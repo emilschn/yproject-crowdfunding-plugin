@@ -1,0 +1,31 @@
+body {
+	font-size: 16px;
+	color: #818080;
+	line-height: 1.5;
+	font-family: "Lato", Helvetica, sans-serif;
+}
+
+html .mceContentBody {
+	max-width: 1140px;
+}
+
+h2 {
+	font: normal 33px/48px 'Crete Round', serif;
+	clear: none;
+}
+
+p {
+	font-size: 17px;
+}
+
+img.alignleft {
+	margin: 10px 80px 0 0;
+}
+
+img.alignright {
+	margin: 10px 0 0 80px;
+}
+
+img[class*="wp-image-"] {
+	clear: both;
+}
