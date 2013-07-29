@@ -113,7 +113,7 @@ final class ATCF_CrowdFunding {
 		do_action( 'atcf_include_files' );
 
 		if ( ! is_admin() )
-			return;
+			return ;
 
 		do_action( 'atcf_include_admin_files' );
 	}

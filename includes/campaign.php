@@ -247,6 +247,8 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_economic_model', __( 'Campaign economic model', 'atcf' ), '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', __( 'Campaign implementation', 'atcf' ), '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_vote', __( 'Campaign vote statu', 'atcf' ), '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_results', __( 'Campaign vote results', 'atcf' ), '_atcf_metabox_campaign_results', 'download', 'side', 'high' );
 		
 		add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
 	}
@@ -283,7 +285,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_economic_model';
 		$fields[] = 'campaign_measuring_impact';
 		$fields[] = 'campaign_implementation';
-		$fields[] = 'vote';
+		$fields[] = 'campaign_vote';
 		
 
 		return $fields;
@@ -537,6 +539,57 @@ function _atcf_metabox_campaign_video() {
 <?php
 	do_action( 'atcf_metabox_campaign_video_after', $campaign );
 }
+
+
+function _atcf_metabox_campaign_vote() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+
+	do_action( 'atcf_metabox_campaign_vote_before', $campaign );
+?>  <p<h3> <?php _e( 'Préciser si ce projet doit passer par les votes des internautes en saisissant le mot : vote', 'atcf' ); ?></h3></p>
+	<p><input type="text" name="campaign_vote" id="campaign_vote" style="width:230px; background-color:red; color:white;" class="regular-text" value="<?php echo esc_attr( $campaign->vote() ); ?>" /></p>
+	<p<h2> <?php _e( 'Ce champs ne doit pas changer tant que le projet est en vote', 'atcf' ); ?></h2></p>
+	
+<?php
+	do_action( 'atcf_metabox_campaign_vote_after', $campaign );
+}
+
+
+
+function _atcf_metabox_campaign_results() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+
+	do_action( 'atcf_metabox_campaign_results_before', $campaign );
+?>  
+	<p	<h1> <?php _e( 'Nombre de participants:', 'atcf' ); ?></h1>
+		<h3> <?php _e( 'Je pense que ce projet va avoir un impact positif:', 'atcf' ); ?></h3></br>
+		<h3> <?php _e( 'Local:', 'atcf' ); ?></h3></br>
+		<h3><?php _e( ' Environnemental:', 'atcf' ); ?></h3></br>
+		<h3><?php _e( 'Economique :', 'atcf' ); ?></h3></br>
+		<h3><?php _e( 'Social :', 'atcf' ); ?></h3></br>
+		<h3><?php _e( 'Autres :', 'atcf' ); ?></h3>
+	
+	</p>
+	<p	<h1> <?php _e( 'Je pense que ce projet va avoir un impact positif :', 'atcf' ); ?></h1>
+		<h3> <?php _e( 'Je pense que ce projet présente un risque très faible:', 'atcf' ); ?></h3></br>
+		<h3> <?php _e( 'Je pense que ce projet présente un risque plutôt faible:', 'atcf' ); ?></h3></br>
+		<h3><?php _e( ' Je pense que ce projet présente un risque modèré:', 'atcf' ); ?></h3></br>
+		<h3><?php _e( 'Je pense que ce projet présente un risque plutôt élevé :', 'atcf' ); ?></h3></br>
+		<h3><?php _e( 'Je pense que ce projet présente un risque très élevé :', 'atcf' ); ?></h3></br>
+		<h3><?php _e( 'Je désapprouve ce projet car son impact prévu n est pas significatif :', 'atcf' ); ?></h3>
+		<h3><?php _e( 'Je pense que ce projet doit être retravaillé avant de pouvoir être financé :', 'atcf' ); ?></h3>
+	
+	
+	</p>
+	
+	
+<?php
+	do_action( 'atcf_metabox_campaign_results_after', $campaign );
+}
+
 
 function _atcf_metabox_campaign_summary() {
 	global $post;
@@ -1053,6 +1106,10 @@ class ATCF_Campaign {
 		return $this->__get( 'campaign_video' );
 	}
 
+	
+	public function vote() {
+		return $this->__get( 'campaign_vote' );
+	}
 	/**
 	 * Campaign Updates
 	 *
@@ -1373,7 +1430,7 @@ function _atcf_metabox_campaign_info() {
 		<label for="campaign_author"><strong><?php _e( 'Author:', 'atcf' ); ?></strong></label><br />
 		<input type="text" name="campaign_author" id="campaign_author" value="<?php echo esc_attr( $campaign->author() ); ?>" class="regular-text" />
 	</p>
-
+	
 	<p>
 		<label for="campaign_email"><strong><?php _e( 'Contact Email:', 'atcf' ); ?></strong></label><br />
 		<input type="text" name="campaign_contact_email" id="campaign_contact_email" value="<?php echo esc_attr( $campaign->contact_email() ); ?>" class="regular-text" />
@@ -1438,7 +1495,7 @@ function atcf_campaign_edit() {
 	
 	$category  = $_POST[ 'cat' ];
 	$content   = $_POST[ 'description' ];
-	$actue   = $_POST[ 'blogs' ];
+	$actu      = $_POST[ 'blogs' ];
 	$updates   = $_POST[ 'updates' ];
 	$excerpt   = $_POST[ 'excerpt' ];
 	
@@ -1450,6 +1507,7 @@ function atcf_campaign_edit() {
 	$economic_model              = $_POST[ 'economic_model' ];
 	$measuring_impact            = $_POST[ 'measuring_impact' ];
 	$implementation              = $_POST[ 'implementation' ];
+	$vote                        = $_POST[ 'vote' ];
 
 	$email     = $_POST[ 'email' ];
 	$author    = $_POST[ 'name' ];
@@ -1489,12 +1547,14 @@ function atcf_campaign_edit() {
 
 	$campaign = wp_update_post( $args, true );
 	
-	$bloga = array(
+	$bloga = apply_filters( 'atcf_edit_campaign_blogs', array(
 		'ID'           => $post->ID,
 		'post_content' => $upadates,
 		'post_excerpt' => $excerpt,
 		'post_category' => array($id_category )
-   );
+  ) );
+  
+  wp_update_post( $bloga);
 
 	/** Extra Campaign Information */
 
@@ -1510,6 +1570,7 @@ function atcf_campaign_edit() {
 	update_post_meta( $post->ID, 'campaign_economic_model', sanitize_text_field( $economic_model ) );
 	update_post_meta( $post->ID, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );
 	update_post_meta( $post->ID, 'campaign_implementation', sanitize_text_field( $implementation ) );
+	update_post_meta( $post->ID, 'campaign_vote', sanitize_text_field( $vote ) );
 	
 
 	do_action( 'atcf_edit_campaign_after', $post->ID, $_POST );
