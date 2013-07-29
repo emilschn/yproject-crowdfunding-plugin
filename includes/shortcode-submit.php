@@ -918,7 +918,7 @@ function atcf_shortcode_submit_process() {
 	
 	
 	// Create category for blog
-	$id_category = wp_create_category('cat'.$campaign, 0);
+	$id_category = wp_insert_category( array('cat_name' => 'cat'.$campaign, 'category_parent' => $parent, 'category_nicename' => sanitize_title($campaign . '-blog-' . $title)) );
 	
 	
 	// Insert posts in blog from updates field
