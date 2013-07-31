@@ -11,6 +11,12 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+
+
+/*********************************************************************************************/
+/* FORM GENERATED WITH SHORTCODES */
+/*********************************************************************************************/
+/*********************************************************************************************/
 /**
  * Base page/form. All fields are loaded through an action,
  * so the form can be extended for ever, fields can be removed, added, etc.
@@ -19,18 +25,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  *
  * @return $form
  */
-function atcf_shortcode_submit( $editing = false ) {
-	global $edd_options;
+function ypcf_shortcode_submit_start( $is_editing = false ) {
+	global $edd_options, $current_campaign, $editing;
 
 	$crowdfunding = crowdfunding();
-	$campaign     = null;
-
-	ob_start();
+	$current_campaign = null;
+	$editing = $is_editing;
 
 	if ( $editing ) {
 		global $post;
-
-		$campaign = atcf_get_campaign( $post );
+		$current_campaign = atcf_get_campaign( $post );
 	} else {
 		wp_enqueue_script( 'jquery-validation', EDD_PLUGIN_URL . 'assets/js/jquery.validate.min.js');
 		wp_enqueue_script( 'atcf-scripts', $crowdfunding->plugin_url . '/assets/js/crowdfunding.js', array( 'jquery', 'jquery-validation' ) );
@@ -39,27 +43,264 @@ function atcf_shortcode_submit( $editing = false ) {
 			'oneReward' => __( 'At least one reward is required.', 'atcf' )
 		) );
 	}
-?>
-	<?php do_action( 'atcf_shortcode_submit_before', $editing, $campaign ); ?>
-	<form action="" method="post" class="atcf-submit-campaign" enctype="multipart/form-data">
-		<?php do_action( 'atcf_shortcode_submit_fields', $editing, $campaign ); ?>
+	
+	do_action( 'atcf_shortcode_submit_before', $editing, $current_campaign );
+	return '<form action="" method="post" class="atcf-submit-campaign" enctype="multipart/form-data">';
+}
+add_shortcode( 'yproject_crowdfunding_submit_start', 'ypcf_shortcode_submit_start' );
 
-		<p class="atcf-submit-campaign-submit">
-			<input type="submit" value="<?php echo $editing ? sprintf( _x( 'Update %s', 'edit "campaign"', 'atcf' ), edd_get_label_singular() ) : sprintf( _x( 'Submit %s', 'submit "campaign"', 'atcf' ), edd_get_label_singular() ); ?>">
-			<input type="hidden" name="action" value="atcf-campaign-<?php echo $editing ? 'edit' : 'submit'; ?>" />
-			<?php wp_nonce_field( 'atcf-campaign-' . ( $editing ? 'edit' : 'submit' ) ); ?>
+
+function ypcf_shortcode_submit_end() {
+	global $edd_options, $current_campaign, $editing;
+
+	$crowdfunding = crowdfunding();
+
+	return '	<p class="atcf-submit-campaign-submit">
+			<input type="submit" value="'. ($editing ? sprintf( _x( 'Update %s', 'edit "campaign"', 'atcf' ), edd_get_label_singular() ) : sprintf( _x( 'Submit %s', 'submit "campaign"', 'atcf' ), edd_get_label_singular() )) .'">
+			<input type="hidden" name="action" value="atcf-campaign-'. ($editing ? 'edit' : 'submit') .'" />
+			'.wp_nonce_field( 'atcf-campaign-' . ( $editing ? 'edit' : 'submit' ), '_wpnonce', true, false ).'
 		</p>
 		
-	</form>
-	<?php do_action( 'atcf_shortcode_submit_after', $editing, $campaign ); ?>
-	
-<?php
-	$form = ob_get_clean();
-
-	return $form;
+	</form>';
 }
+add_shortcode( 'yproject_crowdfunding_submit_end', 'ypcf_shortcode_submit_end' );
 
-add_shortcode( 'appthemer_crowdfunding_submit', 'atcf_shortcode_submit' );
+
+function ypcf_shortcode_submit_field($atts, $content = '') {
+    global $editing;
+    $atts = shortcode_atts( array(
+	'name' => 'title',
+	'rows' => 5,
+	'cols' => 50
+    ), $atts );
+    return '<textarea name="'.$atts['name'].'" id="'.$atts['name'].'" rows="'.$atts['rows'].'" cols="'.$atts['cols'].'" placeholder="'. ($editing ? apply_filters( 'get_summary', $campaign->data->post_summary ) : $content) .'"></textarea>';
+}
+add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
+
+function ypcf_shortcode_submit_field_category($atts, $content = '') {
+    global $editing, $current_campaign;
+    if ( $editing ) {
+	    $selected = 0;
+	    $categories = get_the_terms( $current_campaign->ID, 'download_category' );
+	    if ( ! $categories ) $categories = array();
+
+	    foreach( $categories as $category ) {
+		$selected = $category->term_id;
+		break;
+	    }
+    }
+    return wp_dropdown_categories( array( 
+	    'orderby'	    => 'name', 
+	    'hide_empty'    => 0,
+	    'taxonomy'	    => 'download_category',
+	    'selected'	    => $editing ? $selected : 0,
+	    'echo'	    => 0
+    ) );
+}
+add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_field_category');
+
+function ypcf_shortcode_submit_field_file($atts, $content = '') {
+    $atts = shortcode_atts( array(
+	'name' => 'image'
+    ), $atts );
+    return '<input type="file" name="'.$atts['name'].'" id="'.$atts['name'].'" />';
+}
+add_shortcode('yproject_crowdfunding_field_file', 'ypcf_shortcode_submit_field_file');
+
+function ypcf_shortcode_submit_field_complex($atts, $content = '') {
+    global $editing, $current_campaign;
+    $atts = shortcode_atts( array(
+	'name' => 'description',
+	'width' => '350',
+	'height' => '150'
+    ), $atts );
+    
+    ob_start();
+    $text_to_edit = '';
+    if ($editing) {
+	switch ($atts['name']) {
+	    case 'description':
+		$text_to_edit = $current_campaign->data->post_content;
+		break;
+	}
+    }
+    wp_editor( 
+	    $editing ? wp_richedit_pre($text_to_edit) : wp_richedit_pre($content), 
+	    $atts['name'], 
+	    apply_filters(  
+		'atcf_submit_field_'.$atts['name'].'_editor_args', 
+		array( 
+		    'media_buttons' => true,
+		    'teeny'         => true,
+		    'quicktags'     => false,
+		    'editor_css'    => '<style>body { background: white; } .wp-editor-container {width:'.$atts['width'].'px; height:'.$atts['height'].'px;} .wp-editor-area {width:'.$atts['width'].'px; height:'.$atts['height'].'px;}</style>',
+		    'tinymce'       => array(
+			    'theme_advanced_path'     => false,
+			    'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+			    'plugins'                 => 'paste',
+			    'paste_remove_styles'     => true
+		    )
+
+		) 
+	    ) 
+    );
+    return ob_get_clean();
+}
+add_shortcode('yproject_crowdfunding_field_complex', 'ypcf_shortcode_submit_field_complex');
+
+function ypcf_shortcode_submit_field_location($atts, $content = '') {
+    return '<select id="location" name="location" >
+      <option>01 Ain</option>
+      <option>02 Aisne</option>
+      <option>03 Allier</option>
+      <option>04 Alpes-de-Haute-Provence</option>
+      <option>05 Hautes-Alpes</option>
+      <option>06 Alpes-Maritimes</option>
+      <option>07 Ard&egrave;che</option>
+      <option>08 Ardennes</option>
+      <option>09 Ari&egrave;ge</option>
+      <option>10 Aube</option>
+      <option>11 Aude</option>
+      <option>12 Aveyron</option>
+      <option>13 Bouches-du-Rh&ocirc;ne</option>
+      <option>14 Calvados</option>
+      <option>15 Cantal</option>
+      <option>16 Charente</option>
+      <option>17 Charente-Maritime</option>
+      <option>18 Cher</option>
+      <option>19 Corr&egrave;ze</option>
+      <option>2A Corse-du-Sud</option>
+      <option>2B Haute-Corse</option>
+      <option>21 C&ocirc;te-d&apos;Or</option>
+      <option>22 C&ocirc;tes-d&apos;Armor</option>
+      <option>23 Creuse</option>
+      <option>24 Dordogne</option>
+      <option>25 Doubs</option>
+      <option>26 Dr&ocirc;me</option>
+      <option>27 Eure</option>
+      <option>28 Eure-et-Loir</option>
+      <option>29 Finist&egrave;re</option>
+      <option>30 Gard</option>
+      <option>31 Haute-Garonne</option>
+      <option>32 Gers</option>
+      <option>33 Gironde</option>
+      <option>34 H&eacute;rault</option>
+      <option>35 Ille-et-Vilaine</option>
+      <option>36 Indre</option>
+      <option>37 Indre-et-Loire</option>
+      <option>38 Is&egrave;re</option>
+      <option>39 Jura</option>
+      <option>40 Landes</option>
+      <option>41 Loir-et-Cher</option>
+      <option>42 Loire</option>
+      <option>43 Haute-Loire</option>
+      <option>44 Loire-Atlantique</option>
+      <option>45 Loiret</option>
+      <option>46 Lot</option>
+      <option>47 Lot-et-Garonne</option>
+      <option>48 Loz&egrave;re</option>
+      <option>49 Maine-et-Loire</option>
+      <option>50 Manche</option>
+      <option>51 Marne</option>
+      <option>52 Haute-Marne</option>
+      <option>53 Mayenne</option>
+      <option>54 Meurthe-et-Moselle</option>
+      <option>55 Meuse</option>
+      <option>56 Morbihan</option>
+      <option>57 Moselle</option>
+      <option>58 Ni&egrave;vre</option>
+      <option>59 Nord</option>
+      <option>60 Oise</option>
+      <option>61 Orne</option>
+      <option>62 Pas-de-Calais</option>
+      <option>63 Puy-de-D&ocirc;me</option>
+      <option>64 Pyr&eacute;n&eacute;es-Atlantiques</option>
+      <option>65 Hautes-Pyr&eacute;n&eacute;es</option>
+      <option>66 Pyr&eacute;n&eacute;es-Orientales</option>
+      <option>67 Bas-Rhin</option>
+      <option>68 Haut-Rhin</option>
+      <option>69 Rh&ocirc;ne</option>
+      <option>70 Haute-Sa&ocirc;ne</option>
+      <option>71 Sa&ocirc;ne-et-Loire</option>
+      <option>72 Sarthe</option>
+      <option>73 Savoie</option>
+      <option>74 Haute-Savoie</option>
+      <option>75 Paris</option>
+      <option>76 Seine-Maritime</option>
+      <option>77 Seine-et-Marne</option>
+      <option>78 Yvelines</option>
+      <option>79 Deux-S&egrave;vres</option>
+      <option>80 Somme</option>
+      <option>81 Tarn</option>
+      <option>82 Tarn-et-Garonne</option>
+      <option>83 Var</option>
+      <option>84 Vaucluse</option>
+      <option>85 Vend&eacute;e</option>
+      <option>86 Vienne</option>
+      <option>87 Haute-Vienne</option>
+      <option>88 Vosges</option>
+      <option>89 Yonne</option>
+      <option>90 Territoire de Belfort</option>
+      <option>91 Essonne</option>
+      <option>92 Hauts-de-Seine</option>
+      <option>93 Seine-Saint-Denis</option>
+      <option>94 Val-de-Marne</option>
+      <option>95 Val-d&apos;Oise</option>
+      <option>971 Guadeloupe</option>
+      <option>972 Martinique</option>
+      <option>973 Guyane</option>
+      <option>974 La R&eacute;union</option>
+      <option>976 Mayotte</option>
+    </select>';
+}
+add_shortcode('yproject_crowdfunding_field_location', 'ypcf_shortcode_submit_field_location');
+
+function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
+    $atts = shortcode_atts( array(
+	'option1' => 'Financement d&apos;un projet',
+	'option2' => 'Financement du d&eacute;veloppement (fonds propres)',
+	'option2duration' => 'Dur&eacute;e du financement (en ann&eacute;es) : '
+    ), $atts );
+    return  '<input type="radio" name="fundingtype" id="fundingproject" value="fundingproject" checked="checked">' . $atts['option1'] . '<br />
+	    <input type="radio" name="fundingtype" id="fundingdevelopment" value="fundingdevelopment">' . $atts['option2'] . '
+		<span id="fundingdevelopment_param" style="display: none">- ' . $atts['option2duration'] . '<input type="text" name="fundingduration"></span>';
+}
+add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
+
+function ypcf_shortcode_submit_field_goal($atts, $content = '') {
+    $atts = shortcode_atts( array(
+	'option1' => 'Somme fixe',
+	'option2' => 'Fourchette',
+	'multiplier' => '1.196'
+    ), $atts );
+    return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe" checked="checked">' . $atts['option1'] . '
+		<span id="goalsum_fixe_param">- <input type="text" name="goal" placeholder="100" size="10"></span><br />
+	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible">' . $atts['option2'] . '
+		<span id="goalsum_flexible_param" style="display:none">- Minimum : <input type="text" name="minimum_goal" placeholder="100" size="10">
+		- Maximum : <input type="text" name="maximum_goal" placeholder="200" size="10"></span>
+	    <input type="hidden" name="length" id="length" value="90">';
+}
+add_shortcode('yproject_crowdfunding_field_goal', 'ypcf_shortcode_submit_field_goal');
+
+function ypcf_shortcode_submit_field_length($atts, $content = '') {
+    $atts = shortcode_atts( array(
+	'min' => '15',
+	'max' => '90'
+    ), $atts );
+    return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="length" id="length" value="'.$atts['min'].'">';
+}
+add_shortcode('yproject_crowdfunding_field_length', 'ypcf_shortcode_submit_field_length');
+
+/*********************************************************************************************/
+/* END FORM GENERATED WITH SHORTCODES */
+/*********************************************************************************************/
+/*********************************************************************************************/
+
+
+
+
+
+
 
 /**
  * Campaign Title
@@ -72,8 +313,6 @@ function atcf_shortcode_submit_field_title( $editing, $campaign ) {
 	if ( $editing )
 		return;
 ?>
-	<h3 class="atcf-submit-section campaign-information"><?php _e( 'Campaign Information', 'atcf' ); ?></h3>
-
 	<p class="atcf-submit-title">
 		<label for="title"><?php _e( 'Name', 'atcf' ); ?></label>
 		<input type="text" name="title" id="title" placeholder="<?php esc_attr_e( 'Title', 'atcf' ); ?>">
@@ -81,6 +320,26 @@ function atcf_shortcode_submit_field_title( $editing, $campaign ) {
 <?php
 }
 add_action( 'atcf_shortcode_submit_fields', 'atcf_shortcode_submit_field_title', 10, 2 );
+
+
+
+/**
+ * Campaign summary
+ * Ce champs représente le Resumé
+ *
+ * @since CrowdFunding 0.1-alpha
+ *
+ * @return void
+ */
+function atcf_shortcode_submit_field_summary( $editing, $campaign ) {
+?>
+	<p class="atcf-submit-campaign-summary">
+		<label for="summary"><?php _e( 'Summary', 'atcf' ); ?></label>
+		<textarea name="summary" id="summary" value="<?php echo $editing ? apply_filters( 'get_summary', $campaign->data->post_summary ) : null; ?>"></textarea>
+	</p>
+<?php
+}
+add_action( 'atcf_shortcode_submit_fields', 'atcf_shortcode_submit_field_summary', 10, 2 );
 
 
 
@@ -160,26 +419,6 @@ function atcf_shortcode_submit_field_video( $editing, $campaign ) {
 <?php
 }
 add_action( 'atcf_shortcode_submit_fields', 'atcf_shortcode_submit_field_video', 10, 2 );
-
-
-
-/**
- * Campaign summary
- * Ce champs repr�sente le Resum�
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function atcf_shortcode_submit_field_summary( $editing, $campaign ) {
-?>
-	<p class="atcf-submit-campaign-summary">
-		<label for="summary"><?php _e( 'Summary', 'atcf' ); ?></label>
-		<textarea name="summary" id="summary" value="<?php echo $editing ? apply_filters( 'get_summary', $campaign->data->post_summary ) : null; ?>"></textarea>
-	</p>
-<?php
-}
-add_action( 'atcf_shortcode_submit_fields', 'atcf_shortcode_submit_field_summary', 10, 2 );
 
 /**
  * Campaign gestionnaire du project
@@ -398,7 +637,7 @@ function atcf_shortcode_submit_field_goal_interval( $editing, $campaign ) {
 		<label for="goal"><?php printf( __( 'Minimum Goal (%s)', 'atcf' ), edd_currency_filter( '' ) ); ?></label>
 		<input type="text" name="minimum_goal" id="minimum_goal" placeholder="<?php echo edd_format_amount( 100 ); ?>">
 		<label for="goal"><?php printf( __( 'Maximum Goal (%s)', 'atcf' ), edd_currency_filter( '' ) ); ?></label>
-		<input type="text" name="maximum_goal" id="minimum_goal" placeholder="<?php echo edd_format_amount( 800000 ); ?>">
+		<input type="text" name="maximum_goal" id="maximum_goal" placeholder="<?php echo edd_format_amount( 800000 ); ?>">
 	</p>
 <?php
 }
