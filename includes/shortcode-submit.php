@@ -111,8 +111,8 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
     global $editing, $current_campaign;
     $atts = shortcode_atts( array(
 	'name' => 'description',
-	'width' => '350px',
-	'height' => '150px'
+	'width' => '350',
+	'height' => '150'
     ), $atts );
     
     ob_start();
@@ -121,18 +121,6 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 	switch ($atts['name']) {
 	    case 'description':
 		$text_to_edit = $current_campaign->data->post_content;
-		break;
-	    case 'added_value':
-		$text_to_edit = $current_campaign->added_value();
-		break;
-	    case 'societal_challenge':
-		$text_to_edit = $current_campaign->societal_challenge();
-		break;
-	    case 'economic_model':
-		$text_to_edit = $current_campaign->economic_model();
-		break;
-	    case 'implementation':
-		$text_to_edit = $current_campaign->implementation();
 		break;
 	}
     }
@@ -145,10 +133,10 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 		    'media_buttons' => true,
 		    'teeny'         => true,
 		    'quicktags'     => false,
-		    'editor_css'    => '<style>body { background: white; } .wp-editor-container {width:'.$atts['width'].'; height:'.$atts['height'].';} .wp-editor-area {width:'.$atts['width'].'; height:'.$atts['height'].';}</style>',
+		    'editor_css'    => '<style>body { background: white; } .wp-editor-container {width:'.$atts['width'].'px; height:'.$atts['height'].'px;} .wp-editor-area {width:'.$atts['width'].'px; height:'.$atts['height'].'px;}</style>',
 		    'tinymce'       => array(
 			    'theme_advanced_path'     => false,
-			    'theme_advanced_buttons1' => 'bold,italic,forecolor,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+			    'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
 			    'plugins'                 => 'paste',
 			    'paste_remove_styles'     => true
 		    )

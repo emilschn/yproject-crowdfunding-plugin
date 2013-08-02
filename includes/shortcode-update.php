@@ -23,17 +23,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
  
  function atcf_shortcode_update( $editing = false ) {
-	global $edd_options;
-
+	global $campaign, $post, $edd_options;
 	$crowdfunding = crowdfunding();
-	$campaign     = null;
-
+	
 	ob_start();
 
 	if ( $editing ) {
-		global $post;
-
-		$campaign = atcf_get_campaign( $post );
+		if ( ! is_object( $campaign ) )
+	    $campaign = atcf_get_campaign( $post );
 	} else {
 		wp_enqueue_script( 'jquery-validation', EDD_PLUGIN_URL . 'assets/js/jquery.validate.min.js');
 		wp_enqueue_script( 'atcf-scripts', $crowdfunding->plugin_url . '/assets/js/crowdfunding.js', array( 'jquery', 'jquery-validation' ) );
@@ -82,7 +79,7 @@ function add_meta_boxes() {
 		add_meta_box( 'atcf_campaign_summary', __( 'Campaign summary', 'atcf' ), '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_societal_challenge', __( 'Campaign societal challenge', 'atcf' ), '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_added_value', __( 'Campaign added value', 'atcf' ), '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development test strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_economic_model', __( 'Campaign economic model', 'atcf' ), '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', __( 'Campaign implementation', 'atcf' ), '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
