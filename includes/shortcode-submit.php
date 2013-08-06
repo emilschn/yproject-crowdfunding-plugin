@@ -150,7 +150,8 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 			    'theme_advanced_path'     => false,
 			    'theme_advanced_buttons1' => 'bold,italic,forecolor,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
 			    'plugins'                 => 'paste',
-			    'paste_remove_styles'     => true
+			    'paste_remove_styles'     => true,
+			    'theme_advanced_resizing_use_cookie' => false
 		    )
 
 		) 
@@ -302,6 +303,14 @@ function ypcf_shortcode_submit_field_length($atts, $content = '') {
     return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="length" id="length" value="'.$atts['min'].'">';
 }
 add_shortcode('yproject_crowdfunding_field_length', 'ypcf_shortcode_submit_field_length');
+
+function ypcf_shortcode_submit_field_confirm($atts, $content = '') {
+    ob_start();
+    edd_agree_to_terms_js();
+    edd_terms_agreement();
+    return ob_get_clean();
+}
+add_shortcode('yproject_crowdfunding_field_confirm', 'ypcf_shortcode_submit_field_confirm');
 
 /*********************************************************************************************/
 /* END FORM GENERATED WITH SHORTCODES */
@@ -1047,25 +1056,25 @@ function atcf_shortcode_submit_process() {
 	$edd_files        = array();
 	$upload_overrides = array( 'test_form' => false );
 
-	$terms     		= isset ( $_POST[ 'edd_agree_to_terms' ] ) ? $_POST[ 'edd_agree_to_terms' ] : 0;
-	$title     		= $_POST[ 'title' ];
+	$terms     	= isset ( $_POST[ 'edd_agree_to_terms' ] ) ? $_POST[ 'edd_agree_to_terms' ] : 0;
+	$title     	= $_POST[ 'title' ];
 	$summary     	= $_POST[ 'summary' ];
-	$owner          = $_POST[ 'owner' ];
-	$actu           = $_POST[ 'updates' ];
-	$location       = $_POST[ 'location' ];
-	$impact_area    = $_POST[ 'impact_area' ];
-	$goal      		= $_POST[ 'goal' ];
-	$length    		= $_POST[ 'length' ];
-	$type      		= $_POST[ 'campaign_type' ];
-	$category  		= isset ( $_POST[ 'cat' ] ) ? $_POST[ 'cat' ] : 0;
-	$content   		= $_POST[ 'description' ];
-	$excerpt   		= $_POST[ 'excerpt' ];
-	$societal_challenge  = $_POST[ 'societal_challenge' ];
-	$added_value = $_POST[ 'added_value' ];
+	$owner		= $_POST[ 'owner' ];
+	$actu		= $_POST[ 'updates' ];
+	$location	= $_POST[ 'location' ];
+	$impact_area	= $_POST[ 'impact_area' ];
+	$goal      	= $_POST[ 'goal' ];
+	$length    	= $_POST[ 'length' ];
+	$type      	= $_POST[ 'campaign_type' ];
+	$category  	= isset ( $_POST[ 'cat' ] ) ? $_POST[ 'cat' ] : 0;
+	$content   	= $_POST[ 'description' ];
+	$excerpt   	= $_POST[ 'excerpt' ];
+	$societal_challenge	= $_POST[ 'societal_challenge' ];
+	$added_value	= $_POST[ 'added_value' ];
 
-	$development_strategy  = $_POST[ 'development_strategy' ];
-	$economic_model         = $_POST[ 'economic_model' ];
-	$measuring_impact       = $_POST[ 'measuring_impact' ];
+	$development_strategy	= $_POST[ 'development_strategy' ];
+	$economic_model		= $_POST[ 'economic_model' ];
+	$measuring_impact	= $_POST[ 'measuring_impact' ];
 	$implementation  		= $_POST[ 'implementation' ];
 	
 	$author    		= $_POST[ 'name' ];
@@ -1173,7 +1182,7 @@ function atcf_shortcode_submit_process() {
 	
 	
 	// Insert posts in blog from updates field
-
+/*
 	$blog  = array(
 		  'post_title'    => $title,
 		  'post_content'  => $actu.$updates.'blog Patati patatata my project blog',
@@ -1183,7 +1192,7 @@ function atcf_shortcode_submit_process() {
 		);
 
 		// Insert the post into the database
-		wp_insert_post( $blog,true );
+		wp_insert_post( $blog,true );*/
 
 	/** Extra Campaign Information */
 	add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );

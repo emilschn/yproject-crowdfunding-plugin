@@ -241,6 +241,7 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_updates', __( 'Campaign Updates', 'atcf' ), '_atcf_metabox_campaign_updates', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_video', __( 'Campaign Video', 'atcf' ), '_atcf_metabox_campaign_video', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_summary', __( 'Campaign summary', 'atcf' ), '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_impact_area', __( 'Campaign impact area', 'atcf' ), '_atcf_metabox_campaign_impact_area', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_societal_challenge', __( 'Campaign societal challenge', 'atcf' ), '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_added_value', __( 'Campaign added value', 'atcf' ), '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
@@ -667,7 +668,18 @@ function _atcf_metabox_campaign_summary() {
 	do_action( 'atcf_metabox_campaign_summary_after', $campaign );
 }
 
+function _atcf_metabox_campaign_impact_area () {
+	global $post;
 
+	$campaign = atcf_get_campaign( $post );
+	do_action( 'atcf_metabox_campaign_impact_area_before', $campaign );
+?>
+	<p class="impact_area">
+		<textarea name="impact_area" id="impact_area" class="widefat"><?php echo $campaign->impact_area(); ?></textarea>
+	</p>
+<?php
+	do_action( 'atcf_metabox_campaign_impact_area_after', $campaign );
+}
 
 function _atcf_metabox_campaign_societal_challenge() {
 	global $post;

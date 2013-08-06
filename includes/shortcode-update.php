@@ -35,6 +35,75 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 	    $post = get_post($_GET['campaign_id']);
 	    $campaign = atcf_get_campaign( $post );
+	
+	    if (isset($_POST['action']) && $_POST['action'] == 'atcf-campaign-submit') {
+		$post_update = array();
+		$post_update['ID'] = $campaign->ID;
+		$post_update['post_content'] = $_POST['description'];
+		wp_update_post($post_update);
+		
+		update_post_meta($campaign->ID, 'campaign_impact_area', sanitize_text_field($_POST['impact_area']));
+		update_post_meta($campaign->ID, 'campaign_summary', sanitize_text_field($_POST['summary']));
+		update_post_meta($campaign->ID, 'campaign_societal_challenge', sanitize_text_field($_POST['societal_challenge']));
+		update_post_meta($campaign->ID, 'campaign_added_value', sanitize_text_field($_POST['added_value']));
+		update_post_meta($campaign->ID, 'campaign_economic_model', sanitize_text_field($_POST['economic_model']));
+		update_post_meta($campaign->ID, 'campaign_implementation', sanitize_text_field($_POST['implementation']));
+		update_post_meta($campaign->ID, 'campaign_video', esc_url($_POST['video']));
+		
+		/* Gestion fichiers / images */
+		$image	    = $_FILES[ 'image' ];
+		if (!empty($image)) {
+		    if (isset($_FILES[ 'files' ])) $files = $_FILES[ 'files' ];
+		    $edd_files  = array();
+		    $upload_overrides = array( 'test_form' => false );
+		    if ( ! empty( $files ) ) {
+			    foreach ( $files[ 'name' ] as $key => $value ) {
+				    if ( $files[ 'name' ][$key] ) {
+					    $file = array(
+						    'name'     => $files[ 'name' ][$key],
+						    'type'     => $files[ 'type' ][$key],
+						    'tmp_name' => $files[ 'tmp_name' ][$key],
+						    'error'    => $files[ 'error' ][$key],
+						    'size'     => $files[ 'size' ][$key]
+					    );
+
+					    $upload = wp_handle_upload( $file, $upload_overrides );
+
+					    if ( isset( $upload[ 'url' ] ) )
+						    $edd_files[$key]['file'] = $upload[ 'url' ];
+					    else
+						    unset($files[$key]);
+				    }
+			    }
+		    }
+		    
+		    $upload = wp_handle_upload( $image, $upload_overrides );
+		    if (isset($upload[ 'url' ])) {
+			$attachment = array(
+				'guid'           => $upload[ 'url' ], 
+				'post_mime_type' => $upload[ 'type' ],
+				'post_title'     => $upload[ 'file' ],
+				'post_content' => '',
+				'post_status' => 'inherit'
+			);
+
+			$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign->ID );		
+
+			wp_update_attachment_metadata( 
+				$attach_id, 
+				wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
+			);
+
+			add_post_meta( $campaign->ID, '_thumbnail_id', absint( $attach_id ) );
+		    }
+		    
+		}
+		/* FIN Gestion fichiers / images */
+		
+		//Re-select des données en cas de modification
+		$post = get_post($_GET['campaign_id']);
+		$campaign = atcf_get_campaign( $post );
+	    }
 
 	    ob_start();
 
@@ -52,7 +121,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		    <p class="atcf-update-campaign-update">
 			    <input type="submit" value="<?php echo $editing ? sprintf( _x( 'Update %s', 'edit "campaign"', 'atcf' ), edd_get_label_singular() ) : sprintf( _x( 'Update %s', 'submit "campaign"', 'atcf' ), edd_get_label_singular() ); ?>">
 			    <input type="hidden" name="action" value="atcf-campaign-<?php echo $editing ? 'edit' : 'submit'; ?>" />
-			    <?php wp_nonce_field( 'atcf-campaign-' . ( $editing ? 'edit' : 'submit' ) ); ?>
+			    <?php wp_nonce_field( 'atcf-campaign-edit' ); ?>
 		    </p>
 
 	    </form>
@@ -139,7 +208,7 @@ function atcf_shortcode_update_field_impact_area ($editing, $campaign ) {
 ?>
 	<p class="atcf-update-campaign-impact_area">
 		<label for="impact_area"><?php _e( 'Impact area', 'atcf' ); ?></label>
-		<textarea name="impact_area" id="impact_area" value="<?php echo $editing ? apply_filters( 'get_impact_area', $campaign->data->post_impact_area ) : null; ?>"></textarea>
+		<textarea name="impact_area" id="impact_area"><?php echo $campaign->impact_area(); ?></textarea>
 	</p>
 <?php
 }
@@ -428,16 +497,10 @@ function atcf_shortcode_update_field_video( $editing, $campaign ) {
 ?>
 	<p class="atcf-update-campaign-video">
 		<label for="length"><?php _e( 'Video URL', 'atcf' ); ?></label>
-		<input type="text" name="video" id="video" value="<?php $campaign->video(); ?>">
+		<input type="text" name="video" id="video" value="<?php echo $campaign->video(); ?>">
 	</p>
 <?php
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_video', 12, 2 );
 
-do_action( '_atcf_metabox_campaign_video()' );
-
-
-
-
-add_action( 'template_redirect', 'atcf_campaign_edit' );
 
