@@ -136,32 +136,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 add_shortcode( 'appthemer_crowdfunding_update', 'atcf_shortcode_update' );
 
-/*
-function add_meta_boxes() {
-	global $post;
-
-	if ( ! is_object( $post ) )
-		return;
-
-	$campaign = atcf_get_campaign( $post );
-
-	if ( ! $campaign->is_collected() && ( 'flexible' == $campaign->type() || $campaign->is_funded() ) && atcf_has_preapproval_gateway() )
-		add_meta_box( 'atcf_campaign_funds', __( 'Campaign Funds', 'atcf' ), '_atcf_metabox_campaign_funds', 'download', 'side', 'high' );
-
-	add_meta_box( 'atcf_campaign_stats', __( 'Campaign Stats', 'atcf' ), '_atcf_metabox_campaign_stats', 'download', 'side', 'high' );
-	add_meta_box( 'atcf_campaign_updates', __( 'Campaign Updates', 'atcf' ), '_atcf_metabox_campaign_updates', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_video', __( 'Campaign Video', 'atcf' ), '_atcf_metabox_campaign_video', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_summary', __( 'Campaign summary', 'atcf' ), '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_societal_challenge', __( 'Campaign societal challenge', 'atcf' ), '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_added_value', __( 'Campaign added value', 'atcf' ), '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development test strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_economic_model', __( 'Campaign economic model', 'atcf' ), '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
-	add_meta_box( 'atcf_campaign_implementation', __( 'Campaign implementation', 'atcf' ), '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
-
-	add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
-}*/
-
 
 /**
  * Campaign summary
@@ -173,7 +147,7 @@ function add_meta_boxes() {
  */
 function atcf_shortcode_update_field_description( $editing, $campaign ) {
 ?>
-	<p class="atcf-update-campaign-summary">
+	<div class="atcf-update-campaign-summary">
 		<label for="description"><?php _e( 'Description', 'atcf' ); ?></label>
 		<?php 
 			wp_editor( $campaign ? html_entity_decode( $campaign->data->post_content ) : '', 'description', apply_filters( 'atcf_submit_field_description_editor_args', array( 
@@ -217,7 +191,7 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_impact_
 
 function atcf_shortcode_update_field_summary( $editing, $campaign ) {
 ?>
-	<p class="atcf-update-campaign-summary">
+	<div class="atcf-update-campaign-summary">
 		<label for="summary"><?php _e( 'Summary', 'atcf' ); ?></label>
 		<?php 
 			wp_editor( $campaign ? html_entity_decode( $campaign->summary () ) : '', 'summary', apply_filters( 'atcf_submit_field_summary_editor_args', array( 

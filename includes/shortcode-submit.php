@@ -1181,18 +1181,6 @@ function atcf_shortcode_submit_process() {
 	$id_category = wp_insert_category( array('cat_name' => 'cat'.$campaign, 'category_parent' => $parent, 'category_nicename' => sanitize_title($campaign . '-blog-' . $title)) );
 	
 	
-	// Insert posts in blog from updates field
-/*
-	$blog  = array(
-		  'post_title'    => $title,
-		  'post_content'  => $actu.$updates.'blog Patati patatata my project blog',
-		  'post_status'   => 'publish',
-		  'post_author'   => $user_id,
-		  'post_category' => array($id_category )
-		);
-
-		// Insert the post into the database
-		wp_insert_post( $blog,true );*/
 
 	/** Extra Campaign Information */
 	add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );
