@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $current_user = wp_get_current_user();
     $current_user_id = $current_user->ID;
     $author_id = get_the_author_meta('ID');
-    if ($current_user_id == $author_id || current_user_can('manage_options')) {
+    if (($current_user_id == $author_id || current_user_can('manage_options')) && isset($_GET['campaign_id'])) {
 
 	$crowdfunding = crowdfunding();
 
@@ -43,6 +43,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    <h2>Liste des articles du blog :</h2>
 	    <ul>
 	    <?php 
+		/* Lien ajouter une actu */ 
+		$page_edit_news = get_page_by_path('editer-une-actu');
+		
 		$args = array( 'category' => $category_obj->cat_ID);
 		$posts_array = get_posts( $args );
 		if (empty($posts_array)) {
@@ -54,7 +57,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		    
 		    foreach ( $posts_array as $catpost ) :
 		    ?> 
-		    <li><?php echo $catpost->post_title; ?> [<a href="#">Editer</a>]</li>
+		    <li><?php echo $catpost->post_title; ?> [<a href="<?php echo get_permalink($page_edit_news->ID); ?>?campaign_id=<?php echo $_GET['campaign_id']; ?>&edit_post_id=<?php echo $catpost->ID; ?>">Editer</a>]</li>
 		    <?php
 		    endforeach;
 		}
@@ -65,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    <h2>Ajouter un article</h2>
 	    <form action="" method="post" class="ypcf-add-news" enctype="multipart/form-data">
 		<?php do_action( 'ypcf_shortcode_add_news_fields'); ?>
-		<p class="ypcf-add-news">
+		<p class="ypcf-add-news-p">
 		    <input type="hidden" name="action" value="ypcf-campaign-add-news" /><br />
 		    <?php wp_nonce_field('ypcf-campaign-add-news'); ?>
 		    <input type="submit">
