@@ -72,8 +72,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     }
     
 
-
-
     // Ces variables permettent de compter  combien de fois on cliqué l'un des checbox   du champs impact_ositif
     $count_retravaille_projet  = $wpdb->query("SELECT count('retravaille_projet') FROM `$table_name` WHERE 'campaign_id'= $campaign_id");
    
@@ -87,7 +85,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $count_porteur        = 0;
 
     // Ces variables permettent de compter le pourcentage  des on cliqué l'un des checbox du champs projet doit etre retravaille
-    if ($count_retravaille_projet != 0) {
+    if ($count_retravaille_projet != 0) 
+    {
         $percent_responsable   = ($count_responsable % $count_retravaille_projet )* 100;
         $percent_mal_explique  = ($count_mal_explique % $count_retravaille_projet )* 100;
         $percent_service       = ($count_service % $count_retravaille_projet )* 100;
@@ -140,7 +139,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     // Ces variables permettent de compter  combien de fois on cliqué le choix: je désaprouve ce projet
     $count_desaprouve_projet = $wpdb->query("SELECT count('desarprouve') FROM `$table_name`WHERE 'campaign_id'= $campaign_id");
 
-    if ($count_users != 0) {
+    if ($count_users != 0) 
+    {
         $percent_desaprouve_projet = ($count_pret_collect % $count_users)* 100 ; 
     }
     else
@@ -158,40 +158,36 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 
  <table id="users_votes">
-    <CAPTION> Nombre de participants: </CAPTION> 
+    <CAPTION> Nombre total de participants : <?php  echo $count_users; ?></CAPTION> 
     <TR> 
-         <TH> Utilisateurs </TH> 
-         <TH> Impact positif </TH> 
-         <TH> Prèt à investir </TH> 
-         <TH> La somme </TH> 
+         <TH> |Utilisateur</TH> 
+         <TH> |Impact positif</TH>
+         <TH> |Impact negatif</TH> 
+         <TH> |Prèt à la collecte</TH> 
+         <TH> |Je suis prét à investir</TH> 
+         <TH> |Risque lié</TH>
+         <TH> |Conseil</TH>
     </TR> 
     <TR> 
-         <TH> user 1 </TH> 
-         <TD> local </TD> 
+         <TD> user 1 </TD> 
+         <TD> local </TD>
+         <TD>   </TD>  
          <TD> oui </TD> 
-         <TD> 300 </TD> 
+         <TD> 300 </TD>
+         <TD> risque modéré </TD> 
+         <TD> insister sur la comminication </TD> 
     </TR>
-    <TR> 
-         <TH> user 2 </TH> 
-         <TD> societal </TD> 
-         <TD> non </TD> 
-         <TD>  </TD> 
-    </TR>
-    <TR> 
-         <TH> user 3 </TH> 
-         <TD> environnemental </TD> 
-         <TD> oui </TD> 
-         <TD> 200 </TD> 
-    </TR> 
-    
+   
  </table>
 
 
 
  <table id="impact_positif">
-
-    <h4> Ce porojet a un impcat positif : <?php  echo $count_impact_postif; ?></h4>
+    <h4> Impact du projet</h4>
+    <h5>  <?php  echo $count_impact_postif; ?> %  pensent que ce projet va avoir un impact positif</h5>
+    <h5>  <?php  echo $count_desaprouve_projet ; ?> % pensent que ce projet n'a pas d'impact significatif</h5>
     <tr>
+    <tr>Les personnes qui croient en l'impact positif de ce projet pensent qu'il va porter sur la(les) dimensions suivantes:</tr>
     <td>Local</td>
     <td><?php echo $count_local; ?></td><td>   soit    <?php echo $percent_local; ?>%</td>
     </tr>
@@ -213,8 +209,52 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </tr>
   </table>
   <table>
-    <h4> Les risques liés à ce projet : <?php  echo $count_impact_postif; ?> </h4>
+    </br>
+    <h4>Maturité du projet</h4>
+    <h5> <?php echo $count_pret_collect; ?> % pensent que ce projet est prêt pour la collecte</h5>
+    <h5> <?php echo $count_impact_postif; ?> % pensent que ce projet doit être retravaillé </h5>
     <tr>
+    <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir  0€ en moyenne. </td>
+    </tr>
+    <tr>
+    <td>La moitié de cette personne investiraient plus de X[médiane]€</td>
+    </tr>
+</table> 
+ <tabla style={float:right;}>
+    </br>
+    <tr>Les personnes qui pensent que ce projet doit être retravaillé ont souligné les points suivants:</tr></br>
+    <tr></br>
+    <td>Pas d’impact responsable</td>
+    <td><?php echo  $count_responsable;  ?></td>    <td>   soit    <?php  echo  $percent_responsable; ?>%</td>
+    </tr></br>
+    <tr>
+    <td>Projet mal expliqué</td>
+    <td><?php echo $count_mal_explique; ?></td><td>   soit    <?php echo $percent_mal_explique; ?>%</td>
+    </tr></br>
+    <tr>
+    <td>Qualité du produit/service</td>
+    <td><?php echo $count_service; ?></td><td>   soit    <?php echo $percent_service; ?>%</td>
+    </tr></br>
+    <tr>
+    <td>Qualité de l’équipe</td>
+    <td><?php echo $count_equipe; ?></td><td>   soit    <?php echo $percent_equipe; ?>%</td>
+    </tr></br>
+    <tr>
+    <td>Qualité du business plan</td>
+    <td><?php echo $count_plan ?></td><td>   soit    <?php echo $percent_plan; ?>%</td>
+    </tr></br>
+    <td>Qualité d’innovation</td>
+    <td><?php echo $count_innovation ; ?></td><td>   soit    <?php echo $percent_innovation; ?>%</td>
+    </tr></br>
+    <tr>
+    <td>Qualité du marché, porteur</td>
+    <td><?php echo $count_porteur; ?></td><td>   soit    <?php echo $percent_porteur; ?>%</td>
+    </tr></br>
+  </table>
+  <table>
+</br>
+    <tr>Risques liés à ce proet:</tr></br>
+    <tr></br>
     <td>Le risque est très faible</td>
     <td><?php echo $count_risque_tres_faible; ?></td> <td>   soit    <?php echo $percent_risque_tres_faible; ?>%</td>
     </tr>
@@ -235,45 +275,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <td><?php echo $count_risque_plutot_eleve;  ?></td><td>   soit    <?php echo $percent_risque_plutot_faible; ?>%</td>
     </tr>
  </table>
- <table>
-    <td> Je désaprouve de projet : <?php  echo $count_impact_postif; ?></td>
-    <td><?php echo  $count_desaprouve_projet ; ?></td> <td>   soit    <?php echo $percent_desaprouve_projet; ?>%</td>
-    </tr>
-    <tr> 
-    <td>Je pense que ce projet est prèt pour la colecte</td>
-    <td><?php echo $count_pret_collect; ?></td> <td>   soit    <?php echo $percent_pret_collect; ?>%</td>
-    </tr>
-  </table>
-  <tabla style={float:right;}>
-    <h4> Je pense que ce projet doit être retravaillé avant de pouvoir être financé. Sur quels points : <?php  echo $count_impact_postif; ?></h4>
-    <tr>
-    <td>Pas d’impact responsable</td>
-    <td><?php echo $count_responsable; ?></td><td>   soit    <?php echo $percent_responsable; ?>%</td>
-    </tr>
-    <tr>
-    <td>Projet mal expliqué</td>
-    <td><?php echo $count_mal_explique; ?></td><td>   soit    <?php echo $percent_mal_explique; ?>%</td>
-    </tr>
-    <tr>
-    <td>Qualité du produit/service</td>
-    <td><?php echo $count_service; ?></td><td>   soit    <?php echo $percent_service; ?>%</td>
-    </tr>
-    <tr>
-    <td>Qualité de l’équipe</td>
-    <td><?php echo $count_equipe; ?></td><td>   soit    <?php echo $percent_equipe; ?>%</td>
-    </tr>
-    <tr>
-    <td>Qualité du business plan</td>
-    <td><?php echo $count_plan ?></td><td>   soit    <?php echo $percent_plan; ?>%</td>
-    </tr>
-    <td>Qualité d’innovation</td>
-    <td><?php echo $count_innovation ; ?></td><td>   soit    <?php echo $percent_innovation; ?>%</td>
-    </tr>
-    <tr>
-    <td>Qualité du marché, porteur</td>
-    <td><?php echo $count_porteur; ?></td><td>   soit    <?php echo $percent_porteur; ?>%</td>
-    </tr>
-  </table>
 <?php
 
  
