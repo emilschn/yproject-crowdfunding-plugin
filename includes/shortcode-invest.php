@@ -22,9 +22,16 @@ function ypcf_check_redirections() {
 	if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
     }
     
+    /*if (isset($_GET['campaign_id'])) echo 'ypcf_check_redirections A';
+    if (isset($_POST['amount'])) echo 'ypcf_check_redirections B';
+    if (is_numeric($_POST['amount'])) echo 'ypcf_check_redirections C';
+    if (is_int($_POST['amount'])) echo 'ypcf_check_redirections D';
+    if (isset($_POST['confirmed'])) echo 'ypcf_check_redirections E';
+    if ($_POST['confirmed'] == '1') echo 'ypcf_check_redirections F';*/
+    
     //On a validé la confirmation
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
-    if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && is_int($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1') {
+    if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && ctype_digit($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1') {
 	require_once(dirname(__FILE__) . '/mangopay/common.php');
 
 	//Récupération du walletid de la campagne
@@ -111,9 +118,14 @@ add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form'
 	    ypcf_init_mangopay_user($current_user);
 	    ypcf_init_mangopay_project();
 	    
+	    //Procédure modifiée d'ajout au panier (on ajoute x items de 1 euros)
 	    $post = get_post($_GET['campaign_id']);
 	    $campaign = atcf_get_campaign( $post );
-	    //TODO edd_add_to_cart( $campaign->ID );
+	    edd_empty_cart();
+	    $to_add = array();
+	    $to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => [], 'quantity' => $_POST['amount'] ) );
+	    EDD()->session->set( 'edd_cart', $to_add );
+	    //echo '$cart_items[0] : ' . $cart_items[0]["quantity"]; => comment est stocké le montant saisi dans le panier
 	    
 	    $form .= $content;
 	    
@@ -129,7 +141,7 @@ add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form'
 	    $form .= '<form action="" method="post" enctype="multipart/form-data">';
 	    $form .= '<input name="amount" type="hidden" value="' . $_POST['amount'] . '">';
 	    $form .= '<input name="confirmed" type="hidden" value="1">';
-	    $form .= $_POST['amount'] . '&euro;<input type="submit">';
+	    $form .= $_POST['amount'] . edd_get_currency() . ';<input type="submit">';
 	    $form .= '</form>';
 	} else {
 	    $error = 'general';
@@ -150,37 +162,61 @@ add_shortcode( 'yproject_crowdfunding_invest_confirm', 'ypcf_shortcode_invest_co
  */
 function ypcf_shortcode_invest_return($atts, $content = '') {
     $buffer = '';
+    require_once(dirname(__FILE__) . '/mangopay/common.php');
     $mangopay_contribution_id = $_REQUEST["ContributionID"];
     $mangopay_contribution = request('contributions/'.$mangopay_contribution_id, 'GET');
     if ($mangopay_contribution->IsCompleted) {
 	if ($mangopay_contribution->IsSucceeded) {
-	    /* TODO $post = get_post($_GET['campaign_id']);
+	    //On met à jour l'état de la campagne
+	    $post = get_post($_GET['campaign_id']);
 	    $campaign = atcf_get_campaign( $post );
 	    
 	    //Création d'un paiement pour edd
 	    $current_user = wp_get_current_user();
+	    $user_info = array(
+		'id'         => $current_user->ID,
+		'email'      => $current_user->user_email,
+		'first_name' => $current_user->user_firstname,
+		'last_name'  => $current_user->user_lastname,
+		'discount'   => '',
+		'address'    => array()
+	    );
+	    
+	    $cart_details = array(
+		array(
+			'name'        => get_the_title( $campaign->ID ),
+			'id'          => $campaign->ID,
+			'item_number' => array(
+				'id'      => $campaign->ID,
+				'options' => []
+			),
+			'price'       => 1,
+			'quantity'    => $mangopay_contribution->Amount / 100
+		)
+	    );
+	    
 	    $payment_data = array( 
-		    'price' => $mangopay_contribution->Amount, 
+		    'price' => $mangopay_contribution->Amount / 100, 
 		    'date' => date('Y-m-d H:i:s'), 
 		    'user_email' => $current_user->user_email,
-		    'purchase_key' => $purchase_data['purchase_key'],
+		    'purchase_key' => strtolower( md5( uniqid() ) ),
 		    'currency' => edd_get_currency(),
 		    'downloads' => [$campaign->ID],
-		    'user_info' => $purchase_data['user_info'],
-		    'cart_details' => $purchase_data['cart_details'],
+		    'user_info' => $user_info,
+		    'cart_details' => $cart_details,
 		    'status' => 'publish'
 	    );
 	    $payment = edd_insert_payment( $payment_data );
 	    
-	    //On met à jour l'état de la campagne
-	    edd_record_sale_in_log($campaign->ID, $payment->ID);*/
+	    edd_record_sale_in_log($campaign->ID, $payment);
+	    edd_empty_cart();
 	    
 	    //On affiche que tout s'est bien passé
 	    $amount = $mangopay_contribution->Amount / 100;
 	    $buffer .= $content;
-	    $buffer .= 'Merci pour votre don de ' . $amount . '.<br />';
+	    $buffer .= 'Merci pour votre don de ' . $amount . edd_get_currency() . '.<br />';
 	    $buffer .= 'Nous sommes à pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
-	    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . '.';
+	    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . edd_get_currency() . '.';
 	    
 	    //TODO : rajouter partage
 	} else {
@@ -209,11 +245,11 @@ function ypcf_display_invest_form($error = '') {
 	$form .= '<input id="input_invest_amount_total" type="hidden" value="' . ypcf_get_current_amount() . '">';
 	$form .= '<input type="submit">';
 	$hidden = ' hidden';
-	$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Le montant minimum que vous pouvez investir est de ' . $min_value . '&euro;.</span>';
-	$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Le montant maximum que vous pouvez investir est de ' . $max_value . '&euro;.</span>';
+	$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Le montant minimum que vous pouvez investir est de ' . $min_value . edd_get_currency() . '.</span>';
+	$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Le montant maximum que vous pouvez investir est de ' . $max_value . edd_get_currency() . '.</span>';
 	$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
 	$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
-	$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>&euro;.</span>';
+	$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>'.edd_get_currency().'.</span>';
 	$form .= '</form>';
     } else {
 	$form = '';

@@ -1052,7 +1052,6 @@ function atcf_shortcode_submit_process() {
 	}
 
 	$errors           = new WP_Error();
-	$prices           = array();
 	$edd_files        = array();
 	$upload_overrides = array( 'test_form' => false );
 
@@ -1245,10 +1244,11 @@ function atcf_shortcode_submit_process() {
 	}
 
 	/** EDD Stuff */
-	add_post_meta( $campaign, '_variable_pricing', 1 );
+	add_post_meta( $campaign, '_variable_pricing', 0 );
 	add_post_meta( $campaign, '_edd_price_options_mode', 1 );
 	add_post_meta( $campaign, '_edd_hide_purchase_link', 'on' );
 	
+	$prices = array(1);
 	add_post_meta( $campaign, 'edd_variable_prices', $prices );
 
 	if ( ! empty( $files ) ) {
