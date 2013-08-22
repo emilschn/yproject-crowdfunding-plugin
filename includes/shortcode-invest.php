@@ -22,16 +22,9 @@ function ypcf_check_redirections() {
 	if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
     }
     
-    /*if (isset($_GET['campaign_id'])) echo 'ypcf_check_redirections A';
-    if (isset($_POST['amount'])) echo 'ypcf_check_redirections B';
-    if (is_numeric($_POST['amount'])) echo 'ypcf_check_redirections C';
-    if (is_int($_POST['amount'])) echo 'ypcf_check_redirections D';
-    if (isset($_POST['confirmed'])) echo 'ypcf_check_redirections E';
-    if ($_POST['confirmed'] == '1') echo 'ypcf_check_redirections F';*/
-    
     //On a validé la confirmation
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
-    if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && ctype_digit($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1') {
+    if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && ctype_digit($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1' && isset($_POST['edd_agree_to_terms']) && $_POST['edd_agree_to_terms'] == '1') {
 	require_once(dirname(__FILE__) . '/mangopay/common.php');
 
 	//Récupération du walletid de la campagne
@@ -101,6 +94,37 @@ add_filter( 'login_redirect', 'ypcf_login_redirect_invest', 10, 3 );
 add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form' );
 
 /**
+ * Formulaire de saisie d'investissement
+ */
+function ypcf_display_invest_form($error = '') {
+    $min_value = ypcf_get_min_value_to_invest();
+    $max_value = ypcf_get_max_value_to_invest();
+    
+    if (isset($_GET['campaign_id']) && $max_value > 0) {
+	$form = '';
+	$form .= '<form id="invest_form" action="" method="post" enctype="multipart/form-data">';
+	$form .= '<input id="input_invest_amount" name="amount" type="text" placeholder="' . $min_value . '">';
+	$form .= '<input id="input_invest_min_value" name="old_min_value" type="hidden" value="' . $min_value . '">';
+	$form .= '<input id="input_invest_max_value" name="old_max_value" type="hidden" value="' . $max_value . '">';
+	$form .= '<input id="input_invest_amount_total" type="hidden" value="' . ypcf_get_current_amount() . '">';
+	$form .= '<input type="submit">';
+	$hidden = ' hidden';
+	$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Le montant minimum que vous pouvez investir est de ' . $min_value . edd_get_currency() . '.</span>';
+	$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Le montant maximum que vous pouvez investir est de ' . $max_value . edd_get_currency() . '.</span>';
+	$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . edd_get_currency() . ' &agrave; investir.</span>';
+	$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
+	$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
+	$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>'.edd_get_currency().'.</span>';
+	$form .= '</form>';
+    } else {
+	$post = get_post($_GET['campaign_id']);
+	$campaign = atcf_get_campaign( $post );
+	$form = 'Il n&apos;est plus possible d&apos;investir sur ce <a href="'.get_permalink($campaign->ID).'">projet</a> !';
+    }
+    return $form;
+}
+
+/**
  * Deuxième étape : après saisie de la somme à investir
  * Vérification que la somme correspond bien
  */
@@ -112,20 +136,20 @@ add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form'
 
     if (isset($_GET['campaign_id']) && isset($_POST['amount']) &&  $max_value > 0) {
 	//Si la valeur peut être ponctionnée sur l'objectif, et si c'est bien du numérique supérieur à 0
-	if (is_numeric($_POST['amount']) && intval($_POST['amount']) == $_POST['amount'] && $_POST['amount'] >= $min_value && $_POST['amount'] <= $max_value) {
+	$amount_interval = $max_value - $_POST['amount'];
+	if (is_numeric($_POST['amount']) && intval($_POST['amount']) == $_POST['amount'] && $_POST['amount'] >= $min_value && $_POST['amount'] <= $max_value && ($amount_interval == 0 || $amount_interval >= $min_value)) {
 
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
 	    ypcf_init_mangopay_project();
 	    
-	    //Procédure modifiée d'ajout au panier (on ajoute x items de 1 euros)
+	    //Procédure modifiée d'ajout au panier (on ajoute x items de 1 euros => le montant se retrouve en tant que quantité)
 	    $post = get_post($_GET['campaign_id']);
 	    $campaign = atcf_get_campaign( $post );
 	    edd_empty_cart();
 	    $to_add = array();
 	    $to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => [], 'quantity' => $_POST['amount'] ) );
 	    EDD()->session->set( 'edd_cart', $to_add );
-	    //echo '$cart_items[0] : ' . $cart_items[0]["quantity"]; => comment est stocké le montant saisi dans le panier
 	    
 	    $form .= $content;
 	    
@@ -141,6 +165,10 @@ add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form'
 	    $form .= '<form action="" method="post" enctype="multipart/form-data">';
 	    $form .= '<input name="amount" type="hidden" value="' . $_POST['amount'] . '">';
 	    $form .= '<input name="confirmed" type="hidden" value="1">';
+	    ob_start();
+	    edd_agree_to_terms_js();
+	    edd_terms_agreement();
+	    $form .= ob_get_clean();
 	    $form .= $_POST['amount'] . edd_get_currency() . ';<input type="submit">';
 	    $form .= '</form>';
 	} else {
@@ -148,6 +176,8 @@ add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form'
 	    if (intval($_POST['amount']) != $_POST['amount']) $error = 'integer';
 	    if ($_POST['amount'] >= $min_value) $error = 'min';
 	    if ($_POST['amount'] <= $max_value) $error = 'max';
+	    if ($amount_interval > 0 && $amount_interval < $min_value) $error = 'interval';
+	    unset($_POST['amount']);
 	    $form .= ypcf_display_invest_form($error);
 	}
 
@@ -228,34 +258,6 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
     return $buffer;
 }
 add_shortcode( 'yproject_crowdfunding_invest_return', 'ypcf_shortcode_invest_return' );
-
-/**
- * Formulaire de saisie d'investissement
- */
-function ypcf_display_invest_form($error = '') {
-    $min_value = ypcf_get_min_value_to_invest();
-    $max_value = ypcf_get_max_value_to_invest();
-    
-    if (isset($_GET['campaign_id']) && $max_value > 0) {
-	$form = '';
-	$form .= '<form id="invest_form" action="" method="post" enctype="multipart/form-data">';
-	$form .= '<input id="input_invest_amount" name="amount" type="text" placeholder="' . $min_value . '">';
-	$form .= '<input id="input_invest_min_value" name="old_min_value" type="hidden" value="' . $min_value . '">';
-	$form .= '<input id="input_invest_max_value" name="old_max_value" type="hidden" value="' . $max_value . '">';
-	$form .= '<input id="input_invest_amount_total" type="hidden" value="' . ypcf_get_current_amount() . '">';
-	$form .= '<input type="submit">';
-	$hidden = ' hidden';
-	$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Le montant minimum que vous pouvez investir est de ' . $min_value . edd_get_currency() . '.</span>';
-	$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Le montant maximum que vous pouvez investir est de ' . $max_value . edd_get_currency() . '.</span>';
-	$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
-	$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
-	$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>'.edd_get_currency().'.</span>';
-	$form .= '</form>';
-    } else {
-	$form = '';
-    }
-    return $form;
-}
 
 /**
  * Vérification si l'utilisateur est bien connecté
