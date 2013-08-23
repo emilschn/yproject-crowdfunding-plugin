@@ -249,8 +249,7 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', __( 'Campaign implementation', 'atcf' ), '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_vote', __( 'Campaign vote statu', 'atcf' ), '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_vote_results', __( 'Campaign vote results', 'atcf' ), '_atcf_metabox_campaign_vote_results', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_vote_informations', __( 'Campaign vote informations', 'atcf' ), '_atcf_metabox_campaign_vote_informations', 'download', 'side', 'high' );
+
 		
 		add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
 	}
@@ -555,6 +554,7 @@ function _atcf_metabox_campaign_vote() {
 	<p<h2> <?php _e( 'Choisir le statu de la campagne', 'atcf' ); ?></h2></p>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	 <option></option>
+	 <option value="collecte">collecte</option>
      <option value="vote">vote</option>
 	 <option value="funded">funded</option>
      <option value="archive">archive</option>
@@ -566,80 +566,9 @@ function _atcf_metabox_campaign_vote() {
 
 
 
-function _atcf_metabox_campaign_vote_results() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_vote_results_before', $campaign );
-?>  
-	<p>	<h2> <?php _e( 'Nombre de participants:', 'atcf' ); ?></h2>
-		<h3> <?php _e( 'Je pense que ce projet va avoir un impact positif:', 'atcf' ); ?></h3></br>
-		<h3> <?php _e( 'Local:', 'atcf' ); ?></h3></br>
-		<h3><?php _e( ' Environnemental:', 'atcf' ); ?></h3></br>
-		<h3><?php _e( 'Economique :', 'atcf' ); ?></h3></br>
-		<h3><?php _e( 'Social :', 'atcf' ); ?></h3></br>
-		<h3><?php _e( 'Autres :', 'atcf' ); ?></h3>
-	
-	</p>
-	<p	<h1> <?php _e( 'Je pense que ce projet va avoir un impact positif :', 'atcf' ); ?></h1>
-		<h3> <?php _e( 'Je pense que ce projet présente un risque très faible:', 'atcf' ); ?></h3></br>
-		<h3> <?php _e( 'Je pense que ce projet présente un risque plutôt faible:', 'atcf' ); ?></h3></br>
-		<h3><?php _e( ' Je pense que ce projet présente un risque modèré:', 'atcf' ); ?></h3></br>
-		<h3><?php _e( 'Je pense que ce projet présente un risque plutôt élevé :', 'atcf' ); ?></h3></br>
-		<h3><?php _e( 'Je pense que ce projet présente un risque très élevé :', 'atcf' ); ?></h3></br>
-		<h3><?php _e( 'Je désapprouve ce projet car son impact prévu n est pas significatif :', 'atcf' ); ?></h3>
-		<h3><?php _e( 'Je pense que ce projet doit être retravaillé avant de pouvoir être financé :', 'atcf' ); ?></h3>
-	
-	
-	</p>
-	
-	
-<?php
-	do_action( 'atcf_metabox_campaign_vote_results_after', $campaign );
-}
 
 
 
-function _atcf_metabox_campaign_vote_informations() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_vote_informations_before', $campaign );
-?>  
-		<table id="info-vote">
-			<thead>
-				<tr>
-					
-					<th>Participants</th>
-					<th>Investir</th>
-					<th>Somme</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Mr XXX</td>
-					<td>OUi</td>
-					<td>290</td>
-				</tr>
-				<tr>
-					
-					<td>Mme YY</td>
-					<td>OUi</td>
-					<td>1200</td>
-				</tr>
-				<tr>
-					<td>MR ZZ</td>
-					<td>Non</td>
-					<td></td>
-				</tr>
-			</tbody>
-		</table>
-
-<?php
-	do_action( 'atcf_metabox_campaign_vote_informations_after', $campaign );
-}
 
 
 
