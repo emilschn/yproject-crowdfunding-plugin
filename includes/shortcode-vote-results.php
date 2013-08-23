@@ -35,11 +35,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 // Ces variables permettent de compter  combien de fois on cliqué l'un des checbox   du champs impact_ositif
-    $count_local          = 0;
-    $count_environemental = 0;
-    $count_economique     = 0;
-    $count_social         = 0;
-    $count_autre          = 0;
+    $count_local          = $wpdb->query("SELECT count('local')         FROM `$table_name`");
+    $count_environemental = $wpdb->query("SELECT count('environmental') FROM `$table_name`");
+    $count_social         = $wpdb->query("SELECT count('social')        FROM `$table_name`");
+    $count_autre          = $wpdb->query("SELECT count('autre')         FROM `$table_name`");
 
     // Ces variables permettent de compter  en pourcentage combien de fois on cliqué l'un des checbox   du champs impact_ositif
     if ($count_impact_postif != 0) {
@@ -157,35 +156,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 ?>
 
- <table id="users_votes">
-    <CAPTION> Nombre total de participants : <?php  echo $count_users; ?></CAPTION> 
-    <TR> 
-         <TH> |Utilisateur</TH> 
-         <TH> |Impact positif</TH>
-         <TH> |Impact negatif</TH> 
-         <TH> |Prèt à la collecte</TH> 
-         <TH> |Je suis prét à investir</TH> 
-         <TH> |Risque lié</TH>
-         <TH> |Conseil</TH>
-    </TR> 
-    <TR> 
-         <TD> user 1 </TD> 
-         <TD> local </TD>
-         <TD>   </TD>  
-         <TD> oui </TD> 
-         <TD> 300 </TD>
-         <TD> risque modéré </TD> 
-         <TD> insister sur la comminication </TD> 
-    </TR>
+ 
+    <h2> Nombre total de participants : <?php  echo $count_users; ?></h2> 
    
- </table>
-
-
-
  <table id="impact_positif">
-    <h4> Impact du projet</h4>
-    <h5>  <?php  echo $count_impact_postif; ?> %  pensent que ce projet va avoir un impact positif</h5>
-    <h5>  <?php  echo $count_desaprouve_projet ; ?> % pensent que ce projet n'a pas d'impact significatif</h5>
+    <h3> Impact du projet</h3>
+    <h4>  <?php  echo $count_impact_postif; ?> %  pensent que ce projet va avoir un impact positif</h4>
+    <h4>  <?php  echo $count_desaprouve_projet ; ?> % pensent que ce projet n'a pas d'impact significatif</h4>
     <tr>
     <tr>Les personnes qui croient en l'impact positif de ce projet pensent qu'il va porter sur la(les) dimensions suivantes:</tr>
     <td>Local</td>
@@ -196,9 +173,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <td><?php echo $count_environemental; ?></td><td>   soit    <?php echo $percent_environemental; ?>%</td>
     </tr>
     <tr>
-    <td>Economique</td>
-    <td><?php echo $count_economique; ?></td><td>   soit    <?php echo $percent_economique; ?>%</td>
-    </tr>
     <tr>
     <td>Social</td>
     <td><?php echo $count_social; ?></td><td>   soit    <?php echo $percent_social; ?>%</td>
@@ -210,22 +184,48 @@ if ( ! defined( 'ABSPATH' ) ) exit;
   </table>
   <table>
     </br>
-    <h4>Maturité du projet</h4>
-    <h5> <?php echo $count_pret_collect; ?> % pensent que ce projet est prêt pour la collecte</h5>
-    <h5> <?php echo $count_impact_postif; ?> % pensent que ce projet doit être retravaillé </h5>
+    <h3>Maturité du projet</h3>
+    <h4> <?php echo $count_pret_collect; ?> % pensent que ce projet est prêt pour la collecte</h4>
+    <h4> <?php echo $count_impact_postif; ?> % pensent que ce projet doit être retravaillé </h4>
     <tr>
     <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir  0€ en moyenne. </td>
     </tr>
     <tr>
     <td>La moitié de cette personne investiraient plus de X[médiane]€</td>
     </tr>
-</table> 
+</table>
+
+<table>
+</br>
+    <h4>Les personnes qui pensent que ce projet est prêt ont évalué le risque à [moyenne] en moyenne:</h4>
+    <tr>
+    <td>Le risque est très faible</td>
+    <td><?php echo $count_risque_tres_faible; ?></td> <td>   soit    <?php echo $percent_risque_tres_faible; ?>%</td>
+    </tr>
+    <tr>
+    <td>Le risque est plutôt faible</td>
+    <td><?php echo $count_risque_plutot_faible; ?></td><td>   soit    <?php echo $percent_risque_plutot_faible; ?>%</td>
+    </tr>
+    <tr>
+    <td>Le risque est moderé</td>
+    <td><?php echo $count_risque_modere; ?></td><td>   soit    <?php echo $percent_risque_modere; ?>%</td>
+    </tr>
+    <tr>
+    <td>Le risque est très élevé</td>
+    <td><?php echo $count_risque_tres_eleve; ?></td><td>   soit    <?php echo $percent_risque_tres_eleve; ?>%</td>
+    </tr>
+    <tr>
+    <td>Le risque plutôt élevé</td>
+    <td><?php echo $count_risque_plutot_eleve;  ?></td><td>   soit    <?php echo $percent_risque_plutot_faible; ?>%</td>
+    </tr>
+ </table>
+
  <tabla style={float:right;}>
-    </br>
-    <tr>Les personnes qui pensent que ce projet doit être retravaillé ont souligné les points suivants:</tr></br>
-    <tr></br>
+ </br>
+    <h4>Les personnes qui pensent que ce projet doit être retravaillé ont souligné les points suivants:</h3>
+    <tr>
     <td>Pas d’impact responsable</td>
-    <td><?php echo  $count_responsable;  ?></td>    <td>   soit    <?php  echo  $percent_responsable; ?>%</td>
+    <td><?php echo  $count_responsable;  ?></td><td>   soit    <?php  echo  $percent_responsable; ?>%</td>
     </tr></br>
     <tr>
     <td>Projet mal expliqué</td>
@@ -251,30 +251,25 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <td><?php echo $count_porteur; ?></td><td>   soit    <?php echo $percent_porteur; ?>%</td>
     </tr></br>
   </table>
-  <table>
-</br>
-    <tr>Risques liés à ce proet:</tr></br>
-    <tr></br>
-    <td>Le risque est très faible</td>
-    <td><?php echo $count_risque_tres_faible; ?></td> <td>   soit    <?php echo $percent_risque_tres_faible; ?>%</td>
+  
+ <table>
+ </br>
+    <h3>Conseils</h3>
+    <h4>Les personnes qui ont voté ont souhaité vous apporter ces quelques conseils:</h4>
+    <tr style="min-width:300px"> 
+         <td style="min-width:300px;"> Conseil</td>
+         <td style="min-width:300px;"> Utilisateur</td> 
+          
+    </tr> 
+    <tr style="min-width:300px"> 
+         <td style="min-width:300px;"> patati patata  </td> 
+         <td style="min-width:300px;"> Mr XX </td>
     </tr>
-    <tr>
-    <td>Le risque est plutôt faible</td>
-    <td><?php echo $count_risque_plutot_faible; ?></td><td>   soit    <?php echo $percent_risque_plutot_faible; ?>%</td>
-    </tr>
-    <tr>
-    <td>Le risque est moderé</td>
-    <td><?php echo $count_risque_modere; ?></td><td>   soit    <?php echo $percent_risque_modere; ?>%</td>
-    </tr>
-    <tr>
-    <td>Le risque est très élevé</td>
-    <td><?php echo $count_risque_tres_eleve; ?></td><td>   soit    <?php echo $percent_risque_tres_eleve; ?>%</td>
-    </tr>
-    <tr>
-    <td>Le risque plutôt élevé</td>
-    <td><?php echo $count_risque_plutot_eleve;  ?></td><td>   soit    <?php echo $percent_risque_plutot_faible; ?>%</td>
-    </tr>
+   
  </table>
+
+
+
 <?php
 
  

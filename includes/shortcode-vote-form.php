@@ -20,6 +20,82 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
     $post = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post ); 
 
+  
+
+     if (isset($_POST['submit']))
+     {
+        
+        $impact_positif         = $_POST[ 'impact_positif' ];
+        $local                  = $_POST[ 'local' ];
+        $environmental          = $_POST[ 'environmental' ];
+        $social                 = $_POST[ 'social' ];
+        $autre                  = $_POST[ 'autre' ];
+
+        $desaprouve             = $_POST[ 'desaprouve' ]; 
+
+        $pret_pour_collect      = $_POST[ 'pret_pour_collect' ]; 
+        $sum                    = $_POST[ 'sum' ];
+
+        $liste_risque           = $_POST[ 'liste_risque' ];
+           
+
+        $retravaille            = $_POST[ 'retravaille' ];
+        $pas_responsable        = $_POST[ 'pas_responsable' ];
+        $mal_explique           = $_POST[ 'mal_explique' ];
+        $qualite_produit        = $_POST[ 'qualite_produit' ];
+        $qualite_equipe         = $_POST[ 'qualite_equipe' ];
+        $qualite_business_plan  = $_POST[ 'qualite_business_plan' ];
+        $qualite_innovation     = $_POST[ 'qualite_innovation' ];
+        $qualite_marche         = $_POST[ 'qualite_marche' ];
+        $conseil                = $_POST[ 'conseil' ];
+
+        
+        $isvoted                ; // cette variable verifiera si l'ulisateur a deja vote
+        $user_id                =  wp_get_current_user()->ID;
+        $post                   = get_post(get_the_ID());
+        $campaign               = atcf_get_campaign( $post );
+        $campaign_id            =  $campaign->ID;
+
+
+
+    
+          $wpdb->insert( $table_name, 
+                              array( 
+                                'impact'                  => $impact_positif, 
+                                'local'                   => $local,
+                                'environmental'           => $environmental,
+                                'social'                  => $social,
+                                'autre'                   => $autre,
+                                'desaprouve'              => $desaprouve,
+                                'pret_pour_collect'       => $pret_pour_collect,
+                                'sum'                     => $sum,
+                                'liste_risque'            => $liste_risque,
+                                'retravaille'             => $retravaille,
+                                'pas_responsable'         => $pas_responsable,
+                                'mal_explique'            => $mal_explique,
+                                'qualite_produit'         => $qualite_produit,
+                                'qualite_equipe'          => $qualite_equipe,
+                                'qualite_business_plan'   => $qualite_business_plan,
+                                'qualite_innovation'      => $qualite_innovation,
+                                'qualite_marche'          => $qualite_marche,
+                                'conseil'                 => $conseil,
+                                'isvoted'                 => $isvoted,
+                                'user_id'                 => $user_id, 
+                                'campaign_id'             => $campaign_id
+                              )); 
+
+
+       // $wpdb->query( "INSERT INTO $table_name (`id`, `impact`, `retravaille`, `liste_risque`, `investir`, `sum`, `risque`, `isvoted`, `user_id`, `campaign_id`)
+        //VALUES ('', '$impact', '$retravaille', $liste_risque, '$investir', '$sum' ,NULL, '$isvoted', `$user_id`, '$campaign_id' )");
+      // test la BDD  $wpdb->query("SELECT sum, local  FROM `wdg`.`wp_fvote`");
+       //$wpdb->query("INSERT INTO $table_name (impact) VALUES($ser_impact) ") ;
+
+      
+     // $wpdb->insert( $table_name , array('impact' => $impact, 'retravaille' => $retravaille,  'liste_risque' => $liste_risque));
+
+        echo "Le vote est valid&eacute, merci";
+        
+     }
  ?>
             <!--Formulaire de soumission de vote, visible depuis la page project des projets en vote-->
         <form name="fVote" action="<?php get_permalink();?>" method="POST" class="fVote-form" enctype="multipart/form-data">
@@ -33,27 +109,27 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                     </input>
 
                     <div id="liste_impact_positif_choix" style="display: ">
-                        <input type="checkbox" name="choice[]"  value="local">
+                        <input type="checkbox" name="local"  value="local">
                           Local
                         </input></br>
-                        <input type="checkbox" name="choice[]" value="environnemental">
+                        <input type="checkbox" name="environmental" value="environmental">
                           Environnemental
                         </input></br>
                         
-                        <input type="checkbox" name="choice[]" value="social">
+                        <input type="checkbox" name="social" value="social">
                           Social
                         </label></br>
-                        <input type="checkbox" name="choice[]" value="autre">
+                        <input type="checkbox" name="autre" value="autre">
                           Autre
                         </input>
                         <input id="precision" name="precision" type="text" placeholder="tapez ici" />
                     </div>
                     
-                    <input id="impact_negatif" type="radio" name="radios1" value="impact_negatif" checked="checked">
+                    <input id="desaprouve" type="radio" name="radios1" value="desaprouve" checked="checked">
                       Je d&egravesapprouve ce projet car son impact pr&eacutevu n'est pas significatif
                     </input></br></br>
                     
-                    <input type="radio" name="radios2" value="pret_collect" checked="checked">
+                    <input type="radio" name="radios2" value="pret_pour_collect" checked="checked">
                      Je pense que ce projet est pr&ecirct pour la collecte
                     </input></br>
 
@@ -69,98 +145,57 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                        Risque li&eacute &aring ce projet
                     </label></br>
                     <select id="liste_risque" name="liste_risque" >
-                        <option id="tres_faible">Le risque tr&egraves faible</option>
-                        <option id="plutot_faible">Le risque plut&ocirct faible</option>
-                        <option id="modere">Le risque mod&eacuter&eacute</option>
-                        <option id="plutot_eleve">Le risque plut&ocirct &eacutelev&eacute</option>
-                        <option id="tres_eleve">Le risque tr&egraves &eacutelev&eacute</option>
+                        <option id="risque_tres_faible">Le risque tr&egraves faible</option>
+                        <option id="risque_plutot_faible">Le risque plut&ocirct faible</option>
+                        <option id="risque_modere">Le risque mod&eacuter&eacute</option>
+                        <option id="risque_plutot_eleve">Le risque plut&ocirct &eacutelev&eacute</option>
+                        <option id="risque_tres_eleve">Le risque tr&egraves &eacutelev&eacute</option>
                     </select></br>
                     
-                    <input type="radio" name="radios2" value="pret_collect">
+                    <input type="radio" name="radios2" value="retravaille">
                         Je pense que ce projet doit &ecirctre retravaill&eacute avant de pouvoir &ecirctre financ&eacute. Sur quels points 
                     </input></br>
                     <div id="liste_retravaille" style="display: ">
-                        <input type="checkbox" iname="choice1[]" value="responsable">
+                        <input type="checkbox" name="pas_responsable" value="pas_responsable">
                           Pas d&acuteimpact responsable
                         </input></br>
 
-                        <input type="checkbox" name="choice1[]" value="mal_explique">
+                        <input type="checkbox" name="mal_explique" value="mal_explique">
                           Projet mal expliqu&eacute  
                         </input></br>
 
-                        <input type="checkbox" name="choice1[]" value="service">
+                        <input type="checkbox" name="qualite_produit" value="qualite_produit">
                           Qualit&eacute du produit/service
                         </input></br>
 
-                        <input type="checkbox" name="choice1[]" value="equipe">
+                        <input type="checkbox" name="qualite_equipe" value="qualite_equipe">
                           Qualit&eacute de l&acute&eacutequipe
                         </input></br>
 
-                        <input type="checkbox" id="plan" name="plan" value="plan">
+                        <input type="checkbox"  name="qualite_business_plan" value="qualite_business_plan">
                           Qualit&eacute du business plan
                         </input></br>
 
-                        <input type="checkbox" id="innovation" name="innovation" value="innovation">
+                        <input type="checkbox"  name="qualite_innovation" value="qualite_innovation">
                           Qualit&eacute d&acuteinnovation
                         </input></br>
 
-                        <input type="checkbox" name="porteur" value="porteur" id="porteur">
+                        <input type="checkbox" name="qualite_marche" value="qualite_marche" >
                           Qualit&eacute du march&eacute, porteur
                         </input></br>
             
                         <label> Expliquer pourquoi</label>
-                        <textarea type="text" name="expliquers" id="expliquer" value="expliquer">
+                        <textarea type="text" name="conseil" id="conseil" value="conseil">
                         
                         </textarea></br>
                     </div>
-                    <input type="submit" name="valider" value= "valider" />
+                    <input type="submit" name="submit" value= "valider" />
                  </fieldset>
-            
             </div>
          </form>   
         </div>
 <?php
-    
+}
 
+    add_shortcode( 'yproject_crowdfunding_printPageVoteForm', 'ypcf_shortcode_printPageVoteForm' );
 
-
-if (isset($_POST['submit']) && $_POST['submit'] == "valider")
-    { 
-
-        $precision        = $_POST[ 'precision' ];
-        $investir         = $_POST[ 'investir' ];
-        $sum              = $_POST[ 'sum' ];
-        $liste_risque     = $_POST[ 'liste_risque' ];
-        $isvoted          = $_POST[ 'isvoted' ];
-        $user_id          =  wp_get_current_user()->ID;
-        $post = get_post(get_the_ID());
-        $campaign = atcf_get_campaign( $post );
-        $campaign_id      =  $campaign->ID;
-
-
-      // recuperer les valeurs des chekboxes sur l'impact postif depuis le formulaire vote
-      $options = $_Post['choice'];  
-
-
-      // recuperer les valeurs des chekboxes sur le projet doit etre retravaille depuis le formulaire vote
-      $options1 = $_Post['choice1'];           
-    
-      // stocke des valeurs des cases à cocher dans un tabeau 
-      $impact = implode(', ',$options); 
-      $retravaille = implode(', ',$options1);
-    
-         
-      $wpdb->query( "INSERT INTO $table_name (`id`, `impact`, `retravaille`, `liste_risque`, `investir`, `sum`, `risque`, `isvoted`, `user_id`, `campaign_id`)
-                  VALUES ('', '$impact', '&retravaille', $liste_risque, '$investir', '$sum' ,NULL, '$isvoted', `$user_id`, '$campaign_id' )");
-      // test la BDD  $wpdb->query("SELECT sum, local  FROM `wdg`.`wp_fvote`");
-       //$wpdb->query("INSERT INTO $table_name (impact) VALUES($ser_impact) ") ;
-
-
-        echo 'Votre vote a été bien validé, merci à bientôt !';
-
-
-
-    }
-      
- }// endfunction ypcf_shortcode_printPageVoteForm
-add_shortcode( 'yproject_crowdfunding_printPageVoteForm', 'ypcf_shortcode_printPageVoteForm' );
