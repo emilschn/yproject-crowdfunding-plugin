@@ -167,7 +167,7 @@ function ypcf_display_invest_form($error = '') {
 	    $form .= '<input name="confirmed" type="hidden" value="1">';
 	    ob_start();
 	    edd_agree_to_terms_js();
-	    edd_terms_agreement();
+	    ypcf_terms_agreement();
 	    $form .= ob_get_clean();
 	    $form .= $_POST['amount'] . edd_get_currency() . ';<input type="submit">';
 	    $form .= '</form>';
@@ -245,12 +245,12 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    $amount = $mangopay_contribution->Amount / 100;
 	    $buffer .= $content;
 	    $buffer .= 'Merci pour votre don de ' . $amount . edd_get_currency() . '.<br />';
-	    $buffer .= 'Nous sommes à pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
+	    $buffer .= 'Nous sommes &agrave; pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
 	    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . edd_get_currency() . '.';
 	    
 	    //TODO : rajouter partage
 	} else {
-	    $buffer .= 'Il y a eu une erreur pendant la transacton : ' . $mangopay_contribution->Error->TechnicalDescription;
+	    $buffer .= 'Il y a eu une erreur pendant la transacton : ' . $mangopay_contribution->AnswerMessage . ' (' . $mangopay_contribution->AnswerCode . ')';
 	}
     } else {
 	$buffer .= 'Transaction en cours...';
@@ -267,10 +267,10 @@ add_shortcode( 'yproject_crowdfunding_invest_return', 'ypcf_shortcode_invest_ret
 function ypcf_check_is_user_logged() {
     global $post;
     $page_name = get_post($post)->post_name;
+    if (session_id() == '') session_start();
 
     if ($page_name == 'investir' && !is_user_logged_in()) {
 	if (isset($_GET['campaign_id'])) {
-	    if (session_id() == '') session_start();
 	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	    $page_connexion = get_page_by_path('connexion');
 	    wp_redirect(get_permalink($page_connexion->ID));
@@ -278,6 +278,16 @@ function ypcf_check_is_user_logged() {
 	    wp_redirect(site_url());
 	}
 	exit();
+    } else if ($page_name == 'connexion' && is_user_logged_in()) {
+	if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
+	    $page_invest = get_page_by_path('investir');
+	    $page_invest_link = get_permalink($page_invest->ID);
+	    $campaign_id_param = '?campaign_id=';
+	    $redirect_to = $page_invest_link . $campaign_id_param . $_SESSION['redirect_current_campaign_id'];
+	    unset($_SESSION['redirect_current_campaign_id']);
+	    wp_redirect($redirect_to);
+	    exit();
+	}
     }
 }
 
@@ -332,6 +342,7 @@ function ypcf_check_user_can_invest() {
 	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	    $page_update = get_page_by_path('modifier-mon-compte');
 	    wp_redirect(get_permalink($page_update->ID));
+	    exit();
 	}
     }
 }
@@ -490,5 +501,70 @@ function ypcf_init_mangopay_project() {
 	    }
 	}
     }
+}
+
+/*
+ * Ajout aux réglages d'edd
+ */
+function ypcf_register_settings() {
+    add_settings_field(
+	'edd_settings_misc[contract_label]',
+	'Libelles du contrat d&apos;investissement',
+	function_exists( 'edd_text_callback' ) ? 'edd_text_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'contract_label',
+	    'desc' => '',
+	    'name' => 'contract_label',
+	    'section' => 'misc',
+	    'size' => 'regular' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+    
+    add_settings_field(
+	'edd_settings_misc[contract]',
+	'Contrat d&apos;investissement',
+	function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'contract',
+	    'desc' => '',
+	    'name' => 'contract',
+	    'section' => 'misc',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+}
+
+add_action('admin_init', 'ypcf_register_settings', 11);
+
+
+function ypcf_terms_agreement() {
+	global $edd_options;
+	if ( isset( $edd_options['show_agree_to_terms'] ) ) {
+?>
+		<fieldset id="edd_terms_agreement">
+			<div id="edd_terms" style="display:none;">
+				<?php
+					do_action( 'edd_before_terms' );
+					echo wpautop( $edd_options['contract'] );
+					do_action( 'edd_after_terms' );
+				?>
+			</div>
+			<div id="edd_show_terms">
+				<a href="#" class="edd_terms_links"><?php _e( 'Show Terms', 'edd' ); ?></a>
+				<a href="#" class="edd_terms_links" style="display:none;"><?php _e( 'Hide Terms', 'edd' ); ?></a>
+			</div>
+			<label for="edd_agree_to_terms"><?php echo isset( $edd_options['contract_label'] ) ? $edd_options['contract_label'] : __( 'Agree to Terms?', 'edd' ); ?></label>
+			<input name="edd_agree_to_terms" class="required" type="checkbox" id="edd_agree_to_terms" value="1"/>
+		</fieldset>
+<?php
+	}
 }
 ?>
