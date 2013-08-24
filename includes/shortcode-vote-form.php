@@ -13,12 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function ypcf_shortcode_printPageVoteForm($post, $campaign) {
   
   global $wpdb;
-    $table_name = $wpdb->prefix . "ypVote";  
+    $table_name = $wpdb->prefix . "ypVotes";  
 
     $crowdfunding = crowdfunding();
 
     $post = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post ); 
+        
 
   
 
@@ -51,8 +52,12 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
         $conseil                = $_POST[ 'conseil' ];
 
         
-        $isvoted                ; // cette variable verifiera si l'ulisateur a deja vote
-        $user_id                =  wp_get_current_user()->ID;
+        $isvoted  ; // cette variable verifiera si l'ulisateur a deja vote
+        $user_last_name         = wp_get_current_user()->user_lastname;
+        $user_first_name        = wp_get_current_user()->user_firstname;
+        $user_email             = wp_get_current_user()->user_email;
+        $user_login             = wp_get_current_user()->user_login;
+        $user_id                = wp_get_current_user()->ID;
         $post                   = get_post(get_the_ID());
         $campaign               = atcf_get_campaign( $post );
         $campaign_id            =  $campaign->ID;
@@ -81,7 +86,11 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                                 'qualite_marche'          => $qualite_marche,
                                 'conseil'                 => $conseil,
                                 'isvoted'                 => $isvoted,
-                                'user_id'                 => $user_id, 
+                                'user_id'                 => $user_id,
+                                'user_first_name'         => $user_first_name,
+                                'user_last_name'          => $user_last_name,
+                                'user_login'              => $user_login,
+                                'user_email'              => $user_email,
                                 'campaign_id'             => $campaign_id
                               )); 
 
@@ -95,7 +104,7 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
             
                 <fieldset>
                     <legend>Votez sur ce projet</legend>
-                    
+                   
                     <input id="impact_positif" type="radio" name="impact"  value="positif" checked="checked">
                        Je pense que ce projet va avoir un impact positif
                     </input>
