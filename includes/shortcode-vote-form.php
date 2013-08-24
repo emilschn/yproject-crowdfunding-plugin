@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function ypcf_shortcode_printPageVoteForm($post, $campaign) {
   
   global $wpdb;
-    $table_name = $wpdb->prefix . "fvote";  
+    $table_name = $wpdb->prefix . "ypVote";  
 
     $crowdfunding = crowdfunding();
 
@@ -24,8 +24,9 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
 
      if (isset($_POST['submit']))
      {
-        
-        $impact_positif         = $_POST[ 'impact_positif' ];
+
+
+        $impact                 = $_POST[ 'impact' ];
         $local                  = $_POST[ 'local' ];
         $environmental          = $_POST[ 'environmental' ];
         $social                 = $_POST[ 'social' ];
@@ -39,7 +40,7 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
         $liste_risque           = $_POST[ 'liste_risque' ];
            
 
-        $retravaille            = $_POST[ 'retravaille' ];
+        $maturite               = $_POST[ 'maturite' ];
         $pas_responsable        = $_POST[ 'pas_responsable' ];
         $mal_explique           = $_POST[ 'mal_explique' ];
         $qualite_produit        = $_POST[ 'qualite_produit' ];
@@ -61,7 +62,7 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
     
           $wpdb->insert( $table_name, 
                               array( 
-                                'impact'                  => $impact_positif, 
+                                'impact'                  => $impact, 
                                 'local'                   => $local,
                                 'environmental'           => $environmental,
                                 'social'                  => $social,
@@ -70,7 +71,7 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                                 'pret_pour_collect'       => $pret_pour_collect,
                                 'sum'                     => $sum,
                                 'liste_risque'            => $liste_risque,
-                                'retravaille'             => $retravaille,
+                                'retravaille'             => $maturite,
                                 'pas_responsable'         => $pas_responsable,
                                 'mal_explique'            => $mal_explique,
                                 'qualite_produit'         => $qualite_produit,
@@ -84,15 +85,6 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                                 'campaign_id'             => $campaign_id
                               )); 
 
-
-       // $wpdb->query( "INSERT INTO $table_name (`id`, `impact`, `retravaille`, `liste_risque`, `investir`, `sum`, `risque`, `isvoted`, `user_id`, `campaign_id`)
-        //VALUES ('', '$impact', '$retravaille', $liste_risque, '$investir', '$sum' ,NULL, '$isvoted', `$user_id`, '$campaign_id' )");
-      // test la BDD  $wpdb->query("SELECT sum, local  FROM `wdg`.`wp_fvote`");
-       //$wpdb->query("INSERT INTO $table_name (impact) VALUES($ser_impact) ") ;
-
-      
-     // $wpdb->insert( $table_name , array('impact' => $impact, 'retravaille' => $retravaille,  'liste_risque' => $liste_risque));
-
         echo "Le vote est valid&eacute, merci";
         
      }
@@ -104,7 +96,7 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                 <fieldset>
                     <legend>Votez sur ce projet</legend>
                     
-                    <input id="impact_positif" type="radio" name="radios1"  value="impact_positif">
+                    <input id="impact_positif" type="radio" name="impact"  value="positif" checked="checked">
                        Je pense que ce projet va avoir un impact positif
                     </input>
 
@@ -125,11 +117,11 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                         <input id="precision" name="precision" type="text" placeholder="tapez ici" />
                     </div>
                     
-                    <input id="desaprouve" type="radio" name="radios1" value="desaprouve" checked="checked">
+                    <input id="desaprouve" type="radio" name="impact" value="negatif" >
                       Je d&egravesapprouve ce projet car son impact pr&eacutevu n'est pas significatif
                     </input></br></br>
                     
-                    <input type="radio" name="radios2" value="pret_pour_collect" checked="checked">
+                    <input type="radio" name="maturite" value="pret" checked="checked">
                      Je pense que ce projet est pr&ecirct pour la collecte
                     </input></br>
 
@@ -152,7 +144,7 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                         <option id="risque_tres_eleve">Le risque tr&egraves &eacutelev&eacute</option>
                     </select></br>
                     
-                    <input type="radio" name="radios2" value="retravaille">
+                    <input type="radio" name="maturite" value="retravaille">
                         Je pense que ce projet doit &ecirctre retravaill&eacute avant de pouvoir &ecirctre financ&eacute. Sur quels points 
                     </input></br>
                     <div id="liste_retravaille" style="display: ">
