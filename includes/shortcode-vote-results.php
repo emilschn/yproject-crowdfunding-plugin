@@ -140,7 +140,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
     if ($count_users != 0) {
         $percent_impact_positif = ($count_impact_postif / $count_users)*100 ;
-        $percent_impact_negatif = ($count_impact_postif / $count_users)*100 ;
+        $percent_impact_negatif = ($count_impact_negatif / $count_users)*100 ;
         $percent_pret_collect   = ($count_pret_collect / $count_users)*100;
         $percent_retravaille    = ($count_retravaille / $count_users)*100;
     } else
@@ -160,7 +160,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  
     <h2> Nombre total de participants : <?php  echo($count_users) ;?></h2> 
    
- <table id="impact_positif">
+ <table id="tab-results">
     <h3> Impact du projet</h3>
     <h4>  <?php  echo $percent_impact_positif; ?> %  des participants pensent que ce projet va avoir un impact positif</h4>
     <h4>  <?php  echo $percent_impact_negatif ; ?> % des participants pensent que ce projet n'a pas d'impact significatif</h4>
@@ -183,7 +183,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <td><?php echo($count_autre); ?></td><td>   soit    <?php echo $percent_autre; ?>%</td>
     </tr>
   </table>
-  <table>
+  <table id="tab-results">
     </br>
     <h3>Maturité du projet</h3> 
     <h4> <?php echo $percent_pret_collect; ?> %  pensent que ce projet est prêt pour la collecte</h4>
@@ -192,11 +192,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir  <?php echo($count_sum / $count_pret_collect); ?>€ en moyenne. </td>
     </tr>
     <tr>
-    <td>La moitié de cette personne investiraient plus de X[médiane]€</td>
+    <td>La moitié de ces personnes investiraient plus de <?php echo(($count_sum + 1)/2);?> €</td>
     </tr>
 </table>
 
-<table>
+<table id="tab-results">
 </br>
     <h4>Les personnes qui pensent que ce projet est prêt ont évalué le risque à [moyenne] en moyenne:</h4>
     <tr>
@@ -221,36 +221,36 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </tr>
  </table>
 
- <tabla style={float:right;}>
+ <table id="tab-results">
  </br>
     <h4>Les personnes qui pensent que ce projet doit être retravaillé ont souligné les points suivants:</h3>
     <tr>
     <td>Pas d’impact responsable</td>
     <td><?php echo($count_responsable);  ?></td><td>   soit    <?php  echo  $percent_responsable; ?>%</td>
-    </tr></br>
+    </tr>
     <tr>
     <td>Projet mal expliqué</td>
     <td><?php echo($count_mal_explique); ?></td><td>   soit    <?php echo $percent_mal_explique; ?>%</td>
-    </tr></br>
+    </tr>
     <tr>
     <td>Qualité du produit/service</td>
     <td><?php echo($count_service); ?></td><td>   soit    <?php echo $percent_service; ?>%</td>
-    </tr></br>
+    </tr>
     <tr>
     <td>Qualité de l’équipe</td>
     <td><?php echo($count_equipe); ?></td><td>   soit    <?php echo $percent_equipe; ?>%</td>
-    </tr></br>
+    </tr>
     <tr>
     <td>Qualité du business plan</td>
     <td><?php echo($count_plan); ?></td><td>   soit    <?php echo $percent_plan; ?>%</td>
-    </tr></br>
+    </tr>
     <td>Qualité d’innovation</td>
     <td><?php echo($count_innovation) ; ?></td><td>   soit    <?php echo $percent_innovation; ?>%</td>
-    </tr></br>
+    </tr>
     <tr>
     <td>Qualité du marché, porteur</td>
     <td><?php echo($count_porteur); ?></td><td>   soit    <?php echo $percent_porteur; ?>%</td>
-    </tr></br>
+    </tr>
   </table>
   
  <table>
@@ -262,14 +262,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 <?php
 
-    $conseils = $wpdb->get_results( "SELECT user_login ,conseil FROM $table_name WHERE campaign_id = $campaign_id " );
+    $conseils = $wpdb->get_results( "SELECT user_login,user_email,user_id,conseil FROM $table_name WHERE campaign_id = $campaign_id" );
 
-    echo '<table>';
-    echo '<tr style="min-width:300px">'.'<td style="min-width:300px">';
-        echo 'Participants';
-        echo '</td>';
-        echo '<td style="min-width:300px">';
+    echo '<table id="tab-results">';
+    echo '<tr>'.'<td>';
         echo 'Conseils';
+        echo '</td>';
+        echo '<td>';
+        echo 'Participants';
         echo '</td>'.'</tr>';
     foreach ( $conseils as $cons ) 
     {
@@ -277,11 +277,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             return;
         } else
         {
-        echo '<tr style="min-width:300px">'.'<td style="min-width:300px">';
-        echo $cons->user_login;
-        echo '</td>';
-        echo '<td style="min-width:300px">';
+        echo '<tr>'.'<td>';
         echo $cons->conseil;
+        echo '</td>';
+        echo '<td>';
+        echo $cons->user_login;
         echo '</td>'.'</tr>';
        }
     }
