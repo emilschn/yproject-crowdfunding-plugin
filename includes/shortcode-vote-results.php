@@ -290,7 +290,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     foreach ( $conseils as $cons ) 
     {
         if(empty($cons->conseil)){
-            return;
+            echo '</table>';
         } else
         {
         echo '<tr>'.'<td>';
