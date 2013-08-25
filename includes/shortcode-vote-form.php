@@ -22,101 +22,107 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
     $post = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post ); 
         
-
     if (isset($_POST['submit']))
-        {
-            $impact                 = $_POST[ 'impact' ];
-            $local                  = $_POST[ 'local' ];
-            $environmental          = $_POST[ 'environmental' ];
-            $social                 = $_POST[ 'social' ];
-            $autre                  = $_POST[ 'autre' ];
+        { 
+            if ( is_user_logged_in() )
+            {
+                $impact                 = $_POST[ 'impact' ];
+                $local                  = $_POST[ 'local' ];
+                $environmental          = $_POST[ 'environmental' ];
+                $social                 = $_POST[ 'social' ];
+                $autre                  = $_POST[ 'autre' ];
 
-            $desaprouve             = $_POST[ 'desaprouve' ]; 
+                $desaprouve             = $_POST[ 'desaprouve' ]; 
 
-            $pret_pour_collect      = $_POST[ 'pret_pour_collect' ]; 
-            $sum                    = $_POST[ 'sum' ];          
+                $pret_pour_collect      = $_POST[ 'pret_pour_collect' ]; 
+                $sum                    = $_POST[ 'sum' ];          
 
-            $liste_risque           = $_POST[ 'liste_risque' ];
-               
-            $maturite               = $_POST[ 'maturite' ];
-            $pas_responsable        = $_POST[ 'pas_responsable' ];
-            $mal_explique           = $_POST[ 'mal_explique' ];
-            $qualite_produit        = $_POST[ 'qualite_produit' ];
-            $qualite_equipe         = $_POST[ 'qualite_equipe' ];
-            $qualite_business_plan  = $_POST[ 'qualite_business_plan' ];
-            $qualite_innovation     = $_POST[ 'qualite_innovation' ];
-            $qualite_marche         = $_POST[ 'qualite_marche' ];
-            $conseil                = $_POST[ 'conseil' ];
- 
-            $user_last_name         = wp_get_current_user()->user_lastname;
-            $user_first_name        = wp_get_current_user()->user_firstname;
-            $user_email             = wp_get_current_user()->user_email;
-            $user_login             = wp_get_current_user()->user_login;
-            $user_id                = wp_get_current_user()->ID;
+                $liste_risque           = $_POST[ 'liste_risque' ];
+                   
+                $maturite               = $_POST[ 'maturite' ];
+                $pas_responsable        = $_POST[ 'pas_responsable' ];
+                $mal_explique           = $_POST[ 'mal_explique' ];
+                $qualite_produit        = $_POST[ 'qualite_produit' ];
+                $qualite_equipe         = $_POST[ 'qualite_equipe' ];
+                $qualite_business_plan  = $_POST[ 'qualite_business_plan' ];
+                $qualite_innovation     = $_POST[ 'qualite_innovation' ];
+                $qualite_marche         = $_POST[ 'qualite_marche' ];
+                $conseil                = $_POST[ 'conseil' ];
+     
+                $user_last_name         = wp_get_current_user()->user_lastname;
+                $user_first_name        = wp_get_current_user()->user_firstname;
+                $user_email             = wp_get_current_user()->user_email;
+                $user_login             = wp_get_current_user()->user_login;
+                $user_id                = wp_get_current_user()->ID;
 
-            $post                   = get_post(get_the_ID());
-            $campaign               = atcf_get_campaign( $post );
-            $campaign_id            =  $campaign->ID;
+                $post                   = get_post(get_the_ID());
+                $campaign               = atcf_get_campaign( $post );
+                $campaign_id            =  $campaign->ID;
 
-            if  (is_numeric($_POST[ 'sum' ]) OR $_POST[ 'sum' ] == NULL ) {
-               $sum = $_POST[ 'sum' ];
-               $sum_valid = true;
-            } 
+                if  (is_numeric($_POST[ 'sum' ]) OR $_POST[ 'sum' ] == NULL ) {
+                   $sum = $_POST[ 'sum' ];
+                   $sum_valid = true;
+                } 
+                else
+                {
+                    echo '<label style="color:red">*Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
+                }
+
+            // Vérifie si l'utilisateur a deja voté
+            $users = $wpdb->get_results( "SELECT user_id FROM $table_name WHERE campaign_id = $campaign_id " );
+            
+
+            foreach ( $users as $user ){
+                if ( $user->user_id == $user_id){
+                    echo '<label style="color:red">* D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</label></br>';
+                    $isvoted = true;
+                    break;
+                     
+                } 
+            }
+
+            if ($isvoted == false && $sum_valid)
+            {
+                        $wpdb->insert( $table_name, 
+                                            array( 
+                                                'impact'                  => $impact, 
+                                                'local'                   => $local,
+                                                'environmental'           => $environmental,
+                                                'social'                  => $social,
+                                                'autre'                   => $autre,
+                                                'desaprouve'              => $desaprouve,
+                                                'pret_pour_collect'       => $pret_pour_collect,
+                                                'sum'                     => $sum,
+                                                'liste_risque'            => $liste_risque,
+                                                'retravaille'             => $maturite,
+                                                'pas_responsable'         => $pas_responsable,
+                                                'mal_explique'            => $mal_explique,
+                                                'qualite_produit'         => $qualite_produit,
+                                                'qualite_equipe'          => $qualite_equipe,
+                                                'qualite_business_plan'   => $qualite_business_plan,
+                                                'qualite_innovation'      => $qualite_innovation,
+                                                'qualite_marche'          => $qualite_marche,
+                                                'conseil'                 => $conseil,
+                                                'isvoted'                 => $isvoted,
+                                                'user_id'                 => $user_id,
+                                                'user_first_name'         => $user_first_name,
+                                                'user_last_name'          => $user_last_name,
+                                                'user_login'              => $user_login,
+                                                'user_email'              => $user_email,
+                                                'campaign_id'             => $campaign_id
+                                              )); 
+
+                    echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';
+                       
+                }
+            }
             else
             {
-                echo '<label style="color:red">Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
+                 echo '<label style="color:red"> * Vous devez vous connecter pour voter </label></br>';
             }
 
-        // Vérifie si l'utilisateur a deja voté
-        $users = $wpdb->get_results( "SELECT user_id FROM $table_name WHERE campaign_id = $campaign_id " );
-        
-
-        foreach ( $users as $user ){
-            if ( $user->user_id == $user_id){
-                echo '<label style="color:red">D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</label></br>';
-                $isvoted = true;
-                break;
-                 
-            } 
         }
-
-        if ($isvoted == false && $sum_valid)
-        {
-                    $wpdb->insert( $table_name, 
-                                        array( 
-                                            'impact'                  => $impact, 
-                                            'local'                   => $local,
-                                            'environmental'           => $environmental,
-                                            'social'                  => $social,
-                                            'autre'                   => $autre,
-                                            'desaprouve'              => $desaprouve,
-                                            'pret_pour_collect'       => $pret_pour_collect,
-                                            'sum'                     => $sum,
-                                            'liste_risque'            => $liste_risque,
-                                            'retravaille'             => $maturite,
-                                            'pas_responsable'         => $pas_responsable,
-                                            'mal_explique'            => $mal_explique,
-                                            'qualite_produit'         => $qualite_produit,
-                                            'qualite_equipe'          => $qualite_equipe,
-                                            'qualite_business_plan'   => $qualite_business_plan,
-                                            'qualite_innovation'      => $qualite_innovation,
-                                            'qualite_marche'          => $qualite_marche,
-                                            'conseil'                 => $conseil,
-                                            'isvoted'                 => $isvoted,
-                                            'user_id'                 => $user_id,
-                                            'user_first_name'         => $user_first_name,
-                                            'user_last_name'          => $user_last_name,
-                                            'user_login'              => $user_login,
-                                            'user_email'              => $user_email,
-                                            'campaign_id'             => $campaign_id
-                                          )); 
-
-                echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';
-                   
-            }
-        
-        }
-     
+         
 
 ?>
             <!--Formulaire de soumission de vote, visible depuis la page project des projets en vote-->
