@@ -15,6 +15,7 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
   global $wpdb;
     $table_name = $wpdb->prefix . "ypVotes"; 
     $isvoted = false; 
+    $sum_valid = false;
 
     $crowdfunding = crowdfunding();
 
@@ -22,89 +23,102 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
     $campaign = atcf_get_campaign( $post ); 
         
 
-  
+    if (isset($_POST['submit']))
+        {
+            $impact                 = $_POST[ 'impact' ];
+            $local                  = $_POST[ 'local' ];
+            $environmental          = $_POST[ 'environmental' ];
+            $social                 = $_POST[ 'social' ];
+            $autre                  = $_POST[ 'autre' ];
 
-     if (isset($_POST['submit']))
-     {
+            $desaprouve             = $_POST[ 'desaprouve' ]; 
 
+            $pret_pour_collect      = $_POST[ 'pret_pour_collect' ]; 
+            $sum                    = $_POST[ 'sum' ];          
 
-        $impact                 = $_POST[ 'impact' ];
-        $local                  = $_POST[ 'local' ];
-        $environmental          = $_POST[ 'environmental' ];
-        $social                 = $_POST[ 'social' ];
-        $autre                  = $_POST[ 'autre' ];
+            $liste_risque           = $_POST[ 'liste_risque' ];
+               
+            $maturite               = $_POST[ 'maturite' ];
+            $pas_responsable        = $_POST[ 'pas_responsable' ];
+            $mal_explique           = $_POST[ 'mal_explique' ];
+            $qualite_produit        = $_POST[ 'qualite_produit' ];
+            $qualite_equipe         = $_POST[ 'qualite_equipe' ];
+            $qualite_business_plan  = $_POST[ 'qualite_business_plan' ];
+            $qualite_innovation     = $_POST[ 'qualite_innovation' ];
+            $qualite_marche         = $_POST[ 'qualite_marche' ];
+            $conseil                = $_POST[ 'conseil' ];
+ 
+            $user_last_name         = wp_get_current_user()->user_lastname;
+            $user_first_name        = wp_get_current_user()->user_firstname;
+            $user_email             = wp_get_current_user()->user_email;
+            $user_login             = wp_get_current_user()->user_login;
+            $user_id                = wp_get_current_user()->ID;
 
-        $desaprouve             = $_POST[ 'desaprouve' ]; 
+            $post                   = get_post(get_the_ID());
+            $campaign               = atcf_get_campaign( $post );
+            $campaign_id            =  $campaign->ID;
 
-        $pret_pour_collect      = $_POST[ 'pret_pour_collect' ]; 
-        $sum                    = $_POST[ 'sum' ];
+            if  (is_numeric($_POST[ 'sum' ]) OR $_POST[ 'sum' ] == NULL ) {
+               $sum = $_POST[ 'sum' ];
+               $sum_valid = true;
+            } 
+            else
+            {
+                echo '<label style="color:red">Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
+            }
 
-        $liste_risque           = $_POST[ 'liste_risque' ];
-           
-
-        $maturite               = $_POST[ 'maturite' ];
-        $pas_responsable        = $_POST[ 'pas_responsable' ];
-        $mal_explique           = $_POST[ 'mal_explique' ];
-        $qualite_produit        = $_POST[ 'qualite_produit' ];
-        $qualite_equipe         = $_POST[ 'qualite_equipe' ];
-        $qualite_business_plan  = $_POST[ 'qualite_business_plan' ];
-        $qualite_innovation     = $_POST[ 'qualite_innovation' ];
-        $qualite_marche         = $_POST[ 'qualite_marche' ];
-        $conseil                = $_POST[ 'conseil' ];
-
+        // Vérifie si l'utilisateur a deja voté
+        $users = $wpdb->get_results( "SELECT user_id FROM $table_name WHERE campaign_id = $campaign_id " );
         
-        $user_last_name         = wp_get_current_user()->user_lastname;
-        $user_first_name        = wp_get_current_user()->user_firstname;
-        $user_email             = wp_get_current_user()->user_email;
-        $user_login             = wp_get_current_user()->user_login;
-        $user_id                = wp_get_current_user()->ID;
-        $post                   = get_post(get_the_ID());
-        $campaign               = atcf_get_campaign( $post );
-        $campaign_id            =  $campaign->ID;
 
+        foreach ( $users as $user ){
+            if ( $user->user_id == $user_id){
+                echo '<label style="color:red">D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</label></br>';
+                $isvoted = true;
+                break;
+                 
+            } 
+        }
 
+        if ($isvoted == false && $sum_valid)
+        {
+                    $wpdb->insert( $table_name, 
+                                        array( 
+                                            'impact'                  => $impact, 
+                                            'local'                   => $local,
+                                            'environmental'           => $environmental,
+                                            'social'                  => $social,
+                                            'autre'                   => $autre,
+                                            'desaprouve'              => $desaprouve,
+                                            'pret_pour_collect'       => $pret_pour_collect,
+                                            'sum'                     => $sum,
+                                            'liste_risque'            => $liste_risque,
+                                            'retravaille'             => $maturite,
+                                            'pas_responsable'         => $pas_responsable,
+                                            'mal_explique'            => $mal_explique,
+                                            'qualite_produit'         => $qualite_produit,
+                                            'qualite_equipe'          => $qualite_equipe,
+                                            'qualite_business_plan'   => $qualite_business_plan,
+                                            'qualite_innovation'      => $qualite_innovation,
+                                            'qualite_marche'          => $qualite_marche,
+                                            'conseil'                 => $conseil,
+                                            'isvoted'                 => $isvoted,
+                                            'user_id'                 => $user_id,
+                                            'user_first_name'         => $user_first_name,
+                                            'user_last_name'          => $user_last_name,
+                                            'user_login'              => $user_login,
+                                            'user_email'              => $user_email,
+                                            'campaign_id'             => $campaign_id
+                                          )); 
 
-    
-          $wpdb->insert( $table_name, 
-                              array( 
-                                'impact'                  => $impact, 
-                                'local'                   => $local,
-                                'environmental'           => $environmental,
-                                'social'                  => $social,
-                                'autre'                   => $autre,
-                                'desaprouve'              => $desaprouve,
-                                'pret_pour_collect'       => $pret_pour_collect,
-                                'sum'                     => $sum,
-                                'liste_risque'            => $liste_risque,
-                                'retravaille'             => $maturite,
-                                'pas_responsable'         => $pas_responsable,
-                                'mal_explique'            => $mal_explique,
-                                'qualite_produit'         => $qualite_produit,
-                                'qualite_equipe'          => $qualite_equipe,
-                                'qualite_business_plan'   => $qualite_business_plan,
-                                'qualite_innovation'      => $qualite_innovation,
-                                'qualite_marche'          => $qualite_marche,
-                                'conseil'                 => $conseil,
-                                'isvoted'                 => $isvoted,
-                                'user_id'                 => $user_id,
-                                'user_first_name'         => $user_first_name,
-                                'user_last_name'          => $user_last_name,
-                                'user_login'              => $user_login,
-                                'user_email'              => $user_email,
-                                'campaign_id'             => $campaign_id
-                              )); 
-
-        echo "Le vote est valid&eacute, merci";
+                echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';
+                   
+            }
         
-     }
+        }
+     
 
-     /* $users = $wpdb->get_results( "SELECT user_id FROM $table_name WHERE campaign_id = $campaign_id " );
-      foreach ($users as $user) {
-        echo $user->user_id;
-
-      }*/
-
- ?>
+?>
             <!--Formulaire de soumission de vote, visible depuis la page project des projets en vote-->
     <div class="left post_bottom_infos">
         <form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
@@ -127,11 +141,12 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                     
                     <input id="pret" type="radio" name="maturite" value="pret" checked="checked">Je pense que ce projet est pr&ecirct pour la collecte</input></br>
                     <span id="content-pret">
-                        <label  id="investir" name="investir" value="investir">Je serais pr&ecirct &aring investir</label></br>
-                        <input id="sum" name="sum" type="text" placeholder="200 euro"/></br>
+                        <label  id="investir" name="investir" value="investir">Je serais pr&ecirct &agrave investir</label></br>
+                        <input id="sum" name="sum" type="text" placeholder="200 euro" v/></br>
                      
                         <label class="risque" name="risque" value="risque">Risque li&eacute &aring ce projet</label></br>
-                        <select id="liste_risque" name="liste_risque" >
+                        <select id="liste_risque" name="liste_risque"  placeholder="choisir le type de risque">
+                            <option ></option>
                             <option id="risque_tres_faible">Le risque tr&egraves faible</option>
                             <option id="risque_plutot_faible">Le risque plut&ocirct faible</option>
                             <option id="risque_modere">Le risque mod&eacuter&eacute</option>

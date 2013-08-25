@@ -174,10 +174,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 
  
-    <h2> Nombre total de participants : <?php  echo($count_users) ;?></h2> 
-   
- <table id="tab-results">
-    <h3> Impact du projet</h3>
+<h2> Nombre total de participants : <?php  echo($count_users) ;?></h2> 
+<div id="tab-title"><h3> Impact du projet</h3></div>
+<table id="tab-results">
     <h4>  <?php  echo $percent_impact_positif; ?> %  des participants pensent que ce projet va avoir un impact positif</h4>
     <h4>  <?php  echo $percent_impact_negatif ; ?> % des participants pensent que ce projet n'a pas d'impact significatif</h4>
     <tr>
@@ -199,9 +198,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <td><?php echo($count_autre); ?></td><td>   soit    <?php echo $percent_autre; ?>%</td>
     </tr>
   </table>
+  <div id="tab-title"><h3>Maturité du projet</h3></div>
   <table id="tab-results">
-    </br>
-    <h3>Maturité du projet</h3> 
     <h4> <?php echo $percent_pret_collect; ?> %  pensent que ce projet est prêt pour la collecte</h4>
     <h4> <?php echo $percent_retravaille; ?> % pensent que ce projet doit être retravaillé </h4>
     <tr>
@@ -271,7 +269,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
   
  <table>
  </br>
-    <h3>Conseils</h3>
+    <div id="tab-title"><h3>Conseils</h3></div>
     <h4>Les personnes qui ont voté ont souhaité vous apporter ces quelques conseils:</h4>
 
 
