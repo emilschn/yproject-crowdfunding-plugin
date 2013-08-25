@@ -150,7 +150,23 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         $percent_pret_collect   = 0;
         $percent_retravaille    = 0;
     }
+    // calcul de la moyenne   
+    if ($count_pret_collect == 0) {
+        $moyenne = 0;
+    }else
+    {
+        $moyenne = $count_sum / $count_pret_collect;
+    }
+    // calcule de la mediane
+    if ($count_sum % 2 == 0) { // La somme totale est paire
+        $mediane = $count_sum /2;
+    } else
+    {
+       $mediane = ($count_sum + 1)/2; 
+    }
     
+    
+
 
     ob_start();
     echo "</br>";
@@ -189,10 +205,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <h4> <?php echo $percent_pret_collect; ?> %  pensent que ce projet est prêt pour la collecte</h4>
     <h4> <?php echo $percent_retravaille; ?> % pensent que ce projet doit être retravaillé </h4>
     <tr>
-    <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir  <?php echo($count_sum / $count_pret_collect); ?>€ en moyenne. </td>
+    <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir  <?php echo $moyenne; ?>€ en moyenne. </td>
     </tr>
     <tr>
-    <td>La moitié de ces personnes investiraient plus de <?php echo(($count_sum + 1)/2);?> €</td>
+    <td>La moitié de ces personnes investiraient plus de <?php echo $mediane;?> €</td>
     </tr>
 </table>
 
@@ -262,7 +278,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 <?php
 
-    $conseils = $wpdb->get_results( "SELECT user_login,user_email,user_id,conseil FROM $table_name WHERE campaign_id = $campaign_id" );
+    $conseils = $wpdb->get_results( "SELECT user_login,user_email,user_id,conseil FROM $table_name WHERE campaign_id = $campaign_id " );
 
     echo '<table id="tab-results">';
     echo '<tr>'.'<td>';
