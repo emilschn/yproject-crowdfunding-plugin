@@ -243,6 +243,9 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_summary', __( 'Campaign summary', 'atcf' ), '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_impact_area', __( 'Campaign impact area', 'atcf' ), '_atcf_metabox_campaign_impact_area', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_societal_challenge', __( 'Campaign societal challenge', 'atcf' ), '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_company_status', __( 'Statuts de la societe', 'atcf' ), '_atcf_metabox_campaign_company_status', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_company_status_other', __( 'Autre statut', 'atcf' ), '_atcf_metabox_campaign_company_status_other', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_init_capital', __( 'Autre statut', 'atcf' ), '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_added_value', __( 'Campaign added value', 'atcf' ), '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_economic_model', __( 'Campaign economic model', 'atcf' ), '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
@@ -280,6 +283,9 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_owner';
 		$fields[] = 'campaign_summary';
 		$fields[] = 'campaign_societal_challenge';
+		$fields[] = 'campaign_company_status';
+		$fields[] = 'campaign_company_status_other';
+		$fields[] = 'campaign_init_capital';
 		$fields[] = 'campaign_impact_area';
 		$fields[] = 'campaign_added_value';
 		$fields[] = 'campaign_development_strategy';
@@ -608,6 +614,42 @@ function _atcf_metabox_campaign_impact_area () {
 	</p>
 <?php
 	do_action( 'atcf_metabox_campaign_impact_area_after', $campaign );
+}
+
+function _atcf_metabox_campaign_company_status() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="company_status">
+		<textarea name="company_status" id="company_status" class="widefat"><?php echo $campaign->company_status(); ?></textarea>
+	</p>
+<?php
+    
+}
+
+function _atcf_metabox_campaign_company_status_other() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="company_status_other">
+		<textarea name="company_status_other" id="company_status_other" class="widefat"><?php echo $campaign->company_status_other(); ?></textarea>
+	</p>
+<?php
+    
+}
+
+function _atcf_metabox_campaign_init_capital() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="init_capital">
+		<textarea name="init_capital" id="init_capital" class="widefat"><?php echo $campaign->init_capital(); ?></textarea>
+	</p>
+<?php
+    
 }
 
 function _atcf_metabox_campaign_societal_challenge() {
@@ -992,6 +1034,18 @@ class ATCF_Campaign {
 	 */
 	public function societal_challenge() {
 		return $this->__get( 'campaign_societal_challenge' );
+	}
+	
+	public function company_status() {
+	    return $this->__get('campaign_company_status');
+	}
+	
+	public function company_status_other() {
+	    return $this->__get('campaign_company_status_other');
+	}
+	
+	public function init_capital() {
+	    return $this->__get('campaign_init_capital');
 	}
 
 	/**
@@ -1493,6 +1547,9 @@ function atcf_campaign_edit() {
 	
 	$summary                     = $_POST[ 'summary' ];
 	$societal_challenge          = $_POST[ 'societal_challenge' ];
+	$company_status          = $_POST[ 'company_status' ];
+	$company_status_other          = $_POST[ 'company_status_other' ];
+	$init_capital         = $_POST[ 'init_capital' ];
 	$impact_area                 = $_POST[ 'impact_area' ];
 	$added_value                 = $_POST[ 'added_value' ];
 	$development_strategy	     = $_POST[ 'development_strategy' ];
@@ -1557,7 +1614,10 @@ function atcf_campaign_edit() {
 	update_post_meta( $post->ID, 'campaign_summary', sanitize_text_field( $summary ) );
 	update_post_meta( $post->ID, 'campaign_impact_area', sanitize_text_field( $impact_area ) );
 	update_post_meta( $post->ID, 'campaign_societal_challenge', sanitize_text_field( $societal_challenge ) );
-	update_post_meta( $post->ID, 'campaign_added_value', sanitize_text_field( $valeur_added_value ) );
+	update_post_meta( $post->ID, 'campaign_company_status', sanitize_text_field( $company_status ) );
+	update_post_meta( $post->ID, 'campaign_company_status_other', sanitize_text_field( $company_status_other ) );
+	update_post_meta( $post->ID, 'campaign_init_capital', sanitize_text_field( $init_capital ) );
+	update_post_meta( $post->ID, 'campaign_added_value', sanitize_text_field( $added_value ) );
 	update_post_meta( $post->ID, 'campaign_development_strategy', sanitize_text_field( $development_strategy ) );
 	update_post_meta( $post->ID, 'campaign_economic_model', sanitize_text_field( $economic_model ) );
 	update_post_meta( $post->ID, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );

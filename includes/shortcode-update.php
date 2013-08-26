@@ -42,6 +42,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		$post_update['post_content'] = $_POST['description'];
 		wp_update_post($post_update);
 		
+		update_post_meta($campaign->ID, 'campaign_company_status', sanitize_text_field($_POST['company_status']));
+		update_post_meta($campaign->ID, 'campaign_company_status_other', sanitize_text_field($_POST['company_status_other']));
+		update_post_meta($campaign->ID, 'campaign_init_capital', sanitize_text_field($_POST['init_capital']));
 		update_post_meta($campaign->ID, 'campaign_impact_area', sanitize_text_field($_POST['impact_area']));
 		update_post_meta($campaign->ID, 'campaign_summary', sanitize_text_field($_POST['summary']));
 		update_post_meta($campaign->ID, 'campaign_societal_challenge', sanitize_text_field($_POST['societal_challenge']));
@@ -243,6 +246,50 @@ function atcf_shortcode_update_field_societal_challenge( $editing, $campaign ) {
 <?php
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_societal_challenge', 11, 2 );
+
+
+
+function atcf_shortcode_update_field_company_status() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="company_status">
+		<textarea name="company_status" id="company_status" class="widefat"><?php echo $campaign->company_status(); ?></textarea>
+	</p>
+<?php
+    
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_company_status', 11, 2 );
+
+
+
+function atcf_shortcode_update_field_company_status_other() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="company_status_other">
+		<textarea name="company_status_other" id="company_status_other" class="widefat"><?php echo $campaign->company_status_other(); ?></textarea>
+	</p>
+<?php
+    
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_company_status_other', 11, 2 );
+
+
+function atcf_shortcode_update_field_init_capital() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="init_capital">
+		<textarea name="init_capital" id="init_capital" class="widefat"><?php echo $campaign->init_capital(); ?></textarea>
+	</p>
+<?php
+    
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_init_capital', 11, 2 );
 
 
 /**

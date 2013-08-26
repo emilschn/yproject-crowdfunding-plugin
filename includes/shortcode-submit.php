@@ -162,108 +162,35 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 add_shortcode('yproject_crowdfunding_field_complex', 'ypcf_shortcode_submit_field_complex');
 
 function ypcf_shortcode_submit_field_location($atts, $content = '') {
-    return '<select id="location" name="location" >
-      <option>01 Ain</option>
-      <option>02 Aisne</option>
-      <option>03 Allier</option>
-      <option>04 Alpes-de-Haute-Provence</option>
-      <option>05 Hautes-Alpes</option>
-      <option>06 Alpes-Maritimes</option>
-      <option>07 Ard&egrave;che</option>
-      <option>08 Ardennes</option>
-      <option>09 Ari&egrave;ge</option>
-      <option>10 Aube</option>
-      <option>11 Aude</option>
-      <option>12 Aveyron</option>
-      <option>13 Bouches-du-Rh&ocirc;ne</option>
-      <option>14 Calvados</option>
-      <option>15 Cantal</option>
-      <option>16 Charente</option>
-      <option>17 Charente-Maritime</option>
-      <option>18 Cher</option>
-      <option>19 Corr&egrave;ze</option>
-      <option>2A Corse-du-Sud</option>
-      <option>2B Haute-Corse</option>
-      <option>21 C&ocirc;te-d&apos;Or</option>
-      <option>22 C&ocirc;tes-d&apos;Armor</option>
-      <option>23 Creuse</option>
-      <option>24 Dordogne</option>
-      <option>25 Doubs</option>
-      <option>26 Dr&ocirc;me</option>
-      <option>27 Eure</option>
-      <option>28 Eure-et-Loir</option>
-      <option>29 Finist&egrave;re</option>
-      <option>30 Gard</option>
-      <option>31 Haute-Garonne</option>
-      <option>32 Gers</option>
-      <option>33 Gironde</option>
-      <option>34 H&eacute;rault</option>
-      <option>35 Ille-et-Vilaine</option>
-      <option>36 Indre</option>
-      <option>37 Indre-et-Loire</option>
-      <option>38 Is&egrave;re</option>
-      <option>39 Jura</option>
-      <option>40 Landes</option>
-      <option>41 Loir-et-Cher</option>
-      <option>42 Loire</option>
-      <option>43 Haute-Loire</option>
-      <option>44 Loire-Atlantique</option>
-      <option>45 Loiret</option>
-      <option>46 Lot</option>
-      <option>47 Lot-et-Garonne</option>
-      <option>48 Loz&egrave;re</option>
-      <option>49 Maine-et-Loire</option>
-      <option>50 Manche</option>
-      <option>51 Marne</option>
-      <option>52 Haute-Marne</option>
-      <option>53 Mayenne</option>
-      <option>54 Meurthe-et-Moselle</option>
-      <option>55 Meuse</option>
-      <option>56 Morbihan</option>
-      <option>57 Moselle</option>
-      <option>58 Ni&egrave;vre</option>
-      <option>59 Nord</option>
-      <option>60 Oise</option>
-      <option>61 Orne</option>
-      <option>62 Pas-de-Calais</option>
-      <option>63 Puy-de-D&ocirc;me</option>
-      <option>64 Pyr&eacute;n&eacute;es-Atlantiques</option>
-      <option>65 Hautes-Pyr&eacute;n&eacute;es</option>
-      <option>66 Pyr&eacute;n&eacute;es-Orientales</option>
-      <option>67 Bas-Rhin</option>
-      <option>68 Haut-Rhin</option>
-      <option>69 Rh&ocirc;ne</option>
-      <option>70 Haute-Sa&ocirc;ne</option>
-      <option>71 Sa&ocirc;ne-et-Loire</option>
-      <option>72 Sarthe</option>
-      <option>73 Savoie</option>
-      <option>74 Haute-Savoie</option>
-      <option>75 Paris</option>
-      <option>76 Seine-Maritime</option>
-      <option>77 Seine-et-Marne</option>
-      <option>78 Yvelines</option>
-      <option>79 Deux-S&egrave;vres</option>
-      <option>80 Somme</option>
-      <option>81 Tarn</option>
-      <option>82 Tarn-et-Garonne</option>
-      <option>83 Var</option>
-      <option>84 Vaucluse</option>
-      <option>85 Vend&eacute;e</option>
-      <option>86 Vienne</option>
-      <option>87 Haute-Vienne</option>
-      <option>88 Vosges</option>
-      <option>89 Yonne</option>
-      <option>90 Territoire de Belfort</option>
-      <option>91 Essonne</option>
-      <option>92 Hauts-de-Seine</option>
-      <option>93 Seine-Saint-Denis</option>
-      <option>94 Val-de-Marne</option>
-      <option>95 Val-d&apos;Oise</option>
-      <option>971 Guadeloupe</option>
-      <option>972 Martinique</option>
-      <option>973 Guyane</option>
-      <option>974 La R&eacute;union</option>
-      <option>976 Mayotte</option>
+    return '<select id="location" name="location">
+	<option>Alsace</option>
+	<option>Aquitaine</option>
+	<option>Auvergne</option>
+	<option>Basse-Normandie</option>
+	<option>Bourgogne</option>
+	<option>Bretagne</option>
+	<option>Centre</option>
+	<option>Champagne-Ardenne</option>
+	<option>Bourgogne</option>
+	<option>Corse</option>
+	<option>Franche-Comt&eacute;</option>
+	<option>Guadeloupe</option>
+	<option>Guyane</option>
+	<option>Haute-Normandie</option>
+	<option>&Icirc;le-de-France</option>
+	<option>La R&eacute;union</option>
+	<option>Languedoc-Roussillon</option>
+	<option>Limousin</option>
+	<option>Lorraine</option>
+	<option>Martinique</option>
+	<option>Mayotte</option>
+	<option>Midi-Pyr&eacute;n&eacute;es</option>
+	<option>Nord-Pas-de-Calais</option>
+	<option>Pays de la Loire</option>
+	<option>Picardie</option>
+	<option>Poitou-Charentes</option>
+	<option>Provence-Alpes-C&ocirc;te d&apos;Azur</option>
+	<option>Rh&ocirc;ne-Alpes</option>
     </select>';
 }
 add_shortcode('yproject_crowdfunding_field_location', 'ypcf_shortcode_submit_field_location');
@@ -284,14 +211,20 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
     $atts = shortcode_atts( array(
 	'option1' => 'Somme fixe',
 	'option2' => 'Fourchette',
-	'multiplier' => '1.196'
+	'multiplier_tax' => '1.196',
+	'option1_search' => 'Montant recherch&eacute;',
+	'option1_campaign' => 'Montant de la collecte',
+	'multiplier_campaign' => '1.1'
     ), $atts );
     return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe" checked="checked">' . $atts['option1'] . '
-		<span id="goalsum_fixe_param">- <input type="text" name="goal" placeholder="100" size="10"></span><br />
+		<span id="goalsum_fixe_param">- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" placeholder="100" size="10"> - ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi"></span></span><br />
 	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible">' . $atts['option2'] . '
 		<span id="goalsum_flexible_param" style="display:none">- Minimum : <input type="text" name="minimum_goal" placeholder="100" size="10">
 		- Maximum : <input type="text" name="maximum_goal" placeholder="200" size="10"></span>
-	    <input type="hidden" name="length" id="length" value="90">';
+	    <input type="hidden" name="length" id="length" value="90">
+	    <input type="hidden" name="monney" id="monney" value="&euro;">
+	    <input type="hidden" name="campaign_multiplier" id="campaign_multiplier" value="' . $atts['multiplier_campaign'] . '">
+	    <input type="hidden" name="goal" id="goal">';
 }
 add_shortcode('yproject_crowdfunding_field_goal', 'ypcf_shortcode_submit_field_goal');
 
@@ -303,6 +236,27 @@ function ypcf_shortcode_submit_field_length($atts, $content = '') {
     return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="length" id="length" value="'.$atts['min'].'">';
 }
 add_shortcode('yproject_crowdfunding_field_length', 'ypcf_shortcode_submit_field_length');
+
+function ypcf_shortcode_submit_field_status($atts, $content = '') {
+    $atts = shortcode_atts( array(
+	'other_text' => 'Pr&eacute;cisez :'
+    ), $atts );
+    $buffer = '<select id="company_status" name="company_status">';
+    $buffer .= '<option>SARL</option>
+	<option>SAS</option>
+	<option>SA</option>
+	<option>SCA</option>
+	<option>Autre</option>';
+    $buffer .= '</select>';
+    $buffer .= '<span id="company_status_other_zone" style="display:none">'.$atts['other_text'].'<input type="text" name="company_status_other"></span>';
+    return $buffer;
+}
+add_shortcode('yproject_crowdfunding_field_status', 'ypcf_shortcode_submit_field_status');
+
+function ypcf_shortcode_submit_field_init_capital($atts, $content = '') {
+    return '<input type="text" name="init_capital" size="10">';
+}
+add_shortcode('yproject_crowdfunding_field_init_capital', 'ypcf_shortcode_submit_field_init_capital');
 
 function ypcf_shortcode_submit_field_confirm($atts, $content = '') {
     ob_start();
@@ -1070,6 +1024,9 @@ function atcf_shortcode_submit_process() {
 	$excerpt   	= $_POST[ 'excerpt' ];
 	$societal_challenge	= $_POST[ 'societal_challenge' ];
 	$added_value	= $_POST[ 'added_value' ];
+	$company_status	= $_POST[ 'company_status' ];
+	$company_status_other	= $_POST[ 'company_status_other' ];
+	$init_capital	= $_POST[ 'init_capital' ];
 
 	$development_strategy	= $_POST[ 'development_strategy' ];
 	$economic_model		= $_POST[ 'economic_model' ];
@@ -1199,6 +1156,9 @@ function atcf_shortcode_submit_process() {
 	add_post_meta( $campaign, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );
 	add_post_meta( $campaign, 'campaign_implementation', sanitize_text_field( $implementation ) );
 	add_post_meta( $campaign, 'campaign_societal_challenge', sanitize_text_field( $societal_challenge ) );
+	add_post_meta( $campaign, 'campaign_company_status', sanitize_text_field( $company_status ) );
+	add_post_meta( $campaign, 'campaign_company_status_other', sanitize_text_field( $company_status_other ) );
+	add_post_meta( $campaign, 'campaign_init_capital', sanitize_text_field( $init_capital ) );
 
 	
 
