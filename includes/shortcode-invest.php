@@ -20,6 +20,13 @@ function ypcf_check_redirections() {
     if ($page_name == 'investir') {
 	if (session_id() == '') session_start();
 	if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+	
+	$post_camp = get_post($_GET['campaign_id']);
+	$campaign = atcf_get_campaign( $post_camp );
+	if ($campaign->vote() == 'vote') {
+	    wp_redirect(get_permalink($post_camp->ID));
+	    exit();
+	}
     }
     
     //On a validé la confirmation
@@ -28,8 +35,8 @@ function ypcf_check_redirections() {
 	require_once(dirname(__FILE__) . '/mangopay/common.php');
 
 	//Récupération du walletid de la campagne
-	$post = get_post($_GET['campaign_id']);
-	$campaign = atcf_get_campaign( $post );
+	$post_camp = get_post($_GET['campaign_id']);
+	$campaign = atcf_get_campaign( $post_camp );
 	$currentpost_mangopayid = get_post_meta($campaign->ID, 'mangopay_wallet_id', true);
 
 	//Récupération du walletid de l'utilisateur
