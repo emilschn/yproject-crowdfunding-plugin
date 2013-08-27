@@ -12,57 +12,59 @@ function ypcf_check_redirections() {
     //Ensuite on teste si l'utilisateur vient de remplir ses données pour les enregistrer
     ypcf_check_has_user_filled_infos_and_redirect();
     //Et on reteste si les données sont bel et bien remplies
-    ypcf_check_user_can_invest();
+    ypcf_check_user_can_invest(true);
     
     //Remise à zero des variables de sessions éventuelles
     global $post;
-    $page_name = get_post($post)->post_name;
-    if ($page_name == 'investir') {
-	if (session_id() == '') session_start();
-	if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-	
-	$post_camp = get_post($_GET['campaign_id']);
-	$campaign = atcf_get_campaign( $post_camp );
-	if ($campaign->vote() == 'vote') {
-	    wp_redirect(get_permalink($post_camp->ID));
-	    exit();
+    if (isset($post)) {
+	$page_name = get_post($post)->post_name;
+	if ($page_name == 'investir') {
+	    if (session_id() == '') session_start();
+	    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+
+	    $post_camp = get_post($_GET['campaign_id']);
+	    $campaign = atcf_get_campaign( $post_camp );
+	    if ($campaign->vote() == 'vote') {
+		wp_redirect(get_permalink($post_camp->ID));
+		exit();
+	    }
 	}
-    }
-    
-    //On a validé la confirmation
-    //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
-    if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && ctype_digit($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1' && isset($_POST['edd_agree_to_terms']) && $_POST['edd_agree_to_terms'] == '1') {
-	require_once(dirname(__FILE__) . '/mangopay/common.php');
 
-	//Récupération du walletid de la campagne
-	$post_camp = get_post($_GET['campaign_id']);
-	$campaign = atcf_get_campaign( $post_camp );
-	$currentpost_mangopayid = get_post_meta($campaign->ID, 'mangopay_wallet_id', true);
+	//On a validé la confirmation
+	//Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
+	if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && ctype_digit($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1' && isset($_POST['edd_agree_to_terms']) && $_POST['edd_agree_to_terms'] == '1') {
+	    require_once(dirname(__FILE__) . '/mangopay/common.php');
 
-	//Récupération du walletid de l'utilisateur
-	$author_id = $campaign->data->post_author;
-	$current_user = get_userdata($author_id);
-	$currentuser_mangopayid = get_user_meta($current_user->ID, 'mangopay_user_id', true);
+	    //Récupération du walletid de la campagne
+	    $post_camp = get_post($_GET['campaign_id']);
+	    $campaign = atcf_get_campaign( $post_camp );
+	    $currentpost_mangopayid = get_post_meta($campaign->ID, 'mangopay_wallet_id', true);
 
-	//Conversion de la somme saisie en cents
-	$cent_amount = $_POST['amount'] * 100;
+	    //Récupération du walletid de l'utilisateur
+	    $author_id = $campaign->data->post_author;
+	    $current_user = get_userdata($author_id);
+	    $currentuser_mangopayid = get_user_meta($current_user->ID, 'mangopay_user_id', true);
 
-	//Récupération de l'url de la page qui indique que le paiement est bien effectué
-	$page_paiement_done = get_page_by_path('paiement-effectue');
-	$page_paiement_done_link = get_permalink($page_paiement_done->ID) . '?campaign_id=' . $_GET['campaign_id'];
+	    //Conversion de la somme saisie en cents
+	    $cent_amount = $_POST['amount'] * 100;
 
-	//Création de la contribution en elle-même
-	$mangopay_newcontribution = request('contributions', 'POST', '{ 
-						"UserID" : '.$currentuser_mangopayid.', 
-						"WalletID" : '.$currentpost_mangopayid.',
-						"Amount" : '.$cent_amount.',
-						"ReturnURL" : "'. $page_paiement_done_link .'"
-					    }');
+	    //Récupération de l'url de la page qui indique que le paiement est bien effectué
+	    $page_paiement_done = get_page_by_path('paiement-effectue');
+	    $page_paiement_done_link = get_permalink($page_paiement_done->ID) . '?campaign_id=' . $_GET['campaign_id'];
 
-	//Analyse de la contribution pour récupérer l'url de paiement
-	if (isset($mangopay_newcontribution->ID)) {
-	    wp_redirect($mangopay_newcontribution->PaymentURL);
-	    exit();
+	    //Création de la contribution en elle-même
+	    $mangopay_newcontribution = request('contributions', 'POST', '{ 
+						    "UserID" : '.$currentuser_mangopayid.', 
+						    "WalletID" : '.$currentpost_mangopayid.',
+						    "Amount" : '.$cent_amount.',
+						    "ReturnURL" : "'. $page_paiement_done_link .'"
+						}');
+
+	    //Analyse de la contribution pour récupérer l'url de paiement
+	    if (isset($mangopay_newcontribution->ID)) {
+		wp_redirect($mangopay_newcontribution->PaymentURL);
+		exit();
+	    }
 	}
     }
 }
@@ -243,9 +245,10 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    'cart_details' => $cart_details,
 		    'status' => 'publish'
 	    );
-	    $payment = edd_insert_payment( $payment_data );
+	    $payment_id = edd_insert_payment( $payment_data );
 	    
-	    edd_record_sale_in_log($campaign->ID, $payment);
+	    edd_record_sale_in_log($campaign->ID, $payment_id);
+	    edd_email_purchase_receipt($payment_id, true);
 	    edd_empty_cart();
 	    
 	    //On affiche que tout s'est bien passé
@@ -273,51 +276,20 @@ add_shortcode( 'yproject_crowdfunding_invest_return', 'ypcf_shortcode_invest_ret
  */
 function ypcf_check_is_user_logged() {
     global $post;
-    $page_name = get_post($post)->post_name;
-    if (session_id() == '') session_start();
+    if (isset($post)) {
+	$page_name = get_post($post)->post_name;
+	if (session_id() == '') session_start();
 
-    if ($page_name == 'investir' && !is_user_logged_in()) {
-	if (isset($_GET['campaign_id'])) {
-	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	    $page_connexion = get_page_by_path('connexion');
-	    wp_redirect(get_permalink($page_connexion->ID));
-	} else {
-	    wp_redirect(site_url());
-	}
-	exit();
-    } else if ($page_name == 'connexion' && is_user_logged_in()) {
-	if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
-	    $page_invest = get_page_by_path('investir');
-	    $page_invest_link = get_permalink($page_invest->ID);
-	    $campaign_id_param = '?campaign_id=';
-	    $redirect_to = $page_invest_link . $campaign_id_param . $_SESSION['redirect_current_campaign_id'];
-	    unset($_SESSION['redirect_current_campaign_id']);
-	    wp_redirect($redirect_to);
+	if ($page_name == 'investir' && !is_user_logged_in()) {
+	    if (isset($_GET['campaign_id'])) {
+		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+		$page_connexion = get_page_by_path('connexion');
+		wp_redirect(get_permalink($page_connexion->ID));
+	    } else {
+		wp_redirect(site_url());
+	    }
 	    exit();
-	}
-    }
-}
-
-/**
- * Enregistre les données saisies par l'utilisateur et redirige vers la page d'investissement si nécessaire
- */
-function ypcf_check_has_user_filled_infos_and_redirect() {
-    global $post;
-    $page_name = get_post($post)->post_name;
-    if ($page_name == 'modifier-mon-compte') {
-	$current_user = wp_get_current_user();
-	if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
-	    if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
-	    if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
-	    if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
-	    if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
-	    if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
-	    if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
-	    if ($_POST["update_person_type"] != "") update_user_meta($current_user->ID, 'user_person_type', $_POST["update_person_type"]);
-	    if ($_POST["update_email"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) ) ;
-	    if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
-
-	    if (session_id() == '') session_start();
+	} else if ($page_name == 'connexion' && is_user_logged_in()) {
 	    if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
 		$page_invest = get_page_by_path('investir');
 		$page_invest_link = get_permalink($page_invest->ID);
@@ -332,26 +304,65 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 }
 
 /**
- * Vérification si l'utilisateur a bien rempli toutes ses données
+ * Enregistre les données saisies par l'utilisateur et redirige vers la page d'investissement si nécessaire
  */
-function ypcf_check_user_can_invest() {
+function ypcf_check_has_user_filled_infos_and_redirect() {
     global $post;
-    $page_name = get_post($post)->post_name;
-    if ($page_name == 'investir') {
-	$current_user = wp_get_current_user();
-	$can_invest = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
-	$can_invest = $can_invest && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
-	$can_invest = $can_invest && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
-	$can_invest = $can_invest && ($current_user->get('user_nationality') != "") && ($current_user->get('user_person_type') != "") && ($current_user->user_email != "");
-	
-	if (!$can_invest) {
-	    if (session_id() == '') session_start();
-	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	    $page_update = get_page_by_path('modifier-mon-compte');
-	    wp_redirect(get_permalink($page_update->ID));
-	    exit();
+    if (isset($post)) {
+	$page_name = get_post($post)->post_name;
+	if ($page_name == 'modifier-mon-compte') {
+	    $current_user = wp_get_current_user();
+	    if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
+		if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
+		if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
+		if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
+		if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
+		if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
+		if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
+		if ($_POST["update_person_type"] != "") update_user_meta($current_user->ID, 'user_person_type', $_POST["update_person_type"]);
+		if ($_POST["update_email"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) ) ;
+		if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
+
+		if (session_id() == '') session_start();
+		if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
+		    $page_invest = get_page_by_path('investir');
+		    $page_invest_link = get_permalink($page_invest->ID);
+		    $campaign_id_param = '?campaign_id=';
+		    $redirect_to = $page_invest_link . $campaign_id_param . $_SESSION['redirect_current_campaign_id'];
+		    unset($_SESSION['redirect_current_campaign_id']);
+		    wp_redirect($redirect_to);
+		    exit();
+		}
+	    }
 	}
     }
+}
+
+/**
+ * Vérification si l'utilisateur a bien rempli toutes ses données
+ */
+function ypcf_check_user_can_invest($redirect = false) {
+    global $post;
+    $can_invest = true;
+    if (isset($post)) {
+	$page_name = get_post($post)->post_name;
+	if ($page_name == 'investir') {
+	    $current_user = wp_get_current_user();
+	    $can_invest = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
+	    $can_invest = $can_invest && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
+	    $can_invest = $can_invest && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
+	    $can_invest = $can_invest && ($current_user->get('user_nationality') != "") && ($current_user->get('user_person_type') != "") && ($current_user->user_email != "");
+
+	    if ($redirect && !$can_invest) {
+		if (session_id() == '') session_start();
+		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+		$page_update = get_page_by_path('modifier-mon-compte');
+		wp_redirect(get_permalink($page_update->ID));
+		exit();
+	    }
+	}
+    }
+    return $can_invest;
 }
 
 /**
