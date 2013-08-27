@@ -57,13 +57,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
     $count_total_impact_postif = $count_local +$count_environemental +$count_social +$count_autre;
     // Ces variables permettent de compter  en pourcentage combien de fois on cliqué l'un des checkbox   du champs impact_positif
-    if ($count_total_impact_postif != 0) {
+    if ($count_impact_postif != 0) {
             
-        $percent_local           = ($count_local / $count_total_impact_postif )* 100;
-        $percent_environemental  = ($count_environemental / $count_total_impact_postif )* 100;
-        $percent_economique      = ($count_economique / $count_total_impact_postif )* 100;
-        $percent_social          = ($count_social / $count_total_impact_postif )* 100; 
-        $percent_autre           = ($count_autre / $count_total_impact_postif )* 100;
+        $percent_local           = ($count_local / $count_impact_postif )* 100;
+        $percent_environemental  = ($count_environemental / $count_impact_postif )* 100;
+        $percent_economique      = ($count_economique / $count_impact_postif )* 100;
+        $percent_social          = ($count_social / $count_impact_postif )* 100; 
+        $percent_autre           = ($count_autre / $count_impact_postif )* 100;
      }
      else
      {
@@ -87,15 +87,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
     $count_total_retravaille = $count_responsable + $count_mal_explique + $count_service + $count_equipe + $count_plan + $count_innovation + $count_porteur ;
     // Ces variables permettent de compter le pourcentage  des on cliqué l'un des checbox du champs projet doit etre retravaille
-    if ($count_total_retravaille != 0) 
+    if ($count_retravaille != 0) 
     {
-        $percent_responsable   = ($count_responsable / $count_total_retravaille)* 100;
-        $percent_mal_explique  = ($count_mal_explique / $count_total_retravaille)* 100;
-        $percent_service       = ($count_service / $count_total_retravaille )* 100;
-        $percent_equipe        = ($count_equipe / $count_total_retravaille )* 100;
-        $percent_plan          = ($count_plan / $count_total_retravaille )* 100;
-        $percent_innovation    = ($count_innovation / $count_total_retravaille )* 100;
-        $percent_porteur       = ($count_porteur / $count_total_retravaille )* 100;
+        $percent_responsable   = ($count_responsable / $count_retravaille)* 100;
+        $percent_mal_explique  = ($count_mal_explique / $count_retravaille)* 100;
+        $percent_service       = ($count_service / $count_retravaille )* 100;
+        $percent_equipe        = ($count_equipe / $count_retravaille )* 100;
+        $percent_plan          = ($count_plan / $count_retravaille )* 100;
+        $percent_innovation    = ($count_innovation / $count_retravaille )* 100;
+        $percent_porteur       = ($count_porteur / $count_retravaille )* 100;
     }
     else
     {
@@ -121,13 +121,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $count_total_risque = $count_risque_tres_faible + $count_risque_plutot_faible + $count_risque_modere + $count_risque_tres_eleve + $count_risque_plutot_eleve;
 
     // Ces variables permettent de compter le pourcentage  du choix de l'element dans la liste "risque lié au projet"
-    if($count_total_risque != 0) 
+    if($count_pret_collect != 0) 
     {  
-        $percent_risque_tres_faible   = ($count_risque_tres_faible / $count_total_risque )* 100;
-        $percent_risque_plutot_faible = ($count_risque_plutot_faible / $count_total_risque )* 100;
-        $percent_risque_modere        = ($count_risque_modere / $count_total_risque )* 100;
-        $percent_risque_tres_eleve    = ($count_risque_tres_eleve / $count_total_risque )* 100;
-        $percent_risque_plutot_eleve  = ($count_risque_plutot_eleve / $count_total_risque )* 100;
+        $percent_risque_tres_faible   = ($count_risque_tres_faible / $count_pret_collect )* 100;
+        $percent_risque_plutot_faible = ($count_risque_plutot_faible / $count_pret_collect )* 100;
+        $percent_risque_modere        = ($count_risque_modere / $count_pret_collect )* 100;
+        $percent_risque_tres_eleve    = ($count_risque_tres_eleve / $count_pret_collect )* 100;
+        $percent_risque_plutot_eleve  = ($count_risque_plutot_eleve / $count_pret_collect )* 100;
     }
     else
     {
@@ -182,20 +182,20 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <tr>
     <tr>Les personnes qui croient en l'impact positif de ce projet pensent qu'il va porter sur la(les) dimensions suivantes:</tr>
     <td>Local</td>
-    <td><?php echo($count_local); ?></td><td>   soit    <?php echo $percent_local; ?>%</td>
+    <td><?php echo($count_local); ?></td><td>    <?php echo $percent_local; ?>%  <label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
     </tr>
     <tr>
     <td>Environnemental</td>
-    <td><?php echo($count_environemental); ?></td><td>   soit    <?php echo $percent_environemental; ?>%</td>
+    <td><?php echo($count_environemental); ?></td><td> <?php echo $percent_environemental; ?>% <label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
     </tr>
     <tr>
     <tr>
     <td>Social</td>
-    <td><?php echo($count_social); ?></td><td>   soit    <?php echo $percent_social; ?>%</td>
+    <td><?php echo($count_social); ?></td><td>   <?php echo $percent_social; ?>%<label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
     </tr>
     <tr>
     <td>Autre</td>
-    <td><?php echo($count_autre); ?></td><td>   soit    <?php echo $percent_autre; ?>%</td>
+    <td><?php echo($count_autre); ?></td><td>   <?php echo $percent_autre; ?>%<label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
     </tr>
   </table>
   <div id="tab-title"><h3>Maturité du projet</h3></div>
@@ -203,10 +203,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <h4> <?php echo $percent_pret_collect; ?> %  pensent que ce projet est prêt pour la collecte</h4>
     <h4> <?php echo $percent_retravaille; ?> % pensent que ce projet doit être retravaillé </h4>
     <tr>
-    <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir  <?php echo $moyenne; ?>€ en moyenne. </td>
+    <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir <?php echo $moyenne; ?>€  [ la moyenne du risque] </td>
     </tr>
     <tr>
-    <td>La moitié de ces personnes investiraient plus de <?php echo $mediane;?> €</td>
+    <td>La moitié de ces personnes investiraient plus de <?php echo $mediane;?>€  [médiane]</td>
     </tr>
 </table>
 
@@ -215,23 +215,23 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <h4>Les personnes qui pensent que ce projet est prêt ont évalué le risque à [moyenne] en moyenne:</h4>
     <tr>
     <td>Le risque est très faible</td>
-    <td><?php echo($count_risque_tres_faible); ?></td> <td>   soit    <?php echo $percent_risque_tres_faible; ?>%</td>
+    <td><?php echo($count_risque_tres_faible); ?></td> <td>  <?php echo $percent_risque_tres_faible; ?>% <label><strong>de ceux qui pensent que le projet est prêt</strong></label></td>
     </tr>
     <tr>
     <td>Le risque est plutôt faible</td>
-    <td><?php echo($count_risque_plutot_faible); ?></td><td>   soit    <?php echo $percent_risque_plutot_faible; ?>%</td>
+    <td><?php echo($count_risque_plutot_faible); ?></td><td>  <?php echo $percent_risque_plutot_faible; ?>%<label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
     </tr>
     <tr>
     <td>Le risque est moderé</td>
-    <td><?php echo($count_risque_modere); ?></td><td>   soit    <?php echo $percent_risque_modere; ?>%</td>
+    <td><?php echo($count_risque_modere); ?></td><td>   <?php echo $percent_risque_modere; ?>% <label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
     </tr>
     <tr>
     <td>Le risque est très élevé</td>
-    <td><?php echo($count_risque_tres_eleve); ?></td><td>   soit    <?php echo $percent_risque_tres_eleve; ?>%</td>
+    <td><?php echo($count_risque_tres_eleve); ?></td><td>   soit    <?php echo $percent_risque_tres_eleve; ?>% <label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
     </tr>
     <tr>
     <td>Le risque plutôt élevé</td>
-    <td><?php echo($count_risque_plutot_eleve);  ?></td><td>   soit    <?php echo $percent_risque_plutot_eleve; ?>%</td>
+    <td><?php echo($count_risque_plutot_eleve);  ?></td><td>   soit    <?php echo $percent_risque_plutot_eleve; ?>%<label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
     </tr>
  </table>
 
@@ -240,30 +240,30 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <h4>Les personnes qui pensent que ce projet doit être retravaillé ont souligné les points suivants:</h3>
     <tr>
     <td>Pas d’impact responsable</td>
-    <td><?php echo($count_responsable);  ?></td><td>   soit    <?php  echo  $percent_responsable; ?>%</td>
+    <td><?php echo($count_responsable);  ?></td><td> <?php  echo  $percent_responsable; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
     </tr>
     <tr>
     <td>Projet mal expliqué</td>
-    <td><?php echo($count_mal_explique); ?></td><td>   soit    <?php echo $percent_mal_explique; ?>%</td>
+    <td><?php echo($count_mal_explique); ?></td><td>   <?php echo $percent_mal_explique; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
     </tr>
     <tr>
     <td>Qualité du produit/service</td>
-    <td><?php echo($count_service); ?></td><td>   soit    <?php echo $percent_service; ?>%</td>
+    <td><?php echo($count_service); ?></td><td>   <?php echo $percent_service; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
     </tr>
     <tr>
     <td>Qualité de l’équipe</td>
-    <td><?php echo($count_equipe); ?></td><td>   soit    <?php echo $percent_equipe; ?>%</td>
+    <td><?php echo($count_equipe); ?></td><td>    <?php echo $percent_equipe; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
     </tr>
     <tr>
     <td>Qualité du business plan</td>
-    <td><?php echo($count_plan); ?></td><td>   soit    <?php echo $percent_plan; ?>%</td>
+    <td><?php echo($count_plan); ?></td><td>   <?php echo $percent_plan; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
     </tr>
     <td>Qualité d’innovation</td>
-    <td><?php echo($count_innovation) ; ?></td><td>   soit    <?php echo $percent_innovation; ?>%</td>
+    <td><?php echo($count_innovation) ; ?></td><td>   <?php echo $percent_innovation; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
     </tr>
     <tr>
     <td>Qualité du marché, porteur</td>
-    <td><?php echo($count_porteur); ?></td><td>   soit    <?php echo $percent_porteur; ?>%</td>
+    <td><?php echo($count_porteur); ?></td><td>   <?php echo $percent_porteur; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
     </tr>
   </table>
   
@@ -271,8 +271,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  </br>
     <div id="tab-title"><h3>Conseils</h3></div>
     <h4>Les personnes qui ont voté ont souhaité vous apporter ces quelques conseils:</h4>
-
-
 
 <?php
 
