@@ -42,6 +42,16 @@ function ypcf_mangopay_get_contribution_by_id($contribution_id) {
     return request('contributions/'.$contribution_id, 'GET');
 }
 
+function ypcf_mangopay_get_user_by_id($user_id) {
+    return request('users/'.$user_id, 'GET');
+}
+
+function ypcf_mangopay_get_user_personalamount_by_wpid($wp_user_id) {
+    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    $mp_user = ypcf_mangopay_get_user_by_id($mp_user_id);
+    return $mp_user->PersonalWalletAmount;
+}
+
 function ypcf_mangopay_get_mp_user_id($wp_user_id) {
     return get_user_meta($wp_user_id, 'mangopay_user_id', true);
 }
@@ -150,10 +160,8 @@ function ypcf_refund_wallet_project_to_wallet_contributors($campaign_id) {
     // - plus optimisé (plutôt que multiplier les appels vers mangopay)
     // - récupération de l'id de la campagne, du wallet correspondant, de la liste des backers et de leur wallet
     // - transfert wallet-campagne > wallet-user
-    echo '-------------';
     if (isset($campaign_id)) {
 	$campaign_wallet_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign_id);
-	echo '<br />$campaign_id : ' . $campaign_id . ' ; $campaign_wallet_mangopayid : ' . $campaign_wallet_mangopayid;
 	
 	$post = get_post($campaign_id);
 	$campaign = atcf_get_campaign( $post );
@@ -168,12 +176,10 @@ function ypcf_refund_wallet_project_to_wallet_contributors($campaign_id) {
 	    if ( !empty( $payment ) ) {
 		$cart_items = edd_get_payment_meta_cart_details( $payment_id );
 		foreach ( $cart_items as $item ) $amount = $item[ 'quantity' ];
-		echo '<br /> -> $contributor_id : ' . $contributor_id . ' ; $contributor_user_mangopayid : ' . $contributor_user_mangopayid . ' ; $amount : ' . $amount;
 		ypcf_mangopay_make_transfer($campaign_wallet_mangopayid, $contributor_user_mangopayid, $amount);
 	    }
 	}
     }
-    echo '<br />-------------';
 }
 
 function ypcf_mangopay_make_transfer($mp_payer_id, $mb_beneficiary_id, $amount) {
