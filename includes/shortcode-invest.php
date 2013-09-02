@@ -33,32 +33,10 @@ function ypcf_check_redirections() {
 	//On a validé la confirmation
 	//Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
 	if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && ctype_digit($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1' && isset($_POST['edd_agree_to_terms']) && $_POST['edd_agree_to_terms'] == '1') {
-	    require_once(dirname(__FILE__) . '/mangopay/common.php');
-
-	    //Récupération du walletid de la campagne
-	    $post_camp = get_post($_GET['campaign_id']);
-	    $campaign = atcf_get_campaign( $post_camp );
-	    $currentpost_mangopayid = get_post_meta($campaign->ID, 'mangopay_wallet_id', true);
-
-	    //Récupération du walletid de l'utilisateur
-	    $author_id = $campaign->data->post_author;
-	    $current_user = get_userdata($author_id);
-	    $currentuser_mangopayid = get_user_meta($current_user->ID, 'mangopay_user_id', true);
-
-	    //Conversion de la somme saisie en cents
-	    $cent_amount = $_POST['amount'] * 100;
-
 	    //Récupération de l'url de la page qui indique que le paiement est bien effectué
+	    $current_user = wp_get_current_user();
 	    $page_paiement_done = get_page_by_path('paiement-effectue');
-	    $page_paiement_done_link = get_permalink($page_paiement_done->ID) . '?campaign_id=' . $_GET['campaign_id'];
-
-	    //Création de la contribution en elle-même
-	    $mangopay_newcontribution = request('contributions', 'POST', '{ 
-						    "UserID" : '.$currentuser_mangopayid.', 
-						    "WalletID" : '.$currentpost_mangopayid.',
-						    "Amount" : '.$cent_amount.',
-						    "ReturnURL" : "'. $page_paiement_done_link .'"
-						}');
+	    $mangopay_newcontribution = ypcf_mangopay_contribution_user_to_project($current_user, $_GET['campaign_id'], $_POST['amount'], $page_paiement_done);
 
 	    //Analyse de la contribution pour récupérer l'url de paiement
 	    if (isset($mangopay_newcontribution->ID)) {
@@ -201,9 +179,7 @@ add_shortcode( 'yproject_crowdfunding_invest_confirm', 'ypcf_shortcode_invest_co
  */
 function ypcf_shortcode_invest_return($atts, $content = '') {
     $buffer = '';
-    require_once(dirname(__FILE__) . '/mangopay/common.php');
-    $mangopay_contribution_id = $_REQUEST["ContributionID"];
-    $mangopay_contribution = request('contributions/'.$mangopay_contribution_id, 'GET');
+    $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($_REQUEST["ContributionID"]);
     if ($mangopay_contribution->IsCompleted) {
 	if ($mangopay_contribution->IsSucceeded) {
 	    //On met à jour l'état de la campagne
@@ -449,76 +425,6 @@ function ypcf_get_backers() {
 	$buffer = $campaign->backers_count();
     }
     return $buffer;
-}
-
-/**
- * Vérifie que l'utilisateur connecté a une correspondance dans mangopay pour un id utilisateur et un id porte-monnaie
- * @param type $current_user
- * @return type
- */
-function ypcf_init_mangopay_user($current_user) {
-    require_once(dirname(__FILE__) . '/mangopay/common.php');
-    
-    //On s'apprête à confirmer, donc on vérifie si le currentuser a un compte sur mangopay. Si il n'en a pas, on le crée directement.
-    $currentuser_mangopayid = get_user_meta($current_user->ID, 'mangopay_user_id', true);
-    if ($currentuser_mangopayid == "") {
-	$mangopay_new_user = request('users', 'POST', '{ 
-				    "FirstName" : "'.$current_user->user_firstname.'", 
-				    "LastName" : "'.$current_user->user_lastname.'", 
-				    "Email" : "'.$current_user->user_email.'", 
-				    "Nationality" : "'.$current_user->get('user_nationality').'", 
-				    "Birthday" : '.strtotime($current_user->get('user_birthday_year') . "-" . $current_user->get('user_birthday_month') . "-" . $current_user->get('user_birthday_day')).', 
-				    "PersonType" : "'.$current_user->get('user_person_type').'",
-				    "Tag" : "'.$current_user->user_login.'"
-				}');
-	if (isset($mangopay_new_user->ID)) {
-	    $currentuser_mangopayid = $mangopay_new_user->ID;
-	    update_user_meta($current_user->ID, 'mangopay_user_id', $currentuser_mangopayid);
-	}
-    }
-    //De même, on vérifie si le currentuser a un wallet sur mangopay. Si il n'en a pas, on le crée.
-    $currentuser_wallet_mangopayid = get_user_meta($current_user->ID, 'mangopay_wallet_id', true);
-    if ($currentuser_wallet_mangopayid == "") {
-	$mangopay_new_wallet = request('wallets', 'POST', '{ 
-					"Owners" : ['.$currentuser_mangopayid.'.], 
-					"Name" : "Wallet of '.$current_user->display_name.'",
-					"Tag" : "Wallet of '.$current_user->display_name.'",
-					"Description" : "Wallet of '.$current_user->display_name.'"
-				    }');
-	if (isset($mangopay_new_wallet->ID)) update_user_meta($current_user->ID, 'mangopay_wallet_id', $mangopay_new_wallet->ID);
-    }
-    return $currentuser_mangopayid;
-}
-
-/**
- * Initialise le créateur du projet sur mangopay si nécessaire puis le porte-monnaie du projet.
- */
-function ypcf_init_mangopay_project() {
-    if (isset($_GET['campaign_id'])) {
-	$post = get_post($_GET['campaign_id']);
-	$campaign = atcf_get_campaign( $post );
-	
-	$currentpost_mangopayid = get_post_meta($campaign->ID, 'mangopay_wallet_id', true);
-	//Si le projet n'existe pas encore
-	if ($currentpost_mangopayid == "") {
-	    //On va chercher l'identifiant mangopay du porteur de projet
-	    $author_id = $campaign->data->post_author;
-	    $current_user = get_userdata($author_id);
-	    $mangopay_new_user_id = ypcf_init_mangopay_user($current_user);
-	    
-	    //On crée le poret-monnaie du projet
-	    if ($mangopay_new_user_id != "") {
-		$mangopay_new_wallet = request('wallets', 'POST', '{ 
-					    "Owners" : ['.$mangopay_new_user_id.'], 
-					    "Name" : "Wallet for '.$campaign->data->post_title.'",
-					    "Tag" : "Wallet for '.$campaign->data->post_title.'",
-					    "Description" : "Wallet for '.$campaign->data->post_title.'",
-					    "RaisingGoalAmount" : '.$campaign->goal(false).'
-					}');
-		if (isset($mangopay_new_wallet->ID)) update_post_meta($campaign->ID, 'mangopay_wallet_id', $mangopay_new_wallet->ID);
-	    }
-	}
-    }
 }
 
 /*
