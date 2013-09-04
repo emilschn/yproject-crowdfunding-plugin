@@ -90,7 +90,7 @@ function ypcf_display_invest_form($error = '') {
     if (isset($_GET['campaign_id']) && $max_value > 0) {
 	$form = '';
 	$form .= '<form id="invest_form" action="" method="post" enctype="multipart/form-data">';
-	$form .= '<input id="input_invest_amount" name="amount" type="text" placeholder="' . $min_value . '">';
+	$form .= '<input id="input_invest_amount" name="amount" type="text" placeholder="&Agrave; partir de ' . $min_value . edd_get_currency() . '">';
 	$form .= '<input id="input_invest_min_value" name="old_min_value" type="hidden" value="' . $min_value . '">';
 	$form .= '<input id="input_invest_max_value" name="old_max_value" type="hidden" value="' . $max_value . '">';
 	$form .= '<input id="input_invest_amount_total" type="hidden" value="' . ypcf_get_current_amount() . '">';
@@ -180,70 +180,120 @@ add_shortcode( 'yproject_crowdfunding_invest_confirm', 'ypcf_shortcode_invest_co
 function ypcf_shortcode_invest_return($atts, $content = '') {
     $buffer = '';
     $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($_REQUEST["ContributionID"]);
-    if ($mangopay_contribution->IsCompleted) {
-	if ($mangopay_contribution->IsSucceeded) {
-	    //On met à jour l'état de la campagne
-	    $post = get_post($_GET['campaign_id']);
-	    $campaign = atcf_get_campaign( $post );
-	    
-	    //Création d'un paiement pour edd
-	    $current_user = wp_get_current_user();
-	    $user_info = array(
-		'id'         => $current_user->ID,
-		'email'      => $current_user->user_email,
-		'first_name' => $current_user->user_firstname,
-		'last_name'  => $current_user->user_lastname,
-		'discount'   => '',
-		'address'    => array()
-	    );
-	    
-	    $cart_details = array(
-		array(
-			'name'        => get_the_title( $campaign->ID ),
-			'id'          => $campaign->ID,
-			'item_number' => array(
-				'id'      => $campaign->ID,
-				'options' => []
-			),
-			'price'       => 1,
-			'quantity'    => $mangopay_contribution->Amount / 100
-		)
-	    );
-	    
-	    $payment_data = array( 
-		    'price' => $mangopay_contribution->Amount / 100, 
-		    'date' => date('Y-m-d H:i:s'), 
-		    'user_email' => $current_user->user_email,
-		    'purchase_key' => strtolower( md5( uniqid() ) ),
-		    'currency' => edd_get_currency(),
-		    'downloads' => [$campaign->ID],
-		    'user_info' => $user_info,
-		    'cart_details' => $cart_details,
-		    'status' => 'publish'
-	    );
-	    $payment_id = edd_insert_payment( $payment_data );
-	    
-	    edd_record_sale_in_log($campaign->ID, $payment_id);
-	    edd_email_purchase_receipt($payment_id, true);
-	    edd_empty_cart();
-	    
+    
+    // GESTION DU PAIEMENT COTE EDD
+    //On met à jour l'état de la campagne
+    $post = get_post($_GET['campaign_id']);
+    $campaign = atcf_get_campaign( $post );
+
+    //Création d'un paiement pour edd
+    $current_user = wp_get_current_user();
+    $user_info = array(
+	'id'         => $current_user->ID,
+	'email'      => $current_user->user_email,
+	'first_name' => $current_user->user_firstname,
+	'last_name'  => $current_user->user_lastname,
+	'discount'   => '',
+	'address'    => array()
+    );
+    
+    $amount = $mangopay_contribution->Amount / 100;
+
+    $cart_details = array(
+	array(
+		'name'        => get_the_title( $campaign->ID ),
+		'id'          => $campaign->ID,
+		'item_number' => array(
+			'id'      => $campaign->ID,
+			'options' => []
+		),
+		'price'       => 1,
+		'quantity'    => $amount
+	)
+    );
+
+    $payment_data = array( 
+	    'price' => $amount, 
+	    'date' => date('Y-m-d H:i:s'), 
+	    'user_email' => $current_user->user_email,
+	    'purchase_key' => $_REQUEST["ContributionID"],
+	    'currency' => edd_get_currency(),
+	    'downloads' => [$campaign->ID],
+	    'user_info' => $user_info,
+	    'cart_details' => $cart_details,
+	    'status' => 'pending'
+    );
+    $payment_id = edd_insert_payment( $payment_data );
+    
+    edd_record_sale_in_log($campaign->ID, $payment_id);
+    // FIN GESTION DU PAIEMENT COTE EDD
+    
+    $payment_status = ypcf_get_updated_payment_status($payment_id);
+    switch ($payment_status) {
+	case 'pending' :
+	    $buffer .= 'Transaction en cours';
+	    break;
+	case 'publish' :
 	    //On affiche que tout s'est bien passé
-	    $amount = $mangopay_contribution->Amount / 100;
 	    $buffer .= $content;
 	    $buffer .= 'Merci pour votre don de ' . $amount . edd_get_currency() . '.<br />';
 	    $buffer .= 'Nous sommes &agrave; pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
-	    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . edd_get_currency() . '.';
-	    
-	    //TODO : rajouter partage
-	} else {
+	    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . edd_get_currency() . '.<br />';
+	    $buffer .= 'Vous allez recevoir un mail de confirmation d&apos;achat (pensez &agrave; v&eacute;rifier votre dossier de courrier indésirable).<br />';
+	    $buffer .= 'Retourner &agrave; la <a href="'.get_permalink($_GET['campaign_id']).'">page projet</a>.<br /><br />';
+	    //Liens pour partager
+	    $buffer .= '<iframe src="http://www.facebook.com/plugins/like.php?href='.urlencode(get_permalink($_GET['campaign_id'])).'&amp;layout=button_count&amp;show_faces=true&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=30" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80px; height:20px; text-align: center" allowTransparency="true"></iframe>';
+	    $buffer .= '<a href="http://www.facebook.com/sharer.php?u='.urlencode(get_permalink($_GET['campaign_id'])).'" target="_blank">'. __('Partager sur Facebook', 'yproject') . '</a>';
+	    $buffer .= '<br />';
+	    /*$buffer .= "<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>";
+	    $buffer .= '<a href="https://twitter.com/share" class="twitter-share-button" data-via="yproject_co" data-lang="fr">' . __('Partager sur Twitter', 'yproject') . '</a>';
+	    $buffer .= '<br />';*/
+	    break;
+	case 'failed' :
 	    $buffer .= 'Il y a eu une erreur pendant la transacton : ' . $mangopay_contribution->AnswerMessage . ' (' . $mangopay_contribution->AnswerCode . ')';
-	}
-    } else {
-	$buffer .= 'Transaction en cours...';
+	    break;
     }
+    
+    edd_empty_cart();
+    
     return $buffer;
 }
 add_shortcode( 'yproject_crowdfunding_invest_return', 'ypcf_shortcode_invest_return' );
+
+/**
+ * Met à jour le statut edd en fonction du statut du paiement sur mangopay
+ * @param type $payment_id
+ * @return string
+ */
+function ypcf_get_updated_payment_status($payment_id) {
+    $init_payment_status = edd_get_payment_status($payment_id);
+    if ($init_payment_status == 'refund') {
+	$buffer = $init_payment_status;
+    } else {
+	$contribution_id = edd_get_payment_key($payment_id);
+	$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
+	if ($mangopay_contribution) {
+	    if ($mangopay_contribution->IsCompleted) {
+		if ($mangopay_contribution->IsSucceeded) {
+		    $buffer = 'publish';
+		    if ($buffer !== $init_payment_status) edd_email_purchase_receipt($payment_id, true);
+		} else {
+		    $buffer = 'failed';
+		}
+	    } else {
+		$buffer = 'pending';
+	    }
+	    $postdata = array(
+		'ID'		=> $payment_id,
+		'post_status'	=> $buffer,
+		'edit_date'	=> current_time( 'mysql' )
+	    );
+	    wp_update_post($postdata);
+	}
+    }
+    
+    return $buffer;
+}
 
 /**
  * Vérification si l'utilisateur est bien connecté
