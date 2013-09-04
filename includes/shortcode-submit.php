@@ -90,22 +90,19 @@ add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
 
 function ypcf_shortcode_submit_field_category($atts, $content = '') {
     global $editing, $current_campaign;
-    if ( $editing ) {
-	    $selected = 0;
-	    $categories = get_the_terms( $current_campaign->ID, 'download_category' );
-	    if ( ! $categories ) $categories = array();
-
-	    foreach( $categories as $category ) {
-		$selected = $category->term_id;
-		break;
-	    }
-    }
+    $atts = shortcode_atts( array(
+	'type' => 'general'
+    ), $atts );
+    
+    $parent_cat_id = get_category_by_path($atts['type']);
     return wp_dropdown_categories( array( 
 	    'orderby'	    => 'name', 
 	    'hide_empty'    => 0,
-	    'taxonomy'	    => 'download_category',
-	    'selected'	    => $editing ? $selected : 0,
-	    'echo'	    => 0
+	    'taxonomy'	    => 'category',
+	    'selected'	    => 0,
+	    'echo'	    => 0,
+	    'child_of'	    => $parent_cat_id->cat_ID,
+	    'name'	    => $atts['type']
     ) );
 }
 add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_field_category');
@@ -349,7 +346,8 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'maximum_goal' ]))	$maximum_goal   = $_POST[ 'maximum_goal' ];
 	if (isset($_POST[ 'length' ]))		$length    	= $_POST[ 'length' ];
 	if (isset($_POST[ 'campaign_type' ]))	$type      	= $_POST[ 'campaign_type' ];
-	if (isset($_POST[ 'cat' ]))		$category  	= isset ( $_POST[ 'cat' ] ) ? $_POST[ 'cat' ] : 0;
+	if (isset($_POST[ 'general' ]))		$category  	= isset ( $_POST[ 'general' ] ) ? $_POST[ 'general' ] : 0;
+	if (isset($_POST[ 'activity' ]))	$activity  	= isset ( $_POST[ 'activity' ] ) ? $_POST[ 'activity' ] : 0;
 	if (isset($_POST[ 'description' ]))	$content   	= $_POST[ 'description' ];
 	if (isset($_POST[ 'excerpt' ]))		$excerpt   	= $_POST[ 'excerpt' ];
 	if (isset($_POST[ 'societal_challenge' ]))  $societal_challenge	= $_POST[ 'societal_challenge' ];
@@ -440,6 +438,7 @@ function atcf_shortcode_submit_process() {
 
 	/** Check Category */
 	if (isset($category)) $category = absint( $category );
+	if (isset($activity)) $activity = absint( $activity );
 
 	/** Check Content */
 	if ( empty($content) || empty($summary) || empty($impact_area) || empty($added_value) || empty($development_strategy) || empty($economic_model) || empty($measuring_impact) || empty($implementation) || empty($societal_challenge) )
@@ -484,7 +483,8 @@ function atcf_shortcode_submit_process() {
 
 	    $campaign = wp_insert_post( $args, true );
 
-	    wp_set_object_terms( $campaign, array( $category ), 'download_category' );
+	    wp_set_object_terms( $campaign, array( $category ), 'category' );
+	    wp_set_object_terms( $campaign, array( $activity ), 'category' );
 
 
 	    // Create category for blog
