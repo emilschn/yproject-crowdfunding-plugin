@@ -172,10 +172,12 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                         <input type="checkbox" name="qualite_innovation" value="qualite_innovation">Qualit&eacute d&acuteinnovation</input></br>
                         <input type="checkbox" name="qualite_marche" value="qualite_marche" >Qualit&eacute du march&eacute, porteur</input></br>
             
-                        <label> Expliquer pourquoi</label>
-                        <textarea type="text" name="conseil" id="conseil" value="conseil"></textarea></br>
+                        <label> Autre</label>
+                        <input type="text" name="other" id="other" ></input></br></br>
                     </span>
-                    <input type="submit" name="submit" value= "valider" />
+                    <label> Conseil</label><br>
+                    <textarea type="text" name="conseil" id="conseil" value="conseil"></textarea></br>
+                    <br><input type="submit" name="submit" value= "valider" />
                  </fieldset>
 
          </form> 
@@ -188,6 +190,12 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
 
 
 
-
-
-
+function ypcf_shortcode_printPageVoteDeadLine($post, $campaign) {
+    ?>
+    <span id="tab-end-vote">
+         Les votes sont clôturés pour ce projet, merci
+    </span>
+ 
+<?php
+}
+add_shortcode('yproject_crowdfunding_printPageVoteDeadLine','ypcf_shortcode_printPageVoteDeadLine');
