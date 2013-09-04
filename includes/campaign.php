@@ -245,7 +245,9 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_societal_challenge', __( 'Campaign societal challenge', 'atcf' ), '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_company_status', __( 'Statuts de la societe', 'atcf' ), '_atcf_metabox_campaign_company_status', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_company_status_other', __( 'Autre statut', 'atcf' ), '_atcf_metabox_campaign_company_status_other', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_init_capital', __( 'Autre statut', 'atcf' ), '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_init_capital', __( 'Capital initial', 'atcf' ), '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_funding_type', __( 'Type de financement', 'atcf' ), '_atcf_metabox_campaign_funding_type', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_funding_duration', __( 'Durée du financement', 'atcf' ), '_atcf_metabox_campaign_funding_duration', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_added_value', __( 'Campaign added value', 'atcf' ), '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_economic_model', __( 'Campaign economic model', 'atcf' ), '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
@@ -272,6 +274,7 @@ class ATCF_Campaigns {
 		$fields[] = '_campaign_featured';
 		$fields[] = '_campaign_physical';
 		$fields[] = 'campaign_goal';
+		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_contact_email';
 		$fields[] = 'campaign_end_date';
 		$fields[] = 'campaign_video';
@@ -286,6 +289,8 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_company_status';
 		$fields[] = 'campaign_company_status_other';
 		$fields[] = 'campaign_init_capital';
+		$fields[] = 'campaign_funding_type';
+		$fields[] = 'campaign_funding_duration';
 		$fields[] = 'campaign_impact_area';
 		$fields[] = 'campaign_added_value';
 		$fields[] = 'campaign_development_strategy';
@@ -647,6 +652,30 @@ function _atcf_metabox_campaign_init_capital() {
 ?>
 	<p class="init_capital">
 		<textarea name="init_capital" id="init_capital" class="widefat"><?php echo $campaign->init_capital(); ?></textarea>
+	</p>
+<?php
+    
+}
+
+function _atcf_metabox_campaign_funding_type() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="funding_type">
+		<textarea name="funding_type" id="funding_type" class="widefat"><?php echo $campaign->funding_type(); ?></textarea>
+	</p>
+<?php
+    
+}
+
+function _atcf_metabox_campaign_funding_duration() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="funding_duration">
+		<textarea name="funding_duration" id="funding_duration" class="widefat"><?php echo $campaign->funding_duration(); ?></textarea>
 	</p>
 <?php
     
@@ -1047,6 +1076,14 @@ class ATCF_Campaign {
 	public function init_capital() {
 	    return $this->__get('campaign_init_capital');
 	}
+	
+	public function funding_type() {
+	    return $this->__get('campaign_funding_type');
+	}
+	
+	public function funding_duration() {
+	    return $this->__get('campaign_funding_duration');
+	}
 
 	/**
 	 * Needs Shipping
@@ -1079,6 +1116,13 @@ class ATCF_Campaign {
 			return edd_currency_filter( edd_format_amount( $goal ) );
 
 		return $goal;
+	}
+	
+	public function minimum_goal() {
+	    $goal = $this->__get( 'campaign_minimum_goal' );
+	    if ( ! is_numeric( $goal ) )
+		    return 0;
+	    return $goal;
 	}
 
 	/**
@@ -1385,7 +1429,7 @@ class ATCF_Campaign {
 	 * @return boolean
 	 */
 	public function is_funded() {
-		if ( $this->current_amount(false) >= $this->goal(false) )
+		if ( $this->current_amount(false) >= $this->minimum_goal() )
 			return true;
 
 		return false;
@@ -1464,6 +1508,15 @@ function _atcf_metabox_campaign_info() {
 			<?php echo edd_currency_filter( '' ); ?><input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount( $campaign->goal(false) ); ?>" style="width:80px" />
 		<?php else : ?>
 			<input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount($campaign->goal(false) ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
+		<?php endif; ?>
+	</p>
+
+	<p>
+		<label for="campaign_minimum_goal"><strong><?php _e( 'Minimum Goal:', 'atcf' ); ?></strong></label><br />	
+		<?php if ( ! isset( $edd_options[ 'currency_position' ] ) || $edd_options[ 'currency_position' ] == 'before' ) : ?>
+			<?php echo edd_currency_filter( '' ); ?><input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount( $campaign->minimum_goal() ); ?>" style="width:80px" />
+		<?php else : ?>
+			<input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount($campaign->minimum_goal() ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
 		<?php endif; ?>
 	</p>
 
@@ -1550,6 +1603,8 @@ function atcf_campaign_edit() {
 	$company_status          = $_POST[ 'company_status' ];
 	$company_status_other          = $_POST[ 'company_status_other' ];
 	$init_capital         = $_POST[ 'init_capital' ];
+	$funding_type         = $_POST[ 'funding_type' ];
+	$funding_duration         = $_POST[ 'funding_duration' ];
 	$impact_area                 = $_POST[ 'impact_area' ];
 	$added_value                 = $_POST[ 'added_value' ];
 	$development_strategy	     = $_POST[ 'development_strategy' ];
@@ -1617,6 +1672,8 @@ function atcf_campaign_edit() {
 	update_post_meta( $post->ID, 'campaign_company_status', sanitize_text_field( $company_status ) );
 	update_post_meta( $post->ID, 'campaign_company_status_other', sanitize_text_field( $company_status_other ) );
 	update_post_meta( $post->ID, 'campaign_init_capital', sanitize_text_field( $init_capital ) );
+	update_post_meta( $post->ID, 'campaign_funding_type', sanitize_text_field( $funding_type ) );
+	update_post_meta( $post->ID, 'campaign_funding_duration', sanitize_text_field( $funding_duration ) );
 	update_post_meta( $post->ID, 'campaign_added_value', sanitize_text_field( $added_value ) );
 	update_post_meta( $post->ID, 'campaign_development_strategy', sanitize_text_field( $development_strategy ) );
 	update_post_meta( $post->ID, 'campaign_economic_model', sanitize_text_field( $economic_model ) );
