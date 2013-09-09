@@ -441,7 +441,7 @@ function atcf_shortcode_submit_process() {
 	if (isset($activity)) $activity = absint( $activity );
 
 	/** Check Content */
-	if ( empty($content) || empty($summary) || empty($impact_area) || empty($added_value) || empty($development_strategy) || empty($economic_model) || empty($measuring_impact) || empty($implementation) || empty($societal_challenge) )
+	if ( empty($content) || empty($summary) || empty($added_value)  || empty($economic_model) || empty($implementation) || empty($societal_challenge) )
 		$errors->add( 'invalid-content', __( 'Please add content to this campaign.', 'atcf' ) );
 	
 
@@ -491,6 +491,15 @@ function atcf_shortcode_submit_process() {
 	    $id_category = wp_insert_category( array('cat_name' => 'cat'.$campaign, 'category_parent' => $parent, 'category_nicename' => sanitize_title($campaign . '-blog-' . $title)) );
 
 
+	    // Create forum for campaign
+	    $forum_post = array(
+			'post_title'    => $campaign,
+			'post_name'     => $campaign,
+			'post_status'   => 'publish',
+			'post_type'     => 'forum'
+		);
+ 
+	 	wp_insert_post( $forum_post, $wp_error ); 
 
 	    // Extra Campaign Information
 	    add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );
