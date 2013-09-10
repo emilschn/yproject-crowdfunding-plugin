@@ -171,34 +171,107 @@ add_shortcode('yproject_crowdfunding_field_complex', 'ypcf_shortcode_submit_fiel
 
 function ypcf_shortcode_submit_field_location($atts, $content = '') {
     return '<select id="location" name="location">
-	<option>Alsace</option>
-	<option>Aquitaine</option>
-	<option>Auvergne</option>
-	<option>Basse-Normandie</option>
-	<option>Bourgogne</option>
-	<option>Bretagne</option>
-	<option>Centre</option>
-	<option>Champagne-Ardenne</option>
-	<option>Bourgogne</option>
-	<option>Corse</option>
-	<option>Franche-Comt&eacute;</option>
-	<option>Guadeloupe</option>
-	<option>Guyane</option>
-	<option>Haute-Normandie</option>
-	<option>&Icirc;le-de-France</option>
-	<option>La R&eacute;union</option>
-	<option>Languedoc-Roussillon</option>
-	<option>Limousin</option>
-	<option>Lorraine</option>
-	<option>Martinique</option>
-	<option>Mayotte</option>
-	<option>Midi-Pyr&eacute;n&eacute;es</option>
-	<option>Nord-Pas-de-Calais</option>
-	<option>Pays de la Loire</option>
-	<option>Picardie</option>
-	<option>Poitou-Charentes</option>
-	<option>Provence-Alpes-C&ocirc;te d&apos;Azur</option>
-	<option>Rh&ocirc;ne-Alpes</option>
+	<option>01 Ain</option>
+      <option>02 Aisne</option>
+      <option>03 Allier</option>
+      <option>04 Alpes-de-Haute-Provence</option>
+      <option>05 Hautes-Alpes</option>
+      <option>06 Alpes-Maritimes</option>
+      <option>07 Ard&egraveche</option>
+      <option>08 Ardennes</option>
+      <option>09 Ari&egravege</option>
+      <option>10 Aube</option>
+      <option>11 Aude</option>
+      <option>12 Aveyron</option>
+      <option>13 Bouches-du-Rh&ocircne</option>
+      <option>14 Calvados</option>
+      <option>15 Cantal</option>
+      <option>16 Charente</option>
+      <option>17 Charente-Maritime</option>
+      <option>18 Cher</option>
+      <option>19 Corr&egraveze</option>
+      <option>2A Corse-du-Sud</option>
+      <option>2B Haute-Corse</option>
+      <option>21 C&ocircte-d\'Or</option>
+      <option>22 C&ocirctes d\'Armor</option>
+      <option>23 Creuse</option>
+      <option>24 Dordogne</option>
+      <option>25 Doubs</option>
+      <option>26 Dr&ocircme</option>
+      <option>27 Eure</option>
+      <option>28 Eure-et-Loir</option>
+      <option>29 Finist&egravere</option>
+      <option>30 Gard</option>
+      <option>31 Haute-Garonne</option>
+      <option>32 Gers</option>
+      <option>33 Gironde</option>
+      <option>34 H&eacuterault</option>
+      <option>35 Ille-et-Vilaine</option>
+      <option>36 Indre</option>
+      <option>37 Indre-et-Loire</option>
+      <option>38 Is&egravere</option>
+      <option>39 Jura</option>
+      <option>40 Landes</option>
+      <option>41 Loir-et-Cher</option>
+      <option>42 Loire</option>
+      <option>43 Haute-Loire</option>
+      <option>44 Loire-Atlantique</option>
+      <option>45 Loiret</option>
+      <option>46 Lot</option>
+      <option>47 Lot-et-Garonne</option>
+      <option>48 Loz&egravere</option>
+      <option>49 Maine-et-Loire</option>
+      <option>50 Manche</option>
+      <option>51 Marne</option>
+      <option>52 Haute-Marne</option>
+      <option>53 Mayenne</option>
+      <option>54 Meurthe-et-Moselle</option>
+      <option>55 Meuse</option>
+      <option>56 Morbihan</option>
+      <option>57 Moselle</option>
+      <option>58 Ni&egravevre</option>
+      <option>59 Nord</option>
+      <option>60 Oise</option>
+      <option>61 Orne</option>
+      <option>62 Pas-de-Calais</option>
+      <option>63 Puy-de-D&ocircme</option>
+      <option>64 Pyr&eacuten&eacutees-Atlantiques</option>
+      <option>65 Hautes-Pyr&eacuten&eacutees</option>
+      <option>66 Pyr&eacuten&eacutees-Orientales</option>
+      <option>67 Bas-Rhin</option>
+      <option>68 Haut-Rhin</option>
+      <option>69 Rh&ocircne</option>
+      <option>70 Haute-Sa&ocircne</option>
+      <option>71 Sa&ocircne-et-Loire</option>
+      <option>72 Sarthe</option>
+      <option>73 Savoie</option>
+      <option>74 Haute-Savoie</option>
+      <option>75 Paris</option>
+      <option>76 Seine-Maritime</option>
+      <option>77 Seine-et-Marne</option>
+      <option>78 Yvelines</option>
+      <option>79 Deux-S&egravevres</option>
+      <option>80 Somme</option>
+      <option>81 Tarn</option>
+      <option>82 Tarn-et-Garonne</option>
+      <option>83 Var</option>
+      <option>84 Vaucluse</option>
+      <option>85 Vend&eacutee</option>
+      <option>86 Vienne</option>
+      <option>87 Haute-Vienne</option>
+      <option>88 Vosges</option>
+      <option>89 Yonne</option>
+      <option>90 Territoire de Belfort</option>
+      <option>91 Essonne</option>
+      <option>92 Hauts-de-Seine</option>
+      <option>93 Seine-Saint-Denis</option>
+      <option>94 Val-de-Marne</option>
+      <option>95 Val-d\'Oise</option>
+      <option>971 Guadeloupe</option>
+      <option>972 Martinique</option>
+      <option>973 Guyane</option>
+      <option>974 La Réunion</option>
+      <option>976 Mayotte</option>
     </select>';
 }
 add_shortcode('yproject_crowdfunding_field_location', 'ypcf_shortcode_submit_field_location');
@@ -232,6 +305,7 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 		<span id="goalsum_flexible_param" style="display:none">- Minimum : <input type="text" id="minimum_goal" name="minimum_goal" size="10"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
 		- Maximum : <input type="text" id="maximum_goal" name="maximum_goal" size="10"></span>
 	    <input type="hidden" name="length" id="length" value="90">
+	    <input type="hidden" name="vote_length" id="vote_length" value="9">
 	    <input type="hidden" name="monney" id="monney" value="&euro;">
 	    <input type="hidden" name="campaign_multiplier" id="campaign_multiplier" value="' . $atts['multiplier_campaign'] . '">
 	    <input type="hidden" name="min_amount_project" id="min_amount_project" value="' . $atts['min_amount_project'] . '">
@@ -248,6 +322,15 @@ function ypcf_shortcode_submit_field_length($atts, $content = '') {
     return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="length" id="length" value="'.$atts['min'].'">';
 }
 add_shortcode('yproject_crowdfunding_field_length', 'ypcf_shortcode_submit_field_length');
+
+function ypcf_shortcode_submit_field_vote_length($atts, $content = '') {
+    $atts = shortcode_atts( array(
+	'min' => '0',
+	'max' => '9'
+    ), $atts );
+    return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="vote_length" id="vote_length" value="'.$atts['min'].'">';
+}
+add_shortcode('yproject_crowdfunding_field_vote_length', 'ypcf_shortcode_submit_field_vote_length');
 
 function ypcf_shortcode_submit_field_status($atts, $content = '') {
     $atts = shortcode_atts( array(
@@ -345,6 +428,7 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'minimum_goal' ]))	$minimum_goal   = $_POST[ 'minimum_goal' ];
 	if (isset($_POST[ 'maximum_goal' ]))	$maximum_goal   = $_POST[ 'maximum_goal' ];
 	if (isset($_POST[ 'length' ]))		$length    	= $_POST[ 'length' ];
+	if (isset($_POST[ 'vote_length' ]))		$vote_length    	= $_POST[ 'vote_length' ];
 	if (isset($_POST[ 'campaign_type' ]))	$type      	= $_POST[ 'campaign_type' ];
 	if (isset($_POST[ 'general' ]))		$category  	= isset ( $_POST[ 'general' ] ) ? $_POST[ 'general' ] : 0;
 	if (isset($_POST[ 'activity' ]))	$activity  	= isset ( $_POST[ 'activity' ] ) ? $_POST[ 'activity' ] : 0;
@@ -436,6 +520,22 @@ function atcf_shortcode_submit_process() {
 	$end_date = strtotime( sprintf( '+%d day', $length ) );
 	$end_date = get_gmt_from_date( date( 'Y-m-d H:i:s', $end_date ) );
 
+	/** Check vote Length */
+	$vote_length = absint( $vote_length );
+
+	$min = isset ( $edd_options[ 'atcf_campaign_length_min' ] ) ? $edd_options[ 'atcf_campaign_length_min' ] : 14;
+	$max = isset ( $edd_options[ 'atcf_campaign_length_max' ] ) ? $edd_options[ 'atcf_campaign_length_max' ] : 42;
+
+	if ( $vote_length < $min )
+		$vote_length = $min;
+	else if ( $vote_length > $max )
+		$vote_length = $max;
+
+	$end_date_vote = strtotime( sprintf( '+%d day', $vote_length ) );
+	$end_date_vote = get_gmt_from_date( date( 'Y-m-d H:i:s', $end_date_vote
+
+ ) );
+
 	/** Check Category */
 	if (isset($category)) $category = absint( $category );
 	if (isset($activity)) $activity = absint( $activity );
@@ -508,6 +608,7 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
 	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
+	    add_post_meta($campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_location', sanitize_text_field( $location ) );
 	    add_post_meta( $campaign, 'campaign_author', sanitize_text_field( $author ) );
 	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
