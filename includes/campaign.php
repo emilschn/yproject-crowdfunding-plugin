@@ -277,6 +277,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_contact_email';
 		$fields[] = 'campaign_end_date';
+		$fields[] = 'campaign_end_date_vote';
 		$fields[] = 'campaign_video';
 		$fields[] = 'campaign_images';
 		$fields[] = 'campaign_location';
@@ -419,6 +420,40 @@ function atcf_campaign_save_end_date( $new ) {
 	$end_date = get_gmt_from_date( $end_date );
 
 	return $end_date;
+}
+
+
+function atcf_campaign_save_end_date_vote( $new ) {
+	if ( ! isset( $_POST[ 'end-aa' ] ) )
+		return;
+
+	$aa = $_POST['end-aa'];
+	$mm = $_POST['end-mm'];
+	$jj = $_POST['end-jj'];
+	$hh = $_POST['end-hh'];
+	$mn = $_POST['end-mn'];
+	$ss = $_POST['end-ss'];
+
+	$aa = ($aa <= 0 ) ? date('Y') : $aa;
+	$mm = ($mm <= 0 ) ? date('n') : $mm;
+	$jj = ($jj > 31 ) ? 31 : $jj;
+	$jj = ($jj <= 0 ) ? date('j') : $jj;
+
+	$hh = ($hh > 23 ) ? $hh -24 : $hh;
+	$mn = ($mn > 59 ) ? $mn -60 : $mn;
+	$ss = ($ss > 59 ) ? $ss -60 : $ss;
+
+	$end_date_vote= sprintf( "%04d-%02d-%02d %02d:%02d:%02d", $aa, $mm, $jj, $hh, $mn, $ss );
+	
+	$valid_date = wp_checkdate( $mm, $jj, $aa, $end_date_vote );
+	
+	if ( ! $valid_date ) {
+		return new WP_Error( 'invalid_date', __( 'Whoops, the provided date is invalid.', 'atcf' ) );
+	}
+
+	$end_date_vote = get_gmt_from_date( $end_date_vote );
+
+	return $end_date_vote;
 }
 
 /**
@@ -1185,6 +1220,10 @@ class ATCF_Campaign {
 		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_date' ), false );
 	}
 
+	public function end_date_vote() {
+		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_date_vote' ), false );
+	}
+
 	/**
 	 * Campaign Video
 	 *
@@ -1321,6 +1360,24 @@ class ATCF_Campaign {
 
 		return floor( $days );
 	}
+
+	public function vote_duration() {
+		$expires = strtotime( $this->end_date_vote() );
+		$now     = current_time( 'timestamp' );
+
+		if ( $now > $expires )
+			return 0;
+
+		$diff = $expires - $now;
+
+		if ( $diff < 0 )
+			return 0;
+
+		$days = $diff / 86400;
+
+		return floor( $days );
+	}
+
 
 	/**
 	 * Campaign Percent Completed
@@ -1463,6 +1520,7 @@ function _atcf_metabox_campaign_info() {
 	$campaign = atcf_get_campaign( $post );
 
 	$end_date = $campaign->end_date();
+	$end_date_vote = $campaign->end_date_vote();
 
 	$jj = mysql2date( 'd', $end_date, false );
 	$mm = mysql2date( 'm', $end_date, false );
@@ -1554,6 +1612,7 @@ function _atcf_metabox_campaign_info() {
 		<input type="text" id="end-mn" name="end-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<input type="hidden" id="end-ss" name="end-ss" value="<?php echo esc_attr( $ss ); ?>" />
 		<input type="hidden" id="campaign_end_date" name="campaign_end_date" />
+		<input type="hidden" id="campaign_end_date_vote" name="campaign_end_date_vote" />
 	</p>
 	
 <?php
