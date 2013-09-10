@@ -564,11 +564,11 @@ function _atcf_metabox_campaign_vote() {
 	<p><input type="text" name="campaign_vote_display" id="campaign_vote_display" style="width:200px; background-color:red; color:white;" class="regular-text" value="<?php echo esc_attr( $campaign->vote() ); ?>" /></p>
 	<p<h2> <?php _e( 'Choisir le statu de la campagne', 'atcf' ); ?></h2></p>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
-	 <option></option>
-	 <option value="collecte">collecte</option>
-     <option value="vote">vote</option>
-	 <option value="funded">funded</option>
-     <option value="archive">archive</option>
+	<option></option>
+	<option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">collecte</option>
+	<option <?php if ($campaign->vote() == "vote") { ?>selected="selected"<?php } ?>value="vote">vote</option>
+	<option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">funded</option>
+	<option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">archive</option>
 	</select>
 	
 <?php
