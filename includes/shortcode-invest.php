@@ -266,32 +266,45 @@ add_shortcode( 'yproject_crowdfunding_invest_return', 'ypcf_shortcode_invest_ret
  * @return string
  */
 function ypcf_get_updated_payment_status($payment_id) {
-    $init_payment_status = edd_get_payment_status($payment_id);
-    if ($init_payment_status == 'refund') {
-	$buffer = $init_payment_status;
-    } else {
-	$contribution_id = edd_get_payment_key($payment_id);
-	$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
-	if ($mangopay_contribution) {
-	    if ($mangopay_contribution->IsCompleted) {
-		if ($mangopay_contribution->IsSucceeded) {
-		    $buffer = 'publish';
-		    if ($buffer !== $init_payment_status) edd_email_purchase_receipt($payment_id, true);
-		} else {
-		    $buffer = 'failed';
-		}
-	    } else {
-		$buffer = 'pending';
-	    }
+    $payment_post = get_post($payment_id);
+    $init_payment_status = $payment_post->post_status;
+    $buffer = false;
+    if (isset($payment_id) && $payment_id != '') {
+	//On teste d'abord si ça a été refunded
+	$refund_transfer_id = get_post_meta($payment_id, 'refund_transfer_id', true);
+	if (($init_payment_status == 'refunded') || (isset($refund_transfer_id) && $refund_transfer_id != '')) {
+	    $buffer = 'refunded';
 	    $postdata = array(
 		'ID'		=> $payment_id,
 		'post_status'	=> $buffer,
 		'edit_date'	=> current_time( 'mysql' )
 	    );
 	    wp_update_post($postdata);
+	} else {
+	    $contribution_id = edd_get_payment_key($payment_id);
+	    if (isset($contribution_id) && $contribution_id != '') {
+		$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
+		if ($mangopay_contribution && $mangopay_contribution->Type != 'UserError') {
+		    if ($mangopay_contribution->IsCompleted) {
+			if ($mangopay_contribution->IsSucceeded) {
+			    $buffer = 'publish';
+			    if ($buffer !== $init_payment_status) edd_email_purchase_receipt($payment_id, true);
+			} else {
+			    $buffer = 'failed';
+			}
+		    } else {
+			$buffer = 'pending';
+		    }
+		    $postdata = array(
+			'ID'		=> $payment_id,
+			'post_status'	=> $buffer,
+			'edit_date'	=> current_time( 'mysql' )
+		    );
+		    wp_update_post($postdata);
+		}
+	    }
 	}
     }
-    
     return $buffer;
 }
 
