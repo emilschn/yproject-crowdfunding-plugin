@@ -18,7 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $category_obj = get_category_by_slug($category_slug);
     $campaign_id =  $campaign->ID;
 
-    $investisseurs = $wpdb->get_results( "SELECT ID,post_author,post_name,post_type FROM wp_posts WHERE post_type = 'edd_payment'" );
+    $table_name = $wpdb->prefix . "posts";
+    $investisseurs = $wpdb->get_results( "SELECT ID,post_author,post_name,post_type FROM $table_name WHERE post_type = 'edd_payment'" );
     
 
     ob_start();
