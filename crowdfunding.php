@@ -71,7 +71,7 @@ final class ATCF_CrowdFunding {
 		$this->plugin_dir   = apply_filters( 'atcf_plugin_dir_path',  plugin_dir_path( $this->file ) );
 		$this->plugin_url   = apply_filters( 'atcf_plugin_dir_url',   plugin_dir_url ( $this->file ) );
 
-		$this->template_url = apply_filters( 'atcf_plugin_template_url', 'yproject-site-wptheme/' );
+		$this->template_url = apply_filters( 'atcf_plugin_template_url', 'yproject/' );
 
 		// Includes
 		$this->includes_dir = apply_filters( 'atcf_includes_dir', trailingslashit( $this->plugin_dir . 'includes'  ) );
@@ -113,9 +113,14 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'shortcode-add-news.php' );
 		require( $this->includes_dir . 'shortcode-edit-news.php' );
 		require( $this->includes_dir . 'shortcode-invest.php' );
+		require( $this->includes_dir . 'shortcode-stats.php' );
+		
+		//Composants
 		require( $this->includes_dir . 'mangopay/common.php' );
 		require( $this->includes_dir . 'mangopay/utils.php' );
-		require( $this->includes_dir . 'shortcode-stats.php' );
+		require( $this->includes_dir . 'html2pdf/html2pdf.class.php' );
+		require( $this->includes_dir . 'pdf_generator.php' );
+		
 
 		do_action( 'atcf_include_files' );
 
