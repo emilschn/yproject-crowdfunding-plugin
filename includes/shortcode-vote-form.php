@@ -62,11 +62,15 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                 if  (is_numeric($_POST[ 'sum' ]) OR $_POST[ 'sum' ] == NULL ) {
                    $sum = $_POST[ 'sum' ];
                    $sum_valid = true;
-                } 
-                else
-                {
                     echo '<label style="color:red">*Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
-                }
+                } 
+              /**  elseif( $impact || $local || $environmental || $social || $autre || $desaprouve ||
+                        $pret_pour_collect || $sum || $liste_risque|| $maturite || $pas_responsable ||
+                        $mal_explique  || $qualite_produit ||   $qualite_equipe || $qualite_business_plan ||
+                        $qualite_innovation  ||  $qualite_marche  ||  $conseil  )
+                {
+                    echo '<label style="color:red">*Vous devez remplir les champs avant de valider</label></br> "Je serais pr&ecirct &agrave investir"</br>';
+                }*/
 
             // Vérifie si l'utilisateur a deja voté
             $users = $wpdb->get_results( "SELECT user_id FROM $table_name WHERE campaign_id = $campaign_id " );
@@ -204,3 +208,22 @@ function ypcf_shortcode_printPageVoteDeadLine($post, $campaign) {
 <?php
 }
 add_shortcode('yproject_crowdfunding_printPageVoteDeadLine','ypcf_shortcode_printPageVoteDeadLine');
+
+function ypcf_shortcode_compte_rebours(){
+
+    $debut = strtotime($campaign->start_vote);
+    $fin   = strtotime($post->campaign_end_vote);
+
+        $diff = $fin - $debut;
+
+        echo $debut.'debut'.'</br>';
+        echo $fin.'fin'.'</br>';
+
+        echo $diff.'differ'.'</br>';
+
+        $days = (round(abs($fin - $debut)/60/60/24/10));
+
+        echo $days.'compte a rebours' ;
+}
+
+add_shortcode('yproject_crowdfunding_compte_rebours','ypcf_shortcode_compte_rebours');

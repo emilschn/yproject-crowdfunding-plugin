@@ -254,6 +254,8 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', __( 'Campaign implementation', 'atcf' ), '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_vote', __( 'Campaign vote statu', 'atcf' ), '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_date_vote', __( 'Date de la fin des votes', 'atcf' ), '_atcf_metabox_campaign_date_vote', 'download', 'side', 'high' );
+		
 
 		
 		add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
@@ -277,7 +279,8 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_contact_email';
 		$fields[] = 'campaign_end_date';
-		$fields[] = 'campaign_end_date_vote';
+		$fields[] = 'campaign_start_vote';
+		$fields[] = 'campaign_end_vote';
 		$fields[] = 'campaign_video';
 		$fields[] = 'campaign_images';
 		$fields[] = 'campaign_location';
@@ -423,38 +426,6 @@ function atcf_campaign_save_end_date( $new ) {
 }
 
 
-function atcf_campaign_save_end_date_vote( $new ) {
-	if ( ! isset( $_POST[ 'end-aa' ] ) )
-		return;
-
-	$aa = $_POST['end-aa'];
-	$mm = $_POST['end-mm'];
-	$jj = $_POST['end-jj'];
-	$hh = $_POST['end-hh'];
-	$mn = $_POST['end-mn'];
-	$ss = $_POST['end-ss'];
-
-	$aa = ($aa <= 0 ) ? date('Y') : $aa;
-	$mm = ($mm <= 0 ) ? date('n') : $mm;
-	$jj = ($jj > 31 ) ? 31 : $jj;
-	$jj = ($jj <= 0 ) ? date('j') : $jj;
-
-	$hh = ($hh > 23 ) ? $hh -24 : $hh;
-	$mn = ($mn > 59 ) ? $mn -60 : $mn;
-	$ss = ($ss > 59 ) ? $ss -60 : $ss;
-
-	$end_date_vote= sprintf( "%04d-%02d-%02d %02d:%02d:%02d", $aa, $mm, $jj, $hh, $mn, $ss );
-	
-	$valid_date = wp_checkdate( $mm, $jj, $aa, $end_date_vote );
-	
-	if ( ! $valid_date ) {
-		return new WP_Error( 'invalid_date', __( 'Whoops, the provided date is invalid.', 'atcf' ) );
-	}
-
-	$end_date_vote = get_gmt_from_date( $end_date_vote );
-
-	return $end_date_vote;
-}
 
 /**
  * Price row head
@@ -610,10 +581,22 @@ function _atcf_metabox_campaign_vote() {
 	do_action( 'atcf_metabox_campaign_vote_after', $campaign );
 }
 
+// CHOIX DES DATES DES VOTES
+function _atcf_metabox_campaign_date_vote() {
+	global $post;
 
+	$campaign = atcf_get_campaign( $post );
 
-
-
+	do_action( 'atcf_metabox_campaign_start_vote_before', $campaign );
+?>  
+    
+	<p>
+		<input type="text" name="campaign_vote_date_label" id="campaign_vote_date_label" value="<?php echo esc_attr( $campaign->end_vote() ); ?>"/>
+		<input type="date" name="campaign_end_vote" id="campaign_end_vote">Date de la fin</input>
+	</p>
+<?php
+	do_action( 'atcf_metabox_campaign_start_vote_after', $campaign );
+}
 
 
 
@@ -1220,8 +1203,12 @@ class ATCF_Campaign {
 		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_date' ), false );
 	}
 
-	public function end_date_vote() {
-		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_date_vote' ), false );
+	public function start_vote() {
+		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_start_vote' ), false);
+	}
+
+	public function end_vote() {
+		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_vote' ), false);
 	}
 
 	/**
@@ -1361,23 +1348,10 @@ class ATCF_Campaign {
 		return floor( $days );
 	}
 
-	public function vote_duration() {
-		$expires = strtotime( $this->end_date_vote() );
-		$now     = current_time( 'timestamp' );
+	public function vote_duration() 
+	{
 
-		if ( $now > $expires )
-			return 0;
-
-		$diff = $expires - $now;
-
-		if ( $diff < 0 )
-			return 0;
-
-		$days = $diff / 86400;
-
-		return floor( $days );
 	}
-
 
 	/**
 	 * Campaign Percent Completed
@@ -1520,7 +1494,7 @@ function _atcf_metabox_campaign_info() {
 	$campaign = atcf_get_campaign( $post );
 
 	$end_date = $campaign->end_date();
-	$end_date_vote = $campaign->end_date_vote();
+
 
 	$jj = mysql2date( 'd', $end_date, false );
 	$mm = mysql2date( 'm', $end_date, false );
@@ -1659,11 +1633,11 @@ function atcf_campaign_edit() {
 	
 	$summary                     = $_POST[ 'summary' ];
 	$societal_challenge          = $_POST[ 'societal_challenge' ];
-	$company_status          = $_POST[ 'company_status' ];
-	$company_status_other          = $_POST[ 'company_status_other' ];
-	$init_capital         = $_POST[ 'init_capital' ];
-	$funding_type         = $_POST[ 'funding_type' ];
-	$funding_duration         = $_POST[ 'funding_duration' ];
+	$company_status              = $_POST[ 'company_status' ];
+	$company_status_other        = $_POST[ 'company_status_other' ];
+	$init_capital                = $_POST[ 'init_capital' ];
+	$funding_type                = $_POST[ 'funding_type' ];
+	$funding_duration            = $_POST[ 'funding_duration' ];
 	$impact_area                 = $_POST[ 'impact_area' ];
 	$added_value                 = $_POST[ 'added_value' ];
 	$development_strategy	     = $_POST[ 'development_strategy' ];
@@ -1671,6 +1645,7 @@ function atcf_campaign_edit() {
 	$measuring_impact            = $_POST[ 'measuring_impact' ];
 	$implementation              = $_POST[ 'implementation' ];
 	$vote                        = $_POST[ 'vote' ];
+	$end_vote                    = $_POST[ 'end_vote' ];
 
 	$email     = $_POST[ 'email' ];
 	$author    = $_POST[ 'name' ];
@@ -1739,6 +1714,7 @@ function atcf_campaign_edit() {
 	update_post_meta( $post->ID, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );
 	update_post_meta( $post->ID, 'campaign_implementation', sanitize_text_field( $implementation ) );
 	update_post_meta( $post->ID, 'campaign_vote', sanitize_text_field( $vote ) );
+	update_post_meta( $post->ID, 'campaign_end_vote', sanitize_text_field( $end_vote ) );
 	
 
 	do_action( 'atcf_edit_campaign_after', $post->ID, $_POST );
