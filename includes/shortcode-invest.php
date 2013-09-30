@@ -135,7 +135,7 @@ function ypcf_display_invest_form($error = '') {
 	    $campaign = atcf_get_campaign( $post );
 	    edd_empty_cart();
 	    $to_add = array();
-	    $to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => [], 'quantity' => $_POST['amount'] ) );
+	    $to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => array(), 'quantity' => $_POST['amount'] ) );
 	    EDD()->session->set( 'edd_cart', $to_add );
 	    
 	    $form .= $content;
@@ -178,6 +178,7 @@ add_shortcode( 'yproject_crowdfunding_invest_confirm', 'ypcf_shortcode_invest_co
  * Dernière étape : le paiement a été effectué, on revient sur le site
  */
 function ypcf_shortcode_invest_return($atts, $content = '') {
+
     $buffer = '';
     $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($_REQUEST["ContributionID"]);
     
@@ -205,7 +206,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		'id'          => $campaign->ID,
 		'item_number' => array(
 			'id'      => $campaign->ID,
-			'options' => []
+			'options' => array()
 		),
 		'price'       => 1,
 		'quantity'    => $amount
@@ -218,7 +219,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    'user_email' => $current_user->user_email,
 	    'purchase_key' => $_REQUEST["ContributionID"],
 	    'currency' => edd_get_currency(),
-	    'downloads' => [$campaign->ID],
+	    'downloads' => array($campaign->ID),
 	    'user_info' => $user_info,
 	    'cart_details' => $cart_details,
 	    'status' => 'pending'
@@ -236,11 +237,12 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	case 'publish' :
 	    //On affiche que tout s'est bien passé
 	    $buffer .= $content;
-	    $buffer .= 'Merci pour votre don de ' . $amount . edd_get_currency() . '.<br />';
+	    $buffer .= 'Merci pour votre investissement de ' . $amount . edd_get_currency() . '.<br />';
 	    $buffer .= 'Nous sommes &agrave; pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
 	    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . edd_get_currency() . '.<br />';
-	    $buffer .= 'Vous allez recevoir un mail de confirmation d&apos;achat (pensez &agrave; v&eacute;rifier votre dossier de courrier indésirable).<br />';
-	    $buffer .= 'Retourner &agrave; la <a href="'.get_permalink($_GET['campaign_id']).'">page projet</a>.<br /><br />';
+	    $buffer .= 'Vous allez recevoir un mail de confirmation d&apos;achat (pensez &agrave; v&eacute;rifier votre dossier de courrier indésirable).<br /><br/>';
+	    //$buffer .= 'Retourner &agrave; la <a href="'.get_permalink($_GET['campaign_id']).'">page projet</a>.<br /><br />';
+	    $buffer .='<strong>Il ne vous reste plus qu\'à signer</strong>  '.'<form><input type="submit" name="signer" action="signer"  value="Cliquez pour signer" /></form>'.'</br>'; 
 	    //Liens pour partager
 	    $buffer .= '<iframe src="http://www.facebook.com/plugins/like.php?href='.urlencode(get_permalink($_GET['campaign_id'])).'&amp;layout=button_count&amp;show_faces=true&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=30" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80px; height:20px; text-align: center" allowTransparency="true"></iframe>';
 	    $buffer .= '<a href="http://www.facebook.com/sharer.php?u='.urlencode(get_permalink($_GET['campaign_id'])).'" target="_blank">'. __('Partager sur Facebook', 'yproject') . '</a>';
@@ -554,4 +556,15 @@ function ypcf_terms_agreement() {
 <?php
 	}
 }
+
+// Fonction de signature du contrat
+ function ypcf_contract_sign() {
+ 	 if (isset( $_POST['action'])=='signer') {
+         // appel signsquid
+
+        header('Authorization: Basic MT9M49EHieWFAnaL7gcqBLKmTuNOz2HT');
+       $test = getNewPdfToSign($post_camp->ID); //DEBUG
+
+    }
+ }
 ?>
