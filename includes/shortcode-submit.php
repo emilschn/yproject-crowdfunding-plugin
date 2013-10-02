@@ -94,10 +94,11 @@ function ypcf_shortcode_submit_field_category($atts, $content = '') {
 	'type' => 'general'
     ), $atts );
     
-    $parent_cat_id = get_category_by_path($atts['download']);
-    return wp_dropdown_categories( array(  
+    $parent_cat_id = get_category_by_path($atts['type']);
+    return wp_dropdown_categories( array( 
+	    'orderby'	    => 'name', 
 	    'hide_empty'    => 0,
-	    'taxonomy'	    => 'download_category',
+	    'taxonomy'	    => 'category',
 	    'selected'	    => 0,
 	    'echo'	    => 0,
 	    'child_of'	    => $parent_cat_id->cat_ID,
@@ -105,31 +106,6 @@ function ypcf_shortcode_submit_field_category($atts, $content = '') {
     ) );
 }
 add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_field_category');
-
-function ypcf_shortcode_submit_field_activity($atts, $content = '') {
-    return '<select id="activity" name="activity">
-      <option>Administration publique</option>
-      <option>Agriculture et agroalimentaire</option>
-      <option>Art, design, audiovisuel, culture</option>
-      <option>Bâtiment et travaux publics</option>
-      <option>Commerce, artisanat, distribution</option>
-      <option>Energie</option>
-      <option>Enseignement et formation</option>
-      <option>Fabrication et transformation de biens</option>
-      <option>Finance et assurance</option>
-      <option>Gestion de l\'eau, des déchets et dépollution</option>
-      <option>Hébergement et restauration</option>
-      <option>Médias</option>
-      <option>Recherche et cabinets d\'étude</option>
-      <option>Services à la personnes, santé, action sociale</option>
-      <option>Services et activités de conseil</option>
-      <option>Sport, loisirs, tourisme, activités récréatives</option>
-      <option>Télécoms, informatique et Internet</option>
-      <option>Transports et logistique</option>
-      <option>Autre</option>
-    </select>';
-}
-add_shortcode('yproject_crowdfunding_field_activity', 'ypcf_shortcode_submit_field_activity');
 
 function ypcf_shortcode_submit_field_file($atts, $content = '') {
     $atts = shortcode_atts( array(
@@ -632,7 +608,7 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
 	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
-	    add_post_meta( $campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
+	    add_post_meta($campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_location', sanitize_text_field( $location ) );
 	    add_post_meta( $campaign, 'campaign_author', sanitize_text_field( $author ) );
 	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
