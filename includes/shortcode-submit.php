@@ -1,397 +1,1141 @@
 <?php
-
 /**
  * Submit Shortcode.
  *
  * [appthemer_crowdfunding_submit] creates a submission form.
  *
- * @since Appthemer CrowdFunding 0.1-alpha
+ * @since Astoundify Crowdfunding 0.1-alpha
  */
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+/**
+ * Submission Process.
+ *
+ * If we are on the submission page, start things up. Register fieflds,
+ * set up validation methods, etc.
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @return mixed none|object
+ */
+function atcf_submit_campaign() {
+	return ATCF_Submit_Campaign::instance();
+}
+add_action( 'init', 'atcf_submit_campaign' );
 
+/**
+ * Submission fields.
+ *
+ * A helper function for getting the registered fields. This should be called
+ * instead of the private method, so the filter is run all the time.
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @return array $fields
+ */
+function atcf_shortcode_submit_fields() {
+	$submit_campaign = atcf_submit_campaign();
 
-/*********************************************************************************************/
-/* FORM GENERATED WITH SHORTCODES */
-/*********************************************************************************************/
-/*********************************************************************************************/
+	$fields = $submit_campaign->register_fields();
+
+	return $fields;
+}
+
+/**
+ * Submit a campaign.
+ *
+ * Handles creating the shortcode, registering fields, adding hooks for fields,
+ * saving data, populating data, etc.
+ *
+ * The majority of the HTML output, etc is outside of this class. This serves mainly
+ * as a container for the behind the scenes stuff.
+ *
+ * @since Astoundify Crowdfunding 1.7
+ */
+class ATCF_Submit_Campaign {
+
+	/**
+	 * @var $instance
+	 */
+	private static $instance;
+
+	/**
+	 * Don't create more than once instance of the class.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @return self
+	 */
+	public static function instance() {
+		if ( ! isset ( self::$instance ) ) {
+			self::$instance = new self;
+		}
+
+		return self::$instance;
+	}
+
+	/**
+	 * Actions and Filters
+	 *
+	 * Shortcodes, field callbacks, saving, etc.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @return void
+	 */
+	private function __construct() {
+		$this->register_fields();
+
+		/** Register the Shortcode */
+		add_shortcode( 'appthemer_crowdfunding_submit', 'atcf_shortcode_submit' );
+
+		/** Print errors above the shortcode */
+		add_action( 'atcf_shortcode_submit_before', 'edd_print_errors' );
+
+		/** Output Fields */
+		add_filter( 'atcf_shortcode_submit_field', array( $this, 'get_field_value' ), 10, 4 );
+
+		add_action( 'atcf_shortcode_submit_field_heading', 'atcf_shortcode_submit_heading', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_hidden', 'atcf_shortcode_submit_field_hidden', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_text', 'atcf_shortcode_submit_field_text', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_textarea', 'atcf_shortcode_submit_field_textarea', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_select', 'atcf_shortcode_submit_field_select', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_number', 'atcf_shortcode_submit_field_number', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_checkbox', 'atcf_shortcode_submit_field_checkbox', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_radio', 'atcf_shortcode_submit_field_radio', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_term_checklist', 'atcf_shortcode_submit_field_term_checklist', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_wp_editor', 'atcf_shortcode_submit_field_wp_editor', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_featured_image', 'atcf_shortcode_submit_field_featured_image', 10, 4 );
+		add_action( 'atcf_shortcode_submit_field_rewards', 'atcf_shortcode_submit_field_rewards', 10, 4 );
+
+		/** Save Fields */
+		add_action( 'atcf_submit_process_after', 'atcf_submit_process_after', 10, 4 );
+	}
+
+	/**
+	 * Register submission form fields.
+	 *
+	 * There are some reusable field types to be chosen from, and some unique ones
+	 * that are only meant to be used once. Some reusable ones are:
+	 *
+	 * - heading
+	 * - text
+	 * - textarea
+	 * - number
+	 * - radio
+	 * - select
+	 * - checkbox
+	 * - term_checklist
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @see atcf_shortcode_sumbmit_fields()
+	 *
+	 * @return array $fields;
+	 */
+	public function register_fields() {
+		global $edd_options;
+
+		$min = isset ( $edd_options[ 'atcf_campaign_length_min' ] ) ? $edd_options[ 'atcf_campaign_length_min' ] : 14;
+		$max = isset ( $edd_options[ 'atcf_campaign_length_max' ] ) ? $edd_options[ 'atcf_campaign_length_max' ] : 48;
+
+		$fields = array(
+			'campaign_heading' => array(
+				'label'       => __( 'Campaign Information', 'atcf' ),
+				'type'        => 'heading',
+				'default'     => null,
+				'editable'    => true,
+				'priority'    => 2
+			),
+			'title' => array(
+				'label'       => __( 'Title', 'atcf' ),
+				'default'     => null,
+				'type'        => 'text',
+				'editable'    => false,
+				'placeholder' => null,
+				'required'    => true,
+				'priority'    => 4
+			),
+			'goal' => array(
+				'label'       => sprintf( __( 'Goal (%s)', 'atcf' ), edd_currency_filter( '' ) ),
+				'default'     => null,
+				'type'        => 'text',
+				'editable'    => false,
+				'placeholder' => edd_format_amount( 800 ),
+				'required'    => true,
+				'priority'    => 6
+			),
+			'length' => array(
+				'label'       => __( 'Length', 'atcf' ),
+				'default'     => ( $min + $max ) / 2,
+				'type'        => 'number',
+				'editable'    => false,
+				'placeholder' => null,
+				'min'         => $min,
+				'max'         => $max,
+				'step'        => 1,
+				'priority'    => 8
+			),
+			'type' => array(
+				'label'       => __( 'Funding Type', 'atcf' ),
+				'default'     => atcf_campaign_type_default(),
+				'type'        => 'radio',
+				'options'     => atcf_campaign_types_active(),
+				'editable'    => false,
+				'placeholder' => null,
+				'required'    => true,
+				'priority'    => 10
+			),
+			'category' => array(
+				'label'       => __( 'Categories', 'atcf' ),
+				'default'     => null,
+				'type'        => 'term_checklist',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 12
+			),
+			'tag' => array(
+				'label'       => __( 'Tags', 'atcf' ),
+				'default'     => null,
+				'type'        => 'term_checklist',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 14
+			),
+			'description' => array(
+				'label'       => __( 'Description', 'atcf' ),
+				'default'     => null,
+				'type'        => 'wp_editor',
+				'editable'    => true,
+				'placeholder' => null,
+				'required'    => true,
+				'priority'    => 16
+			),
+			'updates' => array(
+				'label'       => __( 'Updates', 'atcf' ),
+				'default'     => null,
+				'type'        => 'wp_editor',
+				'editable'    => 'only',
+				'placeholder' => null,
+				'priority'    => 18
+			),
+			'excerpt' => array(
+				'label'       => __( 'Excerpt', 'atcf' ),
+				'default'     => null,
+				'type'        => 'textarea',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 20
+			),
+			'image' => array(
+				'label'       => __( 'Featured Image', 'atcf' ),
+				'default'     => null,
+				'type'        => 'featured_image',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 22
+			),
+			'video' => array(
+				'label'       => __( 'Featured Video URL', 'atcf' ),
+				'default'     => null,
+				'type'        => 'text',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 24
+			),
+			'backer_rewards_heading' => array(
+				'label'       => __( 'Backer Rewards', 'atcf' ),
+				'type'        => 'heading',
+				'default'     => null,
+				'editable'    => true,
+				'priority'    => 26
+			),
+			'physical' => array(
+				'label'       => __( 'Collect shipping information on checkout.', 'atcf' ),
+				'default'     => null,
+				'type'        => 'checkbox',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 28
+			),
+			'norewards' => array(
+				'label'       => __( 'No rewards, donations only.', 'atcf' ),
+				'default'     => null,
+				'type'        => 'checkbox',
+				'editable'    => false,
+				'placeholder' => null,
+				'priority'    => 30
+			),
+			'rewards' => array(
+				'label'       => null,
+				'type'        => 'rewards',
+				'required'    => false,
+				'default'     => null,
+				'editable'    => true,
+				'priority'    => 32
+			),
+			'info_heading' => array(
+				'label'       => __( 'Your Information', 'atcf' ),
+				'type'        => 'heading',
+				'default'     => null,
+				'editable'    => true,
+				'priority'    => 34
+			),
+			'contact_email' => array(
+				'label'       => __( 'Contact Email', 'atcf' ),
+				'default'     => null,
+				'type'        => 'text',
+				'editable'    => true,
+				'placeholder' => null,
+				'required'    => true,
+				'priority'    => 36
+			),
+			'organization' => array(
+				'label'       => __( 'Name/Organization', 'atcf' ),
+				'default'     => null,
+				'type'        => 'text',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 38
+			),
+			'location' => array(
+				'label'       => __( 'Location', 'atcf' ),
+				'default'     => null,
+				'type'        => 'text',
+				'editable'    => true,
+				'placeholder' => null,
+				'priority'    => 40
+			)
+		);
+
+		$fields = apply_filters( 'atcf_shortcode_submit_fields', $fields );
+
+		uasort( $fields, __CLASS__ . '::sort_by_priority' );
+
+		return $fields;
+	}
+
+	private static function sort_by_priority( $a, $b ) {
+		if ( $a[ 'priority' ] == $b[ 'priority' ] )
+	        return 0;
+
+	    return ( $a[ 'priority' ] < $b[ 'priority' ] ) ? -1 : 1;
+	}
+
+	/**
+	 * Determine the value of a field/input.
+	 *
+	 * If we are previewing/editing, then get the saved value. If we are on a
+	 * new submission, get a previously posted value, or the default.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return $field The array of modified form arguments.
+	 */
+	public function get_field_value( $key, $field, $atts, $campaign ) {
+		if ( $atts[ 'previewing' ] || $atts[ 'editing' ] )
+			$field[ 'value' ] = $this->saved_data( $key, $campaign );
+		else
+			$field[ 'value' ] = isset ( $_POST[ $key ] ) ? $_POST[ $key ] : $field[ 'default' ];
+
+		return $field;
+	}
+
+	/**
+	 * Retrieve saved campaign data to populate fields.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $atts The shortcoe attribtues.
+	 * @return $data The correct form value for the field.
+	 */
+	private function saved_data( $key, $campaign ) {
+		switch ( $key ) {
+			case 'title' : 
+				$data = $campaign->data->post_title;
+			break;
+
+			case 'length' :
+				$data = $campaign->days_remaining();
+			break;
+
+			case 'description' :
+				$data = wp_richedit_pre( $campaign->data->post_content );
+			break;
+
+			case 'excerpt' :
+				$data = apply_filters( 'get_the_excerpt', $campaign->data->post_excerpt );
+			break;
+
+			case 'updates' :
+				$data = wp_richedit_pre( $campaign->updates() );
+			break;
+
+			case 'norewards' :
+				$data = $campaign->is_donations_only();
+			break;
+
+			case 'rewards' :
+				$data = edd_get_variable_prices( $campaign->ID );
+			break;
+
+			case 'physical' :
+				$data = $campaign->needs_shipping();
+			break;
+
+			case 'goal' :
+				$data = edd_format_amount( $campaign->goal(false) );
+			break;
+
+			case 'tos' :
+				$data = 1;
+			break;
+			
+			default :
+				$data = apply_filters( 'atcf_shortcode_submit_saved_data_' . $key, null, $key, $campaign );
+			break;
+		}
+
+		if ( ! $data && method_exists( $campaign, $key ) )
+			$data = $campaign->$key();
+
+		return $data;
+	}
+
+	/**
+	 * Save tags.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_tag( $key, $field, $campaign, $fields ) {
+		$_tags = array();
+
+		if ( isset ( $_POST[ 'tax_input' ][ 'download_tag' ] ) ) {
+			foreach ( $_POST[ 'tax_input' ][ 'download_tag' ] as $key => $term ) { 
+				$obj = get_term_by( 'id', $term, 'download_tag' );
+				$_tags[] = $obj->name;
+			}
+
+			wp_set_post_terms( $campaign, $_tags, 'download_tag' );
+		}
+	}
+
+	/**
+	 * Save categories.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_category( $key, $field, $campaign, $fields ) {
+		if ( ! isset ( $_POST[ 'tax_input' ][ 'download_category' ] ) )
+			return;
+
+		wp_set_post_terms( $campaign, $_POST[ 'tax_input' ][ 'download_category' ], 'download_category' );
+	}
+
+	/**
+	 * Save length.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_length( $key, $field, $campaign, $fields ) {
+		global $edd_options;
+
+		if ( '' != $field[ 'value' ] ) {
+			$length = absint( $field[ 'value' ] );
+
+			$min = isset ( $edd_options[ 'atcf_campaign_length_min' ] ) ? $edd_options[ 'atcf_campaign_length_min' ] : 14;
+			$max = isset ( $edd_options[ 'atcf_campaign_length_max' ] ) ? $edd_options[ 'atcf_campaign_length_max' ] : 42;
+
+			if ( $length < $min )
+				$length = $min;
+			else if ( $length > $max )
+				$length = $max;
+
+			$end_date = strtotime( sprintf( '+%d day', $length ), current_time( 'timestamp' ) );
+			$end_date = date( 'Y-m-d H:i:s', $end_date );
+		} else {
+			$end_date = null;
+		}
+
+		if ( $end_date ) {
+			update_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
+			update_post_meta( $campaign, 'campaign_length', $field[ 'value' ] );
+		} else {
+			update_post_meta( $campaign, 'campaign_endless', 1 );
+		}
+	}
+
+	/**
+	 * Save rewards.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_rewards( $key, $field, $campaign, $fields ) {
+		$prices = array();
+
+		if ( ! isset( $_POST[ 'norewards' ] ) && ! isset( $_POST[ 'rewards' ] ) )
+			return;
+
+		if ( $fields[ 'norewards' ][ 'value' ] ) {
+			$prices[0] = array(
+				'name'   => apply_filters( 'atcf_default_no_rewards_name', __( 'Donation', 'atcf' ) ),
+				'amount' => apply_filters( 'atcf_default_no_rewards_price', 0 ),
+				'limit'  => null,
+				'bought' => 0
+			);
+
+			update_post_meta( $campaign, 'campaign_norewards', 1 );
+		} else {
+			foreach ( $field[ 'value' ] as $key => $reward ) {
+				if ( '' == $reward[ 'amount' ] )
+					continue;
+
+				$prices[] = array(
+					'name'   => sanitize_text_field( $reward[ 'name' ] ),
+					'amount' => edd_sanitize_amount( $reward[ 'amount' ] ),
+					'limit'  => sanitize_text_field( $reward[ 'limit' ] ),
+					'bought' => isset ( $reward[ 'bought' ] ) ? sanitize_text_field( $reward[ 'bought' ] ) : 0
+				);
+			}
+		}
+
+		update_post_meta( $campaign, 'edd_variable_prices', $prices );
+	}
+
+	/**
+	 * Save featured image.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_image( $key, $field, $campaign, $fields ) {
+		if ( ! function_exists( 'wp_handle_upload' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/admin.php' );
+		}
+
+		$upload_overrides = array( 'test_form' => false );
+
+		if ( '' != $_FILES[ $key ][ 'name' ] ) {
+			$upload = wp_handle_upload( $_FILES[ $key ], $upload_overrides );
+			$attachment = array(
+				'guid'           => $upload[ 'url' ], 
+				'post_mime_type' => $upload[ 'type' ],
+				'post_title'     => $upload[ 'file' ],
+				'post_content'   => '',
+				'post_status'    => 'inherit',
+				'post_parent'    => $campaign
+			);
+
+			$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign );		
+			
+			wp_update_attachment_metadata( 
+				$attach_id, 
+				wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
+			);
+
+			update_post_meta( $campaign, '_thumbnail_id', absint( $attach_id ) );
+		}
+	}
+
+	/**
+	 * Save goal.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_goal( $key, $field, $campaign, $fields ) {
+		if ( '' == $field[ 'value' ] )
+			return;
+
+		$goal = edd_sanitize_amount( $field[ 'value' ] );
+
+		if ( ! is_numeric( $goal ) )
+			$goal = 0;
+
+		update_post_meta( $campaign, 'campaign_' . $key, $goal );
+	}
+
+	/**
+	 * Save shipping.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_physical( $key, $field, $campaign, $fields ) {
+		update_post_meta( $campaign, '_campaign_' . $key, sanitize_text_field( $field[ 'value' ] ) );
+	}
+
+	/**
+	 * Save Name
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_organization( $key, $field, $campaign, $fields ) {
+		update_post_meta( $campaign, 'campaign_author', sanitize_text_field( $field[ 'value' ] ) );
+	}
+
+	/**
+	 * Save a generic field.
+	 *
+	 * @since Astoundify Crowdfunding 1.7
+	 *
+	 * @param $key The key of the current field.
+	 * @param $field The array of field arguments.
+	 * @param $atts The shortcoe attribtues.
+	 * @param $campaign The current campaign (if editing/previewing).
+	 * @return void
+	 */
+	public function save_field( $key, $field, $campaign, $fields ) {
+		if ( isset ( $_POST[ $key ] ) && '' == $_POST[ $key ] )
+			return;
+
+		do_action( 'atcf_shortcode_submit_save_field_' . $key, $key, $field, $campaign, $fields );
+
+		if ( ! did_action( 'atcf_shortcode_submit_save_field_' . $key ) )
+			update_post_meta( $campaign, 'campaign_' . $key, sanitize_text_field( $field[ 'value' ] ) );
+	}
+}
+
 /**
  * Base page/form. All fields are loaded through an action,
  * so the form can be extended for ever, fields can be removed, added, etc.
  *
- * @since CrowdFunding 0.1-alpha
+ * @since Astoundify Crowdfunding 0.1-alpha
  *
+ * @param $atts
  * @return $form
  */
-function ypcf_shortcode_submit_start( $is_editing = false ) {
-    global $edd_options, $current_campaign, $editing;
+function atcf_shortcode_submit( $atts ) {
+	global $edd_options;
 
-    if (is_user_logged_in()) {
-	$crowdfunding = crowdfunding();
-	$current_campaign = null;
-	$editing = $is_editing;
+	$atts = shortcode_atts( array(
+		'editing'    => false,
+		'previewing' => false
+	), $atts );
 
-	if ( $editing ) {
+	$crowdfunding    = crowdfunding();
+	$campaign        = null;
+
+	ob_start();
+
+	/** Allow things to change the content of the shortcode. */
+	if ( apply_filters( 'atcf_shortcode_submit_hide', false, $atts ) ) {
+		do_action( 'atcf_shortcode_submit_hidden', $atts );
+
+		$form = ob_get_clean();
+
+		return $form;
+	}
+
+	if ( $atts[ 'editing' ] || $atts[ 'previewing' ] ) {
 		global $post;
-		$current_campaign = atcf_get_campaign( $post );
-	} else {
-		wp_enqueue_script( 'jquery-validation', EDD_PLUGIN_URL . 'assets/js/jquery.validate.min.js');
-		wp_enqueue_script( 'atcf-scripts', $crowdfunding->plugin_url . '/assets/js/crowdfunding.js', array( 'jquery', 'jquery-validation' ) );
-
-		wp_localize_script( 'atcf-scripts', 'CrowdFundingL10n', array(
-			'oneReward' => __( 'At least one reward is required.', 'atcf' )
-		) );
+		
+		$campaign = atcf_get_campaign( $post );
 	}
+?>
+	<?php do_action( 'atcf_shortcode_submit_before', $atts, $campaign ); ?>
 
-	do_action( 'atcf_shortcode_submit_before', $editing, $current_campaign );
-	return '<form action="" method="post" class="atcf-submit-campaign" enctype="multipart/form-data">';
-    } else {
-	$page_connexion = get_page_by_path('connexion');
-	return 'Attention : <a href="'.get_permalink($page_connexion->ID).'">Vous devez &ecirc;tre connect&eacute; pour proposer un projet</a>';
-    }
+	<form action="" method="post" class="atcf-submit-campaign" enctype="multipart/form-data">
+		
+		<?php
+			foreach ( atcf_shortcode_submit_fields() as $key => $field ) :
+				/** If we _aren't_ editing, and the field should only be shown on edit, skip... */
+				if ( ! $atts[ 'editing' ] && 'only' === $field[ 'editable' ] )
+					continue;
 
-}
-add_shortcode( 'yproject_crowdfunding_submit_start', 'ypcf_shortcode_submit_start' );
+				/** If we _are_ editing, and the field is not editable, skip... */
+				if ( $atts[ 'editing' ] && $field[ 'editable' ] === false )
+					continue;
 
+				$field = apply_filters( 'atcf_shortcode_submit_field', $key, $field, $atts, $campaign );
+				$field = apply_filters( 'atcf_shortcode_submit_field_before_render_' . $key, $field );
 
-function ypcf_shortcode_submit_end() {
-    global $edd_options, $current_campaign, $editing;
+				do_action( 'atcf_shortcode_submit_field_before_' . $key, $key, $field, $atts, $campaign );
+				do_action( 'atcf_shortcode_submit_field_' . $field[ 'type' ], $key, $field, $atts, $campaign );
+				do_action( 'atcf_shortcode_submit_field_after_' . $key, $key, $field, $atts, $campaign );
+			endforeach;
+		?>
 
-    if (is_user_logged_in()) {
-	$crowdfunding = crowdfunding();
+		<p class="atcf-submit-campaign-submit">
+			<button type="submit" name="submit" value="submit" class="button">
+				<?php echo $atts[ 'editing' ] && ! $atts[ 'previewing' ] ? sprintf( _x( 'Update %s', 'edit "campaign"', 'atcf' ), edd_get_label_singular() ) : sprintf( _x( 'Submit %s', 'submit "campaign"', 'atcf' ), edd_get_label_singular() ); ?>
+			</button>
 
-	return '	<p class="atcf-submit-campaign-submit">
-			<input type="submit" value="'. ($editing ? sprintf( _x( 'Update %s', 'edit "campaign"', 'atcf' ), edd_get_label_singular() ) : sprintf( _x( 'Submit %s', 'submit "campaign"', 'atcf' ), edd_get_label_singular() )) .'">
-			<input type="hidden" name="action" value="atcf-campaign-'. ($editing ? 'edit' : 'submit') .'" />
-			'.wp_nonce_field( 'atcf-campaign-' . ( $editing ? 'edit' : 'submit' ), '_wpnonce', true, false ).'
+			<?php if ( is_user_logged_in() && ! $atts[ 'editing' ] ) : ?>
+			<button type="submit" name="submit" value="preview" class="button button-secondary">
+				<?php _e( 'Save and Preview', 'atcf' ); ?>
+			</button>
+			<?php endif; ?>
+
+			<input type="hidden" name="action" value="atcf-campaign-submit" />
+			<?php wp_nonce_field( 'atcf-campaign-submit' ); ?>
+
+			<?php if ( $atts[ 'previewing' ] || $atts[ 'editing' ] ) : ?>
+				<input type="hidden" name="campaign_id" value="<?php echo $campaign->ID; ?>" />
+			<?php endif; ?>
 		</p>
+	</form>
 
-	</form>';
-    } else {
-	$page_connexion = get_page_by_path('connexion');
-	return 'Attention : <a href="'.get_permalink($page_connexion->ID).'">Vous devez &ecirc;tre connect&eacute; pour proposer un projet</a>';
-    }    
+	<?php do_action( 'atcf_shortcode_submit_after', $atts, $campaign ); ?>
+
+<?php
+	$form = ob_get_clean();
+
+	return $form;
 }
-add_shortcode( 'yproject_crowdfunding_submit_end', 'ypcf_shortcode_submit_end' );
-
-
-function ypcf_shortcode_submit_field($atts, $content = '') {
-    global $editing;
-    $atts = shortcode_atts( array(
-	'name' => 'title',
-	'rows' => 5,
-	'cols' => 50
-    ), $atts );
-    return '<textarea name="'.$atts['name'].'" id="'.$atts['name'].'" rows="'.$atts['rows'].'" cols="'.$atts['cols'].'" placeholder="'. ($editing ? apply_filters( 'get_summary', $campaign->data->post_summary ) : $content) .'"></textarea>';
-}
-add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
-
-function ypcf_shortcode_submit_field_category($atts, $content = '') {
-    global $editing, $current_campaign;
-    $atts = shortcode_atts( array(
-	'type' => 'general'
-    ), $atts );
-    
-    $parent_cat_id = get_category_by_path($atts['type']);
-    return wp_dropdown_categories( array( 
-	    'orderby'	    => 'name', 
-	    'hide_empty'    => 0,
-	    'taxonomy'	    => 'category',
-	    'selected'	    => 0,
-	    'echo'	    => 0,
-	    'child_of'	    => $parent_cat_id->cat_ID,
-	    'name'	    => $atts['type']
-    ) );
-}
-add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_field_category');
-
-function ypcf_shortcode_submit_field_file($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'name' => 'image'
-    ), $atts );
-    return '<input type="file" name="'.$atts['name'].'" id="'.$atts['name'].'" />';
-}
-add_shortcode('yproject_crowdfunding_field_file', 'ypcf_shortcode_submit_field_file');
-
-function ypcf_shortcode_submit_field_complex($atts, $content = '') {
-    global $editing, $current_campaign;
-    $atts = shortcode_atts( array(
-	'name' => 'description',
-	'width' => '350px',
-	'height' => '150px'
-    ), $atts );
-    
-    ob_start();
-    $text_to_edit = '';
-    if ($editing) {
-	switch ($atts['name']) {
-	    case 'description':
-		$text_to_edit = $current_campaign->data->post_content;
-		break;
-	    case 'added_value': 		
-		$text_to_edit = $current_campaign->added_value(); 		
-		break; 		
-	    case 'societal_challenge': 		
-		$text_to_edit = $current_campaign->societal_challenge(); 		
-		break; 		
-	    case 'economic_model': 		
-		$text_to_edit = $current_campaign->economic_model(); 		
-		break; 		
-	    case 'implementation': 		
-		$text_to_edit = $current_campaign->implementation(); 		
-		break;
-	}
-    }
-    wp_editor( 
-	    $editing ? wp_richedit_pre($text_to_edit) : wp_richedit_pre($content), 
-	    $atts['name'], 
-	    apply_filters(  
-		'atcf_submit_field_'.$atts['name'].'_editor_args', 
-		array( 
-		    'media_buttons' => true,
-		    'teeny'         => true,
-		    'quicktags'     => false,
-		    'editor_css'    => '<style>body { background: white; } .wp-editor-container {width:'.$atts['width'].'; height:'.$atts['height'].';} .wp-editor-area {width:'.$atts['width'].'; height:'.$atts['height'].';} .media-frame-menu{display: none;} .media-frame-router{display: none;}</style>',
-		    'tinymce'       => array(
-			    'theme_advanced_path'     => false,
-			    'theme_advanced_buttons1' => 'bold,italic,forecolor,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-			    'plugins'                 => 'paste',
-			    'paste_remove_styles'     => true,
-			    'theme_advanced_resizing_use_cookie' => false
-		    )
-
-		) 
-	    ) 
-    );
-    return ob_get_clean();
-}
-add_shortcode('yproject_crowdfunding_field_complex', 'ypcf_shortcode_submit_field_complex');
-
-function ypcf_shortcode_submit_field_location($atts, $content = '') {
-    return '<select id="location" name="location">
-	<option>01 Ain</option>
-      <option>02 Aisne</option>
-      <option>03 Allier</option>
-      <option>04 Alpes-de-Haute-Provence</option>
-      <option>05 Hautes-Alpes</option>
-      <option>06 Alpes-Maritimes</option>
-      <option>07 Ard&egraveche</option>
-      <option>08 Ardennes</option>
-      <option>09 Ari&egravege</option>
-      <option>10 Aube</option>
-      <option>11 Aude</option>
-      <option>12 Aveyron</option>
-      <option>13 Bouches-du-Rh&ocircne</option>
-      <option>14 Calvados</option>
-      <option>15 Cantal</option>
-      <option>16 Charente</option>
-      <option>17 Charente-Maritime</option>
-      <option>18 Cher</option>
-      <option>19 Corr&egraveze</option>
-      <option>2A Corse-du-Sud</option>
-      <option>2B Haute-Corse</option>
-      <option>21 C&ocircte-d\'Or</option>
-      <option>22 C&ocirctes d\'Armor</option>
-      <option>23 Creuse</option>
-      <option>24 Dordogne</option>
-      <option>25 Doubs</option>
-      <option>26 Dr&ocircme</option>
-      <option>27 Eure</option>
-      <option>28 Eure-et-Loir</option>
-      <option>29 Finist&egravere</option>
-      <option>30 Gard</option>
-      <option>31 Haute-Garonne</option>
-      <option>32 Gers</option>
-      <option>33 Gironde</option>
-      <option>34 H&eacuterault</option>
-      <option>35 Ille-et-Vilaine</option>
-      <option>36 Indre</option>
-      <option>37 Indre-et-Loire</option>
-      <option>38 Is&egravere</option>
-      <option>39 Jura</option>
-      <option>40 Landes</option>
-      <option>41 Loir-et-Cher</option>
-      <option>42 Loire</option>
-      <option>43 Haute-Loire</option>
-      <option>44 Loire-Atlantique</option>
-      <option>45 Loiret</option>
-      <option>46 Lot</option>
-      <option>47 Lot-et-Garonne</option>
-      <option>48 Loz&egravere</option>
-      <option>49 Maine-et-Loire</option>
-      <option>50 Manche</option>
-      <option>51 Marne</option>
-      <option>52 Haute-Marne</option>
-      <option>53 Mayenne</option>
-      <option>54 Meurthe-et-Moselle</option>
-      <option>55 Meuse</option>
-      <option>56 Morbihan</option>
-      <option>57 Moselle</option>
-      <option>58 Ni&egravevre</option>
-      <option>59 Nord</option>
-      <option>60 Oise</option>
-      <option>61 Orne</option>
-      <option>62 Pas-de-Calais</option>
-      <option>63 Puy-de-D&ocircme</option>
-      <option>64 Pyr&eacuten&eacutees-Atlantiques</option>
-      <option>65 Hautes-Pyr&eacuten&eacutees</option>
-      <option>66 Pyr&eacuten&eacutees-Orientales</option>
-      <option>67 Bas-Rhin</option>
-      <option>68 Haut-Rhin</option>
-      <option>69 Rh&ocircne</option>
-      <option>70 Haute-Sa&ocircne</option>
-      <option>71 Sa&ocircne-et-Loire</option>
-      <option>72 Sarthe</option>
-      <option>73 Savoie</option>
-      <option>74 Haute-Savoie</option>
-      <option>75 Paris</option>
-      <option>76 Seine-Maritime</option>
-      <option>77 Seine-et-Marne</option>
-      <option>78 Yvelines</option>
-      <option>79 Deux-S&egravevres</option>
-      <option>80 Somme</option>
-      <option>81 Tarn</option>
-      <option>82 Tarn-et-Garonne</option>
-      <option>83 Var</option>
-      <option>84 Vaucluse</option>
-      <option>85 Vend&eacutee</option>
-      <option>86 Vienne</option>
-      <option>87 Haute-Vienne</option>
-      <option>88 Vosges</option>
-      <option>89 Yonne</option>
-      <option>90 Territoire de Belfort</option>
-      <option>91 Essonne</option>
-      <option>92 Hauts-de-Seine</option>
-      <option>93 Seine-Saint-Denis</option>
-      <option>94 Val-de-Marne</option>
-      <option>95 Val-d\'Oise</option>
-      <option>971 Guadeloupe</option>
-      <option>972 Martinique</option>
-      <option>973 Guyane</option>
-      <option>974 La Réunion</option>
-      <option>976 Mayotte</option>
-    </select>';
-}
-add_shortcode('yproject_crowdfunding_field_location', 'ypcf_shortcode_submit_field_location');
-
-function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'option1' => 'Financement d&apos;un projet',
-	'option2' => 'Financement du d&eacute;veloppement (fonds propres)',
-	'option2duration' => 'Dur&eacute;e du financement (en ann&eacute;es) : '
-    ), $atts );
-    return  '<input type="radio" name="fundingtype" class="radiofundingtype" id="fundingproject" value="fundingproject" checked="checked">' . $atts['option1'] . '<br />
-	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment">' . $atts['option2'] . '
-		<span id="fundingdevelopment_param" style="display: none">- ' . $atts['option2duration'] . '<input type="text" name="fundingduration"></span>';
-}
-add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
-
-function ypcf_shortcode_submit_field_goal($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'option1' => 'Somme fixe',
-	'option2' => 'Fourchette',
-	'multiplier_tax' => '1.196',
-	'option1_search' => 'Montant recherch&eacute;',
-	'option1_campaign' => 'Montant de la collecte',
-	'multiplier_campaign' => '1.1',
-	'min_amount_project' => '500',
-	'min_amount_development' => '5000'
-    ), $atts );
-    return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe" checked="checked">' . $atts['option1'] . '
-		<span id="goalsum_fixe_param">- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" size="10"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>) - ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi"></span></span><br />
-	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible">' . $atts['option2'] . '
-		<span id="goalsum_flexible_param" style="display:none">- Minimum : <input type="text" id="minimum_goal" name="minimum_goal" size="10"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
-		- Maximum : <input type="text" id="maximum_goal" name="maximum_goal" size="10"></span>
-	    <input type="hidden" name="length" id="length" value="90">
-	    <input type="hidden" name="vote_length" id="vote_length" value="9">
-	    <input type="hidden" name="monney" id="monney" value="&euro;">
-	    <input type="hidden" name="campaign_multiplier" id="campaign_multiplier" value="' . $atts['multiplier_campaign'] . '">
-	    <input type="hidden" name="min_amount_project" id="min_amount_project" value="' . $atts['min_amount_project'] . '">
-	    <input type="hidden" name="min_amount_development" id="min_amount_development" value="' . $atts['min_amount_development'] . '">
-	    <input type="hidden" name="goal" id="goal">';
-}
-add_shortcode('yproject_crowdfunding_field_goal', 'ypcf_shortcode_submit_field_goal');
-
-function ypcf_shortcode_submit_field_length($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'min' => '15',
-	'max' => '90'
-    ), $atts );
-    return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="length" id="length" value="'.$atts['min'].'">';
-}
-add_shortcode('yproject_crowdfunding_field_length', 'ypcf_shortcode_submit_field_length');
-
-function ypcf_shortcode_submit_field_vote_length($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'min' => '0',
-	'max' => '9'
-    ), $atts );
-    return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="vote_length" id="vote_length" value="'.$atts['min'].'">';
-}
-add_shortcode('yproject_crowdfunding_field_vote_length', 'ypcf_shortcode_submit_field_vote_length');
-
-function ypcf_shortcode_submit_field_status($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'other_text' => 'Pr&eacute;cisez :'
-    ), $atts );
-    $buffer = '<select id="company_status" name="company_status">';
-    $buffer .= '<option>SARL</option>
-	<option>SAS</option>
-	<option>SA</option>
-	<option>SCA</option>
-	<option>Autre</option>';
-    $buffer .= '</select>';
-    $buffer .= '<span id="company_status_other_zone" style="display:none">'.$atts['other_text'].'<input type="text" name="company_status_other"></span>';
-    return $buffer;
-}
-add_shortcode('yproject_crowdfunding_field_status', 'ypcf_shortcode_submit_field_status');
-
-function ypcf_shortcode_submit_field_init_capital($atts, $content = '') {
-    return '<input type="text" name="init_capital" size="10">';
-}
-add_shortcode('yproject_crowdfunding_field_init_capital', 'ypcf_shortcode_submit_field_init_capital');
-
-function ypcf_shortcode_submit_field_confirm($atts, $content = '') {
-    ob_start();
-    edd_agree_to_terms_js();
-    edd_terms_agreement();
-    return ob_get_clean();
-}
-add_shortcode('yproject_crowdfunding_field_confirm', 'ypcf_shortcode_submit_field_confirm');
-
-/*********************************************************************************************/
-/* END FORM GENERATED WITH SHORTCODES */
-/*********************************************************************************************/
-/*********************************************************************************************/
-
-
-
 
 /**
- * Success Message
+ * Terms of Service
  *
- * @since CrowdFunding 0.1-alpha
+ * @since Astoundify Crowdfunding 1.7
  *
+ * @param $fields
+ * @return $fields
+ */
+function atcf_shortcode_submit_field_tos( $fields ) {
+	global $edd_options;
+
+	if ( ! isset ( $edd_options[ 'show_agree_to_terms' ] ) )
+		return $fields;
+
+	$fields[ 'tos' ] = array(
+		'label' => isset( $edd_options[ 'agree_label' ] ) ? $edd_options[ 'agree_label' ] : __( 'Agree to Terms?', 'atcf' ),
+		'default'     => 0,
+		'required'    => true,
+		'type'        => 'checkbox',
+		'editable'    => false,
+		'placeholder' => null,
+		'priority'    => 60
+	);
+
+	return $fields;
+}
+add_filter( 'atcf_shortcode_submit_fields', 'atcf_shortcode_submit_field_tos' );
+
+function atcf_shortcode_submit_field_before_tos( $key, $field, $atts, $campaign ) {
+	global $edd_options;
+?>
+	<div class="atcf-edd-terms-wrap">
+		<div id="edd_terms" style="display:none;">
+			<?php
+				do_action( 'edd_before_terms' );
+				echo wpautop( $edd_options['agree_text'] );
+				do_action( 'edd_after_terms' );
+			?>
+		</div>
+		<div id="edd_show_terms">
+			<a href="#" class="edd_terms_links"><?php _e( 'Show Terms', 'edd' ); ?></a>
+			<a href="#" class="edd_terms_links" style="display:none;"><?php _e( 'Hide Terms', 'edd' ); ?></a>
+		</div>
+<?php
+	edd_agree_to_terms_js();
+}
+add_action( 'atcf_shortcode_submit_field_before_tos', 'atcf_shortcode_submit_field_before_tos', 10, 4 );
+
+function atcf_shortcode_submit_field_after_tos( $key, $field, $atts, $campaign ) {
+	echo '</div>';
+}
+add_action( 'atcf_shortcode_submit_field_after_tos', 'atcf_shortcode_submit_field_after_tos', 10, 4 );
+
+function atcf_shortcode_submit_field_label_length( $label ) {
+	if ( atcf_has_preapproval_gateway() )
+		return $label;
+
+	return $label . '<a href="#" class="atcf-toggle-neverending">' . __( 'No End Date', 'atcf' ) . '</a>';
+}
+add_filter( 'atcf_shortcode_submit_field_label_length', 'atcf_shortcode_submit_field_label_length' );
+
+/**
+ * Heading
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
  * @return void
  */
-function atcf_shortcode_submit_before_success() {
-	if ( ! isset ( $_GET[ 'success' ] ) )
-		return;
-
-	$message = apply_filters( 'atcf_shortcode_submit_success', __( 'Success! Your campaign has been received. It will be reviewed shortly.', 'atcf' ) );
+function atcf_shortcode_submit_heading( $key, $field, $atts, $campaign ) {
 ?>
-	<p class="edd_success"><?php echo esc_attr( $message ); ?></p>	
+	<h3 class="atcf-submit-section <?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $field[ 'label' ] ); ?></h3>
 <?php
 }
-add_action( 'atcf_shortcode_submit_before', 'atcf_shortcode_submit_before_success', 1 );
+
+/**
+ * Hidden Field
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_hidden( $key, $field, $atts, $campaign ) {
+?>
+	<input type="hidden" name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $field[ 'value' ] ); ?>">
+	
+	<?php if ( $field[ 'label' ] ) : ?>
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<?php echo wp_kses_data( $field[ 'label' ] ); ?>
+	</p>
+	<?php endif; ?>
+<?php
+}
+
+/**
+ * Text Field
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_text( $key, $field, $atts, $campaign ) {
+?>
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>"><?php echo apply_filters( 'atcf_shortcode_submit_field_label_' . $key, esc_attr( $field[ 'label' ] ) ); ?></label>
+		<input type="text" name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $field[ 'value' ] ); ?>" placeholder="<?php echo esc_attr( $field[ 'placeholder' ] ); ?>">
+	</p>
+<?php
+}
+
+/**
+ * Textarea
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_textarea( $key, $field, $atts, $campaign ) {
+?>
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $field[ 'label' ] ); ?></label>
+		<textarea name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $field[ 'value' ] ); ?></textarea>
+	</p>
+<?php
+}
+
+/**
+ * Number
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_number( $key, $field, $atts, $campaign ) {
+?>
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>"><?php echo apply_filters( 'atcf_shortcode_submit_field_label_' . $key, esc_attr( $field[ 'label' ] ) ); ?></label>
+		<input type="number" min="<?php echo esc_attr( $field[ 'min' ] ); ?>" max="<?php echo esc_attr( $field[ 'max' ] ); ?>" step="<?php echo esc_attr( $field[ 'step' ] ); ?>" name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $field[ 'value' ] ); ?>" placeholder="<?php echo esc_attr( $field[ 'placeholder' ] ); ?>">
+	</p>
+<?php
+}
+
+/**
+ * Checkbox
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_checkbox( $key, $field, $atts, $campaign ) {
+?>
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>">
+			<input type="checkbox" id="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( $key ); ?>" value="1" <?php checked( 1, $field[ 'value' ] ); ?> /> <?php echo esc_attr( $field[ 'label' ] ); ?>
+		</label>
+	</p>
+<?php
+}
+
+/**
+ * Radio
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_radio( $key, $field, $atts, $campaign ) {
+	if ( count( $field[ 'options' ] ) == 1 ) {
+		echo '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . key( $field[ 'options' ] ) . '" />';
+
+		return;
+	}
+?>
+	<h4><?php echo esc_attr( $field[ 'label' ] ); ?></h4>
+
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<?php foreach ( $field[ 'options' ] as $k => $desc ) : ?>
+		<label for="<?php echo esc_attr( $key ); ?>[<?php echo esc_attr( $k ); ?>]">
+			<input type="radio" name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>[<?php echo esc_attr( $k ); ?>]" value="<?php echo esc_attr( $k ); ?>" <?php checked( $k, $field[ 'value' ] ); ?> /><?php echo $desc; ?>
+		</label><br />
+		<?php endforeach; ?>
+	</p>
+<?php
+}
+
+/**
+ * Select
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_select( $key, $field, $atts, $campaign ) {
+?>
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>"><?php echo apply_filters( 'atcf_shortcode_submit_field_label_' . $key, esc_attr( $field[ 'label' ] ) ); ?></label>
+
+		<select name="<?php echo esc_attr( $key ); ?>">
+		<?php foreach ( $field[ 'options' ] as $k => $desc ) : ?>
+			<option value="<?php echo esc_attr( $k ); ?>" <?php selected( $field[ 'value' ], $k ); ?>><?php echo esc_attr( $desc ); ?></option>
+		<?php endforeach; ?>
+		</select>
+	</p>
+<?php
+}
+
+/**
+ * Term Checklist
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_term_checklist( $key, $field, $atts, $campaign ) {
+	if ( ! atcf_theme_supports( 'campaign-' . $key ) )
+		return;
+
+	if ( ! function_exists( 'wp_terms_checklist' ) ) {
+		require_once( ABSPATH . 'wp-admin/includes/admin.php' );
+	}
+?>
+	<div class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $field[ 'label' ] ); ?></label>
+
+		<ul class="atcf-multi-select">			
+		<?php 
+			wp_terms_checklist( isset ( $campaign->ID ) ? $campaign->ID : 0, array( 
+				'taxonomy'   => 'download_' . $key,
+				'walker'     => new ATCF_Walker_Terms_Checklist
+			) );
+		?>
+	</ul>
+	</div>
+<?php
+}
+
+/**
+ * WP Editor
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_wp_editor( $key, $field, $atts, $campaign ) {
+?>
+	<div class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $field[ 'label' ] ); ?></label>
+		<?php 
+			wp_editor( $field[ 'value' ], esc_attr( $key ), apply_filters( 'atcf_submit_field_' . $key . '_editor_args', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => false,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ) ); 
+		?>
+	</div>
+<?php
+}
+
+/**
+ * Image
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_featured_image( $key, $field, $atts, $campaign ) {
+	if ( ! atcf_theme_supports( 'campaign-featured-image' ) )
+		return;
+?>
+	<p class="atcf-submit-campaign-<?php echo esc_attr( $key ); ?>">
+		<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_attr( $field[ 'label' ] ); ?></label>
+		<input type="file" name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>" />
+
+		<?php if ( $atts[ 'editing' ] || $atts[ 'previewing' ] ) : ?>
+			<br /><?php the_post_thumbnail( array( 50, 50 ) ); ?>
+		<?php endif; ?>
+	</p>
+<?php
+}
+
+/**
+ * Campaign Backer Rewards
+ *
+ * @since Astoundify Crowdfunding 0.1-alpha
+ *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
+ * @return void
+ */
+function atcf_shortcode_submit_field_rewards( $key, $field, $atts, $campaign ) {
+	if ( isset ( $campaign ) && $campaign->is_donations_only() )
+		return;
+
+	$rewards = isset ( $field[ 'value' ] ) ? $field[ 'value' ] : array( 0 => array( 'amount' => null, 'name' => null, 'limit' => null ) );
+?>
+	<?php do_action( 'atcf_shortcode_submit_field_rewards_list_before' ); ?>
+
+	<div class="atcf-submit-campaign-rewards">
+		<?php 
+			foreach ( $rewards as $k => $reward ) : 
+				$disabled = isset ( $reward[ 'bought' ] ) && $reward[ 'bought' ] > 0 ? true : false; 
+		?>
+		<div class="atcf-submit-campaign-reward">
+			<?php do_action( 'atcf_shortcode_submit_field_rewards_before' ); ?>
+
+			<p class="atcf-submit-campaign-reward-amount">
+				<label for="rewards[<?php echo esc_attr( $k ); ?>][amount]"><?php printf( __( 'Amount (%s)', 'atcf' ), edd_currency_filter( '' ) ); ?></label>
+				<input class="name" type="text" name="rewards[<?php echo esc_attr( $k ); ?>][amount]" id="rewards[<?php echo esc_attr( $k ); ?>][amount]" value="<?php echo esc_attr( $reward[ 'amount' ] ); ?>" <?php if ( $disabled ) : ?>readonly="readonly"<?php endif; ?> />
+			</p>
+
+			<p class="atcf-submit-campaign-reward-name">
+				<label for="rewards[<?php echo esc_attr( $k ); ?>][name]"><?php _e( 'Reward', 'atcf' ); ?></label>
+				<input class="name" type="text" name="rewards[<?php echo esc_attr( $k ); ?>][name]" id="rewards[<?php echo esc_attr( $k ); ?>][name]" rows="3" value="<?php echo esc_attr( $reward[ 'name' ] ); ?>" <?php if ( $disabled ) : ?>readonly="readonly"<?php endif; ?> />
+			</p>
+
+			<p class="atcf-submit-campaign-reward-limit">
+				<label for="rewards[<?php echo esc_attr( $k ); ?>][limit]"><?php _e( 'Limit', 'atcf' ); ?></label>
+				<input class="description" type="text" name="rewards[<?php echo esc_attr( $k ); ?>][limit]" id="rewards[<?php echo esc_attr( $k ); ?>][limit]" value="<?php echo isset ( $reward[ 'limit' ] ) ? esc_attr( $reward[ 'limit' ] ) : null; ?>" <?php if ( $disabled ) : ?>readonly="readonly"<?php endif; ?> />
+				<input type="hidden" name="rewards[<?php echo esc_attr( $k ); ?>][bought]" id="rewards[<?php echo esc_attr( $k ); ?>][bought]" value="<?php echo isset ( $reward[ 'bought' ] ) ? esc_attr( $reward[ 'bought' ] ) : null; ?>" />
+			</p>
+
+			<?php do_action( 'atcf_shortcode_submit_field_rewards_after' ); ?>
+
+			<?php if ( ! $disabled ) : ?>
+			<p class="atcf-submit-campaign-reward-remove">
+				<label>&nbsp;</label><br />
+				<a href="#">&times;</a>
+			</p>
+			<?php endif; ?>
+		</div>
+		<?php endforeach; ?>
+
+		<p class="atcf-submit-campaign-add-reward">
+			<a href="#" class="atcf-submit-campaign-add-reward-button"><?php _e( '+ <em>Add Reward</em>', 'atcf' ); ?></a>
+		</p>
+	</div>
+<?php
+}
 
 /**
  * Process shortcode submission.
  *
- * @since Appthemer CrowdFunding 0.1-alpha
+ * @since Astoundify Crowdfunding 0.1-alpha
  *
+ * @param $key The key of the current field.
+ * @param $field The array of field arguments.
+ * @param $atts The shortcoe attribtues.
+ * @param $campaign The current campaign (if editing/previewing).
  * @return void
  */
 function atcf_shortcode_submit_process() {
@@ -400,305 +1144,145 @@ function atcf_shortcode_submit_process() {
 	if ( 'POST' !== strtoupper( $_SERVER['REQUEST_METHOD'] ) )
 		return;
 	
-	if ( empty( $_POST['action' ] ) || ( 'atcf-campaign-submit' !== $_POST[ 'action' ] ) )
+	if ( empty( $_POST[ 'action' ] ) || ( 'atcf-campaign-submit' !== $_POST[ 'action' ] ) )
 		return;
-	
-	if (!is_user_logged_in())
-	    return;
 
 	if ( ! wp_verify_nonce( $_POST[ '_wpnonce' ], 'atcf-campaign-submit' ) )
 		return;
 
-	if ( ! function_exists( 'wp_handle_upload' ) ) {
-		require_once( ABSPATH . 'wp-admin/includes/admin.php' );
+	$action            = esc_attr( $_POST[ 'submit' ] );
+	$existing_campaign = isset ( $_POST[ 'campaign_id' ] ) ? esc_attr( $_POST[ 'campaign_id' ] ) : null;
+	$fields            = atcf_shortcode_submit_fields();
+
+	$status = 'submit' == $action ? 'pending' : 'draft';
+
+	/** If we are submitting, but this is a live campaign, keep published */
+	if ( $existing_campaign && ( 'pending' == $status && get_post( $existing_campaign )->post_status == 'publish' ) )
+		$status = 'publish';
+
+	foreach ( $fields as $key => $field ) {
+		$fields[ $key ][ 'value' ] = isset ( $_POST[ $key ] ) ? $_POST[ $key ] : null;
+		$fields[ $key ][ 'value' ] = apply_filters( 'atcf_shortcode_submit_validate_' . $key, $fields[ $key ][ 'value' ] );
+
+		if ( ( isset ( $field[ 'required' ] ) && true === $field[ 'required' ] && ! $fields[ $key ][ 'value' ] ) && 'publish' != $status )
+			edd_set_error( 'required-' . $key, sprintf( __( 'The <strong>%s</strong> field is required.', 'atcf' ), $field[ 'label' ] ) );
 	}
 
-	$errors           = new WP_Error();
-	$edd_files        = array();
-	$upload_overrides = array( 'test_form' => false );
-
-	$terms     	= isset ( $_POST[ 'edd_agree_to_terms' ] ) ? $_POST[ 'edd_agree_to_terms' ] : 0;
-	if (isset($_POST[ 'title' ]))		$title		= $_POST[ 'title' ];
-	if (isset($_POST[ 'summary' ]))		$summary     	= $_POST[ 'summary' ];
-	if (isset($_POST[ 'owner' ]))		$owner		= $_POST[ 'owner' ];
-	if (isset($_POST[ 'location' ]))	$location		= $_POST[ 'location' ];
-	if (isset($_POST[ 'impact_area' ]))	$impact_area	= $_POST[ 'impact_area' ];
-	if (isset($_POST[ 'goalsum' ]))		$goalsum		= $_POST[ 'goalsum' ]; // "fixe" ou "flexible"
-	if (isset($_POST[ 'goal' ]))		$goal		= $_POST[ 'goal' ];
-	if (isset($_POST[ 'minimum_goal' ]))	$minimum_goal   = $_POST[ 'minimum_goal' ];
-	if (isset($_POST[ 'maximum_goal' ]))	$maximum_goal   = $_POST[ 'maximum_goal' ];
-	if (isset($_POST[ 'length' ]))		$length    	= $_POST[ 'length' ];
-	if (isset($_POST[ 'vote_length' ]))		$vote_length    	= $_POST[ 'vote_length' ];
-	if (isset($_POST[ 'campaign_type' ]))	$type      	= $_POST[ 'campaign_type' ];
-	if (isset($_POST[ 'general' ]))		$category  	= isset ( $_POST[ 'general' ] ) ? $_POST[ 'general' ] : 0;
-	if (isset($_POST[ 'activity' ]))	$activity  	= isset ( $_POST[ 'activity' ] ) ? $_POST[ 'activity' ] : 0;
-	if (isset($_POST[ 'description' ]))	$content   	= $_POST[ 'description' ];
-	if (isset($_POST[ 'excerpt' ]))		$excerpt   	= $_POST[ 'excerpt' ];
-	if (isset($_POST[ 'societal_challenge' ]))  $societal_challenge	= $_POST[ 'societal_challenge' ];
-	if (isset($_POST[ 'added_value' ]))	$added_value	= $_POST[ 'added_value' ];
-	if (isset($_POST[ 'company_status' ]))	$company_status	= $_POST[ 'company_status' ];
-	if (isset($_POST[ 'company_status_other' ]))	$company_status_other	= $_POST[ 'company_status_other' ];
-	if (isset($_POST[ 'init_capital' ]))	$init_capital	= $_POST[ 'init_capital' ];
+	do_action( 'atcf_campaign_submit_validate', $fields, $_POST );
 	
-	if (isset($_POST[ 'fundingtype' ]))	$fundingtype = $_POST['fundingtype']; // fundingproject ou fundingdevelopment
-	if (isset($_POST[ 'fundingduration' ]))	$fundingduration = $_POST['fundingduration'];
-	switch ($fundingtype) {
-	    case "fundingproject":
-		if (isset($_POST[ 'min_amount_project' ]))	$min_amount_collect = $_POST['min_amount_project'];
-		break;
-	    case "fundingdevelopment":
-		if (isset($_POST[ 'min_amount_development' ]))	$min_amount_collect = $_POST['min_amount_development'];
-		break;
-	}
+	if ( edd_get_errors() )
+		return;
 
-	if (isset($_POST[ 'development_strategy' ]))	$development_strategy	= $_POST[ 'development_strategy' ];
-	if (isset($_POST[ 'economic_model' ]))	$economic_model	    = $_POST[ 'economic_model' ];
-	if (isset($_POST[ 'measuring_impact' ]))$measuring_impact   = $_POST[ 'measuring_impact' ];
-	if (isset($_POST[ 'implementation' ]))	$implementation	    = $_POST[ 'implementation' ];
-	
-	if (isset($_POST[ 'name' ]))		$author    	= $_POST[ 'name' ];
-	if (isset($_POST[ 'shipping' ]))	$shipping  	= $_POST[ 'shipping' ];
+	/** Register a new user, or get the current user */
+	$user = get_user_by( 'email', $fields[ 'contact_email' ][ 'value' ] );
 
-	if (isset($_FILES[ 'image' ]))		$image     = $_FILES[ 'image' ];
-	if (isset($_POST[ 'video' ]))		$video     = $_POST[ 'video' ];
-	if (isset($_FILES[ 'files' ]))		$files     = $_FILES[ 'files' ];
-	
-	
-	if ( isset ( $_POST[ 'contact-email' ] ) )
-		$c_email = $_POST[ 'contact-email' ];
-	else {
-		$current_user = wp_get_current_user();
-		$c_email = $current_user->user_email;
-	}
-
-	if ( isset( $edd_options[ 'show_agree_to_terms' ] ) && ! $terms )
-		$errors->add( 'terms', __( 'Please agree to the Terms and Conditions', 'atcf' ) );
-
-	/** Check Title */
-	if ( empty( $title ) )
-		$errors->add( 'invalid-title', __( 'Please add a title to this campaign.', 'atcf' ) );
-
-	/** Check Goal */
-	
-	switch ($goalsum) {
-	    case "fixe":
-		$goal = edd_sanitize_amount( $goal );
-		if ( ! is_numeric( $goal ) )
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
-		if ($min_amount_collect > $goal) 
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
-		break;
-		
-	    case "flexible":
-		$minimum_goal = edd_sanitize_amount( $minimum_goal );
-		$maximum_goal = edd_sanitize_amount( $maximum_goal );
-		if ( ! is_numeric( $minimum_goal ) )
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
-		if ( ! is_numeric( $maximum_goal ) )
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
-		if ($minimum_goal >= $maximum_goal)
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
-		if ($min_amount_collect > $minimum_goal) 
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
-		
-		$goal = $maximum_goal;
-		break;
-	} 
-
-	
-	/** Check Length */
-	$length = absint( $length );
-
-	$min = isset ( $edd_options[ 'atcf_campaign_length_min' ] ) ? $edd_options[ 'atcf_campaign_length_min' ] : 14;
-	$max = isset ( $edd_options[ 'atcf_campaign_length_max' ] ) ? $edd_options[ 'atcf_campaign_length_max' ] : 42;
-
-	if ( $length < $min )
-		$length = $min;
-	else if ( $length > $max )
-		$length = $max;
-
-	$end_date = strtotime( sprintf( '+%d day', $length ) );
-	$end_date = get_gmt_from_date( date( 'Y-m-d H:i:s', $end_date ) );
-
-	/** Check vote Length */
-	$vote_length = absint( $vote_length );
-
-	$min = isset ( $edd_options[ 'atcf_campaign_length_min' ] ) ? $edd_options[ 'atcf_campaign_length_min' ] : 14;
-	$max = isset ( $edd_options[ 'atcf_campaign_length_max' ] ) ? $edd_options[ 'atcf_campaign_length_max' ] : 42;
-
-	if ( $vote_length < $min )
-		$vote_length = $min;
-	else if ( $vote_length > $max )
-		$vote_length = $max;
-
-	$end_date_vote = strtotime( sprintf( '+%d day', $vote_length ) );
-	$end_date_vote = get_gmt_from_date( date( 'Y-m-d H:i:s', $end_date_vote
-
- ) );
-
-	/** Check Category */
-	if (isset($category)) $category = absint( $category );
-	if (isset($activity)) $activity = absint( $activity );
-
-	/** Check Content */
-	if ( empty($content) || empty($summary) || empty($added_value)  || empty($economic_model) || empty($implementation) || empty($societal_challenge) )
-		$errors->add( 'invalid-content', __( 'Please add content to this campaign.', 'atcf' ) );
-	
-
-	/** Check Excerpt */
-	if ( empty( $excerpt ) )
-		$excerpt = null;
-
-	/** Check Image */
-	if ( empty( $image ) )
-		$errors->add( 'invalid-previews', __( 'Please add a campaign image.', 'atcf' ) );
-
-	/** Check Rewards */
-	/* if ( empty( $rewards ) )
-		$errors->add( 'invalid-rewards', __( 'Please add at least one reward to the campaign.', 'atcf' ) ); */
-
-	if ( email_exists( $c_email ) && ! isset ( $current_user ) )
-		$errors->add( 'invalid-c-email', __( 'That contact email address already exists.', 'atcf' ) );		
-
-	do_action( 'atcf_campaign_submit_validate', $_POST, $errors );
-
-	if ( ! empty ( $errors->errors ) ) { // Not sure how to avoid empty instantiated WP_Error
-	    wp_die( $errors );
-	    
+	if ( ! $user ) {
+		$user_id = atcf_register_user( array(
+			'user_login'           => $fields[ 'contact_email' ][ 'value' ], 
+			'user_email'           => $fields[ 'contact_email' ][ 'value' ],
+			'display_name'         => isset ( $fields[ 'name' ][ 'value' ] ) ? $fields[ 'name' ][ 'value' ] : $fields[ 'contact_email' ][ 'value' ],
+		) );
 	} else {
-	    if ( ! $type )
-		    $type = atcf_campaign_type_default();
-
-	    $user_id = $current_user->ID;
-
-	    $args = apply_filters( 'atcf_campaign_submit_data', array(
-		    'post_type'   		 	=> 'download',
-		    'post_status'  		 	=> 'pending',
-		    'post_title'   		 	=> $title,
-		    'post_content' 		 	=> $content,
-		    'post_excerpt' 			=> $excerpt,
-		    'post_author'  			=> $user_id,
-
-	    ), $_POST );
-
-	    $campaign = wp_insert_post( $args, true );
-
-	    wp_set_object_terms( $campaign, array( $category ), 'category' );
-	    wp_set_object_terms( $campaign, array( $activity ), 'category' );
-
-
-	    // Create category for blog
-	    $id_category = wp_insert_category( array('cat_name' => 'cat'.$campaign, 'category_parent' => $parent, 'category_nicename' => sanitize_title($campaign . '-blog-' . $title)) );
-
-
-	    // Create forum for campaign
-	    $forum_post = array(
-			'post_title'    => $campaign,
-			'post_name'     => $campaign,
-			'post_status'   => 'publish',
-			'post_type'     => 'forum'
-		);
- 
-	 	wp_insert_post( $forum_post, $wp_error ); 
-
-	    // Extra Campaign Information
-	    add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );
-	    add_post_meta( $campaign, 'campaign_minimum_goal', apply_filters( 'edd_metabox_save_edd_price', $minimum_goal ) );
-	    add_post_meta( $campaign, 'campaign_type', sanitize_text_field( $type ) );
-	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
-	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
-	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
-	    add_post_meta($campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
-	    add_post_meta( $campaign, 'campaign_location', sanitize_text_field( $location ) );
-	    add_post_meta( $campaign, 'campaign_author', sanitize_text_field( $author ) );
-	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
-	    add_post_meta( $campaign, '_campaign_physical', sanitize_text_field( $shipping ) );
-	    add_post_meta( $campaign, 'campaign_summary', sanitize_text_field( $summary ) );
-	    add_post_meta( $campaign, 'campaign_impact_area', sanitize_text_field( $impact_area ) );
-	    add_post_meta( $campaign, 'campaign_added_value', sanitize_text_field( $added_value ) );
-	    add_post_meta( $campaign, 'campaign_development_strategy', sanitize_text_field( $development_strategy ) );
-	    add_post_meta( $campaign, 'campaign_economic_model', sanitize_text_field( $economic_model ) );
-	    add_post_meta( $campaign, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );
-	    add_post_meta( $campaign, 'campaign_implementation', sanitize_text_field( $implementation ) );
-	    add_post_meta( $campaign, 'campaign_societal_challenge', sanitize_text_field( $societal_challenge ) );
-	    add_post_meta( $campaign, 'campaign_company_status', sanitize_text_field( $company_status ) );
-	    add_post_meta( $campaign, 'campaign_company_status_other', sanitize_text_field( $company_status_other ) );
-	    add_post_meta( $campaign, 'campaign_init_capital', sanitize_text_field( $init_capital ) );
-	    add_post_meta( $campaign, 'campaign_funding_type', sanitize_text_field( $fundingtype ) );
-	    add_post_meta( $campaign, 'campaign_funding_duration', sanitize_text_field( $fundingduration ) );
-
-
-
-
-	    if ( ! empty( $files ) ) {
-		    foreach ( $files[ 'name' ] as $key => $value ) {
-			    if ( $files[ 'name' ][$key] ) {
-				    $file = array(
-					    'name'     => $files[ 'name' ][$key],
-					    'type'     => $files[ 'type' ][$key],
-					    'tmp_name' => $files[ 'tmp_name' ][$key],
-					    'error'    => $files[ 'error' ][$key],
-					    'size'     => $files[ 'size' ][$key]
-				    );
-
-				    $upload = wp_handle_upload( $file, $upload_overrides );
-
-				    if ( isset( $upload[ 'url' ] ) )
-					    $edd_files[$key]['file'] = $upload[ 'url' ];
-				    else
-					    unset($files[$key]);
-			    }
-		    }
-	    }
-
-	    if ( '' != $image[ 'name' ] ) {
-		    $upload = wp_handle_upload( $image, $upload_overrides );
-		    $attachment = array(
-			    'guid'           => $upload[ 'url' ], 
-			    'post_mime_type' => $upload[ 'type' ],
-			    'post_title'     => $upload[ 'file' ],
-			    'post_content' => '',
-			    'post_status' => 'inherit'
-		    );
-
-		    $attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign );		
-
-		    wp_update_attachment_metadata( 
-			    $attach_id, 
-			    wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
-		    );
-
-		    add_post_meta( $campaign, '_thumbnail_id', absint( $attach_id ) );
-	    }
-
-	    // EDD Stuff 
-	    add_post_meta( $campaign, '_variable_pricing', 0 );
-	    add_post_meta( $campaign, '_edd_price_options_mode', 1 );
-	    add_post_meta( $campaign, '_edd_hide_purchase_link', 'on' );
-
-	    $prices = array(1);
-	    add_post_meta( $campaign, 'edd_variable_prices', $prices );
-
-	    if ( ! empty( $files ) ) {
-		    add_post_meta( $campaign, 'edd_download_files', $edd_files );
-	    }
-
-	    do_action( 'atcf_submit_process_after', $campaign, $_POST );
-
-	    $url = isset ( $edd_options[ 'submit_page' ] ) ? get_permalink( $edd_options[ 'submit_page' ] ) : get_permalink();
-
-	    $redirect = apply_filters( 'atcf_submit_campaign_success_redirect', add_query_arg( array( 'success' => 'true' ), $url ) );
-	    wp_safe_redirect( $redirect );
-	    exit();
+		$user_id = $user->ID;
 	}
 
+	/** 
+	 * Create or update a campaign 
+	 */
+	$args = apply_filters( 'atcf_campaign_submit_data', array(
+		'post_type'    => 'download',
+		'post_status'  => $status,
+		'post_content' => $fields[ 'description' ][ 'value' ],
+		'post_author'  => $user_id
+	), $_POST );
+
+	if ( $fields[ 'title' ][ 'value' ] )
+		$args[ 'post_title' ] = $fields[ 'title' ][ 'value' ];
+
+	if ( $fields[ 'excerpt' ][ 'value' ] )
+		$args[ 'post_excerpt' ] = $fields[ 'excerpt' ][ 'value' ];
+
+	if ( ! $existing_campaign ) {
+		$campaign = wp_insert_post( $args, true );
+	} else {
+		$args[ 'ID' ] = $existing_campaign;
+
+		$campaign = wp_update_post( $args );
+	}
+
+	do_action( 'atcf_submit_process_after', $campaign, $_POST, $status, $fields );
+
+	if ( 'publish' == $status ) {
+		wp_safe_redirect( add_query_arg( 'updated', 'true', get_permalink( $campaign ) ) );
+		exit();
+	} elseif ( 'submit' == $action ) {
+		$url = isset ( $edd_options[ 'submit_success_page' ] ) ? get_permalink( $edd_options[ 'submit_success_page' ] ) : home_url();
+
+		$redirect = apply_filters( 'atcf_submit_campaign_success_redirect', $url );
+		
+		wp_safe_redirect( add_query_arg( array( 'success' => true, 'campaign' => $campaign ), $redirect ) );
+		exit();
+	} else {
+		wp_safe_redirect( add_query_arg( 'preview', 'true', get_permalink( $campaign ) ) );
+		exit();
+	}
 }
 add_action( 'template_redirect', 'atcf_shortcode_submit_process' );
 
 /**
+ * Save extra campaign data. This includes default registered fields.
+ *
+ * Themes and plugins should also hook into this action and save their
+ * data as well. Some special fields have a special callback in the main 
+ * class, while default text fields and the like are just saved as standard meta.
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param $campaign The current campaign (if editing/previewing).
+ * @param $postdata The $_POST data.
+ * @param $status The status of the submission.
+ * @param $fields The array of registered fields.
+ * @return void
+ */
+function atcf_submit_process_after( $campaign, $postdata, $status, $fields ) {
+	global $edd_options, $wp_query;
+
+	$submit_campaign = atcf_submit_campaign();
+	
+	/**
+	 * Save the fields
+	 */
+	foreach ( $fields as $key => $field ) {
+		switch ( $key ) {
+			case 'tag' : 
+			case 'category' :
+			case 'length' :
+			case 'rewards' :
+			case 'image' :
+			case 'goal' :
+			case 'physical' :
+				$method = 'save_' . $key;
+
+				$submit_campaign->$method( $key, $field, $campaign, $fields );
+			break;
+			default :
+				$submit_campaign->save_field( $key, $field, $campaign, $fields );
+			break;
+		}
+	}
+
+	/**
+	 * Some standard EDD stuff to save
+	 */
+	update_post_meta( $campaign, '_variable_pricing', 1 );
+	update_post_meta( $campaign, '_edd_price_options_mode', 1 );
+	update_post_meta( $campaign, '_edd_hide_purchase_link', 'on' );
+}
+
+/**
  * Redirect submit page if needed.
  *
- * @since Appthemer CrowdFunding 1.1
+ * @since Astoundify Crowdfunding 1.1
  *
  * @return void
  */
@@ -708,11 +1292,78 @@ function atcf_shortcode_submit_redirect() {
 	if ( ! is_a( $post, 'WP_Post' ) )
 		return;
 
-	if ( ! is_user_logged_in() && ( !empty($edd_options[ 'submit_page' ]) && $post->ID == $edd_options[ 'submit_page' ] ) && isset ( $edd_options[ 'atcf_settings_require_account' ] ) ) {
-		$redirect = apply_filters( 'atcf_require_account_redirect', isset ( $edd_options[ 'login_page' ] ) ? get_permalink( $edd_options[ 'login_page' ] ) : home_url() );
-			
+	if ( ! is_user_logged_in() && ( isset( $edd_options[ 'submit_page' ] ) && $post->ID == $edd_options[ 'submit_page' ] ) && isset ( $edd_options[ 'atcf_settings_require_account' ] ) ) {
+		$url = isset ( $edd_options[ 'login_page' ] ) ? get_permalink( $edd_options[ 'login_page' ] ) : home_url();
+		$url = add_query_arg( array( 'redirect_to' => get_permalink( $edd_options[ 'submit_page' ] ) ), $url );
+
+		$redirect = apply_filters( 'atcf_require_account_redirect', $url );
+
 		wp_safe_redirect( $redirect );
 		exit();
 	}
 }
 add_action( 'template_redirect', 'atcf_shortcode_submit_redirect', 1 );
+
+/**
+ * If the user is logged in, change the contact form email field
+ * to a hidden field with their email address.
+ *
+ * @since Astoundify Crowdfunding 1.7
+ *
+ * @param array $field
+ * @return void
+ */
+function atcf_shortcode_submit_field_before_render_contact_email( $field ) {
+	if ( ! is_user_logged_in() )
+		return $field;
+
+	$current_user = wp_get_current_user();
+
+	$field[ 'type' ]  = 'hidden';
+	$field[ 'value' ] = $current_user->user_email;
+	$field[ 'label' ] =  sprintf( __( '<strong>Note</strong>: You are currently logged in as %1$s. This %2$s will be associated with that account. Please <a href="%3$s">log out</a> if you would like to make a %2$s under a new account.', 'atcf' ), $current_user->user_email, strtolower( edd_get_label_singular() ), wp_logout_url( get_permalink() ) );
+
+	return $field;
+}
+add_filter( 'atcf_shortcode_submit_field_before_render_contact_email', 'atcf_shortcode_submit_field_before_render_contact_email' );
+
+/**
+ * Walker to output an unordered list of category checkbox <input> elements.
+ *
+ * @see Walker
+ * @see wp_category_checklist()
+ * @see wp_terms_checklist()
+ * @since 2.5.1
+ */
+class ATCF_Walker_Terms_Checklist extends Walker {
+	var $tree_type = 'category';
+	var $db_fields = array ('parent' => 'parent', 'id' => 'term_id'); //TODO: decouple this
+
+	function start_lvl( &$output, $depth = 0, $args = array() ) {
+		$indent = str_repeat("\t", $depth);
+		$output .= "$indent<ul class='children'>\n";
+	}
+
+	function end_lvl( &$output, $depth = 0, $args = array() ) {
+		$indent = str_repeat("\t", $depth);
+		$output .= "$indent</ul>\n";
+	}
+
+	function start_el( &$output, $category, $depth = 0, $args = array(), $current_object_id = 0 ) {
+		extract($args);
+		if ( empty($taxonomy) )
+			$taxonomy = 'category';
+
+		if ( $taxonomy == 'category' )
+			$name = 'post_category';
+		else
+			$name = 'tax_input['.$taxonomy.']';
+
+		$class = in_array( $category->term_id, $popular_cats ) ? ' class="popular-category"' : '';
+		$output .= "\n<li id='{$taxonomy}-{$category->term_id}'$class>" . '<label class="selectit"><input value="' . $category->term_id . '" type="checkbox" name="'.$name.'[]" id="in-'.$taxonomy.'-' . $category->term_id . '"' . checked( in_array( $category->term_id, $selected_cats ), true, false ) . ' /> ' . esc_html( apply_filters('the_category', $category->name )) . '</label>';
+	}
+
+	function end_el( &$output, $category, $depth = 0, $args = array() ) {
+		$output .= "</li>\n";
+	}
+}
