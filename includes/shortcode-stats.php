@@ -23,8 +23,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     
 
     ob_start();
-    print_r($investisseurs);
-    echo $campaign_id;
+   // print_r($investisseurs);
+   // echo $campaign_id;
 
     echo "</br>";
     ?>
