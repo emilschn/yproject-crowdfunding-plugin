@@ -1130,8 +1130,15 @@ class ATCF_Campaign {
 		if ( ! is_numeric( $goal ) )
 			return 0;
 
-		if ( $formatted )
+		if ( $formatted ) {
+		    $currency = edd_get_currency();
+		    if ($currency == "EUR") {
+			if (strpos($goal, '.00') !== false) $goal = substr ($goal, 0, -3);
+			return $goal . ' &euro;';
+		    } else {
 			return edd_currency_filter( edd_format_amount( $goal ) );
+		    }
+		}
 
 		return $goal;
 	}
