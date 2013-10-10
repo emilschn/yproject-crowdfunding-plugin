@@ -107,8 +107,8 @@ function ypcf_jcrois(){
 
     }
     ?>
-    <form name="ypjcrois" action="<?php get_permalink();?>" method="POST" class="ypjcrois-form"> 
-        <input type="submit" name="submit" value="J'y crois !" style="background-image:/images/jycrois_gris.png">
+    <form name="ypjycrois" action="<?php get_permalink();?>" method="POST" > 
+        <input type="submit" name="submit" class="bouton_jcrois">
     </form>
     <?php   
     
@@ -144,8 +144,8 @@ function ypcf_jcrois_pas(){
 
     }
     ?>
-    <form name="ypjcrois" action="<?php get_permalink();?>" method="POST" class="ypjcrois-form"> 
-        <input type="submit" name="submit" value="Je n'y crois pas!" style="background-image:/images/jycrois_gris.png">
+    <form name="ypjcrois_pas" action="<?php get_permalink();?>" method="POST" class="ypjcrois_pas-form"> 
+        <input type="submit" name="submit"  class="bouton_jcrois_pas" >
     </form>
     <?php   
     
@@ -166,9 +166,11 @@ function ypcf_shortcode_jcrois(){
     $conseils = $wpdb->get_var( "SELECT count(jcrois) FROM $table_jcrois WHERE campaign_id = $campaign_id AND user_id = $user_id " );
     if ( $conseils != 0) {
         ypcf_jcrois_pas();
+          print_r($conseils);
     }
     else{
       ypcf_jcrois();
+        print_r($conseils);
 
     }
 
