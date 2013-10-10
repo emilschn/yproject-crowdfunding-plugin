@@ -6,7 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  */
  function ypcf_shortcode_stats() {
-    global $wpdb, $campaign, $post, $edd_options;
+    global $wpdb, $campaign, $post, $edd_options ;
+    $table_jcrois = $wpdb->prefix . "yp_jycrois"; 
+    $jcrois=false; 
     
 
     $crowdfunding = crowdfunding();
@@ -72,3 +74,104 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     }
 
 add_shortcode( 'yproject_crowdfunding_stats', 'ypcf_shortcode_stats' );
+
+
+
+// FONCTION J'y crois :
+function ypcf_jcrois(){
+    global $wpdb ;
+    $table_jcrois = $wpdb->prefix . "jycrois";
+
+    $campaign      = atcf_get_campaign( $post );
+    $campaign_id   =  $campaign->ID;
+    $user_id       = wp_get_current_user()->ID;
+
+    
+    if(isset($_POST['submit']) )
+    {
+
+        if ( is_user_logged_in() )
+        { 
+            $wpdb->insert( $table_jcrois,
+                    array(
+                        'user_id'                 => $user_id,
+                        'campaign_id'             => $campaign_id,
+                        'jcrois'                  => 1
+            )); 
+
+        } 
+        else
+        {
+            echo 'Vous n\'êtes pas connecté';
+        }
+
+    }
+    ?>
+    <form name="ypjcrois" action="<?php get_permalink();?>" method="POST" class="ypjcrois-form"> 
+        <input type="submit" name="submit" value="J'y crois !" style="background-image:/images/jycrois_gris.png">
+    </form>
+    <?php   
+    
+
+}
+
+
+function ypcf_jcrois_pas(){
+    global $wpdb ;
+    $table_jcrois = $wpdb->prefix . "jycrois"; 
+    
+    $campaign      = atcf_get_campaign( $post );
+    $campaign_id   =  $campaign->ID;
+    $user_id       = wp_get_current_user()->ID;
+
+    if(isset($_POST['submit']))
+    {
+
+        if ( is_user_logged_in() )
+        { 
+
+            $wpdb->delete( $table_jcrois,
+                    array(
+                        'user_id'                 => $user_id,
+                        'campaign_id'             => $campaign_id
+            )); 
+
+        } 
+        else
+        {
+            echo 'Vous n\'êtes pas connecté';
+        }
+
+    }
+    ?>
+    <form name="ypjcrois" action="<?php get_permalink();?>" method="POST" class="ypjcrois-form"> 
+        <input type="submit" name="submit" value="Je n'y crois pas!" style="background-image:/images/jycrois_gris.png">
+    </form>
+    <?php   
+    
+
+}
+
+
+
+function ypcf_shortcode_jcrois(){
+    global $wpdb ;
+    $table_jcrois = $wpdb->prefix . "jycrois";
+
+    $campaign      = atcf_get_campaign( $post );
+    $campaign_id   =  $campaign->ID;
+    $user_id       = wp_get_current_user()->ID;
+
+    
+    $conseils = $wpdb->get_var( "SELECT count(jcrois) FROM $table_jcrois WHERE campaign_id = $campaign_id AND user_id = $user_id " );
+    if ( $conseils != 0) {
+        ypcf_jcrois_pas();
+    }
+    else{
+      ypcf_jcrois();
+
+    }
+
+}
+    
+add_shortcode('yproject_crowdfunding_jcrois','ypcf_shortcode_jcrois');
