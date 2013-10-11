@@ -98,12 +98,10 @@ function ypcf_jcrois(){
                         'campaign_id'             => $campaign_id
             )); 
 
-        } 
-        else
-        {
-            echo 'Vous n\'êtes pas connecté';
+        } else{
+            echo "Ooops vous </br> n'êtes pas connecté !";
         }
-
+    
     }
     ?>
     <form name="ypjycrois" action="<?php get_permalink();?>" method="POST" > 
@@ -135,10 +133,8 @@ function ypcf_jcrois_pas(){
                         'campaign_id'             => $campaign_id
             )); 
 
-        } 
-        else
-        {
-            echo 'Vous n\'êtes pas connecté';
+        } else{
+             echo "Ooops vous </br> n'êtes pas connecté !";
         }
 
     }
@@ -159,21 +155,38 @@ function ypcf_shortcode_jcrois(){
 
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
-    $user_id       = wp_get_current_user()->ID;
+    $valide = false;
 
     
-    $cont = $wpdb->get_var( "SELECT count(campaign_id) FROM $table_jcrois WHERE campaign_id = $campaign_id" );
-    if ( $cont != 0) {
-        ypcf_jcrois_pas();
-          echo ($cont);
-    }
-    else{
-      ypcf_jcrois();
-        echo($cont);
+        
+        if ( is_user_logged_in() )
+        {
+            
+            $user_id       = wp_get_current_user()->ID;
+            $users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = $campaign_id" );
+            //print_r($users);
+            foreach ( $users as $user )
+            { 
 
-    }
+                if ( $user->user_id == $user_id)
+                {   
+                    
+                    echo "<div>".ypcf_jcrois_pas()."<br/>"
+                  ."<span id='nb_jycrois'>".do_shortcode('[yproject_crowdfunding_count_jcrois]')."</span></div>";
+                    $valide = true;
+                     break;
+                }
+            }
+                
 
+        }  
 
+        if ($valide == false) {
+ 
+            echo "<div>".ypcf_jcrois()."<br/>"
+          ."<span id='nb_jycrois'>".do_shortcode('[yproject_crowdfunding_count_jcrois]')."</span></div>";
+        }
+        
 }  
 add_shortcode('yproject_crowdfunding_jcrois','ypcf_shortcode_jcrois');
 
