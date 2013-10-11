@@ -95,8 +95,7 @@ function ypcf_jcrois(){
             $wpdb->insert( $table_jcrois,
                     array(
                         'user_id'                 => $user_id,
-                        'campaign_id'             => $campaign_id,
-                        'jcrois'                  => 1
+                        'campaign_id'             => $campaign_id
             )); 
 
         } 
@@ -163,17 +162,34 @@ function ypcf_shortcode_jcrois(){
     $user_id       = wp_get_current_user()->ID;
 
     
-    $conseils = $wpdb->get_var( "SELECT count(jcrois) FROM $table_jcrois WHERE campaign_id = $campaign_id AND user_id = $user_id " );
-    if ( $conseils != 0) {
+    $cont = $wpdb->get_var( "SELECT count(campaign_id) FROM $table_jcrois WHERE campaign_id = $campaign_id" );
+    if ( $cont != 0) {
         ypcf_jcrois_pas();
-          print_r($conseils);
+          echo ($cont);
     }
     else{
       ypcf_jcrois();
-        print_r($conseils);
+        echo($cont);
 
     }
 
-}
-    
+
+}  
 add_shortcode('yproject_crowdfunding_jcrois','ypcf_shortcode_jcrois');
+
+
+
+function ypcf_shortcode_count_jcrois(){
+     global $wpdb ;
+    $table_jcrois = $wpdb->prefix . "jycrois";
+
+    $campaign      = atcf_get_campaign( $post );
+    $campaign_id   =  $campaign->ID;
+    $user_id       = wp_get_current_user()->ID;
+
+    
+    $cont = $wpdb->get_var( "SELECT count(campaign_id) FROM $table_jcrois WHERE campaign_id = $campaign_id" );
+
+    echo $cont;
+}
+add_shortcode('yproject_crowdfunding_count_jcrois','ypcf_shortcode_count_jcrois');
