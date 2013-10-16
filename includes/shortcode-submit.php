@@ -91,16 +91,16 @@ add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
 function ypcf_shortcode_submit_field_category($atts, $content = '') {
     global $editing, $current_campaign;
     $atts = shortcode_atts( array(
-    'type' => 'general'
+    'type' => 'categories'
     ), $atts );
    
     $parent_cat_id = get_category_by_path($atts['type']);
     return wp_dropdown_categories( array( 
         'hide_empty'    => 0,
-        'taxonomy'        => 'download_category',
+        'taxonomy'       => 'download_category',
         'selected'        => 0,
         'echo'        => 0,
-        'child_of'        => $parent_cat_id->cat_ID,
+        'child_of'        => 76, /*76 represnte ID de la sous categorie activities*/ /*$parent_cat_id->cat_ID,*/
         'name'        => $atts['type']
     ) );
 }
@@ -108,23 +108,30 @@ add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_fie
 
 
 function ypcf_shortcode_submit_field_activity($atts, $content = '') {
-    global $editing, $current_campaign;
+  global $editing, $current_campaign;
     $atts = shortcode_atts( array(
-    'type' => 'general'
+    'type' => 'activities'
     ), $atts );
    
     $parent_cat_id = get_category_by_path($atts['type']);
     return wp_dropdown_categories( array( 
-        'hide_empty'    => 0,
-        'taxonomy'      => 'activity',
-        'selected'      => 0,
-        'echo'          => 0,
-        'child_of'      => $parent_cat_id->cat_ID,
-        'name'          => $atts['type']
+        'hide_empty'  => 0,
+        'taxonomy'    => 'download_category',
+        'selected'    => 0,
+        'echo'        => 0,
+        'child_of'    => 77,/*77 represnte ID de la sous categorie activities*/ /*$parent_cat_id->cat_ID,*/
+        'name'        => $atts['type']
     ) );
 }
-add_shortcode('yproject_crowdfunding_field_activity', 'ypcf_shortcode_submit_field_activity');
+add_shortcode('yproject_crowdfunding_field_activity', 'ypcf_shortcode_submit_field_activity'); 
 
+/*
+function ypcf_shortcode_submit_field_activity($atts, $content = '') {
+
+  return '<h1> test </h1>';
+}
+add_shortcode('yproject_crowdfunding_field_activity', 'ypcf_shortcode_submit_field_activity'); 
+*/
 
 function ypcf_shortcode_submit_field_file($atts, $content = '') {
     $atts = shortcode_atts( array(
