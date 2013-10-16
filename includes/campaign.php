@@ -1411,8 +1411,15 @@ class ATCF_Campaign {
 			$total      = $total + edd_get_payment_amount( $payment_id );
 		}
 		
-		if ( $formatted )
+		if ( $formatted ) {
+		    $currency = edd_get_currency();
+		    if ($currency == "EUR") {
+			if (strpos($total, '.00') !== false) $total = substr ($total, 0, -3);
+			return $total . ' &euro;';
+		    } else {
 			return edd_currency_filter( edd_format_amount( $total ) );
+		    }
+		}
 
 		return $total;
 	}
