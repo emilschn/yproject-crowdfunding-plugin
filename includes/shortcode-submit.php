@@ -146,7 +146,7 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
     $atts = shortcode_atts( array(
 	'name' => 'description',
 	'width' => '350px',
-	'height' => '150px'
+	'height' => '400px'
     ), $atts );
     
     ob_start();
