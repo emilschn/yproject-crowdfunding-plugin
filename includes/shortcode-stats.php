@@ -82,6 +82,7 @@ function ypcf_jcrois(){
     global $wpdb ;
     $table_jcrois = $wpdb->prefix . "jycrois";
 
+    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
     $user_id       = wp_get_current_user()->ID;
@@ -109,8 +110,9 @@ function ypcf_jcrois(){
 
 function ypcf_jcrois_pas(){
     global $wpdb ;
-    $table_jcrois = $wpdb->prefix . "jycrois"; 
-    
+    $table_jcrois = $wpdb->prefix . "jycrois";
+
+    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
     $user_id       = wp_get_current_user()->ID;
@@ -121,8 +123,8 @@ function ypcf_jcrois_pas(){
         { 
             $wpdb->delete( $table_jcrois,
                     array(
-                        'user_id'                 => $user_id,
-                        'campaign_id'             => $campaign_id
+                        'user_id'      => $user_id,
+                        'campaign_id'  => $campaign_id
             )); 
         } else{
              echo "Ooops vous </br> n'êtes pas connecté !";
@@ -141,6 +143,7 @@ function ypcf_shortcode_jcrois(){
     global $wpdb ;
     $table_jcrois = $wpdb->prefix . "jycrois";
 
+    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
     $valide = false;
@@ -175,6 +178,7 @@ function ypcf_shortcode_count_jcrois(){
     global $wpdb ;
     $table_jcrois = $wpdb->prefix . "jycrois";
 
+    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
     $user_id       = wp_get_current_user()->ID;
