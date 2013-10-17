@@ -1398,17 +1398,16 @@ class ATCF_Campaign {
 		$total   = 0;
 		$backers = $this->backers();
 
-		if ( 0 == $backers )
-			return $formatted ? edd_currency_filter( edd_format_amount( 0 ) ) : 0;
+		if ($backers > 0) {
+		    foreach ( $backers as $backer ) {
+			    $payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
+			    $payment    = get_post( $payment_id );
 
-		foreach ( $backers as $backer ) {
-			$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-			$payment    = get_post( $payment_id );
-			
-			if ( empty( $payment ) )
-				continue;
+			    if ( empty( $payment ) )
+				    continue;
 
-			$total      = $total + edd_get_payment_amount( $payment_id );
+			    $total      = $total + edd_get_payment_amount( $payment_id );
+		    }
 		}
 		
 		if ( $formatted ) {
