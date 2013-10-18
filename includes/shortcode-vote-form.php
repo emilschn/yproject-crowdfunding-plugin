@@ -138,14 +138,15 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
             <div class="light" style="text-transform:none;text-align : left; padding-left:5px;" >
             <form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
                        
-                        <input id="impact-positif" type="radio" name="impact"  value="positif" checked="checked">Je pense que ce projet va avoir un impact positif</input></br>
+                        <input id="impact-positif" type="radio" name="impact"  value="positif" checked="checked">
+                        Je pense que ce projet va avoir un impact positif</input></br>
 
                         <span id="impact-positif-content" style="display: ">
-                            <input type="checkbox" name="local"  value="local">Local</input></br>
-                            <input type="checkbox" name="environmental" value="environmental">Environnemental</input></br>
-                            <input type="checkbox" name="social" value="social">Social</label></br>
-                            <input type="checkbox" name="autre" value="autre">Autre</input>
-                            <input id="precision" name="precision" type="text" placeholder="tapez ici" />
+                            <input type="checkbox" id="local" name="local"  value="local">Local</input></br>
+                            <input type="checkbox" id="environmental" name="environmental" value="environmental">Environnemental</input></br>
+                            <input type="checkbox" id="social" name="social" value="social">Social</label></br>
+                            <input type="checkbox" id="autre" name="autre" value="autre">Autre</input>
+                            <input id="precision"  id="precision" name="precision" type="text" placeholder="tapez ici" />
                         </span></br>
                         
                         <input id="desaprouve" type="radio" name="impact" value="negatif" >Je d&egravesapprouve ce projet car son impact pr&eacutevu n'est pas significatif</input></br></br>
@@ -169,14 +170,14 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
 
                         
                         <input id="retravaille" type="radio" name="maturite" value="retravaille">Je pense que ce projet doit &ecirctre retravaill&eacute avant de pouvoir &ecirctre financ&eacute. Sur quels points </input></br></br>
-                        <span id="content-retravaille">
-                            <input type="checkbox" name="pas_responsable" value="pas_responsable">Pas d&acuteimpact responsable</input></br>
-                            <input type="checkbox" name="mal_explique" value="mal_explique">Projet mal expliqu&eacute  </input></br>
-                            <input type="checkbox" name="qualite_produit" value="qualite_produit">Qualit&eacute du produit/service</input></br>
-                            <input type="checkbox" name="qualite_equipe" value="qualite_equipe">Qualit&eacute de l&acute&eacutequipe</input></br>
-                            <input type="checkbox" name="qualite_business_plan" value="qualite_business_plan">Qualit&eacute du business plan</input></br>
-                            <input type="checkbox" name="qualite_innovation" value="qualite_innovation">Qualit&eacute d&acuteinnovation</input></br>
-                            <input type="checkbox" name="qualite_marche" value="qualite_marche" >Qualit&eacute du march&eacute, porteur</input></br>
+                        <span id="retravaille-content">
+                            <input type="checkbox" id="" name="pas_responsable" value="pas_responsable">Pas d&acuteimpact responsable</input></br>
+                            <input type="checkbox" id="" name="mal_explique" value="mal_explique">Projet mal expliqu&eacute  </input></br>
+                            <input type="checkbox" id="" name="qualite_produit" value="qualite_produit">Qualit&eacute du produit/service</input></br>
+                            <input type="checkbox" id="" name="qualite_equipe" value="qualite_equipe">Qualit&eacute de l&acute&eacutequipe</input></br>
+                            <input type="checkbox" id="" name="qualite_business_plan" value="qualite_business_plan">Qualit&eacute du business plan</input></br>
+                            <input type="checkbox" id="" name="qualite_innovation" value="qualite_innovation">Qualit&eacute d&acuteinnovation</input></br>
+                            <input type="checkbox" id=""name="qualite_marche" value="qualite_marche" >Qualit&eacute du march&eacute, porteur</input></br>
                 
                             <label> Autre</label>
                             <input type="text" name="other" id="other" ></input></br></br>
@@ -184,7 +185,6 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                         <label> Conseil</label><br>
                         <textarea type="text" name="conseil" id="conseil" value="conseil"></textarea></br>
                         <br><input type="submit" name="submit" value= "valider" />
-                    </fieldset>
 
              </form>
          </div>
