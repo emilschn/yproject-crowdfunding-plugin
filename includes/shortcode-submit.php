@@ -91,39 +91,25 @@ add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
 function ypcf_shortcode_submit_field_category($atts, $content = '') {
     global $editing, $current_campaign;
     $atts = shortcode_atts( array(
-    'type' => 'categories'
+	'type' => 'categories'
     ), $atts );
    
-    $parent_cat_id = get_category_by_path($atts['type']);
-    return wp_dropdown_categories( array( 
-        'hide_empty'    => 0,
-        'taxonomy'       => 'download_category',
-        'selected'        => 0,
-        'echo'        => 0,
-        'child_of'        => 76, /*76 represnte ID de la sous categorie activities*/ /*$parent_cat_id->cat_ID,*/
-        'name'        => $atts['type']
-    ) );
-}
-add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_field_category');
-
-
-function ypcf_shortcode_submit_field_activity($atts, $content = '') {
-  global $editing, $current_campaign;
-    $atts = shortcode_atts( array(
-    'type' => 'activities'
-    ), $atts );
-   
-    $parent_cat_id = get_category_by_path($atts['type']);
+    $terms = get_terms( 'download_category', array('slug' => $atts['type'], 'hide_empty' => false));
+    $term_id = 0;
+    foreach ( $terms as $term ) {
+       $term_id = $term->term_id;
+    }
     return wp_dropdown_categories( array( 
         'hide_empty'  => 0,
         'taxonomy'    => 'download_category',
         'selected'    => 0,
         'echo'        => 0,
-        'child_of'    => 77,/*77 represnte ID de la sous categorie activities*/ /*$parent_cat_id->cat_ID,*/
+        'child_of'    => $term_id, 
         'name'        => $atts['type']
     ) );
 }
-add_shortcode('yproject_crowdfunding_field_activity', 'ypcf_shortcode_submit_field_activity'); 
+add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_field_category');
+
 
 /*
 function ypcf_shortcode_submit_field_activity($atts, $content = '') {
