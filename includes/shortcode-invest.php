@@ -348,21 +348,27 @@ function ypcf_check_is_user_logged() {
  * Enregistre les données saisies par l'utilisateur et redirige vers la page d'investissement si nécessaire
  */
 function ypcf_check_has_user_filled_infos_and_redirect() {
-    global $post;
+    global $post, $validate_email;
     if (isset($post)) {
 	$page_name = get_post($post)->post_name;
 	if ($page_name == 'modifier-mon-compte') {
 	    $current_user = wp_get_current_user();
 	    if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
-		if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
-		if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
-		if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
-		if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
-		if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
-		if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
-		if ($_POST["update_person_type"] != "") update_user_meta($current_user->ID, 'user_person_type', $_POST["update_person_type"]);
 		if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
-		    if ($_POST["update_email"] != "") {
+		    if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
+		    if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
+		    if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
+		    if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
+		    if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
+		    if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
+		    if ($_POST["update_person_type"] != "") update_user_meta($current_user->ID, 'user_person_type', $_POST["update_person_type"]);
+		    if ($_POST["update_address"] != "") update_user_meta($current_user->ID, 'user_address', $_POST["update_address"]);
+		    if ($_POST["update_postal_code"] != "") update_user_meta($current_user->ID, 'user_postal_code', $_POST["update_postal_code"]);
+		    if ($_POST["update_city"] != "") update_user_meta($current_user->ID, 'user_city', $_POST["update_city"]);
+		    if ($_POST["update_country"] != "") update_user_meta($current_user->ID, 'user_country', $_POST["update_country"]);
+		    if ($_POST["update_mobile_phone"] != "") update_user_meta($current_user->ID, 'user_mobile_phone', $_POST["update_mobile_phone"]);
+		    $validate_email = bp_core_validate_email_address($_POST["update_email"]);
+		    if (($_POST["update_email"] != "") && ($validate_email === true)) {
 			wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
 			$current_user->user_email = $_POST["update_email"];
 		    }
@@ -398,6 +404,8 @@ function ypcf_check_user_can_invest($redirect = false) {
 	    $can_invest = $can_invest && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
 	    $can_invest = $can_invest && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
 	    $can_invest = $can_invest && ($current_user->get('user_nationality') != "") && ($current_user->get('user_person_type') != "") && ($current_user->user_email != "");
+	    $can_invest = $can_invest && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
+	    $can_invest = $can_invest && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
 
 	    if ($redirect && !$can_invest) {
 		if (session_id() == '') session_start();
