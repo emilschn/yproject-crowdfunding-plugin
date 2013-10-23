@@ -79,10 +79,9 @@ add_shortcode( 'yproject_crowdfunding_stats', 'ypcf_shortcode_stats' );
 
 // FONCTION J'y crois :
 function ypcf_jcrois(){
-    global $wpdb ;
+    global $wpdb, $post;
     $table_jcrois = $wpdb->prefix . "jycrois";
 
-    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
     $user_id       = wp_get_current_user()->ID;
@@ -109,10 +108,9 @@ function ypcf_jcrois(){
 
 
 function ypcf_jcrois_pas(){
-    global $wpdb ;
+    global $wpdb, $post;
     $table_jcrois = $wpdb->prefix . "jycrois";
 
-    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
     $user_id       = wp_get_current_user()->ID;
@@ -140,10 +138,9 @@ function ypcf_jcrois_pas(){
 
 
 function ypcf_shortcode_jcrois(){
-    global $wpdb ;
+    global $wpdb, $post;
     $table_jcrois = $wpdb->prefix . "jycrois";
 
-    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
     $valide = false;
@@ -152,7 +149,6 @@ function ypcf_shortcode_jcrois(){
         { 
             $user_id       = wp_get_current_user()->ID;
             $users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = $campaign_id" );
-            //print_r($users);
             foreach ( $users as $user )
             { 
                 if ( $user->user_id == $user_id)
@@ -175,14 +171,11 @@ add_shortcode('yproject_crowdfunding_jcrois','ypcf_shortcode_jcrois');
 
 
 function ypcf_shortcode_count_jcrois(){
-    global $wpdb ;
+    global $wpdb, $post;
     $table_jcrois = $wpdb->prefix . "jycrois";
 
-    $post = get_post($_GET['campaign_id']);
     $campaign      = atcf_get_campaign( $post );
     $campaign_id   =  $campaign->ID;
-    $user_id       = wp_get_current_user()->ID;
-
     
     $cont = $wpdb->get_var( "SELECT count(campaign_id) FROM $table_jcrois WHERE campaign_id = $campaign_id" );
     echo $cont;
