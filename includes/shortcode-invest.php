@@ -24,7 +24,7 @@ function ypcf_check_redirections() {
 
 	    $post_camp = get_post($_GET['campaign_id']);
 	    $campaign = atcf_get_campaign( $post_camp );
-	    if ($campaign->vote() == 'vote') {
+	    if ($campaign->vote() == 'vote' || $campaign->part_value() == 0) {
 		wp_redirect(get_permalink($post_camp->ID));
 		exit();
 	    }
@@ -32,11 +32,15 @@ function ypcf_check_redirections() {
 
 	//On a validé la confirmation
 	//Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
-	if (isset($_GET['campaign_id']) && isset($_POST['amount']) && is_numeric($_POST['amount']) && ctype_digit($_POST['amount']) && isset($_POST['confirmed']) && $_POST['confirmed'] == '1' && isset($_POST['edd_agree_to_terms']) && $_POST['edd_agree_to_terms'] == '1') {
+	$max_part_value = ypcf_get_max_part_value();
+	if (isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
+		&& intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value 
+		&& isset($_POST['confirmed']) && $_POST['confirmed'] == '1' && isset($_POST['edd_agree_to_terms']) && $_POST['edd_agree_to_terms'] == '1') {
 	    //Récupération de l'url de la page qui indique que le paiement est bien effectué
 	    $current_user = wp_get_current_user();
+	    $amount = $_POST['amount_part'] * ypcf_get_part_value();
 	    $page_paiement_done = get_page_by_path('paiement-effectue');
-	    $mangopay_newcontribution = ypcf_mangopay_contribution_user_to_project($current_user, $_GET['campaign_id'], $_POST['amount'], $page_paiement_done);
+	    $mangopay_newcontribution = ypcf_mangopay_contribution_user_to_project($current_user, $_GET['campaign_id'], $amount, $page_paiement_done);
 
 	    //Analyse de la contribution pour récupérer l'url de paiement
 	    if (isset($mangopay_newcontribution->ID)) {
@@ -74,7 +78,7 @@ add_filter( 'login_redirect', 'ypcf_login_redirect_invest', 10, 3 );
  function ypcf_shortcode_invest_form($atts, $content = '') {
     $form = '';
     
-    if (!isset($_POST['amount'])) $form .= ypcf_display_invest_form($content);
+    if (!isset($_POST['amount_part'])) $form .= ypcf_display_invest_form($content);
 
     return $form;
 }
@@ -86,18 +90,22 @@ add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form'
 function ypcf_display_invest_form($error = '') {
     $min_value = ypcf_get_min_value_to_invest();
     $max_value = ypcf_get_max_value_to_invest();
+    $part_value = ypcf_get_part_value();
+    $max_part_value = ypcf_get_max_part_value();
     
-    if (isset($_GET['campaign_id']) && $max_value > 0) {
+    if (isset($_GET['campaign_id']) && $max_part_value > 0) {
 	$form = '';
 	$form .= '<form id="invest_form" action="" method="post" enctype="multipart/form-data">';
-	$form .= '<input id="input_invest_amount" name="amount" type="text" placeholder="&Agrave; partir de ' . $min_value . edd_get_currency() . '">';
+	$form .= '<input id="input_invest_amount_part" name="amount_part" type="text" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
 	$form .= '<input id="input_invest_min_value" name="old_min_value" type="hidden" value="' . $min_value . '">';
 	$form .= '<input id="input_invest_max_value" name="old_max_value" type="hidden" value="' . $max_value . '">';
+	$form .= '<input id="input_invest_part_value" name="part_value" type="hidden" value="' . $part_value . '">';
+	$form .= '<input id="input_invest_max_part_value" name="part_value" type="hidden" value="' . $max_part_value . '">';
 	$form .= '<input id="input_invest_amount_total" type="hidden" value="' . ypcf_get_current_amount() . '">';
 	$form .= '<input type="submit">';
 	$hidden = ' hidden';
-	$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Le montant minimum que vous pouvez investir est de ' . $min_value . edd_get_currency() . '.</span>';
-	$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Le montant maximum que vous pouvez investir est de ' . $max_value . edd_get_currency() . '.</span>';
+	$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Vous devez prendre au moins une part.</span>';
+	$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas prendre plus de '.$max_part_value.' parts.</span>';
 	$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . edd_get_currency() . ' &agrave; investir.</span>';
 	$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
 	$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
@@ -120,11 +128,14 @@ function ypcf_display_invest_form($error = '') {
     
     $min_value = ypcf_get_min_value_to_invest();
     $max_value = ypcf_get_max_value_to_invest();
+    $part_value = ypcf_get_part_value();
+    $max_part_value = ypcf_get_max_part_value();
 
-    if (isset($_GET['campaign_id']) && isset($_POST['amount']) &&  $max_value > 0) {
+    if (isset($_GET['campaign_id']) && isset($_POST['amount_part']) &&  $max_part_value > 0) {
 	//Si la valeur peut être ponctionnée sur l'objectif, et si c'est bien du numérique supérieur à 0
-	$amount_interval = $max_value - $_POST['amount'];
-	if (is_numeric($_POST['amount']) && intval($_POST['amount']) == $_POST['amount'] && $_POST['amount'] >= $min_value && $_POST['amount'] <= $max_value && ($amount_interval == 0 || $amount_interval >= $min_value)) {
+	$amount = $_POST['amount_part'] * $part_value;
+	$amount_interval = $max_value - $amount;
+	if (is_numeric($_POST['amount_part']) && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value && ($amount_interval == 0 || $amount_interval >= $min_value)) {
 
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
@@ -135,7 +146,7 @@ function ypcf_display_invest_form($error = '') {
 	    $campaign = atcf_get_campaign( $post );
 	    edd_empty_cart();
 	    $to_add = array();
-	    $to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => array(), 'quantity' => $_POST['amount'] ) );
+	    $to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => array(), 'quantity' => $amount ) );
 	    EDD()->session->set( 'edd_cart', $to_add );
 	    
 	    $form .= $content;
@@ -150,21 +161,21 @@ function ypcf_display_invest_form($error = '') {
 	    
 	    // Formulaire de confirmation
 	    $form .= '<form action="" method="post" enctype="multipart/form-data">';
-	    $form .= '<input name="amount" type="hidden" value="' . $_POST['amount'] . '">';
+	    $form .= '<input name="amount_part" type="hidden" value="' . $_POST['amount_part'] . '">';
 	    $form .= '<input name="confirmed" type="hidden" value="1">';
 	    ob_start();
 	    edd_agree_to_terms_js();
 	    ypcf_terms_agreement();
 	    $form .= ob_get_clean();
-	    $form .= $_POST['amount'] . edd_get_currency() . ';<input type="submit">';
+	    $form .= $_POST['amount_part'] . ' part soit '.$amount.'&euro;<input type="submit">';
 	    $form .= '</form>';
 	} else {
 	    $error = 'general';
-	    if (intval($_POST['amount']) != $_POST['amount']) $error = 'integer';
-	    if ($_POST['amount'] >= $min_value) $error = 'min';
-	    if ($_POST['amount'] <= $max_value) $error = 'max';
+	    if (intval($_POST['amount_part']) != $_POST['amount_part']) $error = 'integer';
+	    if ($_POST['amount_part'] < 1) $error = 'min';
+	    if ($amount > $max_value) $error = 'max';
 	    if ($amount_interval > 0 && $amount_interval < $min_value) $error = 'interval';
-	    unset($_POST['amount']);
+	    unset($_POST['amount_part']);
 	    $form .= ypcf_display_invest_form($error);
 	}
 
@@ -450,6 +461,27 @@ function ypcf_get_age($day, $month, $year) {
  */
 function ypcf_is_major($day, $month, $year) {
     return (ypcf_get_age($day, $month, $year) >= 18);
+}
+
+/**
+ * retourne la valeur d'une part
+ * @return type
+ */
+function ypcf_get_part_value() {
+    $buffer = 0;
+    if (isset($_GET['campaign_id'])) {
+	$post = get_post($_GET['campaign_id']);
+	$campaign = atcf_get_campaign( $post );
+	$buffer = $campaign->part_value();
+    }
+    return $buffer;
+}
+
+function ypcf_get_max_part_value() {
+    $max_value = ypcf_get_max_value_to_invest();
+    $part_value = ypcf_get_part_value();
+    $remaining_parts = floor($max_value / $part_value);
+    return $remaining_parts;
 }
 
 /**

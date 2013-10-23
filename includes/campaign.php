@@ -277,6 +277,7 @@ class ATCF_Campaigns {
 		$fields[] = '_campaign_physical';
 		$fields[] = 'campaign_goal';
 		$fields[] = 'campaign_minimum_goal';
+		$fields[] = 'campaign_part_value';
 		$fields[] = 'campaign_contact_email';
 		$fields[] = 'campaign_end_date';
 		$fields[] = 'campaign_start_vote';
@@ -1149,6 +1150,13 @@ class ATCF_Campaign {
 		    return 0;
 	    return $goal;
 	}
+	
+	public function part_value() {
+	    $part_value = $this->__get( 'campaign_part_value' );
+	    if ( ! is_numeric( $part_value ) )
+		    return 0;
+	    return $part_value;
+	}
 
 	/**
 	 * Campaign Type
@@ -1563,6 +1571,10 @@ function _atcf_metabox_campaign_info() {
 		<?php else : ?>
 			<input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount($campaign->minimum_goal() ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
 		<?php endif; ?>
+	</p>
+	<p>
+	    <label for="campaign_part_value"><strong><?php _e( 'Valeur de la part', 'yproject' ); ?></strong></label><br />
+	    <input type="text" name="campaign_part_value" id="campaign_part_value" value="<?php echo edd_format_amount($campaign->part_value() ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
 	</p>
 
 	<p>
