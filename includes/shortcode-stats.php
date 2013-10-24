@@ -77,94 +77,70 @@ add_shortcode( 'yproject_crowdfunding_stats', 'ypcf_shortcode_stats' );
 
 
 
-// FONCTION J'y crois :
-function ypcf_jcrois(){
-    global $wpdb, $post;
-    $table_jcrois = $wpdb->prefix . "jycrois";
-
-    $campaign      = atcf_get_campaign( $post );
-    $campaign_id   =  $campaign->ID;
-    $user_id       = wp_get_current_user()->ID;
-    
-    if(isset($_POST['submit']) )
-    {
-        if ( is_user_logged_in() )
-        { 
-            $wpdb->insert( $table_jcrois,
-                    array(
-                        'user_id'       => $user_id,
-                        'campaign_id'    => $campaign_id
-            )); 
-        } else{
-            echo "Ooops vous </br> n'êtes pas connecté !";
-        }
-    }
-    ?>
-    <form name="ypjycrois" action="<?php get_permalink();?>" method="POST" > 
-        <input id="jcrois" type="submit" name="submit" value="" class="bouton_jcrois">
-    </form>
-    <?php   
-}
-
-
-function ypcf_jcrois_pas(){
-    global $wpdb, $post;
-    $table_jcrois = $wpdb->prefix . "jycrois";
-
-    $campaign      = atcf_get_campaign( $post );
-    $campaign_id   =  $campaign->ID;
-    $user_id       = wp_get_current_user()->ID;
-
-    if(isset($_POST['submit']))
-    {
-        if ( is_user_logged_in() )
-        { 
-            $wpdb->delete( $table_jcrois,
-                    array(
-                        'user_id'      => $user_id,
-                        'campaign_id'  => $campaign_id
-            )); 
-        } else{
-             echo "Ooops vous </br> n'êtes pas connecté !";
-        }
-    }
-    ?>
-    <form name="ypjcrois_pas" action="<?php get_permalink();?>" method="POST" class="jycrois"> 
-        <input id="jcrois_pas" type="submit" name="submit"  value="" class="bouton_jcrois" >
-    </form>
-    <?php   
-}
-
-
-
+// FONCTION J'y crois
 function ypcf_shortcode_jcrois(){
-    global $wpdb, $post;
-    $table_jcrois = $wpdb->prefix . "jycrois";
+    $show_jycroispas = false;
+    ?>
+    <div>
+    <?php
 
-    $campaign      = atcf_get_campaign( $post );
-    $campaign_id   =  $campaign->ID;
-    $valide = false;
+    if ( is_user_logged_in() ) { 
+	global $wpdb, $post;
 
-        if ( is_user_logged_in() )
-        { 
-            $user_id       = wp_get_current_user()->ID;
-            $users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = $campaign_id" );
-            foreach ( $users as $user )
-            { 
-                if ( $user->user_id == $user_id)
-                {   
-                    echo "<div>".ypcf_jcrois_pas()."<br/>"
-                    ."<span class='jycrois'>".do_shortcode('[yproject_crowdfunding_count_jcrois]')."</span></div>";
-                    $valide = true;
-                    break;
-                }
-            }          
-        }  
-        if ($valide == false) {
- 
-            echo "<div>".ypcf_jcrois()."<br/>"
-          ."<span class='jycrois'>".do_shortcode('[yproject_crowdfunding_count_jcrois]')."</span></div>";
-        }        
+	$campaign      = atcf_get_campaign( $post );
+	$campaign_id   =  $campaign->ID;
+	$user_id = wp_get_current_user()->ID;
+	$table_jcrois = $wpdb->prefix . "jycrois";
+	
+	if(isset($_POST['submit_jycroispas'])) {
+	    $wpdb->delete( $table_jcrois,
+		array(
+		    'user_id'      => $user_id,
+		    'campaign_id'  => $campaign_id
+		)
+	    );
+	    
+	} else if(isset($_POST['submit_jycrois']) )  {
+            $wpdb->insert( $table_jcrois,
+		array(
+		    'user_id'       => $user_id,
+		    'campaign_id'    => $campaign_id
+		)
+	    ); 
+        }
+	
+	$users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = $campaign_id" );
+	foreach ( $users as $user ) { 
+	    if ( $user->user_id == $user_id) {   
+		$show_jycroispas = true;
+		break;
+	    }
+	}          
+    } else {
+	if (isset($_POST['submit_jycroispas']) || isset($_POST['submit_jycrois'])) {
+	    $page_connexion = get_page_by_path('connexion'); ?>
+            <a href="<?php echo get_permalink($page_connexion->ID); ?>">Connectez-vous !</a>
+	    <?php
+	}    
+    }
+    
+    if ($show_jycroispas == true) {
+	?>
+	<form name="ypjcrois_pas" action="<?php get_permalink();?>" method="POST" class="jycrois"> 
+	    <input id="jcrois_pas" type="submit" name="submit_jycroispas" value="" class="bouton_jcrois" >
+	</form><br/>
+	<?php
+    } else {
+	?>
+	<form name="ypjycrois" action="<?php get_permalink();?>" method="POST" > 
+	    <input id="jcrois" type="submit" name="submit_jycrois" value="" class="bouton_jcrois">
+	</form><br/>
+	<?php
+    }
+    ?>
+	<span class="jycrois"><?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?></span>
+    </div>
+    <?php
 }  
 add_shortcode('yproject_crowdfunding_jcrois','ypcf_shortcode_jcrois');
 
@@ -175,7 +151,7 @@ function ypcf_shortcode_count_jcrois(){
     $table_jcrois = $wpdb->prefix . "jycrois";
 
     $campaign      = atcf_get_campaign( $post );
-    $campaign_id   =  $campaign->ID;
+    $campaign_id   = $campaign->ID;
     
     $cont = $wpdb->get_var( "SELECT count(campaign_id) FROM $table_jcrois WHERE campaign_id = $campaign_id" );
     echo $cont;
