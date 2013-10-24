@@ -110,7 +110,8 @@ function ypcf_display_invest_form($error = '') {
 	$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
 	$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
 	$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>'.edd_get_currency().'.</span>';
-	$form .= '</form>';
+	$form .= '</form><br /><br />';
+	$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';
     } else {
 	$post = get_post($_GET['campaign_id']);
 	$campaign = atcf_get_campaign( $post );
@@ -139,36 +140,45 @@ function ypcf_display_invest_form($error = '') {
 
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
-	    ypcf_init_mangopay_project();
 	    
-	    //Procédure modifiée d'ajout au panier (on ajoute x items de 1 euros => le montant se retrouve en tant que quantité)
-	    $post = get_post($_GET['campaign_id']);
-	    $campaign = atcf_get_campaign( $post );
-	    edd_empty_cart();
-	    $to_add = array();
-	    $to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => array(), 'quantity' => $amount ) );
-	    EDD()->session->set( 'edd_cart', $to_add );
+	    //Si le montant transmis est supérieur à ce que mangopay accepte sans identification
+	    if ($amount > YP_STRONGAUTH_AMOUNT_LIMIT && !ypcf_mangopay_is_user_strong_authenticated($current_user->ID)) {
+		$form .= 'Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro;, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.';
+		
+	    } else {
+		ypcf_init_mangopay_project();
+
+		//Procédure modifiée d'ajout au panier (on ajoute x items de 1 euros => le montant se retrouve en tant que quantité)
+		$post = get_post($_GET['campaign_id']);
+		$campaign = atcf_get_campaign( $post );
+		edd_empty_cart();
+		$to_add = array();
+		$to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => array(), 'quantity' => $amount ) );
+		EDD()->session->set( 'edd_cart', $to_add );
+
+		$form .= $content;
+
+		// Rappel des informations remplies
+		if (session_id() == '') session_start();
+		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+		$form .= $current_user->user_firstname . ' ' . $current_user->user_lastname . ' (' . $current_user->user_email . ' ; ' . $current_user->get('user_person_type') . ')<br />';
+		$form .= $current_user->get('user_nationality') . ' ; ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year') . '<br />';
+		$page_update = get_page_by_path('modifier-mon-compte');
+		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br />';
+
+		// Formulaire de confirmation
+		$form .= '<form action="" method="post" enctype="multipart/form-data">';
+		$form .= '<input name="amount_part" type="hidden" value="' . $_POST['amount_part'] . '">';
+		$form .= '<input name="confirmed" type="hidden" value="1">';
+		ob_start();
+		edd_agree_to_terms_js();
+		ypcf_terms_agreement();
+		$form .= ob_get_clean();
+		$form .= $_POST['amount_part'] . ' part soit '.$amount.'&euro;<input type="submit">';
+		$form .= '</form><br /><br />';
+		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';
+	    }
 	    
-	    $form .= $content;
-	    
-	    // Rappel des informations remplies
-	    if (session_id() == '') session_start();
-	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	    $form .= $current_user->user_firstname . ' ' . $current_user->user_lastname . ' (' . $current_user->user_email . ' ; ' . $current_user->get('user_person_type') . ')<br />';
-	    $form .= $current_user->get('user_nationality') . ' ; ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year') . '<br />';
-	    $page_update = get_page_by_path('modifier-mon-compte');
-	    $form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br />';
-	    
-	    // Formulaire de confirmation
-	    $form .= '<form action="" method="post" enctype="multipart/form-data">';
-	    $form .= '<input name="amount_part" type="hidden" value="' . $_POST['amount_part'] . '">';
-	    $form .= '<input name="confirmed" type="hidden" value="1">';
-	    ob_start();
-	    edd_agree_to_terms_js();
-	    ypcf_terms_agreement();
-	    $form .= ob_get_clean();
-	    $form .= $_POST['amount_part'] . ' part soit '.$amount.'&euro;<input type="submit">';
-	    $form .= '</form>';
 	} else {
 	    $error = 'general';
 	    if (intval($_POST['amount_part']) != $_POST['amount_part']) $error = 'integer';

@@ -74,6 +74,18 @@ function ypcf_mangopay_get_user_by_id($user_id) {
     return request('users/'.$user_id, 'GET');
 }
 
+function ypcf_mangopay_get_user_strong_authentication($user_id) {
+    return request('users/'.$user_id.'/strongAuthentication', 'GET');
+}
+
+function ypcf_mangopay_is_user_strong_authenticated($wp_user_id) {
+    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    $authentication_object = ypcf_mangopay_get_user_strong_authentication($mp_user_id);
+    $buffer = false;
+    if ($authentication_object) $buffer = ($authentication_object->IsDocumentsTransmitted && $authentication_object->IsCompleted && $authentication_object->IsSucceeded);
+    return $buffer;
+}
+
 function ypcf_mangopay_get_wallet_by_id($wallet_id) {
     return request('wallets/'.$wallet_id, 'GET');
 }
@@ -131,6 +143,7 @@ function ypcf_init_mangopay_user($current_user) {
 				    "Email" : "'.$current_user->user_email.'", 
 				    "Nationality" : "'.$current_user->get('user_nationality').'", 
 				    "Birthday" : '.strtotime($current_user->get('user_birthday_year') . "-" . $current_user->get('user_birthday_month') . "-" . $current_user->get('user_birthday_day')).', 
+				    "IP" : "'.$_SERVER['REMOTE_ADDR'].'",
 				    "PersonType" : "'.$current_user->get('user_person_type').'",
 				    "Tag" : "'.$current_user->user_login.'"
 				}');
