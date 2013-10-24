@@ -480,7 +480,8 @@ function ypcf_get_part_value() {
 function ypcf_get_max_part_value() {
     $max_value = ypcf_get_max_value_to_invest();
     $part_value = ypcf_get_part_value();
-    $remaining_parts = floor($max_value / $part_value);
+    if ($part_value > 0) $remaining_parts = floor($max_value / $part_value);
+    else $remaining_parts = 0;
     return $remaining_parts;
 }
 
