@@ -30,7 +30,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                 $local                  = $_POST[ 'local' ];
                 $environmental          = $_POST[ 'environmental' ];
                 $social                 = $_POST[ 'social' ];
-                $autre                  = $_POST[ 'autre' ];
+                $autre                  = htmlentities($_POST[ 'autre' ]);
 
                 $desaprouve             = $_POST[ 'desaprouve' ]; 
 
@@ -47,7 +47,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                 $qualite_business_plan  = $_POST[ 'qualite_business_plan' ];
                 $qualite_innovation     = $_POST[ 'qualite_innovation' ];
                 $qualite_marche         = $_POST[ 'qualite_marche' ];
-                $conseil                = $_POST[ 'conseil' ];
+                $conseil                = htmlentities($_POST[ 'conseil' ]);
      
                 $user_last_name         = wp_get_current_user()->user_lastname;
                 $user_first_name        = wp_get_current_user()->user_firstname;
@@ -128,19 +128,19 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
         }
          
     $atts = shortcode_atts( array(
-	'remaining_days' => 0
+    'remaining_days' => 0
     ), $atts );
 
 ?>
     </div>
     <div class="left post_bottom_infos">
-	Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
+    Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
         <div class="post_bottom_buttons">
             <div class="dark" style="color:white;text-transform:none;padding-left:5px;">
                 <legend>Votez sur ce projet</legend>
             </div>
             <div class="light" style="text-transform:none;text-align : left; padding-left:5px;" >
-		<form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
+        <form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
                        
                         <input id="impact-positif" type="radio" name="impact"  value="positif" checked="checked">
                         Je pense que ce projet va avoir un impact positif</input></br>
@@ -190,8 +190,8 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                         <textarea type="text" name="conseil" id="conseil" value="conseil"></textarea></br>
                         <br><input type="submit" name="submit" value= "valider" />
 
-		</form>
-	    </div>
+        </form>
+        </div>
         </div>
     </div>
     <div style="clear: both;"></div>
