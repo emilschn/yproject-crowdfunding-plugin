@@ -23,35 +23,31 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
  
  function atcf_shortcode_update( $editing = false ) {
-	global $campaign, $post, $edd_options;
+	$post = get_post($_GET['campaign_id']);
 	
 	// La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
 	$current_user = wp_get_current_user();
 	$current_user_id = $current_user->ID;
-	$author_id = get_the_author_meta('ID');
-	if ($current_user_id == $author_id || current_user_can('manage_options')) {
+	if ($current_user_id == $post->post_author || current_user_can('manage_options')) {
 
 	    $crowdfunding = crowdfunding();
 
-	    $post = get_post($_GET['campaign_id']);
 	    $campaign = atcf_get_campaign( $post );
 	
 	    if (isset($_POST['action']) && $_POST['action'] == 'atcf-campaign-submit') {
 		$post_update = array();
 		$post_update['ID'] = $campaign->ID;
-		$post_update['post_content'] = $_POST['description'];
+		if (isset($_POST['title']) && $_POST['title'] != "") $post_update['post_title'] = $_POST['title'];
+		if (isset($_POST['description']) && $_POST['description'] != "") $post_update['post_content'] = $_POST['description'];
 		wp_update_post($post_update);
 		
-		update_post_meta($campaign->ID, 'campaign_company_status', sanitize_text_field($_POST['company_status']));
-		update_post_meta($campaign->ID, 'campaign_company_status_other', sanitize_text_field($_POST['company_status_other']));
-		update_post_meta($campaign->ID, 'campaign_init_capital', sanitize_text_field($_POST['init_capital']));
-		update_post_meta($campaign->ID, 'campaign_impact_area', sanitize_text_field($_POST['impact_area']));
-		update_post_meta($campaign->ID, 'campaign_summary', sanitize_text_field($_POST['summary']));
-		update_post_meta($campaign->ID, 'campaign_societal_challenge', sanitize_text_field($_POST['societal_challenge']));
+		update_post_meta($campaign->ID, 'campaign_video', esc_url($_POST['video']));
+		update_post_meta($campaign->ID, 'campaign_summary', $_POST['summary']);
+		
 		update_post_meta($campaign->ID, 'campaign_added_value', sanitize_text_field($_POST['added_value']));
+		update_post_meta($campaign->ID, 'campaign_societal_challenge', sanitize_text_field($_POST['societal_challenge']));
 		update_post_meta($campaign->ID, 'campaign_economic_model', sanitize_text_field($_POST['economic_model']));
 		update_post_meta($campaign->ID, 'campaign_implementation', sanitize_text_field($_POST['implementation']));
-		update_post_meta($campaign->ID, 'campaign_video', esc_url($_POST['video']));
 		
 		/* Gestion fichiers / images */
 		$image	    = $_FILES[ 'image' ];
@@ -117,18 +113,18 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		    'oneReward' => __( 'At least one reward is required.', 'atcf' )
 	    ) );
 ?>
-	    <?php do_action( 'atcf_shortcode_update_before', $editing, $campaign ); ?>
+	    <?php do_action( 'atcf_shortcode_update_before', $editing, $campaign, $post ); ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
-		    <?php do_action( 'atcf_shortcode_update_fields', $editing, $campaign ); ?>
+		    <?php do_action( 'atcf_shortcode_update_fields', $editing, $campaign, $post ); ?>
 
 		    <p class="atcf-update-campaign-update">
-			    <input type="submit" value="<?php echo $editing ? sprintf( _x( 'Update %s', 'edit "campaign"', 'atcf' ), edd_get_label_singular() ) : sprintf( _x( 'Update %s', 'submit "campaign"', 'atcf' ), edd_get_label_singular() ); ?>">
+			    <input type="submit" value="Mettre &agrave; jour le projet">
 			    <input type="hidden" name="action" value="atcf-campaign-<?php echo $editing ? 'edit' : 'submit'; ?>" />
 			    <?php wp_nonce_field( 'atcf-campaign-edit' ); ?>
 		    </p>
 
 	    </form>
-	    <?php do_action( 'atcf_shortcode_update_after', $editing, $campaign ); ?>
+	    <?php do_action( 'atcf_shortcode_update_after', $editing, $campaign, $post ); ?>
 
 <?php
 	    $form = ob_get_clean();
@@ -136,22 +132,55 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    return $form;
 	}
 }
-
 add_shortcode( 'appthemer_crowdfunding_update', 'atcf_shortcode_update' );
 
+function atcf_shortcode_update_field_title($editing, $campaign, $post) {
+    ?>
+    <div class="update_field atcf-update-campaign-title">
+	<label class="update_field_label" for="title">Nom du projet</label><br />
+	<textarea name="title" id="title" rows="1" cols="40"><?php echo $post->post_title; ?></textarea>
+    </div><br />
+    <?php
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_title', 10, 3);
 
-/**
- * Campaign summary
- * Ce champs repr�sente le Resum�
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function atcf_shortcode_update_field_description( $editing, $campaign ) {
+
+
+function atcf_shortcode_update_field_summary( $editing, $campaign, $post ) {
 ?>
-	<div class="atcf-update-campaign-summary">
-		<label for="description"><?php _e( 'Description', 'atcf' ); ?></label>
+    <div class="update_field atcf-update-campaign-summary">
+	<label class="update_field_label" for="summary">R&eacute;sum&eacute;</label><br />
+	<textarea name="summary" id="summary" rows="5" cols="40"><?php echo strip_tags(html_entity_decode($campaign->summary())); ?></textarea>
+    </div><br />
+<?php
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_summary', 10, 3);
+
+
+function atcf_shortcode_update_field_images( $editing, $campaign, $post ) {
+?>
+    <div class="update_field atcf-update-campaign-images">
+	<label class="update_field_label" for="image">Image (id&eacute;alement 960px de largeur * 240px de hauteur)</label><br />
+	<input type="file" name="image" id="image" />
+    </div><br />
+<?php
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_images', 10, 3);
+
+function atcf_shortcode_update_field_video( $editing, $campaign, $post ) {
+?>
+    <div class="update_field atcf-update-campaign-video">
+	<label class="update_field_label" for="video">Vid&eacute;o de pr&eacute;sentation</label><br />
+	<textarea name="video" id="video" rows="1" cols="40" placeholder="URL de la vidéo"><?php echo $campaign->video(); ?></textarea>
+    </div><br />
+<?php
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_video', 10, 3);
+
+function atcf_shortcode_update_field_description( $editing, $campaign, $post ) {
+?>
+	<div class="update_field atcf-update-campaign-description">
+		<label class="update_field_label" for="description">En quoi consiste le projet ?</label><br />
 		<?php 
 			wp_editor( $campaign ? html_entity_decode( $campaign->data->post_content ) : '', 'description', apply_filters( 'atcf_submit_field_description_editor_args', array( 
 				'media_buttons' => true,
@@ -166,144 +195,16 @@ function atcf_shortcode_update_field_description( $editing, $campaign ) {
 				),
 			) ) ); 
 		?>
-	</div>
+	</div><br />
 <?php
 }
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_description', 10, 2 );
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_description', 10, 3);
 
 
-
-
-/**
- * Campaign Zone d'impact
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function atcf_shortcode_update_field_impact_area ($editing, $campaign ) {
+function atcf_shortcode_update_field_added_value( $editing, $campaign, $post ) {
 ?>
-	<p class="atcf-update-campaign-impact_area">
-		<label for="impact_area"><?php _e( 'Impact area', 'atcf' ); ?></label>
-		<textarea name="impact_area" id="impact_area"><?php echo $campaign->impact_area(); ?></textarea>
-	</p>
-<?php
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_impact_area', 10, 2 );
-
-
-function atcf_shortcode_update_field_summary( $editing, $campaign ) {
-?>
-	<div class="atcf-update-campaign-summary">
-		<label for="summary"><?php _e( 'Summary', 'atcf' ); ?></label>
-		<?php 
-			wp_editor( $campaign ? html_entity_decode( $campaign->summary () ) : '', 'summary', apply_filters( 'atcf_submit_field_summary_editor_args', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
-		?>
-	</div>
-<?php
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_summary', 10, 2 );
-
-
-
-/**
- * Campaign Defi sociatal
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function atcf_shortcode_update_field_societal_challenge( $editing, $campaign ) {
-?>
-	<div class="atcf-update-campaign-societal_challenge">
-		<label for="societal_challenge"><?php _e( 'Societal challenge', 'atcf' ); ?></label>
-		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'societal_challenge', apply_filters( 'atcf_submit_field_summary_editor_args', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: red; width: 200 px; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
-		?>
-	</div>
-<?php
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_societal_challenge', 11, 2 );
-
-
-
-function atcf_shortcode_update_field_company_status() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="company_status">
-		<textarea name="company_status" id="company_status" class="widefat"><?php echo $campaign->company_status(); ?></textarea>
-	</p>
-<?php
-    
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_company_status', 11, 2 );
-
-
-
-function atcf_shortcode_update_field_company_status_other() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="company_status_other">
-		<textarea name="company_status_other" id="company_status_other" class="widefat"><?php echo $campaign->company_status_other(); ?></textarea>
-	</p>
-<?php
-    
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_company_status_other', 11, 2 );
-
-
-function atcf_shortcode_update_field_init_capital() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="init_capital">
-		<textarea name="init_capital" id="init_capital" class="widefat"><?php echo $campaign->init_capital(); ?></textarea>
-	</p>
-<?php
-    
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_init_capital', 11, 2 );
-
-
-/**
- * Campaign Valeur ajout�e
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
- 
- function atcf_shortcode_update_field_added_value( $editing, $campaign ) {
-?>
-	<div class="atcf-update-campaign_value_added">
-		<label for="value_added"><?php _e( 'Added value', 'atcf' ); ?></label>
+	<div class="update_field atcf-update-campaign_added_value">
+		<label class="update_field_label" for="added_value">Quelle est l’opportunité économique du projet ?</label><br />
 		<?php 
 			wp_editor( $campaign ? html_entity_decode($campaign->added_value()) : '', 'added_value', apply_filters( 'atcf_submit_field_value_added_editor_args', array( 
 				'media_buttons' => true,
@@ -318,31 +219,21 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_init_ca
 				),
 			) ) ); 
 		?>
-	</div>
+	</div><br />
 <?php
 }
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_added_value', 11, 2 );
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_added_value', 10, 3);
 
-
-/**
- * Campaign Strat�gie de d�veloppement
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-
- 
- function atcf_shortcode_update_field_development_strategy( $editing, $campaign ) {
+function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $post ) {
 ?>
-	<div class="atcf-update-campaign-developement_strategy">
-		<label for="developement_strategy"><?php _e( 'Strategy of development', 'atcf' ); ?></label>
-		<?php
-			wp_editor( $campaign ? html_entity_decode($campaign->development_strategy()) : '', 'development_strategy', apply_filters( 'atcf_submit_field_development_strategy_editor_args', array( 
+	<div class="update_field atcf-update-campaign-societal_challenge">
+		<label class="update_field_label" for="societal_challenge">Quelle est l’utilit&eacute; soci&eacute;tale du projet ?</label><br />
+		<?php 
+			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'societal_challenge', apply_filters( 'atcf_submit_field_societal_challenge_editor_args', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
 				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
+				'editor_css'    => '<style>body { background: red; width: 200 px; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
 					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
@@ -351,24 +242,15 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_added_v
 				),
 			) ) ); 
 		?>
-	</div>
+	</div><br />
 <?php
 }
-//add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_development_strategy', 11, 2 );
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_societal_challenge', 10, 3);
 
-
-
-/**
- * Campaign Modele economique
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-  function atcf_shortcode_update_field_economic_model( $editing, $campaign ) {
+function atcf_shortcode_update_field_economic_model( $editing, $campaign, $post ) {
 ?>
-	<div class="atcf-update-campaign_economic_model">
-		<label for="economic_model"><?php _e( 'Economic model', 'atcf' ); ?></label>
+	<div class="update_field atcf-update-campaign_economic_model">
+		<label class="update_field_label" for="economic_model">Quel est le mod&egrave;le &eacute;conomique du projet ?</label><br />
 		<?php 
 			wp_editor( $campaign ? html_entity_decode($campaign->economic_model()) : '', 'economic_model', apply_filters( 'atcf_submit_field_economic_model_editor_args', array( 
 				'media_buttons' => true,
@@ -383,55 +265,15 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_added_v
 				),
 			) ) ); 
 		?>
-	</div>
+	</div><br />
 <?php
 }
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_economic_model', 11, 2 );
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_economic_model', 10, 3 );
 
-
-/**
- * Campaign Mesure d�impact
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
- 
-   function atcf_shortcode_update_field_measuring_impact( $editing, $campaign ) {
+function atcf_shortcode_update_field_implementation( $editing, $campaign, $post ) {
 ?>
-	<div class="atcf-update-campaign_measuring_impact">
-		<label for="measuring_impact"><?php _e( 'Measuring Impact', 'atcf' ); ?></label>
-		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->measuring_impact()) : '', 'measuring_impact', apply_filters( 'atcf_submit_field_measuring_impact_editor_args', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
-		?>
-	</div>
-<?php
-}
-//add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_measuring_impact', 11, 2 );
-
-/**
- * Campaign Mise en oeuvre
- *implementation
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
- 
-   function atcf_shortcode_update_field_implementation( $editing, $campaign ) {
-?>
-	<div class="atcf-update-campaign-implementation">
-		<label for="implementation"><?php _e( 'Implementation', 'atcf' ); ?></label>
+	<div class="update_field atcf-update-campaign-implementation">
+		<label class="update_field_label" for="implementation">Qui porte le projet ?</label><br />
 		<?php 
 			wp_editor( $campaign ? html_entity_decode($campaign->implementation()) : '', 'implementation', apply_filters( 'atcf_submit_field_implementation_editor_args', array( 
 				'media_buttons' => true,
@@ -446,82 +288,7 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_economi
 				),
 			) ) ); 
 		?>
-	</div>
-<?php
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_implementation', 11, 2 );
-
- 
-
-/**
- * Campaign Updates
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function atcf_shortcode_update_field_updates( $editing, $campaign ) {
-	if ( ! $editing )
-		return;
-?>
-	<div class="atcf-update-campaign-updates">
-		<label for="description"><?php _e( 'Updates', 'atcf' ); ?></label>
-		<?php 
-			wp_editor( $campaign->updates(), 'updates', apply_filters( 'atcf_submit_field_updates_editor_args', array( 
-				'media_buttons' => false,
-				'teeny'         => true,
-				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
-		?>
 	</div><br />
 <?php
 }
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_updates', 55, 2 );
-
-
-/**
- * Campaign Images
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function atcf_shortcode_update_field_images( $editing, $campaign ) {
-	if ( $editing )
-		return;
-?>
-	<p class="atcf-update-campaign-images">
-		<label for="excerpt"><?php _e( 'Preview Image', 'atcf' ); ?></label>
-		<input type="file" name="image" id="image" />
-	</p>
-<?php
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_images', 12, 2 );
-
-/**
- * Campaign Video
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function atcf_shortcode_update_field_video( $editing, $campaign ) {
-	if ( $editing )
-		return;
-?>
-	<p class="atcf-update-campaign-video">
-		<label for="length"><?php _e( 'Video URL', 'atcf' ); ?></label>
-		<input type="text" name="video" id="video" value="<?php echo $campaign->video(); ?>">
-	</p>
-<?php
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_video', 12, 2 );
-
-
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_implementation', 10, 3);

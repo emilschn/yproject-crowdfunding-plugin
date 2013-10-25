@@ -10,16 +10,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 //****************************************************************//
 
 // formulaire de vote
-function ypcf_shortcode_printPageVoteForm($post, $campaign) {
+function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
   
-  global $wpdb;
+    global $wpdb, $post;
     $table_name = $wpdb->prefix . "ypVotes"; 
     $isvoted = false; 
     $sum_valid = false;
 
     $crowdfunding = crowdfunding();
 
-    $post = get_post($_GET['campaign_id']);
+    if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post ); 
         
     if (isset($_POST['submit']))
@@ -127,16 +127,20 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
 
         }
          
+    $atts = shortcode_atts( array(
+	'remaining_days' => 0
+    ), $atts );
 
 ?>
-            <!--Formulaire de soumission de vote, visible depuis la page project des projets en vote-->
+    </div>
     <div class="left post_bottom_infos">
+	Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
         <div class="post_bottom_buttons">
             <div class="dark" style="color:white;text-transform:none;padding-left:5px;">
                 <legend>Votez sur ce projet</legend>
             </div>
             <div class="light" style="text-transform:none;text-align : left; padding-left:5px;" >
-            <form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
+		<form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
                        
                         <input id="impact-positif" type="radio" name="impact"  value="positif" checked="checked">
                         Je pense que ce projet va avoir un impact positif</input></br>
@@ -186,11 +190,11 @@ function ypcf_shortcode_printPageVoteForm($post, $campaign) {
                         <textarea type="text" name="conseil" id="conseil" value="conseil"></textarea></br>
                         <br><input type="submit" name="submit" value= "valider" />
 
-             </form>
-         </div>
-        </div> 
-         
+		</form>
+	    </div>
+        </div>
     </div>
+    <div style="clear: both;"></div>
         
 <?php
 }

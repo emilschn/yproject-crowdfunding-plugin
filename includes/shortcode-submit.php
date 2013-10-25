@@ -392,7 +392,7 @@ function atcf_shortcode_submit_before_success() {
 	if ( ! isset ( $_GET[ 'success' ] ) )
 		return;
 
-	$message = apply_filters( 'atcf_shortcode_submit_success', __( 'Success! Your campaign has been received. It will be reviewed shortly.', 'atcf' ) );
+	$message = apply_filters( 'atcf_shortcode_submit_success', __( 'Merci ! Nous avons bien re&ccedil;u votre projet. Nous reviendrons vers vous apr&egrave;s &eacute;tude.', 'yproject' ) );
 ?>
 	<p class="edd_success"><?php echo esc_attr( $message ); ?></p>	
 <?php
