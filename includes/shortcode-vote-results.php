@@ -14,17 +14,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     // La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
     $current_user = wp_get_current_user();
     $current_user_id = $current_user->ID;
-    $author_id = get_the_author_meta('ID');
+    $save_post = $post;
+    if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
+    $author_id = $post->post_author;
+    ob_start();
     if (($current_user_id == $author_id || current_user_can('manage_options')) && isset($_GET['campaign_id'])) {
 
     $crowdfunding = crowdfunding();
 
-    $post = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post );
     $campaign_id =  $campaign->ID;
-    
-    $category_slug = $post->ID . '-vote-' . $post->post_title;
-    $category_obj = get_category_by_slug($category_slug);
 
     // Cette variable permet de compter  le nombre de  partcipants
     $count_users = $wpdb->get_var( "SELECT count( user_id) FROM $table_name WHERE campaign_id = $campaign_id " );
@@ -168,7 +167,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     
 
 
-    ob_start();
     echo "</br>";
 
 ?>
@@ -298,6 +296,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
        }
     }
     echo '</table>';
+    $post = $save_post;
     return ob_get_clean();
 }
 

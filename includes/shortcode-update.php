@@ -142,7 +142,7 @@ function atcf_shortcode_update_field_title($editing, $campaign, $post) {
     </div><br />
     <?php
 }
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_title', 10, 3);
+//add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_title', 10, 3);
 
 
 

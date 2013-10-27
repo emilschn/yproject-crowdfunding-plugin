@@ -12,12 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     // La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
     $current_user = wp_get_current_user();
     $current_user_id = $current_user->ID;
-    $author_id = get_the_author_meta('ID');
+    $save_post = $post;
+    if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
+    $author_id = $post->post_author;
     if (($current_user_id == $author_id || current_user_can('manage_options')) && isset($_GET['campaign_id'])) {
-
 	$crowdfunding = crowdfunding();
 
-	$post = get_post($_GET['campaign_id']);
 	$campaign = atcf_get_campaign( $post );
 	
 	$category_slug = $post->ID . '-blog-' . $post->post_title;
@@ -36,7 +36,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    wp_insert_post($blog, true);
 	}
 
-	ob_start();
 	
 	?>
 	<div style="padding-top: 10px;">
@@ -76,9 +75,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    </form>
 	</div>
 	<?php
+	$post = $save_post;
     }
-
-    return ob_get_clean();
 }
 add_shortcode( 'yproject_crowdfunding_add_news', 'ypcf_shortcode_add_news' );
 
