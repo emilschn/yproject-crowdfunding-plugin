@@ -275,26 +275,24 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $conseils = $wpdb->get_results( "SELECT user_login,user_email,user_id,conseil FROM $table_name WHERE campaign_id = $campaign_id " );
 
     echo '<table id="tab-results">';
-    echo '<tr>'.'<td>';
-        echo 'Conseils';
-        echo '</td>';
-        echo '<td>';
-        echo 'Participants';
-        echo '</td>'.'</tr>';
-    foreach ( $conseils as $cons ) 
-    {
-        if(empty($cons->conseil)){
+	echo '<tr>'.'<td>';
+	echo 'Conseils';
+	echo '</td>';
+	echo '<td>';
+	echo 'Participants';
+	echo '</td>'.'</tr>';
+        if(empty($conseils)){
             echo '</table>';
-        } else
-        {
-        echo '<tr>'.'<td>';
-        echo $cons->conseil;
-        echo '</td>';
-        echo '<td>';
-        echo $cons->user_login;
-        echo '</td>'.'</tr>';
-       }
-    }
+        } else {
+	    foreach ( $conseils as $cons ) {
+	    echo '<tr>'.'<td>';
+	    echo $cons->conseil;
+	    echo '</td>';
+	    echo '<td>';
+	    echo $cons->user_login;
+	    echo '</td>'.'</tr>';
+	    }
+	}
     echo '</table>';
     $post = $save_post;
     return ob_get_clean();

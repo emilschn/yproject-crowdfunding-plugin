@@ -26,28 +26,25 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
         { 
             if ( is_user_logged_in() )
             {
-                $impact                 = $_POST[ 'impact' ];
-                $local                  = $_POST[ 'local' ];
-                $environmental          = $_POST[ 'environmental' ];
-                $social                 = $_POST[ 'social' ];
-                $autre                  = htmlentities($_POST[ 'autre' ]);
+                $impact                 = isset($_POST[ 'impact' ]) ? $_POST[ 'impact' ] : "";
+                $local                  = isset($_POST[ 'local' ]) ? $_POST[ 'local' ] : false;
+                $environmental          = isset($_POST[ 'environmental' ]) ? $_POST[ 'environmental' ] : false;
+                $social                 = isset($_POST[ 'social' ]) ? $_POST[ 'social' ] : false;
+                $autre                  = isset($_POST[ 'autre' ]) ? htmlentities($_POST[ 'autre' ]) : '';
 
-                $desaprouve             = $_POST[ 'desaprouve' ]; 
+                $sum                    = isset($_POST[ 'sum' ]) ? $_POST[ 'sum' ] : 0;    
 
-                $pret_pour_collect      = $_POST[ 'pret_pour_collect' ]; 
-                $sum                    = $_POST[ 'sum' ];          
-
-                $liste_risque           = $_POST[ 'liste_risque' ];
+                $liste_risque           = isset($_POST[ 'liste_risque' ]) ? $_POST[ 'liste_risque' ] : '';  
                    
-                $maturite               = $_POST[ 'maturite' ];
-                $pas_responsable        = $_POST[ 'pas_responsable' ];
-                $mal_explique           = $_POST[ 'mal_explique' ];
-                $qualite_produit        = $_POST[ 'qualite_produit' ];
-                $qualite_equipe         = $_POST[ 'qualite_equipe' ];
-                $qualite_business_plan  = $_POST[ 'qualite_business_plan' ];
-                $qualite_innovation     = $_POST[ 'qualite_innovation' ];
-                $qualite_marche         = $_POST[ 'qualite_marche' ];
-                $conseil                = htmlentities($_POST[ 'conseil' ]);
+                $maturite               = isset($_POST[ 'maturite' ]) ? $_POST[ 'maturite' ] : false; 
+                $pas_responsable        = isset($_POST[ 'pas_responsable' ]) ? $_POST[ 'pas_responsable' ] : false; 
+                $mal_explique           = isset($_POST[ 'mal_explique' ]) ? $_POST[ 'mal_explique' ] : false; 
+                $qualite_produit        = isset($_POST[ 'qualite_produit' ]) ? $_POST[ 'qualite_produit' ] : false; 
+                $qualite_equipe         = isset($_POST[ 'qualite_equipe' ]) ? $_POST[ 'qualite_equipe' ] : false; 
+                $qualite_business_plan  = isset($_POST[ 'qualite_business_plan' ]) ? $_POST[ 'qualite_business_plan' ] : false; 
+                $qualite_innovation     = isset($_POST[ 'qualite_innovation' ]) ? $_POST[ 'qualite_innovation' ] : false; 
+                $qualite_marche         = isset($_POST[ 'qualite_marche' ]) ? $_POST[ 'qualite_marche' ] : false; 
+                $conseil                = isset($_POST[ 'conseil' ]) ? htmlentities($_POST[ 'conseil' ]) : '';
      
                 $user_last_name         = wp_get_current_user()->user_lastname;
                 $user_first_name        = wp_get_current_user()->user_firstname;
@@ -59,11 +56,12 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                 $campaign               = atcf_get_campaign( $post );
                 $campaign_id            =  $campaign->ID;
 
-                if  (is_numeric($_POST[ 'sum' ]) OR $_POST[ 'sum' ] == NULL ) {
+                if  (!is_numeric($_POST[ 'sum' ])) {
+                    echo '<label style="color:red">*Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
+                } else {
                    $sum = $_POST[ 'sum' ];
                    $sum_valid = true;
-                    echo '<label style="color:red">*Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
-                } 
+		}
               /**  elseif( $impact || $local || $environmental || $social || $autre || $desaprouve ||
                         $pret_pour_collect || $sum || $liste_risque|| $maturite || $pas_responsable ||
                         $mal_explique  || $qualite_produit ||   $qualite_equipe || $qualite_business_plan ||
@@ -94,8 +92,6 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                                                 'environmental'           => $environmental,
                                                 'social'                  => $social,
                                                 'autre'                   => $autre,
-                                                'desaprouve'              => $desaprouve,
-                                                'pret_pour_collect'       => $pret_pour_collect,
                                                 'sum'                     => $sum,
                                                 'liste_risque'            => $liste_risque,
                                                 'retravaille'             => $maturite,
@@ -134,65 +130,80 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 ?>
     </div>
     <div class="left post_bottom_infos">
-    Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
+	Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
+	
+	<?php
+            $users = $wpdb->get_results( 'SELECT user_id FROM '.$table_name.' WHERE campaign_id = '.$campaign->ID );
+	    $has_voted = false;
+            foreach ( $users as $user ){
+                if ( $user->user_id == wp_get_current_user()->ID) $has_voted = true;
+	    }
+	    if ($has_voted):
+	?>
+	    Merci pour votre vote.
+	<?php
+	    else:
+	?>
         <div class="post_bottom_buttons">
             <div class="dark" style="color:white;text-transform:none;padding-left:5px;">
                 <legend>Votez sur ce projet</legend>
             </div>
             <div class="light" style="text-transform:none;text-align : left; padding-left:5px;" >
-        <form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
+		<form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
                        
-                        <input id="impact-positif" type="radio" name="impact"  value="positif" checked="checked">
-                        Je pense que ce projet va avoir un impact positif</input></br>
-
-                        <span id="impact-positif-content" style="display: ">
-                            <input type="checkbox" id="local" name="local"  value="local">Local</input></br>
-                            <input type="checkbox" id="environmental" name="environmental" value="environmental">Environnemental</input></br>
-                            <input type="checkbox" id="social" name="social" value="social">Social</label></br>
-                            <input type="checkbox" id="autre" name="autre" value="autre">Autre</input>
-                            <input id="precision"  id="precision" name="precision" type="text" placeholder="tapez ici" />
-                        </span></br>
-                        
-                        <input id="desaprouve" type="radio" name="impact" value="negatif" >Je d&egravesapprouve ce projet car son impact pr&eacutevu n'est pas significatif</input></br></br>
+			<strong>Impacts et coh&eacute;rence du projet</strong><br />
+                        <input id="impact-positif" type="radio" name="impact" value="positif">Je pense que ce projet va avoir un impact positif<br />
+                        <p id="impact-positif-content" style="display: none;">
+                            <input type="checkbox" id="local" name="local"  value="local">Local<br />
+                            <input type="checkbox" id="environmental" name="environmental" value="environmental">Environnemental<br />
+                            <input type="checkbox" id="social" name="social" value="social">Social<br />
+                            <input type="checkbox" id="autre" name="autre" value="autre">Autre
+                            <input id="precision"  id="precision" name="precision" type="text" placeholder="Pr&eacute;ciser..." />
+                        </p>
+                        <input id="desaprouve" type="radio" name="impact" value="negatif" >Je d&eacute;sapprouve ce projet car son impact pr&eacute;vu n'est pas significatif<br /><br />
 
                         
-                        <input id="pret" type="radio" name="maturite" value="pret" checked="checked">Je pense que ce projet est pr&ecirct pour la collecte</input></br>
-                        <span id="content-pret">
-                            <label  id="investir" name="investir" value="investir">Je serais pr&ecirct &agrave investir</label></br>
-                            <input id="sum" name="sum" type="text" placeholder="200 euro" v/></br>
+			<strong>Maturit&eacute; et collecte</strong><br />
+                        <input id="pret" type="radio" name="maturite" value="pret">Je pense que ce projet est pr&ecirc;t pour la collecte<br />
+                        <p id="pret-content" style="display: none;">
+                            <label id="investir" name="investir" value="investir">Je serais pr&ecirc;t &agrave; investir</label><br />
+                            <input id="sum" name="sum" type="text" placeholder="100" />&euro;<br />
                          
-                            <label class="risque" name="risque" value="risque">Risque li&eacute &aring ce projet</label></br>
+                            <label class="risque" name="risque" value="risque">Je pense que ce projet pr&eacute;sente un risque [<a href="javascript:void(0);" title="Evaluez les chances de r&eacute;ussite de ce projet en indiquant le risque que vous estimez. 1 repr&eacute;sente un risque faible (donc de grande chances de r&eacute;ussite), 5 un risque &eacute;lev&eacute; (de faibles chances de r&eacute;ussite). Le niveau de risque du projet a une influence sur sa valeur.">?</a>] :</label><br />
                             <select id="liste_risque" name="liste_risque"  placeholder="choisir le type de risque">
-                                <option ></option>
-                                <option id="risque_tres_faible">Le risque tr&egraves faible</option>
-                                <option id="risque_plutot_faible">Le risque plut&ocirct faible</option>
-                                <option id="risque_modere">Le risque mod&eacuter&eacute</option>
-                                <option id="risque_plutot_eleve">Le risque plut&ocirct &eacutelev&eacute</option>
-                                <option id="risque_tres_eleve">Le risque tr&egraves &eacutelev&eacute</option>
+                                <option></option>
+                                <option id="risque_tres_faible">tr&egrave;s faible</option>
+                                <option id="risque_plutot_faible">plut&ocirc;t faible</option>
+                                <option id="risque_modere">mod&eacute;r&eacute;</option>
+                                <option id="risque_plutot_eleve">plut&ocirc;t &eacute;lev&eacute;</option>
+                                <option id="risque_tres_eleve">tr&egrave;s &eacute;lev&eacute;</option>
                             </select>
-                        </span></br></br>
+                        </p>
 
-                        
-                        <input id="retravaille" type="radio" name="maturite" value="retravaille">Je pense que ce projet doit &ecirctre retravaill&eacute avant de pouvoir &ecirctre financ&eacute. Sur quels points </input></br></br>
-                        <span id="retravaille-content">
-                            <input type="checkbox" id="" name="pas_responsable" value="pas_responsable">Pas d&acuteimpact responsable</input></br>
-                            <input type="checkbox" id="" name="mal_explique" value="mal_explique">Projet mal expliqu&eacute  </input></br>
-                            <input type="checkbox" id="" name="qualite_produit" value="qualite_produit">Qualit&eacute du produit/service</input></br>
-                            <input type="checkbox" id="" name="qualite_equipe" value="qualite_equipe">Qualit&eacute de l&acute&eacutequipe</input></br>
-                            <input type="checkbox" id="" name="qualite_business_plan" value="qualite_business_plan">Qualit&eacute du business plan</input></br>
-                            <input type="checkbox" id="" name="qualite_innovation" value="qualite_innovation">Qualit&eacute d&acuteinnovation</input></br>
-                            <input type="checkbox" id=""name="qualite_marche" value="qualite_marche" >Qualit&eacute du march&eacute, porteur</input></br>
+                        <input id="retravaille" type="radio" name="maturite" value="retravaille">Je pense que ce projet doit &ecirc;tre retravaill&eacute; sur ces points :<br />
+                        <p id="retravaille-content" style="display: none;">
+                            <input type="checkbox" id="" name="pas_responsable" value="pas_responsable">Pas d&apos;impact responsable<br />
+                            <input type="checkbox" id="" name="mal_explique" value="mal_explique">Projet mal expliqu&eacute;<br />
+                            <input type="checkbox" id="" name="qualite_produit" value="qualite_produit">Qualit&eacute; du produit/service<br />
+                            <input type="checkbox" id="" name="qualite_equipe" value="qualite_equipe">Qualit&eacute; de l&apos;&eacute;quipe<br />
+                            <input type="checkbox" id="" name="qualite_business_plan" value="qualite_business_plan">Qualit&eacute; du business plan<br />
+                            <input type="checkbox" id="" name="qualite_innovation" value="qualite_innovation">Qualit&eacute; d&apos;innovation<br />
+                            <input type="checkbox" id="" name="qualite_marche" value="qualite_marche">Qualit&eacute; du march&eacute;, porteur<br />
                 
-                            <label> Autre</label>
-                            <input type="text" name="other" id="other" ></input></br></br>
-                        </span>
-                        <label> Conseil</label><br>
-                        <textarea type="text" name="conseil" id="conseil" value="conseil"></textarea></br>
-                        <br><input type="submit" name="submit" value= "valider" />
+                            <label for="other">Autre</label><input type="text" name="other" id="other">
+                        </p><br />
+			
+			<strong>Remarques</strong><br />
+                        <span>Quels conseils ou encouragements souhaiteriez-vous donner au(x) porteur(s) de ce projet ?</span><br />
+                        <textarea type="text" name="conseil" id="conseil" value="conseil" style="width: 280px;"></textarea><br />
+			
+			<br />
+                        <input type="submit" name="submit" value="Voter" />
 
-        </form>
+		</form>
+	    </div>
         </div>
-        </div>
+	<?php endif; ?>
     </div>
     <div style="clear: both;"></div>
         
