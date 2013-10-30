@@ -119,23 +119,21 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     ), $atts );
 
 ?>
-    </div>
-    <div class="left post_bottom_infos">
-	Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
-	
-	<?php
-            $users = $wpdb->get_results( 'SELECT user_id FROM '.$table_name.' WHERE campaign_id = '.$campaign->ID );
-	    $has_voted = false;
-            foreach ( $users as $user ){
-                if ( $user->user_id == wp_get_current_user()->ID) $has_voted = true;
-	    }
-	    if ($has_voted):
-	?>
+    Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
+
+    <?php
+	$users = $wpdb->get_results( 'SELECT user_id FROM '.$table_name.' WHERE campaign_id = '.$campaign->ID );
+	$has_voted = false;
+	foreach ( $users as $user ){
+	    if ( $user->user_id == wp_get_current_user()->ID) $has_voted = true;
+	}
+	if ($has_voted):
+    ?>
 	    Merci pour votre vote.
-	<?php
-	    else:
-	?>
-        <div class="post_bottom_buttons">
+    <?php
+	else:
+    ?>
+	    
             <div class="dark" style="color:white;text-transform:none;padding-left:5px;">
                 <legend>Votez sur ce projet</legend>
             </div>
@@ -153,7 +151,10 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                             <input type="checkbox" id="autre" name="autre" value="autre">Autre
                             <input type="text" id="precision" name="precision" placeholder="Pr&eacute;ciser..." />
                         </p>
-                        <input id="desaprouve" type="radio" name="impact" value="negatif" >Pas d&apos;impact, je d&eacute;sapprouve.<br /><br />
+                        <input id="desaprouve" type="radio" name="impact" value="negatif" >Pas d&apos;impact, je d&eacute;sapprouve.<br />
+                        <p id="impact-negatif-content" style="display: none;">
+			    <em>En d&eacute;sapprouvant ce projet, je vote contre sa publication sur le site.</em>
+			</p><br /><br />
 
                         
 			<strong>Maturit&eacute; et collecte</strong><br />
@@ -195,15 +196,9 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 
 		</form>
 	    </div>
-        </div>
-	<?php endif; ?>
-    </div>
-    <div style="clear: both;"></div>
-        
-<?php
+    <?php endif;
 }
-
-    add_shortcode( 'yproject_crowdfunding_printPageVoteForm', 'ypcf_shortcode_printPageVoteForm' );
+add_shortcode( 'yproject_crowdfunding_printPageVoteForm', 'ypcf_shortcode_printPageVoteForm' );
 
 
 
