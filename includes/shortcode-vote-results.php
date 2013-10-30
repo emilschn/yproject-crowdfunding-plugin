@@ -40,9 +40,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     // Cette variable permet de compter  combien de fois les participants ont selectionner le bouton le projet est pret pour la collecte
     $count_pret_collect  = $wpdb->get_var("SELECT count(retravaille) FROM $table_name WHERE campaign_id = $campaign_id  AND retravaille='pret'");
 
-    // Ces variables permettent de compter  combien de fois on choisis l'un des element de la liste des risque est choisi
-    $count_liste_risque  = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id " );
-
     // Ces variables permettent de stocker la somme totale que les participants sont préts à mettre sur le projet
     $count_sum  = $wpdb->get_var( "SELECT sum(sum) FROM $table_name WHERE campaign_id = $campaign_id " );
 
@@ -52,23 +49,19 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $count_local          = $wpdb->get_var( "SELECT count(local)         FROM $table_name WHERE campaign_id = $campaign_id AND local         = 'local'" );
     $count_environemental = $wpdb->get_var( "SELECT count(environmental) FROM $table_name WHERE campaign_id = $campaign_id AND environmental = 'environmental'" );
     $count_social         = $wpdb->get_var( "SELECT count(social)        FROM $table_name WHERE campaign_id = $campaign_id AND social        = 'social'" );
-    $count_autre          = $wpdb->get_var( "SELECT count(autre)         FROM $table_name WHERE campaign_id = $campaign_id AND autre         = 'autre'" );
+    $count_autre          = $wpdb->get_var( "SELECT count(autre)         FROM $table_name WHERE campaign_id = $campaign_id AND autre         <> ''" );
+    $autre_list		  = $wpdb->get_results( "SELECT autre		 FROM $table_name WHERE campaign_id = $campaign_id AND autre         <> ''" );
 
-    $count_total_impact_postif = $count_local +$count_environemental +$count_social +$count_autre;
     // Ces variables permettent de compter  en pourcentage combien de fois on cliqué l'un des checkbox   du champs impact_positif
     if ($count_impact_postif != 0) {
-            
         $percent_local           = ($count_local / $count_impact_postif )* 100;
         $percent_environemental  = ($count_environemental / $count_impact_postif )* 100;
-        $percent_economique      = ($count_economique / $count_impact_postif )* 100;
         $percent_social          = ($count_social / $count_impact_postif )* 100; 
         $percent_autre           = ($count_autre / $count_impact_postif )* 100;
-     }
-     else
-     {
+	
+     } else {
         $percent_local           = 0;
         $percent_environemental  = 0;
-        $percent_economique      = 0;
         $percent_social          = 0; 
         $percent_autre           = 0; 
      }
@@ -77,17 +70,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
    
     // Ces variables permettent de compter  combien de fois on cliqué l'un des checkbox   du champs iprojet doit etre retravaille
     $count_responsable    = $wpdb->get_var( "SELECT count(pas_responsable)       FROM $table_name WHERE campaign_id = $campaign_id AND pas_responsable       = 'pas_responsable'" );
-    $count_mal_explique   = $wpdb->get_var( "SELECT count(mal_explique)          FROM $table_name WHERE campaign_id = $campaign_id AND mal_explique          = 'mal_explique'" );
+    $count_mal_explique   = $wpdb->get_var( "SELECT count(mal_explique)          FROM $table_name WHERE campaign_id = $campaign_id AND mal_explique          <> ''" );
+    $mal_explique_list	  = $wpdb->get_results( "SELECT mal_explique		 FROM $table_name WHERE campaign_id = $campaign_id AND mal_explique          <> ''" );
     $count_service        = $wpdb->get_var( "SELECT count(qualite_produit)       FROM $table_name WHERE campaign_id = $campaign_id AND qualite_produit       = 'qualite_produit'" );
     $count_equipe         = $wpdb->get_var( "SELECT count(qualite_equipe)        FROM $table_name WHERE campaign_id = $campaign_id AND qualite_equipe        = 'qualite_equipe'" );
     $count_plan           = $wpdb->get_var( "SELECT count(qualite_business_plan) FROM $table_name WHERE campaign_id = $campaign_id AND qualite_business_plan = 'qualite_business_plan'" );
     $count_innovation     = $wpdb->get_var( "SELECT count(qualite_innovation)    FROM $table_name WHERE campaign_id = $campaign_id AND qualite_innovation    = 'qualite_innovation'" );
     $count_porteur        = $wpdb->get_var( "SELECT count(qualite_marche)        FROM $table_name WHERE campaign_id = $campaign_id AND qualite_marche        = 'qualite_marche'" );
 
-    $count_total_retravaille = $count_responsable + $count_mal_explique + $count_service + $count_equipe + $count_plan + $count_innovation + $count_porteur ;
     // Ces variables permettent de compter le pourcentage  des on cliqué l'un des checbox du champs projet doit etre retravaille
-    if ($count_retravaille != 0) 
-    {
+    if ($count_retravaille != 0) {
         $percent_responsable   = ($count_responsable / $count_retravaille)* 100;
         $percent_mal_explique  = ($count_mal_explique / $count_retravaille)* 100;
         $percent_service       = ($count_service / $count_retravaille )* 100;
@@ -95,9 +87,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         $percent_plan          = ($count_plan / $count_retravaille )* 100;
         $percent_innovation    = ($count_innovation / $count_retravaille )* 100;
         $percent_porteur       = ($count_porteur / $count_retravaille )* 100;
-    }
-    else
-    {
+    } else {
         $percent_responsable   = 0;
         $percent_mal_explique  = 0;
         $percent_service       = 0;
@@ -109,27 +99,21 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 
     // Ces variables permettent de compter  combien de fois on element est choisi dans la liste "risque lié au projet"
-    $count_risque_tres_faible   = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='Le risque très faible' " );
-    $count_risque_plutot_faible = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='Le risque est plutôt faible' " );
-    $count_risque_modere        = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='Le risque est moderé' " );
-    $count_risque_tres_eleve    = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='Le risque est très élevé' " );
-    $count_risque_plutot_eleve  = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='Le risque plutôt élevé' " );
+    $count_risque_tres_faible   = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='tres_faible' " );
+    $count_risque_plutot_faible = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='plutot_faible' " );
+    $count_risque_modere        = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='modere' " );
+    $count_risque_tres_eleve    = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='plutot_eleve' " );
+    $count_risque_plutot_eleve  = $wpdb->get_var( "SELECT count(liste_risque) FROM $table_name WHERE campaign_id = $campaign_id AND liste_risque='tres_eleve' " );
 
-    
-  
-    $count_total_risque = $count_risque_tres_faible + $count_risque_plutot_faible + $count_risque_modere + $count_risque_tres_eleve + $count_risque_plutot_eleve;
 
     // Ces variables permettent de compter le pourcentage  du choix de l'element dans la liste "risque lié au projet"
-    if($count_pret_collect != 0) 
-    {  
+    if($count_pret_collect != 0) {  
         $percent_risque_tres_faible   = ($count_risque_tres_faible / $count_pret_collect )* 100;
         $percent_risque_plutot_faible = ($count_risque_plutot_faible / $count_pret_collect )* 100;
         $percent_risque_modere        = ($count_risque_modere / $count_pret_collect )* 100;
         $percent_risque_tres_eleve    = ($count_risque_tres_eleve / $count_pret_collect )* 100;
         $percent_risque_plutot_eleve  = ($count_risque_plutot_eleve / $count_pret_collect )* 100;
-    }
-    else
-    {
+    } else {
         $percent_risque_tres_faible   = 0;
         $percent_risque_plutot_faible = 0;
         $percent_risque_modere        = 0;
@@ -142,8 +126,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         $percent_impact_negatif = ($count_impact_negatif / $count_users)*100 ;
         $percent_pret_collect   = ($count_pret_collect / $count_users)*100;
         $percent_retravaille    = ($count_retravaille / $count_users)*100;
-    } else
-    {
+    } else {
         $percent_impact_positif = 0;
         $percent_impact_negatif = 0;
         $percent_pret_collect   = 0;
@@ -152,148 +135,168 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     // calcul de la moyenne   
     if ($count_pret_collect == 0) {
         $moyenne = 0;
-    }else
-    {
+    } else {
         $moyenne = $count_sum / $count_pret_collect;
     }
     // calcule de la mediane
     if ($count_sum % 2 == 0) { // La somme totale est paire
-        $mediane = $count_sum /2;
-    } else
-    {
-       $mediane = ($count_sum + 1)/2; 
+        $mediane = $count_sum / 2;
+    } else {
+	$mediane = ($count_sum + 1) / 2; 
     }
-    
-    
-
-
-    echo "</br>";
 
 ?>
 
  
-<h2> Nombre total de participants : <?php  echo($count_users) ;?></h2> 
-<div id="tab-title"><h3> Impact du projet</h3></div>
-<table id="tab-results">
-    <h4>  <?php  echo $percent_impact_positif; ?> %  des participants pensent que ce projet va avoir un impact positif</h4>
-    <h4>  <?php  echo $percent_impact_negatif ; ?> % des participants pensent que ce projet n'a pas d'impact significatif</h4>
+<h2>Nombre total de participants : <?php  echo($count_users) ;?></h2> 
+
+<div class="tab-title"><h3>Impact du projet</h3></div>
+<p>
+    <?php echo $percent_impact_positif; ?>% des participants pensent que ce projet va avoir un impact positif<br />
+    <?php echo $percent_impact_negatif ; ?>% des participants pensent que ce projet n'a pas d&apos;impact significatif<br />
+    Les personnes qui croient en l&apos;impact positif de ce projet pensent qu&apos;il va porter sur la (les) dimensions suivantes :<br />
+</p>
+<table class="tab-results">
     <tr>
-    <tr>Les personnes qui croient en l'impact positif de ce projet pensent qu'il va porter sur la(les) dimensions suivantes:</tr>
-    <td>Local</td>
-    <td><?php echo($count_local); ?></td><td>    <?php echo $percent_local; ?>%  <label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
+	<td>Local</td>
+	<td><?php echo($count_local); ?></td>
+	<td><?php echo $percent_local; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
     </tr>
     <tr>
-    <td>Environnemental</td>
-    <td><?php echo($count_environemental); ?></td><td> <?php echo $percent_environemental; ?>% <label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
+	<td>Environnemental</td>
+	<td><?php echo($count_environemental); ?></td>
+	<td><?php echo $percent_environemental; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
     </tr>
     <tr>
-    <tr>
-    <td>Social</td>
-    <td><?php echo($count_social); ?></td><td>   <?php echo $percent_social; ?>%<label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
+	<td>Social</td>
+	<td><?php echo($count_social); ?></td>
+	<td><?php echo $percent_social; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
     </tr>
     <tr>
-    <td>Autre</td>
-    <td><?php echo($count_autre); ?></td><td>   <?php echo $percent_autre; ?>%<label><strong> de ceux qui pensent que le projet a un impact positif</strong></label></td>
-    </tr>
-  </table>
-  <div id="tab-title"><h3>Maturité du projet</h3></div>
-  <table id="tab-results">
-    <h4> <?php echo $percent_pret_collect; ?> %  pensent que ce projet est prêt pour la collecte</h4>
-    <h4> <?php echo $percent_retravaille; ?> % pensent que ce projet doit être retravaillé </h4>
-    <tr>
-    <td>Les personnes qui pensent que ce projet est prêt seraient prêt à investir <?php echo $moyenne; ?>€  [ la moyenne du risque] </td>
-    </tr>
-    <tr>
-    <td>La moitié de ces personnes investiraient plus de <?php echo $mediane;?>€  [médiane]</td>
+	<td>Autre</td>
+	<td><?php echo($count_autre); ?></td>
+	<td>
+	    <?php echo $percent_autre; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong><br />
+	    <?php
+		if ($count_autre > 0) {
+		    echo 'Liste des raisons :<br /><ul>';
+		    foreach ($autre_list as $autre_item) {
+			echo '<li>' . $autre_item->autre . '</li>';
+		    }
+		    echo '</ul>';
+		}
+	    ?>
+	</td>
     </tr>
 </table>
 
-<table id="tab-results">
-</br>
-    <h4>Les personnes qui pensent que ce projet est prêt ont évalué le risque à [moyenne] en moyenne:</h4>
+<div class="tab-title"><h3>Maturité du projet</h3></div>
+<p>
+    <?php echo $percent_pret_collect; ?> % pensent que ce projet est pr&ecirc;t pour la collecte<br />
+    <?php echo $percent_retravaille; ?> % pensent que ce projet doit &ecirc;tre retravaill&eacute;<br />
+</p>
+<p>
+    Les personnes qui pensent que ce projet est pr&ecirc;t seraient pr&ecirc;ts à investir <?php echo $moyenne; ?>€ (la moyenne du risque)<br />
+    La moiti&eacute; de ces personnes investiraient plus de <?php echo $mediane;?>€ (médiane)
+</p>
+
+<p>En moyenne, les personnes qui pensent que ce projet est pr&ecirc;t ont &eacute;valu&eacute; le risque &agrave; :</p>
+<table class="tab-results">
     <tr>
-    <td>Le risque est très faible</td>
-    <td><?php echo($count_risque_tres_faible); ?></td> <td>  <?php echo $percent_risque_tres_faible; ?>% <label><strong>de ceux qui pensent que le projet est prêt</strong></label></td>
+	<td>Tr&egrave;s faible</td>
+	<td><?php echo($count_risque_tres_faible); ?></td>
+	<td><?php echo $percent_risque_tres_faible; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
-    <td>Le risque est plutôt faible</td>
-    <td><?php echo($count_risque_plutot_faible); ?></td><td>  <?php echo $percent_risque_plutot_faible; ?>%<label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
+	<td>Plut&ocirc;t faible</td>
+	<td><?php echo($count_risque_plutot_faible); ?></td>
+	<td><?php echo $percent_risque_plutot_faible; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
-    <td>Le risque est moderé</td>
-    <td><?php echo($count_risque_modere); ?></td><td>   <?php echo $percent_risque_modere; ?>% <label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
+	<td>Moder&eacute;</td>
+	<td><?php echo($count_risque_modere); ?></td>
+	<td><?php echo $percent_risque_modere; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
-    <td>Le risque est très élevé</td>
-    <td><?php echo($count_risque_tres_eleve); ?></td><td>   soit    <?php echo $percent_risque_tres_eleve; ?>% <label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
+	<td>&Eacute;lev&eacute;</td>
+	<td><?php echo($count_risque_plutot_eleve); ?></td>
+	<td><?php echo $percent_risque_plutot_eleve; ?>% <strong> de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
-    <td>Le risque plutôt élevé</td>
-    <td><?php echo($count_risque_plutot_eleve);  ?></td><td>   soit    <?php echo $percent_risque_plutot_eleve; ?>%<label><strong> de ceux qui pensent que le projet est prêt</strong></label></td>
+	<td>Tr&egrave;s élevé</td>
+	<td><?php echo($count_risque_tres_eleve); ?></td>
+	<td><?php echo $percent_risque_tres_eleve; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
  </table>
 
- <table id="tab-results">
- </br>
-    <h4>Les personnes qui pensent que ce projet doit être retravaillé ont souligné les points suivants:</h3>
+<p>Les personnes qui pensent que ce projet doit &ecirc;tre retravaill&eacute; ont soulign&eacute; les points suivants :</p>
+<table class="tab-results">
     <tr>
-    <td>Pas d’impact responsable</td>
-    <td><?php echo($count_responsable);  ?></td><td> <?php  echo  $percent_responsable; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
+	<td>Impact soci&eacute;tal</td>
+	<td><?php echo($count_responsable); ?></td>
+	<td><?php echo $percent_responsable; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
-    <td>Projet mal expliqué</td>
-    <td><?php echo($count_mal_explique); ?></td><td>   <?php echo $percent_mal_explique; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
+	<td>Produit/service</td>
+	<td><?php echo($count_service); ?></td>
+	<td><?php echo $percent_service; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
-    <td>Qualité du produit/service</td>
-    <td><?php echo($count_service); ?></td><td>   <?php echo $percent_service; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
+	<td>Structuration de l&apos;équipe</td>
+	<td><?php echo($count_equipe); ?></td>
+	<td><?php echo $percent_equipe; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
-    <td>Qualité de l’équipe</td>
-    <td><?php echo($count_equipe); ?></td><td>    <?php echo $percent_equipe; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
+	<td>Pr&eacute;visionnel financier</td>
+	<td><?php echo($count_porteur); ?></td>
+	<td><?php echo $percent_porteur; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
-    <td>Qualité du business plan</td>
-    <td><?php echo($count_plan); ?></td><td>   <?php echo $percent_plan; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
-    </tr>
-    <td>Qualité d’innovation</td>
-    <td><?php echo($count_innovation) ; ?></td><td>   <?php echo $percent_innovation; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
-    </tr>
-    <tr>
-    <td>Qualité du marché, porteur</td>
-    <td><?php echo($count_porteur); ?></td><td>   <?php echo $percent_porteur; ?>% <label><strong>de ceux qui pensent que le projet doit être retravaillé</strong></label></td>
+	<td>Autre</td>
+	<td><?php echo($count_mal_explique); ?></td>
+	<td>
+	    <?php echo $percent_mal_explique; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong><br />
+	    <?php 
+		if ($count_mal_explique > 0) {
+		    echo 'Liste des raisons :<br /><ul>';
+		    foreach ($mal_explique_list as $mal_explique_item) {
+			echo '<li>' . $mal_explique_item->mal_explique . '</li>';
+		    } 
+		    echo '</ul>';
+		}
+	    ?>
+	</td>
     </tr>
   </table>
   
- <table>
- </br>
-    <div id="tab-title"><h3>Conseils</h3></div>
-    <h4>Les personnes qui ont voté ont souhaité vous apporter ces quelques conseils:</h4>
+<div class="tab-title"><h3>Conseils</h3></div>
+<p>Les personnes qui ont vot&eacute; ont souhait&eacute; vous apporter ces quelques conseils :</p>
 
-<?php
+<?php $conseils = $wpdb->get_results( "SELECT user_login,user_email,user_id,conseil FROM $table_name WHERE campaign_id = $campaign_id " ); ?>
 
-    $conseils = $wpdb->get_results( "SELECT user_login,user_email,user_id,conseil FROM $table_name WHERE campaign_id = $campaign_id " );
-
-    echo '<table id="tab-results">';
-	echo '<tr>'.'<td>';
-	echo 'Conseils';
-	echo '</td>';
-	echo '<td>';
-	echo 'Participants';
-	echo '</td>'.'</tr>';
-        if(empty($conseils)){
-            echo '</table>';
+<table class="tab-results">
+    <tr>
+	<td>Conseils</td>
+	<td>Participants</td>
+    </tr>
+    <?php
+        if (empty($conseils)) {
+    ?>
+</table>
+    <?php
         } else {
 	    foreach ( $conseils as $cons ) {
-	    echo '<tr>'.'<td>';
-	    echo $cons->conseil;
-	    echo '</td>';
-	    echo '<td>';
-	    echo $cons->user_login;
-	    echo '</td>'.'</tr>';
+    ?>
+    <tr>
+	<td><?php echo $cons->conseil; ?></td>
+	<td><?php echo $cons->user_login; ?></td>
+    </tr>
+    <?php
 	    }
+	    ?>
+</table>
+    <?php
 	}
-    echo '</table>';
     $post = $save_post;
     return ob_get_clean();
 }

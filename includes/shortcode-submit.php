@@ -63,7 +63,7 @@ function ypcf_shortcode_submit_end() {
 	$crowdfunding = crowdfunding();
 
 	return '	<p class="atcf-submit-campaign-submit">
-			<input type="submit" value="'. ($editing ? sprintf( _x( 'Update %s', 'edit "campaign"', 'atcf' ), edd_get_label_singular() ) : sprintf( _x( 'Submit %s', 'submit "campaign"', 'atcf' ), edd_get_label_singular() )) .'">
+			<input type="submit" value="Soumettre le projet">
 			<input type="hidden" name="action" value="atcf-campaign-'. ($editing ? 'edit' : 'submit') .'" />
 			'.wp_nonce_field( 'atcf-campaign-' . ( $editing ? 'edit' : 'submit' ), '_wpnonce', true, false ).'
 		</p>
@@ -165,7 +165,7 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 		    'media_buttons' => true,
 		    'teeny'         => true,
 		    'quicktags'     => false,
-		    'editor_css'    => '<style>body { background: white; } .wp-editor-container {width:'.$atts['width'].'; height:'.$atts['height'].';} .wp-editor-area {width:'.$atts['width'].'; height:'.$atts['height'].';} .media-frame-menu{display: none;}  .media-frame-router{left: 0px !important;} .media-frame-title{left: 0px !important;} .media-frame-content{left: 0px !important;} .media-frame-toolbar{left: 0px !important;}</style>',
+		    'editor_css'    => '<style>body { background: white; } .wp-editor-wrap {background: white;} .wp-editor-container {width:'.$atts['width'].'; height:'.$atts['height'].';} .wp-editor-area {width:'.$atts['width'].'; height:'.$atts['height'].';} .media-frame-menu{display: none;}  .media-frame-router{left: 0px !important;} .media-frame-title{left: 0px !important;} .media-frame-content{left: 0px !important;} .media-frame-toolbar{left: 0px !important;}</style>',
 		    'tinymce'       => array(
 			    'theme_advanced_path'     => false,
 			    'theme_advanced_buttons1' => 'bold,italic,forecolor,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
