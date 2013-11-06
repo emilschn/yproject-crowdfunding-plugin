@@ -70,12 +70,17 @@ function ypcf_mangopay_get_contribution_by_id($contribution_id) {
     return request('contributions/'.$contribution_id, 'GET');
 }
 
-function ypcf_mangopay_get_user_by_id($user_id) {
-    return request('users/'.$user_id, 'GET');
+function ypcf_mangopay_get_user_by_id($mp_user_id) {
+    return request('users/'.$mp_user_id, 'GET');
 }
 
-function ypcf_mangopay_get_user_strong_authentication($user_id) {
-    return request('users/'.$user_id.'/strongAuthentication', 'GET');
+function ypcf_mangopay_get_user_strong_authentication($mp_user_id) {
+    return request('users/'.$mp_user_id.'/strongAuthentication', 'GET');
+}
+
+function ypcf_mangopay_set_user_strong_authentication_doc_transmitted($wp_user_id) {
+    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    request('users/'.$mp_user_id .'/strongAuthentication', 'PUT', '{"IsDocumentsTransmitted": true}');
 }
 
 function ypcf_mangopay_is_user_strong_authenticated($wp_user_id) {
@@ -175,6 +180,19 @@ function ypcf_init_mangopay_user($current_user) {
 	if (isset($mangopay_new_invest_wallet->ID)) update_user_meta($current_user->ID, 'mangopay_invest_wallet_id', $mangopay_new_invest_wallet->ID);
     }*/
     return $currentuser_mangopayid;
+}
+
+/**
+ * Initialise le besoin d'identification utilisateur
+ * @param type $current_user
+ */
+function ypcf_init_mangopay_user_strongauthentification($current_user) {
+    $currentuser_mangopayid = ypcf_init_mangopay_user($current_user);
+    $authentication_object = ypcf_mangopay_get_user_strong_authentication($currentuser_mangopayid);
+    if (!$authentication_object) {
+	$authentication_object = request('users/'.$currentuser_mangopayid.'/strongAuthentication', 'POST', '{}');
+    }
+    return $authentication_object->UrlRequest;
 }
 
 /**
