@@ -94,8 +94,11 @@ function ypcf_display_invest_form($error = '') {
     $max_part_value = ypcf_get_max_part_value();
     
     if (isset($_GET['campaign_id']) && $max_part_value > 0) {
+	$post = get_post($_GET['campaign_id']);
+	$campaign = atcf_get_campaign( $post );
 	$form = '';
-	$form .= '<form id="invest_form" action="" method="post" enctype="multipart/form-data">';
+	$form .= '<br />'.$campaign->investment_terms();
+	$form .= '<br /><form id="invest_form" action="" method="post" enctype="multipart/form-data">';
 	$form .= '<input id="input_invest_amount_part" name="amount_part" type="text" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
 	$form .= '<input id="input_invest_min_value" name="old_min_value" type="hidden" value="' . $min_value . '">';
 	$form .= '<input id="input_invest_max_value" name="old_max_value" type="hidden" value="' . $max_value . '">';
@@ -146,6 +149,9 @@ function ypcf_display_invest_form($error = '') {
 	    //Si le montant transmis est supérieur à ce que mangopay accepte sans identification
 	    if ($amount > YP_STRONGAUTH_AMOUNT_LIMIT && !ypcf_mangopay_is_user_strong_authenticated($current_user->ID)) {
 		$url_request = ypcf_init_mangopay_user_strongauthentification($current_user);
+		$post = get_post($_GET['campaign_id']);
+		$campaign = atcf_get_campaign( $post );
+		$form .= '<br />'.$campaign->investment_terms();
 		$form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro;, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.<br />';
 		$form .= 'Le fichier doit &ecirc;tre de type jpeg, gif, png ou pdf.<br />';
 		$form .= 'Son poids doit &ecirc;tre inf&eacute;rieur &agrave; 2 Mo.<br />';
@@ -171,15 +177,23 @@ function ypcf_display_invest_form($error = '') {
 		$to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => array(), 'quantity' => $amount ) );
 		EDD()->session->set( 'edd_cart', $to_add );
 
-		$form .= $content;
+		$form .= '<br />'.$campaign->investment_terms();
+		$form .= '<br />'.$content;
 
 		// Rappel des informations remplies
+		require_once('country_list.php');
+		global $country_list;
 		if (session_id() == '') session_start();
 		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-		$form .= $current_user->user_firstname . ' ' . $current_user->user_lastname . ' (' . $current_user->user_email . ' ; ' . $current_user->get('user_person_type') . ')<br />';
-		$form .= $current_user->get('user_nationality') . ' ; ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year') . '<br />';
+		$form .= '<br /><br />Rappel de vos informations :<br />';
+		$form .= 'Pr&eacute;nom : ' . $current_user->user_firstname . '<br />';
+		$form .= 'Nom : ' . $current_user->user_lastname . '<br />';
+		$form .= 'e-mail : ' . $current_user->user_email . '<br />';
+		$form .= 'Type de personne : ' . (($current_user->get('user_person_type') == 'NATURAL_PERSON') ? "physique" : "morale") . '<br />';
+		$form .= 'Nationalit&eacute; : ' . $country_list[$current_user->get('user_nationality')] . '<br />';
+		$form .= 'Date de naissance : ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year') . '<br />';
 		$page_update = get_page_by_path('modifier-mon-compte');
-		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br />';
+		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br /><br />';
 
 		// Formulaire de confirmation
 		$form .= '<form action="" method="post" enctype="multipart/form-data">';

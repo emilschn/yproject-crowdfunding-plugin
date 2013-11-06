@@ -238,23 +238,27 @@ class ATCF_Campaigns {
 			add_meta_box( 'atcf_campaign_funds', __( 'Campaign Funds', 'atcf' ), '_atcf_metabox_campaign_funds', 'download', 'side', 'high' );
 
 		add_meta_box( 'atcf_campaign_stats', __( 'Campaign Stats', 'atcf' ), '_atcf_metabox_campaign_stats', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_updates', __( 'Campaign Updates', 'atcf' ), '_atcf_metabox_campaign_updates', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_vote', 'Satut du vote', '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_date_vote', 'Date de la fin des votes', '_atcf_metabox_campaign_date_vote', 'download', 'side', 'high' );
+		
+		
 		add_meta_box( 'atcf_campaign_video', __( 'Campaign Video', 'atcf' ), '_atcf_metabox_campaign_video', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_summary', __( 'Campaign summary', 'atcf' ), '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_impact_area', __( 'Campaign impact area', 'atcf' ), '_atcf_metabox_campaign_impact_area', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_societal_challenge', __( 'Campaign societal challenge', 'atcf' ), '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_company_status', __( 'Statuts de la societe', 'atcf' ), '_atcf_metabox_campaign_company_status', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_company_status_other', __( 'Autre statut', 'atcf' ), '_atcf_metabox_campaign_company_status_other', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_init_capital', __( 'Capital initial', 'atcf' ), '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_funding_type', __( 'Type de financement', 'atcf' ), '_atcf_metabox_campaign_funding_type', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_funding_duration', __( 'Durée du financement', 'atcf' ), '_atcf_metabox_campaign_funding_duration', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_added_value', __( 'Campaign added value', 'atcf' ), '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_economic_model', __( 'Campaign economic model', 'atcf' ), '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_implementation', __( 'Campaign implementation', 'atcf' ), '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_vote', __( 'Campaign vote statu', 'atcf' ), '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_date_vote', __( 'Date de la fin des votes', 'atcf' ), '_atcf_metabox_campaign_date_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_summary', 'Résumé', '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_added_value', 'Opportunité économique', '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_societal_challenge', 'Utilité sociétale', '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_economic_model', 'Modèle économique', '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_implementation', 'Qui porte le projet ?', '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
+		
+		add_meta_box( 'atcf_campaign_company_status', 'Statuts de la société', '_atcf_metabox_campaign_company_status', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_company_status_other', 'Autre statuts', '_atcf_metabox_campaign_company_status_other', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_init_capital', 'Capital initial', '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_funding_type', 'Type de financement', '_atcf_metabox_campaign_funding_type', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_funding_duration', 'Durée du financement', '_atcf_metabox_campaign_funding_duration', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_updates', __( 'Campaign Updates', 'atcf' ), '_atcf_metabox_campaign_updates', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_impact_area', __( 'Campaign impact area', 'atcf' ), '_atcf_metabox_campaign_impact_area', 'download', 'normal', 'high' );
 		
 
 		
@@ -280,6 +284,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_part_value';
 		$fields[] = 'campaign_contact_email';
 		$fields[] = 'campaign_end_date';
+		$fields[] = 'campaign_vote';
 		$fields[] = 'campaign_start_vote';
 		$fields[] = 'campaign_end_vote';
 		$fields[] = 'campaign_video';
@@ -287,7 +292,6 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_location';
 		$fields[] = 'campaign_author';
 		$fields[] = 'campaign_type';
-		$fields[] = 'campaign_updates';
 		$fields[] = 'campaign_owner';
 		$fields[] = 'campaign_summary';
 		$fields[] = 'campaign_societal_challenge';
@@ -296,13 +300,14 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_init_capital';
 		$fields[] = 'campaign_funding_type';
 		$fields[] = 'campaign_funding_duration';
-		$fields[] = 'campaign_impact_area';
 		$fields[] = 'campaign_added_value';
-		$fields[] = 'campaign_development_strategy';
 		$fields[] = 'campaign_economic_model';
-		$fields[] = 'campaign_measuring_impact';
 		$fields[] = 'campaign_implementation';
-		$fields[] = 'campaign_vote';
+		$fields[] = 'campaign_investment_terms';
+//		$fields[] = 'campaign_updates';
+//		$fields[] = 'campaign_impact_area';
+//		$fields[] = 'campaign_development_strategy';
+//		$fields[] = 'campaign_measuring_impact';
 		
 
 		return $fields;
@@ -911,6 +916,30 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 	do_action( 'atcf_metabox_campaign_implementation_after', $campaign );
 }
 
+function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<div class="atcf-metabox-campaign-investment_terms">
+		<?php 
+			wp_editor( $editing ? html_entity_decode($campaign->investment_terms()) : '', 'campaign_investment_terms', apply_filters( 'atcf_metabox_field_investment_terms_editor_args', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => false,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ) ); 
+		?>
+	</div>
+<?php
+}
+
 
 /**
  * Campaign Updates Box
@@ -1059,6 +1088,10 @@ class ATCF_Campaign {
 	 */
 	public function implementation() {
 		return $this->__get( 'campaign_implementation' );
+	}
+	
+	public function investment_terms() {
+	    return $this->__get('campaign_investment_terms');
 	}
 	
 	/**
@@ -1653,7 +1686,7 @@ function atcf_campaign_edit() {
 	$category  = $_POST[ 'cat' ];
 	$content   = $_POST[ 'description' ];
 	$actu      = $_POST[ 'blogs' ];
-	$updates   = $_POST[ 'updates' ];
+//	$updates   = $_POST[ 'updates' ];
 	$excerpt   = $_POST[ 'excerpt' ];
 	
 	$summary                     = $_POST[ 'summary' ];
@@ -1663,12 +1696,13 @@ function atcf_campaign_edit() {
 	$init_capital                = $_POST[ 'init_capital' ];
 	$funding_type                = $_POST[ 'funding_type' ];
 	$funding_duration            = $_POST[ 'funding_duration' ];
-	$impact_area                 = $_POST[ 'impact_area' ];
+//	$impact_area                 = $_POST[ 'impact_area' ];
 	$added_value                 = $_POST[ 'added_value' ];
-	$development_strategy	     = $_POST[ 'development_strategy' ];
+//	$development_strategy	     = $_POST[ 'development_strategy' ];
 	$economic_model              = $_POST[ 'economic_model' ];
-	$measuring_impact            = $_POST[ 'measuring_impact' ];
+//	$measuring_impact            = $_POST[ 'measuring_impact' ];
 	$implementation              = $_POST[ 'implementation' ];
+	$investment_terms              = $_POST[ 'investment_terms' ];
 	$vote                        = $_POST[ 'vote' ];
 	$end_vote                    = $_POST[ 'end_vote' ];
 
@@ -1738,6 +1772,7 @@ function atcf_campaign_edit() {
 	update_post_meta( $post->ID, 'campaign_economic_model', sanitize_text_field( $economic_model ) );
 	update_post_meta( $post->ID, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );
 	update_post_meta( $post->ID, 'campaign_implementation', sanitize_text_field( $implementation ) );
+	update_post_meta( $post->ID, 'campaign_investment_terms', sanitize_text_field( $investment_terms ) );
 	update_post_meta( $post->ID, 'campaign_vote', sanitize_text_field( $vote ) );
 	update_post_meta( $post->ID, 'campaign_end_vote', sanitize_text_field( $end_vote ) );
 	

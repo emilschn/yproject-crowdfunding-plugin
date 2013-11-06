@@ -204,7 +204,7 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_descrip
 function atcf_shortcode_update_field_added_value( $editing, $campaign, $post ) {
 ?>
 	<div class="update_field atcf-update-campaign_added_value">
-		<label class="update_field_label" for="added_value">Quelle est l’opportunité économique du projet ?</label><br />
+		<label class="update_field_label" for="added_value">Quelle est l&apos;opportunit&eacute; &eacute;conomique du projet ?</label><br />
 		<?php 
 			wp_editor( $campaign ? html_entity_decode($campaign->added_value()) : '', 'added_value', apply_filters( 'atcf_submit_field_value_added_editor_args', array( 
 				'media_buttons' => true,
@@ -227,7 +227,7 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_added_v
 function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $post ) {
 ?>
 	<div class="update_field atcf-update-campaign-societal_challenge">
-		<label class="update_field_label" for="societal_challenge">Quelle est l’utilit&eacute; soci&eacute;tale du projet ?</label><br />
+		<label class="update_field_label" for="societal_challenge">Quelle est l&apos;utilit&eacute; soci&eacute;tale du projet ?</label><br />
 		<?php 
 			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'societal_challenge', apply_filters( 'atcf_submit_field_societal_challenge_editor_args', array( 
 				'media_buttons' => true,
