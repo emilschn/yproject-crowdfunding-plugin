@@ -292,7 +292,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . edd_get_currency() . '.<br />';
 	    $buffer .= 'Vous allez recevoir un mail de confirmation d&apos;achat (pensez &agrave; v&eacute;rifier votre dossier de courrier indésirable).<br /><br/>';
 	    //$buffer .= 'Retourner &agrave; la <a href="'.get_permalink($_GET['campaign_id']).'">page projet</a>.<br /><br />';
-	    $buffer .='<strong>Il ne vous reste plus qu\'à signer</strong>  '.'<form><input type="submit" name="signer" action="signer"  value="Cliquez pour signer" /></form>'.'</br>'; 
+	    $buffer .='<strong>Il ne vous reste plus qu\'à signer</strong>  '.do_shortcode('[yproject_crowdfunding_signs]').'</br>'; 
 	    //Liens pour partager
 	    $buffer .= '<iframe src="http://www.facebook.com/plugins/like.php?href='.urlencode(get_permalink($_GET['campaign_id'])).'&amp;layout=button_count&amp;show_faces=true&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=30" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80px; height:20px; text-align: center" allowTransparency="true"></iframe>';
 	    $buffer .= '<a href="http://www.facebook.com/sharer.php?u='.urlencode(get_permalink($_GET['campaign_id'])).'" target="_blank">'. __('Partager sur Facebook', 'yproject') . '</a>';
