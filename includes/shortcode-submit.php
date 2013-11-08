@@ -84,7 +84,9 @@ function ypcf_shortcode_submit_field($atts, $content = '') {
 	'rows' => 5,
 	'cols' => 50
     ), $atts );
-    return '<textarea name="'.$atts['name'].'" id="'.$atts['name'].'" rows="'.$atts['rows'].'" cols="'.$atts['cols'].'" placeholder="'. ($editing ? apply_filters( 'get_summary', $campaign->data->post_summary ) : $content) .'"></textarea>';
+    $value = '';
+    if (isset($_POST[$atts['name']])) $value = $_POST[$atts['name']];
+    return '<textarea name="'.$atts['name'].'" id="'.$atts['name'].'" rows="'.$atts['rows'].'" cols="'.$atts['cols'].'" placeholder="'. ($editing ? apply_filters( 'get_summary', $campaign->data->post_summary ) : $content) .'">'.$value.'</textarea>';
 }
 add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
 
@@ -156,8 +158,10 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 		break;
 	}
     }
+    $value = wp_richedit_pre($content);
+    if (isset($_POST[$atts['name']])) $value = html_entity_decode($_POST[$atts['name']]);
     wp_editor( 
-	    $editing ? wp_richedit_pre($text_to_edit) : wp_richedit_pre($content), 
+	    $value, 
 	    $atts['name'], 
 	    apply_filters(  
 		'atcf_submit_field_'.$atts['name'].'_editor_args', 
@@ -294,9 +298,20 @@ function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
 	'option2' => 'Financement du d&eacute;veloppement (fonds propres)',
 	'option2duration' => 'Dur&eacute;e du financement (en ann&eacute;es) : '
     ), $atts );
-    return  '<input type="radio" name="fundingtype" class="radiofundingtype" id="fundingproject" value="fundingproject" checked="checked">' . $atts['option1'] . '<br />
-	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment">' . $atts['option2'] . '
-		<span id="fundingdevelopment_param" style="display: none">- ' . $atts['option2duration'] . '<input type="text" name="fundingduration"></span>';
+    $fundingproject = ' checked="checked"';
+    $fundingdevelopment = '';
+    $fundingdevelopment_param = ' style="display: none"';
+    if (isset($_POST['fundingtype']) && $_POST['fundingtype'] == 'fundingdevelopment') {
+	$fundingproject = '';
+	$fundingdevelopment = ' checked="checked"';
+	$fundingdevelopment_param = '';
+    }
+    $fundingduration = '';
+    if (isset($_POST['fundingduration'])) $fundingduration = $_POST['fundingduration'];
+    
+    return  '<input type="radio" name="fundingtype" class="radiofundingtype" id="fundingproject" value="fundingproject"'.$fundingproject.'>' . $atts['option1'] . '<br />
+	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment"'.$fundingdevelopment.'>' . $atts['option2'] . '
+		<span id="fundingdevelopment_param"'.$fundingdevelopment_param.'>- ' . $atts['option2duration'] . '<input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
 }
 add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
 
@@ -311,11 +326,27 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 	'min_amount_project' => '500',
 	'min_amount_development' => '5000'
     ), $atts );
-    return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe" checked="checked">' . $atts['option1'] . '
-		<span id="goalsum_fixe_param">- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" size="10"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>) - ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi"></span></span><br />
-	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible">' . $atts['option2'] . '
-		<span id="goalsum_flexible_param" style="display:none">- Minimum : <input type="text" id="minimum_goal" name="minimum_goal" size="10"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
-		- Maximum : <input type="text" id="maximum_goal" name="maximum_goal" size="10"></span>
+    $goal_search = '';
+    if (isset($_POST['goal_search'])) $goal_search = $_POST['goal_search'];
+    $minimum_goal = '';
+    if (isset($_POST['minimum_goal'])) $minimum_goal = $_POST['minimum_goal'];
+    $maximum_goal = '';
+    if (isset($_POST['maximum_goal'])) $maximum_goal = $_POST['maximum_goal'];
+    $goalsum_fixe = ' checked="checked"';
+    $goalsum_flexible = '';
+    $goalsum_fixe_param = '';
+    $goalsum_flexible_param = ' style="display:none"';
+    if (isset($_POST['goalsum']) && $_POST['goalsum'] == 'flexible') {
+	$goalsum_fixe = '';
+	$goalsum_flexible = ' checked="checked"';
+	$goalsum_fixe_param = ' style="display:none"';
+	$goalsum_flexible_param = '';
+    }
+    return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe"'.$goalsum_fixe.'>' . $atts['option1'] . '
+		<span id="goalsum_fixe_param"'.$goalsum_fixe_param.'>- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" size="10" value="'.$goal_search.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>) - ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi"></span></span><br />
+	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible"'.$goalsum_flexible.'>' . $atts['option2'] . '
+		<span id="goalsum_flexible_param"'.$goalsum_flexible_param.'>- Minimum : <input type="text" id="minimum_goal" name="minimum_goal" size="10" value="'.$minimum_goal.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
+		- Maximum : <input type="text" id="maximum_goal" name="maximum_goal" size="10" value="'.$maximum_goal.'"></span>
 	    <input type="hidden" name="length" id="length" value="90">
 	    <input type="hidden" name="vote_length" id="vote_length" value="9">
 	    <input type="hidden" name="monney" id="monney" value="&euro;">
@@ -392,7 +423,7 @@ function atcf_shortcode_submit_before_success() {
 	if ( ! isset ( $_GET[ 'success' ] ) )
 		return;
 
-	$message = apply_filters( 'atcf_shortcode_submit_success', __( 'Merci ! Nous avons bien re&ccedil;u votre projet. Nous reviendrons vers vous apr&egrave;s &eacute;tude.', 'yproject' ) );
+	$message = apply_filters( 'atcf_shortcode_submit_success', 'Votre proposition a &eacute;t&eacute; soumise avec succ&egrave;s, nous vous recontactons bient&ocirc;t.' );
 ?>
 	<p class="edd_success"><?php echo esc_attr( $message ); ?></p>	
 <?php
@@ -484,11 +515,11 @@ function atcf_shortcode_submit_process() {
 	}
 
 	if ( isset( $edd_options[ 'show_agree_to_terms' ] ) && ! $terms )
-		$errors->add( 'terms', __( 'Please agree to the Terms and Conditions', 'atcf' ) );
+		$errors->add( 'terms', 'Merci d&apos;accepter les conditions d&apos;utilisation' );
 
 	/** Check Title */
 	if ( empty( $title ) )
-		$errors->add( 'invalid-title', __( 'Please add a title to this campaign.', 'atcf' ) );
+		$errors->add( 'invalid-title', 'Merci de pr&eacute;ciser le nom de ce projet.' );
 
 	/** Check Goal */
 	
@@ -496,22 +527,22 @@ function atcf_shortcode_submit_process() {
 	    case "fixe":
 		$goal = edd_sanitize_amount( $goal );
 		if ( ! is_numeric( $goal ) )
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
+		    $errors->add( 'invalid-goal', 'Le montant recherch&eacute; n&apos;est pas un nombre.' );
 		if ($min_amount_collect > $goal) 
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
+		    $errors->add( 'invalid-goal', 'Le montant recherch&eacute; est inférieur au minimum requis.' );
 		break;
 		
 	    case "flexible":
 		$minimum_goal = edd_sanitize_amount( $minimum_goal );
 		$maximum_goal = edd_sanitize_amount( $maximum_goal );
 		if ( ! is_numeric( $minimum_goal ) )
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
+		    $errors->add( 'invalid-goal', 'Le montant minimum recherch&eacute; n&apos;est pas un nombre.' );
 		if ( ! is_numeric( $maximum_goal ) )
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
+		    $errors->add( 'invalid-goal', 'Le montant maximum recherch&eacute; n&apos;est pas un nombre.' );
 		if ($minimum_goal >= $maximum_goal)
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
+		    $errors->add( 'invalid-goal', 'Le montant minimum recherch&eacute; est plus grand que le montant maximum recherch&eacute;.' );
 		if ($min_amount_collect > $minimum_goal) 
-		    $errors->add( 'invalid-goal', sprintf( __( 'Please enter a valid goal amount. All goals are set in the %s currency.', 'atcf' ), $edd_options[ 'currency' ] ) );
+		    $errors->add( 'invalid-goal', 'Le montant recherch&eacute; est inférieur au minimum requis.' );
 		
 		$goal = $maximum_goal;
 		break;
@@ -554,7 +585,7 @@ function atcf_shortcode_submit_process() {
 
 	/** Check Content */
 	if ( empty($content) || empty($summary) || empty($added_value)  || empty($economic_model) || empty($implementation) || empty($societal_challenge) )
-		$errors->add( 'invalid-content', __( 'Please add content to this campaign.', 'atcf' ) );
+		$errors->add( 'invalid-content', 'Certains champs n&apos;ont pas &eacute;t&eacute; remplis.' );
 	
 
 	/** Check Excerpt */
@@ -563,19 +594,21 @@ function atcf_shortcode_submit_process() {
 
 	/** Check Image */
 	if ( empty( $image ) )
-		$errors->add( 'invalid-previews', __( 'Please add a campaign image.', 'atcf' ) );
+		$errors->add( 'invalid-previews', 'Merci de proposer une image pour votre projet.' );
 
 	/** Check Rewards */
 	/* if ( empty( $rewards ) )
 		$errors->add( 'invalid-rewards', __( 'Please add at least one reward to the campaign.', 'atcf' ) ); */
 
-	if ( email_exists( $c_email ) && ! isset ( $current_user ) )
-		$errors->add( 'invalid-c-email', __( 'That contact email address already exists.', 'atcf' ) );		
+	if ( ! isset ( $current_user ) )
+		$errors->add( 'invalid-connection', 'Vous devez &ecirc;tre connect&eacute; pour proposer un projet.' );		
 
 	do_action( 'atcf_campaign_submit_validate', $_POST, $errors );
 
 	if ( ! empty ( $errors->errors ) ) { // Not sure how to avoid empty instantiated WP_Error
-	    wp_die( $errors );
+//	    wp_die( $errors );
+	    global $submit_errors;
+	    $submit_errors = $errors;
 	    
 	} else {
 	    if ( ! $type )
