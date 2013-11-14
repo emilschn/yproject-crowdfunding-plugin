@@ -1,6 +1,8 @@
 <?php
+if( !class_exists( 'WP_Http' ) )
+include_once( ABSPATH . WPINC. '/class-http.php' );
 
-function ypcf_shortcode_signs() {
+function ypcf_shortcode_contract_signs() {
     global $wpdb,  $post;
      
     $crowdfunding = crowdfunding();
@@ -16,49 +18,47 @@ function ypcf_shortcode_signs() {
     $user_login             = wp_get_current_user()->user_phone;
 
 
-   if (isset($_POST['yp_signer'])) {
-       $contract_id = ypcf_create_contract();
-      // ypcf_add_signotories($contract_id);
+   if (isset($_POST['yp_contract_signer'])) {
+       $contract_id = ypcf_creating_contract();
+       //ypcf_additing_signotories($contract_id);
       // ypcf_send_contract_pdf($contract_id);
-    
     }
 
     ob_start();
     ?>
     
     <form method="post" action="">
-        <input type="submit" name="yp_signer" value="Signer" />
+        <input type="submit" name="yp_contract_signer" value="Signer le contrat" />
     </form>
 
 <?php
 }
-add_shortcode( 'yproject_crowdfunding_signs', 'ypcf_shortcode_signs' );
+add_shortcode( 'yproject_crowdfunding_contract_signs', 'ypcf_shortcode_contract_signs' );
 
 
 // Creating a contract
-function ypcf_create_contract(){
+function ypcf_creating_contract(){
 
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_CAINFO,"cacert.pem");
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 2);
-    curl_setopt($curl, CURLOPT_URL, "https://www.google.fr/");
-    //curl_setopt($curl, CURLOPT_URL, "https://app.signsquid.com/api/v1/contracts");
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    curl_setopt($curl, CURLOPT_USERPWD, 'MT9M49EHieWFAnaL7gcqBLKmTuNOz2HT:' );
-    curl_setopt($curl, CURLOPT_VERBOSE, true);
+    $username = 'MT9M49EHieWFAnaL7gcqBLKmTuNOz2HT'; // SignsQuid api key
+    $password = ''; // api signsquid ne demande pas de password
+    $message = "Test signs";
 
-    $curl_response = curl_exec($curl);  /* return [{"id":"5248a02c4bdcc849e4d38efe","name":"Test mention"}]*/
-   // echo $curl_response;
-    $curl_response =substr($curl_response,1, -1);/*Pour avoir un format JSON valide, il faut enlever les crochets [] qui entourent le tableau*/
-
-    $obj = json_decode($curl_response); /*Parser Json pour recuperer la valeur id*/
-
-    $contract_id = $obj->{'id'};
-     echo $curl_response.'</br>';
-    //echo $contract_id;
     
-    curl_close($curl);
+    // La requète:
+   // $api_url = 'https://app.signsquid.com/api/v1/contracts';
+    $api_url = 'https://www.google.fr/';
+    //$body = array( 'status' => $message );
+   // $headers = array( 'Authorization' => 'Basic '.base64_encode("$username:") );
+    $request = new WP_Http;
+    $result = $request->request( $api_url );
+   // $result = $request->request( $api_url , array( 'method' => 'POST', 'body' => $body, 'headers' => $headers ) );
+    //$contract_id = $result['body'];
+
+    $json = $result['body'];
+
+       echo $json;
+   // echo $contract_id;
+
 
     return $contract_id;
 
@@ -66,7 +66,7 @@ function ypcf_create_contract(){
 
 
 // Add signatories 
-function ypcf_add_signotories($contract_id){
+function ypcf_additing_signotories($contract_id){
 
     $curl = curl_init();
     $data=array('name' => 'toto','email'=> 'boubacar@wedogood.co');
@@ -96,7 +96,7 @@ function ypcf_add_signotories($contract_id){
 
 
 // Send contract pdf 
-function ypcf_send_contract_pdf($contract_id){
+function ypcf_sending_contract_pdf($contract_id){
 
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);   
