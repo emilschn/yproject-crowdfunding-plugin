@@ -78,17 +78,50 @@ function ypcf_mangopay_get_user_strong_authentication($mp_user_id) {
     return request('users/'.$mp_user_id.'/strongAuthentication', 'GET');
 }
 
-function ypcf_mangopay_set_user_strong_authentication_doc_transmitted($wp_user_id) {
+function ypcf_mangopay_set_user_strong_authentication_doc_transmitted($wp_user_id, $status = true) {
     $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
-    request('users/'.$mp_user_id .'/strongAuthentication', 'PUT', '{"IsDocumentsTransmitted": true}');
+    $value = ($status) ? 'true' : 'false';
+    request('users/'.$mp_user_id .'/strongAuthentication', 'PUT', '{"IsDocumentsTransmitted": '.$value.'}');
 }
 
 function ypcf_mangopay_is_user_strong_authenticated($wp_user_id) {
     $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
     $authentication_object = ypcf_mangopay_get_user_strong_authentication($mp_user_id);
+//    print_r('$authentication_object');
+//    print_r($authentication_object);
     $buffer = false;
     if ($authentication_object) $buffer = ($authentication_object->IsDocumentsTransmitted && $authentication_object->IsCompleted && $authentication_object->IsSucceeded);
     return $buffer;
+}
+
+function ypcf_mangopay_is_user_strong_authentication_sent($wp_user_id) {
+    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    $authentication_object = ypcf_mangopay_get_user_strong_authentication($mp_user_id);
+//    print_r('$authentication_object');
+//    print_r($authentication_object);
+    $buffer = false;
+    if ($authentication_object) $buffer = $authentication_object->IsDocumentsTransmitted;
+    return $buffer;
+}
+
+function ypcf_mangopay_send_strong_authentication($url_request) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)");
+    curl_setopt($ch, CURLOPT_URL, $url_request);
+    curl_setopt($ch, CURLOPT_POST, TRUE);
+    curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE); 
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+    
+    $authorized_mime_type = array('image/jpeg', 'image/pjpeg', 'image/gif', 'image/png', 'application/pdf'); 
+    if (!in_array($_FILES['StrongValidationDtoPicture']['type'], $authorized_mime_type)) { return false; } 
+    $mime_type_text = ';type='.$_FILES['StrongValidationDtoPicture']['type'];
+    $post = array('StrongValidationDto.Picture' => '@' . $_FILES['StrongValidationDtoPicture']['tmp_name'] . $mime_type_text);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+    if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200 || curl_getinfo($ch, CURLINFO_HTTP_CODE) == 0) $result = TRUE;
+    else $result = FALSE;
+    curl_close($ch);
+    return $result;
 }
 
 function ypcf_mangopay_get_wallet_by_id($wallet_id) {
