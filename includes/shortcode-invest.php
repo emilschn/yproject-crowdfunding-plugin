@@ -105,7 +105,7 @@ function ypcf_display_invest_form($error = '') {
 	$form .= '<input id="input_invest_part_value" name="part_value" type="hidden" value="' . $part_value . '">';
 	$form .= '<input id="input_invest_max_part_value" name="part_value" type="hidden" value="' . $max_part_value . '">';
 	$form .= '<input id="input_invest_amount_total" type="hidden" value="' . ypcf_get_current_amount() . '">';
-	$form .= '<input type="submit">';
+	$form .= '&nbsp;&nbsp;<input type="submit" value="Investir">&nbsp;&nbsp;';
 	$hidden = ' hidden';
 	$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Vous devez prendre au moins une part.</span>';
 	$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas prendre plus de '.$max_part_value.' parts.</span>';
@@ -153,7 +153,8 @@ function ypcf_display_invest_form($error = '') {
 	    }
 	    
 	    //Si le montant transmis est supérieur à ce que mangopay accepte sans identification
-	    if ($amount > YP_STRONGAUTH_AMOUNT_LIMIT && !ypcf_mangopay_is_user_strong_authenticated($current_user->ID)) {
+	    $annual_amount = $amount + ypcf_get_annual_amount_invested($current_user->ID);
+	    if ($annual_amount > YP_STRONGAUTH_AMOUNT_LIMIT && !ypcf_mangopay_is_user_strong_authenticated($current_user->ID)) {
 		if (ypcf_mangopay_is_user_strong_authentication_sent($current_user->ID)) {
 		    $form .= 'Votre pi&egrave;ce d&apos;identit&eacute; est en cours de validation. Un d&eacute;lai maximum de 24h est n&eacute;cessaire &agrave; cette validation.<br />Merci de votre compr&eacute;hension.';
 		    
@@ -161,7 +162,7 @@ function ypcf_display_invest_form($error = '') {
 		    $post = get_post($_GET['campaign_id']);
 		    $campaign = atcf_get_campaign( $post );
 		    $form .= '<br />'.$campaign->investment_terms();
-		    $form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro;, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.<br />';
+		    $form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro; sur une ann&eacute;e, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.<br />';
 		    $form .= 'Le fichier doit &ecirc;tre de type jpeg, gif, png ou pdf.<br />';
 		    $form .= 'Son poids doit &ecirc;tre inf&eacute;rieur &agrave; 2 Mo.<br />';
 		    $form .= '<form id="mangopay_strongauth_form" action="" method="post" enctype="multipart/form-data">';
@@ -209,7 +210,7 @@ function ypcf_display_invest_form($error = '') {
 		edd_agree_to_terms_js();
 		ypcf_terms_agreement();
 		$form .= ob_get_clean();
-		$form .= $_POST['amount_part'] . ' part soit '.$amount.'&euro;<input type="submit">';
+		$form .= $_POST['amount_part'] . ' part soit '.$amount.'&euro;<input type="submit" value="Investir">';
 		$form .= '</form><br /><br />';
 		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';
 	    }
@@ -550,6 +551,38 @@ function ypcf_get_max_value_to_invest() {
 	$campaign = atcf_get_campaign( $post );
 	//Récupérer la valeur maximale possible : la valeur totale du projet moins le montant déjà atteint
 	$buffer = $campaign->goal(false) - $campaign->current_amount(false);
+    }
+    return $buffer;
+}
+
+/**
+ * retourne la somme investie par un utilisateur durant une même année
+ */
+function ypcf_get_annual_amount_invested($wp_user_id) {
+    global $wpdb;
+    
+    $query = "SELECT {$wpdb->prefix}mb.meta_value AS payment_total
+	    FROM {$wpdb->prefix}postmeta {$wpdb->prefix}m
+	    LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}ma
+		    ON {$wpdb->prefix}ma.post_id = {$wpdb->prefix}m.post_id
+		    AND {$wpdb->prefix}ma.meta_key = '_edd_payment_user_id'
+		    AND {$wpdb->prefix}ma.meta_value = '%s'
+	    LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}mb
+		    ON {$wpdb->prefix}mb.post_id = {$wpdb->prefix}ma.post_id
+		    AND {$wpdb->prefix}mb.meta_key = '_edd_payment_total'
+	    INNER JOIN {$wpdb->prefix}posts {$wpdb->prefix}
+		    ON {$wpdb->prefix}.id = {$wpdb->prefix}m.post_id
+		    AND {$wpdb->prefix}.post_status = 'publish'
+		    AND {$wpdb->prefix}.post_date > '".date('Y-m-d', strtotime('-365 days'))."'
+	    WHERE {$wpdb->prefix}m.meta_key = '_edd_payment_mode'
+	    AND {$wpdb->prefix}m.meta_value = '%s'";
+
+    $purchases = $wpdb->get_col( $wpdb->prepare( $query, $wp_user_id, 'live' ) );
+    $purchases = array_filter( $purchases );
+
+    $buffer = 0;
+    if( $purchases ) {
+	$buffer = round( array_sum( $purchases ), 2 );
     }
     return $buffer;
 }
