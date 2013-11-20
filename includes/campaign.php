@@ -1180,7 +1180,8 @@ class ATCF_Campaign {
 	public function minimum_goal() {
 	    $goal = $this->__get( 'campaign_minimum_goal' );
 	    if ( ! is_numeric( $goal ) )
-		    return 0;
+		    $goal = 0;
+	    if ($goal == 0) $goal = $this->goal(false);
 	    return $goal;
 	}
 	

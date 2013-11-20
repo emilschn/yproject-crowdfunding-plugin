@@ -78,6 +78,14 @@ function ypcf_mangopay_get_user_strong_authentication($mp_user_id) {
     return request('users/'.$mp_user_id.'/strongAuthentication', 'GET');
 }
 
+function ypcf_mangopay_get_beneficiary_by_id($mp_beneficiary_id) {
+    return request('beneficiaries/'.$mp_beneficiary_id, 'GET');
+}
+
+function ypcf_mangopay_get_withdrawal_by_id($mp_withdrawal_id) {
+    return request('withdrawals/'.$mp_withdrawal_id, 'GET');
+}
+
 function ypcf_mangopay_set_user_strong_authentication_doc_transmitted($wp_user_id, $status = true) {
     $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
     $value = ($status) ? 'true' : 'false';
@@ -152,6 +160,14 @@ function ypcf_mangopay_get_mp_user_wallet_id($wp_user_id) {
 
 function ypcf_mangopay_set_mp_user_wallet_id($wp_user_id, $mp_user_wallet_id) {
     update_post_meta($wp_user_id, 'mangopay_wallet_id', $mp_user_wallet_id);
+}
+
+function ypcf_mangopay_get_mp_user_beneficiary_id($wp_user_id) {
+    return get_user_meta($wp_user_id, 'mangopay_beneficiary_id', true);
+}
+
+function ypcf_mangopay_set_mp_user_beneficiary_id($wp_user_id, $mp_user_beneficiary_id) {
+    update_user_meta($wp_user_id, 'mangopay_beneficiary_id', $mp_user_beneficiary_id);
 }
 
 function ypcf_mangopay_get_mp_campaign_wallet_id($wp_campaign_id) {
@@ -260,11 +276,35 @@ function ypcf_init_mangopay_project() {
     return $currentpost_mangopayid;
 }
 
+function ypcf_init_mangopay_beneficiary($wp_user_id, $bank_owner_name, $bank_owner_address, $bank_iban, $bank_bic) {
+    $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    $beneficiary_id = "";
+    if ($currentuser_mangopayid != "") {
+	$beneficiary_id = ypcf_mangopay_get_mp_user_beneficiary_id($wp_user_id);
+	if ($beneficiary_id == "") {
+	    $mangopay_new_beneficiary = request('beneficiaries', 'POST', '{ 
+					"BankAccountOwnerName" : "'.$bank_owner_name.'", 
+					"BankAccountOwnerAddress" : "'.$bank_owner_address.'",
+					"BankAccountIBAN" : "'.$bank_iban.'",
+					"BankAccountBIC" : "'.$bank_bic.'",
+					"UserID" : '.$currentuser_mangopayid.'
+				    }');
+	    //Si on reçoit une chaine : il y a eu une erreur
+	    if (isset($mangopay_new_beneficiary->ErrorCode) && $mangopay_new_beneficiary->ErrorCode != 0) {
+		global $mp_errors;
+		$mp_errors = $mangopay_new_beneficiary->UserMessage;
+		
+	    } else {
+		ypcf_mangopay_set_mp_user_beneficiary_id($wp_user_id, $mangopay_new_beneficiary->ID);
+		$beneficiary_id = $mangopay_new_beneficiary->ID;
+	    }
+	}
+    }
+    return $beneficiary_id;
+}
+
 function ypcf_refund_wallet_project_to_wallet_contributors($campaign_id) {
-    //Possibilité 1 : utiliser les données stockées par Mangopay
-    // - Récupérer la liste des opérations qui ont été faites sur le wallet
-    
-    //Possibilité 2 : utiliser les données stockées par edd
+    //Utiliser les données stockées par edd
     // - plus optimisé (plutôt que multiplier les appels vers mangopay)
     // - récupération de l'id de la campagne, du wallet correspondant, de la liste des backers et de leur wallet
     // - transfert wallet-campagne > wallet-user
@@ -290,12 +330,22 @@ function ypcf_refund_wallet_project_to_wallet_contributors($campaign_id) {
     }
 }
 
-function ypcf_mangopay_make_transfer($mp_payer_id, $mb_beneficiary_id, $amount) {
+function ypcf_mangopay_make_transfer($mp_payer_id, $mp_beneficiary_id, $amount) {
     return request('transfers', 'POST', '{ 
 					"Amount" : '.$amount.', 
 					"PayerID" : '.$mp_payer_id.', 
-					"BeneficiaryID" : '.$mb_beneficiary_id.',
-					"Tag" : "'.$mp_payer_id.' -> '.$mb_beneficiary_id.' = '.$amount.'"
+					"BeneficiaryID" : '.$mp_beneficiary_id.',
+					"Tag" : "'.$mp_payer_id.' -> '.$mp_beneficiary_id.' = '.$amount.'"
+				    }');
+}
+
+function ypcf_mangopay_make_withdrawal($wp_user_id, $mp_beneficiary_id, $mp_amount) {
+    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    return request('withdrawals', 'POST', '{ 
+					"Amount" : '.$mp_amount.', 
+					"UserID" : '.$mp_user_id.', 
+					"BeneficiaryID" : '.$mp_beneficiary_id.',
+					"Tag" : "'.$mp_user_id.' -> '.$mp_beneficiary_id.' = '.$mp_amount.'"
 				    }');
 }
 ?>
