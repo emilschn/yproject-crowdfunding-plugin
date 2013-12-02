@@ -14,6 +14,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
   
     global $wpdb, $post;
     $table_name = $wpdb->prefix . "ypVotes"; 
+    $table_activity = $wpdb->prefix .'bp_activity';
     $isvoted = false; 
     $sum_valid = false;
 
@@ -102,6 +103,23 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                                                 'user_email'              => $user_email,
                                                 'campaign_id'             => $campaign_id
                                               )); 
+
+                
+               
+                   $wpdb->insert( $table_activity,
+                                            array('user_id'           => $user_id, 
+                                                  'component'         => 'profile', 
+                                                  'type'              => 'voted', 
+                                                  'action'            => '<a href="http://dev.yproject.co/members/'.$user_login.'... "', 
+                                                  'content'           => 'a voté' , 
+                                                  'primary_link'      => '', 
+                                                  'date_recorded'     =>date(Y-m-d),
+                                                  'item_id'           =>'', 
+                                                  'secondary_item_id' =>'', 
+                                                  'hide_sitewide'     =>'', 
+                                                  'is_spam'           =>''    
+                                                   ));
+
 
                     echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';
                        
