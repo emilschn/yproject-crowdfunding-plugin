@@ -37,7 +37,7 @@ function fillPDFHTMLDefaultContent($user_name, $project_name) {
  * Returns the pdf created with a project_id and a user_id
  * @param type $project_id
  */
-function getNewPdfToSign($project_id) {
+function getNewPdfToSign($project_id, $payment_id) {
     $post_camp = get_post($project_id);
     $campaign = atcf_get_campaign( $post_camp );
     $project_name = get_the_title( $campaign->ID );

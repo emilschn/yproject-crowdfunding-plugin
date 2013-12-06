@@ -181,3 +181,44 @@ function atcf_settings_general( $settings ) {
         return $settings;
 }
 add_filter( 'edd_settings_general', 'atcf_settings_general', 100 );
+
+/*
+ * Ajout aux réglages d'edd
+ */
+function ypcf_register_settings() {
+    add_settings_field(
+	'edd_settings_misc[contract_label]',
+	'Libelles du contrat d&apos;investissement',
+	function_exists( 'edd_text_callback' ) ? 'edd_text_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'contract_label',
+	    'desc' => '',
+	    'name' => 'contract_label',
+	    'section' => 'misc',
+	    'size' => 'regular' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+    
+    add_settings_field(
+	'edd_settings_misc[contract]',
+	'Contrat d&apos;investissement',
+	function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'contract',
+	    'desc' => '',
+	    'name' => 'contract',
+	    'section' => 'misc',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+}
+
+add_action('admin_init', 'ypcf_register_settings', 11);

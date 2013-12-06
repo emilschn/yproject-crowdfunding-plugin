@@ -78,7 +78,9 @@ function signsquid_get_contract_list() {
  * @param type $contract_id
  */
 function signsquid_get_contract_infos($contract_id) {
-    return signsquid_request("GET", "contracts/".$contract_id."/versions/1");
+    $buffer = '';
+    if ($contract_id != '') $buffer = signsquid_request("GET", "contracts/".$contract_id."/versions/1");
+    return $buffer;
 }
 
 /**
@@ -114,8 +116,6 @@ function signsquid_add_signatory($contract_id, $user_name, $user_email, $user_ph
  */
 function signsquid_add_file($contract_id, $filename) {
     $response = signsquid_request("POST_FILE", "contracts/".$contract_id."/versions/1/files?filename=", $filename);
-    echo '<br />signsquid_add_file<br />';
-    print_r($response);
 }
 
 /**
@@ -124,7 +124,5 @@ function signsquid_add_file($contract_id, $filename) {
  */
 function signsquid_send_invite($contract_id) {
     $response = signsquid_request("POST", "contracts/".$contract_id."/versions/1");
-    echo '<br />signsquid_send_invite<br />';
-    print_r($response);
 }
 ?>
