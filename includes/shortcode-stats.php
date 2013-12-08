@@ -91,15 +91,27 @@ function ypcf_shortcode_jcrois(){
 	$campaign               = atcf_get_campaign( $post );
 	$campaign_id            =  $campaign->ID;
 	$user_id                = wp_get_current_user()->ID;
-    $user_display_name      = wp_get_current_user()->display_name;
-    $user_nicename          = wp_get_current_user()->user_nacename;
+  $user_display_name      = wp_get_current_user()->display_name;
+  $user_nicename          = wp_get_current_user()->user_nacename;
 
-    $campaign_url  = get_permalink($campaign->ID);
-    $today = current_time( 'mysql' ); 
+  
+  $today = current_time( 'mysql' ); 
 
 
 	$table_jcrois = $wpdb->prefix . "jycrois";
-    $table_activity = $wpdb->prefix .'bp_activity';
+  $table_activity = $wpdb->prefix .'bp_activity';
+  $table_user = $wpdb->prefix .'users';
+  $table_post = $wpdb->prefix .'posts';
+
+
+  // recuperation de la variable user_nicename qui sert à construire l 'url de l'utilisateur
+  // de la forme  href="http://dev.yproject.co/members/'.$user_nicename.'/
+  $user_nicename = $wpdb->get_var( "SELECT user_nicename FROM $table_user WHERE ID = $user_id" );
+
+  // recuperation de la variable post_name qui sert à construire l 'url de le la campagna
+  // de la forme  href="http://dev.yproject.co/campaign/'.$post_name.'/
+  $post_name = $wpdb->get_var( "SELECT post_name FROM $table_post WHERE ID = $campaign_id" );
+  $post_title = $wpdb->get_var( "SELECT post_title FROM $table_post WHERE ID = $campaign_id" ); 
 	
 	if(isset($_POST['submit_jycroispas'])) {
 	    $wpdb->delete( $table_jcrois,
@@ -137,7 +149,7 @@ function ypcf_shortcode_jcrois(){
                     array('user_id'           => $user_id, 
                           'component'         => 'profile', 
                           'type'              => 'jycrois', 
-                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> croit au projet <a href="'.$campaign_url.'">'.$campaign->title.'</a>',
+                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> croit au projet <a href="http://dev.yproject.co/campaigns/'.$post_name.'">'.$post_title.'</a>',
                           'content'           => '' , 
                           'primary_link'      => '', 
                           'date_recorded'     => $today,

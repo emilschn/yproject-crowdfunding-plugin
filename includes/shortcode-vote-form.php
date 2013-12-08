@@ -15,6 +15,8 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     global $wpdb, $post;
     $table_name = $wpdb->prefix . "ypVotes"; 
     $table_activity = $wpdb->prefix .'bp_activity';
+    $table_user = $wpdb->prefix .'users';
+     $table_post = $wpdb->prefix .'posts';
     $isvoted = false; 
     $sum_valid = false;
 
@@ -24,6 +26,18 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     $campaign = atcf_get_campaign( $post ); 
     $campaign_url  = get_permalink($campaign->ID);
     $today = current_time( 'mysql' ); 
+    $user_id                = wp_get_current_user()->ID;
+
+    // recuperation de la variable user_nicename qui sert à construire l 'url de l'utilisateur
+    // de la forme  href="http://dev.yproject.co/members/'.$user_nicename.'/
+    $user_nicename = $wpdb->get_var( "SELECT user_nicename FROM $table_user WHERE ID = $user_id" ); 
+
+
+  // recuperation de la variable post_name qui sert à construire l 'url de le la campagna
+  // de la forme  href="http://dev.yproject.co/campaign/'.$post_name.'/
+  $post_name = $wpdb->get_var( "SELECT post_name FROM $table_post WHERE ID = $campaign_id" );
+  $post_title = $wpdb->get_var( "SELECT post_title FROM $table_post WHERE ID = $campaign_id" );
+                
         
     if (isset($_POST['submit']))
         { 
@@ -59,8 +73,6 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                 $user_login             = wp_get_current_user()->user_login;
                 $user_id                = wp_get_current_user()->ID;
                 $user_display_name      = wp_get_current_user()->display_name;
-                $user_nicename          = wp_get_current_user()->user_nicename;
-                $user_nicename          = sanitize_title($user_nicename);
                 
 
                 $post                   = get_post(get_the_ID());
@@ -68,9 +80,6 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                 $campaign               = atcf_get_campaign( $post );
                 $campaign_id            = $campaign->ID;
 
-                
-               
-                
                 
 
 
@@ -122,7 +131,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                     array('user_id'           => $user_id, 
                           'component'         => 'profile', 
                           'type'              => 'voted', 
-                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> a voté sur le projet   <a href="'.$campaign_url.'">'.$campaign->title.'</a>',
+                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> a voté projet <a href="http://dev.yproject.co/campaigns/'.$post_name.'">'.$post_title.'</a>',
                           'content'           => '' , 
                           'primary_link'      => '', 
                           'date_recorded'     => $today,
@@ -150,6 +159,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 
 ?>
     Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
+    
 
     <?php
 	$users = $wpdb->get_results( 'SELECT user_id FROM '.$table_name.' WHERE campaign_id = '.$campaign->ID );
