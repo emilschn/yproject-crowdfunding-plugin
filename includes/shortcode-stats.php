@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  function ypcf_shortcode_stats() {
     global $wpdb, $campaign, $post, $edd_options ;
     $table_jcrois = $wpdb->prefix . "yp_jycrois"; 
+    $table_activity = $wpdb->prefix .'bp_activity'; 
     $jcrois=false; 
     
 
@@ -87,10 +88,18 @@ function ypcf_shortcode_jcrois(){
     if ( is_user_logged_in() ) { 
 	global $wpdb, $post;
 
-	$campaign      = atcf_get_campaign( $post );
-	$campaign_id   =  $campaign->ID;
-	$user_id = wp_get_current_user()->ID;
+	$campaign               = atcf_get_campaign( $post );
+	$campaign_id            =  $campaign->ID;
+	$user_id                = wp_get_current_user()->ID;
+    $user_display_name      = wp_get_current_user()->display_name;
+    $user_nicename          = wp_get_current_user()->user_nacename;
+
+    $campaign_url  = get_permalink($campaign->ID);
+    $today = current_time( 'mysql' ); 
+
+
 	$table_jcrois = $wpdb->prefix . "jycrois";
+    $table_activity = $wpdb->prefix .'bp_activity';
 	
 	if(isset($_POST['submit_jycroispas'])) {
 	    $wpdb->delete( $table_jcrois,
@@ -99,6 +108,22 @@ function ypcf_shortcode_jcrois(){
 		    'campaign_id'  => $campaign_id
 		)
 	    );
+
+         // Inserer l'information dans la table du fil d'activité  de la BDD wp_bp_activity 
+        $wpdb->delete( $table_activity,
+         array('user_id'           => $user_id, 
+                          'component'         => 'profile', 
+                          'type'              => 'jycrois', 
+                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> croit au projet <a href="'.$campaign_url.'">'.$campaign->title.'</a>',
+                          'content'           => '' , 
+                          'primary_link'      => '', 
+                          'date_recorded'     => $today,
+                          'item_id'           =>'', 
+                          'secondary_item_id' =>'', 
+                          'hide_sitewide'     =>'', 
+                          'is_spam'           =>''    
+                        ));
+
 	    
 	} else if(isset($_POST['submit_jycrois']) )  {
             $wpdb->insert( $table_jcrois,
@@ -107,6 +132,21 @@ function ypcf_shortcode_jcrois(){
 		    'campaign_id'    => $campaign_id
 		)
 	    ); 
+             // Inserer l'information dans la table du fil d'activité  de la BDD wp_bp_activity 
+         $wpdb->insert( $table_activity,
+                    array('user_id'           => $user_id, 
+                          'component'         => 'profile', 
+                          'type'              => 'jycrois', 
+                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> croit au projet <a href="'.$campaign_url.'">'.$campaign->title.'</a>',
+                          'content'           => '' , 
+                          'primary_link'      => '', 
+                          'date_recorded'     => $today,
+                          'item_id'           =>'', 
+                          'secondary_item_id' =>'', 
+                          'hide_sitewide'     =>'', 
+                          'is_spam'           =>''    
+                        ));
+
         }
 	
 	$users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = $campaign_id" );
