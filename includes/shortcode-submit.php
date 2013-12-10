@@ -343,17 +343,21 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 	$goalsum_flexible_param = '';
     }
     return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe"'.$goalsum_fixe.'>' . $atts['option1'] . '
-		<span id="goalsum_fixe_param"'.$goalsum_fixe_param.'>- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" size="10" value="'.$goal_search.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>) - ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi"></span></span><br />
+		<span id="goalsum_fixe_param"'.$goalsum_fixe_param.'>- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" size="10" value="'.$goal_search.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>) 
+		- ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi">0&euro;</span></span><br />
 	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible"'.$goalsum_flexible.'>' . $atts['option2'] . '
-		<span id="goalsum_flexible_param"'.$goalsum_flexible_param.'>- Minimum : <input type="text" id="minimum_goal" name="minimum_goal" size="10" value="'.$minimum_goal.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
-		- Maximum : <input type="text" id="maximum_goal" name="maximum_goal" size="10" value="'.$maximum_goal.'"></span>
+		<span id="goalsum_flexible_param"'.$goalsum_flexible_param.'>- Minimum : <input type="text" id="minimum_goal_search" name="minimum_goal_search" size="10" value="'.$minimum_goal.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
+		- Maximum : <input type="text" id="maximum_goal_search" name="maximum_goal_search" size="10" value="'.$maximum_goal.'"></span>
+		- ' . $atts['option1_campaign'] . ' entre <span id="goalsum_min_campaign_multi">0&euro;</span> et <span id="goalsum_max_campaign_multi">0&euro;</span>
 	    <input type="hidden" name="length" id="length" value="90">
 	    <input type="hidden" name="vote_length" id="vote_length" value="9">
 	    <input type="hidden" name="monney" id="monney" value="&euro;">
 	    <input type="hidden" name="campaign_multiplier" id="campaign_multiplier" value="' . $atts['multiplier_campaign'] . '">
 	    <input type="hidden" name="min_amount_project" id="min_amount_project" value="' . $atts['min_amount_project'] . '">
 	    <input type="hidden" name="min_amount_development" id="min_amount_development" value="' . $atts['min_amount_development'] . '">
-	    <input type="hidden" name="goal" id="goal">';
+	    <input type="hidden" name="goal" id="goal">
+	    <input type="hidden" name="minimum_goal" id="minimum_goal">
+	    <input type="hidden" name="maximum_goal" id="maximum_goal">';
 }
 add_shortcode('yproject_crowdfunding_field_goal', 'ypcf_shortcode_submit_field_goal');
 
