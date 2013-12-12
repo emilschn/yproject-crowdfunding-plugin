@@ -187,7 +187,9 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
  * @return type
  */
 function ypcf_login_redirect_invest( $redirect_to, $request, $user ) {
-    return ypcf_login_gobackinvest_url();
+    $goback_url = ypcf_login_gobackinvest_url();
+    if ($goback_url == '') $goback_url = site_url();
+    return $goback_url;
 }
 add_filter( 'login_redirect', 'ypcf_login_redirect_invest', 10, 3 );
 
@@ -240,7 +242,25 @@ function ypcf_get_updated_payment_status($payment_id) {
 		    if ($mangopay_contribution->IsCompleted) {
 			if ($mangopay_contribution->IsSucceeded) {
 			    $buffer = 'publish';
-			    if ($buffer !== $init_payment_status) edd_email_purchase_receipt($payment_id, true);
+			    if ($buffer !== $init_payment_status) {
+				//Création du contrat à signer
+				$current_user = wp_get_current_user();
+				$downloads = edd_get_payment_meta_downloads($payment_id); 
+				$download_id = '';
+				if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+				else $download_id = $downloads[0];
+				$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+				if ($contract_id != '') {
+				    $contract_infos = signsquid_get_contract_infos($contract_id);
+				    // $contract_infos->{'signatories'}[0]->{'code'}
+				    edd_email_purchase_receipt($payment_id, true); //Envoyer mail de confirmation avec le code
+				} else {
+				    global $contract_errors;
+				    $contract_errors = 'contract_failed';
+				    edd_email_purchase_receipt($payment_id, true); //Envoyer mail de confirmation sans le code et avec un message d'attente
+				    //Envoyer un message à admin pour regarder le souci
+				}
+			    }
 			} else {
 			    $buffer = 'failed';
 			}
@@ -281,10 +301,13 @@ function ypcf_get_signsquidstatus_from_infos($contract_infos) {
     if ($contract_infos != '') {
 	switch($contract_infos->{'status'}) {
 	    case 'NotPublished':
-		$buffer = 'Contrat non-cr&eacute;&eacute;.';
+		$buffer = 'Contrat non-cr&eacute;&eacute;';
 		break;
 	    case 'WaitingForSignatoryAction':
-		$buffer = 'En attente de signature<br />Code ' . $contract_infos->{'signatories'}[0]->{'code'};
+		$buffer = 'En attente de signature';
+		break;
+	    case 'Refused':
+		$buffer = 'Contrat refus&eacute;';
 		break;
 	    case 'Agreed':
 		$buffer = 'Contrat sign&eacute;';
@@ -374,16 +397,40 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
     $post = get_post($campaign_id);
     $campaign = atcf_get_campaign( $post );
     $user = get_userdata($user_id);
+    $contract_id = 0;
     
     if (isset($post, $campaign, $user)) {
 	// Nom du contrat => "id_payment -> id_projet : nom_projet - id_user : email_user"
-	$contract_name = 'Id Investissement ' . $payment_id . ' -> Projet ' . $campaign_id . ' : ' . get_the_title( $campaign->ID ) . ' - Utilisateur ' . $user_id . ' : ' .$user->user_email; 
+//	$contract_name = 'Id Investissement ' . $payment_id . ' -> Projet ' . $campaign_id . ' : ' . get_the_title( $campaign->ID ) . ' - Utilisateur ' . $user_id . ' : ' .$user->user_email; 
+	
+	//Nom du contrat = "NOMPROJET - Investissement de INV€ de NOMUTILISATEUR - Le DATE"
+	$project_name = get_the_title( $campaign->ID );
+	$amount = edd_get_payment_amount($payment_id);
+	$user_name = $user->user_firstname . ' ' . $user->user_lastname . ' (' . $user->user_email . ')';
+	$date_payment = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_id ) ) );
+	$contract_name = $project_name .' - Investissement de ' .$amount. '€ de ' . $user_name . ' - Le ' . $date_payment;
+	
 	$contract_id = signsquid_create_contract($contract_name);
-	update_post_meta($payment_id, 'signsquid_contract_id', $contract_id);
-	signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email);
-	$contract_filename = getNewPdfToSign($campaign_id, $payment_id);
-	signsquid_add_file($contract_id, $contract_filename);
-	signsquid_send_invite($contract_id);
+	if ($contract_id != '') {
+	    update_post_meta($payment_id, 'signsquid_contract_id', $contract_id);
+	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email, $user->get('user_mobile_phone'));
+	    else signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email);
+	    $contract_filename = getNewPdfToSign($campaign_id, $payment_id);
+	    signsquid_add_file($contract_id, $contract_filename);
+	    signsquid_send_invite($contract_id);
+	}
     }
+    
+    return $contract_id;
+}
+
+/**
+ * Test pour vérifier que le numéro de téléphone est conforme
+ * @param type $mobile_phone
+ */
+function ypcf_check_user_phone_format($mobile_phone) {
+    $buffer = false;
+    
+    return $buffer;
 }
 ?>

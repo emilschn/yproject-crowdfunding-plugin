@@ -27,16 +27,6 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     $campaign_url  = get_permalink($campaign->ID);
     $today = current_time( 'mysql' ); 
     $user_id                = wp_get_current_user()->ID;
-
-    // recuperation de la variable user_nicename qui sert à construire l 'url de l'utilisateur
-    // de la forme  href="http://dev.yproject.co/members/'.$user_nicename.'/
-    $user_nicename = $wpdb->get_var( "SELECT user_nicename FROM $table_user WHERE ID = $user_id" ); 
-
-
-  // recuperation de la variable post_name qui sert à construire l 'url de le la campagna
-  // de la forme  href="http://dev.yproject.co/campaign/'.$post_name.'/
-  $post_name = $wpdb->get_var( "SELECT post_name FROM $table_post WHERE ID = $campaign_id" );
-  $post_title = $wpdb->get_var( "SELECT post_title FROM $table_post WHERE ID = $campaign_id" );
                 
         
     if (isset($_POST['submit']))
@@ -127,19 +117,32 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 
                 
                
-                   $wpdb->insert( $table_activity,
-                    array('user_id'           => $user_id, 
-                          'component'         => 'profile', 
-                          'type'              => 'voted', 
-                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> a voté projet <a href="http://dev.yproject.co/campaigns/'.$post_name.'">'.$post_title.'</a>',
-                          'content'           => '' , 
-                          'primary_link'      => '', 
-                          'date_recorded'     => $today,
-                          'item_id'           =>'', 
-                          'secondary_item_id' =>'', 
-                          'hide_sitewide'     =>'', 
-                          'is_spam'           =>''    
-                        ));
+			/*
+		    // recuperation de la variable user_nicename qui sert à construire l 'url de l'utilisateur
+		    // de la forme  href="http://dev.yproject.co/members/'.$user_nicename.'/
+		    $user_nicename = $wpdb->get_var( "SELECT user_nicename FROM $table_user WHERE ID = $user_id" ); 
+
+
+		    // recuperation de la variable post_name qui sert à construire l 'url de le la campagna
+		    // de la forme  href="http://dev.yproject.co/campaign/'.$post_name.'/
+		    $post_name = $wpdb->get_var( "SELECT post_name FROM $table_post WHERE ID = $campaign_id" );
+		    $post_title = $wpdb->get_var( "SELECT post_title FROM $table_post WHERE ID = $campaign_id" );
+		    $wpdb->insert( $table_activity,
+			array('user_id'           => $user_id, 
+			      'component'         => 'profile', 
+			      'type'              => 'voted', 
+			      'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> a voté projet <a href="http://dev.yproject.co/campaigns/'.$post_name.'">'.$post_title.'</a>',
+			      'content'           => '' , 
+			      'primary_link'      => '', 
+			      'date_recorded'     => $today,
+			      'item_id'           =>'', 
+			      'secondary_item_id' =>'', 
+			      'hide_sitewide'     =>'', 
+			      'is_spam'           =>''    
+			    )
+		    );
+			 * 
+			 */
 
 
                     echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';

@@ -44,10 +44,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		update_post_meta($campaign->ID, 'campaign_video', esc_url($_POST['video']));
 		update_post_meta($campaign->ID, 'campaign_summary', $_POST['summary']);
 		
-		update_post_meta($campaign->ID, 'campaign_added_value', sanitize_text_field($_POST['added_value']));
-		update_post_meta($campaign->ID, 'campaign_societal_challenge', sanitize_text_field($_POST['societal_challenge']));
-		update_post_meta($campaign->ID, 'campaign_economic_model', sanitize_text_field($_POST['economic_model']));
-		update_post_meta($campaign->ID, 'campaign_implementation', sanitize_text_field($_POST['implementation']));
+		update_post_meta($campaign->ID, 'campaign_added_value', $_POST['added_value']);
+		update_post_meta($campaign->ID, 'campaign_societal_challenge', $_POST['societal_challenge']);
+		update_post_meta($campaign->ID, 'campaign_economic_model', $_POST['economic_model']);
+		update_post_meta($campaign->ID, 'campaign_implementation', $_POST['implementation']);
 		
 		/* Gestion fichiers / images */
 		$image	    = $_FILES[ 'image' ];
