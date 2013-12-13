@@ -569,18 +569,15 @@ function _atcf_metabox_campaign_vote() {
 	global $post;
 
 	$campaign = atcf_get_campaign( $post );
-
 	do_action( 'atcf_metabox_campaign_vote_before', $campaign );
 ?>  
-    <p<h2> <?php _e( 'Temoin du statu, pour changer choisir une valeur dans la liste deroulante ci-dessous', 'atcf' ); ?></h2></p>
-	<p><input type="text" name="campaign_vote_display" id="campaign_vote_display" style="width:200px; background-color:red; color:white;" class="regular-text" value="<?php echo esc_attr( $campaign->vote() ); ?>" /></p>
-	<p<h2> <?php _e( 'Choisir le statu de la campagne', 'atcf' ); ?></h2></p>
+	<p>Choisir le statut de la campagne</p>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
-	<option></option>
-	<option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">collecte</option>
-	<option <?php if ($campaign->vote() == "vote") { ?>selected="selected"<?php } ?>value="vote">vote</option>
-	<option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">funded</option>
-	<option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">archive</option>
+	    <option></option>
+	    <option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">collecte</option>
+	    <option <?php if ($campaign->vote() == "vote") { ?>selected="selected"<?php } ?>value="vote">vote</option>
+	    <option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">funded</option>
+	    <option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">archive</option>
 	</select>
 	
 <?php
@@ -597,8 +594,8 @@ function _atcf_metabox_campaign_date_vote() {
 ?>  
     
 	<p>
-		<input type="text" name="campaign_vote_date_label" id="campaign_vote_date_label" value="<?php echo esc_attr( $campaign->end_vote() ); ?>"/>
-		<input type="date" name="campaign_end_vote" id="campaign_end_vote">Date de la fin</input>
+	    Date de la fin :<br />
+	    <input type="date" name="campaign_end_vote" id="campaign_end_vote" value="<?php echo $campaign->end_vote_date(); ?>">
 	</p>
 <?php
 	do_action( 'atcf_metabox_campaign_start_vote_after', $campaign );
@@ -1258,6 +1255,10 @@ class ATCF_Campaign {
 
 	public function end_vote() {
 		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_vote' ), false);
+	}
+
+	public function end_vote_date() {
+		return mysql2date( 'Y-m-d', $this->__get( 'campaign_end_vote' ), false);
 	}
 
 	/**

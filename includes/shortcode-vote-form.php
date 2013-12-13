@@ -165,6 +165,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     
 
     <?php
+    if (is_user_logged_in()) :
 	$users = $wpdb->get_results( 'SELECT user_id FROM '.$table_name.' WHERE campaign_id = '.$campaign->ID );
 	$has_voted = false;
 	foreach ( $users as $user ){
@@ -241,6 +242,11 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 		</form>
 	    </div>
     <?php endif;
+    else :
+	?>
+	<label class="errors">* Vous devez vous connecter pour voter</label>
+	<?php
+    endif;
 }
 add_shortcode( 'yproject_crowdfunding_printPageVoteForm', 'ypcf_shortcode_printPageVoteForm' );
 

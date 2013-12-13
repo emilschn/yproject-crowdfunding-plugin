@@ -189,7 +189,7 @@ function atcf_shortcode_update_field_description( $editing, $campaign, $post ) {
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
@@ -213,7 +213,7 @@ function atcf_shortcode_update_field_added_value( $editing, $campaign, $post ) {
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
@@ -236,7 +236,7 @@ function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $p
 				'editor_css'    => '<style>body { background: red; width: 200 px; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
@@ -259,7 +259,7 @@ function atcf_shortcode_update_field_economic_model( $editing, $campaign, $post 
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
@@ -282,7 +282,7 @@ function atcf_shortcode_update_field_implementation( $editing, $campaign, $post 
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
