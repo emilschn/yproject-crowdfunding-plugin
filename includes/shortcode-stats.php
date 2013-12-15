@@ -11,12 +11,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $table_activity = $wpdb->prefix .'bp_activity'; 
     $jcrois=false; 
     
+    
+
 
     $crowdfunding = crowdfunding();
 
     $post = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post );
-    
+       
+
+   
     $category_slug = $post->ID . '-statistiques-' . $post->post_title;
     $category_obj = get_category_by_slug($category_slug);
     $campaign_id =  $campaign->ID;
@@ -90,28 +94,33 @@ function ypcf_shortcode_jcrois(){
 
 	$campaign               = atcf_get_campaign( $post );
 	$campaign_id            =  $campaign->ID;
+  $campaign_url           = get_permalink($campaign->ID);
 	$user_id                = wp_get_current_user()->ID;
   $user_display_name      = wp_get_current_user()->display_name;
-  $user_nicename          = wp_get_current_user()->user_nacename;
-
+  $user_nicename          =  wp_get_current_user()->user_nicename;
+  $post_title = $post->post_title;
+  $post_name = $post->post_name;
   
   $today = current_time( 'mysql' ); 
 
-
-	$table_jcrois = $wpdb->prefix . "jycrois";
+  $table_jcrois = $wpdb->prefix . "jycrois";
   $table_activity = $wpdb->prefix .'bp_activity';
-  $table_user = $wpdb->prefix .'users';
-  $table_post = $wpdb->prefix .'posts';
+  
 
 
-  // recuperation de la variable user_nicename qui sert à construire l 'url de l'utilisateur
-  // de la forme  href="http://dev.yproject.co/members/'.$user_nicename.'/
-  $user_nicename = $wpdb->get_var( "SELECT user_nicename FROM $table_user WHERE ID = $user_id" );
+     /* Construvction des urls utilisés dans les liens du fil d'actualité*/
+    // Url principal
+    $url = home_url('/');
+    // url de tous les campagnes
+    $url_campaigns = $url.'campaigns/';
+    // url d'une campagne précisée par son nom 
+    $url_campaign = '<a href="'.$url_campaigns.$post_name.'/">'.$post_title.'</a>';
+    // url de tous les membres 
+    $url_members = $url.'members/';
+    //url d'un utilisateur précis
+    $url_profile = '<a href="'.$url_members.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a>';
 
-  // recuperation de la variable post_name qui sert à construire l 'url de le la campagna
-  // de la forme  href="http://dev.yproject.co/campaign/'.$post_name.'/
-  $post_name = $wpdb->get_var( "SELECT post_name FROM $table_post WHERE ID = $campaign_id" );
-  $post_title = $wpdb->get_var( "SELECT post_title FROM $table_post WHERE ID = $campaign_id" ); 
+
 	
 	if(isset($_POST['submit_jycroispas'])) {
 	    $wpdb->delete( $table_jcrois,
@@ -126,7 +135,7 @@ function ypcf_shortcode_jcrois(){
          array('user_id'           => $user_id, 
                           'component'         => 'profile', 
                           'type'              => 'jycrois', 
-                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> croit au projet <a href="'.$campaign_url.'">'.$campaign->title.'</a>',
+                          'action'            => $url_profile.' croit au projet '.$url_campaign,
                           'content'           => '' , 
                           'primary_link'      => '', 
                           'date_recorded'     => $today,
@@ -149,7 +158,7 @@ function ypcf_shortcode_jcrois(){
                     array('user_id'           => $user_id, 
                           'component'         => 'profile', 
                           'type'              => 'jycrois', 
-                          'action'            => '<a href="http://dev.yproject.co/members/'.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> croit au projet <a href="http://dev.yproject.co/campaigns/'.$post_name.'">'.$post_title.'</a>',
+                          'action'            => $url_profile.' croit au projet '.$url_campaign,
                           'content'           => '' , 
                           'primary_link'      => '', 
                           'date_recorded'     => $today,
@@ -186,6 +195,7 @@ function ypcf_shortcode_jcrois(){
 	?>
 	<form name="ypjycrois" action="<?php get_permalink();?>" method="POST" > 
 	    <input id="jcrois" type="submit" name="submit_jycrois" value="" class="bouton_jcrois">
+      
 	</form><br/>
 	<?php
     }
