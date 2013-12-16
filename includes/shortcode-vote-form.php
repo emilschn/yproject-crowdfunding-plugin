@@ -15,8 +15,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     global $wpdb, $post;
     $table_name = $wpdb->prefix . "ypVotes"; 
     $table_activity = $wpdb->prefix .'bp_activity';
-    $table_user = $wpdb->prefix .'users';
-     $table_post = $wpdb->prefix .'posts';
+   
     $isvoted = false; 
     $sum_valid = false;
 
