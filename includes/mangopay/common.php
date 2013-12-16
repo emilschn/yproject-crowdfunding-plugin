@@ -51,12 +51,15 @@ function buildRequestUrlPath($resourcePath) {
 
  
 function request($resourcePath, $method, $body = null) {
+    //DEBUG LOG
+    
     //print("$method /$resourcePath\n");
     $requestUrlPath = buildRequestUrlPath($resourcePath);
     $sign = createAuthSignature($method, $requestUrlPath, $body);
     //print("Signature : $sign\n");
     $leetchiBaseURL = getLeetchiBaseURL();
     $url = $leetchiBaseURL . $requestUrlPath;
+    ypcf_debug_log("mangopay_request --- REQUEST :: ".$url." (" . $method . ") => " . $body);
     //print("request: $url\n");
     $ch = curl_init($url);
     
@@ -78,11 +81,15 @@ function request($resourcePath, $method, $body = null) {
 
     $data = curl_exec($ch);
     if (curl_errno($ch)) {
+	//DEBUG LOG
+	ypcf_debug_log("mangopay_request --- ERROR :: ".curl_errno($ch));
 	//print('cURL error: ' . curl_error($ch));
     } else {
 	$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	ypcf_debug_log("mangopay_request --- STATUS :: ".$statusCode);
 	//print("HTTP response code: $statusCode\n");
     }
+    ypcf_debug_log("mangopay_request --- RESPONSE :: ".$data);
     curl_close($ch);
     if ($data != false) {
 	//print("response data:\n");

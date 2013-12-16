@@ -64,3 +64,13 @@ function atcf_log_type_preapproval( $types ) {
 	return $types;
 }
 add_filter( 'edd_log_types', 'atcf_log_type_preapproval' );
+
+
+function ypcf_debug_log($debug_str) {
+    $filename = dirname ( __FILE__ ) . '/logs/the_logs_'.date("m.d.Y").'.txt';
+    $file_handle = fopen($filename, 'a');
+    date_default_timezone_set("Europe/Paris");
+    $debug_str = date("m.d.Y H:i:s") . " - " . $debug_str . "\n";
+    fwrite($file_handle, $debug_str);
+    fclose($file_handle);
+}

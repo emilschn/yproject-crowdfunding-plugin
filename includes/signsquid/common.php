@@ -1,6 +1,12 @@
 <?php
 require_once(dirname(__FILE__) . "/../../../../../signsquid-config.inc");
 
+/*if (!function_exists('ypcf_debug_log')) {
+    function ypcf_debug_log($log) {
+	echo $log . '<br />';
+    }
+}*/
+
 /**
  * General function to make request to signsquid
  * @global type $signsquidBaseURL : defined somewhere else to call signsquid API
@@ -17,9 +23,14 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
     $data_string = ($post_data != '') ? json_encode($post_data) : '';
     $header_auth = "Authorization: Basic " . base64_encode($signsquiduserpwd) . "\r\n";
     
+    //DEBUG LOG
+    ypcf_debug_log("signsquid_request --- REQUEST :: ".$url." (" . $request_type . ") => " . $data_string);
+    $error = '';
+    $errorno = '';
+    
     switch ($request_type) {
 	case "POST" :
-	    $response = file_get_contents($url, null, stream_context_create(array(
+	    /*$response = file_get_contents($url, null, stream_context_create(array(
 		'http' => array(
 		    'method' => 'POST',
 		    'header' => $header_auth
@@ -27,7 +38,21 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
 				. "Content-Length: " . strlen($data_string) . "\r\n",
 		    'content' => $data_string
 		)
-	    )));
+	    )));*/
+	    $ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_setopt($ch, CURLOPT_HEADER, TRUE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data_string)));
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($ch, CURLOPT_USERPWD, $signsquiduserpwd );
+		curl_setopt($ch, CURLOPT_POST, TRUE);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($ch, CURLOPT_VERBOSE, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+	    $response = curl_exec($ch);
+	    $error = curl_error($ch);
+	    $errorno = curl_errno($ch);
+	    curl_close($ch);
 	    break;
 	case "GET" :
 	    $response = file_get_contents($url, null, stream_context_create(array(
@@ -43,15 +68,15 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
 	    $fh = fopen($post_data, 'r');
 	    $ch = curl_init($url . $filename);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-		curl_setopt($ch, CURLOPT_POST, TRUE);
 		curl_setopt($ch, CURLOPT_HEADER, TRUE);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/octet-stream', 'Content-Length: ' . filesize($post_data)));
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_USERPWD, $signsquiduserpwd );
+		curl_setopt($ch, CURLOPT_POST, TRUE);
 		curl_setopt($ch, CURLOPT_INFILE, $fh );
 		curl_setopt($ch, CURLOPT_INFILESIZE, filesize($post_data) );
 		curl_setopt($ch, CURLOPT_VERBOSE, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 	    $response = curl_exec($ch);
 	    $error = curl_error($ch);
 	    $errorno = curl_errno($ch);
@@ -60,10 +85,34 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
 	    break;
     }
     
+    //DEBUG LOG
+    ypcf_debug_log("signsquid_request --- RESPONSE :: ".$response." (".$error." ; ".$errorno.")");
+    
     //Transforme en objet json directement exploitable
-    $obj = json_decode($response); 
+//    $obj = json_decode($response);
+    $obj = $response;
     
     return $obj;
+}
+
+/**
+ * Parse les headers reçus
+ * @param type $response
+ * @return type
+ */
+function get_headers_from_curl_response($response) {
+    $headers = array();
+    $header_text = substr($response, 0, strpos($response, "\r\n\r\n"));
+
+    foreach (explode("\r\n", $header_text) as $i => $line) {
+        if ($i === 0) {
+            $headers['http_code'] = $line;
+	} else {
+            list ($key, $value) = explode(': ', $line);
+            $headers[$key] = $value;
+        }
+    }
+    return $headers;
 }
 
 /**
@@ -80,6 +129,7 @@ function signsquid_get_contract_list() {
 function signsquid_get_contract_infos($contract_id) {
     $buffer = '';
     if ($contract_id != '') $buffer = signsquid_request("GET", "contracts/".$contract_id."/versions/1");
+    else ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: $contract_id empty');
     return $buffer;
 }
 
@@ -88,9 +138,15 @@ function signsquid_get_contract_infos($contract_id) {
  * @param type $contract_name
  */
 function signsquid_create_contract($contract_name) {
+    $buffer = '';
     $data_to_send = array( 'name' => $contract_name);
     $response = signsquid_request("POST", "contracts", $data_to_send);
-    $buffer = (isset($response->{'id'})) ? $response->{'id'} : '';
+    $headers = get_headers_from_curl_response($response);
+    if (isset($headers['Location'])) {
+	$buffer = basename($headers['Location']);
+    } else {
+	ypcf_debug_log('signsquid_create_contract --- ERROR');
+    }
     return $buffer;
 }
 
@@ -102,10 +158,15 @@ function signsquid_create_contract($contract_name) {
  * @param type $user_phone
  */
 function signsquid_add_signatory($contract_id, $user_name, $user_email, $user_phone = '') {
-    //TODO : vérification sur le numéro de téléphone
     $data_to_send = array( 'name' => $user_name, 'email' => $user_email, 'mobilePhone' => $user_phone);
     $response = signsquid_request("POST", "contracts/".$contract_id."/versions/1/signatories", $data_to_send);
-    $buffer = (isset($response->{'message'})) ? '' : TRUE;
+    $headers = get_headers_from_curl_response($response);
+    if ($headers['http_code'] == 'HTTP/1.1 201 Created') {
+	$buffer = TRUE;
+    } else {
+	ypcf_debug_log('signsquid_add_signatory --- ERROR');
+	$buffer = FALSE;
+    }
     return $buffer;
 }
 
@@ -116,6 +177,14 @@ function signsquid_add_signatory($contract_id, $user_name, $user_email, $user_ph
  */
 function signsquid_add_file($contract_id, $filename) {
     $response = signsquid_request("POST_FILE", "contracts/".$contract_id."/versions/1/files?filename=", $filename);
+    $headers = get_headers_from_curl_response($response);
+    if ($headers['http_code'] == 'HTTP/1.1 100 Continue') {
+	$buffer = TRUE;
+    } else {
+	ypcf_debug_log('signsquid_add_file --- ERROR');
+	$buffer = FALSE;
+    }
+    return $buffer;
 }
 
 /**
@@ -124,5 +193,13 @@ function signsquid_add_file($contract_id, $filename) {
  */
 function signsquid_send_invite($contract_id) {
     $response = signsquid_request("POST", "contracts/".$contract_id."/versions/1");
+    $headers = get_headers_from_curl_response($response);
+    if ($headers['http_code'] == 'HTTP/1.1 200 OK') {
+	$buffer = TRUE;
+    } else {
+	ypcf_debug_log('signsquid_send_invite --- ERROR');
+	$buffer = FALSE;
+    }
+    return $buffer;
 }
 ?>

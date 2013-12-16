@@ -82,12 +82,12 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    case 'publish' :
 		//On affiche que tout s'est bien passé
 		$buffer .= $content;
-		$buffer .= 'Merci pour votre investissement de ' . $amount . edd_get_currency() . '.<br />';
+		$buffer .= 'Merci pour votre investissement de ' . $amount . '&euro;.<br />';
 		$buffer .= 'Nous sommes &agrave; pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
-		$buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . edd_get_currency() . '.<br /><br />';
+		$buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . '&euro;.<br /><br />';
 
 		global $contract_errors;
-		if (!isset($contract_errors)) {
+		if (!isset($contract_errors) || $contract_errors == '') {
 		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
 		    $buffer .= '- un e-mail de confirmation de paiement ; cet e-mail contient votre code pour signer le pouvoir<br />';
 		    $buffer .= '- un e-mail qui contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
@@ -100,6 +100,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
     //		$buffer .= '<a href="https://twitter.com/share" class="twitter-share-button" data-via="yproject_co" data-lang="fr">' . __('Partager sur Twitter', 'yproject') . '</a>';
     //		$buffer .= '<br />';
 		} else {
+		    ypcf_debug_log("ypcf_shortcode_invest_return --- ERROR :: contract :: ".$contract_errors);
 		    $buffer .= 'Vous allez recevoir un e-mail de confirmation de paiement.<br />';
 		    $buffer .= '<span class="errors">Cependant, il y a eu un problème lors de la génération du contrat. Nos &eacute;quipes travaillent &agrave; la r&eacute;solution de ce probl&egrave;me.</span>';
 		}

@@ -400,10 +400,7 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
     $contract_id = 0;
     
     if (isset($post, $campaign, $user)) {
-	// Nom du contrat => "id_payment -> id_projet : nom_projet - id_user : email_user"
-//	$contract_name = 'Id Investissement ' . $payment_id . ' -> Projet ' . $campaign_id . ' : ' . get_the_title( $campaign->ID ) . ' - Utilisateur ' . $user_id . ' : ' .$user->user_email; 
-	
-	//Nom du contrat = "NOMPROJET - Investissement de INV€ de NOMUTILISATEUR - Le DATE"
+	//Nom du contrat = "NOM_PROJET - Investissement de INV€ de NOM_UTILISATEUR (MAIL_UTILISATEUR) - Le DATE"
 	$project_name = get_the_title( $campaign->ID );
 	$amount = edd_get_payment_amount($payment_id);
 	$user_name = $user->user_firstname . ' ' . $user->user_lastname . ' (' . $user->user_email . ')';
@@ -412,13 +409,21 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 	
 	$contract_id = signsquid_create_contract($contract_name);
 	if ($contract_id != '') {
+	    global $contract_errors;
 	    update_post_meta($payment_id, 'signsquid_contract_id', $contract_id);
-	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email, $user->get('user_mobile_phone'));
-	    else signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email);
+	    $mobile_phone = '';
+	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = $user->get('user_mobile_phone');
+	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email)) $contract_errors = 'contract_addsignatories_failed';
 	    $contract_filename = getNewPdfToSign($campaign_id, $payment_id);
-	    signsquid_add_file($contract_id, $contract_filename);
-	    signsquid_send_invite($contract_id);
+	    if (!signsquid_add_file($contract_id, $contract_filename)) $contract_errors = 'contract_addfile_failed';
+	    if (!signsquid_send_invite($contract_id)) $contract_errors = 'contract_sendinvite_failed';
+	} else {
+	    global $contract_errors;
+	    $contract_errors = 'contract_creation_failed';
 	}
+    } else {
+	global $contract_errors;
+	$contract_errors = 'contract_creation_failed';
     }
     
     return $contract_id;
