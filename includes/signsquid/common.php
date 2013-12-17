@@ -30,15 +30,6 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
     
     switch ($request_type) {
 	case "POST" :
-	    /*$response = file_get_contents($url, null, stream_context_create(array(
-		'http' => array(
-		    'method' => 'POST',
-		    'header' => $header_auth
-				. "Content-Type: application/json\r\n"
-				. "Content-Length: " . strlen($data_string) . "\r\n",
-		    'content' => $data_string
-		)
-	    )));*/
 	    $ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLOPT_HEADER, TRUE);
@@ -61,6 +52,8 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
 		    'header' => $header_auth
 		)
 	    )));
+	    //Transforme en objet json directement exploitable
+	    $obj = json_decode($response);
 	    break;
 	case "POST_FILE" :
 	    //In this context, $post_data is the complete file path
@@ -88,11 +81,8 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
     //DEBUG LOG
     ypcf_debug_log("signsquid_request --- RESPONSE :: ".$response." (".$error." ; ".$errorno.")");
     
-    //Transforme en objet json directement exploitable
-//    $obj = json_decode($response);
-    $obj = $response;
-    
-    return $obj;
+    if (isset($obj)) return $obj;
+    else return $response;
 }
 
 /**
@@ -130,6 +120,10 @@ function signsquid_get_contract_infos($contract_id) {
     $buffer = '';
     if ($contract_id != '') $buffer = signsquid_request("GET", "contracts/".$contract_id."/versions/1");
     else ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: $contract_id empty');
+    if (!isset($buffer->{'published'}) || $buffer->{'published'} != true) {
+	$buffer = '';
+	ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: Wrong $contract_id called');
+    }
     return $buffer;
 }
 

@@ -88,9 +88,12 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 		global $contract_errors;
 		if (!isset($contract_errors) || $contract_errors == '') {
-		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
+		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
 		    $buffer .= '- un e-mail de confirmation de paiement ; cet e-mail contient votre code pour signer le pouvoir<br />';
 		    $buffer .= '- un e-mail qui contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
+		    if (ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) {
+			$buffer .= 'Vous devriez aussi recevoir un sms contenant le code au num&eacute;ro que vous nous avez indiqu&eacute; : '.$current_user->get('user_mobile_phone').'<br /><br />'; 
+		    }
 
 		    //Liens pour partager
     //		$buffer .= '<iframe src="http://www.facebook.com/plugins/like.php?href='.urlencode(get_permalink($_GET['campaign_id'])).'&amp;layout=button_count&amp;show_faces=true&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=30" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80px; height:20px; text-align: center" allowTransparency="true"></iframe>';

@@ -79,7 +79,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= 'Nationalit&eacute; : ' . $country_list[$current_user->get('user_nationality')] . '<br />';
 		$form .= 'Date de naissance : ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year') . '<br />';
 		$form .= 'Num&eacute;ro de t&eacute;l&eacute;phone : ' . $current_user->get('user_mobile_phone');
-		if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le numéro de téléphone </span>';
+		if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
 		$form .= '<br />';
 		$page_update = get_page_by_path('modifier-mon-compte');
 		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br /><br />';

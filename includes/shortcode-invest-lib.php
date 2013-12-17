@@ -252,13 +252,12 @@ function ypcf_get_updated_payment_status($payment_id) {
 				$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
 				if ($contract_id != '') {
 				    $contract_infos = signsquid_get_contract_infos($contract_id);
-				    // $contract_infos->{'signatories'}[0]->{'code'}
-				    edd_email_purchase_receipt($payment_id, true); //Envoyer mail de confirmation avec le code
+				    ypcf_send_mail_purchase($payment_id, 'full', $contract_infos->{'signatories'}[0]->{'code'});
 				} else {
 				    global $contract_errors;
 				    $contract_errors = 'contract_failed';
-				    edd_email_purchase_receipt($payment_id, true); //Envoyer mail de confirmation sans le code et avec un message d'attente
-				    //Envoyer un message à admin pour regarder le souci
+				    ypcf_send_mail_purchase($payment_id, $contract_errors);
+				    ypcf_send_mail_admin($payment_id, $contract_errors);
 				}
 			    }
 			} else {
@@ -298,7 +297,7 @@ function ypcf_get_signsquidcontractid_from_invest($payment_id) {
  */
 function ypcf_get_signsquidstatus_from_infos($contract_infos) {
     $buffer = '- Pas de contrat -';
-    if ($contract_infos != '') {
+    if ($contract_infos != '' && is_object($contract_infos)) {
 	switch($contract_infos->{'status'}) {
 	    case 'NotPublished':
 		$buffer = 'Contrat non-cr&eacute;&eacute;';
@@ -315,6 +314,103 @@ function ypcf_get_signsquidstatus_from_infos($contract_infos) {
 	}
     }
     return $buffer;
+}
+
+/**
+ * 
+ * @param type $payment_id
+ * @param type $type
+ * @param type $code
+ */
+function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
+    $downloads = edd_get_payment_meta_downloads($payment_id); 
+    $download_id = '';
+    if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+    else $download_id = $downloads[0];
+    $post_campaign = get_post($download_id);
+				
+    $payment_data = edd_get_payment_meta( $payment_id );
+    $user_id      = edd_get_payment_user_id( $payment_id );
+    $user_info    = maybe_unserialize( $payment_data['user_info'] );
+    $email        = edd_get_payment_user_email( $payment_id );
+
+    if ( isset( $user_id ) && $user_id > 0 ) {
+	$user_data = get_userdata($user_id);
+	$name = $user_data->display_name;
+    } elseif ( isset( $user_info['first_name'] ) && isset( $user_info['last_name'] ) ) {
+	$name = $user_info['first_name'] . ' ' . $user_info['last_name'];
+    } else {
+	$name = $email;
+    }
+    
+    $subject = '';
+    $body_content = '';
+    switch ($type) {
+	case "full":
+	case "contract_failed":
+	    $subject = "Merci pour votre investissement";
+	    $body_content = "Cher ".$name.",\n\n";
+	    $body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. N'oubliez pas qu'il ne sera définitivement validé ";
+	    $body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !\n\n";
+	    switch ($type) {
+		case "full":
+		    $body_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid.\n";
+		    $body_content .= "Votre code personnel pour signer le contrat : " . $code . "\n\n";
+		    break;
+		case "contract_failed":
+		    $body_content .= "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span>\n\n";
+		    break;
+	    }
+	    $body_content .= "<strong>Détails de l'investissement</strong>\n";
+	    $body_content .= "Projet : " . $post_campaign->post_title . "\n";
+	    $body_content .= "Montant investi : ".$payment_data['amount']."€\n";
+	    $body_content .= "Horodatage : ".date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_id ) ) )."\n\n";
+	    break;
+	case "send_code":
+	    $subject = "Code d'investissement";
+	    $body_content = "Cher ".$name.",\n\n";
+	    $body_content .= "Afin de confirmer votre investissement sur le projet " . $post_campaign->post_title . ", ";
+	    $body_content .= "voici le code qui vous permettra de signer le contrat chez notre partenaire Signsquid :\n";
+	    $body_content .= $code . "\n\n";
+	    $body_content .= "Si vous n'avez fait aucune action pour recevoir ce code, ne tenez pas compte de ce message.\n\n";
+	    break;
+    }
+
+    $message = edd_get_email_body_header();
+    $message .= $body_content;
+    $message .= edd_get_email_body_footer();
+
+    $from_name = get_bloginfo('name');
+    $from_email = get_option('admin_email');
+    $headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
+    $headers .= "Reply-To: ". $from_email . "\r\n";
+    $headers .= "Content-Type: text/html; charset=utf-8\r\n";
+    $headers = apply_filters( 'edd_receipt_headers', $headers, $payment_id, $payment_data );
+
+    return wp_mail( $email, $subject, $message, $headers );
+}
+
+/**
+ * @param type $payment_id
+ */
+function ypcf_send_mail_admin($payment_id, $type) {
+    ypcf_debug_log("ypcf_send_mail_admin --- MAIL :: payment_id :: ".$payment_id." ; type :: ".$type);
+    switch ($type) {
+	case "contract_failed":
+	    $subject = 'Problème de création de contrat';
+	    $message = 'Il y a eu un problème de création de contrat sur signsquid lors du paiement ' . $payment_id;
+	    break;
+    }
+    
+    $from_name = get_bloginfo('name') . ' admin bot';
+    $from_email = get_option('admin_email');
+    $headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
+    $headers .= "Reply-To: ". $from_email . "\r\n";
+    $headers .= "Content-Type: text/html; charset=utf-8\r\n";
+    
+    if (!wp_mail( $from_email, $subject, $message, $headers )) {
+	ypcf_debug_log("ypcf_send_mail_admin --- ERROR :: mail admin :: payment_id :: ".$payment_id);
+    }
 }
 
 /**
@@ -412,7 +508,7 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 	    global $contract_errors;
 	    update_post_meta($payment_id, 'signsquid_contract_id', $contract_id);
 	    $mobile_phone = '';
-	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = $user->get('user_mobile_phone');
+	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = ypcf_format_french_phonenumber($user->get('user_mobile_phone'));
 	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email)) $contract_errors = 'contract_addsignatories_failed';
 	    $contract_filename = getNewPdfToSign($campaign_id, $payment_id);
 	    if (!signsquid_add_file($contract_id, $contract_filename)) $contract_errors = 'contract_addfile_failed';
@@ -436,6 +532,29 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 function ypcf_check_user_phone_format($mobile_phone) {
     $buffer = false;
     
+    //Numéro de téléphone type que doit renvoyer ypcf_format_french_phonenumber
+    $classic_phone_number = '+33612345678';
+    if ($mobile_phone != '' && strlen(ypcf_format_french_phonenumber($mobile_phone) == strlen($classic_phone_number))) {
+	$buffer = true;
+    }
+    
     return $buffer;
 }
+
+/**
+ * Retourne le bon numéro de téléphone
+ * @param type $phoneNumber
+ * @return type
+ */
+function ypcf_format_french_phonenumber($phoneNumber){ 
+    //Supprimer tous les caractères qui ne sont pas des chiffres 
+    $phoneNumber = preg_replace('/[^0-9]+/', '', $phoneNumber); 
+    //Garder les 9 derniers chiffres 
+    $phoneNumber = substr($phoneNumber, -9); 
+    //On ajoute +33 
+    $motif = '+33\1\2\3\4\5';
+    $phoneNumber = preg_replace('/(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/', $motif, $phoneNumber); 
+
+    return $phoneNumber; 
+} 
 ?>
