@@ -11,152 +11,116 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // formulaire de vote
 function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
-  
     global $wpdb, $post;
-    $table_name = $wpdb->prefix . "ypVotes"; 
-    $table_activity = $wpdb->prefix .'bp_activity';
-   
-    $isvoted = false; 
-    $sum_valid = false;
-
-    $crowdfunding = crowdfunding();
-
     if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
+    
+    $table_name = $wpdb->prefix . "ypVotes"; 
+
     $campaign = atcf_get_campaign( $post ); 
-    $campaign_url  = get_permalink($campaign->ID);
-    $post_title = $post->post_title;
-    $post_name = $post->post_name;
-    $today = current_time( 'mysql' ); 
-    $user_id                = wp_get_current_user()->ID;
-    $user_nicename =  wp_get_current_user()->user_nicename;
-    $user_display_name =  wp_get_current_user()->display_name;
 
-    /* Construvction des urls utilisés dans les liens du fil d'actualité*/
-    // Url principal
-    $url = home_url('/');
-    // url d'une campagne précisée par son nom 
-    $url_campaign = '<a href="'.$campaign_url.$post_name.'/">'.$post_title.'</a>';
-    // url de tous les membres 
-    $url_members = $url.'members/';
-    //url d'un utilisateur précis
-    $url_profile = '<a href="'.$url_members.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a>';
-
-         
-                
         
-    if (isset($_POST['submit']))
-        { 
-            if ( is_user_logged_in() )
-            {
-                $impact                 = isset($_POST[ 'impact' ]) ? $_POST[ 'impact' ] : "";
-                $local                  = ($impact == "positif" && isset($_POST[ 'local' ])) ? $_POST[ 'local' ] : false;
-                $environmental          = ($impact == "positif" && isset($_POST[ 'environmental' ])) ? $_POST[ 'environmental' ] : false;
-                $social                 = ($impact == "positif" && isset($_POST[ 'social' ])) ? $_POST[ 'social' ] : false;
-                $autre                  = ($impact == "positif" && isset($_POST[ 'autre' ]) && $_POST[ 'autre' ] && isset($_POST['precision'])) ? htmlentities($_POST[ 'precision' ]) : '';
-                
-                $maturite               = isset($_POST[ 'maturite' ]) ? $_POST[ 'maturite' ] : false;
-                
-                if  ($maturite == "pret" && !is_numeric($_POST[ 'sum' ])) {
-                    echo '<label style="color:red">*Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
-                } else {
-                    $sum = ($maturite == "pret" && isset($_POST[ 'sum' ])) ? $_POST[ 'sum' ] : 0;
-                    $sum_valid = true;
-                }
-                $liste_risque           = ($maturite == "pret" && isset($_POST[ 'liste_risque' ])) ? $_POST[ 'liste_risque' ] : '';  
-                   
-                $pas_responsable        = ($maturite == "retravaille" && isset($_POST[ 'pas_responsable' ])) ? $_POST[ 'pas_responsable' ] : false; 
-                $qualite_produit        = ($maturite == "retravaille" && isset($_POST[ 'qualite_produit' ])) ? $_POST[ 'qualite_produit' ] : false; 
-                $qualite_equipe         = ($maturite == "retravaille" && isset($_POST[ 'qualite_equipe' ])) ? $_POST[ 'qualite_equipe' ] : false; 
-                $qualite_marche         = ($maturite == "retravaille" && isset($_POST[ 'qualite_marche' ])) ? $_POST[ 'qualite_marche' ] : false;
-                $retravaille_autre      = ($maturite == "retravaille" && isset($_POST[ 'retravaille_autre' ]) && $_POST[ 'retravaille_autre' ] && isset($_POST[ 'retravaille_autre_precision' ])) ? htmlentities($_POST[ 'retravaille_autre_precision' ]) : '';
-                
-                $conseil                = (isset($_POST[ 'conseil' ])) ? htmlentities($_POST[ 'conseil' ]) : '';
-     
-                $user_last_name         = wp_get_current_user()->user_lastname;
-                $user_first_name        = wp_get_current_user()->user_firstname;
-                $user_email             = wp_get_current_user()->user_email;
-                $user_login             = wp_get_current_user()->user_login;
-                $user_id                = wp_get_current_user()->ID;
-                $user_display_name      = wp_get_current_user()->display_name;
-                
+    if (isset($_POST['submit'])) { 
+	if ( is_user_logged_in() ) {
+	    $impact                 = isset($_POST[ 'impact' ]) ? $_POST[ 'impact' ] : "";
+	    $local                  = ($impact == "positif" && isset($_POST[ 'local' ])) ? $_POST[ 'local' ] : false;
+	    $environmental          = ($impact == "positif" && isset($_POST[ 'environmental' ])) ? $_POST[ 'environmental' ] : false;
+	    $social                 = ($impact == "positif" && isset($_POST[ 'social' ])) ? $_POST[ 'social' ] : false;
+	    $autre                  = ($impact == "positif" && isset($_POST[ 'autre' ]) && $_POST[ 'autre' ] && isset($_POST['precision'])) ? htmlentities($_POST[ 'precision' ]) : '';
 
-                $post                   = get_post(get_the_ID());
+	    $sum_valid = false;
+	    $maturite = isset($_POST[ 'maturite' ]) ? $_POST[ 'maturite' ] : false;
 
-                $campaign               = atcf_get_campaign( $post );
-                $campaign_id            = $campaign->ID;
+	    if  ($maturite == "pret" && !is_numeric($_POST[ 'sum' ])) {
+		echo '<label style="color:red">*Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
+	    } else {
+		$sum = ($maturite == "pret" && isset($_POST[ 'sum' ])) ? $_POST[ 'sum' ] : 0;
+		$sum_valid = true;
+	    }
+	    
+	    $liste_risque           = ($maturite == "pret" && isset($_POST[ 'liste_risque' ])) ? $_POST[ 'liste_risque' ] : '';
+	    $pas_responsable        = ($maturite == "retravaille" && isset($_POST[ 'pas_responsable' ])) ? $_POST[ 'pas_responsable' ] : false; 
+	    $qualite_produit        = ($maturite == "retravaille" && isset($_POST[ 'qualite_produit' ])) ? $_POST[ 'qualite_produit' ] : false; 
+	    $qualite_equipe         = ($maturite == "retravaille" && isset($_POST[ 'qualite_equipe' ])) ? $_POST[ 'qualite_equipe' ] : false; 
+	    $qualite_marche         = ($maturite == "retravaille" && isset($_POST[ 'qualite_marche' ])) ? $_POST[ 'qualite_marche' ] : false;
+	    $retravaille_autre      = ($maturite == "retravaille" && isset($_POST[ 'retravaille_autre' ]) && $_POST[ 'retravaille_autre' ] && isset($_POST[ 'retravaille_autre_precision' ])) ? htmlentities($_POST[ 'retravaille_autre_precision' ]) : '';
 
-                
+	    $conseil                = (isset($_POST[ 'conseil' ])) ? htmlentities($_POST[ 'conseil' ]) : '';
+
+	    $user_last_name         = wp_get_current_user()->user_lastname;
+	    $user_first_name        = wp_get_current_user()->user_firstname;
+	    $user_email             = wp_get_current_user()->user_email;
+	    $user_login             = wp_get_current_user()->user_login;
+	    $user_id                = wp_get_current_user()->ID;
+	    $user_display_name      = wp_get_current_user()->display_name;
+	    
+	    $campaign_id            = $campaign->ID;
 
 
-            // Vérifie si l'utilisateur a deja voté
-            $users = $wpdb->get_results( "SELECT user_id FROM $table_name WHERE campaign_id = $campaign_id " );
-            
 
-            foreach ( $users as $user ){
-                if ( $user->user_id == $user_id){
-                    echo '<label style="color:red">* D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</label></br>';
-                    $isvoted = true;
-                    break;
-                     
-                } 
-            }
+	    // Vérifie si l'utilisateur a deja voté
+	    $users = $wpdb->get_results( "SELECT user_id FROM $table_name WHERE campaign_id = $campaign_id " );
 
-            if ($isvoted == false && $sum_valid)
-            {
-                        $wpdb->insert( $table_name, 
-                                            array( 
-                                                'impact'                  => $impact, 
-                                                'local'                   => $local,
-                                                'environmental'           => $environmental,
-                                                'social'                  => $social,
-                                                'autre'                   => $autre,
-                                                'sum'                     => $sum,
-                                                'liste_risque'            => $liste_risque,
-                                                'retravaille'             => $maturite,
-                                                'pas_responsable'         => $pas_responsable,
-                                                'mal_explique'            => $retravaille_autre,
-                                                'qualite_produit'         => $qualite_produit,
-                                                'qualite_equipe'          => $qualite_equipe,
-                                                'qualite_business_plan'   => '',
-                                                'qualite_innovation'      => '',
-                                                'qualite_marche'          => $qualite_marche,
-                                                'conseil'                 => $conseil,
-                                                'isvoted'                 => $isvoted,
-                                                'user_id'                 => $user_id,
-                                                'user_first_name'         => $user_first_name,
-                                                'user_last_name'          => $user_last_name,
-                                                'user_login'              => $user_login,
-                                                'user_email'              => $user_email,
-                                                'campaign_id'             => $campaign_id
-                                              )); 
+	    $isvoted = false; 
 
-                
-               
-                     $wpdb->insert( $table_activity,
-                    array('user_id'           => $user_id, 
-                          'component'         => 'profile', 
-                          'type'              => 'voted', 
-                          'action'            => '<a href="'.$url_members.$user_nicename.'/" title="'.$user_display_name.'">'.$user_display_name.'</a> a voté pour le projet '.$url_campaign,
-                          'content'           => '' , 
-                          'primary_link'      => '', 
-                          'date_recorded'     => $today,
-                          'item_id'           =>'', 
-                          'secondary_item_id' =>'', 
-                          'hide_sitewide'     =>'', 
-                          'is_spam'           =>''    
-                        ));
+	    foreach ( $users as $user ){
+		if ( $user->user_id == $user_id){
+		    echo '<label style="color:red">* D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</label><br />';
+		    $isvoted = true;
+		    break;
+		} 
+	    }
+
+	    if ($isvoted == false && $sum_valid) {
+		$wpdb->insert( $table_name, 
+		    array ( 
+			'impact'                  => $impact, 
+			'local'                   => $local,
+			'environmental'           => $environmental,
+			'social'                  => $social,
+			'autre'                   => $autre,
+			'sum'                     => $sum,
+			'liste_risque'            => $liste_risque,
+			'retravaille'             => $maturite,
+			'pas_responsable'         => $pas_responsable,
+			'mal_explique'            => $retravaille_autre,
+			'qualite_produit'         => $qualite_produit,
+			'qualite_equipe'          => $qualite_equipe,
+			'qualite_business_plan'   => '',
+			'qualite_innovation'      => '',
+			'qualite_marche'          => $qualite_marche,
+			'conseil'                 => $conseil,
+			'isvoted'                 => $isvoted,
+			'user_id'                 => $user_id,
+			'user_first_name'         => $user_first_name,
+			'user_last_name'          => $user_last_name,
+			'user_login'              => $user_login,
+			'user_email'              => $user_email,
+			'campaign_id'             => $campaign_id
+		    )
+		); 
 
 
-                    echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';
-                       
-                }
-            }
-            else
-            {
-                 echo '<label style="color:red"> * Vous devez vous connecter pour voter </label></br>';
-            }
+		/* Construction des urls utilisés dans les liens du fil d'actualité*/
+		// url d'une campagne précisée par son nom 
+		$campaign_url  = get_permalink($post->ID);
+		$post_title = $post->post_title;
+		$url_campaign = '<a href="'.$campaign_url.'">'.$post_title.'</a>';
+		//url d'un utilisateur précis
+		$url_profile = '<a href="' . bp_core_get_userlink($user_id, false, true) . '">' . $user_display_name . '</a>';
+		
+		bp_activity_add(array (
+		    'component' => 'profile',
+		    'type'      => 'voted',
+		    'action'    => $url_profile.' a voté pour le projet '.$url_campaign
+		));
 
-        }
+
+		echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';
+	    }
+	} else {
+	     echo '<label style="color:red"> * Vous devez vous connecter pour voter </label></br>';
+	}
+    }
          
     $atts = shortcode_atts( array(
     'remaining_days' => 0
@@ -246,7 +210,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     <?php endif;
     else :
         ?>
-        <label class="errors">* Vous devez vous connecter pour voter</label>
+        <label class="errors">* Vous devez vous connecter pour voter.</label>
         <?php
     endif;
 }
