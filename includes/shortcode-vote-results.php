@@ -3,6 +3,10 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+function ypcf_printable_value($val) {
+    return round($val, 1);
+}
+
 /**
  */
  function ypcf_shortcode_vote_results() {
@@ -40,8 +44,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     // Cette variable permet de compter  combien de fois les participants ont selectionner le bouton le projet est pret pour la collecte
     $count_pret_collect  = $wpdb->get_var("SELECT count(retravaille) FROM $table_name WHERE campaign_id = $campaign_id  AND retravaille='pret'");
 
-    // Ces variables permettent de stocker la somme totale que les participants sont préts à mettre sur le projet
-    $count_sum  = $wpdb->get_var( "SELECT sum(sum) FROM $table_name WHERE campaign_id = $campaign_id " );
+    // Cette variable permet de compter combien de fois les participants n'ont pas cliqué sur Prêt/Pas prêt
+    $count_pasrepondu_collect  = $wpdb->get_var("SELECT count(retravaille) FROM $table_name WHERE campaign_id = $campaign_id  AND retravaille=''");
+
+    // Ces variables permettent de stocker la somme totale que les participants sont prêts à mettre sur le projet
+    $count_sum  = $wpdb->get_var( "SELECT sum(sum) FROM $table_name WHERE campaign_id = $campaign_id AND sum > 0" );
+    $count_givers  = $wpdb->get_var( "SELECT count(user_id) FROM $table_name WHERE campaign_id = $campaign_id AND sum > 0" );
 
 
 
@@ -126,6 +134,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         $percent_impact_negatif = ($count_impact_negatif / $count_users)*100 ;
         $percent_pret_collect   = ($count_pret_collect / $count_users)*100;
         $percent_retravaille    = ($count_retravaille / $count_users)*100;
+        $percent_pasrepondu_collect    = ($count_pasrepondu_collect / $count_users)*100;
     } else {
         $percent_impact_positif = 0;
         $percent_impact_negatif = 0;
@@ -137,14 +146,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         $moyenne = 0;
     } else {
         $moyenne = $count_sum / $count_pret_collect;
+	$moyenne_givers = $count_sum / $count_givers;
     }
+    
     // calcule de la mediane
-    if ($count_sum % 2 == 0) { // La somme totale est paire
-        $mediane = $count_sum / 2;
+    if ($count_givers == 0) {
+	$mediane = 0;
+	$mediane_value = 0;
     } else {
-	$mediane = ($count_sum + 1) / 2; 
+	$mediane = round(($count_givers + 1) / 2);
+	$mediane_value  = $wpdb->get_var( "SELECT `sum` FROM $table_name WHERE campaign_id = $campaign_id AND sum > 0 ORDER BY `sum` LIMIT ".$mediane.", 1" );
     }
-
 ?>
 
  
@@ -152,36 +164,36 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 <div class="tab-title"><h3>Impact du projet</h3></div>
 <p>
-    <?php echo $percent_impact_positif; ?>% des participants pensent que ce projet va avoir un impact positif<br />
-    <?php echo $percent_impact_negatif ; ?>% des participants pensent que ce projet n'a pas d&apos;impact significatif<br />
+    <?php echo ypcf_printable_value($percent_impact_positif); ?>% des participants (<?php echo $count_impact_postif; ?>) pensent que ce projet va avoir un impact positif<br />
+    <?php echo ypcf_printable_value($percent_impact_negatif) ; ?>% des participants (<?php echo $count_impact_negatif; ?>) pensent que ce projet n'a pas d&apos;impact significatif<br />
     Les personnes qui croient en l&apos;impact positif de ce projet pensent qu&apos;il va porter sur la (les) dimensions suivantes :<br />
 </p>
 <table class="tab-results">
     <tr>
 	<td>Local</td>
-	<td><?php echo($count_local); ?></td>
-	<td><?php echo $percent_local; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
+	<td><?php echo $count_local; ?></td>
+	<td><?php echo ypcf_printable_value($percent_local); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
     </tr>
     <tr>
 	<td>Environnemental</td>
-	<td><?php echo($count_environemental); ?></td>
-	<td><?php echo $percent_environemental; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
+	<td><?php echo $count_environemental; ?></td>
+	<td><?php echo ypcf_printable_value($percent_environemental); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
     </tr>
     <tr>
 	<td>Social</td>
-	<td><?php echo($count_social); ?></td>
-	<td><?php echo $percent_social; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
+	<td><?php echo $count_social; ?></td>
+	<td><?php echo ypcf_printable_value($percent_social); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
     </tr>
     <tr>
 	<td>Autre</td>
-	<td><?php echo($count_autre); ?></td>
+	<td><?php echo $count_autre; ?></td>
 	<td>
-	    <?php echo $percent_autre; ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong><br />
+	    <?php echo ypcf_printable_value($percent_autre); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong><br />
 	    <?php
 		if ($count_autre > 0) {
 		    echo 'Liste des raisons :<br /><ul>';
 		    foreach ($autre_list as $autre_item) {
-			echo '<li>' . $autre_item->autre . '</li>';
+			echo '<li>' . html_entity_decode($autre_item->autre) . '</li>';
 		    }
 		    echo '</ul>';
 		}
@@ -192,40 +204,42 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 <div class="tab-title"><h3>Maturité du projet</h3></div>
 <p>
-    <?php echo $percent_pret_collect; ?> % pensent que ce projet est pr&ecirc;t pour la collecte<br />
-    <?php echo $percent_retravaille; ?> % pensent que ce projet doit &ecirc;tre retravaill&eacute;<br />
+    <?php echo ypcf_printable_value($percent_pret_collect); ?>% (<?php echo $count_pret_collect; ?>) pensent que ce projet est pr&ecirc;t pour la collecte.<br />
+    <?php echo ypcf_printable_value($percent_retravaille); ?>% (<?php echo $count_retravaille; ?>) pensent que ce projet doit &ecirc;tre retravaill&eacute;.<br />
+    (<?php echo ypcf_printable_value($percent_pasrepondu_collect); ?>% (<?php echo $count_pasrepondu_collect; ?>) n&apos;ont pas r&eacute;pondu &agrave; cette question.)<br />
 </p>
 <p>
-    Les personnes qui pensent que ce projet est pr&ecirc;t seraient pr&ecirc;ts à investir <?php echo $moyenne; ?>€ (la moyenne du risque)<br />
-    La moiti&eacute; de ces personnes investiraient plus de <?php echo $mediane;?>€ (médiane)
+    En moyenne, les gens seraient pr&ecirc;ts &agrave; donner <?php echo ypcf_printable_value($moyenne); ?>&euro;.
+    Si on ne compte que ceux qui investissent, la moyenne monte &agrave; <?php echo ypcf_printable_value($moyenne_givers); ?>&euro;.<br />
+    La moiti&eacute; de ces personnes investiraient plus de <?php echo $mediane_value; ?>&euro; (médiane)
 </p>
 
 <p>En moyenne, les personnes qui pensent que ce projet est pr&ecirc;t ont &eacute;valu&eacute; le risque &agrave; :</p>
 <table class="tab-results">
     <tr>
 	<td>Tr&egrave;s faible</td>
-	<td><?php echo($count_risque_tres_faible); ?></td>
-	<td><?php echo $percent_risque_tres_faible; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo $count_risque_tres_faible; ?></td>
+	<td><?php echo ypcf_printable_value($percent_risque_tres_faible); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
 	<td>Plut&ocirc;t faible</td>
-	<td><?php echo($count_risque_plutot_faible); ?></td>
-	<td><?php echo $percent_risque_plutot_faible; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo $count_risque_plutot_faible; ?></td>
+	<td><?php echo ypcf_printable_value($percent_risque_plutot_faible); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
 	<td>Moder&eacute;</td>
-	<td><?php echo($count_risque_modere); ?></td>
-	<td><?php echo $percent_risque_modere; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo $count_risque_modere; ?></td>
+	<td><?php echo ypcf_printable_value($percent_risque_modere); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
 	<td>&Eacute;lev&eacute;</td>
-	<td><?php echo($count_risque_plutot_eleve); ?></td>
-	<td><?php echo $percent_risque_plutot_eleve; ?>% <strong> de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo $count_risque_plutot_eleve; ?></td>
+	<td><?php echo ypcf_printable_value($percent_risque_plutot_eleve); ?>% <strong> de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
     <tr>
 	<td>Tr&egrave;s élevé</td>
-	<td><?php echo($count_risque_tres_eleve); ?></td>
-	<td><?php echo $percent_risque_tres_eleve; ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo $count_risque_tres_eleve; ?></td>
+	<td><?php echo ypcf_printable_value($percent_risque_tres_eleve); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
     </tr>
  </table>
 
@@ -233,29 +247,29 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <table class="tab-results">
     <tr>
 	<td>Impact soci&eacute;tal</td>
-	<td><?php echo($count_responsable); ?></td>
-	<td><?php echo $percent_responsable; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo $count_responsable; ?></td>
+	<td><?php echo ypcf_printable_value($percent_responsable); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
 	<td>Produit/service</td>
-	<td><?php echo($count_service); ?></td>
-	<td><?php echo $percent_service; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo $count_service; ?></td>
+	<td><?php echo ypcf_printable_value($percent_service); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
 	<td>Structuration de l&apos;équipe</td>
-	<td><?php echo($count_equipe); ?></td>
-	<td><?php echo $percent_equipe; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo $count_equipe; ?></td>
+	<td><?php echo ypcf_printable_value($percent_equipe); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
 	<td>Pr&eacute;visionnel financier</td>
-	<td><?php echo($count_porteur); ?></td>
-	<td><?php echo $percent_porteur; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo $count_porteur; ?></td>
+	<td><?php echo ypcf_printable_value($percent_porteur); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
     </tr>
     <tr>
 	<td>Autre</td>
-	<td><?php echo($count_mal_explique); ?></td>
+	<td><?php echo $count_mal_explique; ?></td>
 	<td>
-	    <?php echo $percent_mal_explique; ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong><br />
+	    <?php echo ypcf_printable_value($percent_mal_explique); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong><br />
 	    <?php 
 		if ($count_mal_explique > 0) {
 		    echo 'Liste des raisons :<br /><ul>';
@@ -267,17 +281,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    ?>
 	</td>
     </tr>
-  </table>
+</table>
   
-<div class="tab-title"><h3>Conseils</h3></div>
+<div class="tab-title"><h3>Conseils et encouragements</h3></div>
 <p>Les personnes qui ont vot&eacute; ont souhait&eacute; vous apporter ces quelques conseils :</p>
 
 <?php $conseils = $wpdb->get_results( "SELECT user_login,user_email,user_id,conseil FROM $table_name WHERE campaign_id = $campaign_id " ); ?>
 
 <table class="tab-results">
     <tr>
-	<td>Conseils</td>
 	<td>Participants</td>
+	<td>Conseils</td>
     </tr>
     <?php
         if (empty($conseils)) {
@@ -288,8 +302,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    foreach ( $conseils as $cons ) {
     ?>
     <tr>
+	<td><a href="<?php echo bp_core_get_userlink($cons->user_id, false, true); ?>"><?php echo $cons->user_login; ?></a></td>
 	<td><?php echo $cons->conseil; ?></td>
-	<td><?php echo $cons->user_login; ?></td>
     </tr>
     <?php
 	    }

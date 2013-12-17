@@ -17,24 +17,51 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     $table_name = $wpdb->prefix . "ypVotes"; 
 
     $campaign = atcf_get_campaign( $post ); 
+    
+    $impact = false;
+    $local = false;
+    $environmental = false;
+    $social = false;
+    $autre = false;
+    $maturite = false;
+    $sum = false;
+    $liste_risque = false;
+    $pas_responsable = false;
+    $qualite_produit = false;
+    $qualite_equipe = false; 
+    $qualite_marche = false;
+    $retravaille_autre = false;
+    $conseil = false;
 
         
     if (isset($_POST['submit'])) { 
 	if ( is_user_logged_in() ) {
-	    $impact                 = isset($_POST[ 'impact' ]) ? $_POST[ 'impact' ] : "";
-	    $local                  = ($impact == "positif" && isset($_POST[ 'local' ])) ? $_POST[ 'local' ] : false;
-	    $environmental          = ($impact == "positif" && isset($_POST[ 'environmental' ])) ? $_POST[ 'environmental' ] : false;
-	    $social                 = ($impact == "positif" && isset($_POST[ 'social' ])) ? $_POST[ 'social' ] : false;
-	    $autre                  = ($impact == "positif" && isset($_POST[ 'autre' ]) && $_POST[ 'autre' ] && isset($_POST['precision'])) ? htmlentities($_POST[ 'precision' ]) : '';
-
-	    $sum_valid = false;
-	    $maturite = isset($_POST[ 'maturite' ]) ? $_POST[ 'maturite' ] : false;
-
+	    $vote_valid = true;
+	    
+	    $impact             = isset($_POST[ 'impact' ]) ? $_POST[ 'impact' ] : "";
+	    $local              = ($impact == "positif" && isset($_POST[ 'local' ])) ? $_POST[ 'local' ] : false;
+	    $environmental      = ($impact == "positif" && isset($_POST[ 'environmental' ])) ? $_POST[ 'environmental' ] : false;
+	    $social             = ($impact == "positif" && isset($_POST[ 'social' ])) ? $_POST[ 'social' ] : false;
+	    $autre              = ($impact == "positif" && isset($_POST[ 'autre' ]) && $_POST[ 'autre' ] && isset($_POST['precision'])) ? htmlentities($_POST[ 'precision' ], ENT_QUOTES | ENT_HTML401) : '';
+	    if ($impact == "") {
+		echo '<label style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la premi&egrave;re question.</label><br />';
+		$vote_valid = false;
+	    }
+	    if ($impact == "positif" && !$local && !$environmental && !$social && (!isset($_POST[ 'autre' ]))) {
+		echo '<label style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; l&apos;impact.</label><br />';
+		$vote_valid = false;
+	    }
+	    
+	    $maturite		= isset($_POST[ 'maturite' ]) ? $_POST[ 'maturite' ] : false;
+	    if ($maturite == "") {
+		echo '<label style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la deuxi&egrave;me question.</label><br />';
+		$vote_valid = false;
+	    }
 	    if  ($maturite == "pret" && !is_numeric($_POST[ 'sum' ])) {
-		echo '<label style="color:red">*Somme invalide dans le champs</label></br> "Je serais pr&ecirct &agrave investir"</br>';
+		echo '<label style="color:red">Somme invalide</label><br />';
+		$vote_valid = false;
 	    } else {
 		$sum = ($maturite == "pret" && isset($_POST[ 'sum' ])) ? $_POST[ 'sum' ] : 0;
-		$sum_valid = true;
 	    }
 	    
 	    $liste_risque           = ($maturite == "pret" && isset($_POST[ 'liste_risque' ])) ? $_POST[ 'liste_risque' ] : '';
@@ -42,8 +69,13 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 	    $qualite_produit        = ($maturite == "retravaille" && isset($_POST[ 'qualite_produit' ])) ? $_POST[ 'qualite_produit' ] : false; 
 	    $qualite_equipe         = ($maturite == "retravaille" && isset($_POST[ 'qualite_equipe' ])) ? $_POST[ 'qualite_equipe' ] : false; 
 	    $qualite_marche         = ($maturite == "retravaille" && isset($_POST[ 'qualite_marche' ])) ? $_POST[ 'qualite_marche' ] : false;
-	    $retravaille_autre      = ($maturite == "retravaille" && isset($_POST[ 'retravaille_autre' ]) && $_POST[ 'retravaille_autre' ] && isset($_POST[ 'retravaille_autre_precision' ])) ? htmlentities($_POST[ 'retravaille_autre_precision' ]) : '';
+	    $retravaille_autre      = ($maturite == "retravaille" && isset($_POST[ 'retravaille_autre' ]) && $_POST[ 'retravaille_autre' ] && isset($_POST[ 'retravaille_autre_precision' ])) ? htmlentities($_POST[ 'retravaille_autre_precision' ], ENT_QUOTES | ENT_HTML401) : '';
 
+	    if ($maturite == "pret" && $liste_risque == "") {
+		echo '<label style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; le risque que vous estimez.</label><br />';
+		$vote_valid = false;
+	    }
+	    
 	    $conseil                = (isset($_POST[ 'conseil' ])) ? htmlentities($_POST[ 'conseil' ]) : '';
 
 	    $user_last_name         = wp_get_current_user()->user_lastname;
@@ -70,7 +102,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 		} 
 	    }
 
-	    if ($isvoted == false && $sum_valid) {
+	    if ($isvoted == false && $vote_valid) {
 		$wpdb->insert( $table_name, 
 		    array ( 
 			'impact'                  => $impact, 
@@ -111,14 +143,14 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 		bp_activity_add(array (
 		    'component' => 'profile',
 		    'type'      => 'voted',
-		    'action'    => $url_profile.' a voté pour le projet '.$url_campaign
+		    'action'    => $url_profile.' a voté sur le projet '.$url_campaign
 		));
 
 
-		echo '<label style="color:green">Le vote est valid&eacute, merci !</label>';
+		echo '<label style="color:green">Le vote est valid&eacute, merci !</label><br />';
 	    }
 	} else {
-	     echo '<label style="color:red"> * Vous devez vous connecter pour voter </label></br>';
+	     echo '<label style="color:red"> * Vous devez vous connecter pour voter </label><br />';
 	}
     }
          
@@ -153,54 +185,54 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                        
                         <strong>Impacts et coh&eacute;rence du projet</strong><br />
                         <em>Cette question d&eacute;termine la publication du projet sur le site.</em><br />
-                        <input id="impact-positif" type="radio" name="impact" value="positif">Impact positif, j&apos;approuve ce projet !<br />
-                        <p id="impact-positif-content" style="display: none;">
+                        <input type="radio" id="impact-positif" name="impact" value="positif" <?php if ($impact == "positif") echo 'checked="checked"'; ?>>Impact positif, j&apos;approuve ce projet !<br />
+                        <p id="impact-positif-content" <?php if ($impact != "positif") echo 'style="display: none;"'; ?>>
                             <em>Selon moi, l&apos;impact du projet sera significatif sur les points suivants :</em><br />
-                            <input type="checkbox" id="local" name="local" value="local">Local<br />
-                            <input type="checkbox" id="environmental" name="environmental" value="environmental">Environnemental<br />
-                            <input type="checkbox" id="social" name="social" value="social">Social<br />
-                            <input type="checkbox" id="autre" name="autre" value="autre">Autre
-                            <input type="text" id="precision" name="precision" placeholder="Pr&eacute;ciser..." />
+                            <input type="checkbox" id="local" name="local" value="local" <?php if ($local) echo 'checked="checked"'; ?>>Local<br />
+                            <input type="checkbox" id="environmental" name="environmental" value="environmental" <?php if ($environmental) echo 'checked="checked"'; ?>>Environnemental<br />
+                            <input type="checkbox" id="social" name="social" value="social" <?php if ($social) echo 'checked="checked"'; ?>>Social<br />
+                            <input type="checkbox" id="autre" name="autre" value="autre" <?php if ($autre != "" && $autre != false) echo 'checked="checked"'; ?>>Autre
+                            <input type="text" id="precision" name="precision" placeholder="Pr&eacute;ciser..." <?php if ($autre != "" && $autre != false) echo 'value="'.$_POST['precision'].'"'; ?>/>
                         </p>
-                        <input id="desaprouve" type="radio" name="impact" value="negatif" >Pas d&apos;impact, je d&eacute;sapprouve.<br />
-                        <p id="impact-negatif-content" style="display: none;">
+                        <input type="radio" id="desaprouve" name="impact" value="negatif" <?php if ($impact == "negatif") echo 'checked="checked"'; ?>>Pas d&apos;impact, je d&eacute;sapprouve.<br />
+                        <p id="impact-negatif-content" <?php if ($impact != "negatif") echo 'style="display: none;"'; ?>>
                             <em>En d&eacute;sapprouvant ce projet, je vote contre sa publication sur le site.</em>
                         </p><br /><br />
 
                         
                         <strong>Maturit&eacute; et collecte</strong><br />
                         <em>Cette question permet au porteur de projet de voir les am&eacute;liorations qu'il peut apporter avant de se lancer.</em><br />
-                        <input id="pret" type="radio" name="maturite" value="pret">Je pense que ce projet est pr&ecirc;t pour la collecte !<br />
-                        <p id="pret-content" style="display: none;">
+                        <input id="pret" type="radio" name="maturite" value="pret" <?php if ($maturite == "pret") echo 'checked="checked"'; ?>>Je pense que ce projet est pr&ecirc;t pour la collecte !<br />
+                        <p id="pret-content" <?php if ($maturite != "pret") echo 'style="display: none;"'; ?>>
                             <label id="investir" name="investir" value="investir">Je serais pr&ecirc;t &agrave; investir</label>
-                            <input id="sum" name="sum" type="text" placeholder="10" size="10" />&euro;<br />
+                            <input type="text" id="sum" name="sum" placeholder="10" size="10" <?php if ($sum !== false) echo 'value="'.$sum.'"'; ?> />&euro;<br />
                          
                             <label class="risque" name="risque" value="risque">Je pense que ce projet pr&eacute;sente un risque [<a href="javascript:void(0);" title="Evaluez les chances de r&eacute;ussite de ce projet en indiquant le risque que vous estimez. 1 repr&eacute;sente un risque faible (donc de grande chances de r&eacute;ussite), 5 un risque &eacute;lev&eacute; (de faibles chances de r&eacute;ussite). Le niveau de risque du projet a une influence sur sa valeur.">?</a>] :</label><br />
                             <select id="liste_risque" name="liste_risque">
                                 <option value=""></option>
-                                <option value="tres_faible">(1) tr&egrave;s faible</option>
-                                <option value="plutot_faible">(2) plut&ocirc;t faible</option>
-                                <option value="modere">(3) mod&eacute;r&eacute;</option>
-                                <option value="plutot_eleve">(4) &eacute;lev&eacute;</option>
-                                <option value="tres_eleve">(5) tr&egrave;s &eacute;lev&eacute;</option>
+                                <option value="tres_faible" <?php if ($liste_risque == "tres_faible") echo 'selected'; ?>>(1) tr&egrave;s faible</option>
+                                <option value="plutot_faible" <?php if ($liste_risque == "plutot_faible") echo 'selected'; ?>>(2) plut&ocirc;t faible</option>
+                                <option value="modere" <?php if ($liste_risque == "modere") echo 'selected'; ?>>(3) mod&eacute;r&eacute;</option>
+                                <option value="plutot_eleve" <?php if ($liste_risque == "plutot_eleve") echo 'selected'; ?>>(4) &eacute;lev&eacute;</option>
+                                <option value="tres_eleve" <?php if ($liste_risque == "tres_eleve") echo 'selected'; ?>>(5) tr&egrave;s &eacute;lev&eacute;</option>
                             </select>
                         </p>
 
-                        <input id="retravaille" type="radio" name="maturite" value="retravaille">Je pense que ce projet n&apos;est pas pr&ecirc;t.<br />
-                        <p id="retravaille-content" style="display: none;">
+                        <input id="retravaille" type="radio" name="maturite" value="retravaille" <?php if ($maturite == "retravaille") echo 'checked="checked"'; ?>>Je pense que ce projet n&apos;est pas pr&ecirc;t.<br />
+                        <p id="retravaille-content" <?php if ($maturite != "retravaille") echo 'style="display: none;"'; ?>>
                             <em>Selon moi, il doit &ecirc;tre retravaill&eacute; sur les points suivants :</em><br />
-                            <input type="checkbox" id="" name="pas_responsable" value="pas_responsable">Impact soci&eacute;tal<br />
-                            <input type="checkbox" id="" name="qualite_produit" value="qualite_produit">Produit/service<br />
-                            <input type="checkbox" id="" name="qualite_equipe" value="qualite_equipe">Structuration de l&apos;&eacute;quipe<br />
-                            <input type="checkbox" id="" name="qualite_marche" value="qualite_marche">Pr&eacute;visionnel financier<br />
+                            <input type="checkbox" name="pas_responsable" value="pas_responsable" <?php if ($pas_responsable) echo 'checked="checked"'; ?>>Impact soci&eacute;tal<br />
+                            <input type="checkbox" name="qualite_produit" value="qualite_produit" <?php if ($qualite_produit) echo 'checked="checked"'; ?>>Produit/service<br />
+                            <input type="checkbox" name="qualite_equipe" value="qualite_equipe" <?php if ($qualite_equipe) echo 'checked="checked"'; ?>>Structuration de l&apos;&eacute;quipe<br />
+                            <input type="checkbox" name="qualite_marche" value="qualite_marche" <?php if ($qualite_marche) echo 'checked="checked"'; ?>>Pr&eacute;visionnel financier<br />
                 
-                            <input type="checkbox" id="retravaille_autre" name="retravaille_autre" value="autre">Autre
-                            <input id="retravaille_autre_precision" name="retravaille_autre_precision" type="text" placeholder="Pr&eacute;ciser..." />
+                            <input type="checkbox" id="retravaille_autre" name="retravaille_autre" value="autre" <?php if ($retravaille_autre != "" && $retravaille_autre != false) echo 'checked="checked"'; ?>>Autre
+                            <input  type="text" id="retravaille_autre_precision" name="retravaille_autre_precision" placeholder="Pr&eacute;ciser..." <?php if ($retravaille_autre != "" && $retravaille_autre != false) echo 'value="'.$retravaille_autre.'"'; ?>/>
                         </p><br />
                         
                         <strong>Remarques</strong><br />
                         <span>Quels conseils ou encouragements souhaiteriez-vous donner au(x) porteur(s) de ce projet ?</span><br />
-                        <textarea type="text" name="conseil" id="conseil" value="conseil" style="width: 280px;"></textarea><br />
+                        <textarea type="text" name="conseil" id="conseil" value="conseil" style="width: 280px;"><?php if ($conseil != "" && $conseil != false) echo $conseil; ?></textarea><br />
                         
                         <br />
                         <input type="submit" name="submit" value="Voter" />
