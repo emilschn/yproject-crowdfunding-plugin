@@ -165,30 +165,30 @@ function ypcf_printable_value($val) {
 <div class="tab-title"><h3>Impact du projet</h3></div>
 <p>
     <?php echo ypcf_printable_value($percent_impact_positif); ?>% des participants (<?php echo $count_impact_postif; ?>) pensent que ce projet va avoir un impact positif<br />
-    <?php echo ypcf_printable_value($percent_impact_negatif) ; ?>% des participants (<?php echo $count_impact_negatif; ?>) pensent que ce projet n'a pas d&apos;impact significatif<br />
-    Les personnes qui croient en l&apos;impact positif de ce projet pensent qu&apos;il va porter sur la (les) dimensions suivantes :<br />
+    <?php echo ypcf_printable_value($percent_impact_negatif) ; ?>% des participants (<?php echo $count_impact_negatif; ?>) pensent que ce projet n'a pas d&apos;impact significatif<br /><br />
+    Les personnes qui croient en l&apos;impact positif de ce projet pensent qu&apos;il va porter sur les dimensions suivantes :<br />
 </p>
 <table class="tab-results">
     <tr>
 	<td>Local</td>
 	<td><?php echo $count_local; ?></td>
-	<td><?php echo ypcf_printable_value($percent_local); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
+	<td><?php echo ypcf_printable_value($percent_local); ?>%</td>
     </tr>
     <tr>
 	<td>Environnemental</td>
 	<td><?php echo $count_environemental; ?></td>
-	<td><?php echo ypcf_printable_value($percent_environemental); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
+	<td><?php echo ypcf_printable_value($percent_environemental); ?>%</td>
     </tr>
     <tr>
 	<td>Social</td>
 	<td><?php echo $count_social; ?></td>
-	<td><?php echo ypcf_printable_value($percent_social); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong></td>
+	<td><?php echo ypcf_printable_value($percent_social); ?>%</td>
     </tr>
     <tr>
 	<td>Autre</td>
 	<td><?php echo $count_autre; ?></td>
 	<td>
-	    <?php echo ypcf_printable_value($percent_autre); ?>% <strong>de ceux qui pensent que le projet a un impact positif</strong><br />
+	    <?php echo ypcf_printable_value($percent_autre); ?>%<br />
 	    <?php
 		if ($count_autre > 0) {
 		    echo 'Liste des raisons :<br /><ul>';
@@ -219,27 +219,27 @@ function ypcf_printable_value($val) {
     <tr>
 	<td>Tr&egrave;s faible</td>
 	<td><?php echo $count_risque_tres_faible; ?></td>
-	<td><?php echo ypcf_printable_value($percent_risque_tres_faible); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo ypcf_printable_value($percent_risque_tres_faible); ?>%</td>
     </tr>
     <tr>
 	<td>Plut&ocirc;t faible</td>
 	<td><?php echo $count_risque_plutot_faible; ?></td>
-	<td><?php echo ypcf_printable_value($percent_risque_plutot_faible); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo ypcf_printable_value($percent_risque_plutot_faible); ?>%</td>
     </tr>
     <tr>
 	<td>Moder&eacute;</td>
 	<td><?php echo $count_risque_modere; ?></td>
-	<td><?php echo ypcf_printable_value($percent_risque_modere); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo ypcf_printable_value($percent_risque_modere); ?>%</td>
     </tr>
     <tr>
 	<td>&Eacute;lev&eacute;</td>
 	<td><?php echo $count_risque_plutot_eleve; ?></td>
-	<td><?php echo ypcf_printable_value($percent_risque_plutot_eleve); ?>% <strong> de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo ypcf_printable_value($percent_risque_plutot_eleve); ?>%</td>
     </tr>
     <tr>
 	<td>Tr&egrave;s élevé</td>
 	<td><?php echo $count_risque_tres_eleve; ?></td>
-	<td><?php echo ypcf_printable_value($percent_risque_tres_eleve); ?>% <strong>de ceux qui pensent que le projet est pr&ecirc;t</strong></td>
+	<td><?php echo ypcf_printable_value($percent_risque_tres_eleve); ?>%</td>
     </tr>
  </table>
 
@@ -248,28 +248,28 @@ function ypcf_printable_value($val) {
     <tr>
 	<td>Impact soci&eacute;tal</td>
 	<td><?php echo $count_responsable; ?></td>
-	<td><?php echo ypcf_printable_value($percent_responsable); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo ypcf_printable_value($percent_responsable); ?>%</td>
     </tr>
     <tr>
 	<td>Produit/service</td>
 	<td><?php echo $count_service; ?></td>
-	<td><?php echo ypcf_printable_value($percent_service); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo ypcf_printable_value($percent_service); ?>%</td>
     </tr>
     <tr>
 	<td>Structuration de l&apos;équipe</td>
 	<td><?php echo $count_equipe; ?></td>
-	<td><?php echo ypcf_printable_value($percent_equipe); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo ypcf_printable_value($percent_equipe); ?>%</td>
     </tr>
     <tr>
 	<td>Pr&eacute;visionnel financier</td>
 	<td><?php echo $count_porteur; ?></td>
-	<td><?php echo ypcf_printable_value($percent_porteur); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong></td>
+	<td><?php echo ypcf_printable_value($percent_porteur); ?>%</td>
     </tr>
     <tr>
 	<td>Autre</td>
 	<td><?php echo $count_mal_explique; ?></td>
 	<td>
-	    <?php echo ypcf_printable_value($percent_mal_explique); ?>% <strong>de ceux qui pensent que le projet doit &ecirc;tre retravaill&eacute;</strong><br />
+	    <?php echo ypcf_printable_value($percent_mal_explique); ?>%<br />
 	    <?php 
 		if ($count_mal_explique > 0) {
 		    echo 'Liste des raisons :<br /><ul>';

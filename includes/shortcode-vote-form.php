@@ -44,21 +44,21 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 	    $social             = ($impact == "positif" && isset($_POST[ 'social' ])) ? $_POST[ 'social' ] : false;
 	    $autre              = ($impact == "positif" && isset($_POST[ 'autre' ]) && $_POST[ 'autre' ] && isset($_POST['precision'])) ? htmlentities($_POST[ 'precision' ], ENT_QUOTES | ENT_HTML401) : '';
 	    if ($impact == "") {
-		echo '<label style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la premi&egrave;re question.</label><br />';
+		echo '<span style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la premi&egrave;re question.</span><br />';
 		$vote_valid = false;
 	    }
 	    if ($impact == "positif" && !$local && !$environmental && !$social && (!isset($_POST[ 'autre' ]))) {
-		echo '<label style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; l&apos;impact.</label><br />';
+		echo '<span style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; l&apos;impact.</span><br />';
 		$vote_valid = false;
 	    }
 	    
 	    $maturite		= isset($_POST[ 'maturite' ]) ? $_POST[ 'maturite' ] : false;
 	    if ($maturite == "") {
-		echo '<label style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la deuxi&egrave;me question.</label><br />';
+		echo '<span style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la deuxi&egrave;me question.</span><br />';
 		$vote_valid = false;
 	    }
 	    if  ($maturite == "pret" && !is_numeric($_POST[ 'sum' ])) {
-		echo '<label style="color:red">Somme invalide</label><br />';
+		echo '<span style="color:red">Somme invalide</span><br />';
 		$vote_valid = false;
 	    } else {
 		$sum = ($maturite == "pret" && isset($_POST[ 'sum' ])) ? $_POST[ 'sum' ] : 0;
@@ -72,7 +72,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 	    $retravaille_autre      = ($maturite == "retravaille" && isset($_POST[ 'retravaille_autre' ]) && $_POST[ 'retravaille_autre' ] && isset($_POST[ 'retravaille_autre_precision' ])) ? htmlentities($_POST[ 'retravaille_autre_precision' ], ENT_QUOTES | ENT_HTML401) : '';
 
 	    if ($maturite == "pret" && $liste_risque == "") {
-		echo '<label style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; le risque que vous estimez.</label><br />';
+		echo '<span style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; le risque que vous estimez.</span><br />';
 		$vote_valid = false;
 	    }
 	    
@@ -96,7 +96,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 
 	    foreach ( $users as $user ){
 		if ( $user->user_id == $user_id){
-		    echo '<label style="color:red">* D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</label><br />';
+		    echo '<span style="color:red">D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</span><br />';
 		    $isvoted = true;
 		    break;
 		} 
@@ -132,7 +132,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 		); 
 
 
-		/* Construction des urls utilisés dans les liens du fil d'actualité*/
+		// Construction des urls utilisés dans les liens du fil d'actualité
 		// url d'une campagne précisée par son nom 
 		$campaign_url  = get_permalink($post->ID);
 		$post_title = $post->post_title;
@@ -147,10 +147,10 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 		));
 
 
-		echo '<label style="color:green">Le vote est valid&eacute, merci !</label><br />';
+		echo '<span style="color:green">Le vote est valid&eacute, merci !</span><br />';
 	    }
 	} else {
-	     echo '<label style="color:red"> * Vous devez vous connecter pour voter </label><br />';
+	     echo '<span style="color:red">Vous devez vous connecter pour voter</span><br />';
 	}
     }
          
@@ -159,7 +159,6 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     ), $atts );
 
 ?>
-    Il reste <?php echo $atts['remaining_days']; ?> jours pour voter sur ce projet.<br />
     
 
     <?php
@@ -176,10 +175,6 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
         else:
     ?>
             
-            <div class="dark" style="color:white;text-transform:none;padding-left:5px;">
-                <legend>Votez sur ce projet</legend>
-                
-            </div>
             <div class="light" style="text-transform:none;text-align : left; padding-left:5px;" >
                 <form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
                        
@@ -242,7 +237,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     <?php endif;
     else :
         ?>
-        <label class="errors">* Vous devez vous connecter pour voter.</label>
+        <span class="errors">Vous devez vous connecter pour voter.</span>
         <?php
     endif;
 }
