@@ -18,22 +18,33 @@ function ypcf_display_invest_form($error = '') {
 	$campaign = atcf_get_campaign( $post );
 	if (isset($campaign)) {
 	    if ($max_part_value > 0) {
-		$form .= '<br />'.$campaign->investment_terms();
-		$form .= '<br /><form id="invest_form" action="" method="post" enctype="multipart/form-data">';
-		$form .= '<input id="input_invest_amount_part" name="amount_part" type="text" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
-		$form .= '<input id="input_invest_min_value" name="old_min_value" type="hidden" value="' . $min_value . '">';
-		$form .= '<input id="input_invest_max_value" name="old_max_value" type="hidden" value="' . $max_value . '">';
-		$form .= '<input id="input_invest_part_value" name="part_value" type="hidden" value="' . $part_value . '">';
-		$form .= '<input id="input_invest_max_part_value" name="part_value" type="hidden" value="' . $max_part_value . '">';
-		$form .= '<input id="input_invest_amount_total" type="hidden" value="' . ypcf_get_current_amount() . '">';
-		$form .= '&nbsp;&nbsp;<input type="submit" value="Investir">&nbsp;&nbsp;';
+		global $edd_options;
+		$form .= ypcf_print_invest_breadcrumb(1);
+		$form .= '<div class="invest_step1_generalities">' . wpautop( $edd_options['investment_generalities'] ) . '</div>';
+		$form .= '<div class="invest_step1_currentproject">' . html_entity_decode($campaign->investment_terms()) . '</div>';
+		$form .= '<form id="invest_form" action="" method="post" enctype="multipart/form-data">';
+		$form .= '<input type="hidden" id="input_invest_min_value" name="old_min_value" value="' . $min_value . '">';
+		$form .= '<input type="hidden" id="input_invest_max_value" name="old_max_value" value="' . $max_value . '">';
+		$form .= '<input type="hidden" id="input_invest_part_value" name="part_value" value="' . $part_value . '">';
+		$form .= '<input type="hidden" id="input_invest_max_part_value" name="part_value" value="' . $max_part_value . '">';
+		$form .= '<input type="hidden" id="input_invest_amount_total" value="' . ypcf_get_current_amount() . '">';
+		$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
+		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount">Valider</a>';
+		
+		$form .= '<div id="validate_invest_amount_feedback" style="display:none;">';
 		$hidden = ' hidden';
 		$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Vous devez prendre au moins une part.</span>';
 		$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas prendre plus de '.$max_part_value.' parts.</span>';
-		$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . edd_get_currency() . ' &agrave; investir.</span>';
+		$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . '&euro; &agrave; investir.</span>';
 		$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
 		$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
-		$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>'.edd_get_currency().'.</span>';
+		$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>&euro;.</span>';
+		
+		$form .= '<div class="invest_step1_conditions">' . wpautop( $edd_options['contract'] ) . '</div>';
+		
+		$form .= '<input type="submit" value="Investir">';
+		$form .= '</div>';
+		
 		$form .= '</form><br /><br />';
 		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';
 	    } else {

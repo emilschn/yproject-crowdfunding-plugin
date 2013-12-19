@@ -5,7 +5,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 function ypcf_get_current_step() {
     $buffer = 1;
-    if (isset($_POST['amount_part'])) $buffer = 2;
+    $max_part_value = ypcf_get_max_part_value();
+    if (isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
+	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value ) {
+	 $buffer = 2;
+    }
     
     return $buffer;
 }

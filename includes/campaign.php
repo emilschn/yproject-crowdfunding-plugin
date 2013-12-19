@@ -248,13 +248,19 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_societal_challenge', 'Utilité sociétale', '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_economic_model', 'Modèle économique', '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', 'Qui porte le projet ?', '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
 		
-		add_meta_box( 'atcf_campaign_company_status', 'Statuts de la société', '_atcf_metabox_campaign_company_status', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_company_status_other', 'Autre statuts', '_atcf_metabox_campaign_company_status_other', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_init_capital', 'Capital initial', '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_funding_type', 'Type de financement', '_atcf_metabox_campaign_funding_type', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_funding_duration', 'Durée du financement', '_atcf_metabox_campaign_funding_duration', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_company_name', 'Nom de la société', '_atcf_metabox_campaign_company_name', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_subscription_params', 'Paramètres de souscriptions (apports, domicile, ...)', '_atcf_metabox_campaign_subscription_params', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_powers_params', 'Paramètres de pouvoirs (déposer, signer, ...)', '_atcf_metabox_campaign_powers_params', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_constitution_terms', 'Modalités de constitutions', '_atcf_metabox_campaign_constitution_terms', 'download', 'normal', 'high' );
+		
+//		add_meta_box( 'atcf_campaign_company_status', 'Statuts de la société', '_atcf_metabox_campaign_company_status', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_company_status_other', 'Autre statuts', '_atcf_metabox_campaign_company_status_other', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_init_capital', 'Capital initial', '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_funding_type', 'Type de financement', '_atcf_metabox_campaign_funding_type', 'download', 'normal', 'high' );
+//		add_meta_box( 'atcf_campaign_funding_duration', 'Durée du financement', '_atcf_metabox_campaign_funding_duration', 'download', 'normal', 'high' );
+//		
 //		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
 //		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
 //		add_meta_box( 'atcf_campaign_updates', __( 'Campaign Updates', 'atcf' ), '_atcf_metabox_campaign_updates', 'download', 'normal', 'high' );
@@ -295,6 +301,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_owner';
 		$fields[] = 'campaign_summary';
 		$fields[] = 'campaign_societal_challenge';
+		$fields[] = 'campaign_company_name';
 		$fields[] = 'campaign_company_status';
 		$fields[] = 'campaign_company_status_other';
 		$fields[] = 'campaign_init_capital';
@@ -304,6 +311,10 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_economic_model';
 		$fields[] = 'campaign_implementation';
 		$fields[] = 'campaign_investment_terms';
+		$fields[] = 'campaign_subscription_params';
+		$fields[] = 'campaign_powers_params';
+		$fields[] = 'campaign_constitution_terms';
+
 //		$fields[] = 'campaign_updates';
 //		$fields[] = 'campaign_impact_area';
 //		$fields[] = 'campaign_development_strategy';
@@ -913,6 +924,18 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 	do_action( 'atcf_metabox_campaign_implementation_after', $campaign );
 }
 
+
+function _atcf_metabox_campaign_company_name() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="campaign_company_name">
+		<textarea name="campaign_company_name" id="campaign_company_name" class="widefat"><?php echo $campaign->company_name(); ?></textarea>
+	</p>
+<?php
+}
+
 function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
 	global $post;
 
@@ -921,6 +944,78 @@ function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
 	<div class="atcf-metabox-campaign-investment_terms">
 		<?php 
 			wp_editor( $editing ? html_entity_decode($campaign->investment_terms()) : '', 'campaign_investment_terms', apply_filters( 'atcf_metabox_field_investment_terms_editor_args', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => false,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ) ); 
+		?>
+	</div>
+<?php
+}
+
+function _atcf_metabox_campaign_subscription_params( $editing, $campaign ) {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<div class="atcf-metabox-campaign-subscription_params">
+		<?php 
+			wp_editor( $editing ? html_entity_decode($campaign->subscription_params()) : '', 'campaign_subscription_params', apply_filters( 'atcf_metabox_field_subscription_params_editor_args', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => false,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ) ); 
+		?>
+	</div>
+<?php
+}
+
+function _atcf_metabox_campaign_powers_params( $editing, $campaign ) {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<div class="atcf-metabox-campaign-powers_params">
+		<?php 
+			wp_editor( $editing ? html_entity_decode($campaign->powers_params()) : '', 'campaign_powers_params', apply_filters( 'atcf_metabox_field_powers_params_editor_args', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => false,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ) ); 
+		?>
+	</div>
+<?php
+}
+
+function _atcf_metabox_campaign_constitution_terms( $editing, $campaign ) {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<div class="atcf-metabox-campaign-constitution_terms">
+		<?php 
+			wp_editor( $editing ? html_entity_decode($campaign->constitution_terms()) : '', 'campaign_constitution_terms', apply_filters( 'atcf_metabox_field_constitution_terms_editor_args', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
 				'quicktags'     => false,
@@ -1090,6 +1185,15 @@ class ATCF_Campaign {
 	public function investment_terms() {
 	    return $this->__get('campaign_investment_terms');
 	}
+	public function subscription_params() {
+	    return $this->__get('campaign_subscription_params');
+	}
+	public function powers_params() {
+	    return $this->__get('campaign_powers_params');
+	}
+	public function constitution_terms() {
+	    return $this->__get('campaign_constitution_terms');
+	}
 	
 	/**
 	 * Campaign Featured
@@ -1112,6 +1216,10 @@ class ATCF_Campaign {
 	 */
 	public function societal_challenge() {
 		return $this->__get( 'campaign_societal_challenge' );
+	}
+	
+	public function company_name() {
+	    return $this->__get('campaign_company_name');
 	}
 	
 	public function company_status() {
@@ -1188,6 +1296,10 @@ class ATCF_Campaign {
 		    return 0;
 	    return $part_value;
 	}
+	
+	public function total_parts() {
+	    return round($this->goal(false) / $this->part_value());
+	}
 
 	/**
 	 * Campaign Type
@@ -1259,6 +1371,19 @@ class ATCF_Campaign {
 
 	public function end_vote_date() {
 		return mysql2date( 'Y-m-d', $this->__get( 'campaign_end_vote' ), false);
+	}
+	
+	public function end_vote_remaining() {
+	    $dateJour = strtotime(date("d-m-Y"));
+	    $fin   = strtotime($this->__get( 'campaign_end_vote' ));
+	    return (round(abs($fin - $dateJour)/60/60/24));
+	}
+	
+	public function nb_voters() {
+	    global $wpdb;
+	    $table_name = $wpdb->prefix . "ypVotes";
+	    $count_users = $wpdb->get_var( "SELECT count( user_id) FROM $table_name WHERE campaign_id = " . $this->ID );
+	    return $count_users;
 	}
 
 	/**
@@ -1663,7 +1788,6 @@ function _atcf_metabox_campaign_info() {
  * @since Appthemer CrowdFunding 0.1-alpha
  *
  * @return void
- */
 function atcf_campaign_edit() {
 	global $edd_options, $post;
 	
@@ -1693,6 +1817,7 @@ function atcf_campaign_edit() {
 	
 	$summary                     = $_POST[ 'summary' ];
 	$societal_challenge          = $_POST[ 'societal_challenge' ];
+	$company_name		     = $_POST[ 'company_name' ];
 	$company_status              = $_POST[ 'company_status' ];
 	$company_status_other        = $_POST[ 'company_status_other' ];
 	$init_capital                = $_POST[ 'init_capital' ];
@@ -1704,7 +1829,7 @@ function atcf_campaign_edit() {
 	$economic_model              = $_POST[ 'economic_model' ];
 //	$measuring_impact            = $_POST[ 'measuring_impact' ];
 	$implementation              = $_POST[ 'implementation' ];
-	$investment_terms              = $_POST[ 'investment_terms' ];
+	$investment_terms            = $_POST[ 'investment_terms' ];
 	$vote                        = $_POST[ 'vote' ];
 	$end_vote                    = $_POST[ 'end_vote' ];
 
@@ -1719,14 +1844,14 @@ function atcf_campaign_edit() {
 		$c_email = $current_user->user_email;
 	}
 
-	/** Check Category */
+	//** Check Category
 	$category = absint( $category );
 
-	/** Check Content */
+	//** Check Content
 	if ( empty( $content ) )
 		$errors->add( 'invalid-content', __( 'Please add content to this campaign.', 'atcf' ) );
 
-	/** Check Excerpt */
+	//** Check Excerpt
 	if ( empty( $excerpt ) )
 		$excerpt = null;
 
@@ -1745,17 +1870,8 @@ function atcf_campaign_edit() {
 	), $_POST );
 
 	$campaign = wp_update_post( $args, true );
-	
-	$bloga = apply_filters( 'atcf_edit_campaign_blogs', array(
-		'ID'           => $post->ID,
-		'post_content' => $upadates,
-		'post_excerpt' => $excerpt,
-		'post_category' => array($id_category )
-  ) );
-  
-  wp_update_post( $bloga);
 
-	/** Extra Campaign Information */
+	//** Extra Campaign Information
 
 	update_post_meta( $post->ID, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	update_post_meta( $post->ID, 'campaign_location', sanitize_text_field( $location ) );
@@ -1764,6 +1880,7 @@ function atcf_campaign_edit() {
 	update_post_meta( $post->ID, 'campaign_summary', sanitize_text_field( $summary ) );
 	update_post_meta( $post->ID, 'campaign_impact_area', sanitize_text_field( $impact_area ) );
 	update_post_meta( $post->ID, 'campaign_societal_challenge', sanitize_text_field( $societal_challenge ) );
+	update_post_meta( $post->ID, 'campaign_company_name', sanitize_text_field( $company_name ) );
 	update_post_meta( $post->ID, 'campaign_company_status', sanitize_text_field( $company_status ) );
 	update_post_meta( $post->ID, 'campaign_company_status_other', sanitize_text_field( $company_status_other ) );
 	update_post_meta( $post->ID, 'campaign_init_capital', sanitize_text_field( $init_capital ) );
@@ -1786,6 +1903,7 @@ function atcf_campaign_edit() {
 	exit();
 }
 add_action( 'template_redirect', 'atcf_campaign_edit' );
+ */
 
 /**
  * Price Options Heading

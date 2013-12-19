@@ -89,13 +89,19 @@ function ypcf_check_user_can_invest($redirect = false) {
     $can_invest = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
     $can_invest = $can_invest && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
     $can_invest = $can_invest && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
-    $can_invest = $can_invest && ($current_user->get('user_nationality') != "") && ($current_user->get('user_person_type') != "") && ($current_user->user_email != "");
+    $can_invest = $can_invest && ($current_user->get('user_nationality') != "") && ($current_user->user_email != "");
     $can_invest = $can_invest && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
     $can_invest = $can_invest && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
+    $can_invest = $can_invest && ($current_user->get('user_gender') != "") && ($current_user->get('user_birthplace') != "");
+    $can_invest = $can_invest && ($current_user->get('user_person_type') == "NATURAL_PERSON");
 
     if ($redirect && !$can_invest) {
 	if (session_id() == '') session_start();
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+	$errors = array();
+	array_push($errors, 'Certaines des informations manquent ou sont inexactes.');
+	if ($current_user->get('user_person_type') == "LEGAL_PERSONALITY") array_push($errors, 'Seules les personnes physiques peuvent investir pour l&apos;instant.');
+	$_SESSION['error_invest'] = $errors;
 	$page_update = get_page_by_path('modifier-mon-compte');
 	wp_redirect(get_permalink($page_update->ID));
 	exit();
@@ -125,9 +131,10 @@ function ypcf_check_invest_redirections() {
     //On a validé la confirmation
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
     $max_part_value = ypcf_get_max_part_value();
-    if (isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
+    //Tests de la validité de l'investissement : utilisateur loggé, projet définie, montant correct, informations validées par coche, bon pour pouvoir écrit
+    if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
 	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value 
-	    && isset($_POST['confirmed']) && $_POST['confirmed'] == '1' && isset($_POST['edd_agree_to_terms']) && $_POST['edd_agree_to_terms'] == '1') {
+	    && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour pouvoir') {
 	//Récupération de l'url de la page qui indique que le paiement est bien effectué
 	$current_user = wp_get_current_user();
 	$amount = $_POST['amount_part'] * ypcf_get_part_value();
@@ -149,11 +156,13 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
     global $validate_email;
     $current_user = wp_get_current_user();
     if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
+	if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
 	if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
 	if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
 	if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
 	if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
 	if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
+	if ($_POST["update_birthplace"] != "") update_user_meta($current_user->ID, 'user_birthplace', $_POST["update_birthplace"]);
 	if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
 	if ($_POST["update_person_type"] != "") update_user_meta($current_user->ID, 'user_person_type', $_POST["update_person_type"]);
 	if ($_POST["update_address"] != "") update_user_meta($current_user->ID, 'user_address', $_POST["update_address"]);
@@ -211,7 +220,18 @@ function ypcf_login_gobackinvest_url() {
 }
 
 
-
+function ypcf_print_invest_breadcrumb($current_step) {
+    $buffer = '<div id="invest-breadcrumb">';
+    $steps = array("Montant", "Validation", "Paiement", "Signature électronique");
+    for ($i = 0; $i < count($steps); $i++) {
+	$class = "";
+	if ($i + 1 == $current_step) $class = " current";
+	if ($i > 0) $buffer .= ' &gt; ';
+	$buffer .= '<span class="step'.$class.'">'.($i+1).'. '.$steps[$i].'</span>';
+    }
+    $buffer .= '</div>';
+    return $buffer;
+}
 
 
 /**
@@ -534,7 +554,7 @@ function ypcf_check_user_phone_format($mobile_phone) {
     
     //Numéro de téléphone type que doit renvoyer ypcf_format_french_phonenumber
     $classic_phone_number = '+33612345678';
-    if ($mobile_phone != '' && strlen(ypcf_format_french_phonenumber($mobile_phone) == strlen($classic_phone_number))) {
+    if ($mobile_phone != '' && strlen(ypcf_format_french_phonenumber($mobile_phone)) == strlen($classic_phone_number)) {
 	$buffer = true;
     }
     
@@ -554,7 +574,6 @@ function ypcf_format_french_phonenumber($phoneNumber){
     //On ajoute +33 
     $motif = '+33\1\2\3\4\5';
     $phoneNumber = preg_replace('/(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/', $motif, $phoneNumber); 
-
     return $phoneNumber; 
 } 
 ?>

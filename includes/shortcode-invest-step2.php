@@ -40,7 +40,6 @@ function ypcf_display_invest_confirm($content) {
 		} else {
 		    $post = get_post($_GET['campaign_id']);
 		    $campaign = atcf_get_campaign( $post );
-		    $form .= '<br />'.$campaign->investment_terms();
 		    $form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro; sur une ann&eacute;e, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.<br />';
 		    $form .= 'Le fichier doit &ecirc;tre de type jpeg, gif, png ou pdf.<br />';
 		    $form .= 'Son poids doit &ecirc;tre inf&eacute;rieur &agrave; 2 Mo.<br />';
@@ -63,37 +62,54 @@ function ypcf_display_invest_confirm($content) {
 		$to_add[] = apply_filters( 'edd_add_to_cart_item', array( 'id' => $campaign->ID, 'options' => array(), 'quantity' => $amount ) );
 		EDD()->session->set( 'edd_cart', $to_add );
 
-		$form .= '<br />'.$campaign->investment_terms();
-		$form .= '<br />'.$content;
-
 		// Rappel des informations remplies
 		require_once('country_list.php');
 		global $country_list;
 		if (session_id() == '') session_start();
 		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-		$form .= '<br /><br />Rappel de vos informations :<br />';
-		$form .= 'Pr&eacute;nom : ' . $current_user->user_firstname . '<br />';
-		$form .= 'Nom : ' . $current_user->user_lastname . '<br />';
-		$form .= 'e-mail : ' . $current_user->user_email . '<br />';
-		$form .= 'Type de personne : ' . (($current_user->get('user_person_type') == 'NATURAL_PERSON') ? "physique" : "morale") . '<br />';
-		$form .= 'Nationalit&eacute; : ' . $country_list[$current_user->get('user_nationality')] . '<br />';
-		$form .= 'Date de naissance : ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year') . '<br />';
+		
+		$form .= ypcf_print_invest_breadcrumb(2);
+		$plurial = '';
+		if ($_POST['amount_part'] > 1) $plurial = 's';
+		$form .= 'Vous vous appr&ecirc;tez &agrave; investir '.$amount.'&euro; ('.$_POST['amount_part'] . ' part'.$plurial.') sur le projet ' . $post->post_title . '.<br /><br />';
+		$form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante :<br />';
+		$user_title = "";
+		if ($current_user->get('user_gender') == "male") $user_title = "MONSIEUR";
+		if ($current_user->get('user_gender') == "female") $user_title = "MADAME";
+		$user_name = $user_title . ' ' . $current_user->first_name . ' ' . $current_user->last_name;
+		$form .= $user_name . '<br />';
+		$form .= 'e-mail : ' . $current_user->user_email . '<br /><br />';
+		$form .= 'N&eacute; le ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year');
+		$form .= ' &agrave; ' . $current_user->get('user_birthplace') . '<br />';
+		$form .= 'Nationalit&eacute; : ' . $country_list[$current_user->get('user_nationality')] . '<br /><br />';
 		$form .= 'Num&eacute;ro de t&eacute;l&eacute;phone : ' . $current_user->get('user_mobile_phone');
 		if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
 		$form .= '<br />';
+		$form .= 'Adresse :<br />' . $current_user->get('user_address') . '<br />' . $current_user->get('user_postal_code') . ' ' . $current_user->get('user_city') . '<br />' . $current_user->get('user_country');
+		$form .= '<br /><br />';
 		$page_update = get_page_by_path('modifier-mon-compte');
 		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br /><br />';
 
 		// Formulaire de confirmation
 		$form .= '<form action="" method="post" enctype="multipart/form-data">';
-		$form .= '<input name="amount_part" type="hidden" value="' . $_POST['amount_part'] . '">';
-		$form .= '<input name="confirmed" type="hidden" value="1">';
-		ob_start();
-		edd_agree_to_terms_js();
-		ypcf_terms_agreement();
-		$form .= ob_get_clean();
-		$form .= $_POST['amount_part'] . ' part soit '.$amount.'&euro;<input type="submit" value="Investir">';
+		$form .= '<input type="hidden" name="amount_part" value="' . $_POST['amount_part'] . '">';
+		$form .= '<input type="hidden" name="confirmed" value="1">';
+		$information_confirmed = '';
+		if (isset($_POST["information_confirmed"]) && $_POST["information_confirmed"] == "1") $information_confirmed = 'checked="checked" ';
+		$form .= '<input type="checkbox" name="information_confirmed" value="1" '.$information_confirmed.'/> Je d&eacute;clare que ces informations sont exactes.<br /><br />';
+
+		$invest_data = array("amount_part" => $_POST['amount_part'], "amount" => $amount, "total_parts_company" => $campaign->total_parts());
+		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data).'</div>';
+		
+		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
+		$form .= 'Ecrire "Bon pour pouvoir" dans la zone de texte ci-contre :';
+		$confirm_power = '';
+		if (isset($_POST["confirm_power"])) $confirm_power = $_POST["confirm_power"];
+		$form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" /><br /><br />';
+		
+		$form .= '<input type="submit" value="Investir">';
 		$form .= '</form><br /><br />';
+		
 		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';
 	    }
 	    

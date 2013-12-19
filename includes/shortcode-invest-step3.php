@@ -81,6 +81,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 	    case 'publish' :
 		//On affiche que tout s'est bien passé
+		$buffer .= ypcf_print_invest_breadcrumb(4);
 		$buffer .= $content;
 		$buffer .= 'Merci pour votre investissement de ' . $amount . '&euro;.<br />';
 		$buffer .= 'Nous sommes &agrave; pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
