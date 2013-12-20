@@ -34,7 +34,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
     $conseil = false;
 
         
-    if (isset($_POST['submit'])) { 
+    if (isset($_POST['submit_vote'])) { 
 	if ( is_user_logged_in() ) {
 	    $vote_valid = true;
 	    
@@ -44,21 +44,21 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 	    $social             = ($impact == "positif" && isset($_POST[ 'social' ])) ? $_POST[ 'social' ] : false;
 	    $autre              = ($impact == "positif" && isset($_POST[ 'autre' ]) && $_POST[ 'autre' ] && isset($_POST['precision'])) ? htmlentities($_POST[ 'precision' ], ENT_QUOTES | ENT_HTML401) : '';
 	    if ($impact == "") {
-		echo '<span style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la premi&egrave;re question.</span><br />';
+		echo '<span class="errors">Vous n&apos;avez pas r&eacute;pondu &agrave; la premi&egrave;re question.</span><br />';
 		$vote_valid = false;
 	    }
 	    if ($impact == "positif" && !$local && !$environmental && !$social && (!isset($_POST[ 'autre' ]))) {
-		echo '<span style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; l&apos;impact.</span><br />';
+		echo '<span class="errors">Vous n&apos;avez pas pr&eacute;cis&eacute; l&apos;impact.</span><br />';
 		$vote_valid = false;
 	    }
 	    
 	    $maturite		= isset($_POST[ 'maturite' ]) ? $_POST[ 'maturite' ] : false;
 	    if ($maturite == "") {
-		echo '<span style="color:red">Vous n&apos;avez pas r&eacute;pondu &agrave; la deuxi&egrave;me question.</span><br />';
+		echo '<span class="errors">Vous n&apos;avez pas r&eacute;pondu &agrave; la deuxi&egrave;me question.</span><br />';
 		$vote_valid = false;
 	    }
 	    if  ($maturite == "pret" && !is_numeric($_POST[ 'sum' ])) {
-		echo '<span style="color:red">Somme invalide</span><br />';
+		echo '<span class="errors">Somme invalide</span><br />';
 		$vote_valid = false;
 	    } else {
 		$sum = ($maturite == "pret" && isset($_POST[ 'sum' ])) ? $_POST[ 'sum' ] : 0;
@@ -72,7 +72,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 	    $retravaille_autre      = ($maturite == "retravaille" && isset($_POST[ 'retravaille_autre' ]) && $_POST[ 'retravaille_autre' ] && isset($_POST[ 'retravaille_autre_precision' ])) ? htmlentities($_POST[ 'retravaille_autre_precision' ], ENT_QUOTES | ENT_HTML401) : '';
 
 	    if ($maturite == "pret" && $liste_risque == "") {
-		echo '<span style="color:red">Vous n&apos;avez pas pr&eacute;cis&eacute; le risque que vous estimez.</span><br />';
+		echo '<span class="errors">Vous n&apos;avez pas pr&eacute;cis&eacute; le risque que vous estimez.</span><br />';
 		$vote_valid = false;
 	    }
 	    
@@ -96,7 +96,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 
 	    foreach ( $users as $user ){
 		if ( $user->user_id == $user_id){
-		    echo '<span style="color:red">D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</span><br />';
+		    echo '<span class="errors">D&eacutesol&eacute vous avez d&egraveja vot&eacute, merci !</span><br />';
 		    $isvoted = true;
 		    break;
 		} 
@@ -145,12 +145,9 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
 		    'type'      => 'voted',
 		    'action'    => $url_profile.' a voté sur le projet '.$url_campaign
 		));
-
-
-		echo '<span style="color:green">Le vote est valid&eacute, merci !</span><br />';
 	    }
 	} else {
-	     echo '<span style="color:red">Vous devez vous connecter pour voter</span><br />';
+	     echo '<span class="errors">Vous devez vous connecter pour voter</span><br />';
 	}
     }
          
@@ -175,7 +172,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
         else:
     ?>
             
-            <div class="light" style="text-transform:none;text-align : left; padding-left:5px;" >
+            <div class="light" style="text-transform:none;text-align : left;" >
                 <form name="ypvote" action="<?php get_permalink();?>" method="POST" class="ypvote-form" enctype="multipart/form-data">
                        
                         <strong>Impacts et coh&eacute;rence du projet</strong><br />
@@ -192,7 +189,7 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                         <input type="radio" id="desaprouve" name="impact" value="negatif" <?php if ($impact == "negatif") echo 'checked="checked"'; ?>>Pas d&apos;impact, je d&eacute;sapprouve.<br />
                         <p id="impact-negatif-content" <?php if ($impact != "negatif") echo 'style="display: none;"'; ?>>
                             <em>En d&eacute;sapprouvant ce projet, je vote contre sa publication sur le site.</em>
-                        </p><br /><br />
+                        </p><br />
 
                         
                         <strong>Maturit&eacute; et collecte</strong><br />
@@ -227,10 +224,10 @@ function ypcf_shortcode_printPageVoteForm($atts, $content = '') {
                         
                         <strong>Remarques</strong><br />
                         <span>Quels conseils ou encouragements souhaiteriez-vous donner au(x) porteur(s) de ce projet ?</span><br />
-                        <textarea type="text" name="conseil" id="conseil" value="conseil" style="width: 280px;"><?php if ($conseil != "" && $conseil != false) echo $conseil; ?></textarea><br />
+                        <textarea type="text" name="conseil" id="conseil" value="conseil"><?php if ($conseil != "" && $conseil != false) echo $conseil; ?></textarea><br />
                         
                         <br />
-                        <input type="submit" name="submit" value="Voter" />
+                        <input type="submit" name="submit_vote" value="Voter" />
 
                 </form>
             </div>

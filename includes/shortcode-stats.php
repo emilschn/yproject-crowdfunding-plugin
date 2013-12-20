@@ -33,7 +33,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
    // print_r($investisseurs);
    // echo $campaign_id;
 
-    echo "</br>";
     ?>
     <div id="stat-tab-1">
         <div id="backers">
@@ -90,15 +89,15 @@ function ypcf_shortcode_jcrois(){
     <?php
 
     if ( is_user_logged_in() ) { 
+	
 	global $wpdb, $post;
+	$table_jcrois = $wpdb->prefix . "jycrois";
+	
 	if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
-
 	$campaign               = atcf_get_campaign( $post );
 	$campaign_id            = $campaign->ID;
-
-	$table_jcrois = $wpdb->prefix . "jycrois";
-
-	/* Construction des urls utilisés dans les liens du fil d'actualité*/
+	
+	// Construction des urls utilisés dans les liens du fil d'actualité
 	// url d'une campagne précisée par son nom 
 	$campaign_url  = get_permalink($post->ID);
 	$post_title = $post->post_title;
@@ -107,7 +106,6 @@ function ypcf_shortcode_jcrois(){
 	$user_id                = wp_get_current_user()->ID;
 	$user_display_name      = wp_get_current_user()->display_name;
 	$url_profile = '<a href="' . bp_core_get_userlink($user_id, false, true) . '">' . $user_display_name . '</a>';
-
 
 	
 	if(isset($_POST['submit_jycroispas'])) {
@@ -143,11 +141,29 @@ function ypcf_shortcode_jcrois(){
 	
 	$users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = $campaign_id" );
 	foreach ( $users as $user ) { 
-	    if ( $user->user_id == $user_id) {   
+	    if ( $user->user_id == $user_id) {
 		$show_jycroispas = true;
 		break;
 	    }
-	}          
+	}
+
+	if (isset($_POST['submit_vote'])) { 
+	    if (!$show_jycroispas && isset($_POST[ 'impact' ]) && $_POST[ 'impact' ] == "positif" && isset($_POST[ 'maturite' ]) && $_POST[ 'maturite' ] == "pret") {
+		$wpdb->insert( $table_jcrois,
+		    array(
+			'user_id'	=> $user_id,
+			'campaign_id'   => $campaign_id
+		    )
+		); 
+		bp_activity_add(array (
+		    'component' => 'profile',
+		    'type'      => 'jycrois',
+		    'action'    => $url_profile.' croit au projet '.$url_campaign
+		));
+		$show_jycroispas = true;
+	    }
+	}
+	
     } else {
 	if (isset($_POST['submit_jycroispas']) || isset($_POST['submit_jycrois'])) {
 	    $page_connexion = get_page_by_path('connexion'); ?>
@@ -159,19 +175,17 @@ function ypcf_shortcode_jcrois(){
     if ($show_jycroispas == true) {
 	?>
 	<form name="ypjcrois_pas" action="<?php get_permalink();?>" method="POST" class="jycrois"> 
-	    <input id="jcrois_pas" type="submit" name="submit_jycroispas" value="" class="bouton_jcrois" >
-	</form><br/>
+	    <input id="jcrois_pas" type="submit" name="submit_jycroispas" value="<?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?>" class="bouton_jcrois" >
+	</form>
 	<?php
     } else {
 	?>
 	<form name="ypjycrois" action="<?php get_permalink();?>" method="POST" > 
-	    <input id="jcrois" type="submit" name="submit_jycrois" value="" class="bouton_jcrois">
-      
-	</form><br/>
+	    <input id="jcrois" type="submit" name="submit_jycrois" value="<?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?>" class="bouton_jcrois">
+	</form>
 	<?php
     }
     ?>
-	<span class="jycrois"><?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?></span>
     </div>
     <?php
 }  
