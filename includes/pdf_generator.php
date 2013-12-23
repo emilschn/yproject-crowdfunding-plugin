@@ -59,7 +59,9 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
     $buffer .= '<p>';
     $plurial = '';
     if ($payment_data["amount_part"] > 1) $plurial = 's';
-    $buffer .= '- Souscrire '.$payment_data["amount_part"].' part'.$plurial.' sur les '.$payment_data["total_parts_company"].' parts de la société "'.$campaign_obj->company_name().'", société en participation en cours de constitution, dont les principales caractéristiques seront les suivantes :<br />';
+    if ($payment_data["total_minimum_parts_company"] != $payment_data["total_parts_company"]) $buffer .= '- Souscrire '.$payment_data["amount_part"].' part'.$plurial.' sur les '.$payment_data["total_minimum_parts_company"].' à '.$payment_data["total_parts_company"].' parts';
+    else $buffer .= '- Souscrire '.$payment_data["amount_part"].' part'.$plurial.' sur les '.$payment_data["total_minimum_parts_company"].' parts';
+    $buffer .= ' de la société "'.$campaign_obj->company_name().'", société en participation en cours de constitution, dont les principales caractéristiques seront les suivantes :<br />';
     $buffer .= html_entity_decode($campaign_obj->subscription_params());
     $buffer .= '</p>';
     $buffer .= html_entity_decode($campaign_obj->powers_params());
@@ -107,8 +109,11 @@ function getNewPdfToSign($project_id, $payment_id) {
     $campaign = atcf_get_campaign( $post_camp );
     
     $current_user = wp_get_current_user();
+    $amount = edd_get_payment_amount($payment_id);
+    $amount_part = $amount / $campaign->part_value();
     
-    $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $payment_id);
+    $invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
+    $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data);
     $filename = dirname ( __FILE__ ) . '/pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf';
     
     if (generatePDF($html_content, $filename)) return $filename;

@@ -1064,6 +1064,7 @@ function _atcf_metabox_campaign_updates() {
  * @return string $price The formatted price
  */
 add_filter( 'edd_metabox_save_campaign_goal', 'edd_sanitize_price_save' );
+add_filter( 'edd_metabox_save_campaign_minimum_goal', 'edd_sanitize_price_save' );
 
 /**
  * Updates Save
@@ -1284,7 +1285,7 @@ class ATCF_Campaign {
 	
 	public function minimum_goal() {
 	    $goal = $this->__get( 'campaign_minimum_goal' );
-	    if ( ! is_numeric( $goal ) )
+	    if ( ! is_numeric( $goal ) && ($this->type() != 'flexible') )
 		    $goal = 0;
 	    if ($goal == 0) $goal = $this->goal(false);
 	    return $goal;
@@ -1295,6 +1296,10 @@ class ATCF_Campaign {
 	    if ( ! is_numeric( $part_value ) )
 		    return 0;
 	    return $part_value;
+	}
+	
+	public function total_minimum_parts() {
+	    return round($this->minimum_goal() / $this->part_value());
 	}
 	
 	public function total_parts() {
@@ -1553,6 +1558,27 @@ class ATCF_Campaign {
 
 		return $percent;
 	}
+	public function percent_minimum_completed($formatted = true ) {
+		$goal    = $this->minimum_goal(false);
+		$current = $this->current_amount(false);
+
+		if ( 0 == $goal )
+			return $formatted ? 0 . '%' : 0;
+
+		$percent = ( $current / $goal ) * 100;
+		$percent = round( $percent );
+
+		if ( $formatted )
+			return $percent . '%';
+
+		return $percent;
+	}
+	
+	public function percent_minimum_to_total() {
+	    $min = $this->minimum_goal(false);
+	    $total = $this->goal(false);
+	    return round($min / $total * 100);
+	}
 
 	/**
 	 * Current amount funded.
@@ -1716,21 +1742,13 @@ function _atcf_metabox_campaign_info() {
 	</p>
 
 	<p>
-		<label for="campaign_goal"><strong><?php _e( 'Goal:', 'atcf' ); ?></strong></label><br />	
-		<?php if ( ! isset( $edd_options[ 'currency_position' ] ) || $edd_options[ 'currency_position' ] == 'before' ) : ?>
-			<?php echo edd_currency_filter( '' ); ?><input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount( $campaign->goal(false) ); ?>" style="width:80px" />
-		<?php else : ?>
-			<input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount($campaign->goal(false) ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
-		<?php endif; ?>
+	    <label for="campaign_goal"><strong><?php _e( 'Goal:', 'atcf' ); ?></strong></label><br />	
+	    <input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount($campaign->goal(false) ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
 	</p>
 
 	<p>
-		<label for="campaign_minimum_goal"><strong><?php _e( 'Minimum Goal:', 'atcf' ); ?></strong></label><br />	
-		<?php if ( ! isset( $edd_options[ 'currency_position' ] ) || $edd_options[ 'currency_position' ] == 'before' ) : ?>
-			<?php echo edd_currency_filter( '' ); ?><input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount( $campaign->minimum_goal() ); ?>" style="width:80px" />
-		<?php else : ?>
-			<input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount($campaign->minimum_goal() ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
-		<?php endif; ?>
+	    <label for="campaign_minimum_goal"><strong>Seuil minimum</strong></label><br />	
+	    <input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount($campaign->minimum_goal() ); ?>" style="width:80px" /> &euro;
 	</p>
 	<p>
 	    <label for="campaign_part_value"><strong><?php _e( 'Valeur de la part', 'yproject' ); ?></strong></label><br />

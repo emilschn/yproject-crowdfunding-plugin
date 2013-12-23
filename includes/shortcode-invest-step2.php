@@ -18,8 +18,8 @@ function ypcf_display_invest_confirm($content) {
     if (isset($_GET['campaign_id']) && $max_part_value > 0) {
 	//Si la valeur peut être ponctionnée sur l'objectif, et si c'est bien du numérique supérieur à 0
 	$amount = $_POST['amount_part'] * $part_value;
-	$amount_interval = $max_value - $amount;
-	if (is_numeric($_POST['amount_part']) && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value && ($amount_interval == 0 || $amount_interval >= $min_value)) {
+	$remaining_amount = $max_value - $amount;
+	if (is_numeric($_POST['amount_part']) && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $amount >= $min_value && $_POST['amount_part'] <= $max_part_value && ($remaining_amount == 0 || $remaining_amount >= $part_value)) {
 
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
@@ -98,7 +98,7 @@ function ypcf_display_invest_confirm($content) {
 		if (isset($_POST["information_confirmed"]) && $_POST["information_confirmed"] == "1") $information_confirmed = 'checked="checked" ';
 		$form .= '<input type="checkbox" name="information_confirmed" value="1" '.$information_confirmed.'/> Je d&eacute;clare que ces informations sont exactes.<br /><br />';
 
-		$invest_data = array("amount_part" => $_POST['amount_part'], "amount" => $amount, "total_parts_company" => $campaign->total_parts());
+		$invest_data = array("amount_part" => $_POST['amount_part'], "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
 		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
@@ -116,9 +116,9 @@ function ypcf_display_invest_confirm($content) {
 	} else {
 	    $error = 'general';
 	    if (intval($_POST['amount_part']) != $_POST['amount_part']) $error = 'integer';
-	    if ($_POST['amount_part'] < 1) $error = 'min';
+	    if ($_POST['amount_part'] < 1 || $amount < $min_value) $error = 'min';
 	    if ($amount > $max_value) $error = 'max';
-	    if ($amount_interval > 0 && $amount_interval < $min_value) $error = 'interval';
+	    if ($remaining_amount > 0 && $remaining_amount < $part_value) $error = 'interval';
 	    unset($_POST['amount_part']);
 	    $form .= ypcf_display_invest_form($error);
 	}
