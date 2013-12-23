@@ -1380,8 +1380,10 @@ class ATCF_Campaign {
 	
 	public function end_vote_remaining() {
 	    $dateJour = strtotime(date("d-m-Y"));
-	    $fin   = strtotime($this->__get( 'campaign_end_vote' ));
-	    return (round(abs($fin - $dateJour)/60/60/24));
+	    $fin = strtotime($this->__get( 'campaign_end_vote' ));
+	    $buffer = round(($fin - $dateJour) / 60 / 60 / 24);
+	    $buffer = max(0, $buffer);
+	    return $buffer;
 	}
 	
 	public function nb_voters() {
