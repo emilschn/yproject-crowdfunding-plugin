@@ -1283,11 +1283,13 @@ class ATCF_Campaign {
 		return $goal;
 	}
 	
-	public function minimum_goal() {
+	public function minimum_goal($formatted = false) {
 	    $goal = $this->__get( 'campaign_minimum_goal' );
+	    if (strpos($goal, '.00') !== false) $goal = substr ($goal, 0, -3);
 	    if ( ! is_numeric( $goal ) && ($this->type() != 'flexible') )
 		    $goal = 0;
 	    if ($goal == 0) $goal = $this->goal(false);
+	    if ($formatted) $goal .= ' &euro;';
 	    return $goal;
 	}
 	
