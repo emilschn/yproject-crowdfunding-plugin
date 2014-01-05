@@ -359,6 +359,7 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
     $post_campaign = get_post($download_id);
 				
     $payment_data = edd_get_payment_meta( $payment_id );
+    $payment_amount = edd_get_payment_amount( $payment_id );
     $user_id      = edd_get_payment_user_id( $payment_id );
     $user_info    = maybe_unserialize( $payment_data['user_info'] );
     $email        = edd_get_payment_user_email( $payment_id );
@@ -378,30 +379,31 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
 	case "full":
 	case "contract_failed":
 	    $subject = "Merci pour votre investissement";
-	    $body_content = "Cher ".$name.",\n\n";
+	    $body_content = "Cher ".$name.",<br /><br />";
 	    $body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. N'oubliez pas qu'il ne sera définitivement validé ";
-	    $body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !\n\n";
+	    $body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br /><br />";
 	    switch ($type) {
 		case "full":
-		    $body_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid.\n";
-		    $body_content .= "Votre code personnel pour signer le contrat : " . $code . "\n\n";
+		    $body_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
+		    $body_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
+		    $body_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong><br /><br />";
 		    break;
 		case "contract_failed":
-		    $body_content .= "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span>\n\n";
+		    $body_content .= "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span><br /><br />";
 		    break;
 	    }
-	    $body_content .= "<strong>Détails de l'investissement</strong>\n";
-	    $body_content .= "Projet : " . $post_campaign->post_title . "\n";
-	    $body_content .= "Montant investi : ".$payment_data['amount']."€\n";
-	    $body_content .= "Horodatage : ".date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_id ) ) )."\n\n";
+	    $body_content .= "<strong>Détails de l'investissement</strong><br />";
+	    $body_content .= "Projet : " . $post_campaign->post_title . "<br />";
+	    $body_content .= "Montant investi : ".$payment_amount."€<br />";
+	    $body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
 	    break;
 	case "send_code":
 	    $subject = "Code d'investissement";
-	    $body_content = "Cher ".$name.",\n\n";
+	    $body_content = "Cher ".$name.",<br /><br />";
 	    $body_content .= "Afin de confirmer votre investissement sur le projet " . $post_campaign->post_title . ", ";
-	    $body_content .= "voici le code qui vous permettra de signer le contrat chez notre partenaire Signsquid :\n";
-	    $body_content .= $code . "\n\n";
-	    $body_content .= "Si vous n'avez fait aucune action pour recevoir ce code, ne tenez pas compte de ce message.\n\n";
+	    $body_content .= "voici le code qui vous permettra de signer le contrat chez notre partenaire Signsquid :<br />";
+	    $body_content .= $code . "<br /><br />";
+	    $body_content .= "Si vous n'avez fait aucune action pour recevoir ce code, ne tenez pas compte de ce message.<br /><br />";
 	    break;
     }
 

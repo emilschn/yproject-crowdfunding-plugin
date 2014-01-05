@@ -10,7 +10,7 @@ function ypcf_printable_value($val) {
 /**
  */
  function ypcf_shortcode_vote_results() {
-    global $wpdb, $campaign, $post, $edd_options;
+    global $wpdb, $campaign, $post;
     $table_name = $wpdb->prefix . "ypVotes";
     
 
@@ -23,8 +23,6 @@ function ypcf_printable_value($val) {
     $author_id = $post->post_author;
     ob_start();
     if (($current_user_id == $author_id || current_user_can('manage_options')) && isset($_GET['campaign_id'])) {
-
-    $crowdfunding = crowdfunding();
 
     $campaign = atcf_get_campaign( $post );
     $campaign_id =  $campaign->ID;
@@ -140,10 +138,12 @@ function ypcf_printable_value($val) {
         $percent_impact_negatif = 0;
         $percent_pret_collect   = 0;
         $percent_retravaille    = 0;
+	$percent_pasrepondu_collect = 0;
     }
     // calcul de la moyenne   
     if ($count_pret_collect == 0) {
         $moyenne = 0;
+	$moyenne_givers = 0;
     } else {
         $moyenne = $count_sum / $count_pret_collect;
 	$moyenne_givers = $count_sum / $count_givers;
@@ -159,8 +159,8 @@ function ypcf_printable_value($val) {
     }
 ?>
 
- 
-<h2>Nombre total de participants : <?php  echo($count_users) ;?></h2> 
+<h2>R&eacute;sultats des votes</h2>
+<h3>Nombre total de participants : <?php  echo($count_users) ;?></h3> 
 
 <div class="tab-title"><h3>Impact du projet</h3></div>
 <p>
@@ -294,11 +294,7 @@ function ypcf_printable_value($val) {
 	<td>Conseils</td>
     </tr>
     <?php
-        if (empty($conseils)) {
-    ?>
-</table>
-    <?php
-        } else {
+        if (!empty($conseils)) {
 	    foreach ( $conseils as $cons ) {
     ?>
     <tr>
@@ -308,9 +304,76 @@ function ypcf_printable_value($val) {
     <?php
 	    }
 	    ?>
-</table>
+
     <?php
 	}
+    ?>
+</table>
+<br /><br />
+
+<h2>Investissements</h2>
+
+<table class="wp-list-table" cellspacing="0">
+    <thead style="background-color: #CCC;">
+    <tr>
+	<td>Utilisateur</td>
+	<td>Date</td>
+	<td>Montant</td>
+	<td>Paiement</td>
+	<td>Paiement Mangopay</td>
+	<td>Signature</td>
+    </tr>
+    </thead>
+
+    <tfoot style="background-color: #CCC;">
+    <tr>
+	<td>Utilisateur</td>
+	<td>Date</td>
+	<td>Montant</td>
+	<td>Paiement</td>
+	<td>Paiement Mangopay</td>
+	<td>Signature</td>
+    </tr>
+    </tfoot>
+
+    <tbody id="the-list">
+	<?php
+	$payments_data = get_payments_data($_GET['campaign_id']);
+	$i = -1;
+	foreach ( $payments_data as $item ) {
+	    $i++;
+	    if ($i % 2 == 0) $bgcolor = "#FFF";
+	    else $bgcolor = "#EEE";
+
+	    $user_link = bp_core_get_userlink($item['user']);
+
+	    $post_invest = get_post($item['ID']);
+	    ypcf_get_updated_payment_status($item['ID']);
+
+	    $mangopay_id = edd_get_payment_key($item['ID']);
+	    $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
+	    $mangopay_is_succeeded = (isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
+
+	    ?>
+	    <tr style="background-color: <?php echo $bgcolor; ?>">
+		<td><?php echo $user_link; ?></td>
+		<td><?php echo date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $item['ID'] ) ) ); ?></td>
+		<td><?php echo $item['amount']; ?>&euro;</td>
+		<td <?php if (edd_get_payment_status( $post_invest, true ) == "Echec") echo 'style="background-color: #EF876D"'; ?>><?php echo edd_get_payment_status( $post_invest, true ); ?></td>
+		<td <?php if (!(isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded)) echo 'style="background-color: #EF876D"'; ?>><?php echo $mangopay_is_succeeded; ?></td>
+		<td <?php if ($item['signsquid_status'] != 'Agreed') echo 'style="background-color: #EF876D"'; ?>><?php echo $item['signsquid_status_text']; ?></td>
+	    </tr>
+	    <?php
+	}
+	?>
+    </tbody>
+</table>
+
+
+
+
+
+    <?php
     $post = $save_post;
     return ob_get_clean();
 }
@@ -320,3 +383,71 @@ function ypcf_printable_value($val) {
 add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_results' );
 
 
+ function get_payments_data($campaign_id = '') {
+    $payments_data = array();
+
+    if ( isset( $_GET['paged'] ) ) $page = $_GET['paged']; else $page = 1;
+
+    $per_page       = 50;
+    $mode           = edd_is_test_mode()            ? 'test'                            : 'live';
+    $orderby 		= isset( $_GET['orderby'] )     ? $_GET['orderby']                  : 'ID';
+    $order 			= isset( $_GET['order'] )       ? $_GET['order']                    : 'DESC';
+    $order_inverse 	= $order == 'DESC'              ? 'ASC'                             : 'DESC';
+    $order_class 	= strtolower( $order_inverse );
+    $user 			= isset( $_GET['user'] )        ? $_GET['user']                     : null;
+    $status 		= isset( $_GET['status'] )      ? $_GET['status']                   : 'any';
+    $meta_key		= isset( $_GET['meta_key'] )    ? $_GET['meta_key']                 : null;
+    $year 			= isset( $_GET['year'] )        ? $_GET['year']                     : null;
+    $month 			= isset( $_GET['m'] )           ? $_GET['m']                        : null;
+    $day 			= isset( $_GET['day'] )         ? $_GET['day']                      : null;
+    $search         = isset( $_GET['s'] )           ? sanitize_text_field( $_GET['s'] ) : null;
+    
+    $payments = edd_get_payments( array(
+	'number'   => $per_page,
+	'page'     => isset( $_GET['paged'] ) ? $_GET['paged'] : null,
+	'mode'     => $mode,
+	'orderby'  => $orderby,
+	'order'    => $order,
+	'user'     => $user,
+	'status'   => $status,
+	'meta_key' => $meta_key,
+	'year'	   => $year,
+	'month'    => $month,
+	'day' 	   => $day,
+	's'        => $search
+    ) );
+
+    if ( $payments ) {
+	foreach ( $payments as $payment ) {
+	    $downloads = edd_get_payment_meta_downloads($payment->ID); 
+	    $download_id = '';
+	    if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+	    else $download_id = $downloads[0];
+	    if ($campaign_id == '' || $download_id == $campaign_id) {
+		$user_info = edd_get_payment_meta_user_info( $payment->ID );
+		$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
+
+		$user_id = isset( $user_info['id'] ) && $user_info['id'] != -1 ? $user_info['id'] : $user_info['email'];
+
+		$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
+		$signsquid_infos = signsquid_get_contract_infos($contractid);
+		$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
+		$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos);
+
+
+		$payments_data[] = array(
+		    'ID' 		=> $payment->ID,
+		    'email' 	=> edd_get_payment_user_email( $payment->ID ),
+		    'products' 	=> $cart_details,
+		    'amount' 	=> edd_get_payment_amount( $payment->ID ),
+		    'date' 		=> $payment->post_date,
+		    'user' 		=> $user_id,
+		    'status' 	=> $payment->post_status,
+		    'signsquid_status' => $signsquid_status,
+		    'signsquid_status_text' => $signsquid_status_text
+		);
+	    }
+	}
+    }
+    return $payments_data;
+}

@@ -82,8 +82,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
     $buffer .= '</td></tr></table>';
     
     $buffer .= '<div style="padding-top: 100px;">';
-    $buffer .= '(1) signature accompagnée de la mention "Bon pour pouvoir"<br />';
-    $buffer .= '(2) signature accompagnée de la mention "Bon pour acceptation de pouvoir"';
+    $buffer .= '(1) signature accompagnée de la mention "Bon pour pouvoir"<br /><br />';
     $buffer .= '</div>';
     
     $buffer .= '<div style="padding-top: 100px;"></div>';
