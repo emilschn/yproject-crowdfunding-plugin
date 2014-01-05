@@ -20,15 +20,15 @@ function ypcf_check_redirections() {
 	    case 'investir' :
 		//D'abord on teste si l'utilisateur est bien connecté
 		ypcf_check_is_user_logged_invest();
-		//Et on reteste si les données sont bel et bien remplies
-		ypcf_check_user_can_invest(true);
-		//On vérifie les redirections nécessaires à l'investissement
-		ypcf_check_invest_redirections();
 		require( crowdfunding()->includes_dir . 'shortcode-invest.php' );
 		if (ypcf_get_current_step() == 1) {
 		    require( crowdfunding()->includes_dir . 'shortcode-invest-step1.php' );
 		}
 		if (ypcf_get_current_step() == 2) {
+		    //Et on reteste si les données sont bel et bien remplies
+		    ypcf_check_user_can_invest(true);
+		    //On vérifie les redirections nécessaires à l'investissement
+		    ypcf_check_invest_redirections();
 		    require( crowdfunding()->includes_dir . 'shortcode-invest-step1.php' );
 		    require( crowdfunding()->includes_dir . 'shortcode-invest-step2.php' );
 		}
@@ -98,9 +98,11 @@ function ypcf_check_user_can_invest($redirect = false) {
     if ($redirect && !$can_invest) {
 	if (session_id() == '') session_start();
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+	$_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	$errors = array();
 	array_push($errors, 'Certaines des informations manquent ou sont inexactes.');
 	if ($current_user->get('user_person_type') == "LEGAL_PERSONALITY") array_push($errors, 'Seules les personnes physiques peuvent investir pour l&apos;instant.');
+	if (!ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'))) array_push($errors, 'Seules les personnes majeures peuvent investir.');
 	$_SESSION['error_invest'] = $errors;
 	$page_update = get_page_by_path('modifier-mon-compte');
 	wp_redirect(get_permalink($page_update->ID));
@@ -115,7 +117,9 @@ function ypcf_check_user_can_invest($redirect = false) {
 function ypcf_check_invest_redirections() {
     if (session_id() == '') session_start();
     if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 
+    //Si le projet n'est pas défini, on annule et retourne à l'accueil
     $post_camp = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post_camp );
     if (!isset($campaign)) {
@@ -123,12 +127,13 @@ function ypcf_check_invest_redirections() {
 	exit();
     }
     
+    //Si le projet est en court de vote ou que le montant de la part est à 0 (donc non-défini), on retourne à la page projet
     if ($campaign->vote() == 'vote' || $campaign->part_value() == 0) {
 	wp_redirect(get_permalink($post_camp->ID));
 	exit();
     }
 
-    //On a validé la confirmation
+    //Si on a validé la confirmation
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
     $max_part_value = ypcf_get_max_part_value();
     //Tests de la validité de l'investissement : utilisateur loggé, projet définie, montant correct, informations validées par coche, bon pour pouvoir écrit
@@ -219,7 +224,11 @@ function ypcf_login_gobackinvest_url() {
     return $redirect_to;
 }
 
-
+/**
+ * Affiche les étapes lors de l'investissement
+ * @param type $current_step
+ * @return string
+ */
 function ypcf_print_invest_breadcrumb($current_step) {
     $buffer = '<div id="invest-breadcrumb">';
     $steps = array("Montant", "Validation", "Paiement", "Signature électronique");

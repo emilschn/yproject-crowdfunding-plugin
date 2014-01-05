@@ -86,8 +86,10 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		$buffer .= 'Merci pour votre investissement de ' . $amount . '&euro;.<br />';
 		$buffer .= 'Nous sommes &agrave; pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
 		$buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . '&euro;.<br /><br />';
+		
+		$campaign_url  = get_permalink($_GET['campaign_id']);
 
-		global $contract_errors;
+		global $contract_errors, $wpdb;
 		if (!isset($contract_errors) || $contract_errors == '') {
 		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
 		    $buffer .= '- un e-mail de confirmation de paiement ; cet e-mail contient votre code pour signer le pouvoir<br />';
@@ -98,7 +100,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 		    //Liens pour partager
     //		$buffer .= '<iframe src="http://www.facebook.com/plugins/like.php?href='.urlencode(get_permalink($_GET['campaign_id'])).'&amp;layout=button_count&amp;show_faces=true&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=30" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80px; height:20px; text-align: center" allowTransparency="true"></iframe>';
-		    $buffer .= '<a href="http://www.facebook.com/sharer.php?u='.urlencode(get_permalink($_GET['campaign_id'])).'" target="_blank">'. __('Partager sur Facebook', 'yproject') . '</a>';
+		    $buffer .= '<a href="http://www.facebook.com/sharer.php?u='.urlencode($campaign_url).'" target="_blank">'. __('Partager sur Facebook', 'yproject') . '</a>';
 		    $buffer .= '<br />';
     //		$buffer .= "<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>";
     //		$buffer .= '<a href="https://twitter.com/share" class="twitter-share-button" data-via="yproject_co" data-lang="fr">' . __('Partager sur Twitter', 'yproject') . '</a>';
@@ -108,7 +110,29 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    $buffer .= 'Vous allez recevoir un e-mail de confirmation de paiement.<br />';
 		    $buffer .= '<span class="errors">Cependant, il y a eu un problème lors de la génération du contrat. Nos &eacute;quipes travaillent &agrave; la r&eacute;solution de ce probl&egrave;me.</span>';
 		}
+		$buffer .= '<br /><br />&lt;&lt; <a href="'.$campaign_url.'">Retour au projet</a>.';
 
+		//Si un utilisateur investit, il croit au projet
+		$table_jcrois = $wpdb->prefix . "jycrois";
+		$wpdb->insert( $table_jcrois,
+		    array(
+			'user_id'	=> $current_user->ID,
+			'campaign_id'   => $_GET['campaign_id']
+		    )
+		);
+		
+		// Construction des urls utilisés dans les liens du fil d'actualité
+		// url d'une campagne précisée par son nom 
+		$post_title = $post->post_title;
+		$url_campaign = '<a href="'.$campaign_url.'">'.$post_title.'</a>';
+		//url d'un utilisateur précis
+		$url_profile = '<a href="' . bp_core_get_userlink($current_user->ID, false, true) . '">' . $current_user->display_name . '</a>';
+		
+		bp_activity_add(array (
+		    'component' => 'profile',
+		    'type'      => 'invested',
+		    'action'    => $url_profile.' a investi sur le projet '.$url_campaign
+		));
 		break;
 
 	    case 'failed' :

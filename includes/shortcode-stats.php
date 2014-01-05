@@ -175,13 +175,13 @@ function ypcf_shortcode_jcrois(){
     if ($show_jycroispas == true) {
 	?>
 	<form name="ypjcrois_pas" action="<?php get_permalink();?>" method="POST" class="jycrois"> 
-	    <input id="jcrois_pas" type="submit" name="submit_jycroispas" value="<?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?>" class="bouton_jcrois" >
+	    <input id="jcrois_pas" type="submit" name="submit_jycroispas" value="<?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?>" class="bouton_jcrois" />
 	</form>
 	<?php
     } else {
 	?>
 	<form name="ypjycrois" action="<?php get_permalink();?>" method="POST" > 
-	    <input id="jcrois" type="submit" name="submit_jycrois" value="<?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?>" class="bouton_jcrois">
+	    <input id="jcrois" type="submit" name="submit_jycrois" value="<?php do_shortcode('[yproject_crowdfunding_count_jcrois]'); ?>" class="bouton_jcrois" />
 	</form>
 	<?php
     }

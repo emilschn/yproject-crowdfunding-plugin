@@ -79,11 +79,6 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
     $buffer .= '</td>';
     
     $buffer .= '<td>';
-    $buffer .= 'Fait à <br />';
-    $buffer .= 'Le <br />';
-    $buffer .= 'Pour la société "WE DO GOOD"<br />';
-    $buffer .= 'Monsieur Jean-David BAR<br />';
-    $buffer .= '(2)';
     $buffer .= '</td></tr></table>';
     
     $buffer .= '<div style="padding-top: 100px;">';

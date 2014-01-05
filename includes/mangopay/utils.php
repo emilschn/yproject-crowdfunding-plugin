@@ -22,13 +22,18 @@ function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id,
     //Récupération de l'url de retour
     $return_url = get_permalink($page_return->ID) . '?campaign_id=' . $campaign_id;
     
+    //Récupération de l'url de template
+    $page_payment = get_page_by_path('paiement');
+    $template_url = get_permalink($page_payment->ID) . '?campaign_id='.$campaign_id;
+    $template_url = 'https://www.wedogood.co/paiement?campaign_id='.$campaign_id;
+    
     //Création de la contribution en elle-même
     $mangopay_newcontribution = request('contributions', 'POST', '{ 
 					    "UserID" : '.$currentuser_mangopayid.', 
 					    "WalletID" : '.$currentpost_mangopayid.',
 					    "Amount" : '.$cent_amount.',
 					    "ReturnURL" : "'. $return_url .'",
-					    "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$campaign_id.'"
+					    "TemplateURL" : "'.$template_url.'"
 					}');
     
     return $mangopay_newcontribution;

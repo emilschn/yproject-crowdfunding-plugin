@@ -17,9 +17,15 @@ function ypcf_display_invest_confirm($content) {
 
     if (isset($_GET['campaign_id']) && $max_part_value > 0) {
 	//Si la valeur peut être ponctionnée sur l'objectif, et si c'est bien du numérique supérieur à 0
-	$amount = $_POST['amount_part'] * $part_value;
+	$amount_part = false;
+	if (isset($_POST['amount_part'])) $amount_part = $_POST['amount_part'];
+	elseif (isset($_SESSION['redirect_current_amount_part'])) {
+	    $amount_part = $_SESSION['redirect_current_amount_part'];
+	    unset($_SESSION['redirect_current_amount_part']);
+	}
+	$amount = $amount_part * $part_value;
 	$remaining_amount = $max_value - $amount;
-	if (is_numeric($_POST['amount_part']) && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $amount >= $min_value && $_POST['amount_part'] <= $max_part_value && ($remaining_amount == 0 || $remaining_amount >= $part_value)) {
+	if (is_numeric($amount_part) && intval($amount_part) == $amount_part && $amount_part >= 1 && $amount >= $min_value && $amount_part <= $max_part_value && ($remaining_amount == 0 || $remaining_amount >= $part_value)) {
 
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
@@ -45,7 +51,7 @@ function ypcf_display_invest_confirm($content) {
 		    $form .= 'Son poids doit &ecirc;tre inf&eacute;rieur &agrave; 2 Mo.<br />';
 		    $form .= '<form id="mangopay_strongauth_form" action="" method="post" enctype="multipart/form-data">';
 		    $form .= '<input type="hidden" name="document_submited" value="1" />';
-		    $form .= '<input type="hidden" name="amount_part" value='.$_POST['amount_part'].' />';
+		    $form .= '<input type="hidden" name="amount_part" value='.$amount_part.' />';
 		    $form .= '<input type="file" name="StrongValidationDtoPicture" />';
 		    $form .= '<input type="submit" value="Envoyer"/>';
 		    $form .= '</form><br /><br />';
@@ -69,36 +75,47 @@ function ypcf_display_invest_confirm($content) {
 		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 		
 		$form .= ypcf_print_invest_breadcrumb(2);
+		if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
+		if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour pouvoir'))) $form .= '<span class="errors">Merci de saisir "Bon pour pouvoir".</span><br />';
+		
 		$plurial = '';
-		if ($_POST['amount_part'] > 1) $plurial = 's';
-		$form .= 'Vous vous appr&ecirc;tez &agrave; investir '.$amount.'&euro; ('.$_POST['amount_part'] . ' part'.$plurial.') sur le projet ' . $post->post_title . '.<br /><br />';
-		$form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante :<br />';
+		if ($amount_part > 1) $plurial = 's';
+		$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>.<br /><br />';
+		
+		$form .= '<div class="invest_part">';
+		$form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante :<br /><br />';
+		
 		$user_title = "";
 		if ($current_user->get('user_gender') == "male") $user_title = "MONSIEUR";
 		if ($current_user->get('user_gender') == "female") $user_title = "MADAME";
 		$user_name = $user_title . ' ' . $current_user->first_name . ' ' . $current_user->last_name;
-		$form .= $user_name . '<br />';
-		$form .= 'e-mail : ' . $current_user->user_email . '<br /><br />';
-		$form .= 'N&eacute; le ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year');
+		$form .= '<span class="label">Identit&eacute; :</span>' . $user_name . '<br />';
+		$form .= '<span class="label">e-mail :</span>' . $current_user->user_email . '<br /><br />';
+		$form .= '<span class="label">Date et lieu de naissance :</span>le ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year');
 		$form .= ' &agrave; ' . $current_user->get('user_birthplace') . '<br />';
-		$form .= 'Nationalit&eacute; : ' . $country_list[$current_user->get('user_nationality')] . '<br /><br />';
-		$form .= 'Num&eacute;ro de t&eacute;l&eacute;phone : ' . $current_user->get('user_mobile_phone');
-		if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
+		$form .= '<span class="label">Nationalit&eacute; :</span>' . $country_list[$current_user->get('user_nationality')] . '<br /><br />';
+		$form .= '<div class="label left">Adresse :</div>';
+		$form .= '<div class="left">' . $current_user->get('user_address') . '<br />' . $current_user->get('user_postal_code') . ' ' . $current_user->get('user_city') . '<br />' . $current_user->get('user_country') . '</div>';
+		$form .= '<div style="clear: both;"></div>';
 		$form .= '<br />';
-		$form .= 'Adresse :<br />' . $current_user->get('user_address') . '<br />' . $current_user->get('user_postal_code') . ' ' . $current_user->get('user_city') . '<br />' . $current_user->get('user_country');
+		$form .= '<span class="label">Num&eacute;ro de t&eacute;l&eacute;phone :</span>' . $current_user->get('user_mobile_phone');
+		if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
 		$form .= '<br /><br />';
+		
 		$page_update = get_page_by_path('modifier-mon-compte');
-		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br /><br />';
+		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a>';
+		$form .= '</div>';
 
 		// Formulaire de confirmation
 		$form .= '<form action="" method="post" enctype="multipart/form-data">';
-		$form .= '<input type="hidden" name="amount_part" value="' . $_POST['amount_part'] . '">';
+		$form .= '<input type="hidden" name="amount_part" value="' . $amount_part . '">';
 		$form .= '<input type="hidden" name="confirmed" value="1">';
 		$information_confirmed = '';
 		if (isset($_POST["information_confirmed"]) && $_POST["information_confirmed"] == "1") $information_confirmed = 'checked="checked" ';
 		$form .= '<input type="checkbox" name="information_confirmed" value="1" '.$information_confirmed.'/> Je d&eacute;clare que ces informations sont exactes.<br /><br />';
 
-		$invest_data = array("amount_part" => $_POST['amount_part'], "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
+		$form .= '<h3>Voici le pouvoir que vous allez signer pour valider l&apos;investissement :</h3>';
+		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
 		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
@@ -115,11 +132,11 @@ function ypcf_display_invest_confirm($content) {
 	    
 	} else {
 	    $error = 'general';
-	    if (intval($_POST['amount_part']) != $_POST['amount_part']) $error = 'integer';
-	    if ($_POST['amount_part'] < 1 || $amount < $min_value) $error = 'min';
+	    if (intval($amount_part) != $amount_part) $error = 'integer';
+	    if ($amount_part < 1 || $amount < $min_value) $error = 'min';
 	    if ($amount > $max_value) $error = 'max';
 	    if ($remaining_amount > 0 && $remaining_amount < $part_value) $error = 'interval';
-	    unset($_POST['amount_part']);
+	    unset($amount_part);
 	    $form .= ypcf_display_invest_form($error);
 	}
     }

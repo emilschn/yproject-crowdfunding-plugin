@@ -6,8 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function ypcf_get_current_step() {
     $buffer = 1;
     $max_part_value = ypcf_get_max_part_value();
-    if (isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
-	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value ) {
+    $amount_part = false;
+    if (isset($_POST['amount_part'])) $amount_part = $_POST['amount_part'];
+    elseif (isset($_SESSION['redirect_current_amount_part'])) {
+	$amount_part = $_SESSION['redirect_current_amount_part'];
+    }
+    if (isset($amount_part) && $amount_part !== FALSE && is_numeric($amount_part) && ctype_digit($amount_part) 
+	    && intval($amount_part) == $amount_part && $amount_part >= 1 && $amount_part <= $max_part_value ) {
 	 $buffer = 2;
     }
     
