@@ -68,14 +68,15 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
     
     $buffer .= '</p>';
     
-    $buffer .= '<table style="border:0px;"><tr><td style="width: 350px;">';
-    $buffer .= 'Fait avec l&apos;adresse IP '.$_SERVER['REMOTE_ADDR'].'<br />';
+    $buffer .= '<table style="border:0px;"><tr><td>';
+    $buffer .= 'Fait avec l\'adresse IP '.$_SERVER['REMOTE_ADDR'].'<br />';
     $day = date("d");
     $month = mb_strtoupper(__($months[date("m") - 1]));
     $year = date("Y");
     $buffer .= 'Le '.$day.' '.$month.' '.$year.'<br />';
     $buffer .= $user_name.'<br />';
-    $buffer .= '(1)';
+    $buffer .= '(1)<br />';
+    $buffer .= 'Bon pour pouvoir';
     $buffer .= '</td>';
     
     $buffer .= '<td>';

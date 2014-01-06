@@ -140,14 +140,14 @@ function ypcf_mangopay_get_wallet_by_id($wallet_id) {
 
 function ypcf_mangopay_get_user_personalamount_by_wpid($wp_user_id) {
     $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
-    $mp_user = ypcf_mangopay_get_user_by_id($mp_user_id);
+    $mp_user = (isset($mp_user_id) && $mp_user_id != "") ? ypcf_mangopay_get_user_by_id($mp_user_id) : false;
     if ($mp_user) return $mp_user->PersonalWalletAmount;
     else return 0;
 }
 
 function ypcf_mangopay_get_userwallet_personalamount_by_wpid($wp_user_id) {
     $mp_wallet_id = ypcf_mangopay_get_mp_user_wallet_id($wp_user_id);
-    $mp_wallet = ypcf_mangopay_get_wallet_by_id($mp_wallet_id);
+    $mp_wallet = (isset($mp_wallet_id) && $mp_wallet_id != "") ? ypcf_mangopay_get_wallet_by_id($mp_wallet_id) : false;
     if ($mp_wallet) return $mp_wallet->CollectedAmount;
     else return 0;
 }
