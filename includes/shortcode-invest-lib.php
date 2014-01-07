@@ -182,6 +182,7 @@ function ypcf_check_invest_redirections() {
  */
 function ypcf_check_has_user_filled_infos_and_redirect() {
     global $validate_email;
+    $validate_email = true;
     $current_user = wp_get_current_user();
     if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
 	if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
@@ -200,10 +201,12 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 	if ($_POST["update_mobile_phone"] != "") update_user_meta($current_user->ID, 'user_mobile_phone', $_POST["update_mobile_phone"]);
 	if (!isset($_POST["update_email"])) $validate_email = true;
 	if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
-	    $validate_email = bp_core_validate_email_address($_POST["update_email"]);
-	    if (($_POST["update_email"] != "") && ($validate_email === true)) {
-		wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
-		$current_user->user_email = $_POST["update_email"];
+	    if (($_POST["update_email"] != "" && $_POST["update_email"] != $current_user->user_email)) {
+		$validate_email = bp_core_validate_email_address($_POST["update_email"]);
+		if ($validate_email === true) {
+		    wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
+		    $current_user->user_email = $_POST["update_email"];
+		}
 	    }
 	    if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
 	endif;
