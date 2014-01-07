@@ -71,6 +71,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 	// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
 	$payment_status = ypcf_get_updated_payment_status($payment_id);
+	
 	// Affichage en fonction du statut du paiement
 	switch ($payment_status) {
 	    case 'pending' :
@@ -116,12 +117,22 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 		//Si un utilisateur investit, il croit au projet
 		$table_jcrois = $wpdb->prefix . "jycrois";
-		$wpdb->insert( $table_jcrois,
-		    array(
-			'user_id'	=> $current_user->ID,
-			'campaign_id'   => $_GET['campaign_id']
-		    )
-		);
+		$users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = ". $_GET['campaign_id'] );
+		$found_jcrois = false;
+		foreach ( $users as $user ) { 
+		    if ( $user->user_id == $current_user->ID) {
+			$found_jcrois = true;
+			break;
+		    }
+		}
+		if (!$found_jcrois) {
+		    $wpdb->insert( $table_jcrois,
+			array(
+			    'user_id'	=> $current_user->ID,
+			    'campaign_id'   => $_GET['campaign_id']
+			)
+		    );
+		}
 		
 		// Construction des urls utilisés dans les liens du fil d'actualité
 		// url d'une campagne précisée par son nom 

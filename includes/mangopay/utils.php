@@ -15,6 +15,8 @@ function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id,
 
     //Récupération du walletid de l'utilisateur
     $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
+    
+    if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
 
     //Conversion de la somme saisie en cents
     $cent_amount = $amount * 100;
@@ -212,7 +214,7 @@ function ypcf_init_mangopay_user($current_user) {
     $currentuser_wallet_mangopayid = ypcf_mangopay_get_mp_user_wallet_id($current_user->ID);
     if ($currentuser_wallet_mangopayid == "") {
 	$mangopay_new_wallet = request('wallets', 'POST', '{ 
-					"Owners" : ['.$currentuser_mangopayid.'.], 
+					"Owners" : ['.$currentuser_mangopayid.'], 
 					"Name" : "Wallet of '.$current_user->display_name.'",
 					"Tag" : "Wallet of '.$current_user->display_name.'",
 					"Description" : "Wallet of '.$current_user->display_name.'"

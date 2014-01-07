@@ -15,22 +15,22 @@ echo '<h2>Adding a signatory</h2>';
 signsquid_add_signatory($new_contract_id, 'Emil Schn', 'emilien@wedogood.co');
 
 
-echo '<h2>Getting a contract</h2>';
-//$infos = signsquid_get_contract_infos($new_contract_id);
-//print_r($infos);
-
-
 echo '<h2>Sending a file</h2>';
 $pdf_filename = 'test.pdf';
 signsquid_add_file($new_contract_id, $pdf_filename);
 
 
-echo '<h2>Getting all contracts</h2>';
+//echo '<h2>Getting all contracts</h2>';
 //$list = signsquid_get_contract_list();
 //print_r($list);
 
 
 echo '<h2>Sending invitations</h2>';
 signsquid_send_invite($new_contract_id);
+
+
+echo '<h2>Getting a contract</h2>';
+$infos = signsquid_get_contract_infos($new_contract_id);
+print_r($infos);
 
 ?>

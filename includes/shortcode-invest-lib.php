@@ -20,6 +20,7 @@ function ypcf_check_redirections() {
 	    case 'investir' :
 		//D'abord on teste si l'utilisateur est bien connecté
 		ypcf_check_is_user_logged_invest();
+		ypcf_check_is_project_investable();
 		require( crowdfunding()->includes_dir . 'shortcode-invest.php' );
 		if (ypcf_get_current_step() == 1) {
 		    require( crowdfunding()->includes_dir . 'shortcode-invest-step1.php' );
@@ -78,6 +79,28 @@ function ypcf_check_is_user_logged_invest() {
 	}
 	exit();
     } 
+}
+
+function ypcf_check_is_project_investable() {
+    $post_camp = get_post($_GET['campaign_id']);
+    if (!ypcf_check_user_is_complete($post_camp->post_author)) {
+	wp_redirect(site_url());
+	exit();
+    }
+}
+
+function ypcf_check_user_is_complete($user_id) {
+    $is_complete = true;
+    $current_user = get_user_by('id', $user_id);
+    $is_complete = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
+    $is_complete = $is_complete && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
+    $is_complete = $is_complete && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
+    $is_complete = $is_complete && ($current_user->get('user_nationality') != "") && ($current_user->user_email != "");
+    $is_complete = $is_complete && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
+    $is_complete = $is_complete && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
+    $is_complete = $is_complete && ($current_user->get('user_gender') != "") && ($current_user->get('user_birthplace') != "");
+    $is_complete = $is_complete && ($current_user->get('user_person_type') != "");
+    return $is_complete;
 }
 
 /**
@@ -291,6 +314,18 @@ function ypcf_get_updated_payment_status($payment_id) {
 			    }
 			} else {
 			    $buffer = 'failed';
+			    $post_items = get_posts(array(
+				'post_type' => 'edd_log',
+				'meta_key' => '_edd_log_payment_id',
+				'meta_value' => $payment_id
+			    ));
+			    foreach ($post_items as $post_item) {
+				$postdata = array(
+				    'ID'	=> $post_item->ID,
+				    'post_status'=> $buffer
+				);
+				wp_update_post($postdata);
+			    }
 			}
 		    } else {
 			$buffer = 'pending';
@@ -425,7 +460,6 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
  * @param type $payment_id
  */
 function ypcf_send_mail_admin($payment_id, $type) {
-    ypcf_debug_log("ypcf_send_mail_admin --- MAIL :: payment_id :: ".$payment_id." ; type :: ".$type);
     switch ($type) {
 	case "contract_failed":
 	    $subject = 'Problème de création de contrat';
@@ -439,6 +473,7 @@ function ypcf_send_mail_admin($payment_id, $type) {
     $headers .= "Reply-To: ". $from_email . "\r\n";
     $headers .= "Content-Type: text/html; charset=utf-8\r\n";
     
+    ypcf_debug_log("ypcf_send_mail_admin --- MAIL :: payment_id :: ".$payment_id." ; type :: ".$type . " ; sent to : " . $from_email);
     if (!wp_mail( $from_email, $subject, $message, $headers )) {
 	ypcf_debug_log("ypcf_send_mail_admin --- ERROR :: mail admin :: payment_id :: ".$payment_id);
     }
@@ -526,6 +561,7 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
     $user = get_userdata($user_id);
     $contract_id = 0;
     
+    ypcf_debug_log('ypcf_create_contract --- START');
     if (isset($post, $campaign, $user)) {
 	//Nom du contrat = "NOM_PROJET - Investissement de INV€ de NOM_UTILISATEUR (MAIL_UTILISATEUR) - Le DATE"
 	$project_name = get_the_title( $campaign->ID );
@@ -534,6 +570,7 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 	$date_payment = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_id ) ) );
 	$contract_name = $project_name .' - Investissement de ' .$amount. '€ de ' . $user_name . ' - Le ' . $date_payment;
 	
+	ypcf_debug_log('ypcf_create_contract --- CALL signsquid_create_contract');
 	$contract_id = signsquid_create_contract($contract_name);
 	if ($contract_id != '') {
 	    global $contract_errors;
@@ -552,6 +589,8 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 	global $contract_errors;
 	$contract_errors = 'contract_creation_failed';
     }
+    ypcf_debug_log('ypcf_create_contract --- $contract_errors : ' . $contract_errors);
+    ypcf_debug_log('ypcf_create_contract --- END');
     
     return $contract_id;
 }

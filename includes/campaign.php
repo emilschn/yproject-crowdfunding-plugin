@@ -412,7 +412,8 @@ class ATCF_Campaigns {
 function atcf_campaign_save_end_date( $new ) {
 	if ( ! isset( $_POST[ 'end-aa' ] ) )
 		return;
-
+	
+	date_default_timezone_set("Europe/Paris");
 	$aa = $_POST['end-aa'];
 	$mm = $_POST['end-mm'];
 	$jj = $_POST['end-jj'];
@@ -425,7 +426,7 @@ function atcf_campaign_save_end_date( $new ) {
 	$jj = ($jj > 31 ) ? 31 : $jj;
 	$jj = ($jj <= 0 ) ? date('j') : $jj;
 
-	$hh = ($hh > 23 ) ? $hh -24 : $hh;
+	$hh = ($hh > 23 ) ? $hh -24 : $hh + 1; //Pourquoi y'a-t-il besoin d'un +1 ? Bonne question...
 	$mn = ($mn > 59 ) ? $mn -60 : $mn;
 	$ss = ($ss > 59 ) ? $ss -60 : $ss;
 
@@ -1365,15 +1366,15 @@ class ATCF_Campaign {
 	 * @return sting Campaign End Date
 	 */
 	public function end_date() {
-		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_date' ), false );
+		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_date' ), false );
 	}
 
 	public function start_vote() {
-		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_start_vote' ), false);
+		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_start_vote' ), false);
 	}
 
 	public function end_vote() {
-		return mysql2date( 'Y-m-d h:i:s', $this->__get( 'campaign_end_vote' ), false);
+		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_vote' ), false);
 	}
 
 	public function end_vote_date() {
