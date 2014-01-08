@@ -92,6 +92,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 		global $contract_errors, $wpdb;
 		if (!isset($contract_errors) || $contract_errors == '') {
+		    $buffer .= '<strong>Il ne vous reste plus qu&apos;&agrave; signer le contrat.</strong><br />';
 		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
 		    $buffer .= '- un e-mail de confirmation de paiement ; cet e-mail contient votre code pour signer le pouvoir<br />';
 		    $buffer .= '- un e-mail qui contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 

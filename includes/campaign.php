@@ -1257,6 +1257,10 @@ class ATCF_Campaign {
 		return apply_filters( 'atcf_campaign_needs_shipping', $physical, $this );
 	}
 
+	public function is_flexible() {
+	    return ($this->minimum_goal() != $this->goal());
+	}
+	
 	/**
 	 * Campaign Goal
 	 *

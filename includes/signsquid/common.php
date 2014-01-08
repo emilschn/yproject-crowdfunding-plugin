@@ -46,7 +46,7 @@ function signsquid_request($request_type, $request_object, $post_data = '') {
 	    curl_close($ch);
 	    break;
 	case "GET" :
-	    $response = file_get_contents($url, null, stream_context_create(array(
+	    $response = @file_get_contents($url, null, stream_context_create(array(
 		'http' => array(
 		    'method' => 'GET',
 		    'header' => $header_auth

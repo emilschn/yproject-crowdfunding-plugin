@@ -299,7 +299,7 @@ function ypcf_get_updated_payment_status($payment_id) {
 			    $buffer = 'publish';
 			    if ($buffer !== $init_payment_status) {
 				//Création du contrat à signer
-				$current_user = wp_get_current_user();
+				$current_user = get_user_by('id', $payment_post->post_author);
 				$downloads = edd_get_payment_meta_downloads($payment_id); 
 				$download_id = '';
 				if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 

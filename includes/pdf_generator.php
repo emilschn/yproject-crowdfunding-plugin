@@ -39,7 +39,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
     $buffer .= '<p>';
     $buffer .= '<h2>LE SOUSSIGNÉ</h2>';
     $buffer .= '<strong>'.$user_name.'</strong><br />';
-    $birthday_month = mb_strtoupper(__($months[$user_obj->get('user_birthday_month')]));
+    $birthday_month = mb_strtoupper(__($months[$user_obj->get('user_birthday_month') - 1]));
     $buffer .= 'né le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' à '.$user_obj->get('user_birthplace').'<br />';
     $buffer .= 'de nationalité '.$nationality.'<br />';
     $buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address');

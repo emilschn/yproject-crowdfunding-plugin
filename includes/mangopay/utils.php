@@ -167,7 +167,7 @@ function ypcf_mangopay_get_mp_user_wallet_id($wp_user_id) {
 }
 
 function ypcf_mangopay_set_mp_user_wallet_id($wp_user_id, $mp_user_wallet_id) {
-    update_post_meta($wp_user_id, 'mangopay_wallet_id', $mp_user_wallet_id);
+    update_user_meta($wp_user_id, 'mangopay_wallet_id', $mp_user_wallet_id);
 }
 
 function ypcf_mangopay_get_mp_user_beneficiary_id($wp_user_id) {
@@ -192,8 +192,11 @@ function ypcf_mangopay_set_mp_campaign_wallet_id($wp_campaign_id, $mp_campaign_w
  * @return type
  */
 function ypcf_init_mangopay_user($current_user) {
+    ypcf_debug_log('-------------');
+    ypcf_debug_log('ypcf_init_mangopay_user : $current_user->ID = ' . $current_user->ID);
     //On s'apprête à confirmer, donc on vérifie si le currentuser a un compte sur mangopay. Si il n'en a pas, on le crée directement.
     $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
+    ypcf_debug_log('ypcf_init_mangopay_user >> $currentuser_mangopayid = ' . $currentuser_mangopayid);
     if ($currentuser_mangopayid == "") {
 	$mangopay_new_user = request('users', 'POST', '{ 
 				    "FirstName" : "'.$current_user->user_firstname.'", 
@@ -206,12 +209,16 @@ function ypcf_init_mangopay_user($current_user) {
 				    "Tag" : "'.$current_user->user_login.'"
 				}');
 	if (isset($mangopay_new_user->ID)) {
+	    ypcf_debug_log('ypcf_init_mangopay_user --->> $mangopay_new_user->ID = ' . $mangopay_new_user->ID);
 	    $currentuser_mangopayid = $mangopay_new_user->ID;
 	    ypcf_mangopay_set_mp_user_id($current_user->ID, $currentuser_mangopayid);
+	} else {
+	    ypcf_debug_log('ypcf_init_mangopay_user --->> $mangopay_new_user creation failed');
 	}
     }
     //De même, on vérifie si le currentuser a un wallet sur mangopay. Si il n'en a pas, on le crée.
     $currentuser_wallet_mangopayid = ypcf_mangopay_get_mp_user_wallet_id($current_user->ID);
+    ypcf_debug_log('ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = ' . $currentuser_wallet_mangopayid);
     if ($currentuser_wallet_mangopayid == "") {
 	$mangopay_new_wallet = request('wallets', 'POST', '{ 
 					"Owners" : ['.$currentuser_mangopayid.'], 
@@ -219,7 +226,12 @@ function ypcf_init_mangopay_user($current_user) {
 					"Tag" : "Wallet of '.$current_user->display_name.'",
 					"Description" : "Wallet of '.$current_user->display_name.'"
 				    }');
-	if (isset($mangopay_new_wallet->ID)) ypcf_mangopay_set_mp_user_wallet_id($current_user->ID, $mangopay_new_wallet->ID);
+	if (isset($mangopay_new_wallet->ID)) {
+	    ypcf_debug_log('ypcf_init_mangopay_user --->> $mangopay_new_wallet->ID = ' . $mangopay_new_wallet->ID);
+	    ypcf_mangopay_set_mp_user_wallet_id($current_user->ID, $mangopay_new_wallet->ID);
+	} else {
+	    ypcf_debug_log('ypcf_init_mangopay_user --->> $mangopay_new_wallet creation failed');
+	}
     }
     /*//On crée un deuxième porte-monnaie d'investissement pour l'utilisateur
     $currentuser_invest_wallet_mangopayid = get_user_meta($current_user->ID, 'mangopay_invest_wallet_id', true);
