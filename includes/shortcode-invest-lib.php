@@ -256,15 +256,7 @@ function ypcf_login_gobackinvest_url() {
  * @return string
  */
 function ypcf_print_invest_breadcrumb($current_step) {
-    $buffer = '<div id="invest-breadcrumb">';
-    $steps = array("Montant", "Validation", "Paiement", "Signature électronique");
-    for ($i = 0; $i < count($steps); $i++) {
-	$class = "";
-	if ($i + 1 == $current_step) $class = " current";
-	if ($i > 0) $buffer .= ' &gt; ';
-	$buffer .= '<span class="step'.$class.'">'.($i+1).'. '.$steps[$i].'</span>';
-    }
-    $buffer .= '</div>';
+    $buffer = '<div id="invest-breadcrumb"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step.'.jpg" width="600" height="100" /></div>';
     return $buffer;
 }
 
@@ -308,6 +300,7 @@ function ypcf_get_updated_payment_status($payment_id) {
 				if ($contract_id != '') {
 				    $contract_infos = signsquid_get_contract_infos($contract_id);
 				    ypcf_send_mail_purchase($payment_id, 'full', $contract_infos->{'signatories'}[0]->{'code'});
+				    ypcf_send_mail_admin($payment_id, "purchase_complete");
 				} else {
 				    global $contract_errors;
 				    $contract_errors = 'contract_failed';
@@ -468,10 +461,37 @@ function ypcf_send_mail_admin($payment_id, $type) {
 	    $subject = 'Problème de création de contrat';
 	    $message = 'Il y a eu un problème de création de contrat sur signsquid lors du paiement ' . $payment_id;
 	    break;
+	case "purchase_complete":
+	    $subject = 'Nouvel achat';
+	    $downloads = edd_get_payment_meta_downloads($payment_id);
+	    
+	    $download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
+	    $post_campaign = get_post($download_id);
+
+	    $payment_amount = edd_get_payment_amount( $payment_id );
+	    $user_id      = edd_get_payment_user_id( $payment_id );
+	    $user_info    = maybe_unserialize( $payment_data['user_info'] );
+	    $email        = edd_get_payment_user_email( $payment_id );
+
+	    if ( isset( $user_id ) && $user_id > 0 ) {
+		$user_data = get_userdata($user_id);
+		$name = $user_data->display_name;
+	    } elseif ( isset( $user_info['first_name'] ) && isset( $user_info['last_name'] ) ) {
+		$name = $user_info['first_name'] . ' ' . $user_info['last_name'];
+	    } else {
+		$name = $email;
+	    }
+	    $message = 'Nouvel investissement avec l\'identifiant de paiement ' . $payment_id . '<br /><br />';
+	    $message .= "<strong>Détails de l'investissement</strong><br />";
+	    $message .= "Utilisateur : " . $name . "<br />";
+	    $message .= "Projet : " . $post_campaign->post_title . "<br />";
+	    $message .= "Montant investi : ".$payment_amount."€<br />";
+	    $message .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
+	    break;
     }
     
     $from_name = get_bloginfo('name') . ' admin bot';
-    $from_email = get_option('admin_email');
+    $from_email = 'admin@wedogood.co';
     $headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
     $headers .= "Reply-To: ". $from_email . "\r\n";
     $headers .= "Content-Type: text/html; charset=utf-8\r\n";

@@ -284,7 +284,7 @@ function ypcf_init_mangopay_project() {
 					    "Name" : "Wallet for '.$campaign->data->post_title.'",
 					    "Tag" : "Wallet for '.$campaign->data->post_title.'",
 					    "Description" : "Wallet for '.$campaign->data->post_title.'",
-					    "RaisingGoalAmount" : '.$campaign->goal(false).'
+					    "RaisingGoalAmount" : '.($campaign->goal(false) * 100).'
 					}');
 		if (isset($mangopay_new_wallet->ID)) {
 		    ypcf_mangopay_set_mp_campaign_wallet_id($campaign->ID, $mangopay_new_wallet->ID);
