@@ -9,7 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function ypcf_shortcode_invest_return($atts, $content = '') {
     $buffer = '';
     if (session_id() == '') session_start();
-    unset($_SESSION['redirect_current_campaign_id']); // Suppression de la demande de redirection automatique
     $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($_REQUEST["ContributionID"]);
     
     $page_investments = get_page_by_path('mes-investissements');
@@ -27,8 +26,18 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	$post = get_post($_GET['campaign_id']);
 	$campaign = atcf_get_campaign( $post );
 
-	//Création d'un paiement pour edd
+	//Récupération du bon utilisateur
 	$current_user = wp_get_current_user();
+	if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
+	    $group_id = $_SESSION['redirect_current_invest_type'];
+	    if (BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
+		$group = groups_get_group( array( 'group_id' => $group_id ) );
+		$organisation_user_id = $group->creator_id;
+		$current_user = get_user_by('id', $organisation_user_id);
+	    }
+	}
+	
+	//Création d'un paiement pour edd
 	$user_info = array(
 	    'id'         => $current_user->ID,
 	    'email'      => $current_user->user_email,

@@ -18,6 +18,11 @@ function ypcf_check_redirections() {
 		break;
 	
 	    case 'investir' :
+		if (isset($_GET['invest_start'])) {
+		    if (session_id() == '') session_start();
+		    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+		    if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
+		}
 		//D'abord on teste si l'utilisateur est bien connecté
 		ypcf_check_is_user_logged_invest();
 		ypcf_check_is_project_investable();
@@ -213,7 +218,6 @@ function ypcf_check_invest_redirections() {
 	
 	if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
 	if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-	if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
 	
 	//Récupération de l'url de la page qui indique que le paiement est bien effectué
 	$current_user = wp_get_current_user();
@@ -270,6 +274,8 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		$username = 'org_' . sanitize_title_with_dashes($_POST['new_org_name']);
 		$password = wp_generate_password();
 		$organisation_user_id = wp_create_user($username, $password, $_POST['new_org_email']);
+		wp_update_user( array ( 'ID' => $organisation_user_id, 'first_name' => $_POST['new_org_name'] ) ) ;
+		wp_update_user( array ( 'ID' => $organisation_user_id, 'last_name' => $_POST['new_org_name'] ) ) ;
 		wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'] ) ) ;
 		update_user_meta($organisation_user_id, 'user_type', 'organisation');
 		update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address']);
@@ -316,6 +322,8 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		    $group->save();
 
 		    $organisation_user_id = $group->creator_id;
+		    wp_update_user( array ( 'ID' => $organisation_user_id, 'first_name' => $_POST['new_org_name'.$name_suffix] ) ) ;
+		    wp_update_user( array ( 'ID' => $organisation_user_id, 'last_name' => $_POST['new_org_name'.$name_suffix] ) ) ;
 		    wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'.$name_suffix] ) ) ;
 		    wp_update_user( array ( 'ID' => $organisation_user_id, 'user_email' => $_POST['new_org_email'.$name_suffix] ) );
 		    update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address'.$name_suffix]);
@@ -598,6 +606,7 @@ function ypcf_send_mail_admin($payment_id, $type) {
 	    $download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
 	    $post_campaign = get_post($download_id);
 
+	    $payment_data = edd_get_payment_meta( $payment_id );
 	    $payment_amount = edd_get_payment_amount( $payment_id );
 	    $user_id      = edd_get_payment_user_id( $payment_id );
 	    $user_info    = maybe_unserialize( $payment_data['user_info'] );
@@ -730,7 +739,7 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 	    update_post_meta($payment_id, 'signsquid_contract_id', $contract_id);
 	    $mobile_phone = '';
 	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = ypcf_format_french_phonenumber($user->get('user_mobile_phone'));
-	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email)) $contract_errors = 'contract_addsignatories_failed';
+	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email, $mobile_phone)) $contract_errors = 'contract_addsignatories_failed';
 	    $contract_filename = getNewPdfToSign($campaign_id, $payment_id);
 	    if (!signsquid_add_file($contract_id, $contract_filename)) $contract_errors = 'contract_addfile_failed';
 	    if (!signsquid_send_invite($contract_id)) $contract_errors = 'contract_sendinvite_failed';

@@ -19,10 +19,13 @@ function ypcf_display_invest_form($error = '') {
 	if (isset($campaign)) {
 	    if ($max_part_value > 0) {
 		global $edd_options;
+		$page_invest = get_page_by_path('investir');
+		$page_invest_link = get_permalink($page_invest->ID);
+		$page_invest_link .= '?campaign_id=' . $_GET['campaign_id'];
 		$form .= ypcf_print_invest_breadcrumb(1);
 		$form .= '<div class="invest_step1_generalities">' . wpautop( $edd_options['investment_generalities'] ) . '</div>';
 		$form .= '<div class="invest_step1_currentproject">' . html_entity_decode($campaign->investment_terms()) . '</div>';
-		$form .= '<form id="invest_form" action="" method="post" enctype="multipart/form-data">';
+		$form .= '<form id="invest_form" action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
 		$form .= '<input type="hidden" id="input_invest_min_value" name="old_min_value" value="' . $min_value . '">';
 		$form .= '<input type="hidden" id="input_invest_max_value" name="old_max_value" value="' . $max_value . '">';
 		$form .= '<input type="hidden" id="input_invest_part_value" name="part_value" value="' . $part_value . '">';

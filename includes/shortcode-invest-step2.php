@@ -85,9 +85,12 @@ function ypcf_display_invest_confirm($content) {
 		if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
 		if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour pouvoir'))) $form .= '<span class="errors">Merci de saisir "Bon pour pouvoir".</span><br />';
 		
+		$page_invest = get_page_by_path('investir');
+		$page_invest_link = get_permalink($page_invest->ID);
+		$page_invest_link .= '?campaign_id=' . $_GET['campaign_id'];
 		$plurial = '';
 		if ($amount_part > 1) $plurial = 's';
-		$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>.<br /><br />';
+		$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
 		
 		$form .= '<div class="invest_part">';
 		$form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante :<br /><br />';
@@ -131,7 +134,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '</div>';
 
 		// Formulaire de confirmation
-		$form .= '<form action="" method="post" enctype="multipart/form-data">';
+		$form .= '<form action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
 		$form .= '<input type="hidden" name="amount_part" value="' . $amount_part . '">';
 		$form .= '<input type="hidden" name="confirmed" value="1">';
 		$information_confirmed = '';
