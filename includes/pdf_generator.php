@@ -20,7 +20,7 @@ function generatePDF($html_content, $filename) {
  * Fill the pdf default content with infos
  * @return string
  */
-function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
+function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $user_organisation_obj = false) {
     $buffer = '';
     
     setlocale( LC_CTYPE, 'fr_FR' );
@@ -38,9 +38,16 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
     
     $buffer .= '<p>';
     $buffer .= '<h2>LE SOUSSIGNÉ</h2>';
+    if ($user_organisation_obj !== false) {
+	$buffer .= '<strong>'.$user_organisation_obj->display_name.', '.$user_organisation_obj->get('organisation_legalform').' au capital '.$user_organisation_obj->get('organisation_capital').'&euro;</strong><br />';
+	$buffer .= 'dont le siège social est à '.$user_organisation_obj->get('user_city').' ('.$user_organisation_obj->get('user_postal_code').') - '.$user_organisation_obj->get('user_address').'<br />';
+	$buffer .= 'immatriculée sous le numéro '.$user_organisation_obj->get('organisation_idnumber').' au RCS de '.$user_organisation_obj->get('organisation_rcs').'<br />';
+	$buffer .= 'représentée par ';
+    }
     $buffer .= '<strong>'.$user_name.'</strong><br />';
     $birthday_month = mb_strtoupper(__($months[$user_obj->get('user_birthday_month') - 1]));
-    $buffer .= 'né le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' à '.$user_obj->get('user_birthplace').'<br />';
+    $suffix_born = ($user_obj->get('user_gender') == "female") ? 'e' : '';
+    $buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' à '.$user_obj->get('user_birthplace').'<br />';
     $buffer .= 'de nationalité '.$nationality.'<br />';
     $buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address');
     $buffer .= '</p>';
@@ -74,6 +81,10 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data) {
     $month = mb_strtoupper(__($months[date("m") - 1]));
     $year = date("Y");
     $buffer .= 'Le '.$day.' '.$month.' '.$year.'<br />';
+    if ($user_organisation_obj !== false) {
+	$buffer .= 'LA '.$user_organisation_obj->get('organisation_legalform').' '.$user_organisation_obj->display_name.'<br />';
+	$buffer .= 'représentée par ';
+    }
     $buffer .= $user_name.'<br />';
     $buffer .= '(1)<br />';
     $buffer .= 'Bon pour pouvoir';

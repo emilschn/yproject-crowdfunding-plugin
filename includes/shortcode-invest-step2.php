@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function ypcf_display_invest_confirm($content) {
     $form = '';
+    if (session_id() == '') session_start();
     
     $min_value = ypcf_get_min_value_to_invest();
     $max_value = ypcf_get_max_value_to_invest();
@@ -17,18 +18,24 @@ function ypcf_display_invest_confirm($content) {
 
     if (isset($_GET['campaign_id']) && $max_part_value > 0) {
 	//Si la valeur peut être ponctionnée sur l'objectif, et si c'est bien du numérique supérieur à 0
-	$amount_part = false;
-	if (isset($_POST['amount_part'])) $amount_part = $_POST['amount_part'];
-	elseif (isset($_SESSION['redirect_current_amount_part'])) {
-	    $amount_part = $_SESSION['redirect_current_amount_part'];
-	    unset($_SESSION['redirect_current_amount_part']);
-	}
-	$amount = $amount_part * $part_value;
+	$amount_part = FALSE;
+	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+	if (isset($_SESSION['redirect_current_amount_part'])) $amount_part = $_SESSION['redirect_current_amount_part'];
+	$amount = ($amount_part === FALSE) ? 0 : $amount_part * $part_value;
 	$remaining_amount = $max_value - $amount;
 	if (is_numeric($amount_part) && intval($amount_part) == $amount_part && $amount_part >= 1 && $amount >= $min_value && $amount_part <= $max_part_value && ($remaining_amount == 0 || $remaining_amount >= $part_value)) {
 
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
+	    $current_user_organisation = false;
+	    $invest_type = '';
+	    if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+	    if (isset($_SESSION['redirect_current_invest_type'])) $invest_type = $_SESSION['redirect_current_invest_type'];
+	    if ($invest_type != 'user') {
+		$group = groups_get_group( array( 'group_id' => $invest_type ) );
+		$current_user_organisation = get_user_by('id', $group->creator_id);
+		ypcf_init_mangopay_user($current_user_organisation, true);
+	    }
 	    
 	    if (isset($_POST['document_submited'])) {
 		$url_request = ypcf_init_mangopay_user_strongauthentification($current_user);
@@ -85,6 +92,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<div class="invest_part">';
 		$form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante :<br /><br />';
 		
+		$form .= '<strong>Informations personnelles</strong><br />';
 		$user_title = "";
 		if ($current_user->get('user_gender') == "male") $user_title = "MONSIEUR";
 		if ($current_user->get('user_gender') == "female") $user_title = "MADAME";
@@ -100,7 +108,23 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<br />';
 		$form .= '<span class="label">Num&eacute;ro de t&eacute;l&eacute;phone :</span>' . $current_user->get('user_mobile_phone');
 		if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
-		$form .= '<br /><br />';
+		$form .= '<br /><br /><br />';
+		
+		if ($invest_type != 'user') {
+		    $form .= '<strong>Informations de l&apos;organisation <em>'.$current_user_organisation->display_name.'</em></strong><br />';
+		    $form .= '<span class="label">e-mail :</span>' . $current_user_organisation->user_email . '<br />';
+		    $form .= '<span class="label">Num&eacute;ro d&apos;immatriculation :</span>' . $current_user_organisation->get('organisation_idnumber') . '<br />';
+		    $form .= '<span class="label">RCS :</span>' . $current_user_organisation->get('organisation_rcs') . '<br />';
+		    $form .= '<span class="label">Forme juridique :</span>' . $current_user_organisation->get('organisation_legalform') . '<br />';
+		    $form .= '<span class="label">Capital social :</span>' . $current_user_organisation->get('organisation_capital') . '<br /><br />';
+		    
+		    $form .= '<div class="left label">Adresse :</div>';
+		    $form .= '<div class="left">'. $current_user_organisation->get('user_address') . '<br />';
+		    $form .= $current_user_organisation->get('user_postal_code') . ' ' . $current_user_organisation->get('user_city') . '<br />';
+		    $form .= $country_list[$current_user_organisation->get('user_nationality')] . '</div>';
+		    $form .= '<div style="clear: both;"></div>';
+		    $form .= '<br /><br />';
+		}
 		
 		$page_update = get_page_by_path('modifier-mon-compte');
 		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a>';
@@ -116,7 +140,7 @@ function ypcf_display_invest_confirm($content) {
 
 		$form .= '<h3>Voici le pouvoir que vous allez signer pour valider l&apos;investissement :</h3>';
 		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
-		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data).'</div>';
+		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $current_user_organisation).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
 		$form .= 'Ecrire "Bon pour pouvoir" dans la zone de texte ci-contre :';

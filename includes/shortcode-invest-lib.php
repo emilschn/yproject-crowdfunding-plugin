@@ -22,11 +22,12 @@ function ypcf_check_redirections() {
 		ypcf_check_is_user_logged_invest();
 		ypcf_check_is_project_investable();
 		require( crowdfunding()->includes_dir . 'shortcode-invest.php' );
-		if (ypcf_get_current_step() == 1) {
+		$current_step = ypcf_get_current_step();
+		if ($current_step == 1) {
 		    require( crowdfunding()->includes_dir . 'shortcode-invest-step1.php' );
 		}
-		if (ypcf_get_current_step() == 2) {
-		    //Et on reteste si les données sont bel et bien remplies
+		if ($current_step == 2) {
+		    //On vérifie que les données utilisateurs sont valables
 		    ypcf_check_user_can_invest(true);
 		    //On vérifie les redirections nécessaires à l'investissement
 		    ypcf_check_invest_redirections();
@@ -121,7 +122,8 @@ function ypcf_check_user_can_invest($redirect = false) {
     if ($redirect && !$can_invest) {
 	if (session_id() == '') session_start();
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	$_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+	if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
 	$errors = array();
 	array_push($errors, 'Certaines des informations manquent ou sont inexactes.');
 	if ($current_user->get('user_person_type') == "LEGAL_PERSONALITY") array_push($errors, 'Seules les personnes physiques peuvent investir pour l&apos;instant.');
@@ -135,12 +137,36 @@ function ypcf_check_user_can_invest($redirect = false) {
 }
 
 /**
+ * Vérification si l'organisation peut investir
+ */
+function ypcf_check_organisation_can_invest($organisation_user_id) {
+    $organisation_user = get_user_by('id', $organisation_user_id);
+    $can_invest = ($organisation_user->user_email != '');
+    $can_invest = $can_invest && ($organisation_user->get('user_type') == 'organisation');
+    $can_invest = $can_invest && ($organisation_user->get('organisation_type') == 'society');
+    $can_invest = $can_invest && ($organisation_user->get('user_nationality') != '');
+    $can_invest = $can_invest && ($organisation_user->get('organisation_legalform') != '');
+    $can_invest = $can_invest && ($organisation_user->get('organisation_idnumber') != '');
+    $can_invest = $can_invest && ($organisation_user->get('organisation_rcs') != '');
+    $can_invest = $can_invest && ($organisation_user->get('organisation_capital') != '');
+    $can_invest = $can_invest && ($organisation_user->get('user_address') != '');
+    $can_invest = $can_invest && ($organisation_user->get('user_postal_code') != '');
+    $can_invest = $can_invest && ($organisation_user->get('user_city') != '');
+
+    if (!$can_invest) {
+	$errors = array();
+	array_push($errors, 'Certaines des informations de l\'entreprise manquent ou sont inexactes.');
+	$_SESSION['error_invest'] = $errors;
+    }
+    
+    return $can_invest;
+}
+
+/**
  * Se charge de tester les redirections à effectuer
  */
 function ypcf_check_invest_redirections() {
     if (session_id() == '') session_start();
-    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 
     //Si le projet n'est pas défini, on annule et retourne à l'accueil
     $post_camp = get_post($_GET['campaign_id']);
@@ -155,6 +181,27 @@ function ypcf_check_invest_redirections() {
 	wp_redirect(get_permalink($post_camp->ID));
 	exit();
     }
+    
+    //Si l'utilisateur veut investir pour une nouvelle organisation, on l'envoie vers "Mon compte" pour qu'il ajoute l'organisation
+    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
+	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+	$page_update = get_page_by_path('modifier-mon-compte');
+	wp_redirect(get_permalink($page_update->ID));
+	exit();
+    }
+    
+    //Si l'utilisateur veut investir pour une organisation existante
+    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != 'new_organisation' && $_SESSION['redirect_current_invest_type'] != 'user') {
+	$group = groups_get_group( array( 'group_id' => $_SESSION['redirect_current_invest_type'] ) );
+	if (!ypcf_check_organisation_can_invest($group->creator_id)) {
+	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+	    if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+	    $page_update = get_page_by_path('modifier-mon-compte');
+	    wp_redirect(get_permalink($page_update->ID));
+	    exit();
+	}
+    }
 
     //Si on a validé la confirmation
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
@@ -163,6 +210,11 @@ function ypcf_check_invest_redirections() {
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
 	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value 
 	    && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour pouvoir') {
+	
+	if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+	if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+	if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
+	
 	//Récupération de l'url de la page qui indique que le paiement est bien effectué
 	$current_user = wp_get_current_user();
 	$amount = $_POST['amount_part'] * ypcf_get_part_value();
@@ -185,6 +237,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
     $validate_email = true;
     $current_user = wp_get_current_user();
     if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
+	//Infos utilisateurs
 	if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
 	if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
 	if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
@@ -193,7 +246,6 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 	if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
 	if ($_POST["update_birthplace"] != "") update_user_meta($current_user->ID, 'user_birthplace', $_POST["update_birthplace"]);
 	if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
-	if ($_POST["update_person_type"] != "") update_user_meta($current_user->ID, 'user_person_type', $_POST["update_person_type"]);
 	if ($_POST["update_address"] != "") update_user_meta($current_user->ID, 'user_address', $_POST["update_address"]);
 	if ($_POST["update_postal_code"] != "") update_user_meta($current_user->ID, 'user_postal_code', $_POST["update_postal_code"]);
 	if ($_POST["update_city"] != "") update_user_meta($current_user->ID, 'user_city', $_POST["update_city"]);
@@ -210,9 +262,87 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 	    }
 	    if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
 	endif;
+	
+	//Nouvelle organisation
+	if (isset($_POST['new_organisation'])) {
+	    if ($_POST['new_org_name'] != '' && $_POST['new_organisation_capable']) {
+		//Création d'un utilisateur pour l'organisation
+		$username = 'org_' . sanitize_title_with_dashes($_POST['new_org_name']);
+		$password = wp_generate_password();
+		$organisation_user_id = wp_create_user($username, $password, $_POST['new_org_email']);
+		wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'] ) ) ;
+		update_user_meta($organisation_user_id, 'user_type', 'organisation');
+		update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address']);
+		update_user_meta($organisation_user_id, 'user_nationality', $_POST['new_org_nationality']);
+		update_user_meta($organisation_user_id, 'user_postal_code', $_POST['new_org_postal_code']);
+		update_user_meta($organisation_user_id, 'user_city', $_POST['new_org_city']);
+		update_user_meta($organisation_user_id, 'organisation_type', 'society');
+		update_user_meta($organisation_user_id, 'organisation_legalform', $_POST['new_org_legalform']);
+		update_user_meta($organisation_user_id, 'organisation_capital', $_POST['new_org_capital']);
+		update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber']);
+		update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs']);
+		
+		//Création d'un groupe pour l'organisation
+		$new_group_id = groups_create_group( array( 
+		    'creator_id' => $organisation_user_id,
+		    'name' => $_POST['new_org_name'],
+		    'description' => $_POST['new_org_name'],
+		    'slug' => groups_check_slug( sanitize_title( esc_attr( $_POST['new_org_name'] ) ) ), 
+		    'date_created' => bp_core_current_time(), 
+		    'enable_forum' => 0,
+		    'status' => 'private' ) );
+		groups_update_groupmeta( $new_group_id, 'group_type', 'organisation');
+		
+		//Ajout de l'utilisateur créé et de l'utilisateur en cours dans le groupe (et on les passe admin)
+		groups_accept_invite( $organisation_user_id, $new_group_id);
+		$org_group_member = new BP_Groups_Member($organisation_user_id, $new_group_id);
+		$org_group_member->promote('admin');
+		groups_accept_invite( $current_user->ID, $new_group_id);
+		$current_group_member = new BP_Groups_Member($current_user->ID, $new_group_id);
+		$current_group_member->promote('admin');
+	    }
+	//Mise à jour d'une organisation
+	} elseif (isset($_POST['update_organisation'])) {
+	    //Parcourir toutes les organisations
+	    $group_ids = BP_Groups_Member::get_group_ids( $current_user->ID );
+	    foreach ($group_ids['groups'] as $group_id) {
+		$group = groups_get_group( array( 'group_id' => $group_id ) );
+		$group_type = groups_get_groupmeta($group_id, 'group_type');
+		$name_suffix = '_' . $group_id;
+		if (isset($_POST['update_organisation' . $name_suffix]) && $group->status == 'private' && $group_type == 'organisation' && BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
+	    
+		    $group->name = $_POST['new_org_name'.$name_suffix];
+		    $group->description = $_POST['new_org_name'.$name_suffix];
+		    $group->save();
 
+		    $organisation_user_id = $group->creator_id;
+		    wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'.$name_suffix] ) ) ;
+		    wp_update_user( array ( 'ID' => $organisation_user_id, 'user_email' => $_POST['new_org_email'.$name_suffix] ) );
+		    update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address'.$name_suffix]);
+		    update_user_meta($organisation_user_id, 'user_nationality', $_POST['new_org_nationality'.$name_suffix]);
+		    update_user_meta($organisation_user_id, 'user_postal_code', $_POST['new_org_postal_code'.$name_suffix]);
+		    update_user_meta($organisation_user_id, 'user_city', $_POST['new_org_city'.$name_suffix]);
+		    update_user_meta($organisation_user_id, 'organisation_legalform', $_POST['new_org_legalform'.$name_suffix]);
+		    update_user_meta($organisation_user_id, 'organisation_capital', $_POST['new_org_capital'.$name_suffix]);
+		    update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber'.$name_suffix]);
+		    update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs'.$name_suffix]);
+		}
+	    }
+	}
+
+	
+	//Si on ajoute une nouvelle organisation mais qu'on ne coche pas la case, on bloque
+	if (isset($_POST['new_org_name']) && !$_POST['new_organisation_capable']) {
+	    $errors = array();
+	    array_push($errors, 'Vous devez cocher la case qui confirme que vous avez le pouvoir de représenter l\'organisation.');
+	    $_SESSION['error_invest'] = $errors;
+	    return;
+	}
+	
 	if (session_id() == '') session_start();
 	if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
+	    if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+	    if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
 	    wp_redirect(ypcf_login_gobackinvest_url());
 	    exit();
 	}

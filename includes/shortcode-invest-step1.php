@@ -42,7 +42,35 @@ function ypcf_display_invest_form($error = '') {
 		
 		$form .= '<div class="invest_step1_conditions">' . wpautop( $edd_options['contract'] ) . '</div>';
 		
+		$current_user = wp_get_current_user();
+		$group_ids = BP_Groups_Member::get_group_ids( $current_user->ID );
+		$count_groups = 0;
+		$groups = array();
+		foreach ($group_ids['groups'] as $group_id) {
+		    $group = groups_get_group( array( 'group_id' => $group_id ) );
+		    $group_type = groups_get_groupmeta($group_id, 'group_type');
+		    if ($group->status == 'private' && $group_type == 'organisation' && BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
+			$groups[$group_id] = $group;
+			$count_groups++;
+		    }
+		}
+		
+		$form .= '<center>';
 		$form .= '<input type="submit" value="Investir">';
+		$form .= '<select name="invest_type">';
+		$form .= '<option value="user">En mon nom</option>';
+		if ($count_groups > 0) {
+		    foreach ($groups as $group_key => $group) {
+			$form .= '<option value="'.$group_key.'">Pour '.$group->name.'</option>';
+		    }
+		    $form .= '<option value="new_organisation">Pour une nouvelle organisation...</option>';
+		    
+		} else {
+		    $form .= '<option value="new_organisation">Pour une organisation...</option>';
+		}
+		$form .= '</select>';
+		$form .= '</center>';
+		
 		$form .= '</div>';
 		
 		$form .= '</form><br /><br />';
