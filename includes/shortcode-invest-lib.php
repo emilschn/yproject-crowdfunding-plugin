@@ -256,17 +256,28 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 	if ($_POST["update_city"] != "") update_user_meta($current_user->ID, 'user_city', $_POST["update_city"]);
 	if ($_POST["update_country"] != "") update_user_meta($current_user->ID, 'user_country', $_POST["update_country"]);
 	if ($_POST["update_mobile_phone"] != "") update_user_meta($current_user->ID, 'user_mobile_phone', $_POST["update_mobile_phone"]);
-	if (!isset($_POST["update_email"])) $validate_email = true;
-	if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
-	    if (($_POST["update_email"] != "" && $_POST["update_email"] != $current_user->user_email)) {
-		$validate_email = bp_core_validate_email_address($_POST["update_email"]);
+	if (isset($_POST["update_email_contact"])) {
+	    if (($_POST["update_email_contact"] != "" && $_POST["update_email_contact"] != $current_user->user_email)) {
+		$validate_email = bp_core_validate_email_address($_POST["update_email_contact"]);
 		if ($validate_email === true) {
-		    wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
-		    $current_user->user_email = $_POST["update_email"];
+		    wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email_contact"] ) );
+		    $current_user->user_email = $_POST["update_email_contact"];
 		}
 	    }
-	    if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
-	endif;
+	    
+	} else {
+	    if (!isset($_POST["update_email"])) $validate_email = true;
+	    if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
+		if (($_POST["update_email"] != "" && $_POST["update_email"] != $current_user->user_email)) {
+		    $validate_email = bp_core_validate_email_address($_POST["update_email"]);
+		    if ($validate_email === true) {
+			wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
+			$current_user->user_email = $_POST["update_email"];
+		    }
+		}
+		if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
+	    endif;
+	}
 	
 	//Nouvelle organisation
 	if (isset($_POST['new_organisation'])) {
