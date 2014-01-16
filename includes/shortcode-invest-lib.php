@@ -240,6 +240,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
     global $validate_email;
     $validate_email = true;
     $current_user = wp_get_current_user();
+    ypcf_debug_log("ypcf_check_has_user_filled_infos_and_redirect --- ".$current_user->ID);
     if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
 	//Infos utilisateurs
 	if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
@@ -306,6 +307,14 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		groups_accept_invite( $current_user->ID, $new_group_id);
 		$current_group_member = new BP_Groups_Member($current_user->ID, $new_group_id);
 		$current_group_member->promote('admin');
+		
+		$organisation_user = get_user_by('id', $organisation_user_id);
+		$url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
+		$curl_result_cni = (isset($_FILES['new_org_file_cni']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni') : false;
+		$curl_result_status = (isset($_FILES['new_org_file_status']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status') : false;
+		$curl_result_extract = (isset($_FILES['new_org_file_extract']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract') : false;
+		if (isset($_FILES['new_org_file_declaration']['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration');
+		if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($current_user->ID);
 	    }
 	//Mise à jour d'une organisation
 	} elseif (isset($_POST['update_organisation'])) {
@@ -334,6 +343,14 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		    update_user_meta($organisation_user_id, 'organisation_capital', $_POST['new_org_capital'.$name_suffix]);
 		    update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber'.$name_suffix]);
 		    update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs'.$name_suffix]);
+		
+		    $organisation_user = get_user_by('id', $organisation_user_id);
+		    $url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
+		    $curl_result_cni = (isset($_FILES['new_org_file_cni'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni'.$name_suffix) : false;
+		    $curl_result_status = (isset($_FILES['new_org_file_status'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status'.$name_suffix) : false;
+		    $curl_result_extract = (isset($_FILES['new_org_file_extract'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract'.$name_suffix) : false;
+		    if (isset($_FILES['new_org_file_declaration'.$name_suffix]['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration'.$name_suffix);
+		    if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($organisation_user->ID);
 		}
 	    }
 	}

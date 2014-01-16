@@ -116,7 +116,12 @@ function ypcf_mangopay_is_user_strong_authentication_sent($wp_user_id) {
     return $buffer;
 }
 
-function ypcf_mangopay_send_strong_authentication($url_request) {
+function ypcf_mangopay_send_strong_authentication($url_request, $field_name) {
+    ypcf_debug_log("ypcf_mangopay_send_strong_authentication --- ".$url_request." (" . $field_name . ")");
+    
+    $authorized_mime_type = array('image/jpeg', 'image/pjpeg', 'image/gif', 'image/png', 'application/pdf'); 
+    if (!in_array($_FILES[$field_name]['type'], $authorized_mime_type)) { return false; } 
+    
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)");
     curl_setopt($ch, CURLOPT_URL, $url_request);
@@ -125,14 +130,15 @@ function ypcf_mangopay_send_strong_authentication($url_request) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
     
-    $authorized_mime_type = array('image/jpeg', 'image/pjpeg', 'image/gif', 'image/png', 'application/pdf'); 
-    if (!in_array($_FILES['StrongValidationDtoPicture']['type'], $authorized_mime_type)) { return false; } 
-    $mime_type_text = ';type='.$_FILES['StrongValidationDtoPicture']['type'];
-    $post = array('StrongValidationDto.Picture' => '@' . $_FILES['StrongValidationDtoPicture']['tmp_name'] . $mime_type_text);
+    $mime_type_text = ';type='.$_FILES[$field_name]['type'];
+    $post = array('StrongValidationDto.Picture' => '@' . $_FILES[$field_name]['tmp_name'] . $mime_type_text);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-    if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200 || curl_getinfo($ch, CURLINFO_HTTP_CODE) == 0) $result = TRUE;
+    $curl_info = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if ($curl_info == 200 || $curl_info == 0) $result = TRUE;
     else $result = FALSE;
     curl_close($ch);
+    
+    ypcf_debug_log("ypcf_mangopay_send_strong_authentication ---> ".($result ? "success" : "fail"). " with code " . $curl_info);
     return $result;
 }
 

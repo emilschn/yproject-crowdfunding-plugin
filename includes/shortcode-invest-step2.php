@@ -39,29 +39,37 @@ function ypcf_display_invest_confirm($content) {
 	    
 	    if (isset($_POST['document_submited'])) {
 		$url_request = ypcf_init_mangopay_user_strongauthentification($current_user);
-		$curl_result = ypcf_mangopay_send_strong_authentication($url_request);
+		$curl_result = ypcf_mangopay_send_strong_authentication($url_request, 'StrongValidationDtoPicture');
 		if ($curl_result) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($current_user->ID);
 		else $form .= 'Il y a eu une erreur pendant l&apos;envoi';
 	    }
 	    
 	    //Si le montant transmis est supérieur à ce que mangopay accepte sans identification
-	    $annual_amount = $amount + ypcf_get_annual_amount_invested($current_user->ID);
-	    if ($annual_amount > YP_STRONGAUTH_AMOUNT_LIMIT && !ypcf_mangopay_is_user_strong_authenticated($current_user->ID)) {
-		if (ypcf_mangopay_is_user_strong_authentication_sent($current_user->ID)) {
+	    $test_user = $current_user;
+	    if ($invest_type != 'user') $test_user = $current_user_organisation;
+	    $annual_amount = $amount + ypcf_get_annual_amount_invested($test_user->ID);
+	    if ($annual_amount > YP_STRONGAUTH_AMOUNT_LIMIT && !ypcf_mangopay_is_user_strong_authenticated($test_user->ID)) {
+		if (ypcf_mangopay_is_user_strong_authentication_sent($test_user->ID)) {
 		    $form .= 'Votre pi&egrave;ce d&apos;identit&eacute; est en cours de validation. Un d&eacute;lai maximum de 24h est n&eacute;cessaire &agrave; cette validation.<br />Merci de votre compr&eacute;hension.';
 		    
 		} else {
-		    $post = get_post($_GET['campaign_id']);
-		    $campaign = atcf_get_campaign( $post );
-		    $form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro; sur une ann&eacute;e, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.<br />';
-		    $form .= 'Le fichier doit &ecirc;tre de type jpeg, gif, png ou pdf.<br />';
-		    $form .= 'Son poids doit &ecirc;tre inf&eacute;rieur &agrave; 2 Mo.<br />';
-		    $form .= '<form id="mangopay_strongauth_form" action="" method="post" enctype="multipart/form-data">';
-		    $form .= '<input type="hidden" name="document_submited" value="1" />';
-		    $form .= '<input type="hidden" name="amount_part" value='.$amount_part.' />';
-		    $form .= '<input type="file" name="StrongValidationDtoPicture" />';
-		    $form .= '<input type="submit" value="Envoyer"/>';
-		    $form .= '</form><br /><br />';
+		    if ($invest_type != 'user') {
+			$page_update = get_page_by_path('modifier-mon-compte');
+			$form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro; sur une ann&eacute;e, merci de vous rendre dans <a href="'.get_permalink($page_update->ID).'">l&apos;administration de votre entreprise</a>.<br />';
+			
+		    } else {
+			$post = get_post($_GET['campaign_id']);
+			$campaign = atcf_get_campaign( $post );
+			$form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro; sur une ann&eacute;e, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.<br />';
+			$form .= 'Le fichier doit &ecirc;tre de type jpeg, gif, png ou pdf.<br />';
+			$form .= 'Son poids doit &ecirc;tre inf&eacute;rieur &agrave; 2 Mo.<br />';
+			$form .= '<form id="mangopay_strongauth_form" action="" method="post" enctype="multipart/form-data">';
+			$form .= '<input type="hidden" name="document_submited" value="1" />';
+			$form .= '<input type="hidden" name="amount_part" value='.$amount_part.' />';
+			$form .= '<input type="file" name="StrongValidationDtoPicture" />';
+			$form .= '<input type="submit" value="Envoyer"/>';
+			$form .= '</form><br /><br />';
+		    }
 		}
 		
 	    } else {
