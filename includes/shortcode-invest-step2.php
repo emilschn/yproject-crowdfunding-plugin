@@ -100,6 +100,7 @@ function ypcf_display_invest_confirm($content) {
 		if ($amount_part > 1) $plurial = 's';
 		$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
 		
+		$form .= '<form action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
 		$form .= '<div class="invest_part">';
 		$form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante :<br /><br />';
 		
@@ -138,16 +139,16 @@ function ypcf_display_invest_confirm($content) {
 		}
 		
 		$page_update = get_page_by_path('modifier-mon-compte');
-		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a>';
+		$form .= '<a href="' . get_permalink($page_update->ID) . '">Modifier ces informations</a><br /><br />';
+		
+		$information_confirmed = '';
+		if (isset($_POST["information_confirmed"]) && $_POST["information_confirmed"] == "1") $information_confirmed = 'checked="checked" ';
+		$form .= '<input type="checkbox" name="information_confirmed" value="1" '.$information_confirmed.'/> Je d&eacute;clare que ces informations sont exactes.<br />';
 		$form .= '</div>';
 
 		// Formulaire de confirmation
-		$form .= '<form action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
 		$form .= '<input type="hidden" name="amount_part" value="' . $amount_part . '">';
 		$form .= '<input type="hidden" name="confirmed" value="1">';
-		$information_confirmed = '';
-		if (isset($_POST["information_confirmed"]) && $_POST["information_confirmed"] == "1") $information_confirmed = 'checked="checked" ';
-		$form .= '<input type="checkbox" name="information_confirmed" value="1" '.$information_confirmed.'/> Je d&eacute;clare que ces informations sont exactes.<br /><br />';
 
 		$form .= '<h3>Voici le pouvoir que vous allez signer pour valider l&apos;investissement :</h3>';
 		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());

@@ -28,6 +28,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 	//Récupération du bon utilisateur
 	$current_user = wp_get_current_user();
+	$current_user_email = $current_user->user_email;
 	if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 	    $group_id = $_SESSION['redirect_current_invest_type'];
 	    if (BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
@@ -40,7 +41,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	//Création d'un paiement pour edd
 	$user_info = array(
 	    'id'         => $current_user->ID,
-	    'email'      => $current_user->user_email,
+	    'email'      => $current_user_email,
 	    'first_name' => $current_user->user_firstname,
 	    'last_name'  => $current_user->user_lastname,
 	    'discount'   => '',
@@ -65,7 +66,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	$payment_data = array( 
 		'price' => $amount, 
 		'date' => date('Y-m-d H:i:s'), 
-		'user_email' => $current_user->user_email,
+		'user_email' => $current_user_email,
 		'purchase_key' => $_REQUEST["ContributionID"],
 		'currency' => edd_get_currency(),
 		'downloads' => array($campaign->ID),
@@ -102,7 +103,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		global $contract_errors, $wpdb;
 		if (!isset($contract_errors) || $contract_errors == '') {
 		    $buffer .= '<strong>Il ne vous reste plus qu&apos;&agrave; signer le contrat.</strong><br />';
-		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
+		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
 		    $buffer .= '- un e-mail de confirmation de paiement ; cet e-mail contient votre code pour signer le pouvoir<br />';
 		    $buffer .= '- un e-mail qui contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
 		    if (ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) {

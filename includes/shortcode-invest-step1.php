@@ -41,7 +41,7 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . '&euro; &agrave; investir.</span>';
 		$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
 		$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
-		$form .= '<span class="invest_success hidden" id="invest_success_message">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>&euro;.</span>';
+		$form .= '<span class="invest_success hidden" id="invest_success_message" class="button">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>&euro;.</span>';
 		
 		$form .= '<div class="invest_step1_conditions">' . wpautop( $edd_options['contract'] ) . '</div>';
 		
@@ -59,7 +59,7 @@ function ypcf_display_invest_form($error = '') {
 		}
 		
 		$form .= '<center>';
-		$form .= '<input type="submit" value="Investir">';
+		$form .= '<input type="submit" value="Investir" class="button" />';
 		$form .= '<select name="invest_type">';
 		$form .= '<option value="user">En mon nom</option>';
 		if ($count_groups > 0) {
