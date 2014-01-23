@@ -28,20 +28,23 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 	//Récupération du bon utilisateur
 	$current_user = wp_get_current_user();
-	$current_user_email = $current_user->user_email;
+	$save_user_id = $current_user->ID;
+	$save_display_name = $current_user->display_name;
 	if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 	    $group_id = $_SESSION['redirect_current_invest_type'];
 	    if (BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
 		$group = groups_get_group( array( 'group_id' => $group_id ) );
-		$organisation_user_id = $group->creator_id;
-		$current_user = get_user_by('id', $organisation_user_id);
+		$save_user_id = $group->creator_id;
+		$organisation_user = get_user_by('id', $save_user_id);
+		$save_display_name = $organisation_user->display_name;
 	    }
 	}
 	
 	//Création d'un paiement pour edd
 	$user_info = array(
-	    'id'         => $current_user->ID,
-	    'email'      => $current_user_email,
+	    'id'         => $save_user_id,
+	    'gender'	 => $current_user->get('user_gender'),
+	    'email'      => $current_user->user_email,
 	    'first_name' => $current_user->user_firstname,
 	    'last_name'  => $current_user->user_lastname,
 	    'discount'   => '',
@@ -66,7 +69,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	$payment_data = array( 
 		'price' => $amount, 
 		'date' => date('Y-m-d H:i:s'), 
-		'user_email' => $current_user_email,
+		'user_email' => $current_user->user_email,
 		'purchase_key' => $_REQUEST["ContributionID"],
 		'currency' => edd_get_currency(),
 		'downloads' => array($campaign->ID),
@@ -103,7 +106,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		global $contract_errors, $wpdb;
 		if (!isset($contract_errors) || $contract_errors == '') {
 		    $buffer .= '<strong>Il ne vous reste plus qu&apos;&agrave; signer le contrat.</strong><br />';
-		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
+		    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
 		    $buffer .= '- un e-mail de confirmation de paiement ; cet e-mail contient votre code pour signer le pouvoir<br />';
 		    $buffer .= '- un e-mail qui contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
 		    if (ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) {
@@ -131,7 +134,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		$users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = ". $_GET['campaign_id'] );
 		$found_jcrois = false;
 		foreach ( $users as $user ) { 
-		    if ( $user->user_id == $current_user->ID) {
+		    if ( $user->user_id == $save_user_id) {
 			$found_jcrois = true;
 			break;
 		    }
@@ -139,7 +142,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		if (!$found_jcrois) {
 		    $wpdb->insert( $table_jcrois,
 			array(
-			    'user_id'	=> $current_user->ID,
+			    'user_id'	=> $save_user_id,
 			    'campaign_id'   => $_GET['campaign_id']
 			)
 		    );
@@ -150,7 +153,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		$post_title = $post->post_title;
 		$url_campaign = '<a href="'.$campaign_url.'">'.$post_title.'</a>';
 		//url d'un utilisateur précis
-		$url_profile = '<a href="' . bp_core_get_userlink($current_user->ID, false, true) . '">' . $current_user->display_name . '</a>';
+		$url_profile = '<a href="' . bp_core_get_userlink($save_user_id, false, true) . '">' . $save_display_name . '</a>';
 		
 		bp_activity_add(array (
 		    'component' => 'profile',

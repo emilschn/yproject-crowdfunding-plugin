@@ -58,7 +58,7 @@ function ypcf_display_invest_form($error = '') {
 		    }
 		}
 		
-		$form .= '<center>';
+		$form .= '<br /><center>';
 		$form .= '<input type="submit" value="Investir" class="button" />';
 		$form .= '<select name="invest_type">';
 		$form .= '<option value="user">En mon nom</option>';

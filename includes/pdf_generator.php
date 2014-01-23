@@ -38,7 +38,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     
     $buffer .= '<p>';
     $buffer .= '<h2>LE SOUSSIGNÉ</h2>';
-    if ($user_organisation_obj !== false) {
+    if (is_object($user_organisation_obj) && $user_organisation_obj !== false) {
 	$buffer .= '<strong>'.$user_organisation_obj->display_name.', '.$user_organisation_obj->get('organisation_legalform').' au capital '.$user_organisation_obj->get('organisation_capital').'&euro;</strong><br />';
 	$buffer .= 'dont le siège social est à '.$user_organisation_obj->get('user_city').' ('.$user_organisation_obj->get('user_postal_code').') - '.$user_organisation_obj->get('user_address').'<br />';
 	$buffer .= 'immatriculée sous le numéro '.$user_organisation_obj->get('organisation_idnumber').' au RCS de '.$user_organisation_obj->get('organisation_rcs').'<br />';
@@ -81,7 +81,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     $month = mb_strtoupper(__($months[date("m") - 1]));
     $year = date("Y");
     $buffer .= 'Le '.$day.' '.$month.' '.$year.'<br />';
-    if ($user_organisation_obj !== false) {
+    if (is_object($user_organisation_obj) && $user_organisation_obj !== false) {
 	$buffer .= 'LA '.$user_organisation_obj->get('organisation_legalform').' '.$user_organisation_obj->display_name.'<br />';
 	$buffer .= 'représentée par ';
     }
@@ -110,11 +110,11 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
  * Returns the pdf created with a project_id and a user_id
  * @param type $project_id
  */
-function getNewPdfToSign($project_id, $payment_id) {
+function getNewPdfToSign($project_id, $payment_id, $user_id) {
     $post_camp = get_post($project_id);
     $campaign = atcf_get_campaign( $post_camp );
     
-    $current_user = wp_get_current_user();
+    $current_user = get_userdata($user_id);
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 	$group_id = $_SESSION['redirect_current_invest_type'];
 	if (BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {

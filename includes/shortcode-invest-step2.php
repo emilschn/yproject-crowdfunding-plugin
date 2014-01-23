@@ -123,6 +123,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<br /><br /><br />';
 		
 		if ($invest_type != 'user') {
+		    $form .= '<hr />';
 		    $form .= '<strong>Informations de l&apos;organisation <em>'.$current_user_organisation->display_name.'</em></strong><br />';
 		    $form .= '<span class="label">e-mail :</span>' . $current_user_organisation->user_email . '<br />';
 		    $form .= '<span class="label">Num&eacute;ro d&apos;immatriculation :</span>' . $current_user_organisation->get('organisation_idnumber') . '<br />';
@@ -160,7 +161,7 @@ function ypcf_display_invest_confirm($content) {
 		if (isset($_POST["confirm_power"])) $confirm_power = $_POST["confirm_power"];
 		$form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" /><br /><br />';
 		
-		$form .= '<input type="submit" value="Investir">';
+		$form .= '<input type="submit" value="Investir" class="button">';
 		$form .= '</form><br /><br />';
 		
 		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';

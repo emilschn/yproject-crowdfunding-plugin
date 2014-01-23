@@ -446,6 +446,14 @@ function ypcf_get_updated_payment_status($payment_id) {
     $init_payment_status = $payment_post->post_status;
     $buffer = false;
     if (isset($payment_id) && $payment_id != '') {
+	/* Nécessaire pour regénérer un contrat :
+	 * if ($payment_id == 1498) {
+	    $downloads = edd_get_payment_meta_downloads($payment_id); 
+	    $download_id = '';
+	    if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+	    else $download_id = $downloads[0];
+	    getNewPdfToSign($download_id, $payment_id, $payment_post->post_author);
+	}*/
 	//On teste d'abord si ça a été refunded
 	$refund_transfer_id = get_post_meta($payment_id, 'refund_transfer_id', true);
 	if (($init_payment_status == 'refunded') || (isset($refund_transfer_id) && $refund_transfer_id != '')) {
@@ -570,11 +578,11 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
     $user_info    = maybe_unserialize( $payment_data['user_info'] );
     $email        = edd_get_payment_user_email( $payment_id );
 
-    if ( isset( $user_id ) && $user_id > 0 ) {
+    if ( isset( $user_info['first_name'] ) && isset( $user_info['last_name'] ) ) {
+	$name = $user_info['first_name'] . ' ' . $user_info['last_name'];
+    } elseif ( isset( $user_id ) && $user_id > 0 ) {
 	$user_data = get_userdata($user_id);
 	$name = $user_data->display_name;
-    } elseif ( isset( $user_info['first_name'] ) && isset( $user_info['last_name'] ) ) {
-	$name = $user_info['first_name'] . ' ' . $user_info['last_name'];
     } else {
 	$name = $email;
     }
@@ -585,7 +593,9 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
 	case "full":
 	case "contract_failed":
 	    $subject = "Merci pour votre investissement";
-	    $body_content = "Cher ".$name.",<br /><br />";
+	    $dear_str = "Cher";
+	    if ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") $dear_str = "Chère";
+	    $body_content = $dear_str." ".$name.",<br /><br />";
 	    $body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. N'oubliez pas qu'il ne sera définitivement validé ";
 	    $body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br /><br />";
 	    switch ($type) {
@@ -777,7 +787,7 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 	    $mobile_phone = '';
 	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = ypcf_format_french_phonenumber($user->get('user_mobile_phone'));
 	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email, $mobile_phone)) $contract_errors = 'contract_addsignatories_failed';
-	    $contract_filename = getNewPdfToSign($campaign_id, $payment_id);
+	    $contract_filename = getNewPdfToSign($campaign_id, $payment_id, $user_id);
 	    if (!signsquid_add_file($contract_id, $contract_filename)) $contract_errors = 'contract_addfile_failed';
 	    if (!signsquid_send_invite($contract_id)) $contract_errors = 'contract_sendinvite_failed';
 	} else {
