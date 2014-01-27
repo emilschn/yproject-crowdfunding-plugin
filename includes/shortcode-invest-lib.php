@@ -554,6 +554,9 @@ function ypcf_get_signsquidstatus_from_infos($contract_infos) {
 	    case 'Agreed':
 		$buffer = 'Contrat sign&eacute;';
 		break;
+	    case 'NewVersionAvailable':
+		$buffer = 'Contrat mis &agrave; jour';
+		break;
 	}
     }
     return $buffer;

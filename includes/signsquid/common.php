@@ -113,7 +113,7 @@ function signsquid_get_contract_list() {
 }
 
 /**
- * get specific contract
+ * retourne la première version d'un contrat
  * @param type $contract_id
  */
 function signsquid_get_contract_infos($contract_id) {
@@ -123,6 +123,40 @@ function signsquid_get_contract_infos($contract_id) {
     if (!isset($buffer->{'published'}) || $buffer->{'published'} != true) {
 	$buffer = '';
 	ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: Wrong $contract_id called');
+    }
+    return $buffer;
+}
+
+/**
+ * retourne toutes les informations d'un contrat
+ * @param type $contract_id
+ * @return string
+ */
+function signsquid_get_contract_infos_complete($contract_id) {
+    $buffer = '';
+    if ($contract_id != '') $buffer = signsquid_request("GET", "contracts/".$contract_id);
+    else ypcf_debug_log('signsquid_get_contract_infos_complete --- ERROR :: $contract_id empty');
+    if (!isset($buffer->{'id'}) || $buffer->{'id'} == '') {
+	$buffer = '';
+	ypcf_debug_log('signsquid_get_contract_infos_complete --- ERROR :: Wrong $contract_id called');
+    }
+    return $buffer;
+}
+
+/**
+ * retourne le signataire de la dernière version du contrat
+ * @param type $contract_id
+ * @return type
+ */
+function signsquid_get_contract_signatory($contract_id) {
+    $buffer = '';
+    $contract_infos = signsquid_get_contract_infos_complete($contract_id);
+    if ($contract_infos != '') {
+	if (isset($contract_infos->{'versions'}) && count($contract_infos->{'versions'}) > 0) {
+	    $last_contract = $contract_infos->{'versions'}[count($contract_infos->{'versions'}) - 1];
+	    $buffer = $last_contract->{'signatories'}[0];
+	    ypcf_debug_log('signsquid_get_contract_signatory --- $buffer name : ' . $buffer->{'name'});
+	}
     }
     return $buffer;
 }

@@ -430,7 +430,7 @@ add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_result
 		$user_id = isset( $user_info['id'] ) && $user_info['id'] != -1 ? $user_info['id'] : $user_info['email'];
 
 		$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
-		$signsquid_infos = signsquid_get_contract_infos($contractid);
+		$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
 		$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
 		$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos);
 
