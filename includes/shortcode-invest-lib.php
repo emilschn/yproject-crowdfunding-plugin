@@ -568,7 +568,7 @@ function ypcf_get_signsquidstatus_from_infos($contract_infos) {
  * @param type $type
  * @param type $code
  */
-function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
+function ypcf_send_mail_purchase($payment_id, $type, $code = '', $force_email = '') {
     $downloads = edd_get_payment_meta_downloads($payment_id); 
     $download_id = '';
     if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
@@ -579,7 +579,7 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '') {
     $payment_amount = edd_get_payment_amount( $payment_id );
     $user_id      = edd_get_payment_user_id( $payment_id );
     $user_info    = maybe_unserialize( $payment_data['user_info'] );
-    $email        = edd_get_payment_user_email( $payment_id );
+    $email        = (isset($force_email) && $force_email != '') ? $force_email : edd_get_payment_user_email( $payment_id );
 
     if ( isset( $user_info['first_name'] ) && isset( $user_info['last_name'] ) ) {
 	$name = $user_info['first_name'] . ' ' . $user_info['last_name'];
