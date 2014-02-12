@@ -247,6 +247,10 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 	if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
 	if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
 	if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
+	if ($_POST["update_publicname"] != "") {
+	    wp_update_user( array ( 'ID' => $current_user->ID, 'display_name' => $_POST["update_publicname"] ) ) ;
+	    $current_user->display_name = $_POST["update_publicname"];
+	}
 	if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
 	if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
 	if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
