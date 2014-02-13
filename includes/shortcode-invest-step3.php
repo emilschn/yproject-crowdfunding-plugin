@@ -98,37 +98,27 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    //On affiche que tout s'est bien passé
 		    $buffer .= ypcf_print_invest_breadcrumb(4);
 		    $buffer .= $content;
-		    $buffer .= 'Merci pour votre investissement de ' . $amount . '&euro;.<br />';
-		    $buffer .= 'Nous sommes &agrave; pr&eacute;sent ' . ypcf_get_backers() . ' &agrave; soutenir le projet.<br />';
-		    $buffer .= 'La somme atteinte est de ' . ypcf_get_current_amount() . '&euro;.<br /><br />';
-
 		    $campaign_url  = get_permalink($_GET['campaign_id']);
 
 		    global $contract_errors, $wpdb;
 		    if (!isset($contract_errors) || $contract_errors == '') {
-			$buffer .= '<strong>Il ne vous reste plus qu&apos;&agrave; signer le contrat.</strong><br />';
 			$buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
-			$buffer .= '- un e-mail de confirmation de paiement ; cet e-mail contient votre code pour signer le pouvoir<br />';
-			$buffer .= '- un e-mail qui contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
+			$buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br />';
+			$buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br />'; 
+			$buffer .= '<center><img src="'. get_stylesheet_directory_uri() .'/images/signsquid.png" width="168" height="64" /></center><br />';
 			if (ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) {
-			    $buffer .= 'Vous devriez aussi recevoir un sms contenant le code au num&eacute;ro que vous nous avez indiqu&eacute; : '.$current_user->get('user_mobile_phone').'<br /><br />'; 
+			    $buffer .= 'Vous allez aussi recevoir un sms contenant le code au num&eacute;ro que vous nous avez indiqu&eacute; : '.$current_user->get('user_mobile_phone').'<br /><br />'; 
 			}
-
+			$share_page = get_page_by_path('paiement-partager');
+			$buffer .= '<center><a class="button" href="'. get_permalink($share_page->ID) .'?campaign_id='.$_GET['campaign_id'].'">Suivant</a></center><br /><br />';
+			
 		    } else {
 			ypcf_debug_log("ypcf_shortcode_invest_return --- ERROR :: contract :: ".$contract_errors);
 			$buffer .= 'Vous allez recevoir un e-mail de confirmation de paiement.<br />';
-			$buffer .= '<span class="errors">Cependant, il y a eu un problème lors de la génération du contrat. Nos &eacute;quipes travaillent &agrave; la r&eacute;solution de ce probl&egrave;me.</span>';
+			$buffer .= '<span class="errors">Cependant, il y a eu un problème lors de la génération du contrat. Nos &eacute;quipes travaillent &agrave; la r&eacute;solution de ce probl&egrave;me.</span><br /><br />';
+			$share_page = get_page_by_path('paiement-partager');
+			$buffer .= '<center><a class="button" href="'. get_permalink($share_page->ID) .'?campaign_id='.$_GET['campaign_id'].'">Suivant</a></center><br /><br />';
 		    }
-
-		    //Liens pour partager
-		    $buffer .= '<center>';
-		    $buffer .= '<a href="http://www.facebook.com/sharer.php?u='.urlencode($campaign_url).'" target="_blank"><img src="'.get_stylesheet_directory_uri().'/images/facebook_bouton_partager.png" /></a>';
-		    $buffer .= '<br /><br />';
-		    $buffer .= "<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>";
-		    $buffer .= '<a href="https://twitter.com/share" class="twitter-share-button" data-text="Je viens d\'investir sur ce projet" data-url="'.$campaign_url.'" data-via="wedogood_co" data-lang="fr">' . __('Partager sur Twitter', 'wedogood') . '</a>';
-		    $buffer .= '<br />';
-		    $buffer .= '</center>';
-		    $buffer .= '<br /><br />&lt;&lt; <a href="'.$campaign_url.'">Retour au projet</a>.';
 
 		    //Si un utilisateur investit, il croit au projet
 		    $table_jcrois = $wpdb->prefix . "jycrois";
@@ -169,9 +159,11 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    }
 
 	    edd_empty_cart();
+	    
+	} else {
+	    $buffer .= 'Il y a eu une erreur pendant la transacton.';
 	}
 	
-	$buffer .= 'Il y a eu une erreur pendant la transacton.';
     }
     
     return $buffer;

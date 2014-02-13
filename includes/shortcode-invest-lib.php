@@ -51,6 +51,12 @@ function ypcf_check_redirections() {
 		require( crowdfunding()->includes_dir . 'shortcode-invest.php' );
 		require( crowdfunding()->includes_dir . 'shortcode-invest-step3.php' );
 		break;
+	
+	    case 'paiement-partager' :
+		//Si on est sur la page paiement-effectue, on en profite pour inclure les fonctions correspondantes
+		require( crowdfunding()->includes_dir . 'shortcode-invest.php' );
+		require( crowdfunding()->includes_dir . 'shortcode-invest-step4.php' );
+		break;
 	}
     }
 }
