@@ -84,9 +84,13 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
 	<?php
 	$buffer .= ob_get_clean();
 
-	//Liens pour partager
 	$buffer .= '<center>';
-	$buffer .= ypcf_fake_sharing_display();
+	if (class_exists('Sharing_Service')) {
+	    //Liens pour partager
+	    $buffer .= ypcf_fake_sharing_display();
+	} else {
+	    $buffer .= 'Le service de partage est momentan&eacute;ment d&eacute;sactiv&eacute;.';
+	}
 	$buffer .= '</center>';
 	$buffer .= '<br /><br />&lt;&lt; <a href="'.$campaign_url.'">Retour au projet</a>';
 	
