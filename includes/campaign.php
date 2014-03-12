@@ -586,10 +586,11 @@ function _atcf_metabox_campaign_vote() {
 	<p>Choisir le statut de la campagne</p>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	    <option></option>
-	    <option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">collecte</option>
-	    <option <?php if ($campaign->vote() == "vote") { ?>selected="selected"<?php } ?>value="vote">vote</option>
-	    <option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">funded</option>
-	    <option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">archive</option>
+	    <option <?php if ($campaign->vote() == "preview") { ?>selected="selected"<?php } ?> value="preview">Avant-première</option>
+	    <option <?php if ($campaign->vote() == "vote") { ?>selected="selected"<?php } ?>value="vote">En cours de vote</option>
+	    <option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">En cours de collecte</option>
+	    <option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">Terminé</option>
+	    <option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">Archivé</option>
 	</select>
 	
 <?php
