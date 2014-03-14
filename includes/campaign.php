@@ -1412,10 +1412,20 @@ class ATCF_Campaign {
 		return $this->__get( 'campaign_video' );
 	}
 
-	
+	/**
+	 * Deprecated : use campaign_status instead
+	 */
 	public function vote() {
 		return $this->__get( 'campaign_vote' );
 	}
+	/**
+	 * Récupérer le statut du projet
+	 * @return Statuts possibles : preview ; vote ; collecte ; funded ; archive
+	 */
+	public function campaign_status() {
+		return $this->__get( 'campaign_vote' );
+	}
+	
 	/**
 	 * Campaign Updates
 	 *
