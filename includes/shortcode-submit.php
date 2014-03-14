@@ -622,7 +622,7 @@ function atcf_shortcode_submit_process() {
 
 	    $args = apply_filters( 'atcf_campaign_submit_data', array(
 		    'post_type'   		 	=> 'download',
-		    'post_status'  		 	=> 'pending',
+		    'post_status'  		 	=> 'private',
 		    'post_title'   		 	=> $title,
 		    'post_content' 		 	=> $content,
 		    'post_excerpt' 			=> $excerpt,
