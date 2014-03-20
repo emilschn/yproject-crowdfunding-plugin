@@ -95,8 +95,9 @@ function ypcf_check_is_user_logged_invest() {
 
 function ypcf_check_is_project_investable() {
     $post_camp = get_post($_GET['campaign_id']);
-    if (!ypcf_check_user_is_complete($post_camp->post_author)) {
-	wp_redirect(site_url());
+    $campaign = atcf_get_campaign( $post_camp );
+    if (!ypcf_check_user_is_complete($post_camp->post_author) || $campaign->days_remaining() <= 0 || $campaign->campaign_status() != 'collecte') {
+	wp_redirect(get_permalink($_GET['campaign_id']));
 	exit();
     }
 }
