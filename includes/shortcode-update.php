@@ -81,9 +81,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 			$attachment = array(
 				'guid'           => $upload[ 'url' ], 
 				'post_mime_type' => $upload[ 'type' ],
-				'post_title'     => $upload[ 'file' ],
-				'post_content' => '',
-				'post_status' => 'inherit'
+				'post_title'     => 'image_header',
+				'post_content'   => '',
+				'post_status'    => 'inherit'
 			);
 
 			$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign->ID );		
@@ -94,6 +94,51 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 			);
 
 			add_post_meta( $campaign->ID, '_thumbnail_id', absint( $attach_id ) );
+		    }
+		    
+		}
+		$image	    = $_FILES[ 'image_home' ];
+		if (!empty($image)) {
+		    if (isset($_FILES[ 'files' ])) $files = $_FILES[ 'files' ];
+		    $edd_files  = array();
+		    $upload_overrides = array( 'test_form' => false );
+		    if ( ! empty( $files ) ) {
+			    foreach ( $files[ 'name' ] as $key => $value ) {
+				    if ( $files[ 'name' ][$key] ) {
+					    $file = array(
+						    'name'     => $files[ 'name' ][$key],
+						    'type'     => $files[ 'type' ][$key],
+						    'tmp_name' => $files[ 'tmp_name' ][$key],
+						    'error'    => $files[ 'error' ][$key],
+						    'size'     => $files[ 'size' ][$key]
+					    );
+
+					    $upload = wp_handle_upload( $file, $upload_overrides );
+
+					    if ( isset( $upload[ 'url' ] ) )
+						    $edd_files[$key]['file'] = $upload[ 'url' ];
+					    else
+						    unset($files[$key]);
+				    }
+			    }
+		    }
+		    
+		    $upload = wp_handle_upload( $image, $upload_overrides );
+		    if (isset($upload[ 'url' ])) {
+			$attachment = array(
+				'guid'           => $upload[ 'url' ], 
+				'post_mime_type' => $upload[ 'type' ],
+				'post_title'     => 'image_home',
+				'post_content'   => '',
+				'post_status'    => 'inherit'
+			);
+
+			$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign->ID );		
+
+			wp_update_attachment_metadata( 
+				$attach_id, 
+				wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
+			);
 		    }
 		    
 		}
@@ -158,9 +203,32 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_summary
 
 
 function atcf_shortcode_update_field_images( $editing, $campaign, $post ) {
+    $attachments = get_posts( array(
+					'post_type' => 'attachment',
+					'post_parent' => $post->ID,
+					'post_mime_type' => 'image'
+		    ));
+    $image_obj_home = '';
+    $image_obj_header = '';
+    $image_src_home = '';
+    $image_src_header = '';
+    //Si on en trouve bien une avec le titre "image_home" on prend celle-là
+    foreach ($attachments as $attachment) {
+	if ($attachment->post_title == 'image_home') $image_obj_home = wp_get_attachment_image_src($attachment->ID, "full");
+	if ($attachment->post_title == 'image_header') $image_obj_header = wp_get_attachment_image_src($attachment->ID, "full");
+    }
+    //Sinon on prend la première image rattachée à l'article
+    if ($image_obj_home != '') $image_src_home = $image_obj_home[0];
+    if ($image_obj_header != '') $image_src_header = $image_obj_header[0];
 ?>
+    <div class="update_field atcf-update-campaign-image-home">
+	<label class="update_field_label" for="image_home">Image d&apos;aper&ccedil;u (Max. 2Mo ; id&eacute;alement 610px de largeur * 330px de hauteur)</label><br />
+	<?php if ($image_src_home != '') { ?><div class="update-field-img-home"><img src="<?php echo $image_src_home; ?>" /></div><br /><?php } ?>
+	<input type="file" name="image_home" id="image_home" />
+    </div><br />
     <div class="update_field atcf-update-campaign-images">
-	<label class="update_field_label" for="image">Image (id&eacute;alement 960px de largeur * 240px de hauteur)</label><br />
+	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 960px de largeur * 240px de hauteur)</label><br />
+	<?php if ($image_src_header != '') { ?><div class="update-field-img-header"><img src="<?php echo $image_src_header; ?>" /></div><br /><?php } ?>
 	<input type="file" name="image" id="image" />
     </div><br />
 <?php

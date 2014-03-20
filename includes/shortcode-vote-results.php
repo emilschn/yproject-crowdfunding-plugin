@@ -372,6 +372,17 @@ function ypcf_printable_value($val) {
     </tbody>
 </table>
 
+<h2>e-mail des Investisseurs</h2>
+<div>
+<?php
+	foreach ( $payments_data as $item ) {
+	    $payment_status = ypcf_get_updated_payment_status($item['ID']);
+	    if ($payment_status == 'publish') {
+		echo bp_core_get_user_email($item['user']) . ', ';
+	    }
+	}
+?>
+</div>
 
 
 

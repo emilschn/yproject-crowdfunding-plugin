@@ -49,7 +49,7 @@ function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $am
     
     //Récupération de l'id du porteur de projet
     $author_id = $campaign->data->post_author;
-    $current_user = get_userdata($author_id);
+    ypcf_debug_log("ypcf_mangopay_transfer_project_to_user --- current user id : ".$current_user->ID. ' ; campaign id : ' .$campaign_id . ' ; author id : ' . $author_id);
     $campaign_author_mangopayid = ypcf_mangopay_get_mp_user_id($author_id);
 
     //Récupération du walletid de l'utilisateur
@@ -76,6 +76,10 @@ function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $am
  */
 function ypcf_mangopay_get_contribution_by_id($contribution_id) {
     return request('contributions/'.$contribution_id, 'GET');
+}
+
+function ypcf_mangopay_get_transfer_by_id($transfer_id) {
+    return request('transfers/'.$transfer_id, 'GET');
 }
 
 function ypcf_mangopay_get_user_by_id($mp_user_id) {
@@ -146,6 +150,14 @@ function ypcf_mangopay_send_strong_authentication($url_request, $field_name) {
 
 function ypcf_mangopay_get_wallet_by_id($wallet_id) {
     return request('wallets/'.$wallet_id, 'GET');
+}
+
+function ypcf_mangopay_get_operations_by_wallet_id($wallet_id) {
+    return request('wallets/'.$wallet_id.'/operations', 'GET');
+}
+
+function ypcf_mangopay_get_operations_by_user_id($user_id) {
+    return request('users/'.$user_id.'/operations', 'GET');
 }
 
 function ypcf_mangopay_get_user_personalamount_by_wpid($wp_user_id) {

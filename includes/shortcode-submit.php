@@ -507,6 +507,7 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'shipping' ]))	$shipping  	= $_POST[ 'shipping' ];
 
 	if (isset($_FILES[ 'image' ]))		$image     = $_FILES[ 'image' ];
+	if (isset($_FILES[ 'image_home' ]))	$image_home     = $_FILES[ 'image_home' ];
 	if (isset($_POST[ 'video' ]))		$video     = $_POST[ 'video' ];
 	if (isset($_FILES[ 'files' ]))		$files     = $_FILES[ 'files' ];
 	
@@ -597,8 +598,8 @@ function atcf_shortcode_submit_process() {
 		$excerpt = null;
 
 	/** Check Image */
-	if ( empty( $image ) )
-		$errors->add( 'invalid-previews', 'Merci de proposer une image pour votre projet.' );
+	if ( empty( $image ) || empty($image_home) )
+		$errors->add( 'invalid-previews', 'Merci de proposer deux images pour votre projet.' );
 
 	/** Check Rewards */
 	/* if ( empty( $rewards ) )
@@ -700,14 +701,14 @@ function atcf_shortcode_submit_process() {
 		    }
 	    }
 
-	    if ( '' != $image[ 'name' ] ) {
+	    if ( $image[ 'name' ] != '' ) {
 		    $upload = wp_handle_upload( $image, $upload_overrides );
 		    $attachment = array(
 			    'guid'           => $upload[ 'url' ], 
 			    'post_mime_type' => $upload[ 'type' ],
-			    'post_title'     => $upload[ 'file' ],
-			    'post_content' => '',
-			    'post_status' => 'inherit'
+			    'post_title'     => 'image_header',
+			    'post_content'   => '',
+			    'post_status'    => 'inherit'
 		    );
 
 		    $attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign );		
@@ -719,6 +720,23 @@ function atcf_shortcode_submit_process() {
 
 		    add_post_meta( $campaign, '_thumbnail_id', absint( $attach_id ) );
 	    }
+	    if ( $image_home[ 'name' ] != '' ) {
+		    $upload = wp_handle_upload( $image_home, $upload_overrides );
+		    $attachment = array(
+			    'guid'           => $upload[ 'url' ], 
+			    'post_mime_type' => $upload[ 'type' ],
+			    'post_title'     => 'image_home',
+			    'post_content'   => '',
+			    'post_status'    => 'inherit'
+		    );
+		    $attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign );		
+
+		    wp_update_attachment_metadata( 
+			    $attach_id, 
+			    wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
+		    );
+	    }
+	    
 
 	    // EDD Stuff 
 	    add_post_meta( $campaign, '_variable_pricing', 0 );
