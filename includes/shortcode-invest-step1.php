@@ -77,7 +77,7 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '</div>';
 		
 		$form .= '</form><br /><br />';
-		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';
+		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></center>';
 	    } else {
 		$form = 'Il n&apos;est plus possible d&apos;investir sur ce <a href="'.get_permalink($campaign->ID).'">projet</a> !';
 	    }

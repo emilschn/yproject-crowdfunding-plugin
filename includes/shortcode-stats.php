@@ -69,7 +69,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
     <div id="stat-tab-2">
          <h3>Liste des investisseurs</h3>
-        <?php printPreviewUsersLastInvestors(30) ;?>
+        <?php // printPreviewUsersLastInvestors(30) ;?>
 
     </div>
 

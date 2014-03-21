@@ -442,7 +442,7 @@ function ypcf_login_gobackinvest_url() {
  * @return string
  */
 function ypcf_print_invest_breadcrumb($current_step) {
-    $buffer = '<div id="invest-breadcrumb"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step.'.jpg" width="600" height="100" /></div>';
+    $buffer = '<div id="invest-breadcrumb"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step.'.jpg" width="600" height="100" alt="Parcours d&apos;investissement" /></div>';
     return $buffer;
 }
 
