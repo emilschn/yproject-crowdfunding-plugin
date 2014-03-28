@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function ypcf_display_invest_confirm($content) {
     $form = '';
-    if (session_id() == '') session_start();
+    ypcf_session_start();
     
     $min_value = ypcf_get_min_value_to_invest();
     $max_value = ypcf_get_max_value_to_invest();
@@ -86,7 +86,7 @@ function ypcf_display_invest_confirm($content) {
 		// Rappel des informations remplies
 		require_once('country_list.php');
 		global $country_list;
-		if (session_id() == '') session_start();
+		ypcf_session_start();
 		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 		
 		$form .= ypcf_print_invest_breadcrumb(2);

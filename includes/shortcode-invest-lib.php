@@ -3,6 +3,10 @@
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+function ypcf_session_start() {
+	if (session_id() == '' && !headers_sent()) session_start();
+}
+
 /**
  * Se charge de tester les redirections à effectuer
  */
@@ -19,7 +23,7 @@ function ypcf_check_redirections() {
 	
 	    case 'investir' :
 		if (isset($_GET['invest_start'])) {
-		    if (session_id() == '') session_start();
+		    ypcf_session_start();
 		    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 		    if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
 		}
@@ -66,7 +70,7 @@ add_action( 'template_redirect', 'ypcf_check_redirections' );
  * Après le login, si on venait de l'investissement, il faut y retourner
  */
 function ypcf_check_is_user_logged_connexion() {
-    if (session_id() == '') session_start();
+    ypcf_session_start();
 
     if (is_user_logged_in() && isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
 	wp_redirect(ypcf_login_gobackinvest_url());
@@ -79,7 +83,7 @@ function ypcf_check_is_user_logged_connexion() {
  * Si l'utilisateur n'est pas connecté, on redirige vers la page de connexion en enregistrant la page d'investissement pour y revenir
  */
 function ypcf_check_is_user_logged_invest() {
-    if (session_id() == '') session_start();
+    ypcf_session_start();
 
     if (!is_user_logged_in()) {
 	if (isset($_GET['campaign_id'])) {
@@ -132,7 +136,7 @@ function ypcf_check_user_can_invest($redirect = false) {
 //    $can_invest = $can_invest && ($current_user->get('user_person_type') == "NATURAL_PERSON");
 
     if ($redirect && !$can_invest) {
-	if (session_id() == '') session_start();
+	ypcf_session_start();
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
@@ -178,7 +182,7 @@ function ypcf_check_organisation_can_invest($organisation_user_id) {
  * Se charge de tester les redirections à effectuer
  */
 function ypcf_check_invest_redirections() {
-    if (session_id() == '') session_start();
+    ypcf_session_start();
 
     //Si le projet n'est pas défini, on annule et retourne à l'accueil
     $post_camp = get_post($_GET['campaign_id']);
@@ -245,7 +249,7 @@ function ypcf_check_invest_redirections() {
  */
 function ypcf_check_has_user_filled_infos_and_redirect() {
     global $validate_email;
-    if (session_id() == '') session_start();
+    ypcf_session_start();
     $validate_email = true;
     $current_user = wp_get_current_user();
     ypcf_debug_log("ypcf_check_has_user_filled_infos_and_redirect --- ".$current_user->ID);
@@ -425,7 +429,7 @@ add_filter( 'login_redirect', 'ypcf_login_redirect_invest', 10, 3 );
  */
 function ypcf_login_gobackinvest_url() {
     $redirect_to = '';
-    if (session_id() == '') session_start();
+    ypcf_session_start();
     if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
 	$page_invest = get_page_by_path('investir');
 	$page_invest_link = get_permalink($page_invest->ID);

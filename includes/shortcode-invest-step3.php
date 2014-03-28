@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function ypcf_shortcode_invest_return($atts, $content = '') {
     $buffer = '';
-    if (session_id() == '') session_start();
+    ypcf_session_start();
     if (isset($_REQUEST["ContributionID"]) && isset($_GET['campaign_id'])) {
 	$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($_REQUEST["ContributionID"]);
 

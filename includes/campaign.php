@@ -238,7 +238,7 @@ class ATCF_Campaigns {
 			add_meta_box( 'atcf_campaign_funds', __( 'Campaign Funds', 'atcf' ), '_atcf_metabox_campaign_funds', 'download', 'side', 'high' );
 
 		add_meta_box( 'atcf_campaign_stats', __( 'Campaign Stats', 'atcf' ), '_atcf_metabox_campaign_stats', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_vote', 'Satut du vote', '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_vote', 'Satut de la campagne', '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
 		add_meta_box( 'atcf_campaign_date_vote', 'Date de la fin des votes', '_atcf_metabox_campaign_date_vote', 'download', 'side', 'high' );
 		
 		
@@ -758,7 +758,7 @@ function _atcf_metabox_campaign_societal_challenge() {
 ?>
 	<div class="atcf-metabox-campaign_added_value">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->added_value()) : '', 'campaign_added_value', apply_filters( 'atcf_metabox_field_added_value"_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->added_value()) : '', 'campaign_added_value', apply_filters( 'atcf_metabox_field_added_value_editor_args', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
 				'quicktags'     => false,
@@ -1808,8 +1808,8 @@ function _atcf_metabox_campaign_info() {
 		<input type="text" id="end-hh" name="end-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
 		<input type="text" id="end-mn" name="end-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<input type="hidden" id="end-ss" name="end-ss" value="<?php echo esc_attr( $ss ); ?>" />
-		<input type="hidden" id="campaign_end_date" name="campaign_end_date" />
-		<input type="hidden" id="campaign_end_date_vote" name="campaign_end_date_vote" />
+		<input type="hidden" id="campaign_end_date" name="campaign_end_date" value="1" />
+		<input type="hidden" id="campaign_end_date_vote" name="campaign_end_date_vote" value="1" />
 	</p>
 	
 <?php

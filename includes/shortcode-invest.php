@@ -4,7 +4,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 function ypcf_get_current_step() {
-    if (session_id() == '') session_start();
+    ypcf_session_start();
     $buffer = 1;
     $max_part_value = ypcf_get_max_part_value();
     
