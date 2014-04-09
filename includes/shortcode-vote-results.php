@@ -9,10 +9,12 @@ function ypcf_printable_value($val) {
 
 /**
  */
- function ypcf_shortcode_vote_results() {
+ function ypcf_shortcode_vote_results_header() {
+//    header('Content-Encoding: UTF-8');
+//    header('Content-type: text/csv; charset=UTF-8');
+    
     global $wpdb, $campaign, $post;
     $table_name = $wpdb->prefix . "ypVotes";
-    
 
 
     // La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
@@ -339,6 +341,10 @@ function ypcf_printable_value($val) {
     <tbody id="the-list">
 	<?php
 	$payments_data = get_payments_data($_GET['campaign_id']);
+	$csv_buffer = "\xEF\xBB\xBF";
+	$csv_buffer .= 'Prénom;Nom;e-mail;Genre;Date de naissance;Ville de naissance;Nationalité;Adresse;Code postal;Ville;Pays;Téléphone;Compte Facebook';
+	$csv_buffer .= PHP_EOL;
+	
 	$i = -1;
 	foreach ( $payments_data as $item ) {
 	    $payment_status = ypcf_get_updated_payment_status($item['ID']);
@@ -366,22 +372,20 @@ function ypcf_printable_value($val) {
 		    <td <?php if ($item['signsquid_status'] != 'Agreed') echo 'style="background-color: #EF876D"'; ?>><?php echo $item['signsquid_status_text']; ?></td>
 		</tr>
 		<?php
+		if ($payment_status == 'publish' && $item['signsquid_status'] == 'Agreed' && $mangopay_contribution->IsSucceeded) $csv_buffer .= ypcf_csv_investors_add_line($item['user']);
 	    }
 	}
+	
+	$filename = $campaign->ID . '_investors_' . time() . '.csv';
+        $filepath = dirname ( __FILE__ ) . '/pdf_files/' . $filename;
+	file_put_contents ($filepath, $csv_buffer);
 	?>
     </tbody>
 </table>
 
-<h2>e-mail des Investisseurs</h2>
+<h2>Données des Investisseurs</h2>
 <div>
-<?php
-	foreach ( $payments_data as $item ) {
-	    $payment_status = ypcf_get_updated_payment_status($item['ID']);
-	    if ($payment_status == 'publish') {
-		echo bp_core_get_user_email($item['user']) . ', ';
-	    }
-	}
-?>
+    <a href="<?php echo site_url(); ?>/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/<?php echo $filename; ?>" target="_blank">Télécharger le fichier csv</a> (Ce fichier peut être lu dans un tableur)
 </div>
 
 
@@ -389,10 +393,16 @@ function ypcf_printable_value($val) {
 
     <?php
     $post = $save_post;
-    return ob_get_clean();
+    global $vote_results_shortcode;
+    $vote_results_shortcode = ob_get_clean();
 }
 
 
+}
+
+function ypcf_shortcode_vote_results() {
+    global $vote_results_shortcode;
+    return $vote_results_shortcode;
 }
 add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_results' );
 
@@ -402,7 +412,7 @@ add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_result
 
     if ( isset( $_GET['paged'] ) ) $page = $_GET['paged']; else $page = 1;
 
-    $per_page       = 50;
+    $per_page       = 10000;
     $mode           = edd_is_test_mode()            ? 'test'                            : 'live';
     $orderby 		= isset( $_GET['orderby'] )     ? $_GET['orderby']                  : 'ID';
     $order 			= isset( $_GET['order'] )       ? $_GET['order']                    : 'DESC';
@@ -464,4 +474,27 @@ add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_result
 	}
     }
     return $payments_data;
+}
+
+function ypcf_csv_investors_add_line($user_id) {
+    $user = get_userdata($user_id);
+    
+    $buffer = '';
+    
+    $buffer .= '"' . $user->first_name . '";';
+    $buffer .= '"' . $user->last_name . '";';
+    $buffer .= '"' . bp_core_get_user_email($user_id) . '";';
+    $buffer .= '"' . $user->get('user_gender') . '";';
+    $buffer .= '"' . $user->get('user_birthday_day') . '/' . $user->get('user_birthday_month') . '/' . $user->get('user_birthday_year') . '";';
+    $buffer .= '"' . $user->get('user_birthplace') . '";';
+    $buffer .= '"' . $user->get('user_nationality') . '";';
+    $buffer .= '"' . $user->get('user_address') . '";';
+    $buffer .= '"' . $user->get('user_postal_code') . '";';
+    $buffer .= '"' . $user->get('user_city') . '";';
+    $buffer .= '"' . $user->get('user_country') . '";';
+    $buffer .= '"' . $user->get('user_mobile_phone') . '";';
+    $buffer .= '"' . $user->user_url . '";';
+    $buffer .= PHP_EOL;
+    
+    return $buffer;
 }
