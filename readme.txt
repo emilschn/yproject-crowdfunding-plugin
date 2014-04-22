@@ -1,10 +1,6 @@
 === Crowdfunding by Astoundify ===
 
-Author URI: http://astoundify.com
-Plugin URI: http://astoundify.com
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=contact@appthemer.com&item_name=Donation+for+Crowdfunding
-Contributors: SpencerFinnell, adampickering
-Tags: crowdfunding, donations, charity, fundraising, digital downloads, crowd funding, crowdsource 
+Contributors: Boubacar, Emilien, Loeiza
 Requires at least: 3.5
 Tested up to: 3.5
 Stable Tag: 1.3.1

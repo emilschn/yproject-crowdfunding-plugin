@@ -342,7 +342,7 @@ function ypcf_printable_value($val) {
 	<?php
 	$payments_data = get_payments_data($_GET['campaign_id']);
 	$csv_buffer = "\xEF\xBB\xBF";
-	$csv_buffer .= 'Prénom;Nom;e-mail;Genre;Date de naissance;Ville de naissance;Nationalité;Adresse;Code postal;Ville;Pays;Téléphone;Compte Facebook';
+	$csv_buffer .= 'Prénom;Nom;e-mail;Investissement;Genre;Date de naissance;Ville de naissance;Nationalité;Adresse;Code postal;Ville;Pays;Téléphone;Compte Facebook';
 	$csv_buffer .= PHP_EOL;
 	
 	$i = -1;
@@ -372,7 +372,7 @@ function ypcf_printable_value($val) {
 		    <td <?php if ($item['signsquid_status'] != 'Agreed') echo 'style="background-color: #EF876D"'; ?>><?php echo $item['signsquid_status_text']; ?></td>
 		</tr>
 		<?php
-		if ($payment_status == 'publish' && $item['signsquid_status'] == 'Agreed' && $mangopay_contribution->IsSucceeded) $csv_buffer .= ypcf_csv_investors_add_line($item['user']);
+		if ($payment_status == 'publish' && $item['signsquid_status'] == 'Agreed' && $mangopay_is_succeeded == 'Oui') $csv_buffer .= ypcf_csv_investors_add_line($item['user'], $item['amount']);
 	    }
 	}
 	
@@ -476,7 +476,7 @@ add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_result
     return $payments_data;
 }
 
-function ypcf_csv_investors_add_line($user_id) {
+function ypcf_csv_investors_add_line($user_id, $amount) {
     $user = get_userdata($user_id);
     
     $buffer = '';
@@ -484,6 +484,7 @@ function ypcf_csv_investors_add_line($user_id) {
     $buffer .= '"' . $user->first_name . '";';
     $buffer .= '"' . $user->last_name . '";';
     $buffer .= '"' . bp_core_get_user_email($user_id) . '";';
+    $buffer .= '"' . $amount . '€";';
     $buffer .= '"' . $user->get('user_gender') . '";';
     $buffer .= '"' . $user->get('user_birthday_day') . '/' . $user->get('user_birthday_month') . '/' . $user->get('user_birthday_year') . '";';
     $buffer .= '"' . $user->get('user_birthplace') . '";';

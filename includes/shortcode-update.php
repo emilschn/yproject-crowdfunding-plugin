@@ -33,6 +33,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    $crowdfunding = crowdfunding();
 
 	    $campaign = atcf_get_campaign( $post );
+	    
+	    //Si on demande la création d'un groupe d'utilisateurs
+	    $investors_group_id = get_post_meta($campaign->ID, 'campaign_investors_group', true);
+	    $group_exists = (is_numeric($investors_group_id) && ($investors_group_id > 0));
+	    if (isset($_POST['action']) && $_POST['action'] == 'ypcf-campaign-create-investors-group' && !$group_exists) {
+		$create_investors_success = false;
+		//Si c'est bien l'admin qui demande et qu'il ne reste plus de temps pour investir
+		if (current_user_can('manage_options') && $campaign->days_remaining() <= 0) {
+		    $create_investors_success = ypcf_campaign_create_investors_group($post, $campaign);
+		}
+	    }
 	
 	    if (isset($_POST['action']) && $_POST['action'] == 'atcf-campaign-submit') {
 		$post_update = array();
@@ -158,6 +169,24 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		    'oneReward' => __( 'At least one reward is required.', 'atcf' )
 	    ) );
 ?>
+
+	    <?php 
+	    if (isset($create_investors_success)) :
+		if ($create_investors_success) : ?>
+		    <span class="error">Groupe cr&eacute;&eacute; avec succ&egrave;s !</span><br /><br />
+		<?php else: ?>
+		    <span class="success">Problème lors de la cr&eacute;ation du groupe...</span><br /><br />
+		<?php endif;
+	    endif;
+	    
+	    if (current_user_can('manage_options') && $campaign->days_remaining() <= 0 && $campaign->campaign_status() != 'preview' && $campaign->campaign_status() != 'vote' && !$group_exists) : 
+	    ?>
+	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
+		    <input type="submit" value="Cr&eacute;er le groupe d&apos;investisseurs" />
+		    <input type="hidden" name="action" value="ypcf-campaign-create-investors-group" />
+	    </form><br /><br />
+	    <?php endif; ?>
+
 	    <?php do_action( 'atcf_shortcode_update_before', $editing, $campaign, $post ); ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
 		    <?php do_action( 'atcf_shortcode_update_fields', $editing, $campaign, $post ); ?>
@@ -360,3 +389,60 @@ function atcf_shortcode_update_field_implementation( $editing, $campaign, $post 
 <?php
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_implementation', 10, 3);
+
+/**
+ * Permet de créer le groupe d'utilisateurs
+ * @param type $campaign
+ */
+function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
+    //Création du groupe
+    $name = 'Investisseurs du projet ' . $post_campaign->post_title;
+    $description = 'Groupe de discussion et d&apos;information pour le projet ' . $post_campaign->post_title;
+    $create_group_args = array(
+	'name' => $name,
+	'description' => $description,
+	'slug' => sanitize_title( esc_attr( $name ) ),
+	'date_created' => bp_core_current_time(), 
+	'enable_forum' => 1,
+	'status' => 'hidden'
+    );
+    $new_group_id = groups_create_group($create_group_args);
+    update_post_meta($campaign->ID, 'campaign_investors_group', $new_group_id);
+    groups_update_groupmeta($new_group_id, 'campaign_id', $post_campaign->ID);
+    
+    //Création d'un forum ? (si nécessaire)
+    
+    //Ajout des utilisateurs à ce groupe
+    $invite_users_args = array(
+	'user_id'       => false,
+	'group_id'      => $new_group_id,
+	'inviter_id'    => bp_loggedin_user_id(),
+	'date_modified' => bp_core_current_time(),
+	'is_confirmed'  => 1
+    );
+    //Le porteur de projet
+    $invite_users_args['user_id'] = $post_campaign->post_author;
+    groups_invite_user( $invite_users_args );
+    //L'admin
+    $invite_users_args['user_id'] = 1;
+    groups_invite_user( $invite_users_args );
+    //Les investisseurs
+    $payments_data = get_payments_data($post_campaign->ID);
+    foreach ( $payments_data as $item ) {
+	if ($item['signsquid_status'] == 'Agreed') {
+	    $payment_status = ypcf_get_updated_payment_status($item['ID']);
+	    if ($payment_status == 'publish') {
+		$mangopay_id = edd_get_payment_key($item['ID']);
+		$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
+		$mangopay_is_succeeded = (isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded);
+		if ($mangopay_is_succeeded) {
+		    $invite_users_args['user_id'] = $item['user'];
+		    groups_invite_user( $invite_users_args );
+		}
+	    }
+	}
+    }
+
+    
+    return true;
+}

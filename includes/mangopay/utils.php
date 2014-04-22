@@ -120,6 +120,25 @@ function ypcf_mangopay_is_user_strong_authentication_sent($wp_user_id) {
     return $buffer;
 }
 
+function ypcf_mangopay_get_user_strong_authentication_status($wp_user_id) {
+    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    $authentication_object = ypcf_mangopay_get_user_strong_authentication($mp_user_id);
+    $buffer = array('status' => '', 'message' => '');
+    if ($authentication_object && isset($authentication_object->IsDocumentsTransmitted) && $authentication_object->IsDocumentsTransmitted && !$authentication_object->IsCompleted) {
+	$buffer['status'] = 'waiting';
+	$buffer['message'] = "Votre pi&egrave;ce d&apos;identit&eacute; est en cours de validation. Un d&eacute;lai maximum de 24h est n&eacute;cessaire &agrave; cette validation.";
+    } elseif ($authentication_object && isset($authentication_object->IsDocumentsTransmitted) && $authentication_object->IsDocumentsTransmitted && $authentication_object->IsCompleted && !$authentication_object->IsSucceeded) {
+	$buffer['status'] = 'error';
+	$buffer['message'] = $authentication_object->Message;
+    }
+    switch ($buffer['message']) {
+	case "The copy of the other side of the ID card is missing.":
+	    $buffer['message'] = "Il manque la copie de l&apos;autre c&ocirc;t&eacute; de la carte d&apos;identit&eacute;.";
+	    break;
+    }
+    return $buffer;
+}
+
 function ypcf_mangopay_send_strong_authentication($url_request, $field_name) {
     ypcf_debug_log("ypcf_mangopay_send_strong_authentication --- ".$url_request." (" . $field_name . ")");
     
