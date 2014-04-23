@@ -442,7 +442,8 @@ function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
 	    }
 	}
     }
-
+    //Envoi des invitations à venir voir le groupe
+    groups_send_invites( $post_campaign->post_author, $new_group_id );
     
     return true;
 }
