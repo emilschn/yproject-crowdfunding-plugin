@@ -667,10 +667,8 @@ function ypcf_send_mail_admin($payment_id, $type) {
 	case "purchase_complete":
 	    $subject = 'Nouvel achat';
 	    $downloads = edd_get_payment_meta_downloads($payment_id);
-	    
 	    $download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
 	    $post_campaign = get_post($download_id);
-
 	    $payment_data = edd_get_payment_meta( $payment_id );
 	    $payment_amount = edd_get_payment_amount( $payment_id );
 	    $user_id      = edd_get_payment_user_id( $payment_id );
@@ -692,6 +690,11 @@ function ypcf_send_mail_admin($payment_id, $type) {
 	    $message .= "Montant investi : ".$payment_amount."€<br />";
 	    $message .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
 	    break;
+    case "project_posted":
+        $subject = '[Nouveau Projet]'.$_POST[ 'title' ];
+        $message = 'Un nouveau projet viens d\'être publié . <br />';
+        $message.= 'Il est accessible depuis le back-office.';
+        break;
     }
     
     $from_name = get_bloginfo('name') . ' admin bot';

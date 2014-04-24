@@ -1,12 +1,8 @@
 <?php
 /**
- * Plugin Name: Crowd Funding by Astoundify
- * Plugin URI:  https://github.com/astoundify/crowdfunding/
- * Description: A crowd funding platform in the likes of Kickstarter and Indigogo
- * Author:      Astoundify
- * Author URI:  http://astoundify.com
- * Version:     1.3.1
- * Text Domain: atcf
+ * Plugin Name: YP Crowdfunding
+ * Author:      WEDOGOOD
+ * Author URI:  http://wedogood.co
  */
 
 // Exit if accessed directly

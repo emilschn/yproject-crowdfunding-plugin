@@ -1,0 +1,118 @@
+01.23.2014 10:12:30 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+01.23.2014 10:12:31 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1390468351 (GET) => 
+01.23.2014 10:12:31 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 404
+01.23.2014 10:12:31 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: 
+01.23.2014 10:12:31 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1390468351 (GET) => 
+01.23.2014 10:12:31 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 404
+01.23.2014 10:12:31 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: 
+01.23.2014 10:12:31 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1390468351 (GET) => 
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1390468352 (GET) => 
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1390468352 (GET) => 
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1390468352 (GET) => 
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+01.23.2014 10:12:32 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+01.23.2014 10:12:51 (/mes-investissements/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705?ts=1390468371 (GET) => 
+01.23.2014 10:12:52 (/mes-investissements/?) - mangopay_request --- STATUS :: 200
+01.23.2014 10:12:52 (/mes-investissements/?) - mangopay_request --- RESPONSE :: {"Email":"emilien@wedogood.co","FirstName":"Emil","LastName":"Schn","CanRegisterMeanOfPayment":false,"HasRegisteredMeansOfPayment":false,"IP":"81.80.82.30","Birthday":451864800,"Password":"QgA3EvSWbRQjGkrXudWvzwcAsfXMny","PersonalWalletAmount":0,"IsStrongAuthenticated":false,"Nationality":"FR","PersonType":"NATURAL_PERSON","ID":1449705,"Tag":"emil","CreationDate":1390320532,"UpdateDate":1390320532}
+01.23.2014 10:13:48 (/investir/?campaign_id=1173?campaign_id=1173) - -------------
+01.23.2014 10:13:48 (/investir/?campaign_id=1173?campaign_id=1173) - ypcf_init_mangopay_user : $current_user->ID = 23
+01.23.2014 10:13:48 (/investir/?campaign_id=1173?campaign_id=1173) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449705
+01.23.2014 10:13:48 (/investir/?campaign_id=1173?campaign_id=1173) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449707
+01.23.2014 10:14:07 (/investir/?campaign_id=1173?campaign_id=1173) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1390468447 (POST) => { 
+					    "UserID" : 1449705, 
+					    "WalletID" : 1348028,
+					    "Amount" : 1000,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1173",
+					    "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id=1173"
+					}
+01.23.2014 10:14:09 (/investir/?campaign_id=1173?campaign_id=1173) - mangopay_request --- STATUS :: 200
+01.23.2014 10:14:09 (/investir/?campaign_id=1173?campaign_id=1173) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1hfnqdE3z3CVeTDNX3mH1390468448962","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1458857","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1458857","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1458857,"Tag":null,"CreationDate":1390468448,"UpdateDate":1390468448}
+01.23.2014 10:14:43 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1458857?ts=1390468483 (GET) => 
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - mangopay_request --- STATUS :: 200
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1hfnqdE3z3CVeTDNX3mH1390468448962","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1458857","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1458857","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1458857,"Tag":null,"CreationDate":1390468448,"UpdateDate":1390468481}
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1458857?ts=1390468484 (GET) => 
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - mangopay_request --- STATUS :: 200
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1hfnqdE3z3CVeTDNX3mH1390468448962","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1458857","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1458857","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1458857,"Tag":null,"CreationDate":1390468448,"UpdateDate":1390468481}
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - ypcf_create_contract --- START
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - ypcf_create_contract --- CALL signsquid_create_contract
+01.23.2014 10:14:44 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts (POST) => {"name":"La Ferme de Milgoulle - Investissement de 10\u20ac de Emil Schn (emilien@wedogood.co) - Le 23 janvier 2014"}
+01.23.2014 10:14:45 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Thu, 23 Jan 2014 09:14:42 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.23.2014 10:14:45 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1/signatories (POST) => {"name":"Emil Schn","email":"emilien@wedogood.co","mobilePhone":"+33679840419"}
+01.23.2014 10:14:45 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Thu, 23 Jan 2014 09:14:43 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.23.2014 10:14:47 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1/files?filename= (POST_FILE) => "\/homepages\/30\/d455744883\/htdocs\/dev\/wp-content\/plugins\/appthemer-crowdfunding\/includes\/pdf_files\/1173_23_1390468485.pdf"
+01.23.2014 10:14:49 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- RESPONSE :: HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1/files/1?contractId=52e0dd824bdcc80ae48ffa01&version=1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Thu, 23 Jan 2014 09:14:46 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.23.2014 10:14:49 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1 (POST) => 
+01.23.2014 10:14:51 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- RESPONSE :: HTTP/1.1 200 OK
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Thu, 23 Jan 2014 09:14:48 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.23.2014 10:14:51 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - ypcf_create_contract --- $contract_errors : 
+01.23.2014 10:14:51 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - ypcf_create_contract --- END
+01.23.2014 10:14:51 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1 (GET) => 
+01.23.2014 10:14:54 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - signsquid_request --- RESPONSE :: {"signatories":[{"name":"Emil Schn","email":"emilien@wedogood.co","code":"X45U2A","status":"WaitingForSignatoryAction","mobilePhone":"+33679840419","smsStatus":null}],"published":true,"expires":"2014-02-23T09:14:42.794Z","status":"WaitingForSignatoryAction"} ( ; )
+01.23.2014 10:14:54 (/paiement-effectue/?campaign_id=1173&ContributionID=1458857?campaign_id=1173&ContributionID=1458857) - ypcf_send_mail_admin --- MAIL :: payment_id :: 1356 ; type :: purchase_complete ; sent to : admin@wedogood.co
+01.23.2014 10:15:35 (/mes-investissements/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705?ts=1390468535 (GET) => 
+01.23.2014 10:15:35 (/mes-investissements/?) - mangopay_request --- STATUS :: 200
+01.23.2014 10:15:35 (/mes-investissements/?) - mangopay_request --- RESPONSE :: {"Email":"emilien@wedogood.co","FirstName":"Emil","LastName":"Schn","CanRegisterMeanOfPayment":false,"HasRegisteredMeansOfPayment":false,"IP":"81.80.82.30","Birthday":451864800,"Password":"QgA3EvSWbRQjGkrXudWvzwcAsfXMny","PersonalWalletAmount":0,"IsStrongAuthenticated":false,"Nationality":"FR","PersonType":"NATURAL_PERSON","ID":1449705,"Tag":"emil","CreationDate":1390320532,"UpdateDate":1390320532}
+01.23.2014 10:15:35 (/mes-investissements/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1458857?ts=1390468535 (GET) => 
+01.23.2014 10:15:35 (/mes-investissements/?) - mangopay_request --- STATUS :: 200
+01.23.2014 10:15:35 (/mes-investissements/?) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1hfnqdE3z3CVeTDNX3mH1390468448962","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1458857","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1458857","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1458857,"Tag":null,"CreationDate":1390468448,"UpdateDate":1390468481}
+01.23.2014 10:15:35 (/mes-investissements/?) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1 (GET) => 
+01.23.2014 10:15:36 (/mes-investissements/?) - signsquid_request --- RESPONSE :: {"signatories":[{"name":"Emil Schn","email":"emilien@wedogood.co","code":"X45U2A","status":"WaitingForSignatoryAction","mobilePhone":"+33679840419","smsStatus":"Sent"}],"published":true,"expires":"2014-02-23T09:14:42.794Z","status":"WaitingForSignatoryAction"} ( ; )
+01.23.2014 10:15:49 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1 (GET) => 
+01.23.2014 10:15:50 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - signsquid_request --- RESPONSE :: {"signatories":[{"name":"Emil Schn","email":"emilien@wedogood.co","code":"X45U2A","status":"WaitingForSignatoryAction","mobilePhone":"+33679840419","smsStatus":"Sent"}],"published":true,"expires":"2014-02-23T09:14:42.794Z","status":"WaitingForSignatoryAction"} ( ; )
+01.23.2014 10:15:50 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705?ts=1390468550 (GET) => 
+01.23.2014 10:15:51 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - mangopay_request --- STATUS :: 200
+01.23.2014 10:15:51 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - mangopay_request --- RESPONSE :: {"Email":"emilien@wedogood.co","FirstName":"Emil","LastName":"Schn","CanRegisterMeanOfPayment":false,"HasRegisteredMeansOfPayment":false,"IP":"81.80.82.30","Birthday":451864800,"Password":"QgA3EvSWbRQjGkrXudWvzwcAsfXMny","PersonalWalletAmount":0,"IsStrongAuthenticated":false,"Nationality":"FR","PersonType":"NATURAL_PERSON","ID":1449705,"Tag":"emil","CreationDate":1390320532,"UpdateDate":1390320532}
+01.23.2014 10:15:51 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1458857?ts=1390468551 (GET) => 
+01.23.2014 10:15:51 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - mangopay_request --- STATUS :: 200
+01.23.2014 10:15:51 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1hfnqdE3z3CVeTDNX3mH1390468448962","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1458857","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1458857","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1458857,"Tag":null,"CreationDate":1390468448,"UpdateDate":1390468481}
+01.23.2014 10:15:51 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52e0dd824bdcc80ae48ffa01/versions/1 (GET) => 
+01.23.2014 10:15:52 (/mes-investissements/?invest_id_resend=1356?invest_id_resend=1356) - signsquid_request --- RESPONSE :: {"signatories":[{"name":"Emil Schn","email":"emilien@wedogood.co","code":"X45U2A","status":"WaitingForSignatoryAction","mobilePhone":"+33679840419","smsStatus":"Sent"}],"published":true,"expires":"2014-02-23T09:14:42.794Z","status":"WaitingForSignatoryAction"} ( ; )

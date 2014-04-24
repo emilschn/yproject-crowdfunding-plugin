@@ -1,0 +1,97 @@
+01.07.2014 11:16:19 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1389089779 (POST) => { 
+					    "UserID" : 507837, 
+					    "WalletID" : 1348028,
+					    "Amount" : 1000,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1173",
+					    "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id=1173"
+					}
+01.07.2014 11:16:20 - mangopay_request --- STATUS :: 200
+01.07.2014 11:16:20 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=1321gyDzEvONcWJmBafO1389089780226","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1366573","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1366573","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1366573,"Tag":null,"CreationDate":1389089779,"UpdateDate":1389089779}
+01.07.2014 11:19:04 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1389089944 (POST) => { 
+					    "UserID" : 507837, 
+					    "WalletID" : 1348028,
+					    "Amount" : 1000,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1173",
+					    "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id=1173"
+					}
+01.07.2014 11:19:05 - mangopay_request --- STATUS :: 200
+01.07.2014 11:19:05 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=10yOVeXIRS8tYKOvHp381389089945347","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1366617","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1366617","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1366617,"Tag":null,"CreationDate":1389089945,"UpdateDate":1389089945}
+01.07.2014 11:19:36 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1366617?ts=1389089976 (GET) => 
+01.07.2014 11:19:37 - mangopay_request --- STATUS :: 200
+01.07.2014 11:19:37 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=10yOVeXIRS8tYKOvHp381389089945347","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1366617","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1366617","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1366617,"Tag":null,"CreationDate":1389089945,"UpdateDate":1389089974}
+01.07.2014 11:19:37 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1366617?ts=1389089977 (GET) => 
+01.07.2014 11:19:38 - mangopay_request --- STATUS :: 200
+01.07.2014 11:19:38 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=10yOVeXIRS8tYKOvHp381389089945347","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1366617","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1366617","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1366617,"Tag":null,"CreationDate":1389089945,"UpdateDate":1389089974}
+01.07.2014 11:19:38 - ypcf_create_contract --- START
+01.07.2014 11:19:38 - ypcf_create_contract --- CALL signsquid_create_contract
+01.07.2014 11:19:38 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts (POST) => {"name":"La Ferme de Milgoulle - Investissement de 10\u20ac de Admin Plateforme (bonjour@yproject.co) - Le 7 janvier 2014"}
+01.07.2014 11:19:41 - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/52cbd4bc4bdcc822bc50cc50
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Tue, 07 Jan 2014 10:19:40 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.07.2014 11:19:41 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52cbd4bc4bdcc822bc50cc50/versions/1/signatories (POST) => {"name":"Admin Plateforme","email":"bonjour@yproject.co","mobilePhone":""}
+01.07.2014 11:19:41 - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Tue, 07 Jan 2014 10:19:40 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.07.2014 11:19:43 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52cbd4bc4bdcc822bc50cc50/versions/1/files?filename= (POST_FILE) => "\/homepages\/30\/d455744883\/htdocs\/dev\/wp-content\/plugins\/appthemer-crowdfunding\/includes\/pdf_files\/1173_1_1389089981.pdf"
+01.07.2014 11:19:46 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1389089986 (POST) => { 
+					    "UserID" : 507837, 
+					    "WalletID" : 1348028,
+					    "Amount" : 1000,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1173",
+					    "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id=1173"
+					}
+01.07.2014 11:19:47 - signsquid_request --- RESPONSE :: HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/52cbd4bc4bdcc822bc50cc50/versions/1/files/1?contractId=52cbd4bc4bdcc822bc50cc50&version=1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Tue, 07 Jan 2014 10:19:45 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.07.2014 11:19:47 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52cbd4bc4bdcc822bc50cc50/versions/1 (POST) => 
+01.07.2014 11:19:47 - mangopay_request --- STATUS :: 200
+01.07.2014 11:19:47 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=15Utex8lnUcA8Zppjmdp1389089987390","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1366638","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1366638","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1366638,"Tag":null,"CreationDate":1389089987,"UpdateDate":1389089987}
+01.07.2014 11:19:50 - signsquid_request --- RESPONSE :: HTTP/1.1 200 OK
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Tue, 07 Jan 2014 10:19:49 GMT
+Content-Length: 0
+
+ ( ; 0)
+01.07.2014 11:19:50 - ypcf_create_contract --- $contract_errors : 
+01.07.2014 11:19:50 - ypcf_create_contract --- END
+01.07.2014 11:19:50 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52cbd4bc4bdcc822bc50cc50/versions/1 (GET) => 
+01.07.2014 11:19:53 - signsquid_request --- RESPONSE :: {"signatories":[{"name":"Admin Plateforme","email":"bonjour@yproject.co","code":"JUCT49","status":"WaitingForSignatoryAction","mobilePhone":"","smsStatus":null}],"published":true,"expires":"2014-02-07T10:19:40.06Z","status":"WaitingForSignatoryAction"} ( ; )
+01.07.2014 12:31:18 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1366617?ts=1389094278 (GET) => 
+01.07.2014 12:31:18 - mangopay_request --- STATUS :: 200
+01.07.2014 12:31:18 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=10yOVeXIRS8tYKOvHp381389089945347","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1366617","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1366617","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1366617,"Tag":null,"CreationDate":1389089945,"UpdateDate":1389089974}
+01.07.2014 12:31:25 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1366617?ts=1389094285 (GET) => 
+01.07.2014 12:31:26 - mangopay_request --- STATUS :: 200
+01.07.2014 12:31:26 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=10yOVeXIRS8tYKOvHp381389089945347","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1366617","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1366617","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1348028,"Amount":1000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1366617,"Tag":null,"CreationDate":1389089945,"UpdateDate":1389089974}

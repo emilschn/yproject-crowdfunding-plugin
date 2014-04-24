@@ -758,6 +758,7 @@ function atcf_shortcode_submit_process() {
 	    wp_safe_redirect( $redirect );
 	    exit();
 	}
+        ypcf_send_mail_admin(0, 'project_posted');
 
 }
 add_action( 'template_redirect', 'atcf_shortcode_submit_process' );

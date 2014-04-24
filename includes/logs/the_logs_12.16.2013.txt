@@ -1,0 +1,136 @@
+12.16.2013 12:50:30 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/wallets?ts=1387194630 (POST) => { 
+					"Owners" : [1105680.], 
+					"Name" : "Wallet of Em Sc",
+					"Tag" : "Wallet of Em Sc",
+					"Description" : "Wallet of Em Sc"
+				    }
+12.16.2013 12:50:30 - mangopay_request --- STATUS :: 200
+12.16.2013 12:50:30 - mangopay_request --- RESPONSE :: {"Owners":[1105680],"Name":"Wallet of Em Sc","Description":"Wallet of Em Sc","RaisingGoalAmount":null,"CollectedAmount":0,"SpentAmount":0,"Amount":0,"ContributionLimitDate":null,"IsClosed":true,"ID":1290575,"Tag":"Wallet of Em Sc","CreationDate":1387194630,"UpdateDate":1387194630}
+12.16.2013 12:50:30 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1105680/strongAuthentication?ts=1387194630 (GET) => 
+12.16.2013 12:50:31 - mangopay_request --- STATUS :: 404
+12.16.2013 12:50:31 - mangopay_request --- RESPONSE :: 
+12.16.2013 12:50:31 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1105680/strongAuthentication?ts=1387194631 (GET) => 
+12.16.2013 12:50:31 - mangopay_request --- STATUS :: 404
+12.16.2013 12:50:31 - mangopay_request --- RESPONSE :: 
+12.16.2013 12:52:48 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/wallets?ts=1387194768 (POST) => { 
+					"Owners" : [1105680.], 
+					"Name" : "Wallet of Em Sc",
+					"Tag" : "Wallet of Em Sc",
+					"Description" : "Wallet of Em Sc"
+				    }
+12.16.2013 12:52:48 - mangopay_request --- STATUS :: 200
+12.16.2013 12:52:48 - mangopay_request --- RESPONSE :: {"Owners":[1105680],"Name":"Wallet of Em Sc","Description":"Wallet of Em Sc","RaisingGoalAmount":null,"CollectedAmount":0,"SpentAmount":0,"Amount":0,"ContributionLimitDate":null,"IsClosed":true,"ID":1290576,"Tag":"Wallet of Em Sc","CreationDate":1387194768,"UpdateDate":1387194768}
+12.16.2013 11:53:45 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1387194825 (POST) => { 
+					    "UserID" : 1105680, 
+					    "WalletID" : 1272464,
+					    "Amount" : 1200,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1055"
+					}
+12.16.2013 11:53:46 - mangopay_request --- STATUS :: 200
+12.16.2013 11:53:46 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=151MTqB8EI1c6VJ6u5fN1387194826342","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1290578","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1105680,"WalletID":1272464,"Amount":1200,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1290578,"Tag":null,"CreationDate":1387194825,"UpdateDate":1387194825}
+12.16.2013 12:53:57 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1290578?ts=1387194837 (GET) => 
+12.16.2013 12:53:57 - mangopay_request --- STATUS :: 200
+12.16.2013 12:53:57 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=151MTqB8EI1c6VJ6u5fN1387194826342","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1290578","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1105680,"WalletID":1272464,"Amount":1200,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1290578,"Tag":null,"CreationDate":1387194825,"UpdateDate":1387194834}
+12.16.2013 11:53:57 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1290578?ts=1387194837 (GET) => 
+12.16.2013 11:53:57 - mangopay_request --- STATUS :: 200
+12.16.2013 11:53:57 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=151MTqB8EI1c6VJ6u5fN1387194826342","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1290578","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1105680,"WalletID":1272464,"Amount":1200,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1290578,"Tag":null,"CreationDate":1387194825,"UpdateDate":1387194834}
+12.16.2013 11:53:57 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts (POST) => {"name":"Emilien 16h16 - Investissement de 12\u20ac de Emil Sc (emilien.schneider@poucr.net) - Le 16 d\u00e9cembre 2013"}
+12.16.2013 11:53:58 - signsquid_request --- RESPONSE :: HTTP/1.1 400 Bad Request
+Content-Type: text/html; charset=us-ascii
+Server: Microsoft-HTTPAPI/2.0
+Date: Mon, 16 Dec 2013 11:53:57 GMT
+Connection: close
+Content-Length: 339
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN""http://www.w3.org/TR/html4/strict.dtd">
+<HTML><HEAD><TITLE>Bad Request</TITLE>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=us-ascii"></HEAD>
+<BODY><h2>Bad Request - Invalid Header</h2>
+<hr><p>HTTP Error 400. The request has an invalid header name.</p>
+</BODY></HTML>
+ ( ; 0)
+12.16.2013 11:53:59 - ypcf_shortcode_invest_return --- ERROR :: contract :: contract_failed
+12.16.2013 15:51:59 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/wallets?ts=1387205519 (POST) => { 
+					"Owners" : [1105680.], 
+					"Name" : "Wallet of Em Sc",
+					"Tag" : "Wallet of Em Sc",
+					"Description" : "Wallet of Em Sc"
+				    }
+12.16.2013 15:52:00 - mangopay_request --- STATUS :: 200
+12.16.2013 15:52:00 - mangopay_request --- RESPONSE :: {"Owners":[1105680],"Name":"Wallet of Em Sc","Description":"Wallet of Em Sc","RaisingGoalAmount":null,"CollectedAmount":0,"SpentAmount":0,"Amount":0,"ContributionLimitDate":null,"IsClosed":true,"ID":1291127,"Tag":"Wallet of Em Sc","CreationDate":1387205520,"UpdateDate":1387205520}
+12.16.2013 15:52:08 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1387205528 (POST) => { 
+					    "UserID" : 1105680, 
+					    "WalletID" : 1272464,
+					    "Amount" : 1200,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1055"
+					}
+12.16.2013 15:52:12 - mangopay_request --- STATUS :: 200
+12.16.2013 15:52:12 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=1FDp9M80ihfwDSzVEVRN1387205532633","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1291128","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1105680,"WalletID":1272464,"Amount":1200,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1291128,"Tag":null,"CreationDate":1387205528,"UpdateDate":1387205528}
+12.16.2013 15:52:37 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1291128?ts=1387205557 (GET) => 
+12.16.2013 15:52:38 - mangopay_request --- STATUS :: 200
+12.16.2013 15:52:38 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=1FDp9M80ihfwDSzVEVRN1387205532633","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1291128","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1105680,"WalletID":1272464,"Amount":1200,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1291128,"Tag":null,"CreationDate":1387205528,"UpdateDate":1387205542}
+12.16.2013 15:52:38 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1291128?ts=1387205558 (GET) => 
+12.16.2013 15:52:38 - mangopay_request --- STATUS :: 200
+12.16.2013 15:52:38 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=1FDp9M80ihfwDSzVEVRN1387205532633","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1291128","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1105680,"WalletID":1272464,"Amount":1200,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1291128,"Tag":null,"CreationDate":1387205528,"UpdateDate":1387205542}
+12.16.2013 15:52:38 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts (POST) => {"name":"Emilien 16h16 - Investissement de 12\u20ac de Emil Sc (emilien.schneider@poucr.net) - Le 16 d\u00e9cembre 2013"}
+12.16.2013 15:52:41 - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/52af13b84bdcc8508c68112f
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Mon, 16 Dec 2013 14:52:40 GMT
+Content-Length: 0
+
+ ( ; 0)
+12.16.2013 15:52:41 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52af13b84bdcc8508c68112f/versions/1/signatories (POST) => {"name":"Emil Sc","email":"emilien.schneider@poucr.net","mobilePhone":""}
+12.16.2013 15:52:41 - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Mon, 16 Dec 2013 14:52:40 GMT
+Content-Length: 0
+
+ ( ; 0)
+12.16.2013 15:52:43 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52af13b84bdcc8508c68112f/versions/1/files?filename= (POST_FILE) => "\/homepages\/30\/d455744883\/htdocs\/dev\/wp-content\/plugins\/appthemer-crowdfunding\/includes\/pdf_files\/1055_12_1387205561.pdf"
+12.16.2013 15:52:44 - signsquid_request --- RESPONSE :: HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/52af13b84bdcc8508c68112f/versions/1/files/1?contractId=52af13b84bdcc8508c68112f&version=1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Mon, 16 Dec 2013 14:52:43 GMT
+Content-Length: 0
+
+ ( ; 0)
+12.16.2013 15:52:44 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52af13b84bdcc8508c68112f/versions/1 (POST) => 
+12.16.2013 15:52:46 - signsquid_request --- RESPONSE :: HTTP/1.1 200 OK
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Mon, 16 Dec 2013 14:52:44 GMT
+Content-Length: 0
+
+ ( ; 0)
+12.16.2013 15:52:46 - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/52af13b84bdcc8508c68112f/versions/1 (GET) => 
+12.16.2013 15:52:48 - signsquid_request --- RESPONSE :: {"signatories":[{"name":"Emil Sc","email":"emilien.schneider@poucr.net","code":"2QJUHG","status":"WaitingForSignatoryAction","mobilePhone":"","smsStatus":null}],"published":true,"expires":"2014-01-16T14:52:40.354Z","status":"WaitingForSignatoryAction"} ( ; )
+12.16.2013 18:10:59 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1387213859 (POST) => { 
+					    "UserID" : 507837, 
+					    "WalletID" : 1272464,
+					    "Amount" : 6000,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1055"
+					}
+12.16.2013 18:11:00 - mangopay_request --- STATUS :: 200
+12.16.2013 18:11:00 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=1ILBlXVSgeDpsx5SArck1387213860391","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1295082","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1272464,"Amount":6000,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1295082,"Tag":null,"CreationDate":1387213859,"UpdateDate":1387213859}

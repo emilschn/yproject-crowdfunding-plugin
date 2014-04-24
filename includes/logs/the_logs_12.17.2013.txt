@@ -1,0 +1,8 @@
+12.17.2013 09:37:37 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1387269457 (POST) => { 
+					    "UserID" : 507837, 
+					    "WalletID" : 1272464,
+					    "Amount" : 1200,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1055"
+					}
+12.17.2013 09:37:39 - mangopay_request --- STATUS :: 200
+12.17.2013 09:37:39 - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/?reqCode=prepareStep2&stepCode=step2&token=1fPKI60m5L8tkaJVjSDa1387269459026","TemplateURL":null,"ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1055&ContributionID=1295934","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":507837,"WalletID":1272464,"Amount":1200,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1295934,"Tag":null,"CreationDate":1387269458,"UpdateDate":1387269458}

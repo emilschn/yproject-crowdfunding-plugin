@@ -1,0 +1,78 @@
+02.21.2014 12:02:27 (/investir/?campaign_id=1173?campaign_id=1173) - -------------
+02.21.2014 12:02:27 (/investir/?campaign_id=1173?campaign_id=1173) - ypcf_init_mangopay_user : $current_user->ID = 23
+02.21.2014 12:02:27 (/investir/?campaign_id=1173?campaign_id=1173) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449705
+02.21.2014 12:02:27 (/investir/?campaign_id=1173?campaign_id=1173) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449707
+02.21.2014 12:02:58 (/investir/?campaign_id=1173?campaign_id=1173) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions?ts=1392980578 (POST) => { 
+					    "UserID" : 1449705, 
+					    "WalletID" : 1348028,
+					    "Amount" : 1500,
+					    "ReturnURL" : "http://dev.yproject.co/paiement-effectue/?campaign_id=1173",
+					    "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id=1173"
+					}
+02.21.2014 12:03:00 (/investir/?campaign_id=1173?campaign_id=1173) - mangopay_request --- STATUS :: 200
+02.21.2014 12:03:00 (/investir/?campaign_id=1173?campaign_id=1173) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1VNcjgtWJJLsCpqG8dWr1392980579898","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1597900","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1597900","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1500,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":false,"IsCompleted":false,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":null,"AnswerMessage":null,"ID":1597900,"Tag":null,"CreationDate":1392980579,"UpdateDate":1392980579}
+02.21.2014 12:03:27 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1597900?ts=1392980607 (GET) => 
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - mangopay_request --- STATUS :: 200
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1VNcjgtWJJLsCpqG8dWr1392980579898","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1597900","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1597900","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1500,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1597900,"Tag":null,"CreationDate":1392980579,"UpdateDate":1392980596}
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/contributions/1597900?ts=1392980608 (GET) => 
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - mangopay_request --- STATUS :: 200
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - mangopay_request --- RESPONSE :: {"PaymentURL":"https://homologation-secure-p.payline.com/webpayment/step2.do?reqCode=prepareStep2&token=1VNcjgtWJJLsCpqG8dWr1392980579898","TemplateURL":"https://www.wedogood.co/paiement?campaign_id=1173&ContributionID=1597900","ReturnURL":"http://dev.yproject.co/paiement-effectue/?campaign_id=1173&ContributionID=1597900","RegisterMeanOfPayment":false,"Culture":"fr","PaymentMethodType":"cb_visa_mastercard","UserID":1449705,"WalletID":1348028,"Amount":1500,"ClientFeeAmount":0,"LeetchiFeeAmount":0,"IsSucceeded":true,"IsCompleted":true,"Error":null,"PaymentCardID":0,"Type":"Payline","AnswerCode":"00000","AnswerMessage":"Transaction approved","ID":1597900,"Tag":null,"CreationDate":1392980579,"UpdateDate":1392980596}
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - ypcf_create_contract --- START
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - ypcf_create_contract --- CALL signsquid_create_contract
+02.21.2014 12:03:28 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts (POST) => {"name":"La Ferme de Milgoulle - Investissement de 15\u20ac de Emil Schn (emilien@wedogood.co) - Le 21 f\u00e9vrier 2014"}
+02.21.2014 12:03:29 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/5307327f4bdcc835d0d1e241
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Fri, 21 Feb 2014 11:03:26 GMT
+Content-Length: 0
+
+ ( ; 0)
+02.21.2014 12:03:29 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/5307327f4bdcc835d0d1e241/versions/1/signatories (POST) => {"name":"Emil Schn","email":"emilien@wedogood.co","mobilePhone":"+33679840419"}
+02.21.2014 12:03:32 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- RESPONSE :: HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Fri, 21 Feb 2014 11:03:29 GMT
+Content-Length: 0
+
+ ( ; 0)
+02.21.2014 12:03:39 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/5307327f4bdcc835d0d1e241/versions/1/files?filename= (POST_FILE) => "\/homepages\/30\/d455744883\/htdocs\/dev\/wp-content\/plugins\/appthemer-crowdfunding\/includes\/pdf_files\/1173_23_1392980612.pdf"
+02.21.2014 12:03:43 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- RESPONSE :: HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Location: https://app.signsquid.com/api/v1/contracts/5307327f4bdcc835d0d1e241/versions/1/files/1?contractId=5307327f4bdcc835d0d1e241&version=1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Fri, 21 Feb 2014 11:03:39 GMT
+Content-Length: 0
+
+ ( ; 0)
+02.21.2014 12:03:43 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/5307327f4bdcc835d0d1e241/versions/1 (POST) => 
+02.21.2014 12:03:47 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- RESPONSE :: HTTP/1.1 200 OK
+Cache-Control: no-cache
+Pragma: no-cache
+Expires: -1
+Server: Microsoft-IIS/7.5
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Fri, 21 Feb 2014 11:03:44 GMT
+Content-Length: 0
+
+ ( ; 0)
+02.21.2014 12:03:47 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - ypcf_create_contract --- $contract_errors : 
+02.21.2014 12:03:47 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - ypcf_create_contract --- END
+02.21.2014 12:03:47 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- REQUEST :: https://app.signsquid.com/api/v1/contracts/5307327f4bdcc835d0d1e241/versions/1 (GET) => 
+02.21.2014 12:03:50 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - signsquid_request --- RESPONSE :: {"signatories":[{"name":"Emil Schn","email":"emilien@wedogood.co","code":"VX57Y8","status":"WaitingForSignatoryAction","mobilePhone":"+33679840419","smsStatus":null}],"published":true,"expires":"2014-03-21T10:03:27.093Z","status":"WaitingForSignatoryAction"} ( ; )
+02.21.2014 12:03:51 (/paiement-effectue/?campaign_id=1173&ContributionID=1597900?campaign_id=1173&ContributionID=1597900) - ypcf_send_mail_admin --- MAIL :: payment_id :: 1537 ; type :: purchase_complete ; sent to : admin@wedogood.co

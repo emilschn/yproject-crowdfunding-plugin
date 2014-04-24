@@ -1,0 +1,402 @@
+02.11.2014 14:44:52 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 14:44:53 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392126293 (GET) => 
+02.11.2014 14:44:53 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 404
+02.11.2014 14:44:53 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: 
+02.11.2014 14:44:53 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392126293 (GET) => 
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 404
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: 
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392126294 (GET) => 
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392126294 (GET) => 
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392126294 (GET) => 
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392126294 (GET) => 
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 14:44:54 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 15:53:07 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 15:53:08 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130388 (GET) => 
+02.11.2014 15:53:08 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 404
+02.11.2014 15:53:08 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: 
+02.11.2014 15:53:08 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130388 (GET) => 
+02.11.2014 15:53:08 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 404
+02.11.2014 15:53:08 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: 
+02.11.2014 15:53:08 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392130388 (GET) => 
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392130389 (GET) => 
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392130389 (GET) => 
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392130389 (GET) => 
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:53:09 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 15:54:03 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 15:54:07 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:54:07 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 23
+02.11.2014 15:54:07 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449705
+02.11.2014 15:54:07 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449707
+02.11.2014 15:54:07 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130447 (GET) => 
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 404
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: 
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130448 (POST) => {}
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_cni_7)
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_status_7)
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_extract_7)
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_declaration_7)
+02.11.2014 15:54:08 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:11 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:54:11 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 23
+02.11.2014 15:54:11 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449705
+02.11.2014 15:54:11 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449707
+02.11.2014 15:54:11 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130451 (GET) => 
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_cni_8)
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_status_8)
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_extract_8)
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_declaration_8)
+02.11.2014 15:54:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 34
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445131
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445133
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392130460 (GET) => 
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_cni_9)
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_status_9)
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_extract_9)
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_declaration_9)
+02.11.2014 15:54:20 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 35
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445135
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445137
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392130462 (GET) => 
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_cni_10)
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_status_10)
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_extract_10)
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_declaration_10)
+02.11.2014 15:54:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 36
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445161
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445163
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392130465 (GET) => 
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_cni_11)
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_status_11)
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_extract_11)
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_declaration_11)
+02.11.2014 15:54:25 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 38
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449699
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449701
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392130467 (GET) => 
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_cni_13)
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_status_13)
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_extract_13)
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_declaration_13)
+02.11.2014 15:54:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:54:29 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130469 (GET) => 
+02.11.2014 15:54:29 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:29 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:54:29 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130469 (GET) => 
+02.11.2014 15:54:29 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:29 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:54:29 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392130469 (GET) => 
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392130470 (GET) => 
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392130470 (GET) => 
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392130470 (GET) => 
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:54:30 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 15:55:23 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 15:55:24 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130524 (GET) => 
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130525 (GET) => 
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392130525 (GET) => 
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 15:55:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392130525 (GET) => 
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392130526 (GET) => 
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392130526 (GET) => 
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:55:26 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 15:56:09 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 23
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449705
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449707
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130574 (GET) => 
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_cni_7)
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_status_7)
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_extract_7)
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_declaration_7)
+02.11.2014 15:56:14 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:16 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:56:16 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 23
+02.11.2014 15:56:16 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449705
+02.11.2014 15:56:16 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449707
+02.11.2014 15:56:16 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130576 (GET) => 
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_cni_8)
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_status_8)
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_extract_8)
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8 (new_org_file_declaration_8)
+02.11.2014 15:56:17 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 34
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445131
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445133
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392130579 (GET) => 
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_cni_9)
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_status_9)
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_extract_9)
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_declaration_9)
+02.11.2014 15:56:19 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:21 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:56:21 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 35
+02.11.2014 15:56:21 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445135
+02.11.2014 15:56:21 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445137
+02.11.2014 15:56:21 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392130581 (GET) => 
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_cni_10)
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_status_10)
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_extract_10)
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_declaration_10)
+02.11.2014 15:56:22 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 36
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445161
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445163
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392130584 (GET) => 
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_cni_11)
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_status_11)
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_extract_11)
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_declaration_11)
+02.11.2014 15:56:24 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - -------------
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 38
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449699
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449701
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392130587 (GET) => 
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_cni_13)
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_status_13)
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_extract_13)
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_declaration_13)
+02.11.2014 15:56:27 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130589 (GET) => 
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130589 (GET) => 
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392130589 (GET) => 
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 15:56:29 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392130589 (GET) => 
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392130590 (GET) => 
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392130590 (GET) => 
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:30 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 15:56:48 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 15:56:50 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130610 (GET) => 
+02.11.2014 15:56:50 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:50 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:56:50 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392130610 (GET) => 
+02.11.2014 15:56:50 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:50 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 15:56:50 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392130610 (GET) => 
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392130611 (GET) => 
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392130611 (GET) => 
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392130611 (GET) => 
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 15:56:51 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 17:21:58 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392135720 (GET) => 
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449705/strongAuthentication?ts=1392135720 (GET) => 
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449705,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=ee4439a950914b268369b62c8a3a0ed8","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1547223,"Tag":null,"CreationDate":1392130449,"UpdateDate":1392130449}
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392135720 (GET) => 
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 17:22:00 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392135720 (GET) => 
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392135721 (GET) => 
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392135721 (GET) => 
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:22:01 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 17:24:24 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392135865 (GET) => 
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392135865 (GET) => 
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392135865 (GET) => 
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 17:24:25 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392135865 (GET) => 
+02.11.2014 17:24:26 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:24:26 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 17:24:52 (/modifier-mon-compte/?) - ypcf_check_has_user_filled_infos_and_redirect --- 23
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - -------------
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 34
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445131
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445133
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392135896 (GET) => 
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_cni_9)
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_status_9)
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_extract_9)
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80 (new_org_file_declaration_9)
+02.11.2014 17:24:56 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - -------------
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 35
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445135
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445137
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392135899 (GET) => 
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_cni_10)
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_status_10)
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_extract_10)
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a (new_org_file_declaration_10)
+02.11.2014 17:24:59 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - -------------
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 36
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1445161
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1445163
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392135901 (GET) => 
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_cni_11)
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_status_11)
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_extract_11)
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4 (new_org_file_declaration_11)
+02.11.2014 17:25:01 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - -------------
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_init_mangopay_user : $current_user->ID = 38
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_mangopayid = 1449699
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = 1449701
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392135904 (GET) => 
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_cni_13)
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_status_13)
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_extract_13)
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13 (new_org_file_declaration_13)
+02.11.2014 17:25:04 (/modifier-mon-compte/?) - ypcf_mangopay_send_strong_authentication --- TEST MIME >> $_FILES -> 
+02.11.2014 17:25:05 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445131/strongAuthentication?ts=1392135905 (GET) => 
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445131,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=f014fb41437243319bed04e2efccbe80","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445134,"Tag":null,"CreationDate":1390260762,"UpdateDate":1390260762}
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445135/strongAuthentication?ts=1392135906 (GET) => 
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445135,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=9865c52ff9a74e7eb0cf7ef08fd80e1a","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445138,"Tag":null,"CreationDate":1390261315,"UpdateDate":1390261315}
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1445161/strongAuthentication?ts=1392135906 (GET) => 
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1445161,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=cc7df0a9e61d4fd1a1da16e6814185f4","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1445164,"Tag":null,"CreationDate":1390262238,"UpdateDate":1390262238}
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/1449699/strongAuthentication?ts=1392135906 (GET) => 
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- STATUS :: 200
+02.11.2014 17:25:06 (/modifier-mon-compte/?) - mangopay_request --- RESPONSE :: {"UserID":1449699,"BeneficiaryID":0,"UrlRequest":"https://www-preprod.leetchi.com/fr/StrongValidation/PostDocument?key=3547f6b80f784cbe965ce0c7264ded13","IsDocumentsTransmitted":false,"IsCompleted":false,"IsSucceeded":false,"Message":null,"ID":1449702,"Tag":null,"CreationDate":1390320511,"UpdateDate":1390320511}
