@@ -178,6 +178,13 @@ function atcf_settings_general( $settings ) {
                 'type'    => 'checkbox'
         );
 
+        $settings[ 'atcf_settings_votes_create' ] = array(
+                'id'      => 'atcf_settings_votes',
+                'name'    => __( 'Votes', 'atcf' ),
+                'desc'    => __( 'Activer les votes', 'atcf' ),
+                'type'    => 'button'
+        );
+
         return $settings;
 }
 add_filter( 'edd_settings_general', 'atcf_settings_general', 100 );

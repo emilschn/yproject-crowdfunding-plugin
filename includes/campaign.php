@@ -1385,7 +1385,10 @@ class ATCF_Campaign {
 	public function end_vote_date() {
 		return mysql2date( 'Y-m-d', $this->__get( 'campaign_end_vote' ), false);
 	}
-	
+	public function end_vote_date_home() {
+		setlocale(LC_TIME, array('fr_FR.UTF-8', 'fr_FR.UTF-8', 'fra'));
+		return  utf8_encode(strftime("%d %B", strtotime(mysql2date( 'm/d', $this->__get( 'campaign_end_vote' ), false))));
+	}
 	public function end_vote_remaining() {
 	    $dateJour = strtotime(date("d-m-Y"));
 	    $fin = strtotime($this->__get( 'campaign_end_vote' ));
