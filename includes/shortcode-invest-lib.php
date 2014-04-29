@@ -690,11 +690,11 @@ function ypcf_send_mail_admin($payment_id, $type) {
 	    $message .= "Montant investi : ".$payment_amount."€<br />";
 	    $message .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
 	    break;
-    case "project_posted":
-        $subject = '[Nouveau Projet]'.$_POST[ 'title' ];
-        $message = 'Un nouveau projet viens d\'être publié . <br />';
-        $message.= 'Il est accessible depuis le back-office.';
-        break;
+	case "project_posted":
+	    $subject = '[Nouveau Projet]'.$_POST[ 'title' ];
+	    $message = 'Un nouveau projet viens d\'être publié . <br />';
+	    $message.= 'Il est accessible depuis le back-office.';
+	    break;
     }
     
     $from_name = get_bloginfo('name') . ' admin bot';

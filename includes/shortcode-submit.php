@@ -751,6 +751,8 @@ function atcf_shortcode_submit_process() {
 	    }
 
 	    do_action( 'atcf_submit_process_after', $campaign, $_POST );
+	    
+	    ypcf_send_mail_admin(0, 'project_posted');
 
 	    $url = isset ( $edd_options[ 'submit_page' ] ) ? get_permalink( $edd_options[ 'submit_page' ] ) : get_permalink();
 
@@ -758,7 +760,6 @@ function atcf_shortcode_submit_process() {
 	    wp_safe_redirect( $redirect );
 	    exit();
 	}
-        ypcf_send_mail_admin(0, 'project_posted');
 
 }
 add_action( 'template_redirect', 'atcf_shortcode_submit_process' );
