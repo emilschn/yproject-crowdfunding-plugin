@@ -62,6 +62,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		
 		/* Gestion fichiers / images */
 		$image	    = $_FILES[ 'image' ];
+		$path = $_FILES['image']['name'];
+		$ext = pathinfo($path, PATHINFO_EXTENSION);
+	
 		if (!empty($image)) {
 		    if (isset($_FILES[ 'files' ])) $files = $_FILES[ 'files' ];
 		    $edd_files  = array();
@@ -96,16 +99,38 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 				'post_content'   => '',
 				'post_status'    => 'inherit'
 			);
-
-			$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign->ID );		
+			$true_image=true;
+			switch ($ext) {
+				case 'png':
+					$image=imagecreatefrompng($upload[ 'file' ]);
+					break;
+				case 'jpg':
+					$image=imagecreatefromjpeg($upload[ 'file' ]);
+					break;
+				default:
+					$true_image=false;
+					break;
+			}
+			if($true_image){
+			for($i=0; $i<10 ; $i++){
+				imagefilter ($image, IMG_FILTER_GAUSSIAN_BLUR);
+				imagefilter ($image , IMG_FILTER_SELECTIVE_BLUR );
+			}
+			$fichier=explode('.',$upload[ 'file' ]);
+			$img_name=$fichier[0].'_blur.'.'jpg';
+			imagejpeg($image,$img_name);
+			$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign->ID );		
 
 			wp_update_attachment_metadata( 
 				$attach_id, 
-				wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
+				wp_generate_attachment_metadata( $attach_id, $img_name ) 
 			);
-
+			//Suppression de la position de la couverture
+			delete_post_meta($campaign->ID, 'campaign_cover_position');
+			
 			add_post_meta( $campaign->ID, '_thumbnail_id', absint( $attach_id ) );
 		    }
+		}
 		    
 		}
 		$image	    = $_FILES[ 'image_home' ];
@@ -256,7 +281,7 @@ function atcf_shortcode_update_field_images( $editing, $campaign, $post ) {
 	<input type="file" name="image_home" id="image_home" />
     </div><br />
     <div class="update_field atcf-update-campaign-images">
-	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 960px de largeur * 240px de hauteur)</label><br />
+	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 1366px de largeur * 768 px de hauteur)</label><br />
 	<?php if ($image_src_header != '') { ?><div class="update-field-img-header"><img src="<?php echo $image_src_header; ?>" /></div><br /><?php } ?>
 	<input type="file" name="image" id="image" />
     </div><br />

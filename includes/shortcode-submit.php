@@ -658,7 +658,7 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
 	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
-	    add_post_meta($campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
+	    add_post_meta( $campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_location', sanitize_text_field( $location ) );
 	    add_post_meta( $campaign, 'campaign_author', sanitize_text_field( $author ) );
 	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
@@ -700,8 +700,10 @@ function atcf_shortcode_submit_process() {
 			    }
 		    }
 	    }
-
 	    if ( $image[ 'name' ] != '' ) {
+        $path = $_FILES['image']['name'];
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+      
 		    $upload = wp_handle_upload( $image, $upload_overrides );
 		    $attachment = array(
 			    'guid'           => $upload[ 'url' ], 
@@ -710,13 +712,32 @@ function atcf_shortcode_submit_process() {
 			    'post_content'   => '',
 			    'post_status'    => 'inherit'
 		    );
+      $true_image=true;
+      switch ($ext) {
+        case 'png':
+          $image=imagecreatefrompng($upload[ 'file' ]);
+          break;
+        case 'jpg':
+          $image=imagecreatefromjpeg($upload[ 'file' ]);
+          break;
+        default:
+          $true_image=false;
+          break;
+      }
+      if($true_image){
+      for($i=0; $i<10 ; $i++){
+        imagefilter ($image, IMG_FILTER_GAUSSIAN_BLUR);
+        imagefilter ($image , IMG_FILTER_SELECTIVE_BLUR );
+      }
+      $fichier=explode('.',$upload[ 'file' ]);
+      $img_name=$fichier[0].'_blur.'.'jpg';
+      imagejpeg($image,$img_name);
+      $attach_id = wp_insert_attachment( $attachment, $img_name, $campaign );   
 
-		    $attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign );		
-
-		    wp_update_attachment_metadata( 
-			    $attach_id, 
-			    wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
-		    );
+      wp_update_attachment_metadata( 
+        $attach_id, 
+        wp_generate_attachment_metadata( $attach_id, $img_name ) 
+      );}
 
 		    add_post_meta( $campaign, '_thumbnail_id', absint( $attach_id ) );
 	    }

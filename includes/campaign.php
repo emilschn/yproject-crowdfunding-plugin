@@ -1400,7 +1400,7 @@ class ATCF_Campaign {
 	public function nb_voters() {
 	    global $wpdb;
 	    $table_name = $wpdb->prefix . "ypVotes";
-	    $count_users = $wpdb->get_var( "SELECT count( user_id) FROM $table_name WHERE campaign_id = " . $this->ID );
+	    $count_users = $wpdb->get_var( "SELECT count(user_id) FROM $table_name WHERE campaign_id = " . $this->ID );
 	    return $count_users;
 	}
 
@@ -1805,7 +1805,6 @@ function _atcf_metabox_campaign_info() {
 				</option>
 			<?php endfor; ?>
 		</select>
-
 		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />, 
 		<input type="text" id="end-aa" name="end-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
 		<input type="text" id="end-hh" name="end-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
@@ -1814,7 +1813,7 @@ function _atcf_metabox_campaign_info() {
 		<input type="hidden" id="campaign_end_date" name="campaign_end_date" value="1" />
 		<input type="hidden" id="campaign_end_date_vote" name="campaign_end_date_vote" value="1" />
 	</p>
-	
+
 <?php
 	do_action( 'atcf_metabox_campaign_info_after', $campaign );
 }
