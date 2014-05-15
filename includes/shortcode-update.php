@@ -24,7 +24,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  
  function atcf_shortcode_update( $editing = false ) {
 	$post = get_post($_GET['campaign_id']);
-	
 	// La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
 	$current_user = wp_get_current_user();
 	$current_user_id = $current_user->ID;
@@ -54,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		
 		update_post_meta($campaign->ID, 'campaign_video', esc_url($_POST['video']));
 		update_post_meta($campaign->ID, 'campaign_summary', $_POST['summary']);
-		
+		update_post_meta($campaign->ID, 'campaign_subtitle', $_POST['subtitle']);
 		update_post_meta($campaign->ID, 'campaign_added_value', $_POST['added_value']);
 		update_post_meta($campaign->ID, 'campaign_societal_challenge', $_POST['societal_challenge']);
 		update_post_meta($campaign->ID, 'campaign_economic_model', $_POST['economic_model']);
@@ -119,6 +118,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 			$fichier=explode('.',$upload[ 'file' ]);
 			$img_name=$fichier[0].'_blur.'.'jpg';
 			imagejpeg($image,$img_name);
+			global $wpdb;
+			$table_posts = $wpdb->prefix . "posts";
+			$campaign_id=$campaign->ID;
+			//Suppression dans la base de données de l'ancienne image
+			$old_attachement_id=$wpdb->get_var( "SELECT * FROM $table_posts WHERE post_parent=$campaign_id and post_title='image_header'" );
+			wp_delete_attachment( $old_attachement_id, true );
 			$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign->ID );		
 
 			wp_update_attachment_metadata( 
@@ -127,6 +132,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 			);
 			//Suppression de la position de la couverture
 			delete_post_meta($campaign->ID, 'campaign_cover_position');
+
 			
 			add_post_meta( $campaign->ID, '_thumbnail_id', absint( $attach_id ) );
 		    }
@@ -168,6 +174,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 				'post_content'   => '',
 				'post_status'    => 'inherit'
 			);
+			global $wpdb;
+			$table_posts = $wpdb->prefix . "posts";
+			$campaign_id=$campaign->ID;
+			//Suppression dans la base de données de l'ancienne image
+			$old_attachement_id=$wpdb->get_var( "SELECT * FROM $table_posts WHERE post_parent=$campaign_id and post_title='image_home'" );
+			wp_delete_attachment( $old_attachement_id, true );
 
 			$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign->ID );		
 
@@ -242,8 +254,15 @@ function atcf_shortcode_update_field_title($editing, $campaign, $post) {
     <?php
 }
 //add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_title', 10, 3);
-
-
+function atcf_shortcode_update_field_subtitle($editing, $campaign, $post) {
+	 ?>
+    <div class="update_field atcf-update-campaign-title">
+	<label class="update_field_label" for="title">Description de 3 à 4 mots du projet</label><br />
+	<textarea name="subtitle" rows="1" cols="30"><?php echo html_entity_decode($campaign->subtitle()); ?></textarea>
+    </div><br />
+    <?php
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_subtitle', 10, 3);
 
 function atcf_shortcode_update_field_summary( $editing, $campaign, $post ) {
 ?>

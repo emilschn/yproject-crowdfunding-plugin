@@ -408,6 +408,7 @@ function ypcf_shortcode_submit_field_confirm($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_confirm', 'ypcf_shortcode_submit_field_confirm');
 
+
 /*********************************************************************************************/
 /* END FORM GENERATED WITH SHORTCODES */
 /*********************************************************************************************/
@@ -466,6 +467,7 @@ function atcf_shortcode_submit_process() {
 
 	$terms     	= isset ( $_POST[ 'edd_agree_to_terms' ] ) ? $_POST[ 'edd_agree_to_terms' ] : 0;
 	if (isset($_POST[ 'title' ]))		$title		= $_POST[ 'title' ];
+  if (isset($_POST[ 'subtitle' ]))   $subtitle    = $_POST[ 'subtitle' ];
 	if (isset($_POST[ 'summary' ]))		$summary     	= $_POST[ 'summary' ];
 	if (isset($_POST[ 'owner' ]))		$owner		= $_POST[ 'owner' ];
 	if (isset($_POST[ 'location' ]))	$location		= $_POST[ 'location' ];
@@ -486,7 +488,6 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'company_status' ]))	$company_status	= $_POST[ 'company_status' ];
 	if (isset($_POST[ 'company_status_other' ]))	$company_status_other	= $_POST[ 'company_status_other' ];
 	if (isset($_POST[ 'init_capital' ]))	$init_capital	= $_POST[ 'init_capital' ];
-	
 	if (isset($_POST[ 'fundingtype' ]))	$fundingtype = $_POST['fundingtype']; // fundingproject ou fundingdevelopment
 	if (isset($_POST[ 'fundingduration' ]))	$fundingduration = $_POST['fundingduration'];
 	switch ($fundingtype) {
@@ -664,6 +665,7 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
 	    add_post_meta( $campaign, '_campaign_physical', sanitize_text_field( $shipping ) );
 	    add_post_meta( $campaign, 'campaign_summary', $summary);
+      add_post_meta( $campaign, 'campaign_subtitle', sanitize_text_field($subtitle));
 	    add_post_meta( $campaign, 'campaign_impact_area', sanitize_text_field( $impact_area ) );
 	    add_post_meta( $campaign, 'campaign_added_value', $added_value);
 	    add_post_meta( $campaign, 'campaign_development_strategy', sanitize_text_field( $development_strategy ) );

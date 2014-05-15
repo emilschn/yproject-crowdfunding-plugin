@@ -1118,6 +1118,16 @@ class ATCF_Campaign {
 	public function featured() {
 		return $this->__get( '_campaign_featured' );
 	}
+	/**
+	 * Campaign Featured
+	 *
+	 * @since Appthemer CrowdFunding 0.1-alpha
+	 *
+	 * @return sting Sous titre d'un projet
+	 */
+	public function subtitle() {
+		return $this->__get( 'campaign_subtitle' );
+	}
 	
 	/**
 	 * Campaign Featured
