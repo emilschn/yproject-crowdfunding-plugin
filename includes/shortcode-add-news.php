@@ -34,6 +34,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    );
 
 	    wp_insert_post($blog, true);
+	    do_action('wdg_delete_cache',array(
+						'project-'.$post->ID.'-header'
+						));
 	}
 
 	
