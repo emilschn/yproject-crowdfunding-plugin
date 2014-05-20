@@ -300,7 +300,7 @@ function atcf_shortcode_update_field_images( $editing, $campaign, $post ) {
 	<input type="file" name="image_home" id="image_home" />
     </div><br />
     <div class="update_field atcf-update-campaign-images">
-	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 1366px de largeur * 768 px de hauteur)</label><br />
+	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 1366px de largeur * 370px de hauteur)</label><br />
 	<?php if ($image_src_header != '') { ?><div class="update-field-img-header"><img src="<?php echo $image_src_header; ?>" /></div><br /><?php } ?>
 	<input type="file" name="image" id="image" />
     </div><br />
