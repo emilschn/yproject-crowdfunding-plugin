@@ -1118,6 +1118,16 @@ class ATCF_Campaign {
 	public function featured() {
 		return $this->__get( '_campaign_featured' );
 	}
+	/**
+	 * Campaign Featured
+	 *
+	 * @since Appthemer CrowdFunding 0.1-alpha
+	 *
+	 * @return sting Sous titre d'un projet
+	 */
+	public function subtitle() {
+		return $this->__get( 'campaign_subtitle' );
+	}
 	
 	/**
 	 * Campaign Featured
@@ -1846,7 +1856,6 @@ function _atcf_metabox_campaign_info() {
 				</option>
 			<?php endfor; ?>
 		</select>
-
 		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />, 
 		<input type="text" id="end-aa" name="end-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
 		<input type="text" id="end-hh" name="end-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
@@ -1855,7 +1864,7 @@ function _atcf_metabox_campaign_info() {
 		<input type="hidden" id="campaign_end_date" name="campaign_end_date" value="1" />
 		<input type="hidden" id="campaign_end_date_vote" name="campaign_end_date_vote" value="1" />
 	</p>
-	
+
 <?php
 	do_action( 'atcf_metabox_campaign_info_after', $campaign );
 }

@@ -408,6 +408,7 @@ function ypcf_shortcode_submit_field_confirm($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_confirm', 'ypcf_shortcode_submit_field_confirm');
 
+
 /*********************************************************************************************/
 /* END FORM GENERATED WITH SHORTCODES */
 /*********************************************************************************************/
@@ -466,6 +467,7 @@ function atcf_shortcode_submit_process() {
 
 	$terms     	= isset ( $_POST[ 'edd_agree_to_terms' ] ) ? $_POST[ 'edd_agree_to_terms' ] : 0;
 	if (isset($_POST[ 'title' ]))		$title		= $_POST[ 'title' ];
+  if (isset($_POST[ 'subtitle' ]))   $subtitle    = $_POST[ 'subtitle' ];
 	if (isset($_POST[ 'summary' ]))		$summary     	= $_POST[ 'summary' ];
 	if (isset($_POST[ 'owner' ]))		$owner		= $_POST[ 'owner' ];
 	if (isset($_POST[ 'location' ]))	$location		= $_POST[ 'location' ];
@@ -486,7 +488,6 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'company_status' ]))	$company_status	= $_POST[ 'company_status' ];
 	if (isset($_POST[ 'company_status_other' ]))	$company_status_other	= $_POST[ 'company_status_other' ];
 	if (isset($_POST[ 'init_capital' ]))	$init_capital	= $_POST[ 'init_capital' ];
-	
 	if (isset($_POST[ 'fundingtype' ]))	$fundingtype = $_POST['fundingtype']; // fundingproject ou fundingdevelopment
 	if (isset($_POST[ 'fundingduration' ]))	$fundingduration = $_POST['fundingduration'];
 	switch ($fundingtype) {
@@ -658,12 +659,13 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
 	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
-	    add_post_meta($campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
+	    add_post_meta( $campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_location', sanitize_text_field( $location ) );
 	    add_post_meta( $campaign, 'campaign_author', sanitize_text_field( $author ) );
 	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
 	    add_post_meta( $campaign, '_campaign_physical', sanitize_text_field( $shipping ) );
 	    add_post_meta( $campaign, 'campaign_summary', $summary);
+      add_post_meta( $campaign, 'campaign_subtitle', sanitize_text_field($subtitle));
 	    add_post_meta( $campaign, 'campaign_impact_area', sanitize_text_field( $impact_area ) );
 	    add_post_meta( $campaign, 'campaign_added_value', $added_value);
 	    add_post_meta( $campaign, 'campaign_development_strategy', sanitize_text_field( $development_strategy ) );
@@ -700,8 +702,10 @@ function atcf_shortcode_submit_process() {
 			    }
 		    }
 	    }
-
 	    if ( $image[ 'name' ] != '' ) {
+        $path = $_FILES['image']['name'];
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+      
 		    $upload = wp_handle_upload( $image, $upload_overrides );
 		    $attachment = array(
 			    'guid'           => $upload[ 'url' ], 
@@ -710,13 +714,32 @@ function atcf_shortcode_submit_process() {
 			    'post_content'   => '',
 			    'post_status'    => 'inherit'
 		    );
+      $true_image=true;
+      switch ($ext) {
+        case 'png':
+          $image=imagecreatefrompng($upload[ 'file' ]);
+          break;
+        case 'jpg':
+          $image=imagecreatefromjpeg($upload[ 'file' ]);
+          break;
+        default:
+          $true_image=false;
+          break;
+      }
+      if($true_image){
+      for($i=0; $i<10 ; $i++){
+        imagefilter ($image, IMG_FILTER_GAUSSIAN_BLUR);
+        imagefilter ($image , IMG_FILTER_SELECTIVE_BLUR );
+      }
+      $fichier=explode('.',$upload[ 'file' ]);
+      $img_name=$fichier[0].'_blur.'.'jpg';
+      imagejpeg($image,$img_name);
+      $attach_id = wp_insert_attachment( $attachment, $img_name, $campaign );   
 
-		    $attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign );		
-
-		    wp_update_attachment_metadata( 
-			    $attach_id, 
-			    wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
-		    );
+      wp_update_attachment_metadata( 
+        $attach_id, 
+        wp_generate_attachment_metadata( $attach_id, $img_name ) 
+      );}
 
 		    add_post_meta( $campaign, '_thumbnail_id', absint( $attach_id ) );
 	    }
