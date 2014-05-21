@@ -1,3 +1,0 @@
-12.18.2013 17:07:06 - mangopay_request --- REQUEST :: https://api-preprod.leetchi.com/v1/partner/yproject/users/507837?ts=1387382826 (GET) => 
-12.18.2013 17:07:07 - mangopay_request --- STATUS :: 200
-12.18.2013 17:07:07 - mangopay_request --- RESPONSE :: {"Email":"bonjour@yproject.co","FirstName":"Tocka","LastName":"Koita","CanRegisterMeanOfPayment":false,"HasRegisteredMeansOfPayment":false,"IP":null,"Birthday":788914800,"Password":"ifAGky6FxBWeaKVn3T8vRMWgf3nqDx","PersonalWalletAmount":0,"IsStrongAuthenticated":false,"Nationality":"AU","PersonType":"NATURAL_PERSON","ID":507837,"Tag":"admin_yteam","CreationDate":1377607559,"UpdateDate":1387213860}

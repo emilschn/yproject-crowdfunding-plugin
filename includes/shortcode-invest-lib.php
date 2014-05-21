@@ -116,7 +116,7 @@ function ypcf_check_user_is_complete($user_id) {
     $is_complete = $is_complete && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
     $is_complete = $is_complete && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
     $is_complete = $is_complete && ($current_user->get('user_gender') != "") && ($current_user->get('user_birthplace') != "");
-    $is_complete = $is_complete && ($current_user->get('user_person_type') != "");
+//    $is_complete = $is_complete && ($current_user->get('user_person_type') != "");
     return $is_complete;
 }
 
@@ -690,11 +690,11 @@ function ypcf_send_mail_admin($payment_id, $type) {
 	    $message .= "Montant investi : ".$payment_amount."€<br />";
 	    $message .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
 	    break;
-    case "project_posted":
-        $subject = '[Nouveau Projet]'.$_POST[ 'title' ];
-        $message = 'Un nouveau projet viens d\'être publié . <br />';
-        $message.= 'Il est accessible depuis le back-office.';
-        break;
+	case "project_posted":
+	    $subject = '[Nouveau Projet]'.$_POST[ 'title' ];
+	    $message = 'Un nouveau projet viens d\'être publié . <br />';
+	    $message.= 'Il est accessible depuis le back-office.';
+	    break;
     }
     
     $from_name = get_bloginfo('name') . ' admin bot';

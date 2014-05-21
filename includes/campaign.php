@@ -1118,16 +1118,6 @@ class ATCF_Campaign {
 	public function featured() {
 		return $this->__get( '_campaign_featured' );
 	}
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Sous titre d'un projet
-	 */
-	public function subtitle() {
-		return $this->__get( 'campaign_subtitle' );
-	}
 	
 	/**
 	 * Campaign Featured
@@ -1409,8 +1399,8 @@ class ATCF_Campaign {
 	
 	public function nb_voters() {
 	    global $wpdb;
-	    $table_name = $wpdb->prefix . "ypVotes";
-	    $count_users = $wpdb->get_var( "SELECT count(user_id) FROM $table_name WHERE campaign_id = " . $this->ID );
+	    $table_name = $wpdb->prefix . "ypcf_project_votes";
+	    $count_users = $wpdb->get_var( "SELECT count(id) FROM $table_name WHERE post_id = " . $this->ID );
 	    return $count_users;
 	}
 
@@ -1705,6 +1695,47 @@ class ATCF_Campaign {
 
 		return false;
 	}
+	
+	
+	public function payments_data() {
+		$payments_data = array();
+
+		$payments = edd_get_payments( array(
+		    'number'	 => -1,
+		    'download'   => $this->ID
+		) );
+
+		if ( $payments ) {
+			foreach ( $payments as $payment ) {
+				$user_info = edd_get_payment_meta_user_info( $payment->ID );
+				$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
+
+				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+
+				$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
+				$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
+				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
+				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos);
+				$mangopay_id = edd_get_payment_key($payment->ID);
+				$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
+
+
+				$payments_data[] = array(
+					'ID'			=> $payment->ID,
+					'email'			=> edd_get_payment_user_email( $payment->ID ),
+					'products'		=> $cart_details,
+					'amount'		=> edd_get_payment_amount( $payment->ID ),
+					'date'			=> $payment->post_date,
+					'user'			=> $user_id,
+					'status'		=> ypcf_get_updated_payment_status( $payment->ID ),
+					'mangopay_contribution' => $mangopay_contribution,
+					'signsquid_status'	=> $signsquid_status,
+					'signsquid_status_text' => $signsquid_status_text
+				);
+			}
+		}
+		return $payments_data;
+	}
 }
 
 function atcf_get_campaign( $campaign ) {
@@ -1815,6 +1846,7 @@ function _atcf_metabox_campaign_info() {
 				</option>
 			<?php endfor; ?>
 		</select>
+
 		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />, 
 		<input type="text" id="end-aa" name="end-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
 		<input type="text" id="end-hh" name="end-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
@@ -1823,7 +1855,7 @@ function _atcf_metabox_campaign_info() {
 		<input type="hidden" id="campaign_end_date" name="campaign_end_date" value="1" />
 		<input type="hidden" id="campaign_end_date_vote" name="campaign_end_date_vote" value="1" />
 	</p>
-
+	
 <?php
 	do_action( 'atcf_metabox_campaign_info_after', $campaign );
 }

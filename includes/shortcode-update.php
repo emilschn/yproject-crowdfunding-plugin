@@ -41,6 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		//Si c'est bien l'admin qui demande et qu'il ne reste plus de temps pour investir
 		if (current_user_can('manage_options') && $campaign->days_remaining() <= 0) {
 		    $create_investors_success = ypcf_campaign_create_investors_group($post, $campaign);
+		    $group_exists = $create_investors_success;
 		}
 	    }
 	
@@ -454,15 +455,17 @@ function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
     update_post_meta($campaign->ID, 'campaign_investors_group', $new_group_id);
     groups_update_groupmeta($new_group_id, 'campaign_id', $post_campaign->ID);
     
-    //Création d'un forum ? (si nécessaire)
+    //Création d'un forum
+    $new_forum_id = bbp_insert_forum( $forum_data = array('post_title' => 'Forum pour le groupe du projet ' . $post_campaign->post_title ) );
+    groups_update_groupmeta( $new_group_id, 'forum_id', $new_forum_id );
     
     //Ajout des utilisateurs à ce groupe
     $invite_users_args = array(
 	'user_id'       => false,
 	'group_id'      => $new_group_id,
-	'inviter_id'    => bp_loggedin_user_id(),
+	'inviter_id'    => $post_campaign->post_author,
 	'date_modified' => bp_core_current_time(),
-	'is_confirmed'  => 1
+	'is_confirmed'  => 0
     );
     //Le porteur de projet
     $invite_users_args['user_id'] = $post_campaign->post_author;
@@ -486,7 +489,19 @@ function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
 	    }
 	}
     }
+    //Envoi des invitations à venir voir le groupe
+    global $send_invite_message;
+    $user_author = get_user_by('id', $post_campaign->post_author);
+    $group_obj = groups_get_group(array('group_id' => $new_group_id));
+    $group_link = bp_get_group_permalink($group_obj);
+    $send_invite_message = 'Bonjour %1$s,<br />
+Afin de communiquer entre vous, un groupe privé regroupant les investisseurs du projet '.$post_campaign->post_title.' a été créé.<br />
+Vous pouvez y accéder en cliquandt sur ce <a href="'.$group_link.'" target="_blank">lien</a> ou en vous connectant à votre compte, puis en vous rendant sur la page "Mes investissements".<br />
+Encore merci pour votre investissement et à bientôt sur <a href="http://www.wedogood.co" target="_blank">WEDOGOOD.co</a> !<br /><br />
 
+';
+    groups_send_invites( $post_campaign->post_author, $new_group_id );
+    unset($GLOBALS['send_invite_message']);
     
     return true;
 }

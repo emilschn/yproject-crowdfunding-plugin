@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function ypcf_shortcode_invest_return($atts, $content = '') {
     $buffer = '';
     ypcf_session_start();
-    if (isset($_REQUEST["ContributionID"]) && isset($_GET['campaign_id'])) {
+    if (isset($_REQUEST["ContributionID"]) && isset($_GET['campaign_id']) && is_user_logged_in() && ypcf_check_is_project_investable()) {
 	$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($_REQUEST["ContributionID"]);
 
 	$page_investments = get_page_by_path('mes-investissements');
