@@ -342,6 +342,29 @@ function atcf_shortcode_update_field_description( $editing, $campaign, $post ) {
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_description', 10, 3);
 
+function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $post ) {
+?>
+	<div class="update_field atcf-update-campaign-societal_challenge">
+		<label class="update_field_label" for="societal_challenge">Quelle est l&apos;utilit&eacute; soci&eacute;tale du projet ?</label><br />
+		<?php 
+			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'societal_challenge', apply_filters( 'atcf_submit_field_societal_challenge_editor_args', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => false,
+				'editor_css'    => '<style>body { background: red; width: 200 px; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ) ); 
+		?>
+	</div><br />
+<?php
+}
+add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_societal_challenge', 10, 3);
+
 
 function atcf_shortcode_update_field_added_value( $editing, $campaign, $post ) {
 ?>
@@ -365,29 +388,6 @@ function atcf_shortcode_update_field_added_value( $editing, $campaign, $post ) {
 <?php
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_added_value', 10, 3);
-
-function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $post ) {
-?>
-	<div class="update_field atcf-update-campaign-societal_challenge">
-		<label class="update_field_label" for="societal_challenge">Quelle est l&apos;utilit&eacute; soci&eacute;tale du projet ?</label><br />
-		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'societal_challenge', apply_filters( 'atcf_submit_field_societal_challenge_editor_args', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: red; width: 200 px; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
-		?>
-	</div><br />
-<?php
-}
-add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_societal_challenge', 10, 3);
 
 function atcf_shortcode_update_field_economic_model( $editing, $campaign, $post ) {
 ?>
