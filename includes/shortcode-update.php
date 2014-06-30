@@ -61,11 +61,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		update_post_meta($campaign->ID, 'campaign_implementation', $_POST['implementation']);
 		
 		/* Gestion fichiers / images */
-		$image	    = $_FILES[ 'image' ];
+		$image_header = $_FILES[ 'image' ];
 		$path = $_FILES['image']['name'];
 		$ext = pathinfo($path, PATHINFO_EXTENSION);
 	
-		if (!empty($image)) {
+		if (!empty($image_header)) {
 		    if (isset($_FILES[ 'files' ])) $files = $_FILES[ 'files' ];
 		    $edd_files  = array();
 		    $upload_overrides = array( 'test_form' => false );
@@ -90,7 +90,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 			    }
 		    }
 		    
-		    $upload = wp_handle_upload( $image, $upload_overrides );
+		    $upload = wp_handle_upload( $image_header, $upload_overrides );
 		    if (isset($upload[ 'url' ])) {
 			$attachment = array(
 				'guid'           => $upload[ 'url' ], 
@@ -99,47 +99,51 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 				'post_content'   => '',
 				'post_status'    => 'inherit'
 			);
-			$true_image=true;
-			switch ($ext) {
+			
+			$is_image_accepted = true;
+			switch (strtolower($ext)) {
 				case 'png':
-					$image=imagecreatefrompng($upload[ 'file' ]);
+					$image_header = imagecreatefrompng($upload[ 'file' ]);
 					break;
 				case 'jpg':
-					$image=imagecreatefromjpeg($upload[ 'file' ]);
+				case 'jpeg':
+					$image_header = imagecreatefromjpeg($upload[ 'file' ]);
 					break;
 				default:
-					$true_image=false;
+					$is_image_accepted = false;
 					break;
 			}
-			if($true_image){
-			for($i=0; $i<10 ; $i++){
-				imagefilter ($image, IMG_FILTER_GAUSSIAN_BLUR);
-				imagefilter ($image , IMG_FILTER_SELECTIVE_BLUR );
+			if($is_image_accepted){
+			    for($i=0; $i<10 ; $i++){
+				    imagefilter ($image_header, IMG_FILTER_GAUSSIAN_BLUR);
+				    imagefilter ($image_header , IMG_FILTER_SELECTIVE_BLUR );
+			    }
+			    $withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $upload[ 'file' ]);
+			    $img_name = $withoutExt.'_blur.jpg';
+			    imagejpeg($image_header,$img_name);
+			    global $wpdb;
+			    $table_posts = $wpdb->prefix . "posts";
+			    $campaign_id=$campaign->ID;
+			    //Suppression dans la base de données de l'ancienne image
+			    $old_attachement_id=$wpdb->get_var( "SELECT * FROM $table_posts WHERE post_parent=$campaign_id and post_title='image_header'" );
+			    wp_delete_attachment( $old_attachement_id, true );
+			    $attach_id = wp_insert_attachment( $attachment, $img_name, $campaign->ID );		
+
+			    wp_update_attachment_metadata( 
+				    $attach_id, 
+				    wp_generate_attachment_metadata( $attach_id, $img_name ) 
+			    );
+			    //Suppression de la position de la couverture
+			    delete_post_meta($campaign->ID, 'campaign_cover_position');
+
+
+			    add_post_meta( $campaign->ID, '_thumbnail_id', absint( $attach_id ) );
 			}
-			$fichier=explode('.',$upload[ 'file' ]);
-			$img_name=$fichier[0].'_blur.'.'jpg';
-			imagejpeg($image,$img_name);
-			global $wpdb;
-			$table_posts = $wpdb->prefix . "posts";
-			$campaign_id=$campaign->ID;
-			//Suppression dans la base de données de l'ancienne image
-			$old_attachement_id=$wpdb->get_var( "SELECT * FROM $table_posts WHERE post_parent=$campaign_id and post_title='image_header'" );
-			wp_delete_attachment( $old_attachement_id, true );
-			$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign->ID );		
-
-			wp_update_attachment_metadata( 
-				$attach_id, 
-				wp_generate_attachment_metadata( $attach_id, $img_name ) 
-			);
-			//Suppression de la position de la couverture
-			delete_post_meta($campaign->ID, 'campaign_cover_position');
-
-			
-			add_post_meta( $campaign->ID, '_thumbnail_id', absint( $attach_id ) );
 		    }
-		}
 		    
 		}
+		
+		
 		$image	    = $_FILES[ 'image_home' ];
 		if (!empty($image)) {
 		    if (isset($_FILES[ 'files' ])) $files = $_FILES[ 'files' ];
