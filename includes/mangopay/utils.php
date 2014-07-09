@@ -43,6 +43,29 @@ function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id,
     return $mangopay_newcontribution;
 }
 
+function ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $campaign_id, $amount) {
+    //Récupération du walletid de la campagne
+    $post_camp = get_post($campaign_id);
+    $campaign = atcf_get_campaign( $post_camp );
+    $currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
+
+    //Récupération du walletid de l'utilisateur
+    $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
+    
+    if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
+
+    //Conversion de la somme saisie en cents
+    $cent_amount = $amount * 100;
+    
+    $mangopay_newcontribution = request('contributions-by-withdrawal', 'POST', '{ 
+					    "UserID" : '.$currentuser_mangopayid.', 
+					    "WalletID" : '.$currentpost_mangopayid.',
+					    "AmountDeclared" : '.$cent_amount.'
+					}');
+    
+    return $mangopay_newcontribution;
+}
+
 function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $amount) {
     //Récupération du walletid de la campagne
     $post_camp = get_post($campaign_id);
@@ -78,6 +101,10 @@ function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $am
  */
 function ypcf_mangopay_get_contribution_by_id($contribution_id) {
     return request('contributions/'.$contribution_id, 'GET');
+}
+
+function ypcf_mangopay_get_withdrawalcontribution_by_id($contribution_id) {
+    return request('contributions-by-withdrawal/'.$contribution_id, 'GET');
 }
 
 function ypcf_mangopay_get_transfer_by_id($transfer_id) {

@@ -1,0 +1,42 @@
+<?php
+
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+
+function ypcf_shortcode_invest_payment_wire($atts, $content = '') {
+	ob_start();
+
+	if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire' && isset($_REQUEST["ContributionID"])) {
+
+		$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($_REQUEST["ContributionID"]);
+		
+		$page_payment_done = get_page_by_path('paiement-effectue');
+
+		echo ypcf_print_invest_breadcrumb(3);
+?>
+
+	Afin de proc&eacute;der au virement, voici les informations bancaires dont vous aurez besoin :<br />
+	<ul>
+	    <li><strong>Titulaire du compte :</strong> <?php echo $mangopay_contribution->BankAccountOwner; ?></li>
+	    <li><strong>IBAN :</strong> <?php echo $mangopay_contribution->BankAccountIBAN; ?></li>
+	    <li><strong>BIC :</strong> <?php echo $mangopay_contribution->BankAccountBIC; ?></li>
+	    <li><strong>Code unique (pour identifier votre paiement) :</strong> <?php echo $mangopay_contribution->GeneratedReference; ?></li>
+	</ul>
+
+	Une fois le virement effectu&eacute;, cliquez sur <a href="<?php echo get_permalink($page_payment_done->ID) . '?ContributionID=' . $_REQUEST["ContributionID"] . '&campaign_id=' . $_GET['campaign_id'] . '&meanofpayment=wire'; ?>" class="button">SUIVANT</a><br /><br />
+
+	<center><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></center>
+
+<?php
+	} else {
+?>
+		Error YPSIPW001 : Probl&egrave;me de page.
+<?php
+	}
+
+	return ob_get_clean();
+}
+add_shortcode( 'yproject_crowdfunding_invest_payment_wire', 'ypcf_shortcode_invest_payment_wire' );
+
+?>
