@@ -104,7 +104,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 			    $buffer .= 'Transaction en cours.<br />';
 		    }
 		    $invest_page = get_page_by_path('mes_investissements');
-		    $buffer .= 'Merci de vous rendre sur la page de <a href="'. get_permalink($invest_page->ID) .'">vos investissements</a> pour suivre l&apos;&eacute;volution de votre paiement.<br />';
+		    $buffer .= 'Merci de vous rendre sur la page de <a href="'. get_permalink($invest_page->ID) .'">vos investissements</a> pour suivre l&apos;&eacute;volution de votre paiement.<br /><br />';
 		    $share_page = get_page_by_path('paiement-partager');
 		    $buffer .= '<center><a class="button" href="'. get_permalink($share_page->ID) .'?campaign_id='.$_GET['campaign_id'].'">Suivant</a></center><br /><br />';
 		    break;

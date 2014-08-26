@@ -469,7 +469,7 @@ function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
 	'group_id'      => $new_group_id,
 	'inviter_id'    => $post_campaign->post_author,
 	'date_modified' => bp_core_current_time(),
-	'is_confirmed'  => 0
+	'is_confirmed'  => 1
     );
     //Le porteur de projet
     $invite_users_args['user_id'] = $post_campaign->post_author;
@@ -495,7 +495,6 @@ function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
     }
     //Envoi des invitations à venir voir le groupe
     global $send_invite_message;
-    $user_author = get_user_by('id', $post_campaign->post_author);
     $group_obj = groups_get_group(array('group_id' => $new_group_id));
     $group_link = bp_get_group_permalink($group_obj);
     $send_invite_message = 'Bonjour %1$s,<br />

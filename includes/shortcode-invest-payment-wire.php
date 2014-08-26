@@ -21,10 +21,17 @@ function ypcf_shortcode_invest_payment_wire($atts, $content = '') {
 	    <li><strong>Titulaire du compte :</strong> <?php echo $mangopay_contribution->BankAccountOwner; ?></li>
 	    <li><strong>IBAN :</strong> <?php echo $mangopay_contribution->BankAccountIBAN; ?></li>
 	    <li><strong>BIC :</strong> <?php echo $mangopay_contribution->BankAccountBIC; ?></li>
-	    <li><strong>Code unique (pour identifier votre paiement) :</strong> <?php echo $mangopay_contribution->GeneratedReference; ?></li>
+	    <li>
+		    <strong>Code unique (pour identifier votre paiement) :</strong> <?php echo $mangopay_contribution->GeneratedReference; ?><br />
+		    <ul>
+			    <li>Indiquez imp&eacute;rativement ce code comme "libell&eacute; b&eacute;n&eacute;ficiaire" ou "code destinataire" au moment du virement !</li>
+		    </ul>
+	    </li>
 	</ul>
-
-	Une fois le virement effectu&eacute;, cliquez sur <a href="<?php echo get_permalink($page_payment_done->ID) . '?ContributionID=' . $_REQUEST["ContributionID"] . '&campaign_id=' . $_GET['campaign_id'] . '&meanofpayment=wire'; ?>" class="button">SUIVANT</a><br /><br />
+	<br /><br />
+	
+	Une fois le virement effectu&eacute;, cliquez sur<br />
+	<a href="<?php echo get_permalink($page_payment_done->ID) . '?ContributionID=' . $_REQUEST["ContributionID"] . '&campaign_id=' . $_GET['campaign_id'] . '&meanofpayment=wire'; ?>" class="button">SUIVANT</a><br /><br />
 
 	<center><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></center>
 
