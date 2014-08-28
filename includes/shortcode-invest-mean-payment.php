@@ -20,9 +20,26 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
     ?>
     Merci de choisir votre moyen de paiement :<br />
     <ul class="invest-mean-payment">
-	<li><a href="<?php echo $page_mean_payment_link; ?>card">Carte bancaire</a></li>
-	<li><?php if ($can_use_wire) { ?><a href="<?php echo $page_mean_payment_link; ?>wire"><?php } ?>Virement bancaire<?php if ($can_use_wire) { ?></a><?php } ?> (&agrave; partir de <?php echo $min_wire; ?>&euro;)</li>
-	<?php /*<li><?php if ($can_use_check) { ?><a href="<?php echo get_permalink($page_mean_payment->ID); ?>?meanofpayment=check"><?php } ?>Ch&egrave;que<?php if ($can_use_check) { ?></a><?php } ?> (&agrave; partir de <?php echo $min_check; ?>&euro;)</li>*/ ?>
+	    <li>
+		    <a href="<?php echo $page_mean_payment_link; ?>card">
+			    <img src="<?php echo get_stylesheet_directory_uri(); ?>/images/paiement-carte.jpg" alt="Paiement par carte" />
+			    Carte bancaire
+		    </a>
+	    </li>
+	    <li>
+		<?php if ($can_use_wire) { ?>
+		    <a href="<?php echo $page_mean_payment_link; ?>wire">
+		<?php } ?>
+			    <img src="<?php echo get_stylesheet_directory_uri(); ?>/images/paiement-virement.jpg" alt="Paiement par virement" />
+			    Virement bancaire
+		<?php if ($can_use_wire) { ?>
+		    </a>
+		<?php } else { ?>
+		    (&agrave; partir de <?php echo $min_wire; ?>&euro;)
+		<?php } ?>
+	    </li>
+	    <?php /*<li><?php if ($can_use_check) { ?><a href="<?php echo get_permalink($page_mean_payment->ID); ?>?meanofpayment=check"><?php } ?><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/paiement-cheque.jpg" alt="Paiement par cheque" /><br /> Ch&egrave;que<?php if ($can_use_check) { ?></a><?php } ?> (&agrave; partir de <?php echo $min_check; ?>&euro;)</li>*/ ?>
+	    <div class="clear"></div>
     </ul>
     <center><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></center>
     <?php
