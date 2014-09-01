@@ -160,4 +160,140 @@ class BoppLib {
 //FIN GESTION UTILISATEURS
 //******************************************************************************************//
 
+//******************************************************************************************//
+//GESTION PROJETS
+	/**
+	 * Crée un projet sur l'API
+	 * @param string $first_name
+	 * @param string $last_name
+	 * @return object
+	 */
+	public static function create_project($wp_project_id, $wp_project_name, $wp_project_slogan, $wp_project_description, $wp_project_video, $wp_project_image_video, $wp_project_image_cover, $wp_project_category, $wp_project_business_sector, $wp_project_funding_type, $wp_project_funding_duration, $wp_project_return_investment, $project_investor_benefit, $wp_project_summary, wp_project_economy_excerpt, $wp_project_social_excerpt, $wp_project_environment_excerpt, $wp_project_mission, $wp_project_economy, $wp_project_social, $wp_project_environment, $wp_project_measure_performance, $wp_project_good_point, $wp_project_content_excerpt, $wp_project_market_excerpt, $projectContext, $wp_project_market, $wp_project_worth_offer, $wp_project_client_collaborator, $wp_project_business_core, $wp_project_income, $wp_project_cost, $wp_project_collaborators_canvas, $wp_project_activities_canvas, wp_project_activities_canvas, $wp_project_ressources_canvas, wp_project_worth_offer_canvas,$wp_project_customers_relations_canvas, $wp_project_chain_distribution_canvas, $wp_project_clients_canvas, $wp_project_structure_canvas, $wp_project_source_income_canvas, $wp_project_financial_board, $wp_project_perspectives, $wp_project_other_information) {
+		$request_params = array(
+			'projects' => array(
+				'wpProjectId' => $wp_project_id, 
+	            'projectName' => $wp_project_name,
+	            'projectSlogan' => $wp_project_slogan,
+	            'projectDescription' => $wp_project_description,
+	            'projectVideo' => $wp_project_video,
+	            'projectImageVideo' => $wp_project_image_video,
+	            'projectImageCover' => $wp_project_image_cover,
+	            'projectCategory' => $wp_project_category,
+	            'projectBusinessSector' => $wp_project_business_sector,
+	            'projectFundingType' => $wp_project_funding_type,
+	            'projectFundingDuration' => $wp_project_funding_duration,
+	            'projectReturnOnInvestment' => $wp_project_return_investment,
+	            'projectInvestorBenefit' => $project_investor_benefit,
+	            'projectSummary' => $wp_project_summary,
+	            'projectEconomyExcerpt' => $wp_project_economy_excerpt,
+	            'projectSocialExcerpt' => $wp_project_social_excerpt,
+	            'projectEnvironmentExcerpt' => $wp_project_environment_excerpt,
+	            'projectMission' => $wp_project_mission,
+	            'projectEconomy' => $wp_project_economy,
+	            'projectSocial' => $wp_project_social, 
+	            'projectEnvironment' => $wp_project_environment,
+	            'projectMeasurePerformance' => $wp_project_measure_performance,
+	            'projectGoodPoint' => $wp_project_good_point,
+	            'projectContextExcerpt' => $wp_project_content_excerpt,
+	            'projectMarketExcerpt' => $wp_project_market_excerpt,
+	            'projectContext' => $wp_project_content,
+	            'projectMarket' => $wp_project_market,
+	            'projectWorthOffer' => $wp_project_worth_offer,
+	            'projectClientCollaborator' => $wp_project_client_collaborator,
+	            'projectBusinessCore' => $wp_project_business_core,
+	            'projectIncome' => $wp_project_income,
+	            'projectCost' => $wp_project_cost,
+	            'projectCollaboratorsCanvas' => $wp_project_collaborators_canvas,
+	            'projectActivitiesCanvas' => $wp_project_activities_canvas,
+	            'projectRessourcesCanvas' => $wp_project_ressources_canvas,
+	            'projectWorthOfferCanvas' => $wp_project_worth_offer_canvas,
+	            'projectCustomersRelationsCanvas' => $wp_project_customers_relations_canvas,
+	            'projectChainDistributionsCanvas' => $wp_project_chain_distribution_canvas,
+	            'projectClientsCanvas' => $wp_project_clients_canvas,
+	            'projectCostStructureCanvas' => $wp_project_structure_canvas,
+	            'projectSourceOfIncomeCanvas' => $wp_project_source_income_canvas,
+	            'projectFinancialBoard' => $wp_project_financial_board,
+	            'projectPerspectives' => $wp_project_perspectives,
+	            'projectOtherInformation' => $wp_project_other_information
+			)
+		);
+		$result_obj = BoppLib::call_post('projects', $request_params);
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne un projet à partir d'un id
+	 * @param string $id
+	 * @return object
+	 */
+	public static function get_project($id) {
+		return BoppLib::call_get('projects/' . $id);
+	}
+	
+	/**
+	 * Mise à jour du projet à partir d'un id
+	 * @param int $id
+	 * @param string $first_name
+	 * @param string $last_name
+	 * @return object
+	 */
+	public static function update_project($wp_project_id, $wp_project_name, $wp_project_slogan, $wp_project_description, $wp_project_video, $wp_project_image_video, $wp_project_image_cover, $wp_project_category, $wp_project_business_sector, $wp_project_funding_type, $wp_project_funding_duration, $wp_project_return_investment, $project_investor_benefit, $wp_project_summary, wp_project_economy_excerpt, $wp_project_social_excerpt, $wp_project_environment_excerpt, $wp_project_mission, $wp_project_economy, $wp_project_social, $wp_project_environment, $wp_project_measure_performance, $wp_project_good_point, $wp_project_content_excerpt, $wp_project_market_excerpt, $projectContext, $wp_project_market, $wp_project_worth_offer, $wp_project_client_collaborator, $wp_project_business_core, $wp_project_income, $wp_project_cost, $wp_project_collaborators_canvas, $wp_project_activities_canvas, wp_project_activities_canvas, $wp_project_ressources_canvas, wp_project_worth_offer_canvas,$wp_project_customers_relations_canvas, $wp_project_chain_distribution_canvas, $wp_project_clients_canvas, $wp_project_structure_canvas, $wp_project_source_income_canvas, $wp_project_financial_board, $wp_project_perspectives, $wp_project_other_information) {
+		$request_params = array(
+			'projects' => array(
+				'wpProjectId' => $wp_project_id, 
+	            'projectName' => $wp_project_name,
+	            'projectSlogan' => $wp_project_slogan,
+	            'projectDescription' => $wp_project_description,
+	            'projectVideo' => $wp_project_video,
+	            'projectImageVideo' => $wp_project_image_video,
+	            'projectImageCover' => $wp_project_image_cover,
+	            'projectCategory' => $wp_project_category,
+	            'projectBusinessSector' => $wp_project_business_sector,
+	            'projectFundingType' => $wp_project_funding_type,
+	            'projectFundingDuration' => $wp_project_funding_duration,
+	            'projectReturnOnInvestment' => $wp_project_return_investment,
+	            'projectInvestorBenefit' => $project_investor_benefit,
+	            'projectSummary' => $wp_project_summary,
+	            'projectEconomyExcerpt' => $wp_project_economy_excerpt,
+	            'projectSocialExcerpt' => $wp_project_social_excerpt,
+	            'projectEnvironmentExcerpt' => $wp_project_environment_excerpt,
+	            'projectMission' => $wp_project_mission,
+	            'projectEconomy' => $wp_project_economy,
+	            'projectSocial' => $wp_project_social, 
+	            'projectEnvironment' => $wp_project_environment,
+	            'projectMeasurePerformance' => $wp_project_measure_performance,
+	            'projectGoodPoint' => $wp_project_good_point,
+	            'projectContextExcerpt' => $wp_project_content_excerpt,
+	            'projectMarketExcerpt' => $wp_project_market_excerpt,
+	            'projectContext' => $wp_project_content,
+	            'projectMarket' => $wp_project_market,
+	            'projectWorthOffer' => $wp_project_worth_offer,
+	            'projectClientCollaborator' => $wp_project_client_collaborator,
+	            'projectBusinessCore' => $wp_project_business_core,
+	            'projectIncome' => $wp_project_income,
+	            'projectCost' => $wp_project_cost,
+	            'projectCollaboratorsCanvas' => $wp_project_collaborators_canvas,
+	            'projectActivitiesCanvas' => $wp_project_activities_canvas,
+	            'projectRessourcesCanvas' => $wp_project_ressources_canvas,
+	            'projectWorthOfferCanvas' => $wp_project_worth_offer_canvas,
+	            'projectCustomersRelationsCanvas' => $wp_project_customers_relations_canvas,
+	            'projectChainDistributionsCanvas' => $wp_project_chain_distribution_canvas,
+	            'projectClientsCanvas' => $wp_project_clients_canvas,
+	            'projectCostStructureCanvas' => $wp_project_structure_canvas,
+	            'projectSourceOfIncomeCanvas' => $wp_project_source_income_canvas,
+	            'projectFinancialBoard' => $wp_project_financial_board,
+	            'projectPerspectives' => $wp_project_perspectives,
+	            'projectOtherInformation' => $wp_project_other_information
+			)
+		);
+		$result_obj = BoppLib::call_put('projects/' . $id, $request_params);
+		return $result_obj;
+	}
+
+//FIN GESTION Projets
+//******************************************************************************************//
+
+
+
+
 }
