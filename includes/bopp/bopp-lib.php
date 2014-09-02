@@ -88,6 +88,31 @@ class BoppLib {
 	}
 	
 	/**
+	 * Supprime une donnée sur le serveur
+	 * @param string $request
+	 * @param array $request_params
+	 * @return object
+	 */
+	public static function call_delete($request, $request_params = array()) {
+		$url = BoppLib::build_url($request);
+		$data_string = ($request_params != '') ? json_encode($request_params) : '';
+		$ch = curl_init($url);
+		    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+		    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data_string)));
+		    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+		    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		    curl_setopt($ch, CURLOPT_HEADER, TRUE);
+		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		$response = curl_exec($ch);
+//		$error = curl_error($ch);
+//		$errorno = curl_errno($ch);
+		curl_close($ch);
+		$obj = json_decode($response);
+		return $obj;
+	    
+	}
+	
+	/**
 	 * Retourne l'url à appeler
 	 * @global BoppLib $bopp_lib
 	 * @param string $request
@@ -164,18 +189,15 @@ class BoppLib {
 //GESTION PROJETS
 	/**
 	 * Crée un projet sur l'API
-	 * @param string $first_name
-	 * @param string $last_name
-	 * @return object
+	 * @param type $wp_project_id
+	 * @param type $wp_project_name
+	 * @return type
 	 */
-	public static function create_project(
-			$wp_project_id, 
-			$wp_project_name
-		) {
+	public static function create_project($wp_project_id, $wp_project_name) {
 		$request_params = array(
 			'projects' => array(
 				'wpProjectId' => $wp_project_id, 
-	            'projectName' => $wp_project_name,
+				'projectName' => $wp_project_name
 			)
 		);
 		$result_obj = BoppLib::call_post('projects', $request_params);
@@ -298,9 +320,47 @@ class BoppLib {
 		return $result_obj;
 	}
 
-//FIN GESTION Projets
+//FIN GESTION PROJETS
 //******************************************************************************************//
 
+//******************************************************************************************//
+//GESTION ROLES
+	/**
+	 * Crée un rôle d'utilisateur dans l'api
+	 * @param type $title
+	 * @param type $slug
+	 */
+	public static function add_role($title, $slug) {
+		//TODO
+	}
+	
+	/**
+	 * Lie un utilisateur à un projet en définissant un rôle
+	 */
+	public static function link_user_to_project($api_project_id, $api_user_id, $api_role_slug) {
+		$request_params = array(
+			'projectsUsers' => array(
+				'sfWdgUsers' => $api_user_id, 
+				'sfWdgRoles' => $api_role_slug
+			)
+		);
+		$result_obj = BoppLib::call_post('projects/'.$api_project_id.'/members', $request_params);
+		return $result_obj;
+	}
+	
+	/**
+	 * Délie un utilisateur d'un projet
+	 * @param type $api_project_id
+	 * @param type $api_user_id
+	 */
+	public static function remove_user_from_project($api_project_id, $api_user_id) {
+		$request_params = array();
+		// projects{idProject}/roles/{idRole}/members/{idMember} 
+		$result_obj = BoppLib::call_delete('projects/' . $api_project_id . '/members/' . $api_user_id, $request_params);
+		return $result_obj;
+	}
+//FIN GESTION ROLES
+//******************************************************************************************//
 
 
 
