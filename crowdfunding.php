@@ -117,6 +117,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'pdf_generator.php' );
 		require( $this->includes_dir . 'bopp/bopp-lib.php' );
+		require( $this->includes_dir . 'bopp/bopp-lib-helpers.php' );
 		
 
 		do_action( 'atcf_include_files' );
