@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	// La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
 	$current_user = wp_get_current_user();
 	$current_user_id = $current_user->ID;
-	if ($current_user_id == $post->post_author || current_user_can('manage_options')) {
+	if (YPProjectLib::current_user_can_edit($_GET['campaign_id'])) {
 
 	    $crowdfunding = crowdfunding();
 

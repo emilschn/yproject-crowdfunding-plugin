@@ -53,7 +53,6 @@ class BoppLib {
 		    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data_string)));
 		    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
 		    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		    curl_setopt($ch, CURLOPT_HEADER, TRUE);
 		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		$response = curl_exec($ch);
 //		$error = curl_error($ch);
@@ -331,7 +330,33 @@ class BoppLib {
 	 * @param type $slug
 	 */
 	public static function add_role($title, $slug) {
-		//TODO
+		$request_params = array(
+			'roles' => array(
+				'roleName' => $title, 
+				'roleSlug' => $slug
+			)
+		);
+		$result_obj = BoppLib::call_post('roles', $request_params);
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne un projet à partir d'un id
+	 * @param string $id
+	 * @return object
+	 */
+	public static function get_role($api_role_slug) {
+		return BoppLib::call_get('roles/' . $api_role_slug);
+	}
+	
+	/**
+	 * Retourne les utilisateurs liés à un projet par rapport à un rôle
+	 * @param int $api_project_id
+	 * @param string $api_role_slug
+	 * @return array
+	 */
+	public static function get_project_members_by_role($api_project_id, $api_role_slug) {
+		return BoppLib::call_get('projects/' . $api_project_id . '/roles/' . $api_role_slug . '/members');
 	}
 	
 	/**
@@ -340,8 +365,8 @@ class BoppLib {
 	public static function link_user_to_project($api_project_id, $api_user_id, $api_role_slug) {
 		$request_params = array(
 			'projectsUsers' => array(
-				'sfWdgUsers' => $api_user_id, 
-				'sfWdgRoles' => $api_role_slug
+				'users' => $api_user_id, 
+				'roles' => $api_role_slug
 			)
 		);
 		$result_obj = BoppLib::call_post('projects/'.$api_project_id.'/members', $request_params);
@@ -353,9 +378,8 @@ class BoppLib {
 	 * @param type $api_project_id
 	 * @param type $api_user_id
 	 */
-	public static function remove_user_from_project($api_project_id, $api_user_id) {
+	public static function unlink_user_from_project($api_project_id, $api_user_id) {
 		$request_params = array();
-		// projects{idProject}/roles/{idRole}/members/{idMember} 
 		$result_obj = BoppLib::call_delete('projects/' . $api_project_id . '/members/' . $api_user_id, $request_params);
 		return $result_obj;
 	}

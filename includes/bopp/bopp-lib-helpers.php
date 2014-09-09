@@ -43,4 +43,19 @@ class BoppLibHelpers {
 		return $api_project_id;
 	}
 //******************************************************************************************//
+	
+//******************************************************************************************//
+//GESTION ROLES
+	/**
+	 * Teste si un rôle existe déjà dans l'API et sinon le crée
+	 * @param string $role_slug
+	 * @param string $role_title
+	 */
+	public static function check_create_role($role_slug, $role_title) {
+		$role_get = BoppLib::get_role($role_slug);
+		if ($role_get->code == 404) {
+			BoppLib::add_role($role_title, $role_slug);
+		}
+	}
+//******************************************************************************************//
 }

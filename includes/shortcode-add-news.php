@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $save_post = $post;
     if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
     $author_id = $post->post_author;
-    if (($current_user_id == $author_id || current_user_can('manage_options')) && isset($_GET['campaign_id'])) {
+    if (YPProjectLib::current_user_can_edit($_GET['campaign_id'])) {
 	$crowdfunding = crowdfunding();
 
 	$campaign = atcf_get_campaign( $post );
