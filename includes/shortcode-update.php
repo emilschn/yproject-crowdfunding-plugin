@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
  
  function atcf_shortcode_update( $editing = false ) {
-	$post = get_post($_GET['campaign_id']);
+	$post_campaign = get_post($_GET['campaign_id']);
 	// La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
 	$current_user = wp_get_current_user();
 	$current_user_id = $current_user->ID;
@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 	    $crowdfunding = crowdfunding();
 
-	    $campaign = atcf_get_campaign( $post );
+	    $campaign = atcf_get_campaign( $post_campaign );
 	    
 	    //Si on demande la création d'un groupe d'utilisateurs
 	    $investors_group_id = get_post_meta($campaign->ID, 'campaign_investors_group', true);
@@ -40,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		$create_investors_success = false;
 		//Si c'est bien l'admin qui demande et qu'il ne reste plus de temps pour investir
 		if (current_user_can('manage_options') && $campaign->days_remaining() <= 0) {
-		    $create_investors_success = ypcf_campaign_create_investors_group($post, $campaign);
+		    $create_investors_success = ypcf_campaign_create_investors_group($post_campaign, $campaign);
 		    $group_exists = $create_investors_success;
 		}
 	    }
@@ -198,8 +198,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		/* FIN Gestion fichiers / images */
 		
 		//Re-select des données en cas de modification
-		$post = get_post($_GET['campaign_id']);
-		$campaign = atcf_get_campaign( $post );
+		$post_campaign = get_post($_GET['campaign_id']);
+		$campaign = atcf_get_campaign( $post_campaign );
 	    }
 
 	    ob_start();
@@ -229,9 +229,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    </form><br /><br />
 	    <?php endif; ?>
 
-	    <?php do_action( 'atcf_shortcode_update_before', $editing, $campaign, $post ); ?>
+	    <?php do_action( 'atcf_shortcode_update_before', $editing, $campaign, $post_campaign ); ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
-		    <?php do_action( 'atcf_shortcode_update_fields', $editing, $campaign, $post ); ?>
+		    <?php do_action( 'atcf_shortcode_update_fields', $editing, $campaign, $post_campaign ); ?>
 
 		    <p class="atcf-update-campaign-update">
 			    <input type="submit" value="Mettre &agrave; jour le projet">
@@ -240,7 +240,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		    </p>
 
 	    </form>
-	    <?php do_action( 'atcf_shortcode_update_after', $editing, $campaign, $post ); ?>
+	    <?php do_action( 'atcf_shortcode_update_after', $editing, $campaign, $post_campaign ); ?>
 
 <?php
 	    $form = ob_get_clean();
@@ -250,16 +250,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 }
 add_shortcode( 'appthemer_crowdfunding_update', 'atcf_shortcode_update' );
 
-function atcf_shortcode_update_field_title($editing, $campaign, $post) {
+function atcf_shortcode_update_field_title($editing, $campaign, $post_campaign) {
     ?>
     <div class="update_field atcf-update-campaign-title">
 	<label class="update_field_label" for="title">Nom du projet</label><br />
-	<textarea name="title" id="title" rows="1" cols="40"><?php echo $post->post_title; ?></textarea>
+	<textarea name="title" id="title" rows="1" cols="40"><?php echo $post_campaign->post_title; ?></textarea>
     </div><br />
     <?php
 }
 //add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_title', 10, 3);
-function atcf_shortcode_update_field_subtitle($editing, $campaign, $post) {
+function atcf_shortcode_update_field_subtitle($editing, $campaign, $post_campaign) {
 	 ?>
     <div class="update_field atcf-update-campaign-title">
 	<label class="update_field_label" for="title">Description de 3 à 4 mots du projet</label><br />
@@ -269,7 +269,7 @@ function atcf_shortcode_update_field_subtitle($editing, $campaign, $post) {
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_subtitle', 10, 3);
 
-function atcf_shortcode_update_field_summary( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_summary( $editing, $campaign, $post_campaign ) {
 ?>
     <div class="update_field atcf-update-campaign-summary">
 	<label class="update_field_label" for="summary">R&eacute;sum&eacute;</label><br />
@@ -280,10 +280,10 @@ function atcf_shortcode_update_field_summary( $editing, $campaign, $post ) {
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_summary', 10, 3);
 
 
-function atcf_shortcode_update_field_images( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_images( $editing, $campaign, $post_campaign ) {
     $attachments = get_posts( array(
 					'post_type' => 'attachment',
-					'post_parent' => $post->ID,
+					'post_parent' => $post_campaign->ID,
 					'post_mime_type' => 'image'
 		    ));
     $image_obj_home = '';
@@ -313,7 +313,7 @@ function atcf_shortcode_update_field_images( $editing, $campaign, $post ) {
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_images', 10, 3);
 
-function atcf_shortcode_update_field_video( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_video( $editing, $campaign, $post_campaign ) {
 ?>
     <div class="update_field atcf-update-campaign-video">
 	<label class="update_field_label" for="video">Vid&eacute;o de pr&eacute;sentation</label><br />
@@ -323,7 +323,9 @@ function atcf_shortcode_update_field_video( $editing, $campaign, $post ) {
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_video', 10, 3);
 
-function atcf_shortcode_update_field_description( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_description( $editing, $campaign, $post_campaign ) {
+	global $post_ID, $post;
+	$post_ID = $post = 0;
 ?>
 	<div class="update_field atcf-update-campaign-description">
 		<label class="update_field_label" for="description">En quoi consiste le projet ?</label><br />
@@ -346,7 +348,9 @@ function atcf_shortcode_update_field_description( $editing, $campaign, $post ) {
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_description', 10, 3);
 
-function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $post_campaign ) {
+	global $post_ID, $post;
+	$post_ID = $post = 0;
 ?>
 	<div class="update_field atcf-update-campaign-societal_challenge">
 		<label class="update_field_label" for="societal_challenge">Quelle est l&apos;utilit&eacute; soci&eacute;tale du projet ?</label><br />
@@ -370,7 +374,9 @@ function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $p
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_societal_challenge', 10, 3);
 
 
-function atcf_shortcode_update_field_added_value( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_added_value( $editing, $campaign, $post_campaign ) {
+	global $post_ID, $post;
+	$post_ID = $post = 0;
 ?>
 	<div class="update_field atcf-update-campaign_added_value">
 		<label class="update_field_label" for="added_value">Quelle est l&apos;opportunit&eacute; &eacute;conomique du projet ?</label><br />
@@ -393,7 +399,9 @@ function atcf_shortcode_update_field_added_value( $editing, $campaign, $post ) {
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_added_value', 10, 3);
 
-function atcf_shortcode_update_field_economic_model( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_economic_model( $editing, $campaign, $post_campaign ) {
+	global $post_ID, $post;
+	$post_ID = $post = 0;
 ?>
 	<div class="update_field atcf-update-campaign_economic_model">
 		<label class="update_field_label" for="economic_model">Quel est le mod&egrave;le &eacute;conomique du projet ?</label><br />
@@ -416,7 +424,9 @@ function atcf_shortcode_update_field_economic_model( $editing, $campaign, $post 
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_economic_model', 10, 3 );
 
-function atcf_shortcode_update_field_implementation( $editing, $campaign, $post ) {
+function atcf_shortcode_update_field_implementation( $editing, $campaign, $post_campaign ) {
+	global $post_ID, $post;
+	$post_ID = $post = 0;
 ?>
 	<div class="update_field atcf-update-campaign-implementation">
 		<label class="update_field_label" for="implementation">Qui porte le projet ?</label><br />
