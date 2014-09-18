@@ -467,20 +467,20 @@ function atcf_shortcode_submit_process() {
 
 	$terms     	= isset ( $_POST[ 'edd_agree_to_terms' ] ) ? $_POST[ 'edd_agree_to_terms' ] : 0;
 	if (isset($_POST[ 'title' ]))		$title		= $_POST[ 'title' ];
-  if (isset($_POST[ 'subtitle' ]))   $subtitle    = $_POST[ 'subtitle' ];
+	if (isset($_POST[ 'subtitle' ]))	$subtitle	= $_POST[ 'subtitle' ];
 	if (isset($_POST[ 'summary' ]))		$summary     	= $_POST[ 'summary' ];
 	if (isset($_POST[ 'owner' ]))		$owner		= $_POST[ 'owner' ];
-	if (isset($_POST[ 'location' ]))	$location		= $_POST[ 'location' ];
+	if (isset($_POST[ 'location' ]))	$location	= $_POST[ 'location' ];
 	if (isset($_POST[ 'impact_area' ]))	$impact_area	= $_POST[ 'impact_area' ];
-	if (isset($_POST[ 'goalsum' ]))		$goalsum		= $_POST[ 'goalsum' ]; // "fixe" ou "flexible"
+	if (isset($_POST[ 'goalsum' ]))		$goalsum	= $_POST[ 'goalsum' ]; // "fixe" ou "flexible"
 	if (isset($_POST[ 'goal' ]))		$goal		= $_POST[ 'goal' ];
 	if (isset($_POST[ 'minimum_goal' ]))	$minimum_goal   = $_POST[ 'minimum_goal' ];
 	if (isset($_POST[ 'maximum_goal' ]))	$maximum_goal   = $_POST[ 'maximum_goal' ];
 	if (isset($_POST[ 'length' ]))		$length    	= $_POST[ 'length' ];
-	if (isset($_POST[ 'vote_length' ]))		$vote_length    	= $_POST[ 'vote_length' ];
+	if (isset($_POST[ 'vote_length' ]))	$vote_length    = $_POST[ 'vote_length' ];
 	if (isset($_POST[ 'campaign_type' ]))	$type      	= $_POST[ 'campaign_type' ];
-	if (isset($_POST[ 'general' ]))		$category  	= isset ( $_POST[ 'general' ] ) ? $_POST[ 'general' ] : 0;
-	if (isset($_POST[ 'activity' ]))	$activity  	= isset ( $_POST[ 'activity' ] ) ? $_POST[ 'activity' ] : 0;
+	if (isset($_POST[ 'categories' ]))	$category  	= isset ( $_POST[ 'categories' ] ) ? $_POST[ 'categories' ] : 0;
+	if (isset($_POST[ 'activities' ]))	$activity  	= isset ( $_POST[ 'activities' ] ) ? $_POST[ 'activities' ] : 0;
 	if (isset($_POST[ 'description' ]))	$content   	= $_POST[ 'description' ];
 	if (isset($_POST[ 'excerpt' ]))		$excerpt   	= $_POST[ 'excerpt' ];
 	if (isset($_POST[ 'societal_challenge' ]))  $societal_challenge	= $_POST[ 'societal_challenge' ];
@@ -590,8 +590,8 @@ function atcf_shortcode_submit_process() {
 	if (isset($activity)) $activity = absint( $activity );
 
 	/** Check Content */
-	if ( empty($content) || empty($summary) || empty($added_value)  || empty($economic_model) || empty($implementation) || empty($societal_challenge) )
-		$errors->add( 'invalid-content', 'Certains champs n&apos;ont pas &eacute;t&eacute; remplis.' );
+//	if ( empty($content) || empty($summary) || empty($added_value)  || empty($economic_model) || empty($implementation) || empty($societal_challenge) )
+//		$errors->add( 'invalid-content', 'Certains champs n&apos;ont pas &eacute;t&eacute; remplis.' );
 	
 
 	/** Check Excerpt */
@@ -599,12 +599,8 @@ function atcf_shortcode_submit_process() {
 		$excerpt = null;
 
 	/** Check Image */
-	if ( empty( $image ) || empty($image_home) )
-		$errors->add( 'invalid-previews', 'Merci de proposer deux images pour votre projet.' );
-
-	/** Check Rewards */
-	/* if ( empty( $rewards ) )
-		$errors->add( 'invalid-rewards', __( 'Please add at least one reward to the campaign.', 'atcf' ) ); */
+//	if ( empty( $image ) || empty($image_home) )
+//		$errors->add( 'invalid-previews', 'Merci de proposer deux images pour votre projet.' );
 
 	if ( ! isset ( $current_user ) )
 		$errors->add( 'invalid-connection', 'Vous devez &ecirc;tre connect&eacute; pour proposer un projet.' );		
@@ -634,8 +630,7 @@ function atcf_shortcode_submit_process() {
 
 	    $campaign = wp_insert_post( $args, true );
 
-	    wp_set_object_terms( $campaign, array( $category ), 'category' );
-	    wp_set_object_terms( $campaign, array( $activity ), 'category' );
+	    wp_set_object_terms( $campaign, array( $category, $activity ), 'download_category' );
 
 
 	    // Create category for blog
@@ -665,7 +660,7 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
 	    add_post_meta( $campaign, '_campaign_physical', sanitize_text_field( $shipping ) );
 	    add_post_meta( $campaign, 'campaign_summary', $summary);
-      add_post_meta( $campaign, 'campaign_subtitle', sanitize_text_field($subtitle));
+	    add_post_meta( $campaign, 'campaign_subtitle', sanitize_text_field($subtitle));
 	    add_post_meta( $campaign, 'campaign_impact_area', sanitize_text_field( $impact_area ) );
 	    add_post_meta( $campaign, 'campaign_added_value', $added_value);
 	    add_post_meta( $campaign, 'campaign_development_strategy', sanitize_text_field( $development_strategy ) );
@@ -703,9 +698,9 @@ function atcf_shortcode_submit_process() {
 		    }
 	    }
 	    if ( $image[ 'name' ] != '' ) {
-        $path = $_FILES['image']['name'];
-        $ext = pathinfo($path, PATHINFO_EXTENSION);
-      
+		    $path = $_FILES['image']['name'];
+		    $ext = pathinfo($path, PATHINFO_EXTENSION);
+
 		    $upload = wp_handle_upload( $image, $upload_overrides );
 		    $attachment = array(
 			    'guid'           => $upload[ 'url' ], 
@@ -714,32 +709,33 @@ function atcf_shortcode_submit_process() {
 			    'post_content'   => '',
 			    'post_status'    => 'inherit'
 		    );
-      $true_image=true;
-      switch ($ext) {
-        case 'png':
-          $image=imagecreatefrompng($upload[ 'file' ]);
-          break;
-        case 'jpg':
-          $image=imagecreatefromjpeg($upload[ 'file' ]);
-          break;
-        default:
-          $true_image=false;
-          break;
-      }
-      if($true_image){
-      for($i=0; $i<10 ; $i++){
-        imagefilter ($image, IMG_FILTER_GAUSSIAN_BLUR);
-        imagefilter ($image , IMG_FILTER_SELECTIVE_BLUR );
-      }
-      $fichier=explode('.',$upload[ 'file' ]);
-      $img_name=$fichier[0].'_blur.'.'jpg';
-      imagejpeg($image,$img_name);
-      $attach_id = wp_insert_attachment( $attachment, $img_name, $campaign );   
+		    $true_image=true;
+		    switch ($ext) {
+			case 'png':
+			  $image=imagecreatefrompng($upload[ 'file' ]);
+			  break;
+			case 'jpg':
+			  $image=imagecreatefromjpeg($upload[ 'file' ]);
+			  break;
+			default:
+			  $true_image=false;
+			  break;
+		    }
+		    if($true_image){
+			for($i=0; $i<10 ; $i++){
+			    imagefilter ($image, IMG_FILTER_GAUSSIAN_BLUR);
+			    imagefilter ($image , IMG_FILTER_SELECTIVE_BLUR );
+			}
+			$fichier=explode('.',$upload[ 'file' ]);
+			$img_name=$fichier[0].'_blur.'.'jpg';
+			imagejpeg($image,$img_name);
+			$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign );   
 
-      wp_update_attachment_metadata( 
-        $attach_id, 
-        wp_generate_attachment_metadata( $attach_id, $img_name ) 
-      );}
+			wp_update_attachment_metadata( 
+			    $attach_id, 
+			    wp_generate_attachment_metadata( $attach_id, $img_name ) 
+			);
+		    }
 
 		    add_post_meta( $campaign, '_thumbnail_id', absint( $attach_id ) );
 	    }
@@ -780,7 +776,9 @@ function atcf_shortcode_submit_process() {
 	    $url = isset ( $edd_options[ 'submit_page' ] ) ? get_permalink( $edd_options[ 'submit_page' ] ) : get_permalink();
 
 	    $redirect = apply_filters( 'atcf_submit_campaign_success_redirect', add_query_arg( array( 'success' => 'true' ), $url ) );
-	    wp_safe_redirect( $redirect );
+	    $page_manage = get_page_by_path('gerer');
+	    $redirect_url = get_permalink($page_manage->ID) . '?campaign_id=' . $campaign;
+	    wp_safe_redirect( $redirect_url );
 	    exit();
 	}
 
