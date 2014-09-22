@@ -620,7 +620,7 @@ function atcf_shortcode_submit_process() {
 
 	    $args = apply_filters( 'atcf_campaign_submit_data', array(
 		    'post_type'   		 	=> 'download',
-		    'post_status'  		 	=> 'private',
+		    'post_status'  		 	=> 'publish',
 		    'post_title'   		 	=> $title,
 		    'post_content' 		 	=> $content,
 		    'post_excerpt' 			=> $excerpt,
@@ -648,6 +648,7 @@ function atcf_shortcode_submit_process() {
 	 	wp_insert_post( $forum_post, $wp_error ); 
 
 	    // Extra Campaign Information
+	    add_post_meta( $campaign, 'campaign_vote', 'preparing' );
 	    add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );
 	    add_post_meta( $campaign, 'campaign_minimum_goal', apply_filters( 'edd_metabox_save_edd_price', $minimum_goal ) );
 	    add_post_meta( $campaign, 'campaign_type', sanitize_text_field( $type ) );

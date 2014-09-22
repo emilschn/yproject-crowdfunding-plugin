@@ -586,6 +586,7 @@ function _atcf_metabox_campaign_vote() {
 	<p>Choisir le statut de la campagne</p>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	    <option></option>
+	    <option <?php if ($campaign->vote() == "preparing") { ?>selected="selected"<?php } ?> value="preparing">Préparation</option>
 	    <option <?php if ($campaign->vote() == "preview") { ?>selected="selected"<?php } ?> value="preview">Avant-première</option>
 	    <option <?php if ($campaign->vote() == "vote") { ?>selected="selected"<?php } ?>value="vote">En cours de vote</option>
 	    <option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">En cours de collecte</option>
@@ -1428,7 +1429,7 @@ class ATCF_Campaign {
 	}
 	/**
 	 * Récupérer le statut du projet
-	 * @return Statuts possibles : preview ; vote ; collecte ; funded ; archive
+	 * @return Statuts possibles : preparing ; preview ; vote ; collecte ; funded ; archive
 	 */
 	public function campaign_status() {
 		return $this->__get( 'campaign_vote' );

@@ -356,7 +356,9 @@ class BoppLib {
 	 * @return array
 	 */
 	public static function get_project_members_by_role($api_project_id, $api_role_slug) {
-		return BoppLib::call_get('projects/' . $api_project_id . '/roles/' . $api_role_slug . '/members');
+		$result = BoppLib::call_get('projects/' . $api_project_id . '/roles/' . $api_role_slug . '/members');
+		if (isset($result->code) && $result->code == '404') return array();
+		else return $result;
 	}
 	
 	/**
