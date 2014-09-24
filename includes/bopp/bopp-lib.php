@@ -180,6 +180,16 @@ class BoppLib {
 		$result_obj = BoppLib::call_put('users/' . $id, $request_params);
 		return $result_obj;
 	}
+	
+	/**
+	 * Récupère la liste des projets auxquels est lié un utilisateur par un certain rôle
+	 * @param int $id
+	 * @param string $role_slug
+	 * @return object
+	 */
+	public static function get_user_projects_by_role($id, $role_slug) {
+		return BoppLib::call_get('users/' . $id . '/roles/' . $role_slug);
+	}
 
 //FIN GESTION UTILISATEURS
 //******************************************************************************************//
