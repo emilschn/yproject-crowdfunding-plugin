@@ -772,7 +772,9 @@ function atcf_shortcode_submit_process() {
 
 	    do_action( 'atcf_submit_process_after', $campaign, $_POST );
 	    
-	    ypcf_send_mail_admin(0, 'project_posted');
+	    $copy_recipient = '';
+	    if (!WP_IS_DEV_SITE) $copy_recipient = 'communication@wedogood.co';
+	    ypcf_send_mail_admin(0, 'project_posted', $copy_recipient);
 
 	    $url = isset ( $edd_options[ 'submit_page' ] ) ? get_permalink( $edd_options[ 'submit_page' ] ) : get_permalink();
 

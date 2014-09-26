@@ -732,7 +732,7 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '', $force_email = 
 /**
  * @param type $payment_id
  */
-function ypcf_send_mail_admin($payment_id, $type) {
+function ypcf_send_mail_admin($payment_id, $type, $copy_recipient = '') {
     switch ($type) {
 	case "contract_failed":
 	    $subject = 'Problème de création de contrat';
@@ -765,8 +765,8 @@ function ypcf_send_mail_admin($payment_id, $type) {
 	    $message .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
 	    break;
 	case "project_posted":
-	    $subject = '[Nouveau Projet]'.$_POST[ 'title' ];
-	    $message = 'Un nouveau projet viens d\'être publié . <br />';
+	    $subject = '[Nouveau Projet] '.$_POST[ 'title' ];
+	    $message = 'Un nouveau projet viens d\'être publié.<br />';
 	    $message.= 'Il est accessible depuis le back-office.';
 	    break;
     }
@@ -778,7 +778,9 @@ function ypcf_send_mail_admin($payment_id, $type) {
     $headers .= "Content-Type: text/html; charset=utf-8\r\n";
     
     ypcf_debug_log("ypcf_send_mail_admin --- MAIL :: payment_id :: ".$payment_id." ; type :: ".$type . " ; sent to : " . $from_email);
-    if (!wp_mail( $from_email, $subject, $message, $headers )) {
+    $recipient = $from_email;
+    if ($copy_recipient !== '') $recipient .= ', ' . $copy_recipient;
+    if (!wp_mail( $recipient, $subject, $message, $headers )) {
 	ypcf_debug_log("ypcf_send_mail_admin --- ERROR :: mail admin :: payment_id :: ".$payment_id);
     }
 }
