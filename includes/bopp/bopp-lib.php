@@ -188,7 +188,9 @@ class BoppLib {
 	 * @return object
 	 */
 	public static function get_user_projects_by_role($id, $role_slug) {
-		return BoppLib::call_get('users/' . $id . '/roles/' . $role_slug);
+		$project_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug);
+		if (!isset($project_list->code)) return $project_list;
+		else return array();
 	}
 
 //FIN GESTION UTILISATEURS
