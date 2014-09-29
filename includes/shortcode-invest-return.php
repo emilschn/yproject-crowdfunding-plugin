@@ -96,9 +96,9 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		case 'pending' :
 		    $buffer .= ypcf_print_invest_breadcrumb(4);
 		    if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') {
-			    $buffer .= 'Nous attendons votre virement.<br />';
-			    $buffer .= 'Une fois validé, vous recevrez deux e-mails :<br />';
-			    $buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br />';
+			    $buffer .= 'Nous attendons votre virement.<br /><br />';
+			    $buffer .= 'Une fois validé, vous recevrez deux e-mails :<br /><br />';
+			    $buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br /><br />';
 			    $buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
 		    } else {
 			    $buffer .= 'Transaction en cours.<br />';
@@ -124,9 +124,9 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 		    global $contract_errors, $wpdb;
 		    if (!isset($contract_errors) || $contract_errors == '') {
-			$buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br />';
-			$buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br />';
-			$buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br />'; 
+			$buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br /><br />';
+			$buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br /><br />';
+			$buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
 			$buffer .= '<center><img src="'. get_stylesheet_directory_uri() .'/images/signsquid.png" width="168" height="64" /></center><br />';
 			if (ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) {
 			    $buffer .= 'Vous allez aussi recevoir un sms contenant le code au num&eacute;ro que vous nous avez indiqu&eacute; : '.$current_user->get('user_mobile_phone').'<br /><br />'; 
