@@ -20,6 +20,7 @@ class BoppLibHelpers {
 		if (!isset($api_user_id) || empty($api_user_id)) {
 			$user_data = get_userdata($wp_user_id);
 			$api_user_id = BoppLib::create_user($wp_user_id, $user_data->first_name, $user_data->last_name);
+			ypcf_debug_log('BoppLibHelpers::get_api_user_id > ' . $api_user_id);
 			update_user_meta($wp_user_id, BoppLibHelpers::$meta_key, $api_user_id);
 		}
 		return $api_user_id;
@@ -38,6 +39,7 @@ class BoppLibHelpers {
 		if (!isset($api_project_id) || empty($api_project_id)) {
 			$campaign_post = get_post($wp_project_id);
 			$api_project_id = BoppLib::create_project($wp_project_id, $campaign_post->post_title);
+			ypcf_debug_log('BoppLibHelpers::get_api_project_id > ' . $api_project_id);
 			update_post_meta($wp_project_id, BoppLibHelpers::$meta_key, $api_project_id);
 		}
 		return $api_project_id;

@@ -72,7 +72,12 @@ function ypcf_debug_log($debug_str) {
 	$filename = dirname ( __FILE__ ) . '/logs/the_logs_'.date("m.d.Y").'.txt';
 	$file_handle = fopen($filename, 'a');
 	date_default_timezone_set("Europe/Paris");
-	$debug_str = date("m.d.Y H:i:s") . " (".$_SERVER['REQUEST_URI']."?".$_SERVER['QUERY_STRING'].") - " . $debug_str . "\n";
+	$current_user_str = 'UNLOGGED';
+	if (is_user_logged_in()) {
+		global $current_user;
+		$current_user_str = $current_user->ID;
+	}
+	$debug_str = date("m.d.Y H:i:s") . " (".$_SERVER['REQUEST_URI']."?".$_SERVER['QUERY_STRING'].") [".$current_user_str."] - " . $debug_str . "\n";
 	fwrite($file_handle, $debug_str);
 	fclose($file_handle);
     }

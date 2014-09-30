@@ -29,12 +29,14 @@ class BoppLib {
 	 */
 	public static function call_get($request) {
 		$url = BoppLib::build_url($request);
+		ypcf_debug_log('BoppLib::call_get -- $url : ' . $url);
 		$ch = curl_init($url);
 		    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 		    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		    curl_setopt($ch, CURLOPT_VERBOSE, true);
 		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		$response = curl_exec($ch);
+		ypcf_debug_log('BoppLib::call_get ----> $response : ' . $response);
 		$obj = json_decode($response);
 		return $obj;
 	}
@@ -47,6 +49,7 @@ class BoppLib {
 	 */
 	public static function call_post($request, $request_params = array()) {
 		$url = BoppLib::build_url($request);
+		ypcf_debug_log('BoppLib::call_post -- $url : ' . $url);
 		$data_string = ($request_params != '') ? json_encode($request_params) : '';
 		$ch = curl_init($url);
 		    curl_setopt($ch, CURLOPT_POST, TRUE);
@@ -55,7 +58,9 @@ class BoppLib {
 		    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		$response = curl_exec($ch);
-//		$error = curl_error($ch);
+		ypcf_debug_log('BoppLib::call_post ----> $response : ' . $response);
+		$error = curl_error($ch);
+		ypcf_debug_log('BoppLib::call_post ----> $error : ' . $error);
 //		$errorno = curl_errno($ch);
 		curl_close($ch);
 		$obj = json_decode($response);
@@ -70,6 +75,7 @@ class BoppLib {
 	 */
 	public static function call_put($request, $request_params = array()) {
 		$url = BoppLib::build_url($request);
+		ypcf_debug_log('BoppLib::call_put -- $url : ' . $url);
 		$data_string = ($request_params != '') ? json_encode($request_params) : '';
 		$ch = curl_init($url);
 		    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
@@ -79,6 +85,7 @@ class BoppLib {
 		    curl_setopt($ch, CURLOPT_HEADER, TRUE);
 		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		$response = curl_exec($ch);
+		ypcf_debug_log('BoppLib::call_put ----> $response : ' . $response);
 //		$error = curl_error($ch);
 //		$errorno = curl_errno($ch);
 		curl_close($ch);
@@ -94,6 +101,7 @@ class BoppLib {
 	 */
 	public static function call_delete($request, $request_params = array()) {
 		$url = BoppLib::build_url($request);
+		ypcf_debug_log('BoppLib::call_delete -- $url : ' . $url);
 		$data_string = ($request_params != '') ? json_encode($request_params) : '';
 		$ch = curl_init($url);
 		    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
@@ -103,6 +111,7 @@ class BoppLib {
 		    curl_setopt($ch, CURLOPT_HEADER, TRUE);
 		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		$response = curl_exec($ch);
+		ypcf_debug_log('BoppLib::call_delete ----> $response : ' . $response);
 //		$error = curl_error($ch);
 //		$errorno = curl_errno($ch);
 		curl_close($ch);
