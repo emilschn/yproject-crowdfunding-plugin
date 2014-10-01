@@ -779,7 +779,7 @@ function ypcf_send_mail_admin($payment_id, $type, $copy_recipient = '') {
     
     ypcf_debug_log("ypcf_send_mail_admin --- MAIL :: payment_id :: ".$payment_id." ; type :: ".$type . " ; sent to : " . $from_email);
     $recipient = $from_email;
-    if ($copy_recipient !== '') $recipient .= ', ' . $copy_recipient;
+    if ($copy_recipient !== '') $recipient .= ',' . $copy_recipient;
     if (!wp_mail( $recipient, $subject, $message, $headers )) {
 	ypcf_debug_log("ypcf_send_mail_admin --- ERROR :: mail admin :: payment_id :: ".$payment_id);
     }
