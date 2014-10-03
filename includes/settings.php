@@ -193,6 +193,54 @@ add_filter( 'edd_settings_general', 'atcf_settings_general', 100 );
  * Ajout aux réglages d'edd
  */
 function ypcf_register_settings() {
+    add_settings_field(
+	'edd_settings_misc[terms_general]',
+	'CGU',
+	function_exists( 'edd_header_callback' ) ? 'edd_header_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'terms_general',
+	    'desc' => '',
+	    'name' => 'terms_general',
+	    'section' => 'misc',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+    add_settings_field(
+	'edd_settings_misc[terms_general_version]',
+	'Version des conditions générales',
+	function_exists( 'edd_text_callback' ) ? 'edd_text_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'terms_general_version',
+	    'desc' => '',
+	    'name' => 'terms_general_version',
+	    'section' => 'misc',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+    add_settings_field(
+	'edd_settings_misc[terms_general_excerpt]',
+	'Extrait des conditions générales à afficher dans la lightbox',
+	function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'terms_general_excerpt',
+	    'desc' => '',
+	    'name' => 'terms_general_excerpt',
+	    'section' => 'misc',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
     
     add_settings_field(
 	'edd_settings_misc[investment_generalities]',
