@@ -84,9 +84,8 @@ function ypcf_shortcode_submit_field($atts, $content = '') {
 	'rows' => 5,
 	'cols' => 50
     ), $atts );
-    $value = '';
-    if (isset($_POST[$atts['name']])) $value = $_POST[$atts['name']];
-    return '<textarea name="'.$atts['name'].'" id="'.$atts['name'].'" rows="'.$atts['rows'].'" cols="'.$atts['cols'].'" placeholder="'. ($editing ? apply_filters( 'get_summary', $campaign->data->post_summary ) : $content) .'">'.$value.'</textarea>';
+    $value = isset($_POST[$atts['name']]) ? stripslashes( $_POST[$atts['name']] ) : '';
+    return '<textarea name="'.$atts['name'].'" id="'.$atts['name'].'" rows="'.$atts['rows'].'" cols="'.$atts['cols'].'">'.$value.'</textarea>';
 }
 add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
 
@@ -326,12 +325,12 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 	'min_amount_project' => '500',
 	'min_amount_development' => '5000'
     ), $atts );
-    $goal_search = '';
-    if (isset($_POST['goal_search'])) $goal_search = $_POST['goal_search'];
-    $minimum_goal = '';
-    if (isset($_POST['minimum_goal'])) $minimum_goal = $_POST['minimum_goal'];
-    $maximum_goal = '';
-    if (isset($_POST['maximum_goal'])) $maximum_goal = $_POST['maximum_goal'];
+    $goal = isset($_POST['goal']) ? $_POST['goal'] : 0;
+    $goal_search = isset($_POST['goal_search']) ? $_POST['goal_search'] : '';
+    $minimum_goal = isset($_POST['minimum_goal']) ? $_POST['minimum_goal'] : '';
+    $minimum_goal_search = isset($_POST['minimum_goal_search']) ? $_POST['minimum_goal_search'] : '';
+    $maximum_goal = isset($_POST['maximum_goal']) ? $_POST['maximum_goal'] : '';
+    $maximum_goal_search = isset($_POST['maximum_goal_search']) ? $_POST['maximum_goal_search'] : '';
     $goalsum_fixe = ' checked="checked"';
     $goalsum_flexible = '';
     $goalsum_fixe_param = '';
@@ -344,20 +343,20 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
     }
     return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe"'.$goalsum_fixe.'>' . $atts['option1'] . '
 		<span id="goalsum_fixe_param"'.$goalsum_fixe_param.'>- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" size="10" value="'.$goal_search.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>) 
-		- ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi">0&euro;</span></span><br />
+		- ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi">'.$goal.'&euro;</span></span><br />
 	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible"'.$goalsum_flexible.'>' . $atts['option2'] . '
-		<span id="goalsum_flexible_param"'.$goalsum_flexible_param.'>- Minimum : <input type="text" id="minimum_goal_search" name="minimum_goal_search" size="10" value="'.$minimum_goal.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
-		- Maximum : <input type="text" id="maximum_goal_search" name="maximum_goal_search" size="10" value="'.$maximum_goal.'"></span>
-		- ' . $atts['option1_campaign'] . ' entre <span id="goalsum_min_campaign_multi">0&euro;</span> et <span id="goalsum_max_campaign_multi">0&euro;</span>
+		<span id="goalsum_flexible_param"'.$goalsum_flexible_param.'>- Minimum : <input type="text" id="minimum_goal_search" name="minimum_goal_search" size="10" value="'.$minimum_goal_search.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
+		- Maximum : <input type="text" id="maximum_goal_search" name="maximum_goal_search" size="10" value="'.$maximum_goal_search.'"></span>
+		- ' . $atts['option1_campaign'] . ' entre <span id="goalsum_min_campaign_multi">'.$minimum_goal.'&euro;</span> et <span id="goalsum_max_campaign_multi">'.$maximum_goal.'&euro;</span>
 	    <input type="hidden" name="length" id="length" value="90">
 	    <input type="hidden" name="vote_length" id="vote_length" value="9">
 	    <input type="hidden" name="monney" id="monney" value="&euro;">
 	    <input type="hidden" name="campaign_multiplier" id="campaign_multiplier" value="' . $atts['multiplier_campaign'] . '">
 	    <input type="hidden" name="min_amount_project" id="min_amount_project" value="' . $atts['min_amount_project'] . '">
 	    <input type="hidden" name="min_amount_development" id="min_amount_development" value="' . $atts['min_amount_development'] . '">
-	    <input type="hidden" name="goal" id="goal">
-	    <input type="hidden" name="minimum_goal" id="minimum_goal">
-	    <input type="hidden" name="maximum_goal" id="maximum_goal">';
+	    <input type="hidden" name="goal" id="goal" value="'.$goal.'">
+	    <input type="hidden" name="minimum_goal" id="minimum_goal" value="'.$minimum_goal.'">
+	    <input type="hidden" name="maximum_goal" id="maximum_goal" value="'.$maximum_goal.'">';
 }
 add_shortcode('yproject_crowdfunding_field_goal', 'ypcf_shortcode_submit_field_goal');
 
@@ -425,6 +424,15 @@ add_shortcode('yproject_crowdfunding_field_confirm', 'ypcf_shortcode_submit_fiel
  * @return void
  */
 function atcf_shortcode_submit_before_success() {
+	echo '<div class="errors padder_more">';
+	global $submit_errors;
+	if (isset($submit_errors)) {
+		foreach ($submit_errors->errors as $submit_error) {
+			if (isset($submit_error[0])) echo $submit_error[0] . '<br />';
+		}
+	}
+	echo '</div>';
+	    
 	if ( ! isset ( $_GET[ 'success' ] ) )
 		return;
 
