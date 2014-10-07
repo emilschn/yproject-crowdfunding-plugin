@@ -34,7 +34,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     if ($user_obj->get('user_gender') == "female") $user_title = "Madame";
     $user_name = mb_strtoupper($user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name);
     
-    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>POUVOIR EN VUE DE LA CONSTITUTION DE LA SOCIÉTÉ "'.$campaign_obj->company_name().'"</h1></div>';
+    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().'</h1></div>';
     
     $buffer .= '<p>';
     $buffer .= '<h2>LE SOUSSIGNÉ</h2>';
@@ -55,7 +55,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     $buffer .= '<p>';
     $buffer .= '<h2>DONNE TOUS POUVOIRS à</h2>';
     $buffer .= '<strong>La société WE DO GOOD</strong><br />';
-    $buffer .= 'Société par actions simplifiée au capital variable de 14 390 Euros<br />';
+    $buffer .= 'Société par actions simplifiée au capital minimum de 1 239 Euros<br />';
     $buffer .= 'dont le siège social est à RENNES (35) - 51 rue Saint Hélier<br />';
     $buffer .= 'immatriculée au R.C.S. de RENNES sous le numéro 797 519 105<br />';
     $buffer .= 'représentée par Monsieur Jean-David BAR';
@@ -64,11 +64,18 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     $buffer .= '<p>';
     $buffer .= '<strong>à l\'effet, en son nom et pour son compte de :</strong><br />';
     $buffer .= '<p>';
-    $plurial = '';
-    if ($payment_data["amount_part"] > 1) $plurial = 's';
-    if ($payment_data["total_minimum_parts_company"] != $payment_data["total_parts_company"]) $buffer .= '- Souscrire '.$payment_data["amount_part"].' part'.$plurial.' sur les '.$payment_data["total_minimum_parts_company"].' à '.$payment_data["total_parts_company"].' parts';
-    else $buffer .= '- Souscrire '.$payment_data["amount_part"].' part'.$plurial.' sur les '.$payment_data["total_minimum_parts_company"].' parts';
-    $buffer .= ' de la société "'.$campaign_obj->company_name().'", société en participation en cours de constitution, dont les principales caractéristiques seront les suivantes :<br />';
+    
+    switch ($campaign_obj->funding_type()) {
+	    case 'fundingproject':
+		$buffer .= '- Signer en tant qu\'Investisseur le contrat à terme ferme annexé au présent pouvoir pour le montant de '.$payment_data["amount"].' euros auprès du Porteur de Projet identifié par les caractéristiques suivantes :<br />';
+		break;
+	    case 'fundingdevelopment':
+		$plurial = '';
+		if ($payment_data["amount_part"] > 1) $plurial = 's';
+		$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' parts de la société dont les principales caractéristiques sont les suivantes :<br />';
+		break;
+    }
+    
     $buffer .= html_entity_decode($campaign_obj->subscription_params());
     $buffer .= '</p>';
     $buffer .= html_entity_decode($campaign_obj->powers_params());

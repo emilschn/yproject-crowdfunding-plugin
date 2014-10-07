@@ -238,7 +238,7 @@ class ATCF_Campaigns {
 			add_meta_box( 'atcf_campaign_funds', __( 'Campaign Funds', 'atcf' ), '_atcf_metabox_campaign_funds', 'download', 'side', 'high' );
 
 		add_meta_box( 'atcf_campaign_stats', __( 'Campaign Stats', 'atcf' ), '_atcf_metabox_campaign_stats', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_vote', 'Satut de la campagne', '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_vote', 'Statut de la campagne', '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
 		add_meta_box( 'atcf_campaign_date_vote', 'Date de la fin des votes', '_atcf_metabox_campaign_date_vote', 'download', 'side', 'high' );
 		
 		
@@ -249,24 +249,12 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_economic_model', 'Modèle économique', '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', 'Qui porte le projet ?', '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
 		
+		add_meta_box( 'atcf_campaign_contract_title', 'Titre du contrat', '_atcf_metabox_campaign_contract_title', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_company_name', 'Nom de la société', '_atcf_metabox_campaign_company_name', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_subscription_params', 'Paramètres de souscriptions (apports, domicile, ...)', '_atcf_metabox_campaign_subscription_params', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_powers_params', 'Paramètres de pouvoirs (déposer, signer, ...)', '_atcf_metabox_campaign_powers_params', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_constitution_terms', 'Modalités de constitutions', '_atcf_metabox_campaign_constitution_terms', 'download', 'normal', 'high' );
-		
-//		add_meta_box( 'atcf_campaign_company_status', 'Statuts de la société', '_atcf_metabox_campaign_company_status', 'download', 'normal', 'high' );
-//		add_meta_box( 'atcf_campaign_company_status_other', 'Autre statuts', '_atcf_metabox_campaign_company_status_other', 'download', 'normal', 'high' );
-//		add_meta_box( 'atcf_campaign_init_capital', 'Capital initial', '_atcf_metabox_campaign_init_capital', 'download', 'normal', 'high' );
-//		add_meta_box( 'atcf_campaign_funding_type', 'Type de financement', '_atcf_metabox_campaign_funding_type', 'download', 'normal', 'high' );
-//		add_meta_box( 'atcf_campaign_funding_duration', 'Durée du financement', '_atcf_metabox_campaign_funding_duration', 'download', 'normal', 'high' );
-//		
-//		add_meta_box( 'atcf_campaign_development_strategy', __( 'Campaign development strategy', 'atcf' ), '_atcf_metabox_campaign_development_strategy', 'download', 'normal', 'high' );
-//		add_meta_box( 'atcf_campaign_measuring_impact', __( 'Campaign measuring impact', 'atcf' ), '_atcf_metabox_campaign_measuring_impact', 'download', 'normal', 'high' );
-//		add_meta_box( 'atcf_campaign_updates', __( 'Campaign Updates', 'atcf' ), '_atcf_metabox_campaign_updates', 'download', 'normal', 'high' );
-//		add_meta_box( 'atcf_campaign_impact_area', __( 'Campaign impact area', 'atcf' ), '_atcf_metabox_campaign_impact_area', 'download', 'normal', 'high' );
-		
-
 		
 		add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
 	}
@@ -301,6 +289,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_owner';
 		$fields[] = 'campaign_summary';
 		$fields[] = 'campaign_societal_challenge';
+		$fields[] = 'campaign_contract_title';
 		$fields[] = 'campaign_company_name';
 		$fields[] = 'campaign_company_status';
 		$fields[] = 'campaign_company_status_other';
@@ -927,6 +916,17 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 	do_action( 'atcf_metabox_campaign_implementation_after', $campaign );
 }
 
+function _atcf_metabox_campaign_contract_title() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="campaign_contract_title">
+		<textarea name="campaign_contract_title" id="campaign_contract_title" class="widefat"><?php echo $campaign->contract_title(); ?></textarea>
+	</p>
+<?php
+}
+
 
 function _atcf_metabox_campaign_company_name() {
 	global $post;
@@ -1125,128 +1125,64 @@ class ATCF_Campaign {
 	}
 
 	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign resume
-	 */
+	//Description projet
 	public function summary() {
 		return $this->__get( 'campaign_summary' );
 	}
-	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign valeur ajoutee
-	 */
 	public function added_value() {
 		return $this->__get( 'campaign_added_value' );
 	}
-	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign strategie developpement
-	 */
 	public function development_strategy() {
 		return $this->__get( 'campaign_development_strategy' );
 	}
-	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign modele economique
-	 */
 	public function economic_model() {
 		return $this->__get( 'campaign_economic_model' );
 	}
-	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign mesure impact
-	 */
 	public function measuring_impact() {
 		return $this->__get( 'campaign_measuring_impact' );
 	}
-	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign mise en oeuvre
-	 */
 	public function implementation() {
 		return $this->__get( 'campaign_implementation' );
 	}
-	
-	public function investment_terms() {
-	    return $this->__get('campaign_investment_terms');
-	}
-	public function subscription_params() {
-	    return $this->__get('campaign_subscription_params');
-	}
-	public function powers_params() {
-	    return $this->__get('campaign_powers_params');
-	}
-	public function constitution_terms() {
-	    return $this->__get('campaign_constitution_terms');
-	}
-	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign impact area
-	 */
 	public function impact_area() {
 		return $this->__get( 'campaign_impact_area' );
 	}
-	
-	
-	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign Defi societal
-	 */
 	public function societal_challenge() {
 		return $this->__get( 'campaign_societal_challenge' );
+	}
+	
+	//Ajouts contrat
+	public function contract_title() {
+		return $this->__get('campaign_contract_title');
+	}
+	public function investment_terms() {
+		return $this->__get('campaign_investment_terms');
+	}
+	public function subscription_params() {
+		return $this->__get('campaign_subscription_params');
+	}
+	public function powers_params() {
+		return $this->__get('campaign_powers_params');
+	}
+	public function constitution_terms() {
+		return $this->__get('campaign_constitution_terms');
 	}
 	
 	public function company_name() {
 	    return $this->__get('campaign_company_name');
 	}
-	
 	public function company_status() {
 	    return $this->__get('campaign_company_status');
 	}
-	
 	public function company_status_other() {
 	    return $this->__get('campaign_company_status_other');
 	}
-	
 	public function init_capital() {
 	    return $this->__get('campaign_init_capital');
 	}
-	
 	public function funding_type() {
 	    return $this->__get('campaign_funding_type');
 	}
-	
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
@@ -1809,6 +1745,20 @@ function _atcf_metabox_campaign_info() {
 		<?php foreach ( atcf_campaign_types_active() as $key => $desc ) : ?>
 		<label for="campaign_type[<?php echo esc_attr( $key ); ?>]"><input type="radio" name="campaign_type" id="campaign_type[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $key ); ?>" <?php checked( $key, $campaign->type() ); ?> /> <strong><?php echo $types[ $key ][ 'title' ]; ?></strong> &mdash; <?php echo $types[ $key ][ 'description' ]; ?></label><br />
 		<?php endforeach; ?>
+	</p>
+
+	<p>
+		<?php
+		$fundingproject = 'checked="checked"';
+		$fundingdevelopment = '';
+		if ($campaign->funding_type() == 'fundingdevelopment') {
+			$fundingproject = '';
+			$fundingdevelopment = 'checked="checked"';
+		}
+		?>
+		<label for="campaign_funding_type"><strong>Type de financement</strong></label><br />
+		<input type="radio" name="campaign_funding_type" value="fundingproject" <?php echo $fundingproject; ?>>Projet<br />
+		<input type="radio" name="campaign_funding_type" value="fundingdevelopment" <?php echo $fundingdevelopment; ?>>Capital<br />
 	</p>
 
 	<p>
