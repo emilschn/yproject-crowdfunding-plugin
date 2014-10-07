@@ -55,7 +55,7 @@ class BoppLibHelpers {
 	 */
 	public static function check_create_role($role_slug, $role_title) {
 		$role_get = BoppLib::get_role($role_slug);
-		if ($role_get->code == 404) {
+		if (!isset($role_get->id)) {
 			BoppLib::add_role($role_title, $role_slug);
 		}
 	}

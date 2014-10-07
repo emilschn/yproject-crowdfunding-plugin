@@ -362,8 +362,8 @@ class BoppLib {
 	}
 	
 	/**
-	 * Retourne un projet à partir d'un id
-	 * @param string $id
+	 * Retourne un rôle à partir d'un slug
+	 * @param string $api_role_slug
 	 * @return object
 	 */
 	public static function get_role($api_role_slug) {
@@ -378,7 +378,7 @@ class BoppLib {
 	 */
 	public static function get_project_members_by_role($api_project_id, $api_role_slug) {
 		$result = BoppLib::call_get('projects/' . $api_project_id . '/roles/' . $api_role_slug . '/members');
-		if (isset($result->code) && $result->code == '404') return array();
+		if (isset($result->code) && ($result->code == '404' || $result->code == '500')) return array();
 		else return $result;
 	}
 	
