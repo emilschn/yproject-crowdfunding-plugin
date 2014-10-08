@@ -72,7 +72,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
 	    case 'fundingdevelopment':
 		$plurial = '';
 		if ($payment_data["amount_part"] > 1) $plurial = 's';
-		$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' parts de la société dont les principales caractéristiques sont les suivantes :<br />';
+		$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
 		break;
     }
     
