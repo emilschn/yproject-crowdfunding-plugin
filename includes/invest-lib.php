@@ -730,24 +730,24 @@ function ypcf_send_mail_purchase($payment_id, $type, $code = '', $force_email = 
 }
 
 /**
- * @param type $payment_id
+ * @param type $item_id
  */
-function ypcf_send_mail_admin($payment_id, $type, $copy_recipient = '') {
+function ypcf_send_mail_admin($item_id, $type, $copy_recipient = '') {
     switch ($type) {
 	case "contract_failed":
 	    $subject = 'Problème de création de contrat';
-	    $message = 'Il y a eu un problème de création de contrat sur signsquid lors du paiement ' . $payment_id;
+	    $message = 'Il y a eu un problème de création de contrat sur signsquid lors du paiement ' . $item_id;
 	    break;
 	case "purchase_complete":
 	    $subject = 'Nouvel achat';
-	    $downloads = edd_get_payment_meta_downloads($payment_id);
+	    $downloads = edd_get_payment_meta_downloads($item_id);
 	    $download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
 	    $post_campaign = get_post($download_id);
-	    $payment_data = edd_get_payment_meta( $payment_id );
-	    $payment_amount = edd_get_payment_amount( $payment_id );
-	    $user_id      = edd_get_payment_user_id( $payment_id );
+	    $payment_data = edd_get_payment_meta( $item_id );
+	    $payment_amount = edd_get_payment_amount( $item_id );
+	    $user_id      = edd_get_payment_user_id( $item_id );
 	    $user_info    = maybe_unserialize( $payment_data['user_info'] );
-	    $email        = edd_get_payment_user_email( $payment_id );
+	    $email        = edd_get_payment_user_email( $item_id );
 
 	    if ( isset( $user_id ) && $user_id > 0 ) {
 		$user_data = get_userdata($user_id);
@@ -757,17 +757,18 @@ function ypcf_send_mail_admin($payment_id, $type, $copy_recipient = '') {
 	    } else {
 		$name = $email;
 	    }
-	    $message = 'Nouvel investissement avec l\'identifiant de paiement ' . $payment_id . '<br /><br />';
+	    $message = 'Nouvel investissement avec l\'identifiant de paiement ' . $item_id . '<br /><br />';
 	    $message .= "<strong>Détails de l'investissement</strong><br />";
 	    $message .= "Utilisateur : " . $name . "<br />";
 	    $message .= "Projet : " . $post_campaign->post_title . "<br />";
 	    $message .= "Montant investi : ".$payment_amount."€<br />";
-	    $message .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
+	    $message .= "Horodatage : ". get_post_field( 'post_date', $item_id ) ."<br /><br />";
 	    break;
 	case "project_posted":
-	    $subject = '[Nouveau Projet] '.$_POST[ 'title' ];
+	    $subject = '[Nouveau Projet] '. $_POST[ 'title' ];
 	    $message = 'Un nouveau projet viens d\'être publié.<br />';
-	    $message.= 'Il est accessible depuis le back-office.';
+	    $message .= 'Il est accessible depuis le back-office :<br />';
+	    $message .= '<a href="'. get_permalink($item_id) .'" target="_blank">'. $_POST[ 'title' ] .'</a>';
 	    break;
     }
     
@@ -777,11 +778,11 @@ function ypcf_send_mail_admin($payment_id, $type, $copy_recipient = '') {
     $headers .= "Reply-To: ". $from_email . "\r\n";
     $headers .= "Content-Type: text/html; charset=utf-8\r\n";
     
-    ypcf_debug_log("ypcf_send_mail_admin --- MAIL :: payment_id :: ".$payment_id." ; type :: ".$type . " ; sent to : " . $from_email);
+    ypcf_debug_log("ypcf_send_mail_admin --- MAIL :: payment_id :: ".$item_id." ; type :: ".$type . " ; sent to : " . $from_email);
     $recipient = $from_email;
     if ($copy_recipient !== '') $recipient .= ',' . $copy_recipient;
     if (!wp_mail( $recipient, $subject, $message, $headers )) {
-	ypcf_debug_log("ypcf_send_mail_admin --- ERROR :: mail admin :: payment_id :: ".$payment_id);
+	ypcf_debug_log("ypcf_send_mail_admin --- ERROR :: mail admin :: payment_id :: ".$item_id);
     }
 }
 
