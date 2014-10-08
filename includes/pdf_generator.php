@@ -105,7 +105,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     $buffer .= '</div>';
     
     $buffer .= '<div style="padding-top: 100px;"></div>';
-    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>MODALITES DE LA CONSTITUTION</h1></div>';
+    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>ANNEXE</h1></div>';
     
     $buffer .= html_entity_decode($campaign_obj->constitution_terms());
    
