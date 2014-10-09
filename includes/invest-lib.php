@@ -1072,7 +1072,7 @@ function ypcf_fake_sharing_display($text = '', $echo = false ) {
 			$sharing_content .= '</div></div></div>';
 
 			// Register our JS
-			wp_register_script( 'sharing-js', plugin_dir_url( __FILE__ ).'sharing.js', array( 'jquery' ), '20121205' );
+//			wp_register_script( 'sharing-js', plugin_dir_url( __FILE__ ).'sharing.js', array( 'jquery' ), '20121205' );
 			add_action( 'wp_footer', 'sharing_add_footer' );
 		}
 	}
