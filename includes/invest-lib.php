@@ -493,7 +493,7 @@ function ypcf_print_invest_breadcrumb($current_step) {
  * @param type $payment_id
  * @return string
  */
-function ypcf_get_updated_payment_status($payment_id) {
+function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = FALSE) {
     $payment_post = get_post($payment_id);
     $init_payment_status = $payment_post->post_status;
     $buffer = false;
@@ -544,7 +544,7 @@ function ypcf_get_updated_payment_status($payment_id) {
 		//On teste une contribution classique
 		} else {
 		
-			$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
+			if ($mangopay_contribution === FALSE) $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
 			if ($mangopay_contribution && $mangopay_contribution->Type != 'UserError') {
 			    if ($mangopay_contribution->IsCompleted) {
 				if ($mangopay_contribution->IsSucceeded) {

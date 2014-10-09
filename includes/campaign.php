@@ -1669,7 +1669,7 @@ class ATCF_Campaign {
 					'amount'		=> edd_get_payment_amount( $payment->ID ),
 					'date'			=> $payment->post_date,
 					'user'			=> $user_id,
-					'status'		=> ypcf_get_updated_payment_status( $payment->ID ),
+					'status'		=> ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution ),
 					'mangopay_contribution' => $mangopay_contribution,
 					'signsquid_status'	=> $signsquid_status,
 					'signsquid_status_text' => $signsquid_status_text
