@@ -1739,6 +1739,28 @@ class ATCF_Campaign {
 		$table_jcrois = $wpdb->prefix . "jycrois";
 		return $wpdb->get_var( 'SELECT count(campaign_id) FROM '.$table_jcrois.' WHERE campaign_id = '.$this->ID );
 	}
+	
+	public function get_home_picture_src() {
+		return $this->get_picture_src('image_home');
+	}
+	
+	public function get_picture_src($type) {
+		$image_obj = '';
+		$img_src = '';
+		$attachments = get_posts( array(
+			'post_type' => 'attachment',
+			'post_parent' => $this->ID,
+			'post_mime_type' => 'image'
+		));
+		//Si on en trouve bien une avec le titre "image_home" on prend celle-là
+		foreach ($attachments as $attachment) {
+			if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
+		}
+		//Sinon on prend la première image rattachée à l'article
+		if ($image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
+		if ($image_obj != '') $img_src = $image_obj[0];
+		return $img_src;
+	}
 }
 
 function atcf_get_campaign( $campaign ) {
