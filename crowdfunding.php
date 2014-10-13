@@ -89,7 +89,8 @@ final class ATCF_CrowdFunding {
 	 * @return void
 	 */
 	private function includes() {
-		require( $this->includes_dir . 'social/facebook/facebook.php' );
+		//require( $this->includes_dir . 'social/facebook/facebook.php' );
+		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
 		require( $this->includes_dir . 'social/twitter/TwitterAPIExchange.php' );
 		
 		require( $this->includes_dir . 'settings.php' );
