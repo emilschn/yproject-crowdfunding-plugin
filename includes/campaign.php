@@ -1678,6 +1678,89 @@ class ATCF_Campaign {
 		}
 		return $payments_data;
 	}
+	
+	public function manage_jycrois($user_id = FALSE) {
+		global $wpdb;
+		$table_jcrois = $wpdb->prefix . "jycrois";
+		
+
+		// Construction des urls utilisés dans les liens du fil d'actualité
+		// url d'une campagne précisée par son nom 
+		$campaign_url = get_permalink($_POST['id_campaign']);
+		$post_campaign = get_post($_POST['id_campaign']);
+		$post_title = $post_campaign->post_title;
+		$url_campaign = '<a href="'.$campaign_url.'">'.$post_title.'</a>';
+
+		//url d'un utilisateur précis
+		$user_item = ($user_id === FALSE) ? wp_get_current_user() : get_userdata($user_id);
+		$user_id = $user_item->ID;
+		$user_display_name = $user_item->display_name;
+		$url_profile = '<a href="' . bp_core_get_userlink($user_id, false, true) . '">' . $user_display_name . '</a>';
+		$user_avatar = UIHelpers::get_user_avatar($user_id);
+
+		//J'y crois
+		if(isset($_POST['jy_crois']) && $_POST['jy_crois'] == 1){
+			$wpdb->insert( 
+				$table_jcrois,
+				array(
+					'user_id'	=> $user_id,
+					'campaign_id'   => $this->ID
+				)
+			); 
+			bp_activity_add(array (
+				'component' => 'profile',
+				'type'      => 'jycrois',
+				'action'    => $user_avatar . $url_profile.' croit au projet '.$url_campaign
+			));
+
+		//J'y crois pas
+		} else if (isset($_POST['jy_crois']) && $_POST['jy_crois'] == 0) { 
+			$wpdb->delete( 
+				$table_jcrois,
+				array(
+					'user_id'      => $user_id,
+					'campaign_id'  => $this->ID
+				)
+			);
+			// Inserer l'information dans la table du fil d'activité  de la BDD wp_bp_activity 
+			bp_activity_delete(array (
+				'user_id'   => $user_id,
+				'component' => 'profile',
+				'type'      => 'jycrois',
+				'action'    => $user_avatar . $url_profile . ' croit au projet '.$url_campaign
+			));
+		}
+		
+		return $this->get_jycrois_nb();
+	}
+	
+	public function get_jycrois_nb() {
+		global $wpdb;
+		$table_jcrois = $wpdb->prefix . "jycrois";
+		return $wpdb->get_var( 'SELECT count(campaign_id) FROM '.$table_jcrois.' WHERE campaign_id = '.$this->ID );
+	}
+	
+	public function get_home_picture_src() {
+		return $this->get_picture_src('image_home');
+	}
+	
+	public function get_picture_src($type) {
+		$image_obj = '';
+		$img_src = '';
+		$attachments = get_posts( array(
+			'post_type' => 'attachment',
+			'post_parent' => $this->ID,
+			'post_mime_type' => 'image'
+		));
+		//Si on en trouve bien une avec le titre "image_home" on prend celle-là
+		foreach ($attachments as $attachment) {
+			if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
+		}
+		//Sinon on prend la première image rattachée à l'article
+		if ($image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
+		if ($image_obj != '') $img_src = $image_obj[0];
+		return $img_src;
+	}
 }
 
 function atcf_get_campaign( $campaign ) {

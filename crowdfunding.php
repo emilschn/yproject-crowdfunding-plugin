@@ -89,6 +89,9 @@ final class ATCF_CrowdFunding {
 	 * @return void
 	 */
 	private function includes() {
+		require( $this->includes_dir . 'social/facebook/facebook.php' );
+		require( $this->includes_dir . 'social/twitter/TwitterAPIExchange.php' );
+		
 		require( $this->includes_dir . 'settings.php' );
 		require( $this->includes_dir . 'campaign.php' );
 		require( $this->includes_dir . 'gateways.php' );
@@ -108,7 +111,6 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'shortcode-add-news.php' );
 		require( $this->includes_dir . 'shortcode-edit-news.php' );
 		require( $this->includes_dir . 'invest-lib.php' );
-		require( $this->includes_dir . 'shortcode-stats.php' );
 		
 		//Composants
 		require( $this->includes_dir . 'mangopay/common.php' );
@@ -120,7 +122,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'bopp/bopp-lib-helpers.php' );
 		
 		require( $this->includes_dir . 'users/lib-users.php' );
-		
+		require( $this->includes_dir . 'ui/ui-helpers.php' );
 		
 
 		do_action( 'atcf_include_files' );
