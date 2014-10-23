@@ -31,8 +31,18 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '<input type="hidden" id="input_invest_part_value" name="part_value" value="' . $part_value . '">';
 		$form .= '<input type="hidden" id="input_invest_max_part_value" name="part_value" value="' . $max_part_value . '">';
 		$form .= '<input type="hidden" id="input_invest_amount_total" value="' . ypcf_get_current_amount() . '">';
-		$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
-		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount">Valider</a>';
+		switch ($campaign->funding_type()) {
+		    case 'fundingproject':
+			$form .= '<span style="color:#FFFFFF;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> &euro; ';
+			break;
+		    
+		    case 'fundingdevelopment':
+		    default:
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
+			break;
+		}
+		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount">Valider</a><br /><br />';
 		
 		$form .= '<div id="validate_invest_amount_feedback" style="display:none;">';
 		$hidden = ' hidden';
