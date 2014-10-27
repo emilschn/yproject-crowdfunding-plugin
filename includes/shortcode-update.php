@@ -59,6 +59,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		update_post_meta($campaign->ID, 'campaign_societal_challenge', $_POST['societal_challenge']);
 		update_post_meta($campaign->ID, 'campaign_economic_model', $_POST['economic_model']);
 		update_post_meta($campaign->ID, 'campaign_implementation', $_POST['implementation']);
+		$temp_blur = $_POST['image_header_blur'];
+		if (empty($temp_blur)) $temp_blur = 'FALSE';
+		update_post_meta($campaign->ID, 'campaign_header_blur_active', $temp_blur);
 		
 		/* Gestion fichiers / images */
 		$image_header = $_FILES[ 'image' ];
@@ -291,23 +294,8 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_summary
 
 
 function atcf_shortcode_update_field_images( $editing, $campaign, $post_campaign ) {
-    $attachments = get_posts( array(
-					'post_type' => 'attachment',
-					'post_parent' => $post_campaign->ID,
-					'post_mime_type' => 'image'
-		    ));
-    $image_obj_home = '';
-    $image_obj_header = '';
-    $image_src_home = '';
-    $image_src_header = '';
-    //Si on en trouve bien une avec le titre "image_home" on prend celle-là
-    foreach ($attachments as $attachment) {
-	if ($attachment->post_title == 'image_home') $image_obj_home = wp_get_attachment_image_src($attachment->ID, "full");
-	if ($attachment->post_title == 'image_header') $image_obj_header = wp_get_attachment_image_src($attachment->ID, "full");
-    }
-    //Sinon on prend la première image rattachée à l'article
-    if ($image_obj_home != '') $image_src_home = $image_obj_home[0];
-    if ($image_obj_header != '') $image_src_header = $image_obj_header[0];
+    $image_src_header = $campaign->get_header_picture_src(false);
+    $image_src_home = $campaign->get_home_picture_src(false);
 ?>
     <div class="update_field atcf-update-campaign-image-home">
 	<label class="update_field_label" for="image_home">Image d&apos;aper&ccedil;u (Max. 2Mo ; id&eacute;alement 610px de largeur * 330px de hauteur)</label><br />
@@ -317,7 +305,8 @@ function atcf_shortcode_update_field_images( $editing, $campaign, $post_campaign
     <div class="update_field atcf-update-campaign-images">
 	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 1366px de largeur * 370px de hauteur)</label><br />
 	<?php if ($image_src_header != '') { ?><div class="update-field-img-header"><img src="<?php echo $image_src_header; ?>" /></div><br /><?php } ?>
-	<input type="file" name="image" id="image" />
+	<input type="file" name="image" id="image" /><br />
+	<input type="checkbox" name="image_header_blur" <?php if ($campaign->is_header_blur()) { echo 'checked="checked"'; } ?> /> Ajouter un flou artistique
     </div><br />
 <?php
 }
