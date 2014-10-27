@@ -118,11 +118,14 @@ function signsquid_get_contract_list() {
  */
 function signsquid_get_contract_infos($contract_id) {
     $buffer = '';
-    if ($contract_id != '') $buffer = signsquid_request("GET", "contracts/".$contract_id."/versions/1");
-    else ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: $contract_id empty');
-    if (!isset($buffer->{'published'}) || $buffer->{'published'} != true) {
-	$buffer = '';
-	ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: Wrong $contract_id called');
+    if ($contract_id != '') {
+	$buffer = signsquid_request("GET", "contracts/".$contract_id."/versions/1");
+	if (!isset($buffer->{'published'}) || $buffer->{'published'} != true) {
+	    $buffer = '';
+	    ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: Wrong $contract_id called');
+	}
+    } else {
+	ypcf_debug_log('signsquid_get_contract_infos --- ERROR :: $contract_id empty');
     }
     return $buffer;
 }
@@ -134,11 +137,14 @@ function signsquid_get_contract_infos($contract_id) {
  */
 function signsquid_get_contract_infos_complete($contract_id) {
     $buffer = '';
-    if ($contract_id != '') $buffer = signsquid_request("GET", "contracts/".$contract_id);
-    else ypcf_debug_log('signsquid_get_contract_infos_complete --- ERROR :: $contract_id empty');
-    if (!isset($buffer->{'id'}) || $buffer->{'id'} == '') {
-	$buffer = '';
-	ypcf_debug_log('signsquid_get_contract_infos_complete --- ERROR :: Wrong $contract_id called');
+    if ($contract_id != '') {
+	$buffer = signsquid_request("GET", "contracts/".$contract_id);
+	if (!isset($buffer->{'id'}) || $buffer->{'id'} == '') {
+	    $buffer = '';
+	    ypcf_debug_log('signsquid_get_contract_infos_complete --- ERROR :: Wrong $contract_id called');
+	}
+    } else {
+	ypcf_debug_log('signsquid_get_contract_infos_complete --- ERROR :: $contract_id empty');
     }
     return $buffer;
 }
