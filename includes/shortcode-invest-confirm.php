@@ -91,7 +91,7 @@ function ypcf_display_invest_confirm($content) {
 		
 		$form .= ypcf_print_invest_breadcrumb(2);
 		if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
-		if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour pouvoir'))) $form .= '<span class="errors">Merci de saisir "Bon pour pouvoir".</span><br />';
+		if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour souscription'))) $form .= '<span class="errors">Merci de saisir "Bon pour souscription".</span><br />';
 		
 		$page_invest = get_page_by_path('investir');
 		$page_invest_link = get_permalink($page_invest->ID);
@@ -164,7 +164,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $current_user_organisation).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
-		$form .= 'Ecrire "Bon pour pouvoir" dans la zone de texte ci-contre :';
+		$form .= 'Ecrire "Bon pour souscription" dans la zone de texte ci-contre :';
 		$confirm_power = '';
 		if (isset($_POST["confirm_power"])) $confirm_power = $_POST["confirm_power"];
 		$form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" /><br /><br />';
