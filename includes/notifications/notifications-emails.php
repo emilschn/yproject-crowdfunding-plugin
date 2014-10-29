@@ -205,6 +205,42 @@ class NotificationsEmails {
 	return NotificationsEmails::send_mail($user->user_email, $object, $body_content);
     }
     //*******************************************************
-    // CODE SIGNATURE
+    // FIN CODE SIGNATURE
+    //*******************************************************
+    
+    //*******************************************************
+    // NOUVEAU COMMENTAIRE
+    //*******************************************************
+    /**
+     * Mail lors de la publication d'un nouveau commentaire
+     * @param int $comment_id
+     * @param WP_Comment_Query $comment_object
+     * @return bool
+     */
+    public static function new_comment($comment_id, $comment_object) {
+	$object = 'Nouveau commentaire !';
+	
+	get_comment($comment_id);
+	$post_parent = get_post($comment_object->comment_parent);
+	$post_categories = get_the_category($post_parent->ID);
+	if (count($post_categories) == 0 || $post_categories[0]->slug == 'wedogood' || $post_categories[0]->slug == 'revue-de-presse') {
+	    return FALSE;
+	}
+	$post_first_category = $post_categories[0];
+	$post_first_category_name = $post_first_category->name;
+	$name_exploded = explode('cat', $post_first_category_name);
+	if (count($name_exploded) < 2) { return FALSE; }
+	$post_campaign = get_post($name_exploded[1]);
+	
+	$body_content = "Vous avez reçu un nouveau commentaire sur votre projet ".$post_campaign->post_title." :<br />";
+	$body_content .= $comment_object->comment_content . "<br /><br />";
+	$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink($post_parent->ID).'">'.$post_parent->post_title.'</a>.';
+	
+	$user = get_userdata($post_campaign->post_author);
+		
+	return NotificationsEmails::send_mail($user->user_email, $object, $body_content);
+    }
+    //*******************************************************
+    // FIN NOUVEAU COMMENTAIRE
     //*******************************************************
 }
