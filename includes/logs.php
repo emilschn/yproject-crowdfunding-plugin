@@ -75,10 +75,10 @@ function ypcf_debug_log($debug_str) {
 	$current_user_str = 'UNLOGGED';
 	if (is_user_logged_in()) {
 		global $current_user;
-		$current_user_str = $current_user->ID;
+		$current_user_str = $current_user->ID .'::'. $current_user->user_nicename;
 	}
-	$debug_str = date("m.d.Y H:i:s") . " (".$_SERVER['REQUEST_URI']."?".$_SERVER['QUERY_STRING'].") [".$current_user_str."] - " . $debug_str . "\n";
-	fwrite($file_handle, $debug_str);
+	fwrite($file_handle, date("m.d.Y H:i:s") . " [".$current_user_str."] (".$_SERVER['REQUEST_URI']."?".$_SERVER['QUERY_STRING'].")\n");
+	fwrite($file_handle, " -> " . $debug_str . "\n\n");
 	fclose($file_handle);
     }
 }

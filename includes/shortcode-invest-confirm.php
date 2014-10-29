@@ -98,7 +98,15 @@ function ypcf_display_invest_confirm($content) {
 		$page_invest_link .= '?campaign_id=' . $_GET['campaign_id'];
 		$plurial = '';
 		if ($amount_part > 1) $plurial = 's';
-		$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
+		switch ($campaign->funding_type()) {
+		    case 'fundingproject':
+			$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro;</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
+			break;
+		    case 'fundingdevelopment':
+		    default:
+			$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
+			break;
+		}
 		
 		$form .= '<form action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
 		$form .= '<div class="invest_part">';

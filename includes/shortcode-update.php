@@ -59,6 +59,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		update_post_meta($campaign->ID, 'campaign_societal_challenge', $_POST['societal_challenge']);
 		update_post_meta($campaign->ID, 'campaign_economic_model', $_POST['economic_model']);
 		update_post_meta($campaign->ID, 'campaign_implementation', $_POST['implementation']);
+		$temp_blur = $_POST['image_header_blur'];
+		if (empty($temp_blur)) $temp_blur = 'FALSE';
+		update_post_meta($campaign->ID, 'campaign_header_blur_active', $temp_blur);
 		
 		/* Gestion fichiers / images */
 		$image_header = $_FILES[ 'image' ];
@@ -224,23 +227,33 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    if (current_user_can('manage_options') && $campaign->days_remaining() <= 0 && $campaign->campaign_status() != 'preview' && $campaign->campaign_status() != 'vote' && !$group_exists) : 
 	    ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
-		    <input type="submit" value="Cr&eacute;er le groupe d&apos;investisseurs" />
+		    <input type="submit" value="Cr&eacute;er le groupe d&apos;investisseurs" class="button" />
 		    <input type="hidden" name="action" value="ypcf-campaign-create-investors-group" />
 	    </form><br /><br />
 	    <?php endif; ?>
 
+	    <?php 
+		add_filter('mce_buttons', 'atcf_editor_filter', 10, 2);
+		add_filter('mce_buttons_2', 'atcf_editor_filter_2', 10, 2);
+	    ?>
+	    
 	    <?php do_action( 'atcf_shortcode_update_before', $editing, $campaign, $post_campaign ); ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
 		    <?php do_action( 'atcf_shortcode_update_fields', $editing, $campaign, $post_campaign ); ?>
 
 		    <p class="atcf-update-campaign-update">
-			    <input type="submit" value="Mettre &agrave; jour le projet">
+			    <input type="submit" value="Mettre &agrave; jour le projet" class="button">
 			    <input type="hidden" name="action" value="atcf-campaign-<?php echo $editing ? 'edit' : 'submit'; ?>" />
 			    <?php wp_nonce_field( 'atcf-campaign-edit' ); ?>
 		    </p>
 
 	    </form>
 	    <?php do_action( 'atcf_shortcode_update_after', $editing, $campaign, $post_campaign ); ?>
+	    
+	    <?php 
+		remove_filter('mce_buttons', 'atcf_editor_filter');
+		remove_filter('mce_buttons_2', 'atcf_editor_filter_2');
+	    ?>
 
 <?php
 	    $form = ob_get_clean();
@@ -281,23 +294,8 @@ add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_summary
 
 
 function atcf_shortcode_update_field_images( $editing, $campaign, $post_campaign ) {
-    $attachments = get_posts( array(
-					'post_type' => 'attachment',
-					'post_parent' => $post_campaign->ID,
-					'post_mime_type' => 'image'
-		    ));
-    $image_obj_home = '';
-    $image_obj_header = '';
-    $image_src_home = '';
-    $image_src_header = '';
-    //Si on en trouve bien une avec le titre "image_home" on prend celle-là
-    foreach ($attachments as $attachment) {
-	if ($attachment->post_title == 'image_home') $image_obj_home = wp_get_attachment_image_src($attachment->ID, "full");
-	if ($attachment->post_title == 'image_header') $image_obj_header = wp_get_attachment_image_src($attachment->ID, "full");
-    }
-    //Sinon on prend la première image rattachée à l'article
-    if ($image_obj_home != '') $image_src_home = $image_obj_home[0];
-    if ($image_obj_header != '') $image_src_header = $image_obj_header[0];
+    $image_src_header = $campaign->get_header_picture_src(false);
+    $image_src_home = $campaign->get_home_picture_src(false);
 ?>
     <div class="update_field atcf-update-campaign-image-home">
 	<label class="update_field_label" for="image_home">Image d&apos;aper&ccedil;u (Max. 2Mo ; id&eacute;alement 610px de largeur * 330px de hauteur)</label><br />
@@ -307,7 +305,8 @@ function atcf_shortcode_update_field_images( $editing, $campaign, $post_campaign
     <div class="update_field atcf-update-campaign-images">
 	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 1366px de largeur * 370px de hauteur)</label><br />
 	<?php if ($image_src_header != '') { ?><div class="update-field-img-header"><img src="<?php echo $image_src_header; ?>" /></div><br /><?php } ?>
-	<input type="file" name="image" id="image" />
+	<input type="file" name="image" id="image" /><br />
+	<input type="checkbox" name="image_header_blur" <?php if ($campaign->is_header_blur()) { echo 'checked="checked"'; } ?> /> Appliquer un flou artistique
     </div><br />
 <?php
 }
@@ -330,23 +329,26 @@ function atcf_shortcode_update_field_description( $editing, $campaign, $post_cam
 	<div class="update_field atcf-update-campaign-description">
 		<label class="update_field_label" for="description">En quoi consiste le projet ?</label><br />
 		<?php 
-			wp_editor( $campaign ? html_entity_decode( $campaign->data->post_content ) : '', 'description', apply_filters( 'atcf_submit_field_description_editor_args', array( 
+		    if ($campaign) {
+			wp_editor( 
+			    html_entity_decode( $campaign->data->post_content ), 
+			    'description', 
+			    array( 
 				'media_buttons' => true,
-				'teeny'         => true,
 				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
+				    'plugins'		    => 'paste',
+				    'paste_remove_styles'   => true
+				)
+			    )
+			); 
+		    }
 		?>
 	</div><br />
 <?php
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_description', 10, 3);
+
 
 function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $post_campaign ) {
 	global $post_ID, $post;
@@ -355,18 +357,20 @@ function atcf_shortcode_update_field_societal_challenge( $editing, $campaign, $p
 	<div class="update_field atcf-update-campaign-societal_challenge">
 		<label class="update_field_label" for="societal_challenge">Quelle est l&apos;utilit&eacute; soci&eacute;tale du projet ?</label><br />
 		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'societal_challenge', apply_filters( 'atcf_submit_field_societal_challenge_editor_args', array( 
+		    if ($campaign) {
+			wp_editor( 
+			    html_entity_decode( $campaign->societal_challenge() ), 
+			    'societal_challenge', 
+			    array( 
 				'media_buttons' => true,
-				'teeny'         => true,
 				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: red; width: 200 px; }</style>',
 				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
+				    'plugins'		    => 'paste',
+				    'paste_remove_styles'   => true
+				)
+			    )
+			); 
+		    }
 		?>
 	</div><br />
 <?php
@@ -381,18 +385,20 @@ function atcf_shortcode_update_field_added_value( $editing, $campaign, $post_cam
 	<div class="update_field atcf-update-campaign_added_value">
 		<label class="update_field_label" for="added_value">Quelle est l&apos;opportunit&eacute; &eacute;conomique du projet ?</label><br />
 		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->added_value()) : '', 'added_value', apply_filters( 'atcf_submit_field_value_added_editor_args', array( 
+		    if ($campaign) {
+			wp_editor( 
+			    html_entity_decode( $campaign->added_value() ), 
+			    'added_value', 
+			    array( 
 				'media_buttons' => true,
-				'teeny'         => true,
 				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
+				    'plugins'		    => 'paste',
+				    'paste_remove_styles'   => true
+				)
+			    )
+			); 
+		    }
 		?>
 	</div><br />
 <?php
@@ -406,18 +412,20 @@ function atcf_shortcode_update_field_economic_model( $editing, $campaign, $post_
 	<div class="update_field atcf-update-campaign_economic_model">
 		<label class="update_field_label" for="economic_model">Quel est le mod&egrave;le &eacute;conomique du projet ?</label><br />
 		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->economic_model()) : '', 'economic_model', apply_filters( 'atcf_submit_field_economic_model_editor_args', array( 
+		    if ($campaign) {
+			wp_editor( 
+			    html_entity_decode( $campaign->economic_model() ), 
+			    'economic_model', 
+			    array( 
 				'media_buttons' => true,
-				'teeny'         => true,
 				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
+				    'plugins'		    => 'paste',
+				    'paste_remove_styles'   => true
+				)
+			    )
+			); 
+		    }
 		?>
 	</div><br />
 <?php
@@ -431,18 +439,20 @@ function atcf_shortcode_update_field_implementation( $editing, $campaign, $post_
 	<div class="update_field atcf-update-campaign-implementation">
 		<label class="update_field_label" for="implementation">Qui porte le projet ?</label><br />
 		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->implementation()) : '', 'implementation', apply_filters( 'atcf_submit_field_implementation_editor_args', array( 
+		    if ($campaign) {
+			wp_editor( 
+			    html_entity_decode( $campaign->implementation() ), 
+			    'implementation', 
+			    array( 
 				'media_buttons' => true,
-				'teeny'         => true,
 				'quicktags'     => false,
-				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,justifyfull,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
+				    'plugins'		    => 'paste',
+				    'paste_remove_styles'   => true
+				)
+			    )
+			); 
+		    }
 		?>
 	</div><br />
 <?php
@@ -517,4 +527,16 @@ Encore merci pour votre investissement et à bientôt sur <a href="http://www.we
     unset($GLOBALS['send_invite_message']);
     
     return true;
+}
+
+
+function atcf_editor_filter($buttons) {
+    array_splice($buttons, 2, 1, 'underline');
+    array_push($buttons, 'alignjustify');
+    array_push($buttons, 'undo');
+    array_push($buttons, 'redo');
+    return $buttons;
+}
+function atcf_editor_filter_2($buttons) {
+    return array();
 }

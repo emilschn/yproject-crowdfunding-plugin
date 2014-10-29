@@ -1740,11 +1740,19 @@ class ATCF_Campaign {
 		return $wpdb->get_var( 'SELECT count(campaign_id) FROM '.$table_jcrois.' WHERE campaign_id = '.$this->ID );
 	}
 	
-	public function get_home_picture_src() {
-		return $this->get_picture_src('image_home');
+	public function get_header_picture_src($force = true) {
+		$src = $this->get_picture_src('image_header', $force);
+		if ($this->is_header_blur() === FALSE) {
+			$src = str_replace('_blur', '', $src);
+		}
+		return $src;
 	}
 	
-	public function get_picture_src($type) {
+	public function get_home_picture_src($force = true) {
+		return $this->get_picture_src('image_home', $force);
+	}
+	
+	public function get_picture_src($type, $force) {
 		$image_obj = '';
 		$img_src = '';
 		$attachments = get_posts( array(
@@ -1757,9 +1765,29 @@ class ATCF_Campaign {
 			if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
 		}
 		//Sinon on prend la première image rattachée à l'article
-		if ($image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
+		if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
+		
 		if ($image_obj != '') $img_src = $image_obj[0];
 		return $img_src;
+	}
+	
+	public function is_header_blur() {
+		$buffer = get_post_meta($this->ID, 'campaign_header_blur_active', TRUE);
+		if ($buffer === FALSE || $buffer === 'FALSE') { 
+		    $buffer = FALSE; 
+		} else {
+		    $buffer = TRUE;
+		}
+		return $buffer;
+	}
+	
+	public function get_header_picture_position_style() {
+		$buffer = '';
+		$cover_position = get_post_meta($this->ID, 'campaign_cover_position', TRUE);
+		if ($cover_position !== '') {
+			$buffer = 'top: ' . $cover_position;
+		}
+		return $buffer;
 	}
 }
 
@@ -1767,6 +1795,12 @@ function atcf_get_campaign( $campaign ) {
 	$campaign = new ATCF_Campaign( $campaign );
 
 	return $campaign;
+}
+
+function atcf_get_campaign_post_by_payment_id($payment_id) {
+	$downloads = edd_get_payment_meta_downloads($payment_id); 
+	$download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
+	return get_post($download_id);
 }
 
 
