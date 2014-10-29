@@ -11,6 +11,7 @@ class NotificationsEmails {
      * @return bool
      */
     public static function send_mail($to, $object, $content) {
+	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
 	$from_name = get_bloginfo('name');
 	$from_email = get_option('admin_email');
 	$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
@@ -19,7 +20,9 @@ class NotificationsEmails {
 	
 	$content = edd_get_email_body_header() . $content . edd_get_email_body_footer();
 
-	return wp_mail( $to, $object, $content, $headers );
+	$buffer = wp_mail( $to, $object, $content, $headers );
+	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
+	return $buffer;
     }
     
     
@@ -218,6 +221,7 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_comment($comment_id, $comment_object) {
+	ypcf_debug_log('NotificationsEmails::new_comment > ' . $comment_id);
 	$object = 'Nouveau commentaire !';
 	
 	get_comment($comment_id);
@@ -237,8 +241,10 @@ class NotificationsEmails {
 	$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink($post_parent->ID).'">'.$post_parent->post_title.'</a>.';
 	
 	$user = get_userdata($post_campaign->post_author);
+	$emails = $user->user_email;
+	$emails .= BoppLibHelpers::get_project_members_mail_list($post_campaign->ID);
 		
-	return NotificationsEmails::send_mail($user->user_email, $object, $body_content);
+	return NotificationsEmails::send_mail($emails, $object, $body_content);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
