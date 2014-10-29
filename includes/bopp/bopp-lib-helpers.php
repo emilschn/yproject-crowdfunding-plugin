@@ -59,5 +59,18 @@ class BoppLibHelpers {
 			BoppLib::add_role($role_title, $role_slug);
 		}
 	}
+	
+	public static function get_project_members_mail_list($wp_project_id) {
+		$emails = '';
+		$project_api_id = BoppLibHelpers::get_api_project_id($wp_project_id);
+		if (isset($project_api_id)) {
+			$team_member_list = BoppLib::get_project_members_by_role($project_api_id, YPProjectLib::$project_team_member_role['slug']);
+			foreach ($team_member_list as $team_member) {
+				$user_data = get_userdata($team_member->wp_user_id);
+				$emails .= ',' . $user_data->user_email;
+			}
+		}
+		return $emails;
+	}
 //******************************************************************************************//
 }

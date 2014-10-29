@@ -1797,6 +1797,12 @@ function atcf_get_campaign( $campaign ) {
 	return $campaign;
 }
 
+function atcf_get_campaign_post_by_payment_id($payment_id) {
+	$downloads = edd_get_payment_meta_downloads($payment_id); 
+	$download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
+	return get_post($download_id);
+}
+
 
 /**
  * Campaign Configuration

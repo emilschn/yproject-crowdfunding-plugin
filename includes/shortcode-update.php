@@ -227,7 +227,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    if (current_user_can('manage_options') && $campaign->days_remaining() <= 0 && $campaign->campaign_status() != 'preview' && $campaign->campaign_status() != 'vote' && !$group_exists) : 
 	    ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
-		    <input type="submit" value="Cr&eacute;er le groupe d&apos;investisseurs" />
+		    <input type="submit" value="Cr&eacute;er le groupe d&apos;investisseurs" class="button" />
 		    <input type="hidden" name="action" value="ypcf-campaign-create-investors-group" />
 	    </form><br /><br />
 	    <?php endif; ?>
@@ -242,7 +242,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		    <?php do_action( 'atcf_shortcode_update_fields', $editing, $campaign, $post_campaign ); ?>
 
 		    <p class="atcf-update-campaign-update">
-			    <input type="submit" value="Mettre &agrave; jour le projet">
+			    <input type="submit" value="Mettre &agrave; jour le projet" class="button">
 			    <input type="hidden" name="action" value="atcf-campaign-<?php echo $editing ? 'edit' : 'submit'; ?>" />
 			    <?php wp_nonce_field( 'atcf-campaign-edit' ); ?>
 		    </p>
@@ -306,7 +306,7 @@ function atcf_shortcode_update_field_images( $editing, $campaign, $post_campaign
 	<label class="update_field_label" for="image">Image du bandeau (Max. 2Mo ; id&eacute;alement 1366px de largeur * 370px de hauteur)</label><br />
 	<?php if ($image_src_header != '') { ?><div class="update-field-img-header"><img src="<?php echo $image_src_header; ?>" /></div><br /><?php } ?>
 	<input type="file" name="image" id="image" /><br />
-	<input type="checkbox" name="image_header_blur" <?php if ($campaign->is_header_blur()) { echo 'checked="checked"'; } ?> /> Ajouter un flou artistique
+	<input type="checkbox" name="image_header_blur" <?php if ($campaign->is_header_blur()) { echo 'checked="checked"'; } ?> /> Appliquer un flou artistique
     </div><br />
 <?php
 }

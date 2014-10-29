@@ -125,6 +125,7 @@ final class ATCF_CrowdFunding {
 		
 		require( $this->includes_dir . 'users/lib-users.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
+		require( $this->includes_dir . 'notifications/notifications-emails.php' );
 		
 
 		do_action( 'atcf_include_files' );
