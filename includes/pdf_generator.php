@@ -53,18 +53,10 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     $buffer .= '</p>';
     
     $buffer .= '<p>';
-    $buffer .= '<h2>DONNE TOUS POUVOIRS à</h2>';
-    $buffer .= '<strong>La société WE DO GOOD</strong><br />';
-    $buffer .= 'Société par actions simplifiée au capital minimum de 1 239 Euros<br />';
-    $buffer .= 'dont le siège social est à RENNES (35) - 51 rue Saint Hélier<br />';
-    $buffer .= 'immatriculée au R.C.S. de RENNES sous le numéro 797 519 105<br />';
-    $buffer .= 'représentée par Monsieur Jean-David BAR';
+    $buffer .= '<h2>DECLARE</h2>';
     $buffer .= '</p>';
     
     $buffer .= '<p>';
-    $buffer .= '<strong>à l\'effet, en son nom et pour son compte de :</strong><br />';
-    $buffer .= '<p>';
-    
     switch ($campaign_obj->funding_type()) {
 	    case 'fundingproject':
 		$buffer .= '- Signer en tant qu\'Investisseur le contrat à terme ferme annexé au présent pouvoir pour le montant de '.$payment_data["amount"].' euros auprès du Porteur de Projet identifié par les caractéristiques suivantes :<br />';
@@ -94,14 +86,14 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     }
     $buffer .= $user_name.'<br />';
     $buffer .= '(1)<br />';
-    $buffer .= 'Bon pour pouvoir';
+    $buffer .= 'Bon pour souscription';
     $buffer .= '</td>';
     
     $buffer .= '<td>';
     $buffer .= '</td></tr></table>';
     
     $buffer .= '<div style="padding-top: 100px;">';
-    $buffer .= '(1) signature accompagnée de la mention "Bon pour pouvoir"<br /><br />';
+    $buffer .= '(1) signature accompagnée de la mention "Bon pour souscription"<br /><br />';
     $buffer .= '</div>';
     
     $buffer .= '<div style="padding-top: 100px;"></div>';
