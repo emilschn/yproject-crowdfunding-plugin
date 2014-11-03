@@ -109,6 +109,7 @@ function get_headers_from_curl_response($response) {
  * get all the contracts
  */
 function signsquid_get_contract_list() {
+    ypcf_debug_log('signsquid_get_contract_list');
     return signsquid_request("GET", "contracts");
 }
 
@@ -117,6 +118,7 @@ function signsquid_get_contract_list() {
  * @param type $contract_id
  */
 function signsquid_get_contract_infos($contract_id) {
+    ypcf_debug_log('signsquid_get_contract_infos');
     $buffer = '';
     if ($contract_id != '') {
 	$buffer = signsquid_request("GET", "contracts/".$contract_id."/versions/1");
@@ -136,6 +138,7 @@ function signsquid_get_contract_infos($contract_id) {
  * @return string
  */
 function signsquid_get_contract_infos_complete($contract_id) {
+    ypcf_debug_log('signsquid_get_contract_infos_complete');
     $buffer = '';
     if ($contract_id != '') {
 	$buffer = signsquid_request("GET", "contracts/".$contract_id);
@@ -155,6 +158,7 @@ function signsquid_get_contract_infos_complete($contract_id) {
  * @return type
  */
 function signsquid_get_contract_signatory($contract_id) {
+    ypcf_debug_log('signsquid_get_contract_signatory');
     $buffer = '';
     $contract_infos = signsquid_get_contract_infos_complete($contract_id);
     if ($contract_infos != '') {
@@ -172,6 +176,7 @@ function signsquid_get_contract_signatory($contract_id) {
  * @param type $contract_name
  */
 function signsquid_create_contract($contract_name) {
+    ypcf_debug_log('signsquid_create_contract');
     $buffer = '';
     $data_to_send = array( 'name' => $contract_name);
     $response = signsquid_request("POST", "contracts", $data_to_send);
@@ -192,6 +197,7 @@ function signsquid_create_contract($contract_name) {
  * @param type $user_phone
  */
 function signsquid_add_signatory($contract_id, $user_name, $user_email, $user_phone = '') {
+    ypcf_debug_log('signsquid_add_signatory');
     $data_to_send = array( 'name' => $user_name, 'email' => $user_email, 'mobilePhone' => $user_phone);
     $response = signsquid_request("POST", "contracts/".$contract_id."/versions/1/signatories", $data_to_send);
     $headers = get_headers_from_curl_response($response);
@@ -210,6 +216,7 @@ function signsquid_add_signatory($contract_id, $user_name, $user_email, $user_ph
  * @param type $filename
  */
 function signsquid_add_file($contract_id, $filename) {
+    ypcf_debug_log('signsquid_add_file');
     $response = signsquid_request("POST_FILE", "contracts/".$contract_id."/versions/1/files?filename=", $filename);
     $headers = get_headers_from_curl_response($response);
     if ($headers['http_code'] == 'HTTP/1.1 100 Continue') {
@@ -226,6 +233,7 @@ function signsquid_add_file($contract_id, $filename) {
  * @param type $contract_id
  */
 function signsquid_send_invite($contract_id) {
+    ypcf_debug_log('signsquid_send_invite');
     $response = signsquid_request("POST", "contracts/".$contract_id."/versions/1");
     $headers = get_headers_from_curl_response($response);
     if ($headers['http_code'] == 'HTTP/1.1 200 OK') {
