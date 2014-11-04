@@ -249,6 +249,7 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_economic_model', 'Modèle économique', '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', 'Qui porte le projet ?', '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
 		
+		add_meta_box( 'atcf_campaign_google_doc', 'ID du doc google', '_atcf_metabox_campaign_google_doc', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_contract_title', 'Titre du contrat', '_atcf_metabox_campaign_contract_title', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_company_name', 'Nom de la société', '_atcf_metabox_campaign_company_name', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
@@ -289,6 +290,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_owner';
 		$fields[] = 'campaign_summary';
 		$fields[] = 'campaign_societal_challenge';
+		$fields[] = 'campaign_google_doc';
 		$fields[] = 'campaign_contract_title';
 		$fields[] = 'campaign_company_name';
 		$fields[] = 'campaign_company_status';
@@ -916,6 +918,17 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 	do_action( 'atcf_metabox_campaign_implementation_after', $campaign );
 }
 
+function _atcf_metabox_campaign_google_doc() {
+	global $post;
+
+	$campaign = atcf_get_campaign( $post );
+?>
+	<p class="campaign_google_doc">
+		<textarea name="campaign_google_doc" id="campaign_google_doc" class="widefat"><?php echo $campaign->google_doc(); ?></textarea>
+	</p>
+<?php
+}
+
 function _atcf_metabox_campaign_contract_title() {
 	global $post;
 
@@ -1089,6 +1102,15 @@ add_filter( 'edd_metabox_save_campaign_updates', 'atcf_sanitize_campaign_updates
 class ATCF_Campaign {
 	public $ID;
 	public $data;
+	
+	public static $status_list = array(
+		'preparing' => 'Pr&eacute;paration',
+		'preview'   => 'Avant-premi&egrave;re',
+		'vote'	    => 'Vote',
+		'collecte'  => 'Collecte',
+		'funded'  => 'Termin&eacute',
+		'archive'  => 'Archiv&eacute'
+	);
 
 	function __construct( $post ) {
 		$this->data = get_post( $post );
@@ -1151,6 +1173,9 @@ class ATCF_Campaign {
 		return $this->__get( 'campaign_societal_challenge' );
 	}
 	
+	public function google_doc() {
+		return $this->__get('campaign_google_doc');
+	}
 	//Ajouts contrat
 	public function contract_title() {
 		return $this->__get('campaign_contract_title');
