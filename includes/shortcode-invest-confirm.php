@@ -166,7 +166,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $current_user_organisation).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
-		$form .= 'Ecrire "Bon pour '.$text_to_type.'" dans la zone de texte ci-contre :';
+		$form .= 'Ecrire "<strong>Bon pour '.$text_to_type.'</strong>" dans la zone de texte ci-contre :';
 		$confirm_power = '';
 		if (isset($_POST["confirm_power"])) $confirm_power = $_POST["confirm_power"];
 		$form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" /><br /><br />';

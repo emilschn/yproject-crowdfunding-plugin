@@ -223,10 +223,11 @@ function ypcf_check_invest_redirections() {
     //Si on a validé la confirmation
     //Il faut choisir le moyen de paiement
     $max_part_value = ypcf_get_max_part_value();
-    //Tests de la validité de l'investissement : utilisateur loggé, projet défini, montant correct, informations validées par coche, bon pour pouvoir écrit
+    $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
+    //Tests de la validité de l'investissement : utilisateur loggé, projet défini, montant correct, informations validées par coche, bon pour pouvoir / souscription écrit
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
 	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value 
-	    && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour pouvoir') {
+	    && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type) {
 	
 	$_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	
