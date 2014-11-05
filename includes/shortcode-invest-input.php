@@ -31,13 +31,36 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '<input type="hidden" id="input_invest_part_value" name="part_value" value="' . $part_value . '">';
 		$form .= '<input type="hidden" id="input_invest_max_part_value" name="part_value" value="' . $max_part_value . '">';
 		$form .= '<input type="hidden" id="input_invest_amount_total" value="' . ypcf_get_current_amount() . '">';
-		$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
-		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount">Valider</a>';
+		switch ($campaign->funding_type()) {
+		    case 'fundingproject':
+			$form .= '<span style="color:#FFFFFF;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> &euro; ';
+			break;
+		    
+		    case 'fundingdevelopment':
+		    default:
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
+			break;
+		}
+		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount">Valider</a><br /><br />';
 		
 		$form .= '<div id="validate_invest_amount_feedback" style="display:none;">';
 		$hidden = ' hidden';
-		$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Vous devez prendre au moins '.(ceil($min_value / $part_value)).' part.</span>';
-		$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas prendre plus de '.$max_part_value.' parts.</span>';
+		$temp_min_part = ceil($min_value / $part_value);
+		switch ($campaign->funding_type()) {
+		    case 'fundingproject':
+			$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Vous devez investir au moins '.$temp_min_part.' &euro;.</span>';
+			$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas investir plus de '.$max_part_value.' &euro;.</span>';
+			break;
+		    
+		    case 'fundingdevelopment':
+		    default:
+			$temp_min_plural = ($temp_min_part > 1) ? 's' : '';
+			$temp_max_plural = ($max_part_value > 1) ? 's' : '';
+			$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Vous devez prendre au moins '.$temp_min_part.' part'.$temp_min_plural.'.</span>';
+			$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas prendre plus de '.$max_part_value.' part'.$temp_max_plural.'.</span>';
+			break;
+		}
 		$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . '&euro; &agrave; investir.</span>';
 		$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
 		$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';

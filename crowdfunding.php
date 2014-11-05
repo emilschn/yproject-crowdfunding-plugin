@@ -89,7 +89,8 @@ final class ATCF_CrowdFunding {
 	 * @return void
 	 */
 	private function includes() {
-		require( $this->includes_dir . 'social/facebook/facebook.php' );
+		//require( $this->includes_dir . 'social/facebook/facebook.php' );
+		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
 		require( $this->includes_dir . 'social/twitter/TwitterAPIExchange.php' );
 		
 		require( $this->includes_dir . 'settings.php' );
@@ -102,6 +103,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'roles.php' );
 		require( $this->includes_dir . 'permalinks.php' );
 		require( $this->includes_dir . 'checkout.php' );
+		require( $this->includes_dir . 'shortcodes-lib.php' );
 		require( $this->includes_dir . 'shortcode-submit.php' );
 		require( $this->includes_dir . 'shortcode-vote-results.php' );
 		require( $this->includes_dir . 'shortcode-profile.php' );
@@ -123,6 +125,7 @@ final class ATCF_CrowdFunding {
 		
 		require( $this->includes_dir . 'users/lib-users.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
+		require( $this->includes_dir . 'notifications/notifications-emails.php' );
 		
 
 		do_action( 'atcf_include_files' );

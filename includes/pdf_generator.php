@@ -6,6 +6,7 @@
  * @return boolean
  */
 function generatePDF($html_content, $filename) {
+    ypcf_debug_log('generatePDF > ' . $filename);
     $buffer = false;
     if (isset($html_content) && isset($filename) && ($filename != "") && !file_exists($filename)) {
 	$html2pdf = new HTML2PDF('P','A4','fr');
@@ -21,6 +22,7 @@ function generatePDF($html_content, $filename) {
  * @return string
  */
 function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $user_organisation_obj = false) {
+    ypcf_debug_log('fillPDFHTMLDefaultContent > ' . $payment_data["amount"]);
     $buffer = '';
     
     setlocale( LC_CTYPE, 'fr_FR' );
@@ -52,19 +54,31 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     $buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address');
     $buffer .= '</p>';
     
-    $buffer .= '<p>';
-    $buffer .= '<h2>DONNE TOUS POUVOIRS à</h2>';
-    $buffer .= '<strong>La société WE DO GOOD</strong><br />';
-    $buffer .= 'Société par actions simplifiée au capital minimum de 1 239 Euros<br />';
-    $buffer .= 'dont le siège social est à RENNES (35) - 51 rue Saint Hélier<br />';
-    $buffer .= 'immatriculée au R.C.S. de RENNES sous le numéro 797 519 105<br />';
-    $buffer .= 'représentée par Monsieur Jean-David BAR';
-    $buffer .= '</p>';
+    switch ($campaign_obj->funding_type()) {
+	    case 'fundingproject':
+		    $buffer .= '<p>';
+		    $buffer .= '<h2>DONNE TOUS POUVOIRS à</h2>';
+		    $buffer .= '<strong>La société WE DO GOOD</strong><br />';
+		    $buffer .= 'Société par actions simplifiée au capital minimum de 1 239 Euros<br />';
+		    $buffer .= 'dont le siège social est à RENNES (35) - 51 rue Saint Hélier<br />';
+		    $buffer .= 'immatriculée au R.C.S. de RENNES sous le numéro 797 519 105<br />';
+		    $buffer .= 'représentée par Monsieur Jean-David BAR';
+		    $buffer .= '</p>';
+		    
+		    $buffer .= '<p>';
+		    $buffer .= '<strong>à l\'effet, en son nom et pour son compte de :</strong><br />';
+		    $buffer .= '</p>';
+		break;
+		
+	    case 'fundingdevelopment':
+	    default:
+		$buffer .= '<p>';
+		$buffer .= '<h2>DECLARE</h2>';
+		$buffer .= '</p>';
+		break;
+    }
     
     $buffer .= '<p>';
-    $buffer .= '<strong>à l\'effet, en son nom et pour son compte de :</strong><br />';
-    $buffer .= '<p>';
-    
     switch ($campaign_obj->funding_type()) {
 	    case 'fundingproject':
 		$buffer .= '- Signer en tant qu\'Investisseur le contrat à terme ferme annexé au présent pouvoir pour le montant de '.$payment_data["amount"].' euros auprès du Porteur de Projet identifié par les caractéristiques suivantes :<br />';
@@ -78,8 +92,9 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     
     $buffer .= html_entity_decode($campaign_obj->subscription_params());
     $buffer .= '</p>';
-    $buffer .= html_entity_decode($campaign_obj->powers_params());
     
+    $buffer .= '<p>';
+    $buffer .= html_entity_decode($campaign_obj->powers_params());
     $buffer .= '</p>';
     
     $buffer .= '<table style="border:0px;"><tr><td>';
@@ -93,15 +108,15 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
 	$buffer .= 'représentée par ';
     }
     $buffer .= $user_name.'<br />';
+    $text_to_type = ($campaign_obj->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
     $buffer .= '(1)<br />';
-    $buffer .= 'Bon pour pouvoir';
+    $buffer .= 'Bon pour '.$text_to_type;
     $buffer .= '</td>';
     
-    $buffer .= '<td>';
-    $buffer .= '</td></tr></table>';
+    $buffer .= '<td></td></tr></table>';
     
     $buffer .= '<div style="padding-top: 100px;">';
-    $buffer .= '(1) signature accompagnée de la mention "Bon pour pouvoir"<br /><br />';
+    $buffer .= '(1) signature accompagnée de la mention "Bon pour '.$text_to_type.'"<br /><br />';
     $buffer .= '</div>';
     
     $buffer .= '<div style="padding-top: 100px;"></div>';
@@ -118,6 +133,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
  * @param type $project_id
  */
 function getNewPdfToSign($project_id, $payment_id, $user_id) {
+    ypcf_debug_log('getNewPdfToSign > ' . $payment_id);
     $post_camp = get_post($project_id);
     $campaign = atcf_get_campaign( $post_camp );
     

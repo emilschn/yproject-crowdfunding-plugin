@@ -89,16 +89,26 @@ function ypcf_display_invest_confirm($content) {
 		ypcf_session_start();
 		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 		
+		$text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
+		
 		$form .= ypcf_print_invest_breadcrumb(2);
 		if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
-		if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour pouvoir'))) $form .= '<span class="errors">Merci de saisir "Bon pour pouvoir".</span><br />';
+		if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour '.$text_to_type))) $form .= '<span class="errors">Merci de saisir "Bon pour '.$text_to_type.'".</span><br />';
 		
 		$page_invest = get_page_by_path('investir');
 		$page_invest_link = get_permalink($page_invest->ID);
 		$page_invest_link .= '?campaign_id=' . $_GET['campaign_id'];
 		$plurial = '';
 		if ($amount_part > 1) $plurial = 's';
-		$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
+		switch ($campaign->funding_type()) {
+		    case 'fundingproject':
+			$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro;</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
+			break;
+		    case 'fundingdevelopment':
+		    default:
+			$form .= '<br />Vous vous appr&ecirc;tez &agrave; investir <strong>'.$amount.'&euro; ('.$amount_part . ' part'.$plurial.')</strong> sur le projet <strong>' . $post->post_title . '</strong>. <a href="'.$page_invest_link.'&invest_start=1">Modifier mon investissement</a><br /><br />';
+			break;
+		}
 		
 		$form .= '<form action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
 		$form .= '<div class="invest_part">';
@@ -156,7 +166,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $current_user_organisation).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
-		$form .= 'Ecrire "Bon pour pouvoir" dans la zone de texte ci-contre :';
+		$form .= 'Ecrire "<strong>Bon pour '.$text_to_type.'</strong>" dans la zone de texte ci-contre :';
 		$confirm_power = '';
 		if (isset($_POST["confirm_power"])) $confirm_power = $_POST["confirm_power"];
 		$form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" /><br /><br />';
