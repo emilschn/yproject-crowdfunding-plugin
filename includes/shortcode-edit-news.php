@@ -30,8 +30,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	
 	?>
 	<div style="padding-top: 10px;">
-	    <?php /* Lien ajouter une actu */ $page_add_news = get_page_by_path('ajouter-une-actu'); ?>
-	    <a href="<?php echo get_permalink($page_add_news->ID); ?>?campaign_id=<?php echo $_GET['campaign_id']; ?>">&lt;&lt; Retour &agrave; la liste des articles</a>
+	    <?php 
+	    $category_slug = $post->ID . '-blog-' . $post->post_name;
+	    $category_obj = get_category_by_slug($category_slug);
+	    if (!empty($category_obj)) {
+		    $news_link = esc_url(get_category_link($category_obj->cat_ID));
+	    } else {
+		    $news_link = '';
+	    }
+	    ?>
+	    <a href="<?php echo $news_link; ?>">&lt;&lt; Retour &agrave; la liste des articles</a>
 	</div>
 	<div style="padding-top: 10px;">
 	    <h2>Editer un article</h2>
@@ -43,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		<p class="ypcf-edit-news-p">
 		    <input type="hidden" name="action" value="ypcf-campaign-edit-news" /><br />
 		    <?php wp_nonce_field('ypcf-campaign-edit-news'); ?>
-		    <input type="submit">
+		    <input type="submit" value="<?php _e('Mettre &agrave; jour', 'yproject'); ?>" class="button" />
 		</p>
 	    </form>
 	</div>
