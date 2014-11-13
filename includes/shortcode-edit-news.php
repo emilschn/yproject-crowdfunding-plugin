@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    <a href="<?php echo $news_link; ?>">&lt;&lt; Retour &agrave; la liste des articles</a>
 	</div>
 	<div style="padding-top: 10px;">
-	    <h2>Editer un article</h2>
+	    <h2>Editer l&apos;actualit&eacute;</h2>
 	    <form action="" method="post" class="ypcf-edit-news" enctype="multipart/form-data">
 		<?php 
 		    $currentpost = get_post($_GET['edit_post_id']);
