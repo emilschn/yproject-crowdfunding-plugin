@@ -19,7 +19,7 @@ class BoppLibHelpers {
 		$api_user_id = get_user_meta($wp_user_id, BoppLibHelpers::$meta_key, TRUE);
 		if (!isset($api_user_id) || empty($api_user_id)) {
 			$user_data = get_userdata($wp_user_id);
-			$api_user_id = BoppLib::create_user($wp_user_id, $user_data->first_name, $user_data->last_name);
+			$api_user_id = BoppUsers::create($wp_user_id, $user_data->first_name, $user_data->last_name);
 			ypcf_debug_log('BoppLibHelpers::get_api_user_id > ' . $api_user_id);
 			update_user_meta($wp_user_id, BoppLibHelpers::$meta_key, $api_user_id);
 		}

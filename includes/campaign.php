@@ -1133,8 +1133,8 @@ class ATCF_Campaign {
 	
 	public static $key_edit_version = 'campaign_edit_version';
 	public function edit_version() {
-		$version = $this->__get(ATCF_Campaign::key_edit_version);
-		if (!isset($version) || !is_numeric($version) || $version < 1) $version = 1;
+		$version = $this->__get(ATCF_Campaign::$key_edit_version);
+		if (!isset($version) || !is_numeric($version) || $version < 1) { $version = 1; }
 		return $version;
 	}
 

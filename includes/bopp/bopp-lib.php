@@ -49,7 +49,7 @@ class BoppLib {
 	 */
 	public static function call_post($request, $request_params = array()) {
 		$url = BoppLib::build_url($request);
-		ypcf_debug_log('BoppLib::call_post -- $url : ' . $url);
+		ypcf_debug_log('BoppLib::call_post -- $url : ' . $url . '  -----  ' . print_r($request_params, TRUE));
 		$data_string = ($request_params != '') ? json_encode($request_params) : '';
 		$ch = curl_init($url);
 		    curl_setopt($ch, CURLOPT_POST, TRUE);
@@ -169,67 +169,6 @@ class BoppLib {
 
 
 
-//******************************************************************************************//
-//GESTION UTILISATEURS
-	/**
-	 * Crée un utilisateur sur l'API
-	 * @param string $first_name
-	 * @param string $last_name
-	 * @return object
-	 */
-	public static function create_user($wp_user_id, $first_name, $last_name) {
-		$request_params = array(
-			'users' => array(
-				'user_wp_id' => $wp_user_id,
-				'user_name' => $first_name,
-				'user_surname' => $last_name
-			)
-		);
-		$result_obj = BoppLib::call_post('users', $request_params);
-		return $result_obj;
-	}
-	
-	/**
-	 * Retourne un utilisateur à partir d'un id
-	 * @param string $id
-	 * @return object
-	 */
-	public static function get_user($id) {
-		return BoppLib::call_get('users/' . $id);
-	}
-	
-	/**
-	 * Mise à jour de l'utilisateur à partir d'un id
-	 * @param int $id
-	 * @param string $first_name
-	 * @param string $last_name
-	 * @return object
-	 */
-	public static function update_user($id, $first_name, $last_name) {
-		$request_params = array(
-			'user' => array(
-				'user_name' => $first_name,
-				'user_surname' => $last_name
-			)
-		);
-		$result_obj = BoppLib::call_put('users/' . $id, $request_params);
-		return $result_obj;
-	}
-	
-	/**
-	 * Récupère la liste des projets auxquels est lié un utilisateur par un certain rôle
-	 * @param int $id
-	 * @param string $role_slug
-	 * @return object
-	 */
-	public static function get_user_projects_by_role($id, $role_slug) {
-		$project_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug);
-		if (!isset($project_list->code)) return $project_list;
-		else return array();
-	}
-
-//FIN GESTION UTILISATEURS
-//******************************************************************************************//
 
 //******************************************************************************************//
 //GESTION PROJETS
@@ -373,7 +312,7 @@ class BoppLib {
 	public static function link_user_to_project($api_project_id, $api_user_id, $api_role_slug) {
 		$request_params = array(
 			'project_management' => array(
-				'boppUaser' => $api_user_id, 
+				'boppUser' => $api_user_id, 
 				'boppRole' => $api_role_slug
 			)
 		);
