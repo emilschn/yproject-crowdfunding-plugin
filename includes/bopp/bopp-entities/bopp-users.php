@@ -12,19 +12,19 @@ class BoppUsers {
 	 */
 	public static function empty_params() {
 		$params = array(
-			'user_wp_id' => '',
-			'user_gender' => '',
-			'user_name' => '',
-			'user_surname' => '',
-			'user_username' => '',
-			'user_birthday_date' => '', 'user_birthday_city' => '',
-			'user_address' => '', 'user_postal_code' => '', 'user_city' => '',
-			'user_email' => '',
-			'user_linkedin_url' => '', 'user_twitter_url' => '', 'user_facebook_url' => '', 'user_viadeo_url' => '',
-			'user_picture_url' => '',
-			'user_website_url' => '',
-			'user_password' => '', 'user_activation_key' => '',
-			'user_signup_date' => ''
+			'user_wp_id' => '---',
+			'user_gender' => '---',
+			'user_name' => '---',
+			'user_surname' => '---',
+			'user_username' => '---',
+			'user_birthday_date' => '---', 'user_birthday_city' => '---',
+			'user_address' => '---', 'user_postal_code' => '---', 'user_city' => '---',
+			'user_email' => '---',
+			'user_linkedin_url' => '---', 'user_twitter_url' => '---', 'user_facebook_url' => '---', 'user_viadeo_url' => '---',
+			'user_picture_url' => '---',
+			'user_website_url' => '---',
+			'user_password' => '---', 'user_activation_key' => '---',
+			'user_signup_date' => '---'
 		);
 		return $params;
 	}
@@ -40,8 +40,25 @@ class BoppUsers {
 		$default_params['user_wp_id'] = $wp_user_id;
 		$default_params['user_name'] = $first_name;
 		$default_params['user_surname'] = $last_name;
-		$default_params['user_birthday_date'] = null;
-		$default_params['user_signup_date'] = null;
+		
+		$date = new DateTime("NOW");
+		$default_params['user_birthday_date'] = array(
+			"year" => $date->format('Y'),
+			"month" => $date->format('m'),
+			"day" => $date->format('d')
+		);
+		$default_params['user_signup_date'] = array(
+			"date" => array(
+				"year"	=> $date->format('Y'),
+				"month" => $date->format('m'),
+				"day"	=> $date->format('d')
+			),
+			"time" => array(
+				"hour"	=> $date->format('H'),
+				"minute"=> $date->format('i'),
+			)
+		);
+		
 		$request_params = array(
 			'user' => $default_params
 		);
