@@ -55,7 +55,8 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		'address'    => array()
 	    );
 
-	    $amount = $mangopay_contribution->Amount / 100;
+	    if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') $amount = $mangopay_contribution->AmountDeclared / 100;
+	    else $amount = $mangopay_contribution->Amount / 100;
 
 	    $cart_details = array(
 		array(
