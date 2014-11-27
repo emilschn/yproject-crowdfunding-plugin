@@ -499,14 +499,6 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
     $init_payment_status = $payment_post->post_status;
     $buffer = false;
     if (isset($payment_id) && $payment_id != '') {
-	/* Nécessaire pour regénérer un contrat :
-	 * if ($payment_id == 1498) {
-	    $downloads = edd_get_payment_meta_downloads($payment_id); 
-	    $download_id = '';
-	    if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
-	    else $download_id = $downloads[0];
-	    getNewPdfToSign($download_id, $payment_id, $payment_post->post_author);
-	}*/
 	//On teste d'abord si ça a été refunded
 	$refund_transfer_id = get_post_meta($payment_id, 'refund_transfer_id', true);
 	if (($init_payment_status == 'refunded') || (isset($refund_transfer_id) && $refund_transfer_id != '')) {
@@ -595,6 +587,18 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 				'post_status' => $buffer
 			    );
 			    wp_update_post($postdata);
+			}
+			
+		//Le paiement est validé, mais aucun contrat n'existe
+		} else if ($buffer == 'publish') {
+			$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
+			if (!isset($contract_id) || empty($contract_id)) {
+				$current_user = get_user_by('id', $payment_post->post_author);
+				$downloads = edd_get_payment_meta_downloads($payment_id); 
+				$download_id = '';
+				if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+				else $download_id = $downloads[0];
+				$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
 			}
 		}
 		
