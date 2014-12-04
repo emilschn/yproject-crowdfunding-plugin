@@ -1776,6 +1776,17 @@ class ATCF_Campaign {
 		$src = $this->get_picture_src('image_header', $force);
 		if ($this->is_header_blur() === FALSE) {
 			$src = str_replace('_blur', '', $src);
+			
+			//Test si le fichier existe
+			if ($src !== '') {
+				$src_exploded = explode('uploads', $src);
+				$upload_dir = wp_upload_dir();
+				if (!file_exists($upload_dir['basedir'] . $src_exploded[1])) {
+					$ext_exploded = explode('.', $src);
+					$ext_exploded[count($ext_exploded) - 1] = 'png';
+					$src = implode('.', $ext_exploded);
+				}
+			}
 		}
 		return $src;
 	}
