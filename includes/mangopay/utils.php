@@ -26,7 +26,7 @@ function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id,
     
     //Récupération de l'url de template
     $template_url = '';
-    if (!defined('WP_IS_DEV_SITE')) {
+    if (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE) {
 	$page_payment = get_page_by_path('paiement');
 	$template_url = get_permalink($page_payment->ID) . '?campaign_id='.$campaign_id;
 	$template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$campaign_id.'"';

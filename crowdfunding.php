@@ -112,6 +112,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'shortcode-update.php' );
 		require( $this->includes_dir . 'shortcode-edit-news.php' );
 		require( $this->includes_dir . 'invest-lib.php' );
+		require( $this->includes_dir . 'organisation.php' );
 		
 		//Composants
 		require( $this->includes_dir . 'mangopay/common.php' );
