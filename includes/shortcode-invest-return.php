@@ -14,11 +14,14 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	
 	if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') $mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($_REQUEST["ContributionID"]);
 	else $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($_REQUEST["ContributionID"]);
+	
+	$purchase_key = $_REQUEST["ContributionID"];
+	if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') $purchase_key = 'wire_' . $purchase_key;
 
 	$page_investments = get_page_by_path('mes-investissements');
 	$paymentlist = edd_get_payments();
 	foreach ($paymentlist as $payment) {
-	    if (edd_get_payment_key($payment->ID) == $_REQUEST["ContributionID"]) {
+	    if (edd_get_payment_key($payment->ID) == $purchase_key) {
 		$buffer .= 'Le paiement a déjà été pris en compte. Merci de vous rendre sur la page <a href="'.get_permalink($page_investments->ID).'">Mes investissements</a>.';
 		break;
 	    }
@@ -55,7 +58,8 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		'address'    => array()
 	    );
 
-	    $amount = $mangopay_contribution->Amount / 100;
+	    if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') $amount = $mangopay_contribution->AmountDeclared / 100;
+	    else $amount = $mangopay_contribution->Amount / 100;
 
 	    $cart_details = array(
 		array(
@@ -70,8 +74,6 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		)
 	    );
 
-	    $purchase_key = $_REQUEST["ContributionID"];
-	    if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') $purchase_key = 'wire_' . $purchase_key;
 	    $payment_data = array( 
 		    'price' => $amount, 
 		    'date' => date('Y-m-d H:i:s'), 
