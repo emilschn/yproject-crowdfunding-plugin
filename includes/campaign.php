@@ -1594,7 +1594,7 @@ class ATCF_Campaign {
 			    $payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
 			    $payment    = get_post( $payment_id );
 
-			    if ( empty( $payment ) )
+			    if ( empty( $payment ) || $payment->post_status == 'pending' )
 				    continue;
 
 			    $total      = $total + edd_get_payment_amount( $payment_id );
@@ -1691,7 +1691,16 @@ class ATCF_Campaign {
 				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
 				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos);
 				$mangopay_id = edd_get_payment_key($payment->ID);
-				$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
+				if (strpos($mangopay_id, 'wire_') !== FALSE) {
+					$mangopay_id = substr($mangopay_id, 5);
+					$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id);
+					$mangopay_is_completed = ($mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
+					$mangopay_is_succeeded = $mangopay_is_completed;
+				} else {
+					$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
+					$mangopay_is_completed = (isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
+					$mangopay_is_succeeded = (isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
+				}
 
 
 				$payments_data[] = array(

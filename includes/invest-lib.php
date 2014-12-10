@@ -498,7 +498,7 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
     $payment_post = get_post($payment_id);
     $init_payment_status = $payment_post->post_status;
     $buffer = false;
-    if (isset($payment_id) && $payment_id != '') {
+    if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed') {
 	/* Nécessaire pour regénérer un contrat :
 	 * if ($payment_id == 1498) {
 	    $downloads = edd_get_payment_meta_downloads($payment_id); 
