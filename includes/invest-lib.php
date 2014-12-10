@@ -498,7 +498,9 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
     $payment_post = get_post($payment_id);
     $init_payment_status = $payment_post->post_status;
     $buffer = false;
-    if (isset($payment_id) && $payment_id != '') {
+    
+    if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed') {
+	
 	//On teste d'abord si ça a été refunded
 	$refund_transfer_id = get_post_meta($payment_id, 'refund_transfer_id', true);
 	if (($init_payment_status == 'refunded') || (isset($refund_transfer_id) && $refund_transfer_id != '')) {
