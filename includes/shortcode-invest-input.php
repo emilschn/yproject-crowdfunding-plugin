@@ -84,15 +84,15 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '<br /><center>';
 		$form .= '<input type="submit" value="Investir" class="button" />';
 		$form .= '<select name="invest_type">';
-		$form .= '<option value="user">En mon nom</option>';
+		$form .= '<option value="user">En mon nom (personne physique)</option>';
 		if ($count_groups > 0) {
 		    foreach ($groups as $group_key => $group) {
 			$form .= '<option value="'.$group_key.'">Pour '.$group->name.'</option>';
 		    }
-		    $form .= '<option value="new_organisation">Pour une nouvelle organisation...</option>';
+		    $form .= '<option value="new_organisation">Pour une nouvelle organisation (personne morale)...</option>';
 		    
 		} else {
-		    $form .= '<option value="new_organisation">Pour une organisation...</option>';
+		    $form .= '<option value="new_organisation">Pour une organisation (personne morale)...</option>';
 		}
 		$form .= '</select>';
 		$form .= '</center>';

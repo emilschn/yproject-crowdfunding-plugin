@@ -123,6 +123,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'bopp/bopp-lib.php' );
 		require( $this->includes_dir . 'bopp/bopp-lib-helpers.php' );
 		require( $this->includes_dir . 'bopp/bopp-entities/bopp-users.php' );
+		require( $this->includes_dir . 'bopp/bopp-entities/bopp-organisations.php' );
 		
 		require( $this->includes_dir . 'users/lib-users.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );

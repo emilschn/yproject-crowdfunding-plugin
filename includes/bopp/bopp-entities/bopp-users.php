@@ -108,4 +108,14 @@ class BoppUsers {
 		return $project_list;
 	}
 
+	/**
+	 * Récupère la liste des organisations auxquelles est lié un utilisateur par un certain rôle
+	 * @param type $id
+	 * @param type $role_slug
+	 */
+	public static function get_organisations_by_role($id, $role_slug) {
+		$organisation_list = BoppLib::call_get('');
+		if (isset($organisation_list->code)) { $organisation_list = array(); }
+		return $organisation_list;
+	}
 }

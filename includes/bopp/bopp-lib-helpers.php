@@ -64,6 +64,10 @@ class BoppLibHelpers {
 						    'slug' => 'project-team-member', 
 						    'title' => 'Membre equipe projet');
 	
+	public static $organisation_creator_role = array(
+						    'slug' => 'organisation-creator', 
+						    'title' => 'Createur organisation');
+	
 	public static function get_project_members_mail_list($wp_project_id) {
 		$emails = '';
 		$project_api_id = BoppLibHelpers::get_api_project_id($wp_project_id);
