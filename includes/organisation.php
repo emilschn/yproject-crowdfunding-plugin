@@ -69,7 +69,16 @@ class YPOrganisation {
 	public function create() {
 		global $errors_submit_new;
 		
+		$organisation_user_id = $this->create_user($this->get_name());
+		
+		//Si il y a eu une erreur lors de la création de l'utilisateur, on arrête la procédure
+		if (isset($organisation_user_id->errors) && count($organisation_user_id->errors) > 0) {
+			$errors_submit_new = $organisation_user_id;
+			return FALSE;
+		}
+		
 		$return_obj = BoppOrganisations::create(
+			$this->creator->ID,
 			$this->get_name(), 
 			$this->get_type(), 
 			$this->get_legalform(), 
@@ -86,14 +95,6 @@ class YPOrganisation {
 		
 		//Vérification si on reçoit bien un entier pour identifiant
 		if (filter_var($this->bopp_id, FILTER_VALIDATE_INT) === FALSE) {
-			return FALSE;
-		}
-		
-		$organisation_user_id = $this->create_user($this->get_name());
-		
-		//Si il y a eu une erreur lors de la création de l'utilisateur, on arrête la procédure
-		if (isset($organisation_user_id->errors) && count($organisation_user_id->errors) > 0) {
-			$errors_submit_new = $organisation_user_id;
 			return FALSE;
 		}
 		
@@ -136,6 +137,17 @@ class YPOrganisation {
 	/**
 	 * Attributions / Récupération de données
 	 */
+	public function get_creator() {
+		return $this->creator;
+	}
+	
+	public function get_wpref() {
+		return $this->wpref;
+	}
+	public function set_wpref($value) {
+		$this->wpref = $value;
+	}
+	
 	public function get_name() {
 		return $this->name;
 	}

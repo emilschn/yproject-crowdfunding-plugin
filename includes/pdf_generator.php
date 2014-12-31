@@ -21,7 +21,7 @@ function generatePDF($html_content, $filename) {
  * Fill the pdf default content with infos
  * @return string
  */
-function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $user_organisation_obj = false) {
+function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $organisation = false) {
     ypcf_debug_log('fillPDFHTMLDefaultContent > ' . $payment_data["amount"]);
     $buffer = '';
     
@@ -40,10 +40,10 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     
     $buffer .= '<p>';
     $buffer .= '<h2>LE SOUSSIGNÉ</h2>';
-    if (is_object($user_organisation_obj) && $user_organisation_obj !== false) {
-	$buffer .= '<strong>'.$user_organisation_obj->display_name.', '.$user_organisation_obj->get('organisation_legalform').' au capital '.$user_organisation_obj->get('organisation_capital').'&euro;</strong><br />';
-	$buffer .= 'dont le siège social est à '.$user_organisation_obj->get('user_city').' ('.$user_organisation_obj->get('user_postal_code').') - '.$user_organisation_obj->get('user_address').'<br />';
-	$buffer .= 'immatriculée sous le numéro '.$user_organisation_obj->get('organisation_idnumber').' au RCS de '.$user_organisation_obj->get('organisation_rcs').'<br />';
+    if (is_object($organisation) && $organisation !== false) {
+	$buffer .= '<strong>'.$organisation->get_name().', '.$organisation->get_legalform().' au capital '.$organisation->get_capital().'&euro;</strong><br />';
+	$buffer .= 'dont le siège social est à '.$organisation->get_city().' ('.$organisation->get_postal_code().') - '.$organisation->get_address().'<br />';
+	$buffer .= 'immatriculée sous le numéro '.$organisation->get_idnumber().' au RCS de '.$organisation->get_rcs().'<br />';
 	$buffer .= 'représentée par ';
     }
     $buffer .= '<strong>'.$user_name.'</strong><br />';
@@ -103,8 +103,8 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $use
     $month = mb_strtoupper(__($months[date("m") - 1]));
     $year = date("Y");
     $buffer .= 'Le '.$day.' '.$month.' '.$year.'<br />';
-    if (is_object($user_organisation_obj) && $user_organisation_obj !== false) {
-	$buffer .= 'LA '.$user_organisation_obj->get('organisation_legalform').' '.$user_organisation_obj->display_name.'<br />';
+    if (is_object($organisation) && $organisation !== false) {
+	$buffer .= 'LA '.$organisation->get_legalform().' '.$organisation->get_name().'<br />';
 	$buffer .= 'représentée par ';
     }
     $buffer .= $user_name.'<br />';
@@ -140,17 +140,13 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
     $current_user = get_userdata($user_id);
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 	$group_id = $_SESSION['redirect_current_invest_type'];
-	if (BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
-	    $group = groups_get_group( array( 'group_id' => $group_id ) );
-	    $organisation_user_id = $group->creator_id;
-	    $current_user_orga = get_user_by('id', $organisation_user_id);
-	}
+	$organisation = new YPOrganisation($group_id);
     }
     $amount = edd_get_payment_amount($payment_id);
     $amount_part = $amount / $campaign->part_value();
     
     $invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
-    $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $current_user_orga);
+    $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation);
     $filename = dirname ( __FILE__ ) . '/pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf';
     
     if (generatePDF($html_content, $filename)) return $filename;

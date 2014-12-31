@@ -12,6 +12,7 @@ class BoppOrganisations {
 	 */
 	public static function empty_params() {
 		$params = array(
+			'organisation_wpref' => '---',
 			'organisation_name' => '---',
 			'organisation_creation_date' => '---',
 			'organisation_type' => '---',
@@ -40,8 +41,9 @@ class BoppOrganisations {
 	 * @param string $last_name
 	 * @return object
 	 */
-	public static function create($name, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape) {
+	public static function create($wpref, $name, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape) {
 		$default_params = BoppOrganisations::empty_params();
+		$default_params['organisation_wpref'] = $wpref;
 		$default_params['organisation_name'] = $name;
 		$default_params['organisation_type'] = $type;
 		$default_params['organisation_legalform'] = $legalform;
@@ -88,6 +90,7 @@ class BoppOrganisations {
 	 */
 	public static function update($id, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape) {
 		$default_params = BoppUsers::empty_params();
+		unset($default_params['organisation_wpref']);
 		unset($default_params['organisation_name']);
 		$default_params['organisation_type'] = $type;
 		$default_params['organisation_legalform'] = $legalform;

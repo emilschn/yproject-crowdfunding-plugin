@@ -103,7 +103,7 @@ class BoppUsers {
 	 * @return object
 	 */
 	public static function get_projects_by_role($id, $role_slug) {
-		$project_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug);
+		$project_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug.'/projects');
 		if (isset($project_list->code)) { $project_list = array(); }
 		return $project_list;
 	}
@@ -114,7 +114,7 @@ class BoppUsers {
 	 * @param type $role_slug
 	 */
 	public static function get_organisations_by_role($id, $role_slug) {
-		$organisation_list = BoppLib::call_get('');
+		$organisation_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug.'/organisations');
 		if (isset($organisation_list->code)) { $organisation_list = array(); }
 		return $organisation_list;
 	}

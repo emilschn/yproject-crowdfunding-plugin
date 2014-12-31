@@ -32,8 +32,8 @@ function ypcf_display_invest_confirm($content) {
 	    if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
 	    if (isset($_SESSION['redirect_current_invest_type'])) $invest_type = $_SESSION['redirect_current_invest_type'];
 	    if ($invest_type != 'user') {
-		$group = groups_get_group( array( 'group_id' => $invest_type ) );
-		$current_user_organisation = get_user_by('id', $group->creator_id);
+		$organisation = new YPOrganisation($invest_type);
+		$current_user_organisation = $organisation->get_creator();
 		ypcf_init_mangopay_user($current_user_organisation, true);
 	    }
 	    
@@ -134,17 +134,16 @@ function ypcf_display_invest_confirm($content) {
 		
 		if ($invest_type != 'user') {
 		    $form .= '<hr />';
-		    $form .= '<strong>Informations de l&apos;organisation <em>'.$current_user_organisation->display_name.'</em></strong><br />';
-		    $form .= '<span class="label">e-mail :</span>' . $current_user_organisation->user_email . '<br />';
-		    $form .= '<span class="label">Num&eacute;ro d&apos;immatriculation :</span>' . $current_user_organisation->get('organisation_idnumber') . '<br />';
-		    $form .= '<span class="label">RCS :</span>' . $current_user_organisation->get('organisation_rcs') . '<br />';
-		    $form .= '<span class="label">Forme juridique :</span>' . $current_user_organisation->get('organisation_legalform') . '<br />';
-		    $form .= '<span class="label">Capital social :</span>' . $current_user_organisation->get('organisation_capital') . '<br /><br />';
+		    $form .= '<strong>Informations de l&apos;organisation <em>'.$organisation->get_name().'</em></strong><br />';
+		    $form .= '<span class="label">Num&eacute;ro d&apos;immatriculation :</span>' . $organisation->get_idnumber() . '<br />';
+		    $form .= '<span class="label">RCS :</span>' . $organisation->get_rcs() . '<br />';
+		    $form .= '<span class="label">Forme juridique :</span>' . $organisation->get_legalform() . '<br />';
+		    $form .= '<span class="label">Capital social :</span>' . $organisation->get_capital() . '<br /><br />';
 		    
 		    $form .= '<div class="left label">Adresse :</div>';
-		    $form .= '<div class="left">'. $current_user_organisation->get('user_address') . '<br />';
-		    $form .= $current_user_organisation->get('user_postal_code') . ' ' . $current_user_organisation->get('user_city') . '<br />';
-		    $form .= $country_list[$current_user_organisation->get('user_nationality')] . '</div>';
+		    $form .= '<div class="left">'. $organisation->get_address() . '<br />';
+		    $form .= $organisation->get_postal_code() . ' ' . $organisation->get_city() . '<br />';
+		    $form .= $country_list[$organisation->get_nationality()] . '</div>';
 		    $form .= '<div style="clear: both;"></div>';
 		    $form .= '<br /><br />';
 		}
@@ -163,7 +162,7 @@ function ypcf_display_invest_confirm($content) {
 
 		$form .= '<h3>Voici le pouvoir que vous allez signer pour valider l&apos;investissement :</h3>';
 		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
-		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $current_user_organisation).'</div>';
+		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
 		$form .= 'Ecrire "<strong>Bon pour '.$text_to_type.'</strong>" dans la zone de texte ci-contre :';

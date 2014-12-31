@@ -68,31 +68,17 @@ function ypcf_display_invest_form($error = '') {
 		
 		$form .= '<div class="invest_step1_conditions">' . wpautop( $edd_options['contract'] ) . '</div>';
 		
-		$current_user = wp_get_current_user();
-		$group_ids = BP_Groups_Member::get_group_ids( $current_user->ID );
-		$count_groups = 0;
-		$groups = array();
-		foreach ($group_ids['groups'] as $group_id) {
-		    $group = groups_get_group( array( 'group_id' => $group_id ) );
-		    $group_type = groups_get_groupmeta($group_id, 'group_type');
-		    if ($group->status == 'private' && $group_type == 'organisation' && BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
-			$groups[$group_id] = $group;
-			$count_groups++;
-		    }
-		}
-		
 		$form .= '<br /><center>';
 		$form .= '<input type="submit" value="Investir" class="button" />';
 		$form .= '<select name="invest_type">';
 		$form .= '<option value="user">En mon nom (personne physique)</option>';
-		if ($count_groups > 0) {
-		    foreach ($groups as $group_key => $group) {
-			$form .= '<option value="'.$group_key.'">Pour '.$group->name.'</option>';
+		$current_user = wp_get_current_user();
+		$api_user_id = BoppLibHelpers::get_api_user_id($current_user->ID);
+		$organisations_list = BoppUsers::get_organisations_by_role($api_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
+		if (count($organisations_list) > 0) {
+		    foreach ($organisations_list as $organisation_item) {
+			$form .= '<option value="'.$organisation_item->organisation_wpref.'">Pour '.$organisation_item->organisation_name.'</option>';
 		    }
-		    $form .= '<option value="new_organisation">Pour une nouvelle organisation (personne morale)...</option>';
-		    
-		} else {
-		    $form .= '<option value="new_organisation">Pour une organisation (personne morale)...</option>';
 		}
 		$form .= '</select>';
 		$form .= '</center>';

@@ -134,7 +134,6 @@ function ypcf_check_user_can_invest($redirect = false) {
     $can_invest = $can_invest && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
     $can_invest = $can_invest && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
     $can_invest = $can_invest && ($current_user->get('user_gender') != "") && ($current_user->get('user_birthplace') != "");
-//    $can_invest = $can_invest && ($current_user->get('user_person_type') == "NATURAL_PERSON");
 
     if ($redirect && !$can_invest) {
 	ypcf_session_start();
@@ -143,7 +142,6 @@ function ypcf_check_user_can_invest($redirect = false) {
 	if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
 	$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
 	array_push($errors, 'Certaines des informations manquent ou sont inexactes.');
-//	if ($current_user->get('user_person_type') == "LEGAL_PERSONALITY") array_push($errors, 'Seules les personnes physiques peuvent investir pour l&apos;instant.');
 	if (!ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'))) array_push($errors, 'Seules les personnes majeures peuvent investir.');
 	$_SESSION['error_invest'] = $errors;
 	$page_update = get_page_by_path('modifier-mon-compte');
@@ -157,18 +155,17 @@ function ypcf_check_user_can_invest($redirect = false) {
  * Vérification si l'organisation peut investir
  */
 function ypcf_check_organisation_can_invest($organisation_user_id) {
-    $organisation_user = get_user_by('id', $organisation_user_id);
-    $can_invest = ($organisation_user->user_email != '');
-    $can_invest = $can_invest && ($organisation_user->get('user_type') == 'organisation');
-    $can_invest = $can_invest && ($organisation_user->get('organisation_type') == 'society');
-    $can_invest = $can_invest && ($organisation_user->get('user_nationality') != '');
-    $can_invest = $can_invest && ($organisation_user->get('organisation_legalform') != '');
-    $can_invest = $can_invest && ($organisation_user->get('organisation_idnumber') != '');
-    $can_invest = $can_invest && ($organisation_user->get('organisation_rcs') != '');
-    $can_invest = $can_invest && ($organisation_user->get('organisation_capital') != '');
-    $can_invest = $can_invest && ($organisation_user->get('user_address') != '');
-    $can_invest = $can_invest && ($organisation_user->get('user_postal_code') != '');
-    $can_invest = $can_invest && ($organisation_user->get('user_city') != '');
+    $organisation = new YPOrganisation($organisation_user_id);
+    
+    $can_invest = ($organisation->get_type() == 'society');
+    $can_invest = $can_invest && ($organisation->get_legalform() != '');
+    $can_invest = $can_invest && ($organisation->get_idnumber() != '');
+    $can_invest = $can_invest && ($organisation->get_rcs() != '');
+    $can_invest = $can_invest && ($organisation->get_capital() != '');
+    $can_invest = $can_invest && ($organisation->get_address() != '');
+    $can_invest = $can_invest && ($organisation->get_postal_code() != '');
+    $can_invest = $can_invest && ($organisation->get_city() != '');
+    $can_invest = $can_invest && ($organisation->get_nationality() != '');
 
     if (!$can_invest) {
 	$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
@@ -210,8 +207,7 @@ function ypcf_check_invest_redirections() {
     
     //Si l'utilisateur veut investir pour une organisation existante
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != 'new_organisation' && $_SESSION['redirect_current_invest_type'] != 'user') {
-	$group = groups_get_group( array( 'group_id' => $_SESSION['redirect_current_invest_type'] ) );
-	if (!ypcf_check_organisation_can_invest($group->creator_id)) {
+	if (!ypcf_check_organisation_can_invest($_SESSION['redirect_current_invest_type'])) {
 	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	    if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	    $page_update = get_page_by_path('modifier-mon-compte');
@@ -396,35 +392,26 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		if (!isset($_POST['new_organisation_capable']) || !$_POST['new_organisation_capable']) array_push($errors, 'Merci de valider que vous êtes en capacité de représenter cette organisation.');
 		if (!$validate_email) array_push($errors, 'L\'adresse e-mail de l\'organisation n\'est pas correcte.');
 	    }
+	    
 	//Mise à jour d'une organisation
 	} elseif (isset($_POST['update_organisation'])) {
 	    //Parcourir toutes les organisations
-	    $group_ids = BP_Groups_Member::get_group_ids( $current_user->ID );
-	    foreach ($group_ids['groups'] as $group_id) {
-		$group = groups_get_group( array( 'group_id' => $group_id ) );
-		$group_type = groups_get_groupmeta($group_id, 'group_type');
+	    $api_user_id = BoppLibHelpers::get_api_user_id($current_user->ID);
+	    $organisations_list = BoppUsers::get_organisations_by_role($api_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
+	    foreach ($organisations_list as $organisation_item) {
+		$organisation = new YPOrganisation($organisation_item->organisation_wpref);
 		$name_suffix = '_' . $group_id;
-		if (isset($_POST['update_organisation' . $name_suffix]) && $group->status == 'private' && $group_type == 'organisation' && BP_Groups_Member::check_is_admin($current_user->ID, $group_id) && $_POST['new_org_name'.$name_suffix] != '') {
-	    
-		    $group->name = $_POST['new_org_name'.$name_suffix];
-		    $group->description = $_POST['new_org_name'.$name_suffix];
-		    $group->save();
-
-		    $organisation_user_id = $group->creator_id;
-		    wp_update_user( array ( 'ID' => $organisation_user_id, 'first_name' => $_POST['new_org_name'.$name_suffix] ) ) ;
-		    wp_update_user( array ( 'ID' => $organisation_user_id, 'last_name' => $_POST['new_org_name'.$name_suffix] ) ) ;
-		    wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'.$name_suffix] ) ) ;
-		    wp_update_user( array ( 'ID' => $organisation_user_id, 'user_email' => $_POST['new_org_email'.$name_suffix] ) );
-		    update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address'.$name_suffix]);
-		    update_user_meta($organisation_user_id, 'user_nationality', $_POST['new_org_nationality'.$name_suffix]);
-		    update_user_meta($organisation_user_id, 'user_postal_code', $_POST['new_org_postal_code'.$name_suffix]);
-		    update_user_meta($organisation_user_id, 'user_city', $_POST['new_org_city'.$name_suffix]);
-		    update_user_meta($organisation_user_id, 'organisation_legalform', $_POST['new_org_legalform'.$name_suffix]);
-		    update_user_meta($organisation_user_id, 'organisation_capital', $_POST['new_org_capital'.$name_suffix]);
-		    update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber'.$name_suffix]);
-		    update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs'.$name_suffix]);
-		
-		    $organisation_user = get_user_by('id', $organisation_user_id);
+		if (isset($_POST['update_organisation' . $name_suffix]) && $_POST['new_org_name'.$name_suffix] != '') {
+		    $organisation->set_address($_POST['new_org_address'.$name_suffix]);
+		    $organisation->set_nationality($_POST['new_org_nationality'.$name_suffix]);
+		    $organisation->set_postal_code($_POST['new_org_postal_code'.$name_suffix]);
+		    $organisation->set_city($_POST['new_org_city'.$name_suffix]);
+		    $organisation->set_legalform($_POST['new_org_legalform'.$name_suffix]);
+		    $organisation->set_capital($_POST['new_org_capital'.$name_suffix]);
+		    $organisation->set_idnumber($_POST['new_org_idnumber'.$name_suffix]);
+		    $organisation->set_rcs($_POST['new_org_rcs'.$name_suffix]);
+		    
+		    $organisation_user = $organisation->get_creator();
 		    $url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
 		    $curl_result_cni = (isset($_FILES['new_org_file_cni'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni'.$name_suffix) : false;
 		    $curl_result_status = (isset($_FILES['new_org_file_status'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status'.$name_suffix) : false;
