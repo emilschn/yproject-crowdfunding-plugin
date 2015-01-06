@@ -1446,11 +1446,21 @@ class ATCF_Campaign {
 	 */
 	public function backers_count() {
 		$backers = $this->backers();
-		
-		if ( ! $backers )
-			return 0;
+		$total = 0;
 
-		return absint( count( $backers ) );
+		if ($backers > 0) {
+		    foreach ( $backers as $backer ) {
+			    $payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
+			    $payment    = get_post( $payment_id );
+
+			    if ( empty( $payment ) || $payment->post_status == 'pending' )
+				    continue;
+
+			    $total++;
+		    }
+		}
+		
+		return $total;
 	}
 
 	/**
