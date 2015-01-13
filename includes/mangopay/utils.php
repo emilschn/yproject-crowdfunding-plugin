@@ -94,6 +94,25 @@ function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $am
     return $mangopay_newtransfer;
 }
 
+function ypcf_mangopay_refund_project_to_user($wp_invest_id) {
+    $post_invest = get_post($wp_invest_id);
+    $payment_key = edd_get_payment_key($wp_invest_id);
+    $contribution_mangopayid = $payment_key;
+    if (strpos($payment_key, 'wire_') !== FALSE) {
+	    $contribution_mangopayid = substr($payment_key, 5);
+    }
+    $user_mangopayid = ypcf_mangopay_get_mp_user_id($post_invest->post_author);
+
+    $mangopay_newrefund = request('refunds', 'POST', '{
+					    "ContributionID" : '.$contribution_mangopayid.',
+					    "UserID" : '.$user_mangopayid.'
+					}');
+    
+    update_post_meta($wp_invest_id, 'refund_id', $mangopay_newrefund->ID);
+    
+    return $mangopay_newrefund;
+}
+
 /**
  * 
  * @param type $contribution_id
@@ -109,6 +128,10 @@ function ypcf_mangopay_get_withdrawalcontribution_by_id($contribution_id) {
 
 function ypcf_mangopay_get_transfer_by_id($transfer_id) {
     return request('transfers/'.$transfer_id, 'GET');
+}
+
+function ypcf_mangopay_get_refund_by_id($refund_id) {
+    return request('refunds/'.$refund_id, 'GET');
 }
 
 function ypcf_mangopay_get_user_by_id($mp_user_id) {
