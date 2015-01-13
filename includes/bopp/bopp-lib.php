@@ -322,12 +322,55 @@ class BoppLib {
 	
 	/**
 	 * Délie un utilisateur d'un projet
-	 * @param type $api_project_id
-	 * @param type $api_user_id
+	 * @param int $api_project_id
+	 * @param int $api_user_id
+	 * @return object
 	 */
 	public static function unlink_user_from_project($api_project_id, $api_user_id) {
 		$request_params = array();
 		$result_obj = BoppLib::call_delete('projects/' . $api_project_id . '/members/' . $api_user_id, $request_params);
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne les organisations liés à un projet par rapport à un rôle
+	 * @param int $api_project_id
+	 * @param string $api_role_slug
+	 * @return array
+	 */
+	public static function get_project_organisations_by_role($api_project_id, $api_role_slug) {
+		$result = BoppLib::call_get('projects/' . $api_project_id . '/roles/' . $api_role_slug . '/organisations');
+		if (isset($result->code) && ($result->code == '404' || $result->code == '500')) return array();
+		else return $result;
+	}
+	
+	/**
+	 * Lie une organisation à un projet en définissant un rôle
+	 * @param int $api_project_id
+	 * @param int $api_organisation_id
+	 * @param string $api_role_slug
+	 * @return object
+	 */
+	public static function link_organisation_to_project($api_project_id, $api_organisation_id, $api_role_slug) {
+		$request_params = array(
+			'project_organisation_management' => array(
+				'boppOrganisation' => $api_organisation_id, 
+				'boppRole' => $api_role_slug
+			)
+		);
+		$result_obj = BoppLib::call_post('projects/'.$api_project_id.'/organisations', $request_params);
+		return $result_obj;
+	}
+	
+	/**
+	 * Délie une organisation d'un projet
+	 * @param int $api_project_id
+	 * @param int $api_organisation_id
+	 * @return object
+	 */
+	public static function unlink_organisation_from_project($api_project_id, $api_organisation_id) {
+		$request_params = array();
+		$result_obj = BoppLib::call_delete('projects/' . $api_project_id . '/organisations/' . $api_organisation_id, $request_params);
 		return $result_obj;
 	}
 //FIN GESTION ROLES

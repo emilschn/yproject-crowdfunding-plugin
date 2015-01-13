@@ -9,6 +9,7 @@ class YPOrganisation {
 	private $creator;
 	private $bopp_id;
 	private $bopp_object;
+	private $wpref;
 	private $name;
 	private $address;
 	private $postal_code;
@@ -34,6 +35,7 @@ class YPOrganisation {
 			$this->creator = get_user_by('id', $user_id);
 			$this->bopp_id = get_user_meta($user_id, YPOrganisation::$key_bopp_id, TRUE);
 			$this->bopp_object = BoppOrganisations::get($this->bopp_id);
+			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->organisation_name;
 			$this->address = $this->bopp_object->organisation_address;
@@ -139,6 +141,9 @@ class YPOrganisation {
 	 */
 	public function get_creator() {
 		return $this->creator;
+	}
+	public function get_bopp_id() {
+		return $this->bopp_id;
 	}
 	
 	public function get_wpref() {

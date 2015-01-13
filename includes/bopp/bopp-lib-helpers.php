@@ -64,6 +64,10 @@ class BoppLibHelpers {
 						    'slug' => 'project-team-member', 
 						    'title' => 'Membre equipe projet');
 	
+	public static $project_organisation_manager_role = array(
+						    'slug' => 'project-organisation-manager', 
+						    'title' => 'Organisation gestionnaire du projet');
+	
 	public static $organisation_creator_role = array(
 						    'slug' => 'organisation-creator', 
 						    'title' => 'Createur organisation');
