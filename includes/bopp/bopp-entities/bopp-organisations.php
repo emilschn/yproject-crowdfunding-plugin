@@ -59,8 +59,8 @@ class BoppOrganisations {
 		$date = new DateTime("NOW");
 		$default_params['organisation_creation_date'] = array(
 			"year" => $date->format('Y'),
-			"month" => $date->format('m'),
-			"day" => $date->format('d')
+			"month" => $date->format('n'),
+			"day" => $date->format('j')
 		);
 		
 		$request_params = array(

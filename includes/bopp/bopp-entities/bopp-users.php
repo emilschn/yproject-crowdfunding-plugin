@@ -44,14 +44,14 @@ class BoppUsers {
 		$date = new DateTime("NOW");
 		$default_params['user_birthday_date'] = array(
 			"year" => $date->format('Y'),
-			"month" => $date->format('m'),
-			"day" => $date->format('d')
+			"month" => $date->format('n'),
+			"day" => $date->format('j')
 		);
 		$default_params['user_signup_date'] = array(
 			"date" => array(
 				"year"	=> $date->format('Y'),
-				"month" => $date->format('m'),
-				"day"	=> $date->format('d')
+				"month" => $date->format('n'),
+				"day"	=> $date->format('j')
 			),
 			"time" => array(
 				"hour"	=> $date->format('H'),

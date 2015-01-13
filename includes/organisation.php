@@ -72,6 +72,7 @@ class YPOrganisation {
 		global $errors_submit_new;
 		
 		$organisation_user_id = $this->create_user($this->get_name());
+		$this->set_wpref($organisation_user_id);
 		
 		//Si il y a eu une erreur lors de la création de l'utilisateur, on arrête la procédure
 		if (isset($organisation_user_id->errors) && count($organisation_user_id->errors) > 0) {
@@ -80,7 +81,7 @@ class YPOrganisation {
 		}
 		
 		$return_obj = BoppOrganisations::create(
-			$this->creator->ID,
+			$this->get_wpref(),
 			$this->get_name(), 
 			$this->get_type(), 
 			$this->get_legalform(), 
