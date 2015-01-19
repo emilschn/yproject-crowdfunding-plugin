@@ -180,9 +180,50 @@ class BoppLib {
 	 */
 	public static function create_project($wp_project_id, $wp_project_name) {
 		$request_params = array(
-			'projects' => array(
+			'project' => array(
 				'project_wp_id' => $wp_project_id, 
-				'project_name' => $wp_project_name
+				'project_name' => $wp_project_name,
+				'project_slogan' => '---',
+				'project_description' => '---',
+				'project_video_url' => '---',
+				'project_image_url' => '---',
+				'project_category' => '---',
+				'project_business_sector' => '---',
+				'project_funding_type' => '---',
+				'project_funding_duration' => '---',
+				'project_return_on_investment' => '---',
+				'project_investor_benefit' => '---',
+				'project_summary' => '---',
+				'project_economy_excerpt' => '---',
+				'project_social_excerpt' => '---',
+				'project_environment_excerpt' => '---',
+				'project_mission' => '---',
+				'project_economy' => '---',
+				'project_social' => '---',
+				'project_environment' => '---',
+				'project_measure_performance' => '---',
+				'project_good_point' => '---',
+				'project_context_excerpt' => '---',
+				'project_market_excerpt' => '---',
+				'project_context' => '---',
+				'project_market' => '---',
+				'project_worth_offer' => '---',
+				'project_client_collaborator' => '---',
+				'project_business_core' => '---',
+				'project_income' => '---',
+				'project_cost' => '---',
+				'project_collaborators_canvas' => '---',
+				'project_activities_canvas' => '---',
+				'project_ressources_canvas' => '---',
+				'project_worth_offer_canvas' => '---',
+				'project_customers_relations_canvas' => '---',
+				'project_chain_distribution_canvas' => '---',
+				'project_clients_canvas' => '---',
+				'project_cost_structure_canvas' => '---',
+				'project_source_of_income_canvas' => '---',
+				'project_financial_board' => '---',
+				'project_perspectives' => '---',
+				'project_other_information' => '---'
 			)
 		);
 		$result_obj = BoppLib::call_post('projects', $request_params);
