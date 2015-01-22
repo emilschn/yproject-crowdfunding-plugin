@@ -11,6 +11,7 @@ class YPOrganisation {
 	private $bopp_object;
 	private $wpref;
 	private $name;
+	private $strong_authentication;
 	private $address;
 	private $postal_code;
 	private $city;
@@ -21,6 +22,10 @@ class YPOrganisation {
 	private $idnumber;
 	private $rcs;
 	private $ape;
+	private $bank_owner;
+	private $bank_address;
+	private $bank_iban;
+	private $bank_bic;
 	
 	/**
 	 * Clés d'accès aux meta
@@ -38,6 +43,7 @@ class YPOrganisation {
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->organisation_name;
+			$this->strong_authentication = $this->bopp_object->strong_authentication;
 			$this->address = $this->bopp_object->organisation_address;
 			$this->postal_code = $this->bopp_object->organisation_postalcode;
 			$this->city = $this->bopp_object->organisation_city;
@@ -48,6 +54,11 @@ class YPOrganisation {
 			$this->idnumber = $this->bopp_object->organisation_idnumber;
 			$this->rcs = $this->bopp_object->organisation_rcs;
 			$this->ape = $this->bopp_object->organisation_ape;
+			
+			$this->bank_owner = $this->bopp_object->organisation_bank_owner;
+			$this->bank_address = $this->bopp_object->organisation_bank_address;
+			$this->bank_iban = $this->bopp_object->organisation_bank_iban;
+			$this->bank_bic = $this->bopp_object->organisation_bank_bic;
 		}
 	}
 	
@@ -83,6 +94,7 @@ class YPOrganisation {
 		$return_obj = BoppOrganisations::create(
 			$this->get_wpref(),
 			$this->get_name(), 
+			FALSE,
 			$this->get_type(), 
 			$this->get_legalform(), 
 			$this->get_idnumber(), 
@@ -92,7 +104,11 @@ class YPOrganisation {
 			$this->get_postal_code(), 
 			$this->get_city(), 
 			$this->get_nationality(), 
-			$this->get_ape()
+			$this->get_ape(),
+			$this->get_bank_owner(),
+			$this->get_bank_address(),
+			$this->get_bank_iban(),
+			$this->get_bank_bic()
 		);
 		$this->bopp_id = $return_obj;
 		
@@ -124,6 +140,7 @@ class YPOrganisation {
 	 */
 	public function save() {
 		BoppOrganisations::update($this->bopp_id, 
+			$this->get_strong_authentication(),
 			$this->get_type(), 
 			$this->get_legalform(), 
 			$this->get_idnumber(), 
@@ -133,7 +150,11 @@ class YPOrganisation {
 			$this->get_postal_code(), 
 			$this->get_city(), 
 			$this->get_nationality(), 
-			$this->get_ape()
+			$this->get_ape(),
+			$this->get_bank_owner(),
+			$this->get_bank_address(),
+			$this->get_bank_iban(),
+			$this->get_bank_bic()
 		);
 	}
 	
@@ -159,6 +180,13 @@ class YPOrganisation {
 	}
 	public function set_name($value) {
 		$this->name = $value;
+	}
+	
+	public function get_strong_authentication() {
+		return $this->strong_authentication;
+	}
+	public function set_strong_authentication($value) {
+		$this->strong_authentication = $value;
 	}
 	
 	public function get_address() {
@@ -231,6 +259,34 @@ class YPOrganisation {
 		$this->ape = $value;
 	}
 	
+	public function get_bank_owner() {
+		return $this->bank_owner;
+	}
+	public function set_bank_owner($value) {
+		$this->bank_owner = $value;
+	}
+	
+	public function get_bank_address() {
+		return $this->bank_address;
+	}
+	public function set_bank_address($value) {
+		$this->bank_address = $value;
+	}
+	
+	public function get_bank_iban() {
+		return $this->bank_iban;
+	}
+	public function set_bank_iban($value) {
+		$this->bank_iban = $value;
+	}
+	
+	public function get_bank_bic() {
+		return $this->bank_bic;
+	}
+	public function set_bank_bic($value) {
+		$this->bank_bic = $value;
+	}
+	
 	/**
 	 * Liaisons utilisateurs
 	 */
@@ -238,5 +294,40 @@ class YPOrganisation {
 		$bopp_user_id = BoppLibHelpers::get_api_user_id($wp_user_id);
 		BoppLibHelpers::check_create_role(BoppLibHelpers::$organisation_creator_role['slug'], BoppLibHelpers::$organisation_creator_role['title']);
 		BoppOrganisations::link_user_to_organisation($this->bopp_id, $bopp_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
+	}
+	
+	/**
+	 * Mise à jour du statut de strong authentication
+	 */
+	public function check_strong_authentication() {
+		$save = FALSE;
+		switch ($this->strong_authentication) {
+			case '0':
+			    //Vérifie les docs ont été envoyés
+			    if (ypcf_mangopay_is_user_strong_authentication_sent($this->wpref)) {
+				    //Vérifie si les docs ont été vérifiés
+				    if (ypcf_mangopay_is_user_strong_authenticated($this->wpref)) {
+					    $this->strong_authentication = '1';
+					    $save = TRUE;
+				    } else {
+					    $this->strong_authentication = '5';
+					    $save = TRUE;
+				    }
+			    }
+			    break;
+			case '1':
+			    //Envoyé et vérifié, on ne fait rien
+			    break;
+			case '5':
+			    //Vérifie si les docs ont été vérifiés
+			    if (ypcf_mangopay_is_user_strong_authenticated($this->wpref)) {
+				    $this->strong_authentication = '1';
+				    $save = TRUE;
+			    }
+			    break;
+		}
+		if ($save == TRUE) {
+			$this->save();
+		}
 	}
 }

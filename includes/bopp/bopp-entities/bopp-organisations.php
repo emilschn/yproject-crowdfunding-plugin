@@ -15,6 +15,7 @@ class BoppOrganisations {
 			'organisation_wpref' => '---',
 			'organisation_name' => '---',
 			'organisation_creation_date' => '---',
+			'organisation_strong_authentication' => '---',
 			'organisation_type' => '---',
 			'organisation_legalform' => '---',
 			'organisation_idnumber' => '---',
@@ -25,8 +26,11 @@ class BoppOrganisations {
 			'organisation_city' => '---', 
 			'organisation_country' => '---',
 			'organisation_ape' => '---',
+			'organisation_bank_owner' => '---',
+			'organisation_bank_address' => '---',
+			'organisation_bank_iban' => '---',
+			'organisation_bank_bic' => '---',
 			'organisation_website_url' => '---',
-			'organisation_societe_url' => '---',
 			'organisation_twitter_url' => '---',
 			'organisation_facebook_url' => '---',
 			'organisation_linkedin_url' => '---',
@@ -36,15 +40,14 @@ class BoppOrganisations {
 	}
     
 	/**
-	 * Crée un utilisateur sur l'API
-	 * @param string $first_name
-	 * @param string $last_name
+	 * Crée une organisation sur l'API
 	 * @return object
 	 */
-	public static function create($wpref, $name, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape) {
+	public static function create($wpref, $name, $strong_authentication, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape, $bank_owner, $bank_address, $bank_iban, $bank_bic) {
 		$default_params = BoppOrganisations::empty_params();
 		$default_params['organisation_wpref'] = $wpref;
 		$default_params['organisation_name'] = $name;
+		$default_params['organisation_strong_authentication'] = $strong_authentication;
 		$default_params['organisation_type'] = $type;
 		$default_params['organisation_legalform'] = $legalform;
 		$default_params['organisation_idnumber'] = $idnumber;
@@ -55,6 +58,10 @@ class BoppOrganisations {
 		$default_params['organisation_city'] = $city;
 		$default_params['organisation_country'] = $country;
 		$default_params['organisation_ape'] = $ape;
+		$default_params['organisation_bank_owner'] = $bank_owner;
+		$default_params['organisation_bank_address'] = $bank_address;
+		$default_params['organisation_bank_iban'] = $bank_iban;
+		$default_params['organisation_bank_bic'] = $bank_bic;
 		
 		$date = new DateTime("NOW");
 		$default_params['organisation_creation_date'] = array(
@@ -88,10 +95,11 @@ class BoppOrganisations {
 	 * @param string $last_name
 	 * @return object
 	 */
-	public static function update($id, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape) {
+	public static function update($id, $strong_authentication, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape, $bank_owner, $bank_address, $bank_iban, $bank_bic) {
 		$default_params = BoppUsers::empty_params();
 		unset($default_params['organisation_wpref']);
 		unset($default_params['organisation_name']);
+		$default_params['organisation_strong_authentication'] = $strong_authentication;
 		$default_params['organisation_type'] = $type;
 		$default_params['organisation_legalform'] = $legalform;
 		$default_params['organisation_idnumber'] = $idnumber;
@@ -102,6 +110,10 @@ class BoppOrganisations {
 		$default_params['organisation_city'] = $city;
 		$default_params['organisation_country'] = $country;
 		$default_params['organisation_ape'] = $ape;
+		$default_params['organisation_bank_owner'] = $bank_owner;
+		$default_params['organisation_bank_address'] = $bank_address;
+		$default_params['organisation_bank_iban'] = $bank_iban;
+		$default_params['organisation_bank_bic'] = $bank_bic;
 		$request_params = array(
 			'organisation' => $default_params
 		);

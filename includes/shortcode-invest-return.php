@@ -38,24 +38,25 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    $save_user_id = $current_user->ID;
 	    $save_display_name = $current_user->display_name;
 	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
-		$group_id = $_SESSION['redirect_current_invest_type'];
-		if (BP_Groups_Member::check_is_admin($current_user->ID, $group_id)) {
-		    $group = groups_get_group( array( 'group_id' => $group_id ) );
-		    $save_user_id = $group->creator_id;
-		    $organisation_user = get_user_by('id', $save_user_id);
-		    $save_display_name = $organisation_user->display_name;
+		$invest_type = $_SESSION['redirect_current_invest_type'];
+		$organisation = new YPOrganisation($invest_type);
+		if ($organisation) {
+		    $current_user_organisation = $organisation->get_creator();
+		    ypcf_init_mangopay_user($current_user_organisation, true);
+		    $save_user_id = $current_user_organisation->ID;
+		    $save_display_name = $organisation->get_name();
 		}
 	    }
 
 	    //Création d'un paiement pour edd
 	    $user_info = array(
-		'id'         => $save_user_id,
-		'gender'	 => $current_user->get('user_gender'),
-		'email'      => $current_user->user_email,
-		'first_name' => $current_user->user_firstname,
-		'last_name'  => $current_user->user_lastname,
-		'discount'   => '',
-		'address'    => array()
+		'id'		=> $save_user_id,
+		'gender'	=> $current_user->get('user_gender'),
+		'email'		=> $current_user->user_email,
+		'first_name'	=> $current_user->user_firstname,
+		'last_name'	=> $current_user->user_lastname,
+		'discount'	=> '',
+		'address'	=> array()
 	    );
 
 	    if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') $amount = $mangopay_contribution->AmountDeclared / 100;

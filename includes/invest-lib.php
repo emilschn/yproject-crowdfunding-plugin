@@ -200,8 +200,8 @@ function ypcf_check_invest_redirections() {
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-	$page_update = get_page_by_path('modifier-mon-compte');
-	wp_redirect(get_permalink($page_update->ID));
+	$page_new_orga = get_page_by_path('creer-une-organisation');
+	wp_redirect(get_permalink($page_new_orga->ID));
 	exit();
     }
     

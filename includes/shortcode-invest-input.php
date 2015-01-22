@@ -79,6 +79,9 @@ function ypcf_display_invest_form($error = '') {
 		    foreach ($organisations_list as $organisation_item) {
 			$form .= '<option value="'.$organisation_item->organisation_wpref.'">Pour '.$organisation_item->organisation_name.'</option>';
 		    }
+		    $form .= '<option value="new_organisation">Pour une nouvelle organisation (personne morale)...</option>';
+		} else {
+		    $form .= '<option value="new_organisation">Pour une organisation (personne morale)...</option>';
 		}
 		$form .= '</select>';
 		$form .= '</center>';
