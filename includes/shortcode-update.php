@@ -329,9 +329,11 @@ function atcf_shortcode_update_field_description( $editing, $campaign, $post_cam
 	<div class="update_field atcf-update-campaign-description">
 		<label class="update_field_label" for="description">En quoi consiste le projet ?</label><br />
 		<?php 
+		    $content = apply_filters( 'the_content', $campaign->data->post_content );
+		    $content = str_replace( ']]>', ']]&gt;', $content );
 		    if ($campaign) {
 			wp_editor( 
-			    html_entity_decode( $campaign->data->post_content ), 
+			    $content, 
 			    'description', 
 			    array( 
 				'media_buttons' => true,
