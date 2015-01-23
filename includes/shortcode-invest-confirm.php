@@ -73,7 +73,10 @@ function ypcf_display_invest_confirm($content) {
 		}
 		
 	    } else {
-		ypcf_init_mangopay_project();
+		$mangopay_project_id = ypcf_init_mangopay_project();
+		if ($mangopay_project_id === FALSE)  {
+		    return 'Problème de création de projet';
+		}
 
 		//Procédure modifiée d'ajout au panier (on ajoute x items de 1 euros => le montant se retrouve en tant que quantité)
 		$post = get_post($_GET['campaign_id']);

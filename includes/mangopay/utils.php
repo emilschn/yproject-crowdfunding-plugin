@@ -8,12 +8,12 @@
  * @return type
  */
 function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id, $amount, $page_return) {
-    //Récupération du walletid de la campagne
+    //RÃ©cupÃ©ration du walletid de la campagne
     $post_camp = get_post($campaign_id);
     $campaign = atcf_get_campaign( $post_camp );
     $currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
 
-    //Récupération du walletid de l'utilisateur
+    //RÃ©cupÃ©ration du walletid de l'utilisateur
     $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
     
     if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
@@ -21,10 +21,10 @@ function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id,
     //Conversion de la somme saisie en cents
     $cent_amount = $amount * 100;
 
-    //Récupération de l'url de retour
+    //RÃ©cupÃ©ration de l'url de retour
     $return_url = get_permalink($page_return->ID) . '?campaign_id=' . $campaign_id;
     
-    //Récupération de l'url de template
+    //RÃ©cupÃ©ration de l'url de template
     $template_url = '';
     if (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE) {
 	$page_payment = get_page_by_path('paiement');
@@ -32,7 +32,7 @@ function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id,
 	$template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$campaign_id.'"';
     }
     
-    //Création de la contribution en elle-même
+    //CrÃ©ation de la contribution en elle-mÃªme
     $mangopay_newcontribution = request('contributions', 'POST', '{ 
 					    "UserID" : '.$currentuser_mangopayid.', 
 					    "WalletID" : '.$currentpost_mangopayid.',
@@ -44,12 +44,12 @@ function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id,
 }
 
 function ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $campaign_id, $amount) {
-    //Récupération du walletid de la campagne
+    //RÃ©cupÃ©ration du walletid de la campagne
     $post_camp = get_post($campaign_id);
     $campaign = atcf_get_campaign( $post_camp );
     $currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
 
-    //Récupération du walletid de l'utilisateur
+    //RÃ©cupÃ©ration du walletid de l'utilisateur
     $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
     
     if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
@@ -67,22 +67,22 @@ function ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $c
 }
 
 function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $amount) {
-    //Récupération du walletid de la campagne
+    //RÃ©cupÃ©ration du walletid de la campagne
     $post_camp = get_post($campaign_id);
     $campaign = atcf_get_campaign( $post_camp );
     $campaign_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
     
-    //Récupération de l'id du porteur de projet
+    //RÃ©cupÃ©ration de l'id du porteur de projet
     $author_id = $campaign->data->post_author;
     ypcf_debug_log("ypcf_mangopay_transfer_project_to_user --- current user id : ".$current_user->ID. ' ; campaign id : ' .$campaign_id . ' ; author id : ' . $author_id);
     $campaign_author_mangopayid = ypcf_mangopay_get_mp_user_id($author_id);
 
-    //Récupération du walletid de l'utilisateur
+    //RÃ©cupÃ©ration du walletid de l'utilisateur
     $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
     
     $cent_amount = $amount * 100;
     
-    //Création du transfer
+    //CrÃ©ation du transfer
     $mangopay_newtransfer = request('transfers', 'POST', '{ 
 					    "PayerID" : '.$campaign_author_mangopayid.', 
 					    "PayerWalletID" : '.$campaign_mangopayid.',
@@ -278,21 +278,21 @@ function ypcf_mangopay_set_mp_campaign_wallet_id($wp_campaign_id, $mp_campaign_w
 }
 
 /**
- * Vérifie que l'utilisateur connecté a une correspondance dans mangopay pour un id utilisateur et un id porte-monnaie
+ * VÃ©rifie que l'utilisateur connectÃ© a une correspondance dans mangopay pour un id utilisateur et un id porte-monnaie
  * @param type $current_user
  * @return type
  */
 function ypcf_init_mangopay_user($current_user, $legal_type = false) {
     ypcf_debug_log('-------------');
     ypcf_debug_log('ypcf_init_mangopay_user : $current_user->ID = ' . $current_user->ID);
-    //On s'apprête à confirmer, donc on vérifie si le currentuser a un compte sur mangopay. Si il n'en a pas, on le crée directement.
+    //On s'apprÃªte Ã  confirmer, donc on vÃ©rifie si le currentuser a un compte sur mangopay. Si il n'en a pas, on le crÃ©e directement.
     $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
     ypcf_debug_log('ypcf_init_mangopay_user >> $currentuser_mangopayid = ' . $currentuser_mangopayid);
     if ($currentuser_mangopayid == "") {
 	$first_name = ($legal_type) ? $current_user->display_name : $current_user->user_firstname;
 	$last_name = ($legal_type) ? $current_user->display_name : $current_user->user_lastname;
 	$birthday = ($legal_type) ? "" : strtotime($current_user->get('user_birthday_year') . "-" . $current_user->get('user_birthday_month') . "-" . $current_user->get('user_birthday_day'));
-	$person_type = ($legal_type) ? "NATURAL_PERSON" : "NATURAL_PERSON";
+	$person_type = ($legal_type) ? "LEGAL_PERSONALITY" : "NATURAL_PERSON";
 	$mangopay_new_user = request('users', 'POST', '{ 
 				    "FirstName" : "'.$first_name.'", 
 				    "LastName" : "'.$last_name.'", 
@@ -311,7 +311,7 @@ function ypcf_init_mangopay_user($current_user, $legal_type = false) {
 	    ypcf_debug_log('ypcf_init_mangopay_user --->> $mangopay_new_user creation failed');
 	}
     }
-    //De même, on vérifie si le currentuser a un wallet sur mangopay. Si il n'en a pas, on le crée.
+    //De mÃªme, on vÃ©rifie si le currentuser a un wallet sur mangopay. Si il n'en a pas, on le crÃ©e.
     $currentuser_wallet_mangopayid = ypcf_mangopay_get_mp_user_wallet_id($current_user->ID);
     ypcf_debug_log('ypcf_init_mangopay_user >> $currentuser_wallet_mangopayid = ' . $currentuser_wallet_mangopayid);
     if ($currentuser_wallet_mangopayid == "") {
@@ -345,10 +345,10 @@ function ypcf_init_mangopay_user_strongauthentification($current_user) {
 }
 
 /**
- * Initialise le créateur du projet sur mangopay si nécessaire puis le porte-monnaie du projet.
+ * Initialise le crÃ©ateur du projet sur mangopay si nÃ©cessaire puis le porte-monnaie du projet.
  */
 function ypcf_init_mangopay_project() {
-    $currentpost_mangopayid = '';
+    $currentpost_mangopayid = FALSE;
     if (isset($_GET['campaign_id'])) {
 	$post = get_post($_GET['campaign_id']);
 	$campaign = atcf_get_campaign( $post );
@@ -356,12 +356,20 @@ function ypcf_init_mangopay_project() {
 	$currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
 	//Si le projet n'existe pas encore
 	if ($currentpost_mangopayid == "") {
-	    //On va chercher l'identifiant mangopay du porteur de projet
-	    $author_id = $campaign->data->post_author;
-	    $current_user = get_userdata($author_id);
-	    $mangopay_new_user_id = ypcf_init_mangopay_user($current_user);
 	    
-	    //On crée le poret-monnaie du projet
+	    $api_project_id = BoppLibHelpers::get_api_project_id($post->ID);
+	    $current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+	    if (count($current_organisations) > 0) {
+		    $current_organisation = $current_organisations[0];
+		    $mangopay_new_user_id = ypcf_init_mangopay_user($current_organisation->get_creator(), TRUE);
+		    
+	    } else {
+		    //On va chercher l'identifiant mangopay du porteur de projet
+		    $current_user = get_userdata($campaign->data->post_author);
+		    $mangopay_new_user_id = ypcf_init_mangopay_user($current_user);
+	    }
+	    
+	    //On crée le porte-monnaie du projet
 	    if ($mangopay_new_user_id != "") {
 		$mangopay_new_wallet = request('wallets', 'POST', '{ 
 					    "Owners" : ['.$mangopay_new_user_id.'], 
@@ -393,7 +401,7 @@ function ypcf_init_mangopay_beneficiary($wp_user_id, $bank_owner_name, $bank_own
 					"BankAccountBIC" : "'.$bank_bic.'",
 					"UserID" : '.$currentuser_mangopayid.'
 				    }');
-	    //Si on reçoit une chaine : il y a eu une erreur
+	    //Si on reÃ§oit une chaine : il y a eu une erreur
 	    if (isset($mangopay_new_beneficiary->ErrorCode) && $mangopay_new_beneficiary->ErrorCode != 0) {
 		global $mp_errors;
 		$mp_errors = $mangopay_new_beneficiary->UserMessage;
@@ -408,9 +416,9 @@ function ypcf_init_mangopay_beneficiary($wp_user_id, $bank_owner_name, $bank_own
 }
 
 function ypcf_refund_wallet_project_to_wallet_contributors($campaign_id) {
-    //Utiliser les données stockées par edd
-    // - plus optimisé (plutôt que multiplier les appels vers mangopay)
-    // - récupération de l'id de la campagne, du wallet correspondant, de la liste des backers et de leur wallet
+    //Utiliser les donnÃ©es stockÃ©es par edd
+    // - plus optimisÃ© (plutÃ´t que multiplier les appels vers mangopay)
+    // - rÃ©cupÃ©ration de l'id de la campagne, du wallet correspondant, de la liste des backers et de leur wallet
     // - transfert wallet-campagne > wallet-user
     if (isset($campaign_id)) {
 	$campaign_wallet_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign_id);
