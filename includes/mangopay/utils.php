@@ -361,7 +361,8 @@ function ypcf_init_mangopay_project() {
 	    $current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 	    if (count($current_organisations) > 0) {
 		    $current_organisation = $current_organisations[0];
-		    $mangopay_new_user_id = ypcf_init_mangopay_user($current_organisation->get_creator(), TRUE);
+		    $organisation_object = new YPOrganisation($current_organisation->organisation_wpref);
+		    $mangopay_new_user_id = ypcf_init_mangopay_user($organisation_object->get_creator(), TRUE);
 		    
 	    } else {
 		    //On va chercher l'identifiant mangopay du porteur de projet
