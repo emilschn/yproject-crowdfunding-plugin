@@ -330,4 +330,13 @@ class YPOrganisation {
 			$this->save();
 		}
 	}
+	
+	/**
+	 * Retourne TRUE si l'utilisateur dont l'id est passé en paramètre est une organisation
+	 * @param type $user_id
+	 */
+	public static function is_user_organisation($user_id) {
+		$result = get_user_meta($user_id, YPOrganisation::$key_bopp_id, TRUE);
+		return (isset($result) && !empty($result));
+	}
 }
