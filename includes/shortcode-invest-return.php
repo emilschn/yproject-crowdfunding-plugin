@@ -150,7 +150,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    $users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = ". $_GET['campaign_id'] );
 		    $found_jcrois = false;
 		    foreach ( $users as $user ) { 
-			if ( $user->user_id == $save_user_id) {
+			if ( $user->user_id == $current_user->ID) {
 			    $found_jcrois = true;
 			    break;
 			}
@@ -158,7 +158,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    if (!$found_jcrois) {
 			$wpdb->insert( $table_jcrois,
 			    array(
-				'user_id'	=> $save_user_id,
+				'user_id'	=> $current_user->ID,
 				'campaign_id'   => $_GET['campaign_id']
 			    )
 			);
