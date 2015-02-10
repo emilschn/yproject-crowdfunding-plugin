@@ -42,7 +42,7 @@ function ypcf_display_invest_form($error = '') {
 			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
 			break;
 		}
-		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount">Valider</a><br /><br />';
+		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount" class="button">Valider</a><br /><br />';
 		
 		$form .= '<div id="validate_invest_amount_feedback" style="display:none;">';
 		$hidden = ' hidden';

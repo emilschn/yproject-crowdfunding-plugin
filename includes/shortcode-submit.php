@@ -49,7 +49,7 @@ function ypcf_shortcode_submit_start( $is_editing = false ) {
 	return '<form action="" method="post" class="atcf-submit-campaign" enctype="multipart/form-data">';
     } else {
 	$page_connexion = get_page_by_path('connexion');
-	return 'Attention : <a href="'.get_permalink($page_connexion->ID).'">Vous devez &ecirc;tre connect&eacute; pour proposer un projet</a>';
+	return 'Attention : <a href="'.get_permalink($page_connexion->ID).'">Vous devez &ecirc;tre connect&eacute; pour proposer un projet</a><br /><br />';
     }
 
 }
@@ -63,7 +63,7 @@ function ypcf_shortcode_submit_end() {
 	$crowdfunding = crowdfunding();
 
 	return '	<p class="atcf-submit-campaign-submit">
-			<input type="submit" value="Soumettre le projet">
+			<input type="submit" class="button" value="Enregistrer le projet">
 			<input type="hidden" name="action" value="atcf-campaign-'. ($editing ? 'edit' : 'submit') .'" />
 			'.wp_nonce_field( 'atcf-campaign-' . ( $editing ? 'edit' : 'submit' ), '_wpnonce', true, false ).'
 		</p>
@@ -103,7 +103,7 @@ function ypcf_shortcode_submit_field_category($atts, $content = '') {
     return wp_dropdown_categories( array( 
         'hide_empty'  => 0,
         'taxonomy'    => 'download_category',
-        'selected'    => 0,
+        'selected'    => $_POST[$atts['type']],
         'echo'        => 0,
         'child_of'    => $term_id, 
         'name'        => $atts['type']
@@ -137,29 +137,9 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
     ), $atts );
     
     ob_start();
-    $text_to_edit = '';
-    if ($editing) {
-	switch ($atts['name']) {
-	    case 'description':
-		$text_to_edit = $current_campaign->data->post_content;
-		break;
-	    case 'added_value': 		
-		$text_to_edit = $current_campaign->added_value(); 		
-		break; 		
-	    case 'societal_challenge': 		
-		$text_to_edit = $current_campaign->societal_challenge(); 		
-		break; 		
-	    case 'economic_model': 		
-		$text_to_edit = $current_campaign->economic_model(); 		
-		break; 		
-	    case 'implementation': 		
-		$text_to_edit = $current_campaign->implementation(); 		
-		break;
-	}
-    }
     $value = wp_richedit_pre($content);
     if (isset($_POST[$atts['name']])) $value = html_entity_decode($_POST[$atts['name']]);
-    wp_editor( 
+    /*wp_editor( 
 	    $value, 
 	    $atts['name'], 
 	    apply_filters(  
@@ -180,7 +160,8 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 		) 
 	    ) 
     );
-    return ob_get_clean();
+    return ob_get_clean();*/
+    return '<input type="hidden" name="'.$atts['name'].'" value="'.$value.'" />';
 }
 add_shortcode('yproject_crowdfunding_field_complex', 'ypcf_shortcode_submit_field_complex');
 
@@ -307,18 +288,16 @@ function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
     ), $atts );
     $fundingproject = ' checked="checked"';
     $fundingdevelopment = '';
-    $fundingdevelopment_param = ' style="display: none"';
     if (isset($_POST['fundingtype']) && $_POST['fundingtype'] == 'fundingdevelopment') {
 	$fundingproject = '';
 	$fundingdevelopment = ' checked="checked"';
-	$fundingdevelopment_param = '';
     }
     $fundingduration = '';
     if (isset($_POST['fundingduration'])) $fundingduration = $_POST['fundingduration'];
     
     return  '<input type="radio" name="fundingtype" class="radiofundingtype" id="fundingproject" value="fundingproject"'.$fundingproject.'>' . $atts['option1'] . '<br />
-	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment"'.$fundingdevelopment.'>' . $atts['option2'] . '
-		<span id="fundingdevelopment_param"'.$fundingdevelopment_param.'>- ' . $atts['option2duration'] . '<input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
+	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment"'.$fundingdevelopment.'>' . $atts['option2'] . '<br />
+	    <span id="fundingdevelopment_param">' . $atts['option2duration'] . '<input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
 }
 add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
 
@@ -333,27 +312,18 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 	'min_amount_project' => '500',
 	'min_amount_development' => '5000'
     ), $atts );
-    $goal = isset($_POST['goal']) ? $_POST['goal'] : 0;
-    $goal_search = isset($_POST['goal_search']) ? $_POST['goal_search'] : '';
     $minimum_goal = isset($_POST['minimum_goal']) ? $_POST['minimum_goal'] : '';
     $minimum_goal_search = isset($_POST['minimum_goal_search']) ? $_POST['minimum_goal_search'] : '';
     $maximum_goal = isset($_POST['maximum_goal']) ? $_POST['maximum_goal'] : '';
     $maximum_goal_search = isset($_POST['maximum_goal_search']) ? $_POST['maximum_goal_search'] : '';
-    $goalsum_fixe = ' checked="checked"';
-    $goalsum_flexible = '';
-    $goalsum_fixe_param = '';
-    $goalsum_flexible_param = ' style="display:none"';
-    if (isset($_POST['goalsum']) && $_POST['goalsum'] == 'flexible') {
-	$goalsum_fixe = '';
-	$goalsum_flexible = ' checked="checked"';
-	$goalsum_fixe_param = ' style="display:none"';
-	$goalsum_flexible_param = '';
+    
+    $minimum_amount = $atts['min_amount_project'];
+    if (isset($_POST['fundingtype']) && $_POST['fundingtype'] == 'fundingdevelopment') {
+	$minimum_amount = $atts['min_amount_development'];
     }
-    return  '<input type="radio" name="goalsum" id="goalsum_fixe" value="fixe"'.$goalsum_fixe.'>' . $atts['option1'] . '
-		<span id="goalsum_fixe_param"'.$goalsum_fixe_param.'>- ' . $atts['option1_search'] . '<input type="text" id="goal_search" name="goal_search" size="10" value="'.$goal_search.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>) 
-		- ' . $atts['option1_campaign'] . ' <span id="goalsum_campaign_multi">'.$goal.'&euro;</span></span><br />
-	    <input type="radio" name="goalsum" id="goalsum_flexible" value="flexible"'.$goalsum_flexible.'>' . $atts['option2'] . '
-		<span id="goalsum_flexible_param"'.$goalsum_flexible_param.'>- Minimum : <input type="text" id="minimum_goal_search" name="minimum_goal_search" size="10" value="'.$minimum_goal_search.'"> (Min. <span class="min_amount_value">'.$atts['min_amount_project'].'</span>)
+    
+    return  '<input type="hidden" name="goalsum" id="goalsum_flexible" value="flexible">' . $atts['option2'] . '
+		<span id="goalsum_flexible_param">- Minimum : <input type="text" id="minimum_goal_search" name="minimum_goal_search" size="10" value="'.$minimum_goal_search.'"> (Min. <span class="min_amount_value">'.$minimum_amount.'</span>)
 		- Maximum : <input type="text" id="maximum_goal_search" name="maximum_goal_search" size="10" value="'.$maximum_goal_search.'"></span>
 		- ' . $atts['option1_campaign'] . ' entre <span id="goalsum_min_campaign_multi">'.$minimum_goal.'&euro;</span> et <span id="goalsum_max_campaign_multi">'.$maximum_goal.'&euro;</span>
 	    <input type="hidden" name="length" id="length" value="90">
@@ -362,7 +332,6 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 	    <input type="hidden" name="campaign_multiplier" id="campaign_multiplier" value="' . $atts['multiplier_campaign'] . '">
 	    <input type="hidden" name="min_amount_project" id="min_amount_project" value="' . $atts['min_amount_project'] . '">
 	    <input type="hidden" name="min_amount_development" id="min_amount_development" value="' . $atts['min_amount_development'] . '">
-	    <input type="hidden" name="goal" id="goal" value="'.$goal.'">
 	    <input type="hidden" name="minimum_goal" id="minimum_goal" value="'.$minimum_goal.'">
 	    <input type="hidden" name="maximum_goal" id="maximum_goal" value="'.$maximum_goal.'">';
 }
@@ -489,7 +458,7 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'location' ]))	$location	= $_POST[ 'location' ];
 	if (isset($_POST[ 'impact_area' ]))	$impact_area	= $_POST[ 'impact_area' ];
 	if (isset($_POST[ 'goalsum' ]))		$goalsum	= $_POST[ 'goalsum' ]; // "fixe" ou "flexible"
-	if (isset($_POST[ 'goal' ]))		$goal		= $_POST[ 'goal' ];
+	if (isset($_POST[ 'goal' ]))		$goal		= $_POST[ 'maximum_goal' ];
 	if (isset($_POST[ 'minimum_goal' ]))	$minimum_goal   = $_POST[ 'minimum_goal' ];
 	if (isset($_POST[ 'maximum_goal' ]))	$maximum_goal   = $_POST[ 'maximum_goal' ];
 	if (isset($_POST[ 'length' ]))		$length    	= $_POST[ 'length' ];
