@@ -16,58 +16,49 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /*********************************************************************************************/
 /* FORM GENERATED WITH SHORTCODES */
 /*********************************************************************************************/
-/*********************************************************************************************/
 /**
- * Base page/form. All fields are loaded through an action,
- * so the form can be extended for ever, fields can be removed, added, etc.
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return $form
+ * Ouverture du formulaire
+ * @param type $is_editing
+ * @return string
  */
 function ypcf_shortcode_submit_start( $is_editing = false ) {
-    global $edd_options, $current_campaign, $editing;
-
     if (is_user_logged_in()) {
 	$crowdfunding = crowdfunding();
-	$current_campaign = null;
-	$editing = $is_editing;
-
-	if ( $editing ) {
-		global $post;
-		$current_campaign = atcf_get_campaign( $post );
-	} else {
-		wp_enqueue_script( 'jquery-validation', EDD_PLUGIN_URL . 'assets/js/jquery.validate.min.js');
-		wp_enqueue_script( 'atcf-scripts', $crowdfunding->plugin_url . '/assets/js/crowdfunding.js', array( 'jquery', 'jquery-validation' ) );
-
-		wp_localize_script( 'atcf-scripts', 'CrowdFundingL10n', array(
-			'oneReward' => __( 'At least one reward is required.', 'atcf' )
-		) );
+	wp_enqueue_script( 'jquery-validation', EDD_PLUGIN_URL . 'assets/js/jquery.validate.min.js');
+	wp_enqueue_script( 'atcf-scripts', $crowdfunding->plugin_url . '/assets/js/crowdfunding.js', array( 'jquery', 'jquery-validation' ) );
+	
+	$errors = '';
+	$error_string = '';
+	global $submit_errors;
+	if (isset($submit_errors)) {
+		foreach ($submit_errors->errors as $submit_error) {
+			if (isset($submit_error[0])) $error_string .= $submit_error[0] . '<br />';
+		}
 	}
-
-	do_action( 'atcf_shortcode_submit_before', $editing, $current_campaign );
-	return '<form action="" method="post" class="atcf-submit-campaign" enctype="multipart/form-data">';
+	if ($error_string != '') {
+		$errors = '<div class="errors padder_more">' . $error_string . '</div>';
+	}
+	
+	return $errors . '<form action="" method="post" class="wdg-forms" enctype="multipart/form-data">';
     } else {
 	$page_connexion = get_page_by_path('connexion');
 	return 'Attention : <a href="'.get_permalink($page_connexion->ID).'">Vous devez &ecirc;tre connect&eacute; pour proposer un projet</a><br /><br />';
     }
-
 }
 add_shortcode( 'yproject_crowdfunding_submit_start', 'ypcf_shortcode_submit_start' );
 
-
+/**
+ * Fermeture du formulaire
+ * @param type $is_editing
+ * @return string
+ */
 function ypcf_shortcode_submit_end() {
-    global $edd_options, $current_campaign, $editing;
-
     if (is_user_logged_in()) {
-	$crowdfunding = crowdfunding();
-
-	return '	<p class="atcf-submit-campaign-submit">
+	return '<p class="atcf-submit-campaign-submit">
 			<input type="submit" class="button" value="Enregistrer le projet">
-			<input type="hidden" name="action" value="atcf-campaign-'. ($editing ? 'edit' : 'submit') .'" />
-			'.wp_nonce_field( 'atcf-campaign-' . ( $editing ? 'edit' : 'submit' ), '_wpnonce', true, false ).'
+			<input type="hidden" name="action" value="atcf-campaign-submit" />
+			'.wp_nonce_field( 'atcf-campaign-submit', '_wpnonce', true, false ).'
 		</p>
-
 	</form>';
     } else {
 	$page_connexion = get_page_by_path('connexion');
@@ -76,9 +67,13 @@ function ypcf_shortcode_submit_end() {
 }
 add_shortcode( 'yproject_crowdfunding_submit_end', 'ypcf_shortcode_submit_end' );
 
-
+/**
+ * Champ texte
+ * @param type $atts
+ * @param type $content
+ * @return type
+ */
 function ypcf_shortcode_submit_field($atts, $content = '') {
-    global $editing;
     $atts = shortcode_atts( array(
 	'name' => 'title',
 	'rows' => 5,
@@ -89,8 +84,13 @@ function ypcf_shortcode_submit_field($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field', 'ypcf_shortcode_submit_field');
 
+/**
+ * Champ sélection de catégorie wordpress
+ * @param type $atts
+ * @param type $content
+ * @return type
+ */
 function ypcf_shortcode_submit_field_category($atts, $content = '') {
-    global $editing, $current_campaign;
     $atts = shortcode_atts( array(
 	'type' => 'categories'
     ), $atts );
@@ -111,15 +111,12 @@ function ypcf_shortcode_submit_field_category($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_category', 'ypcf_shortcode_submit_field_category');
 
-
-/*
-function ypcf_shortcode_submit_field_activity($atts, $content = '') {
-
-  return '<h1> test </h1>';
-}
-add_shortcode('yproject_crowdfunding_field_activity', 'ypcf_shortcode_submit_field_activity'); 
-*/
-
+/**
+ * Champ Fichier
+ * @param type $atts
+ * @param type $content
+ * @return type
+ */
 function ypcf_shortcode_submit_field_file($atts, $content = '') {
     $atts = shortcode_atts( array(
 	'name' => 'image'
@@ -128,6 +125,12 @@ function ypcf_shortcode_submit_field_file($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_file', 'ypcf_shortcode_submit_field_file');
 
+/**
+ * Champ éditeur de texte (transformé en hidden)
+ * @param type $atts
+ * @param type $content
+ * @return type
+ */
 function ypcf_shortcode_submit_field_complex($atts, $content = '') {
     global $editing, $current_campaign;
     $atts = shortcode_atts( array(
@@ -165,6 +168,12 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_complex', 'ypcf_shortcode_submit_field_complex');
 
+/**
+ * Champ sélection de localisation
+ * @param type $atts
+ * @param type $content
+ * @return type
+ */
 function ypcf_shortcode_submit_field_location($atts, $content = '') {
     $location_list = array(
 	'01' => 'Ain',
@@ -280,6 +289,12 @@ function ypcf_shortcode_submit_field_location($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_location', 'ypcf_shortcode_submit_field_location');
 
+/**
+ * Gestion de la partie Type de financement
+ * @param type $atts
+ * @param type $content
+ * @return type
+ */
 function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
     $atts = shortcode_atts( array(
 	'option1' => 'Financement d&apos;un projet',
@@ -301,6 +316,12 @@ function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
 
+/**
+ * Gestion de la partie somme à récolter
+ * @param type $atts
+ * @param type $content
+ * @return type
+ */
 function ypcf_shortcode_submit_field_goal($atts, $content = '') {
     $atts = shortcode_atts( array(
 	'option1' => 'Somme fixe',
@@ -337,45 +358,6 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 }
 add_shortcode('yproject_crowdfunding_field_goal', 'ypcf_shortcode_submit_field_goal');
 
-function ypcf_shortcode_submit_field_length($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'min' => '15',
-	'max' => '90'
-    ), $atts );
-    return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="length" id="length" value="'.$atts['min'].'">';
-}
-add_shortcode('yproject_crowdfunding_field_length', 'ypcf_shortcode_submit_field_length');
-
-function ypcf_shortcode_submit_field_vote_length($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'min' => '0',
-	'max' => '9'
-    ), $atts );
-    return '<input type="number" min="'.$atts['min'].'" max="'.$atts['max'].'" step="1" name="vote_length" id="vote_length" value="'.$atts['min'].'">';
-}
-add_shortcode('yproject_crowdfunding_field_vote_length', 'ypcf_shortcode_submit_field_vote_length');
-
-function ypcf_shortcode_submit_field_status($atts, $content = '') {
-    $atts = shortcode_atts( array(
-	'other_text' => 'Pr&eacute;cisez :'
-    ), $atts );
-    $buffer = '<select id="company_status" name="company_status">';
-    $buffer .= '<option>SARL</option>
-	<option>SAS</option>
-	<option>SA</option>
-	<option>SCA</option>
-	<option>Autre</option>';
-    $buffer .= '</select>';
-    $buffer .= '<span id="company_status_other_zone" style="display:none">'.$atts['other_text'].'<input type="text" name="company_status_other"></span>';
-    return $buffer;
-}
-add_shortcode('yproject_crowdfunding_field_status', 'ypcf_shortcode_submit_field_status');
-
-function ypcf_shortcode_submit_field_init_capital($atts, $content = '') {
-    return '<input type="text" name="init_capital" size="10">';
-}
-add_shortcode('yproject_crowdfunding_field_init_capital', 'ypcf_shortcode_submit_field_init_capital');
-
 function ypcf_shortcode_submit_field_confirm($atts, $content = '') {
     ob_start();
     edd_agree_to_terms_js();
@@ -383,12 +365,6 @@ function ypcf_shortcode_submit_field_confirm($atts, $content = '') {
     return ob_get_clean();
 }
 add_shortcode('yproject_crowdfunding_field_confirm', 'ypcf_shortcode_submit_field_confirm');
-
-
-/*********************************************************************************************/
-/* END FORM GENERATED WITH SHORTCODES */
-/*********************************************************************************************/
-/*********************************************************************************************/
 
 
 
@@ -470,8 +446,6 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'excerpt' ]))		$excerpt   	= $_POST[ 'excerpt' ];
 	if (isset($_POST[ 'societal_challenge' ]))  $societal_challenge	= $_POST[ 'societal_challenge' ];
 	if (isset($_POST[ 'added_value' ]))	$added_value	= $_POST[ 'added_value' ];
-	if (isset($_POST[ 'company_status' ]))	$company_status	= $_POST[ 'company_status' ];
-	if (isset($_POST[ 'company_status_other' ]))	$company_status_other	= $_POST[ 'company_status_other' ];
 	if (isset($_POST[ 'init_capital' ]))	$init_capital	= $_POST[ 'init_capital' ];
 	if (isset($_POST[ 'fundingtype' ]))	$fundingtype = $_POST['fundingtype']; // fundingproject ou fundingdevelopment
 	if (isset($_POST[ 'fundingduration' ]))	$fundingduration = $_POST['fundingduration'];
@@ -615,7 +589,9 @@ function atcf_shortcode_submit_process() {
 
 	    $campaign = wp_insert_post( $args, true );
 
-	    wp_set_object_terms( $campaign, array( $category, $activity ), 'download_category' );
+	    if ($category != 0 && $activity != 0) {
+		    wp_set_object_terms( $campaign, array( $category, $activity ), 'download_category' );
+	    }
 
 
 	    // Create category for blog
@@ -654,8 +630,6 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );
 	    add_post_meta( $campaign, 'campaign_implementation', $implementation);
 	    add_post_meta( $campaign, 'campaign_societal_challenge', $societal_challenge);
-	    add_post_meta( $campaign, 'campaign_company_status', sanitize_text_field( $company_status ) );
-	    add_post_meta( $campaign, 'campaign_company_status_other', sanitize_text_field( $company_status_other ) );
 	    add_post_meta( $campaign, 'campaign_init_capital', sanitize_text_field( $init_capital ) );
 	    add_post_meta( $campaign, 'campaign_funding_type', sanitize_text_field( $fundingtype ) );
 	    add_post_meta( $campaign, 'campaign_funding_duration', sanitize_text_field( $fundingduration ) );
