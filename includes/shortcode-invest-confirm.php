@@ -176,7 +176,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<input type="submit" value="Investir" class="button">';
 		$form .= '</form><br /><br />';
 		
-		$form .= '<center><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></center>';
+		$form .= '<div style="text-align: center;"><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></div>';
 	    }
 	    
 	} else {

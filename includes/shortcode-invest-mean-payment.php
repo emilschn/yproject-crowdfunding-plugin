@@ -37,7 +37,8 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
 	    <?php /*<li><?php if ($can_use_check) { ?><a href="<?php echo get_permalink($page_mean_payment->ID); ?>?meanofpayment=check"><?php } ?><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/paiement-cheque.jpg" alt="Paiement par cheque" /><br /> Ch&egrave;que<?php if ($can_use_check) { ?></a><?php } ?> (&agrave; partir de <?php echo $min_check; ?>&euro;)</li>*/ ?>
 	    <div class="clear"></div>
     </ul>
-    <center><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></center>
+    
+    <div style="text-align: center;"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
     <?php
     return ob_get_clean();
 }
