@@ -18,7 +18,7 @@ class BoppUsers {
 			'user_surname' => '---',
 			'user_username' => '---',
 			'user_birthday_date' => '---', 'user_birthday_city' => '---',
-			'user_address' => '---', 'user_postal_code' => '---', 'user_city' => '---',
+			'user_address' => '---', 'user_postal_code' => '0', 'user_city' => '---',
 			'user_email' => '---',
 			'user_linkedin_url' => '---', 'user_twitter_url' => '---', 'user_facebook_url' => '---', 'user_viadeo_url' => '---',
 			'user_picture_url' => '---',
@@ -114,8 +114,12 @@ class BoppUsers {
 	 * @param type $role_slug
 	 */
 	public static function get_organisations_by_role($id, $role_slug) {
-		$organisation_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug.'/organisations');
-		if (isset($organisation_list->code)) { $organisation_list = array(); }
+		if (!empty($id) && !empty($role_slug)) {
+			$organisation_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug.'/organisations');
+			if (isset($organisation_list->code)) { $organisation_list = array(); }
+		} else {
+			$organisation_list = array();
+		}
 		return $organisation_list;
 	}
 }
