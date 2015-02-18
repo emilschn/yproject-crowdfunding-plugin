@@ -1158,6 +1158,9 @@ class ATCF_Campaign {
 	public function summary() {
 		return $this->__get( 'campaign_summary' );
 	}
+	public function rewards() {
+		return $this->__get( 'campaign_rewards' );
+	}
 	public function added_value() {
 		return $this->__get( 'campaign_added_value' );
 	}
