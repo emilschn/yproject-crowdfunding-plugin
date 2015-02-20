@@ -140,9 +140,10 @@ function ypcf_shortcode_submit_field_complex($atts, $content = '') {
     ), $atts );
     
     ob_start();
-    $value = wp_richedit_pre($content);
-    if (isset($_POST[$atts['name']])) $value = html_entity_decode($_POST[$atts['name']]);
-    /*wp_editor( 
+    $value = htmlentities(wp_richedit_pre($content));
+    
+    /*if (isset($_POST[$atts['name']])) $value = html_entity_decode($_POST[$atts['name']]);
+    wp_editor( 
 	    $value, 
 	    $atts['name'], 
 	    apply_filters(  
@@ -344,8 +345,8 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
     }
     
     return  '<input type="hidden" name="goalsum" id="goalsum_flexible" value="flexible">' . $atts['option2'] . '
-		<span id="goalsum_flexible_param">- Minimum : <input type="text" id="minimum_goal_search" name="minimum_goal_search" size="10" value="'.$minimum_goal_search.'"> (Min. <span class="min_amount_value">'.$minimum_amount.'</span>)
-		- Maximum : <input type="text" id="maximum_goal_search" name="maximum_goal_search" size="10" value="'.$maximum_goal_search.'"></span>
+		<span id="goalsum_flexible_param">- Minimum : <input type="text" id="minimum_goal_search" name="minimum_goal_search" size="10" value="'.$minimum_goal_search.'"> (Min. <span class="min_amount_value">'.$minimum_amount.'</span>)<br />
+		- Maximum : <input type="text" id="maximum_goal_search" name="maximum_goal_search" size="10" value="'.$maximum_goal_search.'"></span><br />
 		- ' . $atts['option1_campaign'] . ' entre <span id="goalsum_min_campaign_multi">'.$minimum_goal.'&euro;</span> et <span id="goalsum_max_campaign_multi">'.$maximum_goal.'&euro;</span>
 	    <input type="hidden" name="length" id="length" value="90">
 	    <input type="hidden" name="vote_length" id="vote_length" value="9">
@@ -442,10 +443,14 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'campaign_type' ]))	$type      	= $_POST[ 'campaign_type' ];
 	if (isset($_POST[ 'categories' ]))	$category  	= isset ( $_POST[ 'categories' ] ) ? $_POST[ 'categories' ] : 0;
 	if (isset($_POST[ 'activities' ]))	$activity  	= isset ( $_POST[ 'activities' ] ) ? $_POST[ 'activities' ] : 0;
-	if (isset($_POST[ 'description' ]))	$content   	= $_POST[ 'description' ];
 	if (isset($_POST[ 'excerpt' ]))		$excerpt   	= $_POST[ 'excerpt' ];
-	if (isset($_POST[ 'societal_challenge' ]))  $societal_challenge	= $_POST[ 'societal_challenge' ];
-	if (isset($_POST[ 'added_value' ]))	$added_value	= $_POST[ 'added_value' ];
+	
+	if (isset($_POST[ 'description' ]))	$content   	= html_entity_decode($_POST[ 'description' ]);
+	if (isset($_POST[ 'societal_challenge' ]))  $societal_challenge	= html_entity_decode($_POST[ 'societal_challenge' ]);
+	if (isset($_POST[ 'added_value' ]))	$added_value	= html_entity_decode($_POST[ 'added_value' ]);
+	if (isset($_POST[ 'economic_model' ]))	$economic_model	= html_entity_decode($_POST[ 'economic_model' ]);
+	if (isset($_POST[ 'implementation' ]))	$implementation	= html_entity_decode($_POST[ 'implementation' ]);
+	
 	if (isset($_POST[ 'init_capital' ]))	$init_capital	= $_POST[ 'init_capital' ];
 	if (isset($_POST[ 'fundingtype' ]))	$fundingtype = $_POST['fundingtype']; // fundingproject ou fundingdevelopment
 	if (isset($_POST[ 'fundingduration' ]))	$fundingduration = $_POST['fundingduration'];
@@ -458,10 +463,6 @@ function atcf_shortcode_submit_process() {
 		break;
 	}
 
-	if (isset($_POST[ 'development_strategy' ]))	$development_strategy	= $_POST[ 'development_strategy' ];
-	if (isset($_POST[ 'economic_model' ]))	$economic_model	    = $_POST[ 'economic_model' ];
-	if (isset($_POST[ 'measuring_impact' ]))$measuring_impact   = $_POST[ 'measuring_impact' ];
-	if (isset($_POST[ 'implementation' ]))	$implementation	    = $_POST[ 'implementation' ];
 	
 	if (isset($_POST[ 'name' ]))		$author    	= $_POST[ 'name' ];
 	if (isset($_POST[ 'shipping' ]))	$shipping  	= $_POST[ 'shipping' ];
@@ -737,9 +738,7 @@ function atcf_shortcode_submit_process() {
 
 	    $url = isset ( $edd_options[ 'submit_page' ] ) ? get_permalink( $edd_options[ 'submit_page' ] ) : get_permalink();
 
-	    $redirect = apply_filters( 'atcf_submit_campaign_success_redirect', add_query_arg( array( 'success' => 'true' ), $url ) );
-	    $page_manage = get_page_by_path('gerer');
-	    $redirect_url = get_permalink($page_manage->ID) . '?campaign_id=' . $campaign;
+	    $redirect_url = get_permalink($campaign);
 	    wp_safe_redirect( $redirect_url );
 	    exit();
 	}
