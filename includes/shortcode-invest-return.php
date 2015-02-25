@@ -114,11 +114,9 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 		case 'publish' :
 		    do_action('wdg_delete_cache', array(
-						    'project-'.$post->ID.'-header',
-						    'project-'.$post->ID.'-content',
-						    'home-funded-projects',
-						    'home-collecte-projects',
-						    'home-small-projects'));
+						    'project-header-right-'.$post->ID,
+						    'projects-current'
+						    ));
 		    
 		    //On affiche que tout s'est bien passé
 		    $buffer .= ypcf_print_invest_breadcrumb(4);
