@@ -45,13 +45,13 @@ class BoppUsers {
 		$default_params['user_birthday_date'] = array(
 			"year" => $date->format('Y'),
 			"month" => $date->format('m'),
-			"day" => $date->format('j')
+			"day" => $date->format('d')
 		);
 		$default_params['user_signup_date'] = array(
 			"date" => array(
 				"year"	=> $date->format('Y'),
 				"month" => $date->format('m'),
-				"day"	=> $date->format('j')
+				"day"	=> $date->format('d')
 			),
 			"time" => array(
 				"hour"	=> $date->format('H'),
