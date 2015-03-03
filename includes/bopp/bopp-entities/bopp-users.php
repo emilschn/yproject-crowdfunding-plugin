@@ -38,20 +38,20 @@ class BoppUsers {
 	public static function create($wp_user_id, $first_name, $last_name) {
 		$default_params = BoppUsers::empty_params();
 		$default_params['user_wp_id'] = $wp_user_id;
-		$default_params['user_name'] = $first_name;
-		$default_params['user_surname'] = $last_name;
+		if (!empty($first_name)) { $default_params['user_name'] = $first_name; }
+		if (!empty($last_name)) { $default_params['user_surname'] = $last_name; }
 		
 		$date = new DateTime("NOW");
 		$default_params['user_birthday_date'] = array(
 			"year" => $date->format('Y'),
-			"month" => $date->format('m'),
-			"day" => $date->format('d')
+			"month" => $date->format('n'),
+			"day" => $date->format('j')
 		);
 		$default_params['user_signup_date'] = array(
 			"date" => array(
 				"year"	=> $date->format('Y'),
-				"month" => $date->format('m'),
-				"day"	=> $date->format('d')
+				"month" => $date->format('n'),
+				"day"	=> $date->format('j')
 			),
 			"time" => array(
 				"hour"	=> $date->format('H'),
