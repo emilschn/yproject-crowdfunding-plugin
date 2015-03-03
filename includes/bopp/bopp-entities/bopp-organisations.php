@@ -47,6 +47,7 @@ class BoppOrganisations {
 		$default_params = BoppOrganisations::empty_params();
 		$default_params['organisation_wpref'] = $wpref;
 		$default_params['organisation_name'] = $name;
+		$strong_authentication = ($strong_authentication === TRUE) ? 1 : 0;
 		$default_params['organisation_strong_authentication'] = $strong_authentication;
 		$default_params['organisation_type'] = $type;
 		$default_params['organisation_legalform'] = $legalform;
