@@ -47,6 +47,10 @@ class BoppUsers {
 			"month" => $date->format('n'),
 			"day" => $date->format('j')
 		);
+		$hour = $date->format('H');
+		if (substr($hour, 0, 1) == '0') { $hour = substr($hour, 1); }
+		$minute = $date->format('i');
+		if (substr($minute, 0, 1) == '0') { $minute = substr($minute, 1); }
 		$default_params['user_signup_date'] = array(
 			"date" => array(
 				"year"	=> $date->format('Y'),
