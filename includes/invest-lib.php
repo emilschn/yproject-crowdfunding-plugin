@@ -240,9 +240,6 @@ function ypcf_check_meanofpayment_redirections() {
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_SESSION['redirect_current_amount_part']) && isset($_GET['meanofpayment'])) {
 	    $amount_part = $_SESSION['redirect_current_amount_part'];
-	    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-	    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-	    
 	    $current_user = wp_get_current_user();
 	    $amount = $amount_part * ypcf_get_part_value();
 
@@ -255,6 +252,8 @@ function ypcf_check_meanofpayment_redirections() {
 
 			    //Analyse de la contribution pour récupérer l'url de paiement
 			    if (isset($mangopay_newcontribution->ID)) {
+				    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+				    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 				    wp_redirect($mangopay_newcontribution->PaymentURL);
 				    exit();
 			    }
@@ -268,6 +267,8 @@ function ypcf_check_meanofpayment_redirections() {
 			    
 			    //Analyse de la contribution pour afficher les informations
 			    if (isset($mangopay_newcontribution->ID)) {
+				    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+				    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 				    wp_redirect(get_permalink($page_payment->ID) . '?ContributionID=' . $mangopay_newcontribution->ID . '&meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
 				    exit();
 			    }
