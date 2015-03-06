@@ -107,8 +107,12 @@ class BoppUsers {
 	 * @return object
 	 */
 	public static function get_projects_by_role($id, $role_slug) {
-		$project_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug.'/projects');
-		if (isset($project_list->code)) { $project_list = array(); }
+		if (!empty($id) && !empty($role_slug)) {
+			$project_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug.'/projects');
+			if (isset($project_list->code)) { $project_list = array(); }
+		} else {
+			$project_list = array();
+		}
 		return $project_list;
 	}
 
