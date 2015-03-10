@@ -599,6 +599,13 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 			    'edit_date'	=> current_time( 'mysql' )
 			);
 			wp_update_post($postdata);
+			
+			if (isset($download_id) && !empty($download_id)) {
+				do_action('wdg_delete_cache', array(
+							    'project-header-right-'.$download_id,
+							    'projects-current'
+							    ));
+			}
 		}
 	    }
 		  
