@@ -52,9 +52,6 @@ class ATCF_Campaigns {
 		
 		if ( ! is_admin() )
 			return;
-		
-		add_filter( 'edd_price_options_heading', 'atcf_edd_price_options_heading' );
-		add_filter( 'edd_variable_pricing_toggle_text', 'atcf_edd_variable_pricing_toggle_text' );
 
 		add_filter( 'manage_edit-download_columns', array( $this, 'dashboard_columns' ), 11, 1 );
 		add_filter( 'manage_download_posts_custom_column', array( $this, 'dashboard_column_item' ), 11, 2 );
@@ -64,6 +61,7 @@ class ATCF_Campaigns {
 
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_boxes_save' ) );
 		add_filter( 'edd_metabox_save_campaign_end_date', 'atcf_campaign_save_end_date' );
+		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
 
 		add_action( 'edd_download_price_table_head', 'atcf_pledge_limit_head' );
 		add_action( 'edd_download_price_table_row', 'atcf_pledge_limit_column', 10, 3 );
@@ -84,19 +82,19 @@ class ATCF_Campaigns {
 	 */
 	function download_labels( $labels ) {
 		$labels =  apply_filters( 'atcf_campaign_labels', array(
-			'name' 				=> __( 'Campaigns', 'atcf' ),
-			'singular_name' 	=> __( 'Campaign', 'atcf' ),
-			'add_new' 			=> __( 'Add New', 'atcf' ),
-			'add_new_item' 		=> __( 'Add New Campaign', 'atcf' ),
-			'edit_item' 		=> __( 'Edit Campaign', 'atcf' ),
-			'new_item' 			=> __( 'New Campaign', 'atcf' ),
-			'all_items' 		=> __( 'All Campaigns', 'atcf' ),
-			'view_item' 		=> __( 'View Campaign', 'atcf' ),
-			'search_items' 		=> __( 'Search Campaigns', 'atcf' ),
-			'not_found' 		=> __( 'No Campaigns found', 'atcf' ),
-			'not_found_in_trash'=> __( 'No Campaigns found in Trash', 'atcf' ),
-			'parent_item_colon' => '',
-			'menu_name' 		=> __( 'Campaigns', 'atcf' )
+			'name' 			=> __( 'Projets', 'atcf' ),
+			'singular_name' 	=> __( 'Projet', 'atcf' ),
+			'add_new' 		=> __( 'Ajouter', 'atcf' ),
+			'add_new_item' 		=> __( 'Nouveau projet', 'atcf' ),
+			'edit_item' 		=> __( 'Editer projet', 'atcf' ),
+			'new_item' 		=> __( 'Nouveau projet', 'atcf' ),
+			'all_items' 		=> __( 'Tous les projets', 'atcf' ),
+			'view_item' 		=> __( 'Voir le projet', 'atcf' ),
+			'search_items' 		=> __( 'Rechercher projet', 'atcf' ),
+			'not_found' 		=> __( 'Aucun projet trouvé', 'atcf' ),
+			'not_found_in_trash'	=> __( 'Aucun projet dans la corbeille', 'atcf' ),
+			'parent_item_colon'	=> '',
+			'menu_name' 		=> __( 'Projets', 'atcf' )
 		) );
 
 		return $labels;
@@ -232,26 +230,15 @@ class ATCF_Campaigns {
 		if ( ! is_object( $post ) )
 			return;
 
-		$campaign = atcf_get_campaign( $post );
-
-		if ( ! $campaign->is_collected() && ( 'flexible' == $campaign->type() || $campaign->is_funded() ) && atcf_has_preapproval_gateway() )
-			add_meta_box( 'atcf_campaign_funds', __( 'Campaign Funds', 'atcf' ), '_atcf_metabox_campaign_funds', 'download', 'side', 'high' );
-
-		add_meta_box( 'atcf_campaign_stats', __( 'Campaign Stats', 'atcf' ), '_atcf_metabox_campaign_stats', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_vote', 'Statut de la campagne', '_atcf_metabox_campaign_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_status', 'Statut de la campagne', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
 		add_meta_box( 'atcf_campaign_date_vote', 'Date de la fin des votes', '_atcf_metabox_campaign_date_vote', 'download', 'side', 'high' );
 		
-		
-		add_meta_box( 'atcf_campaign_video', __( 'Campaign Video', 'atcf' ), '_atcf_metabox_campaign_video', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_summary', 'Résumé', '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_added_value', 'Opportunité économique', '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_societal_challenge', 'Utilité sociétale', '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
+		add_meta_box( 'atcf_campaign_added_value', 'Opportunité économique', '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_economic_model', 'Modèle économique', '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_implementation', 'Qui porte le projet ?', '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
 		
-		add_meta_box( 'atcf_campaign_google_doc', 'ID du doc google', '_atcf_metabox_campaign_google_doc', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_contract_title', 'Titre du contrat', '_atcf_metabox_campaign_contract_title', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_company_name', 'Nom de la société', '_atcf_metabox_campaign_company_name', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_subscription_params', 'Paramètres de souscriptions (apports, domicile, ...)', '_atcf_metabox_campaign_subscription_params', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_powers_params', 'Paramètres de pouvoirs (déposer, signer, ...)', '_atcf_metabox_campaign_powers_params', 'download', 'normal', 'high' );
@@ -434,6 +421,39 @@ function atcf_campaign_save_end_date( $new ) {
 	return $end_date;
 }
 
+function atcf_campaign_save_end_vote() {
+	if ( ! isset( $_POST[ 'end-vote-aa' ] ) )
+		return;
+	
+	date_default_timezone_set("Europe/Paris");
+	$aa = $_POST['end-vote-aa'];
+	$mm = $_POST['end-vote-mm'];
+	$jj = $_POST['end-vote-jj'];
+	$hh = $_POST['end-vote-hh'];
+	$mn = $_POST['end-vote-mn'];
+
+	$aa = ($aa <= 0 ) ? date('Y') : $aa;
+	$mm = ($mm <= 0 ) ? date('n') : $mm;
+	$jj = ($jj > 31 ) ? 31 : $jj;
+	$jj = ($jj <= 0 ) ? date('j') : $jj;
+
+	$hh = ($hh > 23 ) ? $hh -24 : $hh + 1; //Pourquoi y'a-t-il besoin d'un +1 ? Bonne question...
+	$mn = ($mn > 59 ) ? $mn -60 : $mn;
+	$ss = 0;
+
+	$end_date = sprintf( "%04d-%02d-%02d %02d:%02d:%02d", $aa, $mm, $jj, $hh, $mn, $ss );
+	
+	$valid_date = wp_checkdate( $mm, $jj, $aa, $end_date );
+	
+	if ( ! $valid_date ) {
+		return new WP_Error( 'invalid_date', __( 'Whoops, the provided date is invalid.', 'atcf' ) );
+	}
+
+	$end_date = get_gmt_from_date( $end_date );
+
+	return $end_date;
+}
+
 
 
 /**
@@ -484,40 +504,6 @@ function atcf_price_row_args( $args, $value ) {
 add_filter( 'edd_price_row_args', 'atcf_price_row_args', 10, 2 );
 
 /**
- * Campaign Stats Box
- *
- * These are read-only stats/info for the current campaign.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function _atcf_metabox_campaign_stats() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_stats_before', $campaign );
-?>
-	<p>
-		<strong><?php _e( 'Current Amount:', 'atcf' ); ?></strong>
-		<?php echo $campaign->current_amount(); ?> &mdash; <?php echo $campaign->percent_completed(); ?>
-	</p>
-
-	<p>
-		<strong><?php _e( 'Backers:' ,'atcf' ); ?></strong>
-		<?php echo $campaign->backers_count(); ?>
-	</p>
-
-	<p>
-		<strong><?php _e( 'Days Remaining:', 'atcf' ); ?></strong>
-		<?php echo $campaign->days_remaining(); ?>
-	</p>
-<?php
-	do_action( 'atcf_metabox_campaign_stats_after', $campaign );
-}
-
-/**
  * Campaign Collect Funds Box
  *
  * If a campaign is fully funded (or expired and fully funded) show this box.
@@ -545,34 +531,9 @@ function _atcf_metabox_campaign_funds() {
 	do_action( 'atcf_metabox_campaign_funds_after', $campaign );
 }
 
-/**
- * Campaign Video Box
- *
- * oEmbed campaign video.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @return void
- */
-function _atcf_metabox_campaign_video() {
+function _atcf_metabox_campaign_status() {
 	global $post;
-
 	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_video_before', $campaign );
-?>
-	<input type="text" name="campaign_video" id="campaign_video" class="widefat" value="<?php echo esc_url( $campaign->video() ); ?>" />
-	<p class="description"><?php _e( 'oEmbed supported video links.', 'atcf' ); ?></p>
-<?php
-	do_action( 'atcf_metabox_campaign_video_after', $campaign );
-}
-
-
-function _atcf_metabox_campaign_vote() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-	do_action( 'atcf_metabox_campaign_vote_before', $campaign );
 ?>  
 	<p>Choisir le statut de la campagne</p>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
@@ -584,26 +545,36 @@ function _atcf_metabox_campaign_vote() {
 	    <option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">Terminé</option>
 	    <option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">Archivé</option>
 	</select>
-	
 <?php
-	do_action( 'atcf_metabox_campaign_vote_after', $campaign );
 }
 
 // CHOIX DES DATES DES VOTES
 function _atcf_metabox_campaign_date_vote() {
-	global $post;
-
+	global $post, $wp_locale;
 	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_start_vote_before', $campaign );
+	$end_date = $campaign->end_vote_date();
+	$jj = mysql2date( 'd', $end_date, false );
+	$mm = mysql2date( 'm', $end_date, false );
+	$aa = mysql2date( 'Y', $end_date, false );
+	$hh = mysql2date( 'H', $end_date, false );
+	$mn = mysql2date( 'i', $end_date, false );
 ?>  
-    
 	<p>
-	    Date de la fin :<br />
-	    <input type="date" name="campaign_end_vote" id="campaign_end_vote" value="<?php echo $campaign->end_vote_date(); ?>">
+	    <input type="text" name="end-vote-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
+	    <select name="end-vote-mm">
+		    <?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
+			    <option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $mm ); ?>>
+			    <?php printf( '%1$s-%2$s', $monthnum, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ); ?>
+			    </option>
+		    <?php endfor; ?>
+	    </select>
+	    <input type="text" name="end-vote-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
+
+	    <input type="text" name="end-vote-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
+	    <input type="text" name="end-vote-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
+	    <input type="hidden" name="campaign_end_vote" value="1" />
 	</p>
 <?php
-	do_action( 'atcf_metabox_campaign_start_vote_after', $campaign );
 }
 
 
@@ -916,40 +887,6 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 <?php
 
 	do_action( 'atcf_metabox_campaign_implementation_after', $campaign );
-}
-
-function _atcf_metabox_campaign_google_doc() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="campaign_google_doc">
-		<textarea name="campaign_google_doc" id="campaign_google_doc" class="widefat"><?php echo $campaign->google_doc(); ?></textarea>
-	</p>
-<?php
-}
-
-function _atcf_metabox_campaign_contract_title() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="campaign_contract_title">
-		<textarea name="campaign_contract_title" id="campaign_contract_title" class="widefat"><?php echo $campaign->contract_title(); ?></textarea>
-	</p>
-<?php
-}
-
-
-function _atcf_metabox_campaign_company_name() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="campaign_company_name">
-		<textarea name="campaign_company_name" id="campaign_company_name" class="widefat"><?php echo $campaign->company_name(); ?></textarea>
-	</p>
-<?php
 }
 
 function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
@@ -1360,17 +1297,18 @@ class ATCF_Campaign {
 	}
 
 	public function end_vote_date() {
-		return mysql2date( 'Y-m-d', $this->__get( 'campaign_end_vote' ), false);
+		return mysql2date( 'Y-m-d H:i', $this->__get( 'campaign_end_vote' ), false);
 	}
 	public function end_vote_date_home() {
 		setlocale(LC_TIME, array('fr_FR.UTF-8', 'fr_FR.UTF-8', 'fra'));
 		return strftime("%d %B", strtotime(mysql2date( 'm/d', $this->__get( 'campaign_end_vote' ), false)));
 	}
 	public function end_vote_remaining() {
-	    $dateJour = strtotime(date("d-m-Y"));
+	    date_default_timezone_set('Europe/Paris');
+	    $dateJour = strtotime(date("d-m-Y H:i"));
 	    $fin = strtotime($this->__get( 'campaign_end_vote' ));
-	    $buffer = round(($fin - $dateJour) / 60 / 60 / 24);
-	    $buffer = max(0, $buffer);
+	    $buffer = floor(($fin - $dateJour) / 60 / 60 / 24);
+	    $buffer = max(0, $buffer + 1);
 	    return $buffer;
 	}
 	
@@ -1889,8 +1827,6 @@ function _atcf_metabox_campaign_info() {
 	$campaign = atcf_get_campaign( $post );
 
 	$end_date = $campaign->end_date();
-
-
 	$jj = mysql2date( 'd', $end_date, false );
 	$mm = mysql2date( 'm', $end_date, false );
 	$aa = mysql2date( 'Y', $end_date, false );
@@ -1905,15 +1841,7 @@ function _atcf_metabox_campaign_info() {
 	<p>
 		<label for="_campaign_featured">
 			<input type="checkbox" name="_campaign_featured" id="_campaign_featured" value="1" <?php checked( 1, $campaign->featured() ); ?> />
-			<?php _e( 'Featured campaign', 'atcf' ); ?>
-		</label>
-	</p>
-	
-	
-	<p>
-		<label for="_campaign_physical">
-			<input type="checkbox" name="_campaign_physical" id="_campaign_physical" value="1" <?php checked( 1, $campaign->needs_shipping() ); ?> />
-			<?php _e( 'Collect shipping test information on checkout', 'atcf' ); ?>
+			Mise en avant
 		</label>
 	</p>
 	
@@ -1923,7 +1851,6 @@ function _atcf_metabox_campaign_info() {
 	</p>
 
 	<p>
-
 		<?php foreach ( atcf_campaign_types_active() as $key => $desc ) : ?>
 		<label for="campaign_type[<?php echo esc_attr( $key ); ?>]"><input type="radio" name="campaign_type" id="campaign_type[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $key ); ?>" <?php checked( $key, $campaign->type() ); ?> /> <strong><?php echo $types[ $key ][ 'title' ]; ?></strong> &mdash; <?php echo $types[ $key ][ 'description' ]; ?></label><br />
 		<?php endforeach; ?>
@@ -1944,27 +1871,22 @@ function _atcf_metabox_campaign_info() {
 	</p>
 
 	<p>
-	    <label for="campaign_goal"><strong><?php _e( 'Goal:', 'atcf' ); ?></strong></label><br />	
-	    <input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount($campaign->goal(false) ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
+		<label for="campaign_goal"><strong><?php _e( 'Goal:', 'atcf' ); ?></strong></label><br />	
+		<input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount($campaign->goal(false) ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
 	</p>
 
 	<p>
-	    <label for="campaign_minimum_goal"><strong>Seuil minimum</strong></label><br />	
-	    <input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount($campaign->minimum_goal() ); ?>" style="width:80px" /> &euro;
+		<label for="campaign_minimum_goal"><strong>Seuil minimum</strong></label><br />	
+		<input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount($campaign->minimum_goal() ); ?>" style="width:80px" /> &euro;
 	</p>
 	<p>
-	    <label for="campaign_part_value"><strong><?php _e( 'Valeur de la part', 'yproject' ); ?></strong></label><br />
-	    <input type="text" name="campaign_part_value" id="campaign_part_value" value="<?php echo edd_format_amount($campaign->part_value() ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
+		<label for="campaign_part_value"><strong><?php _e( 'Valeur de la part', 'yproject' ); ?></strong></label><br />
+		<input type="text" name="campaign_part_value" id="campaign_part_value" value="<?php echo edd_format_amount($campaign->part_value() ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
 	</p>
 
 	<p>
 		<label for="campaign_location"><strong><?php _e( 'Location:', 'atcf' ); ?></strong></label><br />
 		<input type="text" name="campaign_location" id="campaign_location" value="<?php echo esc_attr( $campaign->location() ); ?>" class="regular-text" />
-	</p>
-
-	<p>
-		<label for="campaign_author"><strong><?php _e( 'Author:', 'atcf' ); ?></strong></label><br />
-		<input type="text" name="campaign_author" id="campaign_author" value="<?php echo esc_attr( $campaign->author() ); ?>" class="regular-text" />
 	</p>
 	
 	<p>
@@ -1977,6 +1899,7 @@ function _atcf_metabox_campaign_info() {
 	<p>
 		<strong><?php _e( 'End Date:', 'atcf' ); ?></strong><br />
 
+		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<select id="end-mm" name="end-mm">
 			<?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
 				<option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $mm ); ?>>
@@ -1984,14 +1907,30 @@ function _atcf_metabox_campaign_info() {
 				</option>
 			<?php endfor; ?>
 		</select>
-
-		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />, 
 		<input type="text" id="end-aa" name="end-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
+		
 		<input type="text" id="end-hh" name="end-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
 		<input type="text" id="end-mn" name="end-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<input type="hidden" id="end-ss" name="end-ss" value="<?php echo esc_attr( $ss ); ?>" />
-		<input type="hidden" id="campaign_end_date" name="campaign_end_date" value="1" />
-		<input type="hidden" id="campaign_end_date_vote" name="campaign_end_date_vote" value="1" />
+		<input type="hidden" name="campaign_end_date" value="1" />
+	</p>
+	
+	<p>
+		Lien video (supporté par oembed) :
+		<input type="text" name="campaign_video" value="<?php echo esc_url( $campaign->video() ); ?>" />
+	</p>
+	<p>
+		Lien Google Doc :
+		<input type="text" name="campaign_google_doc" value="<?php echo $campaign->google_doc(); ?>" />
+	</p>
+	
+	<p>
+		Nom de la société :
+		<input type="text" name="campaign_company_name" value="<?php echo $campaign->company_name(); ?>" />
+	</p>
+	<p>
+		Titre du contrat :
+		<input type="text" name="campaign_contract_title" value="<?php echo $campaign->contract_title(); ?>" />
 	</p>
 	
 <?php
@@ -2000,154 +1939,6 @@ function _atcf_metabox_campaign_info() {
 
 
 
-/** Frontend Submission *******************************************************/
-
-/**
- * Process shortcode submission.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @return void
-function atcf_campaign_edit() {
-	global $edd_options, $post;
-	
-	if ( 'POST' !== strtoupper( $_SERVER['REQUEST_METHOD'] ) )
-		return;
-	
-	if ( empty( $_POST['action' ] ) || ( 'atcf-campaign-edit' !== $_POST[ 'action' ] ) )
-		return;
-
-	if ( ! wp_verify_nonce( $_POST[ '_wpnonce' ], 'atcf-campaign-edit' ) )
-		return;
-
-	if ( ! ( $post->post_author == get_current_user_id() || current_user_can( 'manage_options' ) ) )
-		return;
-
-	if ( ! function_exists( 'wp_handle_upload' ) ) {
-		require_once( ABSPATH . 'wp-admin/includes/admin.php' );
-	}
-
-	$errors    = new WP_Error();
-	
-	$category  = $_POST[ 'cat' ];
-	$content   = $_POST[ 'description' ];
-	$actu      = $_POST[ 'blogs' ];
-//	$updates   = $_POST[ 'updates' ];
-	$excerpt   = $_POST[ 'excerpt' ];
-	
-	$summary                     = $_POST[ 'summary' ];
-	$societal_challenge          = $_POST[ 'societal_challenge' ];
-	$company_name		     = $_POST[ 'company_name' ];
-	$company_status              = $_POST[ 'company_status' ];
-	$company_status_other        = $_POST[ 'company_status_other' ];
-	$init_capital                = $_POST[ 'init_capital' ];
-	$funding_type                = $_POST[ 'funding_type' ];
-	$funding_duration            = $_POST[ 'funding_duration' ];
-//	$impact_area                 = $_POST[ 'impact_area' ];
-	$added_value                 = $_POST[ 'added_value' ];
-//	$development_strategy	     = $_POST[ 'development_strategy' ];
-	$economic_model              = $_POST[ 'economic_model' ];
-//	$measuring_impact            = $_POST[ 'measuring_impact' ];
-	$implementation              = $_POST[ 'implementation' ];
-	$investment_terms            = $_POST[ 'investment_terms' ];
-	$vote                        = $_POST[ 'vote' ];
-	$end_vote                    = $_POST[ 'end_vote' ];
-
-	$email     = $_POST[ 'email' ];
-	$author    = $_POST[ 'name' ];
-	$location  = $_POST[ 'location' ];
-
-	if ( isset ( $_POST[ 'contact-email' ] ) )
-		$c_email = $_POST[ 'contact-email' ];
-	else {
-		$current_user = wp_get_current_user();
-		$c_email = $current_user->user_email;
-	}
-
-	//** Check Category
-	$category = absint( $category );
-
-	//** Check Content
-	if ( empty( $content ) )
-		$errors->add( 'invalid-content', __( 'Please add content to this campaign.', 'atcf' ) );
-
-	//** Check Excerpt
-	if ( empty( $excerpt ) )
-		$excerpt = null;
-
-	do_action( 'atcf_edit_campaign_validate', $_POST, $errors );
-
-	if ( ! empty ( $errors->errors ) ) // Not sure how to avoid empty instantiated WP_Error
-		wp_die( $errors );
-
-	$args = apply_filters( 'atcf_edit_campaign_data', array(
-		'ID'           => $post->ID,
-		'post_content' => $content,
-		'post_excerpt' => $excerpt,
-		'tax_input'    => array(
-			'download_category' => array( $category )
-		)
-	), $_POST );
-
-	$campaign = wp_update_post( $args, true );
-
-	//** Extra Campaign Information
-
-	update_post_meta( $post->ID, 'campaign_contact_email', sanitize_text_field( $c_email ) );
-	update_post_meta( $post->ID, 'campaign_location', sanitize_text_field( $location ) );
-	update_post_meta( $post->ID, 'campaign_author', sanitize_text_field( $author ) );
-	update_post_meta( $post->ID, 'campaign_updates', wp_kses_post( $updates ) );
-	update_post_meta( $post->ID, 'campaign_summary', sanitize_text_field( $summary ) );
-	update_post_meta( $post->ID, 'campaign_impact_area', sanitize_text_field( $impact_area ) );
-	update_post_meta( $post->ID, 'campaign_societal_challenge', sanitize_text_field( $societal_challenge ) );
-	update_post_meta( $post->ID, 'campaign_company_name', sanitize_text_field( $company_name ) );
-	update_post_meta( $post->ID, 'campaign_company_status', sanitize_text_field( $company_status ) );
-	update_post_meta( $post->ID, 'campaign_company_status_other', sanitize_text_field( $company_status_other ) );
-	update_post_meta( $post->ID, 'campaign_init_capital', sanitize_text_field( $init_capital ) );
-	update_post_meta( $post->ID, 'campaign_funding_type', sanitize_text_field( $funding_type ) );
-	update_post_meta( $post->ID, 'campaign_funding_duration', sanitize_text_field( $funding_duration ) );
-	update_post_meta( $post->ID, 'campaign_added_value', sanitize_text_field( $added_value ) );
-	update_post_meta( $post->ID, 'campaign_development_strategy', sanitize_text_field( $development_strategy ) );
-	update_post_meta( $post->ID, 'campaign_economic_model', sanitize_text_field( $economic_model ) );
-	update_post_meta( $post->ID, 'campaign_measuring_impact', sanitize_text_field( $measuring_impact ) );
-	update_post_meta( $post->ID, 'campaign_implementation', sanitize_text_field( $implementation ) );
-	update_post_meta( $post->ID, 'campaign_investment_terms', sanitize_text_field( $investment_terms ) );
-	update_post_meta( $post->ID, 'campaign_vote', sanitize_text_field( $vote ) );
-	update_post_meta( $post->ID, 'campaign_end_vote', sanitize_text_field( $end_vote ) );
-	
-
-	do_action( 'atcf_edit_campaign_after', $post->ID, $_POST );
-
-	$redirect = apply_filters( 'atcf_submit_campaign_success_redirect', add_query_arg( array( 'success' => 'true' ), get_permalink( $post->ID ) ) );
-	wp_safe_redirect( $redirect );
-	exit();
-}
-add_action( 'template_redirect', 'atcf_campaign_edit' );
- */
-
-/**
- * Price Options Heading
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @param string $heading Price options heading
- * @return string Modified price options heading
- */
-function atcf_edd_price_options_heading( $heading ) {
-	return __( 'Reward Options:', 'atcf' );
-}
-
-/**
- * Reward toggle text
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @param string $heading Reward toggle text
- * @return string Modified reward toggle text
- */
-function atcf_edd_variable_pricing_toggle_text( $text ) {
-	return __( 'Enable multiple reward options', 'atcf' );
-}
 
 /**
  * Campaign Types
