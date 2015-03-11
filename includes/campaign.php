@@ -687,7 +687,7 @@ function _atcf_metabox_campaign_societal_challenge() {
 ?>
 		<p class="atcf_metabox_campaign-societal_challenge">	
 		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'campaign_societal_challenge', apply_filters( 'atcf_metabox_field_societal_challenge_editor_args', array( 
+			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'campaign_societal_challenge', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
 				'quicktags'     => true,
@@ -698,7 +698,7 @@ function _atcf_metabox_campaign_societal_challenge() {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?></p>
 <?php
 	do_action( 'atcf_metabox_campaign_societal_challenge_after', $campaign );
@@ -721,10 +721,10 @@ function _atcf_metabox_campaign_societal_challenge() {
 ?>
 	<div class="atcf-metabox-campaign_added_value">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->added_value()) : '', 'campaign_added_value', apply_filters( 'atcf_metabox_field_added_value_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->added_value()) : '', 'campaign_added_value', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -732,7 +732,7 @@ function _atcf_metabox_campaign_societal_challenge() {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -759,10 +759,10 @@ function _atcf_metabox_campaign_societal_challenge() {
 ?>
 	<div class="atcf-metabox-campaign-development_strategy">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->development_strategy()) : '', 'campaign_development_strategy', apply_filters( 'atcf_metabox_field_development_strategy_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->development_strategy()) : '', 'campaign_development_strategy', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -770,7 +770,7 @@ function _atcf_metabox_campaign_societal_challenge() {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -796,10 +796,10 @@ function _atcf_metabox_campaign_societal_challenge() {
 ?>
 	<div class="atcf-metabox-campaign_economic_model">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->economic_model()) : '', 'campaign_economic_model', apply_filters( 'atcf_metabox_field_economic_model_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->economic_model()) : '', 'campaign_economic_model', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -807,7 +807,7 @@ function _atcf_metabox_campaign_societal_challenge() {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -833,10 +833,10 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 ?>
 	<div class="atcf-metabox-campaign-measuring_impact">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->measuring_impact()) : '', 'campaign_measuring_impact', apply_filters( 'atcf_metabox_field_measuring_impact_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->measuring_impact()) : '', 'campaign_measuring_impact', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -844,7 +844,7 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -870,10 +870,10 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 ?>
 	<div class="atcf-metabox-campaign-implementation">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->implementation()) : '', 'campaign_implementation', apply_filters( 'atcf_metabox_field_implementation_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->implementation()) : '', 'campaign_implementation', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -881,7 +881,7 @@ function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -896,10 +896,10 @@ function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
 ?>
 	<div class="atcf-metabox-campaign-investment_terms">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->investment_terms()) : '', 'campaign_investment_terms', apply_filters( 'atcf_metabox_field_investment_terms_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->investment_terms()) : '', 'campaign_investment_terms', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -907,7 +907,7 @@ function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -920,10 +920,10 @@ function _atcf_metabox_campaign_subscription_params( $editing, $campaign ) {
 ?>
 	<div class="atcf-metabox-campaign-subscription_params">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->subscription_params()) : '', 'campaign_subscription_params', apply_filters( 'atcf_metabox_field_subscription_params_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->subscription_params()) : '', 'campaign_subscription_params', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -931,7 +931,7 @@ function _atcf_metabox_campaign_subscription_params( $editing, $campaign ) {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -944,10 +944,10 @@ function _atcf_metabox_campaign_powers_params( $editing, $campaign ) {
 ?>
 	<div class="atcf-metabox-campaign-powers_params">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->powers_params()) : '', 'campaign_powers_params', apply_filters( 'atcf_metabox_field_powers_params_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->powers_params()) : '', 'campaign_powers_params', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -955,7 +955,7 @@ function _atcf_metabox_campaign_powers_params( $editing, $campaign ) {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
@@ -968,10 +968,10 @@ function _atcf_metabox_campaign_constitution_terms( $editing, $campaign ) {
 ?>
 	<div class="atcf-metabox-campaign-constitution_terms">
 		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->constitution_terms()) : '', 'campaign_constitution_terms', apply_filters( 'atcf_metabox_field_constitution_terms_editor_args', array( 
+			wp_editor( $editing ? html_entity_decode($campaign->constitution_terms()) : '', 'campaign_constitution_terms', array( 
 				'media_buttons' => true,
 				'teeny'         => true,
-				'quicktags'     => false,
+				'quicktags'     => true,
 				'editor_css'    => '<style>body { background: white; }</style>',
 				'tinymce'       => array(
 					'theme_advanced_path'     => false,
@@ -979,7 +979,7 @@ function _atcf_metabox_campaign_constitution_terms( $editing, $campaign ) {
 					'plugins'                 => 'paste',
 					'paste_remove_styles'     => true
 				),
-			) ) ); 
+			) ); 
 		?>
 	</div>
 <?php
