@@ -342,9 +342,24 @@ class BoppLib {
 	 * @return array
 	 */
 	public static function get_project_members_by_role($api_project_id, $api_role_slug) {
-		$result = BoppLib::call_get('projects/' . $api_project_id . '/roles/' . $api_role_slug . '/members');
-		if (isset($result->code) && ($result->code == '404' || $result->code == '500')) return array();
-		else return $result;
+		if (!empty($api_project_id) && !empty($api_role_slug)) {
+			global $WDG_cache_plugin;
+			$url_called = 'projects/' . $api_project_id . '/roles/' . $api_role_slug . '/members';
+
+			$result_cached = $WDG_cache_plugin->get_cache($url_called, 1);
+			$result = unserialize($result_cached);
+			if ($result_cached === FALSE || empty($result)) {
+				$result = BoppLib::call_get($url_called);
+				$result_save = serialize($result);
+				if (!empty($result_save)) {
+					$WDG_cache_plugin->set_cache($url_called, $result_save, 60*60*12, 1);
+				}
+			}
+			if (isset($result->code) && ($result->code == '404' || $result->code == '500')) return array();
+			else return $result;
+		} else {
+			return array();
+		}
 	}
 	
 	/**
