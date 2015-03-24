@@ -1,5 +1,5 @@
 <?php
-require_once(dirname(__FILE__) . "/../../../../../signsquid-config.inc");
+require_once(dirname(__FILE__) . "/../../../../../../signsquid-config.inc");
 
 /*if (!function_exists('ypcf_debug_log')) {
     function ypcf_debug_log($log) {

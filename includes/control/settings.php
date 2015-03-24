@@ -32,7 +32,6 @@ function atcf_settings_general_pages( $settings ) {
 
         $keys[] = 'faq_page';
         $keys[] = 'submit_page';
-        $keys[] = 'vote_page';
         $keys[] = 'profile_page';
         $keys[] = 'login_page';
         $keys[] = 'register_page';
@@ -55,14 +54,6 @@ function atcf_settings_general_pages( $settings ) {
         );
 
         $vals[] =  array(
-                'id'      => 'vote_page',
-                'name'    => __( 'Vote Page', 'atcf' ),
-                'desc'    => __( 'The page that contains the <code>[appthemer_crowdfunding_vote]</code> shortcode.', 'atcf' ),
-                'type'    => 'select',
-                'options' => $pages_options
-        );
-        
-		$vals[] =  array(
                 'id'      => 'upade_page',
                 'name'    => __( 'Project update', 'atcf' ),
                 'desc'    => __( 'The page that contains the <code>[appthemer_crowdfunding_update]</code> shortcode.', 'atcf' ),
@@ -176,13 +167,6 @@ function atcf_settings_general( $settings ) {
                 'name'    => __( 'Require Account', 'atcf' ),
                 'desc'    => __( 'Require users to be logged in to submit a campaign.', 'atcf' ),
                 'type'    => 'checkbox'
-        );
-
-        $settings[ 'atcf_settings_votes_create' ] = array(
-                'id'      => 'atcf_settings_votes',
-                'name'    => __( 'Votes', 'atcf' ),
-                'desc'    => __( 'Activer les votes', 'atcf' ),
-                'type'    => 'button'
         );
 
         return $settings;

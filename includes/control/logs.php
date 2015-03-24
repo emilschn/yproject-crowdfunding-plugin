@@ -69,7 +69,7 @@ add_filter( 'edd_log_types', 'atcf_log_type_preapproval' );
 function ypcf_debug_log($debug_str) {
     global $disable_logs;
     if ($disable_logs !== TRUE) {
-	$filename = dirname ( __FILE__ ) . '/logs/the_logs_'.date("m.d.Y").'.txt';
+	$filename = dirname ( __FILE__ ) . '/../logs/the_logs_'.date("m.d.Y").'.txt';
 	$file_handle = fopen($filename, 'a');
 	date_default_timezone_set("Europe/Paris");
 	$current_user_str = 'UNLOGGED';

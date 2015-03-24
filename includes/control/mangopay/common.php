@@ -5,7 +5,7 @@
  */
 
 
-require_once(dirname(__FILE__) . "/../../../../../mp-config.inc");
+require_once(dirname(__FILE__) . "/../../../../../../mp-config.inc");
 
 /*
  * sign HTTP request

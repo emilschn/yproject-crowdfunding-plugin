@@ -23,15 +23,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
  
  function atcf_shortcode_update( $editing = false ) {
-	$post_campaign = get_post($_GET['campaign_id']);
-	// La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
-	$current_user = wp_get_current_user();
-	$current_user_id = $current_user->ID;
-	if (YPProjectLib::current_user_can_edit($_GET['campaign_id'])) {
-
-	    $crowdfunding = crowdfunding();
-
-	    $campaign = atcf_get_campaign( $post_campaign );
+	$crowdfunding = crowdfunding();
+	$campaign = atcf_get_current_campaign();
+	global $post_campaign;
+	
+	if ($campaign->current_user_can_edit()) {
 	    
 	    //Si on demande la création d'un groupe d'utilisateurs
 	    $investors_group_id = get_post_meta($campaign->ID, 'campaign_investors_group', true);

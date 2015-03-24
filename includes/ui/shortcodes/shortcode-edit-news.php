@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  function ypcf_shortcode_edit_news() {
     global $campaign, $post, $edd_options;
     $form = '';
+    $campaign = atcf_get_current_campaign();
 
     // La barre d'admin n'apparait que pour l'admin du site et pour l'admin de la page
     $current_user = wp_get_current_user();
@@ -15,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $save_post = $post;
     if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
     $author_id = $post->post_author;
-    if (YPProjectLib::current_user_can_edit($_GET['campaign_id']) && isset($_GET['edit_post_id'])) {
+    if ($campaign->current_user_can_edit() && isset($_GET['edit_post_id'])) {
 
 	if (isset($_POST['action']) && $_POST['action'] == 'ypcf-campaign-edit-news') {
 

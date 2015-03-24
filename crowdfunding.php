@@ -89,45 +89,46 @@ final class ATCF_CrowdFunding {
 	 * @return void
 	 */
 	private function includes() {
-		//require( $this->includes_dir . 'social/facebook/facebook.php' );
+		
+		require( $this->includes_dir . 'data/campaign.php' );
+		require( $this->includes_dir . 'data/campaigns.php' );
+		require( $this->includes_dir . 'data/organisation.php' );
+//		require( $this->includes_dir . 'data/roles.php' );
+		require( $this->includes_dir . 'data/bopp/bopp-lib.php' );
+		require( $this->includes_dir . 'data/bopp/bopp-lib-helpers.php' );
+		require( $this->includes_dir . 'data/bopp/bopp-entities/bopp-users.php' );
+		require( $this->includes_dir . 'data/bopp/bopp-entities/bopp-organisations.php' );
+		require( $this->includes_dir . 'data/user.php' );
+		
+		//require( $this->includes_dir . 'control/social/facebook/facebook.php' );
 		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
-		require( $this->includes_dir . 'social/twitter/TwitterAPIExchange.php' );
+		require( $this->includes_dir . 'control/social/twitter/TwitterAPIExchange.php' );
 		
-		require( $this->includes_dir . 'settings.php' );
-		require( $this->includes_dir . 'campaign.php' );
-		require( $this->includes_dir . 'gateways.php' );
-		require( $this->includes_dir . 'theme-stuff.php' );
-		require( $this->includes_dir . 'shipping.php' );
-		require( $this->includes_dir . 'logs.php' );
-		require( $this->includes_dir . 'export.php' );
-		require( $this->includes_dir . 'roles.php' );
-		require( $this->includes_dir . 'permalinks.php' );
-		require( $this->includes_dir . 'checkout.php' );
-		require( $this->includes_dir . 'shortcodes-lib.php' );
-		require( $this->includes_dir . 'shortcode-submit.php' );
-		require( $this->includes_dir . 'shortcode-vote-results.php' );
-		require( $this->includes_dir . 'shortcode-profile.php' );
-		require( $this->includes_dir . 'shortcode-login.php' );
-		require( $this->includes_dir . 'shortcode-register.php' );
-		require( $this->includes_dir . 'shortcode-update.php' );
-		require( $this->includes_dir . 'shortcode-edit-news.php' );
-		require( $this->includes_dir . 'invest-lib.php' );
-		require( $this->includes_dir . 'organisation.php' );
+		require( $this->includes_dir . 'control/settings.php' );
+//		require( $this->includes_dir . 'control/gateways.php' );
+//		require( $this->includes_dir . 'control/theme-stuff.php' );
+//		require( $this->includes_dir . 'control/shipping.php' );
+		require( $this->includes_dir . 'control/logs.php' );
+//		require( $this->includes_dir . 'control/export.php' );
+		require( $this->includes_dir . 'control/permalinks.php' );
+//		require( $this->includes_dir . 'control/checkout.php' );
+		require( $this->includes_dir . 'control/invest-lib.php' );
+		require( $this->includes_dir . 'control/mangopay/common.php' );
+		require( $this->includes_dir . 'control/mangopay/utils.php' );
+		require( $this->includes_dir . 'control/signsquid/common.php' );
+		require( $this->includes_dir . 'control/html2pdf/html2pdf.class.php' );
+		require( $this->includes_dir . 'control/pdf_generator.php' );
+		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
 		
-		//Composants
-		require( $this->includes_dir . 'mangopay/common.php' );
-		require( $this->includes_dir . 'mangopay/utils.php' );
-		require( $this->includes_dir . 'signsquid/common.php' );
-		require( $this->includes_dir . 'html2pdf/html2pdf.class.php' );
-		require( $this->includes_dir . 'pdf_generator.php' );
-		require( $this->includes_dir . 'bopp/bopp-lib.php' );
-		require( $this->includes_dir . 'bopp/bopp-lib-helpers.php' );
-		require( $this->includes_dir . 'bopp/bopp-entities/bopp-users.php' );
-		require( $this->includes_dir . 'bopp/bopp-entities/bopp-organisations.php' );
-		
-		require( $this->includes_dir . 'users/lib-users.php' );
+		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
+		require( $this->includes_dir . 'ui/shortcodes/shortcode-submit.php' );
+		require( $this->includes_dir . 'ui/shortcodes/shortcode-vote-results.php' );
+//		require( $this->includes_dir . 'ui/shortcodes/shortcode-profile.php' );
+//		require( $this->includes_dir . 'ui/shortcodes/shortcode-login.php' );
+//		require( $this->includes_dir . 'ui/shortcodes/shortcode-register.php' );
+		require( $this->includes_dir . 'ui/shortcodes/shortcode-update.php' );
+		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
-		require( $this->includes_dir . 'notifications/notifications-emails.php' );
 		
 
 		do_action( 'atcf_include_files' );
