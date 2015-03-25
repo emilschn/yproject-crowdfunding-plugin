@@ -498,9 +498,9 @@ class ATCF_Campaign {
 		return floor( $days );
 	}
 
-	public function vote_duration() 
-	{
-
+	public function can_user_wire($amount_part) {
+		$min_wire = 200;
+		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
 	}
 
 	/**

@@ -42,25 +42,25 @@ function ypcf_check_redirections() {
 		    //On vérifie les redirections nécessaires à l'investissement
 		    ypcf_check_invest_redirections();
 		}
-		require( crowdfunding()->includes_dir . 'shortcode-invest-input.php' );
-		require( crowdfunding()->includes_dir . 'shortcode-invest-confirm.php' );
+		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-input.php' );
+		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-confirm.php' );
 		break;
 		
 	    case 'moyen-de-paiement' :
 		ypcf_check_meanofpayment_redirections();
-		require( crowdfunding()->includes_dir . 'shortcode-invest-mean-payment.php' );
+		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-mean-payment.php' );
 		break;
 	
 	    case 'paiement-virement' :
-		require( crowdfunding()->includes_dir . 'shortcode-invest-payment-wire.php' );
+		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-payment-wire.php' );
 		break;
 	
 	    case 'paiement-effectue' :
-		require( crowdfunding()->includes_dir . 'shortcode-invest-return.php' );
+		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-return.php' );
 		break;
 	
 	    case 'paiement-partager' :
-		require( crowdfunding()->includes_dir . 'shortcode-invest-share.php' );
+		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-share.php' );
 		break;
 	}
     }
@@ -261,16 +261,19 @@ function ypcf_check_meanofpayment_redirections() {
 
 		    //Paiement par virement
 		    case 'wire':
-			    //Récupération de l'url pour permettre le paiement
-			    $page_payment = get_page_by_path('paiement-virement');
-			    $mangopay_newcontribution = ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $_GET['campaign_id'], $amount);
-			    
-			    //Analyse de la contribution pour afficher les informations
-			    if (isset($mangopay_newcontribution->ID)) {
-				    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-				    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-				    wp_redirect(get_permalink($page_payment->ID) . '?ContributionID=' . $mangopay_newcontribution->ID . '&meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
-				    exit();
+			    $campaign = atcf_get_current_campaign();
+			    if ($campaign->can_user_wire($_SESSION['redirect_current_amount_part'])) {
+				    //Récupération de l'url pour permettre le paiement
+				    $page_payment = get_page_by_path('paiement-virement');
+				    $mangopay_newcontribution = ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $_GET['campaign_id'], $amount);
+
+				    //Analyse de la contribution pour afficher les informations
+				    if (isset($mangopay_newcontribution->ID)) {
+					    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+					    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+					    wp_redirect(get_permalink($page_payment->ID) . '?ContributionID=' . $mangopay_newcontribution->ID . '&meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
+					    exit();
+				    }
 			    }
 		    break;
 

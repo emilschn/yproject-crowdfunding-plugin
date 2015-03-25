@@ -6,12 +6,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
     ob_start();
+    $campaign = atcf_get_current_campaign();
     //Lien
     $page_mean_payment = get_page_by_path('moyen-de-paiement');
     $page_mean_payment_link = get_permalink($page_mean_payment->ID) . '?campaign_id=' . $_GET['campaign_id'] . '&meanofpayment=';
     //Possible de régler par virement ?
-    $min_wire = 200;
-    $can_use_wire = (ypcf_get_part_value() * $_SESSION['redirect_current_amount_part'] >= $min_wire);
+    $can_use_wire = ($campaign->can_user_wire($_SESSION['redirect_current_amount_part']));
     //Possible de régler par chèque ?
     $min_check = 500;
     $can_use_check = (ypcf_get_part_value() * $_SESSION['redirect_current_amount_part'] >= $min_check);
