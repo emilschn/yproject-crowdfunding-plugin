@@ -119,6 +119,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'control/pdf_generator.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
+		require( $this->includes_dir . 'control/notifications/notifications-slack.php' );
 		
 		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-submit.php' );
