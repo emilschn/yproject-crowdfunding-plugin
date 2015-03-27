@@ -53,6 +53,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     $buffer .= 'de nationalité '.$nationality.'<br />';
     $buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address');
     $buffer .= '</p>';
+    ypcf_debug_log('fillPDFHTMLDefaultContent > B');
     
     switch ($campaign_obj->funding_type()) {
 	    case 'fundingproject':
@@ -96,6 +97,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     $buffer .= '<p>';
     $buffer .= html_entity_decode($campaign_obj->powers_params());
     $buffer .= '</p>';
+    ypcf_debug_log('fillPDFHTMLDefaultContent > C');
     
     $buffer .= '<table style="border:0px;"><tr><td>';
     $buffer .= 'Fait avec l\'adresse IP '.$payment_data["ip"].'<br />';
@@ -122,6 +124,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
 	    $buffer .= 'Adresse IP : '.$payment_data["ip"].'<br />';
 	    $buffer .= '</div>';
     }
+    ypcf_debug_log('fillPDFHTMLDefaultContent > D');
     
     $buffer .= '<div style="padding-top: 60px;">';
     $buffer .= '(1) signature accompagnée de la mention "Bon pour '.$text_to_type.'"<br /><br />';
@@ -165,6 +168,7 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
     $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation);
     $filename = dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf';
     
+    ypcf_debug_log('getNewPdfToSign > write in ' . $filename);
     if (generatePDF($html_content, $filename)) return $filename;
     else return false;
 }
