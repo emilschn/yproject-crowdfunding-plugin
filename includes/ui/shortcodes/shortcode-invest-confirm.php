@@ -169,7 +169,7 @@ function ypcf_display_invest_confirm($content) {
 		} else {
 			$form .= '<h3>Voici le pouvoir que vous allez signer pour valider l&apos;investissement :</h3>';
 		}
-		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
+		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts(), "ip" => $_SERVER['REMOTE_ADDR']);
 		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
