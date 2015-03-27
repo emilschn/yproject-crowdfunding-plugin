@@ -28,6 +28,7 @@ function ypcf_display_invest_confirm($content) {
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
 	    $current_user_organisation = false;
+	    $organisation = false;
 	    $invest_type = '';
 	    if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
 	    if (isset($_SESSION['redirect_current_invest_type'])) $invest_type = $_SESSION['redirect_current_invest_type'];
