@@ -12,7 +12,7 @@ function atcf_get_campaign( $post_campaign ) {
  * @return objet campagne
  */
 function atcf_get_current_campaign() {
-	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign;
+	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign, $post;
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
 	if (!isset($campaign_id)) {
 		$campaign_id = '';
@@ -785,14 +785,17 @@ class ATCF_Campaign {
 			'post_parent' => $this->ID,
 			'post_mime_type' => 'image'
 		));
-		//Si on en trouve bien une avec le titre "image_home" on prend celle-là
-		foreach ($attachments as $attachment) {
-			if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
-		}
-		//Sinon on prend la première image rattachée à l'article
-		if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
 		
-		if ($image_obj != '') $img_src = $image_obj[0];
+		if (count($attachments) > 0) {
+			//Si on en trouve bien une avec le titre "image_home" on prend celle-là
+			foreach ($attachments as $attachment) {
+				if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
+			}
+			//Sinon on prend la première image rattachée à l'article
+			if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
+			if ($image_obj != '') $img_src = $image_obj[0];
+		}
+		
 		return $img_src;
 	}
 	

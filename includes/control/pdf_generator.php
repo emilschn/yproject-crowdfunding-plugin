@@ -146,6 +146,7 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
     $campaign = atcf_get_campaign( $post_camp );
     
     $current_user = get_userdata($user_id);
+    $organisation = false;
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 	$group_id = $_SESSION['redirect_current_invest_type'];
 	$organisation = new YPOrganisation($group_id);

@@ -126,7 +126,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    //On affiche que tout s'est bien passé
 		    $buffer .= ypcf_print_invest_breadcrumb(4);
 		    $buffer .= $content;
-		    $campaign_url  = get_permalink($_GET['campaign_id']);
+		    $campaign_url = get_permalink($_GET['campaign_id']);
 		    $share_page = get_page_by_path('paiement-partager');
 
 		    if ($amount > 1500) {
@@ -152,16 +152,10 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    $buffer .= '<center><a class="button" href="'. get_permalink($share_page->ID) .'?campaign_id='.$_GET['campaign_id'].'">Suivant</a></center><br /><br />';
 
 		    //Si un utilisateur investit, il croit au projet
+		    global $wpdb;
 		    $table_jcrois = $wpdb->prefix . "jycrois";
-		    $users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = ". $_GET['campaign_id']. " AND user_id = " .$current_user->ID );
-		    $found_jcrois = false;
-		    foreach ( $users as $user ) { 
-			if ( $user->user_id == $current_user->ID) {
-			    $found_jcrois = true;
-			    break;
-			}
-		    }
-		    if (!$found_jcrois) {
+		    $users = $wpdb->get_results( "SELECT user_id FROM $table_jcrois WHERE campaign_id = ". $_GET['campaign_id']. " AND user_id = " . $current_user->ID );
+		    if (!$users) {
 			$wpdb->insert( $table_jcrois,
 			    array(
 				'user_id'	=> $current_user->ID,
