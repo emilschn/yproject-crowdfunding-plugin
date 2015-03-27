@@ -218,12 +218,17 @@ function ypcf_check_invest_redirections() {
 
     //Si on a validé la confirmation
     //Il faut choisir le moyen de paiement
+    $amount_part = FALSE;
+    $part_value = ypcf_get_part_value();
+    if (isset($_POST['amount_part'])) $amount_part = $_POST['amount_part'];
+    $amount = ($amount_part === FALSE) ? 0 : $amount_part * $part_value;
     $max_part_value = ypcf_get_max_part_value();
     $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
     //Tests de la validité de l'investissement : utilisateur loggé, projet défini, montant correct, informations validées par coche, bon pour pouvoir / souscription écrit
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
 	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value 
-	    && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type) {
+	    && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type
+	    && ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))) {
 	
 	$_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	
@@ -548,22 +553,29 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 		
 		//Le paiement vient d'être validé
 		if ($buffer == 'publish' && $buffer !== $init_payment_status) {
-			//Création du contrat à signer
-			$current_user = get_user_by('id', $payment_post->post_author);
-			$downloads = edd_get_payment_meta_downloads($payment_id); 
-			$download_id = '';
-			if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
-			else $download_id = $downloads[0];
-			$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
-			if ($contract_id != '') {
-				$contract_infos = signsquid_get_contract_infos($contract_id);
-				NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
-				NotificationsEmails::new_purchase_admin_success($payment_id);
+			$amount = edd_get_payment_amount($payment_id);
+			if ($amount > 1500) {
+				//Création du contrat à signer
+				$current_user = get_user_by('id', $payment_post->post_author);
+				$downloads = edd_get_payment_meta_downloads($payment_id);
+				$download_id = '';
+				if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+				else $download_id = $downloads[0];
+				$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+				if ($contract_id != '') {
+					$contract_infos = signsquid_get_contract_infos($contract_id);
+					NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
+					NotificationsEmails::new_purchase_admin_success($payment_id);
+				} else {
+					global $contract_errors;
+					$contract_errors = 'contract_failed';
+					NotificationsEmails::new_purchase_user_error_contract($payment_id);
+					NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+				}
 			} else {
-				global $contract_errors;
-				$contract_errors = 'contract_failed';
-				NotificationsEmails::new_purchase_user_error_contract($payment_id);
-				NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+				$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
+				NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
+				NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
 			}
 			NotificationsSlack::send_to_dev('Nouvel achat !');
 			NotificationsEmails::new_purchase_team_members($payment_id);
@@ -585,14 +597,17 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 			
 		//Le paiement est validé, mais aucun contrat n'existe
 		} else if ($buffer == 'publish') {
-			$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
-			if (!isset($contract_id) || empty($contract_id)) {
-				$current_user = get_user_by('id', $payment_post->post_author);
-				$downloads = edd_get_payment_meta_downloads($payment_id); 
-				$download_id = '';
-				if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
-				else $download_id = $downloads[0];
-				$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+			$amount = edd_get_payment_amount($payment_id);
+			if ($amount > 1500) {
+				$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
+				if (!isset($contract_id) || empty($contract_id)) {
+					$current_user = get_user_by('id', $payment_post->post_author);
+					$downloads = edd_get_payment_meta_downloads($payment_id); 
+					$download_id = '';
+					if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+					else $download_id = $downloads[0];
+					$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+				}
 			}
 		}
 		
