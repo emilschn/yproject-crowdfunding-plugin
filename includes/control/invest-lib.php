@@ -554,9 +554,9 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 		//Le paiement vient d'être validé
 		if ($buffer == 'publish' && $buffer !== $init_payment_status) {
 			$amount = edd_get_payment_amount($payment_id);
+			$current_user = get_user_by('id', $payment_post->post_author);
 			if ($amount > 1500) {
 				//Création du contrat à signer
-				$current_user = get_user_by('id', $payment_post->post_author);
 				$downloads = edd_get_payment_meta_downloads($payment_id);
 				$download_id = '';
 				if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
