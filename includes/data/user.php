@@ -57,5 +57,49 @@ class LibUsers {
 		//On affiche la lightbox de cgu si : l'utilisateur est connecté, il n'est pas sur la page cgu, il ne les a pas encore validées
 		return (is_user_logged_in() && $post->post_name != 'cgu' && !LibUsers::has_validated_general_terms($user_id) && $isset_general_terms);
 	}
+	
+	/**
+	 * Récupération de la liste des id des projets auxquels un utilisateur est lié
+	 * @param type $user_id
+	 * @param type $complete
+	 * @return array
+	 */
+	public static function get_projects_by_id($user_id, $complete = FALSE) {
+		$buffer = array();
+		
+		//Récupération des projets dont l'utilisateur est porteur
+		$campaign_status = array('publish');
+		if ($complete === TRUE) {
+			array_push($campaign_status, 'private');
+		}
+		$args = array(
+			'post_type' => 'download',
+			'author' => $user_id,
+			'post_status' => $campaign_status
+		);
+		if ($complete === FALSE) {
+			$args['meta_key'] = 'campaign_vote';
+			$args['meta_compare'] = '!='; 
+			$args['meta_value'] = 'preparing';
+		}
+		query_posts($args);
+		if (have_posts()) {
+			while (have_posts()) {
+				the_post();
+				array_push($buffer, get_the_ID());
+			}
+		}
+		wp_reset_query();
+		
+		//Récupération des projets dont l'utilisateur appartient à l'équipe
+		$api_user_id = BoppLibHelpers::get_api_user_id($user_id);
+		$project_list = BoppUsers::get_projects_by_role($api_user_id, BoppLibHelpers::$project_team_member_role['slug']);
+		if (!empty($project_list)) {
+			foreach ($project_list as $project) {
+				array_push($buffer, $project->project_wp_id);
+			}
+		}
+		
+		return $buffer;
+	}
 }
-?>
