@@ -12,7 +12,7 @@ function atcf_get_campaign( $post_campaign ) {
  * @return objet campagne
  */
 function atcf_get_current_campaign() {
-	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign;
+	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign, $post;
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
 	if (!isset($campaign_id)) {
 		$campaign_id = '';
@@ -20,7 +20,6 @@ function atcf_get_current_campaign() {
 			global $cat;
 			$campaign_id = atcf_get_campaign_id_from_category($cat);
 		} else {
-			global $post;
 			$campaign_id = (isset($_GET['campaign_id'])) ? $_GET['campaign_id'] : $post->ID;
 		}
 	}
