@@ -97,9 +97,10 @@ class BoppOrganisations {
 	 * @return object
 	 */
 	public static function update($id, $strong_authentication, $type, $legalform, $idnumber, $rcs, $capital, $address, $postalcode, $city, $country, $ape, $bank_owner, $bank_address, $bank_iban, $bank_bic) {
-		$default_params = BoppUsers::empty_params();
+		$default_params = BoppOrganisations::empty_params();
 		unset($default_params['organisation_wpref']);
 		unset($default_params['organisation_name']);
+		unset($default_params['organisation_creation_date']);
 		$default_params['organisation_strong_authentication'] = $strong_authentication;
 		$default_params['organisation_type'] = $type;
 		$default_params['organisation_legalform'] = $legalform;

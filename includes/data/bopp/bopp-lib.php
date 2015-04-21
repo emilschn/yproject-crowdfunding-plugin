@@ -75,10 +75,10 @@ class BoppLib {
 	 */
 	public static function call_put($request, $request_params = array()) {
 		$url = BoppLib::build_url($request);
-		ypcf_debug_log('BoppLib::call_put -- $url : ' . $url);
 		$data_string = ($request_params != '') ? json_encode($request_params) : '';
+		ypcf_debug_log('BoppLib::call_put -- $url : ' . $url . ' --- ' . $data_string);
 		$ch = curl_init($url);
-		    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+		    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
 		    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data_string)));
 		    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
 		    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
