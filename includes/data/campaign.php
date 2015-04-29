@@ -20,7 +20,6 @@ function atcf_get_current_campaign() {
 			global $cat;
 			$campaign_id = atcf_get_campaign_id_from_category($cat);
 		} else {
-			global $post;
 			$campaign_id = (isset($_GET['campaign_id'])) ? $_GET['campaign_id'] : $post->ID;
 		}
 	}
@@ -662,7 +661,7 @@ class ATCF_Campaign {
 				$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
 				$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
 				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
-				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos);
+				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos, edd_get_payment_amount( $payment->ID ));
 				$mangopay_id = edd_get_payment_key($payment->ID);
 				if (strpos($mangopay_id, 'wire_') !== FALSE) {
 					$mangopay_id = substr($mangopay_id, 5);

@@ -649,26 +649,30 @@ function ypcf_get_signsquidcontractid_from_invest($payment_id) {
  * Analyse les infos de contrat retournées par signsquid
  * @param type $contract_infos
  */
-function ypcf_get_signsquidstatus_from_infos($contract_infos) {
-    $buffer = '- Pas de contrat -';
-    if ($contract_infos != '' && is_object($contract_infos)) {
-	switch($contract_infos->{'status'}) {
-	    case 'NotPublished':
-		$buffer = 'Contrat non-cr&eacute;&eacute;';
-		break;
-	    case 'WaitingForSignatoryAction':
-		$buffer = 'En attente de signature';
-		break;
-	    case 'Refused':
-		$buffer = 'Contrat refus&eacute;';
-		break;
-	    case 'Agreed':
-		$buffer = 'Contrat sign&eacute;';
-		break;
-	    case 'NewVersionAvailable':
-		$buffer = 'Contrat mis &agrave; jour';
-		break;
-	}
+function ypcf_get_signsquidstatus_from_infos($contract_infos, $amount) {
+    if ($amount <= 1500) {
+	    $buffer = 'Investissement valid&eacute;';
+    } else {
+	    $buffer = '- Pas de contrat -';
+	    if ($contract_infos != '' && is_object($contract_infos)) {
+		switch($contract_infos->{'status'}) {
+		    case 'NotPublished':
+			$buffer = 'Contrat non-cr&eacute;&eacute;';
+			break;
+		    case 'WaitingForSignatoryAction':
+			$buffer = 'En attente de signature';
+			break;
+		    case 'Refused':
+			$buffer = 'Contrat refus&eacute;';
+			break;
+		    case 'Agreed':
+			$buffer = 'Contrat sign&eacute;';
+			break;
+		    case 'NewVersionAvailable':
+			$buffer = 'Contrat mis &agrave; jour';
+			break;
+		}
+	    }
     }
     return $buffer;
 }

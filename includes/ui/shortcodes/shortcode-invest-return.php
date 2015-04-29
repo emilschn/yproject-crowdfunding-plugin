@@ -146,10 +146,13 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 			    $buffer .= '<span class="errors">Cependant, il y a eu un problème lors de la génération du contrat. Nos &eacute;quipes travaillent &agrave; la r&eacute;solution de ce probl&egrave;me.</span><br /><br />';
 			}
 		    } else {
-			    $buffer .= 'Vous allez recevoir un e-mail &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable).';
+			    $buffer .= '<div class="align-center">';
+			    $buffer .= 'Votre investissement est valid&eacute;.<br />';
+			    $buffer .= 'Vous allez recevoir un e-mail &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable).<br />';
 			    $buffer .= 'Votre contrat d&apos;investissement sera joint &agrave; cet e-mail.<br /><br />';
+			    $buffer .= '</div>';
 		    }
-		    $buffer .= '<center><a class="button" href="'. get_permalink($share_page->ID) .'?campaign_id='.$_GET['campaign_id'].'">Suivant</a></center><br /><br />';
+		    $buffer .= '<div class="align-center"><a class="button" href="'. get_permalink($share_page->ID) .'?campaign_id='.$_GET['campaign_id'].'">Suivant</a></div><br /><br />';
 
 		    //Si un utilisateur investit, il croit au projet
 		    global $wpdb;

@@ -102,6 +102,8 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     $day = date("d");
     $month = mb_strtoupper(__($months[date("m") - 1]));
     $year = date("Y");
+    $hour = date("H");
+    $minute = date("i");
     $buffer .= 'Le '.$day.' '.$month.' '.$year.'<br />';
     if (is_object($organisation) && $organisation !== false) {
 	$buffer .= 'LA '.$organisation->get_legalform().' '.$organisation->get_name().'<br />';
@@ -116,8 +118,8 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     $buffer .= '<td></td></tr></table>';
     
     if ($payment_data["amount"] <= 1500) {
-	    $buffer .= '<div style="margin-top: 20px; border: 1px solid blue; color: blue;">';
-	    $buffer .= 'Investissement réalisé le '.$day.' '.$month.' '.$year.'<br />';
+	    $buffer .= '<div style="margin-top: 20px; border: 1px solid green; color: green;">';
+	    $buffer .= 'Investissement réalisé le '.$day.' '.$month.' '.$year.', à '.$hour.'h'.$minute.'<br />';
 	    $buffer .= 'Adresse e-mail : '.$user_obj->user_email.'<br />';
 	    $buffer .= 'Adresse IP : '.$payment_data["ip"].'<br />';
 	    $buffer .= '</div>';
