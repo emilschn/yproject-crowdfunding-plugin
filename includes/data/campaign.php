@@ -179,6 +179,20 @@ class ATCF_Campaign {
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
+        
+        /**
+         * Indique si le porteur de projet est autorisé à passer à l'étape
+         * suivante par ma modération
+         * @return boolean
+         */
+        public function can_go_next_step(){
+            $res = $this->__get('flag_validated_next_step');
+            if($res==1){
+                return true;
+            } else {
+                return false; //Y compris le cas où il n'y a pas de valeur
+            }
+        }
 
 	/**
 	 * Needs Shipping
@@ -836,6 +850,19 @@ class ATCF_Campaign {
 		
 		return FALSE;
 	}
+        
+        /**
+         * Gère la validation de modération pour le passage à l'étape suivante
+         * 
+         * $value : Valeur du flag de validation (true si le PP peut passer à
+         *      l'étape suivante, false sinon)
+         */
+        public function set_validation_next_step($value){
+            if($value==0||$value==1) {
+                $res = update_post_meta($this->ID, 'flag_validated_next_step', $value);
+                //print_r($res);
+            }
+        }
 }
 
 function atcf_get_locations() {
