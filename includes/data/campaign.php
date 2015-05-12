@@ -836,6 +836,32 @@ class ATCF_Campaign {
 		
 		return FALSE;
 	}
+	
+	public function get_documents_list() {
+		$attachments = get_posts( array(
+			'post_type' => 'projectdoc',
+			'post_parent' => $this->ID,
+			'post_status'	=> 'inherit'
+		));
+		return $attachments;
+	}
+	
+	public function add_document($title, $url) {
+		$args = array(
+			'post_type'	=> 'projectdoc',
+			'post_status'	=> 'inherit',
+			'post_title'	=> $title,
+			'post_content'	=> $url,
+			'post_author'	=> $this->data->post_author,
+			'post_parent'	=> $this->ID
+		);
+		wp_insert_post($args, true);
+	}
+	
+	public function delete_document($id) {
+		$post = get_post($id);
+		if ($post->post_parent == $this->ID) wp_delete_post($id);
+	}
 }
 
 function atcf_get_locations() {
