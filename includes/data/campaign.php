@@ -327,6 +327,10 @@ class ATCF_Campaign {
 	public function end_date() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_date' ), false );
 	}
+        
+        public function set_end_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
+        }
 
 	public function start_vote() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_start_vote' ), false);
