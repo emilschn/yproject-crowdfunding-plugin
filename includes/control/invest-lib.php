@@ -553,6 +553,14 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 		
 		//Le paiement vient d'être validé
 		if ($buffer == 'publish' && $buffer !== $init_payment_status) {
+			//Mise à jour du statut du paiement pour être comptabilisé correctement dans le décompte
+			$postdata = array(
+			    'ID'		=> $payment_id,
+			    'post_status'	=> $buffer,
+			    'edit_date'	=> current_time( 'mysql' )
+			);
+			wp_update_post($postdata);
+			
 			$amount = edd_get_payment_amount($payment_id);
 			$current_user = get_user_by('id', $payment_post->post_author);
 			$downloads = edd_get_payment_meta_downloads($payment_id);
