@@ -573,6 +573,9 @@ class ATCF_Campaign {
 		    }
 		}
 		
+		$amount_check = $this->current_amount_check(FALSE);
+		$total += $amount_check;
+		
 		if ( $formatted ) {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
@@ -584,6 +587,25 @@ class ATCF_Campaign {
 		}
 
 		return $total;
+	}
+	
+	public function current_amount_check($formatted = true){
+		$amount_check = $this->__get( 'campaign_amount_check' );
+
+		if ( ! is_numeric( $amount_check ) )
+			$amount_check = 0;
+
+		if ( $formatted ) {
+		    $currency = edd_get_currency();
+		    if ($currency == "EUR") {
+			if (strpos($amount_check, '.00') !== false) $amount_check = substr ($amount_check, 0, -3);
+			return $amount_check . ' &euro;';
+		    } else {
+			return edd_currency_filter( edd_format_amount( $amount_check ) );
+		    }
+		}
+
+		return $amount_check;
 	}
 
 	/**
