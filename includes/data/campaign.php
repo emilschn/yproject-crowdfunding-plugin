@@ -60,6 +60,12 @@ function atcf_get_campaign_post_by_payment_id($payment_id) {
 class ATCF_Campaign {
 	public $ID;
 	public $data;
+        
+        /**
+         *  Number of voters required to go to next step
+         * @var type int
+         */
+        public static $voters_min_required = 50;
 	
 	public static $status_list = array(
 		'preparing' => 'Pr&eacute;paration',
@@ -671,7 +677,7 @@ class ATCF_Campaign {
          * @return boolean
          */
 	public function is_validated_by_vote(){
-            return $this->nb_voters()>=50 
+            return $this->nb_voters()>=  ATCF_Campaign::$voters_min_required
                     && wdg_get_project_vote_results($this->ID)['percent_project_validated']>=50
                     && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->minimum_goal(false)/2;
         }
