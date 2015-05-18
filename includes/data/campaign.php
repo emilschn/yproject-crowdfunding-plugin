@@ -179,6 +179,20 @@ class ATCF_Campaign {
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
+        
+        /**
+         * Indique si le porteur de projet est autorisé à passer à l'étape
+         * suivante par ma modération
+         * @return boolean
+         */
+        public function can_go_next_step(){
+            $res = $this->__get('flag_validated_next_step');
+            if($res==1){
+                return true;
+            } else {
+                return false; //Y compris le cas où il n'y a pas de valeur
+            }
+        }
 
 	/**
 	 * Needs Shipping
@@ -278,7 +292,7 @@ class ATCF_Campaign {
 
 	/**
 	 * Campaign Author
-	 *
+	 * Deprecated : the meta is not used. Use post_author instead.
 	 * @since Appthemer CrowdFunding 0.1-alpha
 	 *
 	 * @return sting Campaign Author
@@ -286,6 +300,11 @@ class ATCF_Campaign {
 	public function author() {
 		return $this->__get( 'campaign_author' );
 	}
+        
+        public function post_author(){
+                $post_campaign = get_post($this->ID);
+                return $post_campaign->post_author;
+        }
 
 	/**
 	 * Campaign Contact Email
@@ -308,6 +327,10 @@ class ATCF_Campaign {
 	public function end_date() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_date' ), false );
 	}
+        
+        public function set_end_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
+        }
 
 	public function start_vote() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_start_vote' ), false);
@@ -663,7 +686,15 @@ class ATCF_Campaign {
 
 		return false;
 	}
-	
+        
+        /**
+         * The terms of votes are validated (50 voters, 50% ok, 50% invest promise)
+         */
+	public function is_validated_by_vote(){
+            return $this->nb_voters()>=50 
+                    && wdg_get_project_vote_results($this->ID)['percent_project_validated']>=50
+                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->goal(false)/2;
+        }
 	
 	public function payments_data() {
 		$payments_data = array();
@@ -861,6 +892,25 @@ class ATCF_Campaign {
 		
 		return FALSE;
 	}
+        
+        /**
+         * Gère la validation de modération pour le passage à l'étape suivante
+         * 
+         * $value : Valeur du flag de validation (true si le PP peut passer à
+         *      l'étape suivante, false sinon)
+         */
+        public function set_validation_next_step($value){
+            if($value==0||$value==1) {
+                $res = update_post_meta($this->ID, 'flag_validated_next_step', $value);
+                //print_r($res);
+            }
+        }
+        
+        public function set_status($newstatus){
+            if(array_key_exists($newstatus, ATCF_Campaign::$status_list)){
+                $res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
+            }
+        }
 }
 
 function atcf_get_locations() {
