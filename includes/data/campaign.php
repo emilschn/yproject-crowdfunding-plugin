@@ -667,11 +667,13 @@ class ATCF_Campaign {
         
         /**
          * The terms of votes are validated (50 voters, 50% ok, 50% invest promise)
+         * 
+         * @return boolean
          */
 	public function is_validated_by_vote(){
             return $this->nb_voters()>=50 
                     && wdg_get_project_vote_results($this->ID)['percent_project_validated']>=50
-                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->goal(false)/2;
+                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->minimum_goal(false)/2;
         }
 	
 	public function payments_data() {
