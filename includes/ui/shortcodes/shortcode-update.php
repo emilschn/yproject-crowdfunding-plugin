@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	    if (isset($_POST['action']) && $_POST['action'] == 'ypcf-campaign-create-investors-group' && !$group_exists) {
 		$create_investors_success = false;
 		//Si c'est bien l'admin qui demande et qu'il ne reste plus de temps pour investir
-		if (current_user_can('manage_options') && $campaign->days_remaining() <= 0) {
+		if (current_user_can('manage_options') && !$campaign->is_remaining_time()) {
 		    $create_investors_success = ypcf_campaign_create_investors_group($post_campaign, $campaign);
 		    $group_exists = $create_investors_success;
 		}
@@ -220,7 +220,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		<?php endif;
 	    endif;
 	    
-	    if (current_user_can('manage_options') && $campaign->days_remaining() <= 0 && $campaign->campaign_status() != 'preview' && $campaign->campaign_status() != 'vote' && !$group_exists) : 
+	    if (current_user_can('manage_options') && !$campaign->is_remaining_time() && $campaign->campaign_status() != 'preview' && $campaign->campaign_status() != 'vote' && !$group_exists) : 
 	    ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
 		    <input type="submit" value="Cr&eacute;er le groupe d&apos;investisseurs" class="button" />

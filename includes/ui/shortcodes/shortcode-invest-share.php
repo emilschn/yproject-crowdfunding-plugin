@@ -16,7 +16,6 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
 	
 	$post_campaign = get_post($_GET['campaign_id']);
 	$campaign = atcf_get_campaign( $post_campaign );
-	$days_remaining = $campaign->days_remaining();
 	global $post;
 	$post = $post_campaign;
 	
@@ -38,7 +37,7 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
 		    </div>
 		    <div class="project_preview_item_picto">
 			<img src="<?php echo get_stylesheet_directory_uri(); ?>/images/horloge.png" />
-			<?php echo $days_remaining; ?>
+			<?php echo $campaign->time_remaining_str(); ?>
 		    </div>
 		    <div class="project_preview_item_picto">
 			<img src="<?php echo get_stylesheet_directory_uri(); ?>/images/cible.png" />
