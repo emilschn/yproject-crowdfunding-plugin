@@ -279,6 +279,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_societal_challenge';
 		$fields[] = 'campaign_google_doc';
 		$fields[] = 'campaign_contract_title';
+		$fields[] = 'campaign_amount_check';
 		$fields[] = 'campaign_company_name';
 		$fields[] = 'campaign_company_status';
 		$fields[] = 'campaign_company_status_other';
@@ -1161,6 +1162,10 @@ function _atcf_metabox_campaign_info() {
 	<p>
 		Titre du contrat :
 		<input type="text" name="campaign_contract_title" value="<?php echo $campaign->contract_title(); ?>" />
+	</p>
+	<p>
+		Total des investissements par chèque :
+		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check(FALSE); ?>" />
 	</p>
 	
 <?php

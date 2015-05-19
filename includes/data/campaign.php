@@ -615,6 +615,9 @@ class ATCF_Campaign {
 		    }
 		}
 		
+		$amount_check = $this->current_amount_check(FALSE);
+		$total += $amount_check;
+		
 		if ( $formatted ) {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
@@ -626,6 +629,25 @@ class ATCF_Campaign {
 		}
 
 		return $total;
+	}
+	
+	public function current_amount_check($formatted = true){
+		$amount_check = $this->__get( 'campaign_amount_check' );
+
+		if ( ! is_numeric( $amount_check ) )
+			$amount_check = 0;
+
+		if ( $formatted ) {
+		    $currency = edd_get_currency();
+		    if ($currency == "EUR") {
+			if (strpos($amount_check, '.00') !== false) $amount_check = substr ($amount_check, 0, -3);
+			return $amount_check . ' &euro;';
+		    } else {
+			return edd_currency_filter( edd_format_amount( $amount_check ) );
+		    }
+		}
+
+		return $amount_check;
 	}
 
 	/**
@@ -713,7 +735,7 @@ class ATCF_Campaign {
 				$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
 				$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
 				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
-				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos);
+				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos, edd_get_payment_amount( $payment->ID ));
 				$mangopay_id = edd_get_payment_key($payment->ID);
 				if (strpos($mangopay_id, 'wire_') !== FALSE) {
 					$mangopay_id = substr($mangopay_id, 5);
@@ -836,14 +858,17 @@ class ATCF_Campaign {
 			'post_parent' => $this->ID,
 			'post_mime_type' => 'image'
 		));
-		//Si on en trouve bien une avec le titre "image_home" on prend celle-là
-		foreach ($attachments as $attachment) {
-			if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
-		}
-		//Sinon on prend la première image rattachée à l'article
-		if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
 		
-		if ($image_obj != '') $img_src = $image_obj[0];
+		if (count($attachments) > 0) {
+			//Si on en trouve bien une avec le titre "image_home" on prend celle-là
+			foreach ($attachments as $attachment) {
+				if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
+			}
+			//Sinon on prend la première image rattachée à l'article
+			if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
+			if ($image_obj != '') $img_src = $image_obj[0];
+		}
+		
 		return $img_src;
 	}
 	

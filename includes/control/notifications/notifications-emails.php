@@ -10,7 +10,7 @@ class NotificationsEmails {
      * @param string $content
      * @return bool
      */
-    public static function send_mail($to, $object, $content) {
+    public static function send_mail($to, $object, $content, $attachments = array()) {
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
 	$from_name = get_bloginfo('name');
 	$from_email = get_option('admin_email');
@@ -20,7 +20,7 @@ class NotificationsEmails {
 	
 	$content = edd_get_email_body_header() . $content . edd_get_email_body_footer();
 
-	$buffer = wp_mail( $to, $object, $content, $headers );
+	$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
 	return $buffer;
     }
@@ -54,12 +54,24 @@ class NotificationsEmails {
     }
     
     /**
+     * Mail pour l'investisseur lors d'un achat sans nécessité de signer le contrat
+     * @param type $payment_id
+     * @return type
+     */
+    public static function new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file) {
+	ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
+	$particular_content = "Vous trouverez votre contrat d'investissement ci-joint.";
+	$attachments = array($new_contract_pdf_file);
+	return NotificationsEmails::new_purchase_user($payment_id, $particular_content, $attachments);
+    }
+    
+    /**
      * Mail pour l'investisseur lors d'un achat
      * @param int $payment_id
      * @param string $particular_content
      * @return bool
      */
-    public static function new_purchase_user($payment_id, $particular_content) {
+    public static function new_purchase_user($payment_id, $particular_content, $attachments = array()) {
 	ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
 	$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 
@@ -82,7 +94,7 @@ class NotificationsEmails {
 	$body_content .= "Montant investi : ".$payment_amount."€<br />";
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
 	
-	return NotificationsEmails::send_mail($email, $object, $body_content);
+	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);
     }
     
     /**
@@ -126,13 +138,23 @@ class NotificationsEmails {
     }
     
     /**
+     * Mail à l'admin lors d'un achat sans nécessité de signer un contrat
+     * @param int $payment_id
+     * @return bool
+     */
+    public static function new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file) {
+	$attachments = array($new_contract_pdf_file);
+	return NotificationsEmails::new_purchase_admin_success($payment_id, '', '', $attachments);
+    }
+    
+    /**
      * Mail à l'admin lors d'un achat réussi
      * @param int $payment_id
      * @param string $complement_object
      * @param string $complement_content
      * @return bool
      */
-    public static function new_purchase_admin_success($payment_id, $complement_object = '', $complement_content = '') {
+    public static function new_purchase_admin_success($payment_id, $complement_object = '', $complement_content = '', $attachments = array()) {
 	ypcf_debug_log('NotificationsEmails::new_purchase_admin_success > ' . $payment_id);
 	$admin_email = get_option('admin_email');
 	$object = 'Nouvel achat' . $complement_object;
@@ -151,7 +173,7 @@ class NotificationsEmails {
 	$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
 	$body_content .= $complement_content;
 	
-	return NotificationsEmails::send_mail($admin_email, $object, $body_content);
+	return NotificationsEmails::send_mail($admin_email, $object, $body_content, $attachments);
     }
     //*******************************************************
     // FIN ACHATS
