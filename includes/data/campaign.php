@@ -62,11 +62,23 @@ class ATCF_Campaign {
 	public $data;
         
         /**
-         *  Number of voters required to go to next step
-         * @var type int
+         * Number of voters required to go to next step
+         * @var int
          */
         public static $voters_min_required = 50;
-	
+        
+        /**
+         * The percent score of "yes" votes required to go to next step
+         * @var int
+         */
+	public static $vote_score_min_required = 50;
+        
+        /**
+         * The sum of invest promises during vote required to go to next step
+         * @var int
+         */
+        public $vote_invest_ready_min_required;
+        
 	public static $status_list = array(
 		'preparing' => 'Pr&eacute;paration',
 		'preview'   => 'Avant-premi&egrave;re',
@@ -79,6 +91,7 @@ class ATCF_Campaign {
 	function __construct( $post ) {
 		$this->data = get_post( $post );
 		$this->ID   = $this->data->ID;
+                $this->vote_invest_ready_min_required = $this->minimum_goal(false)/2;
 	}
 
 	/**
@@ -678,8 +691,8 @@ class ATCF_Campaign {
          */
 	public function is_validated_by_vote(){
             return $this->nb_voters()>=  ATCF_Campaign::$voters_min_required
-                    && wdg_get_project_vote_results($this->ID)['percent_project_validated']>=50
-                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->minimum_goal(false)/2;
+                    && wdg_get_project_vote_results($this->ID)['percent_project_validated']>= ATCF_Campaign::$vote_score_min_required
+                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->vote_invest_ready_min_required;
         }
 	
 	public function payments_data() {
