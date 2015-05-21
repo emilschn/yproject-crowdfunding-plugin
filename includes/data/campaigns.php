@@ -267,6 +267,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_contact_email';
 		$fields[] = 'campaign_end_date';
 		$fields[] = 'campaign_vote';
+                $fields[] = 'campaign_validated_next_step';
 		$fields[] = 'campaign_start_vote';
 		$fields[] = 'campaign_end_vote';
 		$fields[] = 'campaign_video';
@@ -545,6 +546,12 @@ function _atcf_metabox_campaign_status() {
 	    <option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">En cours de collecte</option>
 	    <option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">Terminé</option>
 	    <option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">Archivé</option>
+	</select>
+        
+        <p>Autoriser le porteur de projet &agrave;  passer &agrave;  l'&eacute;tape suivante</p>
+        <select id="campaign_validated_next_step" name="campaign_validated_next_step" class="regular-text" style="width:200px;">
+	    <option <?php if (!$campaign->can_go_next_step()) { ?>selected="selected"<?php } ?> value="0">Non</option>
+            <option <?php if ($campaign->can_go_next_step()) { ?>selected="selected"<?php } ?> value="1">Oui</option>
 	</select>
 <?php
 }

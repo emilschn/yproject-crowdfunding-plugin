@@ -205,7 +205,7 @@ class ATCF_Campaign {
          * @return boolean
          */
         public function can_go_next_step(){
-            $res = $this->__get('flag_validated_next_step');
+            $res = $this->__get('campaign_validated_next_step');
             if($res==1){
                 return true;
             } else {
@@ -922,7 +922,7 @@ class ATCF_Campaign {
          */
         public function set_validation_next_step($value){
             if($value==0||$value==1) {
-                $res = update_post_meta($this->ID, 'flag_validated_next_step', $value);
+                $res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
                 //print_r($res);
             }
         }
