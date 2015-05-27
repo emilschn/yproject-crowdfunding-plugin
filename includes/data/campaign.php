@@ -938,31 +938,17 @@ class ATCF_Campaign {
         public function set_validation_next_step($value){
             if($value==0||$value==1) {
                 $res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
-            }
-            if($value==true) {
-                set_validation_next_step(1);
-            }
-            if($value==false) {
-                set_validation_next_step(0);
-            }
-            
+            }            
         }
         
         /**
-         * Setter si 
+         * Setter si le PP a déjà vu la LB de bienvenue sur son TB
          * 
-         * $value : Valeur du flag de validation (true si le PP peut passer à
-         *      l'étape suivante, false sinon)
+         * $value : Valeur du flag (true si le PP a déjà vu la LB, false sinon)
          */
         public function set_has_been_welcomed($value){
             if($value==0||$value==1) {
                 $res = update_post_meta($this->ID, 'campaign_has_been_welcomed', $value);
-            }
-            if($value==true) {
-                set_has_been_welcomed(1);
-            }
-            if($value==false) {
-                set_has_been_welcomed(0);
             }
         }
         
