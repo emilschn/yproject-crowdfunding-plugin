@@ -201,11 +201,26 @@ class ATCF_Campaign {
         
         /**
          * Indique si le porteur de projet est autorisé à passer à l'étape
-         * suivante par ma modération
+         * suivante par la modération
          * @return boolean
          */
         public function can_go_next_step(){
             $res = $this->__get('campaign_validated_next_step');
+            if($res==1){
+                return true;
+            } else {
+                return false; //Y compris le cas où il n'y a pas de valeur
+            }
+        }
+        
+        
+        /**
+         * Indique si le porteur de projet a déjà eu le message de bienvenue
+         * en arrivant sur le tableau de bord
+         * @return boolean
+         */
+        public function get_has_been_welcomed(){
+            $res = $this->__get('campaign_has_been_welcomed');
             if($res==1){
                 return true;
             } else {
@@ -923,7 +938,31 @@ class ATCF_Campaign {
         public function set_validation_next_step($value){
             if($value==0||$value==1) {
                 $res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
-                //print_r($res);
+            }
+            if($value==true) {
+                set_validation_next_step(1);
+            }
+            if($value==false) {
+                set_validation_next_step(0);
+            }
+            
+        }
+        
+        /**
+         * Setter si 
+         * 
+         * $value : Valeur du flag de validation (true si le PP peut passer à
+         *      l'étape suivante, false sinon)
+         */
+        public function set_has_been_welcomed($value){
+            if($value==0||$value==1) {
+                $res = update_post_meta($this->ID, 'campaign_has_been_welcomed', $value);
+            }
+            if($value==true) {
+                set_has_been_welcomed(1);
+            }
+            if($value==false) {
+                set_has_been_welcomed(0);
             }
         }
         
