@@ -179,6 +179,27 @@ class ATCF_Campaign {
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
+	public function first_payment_date() {
+	    return $this->__get('campaign_first_payment_date');
+	}
+	public function payment_list() {
+	    $buffer = $this->__get('campaign_payment_list');
+	    return json_decode($buffer, TRUE);
+	}
+	public function yearly_accounts_file($year) {
+		$attachments = get_posts( array(
+			'post_type' => 'attachment',
+			'post_parent' => $this->ID
+		));
+		$buffer = array();
+		foreach ($attachments as $attachment) {
+			if ($attachment->post_title == 'Yearly Accounts ' . $year) {
+				$buffer[$attachment->ID]["url"] = get_the_guid($attachment->ID);
+				$buffer[$attachment->ID]["filename"] = get_post_meta($attachment->ID, "_wp_attached_file");
+			}
+		}
+		return $buffer;
+	}
 
 	/**
 	 * Needs Shipping

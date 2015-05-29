@@ -62,6 +62,8 @@ class ATCF_Campaigns {
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_boxes_save' ) );
 		add_filter( 'edd_metabox_save_campaign_end_date', 'atcf_campaign_save_end_date' );
 		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
+		add_filter( 'edd_metabox_save_campaign_first_payment_date', 'atcf_campaign_save_first_payment_date' );
+		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_payment_list' );
 
 		add_action( 'edd_download_price_table_head', 'atcf_pledge_limit_head' );
 		add_action( 'edd_download_price_table_row', 'atcf_pledge_limit_column', 10, 3 );
@@ -269,6 +271,8 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_vote';
 		$fields[] = 'campaign_start_vote';
 		$fields[] = 'campaign_end_vote';
+		$fields[] = 'campaign_first_payment_date';
+		$fields[] = 'campaign_payment_list';
 		$fields[] = 'campaign_video';
 		$fields[] = 'campaign_images';
 		$fields[] = 'campaign_location';
@@ -454,6 +458,39 @@ function atcf_campaign_save_end_vote() {
 	return $end_date;
 }
 
+function atcf_campaign_save_first_payment_date() {
+	if ( ! isset( $_POST[ 'first-payment-dd' ] ) )
+		return;
+
+	date_default_timezone_set("Europe/Paris");
+	$yy = $_POST['first-payment-yy'];
+	$mm = $_POST['first-payment-mm'];
+	$dd = $_POST['first-payment-dd'];
+	$yy = ($yy <= 0 ) ? date('Y') : $yy;
+	$mm = ($mm <= 0 ) ? date('n') : $mm;
+	$dd = ($dd > 31 ) ? 31 : $dd;
+	$dd = ($dd <= 0 ) ? date('j') : $dd;
+
+	$fp_date = sprintf("%04d-%02d-%02d 12:00:00", $yy, $mm, $dd);
+	$valid_date = wp_checkdate( $mm, $dd, $yy, $fp_date );
+	if ( ! $valid_date ) {
+		return new WP_Error( 'invalid_date', __( 'La date de premier paiement n&apos;est pas valide.', 'atcf' ) );
+	}
+
+	$fp_date = get_gmt_from_date( $fp_date );
+	return $fp_date;
+}
+
+function atcf_campaign_payment_list() {
+	$payment_list = array();
+	$fp_yy = $_POST['first-payment-yy'];
+	for ($i = $fp_yy; $i < $_POST['campaign_funding_duration'] + $fp_yy; $i++) {
+		$payment_list[$i] = $_POST["payment-" . $i];
+	}
+	$payment_list = json_encode($payment_list);;
+	return $payment_list;
+}
+
 
 
 /**
@@ -616,66 +653,6 @@ function _atcf_metabox_campaign_impact_area () {
 	</p>
 <?php
 	do_action( 'atcf_metabox_campaign_impact_area_after', $campaign );
-}
-
-function _atcf_metabox_campaign_company_status() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="company_status">
-		<textarea name="company_status" id="company_status" class="widefat"><?php echo $campaign->company_status(); ?></textarea>
-	</p>
-<?php
-    
-}
-
-function _atcf_metabox_campaign_company_status_other() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="company_status_other">
-		<textarea name="company_status_other" id="company_status_other" class="widefat"><?php echo $campaign->company_status_other(); ?></textarea>
-	</p>
-<?php
-    
-}
-
-function _atcf_metabox_campaign_init_capital() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="init_capital">
-		<textarea name="init_capital" id="init_capital" class="widefat"><?php echo $campaign->init_capital(); ?></textarea>
-	</p>
-<?php
-    
-}
-
-function _atcf_metabox_campaign_funding_type() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="funding_type">
-		<textarea name="funding_type" id="funding_type" class="widefat"><?php echo $campaign->funding_type(); ?></textarea>
-	</p>
-<?php
-    
-}
-
-function _atcf_metabox_campaign_funding_duration() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-?>
-	<p class="funding_duration">
-		<textarea name="funding_duration" id="funding_duration" class="widefat"><?php echo $campaign->funding_duration(); ?></textarea>
-	</p>
-<?php
-    
 }
 
 function _atcf_metabox_campaign_societal_challenge() {
@@ -1161,6 +1138,44 @@ function _atcf_metabox_campaign_info() {
 	<p>
 		Titre du contrat :
 		<input type="text" name="campaign_contract_title" value="<?php echo $campaign->contract_title(); ?>" />
+	</p>
+	<p>
+	    <h4 style="font-size: 1.2em">Paramètres de reversement :</h4>
+	    <ul style="margin-left: 10px; list-style: disc;">
+		<li>Durée du financement : <input type="text" name="campaign_funding_duration" value="<?php echo $campaign->funding_duration(); ?>" /></li>
+		<li>
+		    Première date de versement :
+		    <?php
+		    $fp_date = $campaign->first_payment_date();
+		    $fp_dd = mysql2date( 'd', $fp_date, false );
+		    $fp_mm = mysql2date( 'm', $fp_date, false );
+		    $fp_yy = mysql2date( 'Y', $fp_date, false );
+		    ?>
+		    <input type="text" name="first-payment-dd" value="<?php echo esc_attr( $fp_dd ); ?>" size="2" maxlength="2" autocomplete="off" />
+		    <select name="first-payment-mm">
+			    <?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
+				    <option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $fp_mm ); ?>>
+				    <?php printf( '%1$s-%2$s', $monthnum, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ); ?>
+				    </option>
+			    <?php endfor; ?>
+		    </select>
+		    <input type="text" name="first-payment-yy" value="<?php echo esc_attr( $fp_yy ); ?>" size="4" maxlength="4" autocomplete="off" />
+		    <input type="hidden" name="campaign_first_payment_date" value="1" />
+		</li>
+		<li>
+		    Dates et montants des versements :
+		    <?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): $payment_list = $campaign->payment_list(); ?>
+		    <ul style="margin-left: 10px; list-style: disc;">
+			<?php for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
+			    <li><?php echo $fp_dd . ' / ' . $fp_mm . ' / ' . $i; ?> : <input type="text" name="<?php echo 'payment-' . $i; ?>" value="<?php echo $payment_list[$i]; ?>" />&euro;</li>
+			<?php endfor; ?>
+			<input type="hidden" name="campaign_payment_list" value="1" />
+		    </ul>
+		    <?php else: ?>
+			<span style="color: red;">Définissez les paramètres ci-dessus pour pouvoir paramétrer les sommes à reverser par date.</span>
+		    <?php endif; ?>
+		</li>
+	    </ul>
 	</p>
 	
 <?php
