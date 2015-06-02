@@ -732,6 +732,11 @@ class ATCF_Campaign {
                     && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->vote_invest_ready_min_required;
         }
 	
+        /**
+         * Return payments data. 
+         * This function is very slow, it is advisable to use it as few as possible
+         * @return array
+         */
 	public function payments_data() {
 		$payments_data = array();
 
