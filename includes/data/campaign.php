@@ -553,10 +553,116 @@ class ATCF_Campaign {
 
 		return floor( $days );
 	}
+	
+	public function is_remaining_time() {
+		$expires = strtotime( $this->end_date() );
+		$now     = current_time( 'timestamp' );
+		return ( $now < $expires );
+	}
+	
+	/**
+	 * Retourne une chaine avec le temps restant (J-6, H-2, M-23)
+	 */
+	public function time_remaining_str() {
+		//Récupération de la date de fin et de la date actuelle
+		$buffer = '';
+		switch ($this->campaign_status()) {
+			case 'vote':
+			    $expires = strtotime( $this->end_vote() );
+			    break;
+			case 'collecte':
+			    $expires = strtotime( $this->end_date() );
+			    break;
+			default:
+			    $expires = 0;
+			    break;
+		}
+		$now = current_time( 'timestamp' );
+		
+		//Si on a dépassé la date de fin, on retourne "-"
+		if ( $now > $expires ) {
+			$buffer = '-';
+		} else {
+			$diff = $expires - $now;
+			$nb_days = floor($diff / (60 * 60 * 24));
+			if ($nb_days > 0) {
+				$buffer = 'J-' . $nb_days;
+			} else {
+				$nb_hours = floor($diff / (60 * 60));
+				if ($nb_hours > 0) {
+					$buffer = 'H-' . $nb_hours;
+				} else {
+					$nb_minutes = floor($diff / 60);
+					$buffer = 'M-' . $nb_minutes;
+				}
+			}
+		}
+		    
+		return $buffer;
+	}
+	/**
+	 * Retourne une chaine complète avec le temps restant
+	 */
+	public function time_remaining_fullstr() {
+		$buffer = '';
+		
+		$now = current_time( 'timestamp' );
+		switch ($this->campaign_status()) {
+			case 'vote':
+			    $expires = strtotime( $this->end_vote() );
+			    //Si on a dépassé la date de fin, on retourne "-"
+			    if ( $now >= $expires ) {
+				    $buffer = 'Vote termin&eacute;';
+			    } else {
+				    $diff = $expires - $now;
+				    $nb_days = floor($diff / (60 * 60 * 24));
+				    $plural = ($nb_days > 1) ? 's' : '';
+				    $buffer = 'Plus que <b>' . $nb_days . '</b> jour'.$plural.' pour voter !';
+				    if ($nb_days <= 0) {
+					    $nb_hours = floor($diff / (60 * 60));
+					    $plural = ($nb_hours > 1) ? 's' : '';
+					    $buffer = 'Plus que <b>' . $nb_hours . '</b> heure'.$plural.' pour voter !';
+					    if ($nb_hours <= 0) {
+						    $nb_minutes = floor($diff / 60);
+						    $plural = ($nb_minutes > 1) ? 's' : '';
+						    $buffer = 'Plus que <b>' . $nb_minutes . '</b> minute'.$plural.' pour voter !';
+					    }
+				    }
+			    }
+			    break;
+			case 'collecte':
+			    $expires = strtotime( $this->end_date() );
+			    //Si on a dépassé la date de fin, on retourne "-"
+			    if ( $now >= $expires ) {
+				    $buffer = 'Collecte termin&eacute;e';
+			    } else {
+				    $diff = $expires - $now;
+				    $nb_days = floor($diff / (60 * 60 * 24));
+				    $plural = ($nb_days > 1) ? 's' : '';
+				    $buffer = 'Plus que <b>' . $nb_days . '</b> jour'.$plural.' !';
+				    if ($nb_days <= 0) {
+					    $nb_hours = floor($diff / (60 * 60));
+					    $plural = ($nb_hours > 1) ? 's' : '';
+					    $buffer = 'Plus que <b>' . $nb_hours . '</b> heure'.$plural.' !';
+					    if ($nb_hours <= 0) {
+						    $nb_minutes = floor($diff / 60);
+						    $plural = ($nb_minutes > 1) ? 's' : '';
+						    $buffer = 'Plus que <b>' . $nb_minutes . '</b> minute'.$plural.' !';
+					    }
+				    }
+			    }
+			    break;
+			default:
+			    $buffer = '-';
+			    break;
+		}
+		    
+		return $buffer;
+	}
 
 	public function can_user_wire($amount_part) {
 		$min_wire = 200;
-		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
+		return ($this->is_remaining_time() > 7 && $this->part_value() * $amount_part >= $min_wire);
 	}
 
 	/**
