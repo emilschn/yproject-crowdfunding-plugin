@@ -362,6 +362,30 @@ class ATCF_Campaign {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_date' ), false );
 	}
         
+        /**
+	 * Campaign Begin Collecte Date
+	 *
+	 * @since Appthemer CrowdFunding 0.1-alpha
+	 *
+	 * @return sting Campaign Begin Collecte Date
+	 */
+	public function begin_collecte_date() {
+		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_begin_collecte_date' ), false );
+	}
+        
+        
+        /**
+         * Set the date when collecte is started
+         * @param type DateTime $newDate
+         */
+        public function set_begin_collecte_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_begin_collecte_date', date_format($newDate, 'Y-m-d H:i:s'));
+        }
+        
+        /**
+         * Set the date when collecte finishes
+         * @param type DateTime $newDate
+         */
         public function set_end_date($newDate){
             $res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
         }
