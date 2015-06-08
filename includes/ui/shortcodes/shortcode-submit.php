@@ -739,7 +739,12 @@ function atcf_shortcode_submit_process() {
 
 	    $url = isset ( $edd_options[ 'submit_page' ] ) ? get_permalink( $edd_options[ 'submit_page' ] ) : get_permalink();
 
-	    $redirect_url = get_permalink($campaign);
+            
+            $page_dashboard = get_page_by_path('tableau-de-bord');
+            $campaign_id_param = '?campaign_id=';
+            $campaign_id_param .= $campaign;
+            
+	    $redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param;
 	    wp_safe_redirect( $redirect_url );
 	    exit();
 	}
