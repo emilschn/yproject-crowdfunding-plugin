@@ -300,20 +300,29 @@ function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
     $atts = shortcode_atts( array(
 	'option1' => 'Financement d&apos;un projet',
 	'option2' => 'Financement du d&eacute;veloppement (fonds propres)',
-	'option2duration' => 'Dur&eacute;e du financement (en ann&eacute;es) : '
+	'option2duration' => 'Dur&eacute;e du financement (en ann&eacute;es) : ',
+	'option3' => 'Don avec contrepartie'
     ), $atts );
-    $fundingproject = ' checked="checked"';
+    
+    $fundingproject = '';
     $fundingdevelopment = '';
-    if (isset($_POST['fundingtype']) && $_POST['fundingtype'] == 'fundingdevelopment') {
-	$fundingproject = '';
-	$fundingdevelopment = ' checked="checked"';
+    $fundingdonation = '';
+    $hide_duration = ' style="display:none;"';
+    if (isset($_POST['fundingtype'])) {
+	switch($_POST['fundingtype']) {
+	    case 'fundingdevelopment': $fundingdevelopment = ' checked="checked"'; $hide_duration = ''; break;
+	    case 'fundingdonation': $fundingdonation = ' checked="checked"'; break;
+	    default: $fundingproject = ' checked="checked"'; $hide_duration = ''; break;
+	}
     }
+    
     $fundingduration = '';
     if (isset($_POST['fundingduration'])) $fundingduration = $_POST['fundingduration'];
     
     return  '<input type="radio" name="fundingtype" class="radiofundingtype" id="fundingproject" value="fundingproject"'.$fundingproject.'>' . $atts['option1'] . '<br />
 	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment"'.$fundingdevelopment.'>' . $atts['option2'] . '<br />
-	    <span id="fundingdevelopment_param">' . $atts['option2duration'] . '<input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
+	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdonation" value="fundingdonation" value="'.$fundingdonation.'">' . $atts['option3'] . '<br />
+	    <span id="fundingdevelopment_param"'.$hide_duration.'>' . $atts['option2duration'] . '<input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
 }
 add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
 
@@ -332,7 +341,8 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 	'option1_campaign' => 'Montant de la collecte',
 	'multiplier_campaign' => '1.1',
 	'min_amount_project' => '500',
-	'min_amount_development' => '5000'
+	'min_amount_development' => '5000',
+	'min_amount_donation' => '100'
     ), $atts );
     $minimum_goal = isset($_POST['minimum_goal']) ? $_POST['minimum_goal'] : '';
     $minimum_goal_search = isset($_POST['minimum_goal_search']) ? $_POST['minimum_goal_search'] : '';
@@ -354,6 +364,7 @@ function ypcf_shortcode_submit_field_goal($atts, $content = '') {
 	    <input type="hidden" name="campaign_multiplier" id="campaign_multiplier" value="' . $atts['multiplier_campaign'] . '">
 	    <input type="hidden" name="min_amount_project" id="min_amount_project" value="' . $atts['min_amount_project'] . '">
 	    <input type="hidden" name="min_amount_development" id="min_amount_development" value="' . $atts['min_amount_development'] . '">
+	    <input type="hidden" name="min_amount_donation" id="min_amount_donation" value="' . $atts['min_amount_donation'] . '">
 	    <input type="hidden" name="minimum_goal" id="minimum_goal" value="'.$minimum_goal.'">
 	    <input type="hidden" name="maximum_goal" id="maximum_goal" value="'.$maximum_goal.'">';
 }
