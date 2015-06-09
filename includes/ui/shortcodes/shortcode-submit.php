@@ -432,6 +432,7 @@ function atcf_shortcode_submit_process() {
 	if (isset($_POST[ 'subtitle' ]))	$subtitle	= $_POST[ 'subtitle' ];
 	if (isset($_POST[ 'summary' ]))		$summary     	= $_POST[ 'summary' ];
 	if (isset($_POST[ 'owner' ]))		$owner		= $_POST[ 'owner' ];
+        if (isset($_POST[ 'phone' ]))		$phone		= $_POST[ 'phone' ];
 	if (isset($_POST[ 'location' ]))	$location	= $_POST[ 'location' ];
 	if (isset($_POST[ 'impact_area' ]))	$impact_area	= $_POST[ 'impact_area' ];
 	if (isset($_POST[ 'goalsum' ]))		$goalsum	= $_POST[ 'goalsum' ]; // "fixe" ou "flexible"
@@ -486,6 +487,10 @@ function atcf_shortcode_submit_process() {
 	/** Check Title */
 	if ( empty( $title ) )
 		$errors->add( 'invalid-title', 'Merci de pr&eacute;ciser le nom de ce projet.' );
+        
+        /** Check Phone */
+	if ( isset($phone) && empty( $phone ) )
+		$errors->add( 'invalid-phone', 'Merci de pr&eacute;ciser un num&eacute;ro de contact.' );
 
 	/** Check Goal */
 	
@@ -616,6 +621,7 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_minimum_goal', apply_filters( 'edd_metabox_save_edd_price', $minimum_goal ) );
 	    add_post_meta( $campaign, 'campaign_type', sanitize_text_field( $type ) );
 	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
+            add_post_meta( $campaign, 'campaign_contact_phone', $phone);
 	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
 	    add_post_meta( $campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );

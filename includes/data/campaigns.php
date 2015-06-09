@@ -265,6 +265,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_part_value';
 		$fields[] = 'campaign_contact_email';
+                $fields[] = 'campaign_contact_phone';
 		$fields[] = 'campaign_end_date';
 		$fields[] = 'campaign_vote';
                 $fields[] = 'campaign_validated_next_step';
@@ -1128,8 +1129,13 @@ function _atcf_metabox_campaign_info() {
 	</p>
 	
 	<p>
-		<label for="campaign_email"><strong><?php _e( 'Contact Email:', 'atcf' ); ?></strong></label><br />
+		<label for="campaign_contact_email"><strong><?php _e( 'Contact Email:', 'atcf' ); ?></strong></label><br />
 		<input type="text" name="campaign_contact_email" id="campaign_contact_email" value="<?php echo esc_attr( $campaign->contact_email() ); ?>" class="regular-text" />
+	</p>
+        
+        <p>
+		<label for="campaign_contact_phone"><strong><?php _e( 'Contact Téléphone:', 'atcf' ); ?></strong></label><br />
+                <input type="text" name="campaign_contact_phone" id="campaign_contact_phone" value="<?php echo esc_attr( $campaign->contact_phone() ); ?>" class="regular-text" />
 	</p>
 
 	<style>#end-aa { width: 3.4em } #end-jj, #end-hh, #end-mn { width: 2em; }</style>

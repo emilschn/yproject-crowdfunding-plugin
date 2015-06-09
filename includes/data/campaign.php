@@ -350,6 +350,17 @@ class ATCF_Campaign {
 	public function contact_email() {
 		return $this->__get( 'campaign_contact_email' );
 	}
+        
+        /**
+	 * Campaign Contact Email
+	 *
+	 * @since Appthemer CrowdFunding 0.5
+	 *
+	 * @return sting Campaign Contact Phone
+	 */
+	public function contact_phone() {
+		return $this->__get( 'campaign_contact_phone' );
+	}
 
 	/**
 	 * Campaign End Date
