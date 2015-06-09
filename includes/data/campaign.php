@@ -103,7 +103,9 @@ class ATCF_Campaign {
 	 * @return string $meta The fetched value
 	 */
 	public function __get( $key ) {
-		$meta = apply_filters( 'atcf_campaign_meta_' . $key, $this->data->__get( $key ) );
+		if (is_object($this->data)) {
+		    $meta = apply_filters( 'atcf_campaign_meta_' . $key, $this->data->__get( $key ) );
+		}
 
 		return $meta;
 	}
