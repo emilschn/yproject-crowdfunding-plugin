@@ -62,6 +62,12 @@ class ATCF_Campaign {
 	public $data;
         
         /**
+         * Number of days of vote
+         * @var int
+         */
+        public static $vote_duration = 60;
+        
+        /**
          * Number of voters required to go to next step
          * @var int
          */
