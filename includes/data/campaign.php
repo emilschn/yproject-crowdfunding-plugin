@@ -384,6 +384,13 @@ class ATCF_Campaign {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_begin_collecte_date' ), false );
 	}
         
+        /**
+         * Set the date when vote finishes
+         * @param type DateTime $newDate
+         */
+        public function set_end_vote_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
+        }
         
         /**
          * Set the date when collecte is started
