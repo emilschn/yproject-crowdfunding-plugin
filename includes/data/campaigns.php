@@ -1099,14 +1099,22 @@ function _atcf_metabox_campaign_info() {
 		<?php
 		$fundingproject = 'checked="checked"';
 		$fundingdevelopment = '';
+		$fundingdonation = '';
 		if ($campaign->funding_type() == 'fundingdevelopment') {
 			$fundingproject = '';
 			$fundingdevelopment = 'checked="checked"';
+			$fundingdonation = '';
+		}
+		if ($campaign->funding_type() == 'fundingdonation') {
+			$fundingproject = '';
+			$fundingdevelopment = '';
+			$fundingdonation = 'checked="checked"';
 		}
 		?>
 		<label for="campaign_funding_type"><strong>Type de financement</strong></label><br />
 		<input type="radio" name="campaign_funding_type" value="fundingproject" <?php echo $fundingproject; ?>>Projet<br />
 		<input type="radio" name="campaign_funding_type" value="fundingdevelopment" <?php echo $fundingdevelopment; ?>>Capital<br />
+		<input type="radio" name="campaign_funding_type" value="fundingdonation" <?php echo $fundingdonation; ?>>Don<br />
 	</p>
 
 	<p>
