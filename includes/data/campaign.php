@@ -62,6 +62,12 @@ class ATCF_Campaign {
 	public $data;
         
         /**
+         * Number of days of vote
+         * @var int
+         */
+        public static $vote_duration = 60;
+        
+        /**
          * Number of voters required to go to next step
          * @var int
          */
@@ -386,6 +392,13 @@ class ATCF_Campaign {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_begin_collecte_date' ), false );
 	}
         
+        /**
+         * Set the date when vote finishes
+         * @param type DateTime $newDate
+         */
+        public function set_end_vote_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
+        }
         
         /**
          * Set the date when collecte is started
