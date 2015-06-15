@@ -58,8 +58,8 @@ class BoppUsers {
 				"day"	=> $date->format('j')
 			),
 			"time" => array(
-				"hour"	=> $date->format('H'),
-				"minute"=> $date->format('i'),
+				"hour"	=> $hour,
+				"minute"=> $minute,
 			)
 		);
 		
