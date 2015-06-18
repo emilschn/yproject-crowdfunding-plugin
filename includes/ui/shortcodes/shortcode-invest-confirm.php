@@ -28,6 +28,7 @@ function ypcf_display_invest_confirm($content) {
 	    $current_user = wp_get_current_user();
 	    ypcf_init_mangopay_user($current_user);
 	    $current_user_organisation = false;
+	    $organisation = false;
 	    $invest_type = '';
 	    if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
 	    if (isset($_SESSION['redirect_current_invest_type'])) $invest_type = $_SESSION['redirect_current_invest_type'];
@@ -97,6 +98,7 @@ function ypcf_display_invest_confirm($content) {
 		$form .= ypcf_print_invest_breadcrumb(2);
 		if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
 		if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour '.$text_to_type))) $form .= '<span class="errors">Merci de saisir "Bon pour '.$text_to_type.'".</span><br />';
+		if (isset($_POST['confirmed']) && ($amount <= 1500) && (!isset($_POST['confirm_signing']) || !$_POST['confirm_signing'])) $form .= '<span class="errors">Merci de cocher la case de validation de contrat.</span><br />';
 		
 		$page_invest = get_page_by_path('investir');
 		$page_invest_link = get_permalink($page_invest->ID);
@@ -163,8 +165,12 @@ function ypcf_display_invest_confirm($content) {
 		$form .= '<input type="hidden" name="amount_part" value="' . $amount_part . '">';
 		$form .= '<input type="hidden" name="confirmed" value="1">';
 
-		$form .= '<h3>Voici le pouvoir que vous allez signer pour valider l&apos;investissement :</h3>';
-		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
+		if ($amount <= 1500) {
+			$form .= '<h3>Merci de prendre connaissance du contrat que vous allez accepter :</h3>';
+		} else {
+			$form .= '<h3>Voici le pouvoir que vous allez signer pour valider l&apos;investissement :</h3>';
+		}
+		$invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts(), "ip" => $_SERVER['REMOTE_ADDR']);
 		$form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation).'</div>';
 		
 		$form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
@@ -172,6 +178,11 @@ function ypcf_display_invest_confirm($content) {
 		$confirm_power = '';
 		if (isset($_POST["confirm_power"])) $confirm_power = $_POST["confirm_power"];
 		$form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" /><br /><br />';
+		
+		//Si investissement <= 1500, pas besoin de signature, donc on fait cocher une case
+		if ($amount <= 1500) {
+			$form .= '<br /><label for="confirm_signing"><input type="checkbox" name="confirm_signing" /> J&apos;ai bien compris les termes du contrat, que je valide.</label><br /><br />';
+		}
 		
 		$form .= '<input type="submit" value="Investir" class="button">';
 		$form .= '</form><br /><br />';

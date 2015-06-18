@@ -60,7 +60,31 @@ function atcf_get_campaign_post_by_payment_id($payment_id) {
 class ATCF_Campaign {
 	public $ID;
 	public $data;
-	
+        
+        /**
+         * Number of days of vote
+         * @var int
+         */
+        public static $vote_duration = 60;
+        
+        /**
+         * Number of voters required to go to next step
+         * @var int
+         */
+        public static $voters_min_required = 50;
+        
+        /**
+         * The percent score of "yes" votes required to go to next step
+         * @var int
+         */
+	public static $vote_score_min_required = 50;
+        
+        /**
+         * The sum of invest promises during vote required to go to next step
+         * @var int
+         */
+        public $vote_invest_ready_min_required;
+        
 	public static $status_list = array(
 		'preparing' => 'Pr&eacute;paration',
 		'preview'   => 'Avant-premi&egrave;re',
@@ -73,6 +97,7 @@ class ATCF_Campaign {
 	function __construct( $post ) {
 		$this->data = get_post( $post );
 		$this->ID   = $this->data->ID;
+                $this->vote_invest_ready_min_required = $this->minimum_goal(false)/2;
 	}
 
 	/**
@@ -84,7 +109,9 @@ class ATCF_Campaign {
 	 * @return string $meta The fetched value
 	 */
 	public function __get( $key ) {
-		$meta = apply_filters( 'atcf_campaign_meta_' . $key, $this->data->__get( $key ) );
+		if (is_object($this->data)) {
+		    $meta = apply_filters( 'atcf_campaign_meta_' . $key, $this->data->__get( $key ) );
+		}
 
 		return $meta;
 	}
@@ -200,6 +227,35 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+        
+        /**
+         * Indique si le porteur de projet est autorisé à passer à l'étape
+         * suivante par la modération
+         * @return boolean
+         */
+        public function can_go_next_step(){
+            $res = $this->__get('campaign_validated_next_step');
+            if($res==1){
+                return true;
+            } else {
+                return false; //Y compris le cas où il n'y a pas de valeur
+            }
+        }
+        
+        
+        /**
+         * Indique si le porteur de projet a déjà eu le message de bienvenue
+         * en arrivant sur le tableau de bord
+         * @return boolean
+         */
+        public function get_has_been_welcomed(){
+            $res = $this->__get('campaign_has_been_welcomed');
+            if($res==1){
+                return true;
+            } else {
+                return false; //Y compris le cas où il n'y a pas de valeur
+            }
+        }
 
 	/**
 	 * Needs Shipping
@@ -299,7 +355,7 @@ class ATCF_Campaign {
 
 	/**
 	 * Campaign Author
-	 *
+	 * Deprecated : the meta is not used. Use post_author instead.
 	 * @since Appthemer CrowdFunding 0.1-alpha
 	 *
 	 * @return sting Campaign Author
@@ -307,6 +363,11 @@ class ATCF_Campaign {
 	public function author() {
 		return $this->__get( 'campaign_author' );
 	}
+        
+        public function post_author(){
+                $post_campaign = get_post($this->ID);
+                return $post_campaign->post_author;
+        }
 
 	/**
 	 * Campaign Contact Email
@@ -317,6 +378,17 @@ class ATCF_Campaign {
 	 */
 	public function contact_email() {
 		return $this->__get( 'campaign_contact_email' );
+	}
+        
+        /**
+	 * Campaign Contact Email
+	 *
+	 * @since Appthemer CrowdFunding 0.5
+	 *
+	 * @return sting Campaign Contact Phone
+	 */
+	public function contact_phone() {
+		return $this->__get( 'campaign_contact_phone' );
 	}
 
 	/**
@@ -329,6 +401,41 @@ class ATCF_Campaign {
 	public function end_date() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_date' ), false );
 	}
+        
+        /**
+	 * Campaign Begin Collecte Date
+	 *
+	 * @since Appthemer CrowdFunding 0.1-alpha
+	 *
+	 * @return sting Campaign Begin Collecte Date
+	 */
+	public function begin_collecte_date() {
+		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_begin_collecte_date' ), false );
+	}
+        
+        /**
+         * Set the date when vote finishes
+         * @param type DateTime $newDate
+         */
+        public function set_end_vote_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
+        }
+        
+        /**
+         * Set the date when collecte is started
+         * @param type DateTime $newDate
+         */
+        public function set_begin_collecte_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_begin_collecte_date', date_format($newDate, 'Y-m-d H:i:s'));
+        }
+        
+        /**
+         * Set the date when collecte finishes
+         * @param type DateTime $newDate
+         */
+        public function set_end_date($newDate){
+            $res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
+        }
 
 	public function start_vote() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_start_vote' ), false);
@@ -517,10 +624,116 @@ class ATCF_Campaign {
 
 		return floor( $days );
 	}
+	
+	public function is_remaining_time() {
+		$expires = strtotime( $this->end_date() );
+		$now     = current_time( 'timestamp' );
+		return ( $now < $expires );
+	}
+	
+	/**
+	 * Retourne une chaine avec le temps restant (J-6, H-2, M-23)
+	 */
+	public function time_remaining_str() {
+		//Récupération de la date de fin et de la date actuelle
+		$buffer = '';
+		switch ($this->campaign_status()) {
+			case 'vote':
+			    $expires = strtotime( $this->end_vote() );
+			    break;
+			case 'collecte':
+			    $expires = strtotime( $this->end_date() );
+			    break;
+			default:
+			    $expires = 0;
+			    break;
+		}
+		$now = current_time( 'timestamp' );
+		
+		//Si on a dépassé la date de fin, on retourne "-"
+		if ( $now > $expires ) {
+			$buffer = '-';
+		} else {
+			$diff = $expires - $now;
+			$nb_days = floor($diff / (60 * 60 * 24));
+			if ($nb_days > 0) {
+				$buffer = 'J-' . $nb_days;
+			} else {
+				$nb_hours = floor($diff / (60 * 60));
+				if ($nb_hours > 0) {
+					$buffer = 'H-' . $nb_hours;
+				} else {
+					$nb_minutes = floor($diff / 60);
+					$buffer = 'M-' . $nb_minutes;
+				}
+			}
+		}
+		    
+		return $buffer;
+	}
+	/**
+	 * Retourne une chaine complète avec le temps restant
+	 */
+	public function time_remaining_fullstr() {
+		$buffer = '';
+		
+		$now = current_time( 'timestamp' );
+		switch ($this->campaign_status()) {
+			case 'vote':
+			    $expires = strtotime( $this->end_vote() );
+			    //Si on a dépassé la date de fin, on retourne "-"
+			    if ( $now >= $expires ) {
+				    $buffer = 'Vote termin&eacute;';
+			    } else {
+				    $diff = $expires - $now;
+				    $nb_days = floor($diff / (60 * 60 * 24));
+				    $plural = ($nb_days > 1) ? 's' : '';
+				    $buffer = 'Plus que <b>' . $nb_days . '</b> jour'.$plural.' pour voter !';
+				    if ($nb_days <= 0) {
+					    $nb_hours = floor($diff / (60 * 60));
+					    $plural = ($nb_hours > 1) ? 's' : '';
+					    $buffer = 'Plus que <b>' . $nb_hours . '</b> heure'.$plural.' pour voter !';
+					    if ($nb_hours <= 0) {
+						    $nb_minutes = floor($diff / 60);
+						    $plural = ($nb_minutes > 1) ? 's' : '';
+						    $buffer = 'Plus que <b>' . $nb_minutes . '</b> minute'.$plural.' pour voter !';
+					    }
+				    }
+			    }
+			    break;
+			case 'collecte':
+			    $expires = strtotime( $this->end_date() );
+			    //Si on a dépassé la date de fin, on retourne "-"
+			    if ( $now >= $expires ) {
+				    $buffer = 'Collecte termin&eacute;e';
+			    } else {
+				    $diff = $expires - $now;
+				    $nb_days = floor($diff / (60 * 60 * 24));
+				    $plural = ($nb_days > 1) ? 's' : '';
+				    $buffer = 'Plus que <b>' . $nb_days . '</b> jour'.$plural.' !';
+				    if ($nb_days <= 0) {
+					    $nb_hours = floor($diff / (60 * 60));
+					    $plural = ($nb_hours > 1) ? 's' : '';
+					    $buffer = 'Plus que <b>' . $nb_hours . '</b> heure'.$plural.' !';
+					    if ($nb_hours <= 0) {
+						    $nb_minutes = floor($diff / 60);
+						    $plural = ($nb_minutes > 1) ? 's' : '';
+						    $buffer = 'Plus que <b>' . $nb_minutes . '</b> minute'.$plural.' !';
+					    }
+				    }
+			    }
+			    break;
+			default:
+			    $buffer = '-';
+			    break;
+		}
+		    
+		return $buffer;
+	}
 
 	public function can_user_wire($amount_part) {
 		$min_wire = 200;
-		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
+		return ($this->is_remaining_time() > 7 && $this->part_value() * $amount_part >= $min_wire);
 	}
 
 	/**
@@ -594,6 +807,9 @@ class ATCF_Campaign {
 		    }
 		}
 		
+		$amount_check = $this->current_amount_check(FALSE);
+		$total += $amount_check;
+		
 		if ( $formatted ) {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
@@ -605,6 +821,25 @@ class ATCF_Campaign {
 		}
 
 		return $total;
+	}
+	
+	public function current_amount_check($formatted = true){
+		$amount_check = $this->__get( 'campaign_amount_check' );
+
+		if ( ! is_numeric( $amount_check ) )
+			$amount_check = 0;
+
+		if ( $formatted ) {
+		    $currency = edd_get_currency();
+		    if ($currency == "EUR") {
+			if (strpos($amount_check, '.00') !== false) $amount_check = substr ($amount_check, 0, -3);
+			return $amount_check . ' &euro;';
+		    } else {
+			return edd_currency_filter( edd_format_amount( $amount_check ) );
+		    }
+		}
+
+		return $amount_check;
 	}
 
 	/**
@@ -662,8 +897,23 @@ class ATCF_Campaign {
 
 		return false;
 	}
+        
+        /**
+         * The terms of votes are validated (50 voters, 50% ok, 50% invest promise)
+         * 
+         * @return boolean
+         */
+	public function is_validated_by_vote(){
+            return $this->nb_voters()>=  ATCF_Campaign::$voters_min_required
+                    && wdg_get_project_vote_results($this->ID)['percent_project_validated']>= ATCF_Campaign::$vote_score_min_required
+                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->vote_invest_ready_min_required;
+        }
 	
-	
+        /**
+         * Return payments data. 
+         * This function is very slow, it is advisable to use it as few as possible
+         * @return array
+         */
 	public function payments_data() {
 		$payments_data = array();
 
@@ -682,7 +932,7 @@ class ATCF_Campaign {
 				$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
 				$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
 				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
-				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos);
+				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos, edd_get_payment_amount( $payment->ID ));
 				$mangopay_id = edd_get_payment_key($payment->ID);
 				if (strpos($mangopay_id, 'wire_') !== FALSE) {
 					$mangopay_id = substr($mangopay_id, 5);
@@ -805,14 +1055,17 @@ class ATCF_Campaign {
 			'post_parent' => $this->ID,
 			'post_mime_type' => 'image'
 		));
-		//Si on en trouve bien une avec le titre "image_home" on prend celle-là
-		foreach ($attachments as $attachment) {
-			if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
-		}
-		//Sinon on prend la première image rattachée à l'article
-		if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
 		
-		if ($image_obj != '') $img_src = $image_obj[0];
+		if (count($attachments) > 0) {
+			//Si on en trouve bien une avec le titre "image_home" on prend celle-là
+			foreach ($attachments as $attachment) {
+				if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
+			}
+			//Sinon on prend la première image rattachée à l'article
+			if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
+			if ($image_obj != '') $img_src = $image_obj[0];
+		}
+		
 		return $img_src;
 	}
 	
@@ -883,6 +1136,35 @@ class ATCF_Campaign {
 		$post = get_post($id);
 		if ($post->post_parent == $this->ID) wp_delete_post($id);
 	}
+        
+        /**
+         * Gère la validation de modération pour le passage à l'étape suivante
+         * 
+         * $value : Valeur du flag de validation (true si le PP peut passer à
+         *      l'étape suivante, false sinon)
+         */
+        public function set_validation_next_step($value){
+            if($value==0||$value==1) {
+                $res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
+            }            
+        }
+        
+        /**
+         * Setter si le PP a déjà vu la LB de bienvenue sur son TB
+         * 
+         * $value : Valeur du flag (true si le PP a déjà vu la LB, false sinon)
+         */
+        public function set_has_been_welcomed($value){
+            if($value==0||$value==1) {
+                $res = update_post_meta($this->ID, 'campaign_has_been_welcomed', $value);
+            }
+        }
+        
+        public function set_status($newstatus){
+            if(array_key_exists($newstatus, ATCF_Campaign::$status_list)){
+                $res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
+            }
+        }
 }
 
 function atcf_get_locations() {

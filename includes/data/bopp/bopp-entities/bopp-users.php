@@ -58,8 +58,8 @@ class BoppUsers {
 				"day"	=> $date->format('j')
 			),
 			"time" => array(
-				"hour"	=> $date->format('H'),
-				"minute"=> $date->format('i'),
+				"hour"	=> $hour,
+				"minute"=> $minute,
 			)
 		);
 		
@@ -108,12 +108,23 @@ class BoppUsers {
 	 */
 	public static function get_projects_by_role($id, $role_slug) {
 		if (!empty($id) && !empty($role_slug)) {
-			$project_list = BoppLib::call_get('users/' . $id . '/roles/' . $role_slug.'/projects');
-			if (isset($project_list->code)) { $project_list = array(); }
+			global $WDG_cache_plugin;
+			$url_called = 'users/' . $id . '/roles/' . $role_slug.'/projects';
+
+			$result_cached = $WDG_cache_plugin->get_cache($url_called, 1);
+			$result = unserialize($result_cached);
+			if ($result_cached === FALSE || empty($result)) {
+				$result = BoppLib::call_get($url_called);
+				$result_save = serialize($result);
+				if (!empty($result_save)) {
+					$WDG_cache_plugin->set_cache($url_called, $result_save, 60*60*12, 1);
+				}
+			}
+			if (isset($result->code) && ($result->code == '404' || $result->code == '500')) return array();
+			else return $result;
 		} else {
-			$project_list = array();
+			return array();
 		}
-		return $project_list;
 	}
 
 	/**

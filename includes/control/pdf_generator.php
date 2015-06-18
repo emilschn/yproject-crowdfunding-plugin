@@ -98,10 +98,12 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     $buffer .= '</p>';
     
     $buffer .= '<table style="border:0px;"><tr><td>';
-    $buffer .= 'Fait avec l\'adresse IP '.$_SERVER['REMOTE_ADDR'].'<br />';
+    $buffer .= 'Fait avec l\'adresse IP '.$payment_data["ip"].'<br />';
     $day = date("d");
     $month = mb_strtoupper(__($months[date("m") - 1]));
     $year = date("Y");
+    $hour = date("H");
+    $minute = date("i");
     $buffer .= 'Le '.$day.' '.$month.' '.$year.'<br />';
     if (is_object($organisation) && $organisation !== false) {
 	$buffer .= 'LA '.$organisation->get_legalform().' '.$organisation->get_name().'<br />';
@@ -115,11 +117,19 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     
     $buffer .= '<td></td></tr></table>';
     
-    $buffer .= '<div style="padding-top: 100px;">';
+    if ($payment_data["amount"] <= 1500) {
+	    $buffer .= '<div style="margin-top: 20px; border: 1px solid green; color: green;">';
+	    $buffer .= 'Investissement réalisé le '.$day.' '.$month.' '.$year.', à '.$hour.'h'.$minute.'<br />';
+	    $buffer .= 'Adresse e-mail : '.$user_obj->user_email.'<br />';
+	    $buffer .= 'Adresse IP : '.$payment_data["ip"].'<br />';
+	    $buffer .= '</div>';
+    }
+    
+    $buffer .= '<div style="padding-top: 60px;">';
     $buffer .= '(1) signature accompagnée de la mention "Bon pour '.$text_to_type.'"<br /><br />';
     $buffer .= '</div>';
     
-    $buffer .= '<div style="padding-top: 100px;"></div>';
+    $buffer .= '<div style="padding-top: 60px;"></div>';
     $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>ANNEXE</h1></div>';
     
     $buffer .= html_entity_decode($campaign_obj->constitution_terms());
@@ -138,6 +148,7 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
     $campaign = atcf_get_campaign( $post_camp );
     
     $current_user = get_userdata($user_id);
+    $organisation = false;
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 	$group_id = $_SESSION['redirect_current_invest_type'];
 	$organisation = new YPOrganisation($group_id);
@@ -145,10 +156,19 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
     $amount = edd_get_payment_amount($payment_id);
     $amount_part = $amount / $campaign->part_value();
     
-    $invest_data = array("amount_part" => $amount_part, "amount" => $amount, "total_parts_company" => $campaign->total_parts(), "total_minimum_parts_company" => $campaign->total_minimum_parts());
+    $ip_address = get_post_meta($payment_id, '_edd_payment_ip', TRUE);
+    
+    $invest_data = array(
+	"amount_part" => $amount_part, 
+	"amount" => $amount, 
+	"total_parts_company" => $campaign->total_parts(), 
+	"total_minimum_parts_company" => $campaign->total_minimum_parts(),
+	"ip" => $ip_address
+    );
     $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation);
     $filename = dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf';
     
+    ypcf_debug_log('getNewPdfToSign > write in ' . $filename);
     if (generatePDF($html_content, $filename)) return $filename;
     else return false;
 }

@@ -267,8 +267,10 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_part_value';
 		$fields[] = 'campaign_contact_email';
+                $fields[] = 'campaign_contact_phone';
 		$fields[] = 'campaign_end_date';
 		$fields[] = 'campaign_vote';
+                $fields[] = 'campaign_validated_next_step';
 		$fields[] = 'campaign_start_vote';
 		$fields[] = 'campaign_end_vote';
 		$fields[] = 'campaign_first_payment_date';
@@ -283,6 +285,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_societal_challenge';
 		$fields[] = 'campaign_google_doc';
 		$fields[] = 'campaign_contract_title';
+		$fields[] = 'campaign_amount_check';
 		$fields[] = 'campaign_company_name';
 		$fields[] = 'campaign_company_status';
 		$fields[] = 'campaign_company_status_other';
@@ -581,6 +584,12 @@ function _atcf_metabox_campaign_status() {
 	    <option <?php if ($campaign->vote() == "collecte") { ?>selected="selected"<?php } ?> value="collecte">En cours de collecte</option>
 	    <option <?php if ($campaign->vote() == "funded") { ?>selected="selected"<?php } ?>value="funded">Terminé</option>
 	    <option <?php if ($campaign->vote() == "archive") { ?>selected="selected"<?php } ?>value="archive">Archivé</option>
+	</select>
+        
+        <p>Autoriser le porteur de projet &agrave;  passer &agrave;  l'&eacute;tape suivante</p>
+        <select id="campaign_validated_next_step" name="campaign_validated_next_step" class="regular-text" style="width:200px;">
+	    <option <?php if (!$campaign->can_go_next_step()) { ?>selected="selected"<?php } ?> value="0">Non</option>
+            <option <?php if ($campaign->can_go_next_step()) { ?>selected="selected"<?php } ?> value="1">Oui</option>
 	</select>
 <?php
 }
@@ -1067,14 +1076,22 @@ function _atcf_metabox_campaign_info() {
 		<?php
 		$fundingproject = 'checked="checked"';
 		$fundingdevelopment = '';
+		$fundingdonation = '';
 		if ($campaign->funding_type() == 'fundingdevelopment') {
 			$fundingproject = '';
 			$fundingdevelopment = 'checked="checked"';
+			$fundingdonation = '';
+		}
+		if ($campaign->funding_type() == 'fundingdonation') {
+			$fundingproject = '';
+			$fundingdevelopment = '';
+			$fundingdonation = 'checked="checked"';
 		}
 		?>
 		<label for="campaign_funding_type"><strong>Type de financement</strong></label><br />
 		<input type="radio" name="campaign_funding_type" value="fundingproject" <?php echo $fundingproject; ?>>Projet<br />
 		<input type="radio" name="campaign_funding_type" value="fundingdevelopment" <?php echo $fundingdevelopment; ?>>Capital<br />
+		<input type="radio" name="campaign_funding_type" value="fundingdonation" <?php echo $fundingdonation; ?>>Don<br />
 	</p>
 
 	<p>
@@ -1097,8 +1114,13 @@ function _atcf_metabox_campaign_info() {
 	</p>
 	
 	<p>
-		<label for="campaign_email"><strong><?php _e( 'Contact Email:', 'atcf' ); ?></strong></label><br />
+		<label for="campaign_contact_email"><strong><?php _e( 'Contact Email:', 'atcf' ); ?></strong></label><br />
 		<input type="text" name="campaign_contact_email" id="campaign_contact_email" value="<?php echo esc_attr( $campaign->contact_email() ); ?>" class="regular-text" />
+	</p>
+        
+        <p>
+		<label for="campaign_contact_phone"><strong><?php _e( 'Contact Téléphone:', 'atcf' ); ?></strong></label><br />
+                <input type="text" name="campaign_contact_phone" id="campaign_contact_phone" value="<?php echo esc_attr( $campaign->contact_phone() ); ?>" class="regular-text" />
 	</p>
 
 	<style>#end-aa { width: 3.4em } #end-jj, #end-hh, #end-mn { width: 2em; }</style>
@@ -1176,6 +1198,10 @@ function _atcf_metabox_campaign_info() {
 		    <?php endif; ?>
 		</li>
 	    </ul>
+	</p>
+	<p>
+		Total des investissements par chèque :
+		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check(FALSE); ?>" />
 	</p>
 	
 <?php
