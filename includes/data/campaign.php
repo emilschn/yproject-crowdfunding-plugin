@@ -214,18 +214,32 @@ class ATCF_Campaign {
 	    return json_decode($buffer, TRUE);
 	}
 	public function yearly_accounts_file($year) {
-		$attachments = get_posts( array(
-			'post_type' => 'attachment',
-			'post_parent' => $this->ID
-		));
-		$buffer = array();
-		foreach ($attachments as $attachment) {
-			if ($attachment->post_title == 'Yearly Accounts ' . $year) {
-				$buffer[$attachment->ID]["url"] = get_the_guid($attachment->ID);
-				$buffer[$attachment->ID]["filename"] = get_post_meta($attachment->ID, "_wp_attached_file");
-			}
-		}
-		return $buffer;
+	    $attachments = get_posts( array(
+		    'post_type' => 'attachment',
+		    'post_parent' => $this->ID
+	    ));
+	    $buffer = array();
+	    foreach ($attachments as $attachment) {
+		    if ($attachment->post_title == 'Yearly Accounts ' . $year) {
+			    $buffer[$attachment->ID]["url"] = get_the_guid($attachment->ID);
+			    $buffer[$attachment->ID]["filename"] = get_post_meta($attachment->ID, "_wp_attached_file");
+		    }
+	    }
+	    return $buffer;
+	}
+	public function payment_amount_for_year($year) {
+	    $payment_list = $this->payment_list();
+	    return $payment_list[$year];
+	}
+	
+	public function payment_list_status() {
+	    $buffer = $this->__get('campaign_payment_list_status');
+	    return json_decode($buffer, TRUE);
+	}
+	public function update_payment_status($date, $year, $post_id) {
+	    $payment_list_status = $this->payment_list_status();
+	    $payment_list_status[$year] = $post_id;
+	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
         
         /**
@@ -914,7 +928,7 @@ class ATCF_Campaign {
          * This function is very slow, it is advisable to use it as few as possible
          * @return array
          */
-	public function payments_data() {
+	public function payments_data($skip_apis = FALSE) {
 		$payments_data = array();
 
 		$payments = edd_get_payments( array(
@@ -930,19 +944,19 @@ class ATCF_Campaign {
 				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 
 				$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
-				$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
+				$signsquid_infos = ($skip_apis == FALSE) ? signsquid_get_contract_infos_complete($contractid): '';
 				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
 				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos, edd_get_payment_amount( $payment->ID ));
 				$mangopay_id = edd_get_payment_key($payment->ID);
 				if (strpos($mangopay_id, 'wire_') !== FALSE) {
 					$mangopay_id = substr($mangopay_id, 5);
-					$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id);
-					$mangopay_is_completed = ($mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
+					$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
+					$mangopay_is_completed = ($mangopay_contribution != '' && $mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
 					$mangopay_is_succeeded = $mangopay_is_completed;
 				} else {
-					$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
-					$mangopay_is_completed = (isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
-					$mangopay_is_succeeded = (isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
+					$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
+					$mangopay_is_completed = ($mangopay_contribution != '' && isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
+					$mangopay_is_succeeded = ($mangopay_contribution != '' && isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
 				}
 
 

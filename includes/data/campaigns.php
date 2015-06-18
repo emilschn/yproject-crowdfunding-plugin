@@ -63,7 +63,7 @@ class ATCF_Campaigns {
 		add_filter( 'edd_metabox_save_campaign_end_date', 'atcf_campaign_save_end_date' );
 		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
 		add_filter( 'edd_metabox_save_campaign_first_payment_date', 'atcf_campaign_save_first_payment_date' );
-		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_payment_list' );
+		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_save_payment_list' );
 
 		add_action( 'edd_download_price_table_head', 'atcf_pledge_limit_head' );
 		add_action( 'edd_download_price_table_row', 'atcf_pledge_limit_column', 10, 3 );
@@ -484,13 +484,13 @@ function atcf_campaign_save_first_payment_date() {
 	return $fp_date;
 }
 
-function atcf_campaign_payment_list() {
+function atcf_campaign_save_payment_list() {
 	$payment_list = array();
 	$fp_yy = $_POST['first-payment-yy'];
 	for ($i = $fp_yy; $i < $_POST['campaign_funding_duration'] + $fp_yy; $i++) {
 		$payment_list[$i] = $_POST["payment-" . $i];
 	}
-	$payment_list = json_encode($payment_list);;
+	$payment_list = json_encode($payment_list);
 	return $payment_list;
 }
 
