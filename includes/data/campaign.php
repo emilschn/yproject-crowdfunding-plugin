@@ -231,6 +231,10 @@ class ATCF_Campaign {
 	    $payment_list = $this->payment_list();
 	    return $payment_list[$year];
 	}
+	public function payment_status_for_year($year) {
+	    $payment_list = $this->payment_list_status();
+	    return $payment_list[$year];
+	}
 	
 	public function payment_list_status() {
 	    $buffer = $this->__get('campaign_payment_list_status');
