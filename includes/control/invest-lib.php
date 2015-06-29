@@ -579,23 +579,30 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 			$download_id = '';
 			if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
 			else $download_id = $downloads[0];
-			if ($amount > 1500) {
-				//Création du contrat à signer
-				$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
-				if ($contract_id != '') {
-					$contract_infos = signsquid_get_contract_infos($contract_id);
-					NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
-					NotificationsEmails::new_purchase_admin_success($payment_id);
+			$post_campaign = get_post($download_id);
+			$campaign = atcf_get_campaign($post_campaign);
+			if ($campaign->funding_type() != 'fundingdonation') {
+				if ($amount > 1500) {
+					//Création du contrat à signer
+					$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+					if ($contract_id != '') {
+						$contract_infos = signsquid_get_contract_infos($contract_id);
+						NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
+						NotificationsEmails::new_purchase_admin_success($payment_id);
+					} else {
+						global $contract_errors;
+						$contract_errors = 'contract_failed';
+						NotificationsEmails::new_purchase_user_error_contract($payment_id);
+						NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+					}
 				} else {
-					global $contract_errors;
-					$contract_errors = 'contract_failed';
-					NotificationsEmails::new_purchase_user_error_contract($payment_id);
-					NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+					$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
+					NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
+					NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
 				}
 			} else {
-				$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-				NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
-				NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
+				NotificationsEmails::new_purchase_user($payment_id, '');
+				NotificationsEmails::new_purchase_admin_success($payment_id);
 			}
 			NotificationsSlack::send_to_dev('Nouvel achat !');
 			NotificationsEmails::new_purchase_team_members($payment_id);
@@ -626,7 +633,11 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 					$download_id = '';
 					if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
 					else $download_id = $downloads[0];
-					$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+					$post_campaign = get_post($download_id);
+					$campaign = atcf_get_campaign($post_campaign);
+					if ($campaign->funding_type() != 'fundingdonation') {
+						$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+					}
 				}
 			}
 		}
