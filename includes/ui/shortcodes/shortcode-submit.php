@@ -635,7 +635,8 @@ function atcf_shortcode_submit_process() {
             add_post_meta( $campaign, 'campaign_contact_phone', $phone);
 	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
-	    add_post_meta( $campaign, 'campaign_end_date_vote', sanitize_text_field( $end_date_vote ) );
+            add_post_meta( $campaign, 'campaign_begin_collecte_date', sanitize_text_field( $end_date_vote ) );
+	    add_post_meta( $campaign, 'campaign_end_vote', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_location', sanitize_text_field( $location ) );
 	    add_post_meta( $campaign, 'campaign_author', sanitize_text_field( $author ) );
 	    add_post_meta( $campaign, 'campaign_video', esc_url( $video ) );
