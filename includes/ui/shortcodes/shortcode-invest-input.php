@@ -44,8 +44,31 @@ function ypcf_display_invest_form($error = '') {
 		switch ($campaign->funding_type()) {
 		    case 'fundingproject':
 		    case 'fundingdonation':
-			$form .= '<span style="color:#FFFFFF;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
-			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> &euro; ';
+			$form .= '<span style="display:none;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> &euro; <br />';
+                        $rewards = atcf_get_rewards($campaign->ID);
+                        //var_dump($rewards);
+                        
+                        $form .= '<ul>';
+                        $form .= '<label><li><input type="radio" name="selected-reward" value="-1"> Je ne souhaite pas de contrepartie.</li></label>';
+                        
+                        foreach ($rewards->rewards_list as $reward) {
+                            $form .= '<label><li>';
+                            
+                            $form .= '<input type="radio" name="selected-reward" value="'.$reward['id'].'"';
+                            if(!$rewards->is_available_reward($reward['id'])){
+                                $form .= 'disabled="disabled"';
+                            }
+                            $form .= '>';
+                            $form .= $reward['amount'].'&euro; ou plus <br/> '.$reward['name'].'<br/>';
+                            if($rewards->is_limited_reward($reward['id'])){
+                                $form .= 'Contrepartie limit&eacute;e : '. (intval($reward['limit'])-intval($reward['bought'])). ' restants sur '.intval($reward['limit']);
+                            }
+                            
+                            $form .= '</li></label>';
+                        }
+                        $form .= '</ul><br/>';
+                        
 			break;
 		    
 		    case 'fundingdevelopment':
