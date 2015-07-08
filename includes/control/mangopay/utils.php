@@ -159,10 +159,16 @@ function ypcf_mangopay_set_user_strong_authentication_doc_transmitted($wp_user_i
 }
 
 function ypcf_mangopay_is_user_strong_authenticated($wp_user_id) {
-    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
-    $authentication_object = ypcf_mangopay_get_user_strong_authentication($mp_user_id);
     $buffer = false;
-    if ($authentication_object) $buffer = ($authentication_object->IsDocumentsTransmitted && $authentication_object->IsCompleted && $authentication_object->IsSucceeded);
+    $mp_user_id = ypcf_mangopay_get_mp_user_id($wp_user_id);
+    $mp_user_object = ypcf_mangopay_get_user_by_id($mp_user_id);
+    ypcf_debug_log('ypcf_mangopay_is_user_strong_authenticated >> [' . $mp_user_object->ID . '] --> IsStrongAuthenticated : ' . $mp_user_object->IsStrongAuthenticated);
+    if ($mp_user_object && $mp_user_object->IsStrongAuthenticated) {
+	    $buffer = true;
+    } else {
+	    $authentication_object = ypcf_mangopay_get_user_strong_authentication($mp_user_id);
+	    if ($authentication_object) $buffer = ($authentication_object->IsDocumentsTransmitted && $authentication_object->IsCompleted && $authentication_object->IsSucceeded);
+    }
     return $buffer;
 }
 
