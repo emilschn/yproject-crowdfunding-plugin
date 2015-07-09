@@ -57,8 +57,8 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
                 $data_reward = $rewards->get_reward_from_ID($_SESSION['redirect_current_selected_reward']);
                 
                 $save_reward=array(
-                    'id'    => $data_reward['id'],
-                    'amount'=> $data_reward['amount'],
+                    'id'    => intval($data_reward['id']),
+                    'amount'=> intval($data_reward['amount']),
                     'name'  => $data_reward['name'],
                 );
                 $options_cart['reward']=$save_reward;

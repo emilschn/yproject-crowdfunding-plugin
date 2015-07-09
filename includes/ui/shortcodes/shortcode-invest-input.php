@@ -47,23 +47,30 @@ function ypcf_display_invest_form($error = '') {
 			$form .= '<span style="display:none;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
 			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> &euro; <br />';
                         $rewards = atcf_get_rewards($campaign->ID);
-                        var_dump($rewards->get_reward_from_ID(2));
-                        var_dump($rewards->get_reward_from_ID("-1"));
 
-                        $form .= '<ul>';
-                        $form .= '<label><li><input type="radio" name="selected_reward" value="-1" checked="checked"> Je ne souhaite pas de contrepartie.</li></label>';
+                        $form .= '<ul id="reward-selector">';
+                        $form .= '<label><li class="selected"><input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked"> Je ne souhaite pas de contrepartie.</li></label>';
                         
                         foreach ($rewards->rewards_list as $reward) {
-                            $form .= '<label><li>';
+                            $form .= '<label><li';
+                            if(!$rewards->is_available_reward($reward['id'])){
+                                $form .= ' class="unavailable-reward"';
+                            }
+                            $form .= '>';
                             
                             $form .= '<input type="radio" name="selected_reward" value="'.$reward['id'].'"';
                             if(!$rewards->is_available_reward($reward['id'])){
                                 $form .= 'disabled="disabled"';
                             }
                             $form .= '>';
-                            $form .= intval($reward['amount']).' &euro; ou plus <br/> '.$reward['name'].'<br/>';
+                            
+                            $form .= '<span class="reward-amount">'.intval($reward['amount']).'</span> &euro; ou plus <br/> '.$reward['name'].'<br/>';
+                            
                             if($rewards->is_limited_reward($reward['id'])){
-                                $form .= 'Contrepartie limit&eacute;e : '. (intval($reward['limit'])-intval($reward['bought'])). ' restants sur '.intval($reward['limit']);
+                                $form .= 'Contrepartie limit&eacute;e : '
+                                        .'<span class="reward-remaining">'. (intval($reward['limit'])-intval($reward['bought'])).'</span>'
+                                        . ' restants sur '
+                                        .intval($reward['limit']);
                             }
                             
                             $form .= '</li></label>';
@@ -90,7 +97,9 @@ function ypcf_display_invest_form($error = '') {
 		    case 'fundingdonation':
 			$form .= '<span class="invest_error'. (($error != "min") ? $hidden : "") .'" id="invest_error_min">Le montant minimal de soutien est de '.$temp_min_part.' &euro;.</span>';
 			$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas soutenir avec plus de '.$max_part_value.' &euro;.</span>';
-			break;
+			$form .= '<span class="invest_error'. (($error != "reward_remaining") ? $hidden : "") .'" id="invest_error_reward_remaining">La contrepartie que vous avez choisi n\'est plus disponible.</span>';
+			$form .= '<span class="invest_error'. (($error != "reward_insufficient") ? $hidden : "") .'" id="invest_error_reward_insufficient">Vous devez donner plus pour obtenir cette contrepartie.</span>';                        
+                        break;
 		    
 		    case 'fundingdevelopment':
 		    default:

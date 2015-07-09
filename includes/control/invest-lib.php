@@ -243,11 +243,16 @@ function ypcf_check_invest_redirections() {
                     //Enregistre la contrepartie choisie
                     $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
                     
+                    if($_SESSION['redirect_current_selected_reward']==-1){
+                        $selected = $available = $enough_amount = TRUE;
+                    } else {                    
                     //On vérifie si la contrepartie est toujours dispo 
                     $rewards = atcf_get_rewards($_GET['campaign_id']);
                     $selected = (isset($_SESSION['redirect_current_selected_reward']));
                     $available = $rewards->is_available_reward($_SESSION['redirect_current_selected_reward']);
                     $enough_amount = intval($_SESSION['redirect_current_amount_part']) >= intval($rewards->get_reward_from_ID($_SESSION['redirect_current_selected_reward'])['amount']);
+                    }
+                    
                     if($selected && $available && $enough_amount){
                         $page_mean_payment = get_page_by_path('moyen-de-paiement');
                         wp_redirect(get_permalink($page_mean_payment->ID) . '?campaign_id=' . $_GET['campaign_id']);
