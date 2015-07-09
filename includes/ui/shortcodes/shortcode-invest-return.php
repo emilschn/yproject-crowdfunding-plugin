@@ -47,6 +47,23 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    $save_display_name = $organisation->get_name();
 		}
 	    }
+            
+            $options_cart = array();
+            if($campaign->funding_type()=='fundingdonation'){
+                //Gestion contreparties
+                $rewards = atcf_get_rewards($campaign->ID);
+                //Enregistre un achat au compteur
+                $rewards->buy_a_reward($_SESSION['redirect_current_selected_reward']);
+                $data_reward = $rewards->get_reward_from_ID($_SESSION['redirect_current_selected_reward']);
+                
+                $save_reward=array(
+                    'id'    => $data_reward['id'],
+                    'amount'=> $data_reward['amount'],
+                    'name'  => $data_reward['name'],
+                );
+                $options_cart['reward']=$save_reward;
+                unset($_SESSION['redirect_current_selected_reward']);
+            }
 
 	    //Création d'un paiement pour edd
 	    $user_info = array(
@@ -68,7 +85,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    'id'          => $campaign->ID,
 		    'item_number' => array(
 			'id'	    => $campaign->ID,
-			'options'   => array()
+			'options'   => $options_cart
 		    ),
 		    'price'       => 1,
 		    'quantity'    => $amount
