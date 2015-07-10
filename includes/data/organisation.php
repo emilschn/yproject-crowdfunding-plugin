@@ -43,7 +43,7 @@ class YPOrganisation {
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->organisation_name;
-			$this->strong_authentication = $this->bopp_object->strong_authentication;
+			$this->strong_authentication = $this->bopp_object->organisation_strong_authentication;
 			$this->address = $this->bopp_object->organisation_address;
 			$this->postal_code = $this->bopp_object->organisation_postalcode;
 			$this->city = $this->bopp_object->organisation_city;
