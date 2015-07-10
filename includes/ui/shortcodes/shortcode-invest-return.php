@@ -105,6 +105,10 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    );
 	    $payment_id = edd_insert_payment( $payment_data );
 	    update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER['REMOTE_ADDR'] );
+            
+            if(isset($save_reward)){
+                update_post_meta( $payment_id, '_edd_payment_reward', $save_reward );
+            }
 
 	    edd_record_sale_in_log($campaign->ID, $payment_id);
 	    // FIN GESTION DU PAIEMENT COTE EDD
