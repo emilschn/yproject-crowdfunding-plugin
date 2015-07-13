@@ -74,6 +74,7 @@ class NotificationsEmails {
     public static function new_purchase_user($payment_id, $particular_content, $attachments = array()) {
 	ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
 	$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+	$campaign = atcf_get_campaign($post_campaign);
 
 	$payment_data = edd_get_payment_meta( $payment_id );
 	$payment_amount = edd_get_payment_amount( $payment_id );
@@ -81,17 +82,19 @@ class NotificationsEmails {
 	$email = $payment_data['email'];
 	$user_data = get_user_by('email', $email);
 
-	$object = "Merci pour votre investissement";
+	$funding_type = ($campaign->funding_type() == 'fundingdonation') ? 'soutien' : 'investissement';
+	
+	$object = "Merci pour votre " . $funding_type;
 	$body_content = '';
 	$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
 	$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br /><br />";
-	$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. N'oubliez pas qu'il ne sera définitivement validé ";
+	$body_content .= $post_campaign->post_title . " vous remercie pour votre " . $funding_type . ". N'oubliez pas qu'il ne sera définitivement validé ";
 	$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br /><br />";
 	$body_content .= $particular_content . "<br /><br />";
 	
-	$body_content .= "<strong>Détails de l'investissement</strong><br />";
+	$body_content .= "<strong>Détails concernant votre ".$funding_type."</strong><br />";
 	$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-	$body_content .= "Montant investi : ".$payment_amount."€<br />";
+	$body_content .= "Montant : ".$payment_amount."€<br />";
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
 	
 	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);

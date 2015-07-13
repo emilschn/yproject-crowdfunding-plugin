@@ -503,8 +503,9 @@ function atcf_campaign_save_end_vote() {
  */
 function atcf_pledge_limit_head() {
 ?>
-	<th style="width: 30px"><?php _e( 'Limit', 'edd' ); ?></th>
-	<th style="width: 30px"><?php _e( 'Purchased', 'edd' ); ?></th>
+	<th style="width: 60px"><?php _e( 'Limite', 'edd' ); ?></th>
+        <th style="width: 60px"><?php _e( 'Achet&eacute;s', 'edd' ); ?></th>
+        <th style="width: 50px"><?php _e( 'Id--', 'edd' ); ?></th>
 <?php
 }
 
@@ -516,12 +517,16 @@ function atcf_pledge_limit_head() {
  * @return void
  */
 function atcf_pledge_limit_column( $post_id, $key, $args ) {
+    //Il est possible de modifier les "bought" et "id" en modifiant le CSS, et ainsi enregistrer n'importe quoi dans la BDD.
 ?>
 	<td>
-		<input type="text" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][limit]" id="edd_variable_prices[<?php echo $key; ?>][limit]" value="<?php echo isset ( $args[ 'limit' ] ) ? $args[ 'limit' ] : null; ?>" style="width:100%" />
+		<input type="number" min="0" step="1" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][limit]" id="edd_variable_prices[<?php echo $key; ?>][limit]" value="<?php echo isset ( $args[ 'limit' ] ) ? $args[ 'limit' ] : null; ?>" style="width:100%" />
 	</td>
 	<td>
-		<input type="text" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][bought]" id="edd_variable_prices[<?php echo $key; ?>][bought]" value="<?php echo isset ( $args[ 'bought' ] ) ? $args[ 'bought' ] : null; ?>" readonly style="width:100%" />
+		<input type="number" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][bought]" id="edd_variable_prices[<?php echo $key; ?>][bought]" value="<?php echo isset ( $args[ 'bought' ] ) ? $args[ 'bought' ] : null; ?>" readonly style="width:100%" />
+	</td>
+        <td>
+		<input type="number" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][id]" id="edd_variable_prices[<?php echo $key; ?>][id]" value="<?php echo isset ( $args[ 'id' ] ) ? $args[ 'id' ] : null; ?>" readonly style="width:100%" />
 	</td>
 <?php
 }
@@ -536,6 +541,7 @@ function atcf_pledge_limit_column( $post_id, $key, $args ) {
 function atcf_price_row_args( $args, $value ) {
 	$args[ 'limit' ] = isset( $value[ 'limit' ] ) ? $value[ 'limit' ] : '';
 	$args[ 'bought' ] = isset( $value[ 'bought' ] ) ? $value[ 'bought' ] : 0;
+        $args[ 'id' ] = isset( $value[ 'id' ] ) ? $value[ 'id' ] : '';
 
 	return $args;
 }
@@ -1194,10 +1200,6 @@ function _atcf_metabox_campaign_info() {
 		if ($campaign->funding_type() == 'fundingdonation') {
 			$fundingproject = '';
 			$fundingdevelopment = '';
-			$fundingdonation = 'checked="checked"';
-		}
-                if ($campaign->funding_type() == 'fundingdonation') {
-			$fundingproject = '';
 			$fundingdonation = 'checked="checked"';
 		}
 		?>

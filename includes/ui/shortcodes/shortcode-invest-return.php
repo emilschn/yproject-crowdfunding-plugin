@@ -18,10 +18,10 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	$purchase_key = $_REQUEST["ContributionID"];
 	if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') $purchase_key = 'wire_' . $purchase_key;
 
-	$page_investments = get_page_by_path('mes-investissements');
 	$paymentlist = edd_get_payments();
 	foreach ($paymentlist as $payment) {
 	    if (edd_get_payment_key($payment->ID) == $purchase_key) {
+		$page_investments = get_page_by_path('mes-investissements');
 		$buffer .= 'Le paiement a déjà été pris en compte. Merci de vous rendre sur la page <a href="'.get_permalink($page_investments->ID).'">Mes investissements</a>.';
 		break;
 	    }
@@ -47,6 +47,23 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    $save_display_name = $organisation->get_name();
 		}
 	    }
+            
+            $options_cart = array();
+            if($campaign->funding_type()=='fundingdonation'){
+                //Gestion contreparties
+                $rewards = atcf_get_rewards($campaign->ID);
+                //Enregistre un achat au compteur
+                $rewards->buy_a_reward($_SESSION['redirect_current_selected_reward']);
+                $data_reward = $rewards->get_reward_from_ID($_SESSION['redirect_current_selected_reward']);
+                
+                $save_reward=array(
+                    'id'    => intval($data_reward['id']),
+                    'amount'=> intval($data_reward['amount']),
+                    'name'  => $data_reward['name'],
+                );
+                $options_cart['reward']=$save_reward;
+                unset($_SESSION['redirect_current_selected_reward']);
+            }
 
 	    //Création d'un paiement pour edd
 	    $user_info = array(
@@ -68,7 +85,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    'id'          => $campaign->ID,
 		    'item_number' => array(
 			'id'	    => $campaign->ID,
-			'options'   => array()
+			'options'   => $options_cart
 		    ),
 		    'price'       => 1,
 		    'quantity'    => $amount
@@ -88,6 +105,10 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    );
 	    $payment_id = edd_insert_payment( $payment_data );
 	    update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER['REMOTE_ADDR'] );
+            
+            if(isset($save_reward)){
+                update_post_meta( $payment_id, '_edd_payment_reward', $save_reward );
+            }
 
 	    edd_record_sale_in_log($campaign->ID, $payment_id);
 	    // FIN GESTION DU PAIEMENT COTE EDD
@@ -101,12 +122,14 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    $buffer .= ypcf_print_invest_breadcrumb(4);
 		    if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') {
 			    $buffer .= 'Nous attendons votre virement.<br /><br />';
-			    if ($amount > 1500) {
-				    $buffer .= 'Une fois validé, vous recevrez deux e-mails :<br /><br />';
-				    $buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br /><br />';
-				    $buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
-			    } else {
-				    $buffer .= 'Une fois validé, vous recevrez un e-mail confirmant votre paiement. Votre contrat d&apos;investissement sera joint &agrave; cet e-mail.<br /><br />';
+			    if ($campaign->funding_type() != 'fundingdonation') {
+				    if ($amount > 1500) {
+					    $buffer .= 'Une fois validé, vous recevrez deux e-mails :<br /><br />';
+					    $buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br /><br />';
+					    $buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
+				    } else {
+					    $buffer .= 'Une fois validé, vous recevrez un e-mail confirmant votre paiement. Votre contrat d&apos;investissement sera joint &agrave; cet e-mail.<br /><br />';
+				    }
 			    }
 		    } else {
 			    $buffer .= 'Transaction en cours.<br />';
@@ -129,27 +152,34 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 		    $campaign_url = get_permalink($_GET['campaign_id']);
 		    $share_page = get_page_by_path('paiement-partager');
 
-		    if ($amount > 1500) {
-			global $contract_errors, $wpdb;
-			if (!isset($contract_errors) || $contract_errors == '') {
-			    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br /><br />';
-			    $buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br /><br />';
-			    $buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
-			    $buffer .= '<center><img src="'. get_stylesheet_directory_uri() .'/images/signsquid.png" width="168" height="64" /></center><br />';
-			    if (ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) {
-				$buffer .= 'Vous allez aussi recevoir un sms contenant le code au num&eacute;ro que vous nous avez indiqu&eacute; : '.$current_user->get('user_mobile_phone').'<br /><br />'; 
-			    }
+		    if ($campaign->funding_type() != 'fundingdonation') {
+			    if ($amount > 1500) {
+				global $contract_errors, $wpdb;
+				if (!isset($contract_errors) || $contract_errors == '') {
+				    $buffer .= 'Vous allez recevoir deux e-mails cons&eacute;cutifs &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable) :<br /><br />';
+				    $buffer .= '- un e-mail envoyé par WEDOGOOD pour la confirmation de votre paiement. Cet e-mail contient votre code pour signer le pouvoir<br /><br />';
+				    $buffer .= '- un e-mail envoyé par notre partenaire Signsquid. Cet e-mail contient un lien vous permettant de signer le pouvoir pour le contrat d&apos;investissement<br /><br />'; 
+				    $buffer .= '<center><img src="'. get_stylesheet_directory_uri() .'/images/signsquid.png" width="168" height="64" /></center><br />';
+				    if (ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) {
+					$buffer .= 'Vous allez aussi recevoir un sms contenant le code au num&eacute;ro que vous nous avez indiqu&eacute; : '.$current_user->get('user_mobile_phone').'<br /><br />'; 
+				    }
 
-			} else {
-			    ypcf_debug_log("ypcf_shortcode_invest_return --- ERROR :: contract :: ".$contract_errors);
-			    $buffer .= 'Vous allez recevoir un e-mail de confirmation de paiement.<br />';
-			    $buffer .= '<span class="errors">Cependant, il y a eu un problème lors de la génération du contrat. Nos &eacute;quipes travaillent &agrave; la r&eacute;solution de ce probl&egrave;me.</span><br /><br />';
-			}
+				} else {
+				    ypcf_debug_log("ypcf_shortcode_invest_return --- ERROR :: contract :: ".$contract_errors);
+				    $buffer .= 'Vous allez recevoir un e-mail de confirmation de paiement.<br />';
+				    $buffer .= '<span class="errors">Cependant, il y a eu un problème lors de la génération du contrat. Nos &eacute;quipes travaillent &agrave; la r&eacute;solution de ce probl&egrave;me.</span><br /><br />';
+				}
+			    } else {
+				    $buffer .= '<div class="align-center">';
+				    $buffer .= 'Votre investissement est valid&eacute;.<br />';
+				    $buffer .= 'Vous allez recevoir un e-mail &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable).<br />';
+				    $buffer .= 'Votre contrat d&apos;investissement sera joint &agrave; cet e-mail.<br /><br />';
+				    $buffer .= '</div>';
+			    }
 		    } else {
 			    $buffer .= '<div class="align-center">';
-			    $buffer .= 'Votre investissement est valid&eacute;.<br />';
-			    $buffer .= 'Vous allez recevoir un e-mail &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable).<br />';
-			    $buffer .= 'Votre contrat d&apos;investissement sera joint &agrave; cet e-mail.<br /><br />';
+			    $buffer .= 'Votre paiement est valid&eacute;.<br />';
+			    $buffer .= 'Vous allez recevoir un e-mail &agrave; l&apos;adresse '.$current_user->user_email.' (pensez &agrave; v&eacute;rifier votre dossier de courrier ind&eacute;sirable).<br /><br />';
 			    $buffer .= '</div>';
 		    }
 		    $buffer .= '<div class="align-center"><a class="button" href="'. get_permalink($share_page->ID) .'?campaign_id='.$_GET['campaign_id'].'">Suivant</a></div><br /><br />';
