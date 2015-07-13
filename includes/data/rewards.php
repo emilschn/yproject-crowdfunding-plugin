@@ -64,6 +64,14 @@ class ATCF_rewards {
      * @return int
      */
     public function get_reward_number_purchased($reward_id){
+       /* if($reward_id==-1){
+            $count_no_reward = atcf_get_campaign($this->campaign_ID)->backers_count();
+            foreach ($this->rewards_list as $key => $value) {
+                $count_no_reward -= $value['bought'];
+            }
+            return $count_no_reward;
+        }*/
+        
         $pos = $this->get_pos_from_ID($reward_id);
         if($pos==-1){return null;}
         return intval($this->rewards_list[$pos]['bought']);
@@ -124,6 +132,17 @@ class ATCF_rewards {
      * @return type
      */
     public function get_reward_from_ID($reward_id){
+        if($reward_id==-1){
+            return array(
+                'index' => '',
+                'name' => 'Pas de contrepartie',
+                'amount' =>'0',
+                'limit' => '0',
+                'bought' => '0',
+                'id' => '-1'
+            );
+        }
+        
         $pos = $this->get_pos_from_ID($reward_id);
         if($pos==-1){
             return null;

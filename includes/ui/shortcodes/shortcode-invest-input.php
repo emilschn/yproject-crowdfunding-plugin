@@ -49,7 +49,7 @@ function ypcf_display_invest_form($error = '') {
                         $rewards = atcf_get_rewards($campaign->ID);
 
                         $form .= '<ul id="reward-selector">';
-                        $form .= '<label><li class="selected"><input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked"> Je ne souhaite pas de contrepartie.</li></label>';
+                        $form .= '<label><li><input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked"> Je ne souhaite pas de contrepartie.</li></label>';
                         
                         foreach ($rewards->rewards_list as $reward) {
                             $form .= '<label><li';

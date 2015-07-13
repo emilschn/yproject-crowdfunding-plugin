@@ -236,38 +236,15 @@ function ypcf_check_invest_redirections() {
 	
 	    $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
 	    
-            //Suite des tests pours les projets en don :
-            if (($campaign->funding_type() == 'fundingdonation') && (isset($_POST['selected_reward']))){
-                
-                    $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-                    //Enregistre la contrepartie choisie
-                    $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
-                    
-                    if($_SESSION['redirect_current_selected_reward']==-1){
-                        $selected = $available = $enough_amount = TRUE;
-                    } else {                    
-                    //On vérifie si la contrepartie est toujours dispo 
-                    $rewards = atcf_get_rewards($_GET['campaign_id']);
-                    $selected = (isset($_SESSION['redirect_current_selected_reward']));
-                    $available = $rewards->is_available_reward($_SESSION['redirect_current_selected_reward']);
-                    $enough_amount = intval($_SESSION['redirect_current_amount_part']) >= intval($rewards->get_reward_from_ID($_SESSION['redirect_current_selected_reward'])['amount']);
-                    }
-                    
-                    if($selected && $available && $enough_amount){
-                        $page_mean_payment = get_page_by_path('moyen-de-paiement');
-                        wp_redirect(get_permalink($page_mean_payment->ID) . '?campaign_id=' . $_GET['campaign_id']);
-                        exit();
-                    } else {
-                        $page_invest = get_page_by_path('investir');
-                        wp_redirect(get_permalink($page_invest->ID) . '?campaign_id=' . $_GET['campaign_id']."&invest_start=1");
-                        exit();
-                    }
-            }
 
-            //Suite des tests pour les projets en investissement : informations validées par coche, bon pour pouvoir / souscription écrit
-	    if ( ($campaign->funding_type() != 'fundingdonation')&&(isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' 
-		    && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type
-		    && ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing'])))) {
+            //Suite des tests pour les projets 
+            //Pour l'investissement : bon pour pouvoir / souscription écrit
+            //Pour tous : informations validées par coche
+	    if (((($campaign->funding_type() != 'fundingdonation')
+                    &&(isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type
+		    && ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))))
+                || ($campaign->funding_type() == 'fundingdonation'))
+                && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' ) {
 
 		    $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
                     
