@@ -80,10 +80,10 @@ class ATCF_Campaign {
 	public static $vote_score_min_required = 50;
         
         /**
-         * The sum of invest promises during vote required to go to next step
+         * The percent of min goal required in invest promises during vote
          * @var int
          */
-        public $vote_invest_ready_min_required;
+        public static $vote_percent_invest_ready_min_required = 50;
         
 	public static $status_list = array(
 		'preparing' => 'Pr&eacute;paration',
@@ -97,7 +97,6 @@ class ATCF_Campaign {
 	function __construct( $post ) {
 		$this->data = get_post( $post );
 		$this->ID   = $this->data->ID;
-                $this->vote_invest_ready_min_required = $this->minimum_goal(false)/2;
 	}
 
 	/**
@@ -416,10 +415,6 @@ class ATCF_Campaign {
             $res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
         }
 
-	public function start_vote() {
-		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_start_vote' ), false);
-	}
-
 	public function end_vote() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_vote' ), false);
 	}
@@ -446,6 +441,10 @@ class ATCF_Campaign {
 	    $count_users = $wpdb->get_var( "SELECT count(id) FROM $table_name WHERE post_id = " . $this->ID );
 	    return $count_users;
 	}
+        
+        public function vote_invest_ready_min_required(){
+            return $this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100);
+        }
 
 	/**
 	 * Campaign Video
