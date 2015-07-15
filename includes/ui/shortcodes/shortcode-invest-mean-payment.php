@@ -38,7 +38,7 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
 	    <div class="clear"></div>
     </ul>
     
-    <div style="text-align: center;"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
+    <div class="align-center mangopay-image"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
     <?php
     return ob_get_clean();
 }

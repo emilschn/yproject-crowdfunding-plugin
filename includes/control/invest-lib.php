@@ -520,10 +520,11 @@ function ypcf_login_gobackinvest_url() {
  * @return string
  */
 function ypcf_print_invest_breadcrumb($current_step, $funding_type = 'invest') {
+    $current_step_str = $current_step;
     if ($funding_type == 'fundingdonation') {
-	    $current_step = 'don_' . $current_step;
+	    $current_step_str = 'don_' . $current_step;
     }
-    $buffer = '<div id="invest-breadcrumb"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step.'.jpg" width="600" height="100" alt="Parcours d&apos;investissement" /></div>';
+    $buffer = '<div id="invest-breadcrumb" class="breadcrumb-step-'.$current_step.'"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step_str.'.jpg" width="600" height="100" alt="Parcours d&apos;investissement" /></div>';
     return $buffer;
 }
 
