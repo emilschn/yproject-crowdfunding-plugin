@@ -103,7 +103,7 @@ class NotificationsEmails {
             $body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
         }
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
-        echo $body_content;
+        
 	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);
     }
     
