@@ -21,7 +21,7 @@ function ypcf_display_invest_form($error = '') {
 		$page_invest = get_page_by_path('investir');
 		$page_invest_link = get_permalink($page_invest->ID);
 		$page_invest_link .= '?campaign_id=' . $_GET['campaign_id'];
-		$form .= ypcf_print_invest_breadcrumb(1);
+		$form .= ypcf_print_invest_breadcrumb(1, $campaign->funding_type());
 		
 		$form .= '<div class="invest_step1_generalities">';
 		switch ($campaign->funding_type()) {
@@ -51,30 +51,32 @@ function ypcf_display_invest_form($error = '') {
                         $form .= '<ul id="reward-selector">';
                         $form .= '<label><li><input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked"> Je ne souhaite pas de contrepartie.</li></label>';
                         
-                        foreach ($rewards->rewards_list as $reward) {
-                            $form .= '<label><li';
-                            if(!$rewards->is_available_reward($reward['id'])){
-                                $form .= ' class="unavailable-reward"';
-                            }
-                            $form .= '>';
-                            
-                            $form .= '<input type="radio" name="selected_reward" value="'.$reward['id'].'"';
-                            if(!$rewards->is_available_reward($reward['id'])){
-                                $form .= 'disabled="disabled"';
-                            }
-                            $form .= '>';
-                            
-                            $form .= '<span class="reward-amount">'.intval($reward['amount']).'</span> &euro; ou plus <br/> '.$reward['name'].'<br/>';
-                            
-                            if($rewards->is_limited_reward($reward['id'])){
-                                $form .= 'Contrepartie limit&eacute;e : '
-                                        .'<span class="reward-remaining">'. (intval($reward['limit'])-intval($reward['bought'])).'</span>'
-                                        . ' restants sur '
-                                        .intval($reward['limit']);
-                            }
-                            
-                            $form .= '</li></label>';
-                        }
+			if (isset($rewards->rewards_list)) {
+			    foreach ($rewards->rewards_list as $reward) {
+				$form .= '<label><li';
+				if(!$rewards->is_available_reward($reward['id'])){
+				    $form .= ' class="unavailable-reward"';
+				}
+				$form .= '>';
+
+				$form .= '<input type="radio" name="selected_reward" value="'.$reward['id'].'"';
+				if(!$rewards->is_available_reward($reward['id'])){
+				    $form .= 'disabled="disabled"';
+				}
+				$form .= '>';
+
+				$form .= '<span class="reward-amount">'.intval($reward['amount']).'</span> &euro; ou plus <br/> '.$reward['name'].'<br/>';
+
+				if($rewards->is_limited_reward($reward['id'])){
+				    $form .= 'Contrepartie limit&eacute;e : '
+					    .'<span class="reward-remaining">'. (intval($reward['limit'])-intval($reward['bought'])).'</span>'
+					    . ' restants sur '
+					    .intval($reward['limit']);
+				}
+
+				$form .= '</li></label>';
+			    }
+			}
                         $form .= '</ul><br/>';
                         
 			break;

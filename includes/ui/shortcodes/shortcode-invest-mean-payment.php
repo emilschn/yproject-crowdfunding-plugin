@@ -16,7 +16,7 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
     $min_check = 500;
     $can_use_check = (ypcf_get_part_value() * $_SESSION['redirect_current_amount_part'] >= $min_check);
     
-    echo ypcf_print_invest_breadcrumb(3);
+    echo ypcf_print_invest_breadcrumb(3, $campaign->funding_type());
     ?>
     Merci de choisir votre moyen de paiement :<br />
     <ul class="invest-mean-payment">

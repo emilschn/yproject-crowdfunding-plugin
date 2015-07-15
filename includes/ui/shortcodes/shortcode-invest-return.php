@@ -119,7 +119,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 	    // Affichage en fonction du statut du paiement
 	    switch ($payment_status) {
 		case 'pending' :
-		    $buffer .= ypcf_print_invest_breadcrumb(4);
+		    $buffer .= ypcf_print_invest_breadcrumb(4, $campaign->funding_type());
 		    if (isset($_GET['meanofpayment']) && $_GET['meanofpayment'] == 'wire') {
 			    $buffer .= 'Nous attendons votre virement.<br /><br />';
 			    if ($campaign->funding_type() != 'fundingdonation') {
@@ -147,7 +147,7 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 						    ));
 		    
 		    //On affiche que tout s'est bien passé
-		    $buffer .= ypcf_print_invest_breadcrumb(4);
+		    $buffer .= ypcf_print_invest_breadcrumb(4, $campaign->funding_type());
 		    $buffer .= $content;
 		    $campaign_url = get_permalink($_GET['campaign_id']);
 		    $share_page = get_page_by_path('paiement-partager');

@@ -10,12 +10,12 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
     $buffer = '';
     if (isset($_GET['campaign_id'])) {
 	$campaign_url  = get_permalink($_GET['campaign_id']);
-	
-	$buffer .= ypcf_print_invest_breadcrumb(5);
-	$buffer .= $content;
-	
 	$post_campaign = get_post($_GET['campaign_id']);
 	$campaign = atcf_get_campaign( $post_campaign );
+	
+	$buffer .= ypcf_print_invest_breadcrumb(5, $campaign->funding_type());
+	$buffer .= $content;
+	
 	global $post;
 	$post = $post_campaign;
 	

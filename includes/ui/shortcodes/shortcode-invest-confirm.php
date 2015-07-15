@@ -91,14 +91,18 @@ function ypcf_display_invest_confirm($content) {
                 if($campaign->funding_type()=='fundingdonation'){
                 //Gestion contreparties : ajoute la contrepartie
                     $rewards = atcf_get_rewards($campaign->ID);
-                    $data_reward = $rewards->get_reward_from_ID($_SESSION['redirect_current_selected_reward']);
+		    if (isset($rewards)) {
+			    $data_reward = $rewards->get_reward_from_ID($_SESSION['redirect_current_selected_reward']);
 
-                    $save_reward=array(
-                        'id'    => intval($data_reward['id']),
-                        'amount'=> intval($data_reward['amount']),
-                        'name'  => $data_reward['name'],
-                    );
-                    $options_cart['reward']=$save_reward;
+			    $save_reward=array(
+				'id'    => intval($data_reward['id']),
+				'amount'=> intval($data_reward['amount']),
+				'name'  => $data_reward['name'],
+			    );
+			    $options_cart['reward'] = $save_reward;
+		    } else {
+			    $options_cart['reward'] = 'none';
+		    }
                 } else {
                     unset($_SESSION['redirect_current_selected_reward']);
                 }
@@ -115,7 +119,7 @@ function ypcf_display_invest_confirm($content) {
 
                 $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
 
-                $form .= ypcf_print_invest_breadcrumb(2);
+                $form .= ypcf_print_invest_breadcrumb(2, $campaign->funding_type());
                 if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
                 
                 if(($campaign->funding_type() != 'fundingdonation')){

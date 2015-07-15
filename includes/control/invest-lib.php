@@ -496,7 +496,10 @@ function ypcf_login_gobackinvest_url() {
  * @param type $current_step
  * @return string
  */
-function ypcf_print_invest_breadcrumb($current_step) {
+function ypcf_print_invest_breadcrumb($current_step, $funding_type = 'invest') {
+    if ($funding_type == 'fundingdonation') {
+	    $current_step = 'don_' . $current_step;
+    }
     $buffer = '<div id="invest-breadcrumb"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step.'.jpg" width="600" height="100" alt="Parcours d&apos;investissement" /></div>';
     return $buffer;
 }

@@ -13,7 +13,9 @@ function ypcf_shortcode_invest_payment_wire($atts, $content = '') {
 		
 		$page_payment_done = get_page_by_path('paiement-effectue');
 
-		echo ypcf_print_invest_breadcrumb(3);
+		$post = get_post($_GET['campaign_id']);
+                $campaign = atcf_get_campaign( $post );
+		echo ypcf_print_invest_breadcrumb(3, $campaign->funding_type());
 ?>
 
 	Afin de proc&eacute;der au virement, voici les informations bancaires dont vous aurez besoin :<br />
