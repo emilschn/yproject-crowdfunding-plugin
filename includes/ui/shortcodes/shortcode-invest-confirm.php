@@ -99,8 +99,6 @@ function ypcf_display_invest_confirm($content) {
                         'name'  => $data_reward['name'],
                     );
                     $options_cart['reward']=$save_reward;
-                } else {
-                    unset($_SESSION['redirect_current_selected_reward']);
                 }
                 
                 $to_add = array();
@@ -157,12 +155,14 @@ function ypcf_display_invest_confirm($content) {
                 $form .= '<span class="label">Date et lieu de naissance :</span>le ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year');
                 $form .= ' &agrave; ' . $current_user->get('user_birthplace') . '<br />';
                 $form .= '<span class="label">Nationalit&eacute; :</span>' . $country_list[$current_user->get('user_nationality')] . '<br /><br />';
-                $form .= '<div class="label left">Adresse :</div>';
-                $form .= '<div class="left">' . $current_user->get('user_address') . '<br />' . $current_user->get('user_postal_code') . ' ' . $current_user->get('user_city') . '<br />' . $current_user->get('user_country') . '</div>';
-                $form .= '<div style="clear: both;"></div>';
-                $form .= '<br />';
-                $form .= '<span class="label">Num&eacute;ro de t&eacute;l&eacute;phone :</span>' . $current_user->get('user_mobile_phone');
-                if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
+                if ($campaign->funding_type() != 'fundingdonation'){
+                    $form .= '<div class="label left">Adresse :</div>';
+                    $form .= '<div class="left">' . $current_user->get('user_address') . '<br />' . $current_user->get('user_postal_code') . ' ' . $current_user->get('user_city') . '<br />' . $current_user->get('user_country') . '</div>';
+                    $form .= '<div style="clear: both;"></div>';
+                    $form .= '<br />';
+                    $form .= '<span class="label">Num&eacute;ro de t&eacute;l&eacute;phone :</span>' . $current_user->get('user_mobile_phone');
+                    if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
+                }
                 $form .= '<br /><br /><br />';
 
                 if ($invest_type != 'user') {
@@ -221,7 +221,7 @@ function ypcf_display_invest_confirm($content) {
                         $button_title = "Investir";
                         break;
                 }
-                $form .= '<input type="submit" value="'.$button_title.'" class="button">';
+                $form .= '<center><input type="submit" value="'.$button_title.'" class="button"></center>';
                 $form .= '</form><br /><br />';
 
                 $form .= '<div style="text-align: center;"><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" /></div>';
