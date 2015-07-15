@@ -48,19 +48,23 @@ function ypcf_check_redirections() {
 		break;
 		
 	    case 'moyen-de-paiement' :
+		ypcf_check_is_user_logged_invest();
 		ypcf_check_meanofpayment_redirections();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-mean-payment.php' );
 		break;
 	
 	    case 'paiement-virement' :
+		ypcf_check_is_user_logged_invest();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-payment-wire.php' );
 		break;
 	
 	    case 'paiement-effectue' :
+		ypcf_check_is_user_logged_invest();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-return.php' );
 		break;
 	
 	    case 'paiement-partager' :
+		ypcf_check_is_user_logged_invest();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-share.php' );
 		break;
 	}
