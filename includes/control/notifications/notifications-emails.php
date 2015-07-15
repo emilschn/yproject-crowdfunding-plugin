@@ -89,7 +89,10 @@ class NotificationsEmails {
 	$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
 	$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br /><br />";
 	$body_content .= $post_campaign->post_title . " vous remercie pour votre " . $funding_type . ". N'oubliez pas qu'il ne sera définitivement validé ";
-	$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br /><br />";
+	$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br/>"
+                . "Retrouvez le projet &agrave l'adresse suivante : "
+                .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a></br>'
+                ."<br /><br />";
 	$body_content .= $particular_content . "<br /><br />";
 	
 	$body_content .= "<strong>Détails concernant votre ".$funding_type."</strong><br />";
@@ -100,7 +103,7 @@ class NotificationsEmails {
             $body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
         }
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
-        
+        echo $body_content;
 	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);
     }
     
