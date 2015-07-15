@@ -149,7 +149,11 @@ function ypcf_display_invest_confirm($content) {
 
                 $form .= '<form action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
                 $form .= '<div class="invest_part">';
-                $form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante :<br /><br />';
+		$form .= 'Veuillez v&eacute;rifier ces informations avant de passer &agrave; l&apos;&eacute;tape suivante.<br />';
+		if ($campaign->funding_type() == 'fundingdonation') {
+			$form .= '<em>' . __('Si vous choisissez une contrepartie, pensez &agrave; indiquer votre adresse.', 'yproject') . '</em><br />';
+		}
+		$form .= '<br />';
 
                 $form .= '<strong>Informations personnelles</strong><br />';
                 $user_title = "";
