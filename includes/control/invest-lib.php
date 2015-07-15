@@ -31,6 +31,7 @@ function ypcf_check_redirections() {
 		    ypcf_session_start();
 		    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 		    if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
+		    if (isset($_SESSION['error_invest'])) unset($_SESSION['error_invest']);
 		}
 		//D'abord on teste si l'utilisateur est bien connecté
 		ypcf_check_is_user_logged_invest();
@@ -107,6 +108,11 @@ function ypcf_check_is_project_investable() {
     }
 }
 
+/**
+ * Détermine si les informations utilisateurs sont complètes (nécessaires pour les porteurs de projet)
+ * @param type $user_id
+ * @return type
+ */
 function ypcf_check_user_is_complete($user_id) {
     $is_complete = true;
     $current_user = get_user_by('id', $user_id);
@@ -122,32 +128,44 @@ function ypcf_check_user_is_complete($user_id) {
 }
 
 /**
- * Vérification si l'utilisateur a bien rempli toutes ses données
+ * Vérification si l'utilisateur a bien rempli les données nécessaires au type de financement qu'il tente
  */
 function ypcf_check_user_can_invest($redirect = false) {
-    $can_invest = true;
+    $can_invest = TRUE;
+    
+    ypcf_session_start();
+    $errors = array();
+    
     $current_campaign = atcf_get_current_campaign();
     $current_user = wp_get_current_user();
-    $can_invest = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
-    $can_invest = $can_invest && ($current_user->get('user_nationality') != "") && ($current_user->user_email != "");
-    $can_invest = $can_invest && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
+    
+    //Infos nécessaires pour tout type de financement
+    if ($current_user->user_firstname == "") { array_push($errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
+    if ($current_user->user_lastname == "") { array_push($errors, __('Vous devez renseigner votre nom.', 'yproject')); }
+    if ($current_user->user_email == "") { array_push($errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
+    if ($current_user->get('user_nationality') == "") { array_push($errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
+    if ($current_user->get('user_birthday_day') == "") { array_push($errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
+    if ($current_user->get('user_birthday_month') == "") { array_push($errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
+    if ($current_user->get('user_birthday_year') == "") { array_push($errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
+    //Infos nécessaires pour l'investissement
     if ($current_campaign->funding_type() != 'fundingdonation') {
-	$can_invest = $can_invest && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
-	$can_invest = $can_invest && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
-	$can_invest = $can_invest && ($current_user->get('user_country') != "");
-	$can_invest = $can_invest && ($current_user->get('user_birthplace') != "");
-	$can_invest = $can_invest && ($current_user->get('user_gender') != "");
+	    if (!ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'))) { array_push($errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
+	    if ($current_user->get('user_address') == "") { array_push($errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
+	    if ($current_user->get('user_postal_code') == "") { array_push($errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
+	    if ($current_user->get('user_city') == "") { array_push($errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
+	    if ($current_user->get('user_country') == "") { array_push($errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
+	    if ($current_user->get('user_birthplace') == "") { array_push($errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
+	    if ($current_user->get('user_gender') == "") { array_push($errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
     }
+    if (!empty($errors)) {
+	    $can_invest = FALSE;
+    }
+    $_SESSION['error_invest'] = $errors;
 
     if ($redirect && !$can_invest) {
-	ypcf_session_start();
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
-	$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
-	array_push($errors, 'Certaines des informations manquent ou sont inexactes.');
-	if (!ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'))) array_push($errors, 'Seules les personnes majeures peuvent investir.');
-	$_SESSION['error_invest'] = $errors;
 	$page_update = get_page_by_path('modifier-mon-compte');
 	wp_redirect(get_permalink($page_update->ID));
 	exit();
@@ -332,6 +350,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 	if ($_POST["update_city"] != "") update_user_meta($current_user->ID, 'user_city', $_POST["update_city"]);
 	if ($_POST["update_country"] != "") update_user_meta($current_user->ID, 'user_country', $_POST["update_country"]);
 	if ($_POST["update_mobile_phone"] != "") update_user_meta($current_user->ID, 'user_mobile_phone', $_POST["update_mobile_phone"]);
+	if ($_POST["user_description"] != "") update_user_meta($current_user->ID, 'description', $_POST["user_description"]);
 	if (isset($_POST["update_email_contact"])) {
 	    if (($_POST["update_email_contact"] != "" && $_POST["update_email_contact"] != $current_user->user_email)) {
 		$validate_email = bp_core_validate_email_address($_POST["update_email_contact"]);
