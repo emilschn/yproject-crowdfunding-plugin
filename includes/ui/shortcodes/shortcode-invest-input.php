@@ -42,16 +42,15 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '<input type="hidden" id="input_invest_max_part_value" name="part_value" value="' . $max_part_value . '">';
 		$form .= '<input type="hidden" id="input_invest_amount_total" value="' . ypcf_get_current_amount() . '">';
 		switch ($campaign->funding_type()) {
-		    case 'fundingproject':
 		    case 'fundingdonation':
 			$form .= '<span style="display:none;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
 			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> &euro; <br />';
                         $rewards = atcf_get_rewards($campaign->ID);
 
-                        $form .= '<ul id="reward-selector">';
-                        $form .= '<label><li><input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked"> Je ne souhaite pas de contrepartie.</li></label>';
-                        
 			if (isset($rewards->rewards_list)) {
+			    $form .= '<ul id="reward-selector">';
+			    $form .= '<label><li><input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked"> Je ne souhaite <span class="reward-name">pas de contrepartie</span>.</li></label>';
+                        
 			    foreach ($rewards->rewards_list as $reward) {
 				$form .= '<label><li';
 				if(!$rewards->is_available_reward($reward['id'])){
@@ -65,27 +64,31 @@ function ypcf_display_invest_form($error = '') {
 				}
 				$form .= '>';
 
-				$form .= '<span class="reward-amount">'.intval($reward['amount']).'</span> &euro; ou plus <br/> '.$reward['name'].'<br/>';
+				$form .= '<span class="reward-amount">'.intval($reward['amount']).'</span> &euro; ou plus <br/> '
+					.'<span class="reward-name">'.$reward['name'].'</span><br/>';
 
 				if($rewards->is_limited_reward($reward['id'])){
+				    $remaining = (intval($reward['limit'])-intval($reward['bought'])); 
 				    $form .= 'Contrepartie limit&eacute;e : '
-					    .'<span class="reward-remaining">'. (intval($reward['limit'])-intval($reward['bought'])).'</span>'
-					    . ' restants sur '
+					    .'<span class="reward-remaining">'. $remaining.'</span>'
+					    . ' restant';
+				    if($remaining>1){ $form .='s'; }
+				    $form .=' sur '
 					    .intval($reward['limit']);
 				}
 
 				$form .= '</li></label>';
 			    }
+			    $form .= '</ul>';
 			}
-                        $form .= '</ul><br/>';
                         
 			break;
-		    
+		    case 'fundingproject':
 		    case 'fundingdevelopment':
-			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;';
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;<br>';
 			break;
 		}
-		$form .= '&nbsp;&nbsp;<a href="javascript:void(0);" id="link_validate_invest_amount" class="button">Valider</a><br /><br />';
+		$form .= '&nbsp;&nbsp;<center><a href="javascript:void(0);" id="link_validate_invest_amount" class="button">Valider</a></center><br /><br />';
 		
 		$form .= '<div id="validate_invest_amount_feedback" style="display:none;">';
 		$hidden = ' hidden';
@@ -111,10 +114,14 @@ function ypcf_display_invest_form($error = '') {
 			$form .= '<span class="invest_error'. (($error != "max") ? $hidden : "") .'" id="invest_error_max">Vous ne pouvez pas prendre plus de '.$max_part_value.' part'.$temp_max_plural.'.</span>';
 			break;
 		}
-		$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . '&euro; &agrave; investir.</span>';
-		$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier.</span>';
-		$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur.</span>';
-		$form .= '<span class="invest_success hidden" id="invest_success_message" class="button">Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>&euro;.</span>';
+		$form .= '<span class="invest_error'. (($error != "interval") ? $hidden : "") .'" id="invest_error_interval">Merci de ne pas laisser moins de ' . $min_value . '&euro; &agrave; investir. </span>';
+		$form .= '<span class="invest_error'. (($error != "integer") ? $hidden : "") .'" id="invest_error_integer">Le montant que vous pouvez investir doit &ecirc;tre entier. </span>';
+		$form .= '<span class="invest_error'. (($error != "general") ? $hidden : "") .'" id="invest_error_general">Le montant saisi semble comporter une erreur. </span>';
+		$form .= '<span class="invest_success hidden" id="invest_success_message" class="button">';
+                if ($campaign->funding_type()=="fundingdonation"){
+                    $form .= 'Vous vous appr&ecirc;tez &agrave; donner <strong><span id="invest_show_amount"></span>&euro;</strong> en &eacute;change de : <strong><span id="invest_show_reward"></span></strong>.<br/><br/>';
+                }
+                $form .= 'Gr&acirc;ce à vous, nous serons ' . (ypcf_get_backers() + 1) . ' &agrave; soutenir le projet. La somme atteinte sera de <span id="invest_success_amount"></span>&euro;. </span>';
 		
 		$form .= '<div class="invest_step1_conditions">';
 		switch ($campaign->funding_type()) {
