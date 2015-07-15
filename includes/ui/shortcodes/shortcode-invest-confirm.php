@@ -152,14 +152,16 @@ function ypcf_display_invest_confirm($content) {
                 $user_name = $user_title . ' ' . $current_user->first_name . ' ' . $current_user->last_name;
                 $form .= '<span class="label">Identit&eacute; :</span>' . $user_name . '<br />';
                 $form .= '<span class="label">e-mail :</span>' . $current_user->user_email . '<br /><br />';
-                $form .= '<span class="label">Date et lieu de naissance :</span>le ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year');
-                $form .= ' &agrave; ' . $current_user->get('user_birthplace') . '<br />';
+                $form .= '<span class="label">Date de naissance :</span>le ' . $current_user->get('user_birthday_day') . '/' . $current_user->get('user_birthday_month') . '/' . $current_user->get('user_birthday_year').'<br />';
                 $form .= '<span class="label">Nationalit&eacute; :</span>' . $country_list[$current_user->get('user_nationality')] . '<br /><br />';
-                if ($campaign->funding_type() != 'fundingdonation'){
+                if ($campaign->funding_type() != 'fundingdonation' || 
+                        ($current_user->get('user_address')!='' && $current_user->get('user_postal_code')!='' && $current_user->get('user_city')!='' && $current_user->get('user_country')!='')){
                     $form .= '<div class="label left">Adresse :</div>';
                     $form .= '<div class="left">' . $current_user->get('user_address') . '<br />' . $current_user->get('user_postal_code') . ' ' . $current_user->get('user_city') . '<br />' . $current_user->get('user_country') . '</div>';
                     $form .= '<div style="clear: both;"></div>';
                     $form .= '<br />';
+                }
+                if ($campaign->funding_type() != 'fundingdonation'){
                     $form .= '<span class="label">Num&eacute;ro de t&eacute;l&eacute;phone :</span>' . $current_user->get('user_mobile_phone');
                     if (!ypcf_check_user_phone_format($current_user->get('user_mobile_phone'))) $form .= ' <span class="errors">Le num&eacute;ro de t&eacute;l&eacute;phone ne correspond pas &agrave; un num&eacute;ro français.</span>';
                 }

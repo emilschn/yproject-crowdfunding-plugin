@@ -64,6 +64,9 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
                 $options_cart['reward']=$save_reward;
                 unset($_SESSION['redirect_current_selected_reward']);
             }
+            if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+            if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
+                    
 
 	    //Création d'un paiement pour edd
 	    $user_info = array(

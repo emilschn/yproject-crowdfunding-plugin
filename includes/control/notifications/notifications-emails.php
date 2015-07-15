@@ -94,9 +94,13 @@ class NotificationsEmails {
 	
 	$body_content .= "<strong>Détails concernant votre ".$funding_type."</strong><br />";
 	$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-	$body_content .= "Montant : ".$payment_amount."€<br />";
+	$body_content .= "Montant : ".$payment_amount."&euro;<br />";
+        if ($campaign->funding_type()=="fundingdonation"){
+            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
+            $body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
+        }
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
-	
+        
 	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);
     }
     
@@ -122,9 +126,15 @@ class NotificationsEmails {
 	$user_data = get_user_by('email', $email);
 	
 	$body_content = "Une nouvelle personne a investi sur votre projet ".$post_campaign->post_title.":<br />";
-	$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." €.<br />";
+	$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." &euro;";
+        if ($campaign->funding_type()=="fundingdonation"){
+            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
+            $body_content .= " et a choisi la contrepartie suivante : palier de <br/>".$reward['amount']."&euro; - ".$reward['name'];
+        }
+        $body_content .= ".<br />";
+
 	$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
-	
+        
 	return NotificationsEmails::send_mail($emails, $object, $body_content);
     }
     
@@ -172,7 +182,7 @@ class NotificationsEmails {
 	$body_content .= "<strong>Détails de l'investissement</strong><br />";
 	$body_content .= "Utilisateur : " . $user_data->user_login . "<br />";
 	$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-	$body_content .= "Montant investi : ".$payment_amount."€<br />";
+	$body_content .= "Montant investi : ".$payment_amount."&euro;<br />";
 	$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
 	$body_content .= $complement_content;
 	
