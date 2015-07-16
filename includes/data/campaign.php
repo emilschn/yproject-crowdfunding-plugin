@@ -1117,6 +1117,30 @@ class ATCF_Campaign {
                 $res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
             }
         }
+        
+        /**
+         * Provides various words to describe the campaign according to it funding type :
+         * @return array
+         */
+        public function funding_type_vocabulary(){
+            switch ($this->funding_type()) {
+                case 'fundingdonation' :
+                    return array(
+                    'investor_name' => 'contributeur',
+                    'investor_action' => 'contribution',
+                    'action_feminin' => true,
+                    'investor_verb' => 'contribu&eacute;'
+                    );
+                default :
+                    return array(
+                    'investor_name' => 'investisseur',
+                    'investor_action' => 'investissement',
+                    'action_feminin' => false,
+                    'investor_verb' => 'investi;'
+                    );
+            }
+            return array();
+        }
 }
 
 function atcf_get_locations() {
