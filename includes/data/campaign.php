@@ -626,6 +626,8 @@ class ATCF_Campaign {
 			    $expires = 0;
 			    break;
 		}
+		
+		date_default_timezone_set("Europe/London");
 		$now = current_time( 'timestamp' );
 		
 		//Si on a dépassé la date de fin, on retourne "-"
@@ -655,6 +657,7 @@ class ATCF_Campaign {
 	public function time_remaining_fullstr() {
 		$buffer = '';
 		
+		date_default_timezone_set("Europe/London");
 		$now = current_time( 'timestamp' );
 		switch ($this->campaign_status()) {
 			case 'vote':
