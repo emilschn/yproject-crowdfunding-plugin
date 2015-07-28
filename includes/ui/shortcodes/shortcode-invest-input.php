@@ -44,7 +44,7 @@ function ypcf_display_invest_form($error = '') {
 		switch ($campaign->funding_type()) {
 		    case 'fundingdonation':
 			$form .= '<span style="display:none;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
-			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> &euro; <br />';
+			$form .= 'Je souhaite donner <input type="text" id="input_invest_amount_part" name="amount_part" placeholder="'.$min_value.'"> &euro; <br />';
                         $rewards = atcf_get_rewards($campaign->ID);
 
 			if (isset($rewards->rewards_list)) {
@@ -58,23 +58,23 @@ function ypcf_display_invest_form($error = '') {
 				}
 				$form .= '>';
 
-				$form .= '<input type="radio" name="selected_reward" value="'.$reward['id'].'"';
+				$form .= '<div><input type="radio" name="selected_reward" value="'.$reward['id'].'"';
 				if(!$rewards->is_available_reward($reward['id'])){
 				    $form .= 'disabled="disabled"';
 				}
 				$form .= '>';
 
-				$form .= '<span class="reward-amount">'.intval($reward['amount']).'</span> &euro; ou plus <br/> '
-					.'<span class="reward-name">'.$reward['name'].'</span><br/>';
+				$form .= '<span class="reward-amount">'.intval($reward['amount']).'</span>&euro; ou plus </div> '
+					.'<div class="reward-name reward-not-null">'.$reward['name'].'</div>';
 
 				if($rewards->is_limited_reward($reward['id'])){
 				    $remaining = (intval($reward['limit'])-intval($reward['bought'])); 
-				    $form .= 'Contrepartie limit&eacute;e : '
+				    $form .= '<div><span class="detail">Contrepartie limit&eacute;e : </span>'
 					    .'<span class="reward-remaining">'. $remaining.'</span>'
 					    . ' restant';
 				    if($remaining>1){ $form .='s'; }
 				    $form .=' sur '
-					    .intval($reward['limit']);
+					    .intval($reward['limit']).'</div>';
 				}
 
 				$form .= '</li></label>';

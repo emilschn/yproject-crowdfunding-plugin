@@ -1136,7 +1136,7 @@ class ATCF_Campaign {
                     'investor_name' => 'investisseur',
                     'investor_action' => 'investissement',
                     'action_feminin' => false,
-                    'investor_verb' => 'investi;'
+                    'investor_verb' => 'investi'
                     );
             }
             return array();
