@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function ypcf_display_invest_form($error = '') {
     $campaign = atcf_get_current_campaign();
-    $form = '';
+    $form = '<a name="invest-start"></a>';
     
     if (isset($campaign)) {
 	    $min_value = ypcf_get_min_value_to_invest();
@@ -167,7 +167,7 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '</form><br /><br />';
 		$form .= '<div class="align-center mangopay-image"><img src="'.get_stylesheet_directory_uri() . '/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>';
 	    } else {
-		$form = 'Il n&apos;est plus possible d&apos;investir sur ce <a href="'.get_permalink($campaign->ID).'">projet</a> !';
+		$form .= 'Il n&apos;est plus possible d&apos;investir sur ce <a href="'.get_permalink($campaign->ID).'">projet</a> !';
 	    }
 	
     }
