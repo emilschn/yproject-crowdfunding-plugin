@@ -22,16 +22,29 @@ class ATCF_rewards {
         $this->campaign_ID = $post;
 
         $data_rewards = edd_get_variable_prices($post);
-        $this->rewards_list = $this->order_list($data_rewards, $post);
+        
+        $is_safe = true;
+        if (is_array($data_rewards)){
+            foreach ($data_rewards as $value) {
+                $is_safe = $is_safe && is_array($value);
+            }
+        } else { $is_safe = false; }
+        
+        if ($is_safe){
+            $this->rewards_list = $this->order_list($data_rewards, $post);
+        } else {
+            $this->rewards_list = array();
+        }
         $this->save();
     }
+    
+    static function cmp($a, $b){
+        return $diff = $a['amount'] - $b['amount'];
+    }
+    
     private function order_list($list, $post){
         //Sort the rewards by ascending amount
-        function cmp($a, $b){
-            return $diff = $a['amount'] - $b['amount'];
-        }
-        usort($list, "cmp");
-
+        usort($list, array("ATCF_rewards","cmp"));
         foreach ($list as $key => $value) {
             //Add a new ID to rewards who don't have one
             if ($list[$key]['id']==''){
@@ -155,6 +168,7 @@ class ATCF_rewards {
      * Update the database with current object data
      */
     public function save(){
+        $this->rewards_list = $this->order_list($this->rewards_list, $this->campaign_ID);
         $datasave = $this->rewards_list;
         update_post_meta($this->campaign_ID, 'edd_variable_prices', $datasave);
     }
@@ -171,6 +185,48 @@ class ATCF_rewards {
             }
         }
         return -1;
+    }
+    
+    /**
+     * Updates and save updates or new rewards
+     * For each array : if the id is not provided, a new reward is added,
+     * if the id is provided, the existing reward is modified with provided data
+     * if the name is not provided or empty, the existing reward is deleted
+     * @param array $array_new Array of the same pattern than $rewards_list
+     */
+    public function update_rewards_data($array_new){
+        foreach ($array_new as $reward) {
+            if (isset ($reward['id'])){
+                if (($reward['name'])=='' || ($reward['amount'])==''){
+                    //Suppression d'un existant
+                    $nbelem = $this->get_pos_from_ID($reward['id']);
+                    unset($this->rewards_list[$nbelem]);
+                } else {
+                    //Modification d'un existant
+                    $nbelem = $this->get_pos_from_ID($reward['id']);
+                    $this->rewards_list[$nbelem]['name']=$reward['name'];
+                    $this->rewards_list[$nbelem]['amount']=strval($reward['amount']);
+                    if($reward['limit']==0){
+                        $this->rewards_list[$nbelem]['limit']='';
+                    } else {
+                        $this->rewards_list[$nbelem]['limit']=strval($reward['limit']);
+                    }
+                }
+            } else if (($reward['name'])!='' && ($reward['amount'])!=''){
+                //Ajout d'un nouveau
+                $newReward = array();
+                $newReward['name']=$reward['name'];
+                $newReward['amount']=strval($reward['amount']);
+                if($reward['limit']==0){
+                    $newReward['limit']='';
+                } else {
+                    $newReward['limit']=strval($reward['limit']);
+                }
+                
+                $this->rewards_list[]=$newReward;
+            }
+        }
+        $this->save();
     }
 }
 ?>
