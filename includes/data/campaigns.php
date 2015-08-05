@@ -61,6 +61,7 @@ class ATCF_Campaigns {
 
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_boxes_save' ) );
 		add_filter( 'edd_metabox_save_campaign_end_date', 'atcf_campaign_save_end_date' );
+                add_filter( 'edd_metabox_save_campaign_begin_collecte_date', 'atcf_campaign_save_begin_collecte_date' );
 		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
 		add_filter( 'edd_metabox_save_campaign_first_payment_date', 'atcf_campaign_save_first_payment_date' );
 		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_save_payment_list' );
@@ -233,7 +234,7 @@ class ATCF_Campaigns {
 			return;
 
 		add_meta_box( 'atcf_campaign_status', 'Statut de la campagne', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_date_vote', 'Date de la fin des votes', '_atcf_metabox_campaign_date_vote', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_date_vote', 'Dates de la campagne', '_atcf_metabox_campaign_dates', 'download', 'side', 'high' );
 		
 		add_meta_box( 'atcf_campaign_summary', 'Résumé', '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_societal_challenge', 'Utilité sociétale', '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
@@ -268,11 +269,11 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_part_value';
 		$fields[] = 'campaign_contact_email';
                 $fields[] = 'campaign_contact_phone';
+                $fields[] = 'campaign_end_vote';
+                $fields[] = 'campaign_begin_collecte_date';
 		$fields[] = 'campaign_end_date';
 		$fields[] = 'campaign_vote';
                 $fields[] = 'campaign_validated_next_step';
-		$fields[] = 'campaign_start_vote';
-		$fields[] = 'campaign_end_vote';
 		$fields[] = 'campaign_first_payment_date';
 		$fields[] = 'campaign_payment_list';
 		$fields[] = 'campaign_video';
@@ -428,6 +429,40 @@ function atcf_campaign_save_end_date( $new ) {
 	return $end_date;
 }
 
+function atcf_campaign_save_begin_collecte_date( $new ) {
+	if ( ! isset( $_POST[ 'begin-aa' ] ) )
+		return;
+	
+	date_default_timezone_set("Europe/Paris");
+	$aa = $_POST['begin-aa'];
+	$mm = $_POST['begin-mm'];
+	$jj = $_POST['begin-jj'];
+	$hh = $_POST['begin-hh'];
+	$mn = $_POST['begin-mn'];
+	$ss = $_POST['begin-ss'];
+
+	$aa = ($aa <= 0 ) ? date('Y') : $aa;
+	$mm = ($mm <= 0 ) ? date('n') : $mm;
+	$jj = ($jj > 31 ) ? 31 : $jj;
+	$jj = ($jj <= 0 ) ? date('j') : $jj;
+
+	$hh = ($hh > 23 ) ? $hh -24 : $hh + 1; //Pourquoi y'a-t-il besoin d'un +1 ? Bonne question...
+	$mn = ($mn > 59 ) ? $mn -60 : $mn;
+	$ss = ($ss > 59 ) ? $ss -60 : $ss;
+
+	$begin_date = sprintf( "%04d-%02d-%02d %02d:%02d:%02d", $aa, $mm, $jj, $hh, $mn, $ss );
+	
+	$valid_date = wp_checkdate( $mm, $jj, $aa, $begin_date );
+	
+	if ( ! $valid_date ) {
+		return new WP_Error( 'invalid_date', __( 'Whoops, the provided date is invalid.', 'atcf' ) );
+	}
+
+	$begin_date = get_gmt_from_date( $begin_date );
+
+	return $begin_date;
+}
+
 function atcf_campaign_save_end_vote() {
 	if ( ! isset( $_POST[ 'end-vote-aa' ] ) )
 		return;
@@ -505,8 +540,9 @@ function atcf_campaign_save_payment_list() {
  */
 function atcf_pledge_limit_head() {
 ?>
-	<th style="width: 30px"><?php _e( 'Limit', 'edd' ); ?></th>
-	<th style="width: 30px"><?php _e( 'Purchased', 'edd' ); ?></th>
+	<th style="width: 60px"><?php _e( 'Limite', 'edd' ); ?></th>
+        <th style="width: 60px"><?php _e( 'Achet&eacute;s', 'edd' ); ?></th>
+        <th style="width: 50px"><?php _e( 'Id', 'edd' ); ?></th>
 <?php
 }
 
@@ -518,12 +554,16 @@ function atcf_pledge_limit_head() {
  * @return void
  */
 function atcf_pledge_limit_column( $post_id, $key, $args ) {
+    //Il est possible de modifier les "bought" et "id" en modifiant le CSS, et ainsi enregistrer n'importe quoi dans la BDD.
 ?>
 	<td>
-		<input type="text" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][limit]" id="edd_variable_prices[<?php echo $key; ?>][limit]" value="<?php echo isset ( $args[ 'limit' ] ) ? $args[ 'limit' ] : null; ?>" style="width:100%" />
+		<input type="number" min="0" step="1" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][limit]" id="edd_variable_prices[<?php echo $key; ?>][limit]" value="<?php echo isset ( $args[ 'limit' ] ) ? $args[ 'limit' ] : null; ?>" style="width:100%" />
 	</td>
 	<td>
-		<input type="text" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][bought]" id="edd_variable_prices[<?php echo $key; ?>][bought]" value="<?php echo isset ( $args[ 'bought' ] ) ? $args[ 'bought' ] : null; ?>" readonly style="width:100%" />
+		<input type="number" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][bought]" id="edd_variable_prices[<?php echo $key; ?>][bought]" value="<?php echo isset ( $args[ 'bought' ] ) ? $args[ 'bought' ] : null; ?>" readonly style="width:100%" />
+	</td>
+        <td>
+		<input type="number" class="edd_repeatable_name_field" name="edd_variable_prices[<?php echo $key; ?>][id]" id="edd_variable_prices[<?php echo $key; ?>][id]" value="<?php echo isset ( $args[ 'id' ] ) ? $args[ 'id' ] : null; ?>" readonly style="width:100%" />
 	</td>
 <?php
 }
@@ -538,6 +578,7 @@ function atcf_pledge_limit_column( $post_id, $key, $args ) {
 function atcf_price_row_args( $args, $value ) {
 	$args[ 'limit' ] = isset( $value[ 'limit' ] ) ? $value[ 'limit' ] : '';
 	$args[ 'bought' ] = isset( $value[ 'bought' ] ) ? $value[ 'bought' ] : 0;
+        $args[ 'id' ] = isset( $value[ 'id' ] ) ? $value[ 'id' ] : '';
 
 	return $args;
 }
@@ -594,18 +635,20 @@ function _atcf_metabox_campaign_status() {
 <?php
 }
 
-// CHOIX DES DATES DES VOTES
-function _atcf_metabox_campaign_date_vote() {
+// CHOIX DES DATES DE LA CAMPAGNE
+function _atcf_metabox_campaign_dates() {
 	global $post, $wp_locale;
 	$campaign = atcf_get_campaign( $post );
-	$end_date = $campaign->end_vote_date();
-	$jj = mysql2date( 'd', $end_date, false );
-	$mm = mysql2date( 'm', $end_date, false );
-	$aa = mysql2date( 'Y', $end_date, false );
-	$hh = mysql2date( 'H', $end_date, false );
-	$mn = mysql2date( 'i', $end_date, false );
+	$end_vote_date = $campaign->end_vote_date();
+	$jj = mysql2date( 'd', $end_vote_date, false );
+	$mm = mysql2date( 'm', $end_vote_date, false );
+	$aa = mysql2date( 'Y', $end_vote_date, false );
+	$hh = mysql2date( 'H', $end_vote_date, false );
+	$mn = mysql2date( 'i', $end_vote_date, false );
 ?>  
 	<p>
+            <strong><?php _e( 'Date de fin de vote:', 'atcf' ); ?></strong><br />
+
 	    <input type="text" name="end-vote-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
 	    <select name="end-vote-mm">
 		    <?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
@@ -619,6 +662,62 @@ function _atcf_metabox_campaign_date_vote() {
 	    <input type="text" name="end-vote-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
 	    <input type="text" name="end-vote-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
 	    <input type="hidden" name="campaign_end_vote" value="1" />
+	</p>
+        
+        <?php
+            $begin_date = $campaign->begin_collecte_date();
+            $jj = mysql2date( 'd', $begin_date, false );
+            $mm = mysql2date( 'm', $begin_date, false );
+            $aa = mysql2date( 'Y', $begin_date, false );
+            $hh = mysql2date( 'H', $begin_date, false );
+            $mn = mysql2date( 'i', $begin_date, false );
+            $ss = mysql2date( 's', $begin_date, false );
+        ?>
+        <p>
+		<strong><?php _e( 'Date de début de collecte:', 'atcf' ); ?></strong><br />
+
+		<input type="text" id="begin-jj" name="begin-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
+		<select id="begin-mm" name="begin-mm">
+			<?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
+				<option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $mm ); ?>>
+				<?php printf( '%1$s-%2$s', $monthnum, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ); ?>
+				</option>
+			<?php endfor; ?>
+		</select>
+		<input type="text" id="begin-aa" name="begin-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
+		
+		<input type="text" id="begin-hh" name="begin-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
+		<input type="text" id="begin-mn" name="begin-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
+		<input type="hidden" id="begin-ss" name="begin-ss" value="<?php echo esc_attr( $ss ); ?>" />
+		<input type="hidden" name="campaign_begin_collecte_date" value="1" />
+	</p>
+        
+        <?php
+            $end_date = $campaign->end_date();
+            $jj = mysql2date( 'd', $end_date, false );
+            $mm = mysql2date( 'm', $end_date, false );
+            $aa = mysql2date( 'Y', $end_date, false );
+            $hh = mysql2date( 'H', $end_date, false );
+            $mn = mysql2date( 'i', $end_date, false );
+            $ss = mysql2date( 's', $end_date, false );
+        ?>
+        <p>
+		<strong><?php _e( 'Date de fin de collecte:', 'atcf' ); ?></strong><br />
+
+		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
+		<select id="end-mm" name="end-mm">
+			<?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
+				<option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $mm ); ?>>
+				<?php printf( '%1$s-%2$s', $monthnum, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ); ?>
+				</option>
+			<?php endfor; ?>
+		</select>
+		<input type="text" id="end-aa" name="end-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
+		
+		<input type="text" id="end-hh" name="end-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
+		<input type="text" id="end-mn" name="end-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
+		<input type="hidden" id="end-ss" name="end-ss" value="<?php echo esc_attr( $ss ); ?>" />
+		<input type="hidden" name="campaign_end_date" value="1" />
 	</p>
 <?php
 }
@@ -1042,13 +1141,6 @@ function _atcf_metabox_campaign_info() {
 	
 	$campaign = atcf_get_campaign( $post );
 
-	$end_date = $campaign->end_date();
-	$jj = mysql2date( 'd', $end_date, false );
-	$mm = mysql2date( 'm', $end_date, false );
-	$aa = mysql2date( 'Y', $end_date, false );
-	$hh = mysql2date( 'H', $end_date, false );
-	$mn = mysql2date( 'i', $end_date, false );
-	$ss = mysql2date( 's', $end_date, false );
 
 	do_action( 'atcf_metabox_campaign_info_before', $campaign );
 
@@ -1125,24 +1217,6 @@ function _atcf_metabox_campaign_info() {
 
 	<style>#end-aa { width: 3.4em } #end-jj, #end-hh, #end-mn { width: 2em; }</style>
 
-	<p>
-		<strong><?php _e( 'End Date:', 'atcf' ); ?></strong><br />
-
-		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
-		<select id="end-mm" name="end-mm">
-			<?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
-				<option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $mm ); ?>>
-				<?php printf( '%1$s-%2$s', $monthnum, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ); ?>
-				</option>
-			<?php endfor; ?>
-		</select>
-		<input type="text" id="end-aa" name="end-aa" value="<?php echo esc_attr( $aa ); ?>" size="4" maxlength="4" autocomplete="off" /> @
-		
-		<input type="text" id="end-hh" name="end-hh" value="<?php echo esc_attr( $hh ); ?>" size="2" maxlength="2" autocomplete="off" /> :
-		<input type="text" id="end-mn" name="end-mn" value="<?php echo esc_attr( $mn ); ?>" size="2" maxlength="2" autocomplete="off" />
-		<input type="hidden" id="end-ss" name="end-ss" value="<?php echo esc_attr( $ss ); ?>" />
-		<input type="hidden" name="campaign_end_date" value="1" />
-	</p>
 	
 	<p>
 		Lien video (supporté par oembed) :

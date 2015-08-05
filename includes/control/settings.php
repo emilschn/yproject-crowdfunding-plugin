@@ -243,6 +243,23 @@ function ypcf_register_settings() {
 	)
     );
     
+    add_settings_field(
+	'edd_settings_misc[donation_generalities]',
+	'Explications g&eacute;n&eacute;rales sur le don',
+	function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'donation_generalities',
+	    'desc' => '',
+	    'name' => 'donation_generalities',
+	    'section' => 'misc',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+    
     
     add_settings_field(
 	'edd_settings_misc[contract_label]',
@@ -271,6 +288,23 @@ function ypcf_register_settings() {
 	    'id' => 'contract',
 	    'desc' => '',
 	    'name' => 'contract',
+	    'section' => 'misc',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+    
+    add_settings_field(
+	'edd_settings_misc[message_before_donation]',
+	'Message affiché avant un don',
+	function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+	'edd_settings_misc',
+	'edd_settings_misc',
+	array(
+	    'id' => 'message_before_donation',
+	    'desc' => '',
+	    'name' => 'message_before_donation',
 	    'section' => 'misc',
 	    'size' => '' ,
 	    'options' => '',

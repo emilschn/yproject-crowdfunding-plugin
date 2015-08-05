@@ -31,6 +31,8 @@ function ypcf_check_redirections() {
 		    ypcf_session_start();
 		    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 		    if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
+		    if (isset($_SESSION['error_invest'])) unset($_SESSION['error_invest']);
+                    if (isset($_SESSION['redirect_current_selected_reward'])) unset($_SESSION['redirect_current_selected_reward']);
 		}
 		//D'abord on teste si l'utilisateur est bien connecté
 		ypcf_check_is_user_logged_invest();
@@ -47,19 +49,23 @@ function ypcf_check_redirections() {
 		break;
 		
 	    case 'moyen-de-paiement' :
+		ypcf_check_is_user_logged_invest();
 		ypcf_check_meanofpayment_redirections();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-mean-payment.php' );
 		break;
 	
 	    case 'paiement-virement' :
+		ypcf_check_is_user_logged_invest();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-payment-wire.php' );
 		break;
 	
 	    case 'paiement-effectue' :
+		ypcf_check_is_user_logged_invest();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-return.php' );
 		break;
 	
 	    case 'paiement-partager' :
+		ypcf_check_is_user_logged_invest();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-share.php' );
 		break;
 	}
@@ -107,6 +113,11 @@ function ypcf_check_is_project_investable() {
     }
 }
 
+/**
+ * Détermine si les informations utilisateurs sont complètes (nécessaires pour les porteurs de projet)
+ * @param type $user_id
+ * @return type
+ */
 function ypcf_check_user_is_complete($user_id) {
     $is_complete = true;
     $current_user = get_user_by('id', $user_id);
@@ -122,28 +133,45 @@ function ypcf_check_user_is_complete($user_id) {
 }
 
 /**
- * Vérification si l'utilisateur a bien rempli toutes ses données
+ * Vérification si l'utilisateur a bien rempli les données nécessaires au type de financement qu'il tente
  */
 function ypcf_check_user_can_invest($redirect = false) {
-    $can_invest = true;
+    $can_invest = TRUE;
+    
+    ypcf_session_start();
+    $errors = array();
+    
+    $current_campaign = atcf_get_current_campaign();
     $current_user = wp_get_current_user();
-    $can_invest = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
-    $can_invest = $can_invest && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
-    $can_invest = $can_invest && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
-    $can_invest = $can_invest && ($current_user->get('user_nationality') != "") && ($current_user->user_email != "");
-    $can_invest = $can_invest && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
-    $can_invest = $can_invest && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
-    $can_invest = $can_invest && ($current_user->get('user_gender') != "") && ($current_user->get('user_birthplace') != "");
+    
+    //Infos nécessaires pour tout type de financement
+    if ($current_user->user_firstname == "") { array_push($errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
+    if ($current_user->user_lastname == "") { array_push($errors, __('Vous devez renseigner votre nom.', 'yproject')); }
+    if ($current_user->user_email == "") { array_push($errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
+    if ($current_user->get('user_nationality') == "") { array_push($errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
+    if ($current_user->get('user_birthday_day') == "") { array_push($errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
+    if ($current_user->get('user_birthday_month') == "") { array_push($errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
+    if ($current_user->get('user_birthday_year') == "") { array_push($errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
+    //Infos nécessaires pour l'investissement
+    if ($current_campaign->funding_type() != 'fundingdonation') {
+	    if (!ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'))) { array_push($errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
+	    if ($current_user->get('user_address') == "") { array_push($errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
+	    if ($current_user->get('user_postal_code') == "") { array_push($errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
+	    if ($current_user->get('user_city') == "") { array_push($errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
+	    if ($current_user->get('user_country') == "") { array_push($errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
+	    if ($current_user->get('user_birthplace') == "") { array_push($errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
+	    if ($current_user->get('user_gender') == "") { array_push($errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
+    }
+    if (!empty($errors)) {
+	    $can_invest = FALSE;
+    }
+    $_SESSION['error_invest'] = $errors;
 
     if ($redirect && !$can_invest) {
-	ypcf_session_start();
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
-	$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
-	array_push($errors, 'Certaines des informations manquent ou sont inexactes.');
-	if (!ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'))) array_push($errors, 'Seules les personnes majeures peuvent investir.');
-	$_SESSION['error_invest'] = $errors;
+        if (isset($_POST['selected_reward'])) $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
 	$page_update = get_page_by_path('modifier-mon-compte');
 	wp_redirect(get_permalink($page_update->ID));
 	exit();
@@ -183,8 +211,7 @@ function ypcf_check_invest_redirections() {
     ypcf_session_start();
 
     //Si le projet n'est pas défini, on annule et retourne à l'accueil
-    $post_camp = get_post($_GET['campaign_id']);
-    $campaign = atcf_get_campaign( $post_camp );
+    $campaign = atcf_get_current_campaign();
     if (!isset($campaign)) {
 	wp_redirect(site_url());
 	exit();
@@ -196,24 +223,27 @@ function ypcf_check_invest_redirections() {
 	exit();
     }
     
-    //Si l'utilisateur veut investir pour une nouvelle organisation, on l'envoie vers "Mon compte" pour qu'il ajoute l'organisation
-    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
-	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-	$page_new_orga = get_page_by_path('creer-une-organisation');
-	wp_redirect(get_permalink($page_new_orga->ID));
-	exit();
-    }
-    
-    //Si l'utilisateur veut investir pour une organisation existante
-    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != 'new_organisation' && $_SESSION['redirect_current_invest_type'] != 'user') {
-	if (!ypcf_check_organisation_can_invest($_SESSION['redirect_current_invest_type'])) {
-	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	    if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-	    $page_update = get_page_by_path('modifier-mon-compte');
-	    wp_redirect(get_permalink($page_update->ID));
-	    exit();
-	}
+    //En cas d'investissement, et pas de don
+    if ($campaign->funding_type() != "fundingdonation") {
+	    //Si l'utilisateur veut investir pour une nouvelle organisation, on l'envoie vers "Mon compte" pour qu'il ajoute l'organisation
+	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
+		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+		if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+		$page_new_orga = get_page_by_path('creer-une-organisation');
+		wp_redirect(get_permalink($page_new_orga->ID));
+		exit();
+	    }
+
+	    //Si l'utilisateur veut investir pour une organisation existante
+	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != 'new_organisation' && $_SESSION['redirect_current_invest_type'] != 'user') {
+		if (!ypcf_check_organisation_can_invest($_SESSION['redirect_current_invest_type'])) {
+		    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+		    if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+		    $page_update = get_page_by_path('modifier-mon-compte');
+		    wp_redirect(get_permalink($page_update->ID));
+		    exit();
+		}
+	    }
     }
 
     //Si on a validé la confirmation
@@ -223,18 +253,29 @@ function ypcf_check_invest_redirections() {
     if (isset($_POST['amount_part'])) $amount_part = $_POST['amount_part'];
     $amount = ($amount_part === FALSE) ? 0 : $amount_part * $part_value;
     $max_part_value = ypcf_get_max_part_value();
-    $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
-    //Tests de la validité de l'investissement : utilisateur loggé, projet défini, montant correct, informations validées par coche, bon pour pouvoir / souscription écrit
+    
+    //Tests de la validité de l'investissement pour tous les types de financement : utilisateur loggé, projet défini, montant correct
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
-	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value 
-	    && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' && isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type
-	    && ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))) {
+	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value) {
 	
-	$_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-	
-	$page_mean_payment = get_page_by_path('moyen-de-paiement');
-	wp_redirect(get_permalink($page_mean_payment->ID) . '?campaign_id=' . $_GET['campaign_id']);
-	exit();
+	    $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
+	    
+
+            //Suite des tests pour les projets 
+            //Pour l'investissement : bon pour pouvoir / souscription écrit
+            //Pour tous : informations validées par coche
+	    if (((($campaign->funding_type() != 'fundingdonation')
+                    &&(isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type
+		    && ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))))
+                || ($campaign->funding_type() == 'fundingdonation'))
+                && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' ) {
+
+		    $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+                    
+		    $page_mean_payment = get_page_by_path('moyen-de-paiement');
+		    wp_redirect(get_permalink($page_mean_payment->ID) . '?campaign_id=' . $_GET['campaign_id']);
+		    exit();
+	    }
     }
 }
 
@@ -315,6 +356,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 	if ($_POST["update_city"] != "") update_user_meta($current_user->ID, 'user_city', $_POST["update_city"]);
 	if ($_POST["update_country"] != "") update_user_meta($current_user->ID, 'user_country', $_POST["update_country"]);
 	if ($_POST["update_mobile_phone"] != "") update_user_meta($current_user->ID, 'user_mobile_phone', $_POST["update_mobile_phone"]);
+	if ($_POST["user_description"] != "") update_user_meta($current_user->ID, 'description', $_POST["user_description"]);
 	if (isset($_POST["update_email_contact"])) {
 	    if (($_POST["update_email_contact"] != "" && $_POST["update_email_contact"] != $current_user->user_email)) {
 		$validate_email = bp_core_validate_email_address($_POST["update_email_contact"]);
@@ -479,8 +521,12 @@ function ypcf_login_gobackinvest_url() {
  * @param type $current_step
  * @return string
  */
-function ypcf_print_invest_breadcrumb($current_step) {
-    $buffer = '<div id="invest-breadcrumb"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step.'.jpg" width="600" height="100" alt="Parcours d&apos;investissement" /></div>';
+function ypcf_print_invest_breadcrumb($current_step, $funding_type = 'invest') {
+    $current_step_str = $current_step;
+    if ($funding_type == 'fundingdonation') {
+	    $current_step_str = 'don_' . $current_step;
+    }
+    $buffer = '<div id="invest-breadcrumb" class="breadcrumb-step-'.$current_step.'"><img src="'. get_stylesheet_directory_uri() .'/images/paiement_'.$current_step_str.'.jpg" width="600" height="100" alt="Parcours d&apos;investissement" /></div>';
     return $buffer;
 }
 
@@ -567,23 +613,30 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 			$download_id = '';
 			if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
 			else $download_id = $downloads[0];
-			if ($amount > 1500) {
-				//Création du contrat à signer
-				$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
-				if ($contract_id != '') {
-					$contract_infos = signsquid_get_contract_infos($contract_id);
-					NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
-					NotificationsEmails::new_purchase_admin_success($payment_id);
+			$post_campaign = get_post($download_id);
+			$campaign = atcf_get_campaign($post_campaign);
+			if ($campaign->funding_type() != 'fundingdonation') {
+				if ($amount > 1500) {
+					//Création du contrat à signer
+					$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+					if ($contract_id != '') {
+						$contract_infos = signsquid_get_contract_infos($contract_id);
+						NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
+						NotificationsEmails::new_purchase_admin_success($payment_id);
+					} else {
+						global $contract_errors;
+						$contract_errors = 'contract_failed';
+						NotificationsEmails::new_purchase_user_error_contract($payment_id);
+						NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+					}
 				} else {
-					global $contract_errors;
-					$contract_errors = 'contract_failed';
-					NotificationsEmails::new_purchase_user_error_contract($payment_id);
-					NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+					$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
+					NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
+					NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
 				}
 			} else {
-				$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-				NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
-				NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
+				NotificationsEmails::new_purchase_user($payment_id, '');
+				NotificationsEmails::new_purchase_admin_success($payment_id);
 			}
 			NotificationsSlack::send_to_dev('Nouvel achat !');
 			NotificationsEmails::new_purchase_team_members($payment_id);
@@ -614,7 +667,11 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 					$download_id = '';
 					if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
 					else $download_id = $downloads[0];
-					$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+					$post_campaign = get_post($download_id);
+					$campaign = atcf_get_campaign($post_campaign);
+					if ($campaign->funding_type() != 'fundingdonation') {
+						$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+					}
 				}
 			}
 		}

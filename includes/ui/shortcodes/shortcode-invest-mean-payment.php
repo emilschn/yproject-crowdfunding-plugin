@@ -16,7 +16,7 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
     $min_check = 500;
     $can_use_check = (ypcf_get_part_value() * $_SESSION['redirect_current_amount_part'] >= $min_check);
     
-    echo ypcf_print_invest_breadcrumb(3);
+    echo ypcf_print_invest_breadcrumb(3, $campaign->funding_type());
     ?>
     Merci de choisir votre moyen de paiement :<br />
     <ul class="invest-mean-payment">
@@ -38,7 +38,7 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
 	    <div class="clear"></div>
     </ul>
     
-    <div style="text-align: center;"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
+    <div class="align-center mangopay-image"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
     <?php
     return ob_get_clean();
 }

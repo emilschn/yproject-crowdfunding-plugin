@@ -13,7 +13,9 @@ function ypcf_shortcode_invest_payment_wire($atts, $content = '') {
 		
 		$page_payment_done = get_page_by_path('paiement-effectue');
 
-		echo ypcf_print_invest_breadcrumb(3);
+		$post = get_post($_GET['campaign_id']);
+                $campaign = atcf_get_campaign( $post );
+		echo ypcf_print_invest_breadcrumb(3, $campaign->funding_type());
 ?>
 
 	Afin de proc&eacute;der au virement, voici les informations bancaires dont vous aurez besoin :<br />
@@ -33,7 +35,7 @@ function ypcf_shortcode_invest_payment_wire($atts, $content = '') {
 	Une fois le virement effectu&eacute;, cliquez sur<br />
 	<a href="<?php echo get_permalink($page_payment_done->ID) . '?ContributionID=' . $_REQUEST["ContributionID"] . '&campaign_id=' . $_GET['campaign_id'] . '&meanofpayment=wire'; ?>" class="button">SUIVANT</a><br /><br />
 
-	<div style="text-align: center;"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
+	<div class="align-center mangopay-image"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
 
 <?php
 	} else {

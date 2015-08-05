@@ -92,6 +92,7 @@ final class ATCF_CrowdFunding {
 		
 		require( $this->includes_dir . 'data/campaign.php' );
 		require( $this->includes_dir . 'data/campaigns.php' );
+                require( $this->includes_dir . 'data/rewards.php');
 		require( $this->includes_dir . 'data/organisation.php' );
 //		require( $this->includes_dir . 'data/roles.php' );
 		require( $this->includes_dir . 'data/bopp/bopp-lib.php' );

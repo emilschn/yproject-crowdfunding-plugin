@@ -10,19 +10,19 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
     $buffer = '';
     if (isset($_GET['campaign_id'])) {
 	$campaign_url  = get_permalink($_GET['campaign_id']);
-	
-	$buffer .= ypcf_print_invest_breadcrumb(5);
-	$buffer .= $content;
-	
 	$post_campaign = get_post($_GET['campaign_id']);
 	$campaign = atcf_get_campaign( $post_campaign );
+	
+	$buffer .= ypcf_print_invest_breadcrumb(5, $campaign->funding_type());
+	$buffer .= $content;
+	
 	global $post;
 	$post = $post_campaign;
 	
 	ob_start();
 	?>
 	<div class="projects_preview projects_current projects_current_temp" style="margin-left: 370px;">
-	    <div class="preview_item_<?php echo $_GET['campaign_id']; ?> project_preview_item">
+	    <div class="preview_item_<?php echo $_GET['campaign_id']; ?> project_preview_item" style="width: 220px;">
 
 		<div class="project_preview_item_part">
 		    <div class="project_preview_item_pictos">
@@ -62,7 +62,7 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
 			}
 			?>
 			<a href="<?php the_permalink(); ?>">
-			<div class="project_preview_item_progressbg">
+			<div class="project_preview_item_progressbg" style="margin-top: 14px;">
 			    <div class="project_preview_item_progressbar" style="width:<?php echo $width; ?>px">
 				<?php if ($width_min > 0): ?>
 				<div style="width: <?php echo $width_min; ?>px; height: 20px; border: 0px; border-right: 1px solid white;">&nbsp;</div>
@@ -91,7 +91,7 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
 	    $buffer .= 'Le service de partage est momentan&eacute;ment d&eacute;sactiv&eacute;.';
 	}
 	$buffer .= '</center>';
-	$buffer .= '<br /><br />&lt;&lt; <a href="'.$campaign_url.'">Retour au projet</a>';
+	$buffer .= '<br /><br />&lt;&lt; <a href="'.$campaign_url.'">Retour au projet</a><br /><br />';
 	
     } else {
 	wp_redirect(site_url());

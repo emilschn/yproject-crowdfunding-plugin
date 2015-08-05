@@ -90,6 +90,22 @@ class YPOrganisation {
 			$errors_submit_new = $organisation_user_id;
 			return FALSE;
 		}
+                
+                if($this->get_capital()==''){
+                    $this->set_capital(0);
+                }
+                if($this->get_bank_owner()==''){
+                    $this->set_bank_owner("---");
+                }
+                if($this->get_bank_address()==''){
+                    $this->set_bank_address("---");
+                }
+                if($this->get_bank_iban()==''){
+                    $this->set_bank_iban("---");
+                }
+                if($this->get_bank_bic()==''){
+                    $this->set_bank_bic("---");
+                }
 		
 		$return_obj = BoppOrganisations::create(
 			$this->get_wpref(),
