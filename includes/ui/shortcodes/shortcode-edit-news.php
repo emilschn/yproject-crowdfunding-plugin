@@ -16,10 +16,21 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $save_post = $post;
     if (isset($_GET['campaign_id'])) $post = get_post($_GET['campaign_id']);
     $author_id = $post->post_author;
-    if ($campaign->current_user_can_edit() && isset($_GET['edit_post_id'])) {
-
+    
+    //Test pour vérifier que le post de blog appartient à la campagne
+    $category_slug = $post->ID . '-blog-' . $post->post_name;
+    $category_obj = get_category_by_slug($category_slug);
+    $posts_blog = get_posts(array('category'=>$category_obj->cat_ID));
+    if (isset($_GET['edit_post_id'])) $edit_post_id = ($_GET['edit_post_id']);
+    $post_belong_campaign = false;
+    foreach ($posts_blog as $post_blog) {
+        if ($post_blog->ID == $edit_post_id){
+            $post_belong_campaign = true;
+        }
+    }
+    
+    if ($campaign->current_user_can_edit() && isset($_GET['edit_post_id']) && $post_belong_campaign) {
 	if (isset($_POST['action']) && $_POST['action'] == 'ypcf-campaign-edit-news') {
-
 	    $blog  = array(
 		'ID'		=> $_GET['edit_post_id'],
 		'post_title'    => $_POST['posttitle'],
@@ -32,8 +43,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	?>
 	<div style="padding-top: 10px;">
 	    <?php 
-	    $category_slug = $post->ID . '-blog-' . $post->post_name;
-	    $category_obj = get_category_by_slug($category_slug);
 	    if (!empty($category_obj)) {
 		    $news_link = esc_url(get_category_link($category_obj->cat_ID));
 	    } else {
@@ -52,8 +61,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		<p class="ypcf-edit-news-p">
 		    <input type="hidden" name="action" value="ypcf-campaign-edit-news" /><br />
 		    <?php wp_nonce_field('ypcf-campaign-edit-news'); ?>
-		    <input type="submit" value="<?php _e('Mettre &agrave; jour', 'yproject'); ?>" class="button" />
+		    <input type="submit" value="<?php _e('Mettre &agrave; jour', 'yproject'); ?>" class="button"
+                           style="background-color: #FF494C; border: 0px none !important;"/>
 		</p>
+                <br/>
+                <p>
+                    <a class="button" href="<?php echo $news_link."?delete_post_id=".($_GET['edit_post_id']) ?>">Supprimer l'article</a>
+                </p>
 	    </form>
 	</div>
 	<?php
