@@ -8,9 +8,11 @@ class NotificationsEmails {
      * @param string $to
      * @param string $object
      * @param string $content
+     * @param bool $decorate Inclure ou non le header et footer définis dans le back-office (projets-> réglages-> e-mails)
+     * @param array $attachments
      * @return bool
      */
-    public static function send_mail($to, $object, $content, $attachments = array()) {
+    public static function send_mail($to, $object, $content, $decorate = false, $attachments = array()) {
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
 	$from_name = get_bloginfo('name');
 	$from_email = get_option('admin_email');
@@ -18,7 +20,10 @@ class NotificationsEmails {
 	$headers .= "Reply-To: ". $from_email . "\r\n";
 	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
 	
-	$content = edd_get_email_body_header() . $content . edd_get_email_body_footer();
+	if ($decorate){
+            global $edd_options;
+            $content = wpautop( $edd_options['header_global_mail'] ) . $content . wpautop( $edd_options['footer_global_mail'] );
+        }
 
 	$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
@@ -104,7 +109,7 @@ class NotificationsEmails {
         }
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
         
-	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);
+	return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
     
     /**
@@ -138,7 +143,7 @@ class NotificationsEmails {
 
 	$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
         
-	return NotificationsEmails::send_mail($emails, $object, $body_content);
+	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     
     /**
@@ -194,7 +199,7 @@ class NotificationsEmails {
 	$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
 	$body_content .= $complement_content;
 	
-	return NotificationsEmails::send_mail($admin_email, $object, $body_content, $attachments);
+	return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
     }
     //*******************************************************
     // FIN ACHATS
@@ -276,7 +281,7 @@ class NotificationsEmails {
                 $to = get_userdata($item->user_id)->user_email;
                 $list_user[] = get_userdata($item->user_id)->user_login;
 		$list_mail[] = get_userdata($item->user_id)->user_email;
-                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content);
+                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
 	}
         return array_combine($list_mail, $feedback);
     }
@@ -305,7 +310,7 @@ class NotificationsEmails {
 	$body_content .= $code . "<br /><br />";
 	$body_content .= "Si vous n'avez fait aucune action pour recevoir ce code, ne tenez pas compte de ce message.<br /><br />";
 	
-	return NotificationsEmails::send_mail($user->user_email, $object, $body_content);
+	return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
     }
     //*******************************************************
     // FIN CODE SIGNATURE
@@ -344,7 +349,7 @@ class NotificationsEmails {
 	$emails = $user->user_email;
 	$emails .= BoppLibHelpers::get_project_members_mail_list($post_campaign->ID);
 		
-	return NotificationsEmails::send_mail($emails, $object, $body_content);
+	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
@@ -368,7 +373,7 @@ class NotificationsEmails {
 	$emails = $user->user_email;
 	$emails .= BoppLibHelpers::get_project_members_mail_list($post_campaign->ID);
 		
-	return NotificationsEmails::send_mail($emails, $object, $body_content);
+	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
