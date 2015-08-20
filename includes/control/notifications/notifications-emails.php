@@ -380,7 +380,7 @@ class NotificationsEmails {
     //*******************************************************
     // MESSAGE DIRECT PORTEUR DE PROJET
     //*******************************************************
-    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest) {
+    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list) {
 	//$to = liste des emails de la communauté - les désinscrits
 	
 	$post_campaign = get_post($campaign_id);
@@ -409,27 +409,28 @@ class NotificationsEmails {
         global $wpdb;
 	$table_jcrois = $wpdb->prefix . "jycrois";
         $list_user_jcrois = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
-	
+	$send_list = $list_user_jcrois;
+        
         if ($send_jycrois){
             $send_list = $list_user_jcrois;
         } else {
             if($send_vote){
                 $table_vote = $wpdb->prefix . "ypcf_project_votes";
                 $list_user_voters = $wpdb->get_col( "SELECT user_id FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
-                $send_list = array_intersect($list_user_jcrois, $list_user_voters);
+                $send_list = array_intersect($send_list, $list_user_voters);
             }
             if ($send_invest){
-                $send_list = array_intersect($list_user_jcrois, $list_user_investors);
-                //TODO : Récupérer id investisseurs sans ralentissement
+                $send_list = array_intersect($send_list, $id_investors_list);
             }
         }
         $list_mail = array();
         $feedback = array();
         
         foreach ($send_list as $id_user) {
-                $to = get_userdata(intval($id_user))->user_email;
-                $list_user[] = get_userdata(intval($id_user))->user_login;
-		$list_mail[] = get_userdata(intval($id_user))->user_email;
+                $user = get_userdata(intval($id_user));
+                $to = $user->user_email;
+                $list_user[] = $user->user_login;
+		$list_mail[] = $user->user_email;
                 $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
 	}
         return array_combine($list_mail, $feedback);
