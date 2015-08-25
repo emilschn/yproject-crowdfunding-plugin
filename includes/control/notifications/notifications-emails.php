@@ -380,7 +380,7 @@ class NotificationsEmails {
     //*******************************************************
     // MESSAGE DIRECT PORTEUR DE PROJET
     //*******************************************************
-    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list) {
+    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list=  [], $return_string = false) {
 	//$to = liste des emails de la communauté - les désinscrits
 	
 	$post_campaign = get_post($campaign_id);
@@ -404,6 +404,10 @@ class NotificationsEmails {
                 .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
                 . '</div></div>';
         //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
+        
+        if ($return_string){
+            return $body_content;
+        }
         
         //Récupère liste d'envoi
         global $wpdb;

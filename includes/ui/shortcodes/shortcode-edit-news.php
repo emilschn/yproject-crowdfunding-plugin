@@ -99,13 +99,11 @@ function ypcf_shortcode_edit_news_field_postcontent($post) {
 		    'ypcf_submit_field_postcontent_editor_args', 
 		    array( 
 			'media_buttons' => true,
-			'teeny'         => true,
 			'quicktags'     => false,
 			'editor_css'    => '<style>body { background: white; }</style>',
 			'tinymce'       => array(
 				'theme_advanced_path'     => false,
-				'theme_advanced_buttons1' => 'bold,italic,forecolor,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-				'plugins'                 => 'paste',
+				'plugins'                 => 'paste, wplink, textcolor',
 				'paste_remove_styles'     => true,
 				'theme_advanced_resizing_use_cookie' => false
 			)
