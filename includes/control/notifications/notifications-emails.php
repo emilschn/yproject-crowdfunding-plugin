@@ -176,6 +176,7 @@ class NotificationsEmails {
 	$object = 'Nouvel achat' . $complement_object;
 	
 	$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+	$campaign = atcf_get_campaign($post_campaign);
 	$payment_amount = edd_get_payment_amount( $payment_id );
 	$user_id = edd_get_payment_user_id( $payment_id );
 	$user_data = get_userdata($user_id);
@@ -186,6 +187,10 @@ class NotificationsEmails {
 	$body_content .= "Utilisateur : " . $user_data->user_login . "<br />";
 	$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
 	$body_content .= "Montant investi : ".$payment_amount."&euro;<br />";
+        if ($campaign->funding_type()=="fundingdonation"){
+            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
+            $body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
+        }
 	$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
 	$body_content .= $complement_content;
 	
