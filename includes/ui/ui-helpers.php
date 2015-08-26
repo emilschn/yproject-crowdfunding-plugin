@@ -94,12 +94,12 @@ class UIHelpers {
 		$avatar_path = '';
 		$upload_dir = wp_upload_dir();
 
-		if ( file_exists( BP_AVATAR_UPLOAD_PATH . '/avatars/' . bp_loggedin_user_id() . '/avatar.jpg' )) {
-			$avatar_path = $upload_dir['baseurl'] . '/avatars/' . bp_loggedin_user_id() . '/avatar.jpg';
+		if ( file_exists( BP_AVATAR_UPLOAD_PATH . '/avatars/' .  $user_id . '/avatar.jpg' )) {
+			$avatar_path = $upload_dir['baseurl'] . '/avatars/' .  $user_id . '/avatar.jpg';
 			return '<img src="' .$avatar_path . '" width="' . $width . '" height="' . $width . '"/>';
 
-		} elseif (file_exists( BP_AVATAR_UPLOAD_PATH. '/avatars/' . bp_loggedin_user_id() . '/avatar.png' )) {
-			$avatar_path = $upload_dir['baseurl'] . '/avatars/' . bp_loggedin_user_id() . '/avatar.png';
+		} elseif (file_exists( BP_AVATAR_UPLOAD_PATH. '/avatars/' .  $user_id . '/avatar.png' )) {
+			$avatar_path = $upload_dir['baseurl'] . '/avatars/' .  $user_id . '/avatar.png';
 			return '<img src="' . $avatar_path . '" width="' . $width . '" height="' . $width . '"/>';
 
 		} else {
