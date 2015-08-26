@@ -505,7 +505,7 @@ function atcf_pledge_limit_head() {
 ?>
 	<th style="width: 60px"><?php _e( 'Limite', 'edd' ); ?></th>
         <th style="width: 60px"><?php _e( 'Achet&eacute;s', 'edd' ); ?></th>
-        <th style="width: 50px"><?php _e( 'Id--', 'edd' ); ?></th>
+        <th style="width: 50px"><?php _e( 'Id', 'edd' ); ?></th>
 <?php
 }
 

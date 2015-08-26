@@ -32,6 +32,7 @@ function ypcf_check_redirections() {
 		    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 		    if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
 		    if (isset($_SESSION['error_invest'])) unset($_SESSION['error_invest']);
+                    if (isset($_SESSION['redirect_current_selected_reward'])) unset($_SESSION['redirect_current_selected_reward']);
 		}
 		//D'abord on teste si l'utilisateur est bien connecté
 		ypcf_check_is_user_logged_invest();
@@ -170,6 +171,7 @@ function ypcf_check_user_can_invest($redirect = false) {
 	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 	if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+        if (isset($_POST['selected_reward'])) $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
 	$page_update = get_page_by_path('modifier-mon-compte');
 	wp_redirect(get_permalink($page_update->ID));
 	exit();

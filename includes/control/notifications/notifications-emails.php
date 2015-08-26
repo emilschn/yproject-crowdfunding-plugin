@@ -89,14 +89,21 @@ class NotificationsEmails {
 	$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
 	$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br /><br />";
 	$body_content .= $post_campaign->post_title . " vous remercie pour votre " . $funding_type . ". N'oubliez pas qu'il ne sera définitivement validé ";
-	$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br /><br />";
+	$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br/>"
+                . "Retrouvez le projet &agrave l'adresse suivante : "
+                .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a></br>'
+                ."<br /><br />";
 	$body_content .= $particular_content . "<br /><br />";
 	
 	$body_content .= "<strong>Détails concernant votre ".$funding_type."</strong><br />";
 	$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-	$body_content .= "Montant : ".$payment_amount."€<br />";
+	$body_content .= "Montant : ".$payment_amount."&euro;<br />";
+        if ($campaign->funding_type()=="fundingdonation"){
+            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
+            $body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
+        }
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
-	
+        
 	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);
     }
     
@@ -122,9 +129,15 @@ class NotificationsEmails {
 	$user_data = get_user_by('email', $email);
 	
 	$body_content = "Une nouvelle personne a investi sur votre projet ".$post_campaign->post_title.":<br />";
-	$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." €.<br />";
+	$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." &euro;";
+        if ($campaign->funding_type()=="fundingdonation"){
+            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
+            $body_content .= " et a choisi la contrepartie suivante : palier de <br/>".$reward['amount']."&euro; - ".$reward['name'];
+        }
+        $body_content .= ".<br />";
+
 	$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
-	
+        
 	return NotificationsEmails::send_mail($emails, $object, $body_content);
     }
     
@@ -172,7 +185,7 @@ class NotificationsEmails {
 	$body_content .= "<strong>Détails de l'investissement</strong><br />";
 	$body_content .= "Utilisateur : " . $user_data->user_login . "<br />";
 	$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-	$body_content .= "Montant investi : ".$payment_amount."€<br />";
+	$body_content .= "Montant investi : ".$payment_amount."&euro;<br />";
 	$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
 	$body_content .= $complement_content;
 	
