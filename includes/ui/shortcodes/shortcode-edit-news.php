@@ -103,9 +103,9 @@ function ypcf_shortcode_edit_news_field_postcontent($post) {
 			'editor_css'    => '<style>body { background: white; }</style>',
 			'tinymce'       => array(
 				'theme_advanced_path'     => false,
-				'plugins'                 => 'paste, wplink, textcolor',
 				'paste_remove_styles'     => true,
-				'theme_advanced_resizing_use_cookie' => false
+				'theme_advanced_resizing_use_cookie' => false,
+                                'plugins'		    => 'paste, wplink, textcolor'
 			)
 
 		    ) 
