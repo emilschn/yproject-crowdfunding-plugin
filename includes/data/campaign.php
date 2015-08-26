@@ -917,17 +917,6 @@ class ATCF_Campaign {
 
 		return false;
 	}
-        
-        /**
-         * The terms of votes are validated (50 voters, 50% ok, 50% invest promise)
-         * 
-         * @return boolean
-         */
-	public function is_validated_by_vote(){
-            return $this->nb_voters()>=  ATCF_Campaign::$voters_min_required
-                    && wdg_get_project_vote_results($this->ID)['percent_project_validated']>= ATCF_Campaign::$vote_score_min_required
-                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->vote_invest_ready_min_required;
-        }
 	
         /**
          * Return payments data. 
