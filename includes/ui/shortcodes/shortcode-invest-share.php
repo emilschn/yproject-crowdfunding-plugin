@@ -72,8 +72,8 @@ function ypcf_shortcode_invest_share($atts, $content = '') {
 			    </div>
 			</div>
 			<span class="project_preview_item_progressprint"><?php echo $campaign->percent_minimum_completed(); ?></span>
-                        <span class="project_preview_item_progressprint"><?php echo $campaign->current_amount(true)?></span>
-			</a>
+			<span class="project_preview_item_progressprint"><?php echo $campaign->current_amount(true)?></span>
+                        </a>
 		    </div>
 		</div>
 	    </div>

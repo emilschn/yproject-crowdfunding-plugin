@@ -85,7 +85,6 @@ function ypcf_shortcode_edit_news_field_postcontent($post) {
 		    'ypcf_submit_field_postcontent_editor_args', 
 		    array( 
 			'media_buttons' => true,
-			'teeny'         => true,
 			'quicktags'     => false,
 			'editor_css'    => '<style>body { background: white; }</style>',
 			'tinymce'       => array(
