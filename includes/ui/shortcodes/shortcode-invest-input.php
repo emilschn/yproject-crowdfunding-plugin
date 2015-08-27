@@ -44,12 +44,15 @@ function ypcf_display_invest_form($error = '') {
 		switch ($campaign->funding_type()) {
 		    case 'fundingdonation':
 			$form .= '<span style="display:none;">(<span id="input_invest_amount">0</span> &euro;)</span><br />';
-			$form .= 'Je souhaite donner <input type="text" id="input_invest_amount_part" name="amount_part" placeholder="'.$min_value.'"> &euro; <br />';
-                        $rewards = atcf_get_rewards($campaign->ID);
+			$rewards = atcf_get_rewards($campaign->ID);
 
 			if (isset($rewards->rewards_list)) {
+                            $form .= '<p>Choisissez votre contrepartie :</p>';
 			    $form .= '<ul id="reward-selector">';
-			    $form .= '<label><li><input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked"> Je ne souhaite <span class="reward-name">pas de contrepartie</span>.</li></label>';
+			    $form .= '<label><li>'
+                                    . '<input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked">'
+                                    .'<span class="reward-amount" style="display:none">'.$min_value.'</span>'
+                                    . ' Je ne souhaite <span class="reward-name">pas de contrepartie</span>.</li></label>';
                         
 			    foreach ($rewards->rewards_list as $reward) {
 				$form .= '<label><li';
@@ -80,6 +83,7 @@ function ypcf_display_invest_form($error = '') {
 				$form .= '</li></label>';
 			    }
 			    $form .= '</ul>';
+                            $form .= 'Je souhaite donner <input type="text" id="input_invest_amount_part" name="amount_part" placeholder="'.$min_value.'"> &euro; <br />';
 			}
                         
 			break;
@@ -140,7 +144,7 @@ function ypcf_display_invest_form($error = '') {
 		switch ($campaign->funding_type()) {
 		    case "fundingdonation":
 			$form .= '<input type="hidden" name="invest_type" value="user" />';
-			$form .= '<input type="submit" value="Soutenir" class="button" />';
+			$form .= '<input type="submit" value="Confirmer mon don" class="button" />';
 			break;
 		    default:
 			$form .= '<input type="submit" value="Investir" class="button" />';
