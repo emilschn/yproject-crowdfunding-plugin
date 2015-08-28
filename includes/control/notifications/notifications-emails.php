@@ -249,7 +249,7 @@ class NotificationsEmails {
 	$project_title = $post_campaign->post_title;
         $new_post = get_post($post_id);
         $post_title = $new_post->post_title;
-	$object = 'Actualit&eacute '.$project_title. ': ' .$post_title;
+	$object = 'Actualit&eacute; '.$project_title. ': ' .$post_title;
         
         $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
                 .'<h1 style="text-align: center;">'.$post_title.'</h1>';
