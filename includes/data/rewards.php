@@ -151,7 +151,7 @@ class ATCF_rewards {
                 'name' => 'Pas de contrepartie',
                 'amount' =>'0',
                 'limit' => '0',
-                'bought' => get_reward_number_purchased($reward_id),
+                'bought' => $this->get_reward_number_purchased($reward_id),
                 'id' => '-1'
             );
         }
