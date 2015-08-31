@@ -258,14 +258,11 @@ function ypcf_check_invest_redirections() {
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
 	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value) {
 	
-	    $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
-	    
-
-            //Suite des tests pour les projets 
-            //Pour l'investissement : bon pour pouvoir / souscription écrit
+	    //Suite des tests pour les projets 
+            //Pour l'investissement : bon pour souscription écrit
             //Pour tous : informations validées par coche
 	    if (((($campaign->funding_type() != 'fundingdonation')
-                    &&(isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour ' . $text_to_type
+                    &&(isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour souscription'
 		    && ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))))
                 || ($campaign->funding_type() == 'fundingdonation'))
                 && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' ) {

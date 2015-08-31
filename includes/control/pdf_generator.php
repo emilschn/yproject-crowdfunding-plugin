@@ -39,7 +39,16 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().'</h1></div>';
     
     $buffer .= '<p>';
-    $buffer .= '<h2>LE SOUSSIGNÉ</h2>';
+    switch ($campaign_obj->funding_type()) {
+	    case 'fundingproject':
+		    $buffer .= '<h2>ENTRE LES SOUSSIGNÉS</h2>';
+		break;
+		
+	    case 'fundingdevelopment':
+	    default:
+		    $buffer .= '<h2>LE SOUSSIGNÉ</h2>';
+		break;
+    }
     if (is_object($organisation) && $organisation !== false) {
 	$buffer .= '<strong>'.$organisation->get_name().', '.$organisation->get_legalform().' au capital '.$organisation->get_capital().'&euro;</strong><br />';
 	$buffer .= 'dont le siège social est à '.$organisation->get_city().' ('.$organisation->get_postal_code().') - '.$organisation->get_address().'<br />';
@@ -49,27 +58,27 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     $buffer .= '<strong>'.$user_name.'</strong><br />';
     $birthday_month = mb_strtoupper(__($months[$user_obj->get('user_birthday_month') - 1]));
     $suffix_born = ($user_obj->get('user_gender') == "female") ? 'e' : '';
-    $buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' à '.$user_obj->get('user_birthplace').'<br />';
+    $buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' &agrave; '.$user_obj->get('user_birthplace').'<br />';
     $buffer .= 'de nationalité '.$nationality.'<br />';
     $buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address');
+    
+    if ($campaign_obj->funding_type() == 'fundingproject') {
+	    $buffer .= '<br /><br />';
+
+	    require_once('number-words/Numbers/Words.php');
+	    $nbwd_class = new Numbers_Words();
+	    $nbwd_text = $nbwd_class->toWords($payment_data["amount"], 'fr');
+	    
+
+	    $buffer .= 'qui paie la somme de '.$payment_data["amount"].' € ('.strtoupper(str_replace(' ', '-', $nbwd_text)).' EUROS) ci-après désignée la "Souscription",<br /><br />';
+	    $buffer .= 'ci-après désigné'.$suffix_born.' le « Souscripteur »,<br />';
+	    $buffer .= 'D\'UNE PART<br />';
+    }
     $buffer .= '</p>';
     
     switch ($campaign_obj->funding_type()) {
-	    case 'fundingproject':
-		    $buffer .= '<p>';
-		    $buffer .= '<h2>DONNE TOUS POUVOIRS à</h2>';
-		    $buffer .= '<strong>La société WE DO GOOD</strong><br />';
-		    $buffer .= 'Société par actions simplifiée au capital minimum de 1 239 Euros<br />';
-		    $buffer .= 'dont le siège social est à RENNES (35) - 51 rue Saint Hélier<br />';
-		    $buffer .= 'immatriculée au R.C.S. de RENNES sous le numéro 797 519 105<br />';
-		    $buffer .= 'représentée par Monsieur Jean-David BAR';
-		    $buffer .= '</p>';
-		    
-		    $buffer .= '<p>';
-		    $buffer .= '<strong>à l\'effet, en son nom et pour son compte de :</strong><br />';
-		    $buffer .= '</p>';
+	    case 'fundingproject': 
 		break;
-		
 	    case 'fundingdevelopment':
 	    default:
 		$buffer .= '<p>';
@@ -80,10 +89,10 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     
     $buffer .= '<p>';
     switch ($campaign_obj->funding_type()) {
-	    case 'fundingproject':
-		$buffer .= '- Signer en tant qu\'Investisseur le contrat à terme ferme annexé au présent pouvoir pour le montant de '.$payment_data["amount"].' euros auprès du Porteur de Projet identifié par les caractéristiques suivantes :<br />';
+	    case 'fundingproject': 
 		break;
 	    case 'fundingdevelopment':
+	    default:
 		$plurial = '';
 		if ($payment_data["amount_part"] > 1) $plurial = 's';
 		$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
@@ -110,9 +119,8 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
 	$buffer .= 'représentée par ';
     }
     $buffer .= $user_name.'<br />';
-    $text_to_type = ($campaign_obj->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
     $buffer .= '(1)<br />';
-    $buffer .= 'Bon pour '.$text_to_type;
+    $buffer .= 'Bon pour souscription';
     $buffer .= '</td>';
     
     $buffer .= '<td></td></tr></table>';
@@ -126,7 +134,7 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
     }
     
     $buffer .= '<div style="padding-top: 60px;">';
-    $buffer .= '(1) signature accompagnée de la mention "Bon pour '.$text_to_type.'"<br /><br />';
+    $buffer .= '(1) signature accompagnée de la mention "Bon pour souscription"<br /><br />';
     $buffer .= '</div>';
     
     $buffer .= '<div style="padding-top: 60px;"></div>';

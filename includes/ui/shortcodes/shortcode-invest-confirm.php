@@ -114,13 +114,11 @@ function ypcf_display_invest_confirm($content) {
                 ypcf_session_start();
                 $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 
-                $text_to_type = ($campaign->funding_type() == 'fundingproject') ? 'pouvoir' : 'souscription';
-
                 $form .= ypcf_print_invest_breadcrumb(2, $campaign->funding_type());
                 if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
                 
                 if(($campaign->funding_type() != 'fundingdonation')){
-                    if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour '.$text_to_type))) $form .= '<span class="errors">Merci de saisir "Bon pour '.$text_to_type.'".</span><br />';
+                    if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour souscription'))) $form .= '<span class="errors">Merci de saisir "Bon pour souscription".</span><br />';
                     if (isset($_POST['confirmed']) && ($amount <= 1500) && (!isset($_POST['confirm_signing']) || !$_POST['confirm_signing'])) $form .= '<span class="errors">Merci de cocher la case de validation de contrat.</span><br />';
                 }
                 
@@ -212,10 +210,10 @@ function ypcf_display_invest_confirm($content) {
                     $form .= '<div style="padding: 10px; border: 1px solid grey; height: 400px; overflow: scroll;">'.  fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation).'</div>';
 
                     $form .= '<br />Je donne pouvoir à la société WE DO GOOD :<br />';
-                    $form .= 'Ecrire "<strong>Bon pour '.$text_to_type.'</strong>" dans la zone de texte ci-contre :';
+                    $form .= 'Ecrire "<strong>Bon pour souscription</strong>" dans la zone de texte ci-contre :';
                     $confirm_power = '';
                     if (isset($_POST["confirm_power"])) $confirm_power = $_POST["confirm_power"];
-                    $form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" /><br /><br />';
+                    $form .= '&nbsp;<input type="text" name="confirm_power" value="'.$confirm_power.'" placeholder="Bon pour souscription" /><br /><br />';
 
                     //Si investissement <= 1500, pas besoin de signature, donc on fait cocher une case
                     if ($amount <= 1500) {
