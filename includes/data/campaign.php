@@ -938,10 +938,9 @@ class ATCF_Campaign {
 
 				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 
-				$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
-				$signsquid_infos = ($skip_apis == FALSE) ? signsquid_get_contract_infos_complete($contractid): '';
-				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
-				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos, edd_get_payment_amount( $payment->ID ));
+				$signsquid_contract = new SignsquidContract($payment->ID);
+				$signsquid_status = $signsquid_contract->get_status_code();
+				$signsquid_status_text = $signsquid_contract->get_status_str();
 				$mangopay_id = edd_get_payment_key($payment->ID);
 				if (strpos($mangopay_id, 'wire_') !== FALSE) {
 					$mangopay_id = substr($mangopay_id, 5);
