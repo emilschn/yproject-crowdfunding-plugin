@@ -118,7 +118,7 @@ function ypcf_display_invest_confirm($content) {
                 if (isset($_POST['confirmed']) && !isset($_POST['information_confirmed'])) $form .= '<span class="errors">Merci de valider vos informations.</span><br />';
                 
                 if(($campaign->funding_type() != 'fundingdonation')){
-                    if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour souscription'))) $form .= '<span class="errors">Merci de saisir "Bon pour souscription".</span><br />';
+                    if (isset($_POST['confirmed']) && (!isset($_POST['confirm_power']) || (isset($_POST['confirm_power']) && (strtolower($_POST['confirm_power'])) != 'bon pour souscription'))) $form .= '<span class="errors">Merci de saisir "Bon pour souscription" (sans guillemets) dans le champ pr&eacute;vu &agrave; cet effet.</span><br />';
                     if (isset($_POST['confirmed']) && ($amount <= 1500) && (!isset($_POST['confirm_signing']) || !$_POST['confirm_signing'])) $form .= '<span class="errors">Merci de cocher la case de validation de contrat.</span><br />';
                 }
                 
