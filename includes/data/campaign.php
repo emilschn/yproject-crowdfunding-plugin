@@ -714,7 +714,7 @@ class ATCF_Campaign {
 
 	public function can_user_wire($amount_part) {
 		$min_wire = 200;
-		return ($this->is_remaining_time() > 7 && $this->part_value() * $amount_part >= $min_wire);
+		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
 	}
 
 	/**
