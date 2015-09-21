@@ -407,7 +407,7 @@ function ypcf_shortcode_vote_results() {
 add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_results' );
 
 
- function get_payments_data($campaign_id = '') {
+function get_payments_data($campaign_id = '') {
     $payments_data = array();
 
     if ( isset( $_GET['paged'] ) ) $page = $_GET['paged']; else $page = 1;
@@ -453,19 +453,18 @@ add_shortcode( 'yproject_crowdfunding_vote_results', 'ypcf_shortcode_vote_result
 
 		$user_id = isset( $user_info['id'] ) && $user_info['id'] != -1 ? $user_info['id'] : $user_info['email'];
 
-		$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
-		$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
-		$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
-		$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos, edd_get_payment_amount( $payment->ID ));
+		$signsquid_contract = new SignsquidContract($payment->ID);
+		$signsquid_status = $signsquid_contract->get_status_code();
+		$signsquid_status_text = $signsquid_contract->get_status_str();
 
 
 		$payments_data[] = array(
-		    'ID' 		=> $payment->ID,
+		    'ID' 	=> $payment->ID,
 		    'email' 	=> edd_get_payment_user_email( $payment->ID ),
 		    'products' 	=> $cart_details,
 		    'amount' 	=> edd_get_payment_amount( $payment->ID ),
-		    'date' 		=> $payment->post_date,
-		    'user' 		=> $user_id,
+		    'date' 	=> $payment->post_date,
+		    'user' 	=> $user_id,
 		    'status' 	=> $payment->post_status,
 		    'signsquid_status' => $signsquid_status,
 		    'signsquid_status_text' => $signsquid_status_text

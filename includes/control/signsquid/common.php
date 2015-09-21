@@ -244,4 +244,114 @@ function signsquid_send_invite($contract_id) {
     }
     return $buffer;
 }
-?>
+
+
+
+class SignsquidContract {
+	private $payment_id;
+	private $payment_amount;
+	private $contract_id;
+	private $status_code;
+	private $status_str;
+	
+	private static $status_str_array = array(
+		'Small' => 'Investissement valid&eacute;',
+		'NotPublished' => 'Contrat non-cr&eacute;&eacute;',
+		'WaitingForSignatoryAction' => 'En attente de signature',
+		'Refused' => 'Contrat refus&eacute;',
+		'Agreed' => 'Contrat sign&eacute;',
+		'NewVersionAvailable' => 'Contrat mis &agrave; jour'
+	);
+    
+	public function __construct($payment_id) {
+		$this->payment_id = $payment_id;
+		$this->payment_amount = edd_get_payment_amount($this->payment_id);
+		$this->contract_id = get_post_meta($payment_id, 'signsquid_contract_id', true);
+		
+		$this->update_status_code();
+	}
+	
+	/**
+	 * Retourne l'identifiant du contrat sur Signsquid
+	 */
+	public function get_contract_id() {
+		return $this->contract_id;
+	}
+	
+	/**
+	 * Retourne le statut du contrat
+	 * @return type
+	 */
+	public function get_status_code() {
+		return $this->status_code;
+	}
+	
+	/**
+	 * Retourne le statut du contrat sous forme de chaine lisible
+	 * @return type
+	 */
+	public function get_status_str() {
+		return $this->status_str;
+	}
+    
+	/**
+	 * Initialisation du statut du contrat
+	 * @return type
+	 */
+	public function update_status_code() {
+		$this->status_code = FALSE;
+		
+		//Si c'est une petite somme, on ne fait pas de vérification, c'est ok !
+		if ($this->payment_amount <= 1500) {
+			$this->status_code = "Small";
+			
+		} else {
+			//On teste si le contrat a déjà été signé
+			$status_payment_agreed = get_post_meta($this->payment_id, 'signsquid_contract_agreed', true);
+			if ($status_payment_agreed == "Agreed") {
+				$this->status_code = $status_payment_agreed;
+
+			//Sinon, on va chercher sur Signsquid
+			} else {
+				//Récupération de l'id du contrat préalablement créé
+				$contract_infos = $this->get_complete_infos();
+				if ($contract_infos != FALSE) {
+					$this->status_code = $contract_infos->{'status'};
+					update_post_meta($this->payment_id, 'signsquid_contract_agreed', $this->status_code);
+				}
+			}
+		}
+		
+		$this->update_status_str();
+	}
+	
+	/**
+	 * Initialisation de la chaine lisible pour le statut du contrat
+	 */
+	public function update_status_str() {
+		$this->status_str = '- Pas de contrat -';
+		if (isset(SignsquidContract::$status_str_array[$this->status_code])) {
+			$this->status_str = SignsquidContract::$status_str_array[$this->status_code];
+		}
+	}
+	
+	/**
+	 * Retourne les infos du contrat en ligne
+	 * @return string
+	 */
+	public function get_complete_infos() {
+		ypcf_debug_log('SignsquidContract:get_complete_infos : ' .$this->contract_id);
+		$buffer = FALSE;
+		if (!empty($this->contract_id)) {
+			$buffer = signsquid_request("GET", "contracts/" . $this->contract_id);
+			if (!isset($buffer->{'id'}) || $buffer->{'id'} == '') {
+				$buffer = FALSE;
+				ypcf_debug_log('SignsquidContract:get_complete_infos --- ERROR :: Wrong $contract_id called');
+			}
+			
+		} else {
+			ypcf_debug_log('SignsquidContract:get_complete_infos --- ERROR :: $contract_id empty');
+		}
+		return $buffer;
+	}
+}
