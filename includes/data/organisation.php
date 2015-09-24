@@ -303,6 +303,54 @@ class YPOrganisation {
 		$this->bank_bic = $value;
 	}
 	
+	public function get_wallet_amount() {
+		return ypcf_mangopay_get_user_personalamount_by_wpid($this->wpref) / 100;
+	}
+	public function get_transfers() {
+		$args = array(
+		    'author'    => $this->wpref,
+		    'post_type' => 'withdrawal_order',
+		    'post_status' => 'any',
+		    'orderby'   => 'post_date',
+		    'order'     =>  'ASC'
+		);
+		$transfers = get_posts($args);
+		return $transfers;
+	}
+	public function get_pending_transfers() {
+		$args = array(
+			'author'    => $this->wpref,
+			'post_type' => 'withdrawal_order',
+			'post_status'   => 'pending'
+		);
+		$pending_transfers = get_posts($args);
+		return $pending_transfers;
+	}
+	
+	public function transfer_wallet($beneficiary_id) {
+		$mp_amount = $this->get_wallet_amount();
+		$withdrawal_obj = ypcf_mangopay_make_withdrawal($this->get_wpref(), $beneficiary_id, $mp_amount);
+
+		//Si il y a une erreur lors du retrait
+		if (is_string($withdrawal_obj)) {
+			return $withdrawal_obj;
+
+		//Enregistrer le withdrawal pour garder une trace
+		} else {
+			//Enregistrement de l'id du withdrawal (en tant que post wp)
+			$withdrawal_post = array(
+			    'post_author'   => $this->get_wpref(),
+			    'post_title'    => $mp_amount,
+			    'post_content'  => $withdrawal_obj->ID,
+			    'post_status'   => 'pending',
+			    'post_type'	    => 'withdrawal_order'
+			);
+			wp_insert_post( $withdrawal_post );
+			
+			return TRUE;
+		}
+	}
+	
 	/**
 	 * Liaisons utilisateurs
 	 */
@@ -344,6 +392,89 @@ class YPOrganisation {
 		}
 		if ($save == TRUE) {
 			$this->save();
+		}
+	}
+	
+	/**
+	 * Gère les fichiers éventuellement transmis pour la Strong Authentication
+	 */
+	public function submit_strong_authentication() {
+		global $errors_submit;
+		$errors_submit = new WP_Error();
+		
+		if (isset($_FILES['org_file_cni']['tmp_name']) && isset($_FILES['org_file_status']['tmp_name']) && isset($_FILES['org_file_extract']['tmp_name'])) {
+			$wp_organisation_user = get_user_by('id', $this->get_wpref());	
+			$url_request = ypcf_init_mangopay_user_strongauthentification($wp_organisation_user);
+			$curl_result_cni = ypcf_mangopay_send_strong_authentication($url_request, 'org_file_cni');
+			$curl_result_status = ypcf_mangopay_send_strong_authentication($url_request, 'org_file_status');
+			$curl_result_extract = ypcf_mangopay_send_strong_authentication($url_request, 'org_file_extract');
+			
+			if ($curl_result_cni && $curl_result_status && $curl_result_extract) {
+				ypcf_mangopay_set_user_strong_authentication_doc_transmitted($this->get_wpref());
+			} else {
+				$errors_submit->add('strongauthentication-sendfile-error', __('Il y a eu une erreur lors de l&apos;envoi. Contactez-nous si cela se reproduit.', 'yproject'));
+			}
+		} else {
+			if (isset($_FILES['org_file_cni']['tmp_name']) || isset($_FILES['org_file_status']['tmp_name']) || isset($_FILES['org_file_extract']['tmp_name'])) {
+				$errors_submit->add('strongauthentication-incomplete', __('Les 3 fichiers d&apos;identification obligatoires doivent &ecirc;tre envoy&eacute;s en m&ecirc;me temps.', 'yproject'));
+			}
+		}
+		
+		if (isset($_FILES['org_file_declaration']['tmp_name'])) {
+			ypcf_mangopay_send_strong_authentication($url_request, 'org_file_declaration');
+		}
+	}
+	
+	/**
+	 * Gère la mise à jour du RIB
+	 */
+	public function submit_bank_info() {
+		$save = FALSE;
+		if (filter_input(INPUT_POST, 'org_bankownername') != '') {
+			$this->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
+			$save = TRUE;
+		}
+		if (filter_input(INPUT_POST, 'org_bankowneraddress') != '') {
+			$this->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
+			$save = TRUE;
+		}
+		if (filter_input(INPUT_POST, 'org_bankowneriban') != '') {
+			$this->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
+			$save = TRUE;
+		}
+		if (filter_input(INPUT_POST, 'org_bankownerbic') != '') {
+			$this->set_bank_bic(filter_input(INPUT_POST, 'org_bankownerbic'));
+			$save = TRUE;
+		}
+		if ($save) {
+			$this->save();
+		}
+	}
+	
+	public function submit_transfer_wallet() {
+		global $errors_submit;
+		$errors_submit = new WP_Error();
+		
+		if ($this->get_wallet_amount() > 0 && filter_input(INPUT_POST, 'mangopaytoaccount') != '') {
+			$beneficiary_id = ypcf_mangopay_get_mp_user_beneficiary_id($this->get_wpref());
+			if ($beneficiary_id == '' && $this->get_bank_owner() != '' && $this->get_bank_address() != '' && $this->get_bank_iban() != '' && $this->get_bank_bic() != '') {
+				$beneficiary_id = ypcf_init_mangopay_beneficiary(
+					$this->get_wpref(),
+					$this->get_bank_owner(),
+					$this->get_bank_address(),
+					$this->get_bank_iban(),
+					$this->get_bank_bic()
+				);
+			}
+			if ($beneficiary_id != '') {
+				$result = $this->transfer_wallet($beneficiary_id);
+				if ($result !== TRUE) {
+					$errors_submit->add('transfer-wallet', $result);
+				}
+				
+			} else {
+				$errors_submit->add('transfer-wallet', __('Il y a eu une erreur lors du transfert.', 'yproject'));
+			}
 		}
 	}
 	

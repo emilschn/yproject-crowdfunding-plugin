@@ -205,6 +205,45 @@ class ATCF_Campaign {
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
+	public function first_payment_date() {
+	    return $this->__get('campaign_first_payment_date');
+	}
+	public function payment_list() {
+	    $buffer = $this->__get('campaign_payment_list');
+	    return json_decode($buffer, TRUE);
+	}
+	public function yearly_accounts_file($year) {
+	    $attachments = get_posts( array(
+		    'post_type' => 'attachment',
+		    'post_parent' => $this->ID
+	    ));
+	    $buffer = array();
+	    foreach ($attachments as $attachment) {
+		    if ($attachment->post_title == 'Yearly Accounts ' . $year) {
+			    $buffer[$attachment->ID]["url"] = get_the_guid($attachment->ID);
+			    $buffer[$attachment->ID]["filename"] = get_post_meta($attachment->ID, "_wp_attached_file");
+		    }
+	    }
+	    return $buffer;
+	}
+	public function payment_amount_for_year($year) {
+	    $payment_list = $this->payment_list();
+	    return $payment_list[$year];
+	}
+	public function payment_status_for_year($year) {
+	    $payment_list = $this->payment_list_status();
+	    return $payment_list[$year];
+	}
+	
+	public function payment_list_status() {
+	    $buffer = $this->__get('campaign_payment_list_status');
+	    return json_decode($buffer, TRUE);
+	}
+	public function update_payment_status($date, $year, $post_id) {
+	    $payment_list_status = $this->payment_list_status();
+	    $payment_list_status[$year] = $post_id;
+	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
+	}
         
         /**
          * Indique si le porteur de projet est autorisé à passer à l'étape
@@ -714,7 +753,7 @@ class ATCF_Campaign {
 
 	public function can_user_wire($amount_part) {
 		$min_wire = 200;
-		return ($this->is_remaining_time() > 7 && $this->part_value() * $amount_part >= $min_wire);
+		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
 	}
 
 	/**
@@ -878,24 +917,13 @@ class ATCF_Campaign {
 
 		return false;
 	}
-        
-        /**
-         * The terms of votes are validated (50 voters, 50% ok, 50% invest promise)
-         * 
-         * @return boolean
-         */
-	public function is_validated_by_vote(){
-            return $this->nb_voters()>=  ATCF_Campaign::$voters_min_required
-                    && wdg_get_project_vote_results($this->ID)['percent_project_validated']>= ATCF_Campaign::$vote_score_min_required
-                    && wdg_get_project_vote_results($this->ID)['sum_invest_ready']>=$this->vote_invest_ready_min_required;
-        }
 	
         /**
          * Return payments data. 
          * This function is very slow, it is advisable to use it as few as possible
          * @return array
          */
-	public function payments_data() {
+	public function payments_data($skip_apis = FALSE) {
 		$payments_data = array();
 
 		$payments = edd_get_payments( array(
@@ -910,20 +938,19 @@ class ATCF_Campaign {
 
 				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 
-				$contractid = ypcf_get_signsquidcontractid_from_invest($payment->ID);
-				$signsquid_infos = signsquid_get_contract_infos_complete($contractid);
-				$signsquid_status = ($signsquid_infos != '' && is_object($signsquid_infos)) ? $signsquid_infos->{'status'} : '';
-				$signsquid_status_text = ypcf_get_signsquidstatus_from_infos($signsquid_infos, edd_get_payment_amount( $payment->ID ));
+				$signsquid_contract = new SignsquidContract($payment->ID);
+				$signsquid_status = $signsquid_contract->get_status_code();
+				$signsquid_status_text = $signsquid_contract->get_status_str();
 				$mangopay_id = edd_get_payment_key($payment->ID);
 				if (strpos($mangopay_id, 'wire_') !== FALSE) {
 					$mangopay_id = substr($mangopay_id, 5);
-					$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id);
-					$mangopay_is_completed = ($mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
+					$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
+					$mangopay_is_completed = ($mangopay_contribution != '' && $mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
 					$mangopay_is_succeeded = $mangopay_is_completed;
 				} else {
-					$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
-					$mangopay_is_completed = (isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
-					$mangopay_is_succeeded = (isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
+					$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
+					$mangopay_is_completed = ($mangopay_contribution != '' && isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
+					$mangopay_is_succeeded = ($mangopay_contribution != '' && isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
 				}
 
 
@@ -942,6 +969,36 @@ class ATCF_Campaign {
 			}
 		}
 		return $payments_data;
+	}
+	
+	/**
+	 * Retourne la liste des paiement, augmentée par les informations utiles pour un ROI particulier
+	 * @param type $roi_id
+	 */
+	public function roi_payments_data($roi_id) {
+		$buffer = array();
+		$investments_list = $this->payments_data(TRUE);
+		//Calculs des montants à reverser
+		$payment_list = $this->payment_list();
+		$total_amount = $this->current_amount(FALSE);
+		$roi_amount = $payment_list[$roi_id];
+		foreach ($investments_list as $investment_item) {
+			//Calcul de la part de l'investisseur dans le total
+			$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
+			//Calcul du montant à récupérer en roi
+			$investor_proportion_amount = floor($roi_amount * $investor_proportion * 100) / 100; //10.50
+			//Calcul de la commission sur le roi de l'utilisateur
+			$fees_total = $investor_proportion_amount * YP_ROI_FEES / 100; //10.50 * 1.8 / 100 = 0.189
+			//Et arrondi
+			$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+			$investment_item['roi_fees'] = $fees;
+			//Reste à verser pour l'investisseur
+			$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
+			$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+			array_push($buffer, $investment_item);
+		}
+	    
+		return $buffer;
 	}
 	
 	public function manage_jycrois($user_id = FALSE) {
@@ -1090,6 +1147,32 @@ class ATCF_Campaign {
 		}
 		
 		return FALSE;
+	}
+	
+	public function get_documents_list() {
+		$attachments = get_posts( array(
+			'post_type' => 'projectdoc',
+			'post_parent' => $this->ID,
+			'post_status'	=> 'inherit'
+		));
+		return $attachments;
+	}
+	
+	public function add_document($title, $url) {
+		$args = array(
+			'post_type'	=> 'projectdoc',
+			'post_status'	=> 'inherit',
+			'post_title'	=> $title,
+			'post_content'	=> $url,
+			'post_author'	=> $this->data->post_author,
+			'post_parent'	=> $this->ID
+		);
+		wp_insert_post($args, true);
+	}
+	
+	public function delete_document($id) {
+		$post = get_post($id);
+		if ($post->post_parent == $this->ID) wp_delete_post($id);
 	}
         
         /**

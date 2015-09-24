@@ -8,9 +8,11 @@ class NotificationsEmails {
      * @param string $to
      * @param string $object
      * @param string $content
+     * @param bool $decorate Inclure ou non le header et footer définis dans le back-office (projets-> réglages-> e-mails)
+     * @param array $attachments
      * @return bool
      */
-    public static function send_mail($to, $object, $content, $attachments = array()) {
+    public static function send_mail($to, $object, $content, $decorate = false, $attachments = array()) {
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
 	$from_name = get_bloginfo('name');
 	$from_email = get_option('admin_email');
@@ -18,7 +20,10 @@ class NotificationsEmails {
 	$headers .= "Reply-To: ". $from_email . "\r\n";
 	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
 	
-	$content = edd_get_email_body_header() . $content . edd_get_email_body_footer();
+	if ($decorate){
+            global $edd_options;
+            $content = wpautop( $edd_options['header_global_mail'] ) . $content . wpautop( $edd_options['footer_global_mail'] );
+        }
 
 	$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
@@ -104,7 +109,7 @@ class NotificationsEmails {
         }
 	$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
         
-	return NotificationsEmails::send_mail($email, $object, $body_content, $attachments);
+	return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
     
     /**
@@ -138,7 +143,7 @@ class NotificationsEmails {
 
 	$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
         
-	return NotificationsEmails::send_mail($emails, $object, $body_content);
+	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     
     /**
@@ -194,7 +199,7 @@ class NotificationsEmails {
 	$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
 	$body_content .= $complement_content;
 	
-	return NotificationsEmails::send_mail($admin_email, $object, $body_content, $attachments);
+	return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
     }
     //*******************************************************
     // FIN ACHATS
@@ -228,6 +233,61 @@ class NotificationsEmails {
     //*******************************************************
     
     //*******************************************************
+    // NOUVELLE ACTUALITE DE PROJET
+    //*******************************************************
+    /**
+     * Mail aux membres qui ont votés, investis ou mis "j'y crois" à un projet 
+     * lorsque celui-ci publie une nouvelle actualité
+     * @param int $campaign_id
+     * @param int $post_id ID of the new post
+     * @return bool
+     */
+    public static function new_project_post_posted($campaign_id, $post_id) {
+	//$to = liste des emails de la communauté - les désinscrits
+	
+	$post_campaign = get_post($campaign_id);
+	$project_title = $post_campaign->post_title;
+        $new_post = get_post($post_id);
+        $post_title = $new_post->post_title;
+	$object = 'Actualit&eacute; '.$project_title. ': ' .$post_title;
+        
+        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
+                .'<h1 style="text-align: center;">'.$post_title.'</h1>';
+        
+        $body_content .= $new_post->post_content.'<br/>';
+        
+        $body_content .= '<div style="text-align: center;">'
+                .'<a href="'.get_permalink($post_id).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
+                    Voir plus</a><br/>'
+                .'Message envoy&eacute; par '
+                .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
+                .$project_title.'</a><br/><br/>'
+                .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$project_title
+                .'. Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
+                .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
+                . '</div></div>';
+        //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
+        
+        //Récupère liste d'envoi
+        global $wpdb;
+	$table_jcrois = $wpdb->prefix . "jycrois";
+        $result_jcrois = $wpdb->get_results( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+	$list_mail = array();
+        $feedback = array();
+        
+        foreach ($result_jcrois as $item) {
+                $to = get_userdata($item->user_id)->user_email;
+                $list_user[] = get_userdata($item->user_id)->user_login;
+		$list_mail[] = get_userdata($item->user_id)->user_email;
+                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
+	}
+        return array_combine($list_mail, $feedback);
+    }
+    //*******************************************************
+    // FIN NOUVELLE ACTUALITE DE PROJET
+    //*******************************************************
+    
+    //*******************************************************
     // CODE SIGNATURE
     //*******************************************************
     /**
@@ -248,7 +308,7 @@ class NotificationsEmails {
 	$body_content .= $code . "<br /><br />";
 	$body_content .= "Si vous n'avez fait aucune action pour recevoir ce code, ne tenez pas compte de ce message.<br /><br />";
 	
-	return NotificationsEmails::send_mail($user->user_email, $object, $body_content);
+	return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
     }
     //*******************************************************
     // FIN CODE SIGNATURE
@@ -287,7 +347,7 @@ class NotificationsEmails {
 	$emails = $user->user_email;
 	$emails .= BoppLibHelpers::get_project_members_mail_list($post_campaign->ID);
 		
-	return NotificationsEmails::send_mail($emails, $object, $body_content);
+	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
@@ -311,9 +371,75 @@ class NotificationsEmails {
 	$emails = $user->user_email;
 	$emails .= BoppLibHelpers::get_project_members_mail_list($post_campaign->ID);
 		
-	return NotificationsEmails::send_mail($emails, $object, $body_content);
+	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
+    //*******************************************************
+    
+    //*******************************************************
+    // MESSAGE DIRECT PORTEUR DE PROJET
+    //*******************************************************
+    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list=  [], $return_string = false) {
+	//$to = liste des emails de la communauté - les désinscrits
+	
+	$post_campaign = get_post($campaign_id);
+	$project_title = $post_campaign->post_title;
+        
+	$object = $project_title. ': ' .$mail_title;
+        
+        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
+                .'<h1 style="text-align: center;">'.$mail_title.'</h1>';
+        
+        $body_content .= $mail_content.'<br/>';
+        
+        $body_content .= '<div style="text-align: center;">'
+                .'<a href="'.get_permalink($post_campaign->ID).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
+                    Voir le projet</a><br/>'
+                .'Message envoy&eacute; par '
+                .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
+                .$project_title.'</a><br/><br/>'
+                .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$project_title
+                .'. Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
+                .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
+                . '</div></div>';
+        //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
+        
+        if ($return_string){
+            return $body_content;
+        }
+        
+        //Récupère liste d'envoi
+        global $wpdb;
+	$table_jcrois = $wpdb->prefix . "jycrois";
+        $list_user_jcrois = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+	$send_list = $list_user_jcrois;
+        
+        if ($send_jycrois){
+            $send_list = $list_user_jcrois;
+        } else {
+            if($send_vote){
+                $table_vote = $wpdb->prefix . "ypcf_project_votes";
+                $list_user_voters = $wpdb->get_col( "SELECT user_id FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
+                $send_list = array_intersect($send_list, $list_user_voters);
+            }
+            if ($send_invest){
+                $send_list = array_intersect($send_list, $id_investors_list);
+            }
+        }
+        $list_mail = array();
+        $feedback = array();
+        
+        foreach ($send_list as $id_user) {
+                $user = get_userdata(intval($id_user));
+                $to = $user->user_email;
+                $list_user[] = $user->user_login;
+		$list_mail[] = $user->user_email;
+                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
+	}
+        return array_combine($list_mail, $feedback);
+    }
+    //*******************************************************
+    // FIN MESSAGE DIRECT PORTEUR DE PROJET
     //*******************************************************
 }

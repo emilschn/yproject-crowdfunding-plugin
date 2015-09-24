@@ -311,6 +311,47 @@ function ypcf_register_settings() {
 	    'std' => ''
 	)
     );
+    
+    add_settings_field(
+	'edd_settings_emails[header_global_mails]',
+	'En-tête des mails envoyés par la plateforme '
+            . '<br/>Ce contenu sera intégré en haut des mails suivants :'
+            . '<ul style="list-style: inherit;">'
+            . '<li>Notifications d\'actualités de projet</li>'
+            . '<li>Mail direct des porteurs de projets aux investisseurs</li>'
+            . '<li>Confirmation d\'investissement/don</li>'
+            . '<li>Notifications pour Porteur de Projet : nouvel investissement/don, nouveau commentaire</li>'
+            . '</ul>',
+	function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+	'edd_settings_emails',
+	'edd_settings_emails',
+	array(
+	    'id' => 'header_global_mail',
+	    'desc' => '',
+	    'name' => 'header_global_mail',
+	    'section' => 'mail',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
+    
+    add_settings_field(
+	'edd_settings_emails[footer_global_mails]',
+	'Pied de page des mails envoyés par la plateforme',
+	function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+	'edd_settings_emails',
+	'edd_settings_emails',
+	array(
+	    'id' => 'footer_global_mail',
+	    'desc' => '',
+	    'name' => 'footer_global_mail',
+	    'section' => 'mail',
+	    'size' => '' ,
+	    'options' => '',
+	    'std' => ''
+	)
+    );
 }
 
 add_action('admin_init', 'ypcf_register_settings', 11);

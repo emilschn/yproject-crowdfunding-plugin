@@ -696,6 +696,30 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 }
 
 /**
+ * 
+ */
+function ypcf_get_updated_transfer_status($transfer_post) {
+	$widthdrawal_obj = ypcf_mangopay_get_withdrawal_by_id($transfer_post->post_content);
+	if ($widthdrawal_obj->Error != "" && $widthdrawal_obj->Error != NULL) {
+	    $args = array(
+		'ID'	=>  $transfer_post->ID,
+		'post_status'	=> 'draft'
+	    );
+	    wp_update_post($args);
+
+	} else if ($widthdrawal_obj->IsSucceeded && $widthdrawal_obj->IsCompleted && $transfer_post->post_status != 'publish') {
+	    $args = array(
+		'ID'	=>  $transfer_post->ID,
+		'post_status'	=> 'publish'
+	    );
+	    wp_update_post($args);
+	}
+	
+	$transfer_post_obj = get_post($transfer_post);
+	return $transfer_post_obj->post_status;
+}
+
+/**
  * Renvoie l'identifiant de contrat à partir d'un investissement donné
  * @param type $payment_id
  */
