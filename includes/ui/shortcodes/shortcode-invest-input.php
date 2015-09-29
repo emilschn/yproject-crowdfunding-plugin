@@ -88,8 +88,10 @@ function ypcf_display_invest_form($error = '') {
                         
 			break;
 		    case 'fundingproject':
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="'.$min_value.'"> &euro; <span id="input_invest_amount" class="hidden">0</span><br />';
+			break;
 		    case 'fundingdevelopment':
-			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;<br>';
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;<br />';
 			break;
 		}
 		$form .= '&nbsp;&nbsp;<center><a href="javascript:void(0);" id="link_validate_invest_amount" class="button">Valider</a></center><br /><br />';

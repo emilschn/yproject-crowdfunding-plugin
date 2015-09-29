@@ -751,9 +751,14 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
-	public function can_user_wire($amount_part) {
+	public function can_use_wire($amount_part) {
 		$min_wire = 200;
 		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
+	}
+	
+	public function can_use_check($amount_part) {
+		$min_check = 1000;
+		return ($this->part_value() * $amount_part >= $min_check);
 	}
 
 	/**
