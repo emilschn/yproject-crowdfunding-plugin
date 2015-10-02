@@ -26,13 +26,16 @@ function ypcf_shortcode_invest_payment_check($atts, $content = '') {
 	2. <?php _e('Pr&eacute;parez un courrier contenant :', 'yproject'); ?>
 	<ul>
 	    <li><?php _e('le contrat imprim&eacute; et rempli', 'yproject'); ?></li>
-	    <li><?php _e('un ch&egrave;que &agrave; l&apos;ordre de ', 'yproject'); ?> <strong>TODO</strong></li>
+	    <li><?php _e('un ch&egrave;que &agrave; l&apos;ordre de ', 'yproject'); ?> <strong><?php echo $campaign->company_name(); ?></strong></li>
 	</ul>
 
 	3. <?php _e('Envoyez-le &agrave; l&apos;adresse suivante :', 'yproject'); ?><br />
 	WE DO GOOD<br />
 	8 route de la Joneli&egrave;re<br />
 	44300 NANTES<br /><br />
+	
+	<?php _e('Le montant de votre ch&egrave;que sera pris en compte d&egrave;s r&eacute;ception.', 'yproject'); ?>
+	<?php _e('Le montant total atteint sera alors de', 'yproject'); ?> <?php echo ($campaign->current_amount(false) + $_SESSION['redirect_current_amount_part'] * $campaign->part_value()); ?> &euro;.<br /><br />
 
 	<?php _e('Votre ch&egrave;que ne sera transmis au Porteur de Projet qu&apos;en cas de r&eacute;ussite de la collecte.', 'yproject'); ?>
 	<?php _e('Dans le cas contraire, il vous sera retourn&eacute;.', 'yproject'); ?><br /><br />
@@ -46,6 +49,10 @@ function ypcf_shortcode_invest_payment_check($atts, $content = '') {
 
     <?php } ?>
     
+    <?php
+    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+    ?>
 
 <?php
     return ob_get_clean();

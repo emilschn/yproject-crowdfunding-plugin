@@ -331,7 +331,7 @@ class ATCF_Campaign {
 	public function part_value() {
 	    $part_value = $this->__get( 'campaign_part_value' );
 	    if ( ! is_numeric( $part_value ) )
-		    return 0;
+		    return 1;
 	    return $part_value;
 	}
 	

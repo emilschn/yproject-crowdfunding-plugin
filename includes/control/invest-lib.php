@@ -330,8 +330,6 @@ function ypcf_check_meanofpayment_redirections() {
 			    if ($campaign->can_use_check($_SESSION['redirect_current_amount_part'])) {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-cheque');
-				    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-				    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 				    wp_redirect(get_permalink($page_payment->ID) . '?meanofpayment=check&campaign_id=' . $_GET['campaign_id']);
 				    exit();
 				    
