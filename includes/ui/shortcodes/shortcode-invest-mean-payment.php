@@ -13,8 +13,7 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
     //Possible de régler par virement ?
     $can_use_wire = ($campaign->can_use_wire($_SESSION['redirect_current_amount_part']));
     //Possible de régler par chèque ?
-    $min_check = ($campaign->can_use_check($_SESSION['redirect_current_amount_part']));
-    $can_use_check = (ypcf_get_part_value() * $_SESSION['redirect_current_amount_part'] >= $min_check);
+    $can_use_check = ($campaign->can_use_check($_SESSION['redirect_current_amount_part']));
     
     echo ypcf_print_invest_breadcrumb(3, $campaign->funding_type());
     ?>
