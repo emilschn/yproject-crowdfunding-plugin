@@ -35,6 +35,11 @@ function ypcf_display_invest_form($error = '') {
 		$form .= '</div>';
 		
 		$form .= '<div class="invest_step1_currentproject">' . html_entity_decode($campaign->investment_terms()) . '</div>';
+		
+		if (!ypcf_mangopay_is_user_strong_authenticated($test_user->ID) && ypcf_mangopay_is_user_strong_authentication_sent($test_user->ID)) {
+			$form .= '<div class="invest_step1_currentproject" style="text-align: center; font-weight: bold;">Votre pi&egrave;ce d&apos;identit&eacute; est en cours de validation.<br />Un d&eacute;lai maximum de 24h est n&eacute;cessaire &agrave; cette validation.<br />Merci de votre compr&eacute;hension.</div>';
+		}
+		
 		$form .= '<form id="invest_form" action="'.$page_invest_link.'" method="post" enctype="multipart/form-data">';
 		$form .= '<input type="hidden" id="input_invest_min_value" name="old_min_value" value="' . $min_value . '">';
 		$form .= '<input type="hidden" id="input_invest_max_value" name="old_max_value" value="' . $max_value . '">';
@@ -87,9 +92,12 @@ function ypcf_display_invest_form($error = '') {
 			}
                         
 			break;
-		    case 'fundingproject':
 		    case 'fundingdevelopment':
-			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;<br>';
+		    case 'fundingproject':
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="'.$min_value.'"> &euro; <span id="input_invest_amount" class="hidden">0</span><br />';
+			break;
+		    case 'not existing':
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;<br />';
 			break;
 		}
 		$form .= '&nbsp;&nbsp;<center><a href="javascript:void(0);" id="link_validate_invest_amount" class="button">Valider</a></center><br /><br />';

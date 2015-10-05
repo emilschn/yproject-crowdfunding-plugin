@@ -59,6 +59,11 @@ function ypcf_check_redirections() {
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-payment-wire.php' );
 		break;
 	
+	    case 'paiement-cheque' :
+		ypcf_check_is_user_logged_invest();
+		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-payment-check.php' );
+		break;
+	
 	    case 'paiement-effectue' :
 		ypcf_check_is_user_logged_invest();
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-return.php' );
@@ -305,7 +310,7 @@ function ypcf_check_meanofpayment_redirections() {
 		    //Paiement par virement
 		    case 'wire':
 			    $campaign = atcf_get_current_campaign();
-			    if ($campaign->can_user_wire($_SESSION['redirect_current_amount_part'])) {
+			    if ($campaign->can_use_wire($_SESSION['redirect_current_amount_part'])) {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-virement');
 				    $mangopay_newcontribution = ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $_GET['campaign_id'], $amount);
@@ -317,6 +322,17 @@ function ypcf_check_meanofpayment_redirections() {
 					    wp_redirect(get_permalink($page_payment->ID) . '?ContributionID=' . $mangopay_newcontribution->ID . '&meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
 					    exit();
 				    }
+			    }
+		    break;
+		    
+		    case 'check':
+			    $campaign = atcf_get_current_campaign();
+			    if ($campaign->can_use_check($_SESSION['redirect_current_amount_part'])) {
+				    //Récupération de l'url pour permettre le paiement
+				    $page_payment = get_page_by_path('paiement-cheque');
+				    wp_redirect(get_permalink($page_payment->ID) . '?meanofpayment=check&campaign_id=' . $_GET['campaign_id']);
+				    exit();
+				    
 			    }
 		    break;
 

@@ -233,61 +233,6 @@ class NotificationsEmails {
     //*******************************************************
     
     //*******************************************************
-    // NOUVELLE ACTUALITE DE PROJET
-    //*******************************************************
-    /**
-     * Mail aux membres qui ont votés, investis ou mis "j'y crois" à un projet 
-     * lorsque celui-ci publie une nouvelle actualité
-     * @param int $campaign_id
-     * @param int $post_id ID of the new post
-     * @return bool
-     */
-    public static function new_project_post_posted($campaign_id, $post_id) {
-	//$to = liste des emails de la communauté - les désinscrits
-	
-	$post_campaign = get_post($campaign_id);
-	$project_title = $post_campaign->post_title;
-        $new_post = get_post($post_id);
-        $post_title = $new_post->post_title;
-	$object = 'Actualit&eacute; '.$project_title. ': ' .$post_title;
-        
-        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
-                .'<h1 style="text-align: center;">'.$post_title.'</h1>';
-        
-        $body_content .= $new_post->post_content.'<br/>';
-        
-        $body_content .= '<div style="text-align: center;">'
-                .'<a href="'.get_permalink($post_id).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
-                    Voir plus</a><br/>'
-                .'Message envoy&eacute; par '
-                .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
-                .$project_title.'</a><br/><br/>'
-                .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$project_title
-                .'. Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
-                .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
-                . '</div></div>';
-        //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
-        
-        //Récupère liste d'envoi
-        global $wpdb;
-	$table_jcrois = $wpdb->prefix . "jycrois";
-        $result_jcrois = $wpdb->get_results( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
-	$list_mail = array();
-        $feedback = array();
-        
-        foreach ($result_jcrois as $item) {
-                $to = get_userdata($item->user_id)->user_email;
-                $list_user[] = get_userdata($item->user_id)->user_login;
-		$list_mail[] = get_userdata($item->user_id)->user_email;
-                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
-	}
-        return array_combine($list_mail, $feedback);
-    }
-    //*******************************************************
-    // FIN NOUVELLE ACTUALITE DE PROJET
-    //*******************************************************
-    
-    //*******************************************************
     // CODE SIGNATURE
     //*******************************************************
     /**
@@ -386,7 +331,7 @@ class NotificationsEmails {
 	$post_campaign = get_post($campaign_id);
 	$project_title = $post_campaign->post_title;
         
-	$object = $project_title. ': ' .$mail_title;
+	$object = $project_title. ' : ' .$mail_title;
         
         $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
                 .'<h1 style="text-align: center;">'.$mail_title.'</h1>';
@@ -441,5 +386,60 @@ class NotificationsEmails {
     }
     //*******************************************************
     // FIN MESSAGE DIRECT PORTEUR DE PROJET
+    //*******************************************************
+    
+    //*******************************************************
+    // NOUVELLE ACTUALITE DE PROJET
+    //*******************************************************
+    /**
+     * Mail aux membres qui ont votés, investis ou mis "j'y crois" à un projet 
+     * lorsque celui-ci publie une nouvelle actualité
+     * @param int $campaign_id
+     * @param int $post_id ID of the new post
+     * @return bool
+     */
+    public static function new_project_post_posted($campaign_id, $post_id) {
+	//$to = liste des emails de la communauté - les désinscrits
+	
+	$post_campaign = get_post($campaign_id);
+	$project_title = $post_campaign->post_title;
+        $new_post = get_post($post_id);
+        $post_title = $new_post->post_title;
+	$object = 'Actualité ' .$project_title. ' : ' .$post_title;
+        
+        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
+                .'<h1 style="text-align: center;">'.$post_title.'</h1>';
+        
+        $body_content .= $new_post->post_content.'<br/>';
+        
+        $body_content .= '<div style="text-align: center;">'
+                .'<a href="'.get_permalink($post_id).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
+                    Voir plus</a><br/>'
+                .'Message envoy&eacute; par '
+                .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
+                .$project_title.'</a><br/><br/>'
+                .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$project_title
+                .'. Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
+                .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
+                . '</div></div>';
+        //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
+        
+        //Récupère liste d'envoi
+        global $wpdb;
+	$table_jcrois = $wpdb->prefix . "jycrois";
+        $result_jcrois = $wpdb->get_results( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+	$list_mail = array();
+        $feedback = array();
+        
+        foreach ($result_jcrois as $item) {
+                $to = get_userdata($item->user_id)->user_email;
+                $list_user[] = get_userdata($item->user_id)->user_login;
+		$list_mail[] = get_userdata($item->user_id)->user_email;
+                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
+	}
+        return array_combine($list_mail, $feedback);
+    }
+    //*******************************************************
+    // FIN NOUVELLE ACTUALITE DE PROJET
     //*******************************************************
 }

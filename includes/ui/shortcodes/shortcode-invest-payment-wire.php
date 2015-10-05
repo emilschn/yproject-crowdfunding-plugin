@@ -32,10 +32,14 @@ function ypcf_shortcode_invest_payment_wire($atts, $content = '') {
 	</ul>
 	<br /><br />
 	
-	Une fois le virement effectu&eacute;, cliquez sur<br />
+	Une fois le virement effectu&eacute;, cliquez sur<br /><br />
 	<a href="<?php echo get_permalink($page_payment_done->ID) . '?ContributionID=' . $_REQUEST["ContributionID"] . '&campaign_id=' . $_GET['campaign_id'] . '&meanofpayment=wire'; ?>" class="button">SUIVANT</a><br /><br />
 
 	<div class="align-center mangopay-image"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
+	
+	<hr />
+	Exemple de saisie du code destinataire sur différentes banques :<br /><br />
+	<div class="align-center"><img src="<?php echo home_url(); ?>/wp-content/plugins/appthemer-crowdfunding/includes/ui/shortcodes/capture-lbp.png" /></div><br /><br />
 
 <?php
 	} else {

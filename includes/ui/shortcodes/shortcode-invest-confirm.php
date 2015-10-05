@@ -65,8 +65,8 @@ function ypcf_display_invest_confirm($content) {
                         $post = get_post($_GET['campaign_id']);
                         $campaign = atcf_get_campaign( $post );
                         $form .= '<br />Pour investir une somme sup&eacute;rieure &agrave; '.YP_STRONGAUTH_AMOUNT_LIMIT.'&euro; sur une ann&eacute;e, vous devez fournir une pi&egrave;ce d&apos;identit&eacute;.<br />';
-                        $form .= 'Le fichier doit &ecirc;tre de type jpeg, gif, png ou pdf.<br />';
-                        $form .= 'Son poids doit &ecirc;tre inf&eacute;rieur &agrave; 2 Mo.<br />';
+                        $form .= 'Si il s&apos;agit d&apos;une carte nationale d&apos;identit&eacute;, veillez &agrave; ce que le fichier contienne le recto et le verso de votre carte.';
+                        $form .= 'Le fichier doit &ecirc;tre de type jpeg, gif, png ou pdf et son poids inf&eacute;rieur &agrave; 2 Mo.<br />';
                         $form .= '<form id="mangopay_strongauth_form" action="" method="post" enctype="multipart/form-data">';
                         $form .= '<input type="hidden" name="document_submited" value="1" />';
                         $form .= '<input type="hidden" name="amount_part" value='.$amount_part.' />';

@@ -118,6 +118,36 @@ function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $am
     return $mangopay_newtransfer;
 }
 
+function ypcf_mangopay_transfer_project_organisation_to_user($current_user, $campaign_id, $amount, $amount_fees = 0) {
+    //RÃ©cupÃ©ration du walletid de la campagne
+    $post_camp = get_post($campaign_id);
+    $campaign = atcf_get_campaign( $post_camp );
+    $campaign_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
+    
+    //RÃ©cupÃ©ration de l'id du porteur de projet
+//    $author_id = $campaign->data->post_author;
+//    ypcf_debug_log("ypcf_mangopay_transfer_project_to_user --- current user id : ".$current_user->ID. ' ; campaign id : ' .$campaign_id . ' ; author id : ' . $author_id);
+//    $campaign_author_mangopayid = ypcf_mangopay_get_mp_user_id($author_id);
+
+    //RÃ©cupÃ©ration du walletid de l'utilisateur
+    $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
+    
+    $cent_amount = $amount * 100;
+    $cent_amount_fees = $amount_fees * 100;
+    
+    //Création du transfert
+    $mangopay_newtransfer = request('transfers', 'POST', '{ 
+					    "PayerID" : '.$currentuser_mangopayid.', 
+					    "PayerWalletID" : '.$campaign_mangopayid.',
+					    "BeneficiaryID" : '.$currentuser_mangopayid.',
+					    "BeneficiaryWalletID" : 0,
+					    "Amount" : '.$cent_amount.',
+					    "ClientFeeAmount" : '.$cent_amount_fees.'
+					}');
+    
+    return $mangopay_newtransfer;
+}
+
 /**
  * Transfert d'argent entre 2 comptes utilisateur
  */
