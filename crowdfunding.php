@@ -94,25 +94,18 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/campaigns.php' );
                 require( $this->includes_dir . 'data/rewards.php');
 		require( $this->includes_dir . 'data/organisation.php' );
-//		require( $this->includes_dir . 'data/roles.php' );
+		require( $this->includes_dir . 'data/user.php' );
 		require( $this->includes_dir . 'data/bopp/bopp-lib.php' );
 		require( $this->includes_dir . 'data/bopp/bopp-lib-helpers.php' );
 		require( $this->includes_dir . 'data/bopp/bopp-entities/bopp-users.php' );
 		require( $this->includes_dir . 'data/bopp/bopp-entities/bopp-organisations.php' );
-		require( $this->includes_dir . 'data/user.php' );
 		
-		//require( $this->includes_dir . 'control/social/facebook/facebook.php' );
 		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
 		require( $this->includes_dir . 'control/social/twitter/TwitterAPIExchange.php' );
 		
 		require( $this->includes_dir . 'control/settings.php' );
-//		require( $this->includes_dir . 'control/gateways.php' );
-//		require( $this->includes_dir . 'control/theme-stuff.php' );
-//		require( $this->includes_dir . 'control/shipping.php' );
 		require( $this->includes_dir . 'control/logs.php' );
-//		require( $this->includes_dir . 'control/export.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
-//		require( $this->includes_dir . 'control/checkout.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
 		require( $this->includes_dir . 'control/mangopay/common.php' );
 		require( $this->includes_dir . 'control/mangopay/utils.php' );
@@ -125,9 +118,6 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-submit.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-vote-results.php' );
-//		require( $this->includes_dir . 'ui/shortcodes/shortcode-profile.php' );
-//		require( $this->includes_dir . 'ui/shortcodes/shortcode-login.php' );
-//		require( $this->includes_dir . 'ui/shortcodes/shortcode-register.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-update.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
