@@ -947,7 +947,11 @@ class ATCF_Campaign {
 				$signsquid_status = $signsquid_contract->get_status_code();
 				$signsquid_status_text = $signsquid_contract->get_status_str();
 				$mangopay_id = edd_get_payment_key($payment->ID);
-				if (strpos($mangopay_id, 'wire_') !== FALSE) {
+				if ($mangopay_id == 'check') {
+					$mangopay_is_completed = 'Oui';
+					$mangopay_is_succeeded = 'Oui';
+				    
+				} else if (strpos($mangopay_id, 'wire_') !== FALSE) {
 					$mangopay_id = substr($mangopay_id, 5);
 					$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
 					$mangopay_is_completed = ($mangopay_contribution != '' && $mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
@@ -974,6 +978,78 @@ class ATCF_Campaign {
 			}
 		}
 		return $payments_data;
+	}
+	
+	/**
+	 * Ajoute un investissement dans la liste des investissements
+	 * @param string $type
+	 * @param string $email
+	 * @param string $date
+	 * @param string $value
+	 * @param string $new_username
+	 * @param string $new_pwd
+	 */
+	public function add_investment($type, $email, $value, $new_username = '', $new_password = '', $new_gender = '', $new_firstname = '', $new_lastname = '') {
+		$user_id = FALSE;
+	    
+		//Vérification si un utilisateur existe avec l'email en paramètre
+		$user_payment = get_user_by('email', $email);
+		if ($user_payment) {
+			$user_id = $user_payment->ID;
+		
+		//Sinon, on vérifie si il y a un login et pwd transmis, pour créer le nouvel utilisateur
+		} else {
+			if (!empty($new_username) && !empty($new_password)) {
+				$user_id = wp_create_user($new_username, $new_password, $email);
+				if (!empty($new_gender)) update_user_meta($user_id, 'user_gender', $new_gender);
+				if (!empty($new_firstname)) wp_update_user( array ( 'ID' => $user_id, 'first_name' => $new_firstname ) );
+				if (!empty($new_lastname)) wp_update_user( array ( 'ID' => $user_id, 'last_name' => $new_lastname ) );
+			}
+		}
+		
+		if (!is_wp_error($user_id) && !empty($user_id) && $user_id != FALSE) {
+			$user_info = array(
+				'id'		=> $user_id,
+				'gender'	=> $new_gender,
+				'email'		=> $email,
+				'first_name'	=> $new_firstname,
+				'last_name'	=> $new_lastname,
+				'discount'	=> '',
+				'address'	=> array()
+			);
+
+			$cart_details = array(
+				array(
+					'name'        => get_the_title( $this->ID ),
+					'id'          => $this->ID,
+					'item_number' => array(
+						'id'	    => $this->ID,
+						'options'   => array()
+					),
+					'price'       => 1,
+					'quantity'    => $value
+				)
+			);
+
+			$payment_data = array( 
+				'price'		=> $value, 
+				'date'		=> date('Y-m-d H:i:s'), 
+				'user_email'	=> $email,
+				'purchase_key'	=> $type,
+				'currency'	=> edd_get_currency(),
+				'downloads'	=> array($this->ID),
+				'user_info'	=> $user_info,
+				'cart_details'	=> $cart_details,
+				'status'	=> 'publish'
+			);
+			$payment_id = edd_insert_payment( $payment_data );
+			edd_record_sale_in_log($this->ID, $payment_id);
+
+		} else {
+			$user_id = FALSE;
+		}
+		
+		return $user_id;
 	}
 	
 	/**

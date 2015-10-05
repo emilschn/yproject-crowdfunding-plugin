@@ -568,7 +568,7 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 	    wp_update_post($postdata);
 	} else {
 	    $contribution_id = edd_get_payment_key($payment_id);
-	    if (isset($contribution_id) && $contribution_id != '') {
+	    if (isset($contribution_id) && $contribution_id != '' && $contribution_id != 'check') {
 		$update_post = FALSE;
 		
 		//Si la clé de contribution contient "wire", il s'agissait d'un paiement par virement, il faut découper la clé
