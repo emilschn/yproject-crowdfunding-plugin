@@ -484,6 +484,16 @@ class ATCF_Campaign {
         public function vote_invest_ready_min_required(){
             return $this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100);
         }
+	
+	public function is_vote_validated() {
+	    $buffer = FALSE;
+	    if ($this->nb_voters() >= ATCF_Campaign::$voters_min_required) {
+		    $vote_results = WDGCampaignVotes::get_results($this->ID);
+		    $buffer = ($vote_results['percent_project_validated'] >= ATCF_Campaign::$vote_score_min_required)
+				&& ($vote_results['sum_invest_ready'] >= $this->vote_invest_ready_min_required());
+	    }
+	    return $buffer;
+	}
 
 	/**
 	 * Campaign Video
