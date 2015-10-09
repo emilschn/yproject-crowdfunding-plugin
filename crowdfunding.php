@@ -105,6 +105,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
 		require( $this->includes_dir . 'control/social/twitter/TwitterAPIExchange.php' );
 		
+		require( $this->includes_dir . 'control/ajax.php' );
 		require( $this->includes_dir . 'control/settings.php' );
 		require( $this->includes_dir . 'control/logs.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
@@ -141,6 +142,7 @@ final class ATCF_CrowdFunding {
 	 * @return void
 	 */
 	private function setup_actions() {
+		WDGAjaxActions::init_actions();
 		add_action( 'init', array( $this, 'is_edd_activated' ), 1 );
 		add_filter( 'template_include', array( $this, 'template_loader' ) );
 		
