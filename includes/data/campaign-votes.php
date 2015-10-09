@@ -1,6 +1,6 @@
 <?php
 /**
- * Lib de gestion des utilisateurs
+ * Lib de gestion des votes
  */
 class WDGCampaignVotes {
 	public static $table_name_votes = 'ypcf_project_votes';

@@ -91,8 +91,9 @@ final class ATCF_CrowdFunding {
 	private function includes() {
 		
 		require( $this->includes_dir . 'data/campaign.php' );
-		require( $this->includes_dir . 'data/campaign-votes.php' );
 		require( $this->includes_dir . 'data/campaigns.php' );
+		require( $this->includes_dir . 'data/campaign-votes.php' );
+		require( $this->includes_dir . 'data/campaign-investments.php' );
                 require( $this->includes_dir . 'data/rewards.php');
 		require( $this->includes_dir . 'data/organisation.php' );
 		require( $this->includes_dir . 'data/user.php' );
