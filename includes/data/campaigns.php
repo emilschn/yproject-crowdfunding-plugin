@@ -382,6 +382,67 @@ class ATCF_Campaigns {
 
 		return $messages;
 	}
+	
+	public static function list_projects_preview($nb = 0, $client = '') { return ATCF_Campaigns::list_projects_current($nb, 'preview', 'asc', $client); }
+	public static function list_projects_vote($nb = 0, $client = '') { return ATCF_Campaigns::list_projects_current($nb, 'vote', 'desc', $client); }
+	public static function list_projects_funding($nb = 0, $client = '') { return ATCF_Campaigns::list_projects_current($nb, 'collecte', 'asc', $client); }
+	public static function list_projects_funded($nb = 0, $client = '') { return ATCF_Campaigns::list_projects_finished($nb, 'funded', $client); }
+	public static function list_projects_archive($nb = 0, $client = '') { return ATCF_Campaigns::list_projects_finished($nb, 'archive', $client); }
+	
+	public static function list_projects_current($nb, $type, $order, $client) {
+		$query_options = array(
+			'showposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+
+				array (
+					'key' => 'campaign_vote',
+					'value' => $type
+					),
+				array (
+					'key' => 'campaign_end_date',
+					'compare' => '>',
+					'value' => date('Y-m-d H:i:s')
+				)
+			),
+			'orderby' => 'post_date',
+			'order' => $order
+		);
+		if (!empty($client)) {
+			$query_options['tax_query'] = array( array( 
+				'taxonomy' => 'download_tag',
+				'field' => 'slug', 
+				'terms' => array($client) 
+			) );
+		}
+		return query_posts( $query_options );
+	}
+	
+	public static function list_projects_finished($nb, $type, $client) {
+		$query_options = array(
+			'showposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array (
+					'key' => 'campaign_vote',
+					'value' => $type
+				)
+			),
+			'meta_key' => 'campaign_end_date',
+			'orderby' => 'meta_value',
+			'order' => 'desc'
+		);
+		if (!empty($client)) {
+			$query_options['tax_query'] = array( array( 
+				'taxonomy' => 'download_tag',
+				'field' => 'slug', 
+				'terms' => array($client) 
+			) );
+		}
+		return query_posts( $query_options );
+	}
 }
 
 /**
