@@ -1006,6 +1006,9 @@ class ATCF_Campaign {
 		$user_payment = get_user_by('email', $email);
 		if ($user_payment) {
 			$user_id = $user_payment->ID;
+			$new_gender = $user_payment->get('user_gender');
+			$new_firstname = $user_payment->user_firstname;
+			$new_lastname = $user_payment->user_lastname;
 		
 		//Sinon, on vérifie si il y a un login et pwd transmis, pour créer le nouvel utilisateur
 		} else {
