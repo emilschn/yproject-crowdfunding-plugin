@@ -220,11 +220,17 @@ class NotificationsEmails {
 	$to = $admin_email . ',' . $copy_recipient;
 	
 	$post_campaign = get_post($campaign_id);
+	$campaign = atcf_get_campaign($post_campaign);
 	$project_title = $post_campaign->post_title;
 	$object = '[Nouveau Projet] '. $project_title;
 	$body_content = "Un nouveau projet viens d'être publié.<br />";
 	$body_content .= "Il est accessible depuis le back-office :<br />";
-	$body_content .= '<a href="'. get_permalink($campaign_id) .'" target="_blank">'. $project_title .'</a>';
+	$body_content .= '<a href="'. get_permalink($campaign_id) .'" target="_blank">'. $project_title .'</a><br /><br />';
+	$user_author = get_user_by('id', $post_campaign->post_author);
+	$body_content .= "Quelques informations supplémentaires :<br />";
+	$body_content .= "- Porteur de projet : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")<br />";
+	$body_content .= "- Mail : ".$user_author->user_email."<br />";
+	$body_content .= "- Téléphone : ".$campaign->contact_phone()."<br />";
 	
 	return NotificationsEmails::send_mail($to, $object, $body_content);
     }
