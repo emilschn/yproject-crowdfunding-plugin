@@ -325,9 +325,8 @@ class NotificationsEmails {
     //*******************************************************
     // MESSAGE DIRECT PORTEUR DE PROJET
     //*******************************************************
-    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list=  [], $return_string = false) {
-	//$to = liste des emails de la communauté - les désinscrits
-	
+    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list = [], $return_string = false) {
+	ypcf_debug_log('NotificationsEmails::project_mail > ' . $campaign_id . ' > ' . $mail_title);
 	$post_campaign = get_post($campaign_id);
 	$project_title = $post_campaign->post_title;
         
@@ -350,36 +349,37 @@ class NotificationsEmails {
                 . '</div></div>';
         //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
         
-        if ($return_string){
+        if ($return_string) {
             return $body_content;
         }
         
-        //Récupère liste d'envoi
-        global $wpdb;
-	$table_jcrois = $wpdb->prefix . "jycrois";
-        $list_user_jcrois = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
-	$send_list = $list_user_jcrois;
-        
-        if ($send_jycrois){
-            $send_list = $list_user_jcrois;
-        } else {
-            if($send_vote){
-                $table_vote = $wpdb->prefix . "ypcf_project_votes";
-                $list_user_voters = $wpdb->get_col( "SELECT user_id FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
-                $send_list = array_intersect($send_list, $list_user_voters);
-            }
-            if ($send_invest){
-                $send_list = array_intersect($send_list, $id_investors_list);
-            }
-        }
+	global $wpdb;
+	$send_list = array();
         $list_mail = array();
         $feedback = array();
-        
-        foreach ($send_list as $id_user) {
+	//Récupération éventuelle des utilisateurs "j'y crois"
+        if ($send_jycrois) {
+		$table_jcrois = $wpdb->prefix . "jycrois";
+		$list_user_jcrois = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+		$send_list = $list_user_jcrois;
+	}
+	//Récupération éventuelle des utilisateurs "j'ai voté et validé le projet"
+	if ($send_vote) {
+		$table_vote = $wpdb->prefix . "ypcf_project_votes";
+		$list_user_voters = $wpdb->get_col( "SELECT user_id FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
+		$send_list = array_merge($send_list, $list_user_voters);
+	}
+	//Récupération éventuelle des utilisateurs "j'ai investi"
+	if ($send_invest){
+		$send_list = array_merge($send_list, $id_investors_list);
+	}
+	//Suppression des doublons
+	$send_list_result = array_unique($send_list);
+	
+        foreach ($send_list_result as $id_user) {
                 $user = get_userdata(intval($id_user));
                 $to = $user->user_email;
-                $list_user[] = $user->user_login;
-		$list_mail[] = $user->user_email;
+		$list_mail[] = $to;
                 $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
 	}
         return array_combine($list_mail, $feedback);
@@ -392,15 +392,14 @@ class NotificationsEmails {
     // NOUVELLE ACTUALITE DE PROJET
     //*******************************************************
     /**
-     * Mail aux membres qui ont votés, investis ou mis "j'y crois" à un projet 
+     * Mail aux membres qui ont mis "j'y crois" à un projet 
      * lorsque celui-ci publie une nouvelle actualité
      * @param int $campaign_id
      * @param int $post_id ID of the new post
      * @return bool
      */
     public static function new_project_post_posted($campaign_id, $post_id) {
-	//$to = liste des emails de la communauté - les désinscrits
-	
+	ypcf_debug_log('NotificationsEmails::new_project_post_posted > ' . $campaign_id . ' > ' . $post_id);
 	$post_campaign = get_post($campaign_id);
 	$project_title = $post_campaign->post_title;
         $new_post = get_post($post_id);
@@ -433,7 +432,6 @@ class NotificationsEmails {
         
         foreach ($result_jcrois as $item) {
                 $to = get_userdata($item->user_id)->user_email;
-                $list_user[] = get_userdata($item->user_id)->user_login;
 		$list_mail[] = get_userdata($item->user_id)->user_email;
                 $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
 	}
