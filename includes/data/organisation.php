@@ -14,6 +14,7 @@ class YPOrganisation {
 	private $creator;
 	private $bopp_id;
 	private $bopp_object;
+	private $mangopay_id;
 	private $wpref;
 	private $name;
 	private $strong_authentication;
@@ -183,6 +184,13 @@ class YPOrganisation {
 		return $this->bopp_id;
 	}
 	
+	public function get_mangopay_id() {
+		if (!isset($this->mangopay_id)) {
+			$this->mangopay_id = ypcf_mangopay_get_mp_user_id($this->get_wpref());
+		}
+		return $this->mangopay_id;
+	}
+	
 	public function get_wpref() {
 		return $this->wpref;
 	}
@@ -303,8 +311,13 @@ class YPOrganisation {
 	}
 	
 	public function get_wallet_amount() {
-		return ypcf_mangopay_get_user_personalamount_by_wpid($this->wpref) / 100;
+		return ypcf_mangopay_get_user_personalamount_by_wpid($this->get_wpref()) / 100;
 	}
+	
+	public function get_operations() {
+		return ypcf_mangopay_get_operations_by_user_id($this->get_mangopay_id());
+	}
+	
 	public function get_transfers() {
 		$args = array(
 		    'author'    => $this->wpref,

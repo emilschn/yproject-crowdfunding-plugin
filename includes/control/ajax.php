@@ -11,6 +11,7 @@ class WDGAjaxActions {
 	 */
 	public static function init_actions() {
 		WDGAjaxActions::add_action('display_roi_user_list');
+		WDGAjaxActions::add_action('show_project_money_flow');
 	}
     
 	/**
@@ -46,5 +47,135 @@ class WDGAjaxActions {
 		    echo '<tr><td><strong>Total</strong></td><td>'.$campaign->current_amount(FALSE).'&euro;</td><td>'.$total_roi.'&euro;</td><td>'.$total_fees.'&euro;</td></tr>';
 		}
 		exit();
+	}
+	
+	/**
+	 * Affiche le tableau de flux monétaires d'un projet
+	 */
+	public static function show_project_money_flow() {
+		if (current_user_can('manage_options')) {
+			//Récupération des éléments à traiter
+			$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+			$campaign_post = get_post($campaign_id);
+			$campaign = atcf_get_campaign($campaign_post); 
+			$mp_wallet_campaign_id = ypcf_mangopay_get_mp_campaign_wallet_id($campaign_id);
+			$mp_wallet_campaign_infos = ypcf_mangopay_get_wallet_by_id($mp_wallet_campaign_id);
+			$campaign_organisation = $campaign->get_organisation();
+			$organisation_obj = new YPOrganisation($campaign_organisation->organisation_wpref);
+			$mp_operations_campaign = ypcf_mangopay_get_operations_by_wallet_id($mp_wallet_campaign_id);
+			$mp_operations_organisation = $organisation_obj->get_operations();
+			?>
+
+			Montant collect&eacute; : <?php echo $campaign->current_amount(FALSE); ?><br />
+			Montant actuel sur le porte-monnaie du projet : <?php echo ($mp_wallet_campaign_infos->Amount / 100); ?><br />
+			Montant actuel sur le porte-monnaie de l'organisation : <?php echo $organisation_obj->get_wallet_amount(); ?><br /><br />
+			
+			<strong>Liste des transactions sur le porte-monnaie projet :</strong><br />
+			<div class="wdg-datatable">
+			    <table cellspacing="0" width="100%">
+				<thead><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></thead>
+				<tfoot><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></tfoot>
+				<tbody>
+				<?php 
+				//Tri des doublons renvoyés par MP
+				$operation_list = array();
+				foreach($mp_operations_campaign as $operation_item) {
+					$operation_list[$operation_item->TransactionID] = $operation_item;
+				}
+
+				foreach($operation_list as $operation_item): ?>
+				    <?php
+				    $operation_date = new DateTime();
+				    $operation_date->setTimestamp($operation_item->CreationDate);
+				    $object = '';
+				    $credit = '';
+				    $debit = '';
+				    switch ($operation_item->TransactionType) {
+					    case 'Contribution':
+						    $user_list = get_users(array('meta_key' => 'mangopay_user_id', 'meta_value' => $operation_item->UserID));
+						    $object = 'Investissement utilisateur ' . $user_list[0]->data->user_nicename;
+						    $credit = $operation_item->Amount / 100;
+						    break;
+					    case 'Transfer':
+						    $operation_infos = ypcf_mangopay_get_transfer_by_id($operation_item->TransactionID);
+						    $beneficiary_infos = ypcf_mangopay_get_user_by_id($operation_infos->BeneficiaryID);
+						    if ($beneficiary_infos->FirstName != $beneficiary_infos->LastName) {
+							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' ' .$beneficiary_infos->LastName. ' (' .$beneficiary_infos->ID. ')';
+						    } else {
+							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' (' .$beneficiary_infos->ID. ')';
+						    }
+						    $debit = $operation_item->Amount / 100;
+						    break;
+
+				    }
+				    ?>
+				    <tr data-transaction="<?php echo $operation_item->TransactionID; ?>">
+					<td><?php echo $operation_date->format('Y-m-d H:i:s'); ?></td>
+					<td><?php echo $object; ?></td>
+					<td><?php echo $debit; ?></td>
+					<td><?php echo $credit; ?></td>
+				    </tr>
+				<?php endforeach; ?>
+				</tbody>
+			    </table>
+			</div><br /><br />
+			
+			<strong>Liste des transactions sur le porte-monnaie organisation :</strong><br />
+			<div class="wdg-datatable">
+			    <table cellspacing="0" width="100%">
+				<thead><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></thead>
+				<tfoot><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></tfoot>
+				<tbody>
+				<?php 
+				//Tri des doublons renvoyés par MP
+				$operation_list = array();
+				foreach($mp_operations_organisation as $operation_item) {
+					$operation_list[$operation_item->TransactionID] = $operation_item;
+				}
+
+				foreach($operation_list as $operation_item): ?>
+				    <?php
+				    $operation_date = new DateTime();
+				    $operation_date->setTimestamp($operation_item->CreationDate);
+				    $object = '';
+				    $credit = '';
+				    $debit = '';
+				    switch ($operation_item->TransactionType) {
+					    case 'Contribution':
+						    $user_list = get_users(array('meta_key' => 'mangopay_user_id', 'meta_value' => $operation_item->UserID));
+						    $object = 'Investissement utilisateur ' . $user_list[0]->data->user_nicename;
+						    if ($organisation_obj->get_wpref() == $user_list[0]->data->ID) {
+							    $object = 'Paiement pour reversement';
+						    }
+						    
+						    $credit = $operation_item->Amount / 100;
+						    break;
+					    case 'Transfer':
+						    $operation_infos = ypcf_mangopay_get_transfer_by_id($operation_item->TransactionID);
+						    $beneficiary_infos = ypcf_mangopay_get_user_by_id($operation_infos->BeneficiaryID);
+						    if ($beneficiary_infos->FirstName != $beneficiary_infos->LastName) {
+							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' ' .$beneficiary_infos->LastName. ' (' .$beneficiary_infos->ID. ')';
+						    } else {
+							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' (' .$beneficiary_infos->ID. ')';
+						    }
+						    $debit = $operation_item->Amount / 100;
+						    break;
+
+				    }
+				    ?>
+				    <tr data-transaction="<?php echo $operation_item->TransactionID; ?>">
+					<td><?php echo $operation_date->format('Y-m-d H:i:s'); ?></td>
+					<td><?php echo $object; ?></td>
+					<td><?php echo $debit; ?></td>
+					<td><?php echo $credit; ?></td>
+				    </tr>
+				<?php endforeach; ?>
+				</tbody>
+			    </table>
+			</div>
+			
+			<?php
+			exit();
+		}
 	}
 }

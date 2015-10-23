@@ -385,6 +385,18 @@ class ATCF_Campaign {
                 $post_campaign = get_post($this->ID);
                 return $post_campaign->post_author;
         }
+	
+	private $organisation;
+	public function get_organisation() {
+		if (!isset($this->organisation)) {
+			$api_project_id = BoppLibHelpers::get_api_project_id($this->ID);
+			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+			if (isset($current_organisations) && count($current_organisations) > 0) {
+				$this->organisation = $current_organisations[0];
+			}
+		}
+		return $this->organisation;
+	}
 
 	/**
 	 * Campaign Contact Email
