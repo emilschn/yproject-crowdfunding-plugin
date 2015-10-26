@@ -228,25 +228,6 @@ class NotificationsEmails {
 	
 	return NotificationsEmails::send_mail($admin_email, $object, $body_content);
     }
-    
-    /**
-     * Mail pour l'utilisateur lors de la création de son compte
-     * @param int $wp_user_id
-     * @return bool
-     */
-    public static function new_user_user($wp_user_id) {
-	ypcf_debug_log('NotificationsEmails::new_user_user > ' . $wp_user_id);
-	
-	$user_data = get_userdata($wp_user_id);
-	
-	$object = "Bienvenue chez WE DO GOOD !";
-	
-	$body_content = 'Bonjour ' . $user_data->first_name. ',<br />';
-	$body_content .= 'Nous vous souhaitons la bienvenue chez WE DO GOOD';
-	$body_content .= 'et esp&eacute;rons vous retrouver bient&ocirc;t pour vous faire d&eacute;couvrir les projets que nous accompagnons !';
-        
-	return NotificationsEmails::send_mail($user_data->user_email, $object, $body_content, true);
-    }
     //*******************************************************
     // FIN NOUVEL UTILISATEUR
     //*******************************************************
