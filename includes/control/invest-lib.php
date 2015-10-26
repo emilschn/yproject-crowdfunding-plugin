@@ -552,7 +552,7 @@ function ypcf_print_invest_breadcrumb($current_step, $funding_type = 'invest') {
 function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = FALSE) {
     $payment_post = get_post($payment_id);
     $init_payment_status = $payment_post->post_status;
-    $buffer = false;
+    $buffer = $init_payment_status;
     
     if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed') {
 	

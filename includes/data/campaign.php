@@ -984,19 +984,22 @@ class ATCF_Campaign {
 					$mangopay_is_succeeded = ($mangopay_contribution != '' && isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
 				}
 
-
-				$payments_data[] = array(
-					'ID'			=> $payment->ID,
-					'email'			=> edd_get_payment_user_email( $payment->ID ),
-					'products'		=> $cart_details,
-					'amount'		=> edd_get_payment_amount( $payment->ID ),
-					'date'			=> $payment->post_date,
-					'user'			=> $user_id,
-					'status'		=> ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution ),
-					'mangopay_contribution' => $mangopay_contribution,
-					'signsquid_status'	=> $signsquid_status,
-					'signsquid_status_text' => $signsquid_status_text
-				);
+				$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution );
+				
+				if ($payment_status != 'failed') {
+					$payments_data[] = array(
+						'ID'			=> $payment->ID,
+						'email'			=> edd_get_payment_user_email( $payment->ID ),
+						'products'		=> $cart_details,
+						'amount'		=> edd_get_payment_amount( $payment->ID ),
+						'date'			=> $payment->post_date,
+						'user'			=> $user_id,
+						'status'		=> $payment_status,
+						'mangopay_contribution' => $mangopay_contribution,
+						'signsquid_status'	=> $signsquid_status,
+						'signsquid_status_text' => $signsquid_status_text
+					);
+				}
 			}
 		}
 		return $payments_data;
