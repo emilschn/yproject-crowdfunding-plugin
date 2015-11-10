@@ -106,6 +106,10 @@ class WDGAjaxActions {
 						    }
 						    $debit = $operation_item->Amount / 100;
 						    break;
+					    case 'Withdrawal':
+						    $object = 'Retrait';
+						    $debit = $operation_item->Amount / 100;
+						    break;
 
 				    }
 				    ?>
@@ -158,6 +162,10 @@ class WDGAjaxActions {
 						    } else {
 							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' (' .$beneficiary_infos->ID. ')';
 						    }
+						    $debit = $operation_item->Amount / 100;
+						    break;
+					    case 'Withdrawal':
+						    $object = 'Retrait';
 						    $debit = $operation_item->Amount / 100;
 						    break;
 
