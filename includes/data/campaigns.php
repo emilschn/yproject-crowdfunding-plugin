@@ -263,6 +263,7 @@ class ATCF_Campaigns {
 	 */
 	function meta_boxes_save( $fields ) {
 		$fields[] = '_campaign_featured';
+		$fields[] = ATCF_Campaign::$key_edit_version;
 		$fields[] = '_campaign_physical';
 		$fields[] = 'campaign_goal';
 		$fields[] = 'campaign_minimum_goal';
@@ -1227,6 +1228,10 @@ function _atcf_metabox_campaign_info() {
 			<input type="checkbox" name="_campaign_featured" id="_campaign_featured" value="1" <?php checked( 1, $campaign->featured() ); ?> />
 			Mise en avant
 		</label>
+	</p>
+	
+	<p>
+		Version d'affichage : <input type="text" name="<?php echo ATCF_Campaign::$key_edit_version; ?>" value="<?php echo $campaign->edit_version(); ?>" />
 	</p>
 	
 	

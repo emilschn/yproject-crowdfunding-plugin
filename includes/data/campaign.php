@@ -100,10 +100,6 @@ class ATCF_Campaign {
 	}
 
 	/**
-	 * Getter
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
 	 * @param string $key The meta key to fetch
 	 * @return string $meta The fetched value
 	 */
@@ -115,20 +111,46 @@ class ATCF_Campaign {
 		return $meta;
 	}
 	
+/*******************************************************************************
+ * METAS
+ ******************************************************************************/
+	/**
+	 * Version du type de projet
+	 * @return int 
+	 */
 	public static $key_edit_version = 'campaign_edit_version';
 	public function edit_version() {
 		$version = $this->__get(ATCF_Campaign::$key_edit_version);
 		if (!isset($version) || !is_numeric($version) || $version < 1) { $version = 1; }
 		return $version;
 	}
-
+	
 	/**
-	 * Campaign Featured
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign Featured
+	 * Mots-clés
 	 */
+	public static $keywords_taxonomy = 'download_tag';
+	public function get_keywords() {
+		return wp_get_post_terms($this->ID, ATCF_Campaign::$keywords_taxonomy);
+	}
+	
+	
+/*******************************************************************************
+ * DONNEES
+ ******************************************************************************/
+	/**
+	 * Retourne l'éventuel client auquel le projet appartient
+	 * @return string
+	 */
+	public function get_client_context() {
+		$client_context = '';
+		$tag_list = $this->get_keywords();
+		foreach ($tag_list as $tag) {
+			$client_context = $tag->slug;
+		}
+		return $client_context;
+	}
+	
+	
 	public function featured() {
 		return $this->__get( '_campaign_featured' );
 	}
@@ -519,16 +541,16 @@ class ATCF_Campaign {
 	}
 
 	/**
+	 * Récupérer le statut du projet
+	 * @return string Statuts possibles : preparing ; preview ; vote ; collecte ; funded ; archive
+	 */
+	public function campaign_status() {
+		return $this->vote();
+	}
+	/**
 	 * Deprecated : use campaign_status instead
 	 */
 	public function vote() {
-		return $this->__get( 'campaign_vote' );
-	}
-	/**
-	 * Récupérer le statut du projet
-	 * @return Statuts possibles : preparing ; preview ; vote ; collecte ; funded ; archive
-	 */
-	public function campaign_status() {
 		return $this->__get( 'campaign_vote' );
 	}
 	
