@@ -283,6 +283,7 @@ function ypcf_check_invest_redirections() {
 
 function ypcf_check_meanofpayment_redirections() {
     ypcf_session_start();
+    ypcf_debug_log('ypcf_check_meanofpayment_redirections --- SESSION :: ' . $_SESSION['redirect_current_amount_part'] . ' ; meanofpayment :: ' . $_GET['meanofpayment']);
     
     //Si on a choisi le moyen de paiement
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
@@ -297,7 +298,8 @@ function ypcf_check_meanofpayment_redirections() {
 			    //Récupération de l'url de la page qui indique que le paiement est bien effectué
 			    $page_payment_done = get_page_by_path('paiement-effectue');
 			    $mangopay_newcontribution = ypcf_mangopay_contribution_user_to_project($current_user, $_GET['campaign_id'], $amount, $page_payment_done);
-
+			    ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID . ' ; URL :: ' . $mangopay_newcontribution->PaymentURL);
+			    
 			    //Analyse de la contribution pour récupérer l'url de paiement
 			    if (isset($mangopay_newcontribution->ID)) {
 				    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
@@ -314,7 +316,8 @@ function ypcf_check_meanofpayment_redirections() {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-virement');
 				    $mangopay_newcontribution = ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $_GET['campaign_id'], $amount);
-
+				    ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID);
+			    
 				    //Analyse de la contribution pour afficher les informations
 				    if (isset($mangopay_newcontribution->ID)) {
 					    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
