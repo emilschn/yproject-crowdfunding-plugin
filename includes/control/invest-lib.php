@@ -66,6 +66,8 @@ function ypcf_check_redirections() {
 	
 	    case 'paiement-effectue' :
 		ypcf_check_is_user_logged_invest();
+		if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+		if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-return.php' );
 		break;
 	
@@ -302,8 +304,8 @@ function ypcf_check_meanofpayment_redirections() {
 			    
 			    //Analyse de la contribution pour récupérer l'url de paiement
 			    if (isset($mangopay_newcontribution->ID)) {
-				    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-				    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+				    global $payment_url;
+				    $payment_url = $mangopay_newcontribution->PaymentURL;
 				    wp_redirect($mangopay_newcontribution->PaymentURL);
 				    exit();
 			    }
