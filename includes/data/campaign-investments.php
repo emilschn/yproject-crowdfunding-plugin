@@ -44,8 +44,11 @@ class WDGCampaignInvestments {
 					$buffer['count_validate_investors']++;
 					$buffer['investors_list'][$item['user']] = $item['user'];
 					if ($invest_user->get('user_gender') != "") {
-						$buffer['count_age'] += ypcf_get_age($invest_user->get('user_birthday_day'), $invest_user->get('user_birthday_month'), $invest_user->get('user_birthday_year'));
-						$buffer['count_average_age'] ++;
+						$age = ypcf_get_age($invest_user->get('user_birthday_day'), $invest_user->get('user_birthday_month'), $invest_user->get('user_birthday_year'));
+						if ($age < 200) {
+							$buffer['count_age'] += $age;
+							$buffer['count_average_age'] ++;
+						}
 					}
 					if ($invest_user->get('user_gender') == "female") $buffer['count_female']++;
 					if ($buffer['investors_string'] != '') $buffer['investors_string'] .= ', ';

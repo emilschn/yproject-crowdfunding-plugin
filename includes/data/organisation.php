@@ -340,7 +340,7 @@ class YPOrganisation {
 	}
 	
 	public function transfer_wallet($beneficiary_id) {
-		$mp_amount = $this->get_wallet_amount();
+		$mp_amount = $this->get_wallet_amount() * 100;
 		$withdrawal_obj = ypcf_mangopay_make_withdrawal($this->get_wpref(), $beneficiary_id, $mp_amount);
 
 		//Si il y a une erreur lors du retrait

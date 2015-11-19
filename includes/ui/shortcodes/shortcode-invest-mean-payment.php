@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
     ob_start();
+    global $payment_url;
     $campaign = atcf_get_current_campaign();
     //Lien
     $page_mean_payment = get_page_by_path('moyen-de-paiement');
@@ -17,6 +18,11 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
     
     echo ypcf_print_invest_breadcrumb(3, $campaign->funding_type());
     ?>
+
+    <?php if (!empty($payment_url)): ?>
+    La redirection automatique ayant &eacute;chou&eacute;, veuillez cliquer sur <a href="<?php echo $payment_url; ?>">ce lien</a>.<br /><br />
+
+    <?php else: ?>
     Merci de choisir votre moyen de paiement :<br />
     <ul class="invest-mean-payment">
 	    <li>
@@ -43,6 +49,7 @@ function ypcf_shortcode_invest_mean_payment($atts, $content = '') {
 	    <?php } ?>
 	    <div class="clear"></div>
     </ul>
+    <?php endif; ?>
     
     <div class="align-center mangopay-image"><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/powered_by_mangopay.png" alt="Bandeau Mangopay" /></div>
     <?php
