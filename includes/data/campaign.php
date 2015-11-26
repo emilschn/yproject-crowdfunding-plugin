@@ -227,8 +227,15 @@ class ATCF_Campaign {
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
+	public function roi_percent() {
+	    return $this->__get('campaign_roi_percent');
+	}
 	public function first_payment_date() {
 	    return $this->__get('campaign_first_payment_date');
+	}
+	public function estimated_turnover() {
+	    $buffer = $this->__get('campaign_estimated_turnover');
+	    return json_decode($buffer, TRUE);
 	}
 	public function payment_list() {
 	    $buffer = $this->__get('campaign_payment_list');

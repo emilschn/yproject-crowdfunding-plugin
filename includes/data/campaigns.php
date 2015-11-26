@@ -65,6 +65,7 @@ class ATCF_Campaigns {
 		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
 		add_filter( 'edd_metabox_save_campaign_first_payment_date', 'atcf_campaign_save_first_payment_date' );
 		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_save_payment_list' );
+		add_filter( 'edd_metabox_save_campaign_estimated_turnover', 'atcf_campaign_save_estimated_turnover' );
 
 		add_action( 'edd_download_price_table_head', 'atcf_pledge_limit_head' );
 		add_action( 'edd_download_price_table_row', 'atcf_pledge_limit_column', 10, 3 );
@@ -277,6 +278,7 @@ class ATCF_Campaigns {
                 $fields[] = 'campaign_validated_next_step';
 		$fields[] = 'campaign_first_payment_date';
 		$fields[] = 'campaign_payment_list';
+		$fields[] = 'campaign_estimated_turnover';
 		$fields[] = 'campaign_video';
 		$fields[] = 'campaign_images';
 		$fields[] = 'campaign_location';
@@ -294,6 +296,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_init_capital';
 		$fields[] = 'campaign_funding_type';
 		$fields[] = 'campaign_funding_duration';
+		$fields[] = 'campaign_roi_percent';
 		$fields[] = 'campaign_added_value';
 		$fields[] = 'campaign_economic_model';
 		$fields[] = 'campaign_implementation';
@@ -301,11 +304,6 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_subscription_params';
 		$fields[] = 'campaign_powers_params';
 		$fields[] = 'campaign_constitution_terms';
-
-//		$fields[] = 'campaign_updates';
-//		$fields[] = 'campaign_impact_area';
-//		$fields[] = 'campaign_development_strategy';
-//		$fields[] = 'campaign_measuring_impact';
 		
 
 		return $fields;
@@ -604,6 +602,16 @@ function atcf_campaign_save_payment_list() {
 	}
 	$payment_list = json_encode($payment_list);
 	return $payment_list;
+}
+
+function atcf_campaign_save_estimated_turnover() {
+	$estimated_turnover = array();
+	$fp_yy = $_POST['first-payment-yy'];
+	for ($i = $fp_yy; $i < $_POST['campaign_funding_duration'] + $fp_yy; $i++) {
+		$estimated_turnover[$i] = $_POST["est-turnover-" . $i];
+	}
+	$estimated_turnover = json_encode($estimated_turnover);
+	return $estimated_turnover;
 }
 
 
@@ -1262,7 +1270,7 @@ function _atcf_metabox_campaign_info() {
 		}
 		?>
 		<label for="campaign_funding_type"><strong>Type de financement</strong></label><br />
-		<input type="radio" name="campaign_funding_type" value="fundingproject" <?php echo $fundingproject; ?>>Projet<br />
+		<input type="radio" name="campaign_funding_type" value="fundingproject" <?php echo $fundingproject; ?>>Royalties<br />
 		<input type="radio" name="campaign_funding_type" value="fundingdevelopment" <?php echo $fundingdevelopment; ?>>Capital<br />
 		<input type="radio" name="campaign_funding_type" value="fundingdonation" <?php echo $fundingdonation; ?>>Don<br />
 	</p>
@@ -1317,9 +1325,16 @@ function _atcf_metabox_campaign_info() {
 		<input type="text" name="campaign_contract_title" value="<?php echo $campaign->contract_title(); ?>" />
 	</p>
 	<p>
+		Total des investissements par chèque :
+		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check(FALSE); ?>" />
+	</p>
+	<p>
 	    <h4 style="font-size: 1.2em">Paramètres de reversement :</h4>
 	    <ul style="margin-left: 10px; list-style: disc;">
 		<li>Durée du financement : <input type="text" name="campaign_funding_duration" value="<?php echo $campaign->funding_duration(); ?>" /></li>
+		
+		<li>Pourcentage de reversement : <input type="text" name="campaign_roi_percent" value="<?php echo $campaign->roi_percent(); ?>" /></li>
+		
 		<li>
 		    Première date de versement :
 		    <?php
@@ -1339,24 +1354,33 @@ function _atcf_metabox_campaign_info() {
 		    <input type="text" name="first-payment-yy" value="<?php echo esc_attr( $fp_yy ); ?>" size="4" maxlength="4" autocomplete="off" />
 		    <input type="hidden" name="campaign_first_payment_date" value="1" />
 		</li>
+		
+		<?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): 
+		    $estimated_turnover = $campaign->estimated_turnover();
+		    $payment_list = $campaign->payment_list();
+		?>
+		<li>CA prévisionnel :
+		    <ul style="margin-left: 10px; list-style: disc;">
+			<?php for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
+			    <li><?php echo $i; ?> : <input type="text" name="<?php echo 'est-turnover-' . $i; ?>" value="<?php echo $estimated_turnover[$i]; ?>" />&euro;</li>
+			<?php endfor; ?>
+			<input type="hidden" name="campaign_estimated_turnover" value="1" />
+		    </ul>
+		</li>
+		
 		<li>
 		    Dates et montants des versements :
-		    <?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): $payment_list = $campaign->payment_list(); ?>
 		    <ul style="margin-left: 10px; list-style: disc;">
 			<?php for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
 			    <li><?php echo $fp_dd . ' / ' . $fp_mm . ' / ' . $i; ?> : <input type="text" name="<?php echo 'payment-' . $i; ?>" value="<?php echo $payment_list[$i]; ?>" />&euro;</li>
 			<?php endfor; ?>
 			<input type="hidden" name="campaign_payment_list" value="1" />
 		    </ul>
-		    <?php else: ?>
-			<span style="color: red;">Définissez les paramètres ci-dessus pour pouvoir paramétrer les sommes à reverser par date.</span>
-		    <?php endif; ?>
 		</li>
+		<?php else: ?>
+		    <li><span style="color: red;">Définissez les paramètres ci-dessus pour pouvoir paramétrer les sommes à reverser par date.</span></li>
+		<?php endif; ?>
 	    </ul>
-	</p>
-	<p>
-		Total des investissements par chèque :
-		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check(FALSE); ?>" />
 	</p>
 	
 <?php
