@@ -1,93 +1,145 @@
 <?php
 /**
- * Contribution d'un utilisateur vers un projet
+ * Gestion des contributions
  */
+class MangopayContribution {
+	/**
+	 * Création d'une contribution par carte : utilisateur vers projet
+	 * @param WP_User $wp_user
+	 * @param int $wp_campaign_id
+	 * @param int $amount
+	 * @param WP_Post $wp_page_return
+	 */
+	public static function card_user_to_project($wp_user, $wp_campaign_id, $amount, $wp_page_return) {
+		//Récupération du walletid de la campagne
+		$currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($wp_campaign_id);
+
+		//Récupération du walletid de l'utilisateur
+		$currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($wp_user->ID);
+		if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
+
+		//Conversion de la somme saisie en cents
+		$cent_amount = $amount * 100;
+
+		//Récupération de l'url de retour
+		$return_url = get_permalink($wp_page_return->ID) . '?campaign_id=' . $wp_campaign_id;
+
+		//Récupération de l'url de template
+		$template_url = '';
+		if (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE) {
+		    $template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$wp_campaign_id.'"';
+		}
+
+		//Création de la contribution en elle-même
+		$mangopay_newcontribution = request('contributions', 'POST', '{ 
+							"UserID" : '.$currentuser_mangopayid.', 
+							"WalletID" : '.$currentpost_mangopayid.',
+							"Amount" : '.$cent_amount.',
+							"ReturnURL" : "'. $return_url .'"' . $template_url . '
+						    }');
+
+		return $mangopay_newcontribution;
+	}
+	
+	/**
+	 * Création d'une contribution par carte : utilisateur vers propre compte
+	 * @param int $wp_user_id
+	 * @param int $amount
+	 * @param string $url_return
+	 * @param int $wp_campaign_id
+	 */
+	public static function card_user_to_account($wp_user_id, $amount, $url_return, $wp_campaign_id = '') {
+		$user_mangopayid = ypcf_mangopay_get_mp_user_id($wp_user_id);
+		if ($user_mangopayid == '') return '';
+		
+		//Conversion de la somme saisie en cents
+		$cent_amount = $amount * 100;
+
+		//Récupération de l'url de template
+		$template_url = '';
+		if (!empty($wp_campaign_id) && (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE)) {
+		    $template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$wp_campaign_id.'"';
+		}
+
+		//Création de la contribution en elle-même
+		$mangopay_newcontribution = request('contributions', 'POST', '{ 
+							"UserID" : '.$user_mangopayid.', 
+							"WalletID" : 0,
+							"Amount" : '.$cent_amount.',
+							"ReturnURL" : "'. $url_return .'"' . $template_url . '
+						    }');
+		return $mangopay_newcontribution;
+	}
+	
+	/**
+	 * Création d'une contribution par virement : utilisateur vers projet
+	 * @param WP_User $wp_user
+	 * @param int $wp_campaign_id
+	 * @param int $amount
+	 */
+	public static function withdrawal_user_to_project($wp_user, $wp_campaign_id, $amount) {
+		//Récupération du walletid de la campagne
+		$currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($wp_campaign_id);
+
+		//Récupération du walletid de l'utilisateur
+		$currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($wp_user->ID);
+		if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
+
+		//Conversion de la somme saisie en cents
+		$cent_amount = $amount * 100;
+
+		$mangopay_newcontribution = request('contributions-by-withdrawal', 'POST', '{ 
+							"UserID" : '.$currentuser_mangopayid.', 
+							"WalletID" : '.$currentpost_mangopayid.',
+							"AmountDeclared" : '.$cent_amount.'
+						    }');
+
+		return $mangopay_newcontribution;
+	}
+	
+	/**
+	 * Création d'une contribution par virement : utilisateur vers projet
+	 * @param int $wp_user_id
+	 * @param int $amount
+	 */
+	public static function withdrawal_user_to_account($wp_user_id, $amount) {
+		//Récupération du walletid de l'utilisateur
+		$currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($wp_user_id);
+		if ($currentuser_mangopayid == '') return '';
+
+		//Conversion de la somme saisie en cents
+		$cent_amount = $amount * 100;
+
+		$mangopay_newcontribution = request('contributions-by-withdrawal', 'POST', '{ 
+							"UserID" : '.$currentuser_mangopayid.',
+							"AmountDeclared" : '.$cent_amount.'
+						    }');
+
+		return $mangopay_newcontribution;
+	}
+}
+
+
+/*******************************************************************************
+** DEPRECATED
+*******************************************************************************/
 function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id, $amount, $page_return) {
-    //Récupération du walletid de la campagne
-    $post_camp = get_post($campaign_id);
-    $campaign = atcf_get_campaign( $post_camp );
-    $currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
-
-    //Récupération du walletid de l'utilisateur
-    $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
-    
-    if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
-
-    //Conversion de la somme saisie en cents
-    $cent_amount = $amount * 100;
-
-    //Récupération de l'url de retour
-    $return_url = get_permalink($page_return->ID) . '?campaign_id=' . $campaign_id;
-    
-    //Récupération de l'url de template
-    $template_url = '';
-    if (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE) {
-	$page_payment = get_page_by_path('paiement');
-	$template_url = get_permalink($page_payment->ID) . '?campaign_id='.$campaign_id;
-	$template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$campaign_id.'"';
-    }
-    
-    //Création de la contribution en elle-même
-    $mangopay_newcontribution = request('contributions', 'POST', '{ 
-					    "UserID" : '.$currentuser_mangopayid.', 
-					    "WalletID" : '.$currentpost_mangopayid.',
-					    "Amount" : '.$cent_amount.',
-					    "ReturnURL" : "'. $return_url .'"' . $template_url . '
-					}');
-    
-    return $mangopay_newcontribution;
+	MangopayContribution::card_user_to_project($current_user, $campaign_id, $amount, $page_return);
 }
-
-/**
- * Initialise le paiement d'un utilisateur vers son compte personnel
- */
 function ypcf_mangopay_contribution_user_to_account($campaign_id, $user_id, $amount, $return_url) {
-    $user_mangopayid = ypcf_mangopay_get_mp_user_id($user_id);
-    if ($user_mangopayid == '') return '';
-    //Conversion de la somme saisie en cents
-    $cent_amount = $amount * 100;
-    
-    //Récupération de l'url de template
-    $template_url = '';
-    if (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE) {
-	$page_payment = get_page_by_path('paiement');
-	$template_url = get_permalink($page_payment->ID) . '?campaign_id='.$campaign_id;
-	$template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$campaign_id.'"';
-    }
-    
-    //Création de la contribution en elle-même
-    $mangopay_newcontribution = request('contributions', 'POST', '{ 
-					    "UserID" : '.$user_mangopayid.', 
-					    "WalletID" : 0,
-					    "Amount" : '.$cent_amount.',
-					    "ReturnURL" : "'. $return_url .'"' . $template_url . '
-					}');
-    return $mangopay_newcontribution;
+	MangopayContribution::card_user_to_account($user_id, $amount, $return_url, $campaign_id);
 }
-
 function ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $campaign_id, $amount) {
-    //RÃ©cupÃ©ration du walletid de la campagne
-    $post_camp = get_post($campaign_id);
-    $campaign = atcf_get_campaign( $post_camp );
-    $currentpost_mangopayid = ypcf_mangopay_get_mp_campaign_wallet_id($campaign->ID);
-
-    //RÃ©cupÃ©ration du walletid de l'utilisateur
-    $currentuser_mangopayid = ypcf_mangopay_get_mp_user_id($current_user->ID);
-    
-    if ($currentpost_mangopayid == '' || $currentuser_mangopayid == '') return '';
-
-    //Conversion de la somme saisie en cents
-    $cent_amount = $amount * 100;
-    
-    $mangopay_newcontribution = request('contributions-by-withdrawal', 'POST', '{ 
-					    "UserID" : '.$currentuser_mangopayid.', 
-					    "WalletID" : '.$currentpost_mangopayid.',
-					    "AmountDeclared" : '.$cent_amount.'
-					}');
-    
-    return $mangopay_newcontribution;
+	MangopayContribution::withdrawal_user_to_project($current_user, $campaign_id, $amount);
 }
+/*******************************************************************************
+** END DEPRECATED
+*******************************************************************************/
 
+
+/*******************************************************************************
+** A TRIER
+*******************************************************************************/
 function ypcf_mangopay_transfer_project_to_user($current_user, $campaign_id, $amount, $amount_fees = 0) {
     //RÃ©cupÃ©ration du walletid de la campagne
     $post_camp = get_post($campaign_id);

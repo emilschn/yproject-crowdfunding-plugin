@@ -331,11 +331,16 @@ class WDGFormProjects {
 			return FALSE;
 		}
 		
+		$result = FALSE;
 		$fp_date = $campaign->first_payment_date();
 		$fp_yy = mysql2date( 'Y', $fp_date, false );
 		for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++) {
-		    WDGFormProjects::form_proceed_roi($campaign, $i);
+			$result = WDGFormProjects::form_proceed_roi($campaign, $i);
+			if ($result != FALSE) {
+				break;
+			}
 		}
+		return $result;
 	}
 	
 	/**
@@ -360,12 +365,22 @@ class WDGFormProjects {
 			
 			//Si il y a bien une organisation
 			if (isset($current_organisation)) {
-				$page_wallet_management = get_page_by_path('gestion-financiere');
-				$page_return = get_permalink($page_wallet_management->ID) . '?campaign_id=' . $campaign->ID . '&roi_date='.$_POST["proceed_roi_" . $year ].'&roi_year='.$year;
-				$mangopay_newcontribution = ypcf_mangopay_contribution_user_to_account($campaign->ID, $current_organisation->organisation_wpref, $payment_amount, $page_return);
+//				$page_wallet_management = get_page_by_path('gestion-financiere');
+//				$page_return = get_permalink($page_wallet_management->ID) . '?campaign_id=' . $campaign->ID . '&roi_date='.$_POST["proceed_roi_" . $year ].'&roi_year='.$year;
+				$mangopay_newcontribution = MangopayContribution::withdrawal_user_to_account($current_organisation->organisation_wpref, $payment_amount);
 				if (isset($mangopay_newcontribution->ID)) {
-					wp_redirect($mangopay_newcontribution->PaymentURL);
-					exit();
+					//Enregistrement de la contribution
+					$roi_post = array(
+					    'post_author'   => $current_organisation->organisation_wpref,
+					    'post_title'    => 'ROI ' . $mangopay_newcontribution->Amount,
+					    'post_content'  => $mangopay_newcontribution->ID,
+					    'post_status'   => 'pending',
+					    'post_type'	    => 'roi_process'
+					);
+					$new_post_id = wp_insert_post( $roi_post );
+					//Liaison du versement avec la contribution
+					$campaign->update_payment_status($_POST["proceed_roi_" . $year ], $year, $new_post_id);
+					return $mangopay_newcontribution;
 				} else {
 					return FALSE;
 				}
