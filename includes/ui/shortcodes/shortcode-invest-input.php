@@ -52,7 +52,7 @@ function ypcf_display_invest_form($error = '') {
 			$rewards = atcf_get_rewards($campaign->ID);
 
 			if (isset($rewards->rewards_list)) {
-                            $form .= '<p>Choisissez votre contrepartie :</p>';
+				$form .= '<p>Choisissez votre contrepartie :</p>';
 			    $form .= '<ul id="reward-selector">';
 			    $form .= '<label><li>'
                                     . '<input type="radio" name="selected_reward" data-amount="0" value="-1" checked="checked">'
@@ -94,7 +94,7 @@ function ypcf_display_invest_form($error = '') {
 			break;
 		    case 'fundingdevelopment':
 		    case 'fundingproject':
-			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="'.$min_value.'"> &euro; <span id="input_invest_amount" class="hidden">0</span><br />';
+			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="'.$min_value.'" value="'.(!empty($_GET["init_invest"]) ? $_GET["init_invest"] : '').'"> &euro; <span id="input_invest_amount" class="hidden">0</span><br />';
 			break;
 		    case 'not existing':
 			$form .= '<input type="text" id="input_invest_amount_part" name="amount_part" placeholder="1"> parts &agrave; '.$part_value.'&euro; soit <span id="input_invest_amount">0</span>&euro;<br />';
