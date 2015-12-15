@@ -135,6 +135,8 @@ class WDGCampaignVotes {
 				$buffer['list_evo_neg'][count($buffer['list_evo_neg'])-1]++;
 			    }
 			}
+		} else {
+			$buffer['count_voters'] = 0;
 		}
 
 		return $buffer;
