@@ -133,9 +133,64 @@ class ATCF_Campaign {
 		return wp_get_post_terms($this->ID, ATCF_Campaign::$keywords_taxonomy);
 	}
 	
+/*******************************************************************************
+ * GESTION LANGUES
+ ******************************************************************************/
+	public static $key_meta_lang = 'campaign_lang_list';
+	private $current_lang = '';
+	/**
+	 * Ajoute une langue au projet
+	 * @param string $new_lang
+	 */
+	public function add_lang( $new_lang ) {
+		$lang_list = $this->get_lang_list();
+		array_push( $lang_list, $new_lang );
+	    update_post_meta( $this->ID, ATCF_Campaign::$key_meta_lang, json_encode( $lang_list ) );
+	}
+	/**
+	 * Retourne la liste des langues du projet
+	 * @return array
+	 */
+	public function get_lang_list() {
+		$lang_list = json_decode( $this->__get( ATCF_Campaign::$key_meta_lang ) );
+		if (empty($lang_list)) {
+			$lang_list = array();
+		}
+		return $lang_list;
+	}
+	/**
+	 * Définit la langue en cours du projet
+	 * @param string $current_lang
+	 */
+	public function set_current_lang( $current_lang ) {
+		$this->current_lang = $current_lang;
+	}
+	/**
+	 * Retourne la traduction d'une propriété particulière
+	 * @param string $property
+	 * @return string
+	 */
+	private function __get_translated_property( $property ) {
+		// Tentative de récupération dans la langue en cours
+		$value = $this->__get( $property . '_' . $this->current_lang );
+		// Si la valeur est vide et que la langue en cours est définie, on récupère le texte par défaut
+		if (empty( $value ) && !empty( $this->current_lang )) {
+			$value = $this->__get( $property );
+		}
+		return $value;
+	}
+	
 	
 /*******************************************************************************
- * DONNEES
+ * TABLEAU DE BORD
+ ******************************************************************************/
+	public function google_doc() {
+		return $this->__get('campaign_google_doc');
+	}
+	
+	
+/*******************************************************************************
+ * AFFICHAGE
  ******************************************************************************/
 	/**
 	 * Retourne l'éventuel client auquel le projet appartient
@@ -150,63 +205,61 @@ class ATCF_Campaign {
 		return $client_context;
 	}
 	
-	
 	public function featured() {
 		return $this->__get( '_campaign_featured' );
 	}
 	
-	public function subtitle() {
-		return $this->__get( 'campaign_subtitle' );
-	}
-
 	
-	//Description projet
+/*******************************************************************************
+ * DONNEES
+ ******************************************************************************/
+	//Rédaction projet
+	public function subtitle() {
+		return $this->__get_translated_property( 'campaign_subtitle' );
+	}
 	public function summary() {
-		return $this->__get( 'campaign_summary' );
+		return $this->__get_translated_property( 'campaign_summary' );
 	}
 	public function rewards() {
-		return $this->__get( 'campaign_rewards' );
+		return $this->__get_translated_property( 'campaign_rewards' );
 	}
 	public function added_value() {
-		return $this->__get( 'campaign_added_value' );
+		return $this->__get_translated_property( 'campaign_added_value' );
 	}
 	public function development_strategy() {
-		return $this->__get( 'campaign_development_strategy' );
+		return $this->__get_translated_property( 'campaign_development_strategy' );
 	}
 	public function economic_model() {
-		return $this->__get( 'campaign_economic_model' );
+		return $this->__get_translated_property( 'campaign_economic_model' );
 	}
 	public function measuring_impact() {
-		return $this->__get( 'campaign_measuring_impact' );
+		return $this->__get_translated_property( 'campaign_measuring_impact' );
 	}
 	public function implementation() {
-		return $this->__get( 'campaign_implementation' );
+		return $this->__get_translated_property( 'campaign_implementation' );
 	}
 	public function impact_area() {
-		return $this->__get( 'campaign_impact_area' );
+		return $this->__get_translated_property( 'campaign_impact_area' );
 	}
 	public function societal_challenge() {
-		return $this->__get( 'campaign_societal_challenge' );
+		return $this->__get_translated_property( 'campaign_societal_challenge' );
 	}
 	
-	public function google_doc() {
-		return $this->__get('campaign_google_doc');
-	}
 	//Ajouts contrat
 	public function contract_title() {
-		return $this->__get('campaign_contract_title');
+		return $this->__get_translated_property('campaign_contract_title');
 	}
 	public function investment_terms() {
-		return $this->__get('campaign_investment_terms');
+		return $this->__get_translated_property('campaign_investment_terms');
 	}
 	public function subscription_params() {
-		return $this->__get('campaign_subscription_params');
+		return $this->__get_translated_property('campaign_subscription_params');
 	}
 	public function powers_params() {
-		return $this->__get('campaign_powers_params');
+		return $this->__get_translated_property('campaign_powers_params');
 	}
 	public function constitution_terms() {
-		return $this->__get('campaign_constitution_terms');
+		return $this->__get_translated_property('campaign_constitution_terms');
 	}
 	
 	public function company_name() {
@@ -274,34 +327,34 @@ class ATCF_Campaign {
 	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
         
-        /**
-         * Indique si le porteur de projet est autorisé à passer à l'étape
-         * suivante par la modération
-         * @return boolean
-         */
-        public function can_go_next_step(){
-            $res = $this->__get('campaign_validated_next_step');
-            if($res==1){
-                return true;
-            } else {
-                return false; //Y compris le cas où il n'y a pas de valeur
-            }
-        }
+	/**
+	 * Indique si le porteur de projet est autorisé à passer à l'étape
+	 * suivante par la modération
+	 * @return boolean
+	 */
+	public function can_go_next_step(){
+		$res = $this->__get('campaign_validated_next_step');
+		if($res==1){
+			return true;
+		} else {
+			return false; //Y compris le cas où il n'y a pas de valeur
+		}
+	}
         
         
-        /**
-         * Indique si le porteur de projet a déjà eu le message de bienvenue
-         * en arrivant sur le tableau de bord
-         * @return boolean
-         */
-        public function get_has_been_welcomed(){
-            $res = $this->__get('campaign_has_been_welcomed');
-            if($res==1){
-                return true;
-            } else {
-                return false; //Y compris le cas où il n'y a pas de valeur
-            }
-        }
+	/**
+	 * Indique si le porteur de projet a déjà eu le message de bienvenue
+	 * en arrivant sur le tableau de bord
+	 * @return boolean
+	 */
+	public function get_has_been_welcomed(){
+		$res = $this->__get('campaign_has_been_welcomed');
+		if($res==1){
+			return true;
+		} else {
+			return false; //Y compris le cas où il n'y a pas de valeur
+		}
+	}
 
 	/**
 	 * Needs Shipping
@@ -410,10 +463,10 @@ class ATCF_Campaign {
 		return $this->__get( 'campaign_author' );
 	}
         
-        public function post_author(){
-                $post_campaign = get_post($this->ID);
-                return $post_campaign->post_author;
-        }
+	public function post_author(){
+			$post_campaign = get_post($this->ID);
+			return $post_campaign->post_author;
+	}
 	
 	private $organisation;
 	public function get_organisation() {
@@ -427,24 +480,9 @@ class ATCF_Campaign {
 		return $this->organisation;
 	}
 
-	/**
-	 * Campaign Contact Email
-	 *
-	 * @since Appthemer CrowdFunding 0.5
-	 *
-	 * @return sting Campaign Contact Email
-	 */
 	public function contact_email() {
 		return $this->__get( 'campaign_contact_email' );
 	}
-        
-        /**
-	 * Campaign Contact Email
-	 *
-	 * @since Appthemer CrowdFunding 0.5
-	 *
-	 * @return sting Campaign Contact Phone
-	 */
 	public function contact_phone() {
 		return $this->__get( 'campaign_contact_phone' );
 	}
@@ -471,29 +509,29 @@ class ATCF_Campaign {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_begin_collecte_date' ), false );
 	}
         
-        /**
-         * Set the date when vote finishes
-         * @param type DateTime $newDate
-         */
-        public function set_end_vote_date($newDate){
-            $res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
-        }
-        
-        /**
-         * Set the date when collecte is started
-         * @param type DateTime $newDate
-         */
-        public function set_begin_collecte_date($newDate){
-            $res = update_post_meta($this->ID, 'campaign_begin_collecte_date', date_format($newDate, 'Y-m-d H:i:s'));
-        }
-        
-        /**
-         * Set the date when collecte finishes
-         * @param type DateTime $newDate
-         */
-        public function set_end_date($newDate){
-            $res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
-        }
+	/**
+	 * Set the date when vote finishes
+	 * @param type DateTime $newDate
+	 */
+	public function set_end_vote_date($newDate){
+		$res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
+	}
+
+	/**
+	 * Set the date when collecte is started
+	 * @param type DateTime $newDate
+	 */
+	public function set_begin_collecte_date($newDate){
+		$res = update_post_meta($this->ID, 'campaign_begin_collecte_date', date_format($newDate, 'Y-m-d H:i:s'));
+	}
+
+	/**
+	 * Set the date when collecte finishes
+	 * @param type DateTime $newDate
+	 */
+	public function set_end_date($newDate){
+		$res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
+	}
 
 	public function end_vote() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_vote' ), false);
@@ -522,9 +560,9 @@ class ATCF_Campaign {
 	    return $count_users;
 	}
         
-        public function vote_invest_ready_min_required(){
-            return $this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100);
-        }
+	public function vote_invest_ready_min_required(){
+		return $this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100);
+	}
 	
 	public function is_vote_validated() {
 	    $buffer = FALSE;
@@ -544,7 +582,7 @@ class ATCF_Campaign {
 	 * @return sting Campaign Video
 	 */
 	public function video() {
-		return $this->__get( 'campaign_video' );
+		return $this->__get_translated_property( 'campaign_video' );
 	}
 
 	/**
@@ -1313,58 +1351,58 @@ class ATCF_Campaign {
 		if ($post->post_parent == $this->ID) wp_delete_post($id);
 	}
         
-        /**
-         * Gère la validation de modération pour le passage à l'étape suivante
-         * 
-         * $value : Valeur du flag de validation (true si le PP peut passer à
-         *      l'étape suivante, false sinon)
-         */
-        public function set_validation_next_step($value){
-            if($value==0||$value==1) {
-                $res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
-            }            
-        }
-        
-        /**
-         * Setter si le PP a déjà vu la LB de bienvenue sur son TB
-         * 
-         * $value : Valeur du flag (true si le PP a déjà vu la LB, false sinon)
-         */
-        public function set_has_been_welcomed($value){
-            if($value==0||$value==1) {
-                $res = update_post_meta($this->ID, 'campaign_has_been_welcomed', $value);
-            }
-        }
-        
-        public function set_status($newstatus){
-            if(array_key_exists($newstatus, ATCF_Campaign::$status_list)){
-                $res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
-            }
-        }
-        
-        /**
-         * Provides various words to describe the campaign according to it funding type :
-         * @return array
-         */
-        public function funding_type_vocabulary(){
-            switch ($this->funding_type()) {
-                case 'fundingdonation' :
-                    return array(
-                    'investor_name' => 'contributeur',
-                    'investor_action' => 'contribution',
-                    'action_feminin' => true,
-                    'investor_verb' => 'contribu&eacute;'
-                    );
-                default :
-                    return array(
-                    'investor_name' => 'investisseur',
-                    'investor_action' => 'investissement',
-                    'action_feminin' => false,
-                    'investor_verb' => 'investi'
-                    );
-            }
-            return array();
-        }
+	/**
+	 * Gère la validation de modération pour le passage à l'étape suivante
+	 * 
+	 * $value : Valeur du flag de validation (true si le PP peut passer à
+	 *      l'étape suivante, false sinon)
+	 */
+	public function set_validation_next_step($value){
+		if($value==0||$value==1) {
+			$res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
+		}            
+	}
+
+	/**
+	 * Setter si le PP a déjà vu la LB de bienvenue sur son TB
+	 * 
+	 * $value : Valeur du flag (true si le PP a déjà vu la LB, false sinon)
+	 */
+	public function set_has_been_welcomed($value){
+		if($value==0||$value==1) {
+			$res = update_post_meta($this->ID, 'campaign_has_been_welcomed', $value);
+		}
+	}
+
+	public function set_status($newstatus){
+		if(array_key_exists($newstatus, ATCF_Campaign::$status_list)){
+			$res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
+		}
+	}
+
+	/**
+	 * Provides various words to describe the campaign according to it funding type :
+	 * @return array
+	 */
+	public function funding_type_vocabulary(){
+		switch ($this->funding_type()) {
+			case 'fundingdonation' :
+				return array(
+				'investor_name' => 'contributeur',
+				'investor_action' => 'contribution',
+				'action_feminin' => true,
+				'investor_verb' => 'contribu&eacute;'
+				);
+			default :
+				return array(
+				'investor_name' => 'investisseur',
+				'investor_action' => 'investissement',
+				'action_feminin' => false,
+				'investor_verb' => 'investi'
+				);
+		}
+		return array();
+	}
 }
 
 function atcf_get_locations() {

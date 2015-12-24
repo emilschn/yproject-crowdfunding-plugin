@@ -90,11 +90,12 @@ final class ATCF_CrowdFunding {
 	 */
 	private function includes() {
 		
+		require( $this->includes_dir . 'data/language_list.php' );
 		require( $this->includes_dir . 'data/campaign.php' );
 		require( $this->includes_dir . 'data/campaigns.php' );
 		require( $this->includes_dir . 'data/campaign-votes.php' );
 		require( $this->includes_dir . 'data/campaign-investments.php' );
-                require( $this->includes_dir . 'data/rewards.php');
+		require( $this->includes_dir . 'data/rewards.php');
 		require( $this->includes_dir . 'data/organisation.php' );
 		require( $this->includes_dir . 'data/user.php' );
 		require( $this->includes_dir . 'data/bopp/bopp-lib.php' );
@@ -146,6 +147,7 @@ final class ATCF_CrowdFunding {
 		WDGAjaxActions::init_actions();
 		add_action( 'init', array( $this, 'is_edd_activated' ), 1 );
 		add_filter( 'template_include', array( $this, 'template_loader' ) );
+		add_filter( 'locale', array( $this, 'set_locale' ) );
 		
 		do_action( 'atcf_setup_actions' );
 
@@ -169,6 +171,17 @@ final class ATCF_CrowdFunding {
 				add_action( 'admin_notices', array( $this, 'edd_notice' ) );
 			}
 		}
+	}
+	
+	function set_locale($locale) {
+		$input_get_lang = filter_input(INPUT_GET, 'lang');
+		if ( empty ( $input_get_lang ) ) {
+			$input_get_lang = filter_input(INPUT_POST, 'lang');
+		}
+		if ( !empty( $input_get_lang ) ) {
+			$locale = $input_get_lang;
+		}
+		return $locale;
 	}
 
 	/**

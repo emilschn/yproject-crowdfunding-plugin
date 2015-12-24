@@ -1,6 +1,18 @@
 <?php
 class WDGFormProjects {
 	/**
+	 * Gère le formulaire d'ajout de langue
+	 */
+	public static function form_validate_lang_add() {
+		global $campaign;
+		$posted_lang = filter_input(INPUT_POST, 'selected-language');
+		if (empty($posted_lang) || !$campaign->current_user_can_edit()) {
+			return FALSE;
+		}
+		$campaign->add_lang($posted_lang);
+	}
+	
+	/**
 	 * Gère le formulaire d'ajout d'actualité
 	 */
 	public static function form_validate_news_add($campaign_id) {
