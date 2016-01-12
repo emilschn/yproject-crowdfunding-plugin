@@ -122,6 +122,8 @@ class ATCF_Campaign {
 	public function edit_version() {
 		$version = $this->__get(ATCF_Campaign::$key_edit_version);
 		if (!isset($version) || !is_numeric($version) || $version < 1) { $version = 1; }
+		$display_version = filter_input(INPUT_GET, 'display-version');
+		if (!empty($display_version)) { $version = $display_version; }
 		return $version;
 	}
 	
