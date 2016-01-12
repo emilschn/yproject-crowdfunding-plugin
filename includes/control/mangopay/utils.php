@@ -124,13 +124,13 @@ class MangopayContribution {
 ** DEPRECATED
 *******************************************************************************/
 function ypcf_mangopay_contribution_user_to_project($current_user, $campaign_id, $amount, $page_return) {
-	MangopayContribution::card_user_to_project($current_user, $campaign_id, $amount, $page_return);
+	return MangopayContribution::card_user_to_project($current_user, $campaign_id, $amount, $page_return);
 }
 function ypcf_mangopay_contribution_user_to_account($campaign_id, $user_id, $amount, $return_url) {
-	MangopayContribution::card_user_to_account($user_id, $amount, $return_url, $campaign_id);
+	return MangopayContribution::card_user_to_account($user_id, $amount, $return_url, $campaign_id);
 }
 function ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $campaign_id, $amount) {
-	MangopayContribution::withdrawal_user_to_project($current_user, $campaign_id, $amount);
+	return MangopayContribution::withdrawal_user_to_project($current_user, $campaign_id, $amount);
 }
 /*******************************************************************************
 ** END DEPRECATED

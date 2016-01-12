@@ -20,10 +20,11 @@ class NotificationsEmails {
 	$headers .= "Reply-To: ". $from_email . "\r\n";
 	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
 	
-	if ($decorate){
-            global $edd_options;
-            $content = wpautop( $edd_options['header_global_mail'] ) . $content . wpautop( $edd_options['footer_global_mail'] );
-        }
+	ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
+	if ($decorate) {
+		global $edd_options;
+		$content = wpautop( $edd_options['header_global_mail'] ) . $content . wpautop( $edd_options['footer_global_mail'] );
+	}
 
 	$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
@@ -406,35 +407,35 @@ class NotificationsEmails {
             return $body_content;
         }
         
-	global $wpdb;
-	$send_list = array();
-        $list_mail = array();
-        $feedback = array();
-	//Récupération éventuelle des utilisateurs "j'y crois"
-        if ($send_jycrois) {
-		$table_jcrois = $wpdb->prefix . "jycrois";
-		$list_user_jcrois = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
-		$send_list = $list_user_jcrois;
-	}
-	//Récupération éventuelle des utilisateurs "j'ai voté et validé le projet"
-	if ($send_vote) {
-		$table_vote = $wpdb->prefix . "ypcf_project_votes";
-		$list_user_voters = $wpdb->get_col( "SELECT user_id FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
-		$send_list = array_merge($send_list, $list_user_voters);
-	}
-	//Récupération éventuelle des utilisateurs "j'ai investi"
-	if ($send_invest){
-		$send_list = array_merge($send_list, $id_investors_list);
-	}
-	//Suppression des doublons
-	$send_list_result = array_unique($send_list);
+		global $wpdb;
+		$send_list = array();
+		$list_mail = array();
+		$feedback = array();
+		//Récupération éventuelle des utilisateurs "j'y crois"
+		if ($send_jycrois) {
+			$table_jcrois = $wpdb->prefix . "jycrois";
+			$list_user_jcrois = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+			$send_list = $list_user_jcrois;
+		}
+		//Récupération éventuelle des utilisateurs "j'ai voté et validé le projet"
+		if ($send_vote) {
+			$table_vote = $wpdb->prefix . "ypcf_project_votes";
+			$list_user_voters = $wpdb->get_col( "SELECT user_id FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
+			$send_list = array_merge($send_list, $list_user_voters);
+		}
+		//Récupération éventuelle des utilisateurs "j'ai investi"
+		if ($send_invest){
+			$send_list = array_merge($send_list, $id_investors_list);
+		}
+		//Suppression des doublons
+		$send_list_result = array_unique($send_list);
 	
         foreach ($send_list_result as $id_user) {
-                $user = get_userdata(intval($id_user));
-                $to = $user->user_email;
-		$list_mail[] = $to;
-                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
-	}
+			$user = get_userdata(intval($id_user));
+			$to = $user->user_email;
+			$list_mail[] = $to;
+			$feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
+		}
         return array_combine($list_mail, $feedback);
     }
     //*******************************************************
