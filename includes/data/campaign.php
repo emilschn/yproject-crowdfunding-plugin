@@ -176,7 +176,7 @@ class ATCF_Campaign {
 		// Tentative de récupération dans la langue en cours
 		$value = $this->__get( $property . '_' . $this->current_lang );
 		// Si la valeur est vide et que la langue en cours est définie, on récupère le texte par défaut
-		if (empty( $value ) && !empty( $this->current_lang )) {
+		if ((empty( $value ) && !empty( $this->current_lang )) || empty( $this->current_lang )) {
 			$value = $this->__get( $property );
 		}
 		return $value;
