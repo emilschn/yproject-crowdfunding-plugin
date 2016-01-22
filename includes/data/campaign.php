@@ -1029,8 +1029,8 @@ class ATCF_Campaign {
 		) );
 
 		
-		$cache_stats = $WDG_cache_plugin->get_cache('project-investments-data-' . $this->ID, 2);
-		if ($cache_stats === false) {
+//		$cache_stats = $WDG_cache_plugin->get_cache('project-investments-data-' . $this->ID, 2);
+//		if ($cache_stats === false) {
 			if ( $payments ) {
 				foreach ( $payments as $payment ) {
 					$user_info = edd_get_payment_meta_user_info( $payment->ID );
@@ -1076,11 +1076,11 @@ class ATCF_Campaign {
 				}
 			}
 			
-			$cache_stats = json_encode($payments_data);
-			$WDG_cache_plugin->set_cache('project-investments-data-' . $this->ID, $cache_stats, 60*60*3, 2);
-		}
+//			$cache_stats = json_encode($payments_data);
+//			$WDG_cache_plugin->set_cache('project-investments-data-' . $this->ID, $cache_stats, 60*60*3, 2);
+//		}
 		
-		return json_decode($cache_stats);
+		return $payments_data;
 	}
 	
 	/**
