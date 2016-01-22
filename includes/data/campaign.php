@@ -1020,6 +1020,7 @@ class ATCF_Campaign {
          * @return array
          */
 	public function payments_data($skip_apis = FALSE) {
+		global $WDG_cache_plugin;
 		$payments_data = array();
 
 		$payments = edd_get_payments( array(
@@ -1027,51 +1028,59 @@ class ATCF_Campaign {
 		    'download'   => $this->ID
 		) );
 
-		if ( $payments ) {
-			foreach ( $payments as $payment ) {
-				$user_info = edd_get_payment_meta_user_info( $payment->ID );
-				$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
+		
+		$cache_stats = $WDG_cache_plugin->get_cache('project-investments-data-' . $this->ID, 2);
+		if ($cache_stats === false) {
+			if ( $payments ) {
+				foreach ( $payments as $payment ) {
+					$user_info = edd_get_payment_meta_user_info( $payment->ID );
+					$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
 
-				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 
-				$signsquid_contract = new SignsquidContract($payment->ID);
-				$signsquid_status = $signsquid_contract->get_status_code();
-				$signsquid_status_text = $signsquid_contract->get_status_str();
-				$mangopay_id = edd_get_payment_key($payment->ID);
-				if ($mangopay_id == 'check') {
-					$mangopay_is_completed = 'Oui';
-					$mangopay_is_succeeded = 'Oui';
-				    
-				} else if (strpos($mangopay_id, 'wire_') !== FALSE) {
-					$mangopay_id = substr($mangopay_id, 5);
-					$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
-					$mangopay_is_completed = ($mangopay_contribution != '' && $mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
-					$mangopay_is_succeeded = $mangopay_is_completed;
-				} else {
-					$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
-					$mangopay_is_completed = ($mangopay_contribution != '' && isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
-					$mangopay_is_succeeded = ($mangopay_contribution != '' && isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
-				}
+					$signsquid_contract = new SignsquidContract($payment->ID);
+					$signsquid_status = $signsquid_contract->get_status_code();
+					$signsquid_status_text = $signsquid_contract->get_status_str();
+					$mangopay_id = edd_get_payment_key($payment->ID);
+					if ($mangopay_id == 'check') {
+						$mangopay_is_completed = 'Oui';
+						$mangopay_is_succeeded = 'Oui';
 
-				$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution );
-				
-				if ($payment_status != 'failed') {
-					$payments_data[] = array(
-						'ID'			=> $payment->ID,
-						'email'			=> edd_get_payment_user_email( $payment->ID ),
-						'products'		=> $cart_details,
-						'amount'		=> edd_get_payment_amount( $payment->ID ),
-						'date'			=> $payment->post_date,
-						'user'			=> $user_id,
-						'status'		=> $payment_status,
-						'mangopay_contribution' => $mangopay_contribution,
-						'signsquid_status'	=> $signsquid_status,
-						'signsquid_status_text' => $signsquid_status_text
-					);
+					} else if (strpos($mangopay_id, 'wire_') !== FALSE) {
+						$mangopay_id = substr($mangopay_id, 5);
+						$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
+						$mangopay_is_completed = ($mangopay_contribution != '' && $mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
+						$mangopay_is_succeeded = $mangopay_is_completed;
+					} else {
+						$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
+						$mangopay_is_completed = ($mangopay_contribution != '' && isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
+						$mangopay_is_succeeded = ($mangopay_contribution != '' && isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
+					}
+
+					$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution );
+
+					if ($payment_status != 'failed') {
+						$payments_data[] = array(
+							'ID'			=> $payment->ID,
+							'email'			=> edd_get_payment_user_email( $payment->ID ),
+							'products'		=> $cart_details,
+							'amount'		=> edd_get_payment_amount( $payment->ID ),
+							'date'			=> $payment->post_date,
+							'user'			=> $user_id,
+							'status'		=> $payment_status,
+							'mangopay_contribution' => $mangopay_contribution,
+							'signsquid_status'	=> $signsquid_status,
+							'signsquid_status_text' => $signsquid_status_text
+						);
+					}
 				}
 			}
+			
+			$cache_stats = json_encode($payments_data);
+			$WDG_cache_plugin->set_cache('project-investments-data-' . $this->ID, $cache_stats, 60*60*3, 2);
 		}
-		return $payments_data;
+		
+		return json_decode($cache_stats);
 	}
 	
 	/**

@@ -145,10 +145,10 @@ function ypcf_shortcode_invest_return($atts, $content = '') {
 
 		case 'publish' :
 		    do_action('wdg_delete_cache', array(
-						    'project-header-right-'.$campaign->ID,
-						    'projects-current',
-							'project-stats-public-votes-'.$campaign->ID
-						    ));
+				'project-header-right-'.$campaign->ID,
+				'projects-current',
+				'project-investments-data-'.$campaign->ID
+			));
 		    
 		    //On affiche que tout s'est bien passé
 		    $buffer .= ypcf_print_invest_breadcrumb(4, $campaign->funding_type());

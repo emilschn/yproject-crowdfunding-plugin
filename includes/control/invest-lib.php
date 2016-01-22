@@ -704,10 +704,10 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 			
 			if (isset($download_id) && !empty($download_id)) {
 				do_action('wdg_delete_cache', array(
-							    'project-header-right-'.$download_id,
-							    'projects-current',
-								'project-stats-public-votes-'.$download_id
-							    ));
+					'project-header-right-'.$download_id,
+					'projects-current',
+					'project-investments-data-'.$download_id
+				));
 			}
 		}
 	    }
