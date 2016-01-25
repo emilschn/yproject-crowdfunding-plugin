@@ -186,16 +186,3 @@ function ypcf_display_invest_form($error = '') {
     
     return $form;
 }
-
-/**
- * Premier formulaire qui permet de remplir la somme que l'on veut investir
- */
- function ypcf_shortcode_invest_form($atts, $content = '') {
-    $form = '';
-    
-    if (ypcf_get_current_step() == 1) $form .= ypcf_display_invest_form($content);
-
-    return $form;
-}
-add_shortcode( 'yproject_crowdfunding_invest_form', 'ypcf_shortcode_invest_form' );
-?>
