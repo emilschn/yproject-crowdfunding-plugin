@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		    <input type="hidden" name="action" value="ypcf-campaign-edit-news" /><br />
 		    <?php wp_nonce_field('ypcf-campaign-edit-news'); ?>
 		    <input type="submit" value="<?php _e('Mettre &agrave; jour', 'yproject'); ?>" class="button"
-                           style="background-color: #FF494C; border: 0px none !important;"/>
+                           style="background-color: #EA4F51; border: 0px none !important;"/>
 		</p>
                 <br/>
                 <p>
