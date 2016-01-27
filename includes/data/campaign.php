@@ -794,20 +794,20 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_vote() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = 'Vote termin&eacute;';
+				    $buffer = __('Vote termin&eacute;', 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));
 				    $plural = ($nb_days > 1) ? 's' : '';
-				    $buffer = 'Plus que <b>' . $nb_days . '</b> jour'.$plural.' pour voter !';
+				    $buffer = __('Plus que', 'yproject').' <b>' . $nb_days . '</b> '. __('jour', 'yproject').$plural.__(' pour voter !', 'yproject');
 				    if ($nb_days <= 0) {
 					    $nb_hours = floor($diff / (60 * 60));
 					    $plural = ($nb_hours > 1) ? 's' : '';
-					    $buffer = 'Plus que <b>' . $nb_hours . '</b> heure'.$plural.' pour voter !';
+					    $buffer = __('Plus que', 'yproject').' <b>' . $nb_hours . '</b> '. __('heure', 'yproject').$plural.__(' pour voter !', 'yproject');
 					    if ($nb_hours <= 0) {
 						    $nb_minutes = floor($diff / 60);
 						    $plural = ($nb_minutes > 1) ? 's' : '';
-						    $buffer = 'Plus que <b>' . $nb_minutes . '</b> minute'.$plural.' pour voter !';
+						    $buffer = __('Plus que', 'yproject').' <b>' . $nb_minutes . '</b> '. __('minute', 'yproject').$plural.__(' pour voter !', 'yproject');
 					    }
 				    }
 			    }
@@ -816,20 +816,20 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_date() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = 'Collecte termin&eacute;e';
+				    $buffer = __('Collecte termin&eacute;e', 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));
 				    $plural = ($nb_days > 1) ? 's' : '';
-				    $buffer = 'Plus que <b>' . $nb_days . '</b> jour'.$plural.' !';
+				    $buffer = __('Plus que', 'yproject').' <b>' . $nb_days . '</b> '. __('jour', 'yproject').$plural.__(' !', 'yproject');
 				    if ($nb_days <= 0) {
 					    $nb_hours = floor($diff / (60 * 60));
 					    $plural = ($nb_hours > 1) ? 's' : '';
-					    $buffer = 'Plus que <b>' . $nb_hours . '</b> heure'.$plural.' !';
+					    $buffer = __('Plus que', 'yproject').' <b>' . $nb_hours . '</b> '. __('heure', 'yproject').$plural.__(' !', 'yproject');
 					    if ($nb_hours <= 0) {
 						    $nb_minutes = floor($diff / 60);
 						    $plural = ($nb_minutes > 1) ? 's' : '';
-						    $buffer = 'Plus que <b>' . $nb_minutes . '</b> minute'.$plural.' !';
+						    $buffer = __('Plus que', 'yproject').' <b>' . $nb_minutes . '</b> '. __('minute', 'yproject').$plural.__(' !', 'yproject');
 					    }
 				    }
 			    }
@@ -1399,17 +1399,17 @@ class ATCF_Campaign {
 		switch ($this->funding_type()) {
 			case 'fundingdonation' :
 				return array(
-				'investor_name' => 'contributeur',
-				'investor_action' => 'contribution',
+				'investor_name' => __('contributeur', 'yproject'),
+				'investor_action' => __('contribution', 'yproject'),
 				'action_feminin' => true,
-				'investor_verb' => 'contribu&eacute;'
+				'investor_verb' => __('contribu&eacute;', 'yproject')
 				);
 			default :
 				return array(
-				'investor_name' => 'investisseur',
-				'investor_action' => 'investissement',
+				'investor_name' => __('investisseur', 'yproject'),
+				'investor_action' => __('investissement', 'yproject'),
 				'action_feminin' => false,
-				'investor_verb' => 'investi'
+				'investor_verb' => __('investi', 'yproject')
 				);
 		}
 		return array();
