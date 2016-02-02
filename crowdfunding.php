@@ -147,7 +147,9 @@ final class ATCF_CrowdFunding {
 		WDGAjaxActions::init_actions();
 		add_action( 'init', array( $this, 'is_edd_activated' ), 1 );
 		add_filter( 'template_include', array( $this, 'template_loader' ) );
+		
 		add_filter( 'locale', array( $this, 'set_locale' ) );
+		add_action( 'init', array( $this, 'save_locale' ), 1 );
 		
 		do_action( 'atcf_setup_actions' );
 
@@ -173,15 +175,33 @@ final class ATCF_CrowdFunding {
 		}
 	}
 	
-	function set_locale($locale) {
+	/**
+	 * Définition de la langue en cours
+	 * @global string $locale
+	 */
+	function set_locale( $locale ) {
 		$input_get_lang = filter_input(INPUT_GET, 'lang');
 		if ( empty ( $input_get_lang ) ) {
 			$input_get_lang = filter_input(INPUT_POST, 'lang');
 		}
 		if ( !empty( $input_get_lang ) ) {
 			$locale = $input_get_lang;
+			global $save_locale;
+			$save_locale = $locale;
+		} else {
+			if ( isset( $_COOKIE['locale'] ) ) {
+				$locale = $_COOKIE['locale'];
+			}
 		}
+		
 		return $locale;
+	}
+	
+	function save_locale() {
+		global $save_locale;
+		if ( isset($save_locale) ) {
+			setcookie( 'locale', $save_locale, 10 * DAYS_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+		}
 	}
 
 	/**
