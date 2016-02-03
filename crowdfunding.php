@@ -17,6 +17,7 @@ include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
  * @since Appthemer CrowdFunding 0.1-alpha
  */
 final class ATCF_CrowdFunding {
+	public static $option_name = 'wdg';
 
 	/**
 	 * @var crowdfunding The one true AT_CrowdFunding
@@ -202,6 +203,22 @@ final class ATCF_CrowdFunding {
 		if ( isset($save_locale) ) {
 			setcookie( 'locale', $save_locale, 10 * DAYS_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
 		}
+	}
+	
+	public static function get_translated_setting( $setting_id, $locale = '' ) {
+		if ($locale == '') {
+			$locale = get_locale();
+		}
+		
+		$options_saved = get_option(ATCF_CrowdFunding::$option_name .'_'. $locale);
+		if ( !empty( $options_saved[$setting_id] ) ) {
+			$buffer = $options_saved[$setting_id];
+		} else {
+			global $edd_options;
+			$buffer = $edd_options[$setting_id];
+		}
+		
+		return $buffer;
 	}
 
 	/**

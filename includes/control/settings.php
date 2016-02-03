@@ -154,14 +154,6 @@ function atcf_settings_general( $settings ) {
                 $_types[ $key ] = $type[ 'title' ] . ' &mdash; <small>' . $type[ 'description' ] . '</small>';
         }
 
-        $settings[ 'atcf_settings_campaign_types' ] = array(
-                'id'      => 'atcf_campaign_types',
-                'name'    => __( 'Campaign Types', 'atcf' ),
-                'desc'    => __( 'Select which campaign types are allowed.', 'atcf' ),
-                'type'    => 'multicheck',
-                'options' => $_types
-        );
-
         $settings[ 'atcf_settings_require_account' ] = array(
                 'id'      => 'atcf_settings_require_account',
                 'name'    => __( 'Require Account', 'atcf' ),
@@ -353,5 +345,54 @@ function ypcf_register_settings() {
 	)
     );
 }
-
 add_action('admin_init', 'ypcf_register_settings', 11);
+
+
+add_action( 'admin_menu', 'ypcf_setup_wdg_menu' );
+function ypcf_setup_wdg_menu() {
+	add_options_page( 'WE DO GOOD', 'WE DO GOOD', 'manage_options', 'wdg-settings', 'ypcf_display_wdg_admin' );
+}
+
+function ypcf_display_wdg_admin() {
+	if (!current_user_can('manage_options')) { wp_die( __('You do not have sufficient permissions to access this page.') ); }
+	
+	$lang_list = array(
+		'en_US' => 'Anglais'
+	);
+	$properties_list = array(
+		'investment_generalities' => 'Explications g&eacute;n&eacute;rales sur l&apos;investissement',
+		'contract' => 'Contrat d&apos;investissement'
+	);
+	
+	//Sauvegarde toutes les données
+	$need_save = filter_input(INPUT_POST, 'save-wdg');
+	if (!empty($need_save)) {
+		foreach ($lang_list as $lang_key => $lang_name) {
+			$option = array();
+			foreach ($properties_list as $property_key => $property_label) {
+				$value = filter_input(INPUT_POST, $property_key .'_'. $lang_key);
+				$option[$property_key] = $value;
+			}
+			update_option(ATCF_CrowdFunding::$option_name .'_'. $lang_key, $option);
+		}
+	}
+	?>
+
+	<h2>Traduction WE DO GOOD</h2>
+	
+	<form method="post" action="">
+		<?php foreach ($lang_list as $lang_key => $lang_name): ?>
+			<h3><?php echo $lang_name; ?></h3>
+
+			<?php foreach ($properties_list as $property_key => $property_label): ?>
+			<label for="<?php echo $property_key; ?>_<?php echo $lang_key; ?>"><?php echo $property_label; ?></label>
+			<?php wp_editor(ATCF_CrowdFunding::get_translated_setting($property_key, $lang_key), $property_key .'_'. $lang_key); ?>
+			<br /><br />
+			<?php endforeach; ?>
+		<?php endforeach; ?>
+
+		<input type="hidden" name="save-wdg" value="1" />
+		<p class="submit"><input type="submit" name="Submit" class="button-primary" value="Enregistrer" /></p>
+	</form>
+	<?php
+}
