@@ -49,7 +49,6 @@ function ypcf_check_redirections() {
 	    case 'moyen-de-paiement' :
 		ypcf_check_is_user_logged_invest();
 		ypcf_check_meanofpayment_redirections();
-		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-mean-payment.php' );
 		break;
 	
 	    case 'paiement-virement' :
