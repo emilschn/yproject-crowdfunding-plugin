@@ -53,6 +53,7 @@ function ypcf_check_redirections() {
 	
 	    case 'paiement-virement' :
 	    case 'paiement-cheque' :
+	    case 'paiement-partager' :
 		ypcf_check_is_user_logged_invest();
 		break;
 	
@@ -60,11 +61,6 @@ function ypcf_check_redirections() {
 		ypcf_check_is_user_logged_invest();
 		if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
 		if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-		break;
-	
-	    case 'paiement-partager' :
-		ypcf_check_is_user_logged_invest();
-		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-share.php' );
 		break;
 	}
     }
