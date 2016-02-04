@@ -52,13 +52,8 @@ function ypcf_check_redirections() {
 		break;
 	
 	    case 'paiement-virement' :
-		ypcf_check_is_user_logged_invest();
-		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-payment-wire.php' );
-		break;
-	
 	    case 'paiement-cheque' :
 		ypcf_check_is_user_logged_invest();
-		require( crowdfunding()->includes_dir . 'ui/shortcodes/shortcode-invest-payment-check.php' );
 		break;
 	
 	    case 'paiement-effectue' :
