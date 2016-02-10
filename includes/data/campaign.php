@@ -36,6 +36,8 @@ function atcf_get_current_campaign() {
 		}
 	}
 	
+	$campaign->set_current_lang(get_locale());
+	
 	return $campaign;
 }
 

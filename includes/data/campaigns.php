@@ -237,12 +237,6 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_status', 'Statut de la campagne', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
 		add_meta_box( 'atcf_campaign_date_vote', 'Dates de la campagne', '_atcf_metabox_campaign_dates', 'download', 'side', 'high' );
 		
-		add_meta_box( 'atcf_campaign_summary', 'Résumé', '_atcf_metabox_campaign_summary', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_societal_challenge', 'Utilité sociétale', '_atcf_metabox_campaign_societal_challenge', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_added_value', 'Opportunité économique', '_atcf_metabox_campaign_added_value', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_economic_model', 'Modèle économique', '_atcf_metabox_campaign_economic_model', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_implementation', 'Qui porte le projet ?', '_atcf_metabox_campaign_implementation', 'download', 'normal', 'high' );
-		
 		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_subscription_params', 'Paramètres de souscriptions (apports, domicile, ...)', '_atcf_metabox_campaign_subscription_params', 'download', 'normal', 'high' );
 		add_meta_box( 'atcf_campaign_powers_params', 'Paramètres de pouvoirs (déposer, signer, ...)', '_atcf_metabox_campaign_powers_params', 'download', 'normal', 'high' );
@@ -270,12 +264,12 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_part_value';
 		$fields[] = 'campaign_contact_email';
-                $fields[] = 'campaign_contact_phone';
-                $fields[] = 'campaign_end_vote';
-                $fields[] = 'campaign_begin_collecte_date';
+		$fields[] = 'campaign_contact_phone';
+		$fields[] = 'campaign_end_vote';
+		$fields[] = 'campaign_begin_collecte_date';
 		$fields[] = 'campaign_end_date';
 		$fields[] = 'campaign_vote';
-                $fields[] = 'campaign_validated_next_step';
+		$fields[] = 'campaign_validated_next_step';
 		$fields[] = 'campaign_first_payment_date';
 		$fields[] = 'campaign_payment_list';
 		$fields[] = 'campaign_estimated_turnover';
@@ -285,8 +279,6 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_author';
 		$fields[] = 'campaign_type';
 		$fields[] = 'campaign_owner';
-		$fields[] = 'campaign_summary';
-		$fields[] = 'campaign_societal_challenge';
 		$fields[] = 'campaign_google_doc';
 		$fields[] = 'campaign_contract_title';
 		$fields[] = 'campaign_amount_check';
@@ -297,13 +289,14 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_funding_type';
 		$fields[] = 'campaign_funding_duration';
 		$fields[] = 'campaign_roi_percent';
-		$fields[] = 'campaign_added_value';
-		$fields[] = 'campaign_economic_model';
-		$fields[] = 'campaign_implementation';
 		$fields[] = 'campaign_investment_terms';
+		$fields[] = 'campaign_investment_terms_en_US';
 		$fields[] = 'campaign_subscription_params';
+		$fields[] = 'campaign_subscription_params_en_US';
 		$fields[] = 'campaign_powers_params';
+		$fields[] = 'campaign_powers_params_en_US';
 		$fields[] = 'campaign_constitution_terms';
+		$fields[] = 'campaign_constitution_terms_en_US';
 		
 
 		return $fields;
@@ -810,254 +803,6 @@ function _atcf_metabox_campaign_dates() {
 
 
 
-function _atcf_metabox_campaign_summary() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_summary_before', $campaign );
-?>
-		<p class="summary">	<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->summary()) : '', 'campaign_summary', apply_filters( 'atcf_submit_field_summary_editor_args', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => true,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ) ); 
-		?></p>
-<?php
-	do_action( 'atcf_metabox_campaign_summary_after', $campaign );
-}
-
-function _atcf_metabox_campaign_impact_area () {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-	do_action( 'atcf_metabox_campaign_impact_area_before', $campaign );
-?>
-	<p class="impact_area">
-		<textarea name="impact_area" id="impact_area" class="widefat"><?php echo $campaign->impact_area(); ?></textarea>
-	</p>
-<?php
-	do_action( 'atcf_metabox_campaign_impact_area_after', $campaign );
-}
-
-function _atcf_metabox_campaign_societal_challenge() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_societal_challenge_before', $campaign );
-?>
-		<p class="atcf_metabox_campaign-societal_challenge">	
-		<?php 
-			wp_editor( $campaign ? html_entity_decode($campaign->societal_challenge()) : '', 'campaign_societal_challenge', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => true,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ); 
-		?></p>
-<?php
-	do_action( 'atcf_metabox_campaign_societal_challenge_after', $campaign );
-}
-
-/**
- * Campaign Valeur ajout�e
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
- 
- function _atcf_metabox_campaign_added_value( $editing, $campaign ) {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_added_value_before', $campaign );
-?>
-	<div class="atcf-metabox-campaign_added_value">
-		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->added_value()) : '', 'campaign_added_value', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => true,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ); 
-		?>
-	</div>
-<?php
-	do_action( 'atcf_metabox_campaign_added_value_after', $campaign );
-}
-
-
-
-/**
- * Campaign Strat�gie de d�veloppement
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-
- 
- function _atcf_metabox_campaign_development_strategy( $editing, $campaign ) {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_development_strategy_before', $campaign );
-?>
-	<div class="atcf-metabox-campaign-development_strategy">
-		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->development_strategy()) : '', 'campaign_development_strategy', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => true,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ); 
-		?>
-	</div>
-<?php
-
-	do_action( 'atcf_metabox_campaign_development_strategy_after', $campaign );
-}
-
-
-
-/**
- * Campaign Modele economique
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
-  function _atcf_metabox_campaign_economic_model( $editing, $campaign ) {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_economic_model_before', $campaign );
-?>
-	<div class="atcf-metabox-campaign_economic_model">
-		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->economic_model()) : '', 'campaign_economic_model', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => true,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ); 
-		?>
-	</div>
-<?php
-
-	do_action( 'atcf_metabox_campaign_economic_model_after', $campaign );
-}
-
-
-/**
- * Campaign Mesure d�impact
- *
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
- 
-function _atcf_metabox_campaign_measuring_impact( $editing, $campaign ) {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_measuring_impact_before', $campaign );
-?>
-	<div class="atcf-metabox-campaign-measuring_impact">
-		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->measuring_impact()) : '', 'campaign_measuring_impact', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => true,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ); 
-		?>
-	</div>
-<?php
-
-	do_action( 'atcf_metabox_campaign_measuring_impact_after', $campaign );
-}
-
-
-/**
- * Campaign Mise en oeuvre
- *implementation
- * @since CrowdFunding 0.1-alpha
- *
- * @return void
- */
- 
-   function _atcf_metabox_campaign_implementation( $editing, $campaign ) {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_implementation_before', $campaign );
-?>
-	<div class="atcf-metabox-campaign-implementation">
-		<?php 
-			wp_editor( $editing ? html_entity_decode($campaign->implementation()) : '', 'campaign_implementation', array( 
-				'media_buttons' => true,
-				'teeny'         => true,
-				'quicktags'     => true,
-				'editor_css'    => '<style>body { background: white; }</style>',
-				'tinymce'       => array(
-					'theme_advanced_path'     => false,
-					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
-					'plugins'                 => 'paste',
-					'paste_remove_styles'     => true
-				),
-			) ); 
-		?>
-	</div>
-<?php
-
-	do_action( 'atcf_metabox_campaign_implementation_after', $campaign );
-}
 
 function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
 	global $post;
@@ -1078,6 +823,26 @@ function _atcf_metabox_campaign_investment_terms( $editing, $campaign ) {
 					'paste_remove_styles'     => true
 				),
 			) ); 
+		?>
+	</div>
+	
+	<h3>ENGLISH VERSION</h3>
+	<div class="atcf-metabox-campaign-investment_terms_en_US">
+		<?php 
+			$campaign->set_current_lang('en_US');
+			wp_editor( $editing ? html_entity_decode($campaign->investment_terms()) : '', 'campaign_investment_terms_en_US', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => true,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ); 
+			$campaign->set_current_lang('');
 		?>
 	</div>
 <?php
@@ -1104,6 +869,26 @@ function _atcf_metabox_campaign_subscription_params( $editing, $campaign ) {
 			) ); 
 		?>
 	</div>
+	
+	<h3>ENGLISH VERSION</h3>
+	<div class="atcf-metabox-campaign-subscription_params_en_US">
+		<?php 
+			$campaign->set_current_lang('en_US');
+			wp_editor( $editing ? html_entity_decode($campaign->subscription_params()) : '', 'campaign_subscription_params_en_US', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => true,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ); 
+			$campaign->set_current_lang('');
+		?>
+	</div>
 <?php
 }
 
@@ -1128,6 +913,26 @@ function _atcf_metabox_campaign_powers_params( $editing, $campaign ) {
 			) ); 
 		?>
 	</div>
+	
+	<h3>ENGLISH VERSION</h3>
+	<div class="atcf-metabox-campaign-powers_params_en_US">
+		<?php 
+			$campaign->set_current_lang('en_US');
+			wp_editor( $editing ? html_entity_decode($campaign->powers_params()) : '', 'campaign_powers_params_en_US', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => true,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ); 
+			$campaign->set_current_lang('');
+		?>
+	</div>
 <?php
 }
 
@@ -1150,6 +955,26 @@ function _atcf_metabox_campaign_constitution_terms( $editing, $campaign ) {
 					'paste_remove_styles'     => true
 				),
 			) ); 
+		?>
+	</div>
+	
+	<h3>ENGLISH VERSION</h3>
+	<div class="atcf-metabox-campaign-constitution_terms_en_US">
+		<?php 
+			$campaign->set_current_lang('en_US');
+			wp_editor( $editing ? html_entity_decode($campaign->constitution_terms()) : '', 'campaign_constitution_terms_en_US', array( 
+				'media_buttons' => true,
+				'teeny'         => true,
+				'quicktags'     => true,
+				'editor_css'    => '<style>body { background: white; }</style>',
+				'tinymce'       => array(
+					'theme_advanced_path'     => false,
+					'theme_advanced_buttons1' => 'bold,italic,bullist,numlist,blockquote,justifyleft,justifycenter,justifyright,link,unlink',
+					'plugins'                 => 'paste',
+					'paste_remove_styles'     => true
+				),
+			) ); 
+			$campaign->set_current_lang('');
 		?>
 	</div>
 <?php
