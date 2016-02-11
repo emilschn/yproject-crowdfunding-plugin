@@ -33,10 +33,9 @@ function atcf_get_current_campaign() {
 		if ($is_campaign) {
 			$post_campaign = get_post($campaign_id);
 			$campaign = atcf_get_campaign($post_campaign);
+			$campaign->set_current_lang(get_locale());
 		}
 	}
-	
-	$campaign->set_current_lang(get_locale());
 	
 	return $campaign;
 }
