@@ -281,6 +281,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_owner';
 		$fields[] = 'campaign_google_doc';
 		$fields[] = 'campaign_contract_title';
+		$fields[] = 'campaign_contract_title_en_US';
 		$fields[] = 'campaign_amount_check';
 		$fields[] = 'campaign_company_name';
 		$fields[] = 'campaign_company_status';
@@ -1148,6 +1149,10 @@ function _atcf_metabox_campaign_info() {
 	<p>
 		Titre du contrat :
 		<input type="text" name="campaign_contract_title" value="<?php echo $campaign->contract_title(); ?>" />
+	</p>
+	<p>
+		Titre du contrat ANGLAIS :
+		<input type="text" name="campaign_contract_title_en_US" value="<?php $campaign->set_current_lang('en_US'); echo $campaign->contract_title(); $campaign->set_current_lang(''); ?>" />
 	</p>
 	<p>
 		Total des investissements par chèque :
