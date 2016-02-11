@@ -146,10 +146,10 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		$plurial = '';
 		if ($lang == 'en_US') {
 			if ($payment_data["amount_part"] > 1) $plurial = 's';
-			$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following :<br />';
+			$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following:<br />';
 		} else {
 			if ($payment_data["amount_part"] > 1) $plurial = 's';
-			$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractÃ©ristiques sont les suivantes :<br />';
+			$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
 			
 		}
 		break;
@@ -198,8 +198,8 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	    $buffer .= '<div style="margin-top: 20px; border: 1px solid green; color: green;">';
 		if ($lang == 'en_US') {
 			$buffer .= 'Investment done on '.$month.' '.$day.' '.$year.', at '.$hour.':'.$minute.'<br />';
-			$buffer .= 'E-mail address : '.$user_obj->user_email.'<br />';
-			$buffer .= 'IP address : '.$payment_data["ip"].'<br />';
+			$buffer .= 'E-mail address: '.$user_obj->user_email.'<br />';
+			$buffer .= 'IP address: '.$payment_data["ip"].'<br />';
 		} else {
 			$buffer .= 'Investissement réalisé le '.$day.' '.$month.' '.$year.', à '.$hour.'h'.$minute.'<br />';
 			$buffer .= 'Adresse e-mail : '.$user_obj->user_email.'<br />';
@@ -218,9 +218,9 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     
     $buffer .= '<div style="padding-top: 60px;"></div>';
 	if ($lang == 'en_US') {
-		$buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>ANNEXE</h1></div>';
-	} else {
 		$buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>ANNEX</h1></div>';
+	} else {
+		$buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>ANNEXE</h1></div>';
 	}
     
     $buffer .= html_entity_decode($campaign_obj->constitution_terms());
