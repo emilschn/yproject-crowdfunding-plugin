@@ -14,7 +14,7 @@ function atcf_get_campaign( $post_campaign ) {
 function atcf_get_current_campaign() {
 	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign, $post;
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
-	if (!isset($campaign_id)) {
+	if (empty($campaign_id)) {
 		$campaign_id = '';
 		if (is_category()) {
 			global $cat;

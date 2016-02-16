@@ -13,56 +13,56 @@ function ypcf_session_start() {
 function ypcf_check_redirections() {
     global $post;
     if (isset($post)) {
-	$page_name = get_post($post)->post_name;
-	
-	switch ($page_name) {
-	    case 'connexion' :
-		//Redirection vers la page d'investissement après login, si on venait de l'investissement
-		ypcf_check_is_user_logged_connexion();
-		break;
-	
-	    case 'modifier-mon-compte' :
-		//On teste si l'utilisateur vient de remplir ses données pour les enregistrer
-		ypcf_check_has_user_filled_infos_and_redirect();
-		break;
-	
-	    case 'investir' :
-		if (isset($_GET['invest_start'])) {
-		    ypcf_session_start();
-		    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-		    if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
-		    if (isset($_SESSION['error_invest'])) unset($_SESSION['error_invest']);
-                    if (isset($_SESSION['redirect_current_selected_reward'])) unset($_SESSION['redirect_current_selected_reward']);
+		$page_name = get_post($post)->post_name;
+
+		switch ($page_name) {
+			case 'connexion' :
+				//Redirection vers la page d'investissement après login, si on venait de l'investissement
+				ypcf_check_is_user_logged_connexion();
+			break;
+
+			case 'modifier-mon-compte' :
+				//On teste si l'utilisateur vient de remplir ses données pour les enregistrer
+				ypcf_check_has_user_filled_infos_and_redirect();
+			break;
+
+			case 'investir' :
+				if (isset($_GET['invest_start'])) {
+					ypcf_session_start();
+					if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+					if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
+					if (isset($_SESSION['error_invest'])) unset($_SESSION['error_invest']);
+					if (isset($_SESSION['redirect_current_selected_reward'])) unset($_SESSION['redirect_current_selected_reward']);
+				}
+				//D'abord on teste si l'utilisateur est bien connecté
+				ypcf_check_is_user_logged_invest();
+				ypcf_check_is_project_investable();
+				$current_step = ypcf_get_current_step();
+				if ($current_step == 2) {
+					//On vérifie que les données utilisateurs sont valables
+					ypcf_check_user_can_invest(true);
+					//On vérifie les redirections nécessaires à l'investissement
+					ypcf_check_invest_redirections();
+				}
+			break;
+
+			case 'moyen-de-paiement' :
+				ypcf_check_is_user_logged_invest();
+				ypcf_check_meanofpayment_redirections();
+			break;
+
+			case 'paiement-virement' :
+			case 'paiement-cheque' :
+			case 'paiement-partager' :
+				ypcf_check_is_user_logged_invest();
+			break;
+
+			case 'paiement-effectue' :
+				ypcf_check_is_user_logged_invest();
+				if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+				if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+			break;
 		}
-		//D'abord on teste si l'utilisateur est bien connecté
-		ypcf_check_is_user_logged_invest();
-		ypcf_check_is_project_investable();
-		$current_step = ypcf_get_current_step();
-		if ($current_step == 2) {
-		    //On vérifie que les données utilisateurs sont valables
-		    ypcf_check_user_can_invest(true);
-		    //On vérifie les redirections nécessaires à l'investissement
-		    ypcf_check_invest_redirections();
-		}
-		break;
-		
-	    case 'moyen-de-paiement' :
-		ypcf_check_is_user_logged_invest();
-		ypcf_check_meanofpayment_redirections();
-		break;
-	
-	    case 'paiement-virement' :
-	    case 'paiement-cheque' :
-	    case 'paiement-partager' :
-		ypcf_check_is_user_logged_invest();
-		break;
-	
-	    case 'paiement-effectue' :
-		ypcf_check_is_user_logged_invest();
-		if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-		if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-		break;
-	}
     }
 }
 add_action( 'template_redirect', 'ypcf_check_redirections' );
@@ -74,8 +74,8 @@ function ypcf_check_is_user_logged_connexion() {
     ypcf_session_start();
 
     if (is_user_logged_in() && isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
-	wp_redirect(ypcf_login_gobackinvest_url());
-	exit();
+		wp_redirect(ypcf_login_gobackinvest_url());
+		exit();
     }
 }
 
@@ -162,13 +162,14 @@ function ypcf_check_user_can_invest($redirect = false) {
     $_SESSION['error_invest'] = $errors;
 
     if ($redirect && !$can_invest) {
-	$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-	if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
-        if (isset($_POST['selected_reward'])) $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
-	$page_update = get_page_by_path('modifier-mon-compte');
-	wp_redirect(get_permalink($page_update->ID));
-	exit();
+		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+		if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+		if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+		if (isset($_POST['selected_reward'])) $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
+		ypcf_debug_log('ypcf_check_user_can_invest > cant invest, redirect !');
+		$page_update = get_page_by_path('modifier-mon-compte');
+		wp_redirect(get_permalink($page_update->ID));
+		exit();
     }
     return $can_invest;
 }
@@ -207,36 +208,36 @@ function ypcf_check_invest_redirections() {
     //Si le projet n'est pas défini, on annule et retourne à l'accueil
     $campaign = atcf_get_current_campaign();
     if (!isset($campaign)) {
-	wp_redirect(site_url());
-	exit();
+		wp_redirect(site_url());
+		exit();
     }
     
-    //Si le projet est en court de vote ou que le montant de la part est à 0 (donc non-défini), on retourne à la page projet
-    if ($campaign->vote() == 'vote' || $campaign->part_value() == 0) {
-	wp_redirect(get_permalink($post_camp->ID));
-	exit();
+    //Si le projet n'est pas en collecte ou que le montant de la part est à 0 (donc non-défini), on retourne à la page projet
+    if ($campaign->campaign_status() != 'collecte' || $campaign->part_value() == 0) {
+		wp_redirect(get_permalink($campaign->ID));
+		exit();
     }
     
     //En cas d'investissement, et pas de don
     if ($campaign->funding_type() != "fundingdonation") {
 	    //Si l'utilisateur veut investir pour une nouvelle organisation, on l'envoie vers "Mon compte" pour qu'il ajoute l'organisation
 	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
-		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-		if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-		$page_new_orga = get_page_by_path('creer-une-organisation');
-		wp_redirect(get_permalink($page_new_orga->ID));
-		exit();
+			$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+			if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+			$page_new_orga = get_page_by_path('creer-une-organisation');
+			wp_redirect(get_permalink($page_new_orga->ID));
+			exit();
 	    }
 
 	    //Si l'utilisateur veut investir pour une organisation existante
 	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != 'new_organisation' && $_SESSION['redirect_current_invest_type'] != 'user') {
-		if (!ypcf_check_organisation_can_invest($_SESSION['redirect_current_invest_type'])) {
-		    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-		    if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-		    $page_update = get_page_by_path('modifier-mon-compte');
-		    wp_redirect(get_permalink($page_update->ID));
-		    exit();
-		}
+			if (!ypcf_check_organisation_can_invest($_SESSION['redirect_current_invest_type'])) {
+				$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+				if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+				$page_update = get_page_by_path('modifier-mon-compte');
+				wp_redirect(get_permalink($page_update->ID));
+				exit();
+			}
 	    }
     }
 
@@ -250,14 +251,14 @@ function ypcf_check_invest_redirections() {
     
     //Tests de la validité de l'investissement pour tous les types de financement : utilisateur loggé, projet défini, montant correct
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
-	    && intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value) {
+			&& intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value) {
 	
 	    //Suite des tests pour les projets 
             //Pour l'investissement : bon pour souscription écrit
             //Pour tous : informations validées par coche
 	    if (((($campaign->funding_type() != 'fundingdonation')
-                    &&(isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour souscription'
-		    && ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))))
+				&& (isset($_POST['confirm_power']) && strtolower($_POST['confirm_power']) == 'bon pour souscription'
+				&& ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))))
                 || ($campaign->funding_type() == 'fundingdonation'))
                 && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' ) {
 
@@ -343,150 +344,151 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
     $current_user = wp_get_current_user();
     ypcf_debug_log("ypcf_check_has_user_filled_infos_and_redirect --- ".$current_user->ID);
     if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
-	//Infos utilisateurs
-	if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
-	if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
-	if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
-	if ($_POST["update_publicname"] != "") {
-	    wp_update_user( array ( 'ID' => $current_user->ID, 'display_name' => $_POST["update_publicname"] ) ) ;
-	    $current_user->display_name = $_POST["update_publicname"];
-	}
-	if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
-	if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
-	if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
-	if ($_POST["update_birthplace"] != "") update_user_meta($current_user->ID, 'user_birthplace', $_POST["update_birthplace"]);
-	if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
-	if ($_POST["update_address"] != "") update_user_meta($current_user->ID, 'user_address', $_POST["update_address"]);
-	if ($_POST["update_postal_code"] != "") update_user_meta($current_user->ID, 'user_postal_code', $_POST["update_postal_code"]);
-	if ($_POST["update_city"] != "") update_user_meta($current_user->ID, 'user_city', $_POST["update_city"]);
-	if ($_POST["update_country"] != "") update_user_meta($current_user->ID, 'user_country', $_POST["update_country"]);
-	if ($_POST["update_mobile_phone"] != "") update_user_meta($current_user->ID, 'user_mobile_phone', $_POST["update_mobile_phone"]);
-	if ($_POST["user_description"] != "") update_user_meta($current_user->ID, 'description', $_POST["user_description"]);
-	if (isset($_POST["update_email_contact"])) {
-	    if (($_POST["update_email_contact"] != "" && $_POST["update_email_contact"] != $current_user->user_email)) {
-		$validate_email = bp_core_validate_email_address($_POST["update_email_contact"]);
-		if ($validate_email === true) {
-		    wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email_contact"] ) );
-		    $current_user->user_email = $_POST["update_email_contact"];
+		//Infos utilisateurs
+		if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
+		if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
+		if ($_POST["update_lastname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'last_name' => $_POST["update_lastname"] ) ) ;
+		if ($_POST["update_publicname"] != "") {
+			wp_update_user( array ( 'ID' => $current_user->ID, 'display_name' => $_POST["update_publicname"] ) ) ;
+			$current_user->display_name = $_POST["update_publicname"];
 		}
-	    }
-	    
-	} else {
-	    if (isset($_POST["update_password_current"])) {
-		if (!isset($_POST["update_email"])) $validate_email = true;
-		if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
-		    if (($_POST["update_email"] != "" && $_POST["update_email"] != $current_user->user_email)) {
-			$validate_email = bp_core_validate_email_address($_POST["update_email"]);
-			if ($validate_email === true) {
-			    wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
-			    $current_user->user_email = $_POST["update_email"];
+		if ($_POST["update_birthday_day"] != "") update_user_meta($current_user->ID, 'user_birthday_day', $_POST["update_birthday_day"]);
+		if ($_POST["update_birthday_month"] != "") update_user_meta($current_user->ID, 'user_birthday_month', $_POST["update_birthday_month"]);
+		if ($_POST["update_birthday_year"] != "") update_user_meta($current_user->ID, 'user_birthday_year', $_POST["update_birthday_year"]);
+		if ($_POST["update_birthplace"] != "") update_user_meta($current_user->ID, 'user_birthplace', $_POST["update_birthplace"]);
+		if ($_POST["update_nationality"] != "") update_user_meta($current_user->ID, 'user_nationality', $_POST["update_nationality"]);
+		if ($_POST["update_address"] != "") update_user_meta($current_user->ID, 'user_address', $_POST["update_address"]);
+		if ($_POST["update_postal_code"] != "") update_user_meta($current_user->ID, 'user_postal_code', $_POST["update_postal_code"]);
+		if ($_POST["update_city"] != "") update_user_meta($current_user->ID, 'user_city', $_POST["update_city"]);
+		if ($_POST["update_country"] != "") update_user_meta($current_user->ID, 'user_country', $_POST["update_country"]);
+		if ($_POST["update_mobile_phone"] != "") update_user_meta($current_user->ID, 'user_mobile_phone', $_POST["update_mobile_phone"]);
+		if ($_POST["user_description"] != "") update_user_meta($current_user->ID, 'description', $_POST["user_description"]);
+		if (isset($_POST["update_email_contact"])) {
+			if (($_POST["update_email_contact"] != "" && $_POST["update_email_contact"] != $current_user->user_email)) {
+				$validate_email = bp_core_validate_email_address($_POST["update_email_contact"]);
+				if ($validate_email === true) {
+					wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email_contact"] ) );
+					$current_user->user_email = $_POST["update_email_contact"];
+				}
 			}
-		    }
-		    if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
-		endif;
-	    }
-	}
-	
-	$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
-	//Nouvelle organisation
-	if (isset($_POST['new_organisation'])) {
-	    $validate_email = bp_core_validate_email_address($_POST["new_org_email"]);
-	    if ($_POST['new_org_name'] != '' && isset($_POST['new_organisation_capable']) && $_POST['new_organisation_capable'] && $validate_email) {
-		//Création d'un utilisateur pour l'organisation
-		$username = 'org_' . sanitize_title_with_dashes($_POST['new_org_name']);
-		$password = wp_generate_password();
-		$organisation_user_id = wp_create_user($username, $password, $_POST['new_org_email']);
-		if (!isset($organisation_user_id->errors) || count($organisation_user_id->errors) == 0) {
-		    wp_update_user( array ( 'ID' => $organisation_user_id, 'first_name' => $_POST['new_org_name'] ) ) ;
-		    wp_update_user( array ( 'ID' => $organisation_user_id, 'last_name' => $_POST['new_org_name'] ) ) ;
-		    wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'] ) ) ;
-		    update_user_meta($organisation_user_id, 'user_type', 'organisation');
-		    update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address']);
-		    update_user_meta($organisation_user_id, 'user_nationality', $_POST['new_org_nationality']);
-		    update_user_meta($organisation_user_id, 'user_postal_code', $_POST['new_org_postal_code']);
-		    update_user_meta($organisation_user_id, 'user_city', $_POST['new_org_city']);
-		    update_user_meta($organisation_user_id, 'organisation_type', 'society');
-		    update_user_meta($organisation_user_id, 'organisation_legalform', $_POST['new_org_legalform']);
-		    update_user_meta($organisation_user_id, 'organisation_capital', $_POST['new_org_capital']);
-		    update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber']);
-		    update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs']);
 
-		    //Création d'un groupe pour l'organisation
-		    $new_group_id = groups_create_group( array( 
-			'creator_id' => $organisation_user_id,
-			'name' => $_POST['new_org_name'],
-			'description' => $_POST['new_org_name'],
-			'slug' => groups_check_slug( sanitize_title( esc_attr( $_POST['new_org_name'] ) ) ), 
-			'date_created' => bp_core_current_time(), 
-			'enable_forum' => 0,
-			'status' => 'private' ) );
-		    groups_update_groupmeta( $new_group_id, 'group_type', 'organisation');
-
-		    //Ajout de l'utilisateur créé et de l'utilisateur en cours dans le groupe (et on les passe admin)
-		    groups_accept_invite( $organisation_user_id, $new_group_id);
-		    $org_group_member = new BP_Groups_Member($organisation_user_id, $new_group_id);
-		    $org_group_member->promote('admin');
-		    groups_accept_invite( $current_user->ID, $new_group_id);
-		    $current_group_member = new BP_Groups_Member($current_user->ID, $new_group_id);
-		    $current_group_member->promote('admin');
-		    $_SESSION['redirect_current_invest_type'] = $new_group_id;
-
-		    $organisation_user = get_user_by('id', $organisation_user_id);
-		    $url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
-		    $curl_result_cni = (isset($_FILES['new_org_file_cni']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni') : false;
-		    $curl_result_status = (isset($_FILES['new_org_file_status']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status') : false;
-		    $curl_result_extract = (isset($_FILES['new_org_file_extract']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract') : false;
-		    if (isset($_FILES['new_org_file_declaration']['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration');
-		    if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($current_user->ID);
 		} else {
-		    foreach ($organisation_user_id->errors as $error) {
-			array_push($errors, $error[0]);
-		    }
+			if (isset($_POST["update_password_current"])) {
+			if (!isset($_POST["update_email"])) $validate_email = true;
+			if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
+				if (($_POST["update_email"] != "" && $_POST["update_email"] != $current_user->user_email)) {
+				$validate_email = bp_core_validate_email_address($_POST["update_email"]);
+				if ($validate_email === true) {
+					wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
+					$current_user->user_email = $_POST["update_email"];
+				}
+				}
+				if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
+			endif;
+			}
 		}
-	    } else {
-		if ($_POST['new_org_name'] == '') array_push($errors, 'Merci de renseigner une dénomination sociale.');
-		if (!isset($_POST['new_organisation_capable']) || !$_POST['new_organisation_capable']) array_push($errors, 'Merci de valider que vous êtes en capacité de représenter cette organisation.');
-		if (!$validate_email) array_push($errors, 'L\'adresse e-mail de l\'organisation n\'est pas correcte.');
-	    }
-	    
-	//Mise à jour d'une organisation
-	} elseif (isset($_POST['update_organisation'])) {
-	    //Parcourir toutes les organisations
-	    $api_user_id = BoppLibHelpers::get_api_user_id($current_user->ID);
-	    $organisations_list = BoppUsers::get_organisations_by_role($api_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
-	    foreach ($organisations_list as $organisation_item) {
-		$organisation = new YPOrganisation($organisation_item->organisation_wpref);
-		$name_suffix = '_' . $group_id;
-		if (isset($_POST['update_organisation' . $name_suffix]) && $_POST['new_org_name'.$name_suffix] != '') {
-		    $organisation->set_address($_POST['new_org_address'.$name_suffix]);
-		    $organisation->set_nationality($_POST['new_org_nationality'.$name_suffix]);
-		    $organisation->set_postal_code($_POST['new_org_postal_code'.$name_suffix]);
-		    $organisation->set_city($_POST['new_org_city'.$name_suffix]);
-		    $organisation->set_legalform($_POST['new_org_legalform'.$name_suffix]);
-		    $organisation->set_capital($_POST['new_org_capital'.$name_suffix]);
-		    $organisation->set_idnumber($_POST['new_org_idnumber'.$name_suffix]);
-		    $organisation->set_rcs($_POST['new_org_rcs'.$name_suffix]);
-		    
-		    $organisation_user = $organisation->get_creator();
-		    $url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
-		    $curl_result_cni = (isset($_FILES['new_org_file_cni'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni'.$name_suffix) : false;
-		    $curl_result_status = (isset($_FILES['new_org_file_status'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status'.$name_suffix) : false;
-		    $curl_result_extract = (isset($_FILES['new_org_file_extract'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract'.$name_suffix) : false;
-		    if (isset($_FILES['new_org_file_declaration'.$name_suffix]['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration'.$name_suffix);
-		    if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($organisation_user->ID);
-		}
-	    }
-	}
-	$_SESSION['error_invest'] = $errors;
 
-	if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
-	    if (!isset($_SESSION['error_invest']) || count($_SESSION['error_invest']) == 0) {
-		if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-		if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
-		wp_redirect(ypcf_login_gobackinvest_url());
-		exit();
-	    }
-	}
+		$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
+		//Nouvelle organisation
+		if (isset($_POST['new_organisation'])) {
+			$validate_email = bp_core_validate_email_address($_POST["new_org_email"]);
+			if ($_POST['new_org_name'] != '' && isset($_POST['new_organisation_capable']) && $_POST['new_organisation_capable'] && $validate_email) {
+			//Création d'un utilisateur pour l'organisation
+			$username = 'org_' . sanitize_title_with_dashes($_POST['new_org_name']);
+			$password = wp_generate_password();
+			$organisation_user_id = wp_create_user($username, $password, $_POST['new_org_email']);
+			if (!isset($organisation_user_id->errors) || count($organisation_user_id->errors) == 0) {
+				wp_update_user( array ( 'ID' => $organisation_user_id, 'first_name' => $_POST['new_org_name'] ) ) ;
+				wp_update_user( array ( 'ID' => $organisation_user_id, 'last_name' => $_POST['new_org_name'] ) ) ;
+				wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'] ) ) ;
+				update_user_meta($organisation_user_id, 'user_type', 'organisation');
+				update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address']);
+				update_user_meta($organisation_user_id, 'user_nationality', $_POST['new_org_nationality']);
+				update_user_meta($organisation_user_id, 'user_postal_code', $_POST['new_org_postal_code']);
+				update_user_meta($organisation_user_id, 'user_city', $_POST['new_org_city']);
+				update_user_meta($organisation_user_id, 'organisation_type', 'society');
+				update_user_meta($organisation_user_id, 'organisation_legalform', $_POST['new_org_legalform']);
+				update_user_meta($organisation_user_id, 'organisation_capital', $_POST['new_org_capital']);
+				update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber']);
+				update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs']);
+
+				//Création d'un groupe pour l'organisation
+				$new_group_id = groups_create_group( array( 
+				'creator_id' => $organisation_user_id,
+				'name' => $_POST['new_org_name'],
+				'description' => $_POST['new_org_name'],
+				'slug' => groups_check_slug( sanitize_title( esc_attr( $_POST['new_org_name'] ) ) ), 
+				'date_created' => bp_core_current_time(), 
+				'enable_forum' => 0,
+				'status' => 'private' ) );
+				groups_update_groupmeta( $new_group_id, 'group_type', 'organisation');
+
+				//Ajout de l'utilisateur créé et de l'utilisateur en cours dans le groupe (et on les passe admin)
+				groups_accept_invite( $organisation_user_id, $new_group_id);
+				$org_group_member = new BP_Groups_Member($organisation_user_id, $new_group_id);
+				$org_group_member->promote('admin');
+				groups_accept_invite( $current_user->ID, $new_group_id);
+				$current_group_member = new BP_Groups_Member($current_user->ID, $new_group_id);
+				$current_group_member->promote('admin');
+				$_SESSION['redirect_current_invest_type'] = $new_group_id;
+
+				$organisation_user = get_user_by('id', $organisation_user_id);
+				$url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
+				$curl_result_cni = (isset($_FILES['new_org_file_cni']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni') : false;
+				$curl_result_status = (isset($_FILES['new_org_file_status']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status') : false;
+				$curl_result_extract = (isset($_FILES['new_org_file_extract']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract') : false;
+				if (isset($_FILES['new_org_file_declaration']['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration');
+				if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($current_user->ID);
+			} else {
+				foreach ($organisation_user_id->errors as $error) {
+				array_push($errors, $error[0]);
+				}
+			}
+			} else {
+			if ($_POST['new_org_name'] == '') array_push($errors, 'Merci de renseigner une dénomination sociale.');
+			if (!isset($_POST['new_organisation_capable']) || !$_POST['new_organisation_capable']) array_push($errors, 'Merci de valider que vous êtes en capacité de représenter cette organisation.');
+			if (!$validate_email) array_push($errors, 'L\'adresse e-mail de l\'organisation n\'est pas correcte.');
+			}
+
+		//Mise à jour d'une organisation
+		} elseif (isset($_POST['update_organisation'])) {
+			//Parcourir toutes les organisations
+			$api_user_id = BoppLibHelpers::get_api_user_id($current_user->ID);
+			$organisations_list = BoppUsers::get_organisations_by_role($api_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
+			foreach ($organisations_list as $organisation_item) {
+				$organisation = new YPOrganisation($organisation_item->organisation_wpref);
+				$name_suffix = '_' . $group_id;
+				if (isset($_POST['update_organisation' . $name_suffix]) && $_POST['new_org_name'.$name_suffix] != '') {
+					$organisation->set_address($_POST['new_org_address'.$name_suffix]);
+					$organisation->set_nationality($_POST['new_org_nationality'.$name_suffix]);
+					$organisation->set_postal_code($_POST['new_org_postal_code'.$name_suffix]);
+					$organisation->set_city($_POST['new_org_city'.$name_suffix]);
+					$organisation->set_legalform($_POST['new_org_legalform'.$name_suffix]);
+					$organisation->set_capital($_POST['new_org_capital'.$name_suffix]);
+					$organisation->set_idnumber($_POST['new_org_idnumber'.$name_suffix]);
+					$organisation->set_rcs($_POST['new_org_rcs'.$name_suffix]);
+
+					$organisation_user = $organisation->get_creator();
+					$url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
+					$curl_result_cni = (isset($_FILES['new_org_file_cni'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni'.$name_suffix) : false;
+					$curl_result_status = (isset($_FILES['new_org_file_status'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status'.$name_suffix) : false;
+					$curl_result_extract = (isset($_FILES['new_org_file_extract'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract'.$name_suffix) : false;
+					if (isset($_FILES['new_org_file_declaration'.$name_suffix]['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration'.$name_suffix);
+					if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($organisation_user->ID);
+				}
+			}
+		}
+		$_SESSION['error_invest'] = $errors;
+
+		if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
+			if (!isset($_SESSION['error_invest']) || count($_SESSION['error_invest']) == 0) {
+				if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
+				if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+				ypcf_debug_log("ypcf_check_has_user_filled_infos_and_redirect > redirect with ".$_SESSION['redirect_current_amount_part']. " and " . $_SESSION['redirect_current_invest_type']);
+				wp_redirect(ypcf_login_gobackinvest_url());
+				exit();
+			}
+		}
     }
 }
 
@@ -512,12 +514,13 @@ function ypcf_login_gobackinvest_url() {
     $redirect_to = '';
     ypcf_session_start();
     if (isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "") {
-	$page_invest = get_page_by_path('investir');
-	$page_invest_link = get_permalink($page_invest->ID);
-	$campaign_id_param = '?campaign_id=';
-	$redirect_to = $page_invest_link . $campaign_id_param . $_SESSION['redirect_current_campaign_id'];
-	unset($_SESSION['redirect_current_campaign_id']);
+		$page_invest = get_page_by_path('investir');
+		$page_invest_link = get_permalink($page_invest->ID);
+		$campaign_id_param = '?campaign_id=';
+		$redirect_to = $page_invest_link . $campaign_id_param . $_SESSION['redirect_current_campaign_id'];
+		unset($_SESSION['redirect_current_campaign_id']);
     }
+	ypcf_debug_log('ypcf_login_gobackinvest_url > redirect to : ' . $redirect_to);
     return $redirect_to;
 }
 
@@ -1070,8 +1073,8 @@ function ypcf_get_current_step() {
 //    echo '$invest_type : ' . $invest_type . ' ; $amount_part : ' . $amount_part;
     
     if ($invest_type != FALSE && $amount_part !== FALSE && is_numeric($amount_part) && ctype_digit($amount_part) 
-	    && intval($amount_part) == $amount_part && $amount_part >= 1 && $amount_part <= $max_part_value ) {
-	 $buffer = 2;
+			&& intval($amount_part) == $amount_part && $amount_part >= 1 && $amount_part <= $max_part_value ) {
+		$buffer = 2;
     }
     
     return $buffer;
