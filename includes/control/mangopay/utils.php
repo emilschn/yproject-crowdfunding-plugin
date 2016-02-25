@@ -247,11 +247,45 @@ function ypcf_mangopay_refund_project_to_user($wp_invest_id) {
  * @return type
  */
 function ypcf_mangopay_get_contribution_by_id($contribution_id) {
-    return request('contributions/'.$contribution_id, 'GET');
+	if (!empty($contribution_id)) {
+		global $WDG_cache_plugin;
+		$url_called = 'contributions/'.$contribution_id;
+
+		$result_cached = $WDG_cache_plugin->get_cache($url_called, 1);
+		$result = unserialize($result_cached);
+		if ($result_cached === FALSE || empty($result)) {
+			$result = request($url_called, 'GET');
+			$result_save = serialize($result);
+			if (!empty($result_save)) {
+				$WDG_cache_plugin->set_cache($url_called, $result_save, 60*60*5, 1);
+			}
+		}
+		if (isset($result->code) && ($result->code == '404' || $result->code == '500')) return array();
+		else return $result;
+	} else {
+		return array();
+	}
 }
 
 function ypcf_mangopay_get_withdrawalcontribution_by_id($contribution_id) {
-    return request('contributions-by-withdrawal/'.$contribution_id, 'GET');
+	if (!empty($contribution_id)) {
+		global $WDG_cache_plugin;
+		$url_called = 'contributions-by-withdrawal/'.$contribution_id;
+
+		$result_cached = $WDG_cache_plugin->get_cache($url_called, 1);
+		$result = unserialize($result_cached);
+		if ($result_cached === FALSE || empty($result)) {
+			$result = request($url_called, 'GET');
+			$result_save = serialize($result);
+			if (!empty($result_save)) {
+				$WDG_cache_plugin->set_cache($url_called, $result_save, 60*60*5, 1);
+			}
+		}
+		if (isset($result->code) && ($result->code == '404' || $result->code == '500')) return array();
+		else return $result;
+	} else {
+		return array();
+	}
 }
 
 function ypcf_mangopay_get_transfer_by_id($transfer_id) {
