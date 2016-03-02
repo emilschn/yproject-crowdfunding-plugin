@@ -321,7 +321,6 @@ function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
     
     return  '<input type="radio" name="fundingtype" class="radiofundingtype" id="fundingproject" value="fundingproject"'.$fundingproject.'>' . $atts['option1'] . '<br />
 	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment"'.$fundingdevelopment.'>' . $atts['option2'] . '<br />
-	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdonation" value="fundingdonation" value="'.$fundingdonation.'">' . $atts['option3'] . '<br />
 	    <span id="fundingdevelopment_param"'.$hide_duration.'>' . $atts['option2duration'] . '<input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
 }
 add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
