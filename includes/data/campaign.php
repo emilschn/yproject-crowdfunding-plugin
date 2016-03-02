@@ -226,6 +226,13 @@ class ATCF_Campaign {
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
 	}
+	public function description() {
+		$description = $this->__get_translated_property( 'campaign_description' );
+		if ( empty( $description ) ) {
+			$description = $this->data->post_content;
+		}
+		return $description;
+	}
 	public function added_value() {
 		return $this->__get_translated_property( 'campaign_added_value' );
 	}
