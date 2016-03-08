@@ -27,7 +27,12 @@ class MangopayContribution {
 		//Récupération de l'url de template
 		$template_url = '';
 		if (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE) {
-		    $template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$wp_campaign_id.'"';
+			$locale = get_locale();
+			$locale_url = '';
+			if ( !empty($locale) ) {
+				$locale_url = '&lang='.$locale;
+			}
+		    $template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$wp_campaign_id. $locale_url.'"';
 		}
 
 		//Création de la contribution en elle-même
@@ -35,6 +40,7 @@ class MangopayContribution {
 							"UserID" : '.$currentuser_mangopayid.', 
 							"WalletID" : '.$currentpost_mangopayid.',
 							"Amount" : '.$cent_amount.',
+							'.(($locale == 'en_US') ? '"Culture" : "en",' : '').'
 							"ReturnURL" : "'. $return_url .'"' . $template_url . '
 						    }');
 
@@ -58,7 +64,12 @@ class MangopayContribution {
 		//Récupération de l'url de template
 		$template_url = '';
 		if (!empty($wp_campaign_id) && (!defined('WP_IS_DEV_SITE') || WP_IS_DEV_SITE === FALSE)) {
-		    $template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$wp_campaign_id.'"';
+			$locale = get_locale();
+			$locale_url = '';
+			if ( !empty($locale) ) {
+				$locale_url = '&lang='.$locale;
+			}
+		    $template_url = ', "TemplateURL" : "https://www.wedogood.co/paiement?campaign_id='.$wp_campaign_id. $locale_url.'"';
 		}
 
 		//Création de la contribution en elle-même
@@ -66,6 +77,7 @@ class MangopayContribution {
 							"UserID" : '.$user_mangopayid.', 
 							"WalletID" : 0,
 							"Amount" : '.$cent_amount.',
+							'.(($locale == 'en_US') ? '"Culture" : "en",' : '').'
 							"ReturnURL" : "'. $url_return .'"' . $template_url . '
 						    }');
 		return $mangopay_newcontribution;
