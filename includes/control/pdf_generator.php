@@ -218,7 +218,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     
     $buffer .= '<div style="padding-top: 60px;"></div>';
 	if ($lang == 'en_US') {
-		$buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>ANNEX</h1></div>';
+		$buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>APPENDIX</h1></div>';
 	} else {
 		$buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>ANNEXE</h1></div>';
 	}
