@@ -61,11 +61,14 @@ class ATCF_Campaigns {
 
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_boxes_save' ) );
 		add_filter( 'edd_metabox_save_campaign_end_date', 'atcf_campaign_save_end_date' );
-                add_filter( 'edd_metabox_save_campaign_begin_collecte_date', 'atcf_campaign_save_begin_collecte_date' );
+		add_filter( 'edd_metabox_save_campaign_begin_collecte_date', 'atcf_campaign_save_begin_collecte_date' );
 		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
 		add_filter( 'edd_metabox_save_campaign_first_payment_date', 'atcf_campaign_save_first_payment_date' );
 		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_save_payment_list' );
 		add_filter( 'edd_metabox_save_campaign_estimated_turnover', 'atcf_campaign_save_estimated_turnover' );
+		add_filter( 'edd_metabox_save_save_declarations', 'atcf_campaign_save_declarations' );
+		add_filter( 'edd_metabox_save_declaration_amount_first', 'atcf_campaign_declaration_amount_first' );
+		add_filter( 'edd_metabox_save_add_new_declaration', 'atcf_campaign_add_new_declaration' );
 
 		add_action( 'edd_download_price_table_head', 'atcf_pledge_limit_head' );
 		add_action( 'edd_download_price_table_row', 'atcf_pledge_limit_column', 10, 3 );
@@ -259,6 +262,7 @@ class ATCF_Campaigns {
 	function meta_boxes_save( $fields ) {
 		$fields[] = '_campaign_featured';
 		$fields[] = ATCF_Campaign::$key_edit_version;
+		$fields[] = ATCF_Campaign::$key_payment_provider;
 		$fields[] = '_campaign_physical';
 		$fields[] = 'campaign_goal';
 		$fields[] = 'campaign_minimum_goal';
@@ -290,6 +294,12 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_funding_type';
 		$fields[] = 'campaign_funding_duration';
 		$fields[] = 'campaign_roi_percent';
+		$fields[] = ATCF_Campaign::$key_costs_to_organization;
+		$fields[] = ATCF_Campaign::$key_costs_to_investors;
+		$fields[] = 'save_declarations';
+		$fields[] = 'declaration_amount_first';
+		$fields[] = 'add_new_declaration';
+		
 		$fields[] = 'campaign_investment_terms';
 		$fields[] = 'campaign_investment_terms_en_US';
 		$fields[] = 'campaign_subscription_params';
@@ -606,6 +616,52 @@ function atcf_campaign_save_estimated_turnover() {
 	}
 	$estimated_turnover = json_encode($estimated_turnover);
 	return $estimated_turnover;
+}
+
+function atcf_campaign_save_declarations() {
+	$campaign_id = filter_input( INPUT_POST, 'post_ID' );
+	$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+	foreach ( $declaration_list as $ROIdeclaration ) {
+		$declaration_date = filter_input( INPUT_POST, 'decalaration-date_due-' . $ROIdeclaration->id );
+		if ( !empty($declaration_date) ) {
+			$exploded_date = explode('/', $declaration_date);
+			$formatted_date = $exploded_date[2] .'-'. $exploded_date[1] .'-'. $exploded_date[0];
+			$ROIdeclaration->date_due = $formatted_date;
+		}
+		$declaration_amount = filter_input( INPUT_POST, 'decalaration-amount-' . $ROIdeclaration->id );
+		if ( !empty($declaration_amount) ) {
+			$ROIdeclaration->amount = $declaration_amount;
+		}
+		$ROIdeclaration->save();
+	}
+}
+
+function atcf_campaign_declaration_amount_first() {
+	$save_first = filter_input(INPUT_POST, 'declaration_amount_first');
+	$campaign_id = filter_input(INPUT_POST, 'post_ID');
+	if ( !empty( $save_first ) ) {
+		$post_campaign = get_post( $campaign_id );
+		$campaign = atcf_get_campaign( $post_campaign );
+		$fp_date = $campaign->first_payment_date();
+		$fp_dd = mysql2date( 'd', $fp_date, false );
+		$fp_mm = mysql2date( 'm', $fp_date, false );
+		$fp_yy = mysql2date( 'Y', $fp_date, false );
+		$date_formatted = $fp_yy. '-' .$fp_mm. '-' .$fp_dd;
+		$declaration_id = WDGROIDeclaration::insert($campaign_id, $date_formatted);
+		$new_declaration = new WDGROIDeclaration($declaration_id);
+		$new_declaration->amount = $save_first;
+		$new_declaration->save();
+	}
+}
+
+function atcf_campaign_add_new_declaration() {
+	$due_date = filter_input(INPUT_POST, 'decalaration-date_due-new');
+	$campaign_id = filter_input(INPUT_POST, 'post_ID');
+	if ( !empty( $due_date ) ) {
+		$date_exploded = explode('/', $due_date);
+		$date_formatted = $date_exploded[2] .'-'. $date_exploded[1] .'-'. $date_exploded[0];
+		WDGROIDeclaration::insert($campaign_id, $date_formatted);
+	}
 }
 
 
@@ -1046,17 +1102,13 @@ add_filter( 'edd_metabox_save_campaign_updates', 'atcf_sanitize_campaign_updates
  */
 function _atcf_metabox_campaign_info() {
 	global $post, $edd_options, $wp_locale;
+	$campaign = atcf_get_campaign( $post );
 
 	/** Verification Field */
 	wp_nonce_field( 'cf', 'cf-save' );
-	
-	$campaign = atcf_get_campaign( $post );
-
-
 	do_action( 'atcf_metabox_campaign_info_before', $campaign );
+?>
 
-	$types = atcf_campaign_types();
-?>	
 	<p>
 		<label for="_campaign_featured">
 			<input type="checkbox" name="_campaign_featured" id="_campaign_featured" value="1" <?php checked( 1, $campaign->featured() ); ?> />
@@ -1068,11 +1120,20 @@ function _atcf_metabox_campaign_info() {
 		Version d'affichage : <input type="text" name="<?php echo ATCF_Campaign::$key_edit_version; ?>" value="<?php echo $campaign->edit_version(); ?>" />
 	</p>
 	
+	<p>
+		Prestataire de paiement : 
+		<select name="<?php echo ATCF_Campaign::$key_payment_provider; ?>">
+			<option value="<?php echo ATCF_Campaign::$payment_provider_mangopay; ?>" <?php selected($campaign->get_payment_provider(), ATCF_Campaign::$payment_provider_mangopay); ?>>Mangopay</option>
+			<option value="<?php echo ATCF_Campaign::$payment_provider_lemonway; ?>" <?php selected($campaign->get_payment_provider(), ATCF_Campaign::$payment_provider_lemonway); ?>>Lemonway</option>
+		</select>
+	</p>
+	
 	
 	<p>
 		<strong><?php _e( 'Funding Type:', 'atcf' ); ?></strong>
 	</p>
 
+	<?php $types = atcf_campaign_types(); ?>
 	<p>
 		<?php foreach ( atcf_campaign_types_active() as $key => $desc ) : ?>
 		<label for="campaign_type[<?php echo esc_attr( $key ); ?>]"><input type="radio" name="campaign_type" id="campaign_type[<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $key ); ?>" <?php checked( $key, $campaign->type() ); ?> /> <strong><?php echo $types[ $key ][ 'title' ]; ?></strong> &mdash; <?php echo $types[ $key ][ 'description' ]; ?></label><br />
@@ -1102,7 +1163,7 @@ function _atcf_metabox_campaign_info() {
 	</p>
 
 	<p>
-		<label for="campaign_goal"><strong><?php _e( 'Goal:', 'atcf' ); ?></strong></label><br />	
+		<label for="campaign_goal"><strong>Objectif maximal</strong></label><br />	
 		<input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount($campaign->goal(false) ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
 	</p>
 
@@ -1158,58 +1219,79 @@ function _atcf_metabox_campaign_info() {
 		Total des investissements par chèque :
 		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check(FALSE); ?>" />
 	</p>
+	
+	
 	<p>
 	    <h4 style="font-size: 1.2em">Paramètres de reversement :</h4>
 	    <ul style="margin-left: 10px; list-style: disc;">
-		<li>Durée du financement : <input type="text" name="campaign_funding_duration" value="<?php echo $campaign->funding_duration(); ?>" /></li>
-		
-		<li>Pourcentage de reversement : <input type="text" name="campaign_roi_percent" value="<?php echo $campaign->roi_percent(); ?>" /></li>
-		
-		<li>
-		    Première date de versement :
-		    <?php
-		    $fp_date = $campaign->first_payment_date();
-		    $fp_dd = mysql2date( 'd', $fp_date, false );
-		    $fp_mm = mysql2date( 'm', $fp_date, false );
-		    $fp_yy = mysql2date( 'Y', $fp_date, false );
-		    ?>
-		    <input type="text" name="first-payment-dd" value="<?php echo esc_attr( $fp_dd ); ?>" size="2" maxlength="2" autocomplete="off" />
-		    <select name="first-payment-mm">
-			    <?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
-				    <option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $fp_mm ); ?>>
-				    <?php printf( '%1$s-%2$s', $monthnum, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ); ?>
-				    </option>
-			    <?php endfor; ?>
-		    </select>
-		    <input type="text" name="first-payment-yy" value="<?php echo esc_attr( $fp_yy ); ?>" size="4" maxlength="4" autocomplete="off" />
-		    <input type="hidden" name="campaign_first_payment_date" value="1" />
-		</li>
-		
-		<?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): 
-		    $estimated_turnover = $campaign->estimated_turnover();
-		    $payment_list = $campaign->payment_list();
-		?>
-		<li>CA prévisionnel :
-		    <ul style="margin-left: 10px; list-style: disc;">
-			<?php for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
-			    <li><?php echo $i; ?> : <input type="text" name="<?php echo 'est-turnover-' . $i; ?>" value="<?php echo $estimated_turnover[$i]; ?>" />&euro;</li>
-			<?php endfor; ?>
-			<input type="hidden" name="campaign_estimated_turnover" value="1" />
-		    </ul>
-		</li>
-		
-		<li>
-		    Dates et montants des versements :
-		    <ul style="margin-left: 10px; list-style: disc;">
-			<?php for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
-			    <li><?php echo $fp_dd . ' / ' . $fp_mm . ' / ' . $i; ?> : <input type="text" name="<?php echo 'payment-' . $i; ?>" value="<?php echo $payment_list[$i]; ?>" />&euro;</li>
-			<?php endfor; ?>
-			<input type="hidden" name="campaign_payment_list" value="1" />
-		    </ul>
-		</li>
-		<?php else: ?>
-		    <li><span style="color: red;">Définissez les paramètres ci-dessus pour pouvoir paramétrer les sommes à reverser par date.</span></li>
-		<?php endif; ?>
+			<li>Durée du financement : <input type="text" name="campaign_funding_duration" value="<?php echo $campaign->funding_duration(); ?>" /></li>
+
+			<li>Pourcentage de reversement : <input type="text" name="campaign_roi_percent" value="<?php echo $campaign->roi_percent(); ?>" /> %</li>
+			
+			<li>Pourcentage de frais appliqués au PP : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_organization; ?>" value="<?php echo $campaign->get_costs_to_organization(); ?>" /> %</li>
+			
+			<li>Pourcentage de frais appliqués aux investisseurs : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_investors; ?>" value="<?php echo $campaign->get_costs_to_investors(); ?>" /> %</li>
+
+			<li>
+				Première date de versement :
+				<?php
+				$fp_date = $campaign->first_payment_date();
+				$fp_dd = mysql2date( 'd', $fp_date, false );
+				$fp_mm = mysql2date( 'm', $fp_date, false );
+				$fp_yy = mysql2date( 'Y', $fp_date, false );
+				?>
+				<input type="text" name="first-payment-dd" value="<?php echo esc_attr( $fp_dd ); ?>" size="2" maxlength="2" autocomplete="off" />
+				<select name="first-payment-mm">
+					<?php for ( $i = 1; $i < 13; $i = $i + 1 ) : $monthnum = zeroise($i, 2); ?>
+						<option value="<?php echo $monthnum; ?>" <?php selected( $monthnum, $fp_mm ); ?>>
+						<?php printf( '%1$s-%2$s', $monthnum, $wp_locale->get_month_abbrev( $wp_locale->get_month( $i ) ) ); ?>
+						</option>
+					<?php endfor; ?>
+				</select>
+				<input type="text" name="first-payment-yy" value="<?php echo esc_attr( $fp_yy ); ?>" size="4" maxlength="4" autocomplete="off" />
+				<input type="hidden" name="campaign_first_payment_date" value="1" />
+			</li>
+
+			
+			<?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): 
+				$estimated_turnover = $campaign->estimated_turnover();
+			?>
+			<li>CA prévisionnel :
+				<ul style="margin-left: 10px; list-style: disc;">
+				<?php for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
+					<li><?php echo $i; ?> : <input type="text" name="<?php echo 'est-turnover-' . $i; ?>" value="<?php echo $estimated_turnover[$i]; ?>" />&euro;</li>
+				<?php endfor; ?>
+				<input type="hidden" name="campaign_estimated_turnover" value="1" />
+				</ul>
+			</li>
+
+			<li>
+				Dates et montants des versements :
+				<?php $declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign->ID ); ?>
+				<ul style="margin-left: 10px; list-style: disc;">
+					<?php if ($declaration_list): ?>
+					<?php foreach ( $declaration_list as $declaration ): ?>
+					<li>
+						<input type="text" name="decalaration-date_due-<?php echo $declaration->id; ?>" value="<?php echo $declaration->get_formatted_date(); ?>" /> : 
+						<input type="text" name="decalaration-amount-<?php echo $declaration->id; ?>" value="<?php echo $declaration->amount; ?>" /> €
+					</li>
+					<?php endforeach; ?>
+					<input type="hidden" name="save_declarations" value="1" />
+					<?php else: ?>
+					<li>
+						<?php echo $fp_dd. '/' .$fp_mm. '/' .$fp_yy; ?> : 
+						<input type="text" name="declaration_amount_first" value="<?php echo $declaration->amount; ?>" /> €
+					</li>
+					<?php endif; ?>
+					<li>
+						<input type="text" name="decalaration-date_due-new" placeholder="jj/mm/aaaa" />
+						<input type="submit" name="add_new_declaration" value="Ajouter une nouvelle date" />
+					</li>
+				</ul>
+			</li>
+			<?php else: ?>
+				<li><span style="color: red;">Définissez les paramètres ci-dessus pour pouvoir paramétrer les sommes à reverser par date.</span></li>
+			<?php endif; ?>
 	    </ul>
 	</p>
 	

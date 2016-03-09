@@ -62,29 +62,29 @@ class ATCF_Campaign {
 	public $ID;
 	public $data;
         
-        /**
-         * Number of days of vote
-         * @var int
-         */
-        public static $vote_duration = 30;
-        
-        /**
-         * Number of voters required to go to next step
-         * @var int
-         */
-        public static $voters_min_required = 50;
-        
-        /**
-         * The percent score of "yes" votes required to go to next step
-         * @var int
-         */
+	/**
+	 * Number of days of vote
+	 * @var int
+	 */
+	public static $vote_duration = 30;
+
+	/**
+	 * Number of voters required to go to next step
+	 * @var int
+	 */
+	public static $voters_min_required = 50;
+
+	/**
+	 * The percent score of "yes" votes required to go to next step
+	 * @var int
+	 */
 	public static $vote_score_min_required = 50;
         
-        /**
-         * The percent of min goal required in invest promises during vote
-         * @var int
-         */
-        public static $vote_percent_invest_ready_min_required = 50;
+	/**
+	 * The percent of min goal required in invest promises during vote
+	 * @var int
+	 */
+	public static $vote_percent_invest_ready_min_required = 50;
         
 	public static $status_list = array(
 		'preparing' => 'Pr&eacute;paration',
@@ -181,6 +181,21 @@ class ATCF_Campaign {
 			$value = $this->__get( $property );
 		}
 		return $value;
+	}
+	
+	
+/*******************************************************************************
+ * PARAMS
+ ******************************************************************************/
+	public static $key_payment_provider = 'payment_provider';
+	public static $payment_provider_mangopay = 'mangopay';
+	public static $payment_provider_lemonway = 'lemonway';
+	public function get_payment_provider() {
+		$provider = $this->__get( ATCF_Campaign::$key_payment_provider );
+		if ( $provider != ATCF_Campaign::$payment_provider_mangopay && $provider != ATCF_Campaign::$payment_provider_lemonway ) {
+			$provider = ATCF_Campaign::$payment_provider_mangopay;
+		}
+		return $provider;
 	}
 	
 	
@@ -287,6 +302,11 @@ class ATCF_Campaign {
 	public function funding_type() {
 	    return $this->__get('campaign_funding_type');
 	}
+	
+	
+/*******************************************************************************
+ * GESTION ROI
+ ******************************************************************************/
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
@@ -296,6 +316,20 @@ class ATCF_Campaign {
 	public function first_payment_date() {
 	    return $this->__get('campaign_first_payment_date');
 	}
+	
+	// Frais appliqués au porteur de projet
+	public static $key_costs_to_organization = 'costs_to_organization';
+	public function get_costs_to_organization() {
+		return $this->__get( ATCF_Campaign::$key_costs_to_organization );
+	}
+	// Frais appliqués aux investisseurs
+	public static $key_costs_to_investors = 'costs_to_investors';
+	public function get_costs_to_investors() {
+		return $this->__get( ATCF_Campaign::$key_costs_to_investors );
+	}
+	
+	
+	
 	public function estimated_turnover() {
 	    $buffer = $this->__get('campaign_estimated_turnover');
 	    return json_decode($buffer, TRUE);

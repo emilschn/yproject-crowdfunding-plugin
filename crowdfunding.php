@@ -58,7 +58,7 @@ final class ATCF_CrowdFunding {
 	private function setup_globals() {
 		/** Versions **********************************************************/
 
-		$this->version    = '1.3.1';
+		$this->version    = '1.3.4';
 		$this->db_version = '1';
 
 		/** Paths *************************************************************/
@@ -96,6 +96,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/campaigns.php' );
 		require( $this->includes_dir . 'data/campaign-votes.php' );
 		require( $this->includes_dir . 'data/campaign-investments.php' );
+		require( $this->includes_dir . 'data/roi-declaration.php' );
 		require( $this->includes_dir . 'data/rewards.php');
 		require( $this->includes_dir . 'data/organisation.php' );
 		require( $this->includes_dir . 'data/user.php' );
@@ -146,6 +147,12 @@ final class ATCF_CrowdFunding {
 	 */
 	private function setup_actions() {
 		WDGAjaxActions::init_actions();
+		if (get_option('wdg_version') != $this->version) {
+			WDGROIDeclaration::upgrade_db();
+			update_option('wdg_version', $this->version);
+		}
+		
+		
 		add_action( 'init', array( $this, 'is_edd_activated' ), 1 );
 		add_filter( 'template_include', array( $this, 'template_loader' ) );
 		
