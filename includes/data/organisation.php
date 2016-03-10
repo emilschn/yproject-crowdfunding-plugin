@@ -408,13 +408,43 @@ class YPOrganisation {
 	}
 	
 	/**
+	 * Gère les documents à enregistrer en local
+	 */
+	public function submit_documents() {
+		global $errors_submit;
+		if ( empty( $errors_submit ) ) {
+			$errors_submit = new WP_Error();
+		}
+		
+		$documents_list = array(
+			'org_doc_kbis'		=> WDGKYCFile::$type_kbis,
+			'org_doc_status'	=> WDGKYCFile::$type_status,
+			'org_doc_id'		=> WDGKYCFile::$type_id,
+			'org_doc_home'		=> WDGKYCFile::$type_home
+		);
+		foreach ($documents_list as $document_key => $document_type) {
+			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
+				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
+				if ($result == 'ext') {
+					$errors_submit->add('document-wrong-extension', __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
+				}
+				if ($result == 'size') {
+					$errors_submit->add('document-heavy-size', __("Le fichier est trop lourd.", 'yproject'));
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Gère les fichiers éventuellement transmis pour la Strong Authentication
 	 */
 	public function submit_strong_authentication() {
 		global $errors_submit;
-		$errors_submit = new WP_Error();
+		if ( empty( $errors_submit ) ) {
+			$errors_submit = new WP_Error();
+		}
 		
-		if (isset($_FILES['org_file_cni']['tmp_name']) && isset($_FILES['org_file_status']['tmp_name']) && isset($_FILES['org_file_extract']['tmp_name'])) {
+		if (!empty($_FILES['org_file_cni']['tmp_name']) && !empty($_FILES['org_file_status']['tmp_name']) && !empty($_FILES['org_file_extract']['tmp_name'])) {
 			$wp_organisation_user = get_user_by('id', $this->get_wpref());	
 			$url_request = ypcf_init_mangopay_user_strongauthentification($wp_organisation_user);
 			$curl_result_cni = ypcf_mangopay_send_strong_authentication($url_request, 'org_file_cni');
@@ -427,7 +457,7 @@ class YPOrganisation {
 				$errors_submit->add('strongauthentication-sendfile-error', __('Il y a eu une erreur lors de l&apos;envoi. Contactez-nous si cela se reproduit.', 'yproject'));
 			}
 		} else {
-			if (isset($_FILES['org_file_cni']['tmp_name']) || isset($_FILES['org_file_status']['tmp_name']) || isset($_FILES['org_file_extract']['tmp_name'])) {
+			if (!empty($_FILES['org_file_cni']['tmp_name']) || !empty($_FILES['org_file_status']['tmp_name']) || !empty($_FILES['org_file_extract']['tmp_name'])) {
 				$errors_submit->add('strongauthentication-incomplete', __('Les 3 fichiers d&apos;identification obligatoires doivent &ecirc;tre envoy&eacute;s en m&ecirc;me temps.', 'yproject'));
 			}
 		}
@@ -633,6 +663,7 @@ class YPOrganisation {
 //		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
 		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 		$org_object->submit_bank_info();
+		$org_object->submit_documents();
 		$org_object->submit_strong_authentication();
 	}
 }

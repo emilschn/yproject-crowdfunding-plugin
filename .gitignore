@@ -1,3 +1,4 @@
+includes/kyc/*
 includes/logs/*
 includes/pdf_files/*
 dploy.yaml
