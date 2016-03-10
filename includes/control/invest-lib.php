@@ -184,7 +184,7 @@ function ypcf_check_organisation_can_invest($organisation_user_id) {
     $can_invest = $can_invest && ($organisation->get_legalform() != '');
     $can_invest = $can_invest && ($organisation->get_idnumber() != '');
     $can_invest = $can_invest && ($organisation->get_rcs() != '');
-    $can_invest = $can_invest && ($organisation->get_capital() != '');
+    $can_invest = $can_invest && ($organisation->get_capital() !== '');
     $can_invest = $can_invest && ($organisation->get_address() != '');
     $can_invest = $can_invest && ($organisation->get_postal_code() != '');
     $can_invest = $can_invest && ($organisation->get_city() != '');
