@@ -465,39 +465,19 @@ class YPOrganisation {
 	 * 
 	 */
 	public function send_kyc() {
-		$this->try_to_send_kyc_lemonway();
-		$this->try_to_send_kyc_mangopay();
-	}
-	
-	/**
-	 * Gère les fichiers éventuellement transmis pour la Strong Authentication
-	 */
-	public function submit_strong_authentication() {
-		global $errors_submit;
-		if ( empty( $errors_submit ) ) {
-			$errors_submit = new WP_Error();
-		}
-		
-		if (!empty($_FILES['org_file_cni']['tmp_name']) && !empty($_FILES['org_file_status']['tmp_name']) && !empty($_FILES['org_file_extract']['tmp_name'])) {
-			$wp_organisation_user = get_user_by('id', $this->get_wpref());	
-			$url_request = ypcf_init_mangopay_user_strongauthentification($wp_organisation_user);
-			$curl_result_cni = ypcf_mangopay_send_strong_authentication($url_request, 'org_file_cni');
-			$curl_result_status = ypcf_mangopay_send_strong_authentication($url_request, 'org_file_status');
-			$curl_result_extract = ypcf_mangopay_send_strong_authentication($url_request, 'org_file_extract');
-			
-			if ($curl_result_cni && $curl_result_status && $curl_result_extract) {
-				ypcf_mangopay_set_user_strong_authentication_doc_transmitted($this->get_wpref());
-			} else {
-				$errors_submit->add('strongauthentication-sendfile-error', __('Il y a eu une erreur lors de l&apos;envoi. Contactez-nous si cela se reproduit.', 'yproject'));
+		if (isset($_POST['authentify_lw']) && $this->can_register_lemonway()) {
+			$this->register_lemonway();
+			$documents_type_list = array( 
+				WDGKYCFile::$type_kbis		=> '7', 
+				WDGKYCFile::$type_status	=> '11', 
+				WDGKYCFile::$type_id		=> '0', 
+				WDGKYCFile::$type_home		=> '1'
+			);
+			foreach ( $documents_type_list as $document_type => $lemonway_type ) {
+				$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
+				$current_document = $document_filelist[0];
+				LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
 			}
-		} else {
-			if (!empty($_FILES['org_file_cni']['tmp_name']) || !empty($_FILES['org_file_status']['tmp_name']) || !empty($_FILES['org_file_extract']['tmp_name'])) {
-				$errors_submit->add('strongauthentication-incomplete', __('Les 3 fichiers d&apos;identification obligatoires doivent &ecirc;tre envoy&eacute;s en m&ecirc;me temps.', 'yproject'));
-			}
-		}
-		
-		if (isset($_FILES['org_file_declaration']['tmp_name'])) {
-			ypcf_mangopay_send_strong_authentication($url_request, 'org_file_declaration');
 		}
 	}
 	
@@ -586,9 +566,7 @@ class YPOrganisation {
 	 * Détermine si les données sont bien remplies pour pouvoir enregistrer sur Lemonway
 	 */
 	public function can_register_lemonway() {
-		$WDGUser_creator = new WDGUser();
-		$buffer = /*$WDGUser_creator->can_register_lemonway()
-					&&*/ ($this->get_name() != "")
+		$buffer = ($this->get_name() != "")
 					&& ($this->get_description() != "")
 					&& ($this->get_idnumber() != "")
 					&& $this->has_sent_all_documents();
@@ -634,30 +612,6 @@ class YPOrganisation {
 			}
 		}
 		return $buffer;
-	}
-	
-	/**
-	 * Envoi des documents KYC chez Lemonway
-	 */
-	private function try_to_send_kyc_lemonway() {
-		if ($this->can_register_lemonway() && isset($_POST['authentify_lw'])) {
-			$this->register_lemonway();
-			$documents_type_list = array( 
-				WDGKYCFile::$type_kbis		=> '7', 
-				WDGKYCFile::$type_status	=> '11', 
-				WDGKYCFile::$type_id		=> '0', 
-				WDGKYCFile::$type_home		=> '1'
-			);
-			foreach ( $documents_type_list as $document_type => $lemonway_type ) {
-				$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
-				$current_document = $document_filelist[0];
-				LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
-			}
-		}
-	}
-	
-	private function try_to_send_kyc_mangopay() {
-		//TODO
 	}
     
 /*******************************************************************************
@@ -806,6 +760,5 @@ class YPOrganisation {
 		$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 		$org_object->submit_bank_info();
 		$org_object->submit_documents();
-		$org_object->submit_strong_authentication();
 	}
 }

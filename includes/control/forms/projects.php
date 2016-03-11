@@ -415,24 +415,15 @@ class WDGFormProjects {
 	/**
 	 * Gère les fichiers de comptes annuels
 	 */
-	public static function form_submit_yearly_account($year) {
+	public static function form_submit_account_files() {
 		if (!isset($_GET["campaign_id"])) { return FALSE; }
-		$campaign_id = $_GET["campaign_id"];
+		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		
-		$file = $_FILES[ 'accounts_year_' . $year ];
-		if (!empty($file)) {
-			$upload_overrides = array( 'test_form' => false );
-			$upload = wp_handle_upload( $file, $upload_overrides );
-			$file_name = $file['name'];
-			if (isset($upload[ 'url' ])) {
-				$attachment = array(
-					'guid'           => $upload[ 'url' ], 
-					'post_mime_type' => $upload[ 'type' ],
-					'post_title'     => 'Yearly Accounts ' . $year,
-					'post_content'   => '',
-					'post_status'    => 'inherit'
-				);
-				wp_insert_attachment( $attachment, $file_name, $campaign_id );
+		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+		foreach ( $declaration_list as $declaration ) {
+			$file = $_FILES[ 'accounts_file_' . $declaration->id ];
+			if ( !empty( $file ) ) {
+				$declaration->add_file($file);
 			}
 		}
 	}

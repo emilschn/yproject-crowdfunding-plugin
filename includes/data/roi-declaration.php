@@ -84,6 +84,52 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
+	public function get_status() {
+		if ( empty( $this->status ) ) {
+			$this->status = WDGROIDeclaration::$status_declaration;
+		}
+		if ( $this->status == WDGROIDeclaration::$status_declaration && $this->amount > 0 ) {
+			$this->status = WDGROIDeclaration::$status_payment;
+		}
+		return $this->status;
+	}
+	
+	public function add_file( $file_uploaded_data ) {
+		$file_name = $file_uploaded_data['name'];
+		$file_name_exploded = explode('.', $file_name);
+		$ext = $file_name_exploded[count($file_name_exploded) - 1];
+		
+		$random_filename = '';
+		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		$size = strlen( $chars );
+		for( $i = 0; $i < 15; $i++ ) {
+			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
+		}
+		while ( file_exists( __DIR__ . '/../accounts/' . $random_filename . '.' . $ext ) ) {
+			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
+		}
+		$random_filename = $random_filename . '.' . $ext;
+		move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../accounts/' . $random_filename );
+		
+		if ( empty($this->file_list) ) {
+			$this->file_list = $random_filename;
+		} else {
+			$this->file_list .= ';' . $random_filename;
+		}
+		
+		$this->save();
+	}
+	public function get_file_list() {
+		$buffer = array();
+		if ( !empty( $this->file_list ) ) {
+			$filename_array = explode(';', $this->file_list);
+			foreach ($filename_array as $filename) {
+				array_push($buffer, home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/accounts/' . $filename);
+			}
+		}
+		return $buffer;
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
