@@ -77,6 +77,14 @@ class WDGKYCFile {
 		return home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/kyc/' . $this->file_name;
 	}
 	
+	/**
+	 * Retourne le tableau de bytes à envoyer à Lemonway
+	 */
+	public function get_byte_array() {
+		$byte_array = file_get_contents( __DIR__ . '/../kyc/' . $this->file_name );
+		return base64_encode($byte_array);
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES

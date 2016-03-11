@@ -7,6 +7,7 @@ class YPOrganisation {
 	 * Clés d'accès à l'api BOPP
 	 */
 	public static $key_bopp_id = 'organisation_bopp_id';
+	public static $key_description = 'description';
 	
 	/**
 	 * Données
@@ -17,6 +18,8 @@ class YPOrganisation {
 	private $mangopay_id;
 	private $wpref;
 	private $name;
+	private $email;
+	private $description;
 	private $strong_authentication;
 	private $address;
 	private $postal_code;
@@ -56,6 +59,8 @@ class YPOrganisation {
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->organisation_name;
+			$this->email = $this->creator->user_email;
+			$this->description = get_user_meta($user_id, YPOrganisation::$key_description, TRUE);
 			$this->strong_authentication = $this->bopp_object->organisation_strong_authentication;
 			$this->address = $this->bopp_object->organisation_address;
 			$this->postal_code = $this->bopp_object->organisation_postalcode;
@@ -91,21 +96,11 @@ class YPOrganisation {
 			return FALSE;
 		}
                 
-                if($this->get_capital()==''){
-                    $this->set_capital(0);
-                }
-                if($this->get_bank_owner()==''){
-                    $this->set_bank_owner("---");
-                }
-                if($this->get_bank_address()==''){
-                    $this->set_bank_address("---");
-                }
-                if($this->get_bank_iban()==''){
-                    $this->set_bank_iban("---");
-                }
-                if($this->get_bank_bic()==''){
-                    $this->set_bank_bic("---");
-                }
+		if ( $this->get_capital() == '' ) { $this->set_capital(0); }
+		if ( $this->get_bank_owner() == '' ) { $this->set_bank_owner("---"); }
+		if ( $this->get_bank_address() == '' ) { $this->set_bank_address("---"); }
+		if ( $this->get_bank_iban() == '' ) { $this->set_bank_iban("---"); }
+		if ( $this->get_bank_bic() == '' ) { $this->set_bank_bic("---"); }
 		
 		$return_obj = BoppOrganisations::create(
 			$this->get_wpref(),
@@ -172,6 +167,8 @@ class YPOrganisation {
 			$this->get_bank_iban(),
 			$this->get_bank_bic()
 		);
+		update_user_meta( $this->wpref, YPOrganisation::$key_description, $this->get_description() );
+		wp_update_user( array ( 'ID' => $this->wpref, 'user_email' => $this->get_email() ) );
 	}
 	
 	/**
@@ -203,6 +200,19 @@ class YPOrganisation {
 	}
 	public function set_name($value) {
 		$this->name = $value;
+	}
+	
+	public function get_email() {
+		return $this->email;
+	}
+	public function set_email($value) {
+		$this->email = $value;
+	}
+	public function get_description() {
+		return $this->description;
+	}
+	public function set_description($value) {
+		$this->description = $value;
 	}
 	
 	public function get_strong_authentication() {
@@ -434,6 +444,30 @@ class YPOrganisation {
 			}
 		}
 	}
+	/**
+	 * Détermine si l'organisation a envoyé tous ses documents
+	 */
+	public function has_sent_all_documents() {
+		$buffer = TRUE;
+		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		foreach ( $documents_type_list as $document_type ) {
+			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
+			$current_document = $document_filelist[0];
+			if ( !isset($current_document) ) {
+				$buffer = FALSE;
+				break;
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * 
+	 */
+	public function send_kyc() {
+		$this->try_to_send_kyc_lemonway();
+		$this->try_to_send_kyc_mangopay();
+	}
 	
 	/**
 	 * Gère les fichiers éventuellement transmis pour la Strong Authentication
@@ -518,6 +552,112 @@ class YPOrganisation {
 				$errors_submit->add('transfer-wallet', __('Il y a eu une erreur lors du transfert.', 'yproject'));
 			}
 		}
+	}
+	
+/*******************************************************************************
+ * Gestion Lemonway
+*******************************************************************************/
+	/**
+	 * Définir l'identifiant de l'orga sur lemonway
+	 */
+	private function get_lemonway_id() {
+		return 'ORGA'.$this->bopp_id.'W'.$this->wpref;
+	}
+	
+	/**
+	 * Enregistrement sur Lemonway
+	 */
+	public function register_lemonway() {
+		//Vérifie que le wallet n'est pas déjà enregistré
+		$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			$WDGUser_creator = new WDGUser();
+			LemonwayLib::wallet_company_register( $this->get_lemonway_id(), $this->get_email(), $WDGUser_creator->wp_user->user_firstname, $WDGUser_creator->wp_user->user_lastname, $this->get_name(), $this->get_description() );
+		}
+	}
+	
+	public static $lemonway_status_blocked = 'blocked';
+	public static $lemonway_status_ready = 'ready';
+	public static $lemonway_status_waiting = 'waiting';
+	public static $lemonway_status_incomplete = 'incomplete';
+	public static $lemonway_status_rejected = 'rejected';
+	public static $lemonway_status_registered = 'registered';
+	/**
+	 * Détermine si les données sont bien remplies pour pouvoir enregistrer sur Lemonway
+	 */
+	public function can_register_lemonway() {
+		$WDGUser_creator = new WDGUser();
+		$buffer = /*$WDGUser_creator->can_register_lemonway()
+					&&*/ ($this->get_name() != "")
+					&& ($this->get_description() != "")
+					&& ($this->get_idnumber() != "")
+					&& $this->has_sent_all_documents();
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le statut de l'identification sur lemonway
+	 */
+	public function get_lemonway_status() {
+		if (!$this->can_register_lemonway()) {
+			$buffer = YPOrganisation::$lemonway_status_blocked;
+		} else {
+			$buffer = YPOrganisation::$lemonway_status_ready;
+			$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+			if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
+				switch ($wallet_details->STATUS) {
+					case '2':
+					case '8':
+						$buffer = YPOrganisation::$lemonway_status_incomplete;
+						break;
+					case '3':
+					case '9':
+						$buffer = YPOrganisation::$lemonway_status_rejected;
+						break;
+					case '6':
+						$buffer = YPOrganisation::$lemonway_status_registered;
+						break;
+					
+					default:
+					case '5':
+						foreach($wallet_details->DOC as $document_object) {
+							if ($document_object->TYPE !== FALSE) {
+								switch ($document_object->S) {
+									case '1':
+										$buffer = YPOrganisation::$lemonway_status_waiting;
+										break;
+								}
+							}
+						}
+						break;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Envoi des documents KYC chez Lemonway
+	 */
+	private function try_to_send_kyc_lemonway() {
+		if ($this->can_register_lemonway() && isset($_POST['authentify_lw'])) {
+			$this->register_lemonway();
+			$documents_type_list = array( 
+				WDGKYCFile::$type_kbis		=> '7', 
+				WDGKYCFile::$type_status	=> '11', 
+				WDGKYCFile::$type_id		=> '0', 
+				WDGKYCFile::$type_home		=> '1'
+			);
+			foreach ( $documents_type_list as $document_type => $lemonway_type ) {
+				$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
+				$current_document = $document_filelist[0];
+				LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+			}
+		}
+	}
+	
+	private function try_to_send_kyc_mangopay() {
+		//TODO
 	}
     
 /*******************************************************************************
@@ -662,6 +802,8 @@ class YPOrganisation {
 		$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
 //		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
 		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
+		$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
+		$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 		$org_object->submit_bank_info();
 		$org_object->submit_documents();
 		$org_object->submit_strong_authentication();

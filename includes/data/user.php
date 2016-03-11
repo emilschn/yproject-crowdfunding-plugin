@@ -32,6 +32,16 @@ class WDGUser {
 	public function is_admin() {
 		return ($this->wp_user->has_cap('manage_options'));
 	}
+	
+	/**
+	 * Détermine si les informations nécessaires sont remplies : mail, prénom, nom
+	 */
+	public function can_register_lemonway() {
+		$buffer = ($this->wp_user->user_email != "")
+				&& ($this->wp_user->user_firstname == "")
+				&& ($this->wp_user->user_lastname == "");
+		return $buffer;
+	}
     
 /*******************************************************************************
  * Fonctions statiques
