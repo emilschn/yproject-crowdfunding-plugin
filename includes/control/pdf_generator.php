@@ -239,22 +239,25 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
     $campaign = atcf_get_campaign( $post_camp );
     
     $current_user = get_userdata($user_id);
+	$saved_user_id = get_post_meta($payment_id, '_edd_payment_user_id', TRUE);
     $organisation = false;
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
-	$group_id = $_SESSION['redirect_current_invest_type'];
-	$organisation = new YPOrganisation($group_id);
-    }
+		$group_id = $_SESSION['redirect_current_invest_type'];
+		$organisation = new YPOrganisation($group_id);
+    } else if (!empty($saved_user_id) && $saved_user_id != $user_id) {
+		$organisation = new YPOrganisation($saved_user_id);
+	}
     $amount = edd_get_payment_amount($payment_id);
     $amount_part = $amount / $campaign->part_value();
     
     $ip_address = get_post_meta($payment_id, '_edd_payment_ip', TRUE);
     
     $invest_data = array(
-	"amount_part" => $amount_part, 
-	"amount" => $amount, 
-	"total_parts_company" => $campaign->total_parts(), 
-	"total_minimum_parts_company" => $campaign->total_minimum_parts(),
-	"ip" => $ip_address
+		"amount_part" => $amount_part, 
+		"amount" => $amount, 
+		"total_parts_company" => $campaign->total_parts(), 
+		"total_minimum_parts_company" => $campaign->total_minimum_parts(),
+		"ip" => $ip_address
     );
     $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation);
     $filename = dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf';
