@@ -94,6 +94,37 @@ class WDGROIDeclaration {
 		return $this->status;
 	}
 	
+	/**
+	 * Retourne le montant que doit payer le porteur de projet au moment de reverser les fonds (prend en compte un pourcentage de commission éventuel)
+	 * @return number
+	 */
+	public function get_amount_to_pay() {
+		$buffer = $this->amount;
+		$post_campaign = get_post( $this->id_campaign );
+		$campaign = new ATCF_Campaign( $this->$post_campaign );
+		$cost = $campaign->get_costs_to_organization();
+		if ( $cost > 0 ) {
+			$buffer += (round(($buffer * $cost / 100) * 100) / 100);
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne la commission éventuelle que doit payer le porteur de projet au moment de reverser les fonds
+	 * @return number
+	 */
+	public function get_commission_to_pay() {
+		$buffer = 0;
+		$post_campaign = get_post( $this->id_campaign );
+		$campaign = new ATCF_Campaign( $this->$post_campaign );
+		$cost = $campaign->get_costs_to_organization();
+		if ( $cost > 0 ) {
+			$buffer = (round(($buffer * $cost / 100) * 100) / 100);
+		}
+		return $buffer;
+	}
+	
+	
 	public function add_file( $file_uploaded_data ) {
 		$file_name = $file_uploaded_data['name'];
 		$file_name_exploded = explode('.', $file_name);

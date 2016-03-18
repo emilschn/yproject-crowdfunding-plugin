@@ -188,6 +188,13 @@ class YPOrganisation {
 		}
 		return $this->mangopay_id;
 	}
+	/**
+	 * Définir l'identifiant de l'orga sur lemonway
+	 */
+	public function get_lemonway_id() {
+		return 'ORGA'.$this->bopp_id.'W'.$this->wpref;
+	}
+	
 	
 	public function get_wpref() {
 		return $this->wpref;
@@ -539,13 +546,6 @@ class YPOrganisation {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
-	/**
-	 * Définir l'identifiant de l'orga sur lemonway
-	 */
-	private function get_lemonway_id() {
-		return 'ORGA'.$this->bopp_id.'W'.$this->wpref;
-	}
-	
 	/**
 	 * Enregistrement sur Lemonway
 	 */

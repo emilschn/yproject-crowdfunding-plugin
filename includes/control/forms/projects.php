@@ -428,11 +428,33 @@ class WDGFormProjects {
 		}
 	}
 	
+	public static function form_submit_roi_payment() {
+		if (!isset($_POST['action']) || $_POST['action'] != 'proceed_roi' || !isset($_POST['proceed_roi_id']) || !isset($_GET['campaign_id'])) {
+			return FALSE;
+		}
+		
+		$roi_id = filter_input( INPUT_POST, 'proceed_roi_id' );
+		$roi_declaration = new WDGROIDeclaration( $roi_id );
+		$campaign = atcf_get_current_campaign();
+		$api_project_id = BoppLibHelpers::get_api_project_id($campaign->ID);
+		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+		$current_organisation = $current_organisations[0];
+		$organisation = new YPOrganisation($current_organisation->organisation_wpref);
+		
+		if (isset($_POST['payment_card'])) {
+			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url
+			ask_payment_webkit($organisation->get_lemonway_id(), $roi_declaration->amount, $roi_declaration->get_commission_to_pay());
+			
+		} elseif (isset($_POST['payment_wire'])) {
+			
+		}
+	}
+	
 	/**
 	 * Teste si le formulaire de ROI est posté
 	 * @param type $campaign
 	 * @return boolean
-	 */
+	 *
 	public static function form_proceed_roi_list($campaign) {
 		if (!isset($_POST['action']) || $_POST['action'] != 'proceed_roi') {
 			return FALSE;
@@ -453,7 +475,7 @@ class WDGFormProjects {
 	/**
 	 * Lance la redirection vers la page de paiement
 	 * @param type $year
-	 */
+	 *
 	public static function form_proceed_roi($campaign, $year) {
 		//Il faut avoir un id de projet et que l'année soit bien renseignée
 		if (!isset($_GET["campaign_id"])) { return FALSE; }
@@ -501,7 +523,7 @@ class WDGFormProjects {
 	
 	/**
 	 * Valide le transfert d'argent vers le compte de l'organisation
-	 */
+	 *
 	public static function form_proceed_roi_return() {
 		//Vérification qu'on a les bonnes données pour procéder aux transferts
 		if (isset($_GET['ContributionID']) && (!isset($_POST['action']))) {
