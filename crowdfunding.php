@@ -110,6 +110,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/social/twitter/TwitterAPIExchange.php' );
 		
 		require( $this->includes_dir . 'control/ajax.php' );
+		require( $this->includes_dir . 'control/cron.php' );
 		require( $this->includes_dir . 'control/settings.php' );
 		require( $this->includes_dir . 'control/logs.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
@@ -123,7 +124,6 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/notifications/notifications-slack.php' );
 		require( $this->includes_dir . 'control/forms/projects.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-lib.php' );
-		require( $this->includes_dir . 'control/gateways/lemonway-lib-helpers.php' );
 		
 		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-submit.php' );

@@ -8,6 +8,7 @@ class YPOrganisation {
 	 */
 	public static $key_bopp_id = 'organisation_bopp_id';
 	public static $key_description = 'description';
+	public static $key_lemonway_status = 'lemonway_status';
 	
 	/**
 	 * Données
@@ -462,21 +463,22 @@ class YPOrganisation {
 	}
 	
 	/**
-	 * 
+	 * Upload des KYC vers Lemonway si possible
 	 */
 	public function send_kyc() {
 		if (isset($_POST['authentify_lw']) && $this->can_register_lemonway()) {
-			$this->register_lemonway();
-			$documents_type_list = array( 
-				WDGKYCFile::$type_kbis		=> '7', 
-				WDGKYCFile::$type_status	=> '11', 
-				WDGKYCFile::$type_id		=> '0', 
-				WDGKYCFile::$type_home		=> '1'
-			);
-			foreach ( $documents_type_list as $document_type => $lemonway_type ) {
-				$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
-				$current_document = $document_filelist[0];
-				LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+			if ( $this->register_lemonway() ) {
+				$documents_type_list = array( 
+					WDGKYCFile::$type_kbis		=> '7', 
+					WDGKYCFile::$type_status	=> '11', 
+					WDGKYCFile::$type_id		=> '0', 
+					WDGKYCFile::$type_home		=> '1'
+				);
+				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
+					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
+					$current_document = $document_filelist[0];
+					LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+				}
 			}
 		}
 	}
@@ -552,8 +554,9 @@ class YPOrganisation {
 		$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
 			$WDGUser_creator = new WDGUser();
-			LemonwayLib::wallet_company_register( $this->get_lemonway_id(), $this->get_email(), $WDGUser_creator->wp_user->user_firstname, $WDGUser_creator->wp_user->user_lastname, $this->get_name(), $this->get_description() );
+			return LemonwayLib::wallet_company_register( $this->get_lemonway_id(), $this->get_email(), $WDGUser_creator->wp_user->user_firstname, $WDGUser_creator->wp_user->user_lastname, $this->get_name(), $this->get_description() );
 		}
+		return TRUE;
 	}
 	
 	public static $lemonway_status_blocked = 'blocked';
@@ -576,40 +579,52 @@ class YPOrganisation {
 	/**
 	 * Retourne le statut de l'identification sur lemonway
 	 */
-	public function get_lemonway_status() {
-		if (!$this->can_register_lemonway()) {
-			$buffer = YPOrganisation::$lemonway_status_blocked;
-		} else {
-			$buffer = YPOrganisation::$lemonway_status_ready;
-			$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
-			if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
-				switch ($wallet_details->STATUS) {
-					case '2':
-					case '8':
-						$buffer = YPOrganisation::$lemonway_status_incomplete;
-						break;
-					case '3':
-					case '9':
-						$buffer = YPOrganisation::$lemonway_status_rejected;
-						break;
-					case '6':
-						$buffer = YPOrganisation::$lemonway_status_registered;
-						break;
-					
-					default:
-					case '5':
-						foreach($wallet_details->DOC as $document_object) {
-							if ($document_object->TYPE !== FALSE) {
-								switch ($document_object->S) {
-									case '1':
-										$buffer = YPOrganisation::$lemonway_status_waiting;
-										break;
+	public function get_lemonway_status( $force_reload = TRUE ) {
+		if ( $force_reload ) {
+			$user_meta_status = get_user_meta( $this->wpref, YPOrganisation::$key_lemonway_status, TRUE );
+			if ( $user_meta_status == YPOrganisation::$lemonway_status_registered ) {
+				$buffer = $user_meta_status;
+
+			} else {
+				if (!$this->can_register_lemonway()) {
+					$buffer = YPOrganisation::$lemonway_status_blocked;
+				} else {
+					$buffer = YPOrganisation::$lemonway_status_ready;
+					$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+					if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
+						switch ($wallet_details->STATUS) {
+							case '2':
+							case '8':
+								$buffer = YPOrganisation::$lemonway_status_incomplete;
+								break;
+							case '3':
+							case '9':
+								$buffer = YPOrganisation::$lemonway_status_rejected;
+								break;
+							case '6':
+								$buffer = YPOrganisation::$lemonway_status_registered;
+								break;
+
+							default:
+							case '5':
+								foreach($wallet_details->DOCS->DOC as $document_object) {
+									if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
+										switch ($document_object->S) {
+											case '1':
+												$buffer = YPOrganisation::$lemonway_status_waiting;
+												break;
+										}
+									}
 								}
-							}
+								break;
 						}
-						break;
+					}
 				}
+
+				update_user_meta( $this->wpref, YPOrganisation::$key_lemonway_status, $buffer );
 			}
+		} else {
+			$buffer = get_user_meta( $this->wpref, YPOrganisation::$key_lemonway_status, TRUE );
 		}
 		return $buffer;
 	}

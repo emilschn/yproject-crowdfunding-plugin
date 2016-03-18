@@ -48,8 +48,8 @@ class LemonwayLib {
 		}
 		//Appel de la fonction avec les paramètres complets
 		try {
-			if (!isset($lemonway_lib->soap_client)) $lemonway_lib->soap_client = @new SoapClient(OLAGE_LW_URL);
-		} catch (SoapFault $E) {  
+			if (!isset($lemonway_lib->soap_client)) $lemonway_lib->soap_client = @new SoapClient(YP_LW_URL);
+		} catch (SoapFault $E) {
 			LemonwayLib::set_error('SOAPCLIENTINIT', $E->faultstring);
 			ypcf_debug_log('LemonwayLib::call ERROR : ' . $e->faultstring);
 			return FALSE;
@@ -59,7 +59,7 @@ class LemonwayLib {
 		$params = json_decode(json_encode($params), FALSE);
 		$call_result = $soap_client->$method_name($params);
 		ypcf_debug_log('LemonwayLib::call RESULT : ' .print_r($call_result, true));
-		$result_obj = simplexml_load_string($call_result->{$method_name . 'Result'});
+		$result_obj = $call_result->{$method_name . 'Result'};
 		//Annalyse du résultat
 		if (LemonwayLib::has_errors($result_obj)) {
 			return FALSE;
@@ -75,10 +75,10 @@ class LemonwayLib {
 	 */
 	public static function has_errors($result_obj) {
 		$buffer = false;
-		if (isset($result_obj->Code) && isset($result_obj->Msg)) {
+		if (isset($result_obj->E)) {
 			global $lemonway_lib;
-			$lemonway_lib->last_error['Code'] = $result_obj->Code;
-			$lemonway_lib->last_error['Msg'] = $result_obj->Msg;
+			$lemonway_lib->last_error['Code'] = $result_obj->E->Code;
+			$lemonway_lib->last_error['Msg'] = $result_obj->E->Msg;
 			$buffer = true;
 		}
 		return $buffer;
@@ -136,7 +136,7 @@ class LemonwayLib {
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
-			$result = $result->LWID->__toString();
+			$result = $result->WALLET->LWID->__toString();
 		}
 		return $result;
 	}
@@ -154,7 +154,7 @@ class LemonwayLib {
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
-			$result = $result->LWID->__toString();
+			$result = $result->WALLET->LWID->__toString();
 		}
 		return $result;
 	}
@@ -185,7 +185,7 @@ class LemonwayLib {
 		
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
 		if ($result !== FALSE) {
-			$result = $result->LWID->__toString();
+			$result = $result->WALLET->LWID->__toString();
 		}
 		return $result;
 	}
@@ -206,7 +206,7 @@ class LemonwayLib {
 		 * Retourne les éléments suivants :
 		 * ID (identifiant) ; BAL (solde) ; NAME ; EMAIL ; DOCS (liste de documents dont le statut a changé) ; IBANS (liste des IBANs) ; S (statut)
 		 */
-		return $result;
+		return $result->WALLET;
 	}
 	
 	/**
@@ -249,7 +249,11 @@ class LemonwayLib {
 		
 		$result = LemonwayLib::call('UploadFile', $param_list);
 		if ($result !== FALSE) {
-			$result = $result->ID->__toString();
+			if (isset($result->E)) {
+				$result = FALSE;
+			} else {
+				$result = $result->UPLOAD->ID;
+			}
 		}
 		return $result;
 	}
@@ -294,15 +298,15 @@ class LemonwayLib {
 		$buffer = '';
 		if ($document_object !== FALSE) {
 			switch ($document_object->S) {
-				case 1: $buffer = __('Document en cours d&apos;&eacute;tude.', 'olage'); break;
-				case 2: $buffer = __('Document accept&eacute;.', 'olage'); break;
-				case 3: $buffer = __('Document refus&eacute;.', 'olage'); break;
-				case 4: $buffer = __('Document remplac&eacute;.', 'olage'); break;
-				case 5: $buffer = __('Document expir&eacute;.', 'olage'); break;
-				default: $buffer = __('Il y a eu un probl&egrave;me lors de l&apos;envoi. Merci de le renvoyer.', 'olage'); break;
+				case 1: $buffer = __('Document en cours d&apos;&eacute;tude.', 'yproject'); break;
+				case 2: $buffer = __('Document accept&eacute;.', 'yproject'); break;
+				case 3: $buffer = __('Document refus&eacute;.', 'yproject'); break;
+				case 4: $buffer = __('Document remplac&eacute;.', 'yproject'); break;
+				case 5: $buffer = __('Document expir&eacute;.', 'yproject'); break;
+				default: $buffer = __('Il y a eu un probl&egrave;me lors de l&apos;envoi. Merci de le renvoyer.', 'yproject'); break;
 			}
 		} else {
-			$buffer = __('Ce document n&apos;a pas encore &eacute;t&eacute; envoy&eacute;.', 'olage');
+			$buffer = __('Ce document n&apos;a pas encore &eacute;t&eacute; envoy&eacute;.', 'yproject');
 		}
 		return $buffer;
 	}
@@ -313,8 +317,8 @@ class LemonwayLib {
 	/**
 	 * Différents cas :
 	 * - Page web saisie de carte sur site partenaire (Payline ou Atos) MoneyInWebInit
-	 * - Page web saisie de carte sur site OLAGE avec 3DSecore MoneyIn3DInit
-	 * - Page web saisie de carte sur site OLAGE sans 3DSecore MoneyIn
+	 * - Page web saisie de carte sur site WDG avec 3DSecore MoneyIn3DInit
+	 * - Page web saisie de carte sur site WDG sans 3DSecore MoneyIn
 	 * - Virement GetMoneyIBANDetails
 	 * - Entre wallets SendPayment
 	 * - Enregistrement de carte pour utilisation ultérieure RegisterCard ; MoneyInWithCardId
