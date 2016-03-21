@@ -496,6 +496,51 @@ class NotificationsEmails {
     //*******************************************************
 	
     //*******************************************************
+    // NOTIFICATIONS PAIEMENTS ROI
+    //*******************************************************
+    public static function send_notification_roi_payment_success_user( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_success_user > ' . $declaration_id);
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$author = get_user_by( 'id', $campaign->data->post_author );
+		
+		$object = "Paiement de votre reversement effectué";
+		$body_content = "Bonjour,<br /><br />";
+		$body_content .= "Le paiement de votre reversement de ".$roi_declaration->get_amount_to_pay()." € a bien été pris en compte.<br />";
+		$body_content .= "Merci et à bientôt sur WE DO GOOD !<br /><br />";
+		
+		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
+	}
+    public static function send_notification_roi_payment_success_admin( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_success_admin > ' . $declaration_id);
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		
+		$admin_email = get_option('admin_email');
+		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI effectué";
+		$body_content = "Hello !<br /><br />";
+		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_to_pay()." € a été effectué.<br /><br />";
+		
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+	
+    public static function send_notification_roi_payment_error_admin( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_error_admin > ' . $declaration_id);
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		
+		$admin_email = get_option('admin_email');
+		$object = "Projet " . $campaign->data->post_title . " - Problème de paiement de ROI";
+		$body_content = "Hello !<br /><br />";
+		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->get_amount_to_pay()." €).<br /><br />";
+		
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+    //*******************************************************
+    // FIN NOTIFICATIONS PAIEMENTS ROI
+    //*******************************************************
+	
+    //*******************************************************
     // NOTIFICATIONS KYC
     //*******************************************************
     public static function send_notification_kyc_accepted_user($user) {

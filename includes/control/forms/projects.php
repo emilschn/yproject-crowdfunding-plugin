@@ -443,10 +443,46 @@ class WDGFormProjects {
 		
 		if (isset($_POST['payment_card'])) {
 			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url
-			ask_payment_webkit($organisation->get_lemonway_id(), $roi_declaration->amount, $roi_declaration->get_commission_to_pay());
+			$page_wallet = get_page_by_path('gestion-financiere');	// Gestion financière
+			$campaign_id_param = '?campaign_id=' . $campaign->ID;
+			$return_url = get_permalink($page_wallet->ID) . $campaign_id_param;
+			$wk_token = LemonwayLib::make_token('', $roi_id);
+			$roi_declaration->payment_token = $wk_token;
+			$roi_declaration->save();
+			$return = LemonwayLib::ask_payment_webkit($organisation->get_lemonway_id(), $roi_declaration->amount, $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
+			if ( !empty($return->MONEYINWEB->TOKEN) ) {
+				wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
+			}
 			
 		} elseif (isset($_POST['payment_wire'])) {
 			
+		}
+	}
+	
+	public static function return_lemonway_card() {
+		$buffer = FALSE;
+		
+		$wk_token = filter_input( INPUT_POST, 'response_wkToken' );
+		if ( !empty( $wk_token ) ) {
+			$response_code = filter_input( INPUT_POST, 'response_code' );
+			$response_msg = filter_input( INPUT_POST, 'response_msg' );
+			$transaction_result = LemonwayLib::get_transaction_by_id( $wk_token );
+
+			//Si le paiement est réussi
+			if ( $response_code == 0000 && $transaction_result->STATUS == 3 ) {
+				$declaration = WDGROIDeclaration::get_by_payment_token( $wk_token );
+				$date_now = new DateTime();
+				$declaration->date_paid = $date_now->format( 'Y-m-d' );
+				$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
+				$declaration->status = WDGROIDeclaration::$status_transfer;
+				$declaration->save();
+				NotificationsEmails::send_notification_kyc_accepted_admin( $declaration->id );
+				$buffer = TRUE;
+
+			} else {
+				$buffer = $response_msg;
+				
+			}
 		}
 	}
 	

@@ -10,6 +10,9 @@ class WDGROIDeclaration {
 	public static $status_transfer = 'transfer';
 	public static $status_finished = 'finished';
 	
+	public static $mean_payment_card = 'card';
+	public static $mean_payment_wire = 'wire';
+	
 	public $id;
 	public $id_campaign;
 	public $date_due;
@@ -18,6 +21,7 @@ class WDGROIDeclaration {
 	public $amount;
 	public $status;
 	public $mean_payment;
+	public $payment_token;
 	public $file_list;
 	
 	
@@ -35,6 +39,7 @@ class WDGROIDeclaration {
 			$this->amount = $declaration_item->amount;
 			$this->status = $declaration_item->status;
 			$this->mean_payment = $declaration_item->mean_payment;
+			$this->payment_token = $declaration_item->payment_token;
 			$this->file_list = $declaration_item->file_list;
 		}
 	}
@@ -52,6 +57,7 @@ class WDGROIDeclaration {
 				'amount' => $this->amount, 
 				'status' => $this->status, 
 				'mean_payment' => $this->mean_payment, 
+				'payment_token' => $this->payment_token, 
 				'file_list' => $this->file_list, 
 			),
 			array(
@@ -100,8 +106,7 @@ class WDGROIDeclaration {
 	 */
 	public function get_amount_to_pay() {
 		$buffer = $this->amount;
-		$post_campaign = get_post( $this->id_campaign );
-		$campaign = new ATCF_Campaign( $this->$post_campaign );
+		$campaign = new ATCF_Campaign( $this->id_campaign );
 		$cost = $campaign->get_costs_to_organization();
 		if ( $cost > 0 ) {
 			$buffer += (round(($buffer * $cost / 100) * 100) / 100);
@@ -115,8 +120,7 @@ class WDGROIDeclaration {
 	 */
 	public function get_commission_to_pay() {
 		$buffer = 0;
-		$post_campaign = get_post( $this->id_campaign );
-		$campaign = new ATCF_Campaign( $this->$post_campaign );
+		$campaign = new ATCF_Campaign( $this->id_campaign );
 		$cost = $campaign->get_costs_to_organization();
 		if ( $cost > 0 ) {
 			$buffer = (round(($buffer * $cost / 100) * 100) / 100);
@@ -124,7 +128,10 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
-	
+	/**
+	 * Traite un fichier uploadé qui doit être ajouté à la liste
+	 * @param array $file_uploaded_data
+	 */
 	public function add_file( $file_uploaded_data ) {
 		$file_name = $file_uploaded_data['name'];
 		$file_name_exploded = explode('.', $file_name);
@@ -150,6 +157,10 @@ class WDGROIDeclaration {
 		
 		$this->save();
 	}
+	/**
+	 * Renvoie la liste des fichiers avec leur bonne url
+	 * @return array
+	 */
 	public function get_file_list() {
 		$buffer = array();
 		if ( !empty( $this->file_list ) ) {
@@ -165,9 +176,9 @@ class WDGROIDeclaration {
 /*******************************************************************************
  * REQUETES STATIQUES
  ******************************************************************************/
-/**
- * Mise à jour base de données
- */
+	/**
+	 * Mise à jour base de données
+	 */
 	public static function upgrade_db() {
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
@@ -183,15 +194,16 @@ class WDGROIDeclaration {
 			amount mediumint(9),
 			status tinytext,
 			mean_payment tinytext,
+			payment_token tinytext,
 			file_list text,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );
 	}
 	
-/**
- * Ajout d'une nouvelle déclaration
- */
+	/**
+	 * Ajout d'une nouvelle déclaration
+	 */
 	public static function insert( $id_campaign, $date_due ) {
 		global $wpdb;
 		$result = $wpdb->insert( 
@@ -206,9 +218,9 @@ class WDGROIDeclaration {
 		}
 	}
 	
-/**
- * Liste des déclarations ROI pour un projet
- */
+	/**
+	 * Liste des déclarations ROI pour un projet
+	 */
 	public static function get_list_by_campaign_id( $id_campaign ) {
 		$buffer = array();
 		
@@ -221,6 +233,26 @@ class WDGROIDeclaration {
 		foreach ( $declaration_list as $declaration_item ) {
 			$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id );
 			array_push($buffer, $ROIdeclaration);
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne une déclaration ROI par son token de paiement
+	 * @param string $token
+	 * @return WDGROIDeclaration
+	 */
+	public static function get_by_payment_token( $token ) {
+		$buffer = FALSE;
+		
+		global $wpdb;
+		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
+		$query .= " WHERE payment_token='" .$token. "'";
+		
+		$declaration_list = $wpdb->get_results( $query );
+		foreach ( $declaration_list as $declaration_item ) {
+			$buffer = new WDGROIDeclaration( $declaration_item->id );
 		}
 		
 		return $buffer;

@@ -109,6 +109,34 @@ class LemonwayLib {
 	}
 
 
+	
+/*********************** HELPERS ***********************/
+	public static function check_amount($amount) {
+		if (strpos($amount, '.') === FALSE) {
+			$amount .= '.00';
+		} else {
+			$amount *= 100;
+			$amount /= 100;
+			//Modification pour les montants en .5 (doivent devenir .50)
+			if (strpos($amount, '.') == strlen($amount) - 2) {
+				$amount .= '0';
+			}
+		}
+		return $amount;
+	}
+	
+	public static function make_token($invest_id = '', $roi_id = '') {
+		$buffer = FALSE;
+		$random = rand(10000, 99999);
+		if ( !empty( $invest_id ) ) {
+			$buffer = 'INV' . $invest_id . 'TS' . $random;
+			
+		} else if ( !empty( $roi_id ) ) {
+			$buffer = 'ROI' . $roi_id . 'TS' . $random;
+			
+		}
+		return $buffer;
+	}
 
 
 
@@ -407,20 +435,6 @@ class LemonwayLib {
 			$result = $result->ID->__toString();
 		}
 		return $result;
-	}
-	
-	public static function check_amount($amount) {
-		if (strpos($amount, '.') === FALSE) {
-			$amount .= '.00';
-		} else {
-			$amount *= 100;
-			$amount /= 100;
-			//Modification pour les montants en .5 (doivent devenir .50)
-			if (strpos($amount, '.') == strlen($amount) - 2) {
-				$amount .= '0';
-			}
-		}
-		return $amount;
 	}
 	
 	public static function ask_payment_webkit($wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url, $use_registered_card = 0, $comment = '', $auto_commission = 0) {
