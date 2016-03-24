@@ -10,12 +10,18 @@ class NotificationsEmails {
      * @param string $content
      * @param bool $decorate Inclure ou non le header et footer définis dans le back-office (projets-> réglages-> e-mails)
      * @param array $attachments
+     * @param array $from_data
      * @return bool
      */
-    public static function send_mail($to, $object, $content, $decorate = false, $attachments = array()) {
+    public static function send_mail($to, $object, $content, $decorate = false, $attachments = array(), $from_data = array()) {
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
-	$from_name = get_bloginfo('name');
-	$from_email = get_option('admin_email');
+	if ( empty( $from_data ) ) {
+		$from_name = get_bloginfo('name');
+		$from_email = get_option('admin_email');
+	} else {
+		$from_name = $from_data['name'];
+		$from_email = $from_data['email'];
+	}
 	$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
 	$headers .= "Reply-To: ". $from_email . "\r\n";
 	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
@@ -380,11 +386,16 @@ class NotificationsEmails {
     // MESSAGE DIRECT PORTEUR DE PROJET
     //*******************************************************
     public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list = [], $return_string = false) {
-	ypcf_debug_log('NotificationsEmails::project_mail > ' . $campaign_id . ' > ' . $mail_title);
-	$post_campaign = get_post($campaign_id);
-	$project_title = $post_campaign->post_title;
-        
-	$object = $project_title. ' : ' .$mail_title;
+		ypcf_debug_log('NotificationsEmails::project_mail > ' . $campaign_id . ' > ' . $mail_title);
+		$post_campaign = get_post($campaign_id);
+		$project_title = $post_campaign->post_title;
+		
+		$user_author = get_user_by('id', $post_campaign->post_author);
+		$from_data = array();
+		$from_data['name'] = $project_title;
+		$from_data['email'] = $user_author->user_email;
+
+		$object = $project_title. ' : ' .$mail_title;
         
         $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
                 .'<h1 style="text-align: center;">'.$mail_title.'</h1>';
@@ -434,7 +445,7 @@ class NotificationsEmails {
 			$user = get_userdata(intval($id_user));
 			$to = $user->user_email;
 			$list_mail[] = $to;
-			$feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
+			$feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true, array(), $from_data);
 		}
         return array_combine($list_mail, $feedback);
     }
@@ -453,12 +464,18 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_project_post_posted($campaign_id, $post_id) {
-	ypcf_debug_log('NotificationsEmails::new_project_post_posted > ' . $campaign_id . ' > ' . $post_id);
-	$post_campaign = get_post($campaign_id);
-	$project_title = $post_campaign->post_title;
+		ypcf_debug_log('NotificationsEmails::new_project_post_posted > ' . $campaign_id . ' > ' . $post_id);
+		$post_campaign = get_post($campaign_id);
+		$project_title = $post_campaign->post_title;
+		
+		$user_author = get_user_by('id', $post_campaign->post_author);
+		$from_data = array();
+		$from_data['name'] = $project_title;
+		$from_data['email'] = $user_author->user_email;
+		
         $new_post = get_post($post_id);
         $post_title = $new_post->post_title;
-	$object = 'Actualité ' .$project_title. ' : ' .$post_title;
+		$object = 'Actualité ' .$project_title. ' : ' .$post_title;
         
         $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
                 .'<h1 style="text-align: center;">'.$post_title.'</h1>';
@@ -479,16 +496,16 @@ class NotificationsEmails {
         
         //Récupère liste d'envoi
         global $wpdb;
-	$table_jcrois = $wpdb->prefix . "jycrois";
+		$table_jcrois = $wpdb->prefix . "jycrois";
         $result_jcrois = $wpdb->get_results( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
-	$list_mail = array();
+		$list_mail = array();
         $feedback = array();
         
         foreach ($result_jcrois as $item) {
-                $to = get_userdata($item->user_id)->user_email;
-		$list_mail[] = get_userdata($item->user_id)->user_email;
-                $feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true);
-	}
+			$to = get_userdata($item->user_id)->user_email;
+			$list_mail[] = get_userdata($item->user_id)->user_email;
+			$feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true, array(), $from_data);
+		}
         return array_combine($list_mail, $feedback);
     }
     //*******************************************************
