@@ -505,10 +505,12 @@ class WDGFormProjects {
 				$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
 				$declaration->status = WDGROIDeclaration::$status_transfer;
 				$declaration->save();
-				NotificationsEmails::send_notification_kyc_accepted_admin( $declaration->id );
+				NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
+				NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
 				$buffer = TRUE;
 
 			} else {
+				NotificationsEmails::send_notification_roi_payment_error_admin( $declaration->id );
 				$buffer = $response_msg;
 				
 			}
