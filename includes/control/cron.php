@@ -36,11 +36,9 @@ class WDGCronActions {
 					switch ( $new_kyc_status ) {
 						case YPOrganisation::$lemonway_status_rejected:
 							NotificationsEmails::send_notification_kyc_rejected_admin($user);
-							NotificationsEmails::send_notification_kyc_rejected_user($user);
 							break;
 						case YPOrganisation::$lemonway_status_registered:
 							NotificationsEmails::send_notification_kyc_accepted_admin($user);
-							NotificationsEmails::send_notification_kyc_accepted_user($user);
 							break;
 					}
 				}

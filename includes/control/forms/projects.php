@@ -412,6 +412,35 @@ class WDGFormProjects {
 		return $buffer;
 	}
 	
+	public static function form_submit_turnover() {
+		if (!isset($_GET["campaign_id"]) || !isset($_POST["action"]) || $_POST["action"] != 'save-turnover-declaration') { return FALSE; }
+		$declaration_id = filter_input( INPUT_POST, 'declaration-id' );
+		if (empty($declaration_id)) { return FALSE; }
+		$declaration = new WDGROIDeclaration($declaration_id);
+		$campaign = new ATCF_Campaign($_GET["campaign_id"]);
+		
+		$turnover_declaration = filter_input( INPUT_POST, 'turnover-total' );
+		$saved_declaration = array();
+		$total_turnover = 0;
+		if (!empty($turnover_declaration)) {
+			$total_turnover += $turnover_declaration;
+			array_push($saved_declaration, $turnover_declaration);
+		} else {
+			$nb_turnover = $campaign->get_turnover_per_declaration();
+			for ($i = 0; $i < $nb_turnover; $i++) {
+				$turnover_declaration = filter_input( INPUT_POST, 'turnover-' . $i );
+				$total_turnover += $turnover_declaration;
+				array_push($saved_declaration, $turnover_declaration);
+			}
+		}
+		$declaration->set_turnover($saved_declaration);
+		$amount = $total_turnover * $campaign->roi_percent() / 100;
+		$amount_with_fees = $amount + ($amount * $campaign->get_costs_to_organization() / 100);
+		$amount_with_fees = round($amount_with_fees * 100) / 100;
+		$declaration->amount = $amount_with_fees;
+		$declaration->save();
+	}
+	
 	/**
 	 * Gère les fichiers de comptes annuels
 	 */
@@ -484,6 +513,8 @@ class WDGFormProjects {
 				
 			}
 		}
+		
+		return $buffer;
 	}
 	
 	/**

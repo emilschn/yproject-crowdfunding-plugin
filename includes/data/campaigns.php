@@ -296,6 +296,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_roi_percent';
 		$fields[] = ATCF_Campaign::$key_costs_to_organization;
 		$fields[] = ATCF_Campaign::$key_costs_to_investors;
+		$fields[] = ATCF_Campaign::$key_turnover_per_declaration;
 		$fields[] = 'save_declarations';
 		$fields[] = 'declaration_amount_first';
 		$fields[] = 'add_new_declaration';
@@ -622,22 +623,26 @@ function atcf_campaign_save_declarations() {
 	$campaign_id = filter_input( INPUT_POST, 'post_ID' );
 	$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 	foreach ( $declaration_list as $ROIdeclaration ) {
-		$declaration_date = filter_input( INPUT_POST, 'decalaration-date_due-' . $ROIdeclaration->id );
+		$declaration_date = filter_input( INPUT_POST, 'declaration-date_due-' . $ROIdeclaration->id );
 		if ( !empty($declaration_date) ) {
 			$exploded_date = explode('/', $declaration_date);
 			$formatted_date = $exploded_date[2] .'-'. $exploded_date[1] .'-'. $exploded_date[0];
 			$ROIdeclaration->date_due = $formatted_date;
 		}
-		$declaration_amount = filter_input( INPUT_POST, 'decalaration-amount-' . $ROIdeclaration->id );
-		if ( !empty($declaration_amount) ) {
-			$ROIdeclaration->amount = $declaration_amount;
+		$declaration_files = filter_input( INPUT_POST, 'declaration-files-' . $ROIdeclaration->id );
+		if ( !empty($declaration_files) ) {
+			if ($declaration_files && $ROIdeclaration->file_list == "") {
+				$ROIdeclaration->file_list = '1';
+			} elseif (!$declaration_files) {
+				$ROIdeclaration->file_list = '';
+			}
 		}
 		$ROIdeclaration->save();
 	}
 }
 
 function atcf_campaign_declaration_amount_first() {
-	$save_first = filter_input(INPUT_POST, 'declaration_amount_first');
+	$save_first = filter_input(INPUT_POST, 'declaration-files-first');
 	$campaign_id = filter_input(INPUT_POST, 'post_ID');
 	if ( !empty( $save_first ) ) {
 		$post_campaign = get_post( $campaign_id );
@@ -649,13 +654,15 @@ function atcf_campaign_declaration_amount_first() {
 		$date_formatted = $fp_yy. '-' .$fp_mm. '-' .$fp_dd;
 		$declaration_id = WDGROIDeclaration::insert($campaign_id, $date_formatted);
 		$new_declaration = new WDGROIDeclaration($declaration_id);
-		$new_declaration->amount = $save_first;
+		if ($save_first) {
+			$ROIdeclaration->file_list = '1';
+		}
 		$new_declaration->save();
 	}
 }
 
 function atcf_campaign_add_new_declaration() {
-	$due_date = filter_input(INPUT_POST, 'decalaration-date_due-new');
+	$due_date = filter_input(INPUT_POST, 'declaration-date_due-new');
 	$campaign_id = filter_input(INPUT_POST, 'post_ID');
 	if ( !empty( $due_date ) ) {
 		$date_exploded = explode('/', $due_date);
@@ -1228,10 +1235,6 @@ function _atcf_metabox_campaign_info() {
 
 			<li>Pourcentage de reversement : <input type="text" name="campaign_roi_percent" value="<?php echo $campaign->roi_percent(); ?>" /> %</li>
 			
-			<li>Pourcentage de frais appliqués au PP : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_organization; ?>" value="<?php echo $campaign->get_costs_to_organization(); ?>" /> %</li>
-			
-			<li>Pourcentage de frais appliqués aux investisseurs : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_investors; ?>" value="<?php echo $campaign->get_costs_to_investors(); ?>" /> %</li>
-
 			<li>
 				Première date de versement :
 				<?php
@@ -1251,7 +1254,6 @@ function _atcf_metabox_campaign_info() {
 				<input type="text" name="first-payment-yy" value="<?php echo esc_attr( $fp_yy ); ?>" size="4" maxlength="4" autocomplete="off" />
 				<input type="hidden" name="campaign_first_payment_date" value="1" />
 			</li>
-
 			
 			<?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): 
 				$estimated_turnover = $campaign->estimated_turnover();
@@ -1264,6 +1266,18 @@ function _atcf_metabox_campaign_info() {
 				<input type="hidden" name="campaign_estimated_turnover" value="1" />
 				</ul>
 			</li>
+			
+			<li>
+				Nb déclaration CA par versement : 
+				<select name="<?php echo ATCF_Campaign::$key_turnover_per_declaration; ?>">
+					<option <?php selected($campaign->get_turnover_per_declaration(), 1); ?>>1</option>
+					<option <?php selected($campaign->get_turnover_per_declaration(), 3); ?>>3</option>
+				</select>
+			</li>
+			
+			<li>Pourcentage de frais appliqués au PP : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_organization; ?>" value="<?php echo $campaign->get_costs_to_organization(); ?>" /> %</li>
+			
+			<li>Pourcentage de frais appliqués aux investisseurs : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_investors; ?>" value="<?php echo $campaign->get_costs_to_investors(); ?>" /> %</li>
 
 			<li>
 				Dates et montants des versements :
@@ -1272,19 +1286,24 @@ function _atcf_metabox_campaign_info() {
 					<?php if ($declaration_list): ?>
 					<?php foreach ( $declaration_list as $declaration ): ?>
 					<li>
-						<input type="text" name="decalaration-date_due-<?php echo $declaration->id; ?>" value="<?php echo $declaration->get_formatted_date(); ?>" /> : 
-						<input type="text" name="decalaration-amount-<?php echo $declaration->id; ?>" value="<?php echo $declaration->amount; ?>" /> €
+						<input type="text" name="declaration-date_due-<?php echo $declaration->id; ?>" value="<?php echo $declaration->get_formatted_date(); ?>" />
+						<?php if ($declaration->file_list != "" && $declaration->file_list != "1"): ?>
+						Fichiers liés
+						<?php else: ?>
+						<input type="checkbox" name="declaration-files-<?php echo $declaration->id; ?>" <?php checked(($declaration->file_list != "")); ?> /> Activer l'upload de fichiers
+						<?php endif; ?>
 					</li>
 					<?php endforeach; ?>
 					<input type="hidden" name="save_declarations" value="1" />
 					<?php else: ?>
 					<li>
 						<?php echo $fp_dd. '/' .$fp_mm. '/' .$fp_yy; ?> : 
-						<input type="text" name="declaration_amount_first" value="<?php echo $declaration->amount; ?>" /> €
+						<input type="checkbox" name="declaration-files-first" <?php checked(($declaration->file_list != "")); ?> /> Activer l'upload de fichiers
 					</li>
 					<?php endif; ?>
+					
 					<li>
-						<input type="text" name="decalaration-date_due-new" placeholder="jj/mm/aaaa" />
+						<input type="text" name="declaration-date_due-new" placeholder="jj/mm/aaaa" />
 						<input type="submit" name="add_new_declaration" value="Ajouter une nouvelle date" />
 					</li>
 				</ul>

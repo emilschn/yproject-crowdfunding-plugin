@@ -58,7 +58,7 @@ final class ATCF_CrowdFunding {
 	private function setup_globals() {
 		/** Versions **********************************************************/
 
-		$this->version    = '1.3.7';
+		$this->version    = '1.801';
 		$this->db_version = '1';
 
 		/** Paths *************************************************************/

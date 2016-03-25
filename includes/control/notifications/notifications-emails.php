@@ -523,7 +523,7 @@ class NotificationsEmails {
 		
 		$object = "Paiement de votre reversement effectué";
 		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Le paiement de votre reversement de ".$roi_declaration->get_amount_to_pay()." € a bien été pris en compte.<br />";
+		$body_content .= "Le paiement de votre reversement de ".$roi_declaration->amount." € a bien été pris en compte.<br />";
 		$body_content .= "Merci et à bientôt sur WE DO GOOD !<br /><br />";
 		
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
@@ -536,7 +536,7 @@ class NotificationsEmails {
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI effectué";
 		$body_content = "Hello !<br /><br />";
-		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_to_pay()." € a été effectué.<br /><br />";
+		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->amount." € a été effectué.<br /><br />";
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
@@ -549,7 +549,7 @@ class NotificationsEmails {
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Problème de paiement de ROI";
 		$body_content = "Hello !<br /><br />";
-		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->get_amount_to_pay()." €).<br /><br />";
+		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->amount." €).<br /><br />";
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
@@ -560,6 +560,20 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS KYC
     //*******************************************************
+	/**
+	 * @param YPOrganisation $orga
+	 */
+	public static function document_uploaded_admin($orga, $nb_document) {
+		ypcf_debug_log('NotificationsEmails::document_uploaded_admin > ' . $orga->get_wpref());
+		
+		$admin_email = get_option('admin_email');
+		$object = "Documents ajoutés à une organisation";
+		$body_content = "Hello !<br />";
+		$body_content .= "L'organisation ".$orga->get_name()." a uploadé ".$nb_document." fichier(s).<br /><br />";
+
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+	
     public static function send_notification_kyc_accepted_user($user) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
 		

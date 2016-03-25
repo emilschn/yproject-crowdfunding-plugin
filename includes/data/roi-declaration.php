@@ -23,6 +23,7 @@ class WDGROIDeclaration {
 	public $mean_payment;
 	public $payment_token;
 	public $file_list;
+	private $turnover;
 	
 	
 	public function __construct( $declaration_id ) {
@@ -41,6 +42,7 @@ class WDGROIDeclaration {
 			$this->mean_payment = $declaration_item->mean_payment;
 			$this->payment_token = $declaration_item->payment_token;
 			$this->file_list = $declaration_item->file_list;
+			$this->turnover = $declaration_item->turnover;
 		}
 	}
 	
@@ -59,6 +61,7 @@ class WDGROIDeclaration {
 				'mean_payment' => $this->mean_payment, 
 				'payment_token' => $this->payment_token, 
 				'file_list' => $this->file_list, 
+				'turnover' => $this->turnover, 
 			),
 			array(
 				'id' => $this->id
@@ -98,20 +101,6 @@ class WDGROIDeclaration {
 			$this->status = WDGROIDeclaration::$status_payment;
 		}
 		return $this->status;
-	}
-	
-	/**
-	 * Retourne le montant que doit payer le porteur de projet au moment de reverser les fonds (prend en compte un pourcentage de commission éventuel)
-	 * @return number
-	 */
-	public function get_amount_to_pay() {
-		$buffer = $this->amount;
-		$campaign = new ATCF_Campaign( $this->id_campaign );
-		$cost = $campaign->get_costs_to_organization();
-		if ( $cost > 0 ) {
-			$buffer += (round(($buffer * $cost / 100) * 100) / 100);
-		}
-		return $buffer;
 	}
 	
 	/**
@@ -172,6 +161,23 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
+	/**
+	 * Retourne le CA sous forme de tableau
+	 * @return array
+	 */
+	public function get_turnover() {
+		$buffer = json_decode($this->turnover);
+		return $buffer;
+	}
+	/**
+	 * Enregistre le CA en json
+	 * @param array $turnover_array
+	 */
+	public function set_turnover($turnover_array) {
+		$saved_turnover = json_encode($turnover_array);
+		$this->turnover = $saved_turnover;
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
@@ -191,11 +197,12 @@ class WDGROIDeclaration {
 			date_due date DEFAULT '0000-00-00',
 			date_paid date DEFAULT '0000-00-00',
 			date_transfer date DEFAULT '0000-00-00',
-			amount mediumint(9),
+			amount float,
 			status tinytext,
 			mean_payment tinytext,
 			payment_token tinytext,
 			file_list text,
+			turnover text,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );

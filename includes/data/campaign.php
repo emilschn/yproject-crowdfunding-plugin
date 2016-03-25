@@ -329,11 +329,20 @@ class ATCF_Campaign {
 	}
 	
 	
-	
+	public static $key_estimated_turnover = 'campaign_estimated_turnover';
 	public function estimated_turnover() {
-	    $buffer = $this->__get('campaign_estimated_turnover');
+	    $buffer = $this->__get( ATCF_Campaign::$key_estimated_turnover );
 	    return json_decode($buffer, TRUE);
 	}
+	public static $key_turnover_per_declaration = 'turnover_per_declaration';
+	public function get_turnover_per_declaration() {
+		$buffer = $this->__get( ATCF_Campaign::$key_turnover_per_declaration );
+		if (empty($buffer)) { $buffer = 3; }
+		return $buffer;
+	}
+	
+	
+	
 	public function payment_list() {
 	    $buffer = $this->__get('campaign_payment_list');
 	    return json_decode($buffer, TRUE);

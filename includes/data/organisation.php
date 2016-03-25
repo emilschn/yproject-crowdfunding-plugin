@@ -440,16 +440,21 @@ class YPOrganisation {
 			'org_doc_id'		=> WDGKYCFile::$type_id,
 			'org_doc_home'		=> WDGKYCFile::$type_home
 		);
+		$notify = 0;
 		foreach ($documents_list as $document_key => $document_type) {
 			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
 				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
 				if ($result == 'ext') {
 					$errors_submit->add('document-wrong-extension', __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
-				}
-				if ($result == 'size') {
+				} else if ($result == 'size') {
 					$errors_submit->add('document-heavy-size', __("Le fichier est trop lourd.", 'yproject'));
+				} else if ($result != FALSE) {
+					$notify++;
 				}
 			}
+		}
+		if ($notify > 0) {
+			NotificationsEmails::document_uploaded_admin($this, $notify);
 		}
 	}
 	/**
