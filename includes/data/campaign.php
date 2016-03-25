@@ -1211,22 +1211,21 @@ class ATCF_Campaign {
 	
 	/**
 	 * Retourne la liste des paiement, augmentée par les informations utiles pour un ROI particulier
-	 * @param type $roi_id
+	 * @param WDGROIDeclaration $declaration
 	 */
-	public function roi_payments_data($roi_id) {
+	public function roi_payments_data($declaration) {
 		$buffer = array();
 		$investments_list = $this->payments_data(TRUE);
 		//Calculs des montants à reverser
-		$payment_list = $this->payment_list();
 		$total_amount = $this->current_amount(FALSE);
-		$roi_amount = $payment_list[$roi_id];
+		$roi_amount = $declaration->amount;
 		foreach ($investments_list as $investment_item) {
 			//Calcul de la part de l'investisseur dans le total
 			$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
 			//Calcul du montant à récupérer en roi
 			$investor_proportion_amount = floor($roi_amount * $investor_proportion * 100) / 100; //10.50
 			//Calcul de la commission sur le roi de l'utilisateur
-			$fees_total = $investor_proportion_amount * YP_ROI_FEES / 100; //10.50 * 1.8 / 100 = 0.189
+			$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
 			//Et arrondi
 			$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
 			$investment_item['roi_fees'] = $fees;

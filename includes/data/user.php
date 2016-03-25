@@ -10,6 +10,9 @@ class WDGUser {
 	public $wp_user;
 	
 	protected static $_current = null;
+	/**
+	 * @return WDGUser
+	 */
 	public static function current() {
 		if ( is_null( self::$_current ) ) {
 			self::$_current = new self();

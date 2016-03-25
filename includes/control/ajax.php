@@ -27,24 +27,39 @@ class WDGAjaxActions {
 	 * Affiche la liste des utilisateurs d'un projet qui doivent récupérer de l'argent de leur investissement
 	 */
 	public static function display_roi_user_list() {
-		if (current_user_can('manage_options')) {
+		$wdgcurrent_user = WDGUser::current();
+		if ($wdgcurrent_user->is_admin()) {
 		    //Récupération des éléments à traiter
-		    $campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		    $payment_item_id = filter_input(INPUT_POST, 'payment_item');
-		    $campaign = new ATCF_Campaign($campaign_id);
+		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
+			$declaration = new WDGROIDeclaration($declaration_id);
+		    $campaign = new ATCF_Campaign($declaration->id_campaign);
 		    $total_roi = 0;
 		    $total_fees = 0;
-		    $investments_list = $campaign->roi_payments_data($payment_item_id);
+		    $investments_list = $campaign->roi_payments_data($declaration);
 		    foreach ($investments_list as $investment_item) {
 			    $total_fees += $investment_item['roi_fees'];
 			    $total_roi += $investment_item['roi_amount']; 
 			    $user_data = get_userdata($investment_item['user']);
 			    //Affichage utilisateur
-			    echo '<tr><td>'.$user_data->first_name.' '.$user_data->last_name.'</td><td>'.$investment_item['amount'].'&euro;</td><td>'.$investment_item['roi_amount'].'&euro;</td><td>'.$investment_item['roi_fees'].'&euro;</td></tr>';
+				?>
+			    <tr>
+					<td><?php echo $user_data->first_name.' '.$user_data->last_name; ?></td>
+					<td><?php echo $investment_item['amount']; ?> &euro;</td>
+					<td><?php echo $investment_item['roi_amount']; ?> &euro;</td>
+					<td><?php echo $investment_item['roi_fees']; ?> &euro;</td>
+				</tr>
+				<?php
 		    }
 
 		    //Affichage total
-		    echo '<tr><td><strong>Total</strong></td><td>'.$campaign->current_amount(FALSE).'&euro;</td><td>'.$total_roi.'&euro;</td><td>'.$total_fees.'&euro;</td></tr>';
+			?>
+		    <tr>
+				<td><strong>Total</strong></td>
+				<td><?php echo $campaign->current_amount(FALSE); ?> &euro;</td>
+				<td><?php echo $total_roi; ?> &euro;</td>
+				<td><?php echo $total_fees; ?> &euro;</td>
+			</tr>
+			<?php
 		}
 		exit();
 	}
