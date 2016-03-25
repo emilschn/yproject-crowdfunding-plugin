@@ -51,7 +51,7 @@ class LemonwayLib {
 			if (!isset($lemonway_lib->soap_client)) $lemonway_lib->soap_client = @new SoapClient(YP_LW_URL);
 		} catch (SoapFault $E) {
 			LemonwayLib::set_error('SOAPCLIENTINIT', $E->faultstring);
-			ypcf_debug_log('LemonwayLib::call ERROR : ' . $e->faultstring);
+			ypcf_debug_log('LemonwayLib::call ERROR : ' . $E->faultstring);
 			return FALSE;
 		}
 		
