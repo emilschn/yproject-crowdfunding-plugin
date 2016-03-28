@@ -434,10 +434,8 @@ class WDGFormProjects {
 			}
 		}
 		$declaration->set_turnover($saved_declaration);
-		$amount = $total_turnover * $campaign->roi_percent() / 100;
-		$amount_with_fees = $amount + ($amount * $campaign->get_costs_to_organization() / 100);
-		$amount_with_fees = round($amount_with_fees * 100) / 100;
-		$declaration->amount = $amount_with_fees;
+		$declaration->amount = $total_turnover * $campaign->roi_percent() / 100;
+		$declaration->status = WDGROIDeclaration::$status_payment;
 		$declaration->save();
 	}
 	
@@ -481,6 +479,8 @@ class WDGFormProjects {
 			$return = LemonwayLib::ask_payment_webkit($organisation->get_lemonway_id(), $roi_declaration->amount, $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
 			if ( !empty($return->MONEYINWEB->TOKEN) ) {
 				wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
+			} else {
+				return "error_lw_payment";
 			}
 			
 		} elseif (isset($_POST['payment_wire'])) {

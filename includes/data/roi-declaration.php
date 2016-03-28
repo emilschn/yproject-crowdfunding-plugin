@@ -104,6 +104,14 @@ class WDGROIDeclaration {
 	}
 	
 	/**
+	 * Retourne le montant additionné avec la commission
+	 * @return number
+	 */
+	public function get_amount_with_commission() {
+		return ($this->amount + $this->get_commission_to_pay());
+	}
+	
+	/**
 	 * Retourne la commission éventuelle que doit payer le porteur de projet au moment de reverser les fonds
 	 * @return number
 	 */
@@ -112,7 +120,7 @@ class WDGROIDeclaration {
 		$campaign = new ATCF_Campaign( $this->id_campaign );
 		$cost = $campaign->get_costs_to_organization();
 		if ( $cost > 0 ) {
-			$buffer = (round(($buffer * $cost / 100) * 100) / 100);
+			$buffer = (round(($this->amount * $cost / 100) * 100) / 100);
 		}
 		return $buffer;
 	}
