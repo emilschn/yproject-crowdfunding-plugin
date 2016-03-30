@@ -379,7 +379,7 @@ class LemonwayLib {
 		
 		if ($result !== FALSE) {
 			//Retourne : ID ; DATE ; CRED (montant) ; COM (commission) ; STATUS : 3 (terminé) ou 4 (erreur)
-			$result = $result->HPAY;
+			$result = $result->TRANS->HPAY;
 		}
 		return $result;
 	}

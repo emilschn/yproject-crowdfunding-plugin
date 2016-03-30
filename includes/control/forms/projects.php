@@ -491,28 +491,28 @@ class WDGFormProjects {
 	public static function return_lemonway_card() {
 		$buffer = FALSE;
 		
-		$wk_token = filter_input( INPUT_POST, 'response_wkToken' );
+		$wk_token = filter_input( INPUT_GET, 'response_wkToken' );
 		if ( !empty( $wk_token ) ) {
-			$response_code = filter_input( INPUT_POST, 'response_code' );
-			$response_msg = filter_input( INPUT_POST, 'response_msg' );
-			$transaction_result = LemonwayLib::get_transaction_by_id( $wk_token );
+			$declaration = WDGROIDeclaration::get_by_payment_token( $wk_token );
+			if ($declaration->status == WDGROIDeclaration::$status_payment) {
 
-			//Si le paiement est réussi
-			if ( $response_code == 0000 && $transaction_result->STATUS == 3 ) {
-				$declaration = WDGROIDeclaration::get_by_payment_token( $wk_token );
-				$date_now = new DateTime();
-				$declaration->date_paid = $date_now->format( 'Y-m-d' );
-				$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
-				$declaration->status = WDGROIDeclaration::$status_transfer;
-				$declaration->save();
-				NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
-				NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
-				$buffer = TRUE;
+				//Si le paiement est réussi
+				$transaction_result = LemonwayLib::get_transaction_by_id( $wk_token );
+				if ( $transaction_result->STATUS == 3 ) {
+						$date_now = new DateTime();
+						$declaration->date_paid = $date_now->format( 'Y-m-d' );
+						$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
+						$declaration->status = WDGROIDeclaration::$status_transfer;
+						$declaration->save();
+						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
+						NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
+						$buffer = TRUE;
 
-			} else {
-				NotificationsEmails::send_notification_roi_payment_error_admin( $declaration->id );
-				$buffer = $response_msg;
-				
+				} else {
+					NotificationsEmails::send_notification_roi_payment_error_admin( $declaration->id );
+					$buffer = $transaction_result->INT_MSG;
+
+				}
 			}
 		}
 		
