@@ -164,7 +164,7 @@ class LemonwayLib {
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
-			$result = $result->WALLET->LWID->__toString();
+			$result = $result->WALLET->LWID;
 		}
 		return $result;
 	}
@@ -182,7 +182,7 @@ class LemonwayLib {
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
-			$result = $result->WALLET->LWID->__toString();
+			$result = $result->WALLET->LWID;
 		}
 		return $result;
 	}
@@ -578,6 +578,7 @@ class LemonwayLib {
 		if ($result !== FALSE) {
 			//Retourne : 
 			//  - TRANS->HPAY => ID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
+			$result = $result->TRANS->HPAY;
 		}
 		return $result;
 	}

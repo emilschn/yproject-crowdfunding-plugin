@@ -434,7 +434,7 @@ class WDGFormProjects {
 			}
 		}
 		$declaration->set_turnover($saved_declaration);
-		$declaration->amount = $total_turnover * $campaign->roi_percent() / 100;
+		$declaration->amount = round( ($total_turnover * $campaign->roi_percent() / 100) * 100 ) / 100;
 		$declaration->status = WDGROIDeclaration::$status_payment;
 		$declaration->save();
 	}
@@ -476,6 +476,7 @@ class WDGFormProjects {
 			$wk_token = LemonwayLib::make_token('', $roi_id);
 			$roi_declaration->payment_token = $wk_token;
 			$roi_declaration->save();
+			$organisation->register_lemonway();
 			$return = LemonwayLib::ask_payment_webkit($organisation->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
 			if ( !empty($return->MONEYINWEB->TOKEN) ) {
 				wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
@@ -518,156 +519,19 @@ class WDGFormProjects {
 		
 		return $buffer;
 	}
-	
-	/**
-	 * Teste si le formulaire de ROI est posté
-	 * @param type $campaign
-	 * @return boolean
-	 *
-	public static function form_proceed_roi_list($campaign) {
-		if (!isset($_POST['action']) || $_POST['action'] != 'proceed_roi') {
-			return FALSE;
-		}
-		
-		$result = FALSE;
-		$fp_date = $campaign->first_payment_date();
-		$fp_yy = mysql2date( 'Y', $fp_date, false );
-		for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++) {
-			$result = WDGFormProjects::form_proceed_roi($campaign, $i);
-			if ($result != FALSE) {
-				break;
-			}
-		}
-		return $result;
-	}
-	
-	/**
-	 * Lance la redirection vers la page de paiement
-	 * @param type $year
-	 *
-	public static function form_proceed_roi($campaign, $year) {
-		//Il faut avoir un id de projet et que l'année soit bien renseignée
-		if (!isset($_GET["campaign_id"])) { return FALSE; }
-		if (!isset($_POST["proceed_roi_" . $year ])) { return FALSE; }
-		
-		//Si il y a bien un montant à reverser
-		$payment_amount = $campaign->payment_amount_for_year($year);
-		if ($payment_amount > 0) {
-		    
-			//Récupération de l'organisation
-			$api_project_id = BoppLibHelpers::get_api_project_id($campaign->ID);
-			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-			if (isset($current_organisations) && count($current_organisations) > 0) {
-				$current_organisation = $current_organisations[0];
-			}
-			
-			//Si il y a bien une organisation
-			if (isset($current_organisation)) {
-//				$page_wallet_management = get_page_by_path('gestion-financiere');
-//				$page_return = get_permalink($page_wallet_management->ID) . '?campaign_id=' . $campaign->ID . '&roi_date='.$_POST["proceed_roi_" . $year ].'&roi_year='.$year;
-				$mangopay_newcontribution = MangopayContribution::withdrawal_user_to_account($current_organisation->organisation_wpref, $payment_amount);
-				if (isset($mangopay_newcontribution->ID)) {
-					//Enregistrement de la contribution
-					$roi_post = array(
-					    'post_author'   => $current_organisation->organisation_wpref,
-					    'post_title'    => 'ROI ' . $mangopay_newcontribution->Amount,
-					    'post_content'  => $mangopay_newcontribution->ID,
-					    'post_status'   => 'pending',
-					    'post_type'	    => 'roi_process'
-					);
-					$new_post_id = wp_insert_post( $roi_post );
-					//Liaison du versement avec la contribution
-					$campaign->update_payment_status($_POST["proceed_roi_" . $year ], $year, $new_post_id);
-					return $mangopay_newcontribution;
-				} else {
-					return FALSE;
-				}
-			} else {
-				return FALSE;
-			}
-		} else {
-			return FALSE;
-		}
-	}
-	
-	/**
-	 * Valide le transfert d'argent vers le compte de l'organisation
-	 *
-	public static function form_proceed_roi_return() {
-		//Vérification qu'on a les bonnes données pour procéder aux transferts
-		if (isset($_GET['ContributionID']) && (!isset($_POST['action']))) {
-			if (!isset($_GET["campaign_id"])) { return FALSE; }
-			$contribution_id = $_GET['ContributionID'];
-			if (!isset($contribution_id)) { return FALSE; }
-			if (!isset($_GET["roi_date"])) { return FALSE; }
-			if (!isset($_GET["roi_year"])) { return FALSE; }
-			$campaign_id = $_GET["campaign_id"];
-			$post_campaign = get_post($campaign_id);
-			$campaign = atcf_get_campaign($post_campaign);
-
-			//Si la contribution est validée
-			$contribution_obj = ypcf_mangopay_get_contribution_by_id($contribution_id);
-			if ($contribution_obj->IsSucceeded && $contribution_obj->IsCompleted) {
-
-				//Récupération de l'organisation
-				$api_project_id = BoppLibHelpers::get_api_project_id($campaign_id);
-				$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-				if (isset($current_organisations) && count($current_organisations) > 0) {
-					$current_organisation = $current_organisations[0];
-				}
-
-				//On enregistre le versement comme effectué (le virement est au moins effectif jusqu'au compte utilisateur
-				if (isset($current_organisation)) {
-					//Enregistrement de la contribution
-					$roi_post = array(
-					    'post_author'   => $current_organisation->organisation_wpref,
-					    'post_title'    => 'ROI ' . $contribution_obj->Amount,
-					    'post_content'  => $contribution_obj->ID,
-					    'post_status'   => 'pending',
-					    'post_type'	    => 'roi_process'
-					);
-					$new_post_id = wp_insert_post( $roi_post );
-					//Liaison du versement avec la contribution
-					$campaign->update_payment_status($_GET["roi_date"], $_GET["roi_year"], $new_post_id);
-				
-				} else {
-					return FALSE;
-				}
-
-
-			} else {
-				return FALSE;
-			}
-		}
-	}
-	
 	/**
 	 * Lance les transferts d'argent vers les différents investisseurs
 	 */
 	public static function form_proceed_roi_transfers() {
+		if (!isset($_POST['action']) || $_POST['action'] != 'proceed_roi_transfers' || !isset($_POST['roi_id']) || !isset($_GET['campaign_id'])) {
+			return FALSE;
+		}
+		
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
-		$payment_item_id = filter_input(INPUT_POST, 'roi_id');
-		if (current_user_can('manage_options') && !empty($campaign_id) && !empty($payment_item_id)) {
-			//Récupération des éléments à traiter
-			$campaign = new ATCF_Campaign($campaign_id);
-			$investments_list = $campaign->roi_payments_data($payment_item_id);
-			//Récupération de l'organisation du projet
-			$api_project_id = BoppLibHelpers::get_api_project_id($campaign_id);
-			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-			if (isset($current_organisations) && count($current_organisations) > 0) {
-				$current_organisation = $current_organisations[0];
-			}
-			//Transfert à tous les utilisateurs
-			if (isset($current_organisation)) {
-				foreach ($investments_list as $investment_item) {
-					ypcf_mangopay_transfer_user_to_user($current_organisation->organisation_wpref, $investment_item['user'], $investment_item['roi_amount'], $investment_item['roi_fees']);
-				}
-			}
-			$payment_post_id = $campaign->payment_status_for_year($payment_item_id);
-			wp_update_post( array(
-				'ID'		=> $payment_post_id,
-				'post_status'	=> 'published'
-			));
+		$declaration_id = filter_input(INPUT_POST, 'roi_id');
+		if ( current_user_can('manage_options') && !empty( $campaign_id ) && !empty( $declaration_id ) ) {
+			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			$roi_declaration->make_transfer();
 		}
 	}
 }

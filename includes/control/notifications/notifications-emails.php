@@ -553,8 +553,65 @@ class NotificationsEmails {
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
+	
+	public static function roi_transfer_success_user( $declaration_id, $user_id ) {
+		ypcf_debug_log('NotificationsEmails::roi_transfer_success_user > ' . $declaration_id . ' ; ' . $user_id);
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$WDGUser = new WDGUser( $user_id );
+		
+		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;
+		$body_content = "Bonjour,<br /><br />";
+		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et nous avons le plaisir de vous informer que le versement des royalties de ce projet a été effectué !<br />";
+		$body_content .= "Nous vous invitons à vous connecter sur WEDOGOOD.co afin de consulter votre porte monnaie électronique.<br /><br />";
+		$body_content .= "<b>Comment percevoir les royalties de mon investissement ?</b><br />";
+		$body_content .= "1. Je me connecte à mon <b>compte utilisateur</b> sur www.wedogood.co<br />";
+		$body_content .= "2. Je consulte le montant des royalties perçues dans mon <b>porte monnaie électronique</b><br />";
+		$body_content .= "3. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)</b><br />";
+		$body_content .= "OU 4. Je décide de conserver cette somme sur mon porte-monnaie électronique.<br /><br />";
+		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe WE DO GOOD à cette adresse : bonjour@wedogood.co<br />";
+		$body_content .= "Toute l'équipe WE DO GOOD vous souhaite une belle journée.";
+		
+		
+		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
+	}
+	
+	public static function roi_transfer_null_user( $declaration_id, $user_id ) {
+		ypcf_debug_log('NotificationsEmails::roi_transfer_null_user > ' . $declaration_id . ' ; ' . $user_id);
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$WDGUser = new WDGUser( $user_id );
+		
+		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;
+		$body_content = "Bonjour,<br /><br />";
+		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et le versement de vos royalties était annoncé pour le ".$roi_declaration->get_formatted_date().". ";
+		$body_content .= "La déclaration du porteur de projet a bien été reçue et traitée par WE DO GOOD. Cependant, le projet n'a généré aucun chiffre d'affaires sur la période concernée et ne peut donc pas vous verser de royaltiez.<br /><br />";
+		$body_content .= "Nous vous remercions de votre compréhension et restons joignables à cette adresse : bonjour@wedogood.co.<br /><br />";
+		$body_content .= "Nous vous souhaitons une belle journée,<br />";
+		$body_content .= "L'équipe WE DO GOOD";
+		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
+	}
     //*******************************************************
     // FIN NOTIFICATIONS PAIEMENTS ROI
+    //*******************************************************
+	
+    //*******************************************************
+    // NOTIFICATIONS PORTE-MONNAIE ELECTRONIQUE
+    //*******************************************************
+	public static function wallet_transfer_to_account( $user_id, $amount ) {
+		ypcf_debug_log('NotificationsEmails::wallet_transfer_to_account > ' . $user_id . ' ; ' . $amount);
+		$WDGUser = new WDGUser( $user_id );
+		
+		$object = "Transfert d'argent vers votre compte bancaire";
+		$body_content = "Bonjour,<br /><br />";
+		$body_content .= "La somme de ".$amount." € a bien été virée de votre porte-monnaie électronique WE DO GOOD vers votre compte bancaire.<br />";
+		$body_content .= "Toute l’équipe WE DO GOOD vous souhaite une agréable journée.";
+		
+		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
+	}
+
+    //*******************************************************
+    // FIN NOTIFICATIONS PORTE-MONNAIE ELECTRONIQUE
     //*******************************************************
 	
     //*******************************************************

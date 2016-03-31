@@ -7,6 +7,9 @@ class WDGUser {
 	public static $edd_general_terms_version = 'terms_general_version';
 	public static $edd_general_terms_excerpt = 'terms_general_excerpt';
 	
+	/**
+	 * @var WP_User 
+	 */
 	public $wp_user;
 	
 	protected static $_current = null;
@@ -37,12 +40,41 @@ class WDGUser {
 	}
 	
 	/**
+	 * Enregistrement sur Lemonway
+	 */
+	public function register_lemonway() {
+		//Vérifie que le wallet n'est pas déjà enregistré
+		$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			return LemonwayLib::wallet_register( $this->get_lemonway_id(), $this->wp_user->user_email, $this->get_lemonway_title(), $this->wp_user->user_firstname, $this->wp_user->user_lastname );
+		}
+		return TRUE;
+	}
+	
+	/**
 	 * Détermine si les informations nécessaires sont remplies : mail, prénom, nom
 	 */
 	public function can_register_lemonway() {
 		$buffer = ($this->wp_user->user_email != "")
 				&& ($this->wp_user->user_firstname == "")
 				&& ($this->wp_user->user_lastname == "");
+		return $buffer;
+	}
+	
+	/**
+	 * Définit l'identifiant de l'orga sur lemonway
+	 */
+	public function get_lemonway_id() {
+		return 'USERW'.$this->wp_user->ID;
+	}
+	
+	public function get_lemonway_title() {
+		$buffer = "U";
+		if ($this->wp_user->get('user_gender') == "male") {
+			$buffer = "M";
+		} elseif ($this->wp_user->get('user_gender') == "female") {
+			$buffer = "F";
+		}
 		return $buffer;
 	}
     

@@ -186,6 +186,45 @@ class WDGROIDeclaration {
 		$this->turnover = $saved_turnover;
 	}
 	
+	/**
+	 * S'occuper des versements vers les utilisateurs
+	 */
+	public function make_transfer() {
+		$buffer = false;
+		$date_now = new DateTime();
+		$date_now_formatted = $date_now->format( 'Y-m-d' );
+		$campaign = new ATCF_Campaign($this->id_campaign);
+		$current_organisation = $campaign->get_organisation();
+		if (isset($current_organisation)) {
+			$organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
+		}
+		if (isset($organisation_obj)) {
+			$organisation_obj->register_lemonway();
+			$investments_list = $campaign->roi_payments_data($this);
+			$total_fees = 0;
+			foreach ($investments_list as $investment_item) {
+				$total_fees += $investment_item['roi_fees'];
+				$WDGUser = new WDGUser( $investment_item['user'] );
+				$WDGUser->register_lemonway();
+				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount']);
+				WDGROI::insert($this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
+				if ($investment_item['roi_amount'] > 0) {
+					NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'] );
+				} else {
+					NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'] );
+				}
+			}
+			if ($total_fees > 0) {
+				LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), "SC", $total_fees);
+			}
+			$this->status = WDGROIDeclaration::$status_finished;
+			$this->date_transfer = $date_now_formatted;
+			$this->save();
+			$buffer = true;
+		}
+		return $buffer;
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
