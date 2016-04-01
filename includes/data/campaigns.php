@@ -67,7 +67,7 @@ class ATCF_Campaigns {
 		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_save_payment_list' );
 		add_filter( 'edd_metabox_save_campaign_estimated_turnover', 'atcf_campaign_save_estimated_turnover' );
 		add_filter( 'edd_metabox_save_save_declarations', 'atcf_campaign_save_declarations' );
-		add_filter( 'edd_metabox_save_declaration_amount_first', 'atcf_campaign_declaration_amount_first' );
+		add_filter( 'edd_metabox_save_add_first_declaration', 'atcf_campaign_add_first_declaration' );
 		add_filter( 'edd_metabox_save_add_new_declaration', 'atcf_campaign_add_new_declaration' );
 
 		add_action( 'edd_download_price_table_head', 'atcf_pledge_limit_head' );
@@ -298,7 +298,7 @@ class ATCF_Campaigns {
 		$fields[] = ATCF_Campaign::$key_costs_to_investors;
 		$fields[] = ATCF_Campaign::$key_turnover_per_declaration;
 		$fields[] = 'save_declarations';
-		$fields[] = 'declaration_amount_first';
+		$fields[] = 'add_first_declaration';
 		$fields[] = 'add_new_declaration';
 		
 		$fields[] = 'campaign_investment_terms';
@@ -641,22 +641,22 @@ function atcf_campaign_save_declarations() {
 	}
 }
 
-function atcf_campaign_declaration_amount_first() {
+function atcf_campaign_add_first_declaration() {
 	$save_first = filter_input(INPUT_POST, 'declaration-files-first');
 	$campaign_id = filter_input(INPUT_POST, 'post_ID');
+	
+	$post_campaign = get_post( $campaign_id );
+	$campaign = atcf_get_campaign( $post_campaign );
+	$fp_date = $campaign->first_payment_date();
+	$fp_dd = mysql2date( 'd', $fp_date, false );
+	$fp_mm = mysql2date( 'm', $fp_date, false );
+	$fp_yy = mysql2date( 'Y', $fp_date, false );
+	$date_formatted = $fp_yy. '-' .$fp_mm. '-' .$fp_dd;
+	$declaration_id = WDGROIDeclaration::insert($campaign_id, $date_formatted);
+	
 	if ( !empty( $save_first ) ) {
-		$post_campaign = get_post( $campaign_id );
-		$campaign = atcf_get_campaign( $post_campaign );
-		$fp_date = $campaign->first_payment_date();
-		$fp_dd = mysql2date( 'd', $fp_date, false );
-		$fp_mm = mysql2date( 'm', $fp_date, false );
-		$fp_yy = mysql2date( 'Y', $fp_date, false );
-		$date_formatted = $fp_yy. '-' .$fp_mm. '-' .$fp_dd;
-		$declaration_id = WDGROIDeclaration::insert($campaign_id, $date_formatted);
 		$new_declaration = new WDGROIDeclaration($declaration_id);
-		if ($save_first) {
-			$ROIdeclaration->file_list = '1';
-		}
+		$new_declaration->file_list = '1';
 		$new_declaration->save();
 	}
 }
@@ -1295,11 +1295,13 @@ function _atcf_metabox_campaign_info() {
 					</li>
 					<?php endforeach; ?>
 					<input type="hidden" name="save_declarations" value="1" />
+					
 					<?php else: ?>
 					<li>
 						<?php echo $fp_dd. '/' .$fp_mm. '/' .$fp_yy; ?> : 
 						<input type="checkbox" name="declaration-files-first" <?php checked(($declaration->file_list != "")); ?> /> Activer l'upload de fichiers
 					</li>
+					<input type="hidden" name="add_first_declaration" value="1" />
 					<?php endif; ?>
 					
 					<li>
