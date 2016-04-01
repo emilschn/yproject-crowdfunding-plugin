@@ -296,20 +296,19 @@ class LemonwayLib {
 	 * @param string $dom2
 	 * @return boolean or string
 	 */
-	public static function wallet_register_iban($wallet_id, $holder_name, $bic, $iban, $dom1, $dom2) {
+	public static function wallet_register_iban($wallet_id, $holder_name, $iban, $bic, $dom1, $dom2 = '') {
 		if (!isset($wallet_id)) return FALSE;
 		if (!isset($holder_name)) return FALSE;
 		if (!isset($bic)) return FALSE;
 		if (!isset($iban)) return FALSE;
 		if (!isset($dom1)) return FALSE;
-		if (!isset($dom2)) return FALSE;
 		
 		//wallet ; holder; bic ; iban ; dom1 ; dom2
 		$param_list = array(
 			'wallet' => $wallet_id,
 			'holder' => $holder_name,
-			'bic' => $bic,
 			'iban' => $iban,
+			'bic' => $bic,
 			'dom1' => $dom1,
 			'dom2' => $dom2
 		);
@@ -317,7 +316,6 @@ class LemonwayLib {
 		$result = LemonwayLib::call('RegisterIBAN', $param_list);
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
-			$result = $result->S;
 		}
 		return $result;
 	}
@@ -583,9 +581,8 @@ class LemonwayLib {
 		return $result;
 	}
 	
-	public static function ask_transfer_to_iban($wallet_id, $iban_id, $amount, $amount_com = 0, $message = '', $auto_commission = 0) {
+	public static function ask_transfer_to_iban($wallet_id, $amount, $iban_id = 0, $amount_com = 0, $message = '', $auto_commission = 0) {
 		if (!isset($wallet_id)) return FALSE;
-		if (!isset($iban_id)) return FALSE;
 		if (!isset($amount)) return FALSE;
 		
 		$amount = LemonwayLib::check_amount($amount);
@@ -596,9 +593,11 @@ class LemonwayLib {
 			'amountTot' => $amount,
 			'amountCom' => $amount_com,
 			'message' => $message,
-			'ibanId' => $iban_id,
 			'autoCommission' => $auto_commission
 		);
+		if ($iban_id > 0) {
+			$param_list['ibanId'] = $iban_id;
+		}
 		
 		$result = LemonwayLib::call('MoneyOut', $param_list);
 		if ($result !== FALSE) {

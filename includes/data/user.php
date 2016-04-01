@@ -11,6 +11,7 @@ class WDGUser {
 	 * @var WP_User 
 	 */
 	public $wp_user;
+	private $wallet_details;
 	
 	protected static $_current = null;
 	/**
@@ -39,12 +40,58 @@ class WDGUser {
 		return ($this->wp_user->has_cap('manage_options'));
 	}
 	
+	public static $key_bank_holdername = "bank_holdername";
+	public static $key_bank_iban = "bank_iban";
+	public static $key_bank_bic = "bank_bic";
+	public static $key_bank_address1 = "bank_address1";
+	
+	/**
+	 * Retourne une info correspondante au IBAN
+	 * @param string $info
+	 * @return string
+	 */
+	public function get_iban_info( $info ) {
+		return get_user_meta( $this->wp_user->ID, "bank_" . $info, TRUE);
+	}
+	
+	/**
+	 * Est-ce que le RIB est enregistré ?
+	 */
+	public function has_saved_iban() {
+		$saved_holdername = $this->get_iban_info("holdername");
+		$saved_iban = $this->get_iban_info("iban");
+		return (!empty($saved_holdername) && !empty($saved_iban));
+	}
+	
+	/**
+	 * Enregistre le RIB
+	 */
+	public function save_iban( $holder_name, $iban, $bic, $address1, $address2 = '' ) {
+		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, $holder_name );
+		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, $iban );
+		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, $bic );
+		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, $address1 );
+		if ( !empty( $address2 ) ) {
+			update_user_meta( $this->wp_user->ID, "bank_address2", $address2 );
+		}
+	}
+	
+/*******************************************************************************
+ * Gestion Lemonway
+*******************************************************************************/
+	private function get_wallet_details( $reload = false ) {
+		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
+			$this->wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		}
+		return $this->wallet_details;
+	}
+	
 	/**
 	 * Enregistrement sur Lemonway
 	 */
 	public function register_lemonway() {
 		//Vérifie que le wallet n'est pas déjà enregistré
-		$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
 			return LemonwayLib::wallet_register( $this->get_lemonway_id(), $this->wp_user->user_email, $this->get_lemonway_title(), $this->wp_user->user_firstname, $this->wp_user->user_lastname );
 		}
@@ -68,12 +115,83 @@ class WDGUser {
 		return 'USERW'.$this->wp_user->ID;
 	}
 	
+	/**
+	 * Récupère le genre de l'utilisateur, formatté pour lemonway
+	 * @return string
+	 */
 	public function get_lemonway_title() {
 		$buffer = "U";
 		if ($this->wp_user->get('user_gender') == "male") {
 			$buffer = "M";
 		} elseif ($this->wp_user->get('user_gender') == "female") {
 			$buffer = "F";
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le montant actuel sur le compte bancaire
+	 * @return number
+	 */
+	public function get_lemonway_wallet_amount() {
+		$wallet_details = $this->get_wallet_details();
+		return $wallet_details->BAL;
+	}
+	
+	/**
+	 * Transfère l'argent du porte-monnaie utilisateur vers son compte bancaire
+	 */
+	public function transfer_wallet_to_bankaccount() {
+		$buffer = FALSE;
+		
+		//Il faut qu'un iban ait déjà été enregistré
+		if ($this->has_saved_iban()) {
+			//Vérification que des IBANS existent
+			$wallet_details = $this->get_wallet_details();
+			$first_iban = $wallet_details->IBANS->IBAN;
+			//Sinon on l'enregistre auprès de Lemonway
+			if (empty($first_iban)) {
+				$saved_holdername = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, TRUE );
+				$saved_iban = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, TRUE );
+				$saved_bic = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, TRUE );
+				$saved_dom1 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, TRUE );
+				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1 );
+				if ($result_iban == FALSE) {
+					$buffer = LemonwayLib::get_last_error_message();
+				}
+			}
+			
+			if ($buffer == FALSE) {
+				//Exécution du transfert vers le compte du montant du solde
+				$amount = $wallet_details->BAL;
+				$result_transfer = LemonwayLib::ask_transfer_to_iban($this->get_lemonway_id(), $wallet_details->BAL);
+				$buffer = ($result_transfer->TRANS->HPAY->ID) ? "success" : $result_transfer->TRANS->HPAY->MSG;
+				if ($buffer == "success") {
+					NotificationsEmails::wallet_transfer_to_account( $this->wp_user->ID, $amount );
+					$withdrawal_post = array(
+						'post_author'   => $this->wp_user->ID,
+						'post_title'    => $wallet_details->BAL,
+						'post_content'  => print_r($result_transfer, TRUE),
+						'post_status'   => 'published',
+						'post_type'	    => 'withdrawal_order'
+					);
+					wp_insert_post( $withdrawal_post );
+				}
+			}
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne true si l'iban est enregistré sur lemonway
+	 */
+	public function has_registered_iban() {
+		$buffer = true;
+		$wallet_details = $this->get_wallet_details();
+		$first_iban = $wallet_details->IBANS->IBAN;
+		if (empty($first_iban)) {
+			$buffer = false;
 		}
 		return $buffer;
 	}
