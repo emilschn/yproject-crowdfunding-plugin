@@ -293,6 +293,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_init_capital';
 		$fields[] = 'campaign_funding_type';
 		$fields[] = 'campaign_funding_duration';
+		$fields[] = 'campaign_roi_percent_estimated';
 		$fields[] = 'campaign_roi_percent';
 		$fields[] = ATCF_Campaign::$key_costs_to_organization;
 		$fields[] = ATCF_Campaign::$key_costs_to_investors;
@@ -1233,7 +1234,9 @@ function _atcf_metabox_campaign_info() {
 	    <ul style="margin-left: 10px; list-style: disc;">
 			<li>Durée du financement : <input type="text" name="campaign_funding_duration" value="<?php echo $campaign->funding_duration(); ?>" /></li>
 
-			<li>Pourcentage de reversement : <input type="text" name="campaign_roi_percent" value="<?php echo $campaign->roi_percent(); ?>" /> %</li>
+			<li>Pourcentage de reversement estimé : <input type="text" name="campaign_roi_percent_estimated" value="<?php echo $campaign->roi_percent_estimated(); ?>" /> %</li>
+			
+			<li>Pourcentage de reversement réel : <input type="text" name="campaign_roi_percent" value="<?php echo $campaign->roi_percent(); ?>" /> %</li>
 			
 			<li>
 				Première date de versement :

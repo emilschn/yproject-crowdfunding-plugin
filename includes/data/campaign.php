@@ -310,6 +310,13 @@ class ATCF_Campaign {
 	public function funding_duration() {
 	    return $this->__get('campaign_funding_duration');
 	}
+	public function roi_percent_estimated() {
+	    $buffer = $this->__get('campaign_roi_percent_estimated');
+		if (empty($buffer)) {
+			$buffer = $this->roi_percent();
+		}
+		return $buffer;
+	}
 	public function roi_percent() {
 	    return $this->__get('campaign_roi_percent');
 	}

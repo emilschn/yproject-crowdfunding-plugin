@@ -185,6 +185,18 @@ class WDGROIDeclaration {
 		$saved_turnover = json_encode($turnover_array);
 		$this->turnover = $saved_turnover;
 	}
+	/**
+	 * Retourne le montant total de CA déclaré
+	 * @return int
+	 */
+	public function get_turnover_total() {
+		$buffer = 0;
+		$turnover_array = $this->get_turnover();
+		foreach ($turnover_array as $turnover_amount) {
+			$buffer += $turnover_amount;
+		}
+		return $buffer;
+	}
 	
 	/**
 	 * S'occuper des versements vers les utilisateurs
