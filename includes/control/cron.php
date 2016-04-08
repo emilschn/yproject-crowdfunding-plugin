@@ -7,13 +7,13 @@ class WDGCronActions {
 	 * Initialise la liste des actions ajax
 	 */
 	public static function init_actions() {
-		$init_date_daily = new DateTime("2016-04-01 10:15:00");
+		$init_date_daily = new DateTime("2016-04-08 12:30:00");
 		add_action( 'wdg_daily_actions_action', array( 'WDGCronActions', 'daily_actions' ) );
 		wp_schedule_event( $init_date_daily->getTimestamp(), 'daily', 'wdg_daily_actions_action' );
 		
-		$init_date_twicedaily = new DateTime("2016-04-01 07:15:00");
+		$init_date_twicedaily = new DateTime("2016-04-08 12:30:00");
 		add_action( 'wdg_twicedaily_actions_action', array( 'WDGCronActions', 'twicedaily_actions' ) );
-		wp_schedule_event( $init_date_twicedaily->getTimestamp(), 'daily', 'wdg_twicedaily_actions_action' );
+		wp_schedule_event( $init_date_twicedaily->getTimestamp(), 'twicedaily', 'wdg_twicedaily_actions_action' );
 	}
 	
 	public static function daily_actions() {
