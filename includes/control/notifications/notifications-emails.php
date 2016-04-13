@@ -523,7 +523,7 @@ class NotificationsEmails {
 		
 		$object = "Paiement de votre reversement effectué";
 		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Le paiement de votre reversement de ".$roi_declaration->amount." € a bien été pris en compte.<br />";
+		$body_content .= "Le paiement de votre reversement de ".$roi_declaration->get_amount_with_commission()." € a bien été pris en compte.<br />";
 		$body_content .= "Merci et à bientôt sur WE DO GOOD !<br /><br />";
 		
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
@@ -536,7 +536,7 @@ class NotificationsEmails {
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI effectué";
 		$body_content = "Hello !<br /><br />";
-		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->amount." € a été effectué.<br /><br />";
+		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € a été effectué.<br /><br />";
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
@@ -549,7 +549,7 @@ class NotificationsEmails {
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Problème de paiement de ROI";
 		$body_content = "Hello !<br /><br />";
-		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->amount." €).<br /><br />";
+		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->get_amount_with_commission()." €).<br /><br />";
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
