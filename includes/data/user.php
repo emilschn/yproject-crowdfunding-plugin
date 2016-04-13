@@ -172,8 +172,8 @@ class WDGUser {
 						'post_author'   => $this->wp_user->ID,
 						'post_title'    => $wallet_details->BAL,
 						'post_content'  => print_r($result_transfer, TRUE),
-						'post_status'   => 'published',
-						'post_type'	    => 'withdrawal_order'
+						'post_status'   => 'publish',
+						'post_type'	    => 'withdrawal_order_lw'
 					);
 					wp_insert_post( $withdrawal_post );
 				}
