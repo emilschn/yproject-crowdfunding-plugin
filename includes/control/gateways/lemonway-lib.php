@@ -237,6 +237,12 @@ class LemonwayLib {
 		return $result->WALLET;
 	}
 	
+	public static $status_blocked = 'blocked';
+	public static $status_ready = 'ready';
+	public static $status_waiting = 'waiting';
+	public static $status_incomplete = 'incomplete';
+	public static $status_rejected = 'rejected';
+	public static $status_registered = 'registered';
 	/**
 	 * Récupère les statuts qui ont changé depuis une certaine date
 	 * @param type $update_date

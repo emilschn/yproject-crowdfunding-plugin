@@ -4,6 +4,7 @@
  */
 class WDGUser {
 	public static $key_validated_general_terms_version = 'validated_general_terms_version';
+	public static $key_lemonway_status = 'lemonway_status';
 	public static $edd_general_terms_version = 'terms_general_version';
 	public static $edd_general_terms_excerpt = 'terms_general_excerpt';
 	
@@ -193,8 +194,8 @@ class WDGUser {
 	 */
 	public function can_register_lemonway() {
 		$buffer = ($this->wp_user->user_email != "")
-				&& ($this->wp_user->user_firstname == "")
-				&& ($this->wp_user->user_lastname == "");
+				&& ($this->wp_user->user_firstname != "")
+				&& ($this->wp_user->user_lastname != "");
 		return $buffer;
 	}
 	
@@ -215,6 +216,59 @@ class WDGUser {
 			$buffer = "M";
 		} elseif ($this->wp_user->get('user_gender') == "female") {
 			$buffer = "F";
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le statut de l'identification sur lemonway
+	 */
+	public function get_lemonway_status( $force_reload = TRUE ) {
+		if ( $force_reload ) {
+			$user_meta_status = get_user_meta( $this->wp_user->ID, WDGUser::$key_lemonway_status, TRUE );
+			if ( $user_meta_status == LemonwayLib::$status_registered ) {
+				$buffer = $user_meta_status;
+
+			} else {
+				if (!$this->can_register_lemonway()) {
+					$buffer = LemonwayLib::$status_blocked;
+				} else {
+					$buffer = LemonwayLib::$status_ready;
+					$wallet_details = $this->get_wallet_details();
+					if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
+						switch ($wallet_details->STATUS) {
+							case '2':
+							case '8':
+								$buffer = LemonwayLib::$status_incomplete;
+								break;
+							case '3':
+							case '9':
+								$buffer = LemonwayLib::$status_rejected;
+								break;
+							case '6':
+								$buffer = LemonwayLib::$status_registered;
+								break;
+
+							default:
+							case '5':
+								foreach($wallet_details->DOCS->DOC as $document_object) {
+									if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
+										switch ($document_object->S) {
+											case '1':
+												$buffer = LemonwayLib::$status_waiting;
+												break;
+										}
+									}
+								}
+								break;
+						}
+					}
+				}
+
+				update_user_meta( $this->wp_user->ID, WDGUser::$key_lemonway_status, $buffer );
+			}
+		} else {
+			$buffer = get_user_meta( $this->wp_user->ID, WDGUser::$key_lemonway_status, TRUE );
 		}
 		return $buffer;
 	}
@@ -284,6 +338,46 @@ class WDGUser {
 			$buffer = false;
 		}
 		return $buffer;
+	}
+	
+/*******************************************************************************
+ * Gestion Lemonway - KYC
+*******************************************************************************/
+	/**
+	 * Détermine si l'organisation a envoyé tous ses documents en local sur WDG
+	 */
+	public function has_sent_all_documents() {
+		$buffer = TRUE;
+		$documents_type_list = array( WDGKYCFile::$type_bank, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		foreach ( $documents_type_list as $document_type ) {
+			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
+			$current_document = $document_filelist[0];
+			if ( !isset($current_document) ) {
+				$buffer = FALSE;
+				break;
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Upload des KYC vers Lemonway si possible
+	 */
+	public function send_kyc() {
+		if ($this->can_register_lemonway()) {
+			if ( $this->register_lemonway() ) {
+				$documents_type_list = array( 
+					WDGKYCFile::$type_bank	=> '2', 
+					WDGKYCFile::$type_id		=> '0', 
+					WDGKYCFile::$type_home		=> '1'
+				);
+				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
+					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
+					$current_document = $document_filelist[0];
+					LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+				}
+			}
+		}
 	}
     
 /*******************************************************************************

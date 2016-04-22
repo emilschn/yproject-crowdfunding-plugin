@@ -14,6 +14,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('show_project_money_flow');
 		WDGAjaxActions::add_action('check_invest_input');
 		WDGAjaxActions::add_action('save_user_infos');
+		WDGAjaxActions::add_action('save_user_docs');
 	}
     
 	/**
@@ -212,27 +213,27 @@ class WDGAjaxActions {
 		$campaign = new ATCF_Campaign($campaign_id);
 		$invest_value = filter_input(INPUT_POST, 'invest_value');
 		$invest_type = filter_input(INPUT_POST, 'invest_type');
-		$current_user = WDGUser::current();
+		$WDGuser_current = WDGUser::current();
 		
 		//Dans tous les cas, vérifie que l'utilisateur a rempli ses infos pour investir
-		if (!$current_user->has_filled_invest_infos( $campaign->funding_type() )) {
+		if (!$WDGuser_current->has_filled_invest_infos( $campaign->funding_type() )) {
 			global $user_can_invest_errors;
 			$return_values = array(
 				"response" => "edit_user",
 				"errors" => $user_can_invest_errors,
-				"firstname" => $current_user->wp_user->user_firstname,
-				"lastname" => $current_user->wp_user->user_lastname,
-				"email" => $current_user->wp_user->user_email,
-				"nationality" => $current_user->wp_user->get('user_nationality'),
-				"birthday_day" => $current_user->wp_user->get('user_birthday_day'),
-				"birthday_month" => $current_user->wp_user->get('user_birthday_month'),
-				"birthday_year" => $current_user->wp_user->get('user_birthday_year'),
-				"address" => $current_user->wp_user->get('user_address'),
-				"postal_code" => $current_user->wp_user->get('user_postal_code'),
-				"city" => $current_user->wp_user->get('user_city'),
-				"country" => $current_user->wp_user->get('user_country'),
-				"birthplace" => $current_user->wp_user->get('user_birthplace'),
-				"gender" => $current_user->wp_user->get('user_gender'),
+				"firstname" => $WDGuser_current->wp_user->user_firstname,
+				"lastname" => $WDGuser_current->wp_user->user_lastname,
+				"email" => $WDGuser_current->wp_user->user_email,
+				"nationality" => $WDGuser_current->wp_user->get('user_nationality'),
+				"birthday_day" => $WDGuser_current->wp_user->get('user_birthday_day'),
+				"birthday_month" => $WDGuser_current->wp_user->get('user_birthday_month'),
+				"birthday_year" => $WDGuser_current->wp_user->get('user_birthday_year'),
+				"address" => $WDGuser_current->wp_user->get('user_address'),
+				"postal_code" => $WDGuser_current->wp_user->get('user_postal_code'),
+				"city" => $WDGuser_current->wp_user->get('user_city'),
+				"country" => $WDGuser_current->wp_user->get('user_country'),
+				"birthplace" => $WDGuser_current->wp_user->get('user_birthplace'),
+				"gender" => $WDGuser_current->wp_user->get('user_gender'),
 			);
 			echo json_encode($return_values);
 			exit();
@@ -242,6 +243,7 @@ class WDGAjaxActions {
 		if ($invest_type == "new_orga") {
 			$return_values = array(
 				"response" => "create_orga",
+				"errors" => array()
 			);
 			echo json_encode($return_values);
 			exit();
@@ -253,10 +255,21 @@ class WDGAjaxActions {
 		}
 		
 		//Vérifie, selon le prestataire de paiement, que les kyc sont remplis 
-		if ($campaign->get_payment_provider() == 'lemonway' && $invest_value > YP_LW_STRONGAUTH_MIN) {
+		//Si Lemonway, il faut les KYC pour les paiements supérieurs à 250€, et pour un montant annuel supérieur à 2500€
+		if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway && $invest_value > YP_LW_STRONGAUTH_MIN) {
 			//Vérifie si les documents LW sont déjà envoyés
+			//Si c'est au nom de la personne
+			if ($invest_type == "user" && $WDGuser_current->get_lemonway_status() == LemonwayLib::$status_ready) {
+				$return_values = array(
+					"response" => "kyc",
+					"errors" => array()
+				);
+				echo json_encode($return_values);
+				exit();
+			}
 			
-		} else if ($campaign->get_payment_provider() == 'mangopay' && $invest_value > YP_STRONGAUTH_AMOUNT_LIMIT) {
+		//Voir si nécessaire plus tard
+		} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay && $invest_value > YP_STRONGAUTH_AMOUNT_LIMIT) {
 			//Vérifie si les documents MP sont déjà envoyés
 			
 		}
@@ -295,5 +308,43 @@ class WDGAjaxActions {
 			echo json_encode($return_values);
 		}
 		exit();
+	}
+	
+	/**
+	 * Enregistre les documents KYC liés à l'utilisateur
+	 */
+	public static function save_user_docs() {
+		$WDGuser_current = WDGUser::current();
+		$user_kyc_errors = array();
+		$documents_list = array(
+			'user_doc_bank'		=> WDGKYCFile::$type_bank,
+			'user_doc_id'		=> WDGKYCFile::$type_id,
+			'user_doc_home'		=> WDGKYCFile::$type_home
+		);
+		
+		foreach ($documents_list as $document_key => $document_type) {
+			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
+				$result = WDGKYCFile::add_file( $document_type, $WDGuser_current->wp_user->ID, WDGKYCFile::$owner_user, $_FILES[$document_key] );
+				if ($result == 'ext') {
+					array_push($user_kyc_errors, __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
+				} else if ($result == 'size') {
+					array_push($user_kyc_errors, __("Le fichier est trop lourd.", 'yproject'));
+				}
+			} else {
+				array_push($user_kyc_errors, __("Le fichier n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject'));
+			}
+		}
+		
+		if (!$WDGuser_current->has_sent_all_documents()) {
+			$return_values = array(
+				"response" => "kyc",
+				"errors" => $user_kyc_errors
+			);
+			echo json_encode($return_values);
+			exit();
+			
+		} else {
+			$WDGuser_current->send_kyc();
+		}
 	}
 }
