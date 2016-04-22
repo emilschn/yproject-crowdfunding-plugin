@@ -115,9 +115,10 @@ function ypcf_check_is_project_investable() {
 function ypcf_check_user_is_complete($user_id) {
     $is_complete = true;
     $current_user = get_user_by('id', $user_id);
+	$wdg_current_user = new WDGUser($user_id);
     $is_complete = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
     $is_complete = $is_complete && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
-    $is_complete = $is_complete && ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'));
+    $is_complete = $is_complete && $wdg_current_user->is_major();
     $is_complete = $is_complete && ($current_user->get('user_nationality') != "") && ($current_user->user_email != "");
     $is_complete = $is_complete && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
     $is_complete = $is_complete && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
@@ -133,33 +134,15 @@ function ypcf_check_user_can_invest($redirect = false) {
     $can_invest = TRUE;
     
     ypcf_session_start();
-    $errors = array();
     
     $current_campaign = atcf_get_current_campaign();
-    $current_user = wp_get_current_user();
-    
-    //Infos nécessaires pour tout type de financement
-    if ($current_user->user_firstname == "") { array_push($errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
-    if ($current_user->user_lastname == "") { array_push($errors, __('Vous devez renseigner votre nom.', 'yproject')); }
-    if ($current_user->user_email == "") { array_push($errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
-    if ($current_user->get('user_nationality') == "") { array_push($errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
-    if ($current_user->get('user_birthday_day') == "") { array_push($errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
-    if ($current_user->get('user_birthday_month') == "") { array_push($errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
-    if ($current_user->get('user_birthday_year') == "") { array_push($errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
-    //Infos nécessaires pour l'investissement
-    if ($current_campaign->funding_type() != 'fundingdonation') {
-	    if (!ypcf_is_major($current_user->get('user_birthday_day'), $current_user->get('user_birthday_month'), $current_user->get('user_birthday_year'))) { array_push($errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
-	    if ($current_user->get('user_address') == "") { array_push($errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
-	    if ($current_user->get('user_postal_code') == "") { array_push($errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
-	    if ($current_user->get('user_city') == "") { array_push($errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
-	    if ($current_user->get('user_country') == "") { array_push($errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
-	    if ($current_user->get('user_birthplace') == "") { array_push($errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
-	    if ($current_user->get('user_gender') == "") { array_push($errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
-    }
-    if (!empty($errors)) {
+	$wdg_current_user = WDGUser::current();
+	$wdg_current_user->has_filled_invest_infos($current_campaign->funding_type());
+	global $user_can_invest_errors;
+    if (!empty($user_can_invest_errors)) {
 	    $can_invest = FALSE;
     }
-    $_SESSION['error_invest'] = $errors;
+    $_SESSION['error_invest'] = $user_can_invest_errors;
 
     if ($redirect && !$can_invest) {
 		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
@@ -759,39 +742,6 @@ function ypcf_get_signsquidstatus_from_infos($contract_infos, $amount) {
 	    }
     }
     return $buffer;
-}
-
-/**
- * retourne l'age en fonction du jour, mois et année
- * @param type $day
- * @param type $month
- * @param type $year
- * @return type
- */
-function ypcf_get_age($day, $month, $year) {
-    $today_day = date('j');
-    $today_month = date('n');
-    $today_year = date('Y');
-    $years_diff = $today_year - $year;
-    if ($today_month <= $month) {
-	if ($month == $today_month) {
-	    if ($day > $today_day) $years_diff--;
-	} else {
-	    $years_diff--;
-	}
-    }
-    return $years_diff;
-}
-
-/**
- * retourne si l'utilisateur est majeur (en france)
- * @param type $day
- * @param type $month
- * @param type $year
- * @return type
- */
-function ypcf_is_major($day, $month, $year) {
-    return (ypcf_get_age($day, $month, $year) >= 18);
 }
 
 /**

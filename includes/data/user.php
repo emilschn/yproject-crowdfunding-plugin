@@ -32,6 +32,31 @@ class WDGUser {
 		}
 	}
 	
+/*******************************************************************************
+ * Fonctions de sauvegarde
+*******************************************************************************/
+	/**
+	 * Enregistre les données nécessaires pour l'investissement
+	 */
+	public function save_data($gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone) {
+		update_user_meta( $this->wp_user->ID, 'user_gender', $gender );
+		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
+		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+		update_user_meta( $this->wp_user->ID, 'user_birthday_day', $birthday_day );
+		update_user_meta( $this->wp_user->ID, 'user_birthday_month', $birthday_month );
+		update_user_meta( $this->wp_user->ID, 'user_birthday_year', $birthday_year );
+		update_user_meta( $this->wp_user->ID, 'user_birthplace', $birthplace );
+		update_user_meta( $this->wp_user->ID, 'user_nationality', $nationality );
+		update_user_meta( $this->wp_user->ID, 'user_address', $address );
+		update_user_meta( $this->wp_user->ID, 'user_postal_code', $postal_code );
+		update_user_meta( $this->wp_user->ID, 'user_city', $city );
+		update_user_meta( $this->wp_user->ID, 'user_country', $country );
+		update_user_meta( $this->wp_user->ID, 'user_mobile_phone', $telephone );
+	}
+	
+/*******************************************************************************
+ * Fonctions meta
+*******************************************************************************/
 	/**
 	 * Détermine si l'utilisateur est admin
 	 * @return boolean
@@ -40,6 +65,71 @@ class WDGUser {
 		return ($this->wp_user->has_cap('manage_options'));
 	}
 	
+	/**
+	 * Détermine l'age de l'utilisateur
+	 * @return int
+	 */
+	public function get_age() {
+		$day = $this->wp_user->get('user_birthday_day');
+		$month = $this->wp_user->get('user_birthday_month');
+		$year = $this->wp_user->get('user_birthday_year');
+		$today_day = date('j');
+		$today_month = date('n');
+		$today_year = date('Y');
+		$years_diff = $today_year - $year;
+		if ($today_month <= $month) {
+		if ($month == $today_month) {
+			if ($day > $today_day) $years_diff--;
+		} else {
+			$years_diff--;
+		}
+		}
+		return $years_diff;
+	}
+	
+	/**
+	 * Détermine si l'utilisateur est majeur
+	 * @return boolean
+	 */
+	public function is_major() {
+		return ($this->get_age() >= 18);
+	}
+	
+	/**
+	 * Détermine si l'utilisateur a rempli ses informations nécessaires pour investir
+	 * @param string $campaign_funding_type
+	 * @return boolean
+	 */
+	public function has_filled_invest_infos($campaign_funding_type) {
+		global $user_can_invest_errors;
+		$user_can_invest_errors = array();
+		
+		//Infos nécessaires pour tout type de financement
+		if ($this->wp_user->user_firstname == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
+		if ($this->wp_user->user_lastname == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre nom.', 'yproject')); }
+		if ($this->wp_user->user_email == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
+		if ($this->wp_user->get('user_nationality') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
+		if ($this->wp_user->get('user_birthday_day') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
+		if ($this->wp_user->get('user_birthday_month') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
+		if ($this->wp_user->get('user_birthday_year') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
+		
+		//Infos nécessaires pour l'investissement
+		if ($campaign_funding_type != 'fundingdonation') {
+			if (!$this->is_major()) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
+			if ($this->wp_user->get('user_address') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
+			if ($this->wp_user->get('user_postal_code') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
+			if ($this->wp_user->get('user_city') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
+			if ($this->wp_user->get('user_country') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
+			if ($this->wp_user->get('user_birthplace') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
+			if ($this->wp_user->get('user_gender') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
+		}
+		
+		return (empty($user_can_invest_errors));
+	}
+	
+/*******************************************************************************
+ * Gestion RIB
+*******************************************************************************/
 	public static $key_bank_holdername = "bank_holdername";
 	public static $key_bank_iban = "bank_iban";
 	public static $key_bank_bic = "bank_bic";

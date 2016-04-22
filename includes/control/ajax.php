@@ -12,6 +12,8 @@ class WDGAjaxActions {
 	public static function init_actions() {
 		WDGAjaxActions::add_action('display_roi_user_list');
 		WDGAjaxActions::add_action('show_project_money_flow');
+		WDGAjaxActions::add_action('check_invest_input');
+		WDGAjaxActions::add_action('save_user_infos');
 	}
     
 	/**
@@ -200,5 +202,98 @@ class WDGAjaxActions {
 			<?php
 			exit();
 		}
+	}
+	
+	/**
+	 * Vérifie le passage à l'étape suivante pour les utilisateurs lors de l'investissement
+	 */
+	public static function check_invest_input() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$invest_value = filter_input(INPUT_POST, 'invest_value');
+		$invest_type = filter_input(INPUT_POST, 'invest_type');
+		$current_user = WDGUser::current();
+		
+		//Dans tous les cas, vérifie que l'utilisateur a rempli ses infos pour investir
+		if (!$current_user->has_filled_invest_infos( $campaign->funding_type() )) {
+			global $user_can_invest_errors;
+			$return_values = array(
+				"response" => "edit_user",
+				"errors" => $user_can_invest_errors,
+				"firstname" => $current_user->wp_user->user_firstname,
+				"lastname" => $current_user->wp_user->user_lastname,
+				"email" => $current_user->wp_user->user_email,
+				"nationality" => $current_user->wp_user->get('user_nationality'),
+				"birthday_day" => $current_user->wp_user->get('user_birthday_day'),
+				"birthday_month" => $current_user->wp_user->get('user_birthday_month'),
+				"birthday_year" => $current_user->wp_user->get('user_birthday_year'),
+				"address" => $current_user->wp_user->get('user_address'),
+				"postal_code" => $current_user->wp_user->get('user_postal_code'),
+				"city" => $current_user->wp_user->get('user_city'),
+				"country" => $current_user->wp_user->get('user_country'),
+				"birthplace" => $current_user->wp_user->get('user_birthplace'),
+				"gender" => $current_user->wp_user->get('user_gender'),
+			);
+			echo json_encode($return_values);
+			exit();
+		}
+		
+		//Vérifie si on crée une organisation
+		if ($invest_type == "new_orga") {
+			$return_values = array(
+				"response" => "create_orga",
+			);
+			echo json_encode($return_values);
+			exit();
+			
+		//Vérifie si on veut investir en tant qu'organisation (différent de user)
+		} else if ($invest_type != "user") {
+			//Vérifie si les informations de l'organisation sont bien remplies
+			//TODO
+		}
+		
+		//Vérifie, selon le prestataire de paiement, que les kyc sont remplis 
+		if ($campaign->get_payment_provider() == 'lemonway' && $invest_value > YP_LW_STRONGAUTH_MIN) {
+			//Vérifie si les documents LW sont déjà envoyés
+			
+		} else if ($campaign->get_payment_provider() == 'mangopay' && $invest_value > YP_STRONGAUTH_AMOUNT_LIMIT) {
+			//Vérifie si les documents MP sont déjà envoyés
+			
+		}
+	}
+	
+	/**
+	 * Enregistre les informations liées à l'utilisateur
+	 */
+	public static function save_user_infos() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_user = WDGUser::current();
+		$gender = filter_input(INPUT_POST, 'gender');
+		$firstname = filter_input(INPUT_POST, 'firstname');
+		$lastname = filter_input(INPUT_POST, 'lastname');
+		$birthday_day = filter_input(INPUT_POST, 'birthday_day');
+		$birthday_month = filter_input(INPUT_POST, 'birthday_month');
+		$birthday_year = filter_input(INPUT_POST, 'birthday_year');
+		$birthplace = filter_input(INPUT_POST, 'birthplace');
+		$nationality = filter_input(INPUT_POST, 'nationality');
+		$address = filter_input(INPUT_POST, 'address');
+		$postal_code = filter_input(INPUT_POST, 'postal_code');
+		$city = filter_input(INPUT_POST, 'city');
+		$country = filter_input(INPUT_POST, 'country');
+		$telephone = filter_input(INPUT_POST, 'telephone');
+		$current_user->save_data($gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+		
+		if ($current_user->has_filled_invest_infos($campaign->funding_type())) {
+			WDGAjaxActions::check_invest_input();
+		} else {
+			global $user_can_invest_errors;
+			$return_values = array(
+				"response" => "edit_user",
+				"errors" => $user_can_invest_errors
+			);
+			echo json_encode($return_values);
+		}
+		exit();
 	}
 }

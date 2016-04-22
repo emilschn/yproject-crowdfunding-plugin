@@ -40,11 +40,12 @@ class WDGCampaignInvestments {
 			if ($item['status'] == 'publish' || ($include_pending && $item['status'] == 'pending')) {
 
 			    $invest_user = get_user_by('id', $item['user']);
+				$wdg_invest_user = new WDGUser($item['user']);
 				if (!isset($buffer['investors_list'][$item['user']])) {
 					$buffer['count_validate_investors']++;
 					$buffer['investors_list'][$item['user']] = $item['user'];
 					if ($invest_user->get('user_gender') != "") {
-						$age = ypcf_get_age($invest_user->get('user_birthday_day'), $invest_user->get('user_birthday_month'), $invest_user->get('user_birthday_year'));
+						$age = $wdg_invest_user->get_age();
 						if ($age < 200) {
 							$buffer['count_age'] += $age;
 							$buffer['count_average_age'] ++;
