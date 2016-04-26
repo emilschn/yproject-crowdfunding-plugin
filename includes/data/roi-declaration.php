@@ -237,6 +237,33 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
+	/**
+	 * Répare un versement qui n'a pas eu lieu vers un utilisateur
+	 */
+	public function redo_transfers() {
+		$campaign = new ATCF_Campaign($this->id_campaign);
+		$current_organisation = $campaign->get_organisation();
+		if (isset($current_organisation)) {
+			$organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
+		}
+		
+		global $wpdb;
+		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
+		$query .= " WHERE id_campaign=".$this->id_campaign;
+		$query .= " AND amount>0";
+		$query .= " AND id_transfer=0";
+		
+		$roi_list = $wpdb->get_results( $query );
+		foreach ( $roi_list as $roi_item ) {
+			$ROI = new WDGROI( $roi_item->id );
+			$WDGUser = new WDGUser( $ROI->id_user );
+			$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+			$ROI->id_transfer = $transfer->ID;
+			$ROI->save();
+		}
+		
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
@@ -323,5 +350,4 @@ class WDGROIDeclaration {
 		
 		return $buffer;
 	}
-
 }
