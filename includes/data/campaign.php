@@ -537,6 +537,9 @@ class ATCF_Campaign {
 	}
 	
 	private $organisation;
+	/**
+	 * @return YPOrganisation
+	 */
 	public function get_organisation() {
 		if (!isset($this->organisation)) {
 			$api_project_id = BoppLibHelpers::get_api_project_id($this->ID);

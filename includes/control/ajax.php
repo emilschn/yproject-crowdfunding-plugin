@@ -254,6 +254,7 @@ class WDGAjaxActions {
 			//TODO
 		}
 		
+		/*
 		//Vérifie, selon le prestataire de paiement, que les kyc sont remplis 
 		//Si Lemonway, il faut les KYC pour les paiements supérieurs à 250€, et pour un montant annuel supérieur à 2500€
 		if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway && $invest_value > YP_LW_STRONGAUTH_MIN) {
@@ -269,7 +270,7 @@ class WDGAjaxActions {
 			}
 			
 		//Voir si nécessaire plus tard
-		} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay && $invest_value > YP_STRONGAUTH_AMOUNT_LIMIT) {
+		} else */if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay && $invest_value > YP_STRONGAUTH_AMOUNT_LIMIT) {
 			//Vérifie si les documents MP sont déjà envoyés
 			
 		}

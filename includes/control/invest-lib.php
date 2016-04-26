@@ -276,18 +276,33 @@ function ypcf_check_meanofpayment_redirections() {
 	    switch ($_GET['meanofpayment']) {
 		    //Paiement par carte
 		    case 'card':
+				$campaign = atcf_get_current_campaign();
 			    //Récupération de l'url de la page qui indique que le paiement est bien effectué
 			    $page_payment_done = get_page_by_path('paiement-effectue');
-			    $mangopay_newcontribution = ypcf_mangopay_contribution_user_to_project($current_user, $_GET['campaign_id'], $amount, $page_payment_done);
-			    ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID . ' ; URL :: ' . $mangopay_newcontribution->PaymentURL);
-			    
-			    //Analyse de la contribution pour récupérer l'url de paiement
-			    if (isset($mangopay_newcontribution->ID)) {
-				    global $payment_url;
-				    $payment_url = $mangopay_newcontribution->PaymentURL;
-				    wp_redirect($mangopay_newcontribution->PaymentURL);
-				    exit();
-			    }
+				
+				if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
+					$mangopay_newcontribution = ypcf_mangopay_contribution_user_to_project($current_user, $_GET['campaign_id'], $amount, $page_payment_done);
+					ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID . ' ; URL :: ' . $mangopay_newcontribution->PaymentURL);
+
+					//Analyse de la contribution pour récupérer l'url de paiement
+					if (isset($mangopay_newcontribution->ID)) {
+						global $payment_url;
+						$payment_url = $mangopay_newcontribution->PaymentURL;
+						wp_redirect($mangopay_newcontribution->PaymentURL);
+						exit();
+					}
+					
+				} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					$organization = $campaign->get_organisation();
+					$WDGuser_current = WDGUser::current();
+					$current_token_id = 'U'.$current_user->ID .'C'. $campaign->ID;
+					$wk_token = LemonwayLib::make_token($current_token_id);
+					LemonwayLib::ask_payment_webkit( $organization->get_lemonway_id(), $amount, 0, $wk_token, $page_payment_done, $page_payment_done, $page_payment_done );
+					if ( !empty($return->MONEYINWEB->TOKEN) ) {
+						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
+						exit();
+					}
+				}
 		    break;
 
 		    //Paiement par virement
@@ -521,165 +536,195 @@ function ypcf_login_gobackinvest_url() {
  * @param type $payment_id
  * @return string
  */
-function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = FALSE) {
+function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = FALSE, $lemonway_transaction = FALSE ) {
     $payment_post = get_post($payment_id);
+	$downloads = edd_get_payment_meta_downloads($payment_id);
+	$download_id = '';
+	if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+	else $download_id = $downloads[0];
+	$post_campaign = get_post($download_id);
+	$campaign = atcf_get_campaign($post_campaign);
+	
     $init_payment_status = $payment_post->post_status;
     $buffer = $init_payment_status;
     
-    if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed') {
-	
-	//On teste d'abord si ça a été refunded
-	$refund_transfer_id = get_post_meta($payment_id, 'refund_transfer_id', true);
-	if (($init_payment_status == 'refunded') || (isset($refund_transfer_id) && $refund_transfer_id != '')) {
-	    $buffer = 'refunded';
-	    $postdata = array(
-		'ID'		=> $payment_id,
-		'post_status'	=> $buffer,
-		'edit_date'	=> current_time( 'mysql' )
-	    );
-	    wp_update_post($postdata);
-	} else {
-	    $contribution_id = edd_get_payment_key($payment_id);
-	    if (isset($contribution_id) && $contribution_id != '' && $contribution_id != 'check') {
-		$update_post = FALSE;
-		
-		//Si la clé de contribution contient "wire", il s'agissait d'un paiement par virement, il faut découper la clé
-		if (strpos($contribution_id, 'wire_') !== FALSE) {
-			$contribution_id = substr($contribution_id, 5);
-			$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($contribution_id);
-			if ($mangopay_contribution) {
-				switch ($mangopay_contribution->Status) {
-					case 'CREATED':
-					    $buffer = 'pending';
-					    break;
-					case 'ACCEPTED':
-					    $buffer = 'publish';
-					    break;
-					case 'REFUSED':
-					    $buffer = 'failed';
-					    break;
-				}
-				$update_post = TRUE;
-			}
+	if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed') {
+
+		//On teste d'abord si ça a été refunded
+		$refund_transfer_id = get_post_meta($payment_id, 'refund_transfer_id', true);
+		if (($init_payment_status == 'refunded') || (isset($refund_transfer_id) && $refund_transfer_id != '')) {
+			$buffer = 'refunded';
+			$postdata = array(
+				'ID'		=> $payment_id,
+				'post_status'	=> $buffer,
+				'edit_date'	=> current_time( 'mysql' )
+			);
+			wp_update_post($postdata);
 			
 			
-		//On teste une contribution classique
 		} else {
-		
-			if ($mangopay_contribution === FALSE) $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
-			if ($mangopay_contribution && $mangopay_contribution->Type != 'UserError') {
-			    if ($mangopay_contribution->IsCompleted) {
-				if ($mangopay_contribution->IsSucceeded) {
-				    $buffer = 'publish';
+			$contribution_id = edd_get_payment_key($payment_id);
+			if (isset($contribution_id) && $contribution_id != '' && $contribution_id != 'check') {
+				$update_post = FALSE;
+
+				//Si la clé de contribution contient "wire", il s'agissait d'un paiement par virement, il faut découper la clé
+				if (strpos($contribution_id, 'wire_') !== FALSE) {
+					$contribution_id = substr($contribution_id, 5);
+					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
+						$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($contribution_id);
+						if ($mangopay_contribution) {
+							switch ($mangopay_contribution->Status) {
+								case 'CREATED':
+									$buffer = 'pending';
+									break;
+								case 'ACCEPTED':
+									$buffer = 'publish';
+									break;
+								case 'REFUSED':
+									$buffer = 'failed';
+									break;
+							}
+							$update_post = TRUE;
+						}
+						
+					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+						//TODO
+					}
+
+
+				//On teste une contribution classique
 				} else {
-				    $buffer = 'failed';
-				}
-			    } else {
-				$buffer = 'pending';
-			    }
-			    $update_post = TRUE;
-			}
-		}
-		
-		
-		//Le paiement vient d'être validé
-		if ($buffer == 'publish' && $buffer !== $init_payment_status) {
-			//Mise à jour du statut du paiement pour être comptabilisé correctement dans le décompte
-			$postdata = array(
-			    'ID'		=> $payment_id,
-			    'post_status'	=> $buffer,
-			    'edit_date'	=> current_time( 'mysql' )
-			);
-			wp_update_post($postdata);
-			
-			$amount = edd_get_payment_amount($payment_id);
-			$current_user = get_user_by('id', $payment_post->post_author);
-			$downloads = edd_get_payment_meta_downloads($payment_id);
-			$download_id = '';
-			if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
-			else $download_id = $downloads[0];
-			$post_campaign = get_post($download_id);
-			$campaign = atcf_get_campaign($post_campaign);
-			if ($campaign->funding_type() != 'fundingdonation') {
-				if ($amount > 1500) {
-					//Création du contrat à signer
-					$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
-					if ($contract_id != '') {
-						$contract_infos = signsquid_get_contract_infos($contract_id);
-						NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
-						NotificationsEmails::new_purchase_admin_success($payment_id);
+
+					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
+						if ($mangopay_contribution === FALSE) $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
+						if ($mangopay_contribution && $mangopay_contribution->Type != 'UserError') {
+							if ($mangopay_contribution->IsCompleted) {
+								if ($mangopay_contribution->IsSucceeded) {
+									$buffer = 'publish';
+								} else {
+									$buffer = 'failed';
+								}
+							} else {
+								$buffer = 'pending';
+							}
+							$update_post = TRUE;
+						}
+						
 					} else {
-						global $contract_errors;
-						$contract_errors = 'contract_failed';
-						NotificationsEmails::new_purchase_user_error_contract($payment_id);
-						NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+						if ($lemonway_transaction === FALSE) {
+							$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
+						}
+						if ($lw_transaction_result) {
+							switch ($lw_transaction_result->STATUS) {
+								case 3:
+									$buffer = 'publish';
+									break;
+								case 4:
+									$buffer = 'failed';
+									break;
+								case 0:
+								default:
+									$buffer = 'pending';
+									break;
+							}
+							$update_post = TRUE;
+						}
 					}
-				} else {
-					$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-					NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
-					NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
 				}
-			} else {
-				NotificationsEmails::new_purchase_user($payment_id, '');
-				NotificationsEmails::new_purchase_admin_success($payment_id);
-			}
-			NotificationsSlack::send_to_dev('Nouvel achat !');
-			NotificationsEmails::new_purchase_team_members($payment_id);
-			
-		//Le paiement vient d'échouer
-		} else if ($buffer == 'failed' && $buffer !== $init_payment_status) {
-			$post_items = get_posts(array(
-			    'post_type' => 'edd_log',
-			    'meta_key' => '_edd_log_payment_id',
-			    'meta_value' => $payment_id
-			));
-			foreach ($post_items as $post_item) {
-			    $postdata = array(
-				'ID' => $post_item->ID,
-				'post_status' => $buffer
-			    );
-			    wp_update_post($postdata);
-			}
-			
-		//Le paiement est validé, mais aucun contrat n'existe
-		} else if ($buffer == 'publish') {
-			$amount = edd_get_payment_amount($payment_id);
-			if ($amount > 1500) {
-				$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
-				if (!isset($contract_id) || empty($contract_id)) {
+
+
+				//Le paiement vient d'être validé
+				if ($buffer == 'publish' && $buffer !== $init_payment_status) {
+					//Mise à jour du statut du paiement pour être comptabilisé correctement dans le décompte
+					$postdata = array(
+						'ID'			=> $payment_id,
+						'post_status'	=> $buffer,
+						'edit_date'		=> current_time( 'mysql' )
+					);
+					wp_update_post($postdata);
+
+					$amount = edd_get_payment_amount($payment_id);
 					$current_user = get_user_by('id', $payment_post->post_author);
-					$downloads = edd_get_payment_meta_downloads($payment_id); 
-					$download_id = '';
-					if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
-					else $download_id = $downloads[0];
-					$post_campaign = get_post($download_id);
-					$campaign = atcf_get_campaign($post_campaign);
 					if ($campaign->funding_type() != 'fundingdonation') {
-						$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+						if ($amount > 1500) {
+							//Création du contrat à signer
+							$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+							if ($contract_id != '') {
+								$contract_infos = signsquid_get_contract_infos($contract_id);
+								NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
+								NotificationsEmails::new_purchase_admin_success($payment_id);
+							} else {
+								global $contract_errors;
+								$contract_errors = 'contract_failed';
+								NotificationsEmails::new_purchase_user_error_contract($payment_id);
+								NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+							}
+						} else {
+							$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
+							NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
+							NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
+						}
+					} else {
+						NotificationsEmails::new_purchase_user($payment_id, '');
+						NotificationsEmails::new_purchase_admin_success($payment_id);
+					}
+					NotificationsSlack::send_to_dev('Nouvel achat !');
+					NotificationsEmails::new_purchase_team_members($payment_id);
+
+				//Le paiement vient d'échouer
+				} else if ($buffer == 'failed' && $buffer !== $init_payment_status) {
+					$post_items = get_posts(array(
+						'post_type' => 'edd_log',
+						'meta_key' => '_edd_log_payment_id',
+						'meta_value' => $payment_id
+					));
+					foreach ($post_items as $post_item) {
+						$postdata = array(
+						'ID' => $post_item->ID,
+						'post_status' => $buffer
+						);
+						wp_update_post($postdata);
+					}
+
+				//Le paiement est validé, mais aucun contrat n'existe
+				} else if ($buffer == 'publish') {
+					$amount = edd_get_payment_amount($payment_id);
+					if ($amount > 1500) {
+						$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
+						if (!isset($contract_id) || empty($contract_id)) {
+							$current_user = get_user_by('id', $payment_post->post_author);
+							$downloads = edd_get_payment_meta_downloads($payment_id); 
+							$download_id = '';
+							if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+							else $download_id = $downloads[0];
+							$post_campaign = get_post($download_id);
+							$campaign = atcf_get_campaign($post_campaign);
+							if ($campaign->funding_type() != 'fundingdonation') {
+								$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+							}
+						}
+					}
+				}
+
+				if ($update_post) {
+					$postdata = array(
+						'ID'		=> $payment_id,
+						'post_status'	=> $buffer,
+						'edit_date'	=> current_time( 'mysql' )
+					);
+					wp_update_post($postdata);
+
+					if (isset($download_id) && !empty($download_id)) {
+						do_action('wdg_delete_cache', array(
+							'project-header-right-'.$download_id,
+							'projects-current',
+							'project-investments-data-'.$download_id
+						));
 					}
 				}
 			}
+
 		}
-		
-		if ($update_post) {
-			$postdata = array(
-			    'ID'		=> $payment_id,
-			    'post_status'	=> $buffer,
-			    'edit_date'	=> current_time( 'mysql' )
-			);
-			wp_update_post($postdata);
-			
-			if (isset($download_id) && !empty($download_id)) {
-				do_action('wdg_delete_cache', array(
-					'project-header-right-'.$download_id,
-					'projects-current',
-					'project-investments-data-'.$download_id
-				));
-			}
-		}
-	    }
-		  
-	}
     }
     return $buffer;
 }
