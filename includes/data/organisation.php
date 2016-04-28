@@ -435,6 +435,7 @@ class YPOrganisation {
 		}
 		
 		$documents_list = array(
+			'org_doc_bank'		=> WDGKYCFile::$type_bank,
 			'org_doc_kbis'		=> WDGKYCFile::$type_kbis,
 			'org_doc_status'	=> WDGKYCFile::$type_status,
 			'org_doc_id'		=> WDGKYCFile::$type_id,
@@ -462,7 +463,7 @@ class YPOrganisation {
 	 */
 	public function has_sent_all_documents() {
 		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		$documents_type_list = array( WDGKYCFile::$type_bank, WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 			$current_document = $document_filelist[0];
@@ -481,6 +482,7 @@ class YPOrganisation {
 		if (isset($_POST['authentify_lw']) && $this->can_register_lemonway()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
+					WDGKYCFile::$type_bank		=> '2', 
 					WDGKYCFile::$type_kbis		=> '7', 
 					WDGKYCFile::$type_status	=> '11', 
 					WDGKYCFile::$type_id		=> '0', 
@@ -630,6 +632,18 @@ class YPOrganisation {
 			}
 		} else {
 			$buffer = get_user_meta( $this->wpref, YPOrganisation::$key_lemonway_status, TRUE );
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Donne l'argent disponible sur le compte utilisateur
+	 */
+	public function get_lemonway_balance() {
+		$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		$buffer = 0;
+		if (isset($wallet_details->BAL)) {
+			$buffer = $wallet_details->BAL;
 		}
 		return $buffer;
 	}

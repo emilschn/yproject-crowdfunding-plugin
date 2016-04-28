@@ -294,10 +294,12 @@ function ypcf_check_meanofpayment_redirections() {
 					
 				} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 					$organization = $campaign->get_organisation();
+					$organization_obj = new YPOrganisation($organization->organisation_wpref);
 					$WDGuser_current = WDGUser::current();
-					$current_token_id = 'U'.$current_user->ID .'C'. $campaign->ID;
+					$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $campaign->ID;
 					$wk_token = LemonwayLib::make_token($current_token_id);
-					LemonwayLib::ask_payment_webkit( $organization->get_lemonway_id(), $amount, 0, $wk_token, $page_payment_done, $page_payment_done, $page_payment_done );
+					$return_url = get_permalink($page_payment_done) . '?campaign_id='. $campaign->ID;
+					$return = LemonwayLib::ask_payment_webkit( $organization_obj->get_lemonway_id(), $amount, 0, $wk_token, $return_url, $return_url, $return_url );
 					if ( !empty($return->MONEYINWEB->TOKEN) ) {
 						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
 						exit();
