@@ -1107,23 +1107,35 @@ class ATCF_Campaign {
 					$signsquid_contract = new SignsquidContract($payment->ID);
 					$signsquid_status = $signsquid_contract->get_status_code();
 					$signsquid_status_text = $signsquid_contract->get_status_str();
-					$mangopay_id = edd_get_payment_key($payment->ID);
-					if ($mangopay_id == 'check') {
-						$mangopay_is_completed = 'Oui';
-						$mangopay_is_succeeded = 'Oui';
+					
+					$mangopay_contribution = FALSE;
+					$lemonway_contribution = FALSE;
+					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
+						$mangopay_id = edd_get_payment_key($payment->ID);
+						if ($mangopay_id == 'check') {
+							//Rien
 
-					} else if (strpos($mangopay_id, 'wire_') !== FALSE) {
-						$mangopay_id = substr($mangopay_id, 5);
-						$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
-						$mangopay_is_completed = ($mangopay_contribution != '' && $mangopay_contribution->Status == 'ACCEPTED') ? 'Oui' : 'Non';
-						$mangopay_is_succeeded = $mangopay_is_completed;
-					} else {
-						$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
-						$mangopay_is_completed = ($mangopay_contribution != '' && isset($mangopay_contribution->IsCompleted) && $mangopay_contribution->IsCompleted) ? 'Oui' : 'Non';
-						$mangopay_is_succeeded = ($mangopay_contribution != '' && isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded) ? 'Oui' : 'Non';
+						} else if (strpos($mangopay_id, 'wire_') !== FALSE) {
+							$mangopay_id = substr($mangopay_id, 5);
+							$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
+						} else {
+							$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
+						}
+						
+					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+						$lemonway_id = edd_get_payment_key($payment->ID);
+						
+						if ($lemonway_id == 'check') {
+
+						} else if (strpos($lemonway_id, 'wire_') !== FALSE) {
+							$lemonway_id = substr($lemonway_id, 5);
+//							$lemonway_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
+						} else {
+							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
+						}
 					}
 
-					$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution );
+					$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
 
 					if ($payment_status != 'failed') {
 						$payments_data[] = array(
@@ -1135,6 +1147,7 @@ class ATCF_Campaign {
 							'user'			=> $user_id,
 							'status'		=> $payment_status,
 							'mangopay_contribution' => $mangopay_contribution,
+							'lemonway_contribution' => $lemonway_contribution,
 							'signsquid_status'	=> $signsquid_status,
 							'signsquid_status_text' => $signsquid_status_text
 						);

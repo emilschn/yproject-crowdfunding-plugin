@@ -313,16 +313,22 @@ function ypcf_check_meanofpayment_redirections() {
 			    if ($campaign->can_use_wire($_SESSION['redirect_current_amount_part'])) {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-virement');
-				    $mangopay_newcontribution = ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $_GET['campaign_id'], $amount);
-				    ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID);
-			    
-				    //Analyse de la contribution pour afficher les informations
-				    if (isset($mangopay_newcontribution->ID)) {
-					    if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-					    if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-					    wp_redirect(get_permalink($page_payment->ID) . '?ContributionID=' . $mangopay_newcontribution->ID . '&meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
-					    exit();
-				    }
+					
+					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
+						$mangopay_newcontribution = ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $_GET['campaign_id'], $amount);
+						ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID);
+
+						//Analyse de la contribution pour afficher les informations
+						if (isset($mangopay_newcontribution->ID)) {
+							if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+							if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+							wp_redirect(get_permalink($page_payment->ID) . '?ContributionID=' . $mangopay_newcontribution->ID . '&meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
+							exit();
+						}
+						
+					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+						
+					}
 			    }
 		    break;
 		    
@@ -612,7 +618,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							$update_post = TRUE;
 						}
 						
-					} else {
+					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						if ($lemonway_transaction === FALSE) {
 							$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
 						}

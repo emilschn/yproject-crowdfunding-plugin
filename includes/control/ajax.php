@@ -75,13 +75,14 @@ class WDGAjaxActions {
 			//Récupération des éléments à traiter
 			$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 			$campaign_post = get_post($campaign_id);
-			$campaign = atcf_get_campaign($campaign_post); 
-			$mp_wallet_campaign_id = ypcf_mangopay_get_mp_campaign_wallet_id($campaign_id);
-			$mp_wallet_campaign_infos = ypcf_mangopay_get_wallet_by_id($mp_wallet_campaign_id);
+			$campaign = atcf_get_campaign($campaign_post);
+			if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay):
 			$campaign_organisation = $campaign->get_organisation();
-			$organisation_obj = new YPOrganisation($campaign_organisation->organisation_wpref);
-			$mp_operations_campaign = ypcf_mangopay_get_operations_by_wallet_id($mp_wallet_campaign_id);
-			$mp_operations_organisation = $organisation_obj->get_operations();
+				$mp_wallet_campaign_id = ypcf_mangopay_get_mp_campaign_wallet_id($campaign_id);
+				$mp_wallet_campaign_infos = ypcf_mangopay_get_wallet_by_id($mp_wallet_campaign_id);
+				$organisation_obj = new YPOrganisation($campaign_organisation->organisation_wpref);
+				$mp_operations_campaign = ypcf_mangopay_get_operations_by_wallet_id($mp_wallet_campaign_id);
+				$mp_operations_organisation = $organisation_obj->get_operations();
 			?>
 
 			Montant collect&eacute; : <?php echo $campaign->current_amount(FALSE); ?><br />
@@ -201,6 +202,7 @@ class WDGAjaxActions {
 			</div>
 			
 			<?php
+			endif;
 			exit();
 		}
 	}

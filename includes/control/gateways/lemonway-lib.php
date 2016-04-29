@@ -364,21 +364,34 @@ class LemonwayLib {
 	public static function get_transaction_by_id($transaction_id, $type = 'moneyin') {
 		if (!isset($transaction_id)) return FALSE;
 		
-		switch ($type) {
-			case 'payment':
-			    $param_list = array( 
-				    'transactionId' => $transaction_id
-			    );
-			    $result = LemonwayLib::call('GetPaymentDetails', $param_list);
-			    break;
-		    
-			case 'moneyin':
-			default:
-			    $param_list = array( 
-				    'transactionMerchantToken' => $transaction_id
-			    );
-			    $result = LemonwayLib::call('GetMoneyInTransDetails', $param_list);
-			    break;
+		
+		global $WDG_cache_plugin;
+		$url_called = 'transaction::'.$type.'::'.$transaction_id;
+		$result_cached = $WDG_cache_plugin->get_cache( $url_called, 1 );
+		$result = unserialize( $result_cached );
+		
+		if ($result_cached === FALSE || empty($result)) {
+			switch ($type) {
+				case 'payment':
+					$param_list = array( 
+						'transactionId' => $transaction_id
+					);
+					$result = LemonwayLib::call('GetPaymentDetails', $param_list);
+					break;
+
+				case 'moneyin':
+				default:
+					$param_list = array( 
+						'transactionMerchantToken' => $transaction_id
+					);
+					$result = LemonwayLib::call('GetMoneyInTransDetails', $param_list);
+					break;
+			}
+			
+			$result_save = serialize($result);
+			if (!empty($result_save)) {
+				$WDG_cache_plugin->set_cache($url_called, $result_save, 60*60*5, 1);
+			}
 		}
 		
 		if ($result !== FALSE) {
