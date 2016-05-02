@@ -61,7 +61,10 @@ function ypcf_check_redirections() {
 			case 'paiement-effectue' :
 				ypcf_check_is_user_logged_invest();
 				if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-				if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+				if (isset($_SESSION['redirect_current_amount_part'])) {
+					$_SESSION['amount_to_save'] = $_SESSION['redirect_current_amount_part'];
+					unset($_SESSION['redirect_current_amount_part']);
+				}
 			break;
 		}
     }
@@ -323,7 +326,10 @@ function ypcf_check_meanofpayment_redirections() {
 						}
 						
 					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-						
+						if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+						if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+						wp_redirect(get_permalink($page_payment->ID) . '?meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
+						exit();
 					}
 			    }
 		    break;
@@ -552,7 +558,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
     $init_payment_status = $payment_post->post_status;
     $buffer = $init_payment_status;
     
-	if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed') {
+	if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed' && $init_payment_status != 'publish') {
 
 		//On teste d'abord si ça a été refunded
 		$refund_transfer_id = get_post_meta($payment_id, 'refund_transfer_id', true);

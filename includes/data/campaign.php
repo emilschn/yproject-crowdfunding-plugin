@@ -1122,14 +1122,13 @@ class ATCF_Campaign {
 							$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
 						}
 						
-					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					} else if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						$lemonway_id = edd_get_payment_key($payment->ID);
 						
 						if ($lemonway_id == 'check') {
 
 						} else if (strpos($lemonway_id, 'wire_') !== FALSE) {
-							$lemonway_id = substr($lemonway_id, 5);
-//							$lemonway_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
+							
 						} else {
 							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
 						}
