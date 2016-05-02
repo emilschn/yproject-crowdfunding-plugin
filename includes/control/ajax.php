@@ -14,6 +14,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('show_project_money_flow');
 		WDGAjaxActions::add_action('check_invest_input');
 		WDGAjaxActions::add_action('save_user_infos');
+		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
 	}
     
@@ -213,7 +214,6 @@ class WDGAjaxActions {
 	public static function check_invest_input() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$invest_value = filter_input(INPUT_POST, 'invest_value');
 		$invest_type = filter_input(INPUT_POST, 'invest_type');
 		$WDGuser_current = WDGUser::current();
 		
@@ -242,9 +242,9 @@ class WDGAjaxActions {
 		}
 		
 		//Vérifie si on crée une organisation
-		if ($invest_type == "new_orga") {
+		if ($invest_type == "new_organisation") {
 			$return_values = array(
-				"response" => "create_orga",
+				"response" => "new_organization",
 				"errors" => array()
 			);
 			echo json_encode($return_values);
@@ -253,7 +253,28 @@ class WDGAjaxActions {
 		//Vérifie si on veut investir en tant qu'organisation (différent de user)
 		} else if ($invest_type != "user") {
 			//Vérifie si les informations de l'organisation sont bien remplies
-			//TODO
+			global $organization_can_invest_errors;
+			$organisation = new YPOrganisation($invest_type);
+			if (!$organisation->has_filled_invest_infos()) {
+				$return_values = array(
+					"response" => "edit_organization",
+					"errors" => $organization_can_invest_errors,
+					"org_name" => $organisation->get_name(),
+					"org_email" => $organisation->get_email(),
+					
+					"org_legalform" => $organisation->get_legalform(),
+					"org_idnumber" => $organisation->get_idnumber(),
+					"org_rcs" => $organisation->get_rcs(),
+					"org_capital" => $organisation->get_capital(),
+					"org_ape" => $organisation->get_ape(),
+					"org_address" => $organisation->get_address(),
+					"org_postal_code" => $organisation->get_postal_code(),
+					"org_city" => $organisation->get_city(),
+					"org_nationality" => $organisation->get_nationality()
+				);
+				echo json_encode($return_values);
+				exit();
+			}
 		}
 		
 		/*
@@ -270,12 +291,9 @@ class WDGAjaxActions {
 				echo json_encode($return_values);
 				exit();
 			}
-			
-		//Voir si nécessaire plus tard
-		} else */if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay && $invest_value > YP_STRONGAUTH_AMOUNT_LIMIT) {
-			//Vérifie si les documents MP sont déjà envoyés
-			
 		}
+		 * 
+		 */
 	}
 	
 	/**
@@ -309,6 +327,83 @@ class WDGAjaxActions {
 				"errors" => $user_can_invest_errors
 			);
 			echo json_encode($return_values);
+		}
+		exit();
+	}
+	
+	public static function save_orga_infos() {
+		$invest_type = filter_input(INPUT_POST, 'invest_type');
+		if ($invest_type == "new_organisation") {
+			$current_user = WDGUser::current();
+
+			global $errors_create_orga;
+			$errors_create_orga = array();
+
+			$new_orga_id = FALSE;
+			$orga_capable = filter_input( INPUT_POST, 'org_capable' );
+			if ($orga_capable == '1') {
+				$new_orga = new YPOrganisation();
+				$new_orga->set_name( filter_input( INPUT_POST, 'org_name' ) );
+				$new_orga->set_email( filter_input( INPUT_POST, 'org_email' ) );
+				$new_orga->set_type('society');
+				$new_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
+				$new_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
+				$new_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
+				$new_orga->set_capital( filter_input( INPUT_POST, 'org_capital' ) );
+				$new_orga->set_ape( filter_input( INPUT_POST, 'org_ape' ) );
+				$new_orga->set_address( filter_input( INPUT_POST, 'org_address' ) );
+				$new_orga->set_postal_code( filter_input( INPUT_POST, 'org_postal_code' ) );
+				$new_orga->set_city( filter_input( INPUT_POST, 'org_city' ) );
+				$new_orga->set_nationality( filter_input( INPUT_POST, 'org_nationality' ) );
+				$new_orga_id = $new_orga->create();
+			} else {
+				array_push($errors_create_orga, __("Merci de confirmer que vous pouvez repr&eacute;senter cette organisation.", 'yproject'));
+			}
+
+			if ($new_orga_id != FALSE) {
+				$new_orga->set_creator($current_user->wp_user->ID);
+				ypcf_session_start();
+				$_SESSION['new_orga_just_created'] = $new_orga_id;
+
+				WDGAjaxActions::check_invest_input();
+
+			} else {
+				global $errors_submit_new;
+				$error_messages = $errors_submit_new->get_error_messages();
+				foreach ($error_messages as $error_message) {
+					array_push($errors_create_orga, $error_message);
+				}
+				$return_values = array(
+					"response" => "new_organization",
+					"errors" => $errors_create_orga
+				);
+				echo json_encode($return_values);
+			}
+			
+		} else {
+			$edit_orga = new YPOrganisation($invest_type);
+			$edit_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
+			$edit_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
+			$edit_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
+			$edit_orga->set_capital( filter_input( INPUT_POST, 'org_capital' ) );
+			$edit_orga->set_ape( filter_input( INPUT_POST, 'org_ape' ) );
+			$edit_orga->set_address( filter_input( INPUT_POST, 'org_address' ) );
+			$edit_orga->set_postal_code( filter_input( INPUT_POST, 'org_postal_code' ) );
+			$edit_orga->set_city( filter_input( INPUT_POST, 'org_city' ) );
+			$edit_orga->set_nationality( filter_input( INPUT_POST, 'org_nationality' ) );
+			$edit_orga->save();
+			
+			if (!$edit_orga->has_filled_invest_infos()) {
+				global $organization_can_invest_errors;
+				$return_values = array(
+					"response" => "edit_organization",
+					"errors" => $organization_can_invest_errors
+				);
+				echo json_encode($return_values);
+				
+			} else {
+				WDGAjaxActions::check_invest_input();
+			}
 		}
 		exit();
 	}

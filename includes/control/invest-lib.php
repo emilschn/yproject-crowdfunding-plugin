@@ -31,6 +31,7 @@ function ypcf_check_redirections() {
 					ypcf_session_start();
 					if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 					if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
+					if (isset($_SESSION['new_orga_just_created'])) unset($_SESSION['new_orga_just_created']);
 					if (isset($_SESSION['error_invest'])) unset($_SESSION['error_invest']);
 					if (isset($_SESSION['redirect_current_selected_reward'])) unset($_SESSION['redirect_current_selected_reward']);
 				}
@@ -147,7 +148,11 @@ function ypcf_check_user_can_invest($redirect = false) {
     if ($redirect && !$can_invest) {
 		$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 		if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-		if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+		if (isset($_SESSION['new_orga_just_created']) && !empty($_SESSION['new_orga_just_created'])) {
+			$_SESSION['redirect_current_invest_type'] = $_SESSION['new_orga_just_created'];
+		} else {
+			if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+		}
 		if (isset($_POST['selected_reward'])) $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
 		ypcf_debug_log('ypcf_check_user_can_invest > cant invest, redirect !');
 		$page_update = get_page_by_path('modifier-mon-compte');
@@ -162,21 +167,12 @@ function ypcf_check_user_can_invest($redirect = false) {
  */
 function ypcf_check_organisation_can_invest($organisation_user_id) {
     $organisation = new YPOrganisation($organisation_user_id);
-    
-    $can_invest = ($organisation->get_type() == 'society');
-    $can_invest = $can_invest && ($organisation->get_legalform() != '');
-    $can_invest = $can_invest && ($organisation->get_idnumber() != '');
-    $can_invest = $can_invest && ($organisation->get_rcs() != '');
-    $can_invest = $can_invest && ($organisation->get_capital() !== '');
-    $can_invest = $can_invest && ($organisation->get_address() != '');
-    $can_invest = $can_invest && ($organisation->get_postal_code() != '');
-    $can_invest = $can_invest && ($organisation->get_city() != '');
-    $can_invest = $can_invest && ($organisation->get_nationality() != '');
+    $can_invest = $organisation->has_filled_invest_infos();
 
     if (!$can_invest) {
-	$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
-	array_push($errors, 'Certaines des informations de l\'entreprise manquent ou sont inexactes.');
-	$_SESSION['error_invest'] = $errors;
+		$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
+		array_push($errors, "Certaines des informations de l'organisation manquent ou sont inexactes.");
+		$_SESSION['error_invest'] = $errors;
     }
     
     return $can_invest;
@@ -1079,7 +1075,11 @@ function ypcf_get_current_step() {
     
     if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
     if (isset($_SESSION['redirect_current_amount_part'])) $amount_part = $_SESSION['redirect_current_amount_part'];
-    if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+	if (isset($_SESSION['new_orga_just_created']) && !empty($_SESSION['new_orga_just_created'])) {
+		$_SESSION['redirect_current_invest_type'] = $_SESSION['new_orga_just_created'];
+	} else {
+		if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
+	}
     if (isset($_SESSION['redirect_current_invest_type'])) $invest_type = $_SESSION['redirect_current_invest_type'];
 //    echo '$invest_type : ' . $invest_type . ' ; $amount_part : ' . $amount_part;
     

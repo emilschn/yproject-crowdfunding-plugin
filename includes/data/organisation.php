@@ -86,7 +86,26 @@ class YPOrganisation {
 	 * @return boolean
 	 */
 	public function create() {
-		global $errors_submit_new;
+		global $errors_submit_new, $errors_create_orga;
+		if (!isset($errors_create_orga)) {
+			$errors_create_orga = array();
+		}
+		
+		if ($this->get_name() == "") { array_push( $errors_create_orga, __("Merci de remplir le nom de l'organisation", 'yproject') ); }
+		if ($this->get_email() == "") { array_push( $errors_create_orga, __("Merci de remplir l'adresse e-mail de l'organisation", 'yproject') ); }
+		if ($this->get_type() == "") { array_push( $errors_create_orga, __("Merci de remplir le type de l'organisation", 'yproject') ); }
+		if ($this->get_legalform() == "") { array_push( $errors_create_orga, __("Merci de remplir la forme juridique de l'organisation", 'yproject') ); }
+		if ($this->get_idnumber() == "") { array_push( $errors_create_orga, __("Merci de remplir le num&eacute;ro SIREN de l'organisation", 'yproject') ); }
+		if ($this->get_rcs() == "") { array_push( $errors_create_orga, __("Merci de remplir le RCS de l'organisation", 'yproject') ); }
+		if ($this->get_capital() == "") { array_push( $errors_create_orga, __("Merci de remplir le capital de l'organisation", 'yproject') ); }
+		if ($this->get_ape() == "") { array_push( $errors_create_orga, __("Merci de remplir le code APE de l'organisation", 'yproject') ); }
+		if ($this->get_address() == "") { array_push( $errors_create_orga, __("Merci de remplir l'adresse de l'organisation", 'yproject') ); }
+		if ($this->get_postal_code() == "") { array_push( $errors_create_orga, __("Merci de remplir le code postal de l'organisation", 'yproject') ); }
+		if ($this->get_city() == "") { array_push( $errors_create_orga, __("Merci de remplir la ville de l'organisation", 'yproject') ); }
+		if ($this->get_nationality() == "") { array_push( $errors_create_orga, __("Merci de remplir le pays de l'organisation", 'yproject') ); }
+		if (!empty($errors_create_orga)) {
+			return FALSE;
+		}
 		
 		$organisation_user_id = $this->create_user($this->get_name());
 		$this->set_wpref($organisation_user_id);
@@ -142,7 +161,10 @@ class YPOrganisation {
 		$sanitized_name = sanitize_title_with_dashes($name);
 		$username = 'org_' . $sanitized_name;
 		$password = wp_generate_password();
-		$email = $sanitized_name . '@wedogood.co';
+		$email = $this->get_email();
+		if (empty($email)) {
+			$email = $sanitized_name . '@wedogood.co';
+		}
 		$organisation_user_id = wp_create_user($username, $password, $email);
 		return $organisation_user_id;
 	}
@@ -327,6 +349,29 @@ class YPOrganisation {
 	public function set_bank_bic($value) {
 		$this->bank_bic = $value;
 	}
+	
+	/**
+	 * Détermine si l'organisation a rempli ses informations nécessaires pour investir
+	 * @return boolean
+	 */
+	public function has_filled_invest_infos() {
+		global $organization_can_invest_errors;
+		$organization_can_invest_errors = array();
+		
+		//Infos nécessaires pour tout type de financement
+		if ($this->get_type() != 'society') { array_push($organization_can_invest_errors, __("Ce type d'organisation ne peut pas investir.", 'yproject')); }
+		if ($this->get_legalform() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la forme juridique de l'organisation", 'yproject')); }
+		if ($this->get_idnumber() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le num&eacute;ro SIREN de l'organisation", 'yproject')); }
+		if ($this->get_rcs() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le RCS de l'organisation", 'yproject')); }
+		if ($this->get_capital() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le capital de l'organisation", 'yproject')); }
+		if ($this->get_address() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser l'adresse de l'organisation", 'yproject')); }
+		if ($this->get_postal_code() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le code postal de l'organisation", 'yproject')); }
+		if ($this->get_city() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la ville de l'organisation", 'yproject')); }
+		if ($this->get_nationality() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le pays de l'organisation", 'yproject')); }
+		
+		return (empty($organization_can_invest_errors));
+	}
+	
 	
 	public function get_wallet_amount() {
 		return ypcf_mangopay_get_user_personalamount_by_wpid($this->get_wpref()) / 100;
