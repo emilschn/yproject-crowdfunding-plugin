@@ -60,7 +60,14 @@ class YPOrganisation {
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->organisation_name;
-			$this->email = $this->creator->user_email;
+			
+			$meta_email = get_user_meta( $user_id, 'orga_contact_email', TRUE );
+			if (empty($meta_email)) {
+				$this->email = $this->creator->user_email;
+			} else {
+				$this->email = $meta_email;
+			}
+			
 			$this->description = get_user_meta($user_id, YPOrganisation::$key_description, TRUE);
 			$this->strong_authentication = $this->bopp_object->organisation_strong_authentication;
 			$this->address = $this->bopp_object->organisation_address;
@@ -97,7 +104,7 @@ class YPOrganisation {
 		if ($this->get_legalform() == "") { array_push( $errors_create_orga, __("Merci de remplir la forme juridique de l'organisation", 'yproject') ); }
 		if ($this->get_idnumber() == "") { array_push( $errors_create_orga, __("Merci de remplir le num&eacute;ro SIREN de l'organisation", 'yproject') ); }
 		if ($this->get_rcs() == "") { array_push( $errors_create_orga, __("Merci de remplir le RCS de l'organisation", 'yproject') ); }
-		if ($this->get_capital() == "") { array_push( $errors_create_orga, __("Merci de remplir le capital de l'organisation", 'yproject') ); }
+		if ($this->get_capital() == "") { $this->set_capital(0); }
 		if ($this->get_ape() == "") { array_push( $errors_create_orga, __("Merci de remplir le code APE de l'organisation", 'yproject') ); }
 		if ($this->get_address() == "") { array_push( $errors_create_orga, __("Merci de remplir l'adresse de l'organisation", 'yproject') ); }
 		if ($this->get_postal_code() == "") { array_push( $errors_create_orga, __("Merci de remplir le code postal de l'organisation", 'yproject') ); }
@@ -116,7 +123,6 @@ class YPOrganisation {
 			return FALSE;
 		}
                 
-		if ( $this->get_capital() == '' ) { $this->set_capital(0); }
 		if ( $this->get_bank_owner() == '' ) { $this->set_bank_owner("---"); }
 		if ( $this->get_bank_address() == '' ) { $this->set_bank_address("---"); }
 		if ( $this->get_bank_iban() == '' ) { $this->set_bank_iban("---"); }
@@ -161,11 +167,16 @@ class YPOrganisation {
 		$sanitized_name = sanitize_title_with_dashes($name);
 		$username = 'org_' . $sanitized_name;
 		$password = wp_generate_password();
-		$email = $this->get_email();
-		if (empty($email)) {
+		$email_input = $this->get_email();
+		if (empty($email_input) || email_exists($email_input)) {
 			$email = $sanitized_name . '@wedogood.co';
+		} else {
+			$email = $email_input;
 		}
 		$organisation_user_id = wp_create_user($username, $password, $email);
+		if (email_exists($email_input) && !empty($email_input)) {
+			update_user_meta($organisation_user_id, 'orga_contact_email', $email_input);
+		}
 		return $organisation_user_id;
 	}
 	
@@ -191,7 +202,15 @@ class YPOrganisation {
 			$this->get_bank_bic()
 		);
 		update_user_meta( $this->wpref, YPOrganisation::$key_description, $this->get_description() );
-		wp_update_user( array ( 'ID' => $this->wpref, 'user_email' => $this->get_email() ) );
+		
+		
+		$new_mail = $this->get_email();
+		$meta_email = get_user_meta( $this->wpref, 'orga_contact_email', TRUE );
+		if (empty($meta_email) && !email_exists($new_mail)) {
+			wp_update_user( array ( 'ID' => $this->wpref, 'user_email' => $new_mail ) );
+		} else {
+			update_user_meta( $this->wpref, 'orga_contact_email', $new_mail );
+		}
 	}
 	
 	/**
@@ -753,7 +772,7 @@ class YPOrganisation {
 		}
 		
 		//Vérification des données obligatoires
-		$necessary_fields = array('org_name', 'org_address', 'org_city', 'org_nationality', 'org_legalform', 'org_idnumber', 'org_ape');
+		$necessary_fields = array('org_name', 'org_address', 'org_city', 'org_nationality', 'org_legalform', 'org_idnumber', 'org_ape', 'org_rcs');
 		$necessary_fields_full = TRUE;
 		foreach ($necessary_fields as $field) {
 			$value = filter_input(INPUT_POST, $field);
