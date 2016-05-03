@@ -775,6 +775,7 @@ class YPOrganisation {
 		$org_object = new YPOrganisation();
 		$org_object->set_strong_authentication(FALSE);
 		$org_object->set_name(filter_input(INPUT_POST, 'org_name'));
+		$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 		$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 		$org_object->set_postal_code($org_postal_code);
 		$org_object->set_city(filter_input(INPUT_POST, 'org_city'));

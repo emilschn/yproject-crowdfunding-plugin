@@ -61,10 +61,7 @@ function ypcf_check_redirections() {
 			case 'paiement-effectue' :
 				ypcf_check_is_user_logged_invest();
 				if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-				if (isset($_SESSION['redirect_current_amount_part'])) {
-					$_SESSION['amount_to_save'] = $_SESSION['redirect_current_amount_part'];
-					unset($_SESSION['redirect_current_amount_part']);
-				}
+				if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 			break;
 		}
     }
@@ -326,6 +323,7 @@ function ypcf_check_meanofpayment_redirections() {
 						}
 						
 					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+						$_SESSION['amount_to_save'] = $amount;
 						if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
 						if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 						wp_redirect(get_permalink($page_payment->ID) . '?meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
