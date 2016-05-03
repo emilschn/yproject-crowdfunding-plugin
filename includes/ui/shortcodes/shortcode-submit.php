@@ -298,30 +298,30 @@ add_shortcode('yproject_crowdfunding_field_location', 'ypcf_shortcode_submit_fie
  */
 function ypcf_shortcode_submit_field_fundingtype($atts, $content = '') {
     $atts = shortcode_atts( array(
-	'option1' => 'Financement d&apos;un projet',
+	'option1' => 'Royalties (Financement d&apos;un projet)',
 	'option2' => 'Financement du d&eacute;veloppement (fonds propres)',
 	'option2duration' => 'Dur&eacute;e du financement (en ann&eacute;es) : ',
 	'option3' => 'Don avec contrepartie'
     ), $atts );
     
-    $fundingproject = '';
-    $fundingdevelopment = '';
+    $fundingproject = ' checked="checked"';
+	$hide_duration = '';
+    /*$fundingdevelopment = '';
     $fundingdonation = '';
     $hide_duration = ' style="display:none;"';
     if (isset($_POST['fundingtype'])) {
-	switch($_POST['fundingtype']) {
-	    case 'fundingdevelopment': $fundingdevelopment = ' checked="checked"'; $hide_duration = ''; break;
-	    case 'fundingdonation': $fundingdonation = ' checked="checked"'; break;
-	    default: $fundingproject = ' checked="checked"'; $hide_duration = ''; break;
-	}
-    }
+		switch($_POST['fundingtype']) {
+			case 'fundingdevelopment': $fundingdevelopment = ' checked="checked"'; $hide_duration = ''; break;
+			case 'fundingdonation': $fundingdonation = ' checked="checked"'; break;
+			default: $fundingproject = ' checked="checked"'; $hide_duration = ''; break;
+		}
+    }*/
     
     $fundingduration = '';
     if (isset($_POST['fundingduration'])) $fundingduration = $_POST['fundingduration'];
     
     return  '<input type="radio" name="fundingtype" class="radiofundingtype" id="fundingproject" value="fundingproject"'.$fundingproject.'>' . $atts['option1'] . '<br />
-	    <input type="radio" name="fundingtype" class="radiofundingtype" id="fundingdevelopment" value="fundingdevelopment"'.$fundingdevelopment.'>' . $atts['option2'] . '<br />
-	    <span id="fundingdevelopment_param"'.$hide_duration.'>' . $atts['option2duration'] . '<input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
+	    <span id="fundingdevelopment_param"'.$hide_duration.'>' . $atts['option2duration'] . ' <input type="text" name="fundingduration" value="'.$fundingduration.'"></span>';
 }
 add_shortcode('yproject_crowdfunding_field_fundingtype', 'ypcf_shortcode_submit_field_fundingtype');
 
