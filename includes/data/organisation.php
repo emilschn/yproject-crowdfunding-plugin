@@ -151,6 +151,7 @@ class YPOrganisation {
 		
 		//Vérification si on reçoit bien un entier pour identifiant
 		if (filter_var($this->bopp_id, FILTER_VALIDATE_INT) === FALSE) {
+			array_push( $errors_create_orga, __("Probl&egrave;me interne de cr&eacute;ation d'organisation.", 'yproject') );
 			return FALSE;
 		}
 		

@@ -365,8 +365,6 @@ class WDGAjaxActions {
 				ypcf_session_start();
 				$_SESSION['new_orga_just_created'] = $new_orga_id;
 
-				WDGAjaxActions::check_invest_input();
-
 			} else {
 				global $errors_submit_new;
 				$error_messages = $errors_submit_new->get_error_messages();
