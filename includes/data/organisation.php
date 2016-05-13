@@ -461,17 +461,14 @@ class YPOrganisation {
 		$save = FALSE;
 		switch ($this->strong_authentication) {
 			case 0:
-			    //Vérifie les docs ont été envoyés
-			    if (ypcf_mangopay_is_user_strong_authentication_sent($this->wpref)) {
-				    //Vérifie si les docs ont été vérifiés
-				    if (ypcf_mangopay_is_user_strong_authenticated($this->wpref)) {
-					    $this->strong_authentication = '1';
-					    $save = TRUE;
-				    } else {
-					    $this->strong_authentication = '5';
-					    $save = TRUE;
-				    }
-			    }
+				//Vérifie si les docs ont été vérifiés
+				if (ypcf_mangopay_is_user_strong_authenticated($this->wpref)) {
+					$this->strong_authentication = '1';
+					$save = TRUE;
+				} else {
+					$this->strong_authentication = '5';
+					$save = TRUE;
+				}
 			    break;
 			case 1:
 			    //Envoyé et vérifié, on ne fait rien

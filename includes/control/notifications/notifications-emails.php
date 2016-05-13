@@ -270,23 +270,23 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_project_posted($campaign_id, $copy_recipient) {
-	$admin_email = get_option('admin_email');
-	$to = $admin_email . ',' . $copy_recipient;
-	
-	$post_campaign = get_post($campaign_id);
-	$campaign = atcf_get_campaign($post_campaign);
-	$project_title = $post_campaign->post_title;
-	$object = '[Nouveau Projet] '. $project_title;
-	$body_content = "Un nouveau projet viens d'être publié.<br />";
-	$body_content .= "Il est accessible depuis le back-office :<br />";
-	$body_content .= '<a href="'. get_permalink($campaign_id) .'" target="_blank">'. $project_title .'</a><br /><br />';
-	$user_author = get_user_by('id', $post_campaign->post_author);
-	$body_content .= "Quelques informations supplémentaires :<br />";
-	$body_content .= "- Porteur de projet : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")<br />";
-	$body_content .= "- Mail : ".$user_author->user_email."<br />";
-	$body_content .= "- Téléphone : ".$campaign->contact_phone()."<br />";
-	
-	return NotificationsEmails::send_mail($to, $object, $body_content);
+		$admin_email = get_option('admin_email');
+		$to = $admin_email . ',' . $copy_recipient;
+
+		$post_campaign = get_post($campaign_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		$project_title = $post_campaign->post_title;
+		$object = '[Nouveau Projet] '. $project_title;
+		$body_content = "Un nouveau projet viens d'être publié.<br />";
+		$body_content .= "Il est accessible depuis le back-office :<br />";
+		$body_content .= '<a href="'. get_permalink($campaign_id) .'" target="_blank">'. $project_title .'</a><br /><br />';
+		$user_author = get_user_by('id', $post_campaign->post_author);
+		$body_content .= "Quelques informations supplémentaires :<br />";
+		$body_content .= "- Porteur de projet : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")<br />";
+		$body_content .= "- Mail : ".$user_author->user_email."<br />";
+		$body_content .= "- Téléphone : ".$campaign->contact_phone()."<br />";
+
+		return NotificationsEmails::send_mail($to, $object, $body_content);
     }
     //*******************************************************
     // FIN NOUVEAU PROJET
@@ -388,12 +388,14 @@ class NotificationsEmails {
     public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list = [], $return_string = false) {
 		ypcf_debug_log('NotificationsEmails::project_mail > ' . $campaign_id . ' > ' . $mail_title);
 		$post_campaign = get_post($campaign_id);
+		$campaign = new ATCF_Campaign($post_campaign);
+		$organization = $campaign->get_organisation();
+		$organization_obj = new YPOrganisation($organization->organisation_wpref);
 		$project_title = $post_campaign->post_title;
 		
-		$user_author = get_user_by('id', $post_campaign->post_author);
 		$from_data = array();
 		$from_data['name'] = $project_title;
-		$from_data['email'] = $user_author->user_email;
+		$from_data['email'] = $organization_obj->get_email();
 
 		$object = $project_title. ' : ' .$mail_title;
         
@@ -466,12 +468,13 @@ class NotificationsEmails {
     public static function new_project_post_posted($campaign_id, $post_id) {
 		ypcf_debug_log('NotificationsEmails::new_project_post_posted > ' . $campaign_id . ' > ' . $post_id);
 		$post_campaign = get_post($campaign_id);
+		$organization = $campaign->get_organisation();
+		$organization_obj = new YPOrganisation($organization->organisation_wpref);
 		$project_title = $post_campaign->post_title;
 		
-		$user_author = get_user_by('id', $post_campaign->post_author);
 		$from_data = array();
 		$from_data['name'] = $project_title;
-		$from_data['email'] = $user_author->user_email;
+		$from_data['email'] = $organization_obj->get_email();
 		
         $new_post = get_post($post_id);
         $post_title = $new_post->post_title;
