@@ -151,6 +151,27 @@ class WDGFormProjects {
 	}
 	
 	/**
+	 * Check si on veut valider un paiement
+	 */
+	public static function form_approve_payment() {
+		$current_wdg_user = WDGUser::current();
+		$approve_payment_id = filter_input(INPUT_GET, 'approve_payment');
+		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
+		if ( !empty( $approve_payment_id ) &&  !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
+			$postdata = array(
+				'ID'			=> $approve_payment_id,
+				'post_status'	=> 'publish',
+				'edit_date'		=> current_time( 'mysql' )
+			);
+			wp_update_post($postdata);
+			
+			$page_dashboard = get_page_by_path('tableau-de-bord');
+			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=approvepayment' );
+			exit();
+		}
+	}
+	
+	/**
 	 * Gère le formulaire de paramètres projets
 	 */
 	public static function form_validate_edit_parameters() {
