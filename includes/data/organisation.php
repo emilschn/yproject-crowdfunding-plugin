@@ -801,7 +801,7 @@ class YPOrganisation {
 		$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
 		$org_object->set_capital($org_capital);
 		$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
-		$org_object->set_rcs('---');
+		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
 		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 		$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
 		$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
