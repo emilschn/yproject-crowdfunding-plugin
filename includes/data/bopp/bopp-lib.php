@@ -430,6 +430,11 @@ class BoppLib {
 			)
 		);
 		$result_obj = BoppLib::call_post('projects/'.$api_project_id.'/organisations', $request_params);
+		
+		do_action('wdg_delete_cache', array(
+			'projects/' . $api_project_id . '/roles/' . BoppLibHelpers::$project_organisation_manager_role['slug'] . '/organisations'
+		));
+		
 		return $result_obj;
 	}
 	
@@ -442,6 +447,11 @@ class BoppLib {
 	public static function unlink_organisation_from_project($api_project_id, $api_organisation_id) {
 		$request_params = array();
 		$result_obj = BoppLib::call_delete('projects/' . $api_project_id . '/organisations/' . $api_organisation_id, $request_params);
+		
+		do_action('wdg_delete_cache', array(
+			'projects/' . $api_project_id . '/roles/' . BoppLibHelpers::$project_organisation_manager_role['slug'] . '/organisations'
+		));
+		
 		return $result_obj;
 	}
 //FIN GESTION ROLES
