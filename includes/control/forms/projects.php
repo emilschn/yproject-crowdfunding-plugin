@@ -157,7 +157,7 @@ class WDGFormProjects {
 		$current_wdg_user = WDGUser::current();
 		$approve_payment_id = filter_input(INPUT_GET, 'approve_payment');
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
-		if ( !empty( $approve_payment_id ) &&  !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
+		if ( !empty( $approve_payment_id ) && !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
 			$postdata = array(
 				'ID'			=> $approve_payment_id,
 				'post_status'	=> 'publish',
@@ -173,6 +173,27 @@ class WDGFormProjects {
 			
 			$page_dashboard = get_page_by_path('tableau-de-bord');
 			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=approvepayment' );
+			exit();
+		}
+	}
+	
+	/**
+	 * Check si on veut annuler un paiement
+	 */
+	public static function form_cancel_payment() {
+		$current_wdg_user = WDGUser::current();
+		$cancel_payment_id = filter_input(INPUT_GET, 'cancel_payment');
+		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
+		if ( !empty( $cancel_payment_id ) && !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
+			$postdata = array(
+				'ID'			=> $cancel_payment_id,
+				'post_status'	=> 'failed',
+				'edit_date'		=> current_time( 'mysql' )
+			);
+			wp_update_post($postdata);
+			
+			$page_dashboard = get_page_by_path('tableau-de-bord');
+			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment' );
 			exit();
 		}
 	}
