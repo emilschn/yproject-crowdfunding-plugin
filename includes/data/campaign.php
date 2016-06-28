@@ -562,8 +562,8 @@ class ATCF_Campaign {
 	 *
 	 * @return sting Campaign End Date
 	 */
-	public function end_date() {
-		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_date' ), false );
+	public function end_date($format = 'Y-m-d H:i:s') {
+		return mysql2date( $format, $this->__get( 'campaign_end_date' ), false );
 	}
         
         /**
@@ -573,8 +573,8 @@ class ATCF_Campaign {
 	 *
 	 * @return sting Campaign Begin Collecte Date
 	 */
-	public function begin_collecte_date() {
-		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_begin_collecte_date' ), false );
+	public function begin_collecte_date($format = 'Y-m-d H:i:s') {
+		return mysql2date( $format, $this->__get( 'campaign_begin_collecte_date' ), false );
 	}
         
 	/**
@@ -909,8 +909,8 @@ class ATCF_Campaign {
 	}
 
 	public function can_use_wire($amount_part) {
-		$min_wire = 200;
-		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
+		$min_wire = 150;
+		return ($this->part_value() * $amount_part >= $min_wire);
 	}
 	
 	public function can_use_check($amount_part) {
