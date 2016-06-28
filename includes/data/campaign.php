@@ -914,7 +914,7 @@ class ATCF_Campaign {
 	}
 	
 	public function can_use_check($amount_part) {
-		$min_check = 1000;
+		$min_check = 150;
 		return ($this->part_value() * $amount_part >= $min_check);
 	}
 
