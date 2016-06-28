@@ -216,9 +216,20 @@ class WDGROIDeclaration {
 			$total_fees = 0;
 			foreach ($investments_list as $investment_item) {
 				$total_fees += $investment_item['roi_fees'];
-				$WDGUser = new WDGUser( $investment_item['user'] );
-				$WDGUser->register_lemonway();
-				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount']);
+			
+				//Gestion versement vers organisation
+				if (YPOrganisation::is_user_organisation( $investment_item['user'] )) {
+					$WDGOrga = new YPOrganisation( $investment_item['user'] );
+					$WDGOrga->register_lemonway();
+					$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
+
+				//Versement vers utilisateur personne physique
+				} else {
+					$WDGUser = new WDGUser( $investment_item['user'] );
+					$WDGUser->register_lemonway();
+					$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
+				}
+			
 				WDGROI::insert($this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
 				if ($investment_item['roi_amount'] > 0) {
 					NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'] );
@@ -256,8 +267,20 @@ class WDGROIDeclaration {
 		$roi_list = $wpdb->get_results( $query );
 		foreach ( $roi_list as $roi_item ) {
 			$ROI = new WDGROI( $roi_item->id );
-			$WDGUser = new WDGUser( $ROI->id_user );
-			$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+			
+			//Gestion versement vers organisation
+			if (YPOrganisation::is_user_organisation( $ROI->id_user )) {
+				$WDGOrga = new YPOrganisation( $ROI->id_user );
+				$WDGOrga->register_lemonway();
+				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
+				
+			//Versement vers utilisateur personne physique
+			} else {
+				$WDGUser = new WDGUser( $ROI->id_user );
+				$WDGUser->register_lemonway();
+				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+			}
+			
 			$ROI->id_transfer = $transfer->ID;
 			$ROI->save();
 		}
