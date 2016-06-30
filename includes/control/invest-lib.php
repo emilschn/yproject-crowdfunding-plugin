@@ -261,6 +261,13 @@ function ypcf_check_invest_redirections() {
 function ypcf_check_meanofpayment_redirections() {
     ypcf_session_start();
     ypcf_debug_log('ypcf_check_meanofpayment_redirections --- SESSION :: ' . $_SESSION['redirect_current_amount_part'] . ' ; meanofpayment :: ' . $_GET['meanofpayment']);
+	
+	//Si il n'y a plus rien dans la session, il faut l'indiquer
+	if (empty($_SESSION['redirect_current_amount_part'])) {
+		global $error_session;
+		$error_session = '1';
+		return;
+	}
     
     //Si on a choisi le moyen de paiement
     //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
