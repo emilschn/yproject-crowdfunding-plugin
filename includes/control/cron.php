@@ -109,7 +109,7 @@ class WDGCronActions {
 			$buffer_partners .= '<impact_eco>oui</impact_eco>' . "\n";
 			
 			$buffer_partners .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>' . "\n"; //TNP :: Mots-clés TODO
-			$buffer_partners .= '<mode_financement>OBL</mode_financement>' . "\n"; //TNP :: Mode de financement (DON, DOC, PRE, PRR, ACT, OBL)
+			$buffer_partners .= '<mode_financement>ROY</mode_financement>' . "\n"; //TNP :: Mode de financement (DON, DOC, PRE, PRR, ACT, OBL) - invention ROY
 			$buffer_partners .= '<type_porteur_projet>ENT</type_porteur_projet>' . "\n"; //TNP :: Statut du PP (ENT, ASS, PAR, COL)
 			$buffer_partners .= '<qualif_ESS>non</qualif_ESS>' . "\n"; //TNP :: Qualification ESS du porteur projet
 			$buffer_partners .= '<code_postal></code_postal>' . "\n"; //TNP :: Code postal TODO
