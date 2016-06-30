@@ -306,7 +306,9 @@ function ypcf_check_meanofpayment_redirections() {
 					$cancel_url = $return_url . '&cancel=1';
 					$return = LemonwayLib::ask_payment_webkit( $organization_obj->get_lemonway_id(), $amount, 0, $wk_token, $return_url, $error_url, $cancel_url );
 					if ( !empty($return->MONEYINWEB->TOKEN) ) {
-						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
+						$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
+						$url_css_encoded = urlencode($url_css);
+						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&p=' . $url_css_encoded);
 						exit();
 					}
 				}
