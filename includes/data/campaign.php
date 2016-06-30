@@ -1170,7 +1170,7 @@ class ATCF_Campaign {
 	 * @param string $new_username
 	 * @param string $new_pwd
 	 */
-	public function add_investment($type, $email, $value, $new_username = '', $new_password = '', $new_gender = '', $new_firstname = '', $new_lastname = '') {
+	public function add_investment($type, $email, $value, $new_username = '', $new_password = '', $new_gender = '', $new_firstname = '', $new_lastname = '', $orga_email = '', $orga_name = '') {
 		$user_id = FALSE;
 	    
 		//Vérification si un utilisateur existe avec l'email en paramètre
@@ -1190,10 +1190,48 @@ class ATCF_Campaign {
 				if (!empty($new_lastname)) wp_update_user( array ( 'ID' => $user_id, 'last_name' => $new_lastname ) );
 			}
 		}
+		$saved_user_id = $user_id;
 		
-		if (!is_wp_error($user_id) && !empty($user_id) && $user_id != FALSE) {
+		if (!is_wp_error($saved_user_id) && !empty($saved_user_id) && $saved_user_id != FALSE) {
+			//Gestion organisation
+			if ( !empty($orga_email) ) {
+				//Vérification si organisation existante
+				$orga_payment = get_user_by('email', $orga_email);
+				if ($orga_payment) {
+					$saved_user_id = $orga_payment->ID;
+
+				//Sinon, on la crée juste avec un e-mail et un nom
+				} else {
+					$org_object = new YPOrganisation();
+					$org_object->set_strong_authentication(FALSE);
+					$org_object->set_name($orga_name);
+					$org_object->set_email($orga_email);
+					
+					$org_object->set_address('---');
+					$org_object->set_postal_code('00000');
+					$org_object->set_city('---');
+					$org_object->set_nationality('---');
+					$org_object->set_type('society');
+					$org_object->set_legalform('---');
+					$org_object->set_capital(0);
+					$org_object->set_idnumber('---');
+					$org_object->set_rcs('---');
+					$org_object->set_ape('---');
+					$org_object->set_bank_owner('---');
+					$org_object->set_bank_address('---');
+					$org_object->set_bank_iban('---');
+					$org_object->set_bank_bic('---');
+		
+					$wp_orga_user_id = $org_object->create();
+					$org_object->set_creator( $user_id );
+					$saved_user_id = $wp_orga_user_id;
+				}
+			}
+		}
+		
+		if (!is_wp_error($saved_user_id) && !empty($saved_user_id) && $saved_user_id != FALSE) {
 			$user_info = array(
-				'id'		=> $user_id,
+				'id'		=> $saved_user_id,
 				'gender'	=> $new_gender,
 				'email'		=> $email,
 				'first_name'	=> $new_firstname,
@@ -1201,7 +1239,7 @@ class ATCF_Campaign {
 				'discount'	=> '',
 				'address'	=> array()
 			);
-
+			
 			$cart_details = array(
 				array(
 					'name'        => get_the_title( $this->ID ),
@@ -1230,10 +1268,10 @@ class ATCF_Campaign {
 			edd_record_sale_in_log($this->ID, $payment_id);
 
 		} else {
-			$user_id = FALSE;
+			$saved_user_id = FALSE;
 		}
 		
-		return $user_id;
+		return $saved_user_id;
 	}
 	
 	/**
