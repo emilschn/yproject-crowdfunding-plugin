@@ -134,7 +134,7 @@ class WDGROI {
 		$query .= " WHERE id_campaign=".$id_campaign;
 		$query .= " AND id_user=".$id_user;
 		$query .= " AND status='".WDGROI::$status_transferred."'";
-		$query .= " ORDER BY date_due ASC";
+		$query .= " ORDER BY date_transfer ASC";
 		
 		$roi_list = $wpdb->get_results( $query );
 		foreach ( $roi_list as $roi_item ) {
