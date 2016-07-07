@@ -697,7 +697,14 @@ class YPOrganisation {
 		}
 		return $buffer;
 	}
-	
+
+	/**
+	 * Retourne si l'identification sur lemonway est validée
+	 */
+	public function is_registered_lemonway_wallet() {
+		return (get_lemonway_status == YPOrganisation::$lemonway_status_registered);
+	}
+
 	/**
 	 * Donne l'argent disponible sur le compte utilisateur
 	 */
