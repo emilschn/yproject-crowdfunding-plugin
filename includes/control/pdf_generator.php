@@ -92,13 +92,16 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		$birthday_month = mb_strtoupper($months[$user_obj->get('user_birthday_month') - 1]);
 		$buffer .= 'born on '.$birthday_month.' '.$user_obj->get('user_birthday_day').' '.$user_obj->get('user_birthday_year').' in '.$user_obj->get('user_birthplace').'<br />';
 		$buffer .= 'from '.$nationality.'<br />';
-		$buffer .= 'living in '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address');
+		$buffer .= 'living in '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address').'<br />';;
+		$buffer .= 'E-mail address: '.$user_obj->user_email;
+
 	} else {
 		$birthday_month = mb_strtoupper(__($months[$user_obj->get('user_birthday_month') - 1]));
 		$suffix_born = ($user_obj->get('user_gender') == "female") ? 'e' : '';
 		$buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' &agrave; '.$user_obj->get('user_birthplace').'<br />';
 		$buffer .= 'de nationalité '.$nationality.'<br />';
-		$buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address');
+		$buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address').'<br />';;
+		$buffer .= 'Addresse e-mail : '.$user_obj->user_email;
 	}
     
     if ($campaign_obj->funding_type() == 'fundingproject') {
