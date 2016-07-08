@@ -27,7 +27,7 @@ class WDGCronActions {
 	
 	public static function daily_actions() {
 //		WDGCronActions::check_kycs();
-//		WDGCronActions::check_bank_transfers();
+		WDGCronActions::check_bank_transfers();
 		WDGCronActions::make_projects_rss();
 	}
 	
