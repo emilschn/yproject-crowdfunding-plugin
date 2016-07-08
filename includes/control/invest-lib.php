@@ -274,12 +274,12 @@ function ypcf_check_meanofpayment_redirections() {
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_SESSION['redirect_current_amount_part']) && isset($_GET['meanofpayment'])) {
 	    $amount_part = $_SESSION['redirect_current_amount_part'];
 	    $current_user = wp_get_current_user();
-	    $amount = $amount_part * ypcf_get_part_value();
+		$campaign = atcf_get_current_campaign();
+	    $amount = $amount_part * $campaign->part_value();
 
 	    switch ($_GET['meanofpayment']) {
 		    //Paiement par carte
 		    case 'card':
-				$campaign = atcf_get_current_campaign();
 			    //Récupération de l'url de la page qui indique que le paiement est bien effectué
 			    $page_payment_done = get_page_by_path('paiement-effectue');
 				
@@ -313,10 +313,30 @@ function ypcf_check_meanofpayment_redirections() {
 					}
 				}
 		    break;
+			
+			//Paiement par wallet
+			case 'wallet':
+				$WDGUser_current = WDGUser::current();
+				$lemonway_amount = 0;
+				if ($_SESSION['redirect_current_invest_type'] == 'user') {
+					$lemonway_amount = $WDGUser_current->get_lemonway_wallet_amount();
+				} else {
+					$invest_type = $_SESSION['redirect_current_invest_type'];
+					$organisation = new YPOrganisation($invest_type);
+					$lemonway_amount = $organisation->get_lemonway_balance();
+				}
+				$can_use_wallet = ($lemonway_amount > 0 && $lemonway_amount > $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+				if ($can_use_wallet) {
+					$_SESSION['amount_to_save'] = $amount;
+					if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+					if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+				    $page_payment_done = get_page_by_path('paiement-effectue');
+					wp_redirect(get_permalink($page_payment_done->ID) . '?meanofpayment=wallet&campaign_id=' . $_GET['campaign_id']);
+				}
+			break;
 
 		    //Paiement par virement
 		    case 'wire':
-			    $campaign = atcf_get_current_campaign();
 			    if ($campaign->can_use_wire($_SESSION['redirect_current_amount_part'])) {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-virement');
@@ -343,8 +363,8 @@ function ypcf_check_meanofpayment_redirections() {
 			    }
 		    break;
 		    
+			//Paiement par chèque
 		    case 'check':
-			    $campaign = atcf_get_current_campaign();
 			    if ($campaign->can_use_check($_SESSION['redirect_current_amount_part'])) {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-cheque');
@@ -752,7 +772,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
  * 
  */
 function ypcf_get_updated_transfer_status($transfer_post) {
-	$widthdrawal_obj = ypcf_mangopay_get_withdrawal_by_id($transfer_post->post_content);
+	/*$widthdrawal_obj = ypcf_mangopay_get_withdrawal_by_id($transfer_post->post_content);
 	if ($widthdrawal_obj->Error != "" && $widthdrawal_obj->Error != NULL) {
 	    $args = array(
 		'ID'	=>  $transfer_post->ID,
@@ -766,7 +786,7 @@ function ypcf_get_updated_transfer_status($transfer_post) {
 		'post_status'	=> 'publish'
 	    );
 	    wp_update_post($args);
-	}
+	}*/
 	
 	$transfer_post_obj = get_post($transfer_post);
 	return $transfer_post_obj->post_status;
