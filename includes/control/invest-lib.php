@@ -317,15 +317,15 @@ function ypcf_check_meanofpayment_redirections() {
 			//Paiement par wallet
 			case 'wallet':
 				$WDGUser_current = WDGUser::current();
-				$lemonway_amount = 0;
+				
+				$can_use_wallet = false;
 				if ($_SESSION['redirect_current_invest_type'] == 'user') {
-					$lemonway_amount = $WDGUser_current->get_lemonway_wallet_amount();
+					$can_use_wallet = $WDGUser_current->can_pay_with_wallet($amount, $campaign);
 				} else {
 					$invest_type = $_SESSION['redirect_current_invest_type'];
 					$organisation = new YPOrganisation($invest_type);
-					$lemonway_amount = $organisation->get_lemonway_balance();
+					$can_use_wallet = $organisation->can_pay_with_wallet($amount, $campaign);
 				}
-				$can_use_wallet = ($lemonway_amount > 0 && $lemonway_amount > $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 				if ($can_use_wallet) {
 					$_SESSION['amount_to_save'] = $amount;
 					if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
@@ -630,6 +630,9 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						//TODO
 					}
 
+				} else if (strpos($contribution_id, 'wallet_') !== FALSE) {
+					$buffer = 'publish';
+					$update_post = TRUE;
 
 				//On teste une contribution classique
 				} else {

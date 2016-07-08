@@ -305,7 +305,22 @@ class WDGUser {
 	 */
 	public function get_lemonway_wallet_amount() {
 		$wallet_details = $this->get_wallet_details();
-		return $wallet_details->BAL;
+		$buffer = 0;
+		if (isset($wallet_details->BAL)) {
+			$buffer = $wallet_details->BAL;
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Détermine si l'utilisateur peut payer avec son porte-monnaie
+	 * @param int $amount
+	 * @param ATCF_Campaign $campaign
+	 * @return bool
+	 */
+	public function can_pay_with_wallet( $amount, $campaign ) {
+		$lemonway_amount = $this->get_lemonway_wallet_amount();
+		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
 	/**
