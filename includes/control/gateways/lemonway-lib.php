@@ -121,6 +121,9 @@ class LemonwayLib {
 			if (strpos($amount, '.') == strlen($amount) - 2) {
 				$amount .= '0';
 			}
+			if (strpos($amount, '.') === FALSE) {
+				$amount .= '.00';
+			}
 		}
 		return $amount;
 	}
