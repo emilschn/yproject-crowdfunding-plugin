@@ -706,6 +706,17 @@ class YPOrganisation {
 	}
 
 	/**
+	 * Détermine si l'utilisateur peut payer avec son porte-monnaie
+	 * @param int $amount
+	 * @param ATCF_Campaign $campaign
+	 * @return bool
+	 */
+	public function can_pay_with_wallet( $amount, $campaign ) {
+		$lemonway_amount = $this->get_lemonway_balance();
+		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+	}
+	
+	/**
 	 * Donne l'argent disponible sur le compte utilisateur
 	 */
 	public function get_lemonway_balance() {
