@@ -201,7 +201,7 @@ class WDGROIDeclaration {
 	/**
 	 * S'occuper des versements vers les utilisateurs
 	 */
-	public function make_transfer() {
+	public function make_transfer( $send_notifications = true ) {
 		$buffer = false;
 		$date_now = new DateTime();
 		$date_now_formatted = $date_now->format( 'Y-m-d' );
@@ -215,26 +215,39 @@ class WDGROIDeclaration {
 			$investments_list = $campaign->roi_payments_data($this);
 			$total_fees = 0;
 			foreach ($investments_list as $investment_item) {
-				$total_fees += $investment_item['roi_fees'];
-			
-				//Gestion versement vers organisation
-				if (YPOrganisation::is_user_organisation( $investment_item['user'] )) {
-					$WDGOrga = new YPOrganisation( $investment_item['user'] );
-					$WDGOrga->register_lemonway();
-					$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
+				
+				$saved_roi = WDGROI::get_roi_by_declaration_invest( $this->id, $investment_item['ID'] );
+				if ( empty( $saved_roi ) ) {
+					$total_fees += $investment_item['roi_fees'];
 
-				//Versement vers utilisateur personne physique
-				} else {
-					$WDGUser = new WDGUser( $investment_item['user'] );
-					$WDGUser->register_lemonway();
-					$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
-				}
-			
-				WDGROI::insert($this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
-				if ($investment_item['roi_amount'] > 0) {
-					NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'] );
-				} else {
-					NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'] );
+					//Versement vers organisation
+					if (YPOrganisation::is_user_organisation( $investment_item['user'] )) {
+						$WDGOrga = new YPOrganisation( $investment_item['user'] );
+						$WDGOrga->register_lemonway();
+						$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
+
+					//Versement vers utilisateur personne physique
+					} else {
+						$WDGUser = new WDGUser( $investment_item['user'] );
+						$WDGUser->register_lemonway();
+						$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
+					}
+
+					if ( $transfer != FALSE ) {
+						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
+						if ( $send_notifications ) {
+							if ($investment_item['roi_amount'] > 0) {
+								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'] );
+							} else {
+								NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'] );
+							}
+						}
+
+					} else {
+						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
+
+					}
+					
 				}
 			}
 			if ($total_fees > 0) {
@@ -260,9 +273,10 @@ class WDGROIDeclaration {
 		
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
-		$query .= " WHERE id_campaign=".$this->id_campaign;
+		$query .= " WHERE id_declaration=".$this->id;
 		$query .= " AND amount>0";
 		$query .= " AND id_transfer=0";
+		$query .= " AND status='" .WDGROI::$status_transferred. "'";
 		
 		$roi_list = $wpdb->get_results( $query );
 		foreach ( $roi_list as $roi_item ) {
