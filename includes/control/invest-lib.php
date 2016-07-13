@@ -102,7 +102,7 @@ function ypcf_check_is_user_logged_invest() {
 function ypcf_check_is_project_investable() {
     $post_camp = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post_camp );
-    if (!ypcf_check_user_is_complete($post_camp->post_author) || !$campaign->is_remaining_time() || $campaign->campaign_status() != 'collecte') {
+    if (!ypcf_check_user_is_complete($post_camp->post_author) || !$campaign->is_remaining_time() || $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte) {
 	wp_redirect(get_permalink($_GET['campaign_id']));
 	exit();
     }
@@ -192,7 +192,7 @@ function ypcf_check_invest_redirections() {
     }
     
     //Si le projet n'est pas en collecte ou que le montant de la part est à 0 (donc non-défini), on retourne à la page projet
-    if ($campaign->campaign_status() != 'collecte' || $campaign->part_value() == 0) {
+    if ($campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte || $campaign->part_value() == 0) {
 		wp_redirect(get_permalink($campaign->ID));
 		exit();
     }

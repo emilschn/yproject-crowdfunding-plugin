@@ -482,7 +482,7 @@ class WDGUser {
 		if ($complete === FALSE) {
 			$args['meta_key'] = 'campaign_vote';
 			$args['meta_compare'] = '!='; 
-			$args['meta_value'] = 'preparing';
+			$args['meta_value'] = ATCF_Campaign::$campaign_status_preparing;
 		}
 		query_posts($args);
 		if (have_posts()) {

@@ -625,7 +625,7 @@ function atcf_shortcode_submit_process() {
 	 	wp_insert_post( $forum_post, $wp_error ); 
 
 	    // Extra Campaign Information
-	    add_post_meta( $campaign, 'campaign_vote', 'preparing' );
+	    add_post_meta( $campaign, 'campaign_vote', ATCF_Campaign::$campaign_status_preparing );
             add_post_meta( $campaign, 'campaign_validated_next_step', 0);
 	    add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );
 	    add_post_meta( $campaign, 'campaign_minimum_goal', apply_filters( 'edd_metabox_save_edd_price', $minimum_goal ) );

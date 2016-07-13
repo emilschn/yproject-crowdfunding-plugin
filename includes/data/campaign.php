@@ -85,15 +85,25 @@ class ATCF_Campaign {
 	 * @var int
 	 */
 	public static $vote_percent_invest_ready_min_required = 50;
-        
-	public static $status_list = array(
-		'preparing' => 'Pr&eacute;paration',
-		'preview'   => 'Avant-premi&egrave;re',
-		'vote'	    => 'Vote',
-		'collecte'  => 'Collecte',
-		'funded'  => 'Termin&eacute',
-		'archive'  => 'Archiv&eacute'
-	);
+
+	public static $campaign_status_preparing = 'preparing';
+	public static $campaign_status_validated = 'validated';
+	public static $campaign_status_preview = 'preview';
+	public static $campaign_status_vote = 'vote';
+	public static $campaign_status_collecte = 'collecte';
+	public static $campaign_status_funded = 'funded';
+	public static $campaign_status_archive = 'archive';
+
+	static public function get_campaign_status_list(){
+		return array(
+			ATCF_Campaign::$campaign_status_preparing => 'Pr&eacute;paration',
+			ATCF_Campaign::$campaign_status_preview => 'Avant-premi&egrave;re',
+			ATCF_Campaign::$campaign_status_vote => 'Vote',
+			ATCF_Campaign::$campaign_status_collecte=> 'Collecte',
+			ATCF_Campaign::$campaign_status_funded => 'Termin&eacute',
+			ATCF_Campaign::$campaign_status_archive => 'Archiv&eacute'
+		);
+	}
 
 	function __construct( $post ) {
 		$this->data = get_post( $post );
@@ -812,10 +822,10 @@ class ATCF_Campaign {
 		//Récupération de la date de fin et de la date actuelle
 		$buffer = '';
 		switch ($this->campaign_status()) {
-			case 'vote':
+			case ATCF_Campaign::$campaign_status_vote:
 			    $expires = strtotime( $this->end_vote() );
 			    break;
-			case 'collecte':
+			case ATCF_Campaign::$campaign_status_collecte:
 			    $expires = strtotime( $this->end_date() );
 			    break;
 			default:
@@ -856,7 +866,7 @@ class ATCF_Campaign {
 		date_default_timezone_set("Europe/London");
 		$now = current_time( 'timestamp' );
 		switch ($this->campaign_status()) {
-			case 'vote':
+			case ATCF_Campaign::$campaign_status_vote:
 			    $expires = strtotime( $this->end_vote() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
@@ -878,7 +888,7 @@ class ATCF_Campaign {
 				    }
 			    }
 			    break;
-			case 'collecte':
+			case ATCF_Campaign::$campaign_status_collecte:
 			    $expires = strtotime( $this->end_date() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
@@ -1501,7 +1511,7 @@ class ATCF_Campaign {
 	}
 
 	public function set_status($newstatus){
-		if(array_key_exists($newstatus, ATCF_Campaign::$status_list)){
+		if(array_key_exists($newstatus, ATCF_Campaign::get_campaign_status_list())){
 			$res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
 		}
 	}
