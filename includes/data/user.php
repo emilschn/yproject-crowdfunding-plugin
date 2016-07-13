@@ -324,6 +324,18 @@ class WDGUser {
 	}
 	
 	/**
+	 * Détermine si l'utilisateur peut payer avec sa carte et son porte-monnaie
+	 * @param int $amount
+	 * @param ATCF_Campaign $campaign
+	 * @return bool
+	 */
+	public function can_pay_with_card_and_wallet( $amount, $campaign ) {
+		$lemonway_amount = $this->get_lemonway_wallet_amount();
+		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5€ à payer par carte
+		return ($lemonway_amount > 0 && $amount - $lemonway_amount > 5 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+	}
+	
+	/**
 	 * Transfère l'argent du porte-monnaie utilisateur vers son compte bancaire
 	 */
 	public function transfer_wallet_to_bankaccount() {

@@ -314,6 +314,29 @@ function ypcf_check_meanofpayment_redirections() {
 				}
 		    break;
 			
+		    case 'cardwallet':
+				if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					$_SESSION['need_wallet_completion'] = TRUE;
+					$organization = $campaign->get_organisation();
+					$organization_obj = new YPOrganisation($organization->organisation_wpref);
+					$WDGuser_current = WDGUser::current();
+					$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $campaign->ID;
+					$wk_token = LemonwayLib::make_token($current_token_id);
+					$return_url = get_permalink($page_payment_done) . '?meanofpayment=cardwallet&campaign_id='. $campaign->ID;
+					$error_url = $return_url . '&error=1';
+					$cancel_url = $return_url . '&cancel=1';
+					$WDGuser_current_wallet_amount = $WDGuser_current->get_lemonway_wallet_amount();
+					$amount -= $WDGuser_current_wallet_amount;
+					$return = LemonwayLib::ask_payment_webkit( $organization_obj->get_lemonway_id(), $amount, 0, $wk_token, $return_url, $error_url, $cancel_url );
+					if ( !empty($return->MONEYINWEB->TOKEN) ) {
+						$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
+						$url_css_encoded = urlencode($url_css);
+						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&p=' . $url_css_encoded);
+						exit();
+					}
+				}
+		    break;
+			
 			//Paiement par wallet
 			case 'wallet':
 				$WDGUser_current = WDGUser::current();
@@ -630,7 +653,8 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						//TODO
 					}
 
-				} else if (strpos($contribution_id, 'wallet_') !== FALSE) {
+				//Paiement par wallet uniquement
+				} else if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
 					$buffer = 'publish';
 					$update_post = TRUE;
 
