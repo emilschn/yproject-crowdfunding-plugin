@@ -101,7 +101,7 @@ class WDGUser {
 	 * @param string $campaign_funding_type
 	 * @return boolean
 	 */
-	public function has_filled_invest_infos($campaign_funding_type) {
+	public function has_filled_invest_infos($campaign_funding_type, $is_project_holder) {
 		global $user_can_invest_errors;
 		$user_can_invest_errors = array();
 		
@@ -115,7 +115,7 @@ class WDGUser {
 		if ($this->wp_user->get('user_birthday_year') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
 		
 		//Infos nécessaires pour l'investissement
-		if ($campaign_funding_type != 'fundingdonation') {
+		if ($campaign_funding_type != 'fundingdonation' && !$is_project_holder) {
 			if (!$this->is_major()) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
 			if ($this->wp_user->get('user_address') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
 			if ($this->wp_user->get('user_postal_code') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
@@ -124,6 +124,18 @@ class WDGUser {
 			if ($this->wp_user->get('user_birthplace') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
 			if ($this->wp_user->get('user_gender') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
 		}
+
+		if($is_project_holder) {
+            if (!$this->is_major()) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent porter un projet.', 'yproject')); }
+            if ($this->wp_user->get('user_address') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse.', 'yproject')); }
+            if ($this->wp_user->get('user_postal_code') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre code postal.', 'yproject')); }
+            if ($this->wp_user->get('user_city') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville.', 'yproject')); }
+            if ($this->wp_user->get('user_country') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre pays.', 'yproject')); }
+            if ($this->wp_user->get('user_birthplace') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville de naissance.', 'yproject')); }
+            if ($this->wp_user->get('user_gender') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre sexe.', 'yproject')); }
+
+            if ($this->wp_user->get('user_mobile_phone') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre num&eacute;ro de t&eacute;l&eacute;phone.', 'yproject')); }
+        }
 		
 		return (empty($user_can_invest_errors));
 	}

@@ -317,8 +317,12 @@ class WDGAjaxActions {
 		$country = filter_input(INPUT_POST, 'country');
 		$telephone = filter_input(INPUT_POST, 'telephone');
 		$current_user->save_data($gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
-		
-		if ($current_user->has_filled_invest_infos($campaign->funding_type())) {
+
+		$is_project_holder = false;
+		if (filter_input(INPUT_POST, 'is_project_holder')=="1"){$is_project_holder = true;}
+
+		if ($current_user->has_filled_invest_infos($campaign->funding_type(),$is_project_holder) &&
+			filter_input(INPUT_POST, 'invest_type')!='') {
 			WDGAjaxActions::check_invest_input();
 		} else {
 			global $user_can_invest_errors;
