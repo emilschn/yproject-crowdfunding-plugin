@@ -109,8 +109,9 @@ final class ATCF_CrowdFunding {
 		
 		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
 		require( $this->includes_dir . 'control/social/twitter/TwitterAPIExchange.php' );
-		
+
 		require( $this->includes_dir . 'control/ajax.php' );
+		require( $this->includes_dir . 'control/post.php' );
 		require( $this->includes_dir . 'control/cron.php' );
 		require( $this->includes_dir . 'control/settings.php' );
 		require( $this->includes_dir . 'control/logs.php' );
@@ -152,6 +153,8 @@ final class ATCF_CrowdFunding {
 	 */
 	private function setup_actions() {
 		WDGAjaxActions::init_actions();
+		WDGPostActions::init_actions();
+
 		if (get_option('wdg_version') != $this->version) {
 			WDGROIDeclaration::upgrade_db();
 			WDGROI::upgrade_db();
