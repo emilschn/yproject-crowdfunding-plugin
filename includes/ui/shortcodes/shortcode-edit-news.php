@@ -18,9 +18,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $author_id = $post->post_author;
     
     //Test pour vérifier que le post de blog appartient à la campagne
-    $category_slug = $post->ID . '-blog-' . $post->post_name;
-    $category_obj = get_category_by_slug($category_slug);
-    $posts_blog = get_posts(array('category'=>$category_obj->cat_ID));
+    $posts_blog = get_posts( array(
+		'category' => $campaign->get_news_category_id()
+	));
     if (isset($_GET['edit_post_id'])) $edit_post_id = ($_GET['edit_post_id']);
     $post_belong_campaign = false;
     foreach ($posts_blog as $post_blog) {
@@ -42,13 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	
 	?>
 	<div style="padding-top: 10px;">
-	    <?php 
-	    if (!empty($category_obj)) {
-		    $news_link = esc_url(get_category_link($category_obj->cat_ID));
-	    } else {
-		    $news_link = '';
-	    }
-	    ?>
+	    <?php $news_link = esc_url(get_category_link($campaign->get_news_category_id())); ?>
 	    <a href="<?php echo $news_link; ?>">&lt;&lt; Retour &agrave; la liste des articles</a>
 	</div>
 	<div style="padding-top: 10px;">
