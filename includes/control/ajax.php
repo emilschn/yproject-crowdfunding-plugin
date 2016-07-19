@@ -16,6 +16,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_user_infos');
 		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
+		WDGAjaxActions::add_action('save_image_head');
 	}
     
 	/**
@@ -442,5 +443,76 @@ class WDGAjaxActions {
 		} else {
 			$WDGuser_current->send_kyc();
 		}
+	}
+
+
+	/**
+	 * Enregistre l'image head
+	 */
+	public static function save_image_head() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_user = WDGUser::current();
+		$image_header =  $_FILES['image_header'];
+		if (!empty($image_header)) {
+			$upload_overrides = array( 'test_form' => false );
+
+			$upload = wp_handle_upload( $image_header, $upload_overrides );
+			if (isset($upload[ 'url' ])) {
+				$path = $image_header['name'];
+				$ext = pathinfo($path, PATHINFO_EXTENSION);
+				$is_image_accepted = true;
+				switch (strtolower($ext)) {
+					case 'png':
+						$image_header = imagecreatefrompng($upload[ 'file' ]);
+						break;
+					case 'jpg':
+					case 'jpeg':
+						$image_header = imagecreatefromjpeg($upload[ 'file' ]);
+						break;
+					default:
+						$is_image_accepted = false;
+						break;
+				}
+				if ($is_image_accepted) {
+					for ($i = 0; $i < 10; $i++) {
+						imagefilter($image_header, IMG_FILTER_GAUSSIAN_BLUR);
+						imagefilter($image_header, IMG_FILTER_SELECTIVE_BLUR);
+					}
+					$withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $upload[ 'file' ]);
+					$img_name = $withoutExt.'_blur.jpg';
+					imagejpeg($image_header,$img_name);
+
+					//Suppression dans la base de données de l'ancienne image
+					global $wpdb;
+					$table_posts = $wpdb->prefix . "posts";
+					$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_header'" );
+					wp_delete_attachment( $old_attachement_id, true );
+					
+					$attachment = array(
+						'guid'           => $upload[ 'url' ], 
+						'post_mime_type' => $upload[ 'type' ],
+						'post_title'     => 'image_header',
+						'post_content'   => '',
+						'post_status'    => 'inherit'
+					);
+					$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign_id );		
+
+					wp_update_attachment_metadata( 
+						$attach_id, 
+						wp_generate_attachment_metadata( $attach_id, $img_name ) 
+					);
+					//Suppression de la position de la couverture
+					delete_post_meta($campaign_id, 'campaign_cover_position');
+
+					add_post_meta( $campaign_id, '_thumbnail_id', absint( $attach_id ) );
+				}
+			}
+		}
+		$temp_blur = filter_input(INPUT_POST, 'image_header_blur');
+		if (empty($temp_blur)) $temp_blur = 'FALSE';
+		update_post_meta($campaign_id, 'campaign_header_blur_active', $temp_blur);
+		
+		exit();
 	}
 }
