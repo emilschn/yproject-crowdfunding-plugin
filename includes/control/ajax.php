@@ -16,6 +16,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_user_infos');
 		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
+		WDGAjaxActions::add_action('save_project_infos');
+		WDGAjaxActions::add_action('save_project_funding');
 	}
     
 	/**
@@ -447,4 +449,115 @@ class WDGAjaxActions {
 			$WDGuser_current->send_kyc();
 		}
 	}
+
+	/**
+	 * Enregistre les informations générales du projet
+	 */
+	public static function save_project_infos(){
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$errors = array();
+
+		//Titre du projet
+		$title = sanitize_text_field(filter_input(INPUT_POST,'project_name'));
+		if (!empty($title)) {
+			$return = wp_update_post(array(
+				'ID' => $campaign_id,
+				'post_title' => $title
+			));
+			if ($return != $campaign_id){
+				array_push($errors,"Le nouveau nom du projet n'est pas valide");
+			}
+		} else {
+			array_push($errors,"Le nom du projet ne peut pas &ecirc;tre vide");
+		}
+
+		//Catégories du projet
+		$cat_cat_id = -1; $cat_act_id = -1;
+		if (isset($_POST['project_category'])) { $cat_cat_id = $_POST['project_category']; } else { $buffer = FALSE; }
+		if (isset($_POST['project_activity'])) { $cat_act_id = $_POST['project_activity']; } else { $buffer = FALSE; }
+		if ($cat_cat_id != -1 && $cat_act_id != -1) {
+			$cat_ids = array_map( 'intval', array($cat_cat_id, $cat_act_id) );
+			wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
+		}
+
+		//Localisation du projet
+		$location = sanitize_text_field(filter_input(INPUT_POST,'project_location'));
+		if (!empty($location)) {
+			update_post_meta($campaign_id, 'campaign_location', $location);
+		}
+
+		$return_values = array(
+			"response" => "edit_project",
+			"errors" => $errors
+		);
+		echo json_encode($return_values);
+
+		exit();
+	}
+
+	/**
+	 * Enregistre les informations de collecte du projet
+	 */
+	public static function save_project_funding(){
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$errors = array();
+
+		//Update required amount
+		$new_minimum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'minimum_goal')));
+		$new_maximum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'maximum_goal')));
+		if($new_minimum_goal > $new_maximum_goal){
+			array_push($errors, "Le montant maximum ne peut &ecirc;tre inf&eacute;rieur au montant minimum");
+		} else if($new_minimum_goal<0 || $new_maximum_goal<0) {
+			array_push($errors, "Les montants doivent &ecirc;tre positifs");
+		} else {
+			update_post_meta($campaign_id, 'campaign_minimum_goal', $new_minimum_goal);
+			update_post_meta($campaign_id, 'campaign_goal', $new_maximum_goal);
+		}
+
+		//Update funding duration
+		$new_duration = intval(sanitize_text_field(filter_input(INPUT_POST, 'funding_duration')));
+		if($new_duration>=1){
+			update_post_meta($campaign_id, ATCF_Campaign::$key_funding_duration, $new_duration);
+		} else {
+			array_push($errors, "Le financement doit au moins durer une ann&eacute;e");
+		}
+
+		//Update roi_percent_estimated duration
+		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'roi_percent_estimated'))),2);
+		if($new_roi_percent>=0){
+			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent);
+		} else {
+			array_push($errors, "Le pourcentage de CA reversé doit être positif");
+		}
+
+		//Update first_payment_date
+		try {
+			$new_first_payment_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'first_payment_date')));
+			update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
+		} catch (Exception $e) {
+			array_push($errors, "La date est invalide");
+		}
+
+		//Update list of estimated turnover
+		$new_turnover_list = filter_input(INPUT_POST, 'list_turnover');
+		$turnover_list = json_decode($new_turnover_list);
+		$sanitized_list = array();
+		foreach ($turnover_list as $key => $value){
+			$sanitized_list[strval(intval($key))] = strval(intval($value));
+		}
+
+ 		if(json_last_error() == JSON_ERROR_NONE){
+			$campaign->__set(ATCF_Campaign::$key_estimated_turnover,json_encode($sanitized_list));
+		}
+
+
+		$return_values = array(
+			"response" => "edit_funding",
+			"errors" => $errors
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+
 }

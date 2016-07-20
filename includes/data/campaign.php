@@ -63,7 +63,7 @@ class ATCF_Campaign {
 	public $data;
         
 	/**
-	 * Number of days of vote
+	 * Default number of days of vote
 	 * @var int
 	 */
 	public static $vote_duration = 30;
@@ -121,6 +121,12 @@ class ATCF_Campaign {
 
 		return $meta;
 	}
+
+    public function __set( $key, $value) {
+        if (is_object($this->data)) {
+            update_post_meta($this->ID, $key, $value);
+        }
+    }
 	
 /*******************************************************************************
  * METAS
@@ -317,11 +323,14 @@ class ATCF_Campaign {
 /*******************************************************************************
  * GESTION ROI
  ******************************************************************************/
-	public function funding_duration() {
-	    return $this->__get('campaign_funding_duration');
+    public static $key_funding_duration = 'campaign_funding_duration';
+    public function funding_duration() {
+	    return $this->__get(ATCF_Campaign::$key_funding_duration);
 	}
+
+    public static $key_roi_percent_estimated = 'campaign_roi_percent_estimated';
 	public function roi_percent_estimated() {
-	    $buffer = $this->__get('campaign_roi_percent_estimated');
+	    $buffer = $this->__get(ATCF_Campaign::$key_roi_percent_estimated);
 		if (empty($buffer)) {
 			$buffer = $this->roi_percent();
 		}
@@ -330,8 +339,10 @@ class ATCF_Campaign {
 	public function roi_percent() {
 	    return $this->__get('campaign_roi_percent');
 	}
+
+    public static $key_first_payment_date = 'campaign_first_payment_date';
 	public function first_payment_date() {
-	    return $this->__get('campaign_first_payment_date');
+	    return $this->__get(ATCF_Campaign::$key_first_payment_date);
 	}
 	
 	// Frais appliqués au porteur de projet
