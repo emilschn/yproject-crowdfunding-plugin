@@ -101,7 +101,7 @@ class WDGUser {
 	 * @param string $campaign_funding_type
 	 * @return boolean
 	 */
-	public function has_filled_invest_infos($campaign_funding_type, $is_project_holder) {
+	public function has_filled_invest_infos($campaign_funding_type, $is_project_holder=false) {
 		global $user_can_invest_errors;
 		$user_can_invest_errors = array();
 		

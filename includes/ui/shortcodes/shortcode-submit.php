@@ -612,30 +612,20 @@ function atcf_shortcode_submit_process() {
 
 	    // Create category for blog
 	    $id_category = wp_insert_category( array('cat_name' => 'cat'.$campaign, 'category_parent' => $parent, 'category_nicename' => sanitize_title($campaign . '-blog-' . $title)) );
-
-
-	    // Create forum for campaign
-	    $forum_post = array(
-			'post_title'    => $campaign,
-			'post_name'     => $campaign,
-			'post_status'   => 'publish',
-			'post_type'     => 'forum'
-		);
- 
-	 	wp_insert_post( $forum_post, $wp_error ); 
+	    add_post_meta( $campaign, 'campaign_blog_category_id', $id_category );
 
 	    // Extra Campaign Information
 	    add_post_meta( $campaign, 'campaign_vote', ATCF_Campaign::$campaign_status_preparing );
-            add_post_meta( $campaign, 'campaign_validated_next_step', 0);
+        add_post_meta( $campaign, 'campaign_validated_next_step', 0);
 	    add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );
 	    add_post_meta( $campaign, 'campaign_minimum_goal', apply_filters( 'edd_metabox_save_edd_price', $minimum_goal ) );
 	    add_post_meta( $campaign, 'campaign_part_value', 1 );
 	    add_post_meta( $campaign, 'campaign_type', sanitize_text_field( $type ) );
 	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
-            add_post_meta( $campaign, 'campaign_contact_phone', $phone);
+		add_post_meta( $campaign, 'campaign_contact_phone', $phone);
 	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
-            add_post_meta( $campaign, 'campaign_begin_collecte_date', sanitize_text_field( $end_date_vote ) );
+		add_post_meta( $campaign, 'campaign_begin_collecte_date', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_end_vote', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_location', sanitize_text_field( $location ) );
 	    add_post_meta( $campaign, 'campaign_author', sanitize_text_field( $author ) );

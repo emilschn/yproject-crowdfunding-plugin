@@ -26,15 +26,12 @@ class WDGFormProjects {
 
 		$current_user = wp_get_current_user();
 
-		$category_slug = $post_campaign->ID . '-blog-' . $post_campaign->post_name;
-		$category_obj = get_category_by_slug($category_slug);
-
 		$blog = array(
 			'post_title'    => $_POST['posttitle'],
 			'post_content'  => $_POST['postcontent'],
 			'post_status'   => 'publish',
 			'post_author'   => $current_user->ID,
-			'post_category' => array($category_obj->cat_ID)
+			'post_category' => array( $campaign->get_news_category_id() )
 		);
 
 		$post_id = wp_insert_post($blog, true);

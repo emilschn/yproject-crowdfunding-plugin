@@ -415,6 +415,38 @@ class ATCF_Campaign {
 	    $payment_list_status[$year] = $post_id;
 	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
+	
+	
+/*******************************************************************************
+ * GESTION CATEGORIES
+ ******************************************************************************/
+	public static $key_blog_category_id = 'campaign_blog_category_id';
+	public function get_news_category_id() {
+	    $cat_id = $this->__get( ATCF_Campaign::$key_blog_category_id );
+		
+		if ( empty ( $cat_id ) ) {
+			$category_slug = $this->ID . '-blog-' . $this->data->post_name;
+			$category_obj = get_category_by_slug($category_slug);
+			$cat_id = $category_obj->cat_ID;
+		}
+		
+		return $cat_id;
+	}
+	
+	public function get_news_posts( $nb = -1 ) {
+		$posts_in_category = array();
+		
+		$cat_id = $this->get_news_category_id();
+		if ( !empty( $cat_id ) ) {
+			$posts_in_category = get_posts( array(
+				'category'	=> $cat_id,
+				'showposts'	=> $nb
+			) );
+		}
+		
+		return $posts_in_category;
+	}
+	
         
 	/**
 	 * Indique si le porteur de projet est autorisé à passer à l'étape
