@@ -752,6 +752,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
  * 
  */
 function ypcf_get_updated_transfer_status($transfer_post) {
+	/*
 	$widthdrawal_obj = ypcf_mangopay_get_withdrawal_by_id($transfer_post->post_content);
 	if ($widthdrawal_obj->Error != "" && $widthdrawal_obj->Error != NULL) {
 	    $args = array(
@@ -767,6 +768,8 @@ function ypcf_get_updated_transfer_status($transfer_post) {
 	    );
 	    wp_update_post($args);
 	}
+	 * 
+	 */
 	
 	$transfer_post_obj = get_post($transfer_post);
 	return $transfer_post_obj->post_status;
