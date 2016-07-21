@@ -18,6 +18,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_user_docs');
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
+		WDGAjaxActions::add_action('save_project_communication');
 	}
     
 	/**
@@ -560,4 +561,19 @@ class WDGAjaxActions {
 		exit();
 	}
 
+	public static function save_project_communication(){
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+
+		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'website'))));
+		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'facebook'))));
+		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'twitter'))));
+
+		$return_values = array(
+			"response" => "edit_communication",
+			"errors" => array()
+		);
+		echo json_encode($return_values);
+		exit();
+	}
 }

@@ -97,6 +97,7 @@ class ATCF_Campaign {
 	static public function get_campaign_status_list(){
 		return array(
 			ATCF_Campaign::$campaign_status_preparing => 'Pr&eacute;paration',
+            ATCF_Campaign::$campaign_status_validated => 'Valid&eacute;e',
 			ATCF_Campaign::$campaign_status_preview => 'Avant-premi&egrave;re',
 			ATCF_Campaign::$campaign_status_vote => 'Vote',
 			ATCF_Campaign::$campaign_status_collecte=> 'Collecte',
@@ -607,6 +608,21 @@ class ATCF_Campaign {
 	public function contact_phone() {
 		return $this->__get( 'campaign_contact_phone' );
 	}
+
+    public static $key_external_website = 'campaign_website';
+    public function campaign_external_website(){
+        return $this->__get(ATCF_Campaign::$key_external_website);
+    }
+
+    public static $key_facebook_name = 'campaign_facebook';
+    public function facebook_name(){
+        return $this->__get(ATCF_Campaign::$key_facebook_name);
+    }
+
+    public static $key_twitter_name = 'campaign_twitter';
+    public function twitter_name(){
+        return $this->__get( ATCF_Campaign::$key_twitter_name );
+    }
 
 	/**
 	 * Campaign End Date
