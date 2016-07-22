@@ -19,6 +19,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
+		WDGAjaxActions::add_action('save_project_organisation');
 	}
     
 	/**
@@ -456,6 +457,7 @@ class WDGAjaxActions {
 	 */
 	public static function save_project_infos(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
 		$errors = array();
 
 		//Titre du projet
@@ -466,10 +468,20 @@ class WDGAjaxActions {
 				'post_title' => $title
 			));
 			if ($return != $campaign_id){
+				//$errors["project_name"].="Le nouveau nom du projet n'est pas valide";
 				array_push($errors,"Le nouveau nom du projet n'est pas valide");
 			}
 		} else {
+			//$errors["project_name"].="Le nom du projet ne peut pas &ecirc;tre vide";
 			array_push($errors,"Le nom du projet ne peut pas &ecirc;tre vide");
+		}
+
+		//Résumé backoffice du projet
+		$backoffice_summary = (filter_input(INPUT_POST,'backoffice_summary'));
+		if (!empty($backoffice_summary)) {
+			$campaign->__set(ATCF_Campaign::$key_backoffice_summary, $backoffice_summary);
+		} else {
+			array_push($errors,"Décrivez votre projet");
 		}
 
 		//Catégories du projet
@@ -561,6 +573,61 @@ class WDGAjaxActions {
 		exit();
 	}
 
+	/**
+	 * Enregistre les informations de l'organisation liée à un projet
+	 */
+	public static function save_project_organisation(){
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+
+		//Récupération de l'ancienne organisation
+		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
+		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+		$current_organisation = FALSE;
+		if (count($current_organisations) > 0) {
+			$current_organisation = $current_organisations[0];
+		}
+
+		$delete = FALSE;
+		$update = FALSE;
+
+		//On met à jour : si une nouvelle organisation est renseignée et différente de celle d'avant
+		//On supprime : si la nouvelle organisation renseignée est différente de celle d'avant
+		if (!empty(filter_input(INPUT_POST, 'project-organisation'))) {
+			$organisation_selected = new YPOrganisation(filter_input(INPUT_POST, 'project-organisation'));
+			if ($current_organisation === FALSE || $current_organisation->organisation_wpref != $organisation_selected->get_wpref()) {
+				$update = TRUE;
+				if ($current_organisation !== FALSE) {
+					$delete = TRUE;
+				}
+			}
+
+			//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
+		} else {
+			if ($current_organisation !== FALSE) {
+				$delete = TRUE;
+			}
+		}
+
+		if ($delete) {
+			BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+		}
+
+		if ($update) {
+			$api_organisation_id = $organisation_selected->get_bopp_id();
+			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+		}
+
+		$return_values = array(
+			"response" => "edit_organisation",
+			"errors" => array()
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+
+	/**
+	 * Enregistre les informations de communication du projet
+	 */
 	public static function save_project_communication(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);

@@ -106,6 +106,22 @@ class ATCF_Campaign {
 		);
 	}
 
+    /**
+     * Cette liste détermine l'ordre croissant d'informations nécessaires au cours d'une campagne
+     * @return array
+     */
+    static public function get_campaign_status_priority(){
+        return array(
+            ATCF_Campaign::$campaign_status_archive => 0,
+            ATCF_Campaign::$campaign_status_preparing => 1,
+            ATCF_Campaign::$campaign_status_validated => 2,
+            ATCF_Campaign::$campaign_status_preview => 3,
+            ATCF_Campaign::$campaign_status_vote => 4,
+            ATCF_Campaign::$campaign_status_collecte=> 5,
+            ATCF_Campaign::$campaign_status_funded => 6,
+        );
+    }
+
 	function __construct( $post ) {
 		$this->data = get_post( $post );
 		$this->ID   = $this->data->ID;
@@ -252,9 +268,17 @@ class ATCF_Campaign {
 	public function subtitle() {
 		return $this->__get_translated_property( 'campaign_subtitle' );
 	}
-	public function summary() {
-		return $this->__get_translated_property( 'campaign_summary' );
-	}
+    public function summary() {
+        return $this->__get_translated_property( 'campaign_summary' );
+    }
+
+    /**
+     * @return string This summary is used in the back-office to introduce the project
+     */
+    public static $key_backoffice_summary = 'campaign_backoffice_summary';
+    public function backoffice_summary() {
+        return $this->__get_translated_property(ATCF_Campaign::$key_backoffice_summary);
+    }
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
 	}
