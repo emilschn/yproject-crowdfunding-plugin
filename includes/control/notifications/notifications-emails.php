@@ -34,6 +34,7 @@ class NotificationsEmails {
 		}
 		$bcc_list = substr( $bcc_list, 0, -1 );
 		$headers .= "Bcc: ".$bcc_list.";\r\n";
+		ypcf_debug_log('NotificationsEmails::send_mail > Bcc list : ' . $bcc_list);
 	}
 	
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
