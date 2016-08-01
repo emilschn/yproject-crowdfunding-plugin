@@ -235,10 +235,10 @@ class ATCF_Campaign {
 /*******************************************************************************
  * TABLEAU DE BORD
  ******************************************************************************/
-	public function google_doc() {
-		return $this->__get('campaign_google_doc');
-	}
-	
+    public static $key_google_doc = 'campaign_google_doc';
+    public function google_doc() {
+        return $this->__get_translated_property(ATCF_Campaign::$key_google_doc);
+    }
 	
 /*******************************************************************************
  * AFFICHAGE
@@ -669,30 +669,36 @@ class ATCF_Campaign {
 	public function begin_collecte_date($format = 'Y-m-d H:i:s') {
 		return mysql2date( $format, $this->__get( 'campaign_begin_collecte_date' ), false );
 	}
-        
-	/**
-	 * Set the date when vote finishes
-	 * @param type DateTime $newDate
-	 */
+
+    /**
+     * Set the date when vote finishes
+     * @param type DateTime $newDate
+     * @return bool|int
+     */
 	public function set_end_vote_date($newDate){
 		$res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
+        return $res;
 	}
 
 	/**
 	 * Set the date when collecte is started
 	 * @param type DateTime $newDate
-	 */
+     * @return bool|int
+     */
 	public function set_begin_collecte_date($newDate){
 		$res = update_post_meta($this->ID, 'campaign_begin_collecte_date', date_format($newDate, 'Y-m-d H:i:s'));
+        return $res;
 	}
 
 	/**
 	 * Set the date when collecte finishes
 	 * @param type DateTime $newDate
-	 */
+     * @return bool|int
+     */
 	public function set_end_date($newDate){
 		$res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
-	}
+        return $res;
+    }
 
 	public function end_vote() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_vote' ), false);

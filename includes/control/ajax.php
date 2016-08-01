@@ -16,10 +16,12 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_user_infos');
 		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
+
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
 		WDGAjaxActions::add_action('save_project_organisation');
+		WDGAjaxActions::add_action('save_project_campaigntab');
 	}
     
 	/**
@@ -639,6 +641,52 @@ class WDGAjaxActions {
 		$return_values = array(
 			"response" => "edit_communication",
 			"errors" => array()
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+
+	/**
+	 * Enregistre les informations de l'onglet "campagne" du projet
+	 */
+	public static function save_project_campaigntab(){
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$errors = array();
+
+		$new_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'google_doc'));
+		if(strpos($new_gdoc_url,"https://docs.google.com/document/d/")==0 ||
+			strpos($new_gdoc_url,"docs.google.com/document/d/")==0){
+			$campaign->__set(ATCF_Campaign::$key_google_doc, (sanitize_text_field(filter_input(INPUT_POST, 'google_doc'))));
+		} else {
+			array_push($errors, "L'URL ".$new_gdoc_url." est invalide ");
+		}
+
+		if(!empty(filter_input(INPUT_POST, 'end_vote_date'))){
+			try {
+				$new_end_vote_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'end_vote_date')));
+				$campaign->set_end_vote_date($new_end_vote_date);
+			} catch (Exception $e) {
+				array_push($errors, "La date est invalide");
+			}
+		} else {
+			array_push($errors, "Il faut une date de fin de vote !");
+		}
+
+		if(!empty(filter_input(INPUT_POST, 'end_collecte_date'))){
+			try {
+				$new_end_collecte_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'end_collecte_date')));
+				$campaign->set_end_date($new_end_collecte_date);
+			} catch (Exception $e) {
+				array_push($errors, "La date est invalide");
+			}
+		} else {
+			array_push($errors, "Il faut une date de fin de collecte !");
+		}
+
+		$return_values = array(
+			"response" => "save_project_campaigntab",
+			"errors" => $errors
 		);
 		echo json_encode($return_values);
 		exit();
