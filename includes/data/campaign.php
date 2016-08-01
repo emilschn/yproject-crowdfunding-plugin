@@ -239,6 +239,11 @@ class ATCF_Campaign {
     public function google_doc() {
         return $this->__get_translated_property(ATCF_Campaign::$key_google_doc);
     }
+
+    public static $key_logbook_google_doc = 'campaign_logbook_google_doc';
+    public function logbook_google_doc() {
+        return $this->__get_translated_property(ATCF_Campaign::$key_logbook_google_doc);
+    }
 	
 /*******************************************************************************
  * AFFICHAGE
@@ -327,6 +332,10 @@ class ATCF_Campaign {
 	public function constitution_terms() {
 		return $this->__get_translated_property('campaign_constitution_terms');
 	}
+    public static $key_contract_doc_url = 'campaign_contract_doc_url';
+    public function contract_doc_url() {
+        return $this->__get(ATCF_Campaign::$key_contract_doc_url);
+    }
 	
 	public function company_name() {
 	    return $this->__get('campaign_company_name');
