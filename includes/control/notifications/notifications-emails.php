@@ -13,7 +13,7 @@ class NotificationsEmails {
      * @param array $from_data
      * @return bool
      */
-    public static function send_mail($to, $object, $content, $decorate = false, $attachments = array(), $from_data = array()) {
+    public static function send_mail($to, $object, $content, $decorate = false, $attachments = array(), $from_data = array(), $bcc = array()) {
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
 	if ( empty( $from_data ) ) {
 		$from_name = get_bloginfo('name');
@@ -25,6 +25,17 @@ class NotificationsEmails {
 	$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
 	$headers .= "Reply-To: ". $from_email . "\r\n";
 	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
+	if ( !empty($bcc) ) {
+		$bcc_list = '';
+		foreach ($bcc as $bcc_mail) {
+			if ( !empty($bcc_mail) ) {
+				$bcc_list .= $bcc_mail . ',';
+			}
+		}
+		$bcc_list = substr( $bcc_list, 0, -1 );
+		$headers .= "Bcc: ".$bcc_list.";\r\n";
+		ypcf_debug_log('NotificationsEmails::send_mail > Bcc list : ' . $bcc_list);
+	}
 	
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
 	if ($decorate) {
@@ -422,7 +433,6 @@ class NotificationsEmails {
         
 		global $wpdb;
 		$send_list = array();
-		$list_mail = array();
 		$feedback = array();
 		//Récupération éventuelle des utilisateurs "j'y crois"
 		if ($send_jycrois) {
@@ -443,13 +453,15 @@ class NotificationsEmails {
 		//Suppression des doublons
 		$send_list_result = array_unique($send_list);
 	
+		$bcc_to = array();
         foreach ($send_list_result as $id_user) {
 			$user = get_userdata(intval($id_user));
 			$to = $user->user_email;
-			$list_mail[] = $to;
-			$feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true, array(), $from_data);
+			$bcc_to[] = $to;
 		}
-        return array_combine($list_mail, $feedback);
+		$admin_email = get_option('admin_email');
+		$feedback[] = NotificationsEmails::send_mail( $admin_email, $object, $body_content, true, array(), $from_data, $bcc_to );
+        return array_combine($bcc_to, $feedback);
     }
     //*******************************************************
     // FIN MESSAGE DIRECT PORTEUR DE PROJET
@@ -468,6 +480,7 @@ class NotificationsEmails {
     public static function new_project_post_posted($campaign_id, $post_id) {
 		ypcf_debug_log('NotificationsEmails::new_project_post_posted > ' . $campaign_id . ' > ' . $post_id);
 		$post_campaign = get_post($campaign_id);
+		$campaign = new ATCF_Campaign($post_campaign);
 		$organization = $campaign->get_organisation();
 		$organization_obj = new YPOrganisation($organization->organisation_wpref);
 		$project_title = $post_campaign->post_title;
@@ -506,9 +519,10 @@ class NotificationsEmails {
         
         foreach ($result_jcrois as $item) {
 			$to = get_userdata($item->user_id)->user_email;
-			$list_mail[] = get_userdata($item->user_id)->user_email;
-			$feedback[] = NotificationsEmails::send_mail($to, $object, $body_content, true, array(), $from_data);
+			$list_mail[] = $to;
 		}
+		$admin_email = get_option('admin_email');
+		$feedback[] = NotificationsEmails::send_mail( $admin_email, $object, $body_content, true, array(), $from_data, $list_mail );
         return array_combine($list_mail, $feedback);
     }
     //*******************************************************
