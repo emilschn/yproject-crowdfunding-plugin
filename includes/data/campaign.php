@@ -97,7 +97,7 @@ class ATCF_Campaign {
 	static public function get_campaign_status_list(){
 		return array(
 			ATCF_Campaign::$campaign_status_preparing => 'Pr&eacute;paration',
-            ATCF_Campaign::$campaign_status_validated => 'Valid&eacute;e',
+            ATCF_Campaign::$campaign_status_validated => 'Valid&eacute;',
 			ATCF_Campaign::$campaign_status_preview => 'Avant-premi&egrave;re',
 			ATCF_Campaign::$campaign_status_vote => 'Vote',
 			ATCF_Campaign::$campaign_status_collecte=> 'Collecte',
@@ -487,15 +487,32 @@ class ATCF_Campaign {
 	 * suivante par la modération
 	 * @return boolean
 	 */
-	public function can_go_next_step(){
-		$res = $this->__get('campaign_validated_next_step');
+    public static $key_validation_next_status = 'campaign_validated_next_step';
+    public function can_go_next_status(){
+		$res = $this->__get(ATCF_Campaign::$key_validation_next_status);
 		if($res==1){
 			return true;
 		} else {
 			return false; //Y compris le cas où il n'y a pas de valeur
 		}
 	}
-        
+
+    /**
+     * Modifie la validation de modération pour le passage à l'étape suivante
+     * @param $value Valeur du flag de validation (true si le PP peut passer à l'étape suivante, false sinon)
+     * @return bool|int
+     */
+    public function set_validation_next_status($value){
+        if($value === true || $value === "true" || $value===1){
+            return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 1);
+        }
+
+        if($value === false || $value === "false" || $value===0){
+            return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 0);
+        }
+
+        return false;
+    }
         
 	/**
 	 * Indique si le porteur de projet a déjà eu le message de bienvenue
@@ -765,6 +782,7 @@ class ATCF_Campaign {
 	 * Récupérer le statut du projet
 	 * @return string Statuts possibles : preparing ; preview ; vote ; collecte ; funded ; archive
 	 */
+	public static $key_campaign_status = 'campaign_vote';
 	public function campaign_status() {
 		return $this->vote();
 	}
@@ -772,7 +790,7 @@ class ATCF_Campaign {
 	 * Deprecated : use campaign_status instead
 	 */
 	public function vote() {
-		return $this->__get( 'campaign_vote' );
+		return $this->__get(ATCF_Campaign::$key_campaign_status);
 	}
 	
 	/**
@@ -1584,18 +1602,6 @@ class ATCF_Campaign {
 		$post = get_post($id);
 		if ($post->post_parent == $this->ID) wp_delete_post($id);
 	}
-        
-	/**
-	 * Gère la validation de modération pour le passage à l'étape suivante
-	 * 
-	 * $value : Valeur du flag de validation (true si le PP peut passer à
-	 *      l'étape suivante, false sinon)
-	 */
-	public function set_validation_next_step($value){
-		if($value==0||$value==1) {
-			$res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
-		}            
-	}
 
 	/**
 	 * Setter si le PP a déjà vu la LB de bienvenue sur son TB
@@ -1610,8 +1616,10 @@ class ATCF_Campaign {
 
 	public function set_status($newstatus){
 		if(array_key_exists($newstatus, ATCF_Campaign::get_campaign_status_list())){
-			$res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
-		}
+			return update_post_meta($this->ID, ATCF_Campaign::$key_campaign_status, $newstatus);
+		} else {
+		    return false;
+        }
 	}
 
 	/**

@@ -23,6 +23,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_organisation');
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_contract');
+		WDGAjaxActions::add_action('save_project_status');
+
 	}
     
 	/**
@@ -711,6 +713,28 @@ class WDGAjaxActions {
 		$return_values = array(
 			"response" => "edit_contract",
 			"errors" => array()
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+
+	/**
+	 * Enregistre les informations d'étape du projet
+	 */
+	public static function save_project_status(){
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$errors = array();
+
+		$new_status = (sanitize_text_field(filter_input(INPUT_POST, 'campaign_status')));
+		$campaign->set_status($new_status);
+
+		$new_validation_status = (sanitize_text_field(filter_input(INPUT_POST, 'can_go_next')));
+		$campaign->set_validation_next_status($new_validation_status);
+
+		$return_values = array(
+			"response" => "edit_status",
+			"errors" => $errors
 		);
 		echo json_encode($return_values);
 		exit();
