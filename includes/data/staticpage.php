@@ -42,14 +42,53 @@ class WDGStaticPage {
 	public function get_content() {
 		$api_content = "";
 		
+		//Si on doit récupérer du contenu de l'API
 		if ( $this->is_api_content() ) {
-			$api_content = WDGWPRESTLib::get_post( $this->get_content_post_id() );
-		}
+			
+			//Parcours des pages statiques de l'API pour voir celle-ci a été mise à jour
+			$content_post_id = $this->get_content_post_id();
+			$last_update = FALSE;
+			$staticpages_list = WDGStaticPage::get_list();
+			foreach ( $staticpages_list as $staticpage ) {
+				if ( $staticpage->id == $content_post_id ) {
+					$last_update = $staticpage->update;
+				}
+			}
+			
+			//Configuration du cache
+			global $WDG_cache_plugin;
+			$cache_wdgwpapi_id = 'wdgwpapi_get_gost_' . $content_post_id;
+			$cache_wdgwpapi_id_date = 'wdgwpapi_get_gost_' . $content_post_id . '_cachedate';
+			$cache_wdgwpapi_version = 1;
+			$cache_wdgwpapi_duration = 60*60*24*30; // Mis à jour tous les 30 jours
+			
+			//Si la mise à jour de la page de l'API est plus récente que la dernière mise en cache
+			$api_content_cachedate = $WDG_cache_plugin->get_cache( $cache_wdgwpapi_id_date, $cache_wdgwpapi_version );
+			$date_cache = new DateTime( $api_content_cachedate );
+			$date_update = new DateTime( $last_update );
+			if ( empty( $api_content_cachedate ) || empty( $last_update ) || $date_cache < $date_update ) {
+				$api_content = WDGWPRESTLib::get_post( $content_post_id );
+				$WDG_cache_plugin->set_cache( $cache_wdgwpapi_id, $api_content, $cache_wdgwpapi_duration, $cache_wdgwpapi_version );
+				$date_today = new DateTime();
+				$WDG_cache_plugin->set_cache( $cache_wdgwpapi_id_date, $date_today->format( 'Y-m-d H:i' ), $cache_wdgwpapi_duration, $cache_wdgwpapi_version );
+			
+			//Récupération du cache et mise à jour si nécessaire
+			} else {
+				$api_content = $WDG_cache_plugin->get_cache( $cache_wdgwpapi_id, $cache_wdgwpapi_version );
+				
+				if ( empty( $api_content ) ) {
+					$api_content = WDGWPRESTLib::get_post( $content_post_id );
+					$WDG_cache_plugin->set_cache( $cache_wdgwpapi_id, $api_content, $cache_wdgwpapi_duration, $cache_wdgwpapi_version );
+					$date_today = new DateTime();
+					$WDG_cache_plugin->set_cache( $cache_wdgwpapi_id_date, $date_today->format( 'Y-m-d H:i' ), $cache_wdgwpapi_duration, $cache_wdgwpapi_version );
+				}
+			}
 		
-		if ( empty( $api_content ) ) {
-			return apply_filters( "the_content", $this->post->post_content );
-		} else {
-			return apply_filters( "the_content", $api_content );
+			if ( empty( $api_content ) ) {
+				return apply_filters( "the_content", $this->post->post_content );
+			} else {
+				return apply_filters( "the_content", $api_content );
+			}
 		}
 	}
 	

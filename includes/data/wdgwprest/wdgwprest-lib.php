@@ -7,12 +7,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 class WDGWPRESTLib {
 	private static function call_get( $route ) {
-		ypcf_debug_log('BoppLib::call_get -- $route : ' . $route);
+		ypcf_debug_log('WDGWPRESTLib::call_get -- $route : ' . $route);
 		
 		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
 		$result = wp_remote_get( YP_WDGWPREST_URL . $route, array( 'headers' => $headers ) );
 		
-		ypcf_debug_log('BoppLib::call_get ----> $buffer : ' . print_r( $result, TRUE ));
+		ypcf_debug_log('WDGWPRESTLib::call_get ----> $buffer : ' . print_r( $result, TRUE ));
 		
 		$buffer = FALSE;
 		if ( !is_wp_error($result) && isset( $result["response"] ) && isset( $result["response"]["code"] ) && $result["response"]["code"] == "200" ) {
@@ -36,7 +36,22 @@ class WDGWPRESTLib {
 	}
 	
 	public static function get_staticpages_list() {
-		$route = 'wdg/v1/staticpages';
-		return WDGWPRESTLib::call_get( $route );
+		global $WDG_cache_plugin;
+		$cache_wdgwpapi_version = 1;
+		$cache_wdgwpapi_id = 'wdgwpapi_get_static_pages';
+		$cache_wdgwpapi_duration = 60*15;
+		$cache_wdgwpapi = $WDG_cache_plugin->get_cache( $cache_wdgwpapi_id, $cache_wdgwpapi_version );
+		
+		if ( $cache_wdgwpapi !== FALSE ) {
+			$result = json_decode( $cache_wdgwpapi );
+			
+		} else {
+			$route = 'wdg/v1/staticpages';
+			$result = WDGWPRESTLib::call_get( $route );
+			$WDG_cache_plugin->set_cache( $cache_wdgwpapi_id, json_encode( $result ), $cache_wdgwpapi_duration, $cache_wdgwpapi_version );
+
+		}
+		
+		return $result;
 	}
 }
