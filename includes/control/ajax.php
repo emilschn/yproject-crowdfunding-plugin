@@ -456,10 +456,6 @@ class WDGAjaxActions {
 		$image_header =  $_FILES['image_header'];
 		
 		WDGFormProjects::edit_image_banniere($image_header, $campaign_id);
-
-		$temp_blur = filter_input(INPUT_POST, 'image_header_blur');
-		if (empty($temp_blur)) $temp_blur = 'FALSE';
-		update_post_meta($campaign_id, 'campaign_header_blur_active', $temp_blur);
 		
 		exit();
 	}
