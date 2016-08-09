@@ -17,6 +17,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
 		WDGAjaxActions::add_action('save_image_head');
+		WDGAjaxActions::add_action('save_image_url_video');
 	}
     
 	/**
@@ -451,12 +452,25 @@ class WDGAjaxActions {
 	 */
 	public static function save_image_head() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$campaign = new ATCF_Campaign($campaign_id);
-		$current_user = WDGUser::current();
 		$image_header =  $_FILES['image_header'];
 		
 		WDGFormProjects::edit_image_banniere($image_header, $campaign_id);
 		
 		exit();
 	}
+
+	/**
+	 * Enregistre la petite image et/ou url de la vidéo
+	 */
+	public static function save_image_url_video() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$url_video = filter_input(INPUT_POST, 'url_video');
+
+		$image = $_FILES[ 'image_video_zone' ];
+
+		WDGFormProjects::edit_image_url_video($image, $url_video, $campaign_id);
+
+		exit();
+	}
+
 }

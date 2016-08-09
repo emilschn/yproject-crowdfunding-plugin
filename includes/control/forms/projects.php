@@ -245,43 +245,17 @@ class WDGFormProjects {
 			$buffer = FALSE;
 		}
 		
-		if (isset($_POST['video'])) {
-			update_post_meta($campaign_id, 'campaign_video', esc_url($_POST['video']));
-		}
 		
 		/* Gestion fichiers / images */
 		$image_header = $_FILES[ 'image_header' ];
 
-		edit_image_banniere($image_header, $campaign_id);
+		WDGFormProjects::edit_image_banniere($image_header, $campaign_id);
 		
 
 		$image = $_FILES[ 'image_home' ];
-		if (!empty($image)) {
-			$upload_overrides = array( 'test_form' => false );
-			$upload = wp_handle_upload( $image, $upload_overrides );
-			if (isset($upload[ 'url' ])) {
-				$attachment = array(
-					'guid'           => $upload[ 'url' ], 
-					'post_mime_type' => $upload[ 'type' ],
-					'post_title'     => 'image_home',
-					'post_content'   => '',
-					'post_status'    => 'inherit'
-				);
 
-				//Suppression dans la base de données de l'ancienne image
-				global $wpdb;
-				$table_posts = $wpdb->prefix . "posts";
-				$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_home'" );
-				wp_delete_attachment($old_attachement_id, true);
+		WDGFormProjects::edit_image_url_video($image, $_POST['video'], $campaign_id);
 
-				$attach_id = wp_insert_attachment($attachment, $upload[ 'file' ], $campaign_id);		
-
-				wp_update_attachment_metadata( 
-					$attach_id, 
-					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
-				);
-			}
-		}
 		
 		$temp_blur = $_POST['image_header_blur'];
 		if (empty($temp_blur)) $temp_blur = 'FALSE';
@@ -469,6 +443,40 @@ class WDGFormProjects {
 		}
 	}
 
+
+	public static function edit_image_url_video($image, $post_video, $campaign_id) {
+		//ajout de l'image
+		if (!empty($image)) {
+			$upload_overrides = array( 'test_form' => false );
+			$upload = wp_handle_upload( $image, $upload_overrides );
+			if (isset($upload[ 'url' ])) {
+				$attachment = array(
+					'guid'           => $upload[ 'url' ], 
+					'post_mime_type' => $upload[ 'type' ],
+					'post_title'     => 'image_home',
+					'post_content'   => '',
+					'post_status'    => 'inherit'
+				);
+
+				//Suppression dans la base de données de l'ancienne image
+				global $wpdb;
+				$table_posts = $wpdb->prefix . "posts";
+				$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_home'" );
+				wp_delete_attachment($old_attachement_id, true);
+
+				$attach_id = wp_insert_attachment($attachment, $upload[ 'file' ], $campaign_id);		
+
+				wp_update_attachment_metadata( 
+					$attach_id, 
+					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
+				);
+			}
+		}
+		//ajout de l'url de la vidéo
+		if (isset($post_video)) {
+			update_post_meta($campaign_id, 'campaign_video', esc_url($post_video));
+		}
+	}
 
 	public static function form_submit_turnover() {
 		if (!isset($_GET["campaign_id"]) || !isset($_POST["action"]) || $_POST["action"] != 'save-turnover-declaration') { return FALSE; }
