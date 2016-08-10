@@ -68,12 +68,18 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_success($payment_id, $code) {
-	ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
-	$particular_content = "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
-	$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
-	$particular_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong>";
-	return NotificationsEmails::new_purchase_user($payment_id, $particular_content);
+    public static function new_purchase_user_success($payment_id, $code, $is_card_contribution = true) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
+
+		$particular_content = "";
+		if ( $is_card_contribution ) {
+			$particular_content .= NotificationsEmails::new_purchase_lemonway_conditions();
+		}
+
+		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
+		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
+		$particular_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong>";
+		return NotificationsEmails::new_purchase_user($payment_id, $particular_content);
     }
     
     /**
@@ -81,12 +87,26 @@ class NotificationsEmails {
      * @param type $payment_id
      * @return type
      */
-    public static function new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file) {
-	ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
-	$particular_content = "Vous trouverez votre contrat d'investissement ci-joint.";
-	$attachments = array($new_contract_pdf_file);
-	return NotificationsEmails::new_purchase_user($payment_id, $particular_content, $attachments);
+    public static function new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file, $is_card_contribution = true) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
+		
+		$particular_content = "";
+		if ( $is_card_contribution ) {
+			$particular_content .= NotificationsEmails::new_purchase_lemonway_conditions();
+		}
+		
+		$particular_content .= "Vous trouverez votre contrat d'investissement ci-joint.";
+		
+		$attachments = array($new_contract_pdf_file);
+		return NotificationsEmails::new_purchase_user($payment_id, $particular_content, $attachments);
     }
+	
+	private static function new_purchase_lemonway_conditions() {
+		$buffer = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », dans le détail des opérations Carte Bancaire.<br />";
+		$buffer .= "L'acceptation des CGU de Lemon Way, entraine l'ouverture d'un compte de paiement dédié à l'utilisation du site.";
+		$buffer .= "Vous pouvez clôturer ce compte à tout moment en suivant la procédure décrite dans les CGU de Lemon Way.<br />";
+		return $buffer;
+	}
     
     /**
      * Mail pour l'investisseur lors d'un achat

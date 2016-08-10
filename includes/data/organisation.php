@@ -394,11 +394,11 @@ class YPOrganisation {
 	
 	
 	public function get_wallet_amount() {
-		return ypcf_mangopay_get_user_personalamount_by_wpid($this->get_wpref()) / 100;
+		return 0; //ypcf_mangopay_get_user_personalamount_by_wpid($this->get_wpref()) / 100;
 	}
 	
 	public function get_operations() {
-		return ypcf_mangopay_get_operations_by_user_id($this->get_mangopay_id());
+		return 0; //ypcf_mangopay_get_operations_by_user_id($this->get_mangopay_id());
 	}
 	
 	public function get_transfers() {
@@ -424,7 +424,7 @@ class YPOrganisation {
 	
 	public function transfer_wallet($beneficiary_id) {
 		$mp_amount = $this->get_wallet_amount() * 100;
-		$withdrawal_obj = ypcf_mangopay_make_withdrawal($this->get_wpref(), $beneficiary_id, $mp_amount);
+//		$withdrawal_obj = ypcf_mangopay_make_withdrawal($this->get_wpref(), $beneficiary_id, $mp_amount);
 
 		//Si il y a une erreur lors du retrait
 		if (is_string($withdrawal_obj)) {
@@ -460,6 +460,7 @@ class YPOrganisation {
 	 */
 	public function check_strong_authentication() {
 		$save = FALSE;
+		/*
 		switch ($this->strong_authentication) {
 			case 0:
 				//Vérifie si les docs ont été vérifiés
@@ -482,6 +483,8 @@ class YPOrganisation {
 			    }
 			    break;
 		}
+		 * 
+		 */
 		if ($save == TRUE) {
 			$this->save();
 		}
@@ -559,6 +562,9 @@ class YPOrganisation {
 		}
 	}
 	
+/*******************************************************************************
+ * Gestion RIB
+*******************************************************************************/
 	/**
 	 * Gère la mise à jour du RIB
 	 */
@@ -585,7 +591,19 @@ class YPOrganisation {
 		}
 	}
 	
+	/**
+	 * Est-ce que le RIB est enregistré ?
+	 */
+	public function has_saved_iban() {
+		$saved_holdername = $this->get_bank_owner();
+		return (!empty($saved_holdername));
+	}
+	
+/*******************************************************************************
+ * Gestion transferts bancaires
+*******************************************************************************/
 	public function submit_transfer_wallet() {
+		/*
 		global $errors_submit;
 		$errors_submit = new WP_Error();
 		
@@ -610,17 +628,78 @@ class YPOrganisation {
 				$errors_submit->add('transfer-wallet', __('Il y a eu une erreur lors du transfert.', 'yproject'));
 			}
 		}
+		 * 
+		 */
+	}
+	
+	/**
+	 * Formulaire de transfert de fonds pour une organisation
+	 */
+	public function submit_transfer_wallet_lemonway() {
+		// Vérifications sur le droit de poster le formulaire
+		$form_posted = filter_input( INPUT_POST, 'submit_transfer_wallet_lemonway' );
+		$WDGUser_current = WDGUser::current();
+		$lemonway_balance = $this->get_lemonway_balance();
+		if ( $WDGUser_current->is_admin() && $form_posted == "1" && $lemonway_balance > 0 ) {
+			
+			$buffer = FALSE;
+
+			//Il faut qu'un iban ait déjà été enregistré
+			if ($this->has_saved_iban()) {
+				//Vérification que des IBANS existent
+				$wallet_details = $this->get_wallet_details();
+				$first_iban = $wallet_details->IBANS->IBAN;
+				//Sinon on l'enregistre auprès de Lemonway
+				if (empty($first_iban)) {
+					$saved_holdername = $this->get_bank_owner();
+					$saved_iban = $this->get_bank_iban();
+					$saved_bic = $this->get_bank_bic();
+					$saved_dom1 = $this->get_bank_address();
+					$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1 );
+					if ($result_iban == FALSE) {
+						$buffer = LemonwayLib::get_last_error_message();
+					}
+				}
+				
+				if ($buffer == FALSE) {
+					// Récupération des montants à transférer
+					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
+					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
+					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $transfer_amount + $transfer_commission, 0, $transfer_commission );
+					$buffer = ($result_transfer->TRANS->HPAY->ID) ? "success" : $result_transfer->TRANS->HPAY->MSG;
+
+					if ($buffer == "success") {
+						// Enregistrement de l'objet Lemon Way
+						$withdrawal_post = array(
+							'post_author'   => $this->get_wpref(),
+							'post_title'    => $transfer_amount,
+							'post_content'  => print_r( $result_transfer, TRUE ),
+							'post_status'   => 'publish',
+							'post_type'		=> 'withdrawal_order'
+						);
+						wp_insert_post( $withdrawal_post );
+					}
+				}
+			}
+		}
 	}
 	
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
+	private function get_wallet_details( $reload = false ) {
+		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
+			$this->wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		}
+		return $this->wallet_details;
+	}
+	
 	/**
 	 * Enregistrement sur Lemonway
 	 */
 	public function register_lemonway() {
 		//Vérifie que le wallet n'est pas déjà enregistré
-		$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
 			$WDGUser_creator = new WDGUser();
 			return LemonwayLib::wallet_company_register( $this->get_lemonway_id(), $this->get_email(), $WDGUser_creator->wp_user->user_firstname, $WDGUser_creator->wp_user->user_lastname, $this->get_name(), $this->get_description() );
@@ -659,7 +738,7 @@ class YPOrganisation {
 					$buffer = YPOrganisation::$lemonway_status_blocked;
 				} else {
 					$buffer = YPOrganisation::$lemonway_status_ready;
-					$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+					$wallet_details = $this->get_wallet_details();
 					if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
 						switch ($wallet_details->STATUS) {
 							case '2':
@@ -720,7 +799,7 @@ class YPOrganisation {
 	 * Donne l'argent disponible sur le compte utilisateur
 	 */
 	public function get_lemonway_balance() {
-		$wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+		$wallet_details = $this->get_wallet_details();
 		$buffer = 0;
 		if (isset($wallet_details->BAL)) {
 			$buffer = $wallet_details->BAL;
