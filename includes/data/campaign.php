@@ -941,14 +941,21 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
+	public static $invest_amount_min_wire = 300;
+	public static $invest_time_min_wire = 7;
+	public function can_use_wire_remaining_time() {
+		return ($this->days_remaining() > ATCF_Campaign::$invest_time_min_wire);
+	}
+	public function can_use_wire_amount($amount_part) {
+		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
+	}
 	public function can_use_wire($amount_part) {
-		$min_wire = 150;
-		return ($this->days_remaining() > 7 && $this->part_value() * $amount_part >= $min_wire);
+		return ($this->can_use_wire_remaining_time() && $this->can_use_wire_amount($amount_part));
 	}
 	
+	public static $invest_amount_min_check = 500;
 	public function can_use_check($amount_part) {
-		$min_check = 150;
-		return ($this->part_value() * $amount_part >= $min_check);
+		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_check);
 	}
 
 	/**
