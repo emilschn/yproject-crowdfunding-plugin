@@ -585,9 +585,11 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 			$contribution_id = edd_get_payment_key($payment_id);
 			if (isset($contribution_id) && $contribution_id != '' && $contribution_id != 'check') {
 				$update_post = FALSE;
+				$is_card_contribution = TRUE;
 
 				//Si la clé de contribution contient "wire", il s'agissait d'un paiement par virement, il faut découper la clé
 				if (strpos($contribution_id, 'wire_') !== FALSE) {
+					$is_card_contribution = FALSE;
 					$contribution_id = substr($contribution_id, 5);
 					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
 						$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($contribution_id);
@@ -670,7 +672,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
 							if ($contract_id != '') {
 								$contract_infos = signsquid_get_contract_infos($contract_id);
-								NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'});
+								NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution);
 								NotificationsEmails::new_purchase_admin_success($payment_id);
 							} else {
 								global $contract_errors;
@@ -680,7 +682,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							}
 						} else {
 							$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-							NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file);
+							NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file, $is_card_contribution);
 							NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
 						}
 					} else {
