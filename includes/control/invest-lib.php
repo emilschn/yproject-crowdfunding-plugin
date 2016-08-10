@@ -88,14 +88,14 @@ function ypcf_check_is_user_logged_invest() {
     ypcf_session_start();
 
     if (!is_user_logged_in()) {
-	if (isset($_GET['campaign_id'])) {
-	    $_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
-	    $page_connexion = get_page_by_path('connexion');
-	    wp_redirect(get_permalink($page_connexion->ID));
-	} else {
-	    wp_redirect(site_url());
-	}
-	exit();
+		if (isset($_GET['campaign_id'])) {
+			$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+			$page_connexion = get_page_by_path('connexion');
+			wp_redirect(get_permalink($page_connexion->ID));
+		} else {
+			wp_redirect(site_url());
+		}
+		exit();
     } 
 }
 
@@ -103,8 +103,8 @@ function ypcf_check_is_project_investable() {
     $post_camp = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post_camp );
     if (!ypcf_check_user_is_complete($post_camp->post_author) || !$campaign->is_remaining_time() || $campaign->campaign_status() != 'collecte') {
-	wp_redirect(get_permalink($_GET['campaign_id']));
-	exit();
+		wp_redirect(get_permalink($_GET['campaign_id']));
+		exit();
     }
 }
 
