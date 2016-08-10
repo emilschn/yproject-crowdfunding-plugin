@@ -665,7 +665,7 @@ class YPOrganisation {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
-					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $transfer_amount, 0, $transfer_commission );
+					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $transfer_amount + $transfer_commission, 0, $transfer_commission );
 					$buffer = ($result_transfer->TRANS->HPAY->ID) ? "success" : $result_transfer->TRANS->HPAY->MSG;
 
 					if ($buffer == "success") {
