@@ -467,7 +467,11 @@ class WDGAjaxActions {
 		$url_video = filter_input(INPUT_POST, 'url_video');
 
 		$image = $_FILES[ 'image_video_zone' ];
-
+		if(empty($url_video)){
+			$campaign = new ATCF_Campaign($campaign_id);
+			if($campaign->video() != '')
+				$url_video=$campaign->video();
+		}
 		WDGFormProjects::edit_image_url_video($image, $url_video, $campaign_id);
 
 		exit();
