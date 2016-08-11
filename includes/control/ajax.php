@@ -17,6 +17,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
 
+        //Dashboard
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
@@ -24,6 +25,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_contract');
 		WDGAjaxActions::add_action('save_project_status');
+
+        WDGAjaxActions::add_action('create_contacts_table');
 
 	}
     
@@ -660,14 +663,14 @@ class WDGAjaxActions {
 		$new_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'google_doc'));
         if(strpos($new_gdoc_url,"https://docs.google.com/document/d/")===0){
             $campaign->__set(ATCF_Campaign::$key_google_doc, $new_gdoc_url);
-        } else {
+        } else if (!empty($new_logbook_gdoc_url)) {
             array_push($errors, "L'URL du planning est invalide ");
         }
 
         $new_logbook_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'logbook_google_doc'));
         if(strpos($new_logbook_gdoc_url,"https://docs.google.com/document/d/")===0){
             $campaign->__set(ATCF_Campaign::$key_logbook_google_doc, $new_logbook_gdoc_url);
-        } else {
+        } else if (!empty($new_logbook_gdoc_url)) {
             array_push($errors, "L'URL du journal de bord est invalide ");
         }
 
@@ -739,4 +742,340 @@ class WDGAjaxActions {
 		echo json_encode($return_values);
 		exit();
 	}
+
+	/**
+	 * Crée la table des contacts
+	 */
+	public static function create_contacts_table(){
+		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
+		$campaign = new ATCF_Campaign($campaign_id);
+        $current_wdg_user = WDGUser::current();
+        require_once("country_list.php");
+        global $country_list;
+		global $wpdb;
+		$table_vote = $wpdb->prefix . "ypcf_project_votes";
+		$table_jcrois = $wpdb->prefix . "jycrois";
+
+		//Données suiveurs
+		$list_user_follow = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+
+		//Données d'investissement
+		$investments_list = (json_decode(filter_input(INPUT_POST, 'data'),true));
+
+		//Données de vote
+		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, validate_project, advice FROM ".$table_vote." WHERE post_id = ".$campaign_id );
+
+
+        /******************Lignes du tableau*********************/
+        $array_contacts = array();
+
+		//Extraction infos suiveurs
+		foreach ( $list_user_follow as $item_follow ) {
+			$array_contacts[$item_follow]["follow"]=1;
+		}
+
+        //Extraction infos de vote
+        foreach ( $list_user_voters as $item_vote ) {
+            $u_id = $item_vote->user_id;
+            $array_contacts[$u_id]["vote"]=1;
+            $array_contacts[$u_id]["vote_date"]=$item_vote->date;
+
+
+            $array_contacts[$u_id]["vote_advice"]='<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>';
+
+            switch ($item_vote->validate_project) {
+                case '1':
+                    $array_contacts[$u_id]["vote_validate"]="Oui";
+                    $array_contacts[$u_id]["vote_invest_sum"]=$item_vote->invest_sum;
+                    break;
+                case '0' :
+                default :
+                    $array_contacts[$u_id]["vote_validate"]="Non";
+                    $array_contacts[$u_id]["vote_invest_sum"]="";
+                    break;
+            }
+        }
+
+        //Extraction infos d'investissements
+        foreach ( $investments_list['payments_data'] as $item_invest ) {
+            $post_invest = get_post($item_invest['ID']);
+            $mangopay_id = edd_get_payment_key($item_invest['ID']);
+
+            $u_id = $item_invest['user'];
+
+            $payment_type = 'Carte';
+            if (strpos($mangopay_id, 'wire_') !== FALSE) {
+                $payment_type = 'Virement';
+            } else if ($mangopay_id == 'check') {
+                $payment_type = 'Ch&egrave;que';
+            }
+
+            $investment_state = 'Validé';
+            if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing) {
+                $investment_state = 'Annulé';
+
+                $refund_id = get_post_meta($item_invest['ID'], 'refund_id', TRUE);
+                if (isset($refund_id) && !empty($refund_id)) {
+                    $refund_obj = ypcf_mangopay_get_refund_by_id($refund_id);
+                    $investment_state = 'Remboursement en cours';
+                    if ($refund_obj->IsCompleted) {
+                        if ($refund_obj->IsSucceeded) {
+                            $investment_state = 'Remboursé';
+                        } else {
+                            $investment_state = 'Remboursement échoué';
+                        }
+                    }
+
+                } else {
+                    $refund_id = get_post_meta($item_invest['ID'], 'refund_wire_id', TRUE);
+                    if (isset($refund_id) && !empty($refund_id)) {
+                        $investment_state = 'Remboursé';
+                    }
+                }
+            }
+
+            $page_dashboard = get_page_by_path('tableau-de-bord');
+            $campaign_id_param = '?campaign_id=' . $campaign->ID;
+            $payment_state = edd_get_payment_status( $post_invest, true );
+            if ($payment_state == "En attente" && $current_wdg_user->is_admin()) {
+                $payment_state .= '<br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
+                $payment_state .= '<br /><br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
+            }
+            $array_contacts[$u_id]["invest"] = 1;
+
+            $array_contacts[$u_id]["invest_payment_type"] = $payment_type;
+			$array_contacts[$u_id]["invest_payment_state"] = $investment_state;
+			$array_contacts[$u_id]["invest_state"] = $payment_state;
+            $array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
+            $array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
+            $array_contacts[$u_id]["invest_sign"] = $item_invest['signsquid_status_text'];
+        }
+
+        //Extraction infos utilisateur
+        foreach ( $array_contacts as $user_id=>$user_item ){
+            //Données si l'investisseur est une organisation
+			$array_contacts[$user_id]["user_id"]= $user_id;
+
+            if(YPOrganisation::is_user_organisation($user_id)){
+                $orga = new YPOrganisation($user_id);
+                $orga_creator = $orga->get_creator();
+				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
+                $array_contacts[$user_id]["user_email"]= $orga->get_email();
+
+				//Infos supplémentaires pour les votants
+				if($array_contacts[$user_id]["vote"] == 1 || $array_contacts[$user_id]["invest"] == 1){
+					$array_contacts[$user_id]["user_last_name"]=$orga_creator->last_name;
+					$array_contacts[$user_id]["user_first_name"]=$orga_creator->first_name;
+					$array_contacts[$user_id]["user_city"]= $orga->get_city();
+					$array_contacts[$user_id]["user_postal_code"]= $orga->get_postal_code();
+					$array_contacts[$user_id]["user_nationality"] = ucfirst(strtolower($orga->get_nationality()));
+
+					//Infos supplémentaires pour les investisseurs
+					if($array_contacts[$user_id]["invest"] == 1){
+						$array_contacts[$user_id]["user_address"] = $orga->get_address();
+						$array_contacts[$user_id]["user_country"] = ucfirst(strtolower($orga->get_nationality()));
+						$array_contacts[$user_id]["user_mobile_phone"] = $orga_creator->get('user_mobile_phone');
+						$array_contacts[$user_id]["user_orga_id"] = $orga->get_rcs() .' ('.$orga->get_idnumber().')';
+					}
+				}
+
+            }
+            //Données si l'investisseur est un utilisateur normal
+            else {
+                $user_data = get_userdata($user_id);
+
+                $array_contacts[$user_id]["user_link"] = bp_core_get_userlink($user_id);
+                $array_contacts[$user_id]["user_email"] = $user_data->get('user_email');
+
+				//Infos supplémentaires pour les votants
+				if($array_contacts[$user_id]["vote"] == 1 || $array_contacts[$user_id]["invest"] == 1){
+					$array_contacts[$user_id]["user_last_name"] = $user_data->last_name;
+					$array_contacts[$user_id]["user_first_name"] = $user_data->first_name;
+					$array_contacts[$user_id]["user_city"] = $user_data->get('user_city');
+					$array_contacts[$user_id]["user_postal_code"] = $user_data->get('user_postal_code');
+					$array_contacts[$user_id]["user_nationality"] = ucfirst(strtolower($country_list[$user_data->get('user_nationality')]));
+
+					//Infos supplémentaires pour les investisseurs
+					if($array_contacts[$user_id]["invest"] == 1){
+						$array_contacts[$user_id]["user_birthday"] = $user_data->user_birthday_year.'-'.$user_data->user_birthday_month.'-'.$user_data->user_birthday_day;
+						$array_contacts[$user_id]["user_birthplace"] = $user_data->get('user_birthplace');
+						$array_contacts[$user_id]["user_address"] = $user_data->user_address;
+						$array_contacts[$user_id]["user_country"] = $user_data->user_country;
+						$array_contacts[$user_id]["user_mobile_phone"] = $user_data->get('user_mobile_phone');
+					}
+				}
+            }
+        }
+
+        /*********Intitulés et paramètres des colonnes***********/
+        $status = $campaign->campaign_status();
+        $display_invest_infos = false;
+        if($status == ATCF_Campaign::$campaign_status_collecte ||
+            $status == ATCF_Campaign::$campaign_status_funded ||
+            $status == ATCF_Campaign::$campaign_status_archive
+        ){
+            $display_invest_infos = true;
+        }
+
+        $display_vote_infos = true;
+        if($status == ATCF_Campaign::$campaign_status_collecte ||
+            $status == ATCF_Campaign::$campaign_status_funded ||
+            $status == ATCF_Campaign::$campaign_status_archive
+        ){
+            $display_vote_infos = false;
+        }
+
+        $array_columns = array(
+        	new ContactColumn('checkbox','',true,"none"),
+            new ContactColumn('user_link', 'Utilisateur', true),
+			new ContactColumn('follow','',true,"check"),
+			new ContactColumn('vote','',true,"check"),
+            new ContactColumn('invest','',true,"check"),
+			new ContactColumn('user_id','',false),
+
+			new ContactColumn('user_last_name', 'Nom', true),
+            new ContactColumn('user_first_name', 'Prénom', true),
+            new ContactColumn('user_birthday', 'Date de naissance', false, "date"),
+            new ContactColumn('user_birthplace', 'Ville de naissance', false),
+            new ContactColumn('user_nationality', 'Nationalité', false),
+            new ContactColumn('user_address', 'Adresse', false),
+            new ContactColumn('user_city', 'Ville', true),
+            new ContactColumn('user_postal_code', 'Code postal', false),
+            new ContactColumn('user_country', 'Pays', false),
+            new ContactColumn('user_email', 'Mail', true),
+            new ContactColumn('user_mobile_phone', 'Téléphone', $display_invest_infos),
+
+            new ContactColumn('vote_date','Date de vote',$display_vote_infos, "date"),
+            new ContactColumn('vote_validate','A valid&eacute;',true),
+            new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
+			new ContactColumn('vote_advice','Conseil',$display_vote_infos),
+
+			new ContactColumn('invest_amount', 'Montant investi', $display_invest_infos, "range"),
+            new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
+            new ContactColumn('invest_payment_type', 'Type de paiement', $display_invest_infos),
+            new ContactColumn('invest_payment_state', 'Etat du paiement', $display_invest_infos),
+            new ContactColumn('invest_sign', 'Signature', false),
+            new ContactColumn('invest_state', 'Investissement', $display_invest_infos),
+        );
+
+        ?>
+        <div class="wdg-datatable" >
+        <table id="contacts-table" class="display" cellspacing="0">
+            <?php //Ecriture des nom des colonnes en haut ?>
+            <thead>
+            <tr>
+                <?php foreach($array_columns as $column) { ?>
+                    <th><?php echo $column->columnName; ?></th>
+                <?php }?>
+            </tr>
+            </thead>
+
+            <tbody>
+            <?php foreach($array_contacts as $id_contact=>$data_contact) { ?>
+                <tr data-DT_RowId="<?php echo $id_contact; ?>">
+                <?php foreach($array_columns as $column) {
+                	echo "<td>";
+					if($column->columnData == "follow" && $data_contact[$column->columnData]==1){
+						?><div class="dirty-hide">1</div><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/good.png" alt="suit" title="Suit le projet" /><?php
+
+					} else if($column->columnData == "vote" && $data_contact[$column->columnData]==1){
+						?><div class="dirty-hide">1</div><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/goodvote.png" alt="vote" title="A voté" /><?php
+
+					} else if ($column->columnData == "invest" && $data_contact[$column->columnData]==1){
+						?><div class="dirty-hide">1</div><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/goodmains.png" alt="investi" title="A investi" /><?php
+					} else {
+						echo $data_contact[$column->columnData];
+					}
+					echo "</td>";
+                }?>
+                </tr>
+            <?php }?>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <?php
+				$i = 0;
+				foreach($array_columns as $column) {
+                	$type_filter = $column->filterClass?>
+                    <th class="<?php echo $type_filter; ?>">
+						<?php
+						switch ($type_filter){
+							case "text":
+							case "range" :
+							case "date":
+								echo '<input type="text" placeholder="Filtrer " data-index="'.$i.'"/><br/>'.$column->columnName;
+								break;
+							case "check":
+								echo '<input type="checkbox" data-index="'.$i.'"/>';
+								break;
+							/*case "range":
+								echo '<input type="number" placeholder="Min." /><br/><input type="number" placeholder="Max." data-index="'.$i.'"/>';
+								break;
+							case "date":
+								echo '<input type="text" placeholder="Min." /><br/><input type="text" placeholder="Max."  data-index="'.$i.'"/>';
+								break;*/
+						}
+						$i++;
+						?>
+					</th>
+                <?php }?>
+            </tr>
+            </tfoot>
+        </table>
+        </div>
+
+        <?php
+
+        //Colonnes à afficher par défaut
+        $array_hidden = array();
+        $i = 0;
+        foreach($array_columns as $column) {
+            if(!$column->defaultDisplay){
+                $array_hidden[]=$i;
+            }
+            $i++;
+        }
+
+        //Identifiants de colonnes par lesquels seront triés les contacts par défaut
+        $default_sort=false;
+        $i = 0;
+        foreach($array_columns as $column) {
+            if($column->columnData == 'invest_date' && $display_invest_infos){
+                $default_sort=$i;
+            } else if($column->columnData == 'vote_date' && $display_vote_infos){
+                $default_sort=$i;
+            }
+            $i++;
+        }
+
+        $result = array(
+            'default_sort' => $default_sort,
+            'array_hidden' => $array_hidden,
+			'id_column_index' => 5
+        );
+        ?>
+        <script type="text/javascript">
+            var result_contacts_table = <?php echo(json_encode($result)); ?>
+        </script>
+        <?php
+        exit();
+	}
+}
+
+/**
+ * Class ContactColumn utilisé pour les colonnes du tableau de contacts
+ */
+class ContactColumn {
+    public $columnData;
+    public $columnName;
+    public $defaultDisplay = false;
+	public $filterClass = "text";
+
+    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $newFilterClass = "text") {
+        $this->columnData = $newColumnData;
+        $this->columnName = $newColumnName;
+        $this->defaultDisplay = $newDefaultDisplay;
+		$this->filterClass = $newFilterClass;
+    }
 }

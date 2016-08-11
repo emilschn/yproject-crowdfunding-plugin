@@ -754,7 +754,7 @@ class ATCF_Campaign {
 	}
         
 	public function vote_invest_ready_min_required(){
-		return $this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100);
+		return round($this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100));
 	}
 	
 	public function is_vote_validated() {
