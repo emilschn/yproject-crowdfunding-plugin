@@ -310,6 +310,16 @@ class ATCF_Campaign {
 	}
 	
 	
+	public static $key_maximum_profit = 'maximum_profit';
+	public function maximum_profit() {
+	    $buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
+		if ( empty($buffer) ) {
+			$buffer = 2;
+		}
+		return $buffer;
+	}
+	
+	
 /*******************************************************************************
  * GESTION ROI
  ******************************************************************************/
