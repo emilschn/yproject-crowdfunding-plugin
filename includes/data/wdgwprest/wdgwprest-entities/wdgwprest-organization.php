@@ -75,19 +75,17 @@ class WDGWPREST_Entity_Organization {
 
 	/**
 	 * Lie un utilisateur à une organisation en définissant son rôle
-	 * @param type $bopp_organisation_id
-	 * @param type $bopp_user_id
-	 * @param type $bopp_role_slug
-	 * @return type
-	public static function link_user_to_organisation($bopp_organisation_id, $bopp_user_id, $bopp_role_slug) {
+	 * @param int $organization_id
+	 * @param int $user_id
+	 * @param string $role_slug
+	 * @return object
+	 */
+	public static function link_user_to_organisation( $organization_id, $user_id, $role_slug ) {
 		$request_params = array(
-			'organisation_management' => array(
-				'boppUser' => $bopp_user_id, 
-				'boppRole' => $bopp_role_slug
-			)
+			'id_user' => $user_id,
+			'type' => $role_slug
 		);
-		$result_obj = BoppLib::call_post('organisations/'.$bopp_organisation_id.'/members', $request_params);
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' .$organization_id. '/users', $request_params );
 		return $result_obj;
 	}
-	 */
 }

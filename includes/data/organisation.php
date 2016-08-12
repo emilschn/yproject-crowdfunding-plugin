@@ -418,7 +418,7 @@ class YPOrganisation {
 	public function set_creator($wp_user_id) {
 		$bopp_user_id = BoppLibHelpers::get_api_user_id($wp_user_id);
 		BoppLibHelpers::check_create_role(BoppLibHelpers::$organisation_creator_role['slug'], BoppLibHelpers::$organisation_creator_role['title']);
-		BoppOrganisations::link_user_to_organisation($this->bopp_id, $bopp_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
+		WDGWPREST_Entity_Organization::link_user_to_organisation( $this->bopp_id, $bopp_user_id, BoppLibHelpers::$organisation_creator_role['slug'] );
 	}
 	
 	/**
