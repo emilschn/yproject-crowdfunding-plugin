@@ -16,9 +16,14 @@ function atcf_get_current_campaign() {
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
 	if (empty($campaign_id)) {
 		$campaign_id = '';
-		if (is_category()) {
+		if ( is_single() && $post->post_type == "post" ) {
+			$singlepost_category = get_the_category();
+			$campaign_id = atcf_get_campaign_id_from_category($singlepost_category[0]);
+			
+		} else if (is_category()) {
 			global $cat;
 			$campaign_id = atcf_get_campaign_id_from_category($cat);
+			
 		} else {
 			$campaign_id = (isset($_GET['campaign_id'])) ? $_GET['campaign_id'] : $post->ID;
 		}
@@ -41,6 +46,7 @@ function atcf_get_current_campaign() {
 }
 
 function atcf_get_campaign_id_from_category($category) {
+	$campaign_id = FALSE;
 	$this_category = get_category($category);
 	$this_category_name = $this_category->name;
 	$name_exploded = explode('cat', $this_category_name);
@@ -301,6 +307,16 @@ class ATCF_Campaign {
 	}
 	public function funding_type() {
 	    return $this->__get('campaign_funding_type');
+	}
+	
+	
+	public static $key_maximum_profit = 'maximum_profit';
+	public function maximum_profit() {
+	    $buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
+		if ( empty($buffer) ) {
+			$buffer = 2;
+		}
+		return $buffer;
 	}
 	
 	
@@ -832,6 +848,7 @@ class ATCF_Campaign {
 	}
 	
 	public function is_remaining_time() {
+	    date_default_timezone_set('Europe/Paris');
 		$expires = strtotime( $this->end_date() );
 		$now     = current_time( 'timestamp' );
 		return ( $now < $expires );
