@@ -56,7 +56,7 @@ class YPOrganisation {
 		if (!empty($user_id)) {
 			$this->creator = get_user_by('id', $user_id);
 			$this->bopp_id = get_user_meta($user_id, YPOrganisation::$key_bopp_id, TRUE);
-			$this->bopp_object = BoppOrganisations::get($this->bopp_id);
+			$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->bopp_id );
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->organisation_name;
@@ -128,26 +128,8 @@ class YPOrganisation {
 		if ( $this->get_bank_iban() == '' ) { $this->set_bank_iban("---"); }
 		if ( $this->get_bank_bic() == '' ) { $this->set_bank_bic("---"); }
 		
-		$return_obj = BoppOrganisations::create(
-			$this->get_wpref(),
-			$this->get_name(), 
-			FALSE,
-			$this->get_type(), 
-			$this->get_legalform(), 
-			$this->get_idnumber(), 
-			$this->get_rcs(), 
-			$this->get_capital(), 
-			$this->get_address(), 
-			$this->get_postal_code(), 
-			$this->get_city(), 
-			$this->get_nationality(), 
-			$this->get_ape(),
-			$this->get_bank_owner(),
-			$this->get_bank_address(),
-			$this->get_bank_iban(),
-			$this->get_bank_bic()
-		);
-		$this->bopp_id = $return_obj;
+		$return_obj = WDGWPREST_Entity_Organization::create( $this );
+		$this->bopp_id = $return_obj->id;
 		
 		//Vérification si on reçoit bien un entier pour identifiant
 		if (filter_var($this->bopp_id, FILTER_VALIDATE_INT) === FALSE) {
@@ -185,23 +167,7 @@ class YPOrganisation {
 	 * Enregistre les modifications sur l'api bopp
 	 */
 	public function save() {
-		BoppOrganisations::update($this->bopp_id, 
-			$this->get_strong_authentication(),
-			$this->get_type(), 
-			$this->get_legalform(), 
-			$this->get_idnumber(), 
-			$this->get_rcs(), 
-			$this->get_capital(), 
-			$this->get_address(), 
-			$this->get_postal_code(), 
-			$this->get_city(), 
-			$this->get_nationality(), 
-			$this->get_ape(),
-			$this->get_bank_owner(),
-			$this->get_bank_address(),
-			$this->get_bank_iban(),
-			$this->get_bank_bic()
-		);
+		WDGWPREST_Entity_Organization::update( $this );
 		update_user_meta( $this->wpref, YPOrganisation::$key_description, $this->get_description() );
 		
 		
