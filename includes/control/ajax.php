@@ -27,6 +27,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_status');
 
         WDGAjaxActions::add_action('create_contacts_table');
+		WDGAjaxActions::add_action('preview_mail_message');
 
 	}
     
@@ -943,7 +944,7 @@ class WDGAjaxActions {
             new ContactColumn('user_postal_code', 'Code postal', false),
             new ContactColumn('user_country', 'Pays', false),
             new ContactColumn('user_email', 'Mail', true),
-            new ContactColumn('user_mobile_phone', 'Téléphone', $display_invest_infos),
+            new ContactColumn('user_mobile_phone', 'Téléphone', false),
 
             new ContactColumn('vote_date','Date de vote',$display_vote_infos, "date"),
             new ContactColumn('vote_validate','A valid&eacute;',true),
@@ -1060,6 +1061,26 @@ class WDGAjaxActions {
         </script>
         <?php
         exit();
+	}
+
+	public static function preview_mail_message(){
+		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
+		$errors = array();
+
+		$title = sanitize_text_field(filter_input(INPUT_POST, 'mail_title'));
+		if (empty($title)){
+			$errors[]= "L'objet du mail ne peut être vide";
+		}
+		$content = filter_input(INPUT_POST, 'mail_content');
+		$content = WDGFormProjects::build_mail_text($content,$title,$campaign_id);
+
+		$return_values = array(
+			"response" => "preview_mail_message",
+			"content" => $content,
+			"errors" => $errors
+		);
+		echo json_encode($return_values);
+		exit();
 	}
 }
 
