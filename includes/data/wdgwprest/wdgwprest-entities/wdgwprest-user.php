@@ -18,60 +18,62 @@ class WDGWPREST_Entity_User {
 	
 	/**
 	 * Définit les paramètres en fonction de ce qu'on sait sur le site
-	 * @param YPOrganisation $organization
+	 * @param WDGUser $user
 	 * @return array
-	public static function set_post_parameters( YPOrganisation $organization ) {
+	 */
+	public static function set_post_parameters( WDGUser $user ) {
 		$parameters = array(
-			'wpref'						=> $organization->get_wpref(),
-			'name'						=> $organization->get_name(),
-			'strong_authentication'		=> ( $organization->get_strong_authentication() === TRUE ) ? 1 : 0,
-			'type'						=> $organization->get_type(),
-			'legalform'					=> $organization->get_legalform(),
-			'idnumber'					=> $organization->get_idnumber(),
-			'rcs'						=> $organization->get_rcs(),
-			'ape'						=> $organization->get_ape(),
-			'capital'					=> $organization->get_capital(),
-			'address'					=> $organization->get_address(),
-			'postalcode'				=> $organization->get_postal_code(),
-			'city'						=> $organization->get_city(),
-			'country'					=> $organization->get_nationality(),
-			'bank_owner'				=> $organization->get_bank_owner(),
-			'bank_address'				=> $organization->get_bank_address(),
-			'bank_iban'					=> $organization->get_bank_iban(),
-			'bank_bic'					=> $organization->get_bank_bic(),
+			'wpref'				=> $user->get_wpref(),
+			'gender'			=> $user->get_gender(),
+			'name'				=> $user->get_firstname(),
+			'surname'			=> $user->get_lastname(),
+			'username'			=> $user->get_login(),
+			'birthday_date'		=> $user->get_birthday_date(),
+			'birthday_city'		=> '---',
+			'address'			=> '---',
+			'postalcode'		=> '---',
+			'city'				=> '---',
+			'email'				=> '---',
+			'picture_url'		=> '---',
+			'website_url'		=> '---',
+			'twitter_url'		=> '---',
+			'facebook_url'		=> '---',
+			'linkedin_url'		=> '---',
+			'viadeo_url'		=> '---',
+			'activation_key'	=> '---',
+			'password'			=> '---',
+			'signup_date'		=> '---'
 		);
 		return $parameters;
 	}
-	 */
 	
 	/**
-	 * Crée une organisation sur l'API
+	 * Crée un utilisateur sur l'API
+	 * @param WDGUser $user
 	 * @return object
-	public static function create( YPOrganisation $organization ) {
-		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $organization );
+	 */
+	public static function create( WDGUser $user ) {
+		$parameters = WDGWPREST_Entity_User::set_post_parameters( $user );
 		$date = new DateTime("NOW");
-		$parameters['creation_date'] = $date->format('Y') .'-'. $date->format('m') .'-'. $date->format('d');
+		$parameters['signup_date'] = $date->format('Y') .'-'. $date->format('m') .'-'. $date->format('d');
 		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization', $parameters );
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'user', $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
-	 */
 	
 	/**
-	 * Mise à jour de l'organisation à partir d'un id
-	 * @param int $id
-	 * @param string $first_name
-	 * @param string $last_name
+	 * Mise à jour de l'utilisateur à partir d'un id
+	 * @param WDGUser $user
 	 * @return object
-	public static function update( YPOrganisation $organization ) {
-		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $organization );
+	 */
+	public static function update( WDGUser $user ) {
+		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $user );
 		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' . $organization->get_bopp_id(), $parameters );
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'user/' . $user->get_api_id(), $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
-	 */
 	
 	/**
 	 * Retourne la liste des organisations d'un utilisateur

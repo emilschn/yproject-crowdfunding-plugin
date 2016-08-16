@@ -478,7 +478,8 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		//Mise à jour d'une organisation
 		} elseif (isset($_POST['update_organisation'])) {
 			//Parcourir toutes les organisations
-			$api_user_id = BoppLibHelpers::get_api_user_id($current_user->ID);
+			$wdg_current_user = new WDGUser( $current_user->ID );
+			$api_user_id = $wdg_current_user->get_api_id();
 			$organisations_list = WDGWPREST_Entity_User::get_organizations_by_role($api_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
 			foreach ($organisations_list as $organisation_item) {
 				$organisation = new YPOrganisation($organisation_item->organisation_wpref);

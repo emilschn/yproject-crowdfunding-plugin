@@ -6,7 +6,7 @@ class YPOrganisation {
 	/**
 	 * Clés d'accès à l'api BOPP
 	 */
-	public static $key_bopp_id = 'organisation_bopp_id';
+	public static $key_api_id = 'organisation_bopp_id';
 	public static $key_description = 'description';
 	public static $key_lemonway_status = 'lemonway_status';
 	
@@ -14,7 +14,7 @@ class YPOrganisation {
 	 * Données
 	 */
 	private $creator;
-	private $bopp_id;
+	private $api_id;
 	private $bopp_object;
 	private $mangopay_id;
 	private $wpref;
@@ -55,8 +55,8 @@ class YPOrganisation {
 			
 		if (!empty($user_id)) {
 			$this->creator = get_user_by('id', $user_id);
-			$this->bopp_id = get_user_meta($user_id, YPOrganisation::$key_bopp_id, TRUE);
-			$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->bopp_id );
+			$this->api_id = get_user_meta($user_id, YPOrganisation::$key_api_id, TRUE);
+			$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->api_id );
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->organisation_name;
@@ -129,15 +129,15 @@ class YPOrganisation {
 		if ( $this->get_bank_bic() == '' ) { $this->set_bank_bic("---"); }
 		
 		$return_obj = WDGWPREST_Entity_Organization::create( $this );
-		$this->bopp_id = $return_obj->id;
+		$this->api_id = $return_obj->id;
 		
 		//Vérification si on reçoit bien un entier pour identifiant
-		if (filter_var($this->bopp_id, FILTER_VALIDATE_INT) === FALSE) {
+		if (filter_var($this->api_id, FILTER_VALIDATE_INT) === FALSE) {
 			array_push( $errors_create_orga, __("Probl&egrave;me interne de cr&eacute;ation d'organisation.", 'yproject') );
 			return FALSE;
 		}
 		
-		update_user_meta($organisation_user_id, YPOrganisation::$key_bopp_id, $this->bopp_id);
+		update_user_meta($organisation_user_id, YPOrganisation::$key_api_id, $this->api_id);
 		
 		return $organisation_user_id;
 	}
@@ -186,8 +186,8 @@ class YPOrganisation {
 	public function get_creator() {
 		return $this->creator;
 	}
-	public function get_bopp_id() {
-		return $this->bopp_id;
+	public function get_api_id() {
+		return $this->api_id;
 	}
 	
 	public function get_mangopay_id() {
@@ -200,7 +200,7 @@ class YPOrganisation {
 	 * Définir l'identifiant de l'orga sur lemonway
 	 */
 	public function get_lemonway_id() {
-		return 'ORGA'.$this->bopp_id.'W'.$this->wpref;
+		return 'ORGA'.$this->api_id.'W'.$this->wpref;
 	}
 	
 	
@@ -415,10 +415,11 @@ class YPOrganisation {
 	/**
 	 * Liaisons utilisateurs
 	 */
-	public function set_creator($wp_user_id) {
-		$bopp_user_id = BoppLibHelpers::get_api_user_id($wp_user_id);
-		BoppLibHelpers::check_create_role(BoppLibHelpers::$organisation_creator_role['slug'], BoppLibHelpers::$organisation_creator_role['title']);
-		WDGWPREST_Entity_Organization::link_user_to_organisation( $this->bopp_id, $bopp_user_id, BoppLibHelpers::$organisation_creator_role['slug'] );
+	public function set_creator( $wp_user_id ) {
+		$wdg_current_user = new WDGUser( $wp_user_id );
+		$api_user_id = $wdg_current_user->get_api_id();
+		BoppLibHelpers::check_create_role( BoppLibHelpers::$organisation_creator_role['slug'], BoppLibHelpers::$organisation_creator_role['title'] );
+		WDGWPREST_Entity_Organization::link_user_to_organisation( $this->api_id, $api_user_id, BoppLibHelpers::$organisation_creator_role['slug'] );
 	}
 	
 	/**
@@ -763,7 +764,7 @@ class YPOrganisation {
 	 * @param type $user_id
 	 */
 	public static function is_user_organisation($user_id) {
-		$result = get_user_meta($user_id, YPOrganisation::$key_bopp_id, TRUE);
+		$result = get_user_meta($user_id, YPOrganisation::$key_api_id, TRUE);
 		return (isset($result) && !empty($result));
 	}
 	

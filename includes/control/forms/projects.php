@@ -374,7 +374,7 @@ class WDGFormProjects {
 			}
 				
 			if ($update) {
-				$api_organisation_id = $organisation_selected->get_bopp_id();
+				$api_organisation_id = $organisation_selected->get_api_id();
 				BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			}
 			

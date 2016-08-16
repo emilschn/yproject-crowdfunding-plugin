@@ -46,6 +46,7 @@ class WDGWPREST_Entity_Organization {
 	
 	/**
 	 * Crée une organisation sur l'API
+	 * @param YPOrganisation $organization
 	 * @return object
 	 */
 	public static function create( YPOrganisation $organization ) {
@@ -60,15 +61,13 @@ class WDGWPREST_Entity_Organization {
 	
 	/**
 	 * Mise à jour de l'organisation à partir d'un id
-	 * @param int $id
-	 * @param string $first_name
-	 * @param string $last_name
+	 * @param YPOrganisation $organization
 	 * @return object
 	 */
 	public static function update( YPOrganisation $organization ) {
 		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $organization );
 		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' . $organization->get_bopp_id(), $parameters );
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' . $organization->get_api_id(), $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}

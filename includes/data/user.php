@@ -34,6 +34,46 @@ class WDGUser {
 	}
 	
 /*******************************************************************************
+ * Accès aux données classiques
+*******************************************************************************/
+	public function get_wpref() {
+		return $this->wp_user->ID;
+	}
+	
+	public static $key_api_id = 'id_api';
+	public function get_api_id() {
+		$api_user_id = get_user_meta( $this->get_wpref(), WDGUser::$key_api_id, TRUE );
+		if ( empty($api_user_id) ) {
+			$user_create_result = WDGWPREST_Entity_User::create( $this );
+			$api_user_id = $user_create_result->id;
+			ypcf_debug_log('WDGUser::get_bopp_id > ' . $api_user_id);
+			update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $api_user_id );
+		}
+		return $api_user_id;
+		
+	}
+	
+	public function get_gender() {
+		return $this->wp_user->get('user_gender');
+	}
+	
+	public function get_firstname() {
+		return $this->wp_user->first_name;
+	}
+	
+	public function get_lastname() {
+		return $this->wp_user->last_name;
+	}
+	
+	public function get_login() {
+		return $this->wp_user->user_login;
+	}
+	
+	public function get_birthday_date() {
+		return $this->wp_user->get('user_birthday_year'). '-' .$this->wp_user->get('user_birthday_month'). '-' .$this->wp_user->get('user_birthday_day');
+	}
+	
+/*******************************************************************************
  * Fonctions de sauvegarde
 *******************************************************************************/
 	/**
@@ -494,11 +534,12 @@ class WDGUser {
 		wp_reset_query();
 		
 		//Récupération des projets dont l'utilisateur appartient à l'équipe
-		$api_user_id = BoppLibHelpers::get_api_user_id($user_id);
-		$project_list = BoppUsers::get_projects_by_role($api_user_id, BoppLibHelpers::$project_team_member_role['slug']);
-		if (!empty($project_list)) {
-			foreach ($project_list as $project) {
-				array_push($buffer, $project->project_wp_id);
+		$wdg_user = new WDGUser( $user_id );
+		$api_user_id = $wdg_user->get_api_id();
+		$project_list = BoppUsers::get_projects_by_role( $api_user_id, BoppLibHelpers::$project_team_member_role['slug'] );
+		if ( !empty( $project_list ) ) {
+			foreach ( $project_list as $project ) {
+				array_push( $buffer, $project->project_wp_id );
 			}
 		}
 		
