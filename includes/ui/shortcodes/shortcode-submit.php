@@ -731,6 +731,8 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, '_variable_pricing', 0 );
 	    add_post_meta( $campaign, '_edd_price_options_mode', 1 );
 	    add_post_meta( $campaign, '_edd_hide_purchase_link', 'on' );
+	    add_post_meta( $campaign, ATCF_Campaign::$key_edit_version, 3 );
+	    add_post_meta( $campaign, ATCF_Campaign::$key_payment_provider, ATCF_Campaign::$payment_provider_lemonway );
 
 	    $prices = array(1);
 	    add_post_meta( $campaign, 'edd_variable_prices', $prices );

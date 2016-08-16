@@ -292,6 +292,7 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_company_status_other';
 		$fields[] = 'campaign_init_capital';
 		$fields[] = 'campaign_funding_type';
+		$fields[] = ATCF_Campaign::$key_maximum_profit;
 		$fields[] = 'campaign_funding_duration';
 		$fields[] = 'campaign_roi_percent_estimated';
 		$fields[] = 'campaign_roi_percent';
@@ -1233,6 +1234,8 @@ function _atcf_metabox_campaign_info() {
 	<p>
 	    <h4 style="font-size: 1.2em">Paramètres de reversement :</h4>
 	    <ul style="margin-left: 10px; list-style: disc;">
+			<li>Gain maximum : x<input type="text" name="<?php echo ATCF_Campaign::$key_maximum_profit; ?>" value="<?php echo $campaign->maximum_profit(); ?>" /></li>
+			
 			<li>Durée du financement : <input type="text" name="campaign_funding_duration" value="<?php echo $campaign->funding_duration(); ?>" /></li>
 
 			<li>Pourcentage de reversement estimé : <input type="text" name="campaign_roi_percent_estimated" value="<?php echo $campaign->roi_percent_estimated(); ?>" /> %</li>
