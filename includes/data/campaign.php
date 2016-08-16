@@ -122,6 +122,20 @@ class ATCF_Campaign {
  * METAS
  ******************************************************************************/
 	/**
+	 * Liaison API
+	 */
+	public static $key_api_id = 'id_api';
+	public function get_api_id() {
+		$api_project_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
+		if ( empty($api_project_id) ) {
+			$api_project_id = WDGWPREST_Entity_Project::create( $this );
+			ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $api_project_id);
+			update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $api_project_id );
+		}
+		return $api_project_id;
+	}
+	
+	/**
 	 * Version du type de projet
 	 * @return int 
 	 */
@@ -587,7 +601,7 @@ class ATCF_Campaign {
 	private $organisation;
 	public function get_organisation() {
 		if (!isset($this->organisation)) {
-			$api_project_id = BoppLibHelpers::get_api_project_id($this->ID);
+			$api_project_id = $this->get_api_id();
 			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			if (isset($current_organisations) && count($current_organisations) > 0) {
 				$this->organisation = $current_organisations[0];
@@ -1491,7 +1505,7 @@ class ATCF_Campaign {
 		if ($current_user_id == $post_campaign->post_author) return TRUE;
 		
 		//On autorise les personnes de l'équipe projet
-		$project_api_id = BoppLibHelpers::get_api_project_id($this->ID);
+		$project_api_id = $this->get_api_id();
 		$team_member_list = BoppLib::get_project_members_by_role($project_api_id, BoppLibHelpers::$project_team_member_role['slug']);
 		foreach ($team_member_list as $team_member) {
 			if ($current_user_id == $team_member->wp_user_id) return TRUE;

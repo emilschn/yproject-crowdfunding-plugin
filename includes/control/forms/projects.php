@@ -341,7 +341,7 @@ class WDGFormProjects {
 		
 		if (isset($_POST['project-organisation'])) {
 			//Récupération de l'ancienne organisation
-			$api_project_id = BoppLibHelpers::get_api_project_id($post_campaign->ID);
+			$api_project_id = $campaign->get_api_id();
 			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			$current_organisation = FALSE;
 			if (count($current_organisations) > 0) {
@@ -509,7 +509,7 @@ class WDGFormProjects {
 		$roi_id = filter_input( INPUT_POST, 'proceed_roi_id' );
 		$roi_declaration = new WDGROIDeclaration( $roi_id );
 		$campaign = atcf_get_current_campaign();
-		$api_project_id = BoppLibHelpers::get_api_project_id($campaign->ID);
+		$api_project_id = $campaign->get_api_id();
 		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 		$current_organisation = $current_organisations[0];
 		$organisation = new YPOrganisation($current_organisation->organisation_wpref);
