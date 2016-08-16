@@ -31,7 +31,7 @@ class WDGPostActions {
 
         NotificationsEmails::project_mail($campaign_id, $mail_title, $mail_content, $mail_recipients);
 
-        wp_safe_redirect( wp_get_referer() );
+        wp_safe_redirect( wp_get_referer()."#page-contacts" );
         die();
     }
 }
