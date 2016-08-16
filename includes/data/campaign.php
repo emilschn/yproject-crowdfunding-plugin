@@ -19,6 +19,7 @@ function atcf_get_current_campaign() {
 		if ( is_single() && $post->post_type == "post" ) {
 			$singlepost_category = get_the_category();
 			$campaign_id = atcf_get_campaign_id_from_category($singlepost_category[0]);
+			$is_campaign_page = TRUE;
 			
 		} else if (is_category()) {
 			global $cat;
@@ -32,7 +33,9 @@ function atcf_get_current_campaign() {
 	//On a un id, alors on fait les vérifications pour savoir si c'est bien une campagne
 	if (!empty($campaign_id)) {
 		$is_campaign = (get_post_meta($campaign_id, 'campaign_goal', TRUE) != '');
-		$is_campaign_page = $is_campaign && ($campaign_id == $post->ID);
+		if (!isset($is_campaign_page) || $is_campaign_page != TRUE) {
+			$is_campaign_page = $is_campaign && ($campaign_id == $post->ID);
+		}
 		
 		//Si c'est bien une campagne, on définit les objets utiles
 		if ($is_campaign) {
