@@ -19,7 +19,9 @@ function atcf_get_current_campaign() {
 		if ( is_single() && $post->post_type == "post" ) {
 			$singlepost_category = get_the_category();
 			$campaign_id = atcf_get_campaign_id_from_category($singlepost_category[0]);
-			$is_campaign_page = TRUE;
+			if ( !empty( $campaign_id ) ) {
+				$is_campaign_page = TRUE;
+			}
 			
 		} else if (is_category()) {
 			global $cat;
