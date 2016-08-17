@@ -416,72 +416,42 @@ class NotificationsEmails {
     //*******************************************************
     // MESSAGE DIRECT PORTEUR DE PROJET
     //*******************************************************
-    public static function project_mail($campaign_id, $mail_title, $mail_content, $send_jycrois, $send_vote, $send_invest, $id_investors_list = [], $return_string = false) {
-		ypcf_debug_log('NotificationsEmails::project_mail > ' . $campaign_id . ' > ' . $mail_title);
-		$post_campaign = get_post($campaign_id);
-		$campaign = new ATCF_Campaign($post_campaign);
-		$organization = $campaign->get_organisation();
-		$organization_obj = new YPOrganisation($organization->organisation_wpref);
-		$project_title = $post_campaign->post_title;
-		
-		$from_data = array();
-		$from_data['name'] = $project_title;
-		$from_data['email'] = $organization_obj->get_email();
 
-		$object = $project_title. ' : ' .$mail_title;
-        
-        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
-                .'<h1 style="text-align: center;">'.$mail_title.'</h1>';
-        
-        $body_content .= $mail_content.'<br/>';
-        
-        $body_content .= '<div style="text-align: center;">'
-                .'<a href="'.get_permalink($post_campaign->ID).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
-                    Voir le projet</a><br/>'
-                .'Message envoy&eacute; par '
-                .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
-                .$project_title.'</a><br/><br/>'
-                .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$project_title
-                .'. Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
-                .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
-                . '</div></div>';
-        //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
-        
-        if ($return_string) {
-            return $body_content;
+    public static function project_mail($campaign_id, $mail_title, $mail_content, $mail_recipients) {
+		ypcf_debug_log('NotificationsEmails::project_mail > ' . $campaign_id . ' > ' . $mail_title);
+        $post_campaign = get_post($campaign_id);
+        $campaign = new ATCF_Campaign($post_campaign);
+        $organization = $campaign->get_organisation();
+        $organization_obj = new YPOrganisation($organization->organisation_wpref);
+        $project_title = $post_campaign->post_title;
+
+        $from_data = array();
+        $from_data['name'] = $project_title;
+        $from_data['email'] = $organization_obj->get_email();
+
+        global $wpdb;
+        $table_vote = $wpdb->prefix . "ypcf_project_votes";
+        $list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1", OBJECT_K);
+
+        $list_mail = array();
+        $feedback = array();
+        foreach ($mail_recipients as $id_user) {
+            //TODO : Vérifier si l'utilisateur peut bien envoyer à la personne (vérifier si dans la liste des suiveurs/votants/investisseurs)
+            $user = get_userdata(intval($id_user));
+            $to = $user->user_email;
+            $user_str = $user->first_name . ' ' . $user->last_name;
+            if (empty($user_str)) { $user_str = $user->user_login; }
+            $user_data= array(
+                'username'=> $user_str,
+                'investwish'=>$list_user_voters[$id_user]->invest_sum
+            );
+
+            $this_mail_content = WDGFormProjects::build_mail_text($mail_content,$mail_title,$campaign_id, $user_data);
+            $list_mail[] = $to;
+
+            $feedback[] = NotificationsEmails::send_mail($to, $this_mail_content['title'], $this_mail_content['body'], true, array());
         }
-        
-		global $wpdb;
-		$send_list = array();
-		$feedback = array();
-		//Récupération éventuelle des utilisateurs "j'y crois"
-		if ($send_jycrois) {
-			$table_jcrois = $wpdb->prefix . "jycrois";
-			$list_user_jcrois = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
-			$send_list = $list_user_jcrois;
-		}
-		//Récupération éventuelle des utilisateurs "j'ai voté et validé le projet"
-		if ($send_vote) {
-			$table_vote = $wpdb->prefix . "ypcf_project_votes";
-			$list_user_voters = $wpdb->get_col( "SELECT user_id FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
-			$send_list = array_merge($send_list, $list_user_voters);
-		}
-		//Récupération éventuelle des utilisateurs "j'ai investi"
-		if ($send_invest){
-			$send_list = array_merge($send_list, $id_investors_list);
-		}
-		//Suppression des doublons
-		$send_list_result = array_unique($send_list);
-	
-		$bcc_to = array();
-        foreach ($send_list_result as $id_user) {
-			$user = get_userdata(intval($id_user));
-			$to = $user->user_email;
-			$bcc_to[] = $to;
-		}
-		$admin_email = get_option('admin_email');
-		$feedback[] = NotificationsEmails::send_mail( $admin_email, $object, $body_content, true, array(), $from_data, $bcc_to );
-        return array_combine($bcc_to, $feedback);
+        return array_combine($list_mail, $feedback);
     }
     //*******************************************************
     // FIN MESSAGE DIRECT PORTEUR DE PROJET
@@ -495,7 +465,7 @@ class NotificationsEmails {
      * lorsque celui-ci publie une nouvelle actualité
      * @param int $campaign_id
      * @param int $post_id ID of the new post
-     * @return bool
+     * @return
      */
     public static function new_project_post_posted($campaign_id, $post_id) {
 		ypcf_debug_log('NotificationsEmails::new_project_post_posted > ' . $campaign_id . ' > ' . $post_id);

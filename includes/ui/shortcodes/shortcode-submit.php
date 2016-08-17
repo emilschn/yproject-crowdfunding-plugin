@@ -615,7 +615,7 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_blog_category_id', $id_category );
 
 	    // Extra Campaign Information
-	    add_post_meta( $campaign, 'campaign_vote', 'preparing' );
+	    add_post_meta( $campaign, 'campaign_vote', ATCF_Campaign::$campaign_status_preparing );
         add_post_meta( $campaign, 'campaign_validated_next_step', 0);
 	    add_post_meta( $campaign, 'campaign_goal', apply_filters( 'edd_metabox_save_edd_price', $goal ) );
 	    add_post_meta( $campaign, 'campaign_minimum_goal', apply_filters( 'edd_metabox_save_edd_price', $minimum_goal ) );
@@ -731,6 +731,8 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, '_variable_pricing', 0 );
 	    add_post_meta( $campaign, '_edd_price_options_mode', 1 );
 	    add_post_meta( $campaign, '_edd_hide_purchase_link', 'on' );
+	    add_post_meta( $campaign, ATCF_Campaign::$key_edit_version, 3 );
+	    add_post_meta( $campaign, ATCF_Campaign::$key_payment_provider, ATCF_Campaign::$payment_provider_lemonway );
 
 	    $prices = array(1);
 	    add_post_meta( $campaign, 'edd_variable_prices', $prices );

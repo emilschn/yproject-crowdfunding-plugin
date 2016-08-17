@@ -16,9 +16,15 @@ function atcf_get_current_campaign() {
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
 	if (empty($campaign_id)) {
 		$campaign_id = '';
-		if (is_category()) {
+		if ( is_single() && $post->post_type == "post" ) {
+			$singlepost_category = get_the_category();
+			$campaign_id = atcf_get_campaign_id_from_category($singlepost_category[0]);
+			$is_campaign_page = TRUE;
+			
+		} else if (is_category()) {
 			global $cat;
 			$campaign_id = atcf_get_campaign_id_from_category($cat);
+			
 		} else {
 			$campaign_id = (isset($_GET['campaign_id'])) ? $_GET['campaign_id'] : $post->ID;
 		}
@@ -27,7 +33,9 @@ function atcf_get_current_campaign() {
 	//On a un id, alors on fait les vérifications pour savoir si c'est bien une campagne
 	if (!empty($campaign_id)) {
 		$is_campaign = (get_post_meta($campaign_id, 'campaign_goal', TRUE) != '');
-		$is_campaign_page = $is_campaign && ($campaign_id == $post->ID);
+		if (!isset($is_campaign_page) || $is_campaign_page != TRUE) {
+			$is_campaign_page = $is_campaign && ($campaign_id == $post->ID);
+		}
 		
 		//Si c'est bien une campagne, on définit les objets utiles
 		if ($is_campaign) {
@@ -41,6 +49,7 @@ function atcf_get_current_campaign() {
 }
 
 function atcf_get_campaign_id_from_category($category) {
+	$campaign_id = FALSE;
 	$this_category = get_category($category);
 	$this_category_name = $this_category->name;
 	$name_exploded = explode('cat', $this_category_name);
@@ -63,7 +72,7 @@ class ATCF_Campaign {
 	public $data;
         
 	/**
-	 * Number of days of vote
+	 * Default number of days of vote
 	 * @var int
 	 */
 	public static $vote_duration = 30;
@@ -85,15 +94,42 @@ class ATCF_Campaign {
 	 * @var int
 	 */
 	public static $vote_percent_invest_ready_min_required = 50;
-        
-	public static $status_list = array(
-		'preparing' => 'Pr&eacute;paration',
-		'preview'   => 'Avant-premi&egrave;re',
-		'vote'	    => 'Vote',
-		'collecte'  => 'Collecte',
-		'funded'  => 'Termin&eacute',
-		'archive'  => 'Archiv&eacute'
-	);
+
+	public static $campaign_status_preparing = 'preparing';
+	public static $campaign_status_validated = 'validated';
+	public static $campaign_status_preview = 'preview';
+	public static $campaign_status_vote = 'vote';
+	public static $campaign_status_collecte = 'collecte';
+	public static $campaign_status_funded = 'funded';
+	public static $campaign_status_archive = 'archive';
+
+	static public function get_campaign_status_list(){
+		return array(
+			ATCF_Campaign::$campaign_status_preparing => 'Pr&eacute;paration',
+            ATCF_Campaign::$campaign_status_validated => 'Valid&eacute;',
+			ATCF_Campaign::$campaign_status_preview => 'Avant-premi&egrave;re',
+			ATCF_Campaign::$campaign_status_vote => 'Vote',
+			ATCF_Campaign::$campaign_status_collecte=> 'Collecte',
+			ATCF_Campaign::$campaign_status_funded => 'Termin&eacute',
+			ATCF_Campaign::$campaign_status_archive => 'Archiv&eacute'
+		);
+	}
+
+    /**
+     * Cette liste détermine l'ordre croissant d'informations nécessaires au cours d'une campagne
+     * @return array
+     */
+    static public function get_campaign_status_priority(){
+        return array(
+            ATCF_Campaign::$campaign_status_archive => 0,
+            ATCF_Campaign::$campaign_status_preparing => 1,
+            ATCF_Campaign::$campaign_status_validated => 2,
+            ATCF_Campaign::$campaign_status_preview => 3,
+            ATCF_Campaign::$campaign_status_vote => 4,
+            ATCF_Campaign::$campaign_status_collecte=> 5,
+            ATCF_Campaign::$campaign_status_funded => 6,
+        );
+    }
 
 	function __construct( $post ) {
 		$this->data = get_post( $post );
@@ -111,6 +147,12 @@ class ATCF_Campaign {
 
 		return $meta;
 	}
+
+    public function __set( $key, $value) {
+        if (is_object($this->data)) {
+            update_post_meta($this->ID, $key, $value);
+        }
+    }
 	
 /*******************************************************************************
  * METAS
@@ -202,10 +244,15 @@ class ATCF_Campaign {
 /*******************************************************************************
  * TABLEAU DE BORD
  ******************************************************************************/
-	public function google_doc() {
-		return $this->__get('campaign_google_doc');
-	}
-	
+    public static $key_google_doc = 'campaign_google_doc';
+    public function google_doc() {
+        return $this->__get_translated_property(ATCF_Campaign::$key_google_doc);
+    }
+
+    public static $key_logbook_google_doc = 'campaign_logbook_google_doc';
+    public function logbook_google_doc() {
+        return $this->__get_translated_property(ATCF_Campaign::$key_logbook_google_doc);
+    }
 	
 /*******************************************************************************
  * AFFICHAGE
@@ -235,9 +282,17 @@ class ATCF_Campaign {
 	public function subtitle() {
 		return $this->__get_translated_property( 'campaign_subtitle' );
 	}
-	public function summary() {
-		return $this->__get_translated_property( 'campaign_summary' );
-	}
+    public function summary() {
+        return $this->__get_translated_property( 'campaign_summary' );
+    }
+
+    /**
+     * @return string This summary is used in the back-office to introduce the project
+     */
+    public static $key_backoffice_summary = 'campaign_backoffice_summary';
+    public function backoffice_summary() {
+        return $this->__get_translated_property(ATCF_Campaign::$key_backoffice_summary);
+    }
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
 	}
@@ -286,6 +341,10 @@ class ATCF_Campaign {
 	public function constitution_terms() {
 		return $this->__get_translated_property('campaign_constitution_terms');
 	}
+    public static $key_contract_doc_url = 'campaign_contract_doc_url';
+    public function contract_doc_url() {
+        return $this->__get(ATCF_Campaign::$key_contract_doc_url);
+    }
 	
 	public function company_name() {
 	    return $this->__get('campaign_company_name');
@@ -304,14 +363,27 @@ class ATCF_Campaign {
 	}
 	
 	
+	public static $key_maximum_profit = 'maximum_profit';
+	public function maximum_profit() {
+	    $buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
+		if ( empty($buffer) ) {
+			$buffer = 2;
+		}
+		return $buffer;
+	}
+	
+	
 /*******************************************************************************
  * GESTION ROI
  ******************************************************************************/
-	public function funding_duration() {
-	    return $this->__get('campaign_funding_duration');
+    public static $key_funding_duration = 'campaign_funding_duration';
+    public function funding_duration() {
+	    return $this->__get(ATCF_Campaign::$key_funding_duration);
 	}
+
+    public static $key_roi_percent_estimated = 'campaign_roi_percent_estimated';
 	public function roi_percent_estimated() {
-	    $buffer = $this->__get('campaign_roi_percent_estimated');
+	    $buffer = $this->__get(ATCF_Campaign::$key_roi_percent_estimated);
 		if (empty($buffer)) {
 			$buffer = $this->roi_percent();
 		}
@@ -320,8 +392,10 @@ class ATCF_Campaign {
 	public function roi_percent() {
 	    return $this->__get('campaign_roi_percent');
 	}
+
+    public static $key_first_payment_date = 'campaign_first_payment_date';
 	public function first_payment_date() {
-	    return $this->__get('campaign_first_payment_date');
+	    return $this->__get(ATCF_Campaign::$key_first_payment_date);
 	}
 	
 	// Frais appliqués au porteur de projet
@@ -432,15 +506,32 @@ class ATCF_Campaign {
 	 * suivante par la modération
 	 * @return boolean
 	 */
-	public function can_go_next_step(){
-		$res = $this->__get('campaign_validated_next_step');
+    public static $key_validation_next_status = 'campaign_validated_next_step';
+    public function can_go_next_status(){
+		$res = $this->__get(ATCF_Campaign::$key_validation_next_status);
 		if($res==1){
 			return true;
 		} else {
 			return false; //Y compris le cas où il n'y a pas de valeur
 		}
 	}
-        
+
+    /**
+     * Modifie la validation de modération pour le passage à l'étape suivante
+     * @param $value Valeur du flag de validation (true si le PP peut passer à l'étape suivante, false sinon)
+     * @return bool|int
+     */
+    public function set_validation_next_status($value){
+        if($value === true || $value === "true" || $value===1){
+            return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 1);
+        }
+
+        if($value === false || $value === "false" || $value===0){
+            return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 0);
+        }
+
+        return false;
+    }
         
 	/**
 	 * Indique si le porteur de projet a déjà eu le message de bienvenue
@@ -587,6 +678,21 @@ class ATCF_Campaign {
 		return $this->__get( 'campaign_contact_phone' );
 	}
 
+    public static $key_external_website = 'campaign_website';
+    public function campaign_external_website(){
+        return $this->__get(ATCF_Campaign::$key_external_website);
+    }
+
+    public static $key_facebook_name = 'campaign_facebook';
+    public function facebook_name(){
+        return $this->__get(ATCF_Campaign::$key_facebook_name);
+    }
+
+    public static $key_twitter_name = 'campaign_twitter';
+    public function twitter_name(){
+        return $this->__get( ATCF_Campaign::$key_twitter_name );
+    }
+
 	/**
 	 * Campaign End Date
 	 *
@@ -608,30 +714,36 @@ class ATCF_Campaign {
 	public function begin_collecte_date($format = 'Y-m-d H:i:s') {
 		return mysql2date( $format, $this->__get( 'campaign_begin_collecte_date' ), false );
 	}
-        
-	/**
-	 * Set the date when vote finishes
-	 * @param type DateTime $newDate
-	 */
+
+    /**
+     * Set the date when vote finishes
+     * @param type DateTime $newDate
+     * @return bool|int
+     */
 	public function set_end_vote_date($newDate){
 		$res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
+        return $res;
 	}
 
 	/**
 	 * Set the date when collecte is started
 	 * @param type DateTime $newDate
-	 */
+     * @return bool|int
+     */
 	public function set_begin_collecte_date($newDate){
 		$res = update_post_meta($this->ID, 'campaign_begin_collecte_date', date_format($newDate, 'Y-m-d H:i:s'));
+        return $res;
 	}
 
 	/**
 	 * Set the date when collecte finishes
 	 * @param type DateTime $newDate
-	 */
+     * @return bool|int
+     */
 	public function set_end_date($newDate){
 		$res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
-	}
+        return $res;
+    }
 
 	public function end_vote() {
 		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_vote' ), false);
@@ -661,7 +773,7 @@ class ATCF_Campaign {
 	}
         
 	public function vote_invest_ready_min_required(){
-		return $this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100);
+		return round($this->minimum_goal(false)*(ATCF_Campaign::$vote_percent_invest_ready_min_required/100));
 	}
 	
 	public function is_vote_validated() {
@@ -689,6 +801,7 @@ class ATCF_Campaign {
 	 * Récupérer le statut du projet
 	 * @return string Statuts possibles : preparing ; preview ; vote ; collecte ; funded ; archive
 	 */
+	public static $key_campaign_status = 'campaign_vote';
 	public function campaign_status() {
 		return $this->vote();
 	}
@@ -696,7 +809,7 @@ class ATCF_Campaign {
 	 * Deprecated : use campaign_status instead
 	 */
 	public function vote() {
-		return $this->__get( 'campaign_vote' );
+		return $this->__get(ATCF_Campaign::$key_campaign_status);
 	}
 	
 	/**
@@ -845,10 +958,10 @@ class ATCF_Campaign {
 		//Récupération de la date de fin et de la date actuelle
 		$buffer = '';
 		switch ($this->campaign_status()) {
-			case 'vote':
+			case ATCF_Campaign::$campaign_status_vote:
 			    $expires = strtotime( $this->end_vote() );
 			    break;
-			case 'collecte':
+			case ATCF_Campaign::$campaign_status_collecte:
 			    $expires = strtotime( $this->end_date() );
 			    break;
 			default:
@@ -889,7 +1002,7 @@ class ATCF_Campaign {
 		date_default_timezone_set("Europe/London");
 		$now = current_time( 'timestamp' );
 		switch ($this->campaign_status()) {
-			case 'vote':
+			case ATCF_Campaign::$campaign_status_vote:
 			    $expires = strtotime( $this->end_vote() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
@@ -911,7 +1024,7 @@ class ATCF_Campaign {
 				    }
 			    }
 			    break;
-			case 'collecte':
+			case ATCF_Campaign::$campaign_status_collecte:
 			    $expires = strtotime( $this->end_date() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
@@ -1509,18 +1622,6 @@ class ATCF_Campaign {
 		$post = get_post($id);
 		if ($post->post_parent == $this->ID) wp_delete_post($id);
 	}
-        
-	/**
-	 * Gère la validation de modération pour le passage à l'étape suivante
-	 * 
-	 * $value : Valeur du flag de validation (true si le PP peut passer à
-	 *      l'étape suivante, false sinon)
-	 */
-	public function set_validation_next_step($value){
-		if($value==0||$value==1) {
-			$res = update_post_meta($this->ID, 'campaign_validated_next_step', $value);
-		}            
-	}
 
 	/**
 	 * Setter si le PP a déjà vu la LB de bienvenue sur son TB
@@ -1534,9 +1635,11 @@ class ATCF_Campaign {
 	}
 
 	public function set_status($newstatus){
-		if(array_key_exists($newstatus, ATCF_Campaign::$status_list)){
-			$res = update_post_meta($this->ID, 'campaign_vote', $newstatus);
-		}
+		if(array_key_exists($newstatus, ATCF_Campaign::get_campaign_status_list())){
+			return update_post_meta($this->ID, ATCF_Campaign::$key_campaign_status, $newstatus);
+		} else {
+		    return false;
+        }
 	}
 
 	/**
