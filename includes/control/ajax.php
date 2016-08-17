@@ -662,14 +662,14 @@ class WDGAjaxActions {
 		$errors = array();
 
 		$new_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'google_doc'));
-        if(strpos($new_gdoc_url,"https://docs.google.com/document/d/")===0){
+        if(empty($new_gdoc_url) || strpos($new_gdoc_url,"https://docs.google.com/document/d/")===0){
             $campaign->__set(ATCF_Campaign::$key_google_doc, $new_gdoc_url);
-        } else if (!empty($new_logbook_gdoc_url)) {
+        } else if (!empty($new_gdoc_url)) {
             array_push($errors, "L'URL du planning est invalide ");
         }
 
         $new_logbook_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'logbook_google_doc'));
-        if(strpos($new_logbook_gdoc_url,"https://docs.google.com/document/d/")===0){
+        if(empty($new_logbook_gdoc_url) || strpos($new_logbook_gdoc_url,"https://docs.google.com/document/d/")===0){
             $campaign->__set(ATCF_Campaign::$key_logbook_google_doc, $new_logbook_gdoc_url);
         } else if (!empty($new_logbook_gdoc_url)) {
             array_push($errors, "L'URL du journal de bord est invalide ");
