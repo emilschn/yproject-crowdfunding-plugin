@@ -16,6 +16,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_user_infos');
 		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
+		WDGAjaxActions::add_action('save_image_head');
+		WDGAjaxActions::add_action('save_image_url_video');
 
         //Dashboard
 		WDGAjaxActions::add_action('save_project_infos');
@@ -28,7 +30,6 @@ class WDGAjaxActions {
 
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
-
 	}
     
 	/**
@@ -461,6 +462,39 @@ class WDGAjaxActions {
 		}
 	}
 
+
+	/**
+	 * Enregistre l'image head
+	 */
+	public static function save_image_head() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$image_header =  $_FILES['image_header'];
+		
+		WDGFormProjects::edit_image_banniere($image_header, $campaign_id);
+		
+		exit();
+	}
+	
+	
+
+	/**
+	 * Enregistre la petite image et/ou url de la vidéo
+	 */
+	public static function save_image_url_video() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$url_video = filter_input(INPUT_POST, 'url_video');
+
+		$image = $_FILES[ 'image_video_zone' ];
+		if(empty($url_video)){
+			$campaign = new ATCF_Campaign($campaign_id);
+			if($campaign->video() != '')
+				$url_video=$campaign->video();
+		}
+		WDGFormProjects::edit_image_url_video($image, $url_video, $campaign_id);
+
+		exit();
+	}
+		
 	/**
 	 * Enregistre les informations générales du projet
 	 */
@@ -601,7 +635,8 @@ class WDGAjaxActions {
 
 		//On met à jour : si une nouvelle organisation est renseignée et différente de celle d'avant
 		//On supprime : si la nouvelle organisation renseignée est différente de celle d'avant
-		if (!empty(filter_input(INPUT_POST, 'project-organisation'))) {
+		$project_organization = filter_input(INPUT_POST, 'project-organisation');
+		if (!empty($project_organization)) {
 			$organisation_selected = new YPOrganisation(filter_input(INPUT_POST, 'project-organisation'));
 			if ($current_organisation === FALSE || $current_organisation->organisation_wpref != $organisation_selected->get_wpref()) {
 				$update = TRUE;
@@ -675,7 +710,8 @@ class WDGAjaxActions {
             array_push($errors, "L'URL du journal de bord est invalide ");
         }
 
-		if(!empty(filter_input(INPUT_POST, 'end_vote_date'))){
+		$end_vote_date = filter_input(INPUT_POST, 'end_vote_date');
+		if(!empty($end_vote_date)){
 			try {
 				$new_end_vote_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'end_vote_date')));
 				$campaign->set_end_vote_date($new_end_vote_date);
@@ -686,7 +722,8 @@ class WDGAjaxActions {
 			array_push($errors, "Il faut une date de fin de vote !");
 		}
 
-		if(!empty(filter_input(INPUT_POST, 'end_collecte_date'))){
+		$end_collecte_date = filter_input(INPUT_POST, 'end_collecte_date');
+		if(!empty($end_collecte_date)){
 			try {
 				$new_end_collecte_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'end_collecte_date')));
 				$campaign->set_end_date($new_end_collecte_date);
