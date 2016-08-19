@@ -963,12 +963,16 @@ class WDGAjaxActions {
             $display_vote_infos = false;
         }
 
+        $imggood = '<img src="'.get_stylesheet_directory_uri().'/images/good.png" alt="suit" title="Suit le projet" width="30px" class="infobutton" style="margin-left:0px;"/>';
+		$imggoodvote = '<img src="'.get_stylesheet_directory_uri().'/images/goodvote.png" alt="vote" title="A voté" width="30px" class="infobutton" style="margin-left:0px;"/>';
+		$imggoodmains = '<img src="'.get_stylesheet_directory_uri().'/images/goodmains.png" alt="investi" title="A investi" width="30px" class="infobutton" style="margin-left:0px;"/>';
+
         $array_columns = array(
         	new ContactColumn('checkbox','',true,"none"),
             new ContactColumn('user_link', 'Utilisateur', true),
-			new ContactColumn('follow','',true,"check"),
-			new ContactColumn('vote','',true,"check"),
-            new ContactColumn('invest','',true,"check"),
+			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check"),
+			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check"),
+            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.count($investments_list['payments_data']).'</div>',true,"check"),
 			new ContactColumn('user_id','',false),
 
 			new ContactColumn('user_last_name', 'Nom', true),
@@ -1014,13 +1018,13 @@ class WDGAjaxActions {
                 <?php foreach($array_columns as $column) {
                 	echo "<td>";
 					if($column->columnData == "follow" && $data_contact[$column->columnData]==1){
-						?><div class="dirty-hide">1</div><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/good.png" alt="suit" title="Suit le projet" /><?php
+						?><div class="dirty-hide">1</div><?php echo $imggood;
 
 					} else if($column->columnData == "vote" && $data_contact[$column->columnData]==1){
-						?><div class="dirty-hide">1</div><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/goodvote.png" alt="vote" title="A voté" /><?php
+						?><div class="dirty-hide">1</div><?php echo $imggoodvote;
 
 					} else if ($column->columnData == "invest" && $data_contact[$column->columnData]==1){
-						?><div class="dirty-hide">1</div><img src="<?php echo get_stylesheet_directory_uri(); ?>/images/goodmains.png" alt="investi" title="A investi" /><?php
+						?><div class="dirty-hide">1</div><?php echo $imggoodmains;
 					} else {
 						echo $data_contact[$column->columnData];
 					}
