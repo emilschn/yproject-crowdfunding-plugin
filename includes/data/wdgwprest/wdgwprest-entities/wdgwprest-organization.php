@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 class WDGWPREST_Entity_Organization {
 	
+	public static $link_user_type_creator = 'organization-creator';
+	
 	/**
 	 * Retourne une organisation à partir d'un id
 	 * @param string $id
@@ -79,7 +81,7 @@ class WDGWPREST_Entity_Organization {
 	 * @param string $role_slug
 	 * @return object
 	 */
-	public static function link_user_to_organisation( $organization_id, $user_id, $role_slug ) {
+	public static function link_user( $organization_id, $user_id, $role_slug ) {
 		$request_params = array(
 			'id_user' => $user_id,
 			'type' => $role_slug

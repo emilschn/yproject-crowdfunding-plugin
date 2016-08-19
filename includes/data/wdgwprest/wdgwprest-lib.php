@@ -58,10 +58,40 @@ class WDGWPRESTLib {
 		
 		return $buffer;
 	}
+	
 	public static function call_post_wdg( $route, $parameters ) {
 		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_wdg . $route, $parameters );
 	}
 	
+/*******************************************************************************
+ * Appels générique en DELETE
+ ******************************************************************************/
+	private static function call_delete( $route, $parameters ) {
+		ypcf_debug_log( 'WDGWPRESTLib::call_delete -- $route : ' . $route . ' --- ' . print_r( $parameters, TRUE ) );
+		
+		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
+		$result = wp_remote_post( 
+			YP_WDGWPREST_URL . $route, 
+			array(
+				'method'		=> 'DELETE',
+				'headers'		=> $headers, 
+				'body'			=> $parameters
+			) 
+		);
+		
+		ypcf_debug_log( 'WDGWPRESTLib::call_delete ----> $buffer : ' . print_r( $result, TRUE ) );
+		
+		$buffer = FALSE;
+		if ( !is_wp_error($result) && isset( $result["response"] ) && isset( $result["response"]["code"] ) && $result["response"]["code"] == "200" ) {
+			$buffer = json_decode( $result["body"] );
+		}
+		
+		return $buffer;
+	}
+	
+	public static function call_delete_wdg( $route, $parameters = array() ) {
+		return WDGWPRESTLib::call_delete( WDGWPRESTLib::$wp_route_wdg . $route, $parameters );
+	}
 	
 /*******************************************************************************
  * Récupération d'une page en particulier

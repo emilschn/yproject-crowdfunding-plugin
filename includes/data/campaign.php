@@ -1506,7 +1506,7 @@ class ATCF_Campaign {
 		
 		//On autorise les personnes de l'équipe projet
 		$project_api_id = $this->get_api_id();
-		$team_member_list = BoppLib::get_project_members_by_role($project_api_id, BoppLibHelpers::$project_team_member_role['slug']);
+		$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $project_api_id, WDGWPREST_Entity_Project::$link_user_type_member );
 		foreach ($team_member_list as $team_member) {
 			if ($current_user_id == $team_member->wp_user_id) return TRUE;
 		}

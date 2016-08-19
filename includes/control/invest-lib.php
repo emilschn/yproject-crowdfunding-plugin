@@ -480,7 +480,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 			//Parcourir toutes les organisations
 			$wdg_current_user = new WDGUser( $current_user->ID );
 			$api_user_id = $wdg_current_user->get_api_id();
-			$organisations_list = WDGWPREST_Entity_User::get_organizations_by_role($api_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
+			$organisations_list = WDGWPREST_Entity_User::get_organizations_by_role($api_user_id, WDGWPREST_Entity_Organization::$link_user_type_creator);
 			foreach ($organisations_list as $organisation_item) {
 				$organisation = new YPOrganisation($organisation_item->organisation_wpref);
 				$name_suffix = '_' . $group_id;
