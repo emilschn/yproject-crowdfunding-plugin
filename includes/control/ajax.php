@@ -970,9 +970,9 @@ class WDGAjaxActions {
         $array_columns = array(
         	new ContactColumn('checkbox','',true,"none"),
             new ContactColumn('user_link', 'Utilisateur', true),
-			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check"),
-			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check"),
-            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.count($investments_list['payments_data']).'</div>',true,"check"),
+			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check","N'afficher que les contacts suivant le projet"),
+			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant voté"),
+            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.count($investments_list['payments_data']).'</div>',true,"check","N'afficher que les contacts ayant investi"),
 			new ContactColumn('user_id','',false),
 
 			new ContactColumn('user_last_name', 'Nom', true),
@@ -1046,10 +1046,10 @@ class WDGAjaxActions {
 							case "text":
 							case "range" :
 							case "date":
-								echo '<input type="text" placeholder="Filtrer " data-index="'.$i.'"/><br/>'.$column->columnName;
+								echo '<input type="text" class="qtip-element" placeholder="Filtrer " data-index="'.$i.'" title="'.$column->filterQtip.'"/><br/>'.$column->columnName;
 								break;
 							case "check":
-								echo '<input type="checkbox" data-index="'.$i.'"/>';
+								echo '<input type="checkbox" class="qtip-element" data-index="'.$i.'" title="'.$column->filterQtip.'"/>';
 								break;
 							/*case "range":
 								echo '<input type="number" placeholder="Min." /><br/><input type="number" placeholder="Max." data-index="'.$i.'"/>';
@@ -1133,11 +1133,13 @@ class ContactColumn {
     public $columnName;
     public $defaultDisplay = false;
 	public $filterClass = "text";
+	public $filterQtip = "";
 
-    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $newFilterClass = "text") {
+    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $newFilterClass = "text", $newFilterQtip = "") {
         $this->columnData = $newColumnData;
         $this->columnName = $newColumnName;
         $this->defaultDisplay = $newDefaultDisplay;
 		$this->filterClass = $newFilterClass;
+		$this->filterQtip = $newFilterQtip;
     }
 }

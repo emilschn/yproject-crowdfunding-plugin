@@ -781,7 +781,7 @@ class YPOrganisation {
 	 * Retourne si l'identification sur lemonway est validée
 	 */
 	public function is_registered_lemonway_wallet() {
-		return (get_lemonway_status == YPOrganisation::$lemonway_status_registered);
+		return (self::get_lemonway_status() == YPOrganisation::$lemonway_status_registered);
 	}
 
 	/**
