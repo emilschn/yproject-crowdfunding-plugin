@@ -127,7 +127,7 @@ function atcf_get_email_body_content( $payment_id = 0, $payment_data = array() )
 	return apply_filters( 'atcf_pending_purchase_receipt', $email_body, $payment_id, $payment_data );
 }
 
-function custom_notificaion($notify_message, $comment_id) {
+function custom_notification($notify_message, $comment_id) {
 	if( ($comment->comment_type!= 'trackback' ) && ($comment->comment_type!= 'pingback' ) ){ 
 	    $comment_obj = get_comment($comment_id); 
 	    $comment_post = get_post($comment_obj->comment_post_ID);
@@ -144,4 +144,4 @@ function custom_notificaion($notify_message, $comment_id) {
 	}
 }
 
-add_filter('comment_notification_text', 'custom_notificaion_text', 10, 2);
+add_filter('comment_notification_text', 'custom_notification', 10, 2);
