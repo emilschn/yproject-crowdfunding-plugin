@@ -300,12 +300,12 @@ class WDGFormProjects {
 						break;
 				}
 				if ($is_image_accepted) {
-					for ($i = 0; $i < 10; $i++) {
+					/*for ($i = 0; $i < 10; $i++) {
 						imagefilter($image_header, IMG_FILTER_GAUSSIAN_BLUR);
 						imagefilter($image_header, IMG_FILTER_SELECTIVE_BLUR);
-					}
+					}*/
 					$withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $upload[ 'file' ]);
-					$img_name = $withoutExt.'_blur.jpg';
+					$img_name = $withoutExt.'_noblur.jpg';
 					imagejpeg($image_header,$img_name);
 
 					//Suppression dans la base de données de l'ancienne image
