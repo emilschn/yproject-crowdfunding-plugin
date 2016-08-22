@@ -772,10 +772,10 @@ function _atcf_metabox_campaign_status() {
 	    <option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_archive) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_archive; ?>>Archivé</option>
 	</select>
         
-        <p>Autoriser le porteur de projet &agrave;  passer &agrave;  l'&eacute;tape suivante</p>
-        <select id="campaign_validated_next_step" name="campaign_validated_next_step" class="regular-text" style="width:200px;">
-	    <option <?php if (!$campaign->can_go_next_step()) { ?>selected="selected"<?php } ?> value="0">Non</option>
-            <option <?php if ($campaign->can_go_next_step()) { ?>selected="selected"<?php } ?> value="1">Oui</option>
+	<p>Autoriser le porteur de projet &agrave;  passer &agrave;  l'&eacute;tape suivante</p>
+	<select id="campaign_validated_next_step" name="campaign_validated_next_step" class="regular-text" style="width:200px;">
+		<option <?php if (!$campaign->can_go_next_status()) { ?>selected="selected"<?php } ?> value="0">Non</option>
+		<option <?php if ($campaign->can_go_next_status()) { ?>selected="selected"<?php } ?> value="1">Oui</option>
 	</select>
 <?php
 }
