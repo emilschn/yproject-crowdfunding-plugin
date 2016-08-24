@@ -890,6 +890,8 @@ class WDGAjaxActions {
         }
 
         //Extraction infos utilisateur
+		$count_distinct_investors=0;
+
         foreach ( $array_contacts as $user_id=>$user_item ){
             //Données si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"]= $user_id;
@@ -910,6 +912,7 @@ class WDGAjaxActions {
 
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
+						$count_distinct_investors++;
 						$array_contacts[$user_id]["user_address"] = $orga->get_address();
 						$array_contacts[$user_id]["user_country"] = ucfirst(strtolower($orga->get_nationality()));
 						$array_contacts[$user_id]["user_mobile_phone"] = $orga_creator->get('user_mobile_phone');
@@ -935,6 +938,7 @@ class WDGAjaxActions {
 
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
+						$count_distinct_investors++;
 						$array_contacts[$user_id]["user_birthday"] = $user_data->user_birthday_year.'-'.$user_data->user_birthday_month.'-'.$user_data->user_birthday_day;
 						$array_contacts[$user_id]["user_birthplace"] = $user_data->get('user_birthplace');
 						$array_contacts[$user_id]["user_address"] = $user_data->user_address;
@@ -972,7 +976,7 @@ class WDGAjaxActions {
             new ContactColumn('user_link', 'Utilisateur', true),
 			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check","N'afficher que les contacts suivant le projet"),
 			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant voté"),
-            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.count($investments_list['payments_data']).'</div>',true,"check","N'afficher que les contacts ayant investi"),
+            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,"check","N'afficher que les contacts ayant investi"),
 			new ContactColumn('user_id','',false),
 
 			new ContactColumn('user_last_name', 'Nom', true),

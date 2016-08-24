@@ -34,7 +34,7 @@ function atcf_get_current_campaign() {
 	
 	//On a un id, alors on fait les vérifications pour savoir si c'est bien une campagne
 	if (!empty($campaign_id)) {
-		$is_campaign = (get_post_meta($campaign_id, 'campaign_goal', TRUE) != '');
+		$is_campaign = (get_post_meta($campaign_id, 'campaign_funding_type', TRUE) != '');
 		if (!isset($is_campaign_page) || $is_campaign_page != TRUE) {
 			$is_campaign_page = $is_campaign && ($campaign_id == $post->ID);
 		}
@@ -65,6 +65,60 @@ function atcf_get_campaign_post_by_payment_id($payment_id) {
 	$downloads = edd_get_payment_meta_downloads($payment_id); 
 	$download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
 	return get_post($download_id);
+}
+
+function atcf_create_campaign($author_ID, $title){
+    global $edd_options;
+
+    $args = array(
+        'post_type'   		 	=> 'download',
+        'post_status'  		 	=> 'publish',
+        'post_content' 		 	=> $edd_options['default_pitch'] ,
+        'post_title'   		 	=> $title,
+        'post_author'  			=> $author_ID,
+
+    );
+
+    $newcampaign_id = wp_insert_post( $args, true );
+
+    $default_date = date_format(date_add(new DateTime(),new DateInterval('P10Y')), 'Y-m-d H:i:s');
+
+    // Create category for blog
+    $id_category = wp_insert_category( array('cat_name' => 'cat'.$newcampaign_id, 'category_nicename' => sanitize_title($newcampaign_id . '-blog-' . $title)) );
+    add_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category );
+
+    // Extra Campaign Information
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_preparing );
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0);
+
+    add_post_meta( $newcampaign_id, 'campaign_part_value', 1 );
+    add_post_meta( $newcampaign_id, 'campaign_funding_type', 'fundingproject' );
+
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_end_vote_date, $default_date);
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_end_collecte_date,  $default_date);
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_begin_collecte_date, $default_date);
+
+    add_post_meta( $newcampaign_id, 'campaign_societal_challenge', $edd_options['default_positive_impacts']);
+    add_post_meta( $newcampaign_id, 'campaign_added_value', $edd_options['default_strategy']);
+    add_post_meta( $newcampaign_id, 'campaign_economic_model', $edd_options['default_financiary']);
+    add_post_meta( $newcampaign_id, 'campaign_implementation', $edd_options['default_team']);
+
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_edit_version, 3);
+
+    // EDD Stuff
+    add_post_meta( $newcampaign_id, '_variable_pricing', 0 );
+    add_post_meta( $newcampaign_id, '_edd_price_options_mode', 1 );
+    add_post_meta( $newcampaign_id, '_edd_hide_purchase_link', 'on' );
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_payment_provider, ATCF_Campaign::$payment_provider_lemonway );
+    add_post_meta( $newcampaign_id, 'edd_variable_prices', array(1) );
+
+
+    //Mail pour l'équipe
+    if (!WP_IS_DEV_SITE) $copy_recipient = 'communication@wedogood.co';
+    NotificationsEmails::new_project_posted($newcampaign_id, '');
+
+    return $newcampaign_id;
+
 }
 
 /** Single Campaign *******************************************************/
@@ -116,22 +170,6 @@ class ATCF_Campaign {
 			ATCF_Campaign::$campaign_status_archive => 'Archiv&eacute'
 		);
 	}
-
-    /**
-     * Cette liste détermine l'ordre croissant d'informations nécessaires au cours d'une campagne
-     * @return array
-     */
-    static public function get_campaign_status_priority(){
-        return array(
-            ATCF_Campaign::$campaign_status_archive => 0,
-            ATCF_Campaign::$campaign_status_preparing => 1,
-            ATCF_Campaign::$campaign_status_validated => 2,
-            ATCF_Campaign::$campaign_status_preview => 3,
-            ATCF_Campaign::$campaign_status_vote => 4,
-            ATCF_Campaign::$campaign_status_collecte=> 5,
-            ATCF_Campaign::$campaign_status_funded => 6,
-        );
-    }
 
 	function __construct( $post ) {
 		$this->data = get_post( $post );
@@ -293,8 +331,17 @@ class ATCF_Campaign {
      */
     public static $key_backoffice_summary = 'campaign_backoffice_summary';
     public function backoffice_summary() {
-        return $this->__get_translated_property(ATCF_Campaign::$key_backoffice_summary);
+        return $this->__get(ATCF_Campaign::$key_backoffice_summary);
     }
+
+    /**
+     * @var string How did the author knew about WDG
+     */
+    public static $key_backoffice_WDG_notoriety = 'campaign_backoffice_WDG_notoriety';
+    public function backoffice_WDG_notoriety() {
+        return $this->__get(ATCF_Campaign::$key_backoffice_WDG_notoriety);
+    }
+
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
 	}
@@ -574,8 +621,9 @@ class ATCF_Campaign {
 	 * @param boolean $formatted Return formatted currency or not
 	 * @return sting $goal A goal amount (formatted or not)
 	 */
-	public function goal( $formatted = true ) {
-		$goal = $this->__get( 'campaign_goal' );
+    public static $key_goal = 'campaign_goal';
+    public function goal( $formatted = true ) {
+		$goal = $this->__get( ATCF_Campaign::$key_goal );
 
 		if ( ! is_numeric( $goal ) )
 			return 0;
@@ -673,9 +721,18 @@ class ATCF_Campaign {
 		return $this->organisation;
 	}
 
+    /**
+     * @deprecated Utiliser plutôt mail de l'auteur
+     * @return string
+     */
 	public function contact_email() {
 		return $this->__get( 'campaign_contact_email' );
 	}
+
+    /**
+     * @deprecated Utiliser plutot Téléphone de l'auteur
+     * @return string
+     */
 	public function contact_phone() {
 		return $this->__get( 'campaign_contact_phone' );
 	}
@@ -702,8 +759,9 @@ class ATCF_Campaign {
 	 *
 	 * @return sting Campaign End Date
 	 */
+    public static $key_end_collecte_date = 'campaign_end_date';
 	public function end_date($format = 'Y-m-d H:i:s') {
-		return mysql2date( $format, $this->__get( 'campaign_end_date' ), false );
+		return mysql2date( $format, $this->__get( ATCF_Campaign::$key_end_collecte_date ), false );
 	}
         
         /**
@@ -713,8 +771,9 @@ class ATCF_Campaign {
 	 *
 	 * @return sting Campaign Begin Collecte Date
 	 */
+    public static $key_begin_collecte_date = 'campaign_begin_collecte_date';
 	public function begin_collecte_date($format = 'Y-m-d H:i:s') {
-		return mysql2date( $format, $this->__get( 'campaign_begin_collecte_date' ), false );
+		return mysql2date( $format, $this->__get( ATCF_Campaign::$key_begin_collecte_date ), false );
 	}
 
     /**
@@ -722,8 +781,9 @@ class ATCF_Campaign {
      * @param type DateTime $newDate
      * @return bool|int
      */
-	public function set_end_vote_date($newDate){
-		$res = update_post_meta($this->ID, 'campaign_end_vote', date_format($newDate, 'Y-m-d H:i:s'));
+    public static $key_end_vote_date = 'campaign_end_vote';
+    public function set_end_vote_date($newDate){
+		$res = update_post_meta($this->ID, ATCF_Campaign::$key_end_vote_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
 	}
 
@@ -733,7 +793,7 @@ class ATCF_Campaign {
      * @return bool|int
      */
 	public function set_begin_collecte_date($newDate){
-		$res = update_post_meta($this->ID, 'campaign_begin_collecte_date', date_format($newDate, 'Y-m-d H:i:s'));
+		$res = update_post_meta($this->ID, ATCF_Campaign::$key_begin_collecte_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
 	}
 
@@ -743,25 +803,25 @@ class ATCF_Campaign {
      * @return bool|int
      */
 	public function set_end_date($newDate){
-		$res = update_post_meta($this->ID, 'campaign_end_date', date_format($newDate, 'Y-m-d H:i:s'));
+		$res = update_post_meta($this->ID, ATCF_Campaign::$key_end_collecte_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
     }
 
 	public function end_vote() {
-		return mysql2date( 'Y-m-d H:i:s', $this->__get( 'campaign_end_vote' ), false);
+		return mysql2date( 'Y-m-d H:i:s', $this->__get( ATCF_Campaign::$key_end_vote_date ), false);
 	}
 
 	public function end_vote_date() {
-		return mysql2date( 'Y-m-d H:i', $this->__get( 'campaign_end_vote' ), false);
+		return mysql2date( 'Y-m-d H:i', $this->__get( ATCF_Campaign::$key_end_vote_date ), false);
 	}
 	public function end_vote_date_home() {
 		setlocale(LC_TIME, array('fr_FR.UTF-8', 'fr_FR.UTF-8', 'fra'));
-		return strftime("%d %B", strtotime(mysql2date( 'm/d', $this->__get( 'campaign_end_vote' ), false)));
+		return strftime("%d %B", strtotime(mysql2date( 'm/d', $this->__get( ATCF_Campaign::$key_end_vote_date ), false)));
 	}
 	public function end_vote_remaining() {
 	    date_default_timezone_set('Europe/Paris');
 	    $dateJour = strtotime(date("d-m-Y H:i"));
-	    $fin = strtotime($this->__get( 'campaign_end_vote' ));
+	    $fin = strtotime($this->__get( ATCF_Campaign::$key_end_vote_date ));
 	    $buffer = floor(($fin - $dateJour) / 60 / 60 / 24);
 	    $buffer = max(0, $buffer + 1);
 	    return $buffer;
@@ -801,7 +861,7 @@ class ATCF_Campaign {
 
 	/**
 	 * Récupérer le statut du projet
-	 * @return string Statuts possibles : preparing ; preview ; vote ; collecte ; funded ; archive
+	 * @return string Possible answers : see get_campaign_status_list()
 	 */
 	public static $key_campaign_status = 'campaign_vote';
 	public function campaign_status() {
@@ -1357,28 +1417,7 @@ class ATCF_Campaign {
 
 				//Sinon, on la crée juste avec un e-mail et un nom
 				} else {
-					$org_object = new YPOrganisation();
-					$org_object->set_strong_authentication(FALSE);
-					$org_object->set_name($orga_name);
-					$org_object->set_email($orga_email);
-					
-					$org_object->set_address('---');
-					$org_object->set_postal_code('00000');
-					$org_object->set_city('---');
-					$org_object->set_nationality('---');
-					$org_object->set_type('society');
-					$org_object->set_legalform('---');
-					$org_object->set_capital(0);
-					$org_object->set_idnumber('---');
-					$org_object->set_rcs('---');
-					$org_object->set_ape('---');
-					$org_object->set_bank_owner('---');
-					$org_object->set_bank_address('---');
-					$org_object->set_bank_iban('---');
-					$org_object->set_bank_bic('---');
-		
-					$wp_orga_user_id = $org_object->create();
-					$org_object->set_creator( $user_id );
+                    $wp_orga_user_id = YPOrganisation::createSimpleOrganisation($user_id,$orga_name,$orga_email);
 					$saved_user_id = $wp_orga_user_id;
 				}
 			}

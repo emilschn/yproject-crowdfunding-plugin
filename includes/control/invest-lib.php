@@ -110,8 +110,8 @@ function ypcf_check_is_project_investable() {
 
 /**
  * Détermine si les informations utilisateurs sont complètes (nécessaires pour les porteurs de projet)
- * @param type $user_id
- * @return type
+ * @param int $user_id
+ * @return bool
  */
 function ypcf_check_user_is_complete($user_id) {
     $is_complete = true;

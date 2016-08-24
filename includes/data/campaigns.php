@@ -267,8 +267,6 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_goal';
 		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_part_value';
-		$fields[] = 'campaign_contact_email';
-		$fields[] = 'campaign_contact_phone';
 		$fields[] = 'campaign_end_vote';
 		$fields[] = 'campaign_begin_collecte_date';
 		$fields[] = 'campaign_end_date';
@@ -282,7 +280,6 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_location';
 		$fields[] = 'campaign_author';
 		$fields[] = 'campaign_type';
-		$fields[] = 'campaign_owner';
 		$fields[] = 'campaign_google_doc';
 		$fields[] = 'campaign_contract_title';
 		$fields[] = 'campaign_contract_title_en_US';
@@ -763,13 +760,13 @@ function _atcf_metabox_campaign_status() {
 	<p>Choisir le statut de la campagne</p>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	    <option></option>
-		<option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_preparing) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preparing; ?>>Préparation</option>
-		<option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_validated) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preparing; ?>>Validé</option>
-	    <option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_preview) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preview; ?>>Avant-première</option>
-	    <option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_vote) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_vote; ?>>En cours de vote</option>
-	    <option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_collecte) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_collecte ; ?>>En cours de collecte</option>
-	    <option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_funded) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_funded; ?>>Terminé</option>
-	    <option <?php if ($campaign->vote() == ATCF_Campaign::$campaign_status_archive) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_archive; ?>>Archivé</option>
+		<option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preparing; ?>>Préparation</option>
+		<option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_validated) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preparing; ?>>Validé</option>
+	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_preview) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preview; ?>>Avant-première</option>
+	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_vote; ?>>En cours de vote</option>
+	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_collecte ; ?>>En cours de collecte</option>
+	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_funded; ?>>Terminé</option>
+	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_archive; ?>>Archivé</option>
 	</select>
         
         <p>Autoriser le porteur de projet &agrave;  passer &agrave;  l'&eacute;tape suivante</p>
@@ -1189,16 +1186,6 @@ function _atcf_metabox_campaign_info() {
 	<p>
 		<label for="campaign_location"><strong><?php _e( 'Location:', 'atcf' ); ?></strong></label><br />
 		<input type="text" name="campaign_location" id="campaign_location" value="<?php echo esc_attr( $campaign->location() ); ?>" class="regular-text" />
-	</p>
-	
-	<p>
-		<label for="campaign_contact_email"><strong><?php _e( 'Contact Email:', 'atcf' ); ?></strong></label><br />
-		<input type="text" name="campaign_contact_email" id="campaign_contact_email" value="<?php echo esc_attr( $campaign->contact_email() ); ?>" class="regular-text" />
-	</p>
-        
-        <p>
-		<label for="campaign_contact_phone"><strong><?php _e( 'Contact Téléphone:', 'atcf' ); ?></strong></label><br />
-                <input type="text" name="campaign_contact_phone" id="campaign_contact_phone" value="<?php echo esc_attr( $campaign->contact_phone() ); ?>" class="regular-text" />
 	</p>
 
 	<style>#end-aa { width: 3.4em } #end-jj, #end-hh, #end-mn { width: 2em; }</style>
