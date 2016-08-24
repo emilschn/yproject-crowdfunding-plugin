@@ -2,6 +2,9 @@
 
 /**
  * Classe de gestion des appels Post et Get
+ *
+ * Ex d'utilisation dans un formulaire:
+ * <form ..... action="<?php echo admin_url( 'admin-post.php?action=create_project_form'); ?>">
  */
 class WDGPostActions {
     private static $class_name = 'WDGPostActions';
@@ -88,8 +91,8 @@ class WDGPostActions {
             $campaign_id_param = '?campaign_id=';
             $campaign_id_param .= $newcampaign_id;
 
-            $redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param;
-            wp_safe_redirect( $redirect_url );
+            $redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject##informations" ;
+            wp_safe_redirect( $redirect_url);
             exit();
         } else {
             echo "0";

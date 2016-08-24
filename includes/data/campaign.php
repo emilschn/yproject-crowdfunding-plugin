@@ -581,20 +581,6 @@ class ATCF_Campaign {
 
         return false;
     }
-        
-	/**
-	 * Indique si le porteur de projet a déjà eu le message de bienvenue
-	 * en arrivant sur le tableau de bord
-	 * @return boolean
-	 */
-	public function get_has_been_welcomed(){
-		$res = $this->__get('campaign_has_been_welcomed');
-		if($res==1){
-			return true;
-		} else {
-			return false; //Y compris le cas où il n'y a pas de valeur
-		}
-	}
 
 	/**
 	 * Needs Shipping
@@ -1669,17 +1655,6 @@ class ATCF_Campaign {
 	public function delete_document($id) {
 		$post = get_post($id);
 		if ($post->post_parent == $this->ID) wp_delete_post($id);
-	}
-
-	/**
-	 * Setter si le PP a déjà vu la LB de bienvenue sur son TB
-	 * 
-	 * $value : Valeur du flag (true si le PP a déjà vu la LB, false sinon)
-	 */
-	public function set_has_been_welcomed($value){
-		if($value==0||$value==1) {
-			$res = update_post_meta($this->ID, 'campaign_has_been_welcomed', $value);
-		}
 	}
 
 	public function set_status($newstatus){
