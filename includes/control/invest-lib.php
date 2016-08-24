@@ -165,9 +165,9 @@ function ypcf_check_user_can_invest($redirect = false) {
 /**
  * Vérification si l'organisation peut investir
  */
-function ypcf_check_organisation_can_invest($organisation_user_id) {
-    $organisation = new YPOrganisation($organisation_user_id);
-    $can_invest = $organisation->has_filled_invest_infos();
+function ypcf_check_organization_can_invest($organization_user_id) {
+    $organization = new WDGOrganization($organization_user_id);
+    $can_invest = $organization->has_filled_invest_infos();
 
     if (!$can_invest) {
 		$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
@@ -210,7 +210,7 @@ function ypcf_check_invest_redirections() {
 
 	    //Si l'utilisateur veut investir pour une organisation existante
 	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != 'new_organisation' && $_SESSION['redirect_current_invest_type'] != 'user') {
-			if (!ypcf_check_organisation_can_invest($_SESSION['redirect_current_invest_type'])) {
+			if (!ypcf_check_organization_can_invest($_SESSION['redirect_current_invest_type'])) {
 				$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
 				if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
 				$page_update = get_page_by_path('modifier-mon-compte');
@@ -270,7 +270,7 @@ function ypcf_check_meanofpayment_redirections() {
 	}
     
     //Si on a choisi le moyen de paiement
-    //Il faut donc créer une contribution sur mangopay et rediriger sur la page de paiement récupérée
+    //Il faut donc créer une contribution sur LW et rediriger sur la page de paiement récupérée
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_SESSION['redirect_current_amount_part']) && isset($_GET['meanofpayment'])) {
 	    $amount_part = $_SESSION['redirect_current_amount_part'];
 	    $current_user = wp_get_current_user();
@@ -283,21 +283,9 @@ function ypcf_check_meanofpayment_redirections() {
 			    //Récupération de l'url de la page qui indique que le paiement est bien effectué
 			    $page_payment_done = get_page_by_path('paiement-effectue');
 				
-				if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
-					$mangopay_newcontribution = ypcf_mangopay_contribution_user_to_project($current_user, $_GET['campaign_id'], $amount, $page_payment_done);
-					ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID . ' ; URL :: ' . $mangopay_newcontribution->PaymentURL);
-
-					//Analyse de la contribution pour récupérer l'url de paiement
-					if (isset($mangopay_newcontribution->ID)) {
-						global $payment_url;
-						$payment_url = $mangopay_newcontribution->PaymentURL;
-						wp_redirect($mangopay_newcontribution->PaymentURL);
-						exit();
-					}
-					
-				} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-					$organization = $campaign->get_organisation();
-					$organization_obj = new YPOrganisation($organization->organisation_wpref);
+				if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					$organization = $campaign->get_organization();
+					$organization_obj = new WDGOrganization($organization->wpref);
 					$WDGuser_current = WDGUser::current();
 					$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $campaign->ID;
 					$wk_token = LemonwayLib::make_token($current_token_id);
@@ -321,19 +309,7 @@ function ypcf_check_meanofpayment_redirections() {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-virement');
 					
-					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
-						$mangopay_newcontribution = ypcf_mangopay_contribution_withdrawal_user_to_project($current_user, $_GET['campaign_id'], $amount);
-						ypcf_debug_log('ypcf_check_meanofpayment_redirections --- $mangopay_newcontribution :: ' . $mangopay_newcontribution->ID);
-
-						//Analyse de la contribution pour afficher les informations
-						if (isset($mangopay_newcontribution->ID)) {
-							if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-							if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-							wp_redirect(get_permalink($page_payment->ID) . '?ContributionID=' . $mangopay_newcontribution->ID . '&meanofpayment=wire&campaign_id=' . $_GET['campaign_id']);
-							exit();
-						}
-						
-					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						$_SESSION['amount_to_save'] = $amount;
 						if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
 						if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
@@ -421,25 +397,25 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 			//Création d'un utilisateur pour l'organisation
 			$username = 'org_' . sanitize_title_with_dashes($_POST['new_org_name']);
 			$password = wp_generate_password();
-			$organisation_user_id = wp_create_user($username, $password, $_POST['new_org_email']);
-			if (!isset($organisation_user_id->errors) || count($organisation_user_id->errors) == 0) {
-				wp_update_user( array ( 'ID' => $organisation_user_id, 'first_name' => $_POST['new_org_name'] ) ) ;
-				wp_update_user( array ( 'ID' => $organisation_user_id, 'last_name' => $_POST['new_org_name'] ) ) ;
-				wp_update_user( array ( 'ID' => $organisation_user_id, 'display_name' => $_POST['new_org_name'] ) ) ;
-				update_user_meta($organisation_user_id, 'user_type', 'organisation');
-				update_user_meta($organisation_user_id, 'user_address', $_POST['new_org_address']);
-				update_user_meta($organisation_user_id, 'user_nationality', $_POST['new_org_nationality']);
-				update_user_meta($organisation_user_id, 'user_postal_code', $_POST['new_org_postal_code']);
-				update_user_meta($organisation_user_id, 'user_city', $_POST['new_org_city']);
-				update_user_meta($organisation_user_id, 'organisation_type', 'society');
-				update_user_meta($organisation_user_id, 'organisation_legalform', $_POST['new_org_legalform']);
-				update_user_meta($organisation_user_id, 'organisation_capital', $_POST['new_org_capital']);
-				update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber']);
-				update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs']);
+			$organization_user_id = wp_create_user($username, $password, $_POST['new_org_email']);
+			if (!isset($organization_user_id->errors) || count($organization_user_id->errors) == 0) {
+				wp_update_user( array ( 'ID' => $organization_user_id, 'first_name' => $_POST['new_org_name'] ) ) ;
+				wp_update_user( array ( 'ID' => $organization_user_id, 'last_name' => $_POST['new_org_name'] ) ) ;
+				wp_update_user( array ( 'ID' => $organization_user_id, 'display_name' => $_POST['new_org_name'] ) ) ;
+				update_user_meta($organization_user_id, 'user_type', 'organisation');
+				update_user_meta($organization_user_id, 'user_address', $_POST['new_org_address']);
+				update_user_meta($organization_user_id, 'user_nationality', $_POST['new_org_nationality']);
+				update_user_meta($organization_user_id, 'user_postal_code', $_POST['new_org_postal_code']);
+				update_user_meta($organization_user_id, 'user_city', $_POST['new_org_city']);
+				update_user_meta($organization_user_id, 'organisation_type', 'society');
+				update_user_meta($organization_user_id, 'organisation_legalform', $_POST['new_org_legalform']);
+				update_user_meta($organization_user_id, 'organisation_capital', $_POST['new_org_capital']);
+				update_user_meta($organization_user_id, 'organisation_idnumber', $_POST['new_org_idnumber']);
+				update_user_meta($organization_user_id, 'organisation_rcs', $_POST['new_org_rcs']);
 
 				//Création d'un groupe pour l'organisation
 				$new_group_id = groups_create_group( array( 
-				'creator_id' => $organisation_user_id,
+				'creator_id' => $organization_user_id,
 				'name' => $_POST['new_org_name'],
 				'description' => $_POST['new_org_name'],
 				'slug' => groups_check_slug( sanitize_title( esc_attr( $_POST['new_org_name'] ) ) ), 
@@ -449,23 +425,17 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 				groups_update_groupmeta( $new_group_id, 'group_type', 'organisation');
 
 				//Ajout de l'utilisateur créé et de l'utilisateur en cours dans le groupe (et on les passe admin)
-				groups_accept_invite( $organisation_user_id, $new_group_id);
-				$org_group_member = new BP_Groups_Member($organisation_user_id, $new_group_id);
+				groups_accept_invite( $organization_user_id, $new_group_id);
+				$org_group_member = new BP_Groups_Member($organization_user_id, $new_group_id);
 				$org_group_member->promote('admin');
 				groups_accept_invite( $current_user->ID, $new_group_id);
 				$current_group_member = new BP_Groups_Member($current_user->ID, $new_group_id);
 				$current_group_member->promote('admin');
 				$_SESSION['redirect_current_invest_type'] = $new_group_id;
 
-				$organisation_user = get_user_by('id', $organisation_user_id);
-				$url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
-				$curl_result_cni = (isset($_FILES['new_org_file_cni']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni') : false;
-				$curl_result_status = (isset($_FILES['new_org_file_status']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status') : false;
-				$curl_result_extract = (isset($_FILES['new_org_file_extract']['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract') : false;
-				if (isset($_FILES['new_org_file_declaration']['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration');
-				if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($current_user->ID);
+				$organization_user = get_user_by('id', $organization_user_id);
 			} else {
-				foreach ($organisation_user_id->errors as $error) {
+				foreach ($organization_user_id->errors as $error) {
 				array_push($errors, $error[0]);
 				}
 			}
@@ -480,27 +450,21 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 			//Parcourir toutes les organisations
 			$wdg_current_user = new WDGUser( $current_user->ID );
 			$api_user_id = $wdg_current_user->get_api_id();
-			$organisations_list = WDGWPREST_Entity_User::get_organizations_by_role($api_user_id, WDGWPREST_Entity_Organization::$link_user_type_creator);
-			foreach ($organisations_list as $organisation_item) {
-				$organisation = new YPOrganisation($organisation_item->organisation_wpref);
+			$organizations_list = WDGWPREST_Entity_User::get_organizations_by_role($api_user_id, WDGWPREST_Entity_Organization::$link_user_type_creator);
+			foreach ($organizations_list as $organization_item) {
+				$organization = new WDGOrganization($organization_item->wpref);
 				$name_suffix = '_' . $group_id;
 				if (isset($_POST['update_organisation' . $name_suffix]) && $_POST['new_org_name'.$name_suffix] != '') {
-					$organisation->set_address($_POST['new_org_address'.$name_suffix]);
-					$organisation->set_nationality($_POST['new_org_nationality'.$name_suffix]);
-					$organisation->set_postal_code($_POST['new_org_postal_code'.$name_suffix]);
-					$organisation->set_city($_POST['new_org_city'.$name_suffix]);
-					$organisation->set_legalform($_POST['new_org_legalform'.$name_suffix]);
-					$organisation->set_capital($_POST['new_org_capital'.$name_suffix]);
-					$organisation->set_idnumber($_POST['new_org_idnumber'.$name_suffix]);
-					$organisation->set_rcs($_POST['new_org_rcs'.$name_suffix]);
+					$organization->set_address($_POST['new_org_address'.$name_suffix]);
+					$organization->set_nationality($_POST['new_org_nationality'.$name_suffix]);
+					$organization->set_postal_code($_POST['new_org_postal_code'.$name_suffix]);
+					$organization->set_city($_POST['new_org_city'.$name_suffix]);
+					$organization->set_legalform($_POST['new_org_legalform'.$name_suffix]);
+					$organization->set_capital($_POST['new_org_capital'.$name_suffix]);
+					$organization->set_idnumber($_POST['new_org_idnumber'.$name_suffix]);
+					$organization->set_rcs($_POST['new_org_rcs'.$name_suffix]);
 
-					$organisation_user = $organisation->get_creator();
-					$url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
-					$curl_result_cni = (isset($_FILES['new_org_file_cni'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_cni'.$name_suffix) : false;
-					$curl_result_status = (isset($_FILES['new_org_file_status'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_status'.$name_suffix) : false;
-					$curl_result_extract = (isset($_FILES['new_org_file_extract'.$name_suffix]['tmp_name'])) ? ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_extract'.$name_suffix) : false;
-					if (isset($_FILES['new_org_file_declaration'.$name_suffix]['tmp_name'])) ypcf_mangopay_send_strong_authentication($url_request, 'new_org_file_declaration'.$name_suffix);
-					if ($curl_result_cni && $curl_result_status && $curl_result_extract) ypcf_mangopay_set_user_strong_authentication_doc_transmitted($organisation_user->ID);
+					$organization_user = $organization->get_creator();
 				}
 			}
 		}
@@ -552,7 +516,7 @@ function ypcf_login_gobackinvest_url() {
 
 
 /**
- * Met à jour le statut edd en fonction du statut du paiement sur mangopay
+ * Met à jour le statut edd en fonction du statut du paiement sur LW
  * @param type $payment_id
  * @return string
  */
@@ -592,24 +556,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				if (strpos($contribution_id, 'wire_') !== FALSE) {
 					$is_card_contribution = FALSE;
 					$contribution_id = substr($contribution_id, 5);
-					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
-						$mangopay_contribution = ypcf_mangopay_get_withdrawalcontribution_by_id($contribution_id);
-						if ($mangopay_contribution) {
-							switch ($mangopay_contribution->Status) {
-								case 'CREATED':
-									$buffer = 'pending';
-									break;
-								case 'ACCEPTED':
-									$buffer = 'publish';
-									break;
-								case 'REFUSED':
-									$buffer = 'failed';
-									break;
-							}
-							$update_post = TRUE;
-						}
-						
-					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						//TODO
 					}
 
@@ -617,22 +564,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				//On teste une contribution classique
 				} else {
 
-					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
-						if ($mangopay_contribution === FALSE) $mangopay_contribution = ypcf_mangopay_get_contribution_by_id($contribution_id);
-						if ($mangopay_contribution && $mangopay_contribution->Type != 'UserError') {
-							if ($mangopay_contribution->IsCompleted) {
-								if ($mangopay_contribution->IsSucceeded) {
-									$buffer = 'publish';
-								} else {
-									$buffer = 'failed';
-								}
-							} else {
-								$buffer = 'pending';
-							}
-							$update_post = TRUE;
-						}
-						
-					} else if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						if ($lemonway_transaction === FALSE) {
 							$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
 						}
@@ -755,25 +687,6 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
  * 
  */
 function ypcf_get_updated_transfer_status($transfer_post) {
-	/*
-	$widthdrawal_obj = ypcf_mangopay_get_withdrawal_by_id($transfer_post->post_content);
-	if ($widthdrawal_obj->Error != "" && $widthdrawal_obj->Error != NULL) {
-	    $args = array(
-		'ID'	=>  $transfer_post->ID,
-		'post_status'	=> 'draft'
-	    );
-	    wp_update_post($args);
-
-	} else if ($widthdrawal_obj->IsSucceeded && $widthdrawal_obj->IsCompleted && $transfer_post->post_status != 'publish') {
-	    $args = array(
-		'ID'	=>  $transfer_post->ID,
-		'post_status'	=> 'publish'
-	    );
-	    wp_update_post($args);
-	}
-	 * 
-	 */
-	
 	$transfer_post_obj = get_post($transfer_post);
 	return $transfer_post_obj->post_status;
 }

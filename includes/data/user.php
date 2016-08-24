@@ -536,10 +536,10 @@ class WDGUser {
 		//Récupération des projets dont l'utilisateur appartient à l'équipe
 		$wdg_user = new WDGUser( $user_id );
 		$api_user_id = $wdg_user->get_api_id();
-		$project_list = BoppUsers::get_projects_by_role( $api_user_id, BoppLibHelpers::$project_team_member_role['slug'] );
+		$project_list = WDGWPREST_Entity_User::get_projects_by_role( $api_user_id, WDGWPREST_Entity_Project::$link_user_type_member );
 		if ( !empty( $project_list ) ) {
 			foreach ( $project_list as $project ) {
-				array_push( $buffer, $project->project_wp_id );
+				array_push( $buffer, $project->wpref );
 			}
 		}
 		

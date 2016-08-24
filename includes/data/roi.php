@@ -89,17 +89,17 @@ class WDGROI {
 			
 			//Si il y avait bien un ID de transfert sur LW
 			if ( $this->id_transfer > 0 ) {
-				$organisation_obj = new YPOrganisation( $this->id_orga );
+				$organization_obj = new WDGOrganization( $this->id_orga );
 
 				//Gestion versement organisation vers projet
-				if (YPOrganisation::is_user_organisation( $this->id_user )) {
-					$WDGOrga = new YPOrganisation( $this->id_user );
-					$transfer = LemonwayLib::ask_transfer_funds( $WDGOrga->get_lemonway_id(), $organisation_obj->get_lemonway_id(), $this->amount );
+				if (WDGOrganization::is_user_organization( $this->id_user )) {
+					$WDGOrga = new WDGOrganization( $this->id_user );
+					$transfer = LemonwayLib::ask_transfer_funds( $WDGOrga->get_lemonway_id(), $organization_obj->get_lemonway_id(), $this->amount );
 
 				//Versement utilisateur personne physique vers projet
 				} else {
 					$WDGUser = new WDGUser( $this->id_user );
-					$transfer = LemonwayLib::ask_transfer_funds( $WDGUser->get_lemonway_id(), $organisation_obj->get_lemonway_id(), $this->amount );
+					$transfer = LemonwayLib::ask_transfer_funds( $WDGUser->get_lemonway_id(), $organization_obj->get_lemonway_id(), $this->amount );
 				}
 			}
 

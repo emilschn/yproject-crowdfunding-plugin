@@ -20,10 +20,10 @@ class WDGWPREST_Entity_Organization {
 	
 	/**
 	 * Définit les paramètres en fonction de ce qu'on sait sur le site
-	 * @param YPOrganisation $organization
+	 * @param WDGOrganization $organization
 	 * @return array
 	 */
-	public static function set_post_parameters( YPOrganisation $organization ) {
+	public static function set_post_parameters( WDGOrganization $organization ) {
 		$parameters = array(
 			'wpref'						=> $organization->get_wpref(),
 			'name'						=> $organization->get_name(),
@@ -48,10 +48,10 @@ class WDGWPREST_Entity_Organization {
 	
 	/**
 	 * Crée une organisation sur l'API
-	 * @param YPOrganisation $organization
+	 * @param WDGOrganization $organization
 	 * @return object
 	 */
-	public static function create( YPOrganisation $organization ) {
+	public static function create( WDGOrganization $organization ) {
 		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $organization );
 		$date = new DateTime("NOW");
 		$parameters['creation_date'] = $date->format('Y') .'-'. $date->format('m') .'-'. $date->format('d');
@@ -63,10 +63,10 @@ class WDGWPREST_Entity_Organization {
 	
 	/**
 	 * Mise à jour de l'organisation à partir d'un id
-	 * @param YPOrganisation $organization
+	 * @param WDGOrganization $organization
 	 * @return object
 	 */
-	public static function update( YPOrganisation $organization ) {
+	public static function update( WDGOrganization $organization ) {
 		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $organization );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' . $organization->get_api_id(), $parameters );

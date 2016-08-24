@@ -501,13 +501,8 @@ function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
 	if ($item['signsquid_status'] == 'Agreed') {
 	    $payment_status = ypcf_get_updated_payment_status($item['ID']);
 	    if ($payment_status == 'publish') {
-		$mangopay_id = edd_get_payment_key($item['ID']);
-		$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
-		$mangopay_is_succeeded = (isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded);
-		if ($mangopay_is_succeeded) {
 		    $invite_users_args['user_id'] = $item['user'];
 		    groups_invite_user( $invite_users_args );
-		}
 	    }
 	}
     }

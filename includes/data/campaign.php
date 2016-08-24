@@ -213,7 +213,7 @@ class ATCF_Campaign {
 	public function get_payment_provider() {
 		$provider = $this->__get( ATCF_Campaign::$key_payment_provider );
 		if ( $provider != ATCF_Campaign::$payment_provider_mangopay && $provider != ATCF_Campaign::$payment_provider_lemonway ) {
-			$provider = ATCF_Campaign::$payment_provider_mangopay;
+			$provider = ATCF_Campaign::$payment_provider_lemonway;
 		}
 		return $provider;
 	}
@@ -598,16 +598,17 @@ class ATCF_Campaign {
 			return $post_campaign->post_author;
 	}
 	
-	private $organisation;
-	public function get_organisation() {
-		if (!isset($this->organisation)) {
+	private $organization;
+	public function get_organization() {
+		if (!isset($this->organization)) {
 			$api_project_id = $this->get_api_id();
-			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-			if (isset($current_organisations) && count($current_organisations) > 0) {
-				$this->organisation = $current_organisations[0];
+			
+			$current_organizations = WDGWPREST_Entity_Project::get_organizations_by_role( $api_project_id, WDGWPREST_Entity_Project::$link_organization_type_manager );
+			if (isset($current_organizations) && count($current_organizations) > 0) {
+				$this->organization = $current_organizations[0];
 			}
 		}
-		return $this->organisation;
+		return $this->organization;
 	}
 
 	public function contact_email() {
@@ -1173,19 +1174,7 @@ class ATCF_Campaign {
 					
 					$mangopay_contribution = FALSE;
 					$lemonway_contribution = FALSE;
-					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
-						$mangopay_id = edd_get_payment_key($payment->ID);
-						if ($mangopay_id == 'check') {
-							//Rien
-
-						} else if (strpos($mangopay_id, 'wire_') !== FALSE) {
-							$mangopay_id = substr($mangopay_id, 5);
-							$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
-						} else {
-							$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
-						}
-						
-					} else if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						$lemonway_id = edd_get_payment_key($payment->ID);
 						
 						if ($lemonway_id == 'check') {
@@ -1265,7 +1254,7 @@ class ATCF_Campaign {
 
 				//Sinon, on la crée juste avec un e-mail et un nom
 				} else {
-					$org_object = new YPOrganisation();
+					$org_object = new WDGOrganization();
 					$org_object->set_strong_authentication(FALSE);
 					$org_object->set_name($orga_name);
 					$org_object->set_email($orga_email);

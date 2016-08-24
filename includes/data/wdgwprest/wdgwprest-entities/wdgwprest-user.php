@@ -101,4 +101,31 @@ class WDGWPREST_Entity_User {
 		}
 		return $buffer;
 	}
+	
+	/**
+	 * Retourne la liste des projets d'un utilisateur
+	 * @param int $user_id
+	 * @return array
+	 */
+	public static function get_projects( $user_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/projects' );
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne la liste des projets d'un utilisateur, filtrées par un role
+	 * @param int $user_id
+	 * @param string $role_slug
+	 * @return array
+	 */
+	public static function get_projects_by_role( $user_id, $role_slug ) {
+		$buffer = array();
+		$project_list = WDGWPREST_Entity_User::get_projects( $user_id );
+		foreach ( $project_list as $project ) {
+			if ( $project->type == $role_slug ) {
+				array_push( $buffer, $project );
+			}
+		}
+		return $buffer;
+	}
 }

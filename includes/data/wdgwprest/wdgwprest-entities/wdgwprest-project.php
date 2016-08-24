@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class WDGWPREST_Entity_Project {
 	
 	public static $link_user_type_member = 'team-member';
+	public static $link_organization_type_manager = 'manager';
 	
 	/**
 	 * Retourne un projet à partir d'un id
@@ -126,11 +127,62 @@ class WDGWPREST_Entity_Project {
 	 * @return object
 	 */
 	public static function unlink_user( $project_id, $user_id, $role_slug ) {
-		/*$request_params = array(
-			'id_user' => $user_id,
-			'type' => $role_slug
-		);*/
 		$result_obj = WDGWPRESTLib::call_delete_wdg( 'project/' .$project_id. '/user/' .$user_id. '/type/' .$role_slug );
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne la liste des organisations liées au projet
+	 * @param int $project_id
+	 * @return array
+	 */
+	public static function get_organizations( $project_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/organizations' );
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne la liste des organisations liées au projet, filtrées selon leur rôle
+	 * @param int $project_id
+	 * @param string $role_slug
+	 * @return array
+	 */
+	public static function get_organizations_by_role( $project_id, $role_slug ) {
+		$buffer = array();
+		$organization_list = WDGWPREST_Entity_Project::get_organizations( $project_id );
+		foreach ( $organization_list as $organization ) {
+			if ( $organization->type == $role_slug ) {
+				array_push( $buffer, $organization );
+			}
+		}
+		return $buffer;
+	}
+
+	/**
+	 * Lie une organisation à un projet en définissant son rôle
+	 * @param int $project_id
+	 * @param int $organization_id
+	 * @param string $role_slug
+	 * @return object
+	 */
+	public static function link_organization( $project_id, $organization_id, $role_slug ) {
+		$request_params = array(
+			'organization_id' => $organization_id,
+			'type' => $role_slug
+		);
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'project/' .$project_id. '/organizations', $request_params );
+		return $result_obj;
+	}
+
+	/**
+	 * Supprime la liaison d'une organisation à un projet en définissant son rôle
+	 * @param int $project_id
+	 * @param int $organization_id
+	 * @param string $role_slug
+	 * @return object
+	 */
+	public static function unlink_organization( $project_id, $organization_id, $role_slug ) {
+		$result_obj = WDGWPRESTLib::call_delete_wdg( 'project/' .$project_id. '/organization/' .$organization_id. '/type/' .$role_slug );
 		return $result_obj;
 	}
 }

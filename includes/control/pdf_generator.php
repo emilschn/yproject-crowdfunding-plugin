@@ -21,21 +21,21 @@ function generatePDF($html_content, $filename) {
  * Fill the pdf default content with infos
  * @return string
  */
-function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $organisation = false) {
+function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $organization = false) {
     ypcf_debug_log('fillPDFHTMLDefaultContent > ' . $payment_data["amount"]);
     $buffer = '';
     require_once("country_list.php");
 	
 	//Si on doit faire une version anglaise
 	if (get_locale() == 'en_US') {
-		$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organisation, 'en_US');
+		$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, 'en_US');
 	}
-	$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organisation);
+	$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization);
 	
 	return $buffer;
 }
 
-function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organisation, $lang = '') {
+function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $lang = '') {
 	if (empty($lang)) {
 		setlocale( LC_CTYPE, 'fr_FR' );
 	}
@@ -74,16 +74,16 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			}
 		break;
     }
-    if (is_object($organisation) && $organisation !== false) {
+    if (is_object($organization) && $organization !== false) {
 		if ($lang == 'en_US') {
-			$buffer .= '<strong>'.$organisation->get_name().', '.$organisation->get_legalform().' with the capital of '.$organisation->get_capital().'&euro;</strong><br />';
-			$buffer .= 'which address is '.$organisation->get_city().' ('.$organisation->get_postal_code().') - '.$organisation->get_address().'<br />';
-			$buffer .= 'registered with the number '.$organisation->get_idnumber().' in '.$organisation->get_rcs().'<br />';
+			$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' with the capital of '.$organization->get_capital().'&euro;</strong><br />';
+			$buffer .= 'which address is '.$organization->get_city().' ('.$organization->get_postal_code().') - '.$organization->get_address().'<br />';
+			$buffer .= 'registered with the number '.$organization->get_idnumber().' in '.$organization->get_rcs().'<br />';
 			$buffer .= 'represented by ';
 		} else {
-			$buffer .= '<strong>'.$organisation->get_name().', '.$organisation->get_legalform().' au capital de '.$organisation->get_capital().'&euro;</strong><br />';
-			$buffer .= 'dont le siège social est à '.$organisation->get_city().' ('.$organisation->get_postal_code().') - '.$organisation->get_address().'<br />';
-			$buffer .= 'immatriculée sous le numéro '.$organisation->get_idnumber().' au RCS de '.$organisation->get_rcs().'<br />';
+			$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' au capital de '.$organization->get_capital().'&euro;</strong><br />';
+			$buffer .= 'dont le siège social est à '.$organization->get_city().' ('.$organization->get_postal_code().') - '.$organization->get_address().'<br />';
+			$buffer .= 'immatriculée sous le numéro '.$organization->get_idnumber().' au RCS de '.$organization->get_rcs().'<br />';
 			$buffer .= 'représentée par ';
 		}
     }
@@ -175,15 +175,15 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     $minute = date("i");
 	if ($lang == 'en_US') {
 		$buffer .= 'On '.$month.' '.$day.' '.$year.'<br />';
-		if (is_object($organisation) && $organisation !== false) {
-			$buffer .= 'THE '.$organisation->get_legalform().' '.$organisation->get_name().'<br />';
+		if (is_object($organization) && $organization !== false) {
+			$buffer .= 'THE '.$organization->get_legalform().' '.$organization->get_name().'<br />';
 			$buffer .= 'represented by ';
 		}
 		
 	} else {
 		$buffer .= 'Le '.$day.' '.$month.' '.$year.'<br />';
-		if (is_object($organisation) && $organisation !== false) {
-			$buffer .= 'LA '.$organisation->get_legalform().' '.$organisation->get_name().'<br />';
+		if (is_object($organization) && $organization !== false) {
+			$buffer .= 'LA '.$organization->get_legalform().' '.$organization->get_name().'<br />';
 			$buffer .= 'représentée par ';
 		}
 	}
@@ -240,12 +240,12 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
     
     $current_user = get_userdata($user_id);
 	$saved_user_id = get_post_meta($payment_id, '_edd_payment_user_id', TRUE);
-    $organisation = false;
+    $organization = false;
     if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 		$group_id = $_SESSION['redirect_current_invest_type'];
-		$organisation = new YPOrganisation($group_id);
+		$organization = new WDGOrganization($group_id);
     } else if (!empty($saved_user_id) && $saved_user_id != $user_id) {
-		$organisation = new YPOrganisation($saved_user_id);
+		$organization = new WDGOrganization($saved_user_id);
 	}
     $amount = edd_get_payment_amount($payment_id);
     $amount_part = $amount / $campaign->part_value();
@@ -259,7 +259,7 @@ function getNewPdfToSign($project_id, $payment_id, $user_id) {
 		"total_minimum_parts_company" => $campaign->total_minimum_parts(),
 		"ip" => $ip_address
     );
-    $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organisation);
+    $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organization);
     $filename = dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf';
     
     ypcf_debug_log('getNewPdfToSign > write in ' . $filename);

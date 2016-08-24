@@ -411,8 +411,8 @@ class NotificationsEmails {
 		ypcf_debug_log('NotificationsEmails::project_mail > ' . $campaign_id . ' > ' . $mail_title);
 		$post_campaign = get_post($campaign_id);
 		$campaign = new ATCF_Campaign($post_campaign);
-		$organization = $campaign->get_organisation();
-		$organization_obj = new YPOrganisation($organization->organisation_wpref);
+		$organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization($organization->wpref);
 		$project_title = $post_campaign->post_title;
 		
 		$from_data = array();
@@ -490,8 +490,9 @@ class NotificationsEmails {
     public static function new_project_post_posted($campaign_id, $post_id) {
 		ypcf_debug_log('NotificationsEmails::new_project_post_posted > ' . $campaign_id . ' > ' . $post_id);
 		$post_campaign = get_post($campaign_id);
-		$organization = $campaign->get_organisation();
-		$organization_obj = new YPOrganisation($organization->organisation_wpref);
+		$campaign = new ATCF_Campaign($post_campaign);
+		$organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization($organization->wpref);
 		$project_title = $post_campaign->post_title;
 		
 		$from_data = array();
@@ -643,7 +644,7 @@ class NotificationsEmails {
     // NOTIFICATIONS KYC
     //*******************************************************
 	/**
-	 * @param YPOrganisation $orga
+	 * @param WDGOrganization $orga
 	 */
 	public static function document_uploaded_admin($orga, $nb_document) {
 		ypcf_debug_log('NotificationsEmails::document_uploaded_admin > ' . $orga->get_wpref());
