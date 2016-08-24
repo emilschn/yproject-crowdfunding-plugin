@@ -365,15 +365,11 @@ class WDGFormProjects {
 			}
 			
 			if ($delete) {
-				$api_project_id = $campaign->get_api_id();
-				$api_organization_id = $organization_selected->get_api_id();
-				WDGWPREST_Entity_Project::unlink_organization( $api_project_id, $api_organization_id, WDGWPREST_Entity_Project::$link_organization_type_manager );
+				$campaign->unlink_organization( $organization_selected->get_api_id() );
 			}
 				
 			if ($update) {
-				$api_project_id = $campaign->get_api_id();
-				$api_organization_id = $organization_selected->get_api_id();
-				WDGWPREST_Entity_Project::link_organization( $api_project_id, $api_organization_id, WDGWPREST_Entity_Project::$link_organization_type_manager );
+				$campaign->link_organization( $organization_selected->get_api_id() );
 			}
 			
 		} else {

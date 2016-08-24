@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 class WDGWPREST_Entity_Project {
 	
-	public static $link_user_type_member = 'team-member';
+	public static $link_user_type_team = 'team';
 	public static $link_organization_type_manager = 'manager';
 	
 	/**
@@ -150,9 +150,11 @@ class WDGWPREST_Entity_Project {
 	public static function get_organizations_by_role( $project_id, $role_slug ) {
 		$buffer = array();
 		$organization_list = WDGWPREST_Entity_Project::get_organizations( $project_id );
-		foreach ( $organization_list as $organization ) {
-			if ( $organization->type == $role_slug ) {
-				array_push( $buffer, $organization );
+		if ( $organization_list ) {
+			foreach ( $organization_list as $organization ) {
+				if ( $organization->type == $role_slug ) {
+					array_push( $buffer, $organization );
+				}
 			}
 		}
 		return $buffer;
@@ -167,7 +169,7 @@ class WDGWPREST_Entity_Project {
 	 */
 	public static function link_organization( $project_id, $organization_id, $role_slug ) {
 		$request_params = array(
-			'organization_id' => $organization_id,
+			'id_organization' => $organization_id,
 			'type' => $role_slug
 		);
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'project/' .$project_id. '/organizations', $request_params );

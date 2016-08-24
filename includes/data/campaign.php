@@ -600,15 +600,45 @@ class ATCF_Campaign {
 	
 	private $organization;
 	public function get_organization() {
-		if (!isset($this->organization)) {
-			$api_project_id = $this->get_api_id();
-			
-			$current_organizations = WDGWPREST_Entity_Project::get_organizations_by_role( $api_project_id, WDGWPREST_Entity_Project::$link_organization_type_manager );
-			if (isset($current_organizations) && count($current_organizations) > 0) {
-				$this->organization = $current_organizations[0];
+		if ( !isset( $this->organization ) ) {
+			global $WDG_cache_plugin;
+			$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
+			$cache_version = 1;
+			$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );
+			$this->organization = unserialize($result_cached);
+
+			if ( empty( $this->organization ) ) {
+				$api_project_id = $this->get_api_id();
+				$current_organizations = WDGWPREST_Entity_Project::get_organizations_by_role( $api_project_id, WDGWPREST_Entity_Project::$link_organization_type_manager );
+				if (isset($current_organizations) && count($current_organizations) > 0) {
+					$this->organization = $current_organizations[0];
+				
+					$result_save = serialize( $this->organization );
+					if ( !empty( $result_save ) ) {
+						$WDG_cache_plugin->set_cache( $cache_id, $result_save, 60*60*12, $cache_version );
+					}
+				}
 			}
 		}
 		return $this->organization;
+	}
+	
+	public function link_organization( $id_api_organization, $link_type = '' ) {
+		if ( empty( $link_type ) ) {
+			$link_type = WDGWPREST_Entity_Project::$link_organization_type_manager;
+		}
+		WDGWPREST_Entity_Project::link_organization( $this->get_api_id(), $id_api_organization, $link_type );
+		$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
+		do_action( 'wdg_delete_cache', array( $cache_id ) );
+	}
+	
+	public function unlink_organization( $id_api_organization, $link_type = '' ) {
+		if ( empty( $link_type ) ) {
+			$link_type = WDGWPREST_Entity_Project::$link_organization_type_manager;
+		}
+		WDGWPREST_Entity_Project::unlink_organization( $this->get_api_id(), $id_api_organization, $link_type );
+		$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
+		do_action( 'wdg_delete_cache', array( $cache_id ) );
 	}
 
 	public function contact_email() {
@@ -1495,7 +1525,7 @@ class ATCF_Campaign {
 		
 		//On autorise les personnes de l'équipe projet
 		$project_api_id = $this->get_api_id();
-		$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $project_api_id, WDGWPREST_Entity_Project::$link_user_type_member );
+		$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $project_api_id, WDGWPREST_Entity_Project::$link_user_type_team );
 		foreach ($team_member_list as $team_member) {
 			if ($current_user_id == $team_member->wp_user_id) return TRUE;
 		}

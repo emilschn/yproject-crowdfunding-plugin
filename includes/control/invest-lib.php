@@ -449,8 +449,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		} elseif (isset($_POST['update_organisation'])) {
 			//Parcourir toutes les organisations
 			$wdg_current_user = new WDGUser( $current_user->ID );
-			$api_user_id = $wdg_current_user->get_api_id();
-			$organizations_list = WDGWPREST_Entity_User::get_organizations_by_role($api_user_id, WDGWPREST_Entity_Organization::$link_user_type_creator);
+			$organizations_list = $wdg_current_user->get_organizations_list();
 			foreach ($organizations_list as $organization_item) {
 				$organization = new WDGOrganization($organization_item->wpref);
 				$name_suffix = '_' . $group_id;

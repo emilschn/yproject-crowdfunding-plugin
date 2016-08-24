@@ -46,7 +46,7 @@ class WDGUser {
 		if ( empty($api_user_id) ) {
 			$user_create_result = WDGWPREST_Entity_User::create( $this );
 			$api_user_id = $user_create_result->id;
-			ypcf_debug_log('WDGUser::get_bopp_id > ' . $api_user_id);
+			ypcf_debug_log('WDGUser::get_api_id > ' . $api_user_id);
 			update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $api_user_id );
 		}
 		return $api_user_id;
@@ -71,6 +71,62 @@ class WDGUser {
 	
 	public function get_birthday_date() {
 		return $this->wp_user->get('user_birthday_year'). '-' .$this->wp_user->get('user_birthday_month'). '-' .$this->wp_user->get('user_birthday_day');
+	}
+	
+	public function get_projects_list() {
+		global $WDG_cache_plugin;
+		$cache_id = 'WDGUser::' .$this->get_wpref(). '::get_projects_list';
+		$cache_version = 1;
+		$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );
+		$buffer = unserialize($result_cached);
+		
+		if ( empty($buffer) ) {
+			$buffer = array();
+			//Récupération des projets dont l'utilisateur est porteur
+			$campaign_status = array('publish');
+			$args = array(
+				'post_type' => 'download',
+				'author' => $this->get_wpref(),
+				'post_status' => $campaign_status
+			);
+			$args['meta_key'] = 'campaign_vote';
+			$args['meta_compare'] = '!='; 
+			$args['meta_value'] = 'preparing';
+
+			query_posts($args);
+			if (have_posts()) {
+				while (have_posts()) {
+					the_post();
+					array_push($buffer, get_the_ID());
+				}
+			}
+			wp_reset_query();
+
+			//Récupération des projets dont l'utilisateur appartient à l'équipe
+			$project_list = WDGWPREST_Entity_User::get_projects_by_role( $this->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+			if ( !empty( $project_list ) ) {
+				foreach ( $project_list as $project ) {
+					$post_campaign = get_post( $project->wpref );
+					if ( !empty( $post_campaign ) ) {
+						array_push( $buffer, $project->wpref );
+					}
+				}
+			}
+			
+			$result_save = serialize($buffer);
+			if ( !empty( $result_save ) ) {
+				$WDG_cache_plugin->set_cache( $cache_id, $result_save, 60*60*12, $cache_version );
+			}
+		}
+		
+		return $buffer;
+	}
+	
+	public function get_organizations_list() {
+		if ( !isset( $this->organizations_list ) ) {
+			$this->organizations_list = WDGWPREST_Entity_User::get_organizations_by_role( $this->get_api_id(), WDGWPREST_Entity_Organization::$link_user_type_creator );
+		}
+		return $this->organizations_list;
 	}
 	
 /*******************************************************************************
@@ -498,52 +554,6 @@ class WDGUser {
 		if (isset($edd_options[WDGUser::$edd_general_terms_version]) && !empty($edd_options[WDGUser::$edd_general_terms_version])) $isset_general_terms = TRUE;
 		//On affiche la lightbox de cgu si : l'utilisateur est connecté, il n'est pas sur la page cgu, il ne les a pas encore validées
 		return (is_user_logged_in() && $post->post_name != 'cgu' && !WDGUser::has_validated_general_terms($user_id) && $isset_general_terms);
-	}
-	
-	/**
-	 * Récupération de la liste des id des projets auxquels un utilisateur est lié
-	 * @param type $user_id
-	 * @param type $complete
-	 * @return array
-	 */
-	public static function get_projects_by_id($user_id, $complete = FALSE) {
-		$buffer = array();
-		
-		//Récupération des projets dont l'utilisateur est porteur
-		$campaign_status = array('publish');
-		if ($complete === TRUE) {
-			array_push($campaign_status, 'private');
-		}
-		$args = array(
-			'post_type' => 'download',
-			'author' => $user_id,
-			'post_status' => $campaign_status
-		);
-		if ($complete === FALSE) {
-			$args['meta_key'] = 'campaign_vote';
-			$args['meta_compare'] = '!='; 
-			$args['meta_value'] = 'preparing';
-		}
-		query_posts($args);
-		if (have_posts()) {
-			while (have_posts()) {
-				the_post();
-				array_push($buffer, get_the_ID());
-			}
-		}
-		wp_reset_query();
-		
-		//Récupération des projets dont l'utilisateur appartient à l'équipe
-		$wdg_user = new WDGUser( $user_id );
-		$api_user_id = $wdg_user->get_api_id();
-		$project_list = WDGWPREST_Entity_User::get_projects_by_role( $api_user_id, WDGWPREST_Entity_Project::$link_user_type_member );
-		if ( !empty( $project_list ) ) {
-			foreach ( $project_list as $project ) {
-				array_push( $buffer, $project->wpref );
-			}
-		}
-		
-		return $buffer;
 	}
 	
 	/**

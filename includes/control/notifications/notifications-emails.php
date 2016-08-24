@@ -151,7 +151,7 @@ class NotificationsEmails {
 	
 	$author_data = get_userdata($post_campaign->post_author);
 	$emails = $author_data->user_email;
-	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_member );
+	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 	
 	$object = "Nouvel investissement";
 	
@@ -371,7 +371,7 @@ class NotificationsEmails {
 	
 	$user = get_userdata($post_campaign->post_author);
 	$emails = $user->user_email;
-	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_member );
+	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 		
 	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
@@ -396,7 +396,7 @@ class NotificationsEmails {
 
 		$user = get_userdata($post_campaign->post_author);
 		$emails = $user->user_email;
-		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_member );
+		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
 		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
