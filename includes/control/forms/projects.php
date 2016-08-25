@@ -365,7 +365,7 @@ class WDGFormProjects {
 			}
 			
 			if ($delete) {
-				$campaign->unlink_organization( $organization_selected->get_api_id() );
+				$campaign->unlink_organization( $current_organization->id );
 			}
 				
 			if ($update) {

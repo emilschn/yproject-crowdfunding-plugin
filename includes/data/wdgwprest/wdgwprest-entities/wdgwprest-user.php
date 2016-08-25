@@ -94,9 +94,11 @@ class WDGWPREST_Entity_User {
 	public static function get_organizations_by_role( $user_id, $role_slug ) {
 		$buffer = array();
 		$organization_list = WDGWPREST_Entity_User::get_organizations( $user_id );
-		foreach ( $organization_list as $organization ) {
-			if ( $organization->type == $role_slug ) {
-				array_push( $buffer, $organization );
+		if ( $organization_list ) {
+			foreach ( $organization_list as $organization ) {
+				if ( $organization->type == $role_slug ) {
+					array_push( $buffer, $organization );
+				}
 			}
 		}
 		return $buffer;
@@ -121,9 +123,11 @@ class WDGWPREST_Entity_User {
 	public static function get_projects_by_role( $user_id, $role_slug ) {
 		$buffer = array();
 		$project_list = WDGWPREST_Entity_User::get_projects( $user_id );
-		foreach ( $project_list as $project ) {
-			if ( $project->type == $role_slug ) {
-				array_push( $buffer, $project );
+		if ( $project_list ) {
+			foreach ( $project_list as $project ) {
+				if ( $project->type == $role_slug ) {
+					array_push( $buffer, $project );
+				}
 			}
 		}
 		return $buffer;

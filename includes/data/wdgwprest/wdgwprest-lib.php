@@ -9,6 +9,8 @@ class WDGWPRESTLib {
 	public static $wp_route_standard = 'wp/v2/';
 	public static $wp_route_wdg = 'wdg/v1/';
 	
+	private static $http_request_timeout = 10;
+	
 /*******************************************************************************
  * Appels génériques en GET
  ******************************************************************************/
@@ -16,7 +18,13 @@ class WDGWPRESTLib {
 		ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
 		
 		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
-		$result = wp_remote_get( YP_WDGWPREST_URL . $route, array( 'headers' => $headers ) );
+		$result = wp_remote_get(
+			YP_WDGWPREST_URL . $route,
+			array( 
+				'headers' => $headers,
+				'timeout' => WDGWPRESTLib::$http_request_timeout
+			)
+		);
 		
 		ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $buffer : ' . print_r( $result, TRUE ) );
 		
@@ -44,8 +52,9 @@ class WDGWPRESTLib {
 		$result = wp_remote_post( 
 			YP_WDGWPREST_URL . $route, 
 			array( 
-				'headers' => $headers, 
-				'body' => $parameters
+				'headers'	=> $headers,
+				'timeout'	=> WDGWPRESTLib::$http_request_timeout, 
+				'body'		=> $parameters
 			) 
 		);
 		
@@ -73,9 +82,10 @@ class WDGWPRESTLib {
 		$result = wp_remote_post( 
 			YP_WDGWPREST_URL . $route, 
 			array(
-				'method'		=> 'DELETE',
-				'headers'		=> $headers, 
-				'body'			=> $parameters
+				'method'	=> 'DELETE',
+				'headers'	=> $headers,
+				'timeout'	=> WDGWPRESTLib::$http_request_timeout, 
+				'body'		=> $parameters
 			) 
 		);
 		
