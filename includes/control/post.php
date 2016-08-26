@@ -64,7 +64,6 @@ class WDGPostActions {
         }
         if (is_email($new_email)==$new_email) {
             wp_update_user( array ( 'ID' => $WPuserID, 'user_email' => $new_email ) );
-            $WDGUser_current->wp_user->user_email = $new_email;
         }
         if(!empty($new_phone)){
             update_user_meta( $WPuserID, 'user_mobile_phone', $new_phone );
@@ -80,7 +79,7 @@ class WDGPostActions {
 
 
             //Company data
-            $organisation_created = YPOrganisation::createSimpleOrganisation($WPuserID,$orga_name,$new_email);
+            $organisation_created = YPOrganisation::createSimpleOrganisation($WPuserID,$orga_name,$WDGUser_current->wp_user->user_email);
             $api_organisation_id = $organisation_created->get_bopp_id();
             $api_project_id = BoppLibHelpers::get_api_project_id($newcampaign_id);
             BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
