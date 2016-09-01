@@ -44,7 +44,41 @@ class YPOrganisation {
 		}
 		return self::$_current;
 	}
-    
+
+    /**
+     * Quickly creates a new Organization with limited informations
+     * @param $user_id int The organization creator id
+     * @param $orga_name string Name of the new organization
+     * @param $orga_email string Mail
+     * @return bool|YPOrganisation The new organisation or FALSE if failure
+     */
+	public static function createSimpleOrganisation($user_id, $orga_name, $orga_email){
+        $org_object = new YPOrganisation();
+        $org_object->set_strong_authentication(FALSE);
+        $org_object->set_name($orga_name);
+        $org_object->set_email($orga_email);
+
+        $org_object->set_address('---');
+        $org_object->set_postal_code('00000');
+        $org_object->set_city('---');
+        $org_object->set_nationality('---');
+        $org_object->set_type('society');
+        $org_object->set_legalform('---');
+        $org_object->set_capital(0);
+        $org_object->set_idnumber('---');
+        $org_object->set_rcs('---');
+        $org_object->set_ape('---');
+        $org_object->set_bank_owner('---');
+        $org_object->set_bank_address('---');
+        $org_object->set_bank_iban('---');
+        $org_object->set_bank_bic('---');
+
+        $org_user_id = $org_object->create();
+        if($org_user_id==false) return false;
+        $org_object->set_creator( $user_id );
+        return $org_object;
+    }
+
 	/**
 	 * Constructeur
 	 */
@@ -90,7 +124,7 @@ class YPOrganisation {
 	
 	/**
 	 * Crée un utilisateur dans la base de données et l'initialise
-	 * @return boolean
+	 * @return boolean|int
 	 */
 	public function create() {
 		global $errors_submit_new, $errors_create_orga;
@@ -448,6 +482,7 @@ class YPOrganisation {
 	
 	/**
 	 * Liaisons utilisateurs
+     * ATTENTION : L'organisation doit être déjà créée sur l'API (avec create()) avant d'y lier un compte
 	 */
 	public function set_creator($wp_user_id) {
 		$bopp_user_id = BoppLibHelpers::get_api_user_id($wp_user_id);
@@ -781,7 +816,7 @@ class YPOrganisation {
 	 * Retourne si l'identification sur lemonway est validée
 	 */
 	public function is_registered_lemonway_wallet() {
-		return (get_lemonway_status == YPOrganisation::$lemonway_status_registered);
+		return (self::get_lemonway_status() == YPOrganisation::$lemonway_status_registered);
 	}
 
 	/**

@@ -556,9 +556,7 @@ function atcf_shortcode_submit_process() {
 		$vote_length = $max;
 
 	$end_date_vote = strtotime( sprintf( '+%d day', $vote_length ) );
-	$end_date_vote = get_gmt_from_date( date( 'Y-m-d H:i:s', $end_date_vote
-
- ) );
+	$end_date_vote = get_gmt_from_date( date( 'Y-m-d H:i:s', $end_date_vote) );
 
 	/** Check Category */
 	if (isset($category)) $category = absint( $category );
@@ -594,14 +592,14 @@ function atcf_shortcode_submit_process() {
 	    $user_id = $current_user->ID;
 
 	    $args = apply_filters( 'atcf_campaign_submit_data', array(
-		    'post_type'   		 	=> 'download',
-		    'post_status'  		 	=> 'publish',
-		    'post_title'   		 	=> $title,
-		    'post_content' 		 	=> $content,
-		    'post_excerpt' 			=> $excerpt,
-		    'post_author'  			=> $user_id,
+			'post_type'   		 	=> 'download',
+			'post_status'  		 	=> 'publish',
+			'post_title'   		 	=> $title,
+			'post_content' 		 	=> $content,
+			'post_excerpt' 			=> $excerpt,
+			'post_author'  			=> $user_id,
 
-	    ), $_POST );
+		), $_POST );
 
 	    $campaign = wp_insert_post( $args, true );
 
@@ -621,9 +619,6 @@ function atcf_shortcode_submit_process() {
 	    add_post_meta( $campaign, 'campaign_minimum_goal', apply_filters( 'edd_metabox_save_edd_price', $minimum_goal ) );
 	    add_post_meta( $campaign, 'campaign_part_value', 1 );
 	    add_post_meta( $campaign, 'campaign_type', sanitize_text_field( $type ) );
-	    add_post_meta( $campaign, 'campaign_owner', sanitize_text_field( $owner ) );
-		add_post_meta( $campaign, 'campaign_contact_phone', $phone);
-	    add_post_meta( $campaign, 'campaign_contact_email', sanitize_text_field( $c_email ) );
 	    add_post_meta( $campaign, 'campaign_end_date', sanitize_text_field( $end_date ) );
 		add_post_meta( $campaign, 'campaign_begin_collecte_date', sanitize_text_field( $end_date_vote ) );
 	    add_post_meta( $campaign, 'campaign_end_vote', sanitize_text_field( $end_date_vote ) );

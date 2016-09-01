@@ -125,12 +125,6 @@ class WDGFormProjects {
 			$cat_ids = array_map( 'intval', array($cat_cat_id, $cat_act_id) );
 			wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
 		}
-                
-        if (isset($_POST['phone'])) {
-			update_post_meta($campaign_id, 'campaign_contact_phone', sanitize_text_field($_POST['phone']));
-		} else {
-			$buffer = FALSE;
-		}
 		
 		if (isset($_POST['project-location'])) {
 			update_post_meta($campaign_id, 'campaign_location', $_POST['project-location']);

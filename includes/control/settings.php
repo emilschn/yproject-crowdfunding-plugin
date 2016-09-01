@@ -342,8 +342,92 @@ function ypcf_register_settings() {
 	    'size' => '' ,
 	    'options' => '',
 	    'std' => ''
-	)
-    );
+	));
+
+	add_settings_field(
+		'edd_settings_misc[default_pitch]',
+		'Section "Pitch" par défaut',
+		function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+		'edd_settings_misc',
+		'edd_settings_misc',
+		array(
+			'id' => 'default_pitch',
+			'desc' => '',
+			'name' => 'default_pitch',
+			'section' => 'misc',
+			'size' => '' ,
+			'options' => '',
+			'std' => ''
+		)
+	);
+
+	add_settings_field(
+		'edd_settings_misc[default_positive_impacts]',
+		'Section "Impacts positifs" par défaut',
+		function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+		'edd_settings_misc',
+		'edd_settings_misc',
+		array(
+			'id' => 'default_positive_impacts',
+			'desc' => '',
+			'name' => 'default_positive_impacts',
+			'section' => 'misc',
+			'size' => '' ,
+			'options' => '',
+			'std' => ''
+		)
+	);
+
+	add_settings_field(
+		'edd_settings_misc[default_strategy]',
+		'Section "Stratégie" par défaut',
+		function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+		'edd_settings_misc',
+		'edd_settings_misc',
+		array(
+			'id' => 'default_strategy',
+			'desc' => '',
+			'name' => 'default_strategy',
+			'section' => 'misc',
+			'size' => '' ,
+			'options' => '',
+			'std' => ''
+		)
+	);
+
+	add_settings_field(
+		'edd_settings_misc[default_financiary]',
+		'Section "Données financières" par défaut',
+		function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+		'edd_settings_misc',
+		'edd_settings_misc',
+		array(
+			'id' => 'default_financiary',
+			'desc' => '',
+			'name' => 'default_financiary',
+			'section' => 'misc',
+			'size' => '' ,
+			'options' => '',
+			'std' => ''
+		)
+	);
+
+	add_settings_field(
+		'edd_settings_misc[default_team]',
+		'Section "Equipe" par défaut',
+		function_exists( 'edd_rich_editor_callback' ) ? 'edd_rich_editor_callback' : 'edd_missing_callback',
+		'edd_settings_misc',
+		'edd_settings_misc',
+		array(
+			'id' => 'default_team',
+			'desc' => '',
+			'name' => 'default_team',
+			'section' => 'misc',
+			'size' => '' ,
+			'options' => '',
+			'std' => ''
+		)
+	);
 }
 add_action('admin_init', 'ypcf_register_settings', 11);
 

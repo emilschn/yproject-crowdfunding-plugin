@@ -27,6 +27,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_contract');
 		WDGAjaxActions::add_action('save_project_status');
+		WDGAjaxActions::add_action('save_user_infos_dashboard');
 
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
@@ -335,7 +336,7 @@ class WDGAjaxActions {
 		$is_project_holder = false;
 		if (filter_input(INPUT_POST, 'is_project_holder')=="1"){$is_project_holder = true;}
 
-		if ($current_user->has_filled_invest_infos($campaign->funding_type(),$is_project_holder) &&
+		if ($current_user->has_filled_invest_infos($campaign->funding_type()) &&
 			filter_input(INPUT_POST, 'invest_type')!='') {
 			WDGAjaxActions::check_invest_input();
 		} else {
@@ -502,49 +503,180 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
 		$errors = array();
+		$success = array();
+
 
 		//Titre du projet
-		$title = sanitize_text_field(filter_input(INPUT_POST,'project_name'));
+		$title = sanitize_text_field(filter_input(INPUT_POST,'new_project_name'));
 		if (!empty($title)) {
 			$return = wp_update_post(array(
 				'ID' => $campaign_id,
 				'post_title' => $title
 			));
 			if ($return != $campaign_id){
-				//$errors["project_name"].="Le nouveau nom du projet n'est pas valide";
-				array_push($errors,"Le nouveau nom du projet n'est pas valide");
+				$errors["new_project_name"]="Le nouveau nom du projet n'est pas valide";
+			} else {
+				$success["new_project_name"]=1;
 			}
 		} else {
-			//$errors["project_name"].="Le nom du projet ne peut pas &ecirc;tre vide";
-			array_push($errors,"Le nom du projet ne peut pas &ecirc;tre vide");
+			$errors["new_project_name"].="Le nom du projet ne peut pas &ecirc;tre vide";
 		}
 
 		//Résumé backoffice du projet
-		$backoffice_summary = (filter_input(INPUT_POST,'backoffice_summary'));
+		$backoffice_summary = (filter_input(INPUT_POST,'new_backoffice_summary'));
 		if (!empty($backoffice_summary)) {
 			$campaign->__set(ATCF_Campaign::$key_backoffice_summary, $backoffice_summary);
+			$success["new_backoffice_summary"]=1;
 		} else {
-			array_push($errors,"Décrivez votre projet");
+			$errors['new_backoffice_summary'].="Décrivez votre projet";
 		}
 
 		//Catégories du projet
 		$cat_cat_id = -1; $cat_act_id = -1;
-		if (isset($_POST['project_category'])) { $cat_cat_id = $_POST['project_category']; } else { $buffer = FALSE; }
-		if (isset($_POST['project_activity'])) { $cat_act_id = $_POST['project_activity']; } else { $buffer = FALSE; }
+		if (isset($_POST['new_project_category'])) { $cat_cat_id = $_POST['new_project_category']; }
+		if (isset($_POST['new_project_activity'])) { $cat_act_id = $_POST['new_project_activity']; }
 		if ($cat_cat_id != -1 && $cat_act_id != -1) {
 			$cat_ids = array_map( 'intval', array($cat_cat_id, $cat_act_id) );
 			wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
+			$success["new_project_category"]=1;
+			$success["new_project_activity"]=1;
 		}
 
 		//Localisation du projet
-		$location = sanitize_text_field(filter_input(INPUT_POST,'project_location'));
-		if (!empty($location)) {
+		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));
+		if (is_numeric($location)) {
 			update_post_meta($campaign_id, 'campaign_location', $location);
+			$success["new_project_location"]=1;
 		}
 
 		$return_values = array(
 			"response" => "edit_project",
-			"errors" => $errors
+			"errors" => $errors,
+			"success" => $success
+		);
+		echo json_encode($return_values);
+
+		exit();
+	}
+
+	/**
+	 * Enregistre les informations liées à l'utilisateur
+	 */
+	public static function save_user_infos_dashboard() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_user = WDGUser::current();
+		$errors = array();
+		$success = array();
+
+		$gender = filter_input(INPUT_POST, 'new_gender');
+		if($gender == "male" || $gender == "female"){
+			update_user_meta( $current_user->wp_user->ID, 'user_gender', $gender );
+			$success['new_gender']=1;
+		}
+
+		$firstname = sanitize_text_field(filter_input(INPUT_POST, 'new_firstname'));
+		if(!empty($firstname)){
+			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'first_name' => $firstname ) ) ;
+			$success['new_firstname']=1;
+		} else {
+			$errors['new_firstname']= __("Vous devez renseigner votre prénom",'yproject');
+		}
+
+		$lastname = sanitize_text_field(filter_input(INPUT_POST, 'new_lastname'));
+		if(!empty($lastname)){
+			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'last_name' => $lastname ) ) ;
+			$success['new_lastname']=1;
+		} else {
+			$errors['new_lastname']= __("Vous devez renseigner votre prénom",'yproject');
+		}
+
+		$birthday = filter_input(INPUT_POST, 'new_birthday');
+		if(!empty($birthday)){
+			try {
+				$new_birthday_date = new DateTime($birthday);
+				update_user_meta( $current_user->wp_user->ID, 'user_birthday_day', $new_birthday_date->format('d') );
+				update_user_meta( $current_user->wp_user->ID, 'user_birthday_month', $new_birthday_date->format('n') );
+				update_user_meta( $current_user->wp_user->ID, 'user_birthday_year', $new_birthday_date->format('Y') );
+				$success['new_birthday']=1;
+			} catch (Exception $e) {
+				$errors['new_birthday']="La date est invalide";
+			}
+		} else {
+			$errors['new_birthday']="Vous devez renseigner votre date de naissance";
+		}
+
+		$birthplace = filter_input(INPUT_POST, 'new_birthplace');
+
+		$birthplace = sanitize_text_field(filter_input(INPUT_POST, 'new_birthplace'));
+		if(!empty($birthplace)){
+			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'user_birthplace' => $birthplace ) ) ;
+			$success['new_birthplace']=1;
+		} else {
+			$errors['new_birthplace']= __("Vous devez renseigner votre lieu de naissance",'yproject');
+		}
+
+		$nationality = sanitize_text_field(filter_input(INPUT_POST, 'new_nationality'));
+		if(!empty($nationality)){
+			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'user_nationality' => $nationality ) ) ;
+			$success['new_nationality']=1;
+		} else {
+			$errors['new_nationality']= __("Vous devez renseigner votre nationalit&eacute;",'yproject');
+		}
+
+		$address = sanitize_text_field(filter_input(INPUT_POST, 'new_address'));
+		if(!empty($address)){
+			update_user_meta( $current_user->wp_user->ID, 'user_address', $address );
+			$success['new_address']=1;
+		} else {
+			$errors['new_address']= __("Vous devez renseigner votre adresse",'yproject');
+		}
+
+		$postal_code = sanitize_text_field(filter_input(INPUT_POST, 'new_postal_code'));
+		if(!empty($postal_code)){
+			update_user_meta( $current_user->wp_user->ID, 'user_postal_code', $postal_code );
+			$success['new_postal_code']=1;
+		} else {
+			$errors['new_postal_code']= __("Vous devez renseigner votre adresse",'yproject');
+		}
+
+		$city = sanitize_text_field(filter_input(INPUT_POST, 'new_city'));
+		if(!empty($city)){
+			update_user_meta( $current_user->wp_user->ID, 'user_city', $city );
+			$success['new_city']=1;
+		} else {
+			$errors['new_city']= __("Vous devez renseigner votre ville",'yproject');
+		}
+
+		$country = sanitize_text_field(filter_input(INPUT_POST, 'new_country'));
+		if(!empty($country)){
+			update_user_meta( $current_user->wp_user->ID, 'user_country', $country );
+			$success['new_country']=1;
+		} else {
+			$errors['new_country']= __("Vous devez renseigner votre pays",'yproject');
+		}
+
+		$mobile_phone = sanitize_text_field(filter_input(INPUT_POST, 'new_mobile_phone'));
+		if(!empty($mobile_phone)){
+			update_user_meta( $current_user->wp_user->ID, 'user_mobile_phone', $country );
+			$success['new_mobile_phone']=1;
+		} else {
+			$errors['new_mobile_phone']= __("Vous devez renseigner un numéro de téléphone",'yproject');
+		}
+
+		$mail = sanitize_text_field(filter_input(INPUT_POST, 'new_mail'));
+		if (is_email($mail)==$mail && !empty($mail)) {
+			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'user_email' => $mail ) );
+			//$WDGUser_current->wp_user->user_email = $new_email;
+			$success['new_mail']=1;
+		} else {
+			$errors['new_mail']= __("Adresse mail non valide",'yproject');
+		}
+
+		$return_values = array(
+			"response" => "edit_project",
+			"errors" => $errors,
+			"success" => $success
 		);
 		echo json_encode($return_values);
 
@@ -558,59 +690,85 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
 		$errors = array();
+		$success = array();
 
 		//Update required amount
-		$new_minimum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'minimum_goal')));
-		$new_maximum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'maximum_goal')));
+		$new_minimum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_minimum_goal')));
+		$new_maximum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_maximum_goal')));
 		if($new_minimum_goal > $new_maximum_goal){
-			array_push($errors, "Le montant maximum ne peut &ecirc;tre inf&eacute;rieur au montant minimum");
+			$errors['new_minimum_goal']="Le montant maximum ne peut &ecirc;tre inf&eacute;rieur au montant minimum";
+			$errors['new_maximum_goal']="Le montant maximum ne peut &ecirc;tre inf&eacute;rieur au montant minimum";
 		} else if($new_minimum_goal<0 || $new_maximum_goal<0) {
-			array_push($errors, "Les montants doivent &ecirc;tre positifs");
+			$errors['new_minimum_goal']="Les montants doivent &ecirc;tre positifs";
+		} else if($new_maximum_goal<0) {
+			$errors['new_maximum_goal']="Les montants doivent &ecirc;tre positifs";
 		} else {
-			update_post_meta($campaign_id, 'campaign_minimum_goal', $new_minimum_goal);
-			update_post_meta($campaign_id, 'campaign_goal', $new_maximum_goal);
+			update_post_meta($campaign_id, 'new_campaign_minimum_goal', $new_minimum_goal);
+			update_post_meta($campaign_id, 'new_campaign_goal', $new_maximum_goal);
+			$success['new_minimum_goal']=1;
+			$success['new_maximum_goal']=1;
 		}
 
 		//Update funding duration
-		$new_duration = intval(sanitize_text_field(filter_input(INPUT_POST, 'funding_duration')));
+		$new_duration = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_funding_duration')));
 		if($new_duration>=1){
 			update_post_meta($campaign_id, ATCF_Campaign::$key_funding_duration, $new_duration);
+			$success['new_funding_duration']=1;
 		} else {
-			array_push($errors, "Le financement doit au moins durer une ann&eacute;e");
+			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
 		}
 
 		//Update roi_percent_estimated duration
-		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'roi_percent_estimated'))),2);
+		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent_estimated'))),2);
 		if($new_roi_percent>=0){
 			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent);
+			$success['new_roi_percent_estimated']=1;
 		} else {
-			array_push($errors, "Le pourcentage de CA reversé doit être positif");
+			$errors['new_roi_percent_estimated']="Le pourcentage de CA reversé doit être positif";
 		}
 
 		//Update first_payment_date
-		try {
-			$new_first_payment_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'first_payment_date')));
-			update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
-		} catch (Exception $e) {
-			array_push($errors, "La date est invalide");
+		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
+		if(empty($new_first_payment_date)){
+			$errors['new_first_payment']= "La date est invalide";
+		} else {
+			try {
+				$new_first_payment_date = new DateTime(filter_input(INPUT_POST, 'new_first_payment'));
+				update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
+				$success['new_first_payment'] = 1;
+			} catch (Exception $e) {
+				$errors['new_first_payment'] = "La date est invalide";
+			}
 		}
 
 		//Update list of estimated turnover
-		$new_turnover_list = filter_input(INPUT_POST, 'list_turnover');
-		$turnover_list = json_decode($new_turnover_list);
+		$i = 0;
 		$sanitized_list = array();
-		foreach ($turnover_list as $key => $value){
-			$sanitized_list[strval(intval($key))] = strval(intval($value));
-		}
+		while(filter_input(INPUT_POST, 'new_estimated_turnover_'.$i)!='' && ($i+1 <= $campaign->funding_duration())){
+			$current_val = filter_input(INPUT_POST, 'new_estimated_turnover_'.$i);
 
- 		if(json_last_error() == JSON_ERROR_NONE){
-			$campaign->__set(ATCF_Campaign::$key_estimated_turnover,json_encode($sanitized_list));
+			if(is_numeric($current_val)){
+				if(intval($current_val)>=0){
+					$sanitized_list[$i+1] = strval(intval($current_val));
+					$success['new_estimated_turnover_'.$i] = 1;
+				} else {
+					$errors['new_estimated_turnover_'.$i] = "La valeur doit être positive";
+					$sanitized_list[$i+1] = strval(abs(intval($current_val)));
+				}
+			} else {
+				$errors['new_estimated_turnover_'.$i] = "Valeur invalide";
+				$sanitized_list[$i+1] = 0;
+			}
+
+			$i++;
 		}
+ 		$campaign->__set(ATCF_Campaign::$key_estimated_turnover,json_encode($sanitized_list));
 
 
 		$return_values = array(
 			"response" => "edit_funding",
-			"errors" => $errors
+			"errors" => $errors,
+			"success" => $success
 		);
 		echo json_encode($return_values);
 		exit();
@@ -621,6 +779,7 @@ class WDGAjaxActions {
 	 */
 	public static function save_project_organisation(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$success = array();
 
 		//Récupération de l'ancienne organisation
 		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
@@ -635,14 +794,16 @@ class WDGAjaxActions {
 
 		//On met à jour : si une nouvelle organisation est renseignée et différente de celle d'avant
 		//On supprime : si la nouvelle organisation renseignée est différente de celle d'avant
-		$project_organization = filter_input(INPUT_POST, 'project-organisation');
+		$project_organization = filter_input(INPUT_POST, 'new_project_organisation');
 		if (!empty($project_organization)) {
-			$organisation_selected = new YPOrganisation(filter_input(INPUT_POST, 'project-organisation'));
+			$organisation_selected = new YPOrganisation($project_organization);
 			if ($current_organisation === FALSE || $current_organisation->organisation_wpref != $organisation_selected->get_wpref()) {
 				$update = TRUE;
 				if ($current_organisation !== FALSE) {
 					$delete = TRUE;
 				}
+			} else {
+				$success['new_project_organisation']=1;
 			}
 
 			//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
@@ -659,11 +820,13 @@ class WDGAjaxActions {
 		if ($update) {
 			$api_organisation_id = $organisation_selected->get_bopp_id();
 			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+			$success['new_project_organisation']=1;
 		}
 
 		$return_values = array(
 			"response" => "edit_organisation",
-			"errors" => array()
+			"errors" => array(),
+			"success" => $success
 		);
 		echo json_encode($return_values);
 		exit();
@@ -675,14 +838,19 @@ class WDGAjaxActions {
 	public static function save_project_communication(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
+		$success = array();
 
-		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'website'))));
-		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'facebook'))));
-		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'twitter'))));
+		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'new_website'))));
+		$success['new_website']=1;
+		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_facebook'))));
+		$success['new_facebook']=1;
+		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
+		$success['new_twitter']=1;
 
 		$return_values = array(
 			"response" => "edit_communication",
-			"errors" => array()
+			"errors" => array(),
+			"success" => $success
 		);
 		echo json_encode($return_values);
 		exit();
@@ -695,48 +863,66 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
 		$errors = array();
+		$success = array();
 
-		$new_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'google_doc'));
+		$new_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'new_planning_gdrive'));
         if(empty($new_gdoc_url) || strpos($new_gdoc_url,"https://docs.google.com/document/d/")===0){
             $campaign->__set(ATCF_Campaign::$key_google_doc, $new_gdoc_url);
+			$success['new_planning_gdrive']=1;
         } else if (!empty($new_gdoc_url)) {
-            array_push($errors, "L'URL du planning est invalide ");
+            $errors['new_planning_gdrive']="L'URL du planning est invalide ";
         }
 
-        $new_logbook_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'logbook_google_doc'));
+        $new_logbook_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'new_logbook_gdrive'));
         if(empty($new_logbook_gdoc_url) || strpos($new_logbook_gdoc_url,"https://docs.google.com/document/d/")===0){
             $campaign->__set(ATCF_Campaign::$key_logbook_google_doc, $new_logbook_gdoc_url);
+			$success['new_logbook_gdrive']=1;
         } else if (!empty($new_logbook_gdoc_url)) {
-            array_push($errors, "L'URL du journal de bord est invalide ");
+			$errors['new_logbook_gdrive']="L'URL du journal de bord est invalide ";
         }
-
-		$end_vote_date = filter_input(INPUT_POST, 'end_vote_date');
+		$end_vote_date = filter_input(INPUT_POST, 'new_end_vote_date');
 		if(!empty($end_vote_date)){
 			try {
-				$new_end_vote_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'end_vote_date')));
+				$new_end_vote_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'new_end_vote_date')));
 				$campaign->set_end_vote_date($new_end_vote_date);
+				$success['new_end_vote_date']=1;
 			} catch (Exception $e) {
-				array_push($errors, "La date est invalide");
+				$errors['new_end_vote_date']="La date est invalide";
 			}
 		} else {
-			array_push($errors, "Il faut une date de fin de vote !");
+			$errors['new_end_vote_date']="Il faut une date de fin de vote !";
 		}
 
-		$end_collecte_date = filter_input(INPUT_POST, 'end_collecte_date');
-		if(!empty($end_collecte_date)){
+		$begin_collecte_date = filter_input(INPUT_POST, 'new_begin_collecte_date');
+		if(!empty($begin_collecte_date)){
 			try {
-				$new_end_collecte_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'end_collecte_date')));
-				$campaign->set_end_date($new_end_collecte_date);
+				$new_begin_collecte_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'new_begin_collecte_date')));
+				$campaign->set_begin_collecte_date($new_begin_collecte_date);
+				$success['new_begin_collecte_date']=1;
 			} catch (Exception $e) {
-				array_push($errors, "La date est invalide");
+				$errors['new_begin_collecte_date']="La date est invalide";
 			}
 		} else {
-			array_push($errors, "Il faut une date de fin de collecte !");
+			$errors['new_begin_collecte_date']="Il faut une date de début de collecte !";
+		}
+
+		$end_collecte_date = filter_input(INPUT_POST, 'new_end_collecte_date');
+		if(!empty($end_collecte_date)){
+			try {
+				$new_end_collecte_date = new DateTime(sanitize_text_field(filter_input(INPUT_POST, 'new_end_collecte_date')));
+				$campaign->set_end_date($new_end_collecte_date);
+				$success['new_end_collecte_date']=1;
+			} catch (Exception $e) {
+				$errors['new_end_collecte_date']="La date est invalide";
+			}
+		} else {
+			$errors['new_end_collecte_date']="Il faut une date de fin de collecte !";
 		}
 
 		$return_values = array(
 			"response" => "save_project_campaigntab",
-			"errors" => $errors
+			"errors" => $errors,
+			"success" => $success
 		);
 		echo json_encode($return_values);
 		exit();
@@ -749,11 +935,13 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
 
-		$campaign->__set(ATCF_Campaign::$key_contract_doc_url, (sanitize_text_field(filter_input(INPUT_POST, 'contract_url'))));
+		$campaign->__set(ATCF_Campaign::$key_contract_doc_url, (sanitize_text_field(filter_input(INPUT_POST, 'new_contract_url'))));
+		$success['new_contract_url']=1;
 
 		$return_values = array(
 			"response" => "edit_contract",
-			"errors" => array()
+			"errors" => array(),
+			"success" => $success
 		);
 		echo json_encode($return_values);
 		exit();
@@ -766,16 +954,20 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
 		$errors = array();
+		$success = array();
 
-		$new_status = (sanitize_text_field(filter_input(INPUT_POST, 'campaign_status')));
+		$new_status = (sanitize_text_field(filter_input(INPUT_POST, 'new_campaign_status')));
 		$campaign->set_status($new_status);
+		$success['new_campaign_status']=1;
 
-		$new_validation_status = (sanitize_text_field(filter_input(INPUT_POST, 'can_go_next')));
+		$new_validation_status = (sanitize_text_field(filter_input(INPUT_POST, 'new_can_go_next_status')));
 		$campaign->set_validation_next_status($new_validation_status);
+		$success['new_can_go_next_status']=1;
 
 		$return_values = array(
 			"response" => "edit_status",
-			"errors" => $errors
+			"errors" => $errors,
+			"success" => $success
 		);
 		echo json_encode($return_values);
 		exit();
@@ -890,6 +1082,8 @@ class WDGAjaxActions {
         }
 
         //Extraction infos utilisateur
+		$count_distinct_investors=0;
+
         foreach ( $array_contacts as $user_id=>$user_item ){
             //Données si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"]= $user_id;
@@ -910,6 +1104,7 @@ class WDGAjaxActions {
 
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
+						$count_distinct_investors++;
 						$array_contacts[$user_id]["user_address"] = $orga->get_address();
 						$array_contacts[$user_id]["user_country"] = ucfirst(strtolower($orga->get_nationality()));
 						$array_contacts[$user_id]["user_mobile_phone"] = $orga_creator->get('user_mobile_phone');
@@ -935,6 +1130,7 @@ class WDGAjaxActions {
 
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
+						$count_distinct_investors++;
 						$array_contacts[$user_id]["user_birthday"] = $user_data->user_birthday_year.'-'.$user_data->user_birthday_month.'-'.$user_data->user_birthday_day;
 						$array_contacts[$user_id]["user_birthplace"] = $user_data->get('user_birthplace');
 						$array_contacts[$user_id]["user_address"] = $user_data->user_address;
@@ -970,9 +1166,9 @@ class WDGAjaxActions {
         $array_columns = array(
         	new ContactColumn('checkbox','',true,"none"),
             new ContactColumn('user_link', 'Utilisateur', true),
-			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check"),
-			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check"),
-            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.count($investments_list['payments_data']).'</div>',true,"check"),
+			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check","N'afficher que les contacts suivant le projet"),
+			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant voté"),
+            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,"check","N'afficher que les contacts ayant investi"),
 			new ContactColumn('user_id','',false),
 
 			new ContactColumn('user_last_name', 'Nom', true),
@@ -1046,10 +1242,10 @@ class WDGAjaxActions {
 							case "text":
 							case "range" :
 							case "date":
-								echo '<input type="text" placeholder="Filtrer " data-index="'.$i.'"/><br/>'.$column->columnName;
+								echo '<input type="text" class="qtip-element" placeholder="Filtrer " data-index="'.$i.'" title="'.$column->filterQtip.'"/><br/>'.$column->columnName;
 								break;
 							case "check":
-								echo '<input type="checkbox" data-index="'.$i.'"/>';
+								echo '<input type="checkbox" class="qtip-element" data-index="'.$i.'" title="'.$column->filterQtip.'"/>';
 								break;
 							/*case "range":
 								echo '<input type="number" placeholder="Min." /><br/><input type="number" placeholder="Max." data-index="'.$i.'"/>';
@@ -1104,6 +1300,9 @@ class WDGAjaxActions {
         exit();
 	}
 
+	/**
+	 * Crée l'aperçu du mail à confirmer avant de l'envoyer (Tableau de bord)
+	 */
 	public static function preview_mail_message(){
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
 		$errors = array();
@@ -1133,11 +1332,13 @@ class ContactColumn {
     public $columnName;
     public $defaultDisplay = false;
 	public $filterClass = "text";
+	public $filterQtip = "";
 
-    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $newFilterClass = "text") {
+    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $newFilterClass = "text", $newFilterQtip = "") {
         $this->columnData = $newColumnData;
         $this->columnName = $newColumnName;
         $this->defaultDisplay = $newDefaultDisplay;
 		$this->filterClass = $newFilterClass;
+		$this->filterQtip = $newFilterQtip;
     }
 }
