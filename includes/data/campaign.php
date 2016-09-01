@@ -161,13 +161,13 @@ class ATCF_Campaign {
 
 	static public function get_campaign_status_list(){
 		return array(
-			ATCF_Campaign::$campaign_status_preparing => 'Pr&eacute;paration',
-            ATCF_Campaign::$campaign_status_validated => 'Valid&eacute;',
+			ATCF_Campaign::$campaign_status_preparing => 'D&eacute;pot de dossier',
+            ATCF_Campaign::$campaign_status_validated => 'Pr&eacute;paration',
 			ATCF_Campaign::$campaign_status_preview => 'Avant-premi&egrave;re',
 			ATCF_Campaign::$campaign_status_vote => 'Vote',
-			ATCF_Campaign::$campaign_status_collecte=> 'Collecte',
-			ATCF_Campaign::$campaign_status_funded => 'Termin&eacute',
-			ATCF_Campaign::$campaign_status_archive => 'Archiv&eacute'
+			ATCF_Campaign::$campaign_status_collecte=> 'Lev&eacute;e de fonds',
+			ATCF_Campaign::$campaign_status_funded => 'Versement des royalties',
+			ATCF_Campaign::$campaign_status_archive => 'Projet cl&ocirc;tur&eacute;'
 		);
 	}
 
