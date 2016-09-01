@@ -703,8 +703,8 @@ class WDGAjaxActions {
 		} else if($new_maximum_goal<0) {
 			$errors['new_maximum_goal']="Les montants doivent &ecirc;tre positifs";
 		} else {
-			update_post_meta($campaign_id, 'new_campaign_minimum_goal', $new_minimum_goal);
-			update_post_meta($campaign_id, 'new_campaign_goal', $new_maximum_goal);
+			update_post_meta($campaign_id, ATCF_Campaign::$key_minimum_goal, $new_minimum_goal);
+			update_post_meta($campaign_id, ATCF_Campaign::$key_goal, $new_maximum_goal);
 			$success['new_minimum_goal']=1;
 			$success['new_maximum_goal']=1;
 		}

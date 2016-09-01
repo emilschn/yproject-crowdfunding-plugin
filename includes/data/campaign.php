@@ -618,17 +618,18 @@ class ATCF_Campaign {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
 			if (strpos($goal, '.00') !== false) $goal = substr ($goal, 0, -3);
-			return $goal . ' &euro;';
+				return $goal . ' &euro;';
 		    } else {
-			return edd_currency_filter( edd_format_amount( $goal ) );
+				return edd_currency_filter( edd_format_amount( $goal ) );
 		    }
 		}
 
 		return $goal;
 	}
 	
+	public static $key_minimum_goal = 'campaign_minimum_goal';
 	public function minimum_goal($formatted = false) {
-	    $goal = $this->__get( 'campaign_minimum_goal' );
+	    $goal = $this->__get( ATCF_Campaign::$key_minimum_goal );
 	    if (strpos($goal, '.00') !== false) $goal = substr ($goal, 0, -3);
 	    if ( ! is_numeric( $goal ) && ($this->type() != 'flexible') )
 		    $goal = 0;
