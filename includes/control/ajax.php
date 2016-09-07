@@ -432,7 +432,6 @@ class WDGAjaxActions {
 		$WDGuser_current = WDGUser::current();
 		$user_kyc_errors = array();
 		$documents_list = array(
-			'user_doc_bank'		=> WDGKYCFile::$type_bank,
 			'user_doc_id'		=> WDGKYCFile::$type_id,
 			'user_doc_home'		=> WDGKYCFile::$type_home
 		);

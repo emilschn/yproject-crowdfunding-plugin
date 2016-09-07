@@ -27,7 +27,6 @@ class WDGCronActions {
 	
 	public static function daily_actions() {
 //		WDGCronActions::check_kycs();
-		WDGCronActions::check_bank_transfers();
 		WDGCronActions::make_projects_rss();
 	}
 	
@@ -51,13 +50,6 @@ class WDGCronActions {
 				}
 			}
 		}
-	}
-	
-	public static function check_bank_transfers() {
-		$date = new DateTime();
-		$date->sub( new DateInterval('P10D') );
-		$transactions_list = LemonwayLib::get_transactions_wire_since( $date->getTimestamp() );
-		NotificationsEmails::send_mail('emilien@wedogood.co', 'Derniers transferts', print_r($transactions_list, true), true);
 	}
 	
 	public static function make_projects_rss() {
