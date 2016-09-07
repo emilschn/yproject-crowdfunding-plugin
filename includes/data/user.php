@@ -277,12 +277,14 @@ class WDGUser {
 
 							default:
 							case '5':
-								foreach($wallet_details->DOCS->DOC as $document_object) {
-									if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
-										switch ($document_object->S) {
-											case '1':
-												$buffer = LemonwayLib::$status_waiting;
-												break;
+								if ( !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+									foreach($wallet_details->DOCS->DOC as $document_object) {
+										if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
+											switch ($document_object->S) {
+												case '1':
+													$buffer = LemonwayLib::$status_waiting;
+													break;
+											}
 										}
 									}
 								}
@@ -297,6 +299,15 @@ class WDGUser {
 			$buffer = get_user_meta( $this->wp_user->ID, WDGUser::$key_lemonway_status, TRUE );
 		}
 		return $buffer;
+	}
+	
+	/**
+	 * Détermine si l'utilisateur est authentifié auprès de LW
+	 * @param bool $force_reload
+	 * @return bool
+	 */
+	public function is_lemonway_registered( $force_reload = TRUE ) {
+		return ( $this->get_lemonway_status($force_reload) == LemonwayLib::$status_registered );
 	}
 	
 	/**
@@ -374,7 +385,7 @@ class WDGUser {
 	 */
 	public function has_sent_all_documents() {
 		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_bank, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_home );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
 			$current_document = $document_filelist[0];
@@ -393,7 +404,6 @@ class WDGUser {
 		if ($this->can_register_lemonway()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
-					WDGKYCFile::$type_bank	=> '2', 
 					WDGKYCFile::$type_id		=> '0', 
 					WDGKYCFile::$type_home		=> '1'
 				);
