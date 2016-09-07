@@ -126,3 +126,22 @@ function atcf_get_email_body_content( $payment_id = 0, $payment_data = array() )
 
 	return apply_filters( 'atcf_pending_purchase_receipt', $email_body, $payment_id, $payment_data );
 }
+
+function custom_notification($notify_message, $comment_id) {
+	if( ($comment->comment_type!= 'trackback' ) && ($comment->comment_type!= 'pingback' ) ){ 
+	    $comment_obj = get_comment($comment_id); 
+	    $comment_post = get_post($comment_obj->comment_post_ID);
+		$user  = get_userdata( $comment_post->post_author );
+		$first_name = $user->first_name;
+		$last_name=$user->last_name;
+		$notify_message  = "Bonjour ".$first_name." ".$last_name.",</br>";
+		$notify_message .= 'Vous avez reçu un nouveau commentaire sur la page de votre projet "'.$comment_post->post_title.'".</br>';
+		$notify_message .= 'Vous pouvez le lire en vous rendant la section "Commentaires" de votre page projet : <a href="'.get_permalink($comment_obj->comment_post_ID).'">'.get_permalink($comment_obj->comment_post_ID)."</a>. </br>";
+		$notify_message .= "Bonne journée de la part de toute l'équipe WE DO GOOD !";
+	    return $notify_message;
+	}else{
+		return $notify_message;
+	}
+}
+
+add_filter('comment_notification_text', 'custom_notification', 10, 2);
