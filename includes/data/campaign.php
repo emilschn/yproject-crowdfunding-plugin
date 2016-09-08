@@ -581,6 +581,35 @@ class ATCF_Campaign {
 
         return false;
     }
+	
+	
+	/**
+	 * Gestion centralisée des différentes coches dans le TB
+	 * Valeurs possibles pour les step : has_filled_desc, has_filled_finance, has_filled_parameters, has_signed_order
+	 * @var string 
+	 */
+	private $validation_steps;
+	public static $key_validation_steps = 'campaign_validation_steps';
+	public function get_validation_step_status( $step ) {
+		if ( !isset( $this->validation_steps ) ) {
+			$this->validation_steps = json_decode( $this->__get( ATCF_Campaign::$key_validation_steps ) );
+		}
+		if ( isset( $this->validation_steps->$step ) ) {
+			$buffer = $this->validation_steps->$step;
+		}
+		if ( empty( $buffer ) ) {
+			$buffer = FALSE;
+		}
+		return $buffer;
+	}
+	public function set_validation_step_status( $step, $status ) {
+		if ( !isset( $this->validation_steps ) ) {
+			$this->validation_steps = array();
+		}
+		$this->validation_steps[ $step ] = $status;
+		update_post_meta( $this->ID, ATCF_Campaign::$key_validation_steps, json_encode( $this->validation_steps ) );
+	}
+	
 
 	/**
 	 * Needs Shipping

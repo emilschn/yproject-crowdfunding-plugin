@@ -113,10 +113,25 @@ class WDGPostActions {
             && !empty($next_status)
             && ($next_status==1 || $next_status==2)){
 
-            if ($status==ATCF_Campaign::$campaign_status_preparing && $is_admin){
-                //Préparation -> Validé (pour les admin seulement)
-                $campaign->set_status(ATCF_Campaign::$campaign_status_validated);
-                $campaign->set_validation_next_status(0);
+            if ( $status == ATCF_Campaign::$campaign_status_preparing && $is_admin ) {
+				$save_validation_steps = filter_input( INPUT_POST, 'validation-next-save' );
+				$validate_next_step = filter_input( INPUT_POST, 'validation-next-validate' );
+				//Préparation -> sauvegarde coches
+				if ( $save_validation_steps == '1' ) {
+					$has_filled_desc = filter_input( INPUT_POST, 'validation-step-has-filled-desc' );
+					$campaign->set_validation_step_status( 'has_filled_desc', $has_filled_desc );
+					$has_filled_finance = filter_input( INPUT_POST, 'validation-step-has-filled-finance' );
+					$campaign->set_validation_step_status( 'has_filled_finance', $has_filled_finance );
+					$has_filled_parameters = filter_input( INPUT_POST, 'validation-step-has-filled-parameters' );
+					$campaign->set_validation_step_status( 'has_filled_parameters', $has_filled_parameters );
+					$has_signed_order = filter_input( INPUT_POST, 'validation-step-has-signed-order' );
+					$campaign->set_validation_step_status( 'has_signed_order', $has_signed_order );
+					
+                //Préparation -> Validé (pour les admin seulement)	
+				} else if ( $validate_next_step == '1' ) {
+					$campaign->set_status(ATCF_Campaign::$campaign_status_validated);
+					$campaign->set_validation_next_status(0);
+				}
 
             } else if ($campaign->can_go_next_status()){
                 if ($status==ATCF_Campaign::$campaign_status_validated && ($next_status==1)){
