@@ -112,9 +112,10 @@ class WDGPostActions {
         if ($can_modify
             && !empty($next_status)
             && ($next_status==1 || $next_status==2)){
+			
+			$save_validation_steps = filter_input( INPUT_POST, 'validation-next-save' );
 
             if ( $status == ATCF_Campaign::$campaign_status_preparing && $is_admin ) {
-				$save_validation_steps = filter_input( INPUT_POST, 'validation-next-save' );
 				$validate_next_step = filter_input( INPUT_POST, 'validation-next-validate' );
 				//Préparation -> sauvegarde coches
 				if ( $save_validation_steps == '1' ) {
@@ -132,6 +133,11 @@ class WDGPostActions {
 					$campaign->set_status(ATCF_Campaign::$campaign_status_validated);
 					$campaign->set_validation_next_status(0);
 				}
+			
+			//Enregistrement avant passage en vote
+			} else if ( $status == ATCF_Campaign::$campaign_status_validated && $save_validation_steps == '1' ) {
+				$has_filled_presentation = filter_input( INPUT_POST, 'validation-step-has-filled-presentation' );
+				$campaign->set_validation_step_status( 'has_filled_presentation', $has_filled_presentation );
 
             } else if ($campaign->can_go_next_status()){
                 if ($status==ATCF_Campaign::$campaign_status_validated && ($next_status==1)){
