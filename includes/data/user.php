@@ -15,6 +15,15 @@ class WDGUser {
 	private $wallet_details;
 	
 	protected static $_current = null;
+	
+	public function __construct($user_id = '') {
+		if ($user_id === '') {
+			$this->wp_user = wp_get_current_user();
+		} else {
+			$this->wp_user = new WP_User($user_id);
+		}
+	}
+	
 	/**
 	 * @return WDGUser
 	 */
@@ -25,12 +34,22 @@ class WDGUser {
 		return self::$_current;
 	}
 	
-	public function __construct($user_id = '') {
-		if ($user_id === '') {
-			$this->wp_user = wp_get_current_user();
-		} else {
-			$this->wp_user = new WP_User($user_id);
+	/**
+	 * Retourne un utilisateurs en découpant l'id transmis par LW
+	 * @param int $lemonway_id
+	 */
+	public static function get_by_lemonway_id( $lemonway_id ) {
+		$buffer = FALSE;
+		
+		// USER : 'USERW'.$this->wp_user->ID; ORGA : 'ORGA'.$this->bopp_id.'W'.$this->wpref;
+		$wp_user_id_start = strpos( $lemonway_id, 'W' );
+		if ( $wp_user_id_start !== FALSE ) {
+			$wp_user_id_start++;
+			$wp_user_id = substr( $lemonway_id, $wp_user_id_start );
+			$buffer = new WDGUser( $wp_user_id );
 		}
+
+		return $buffer;
 	}
 	
 /*******************************************************************************
@@ -132,11 +151,10 @@ class WDGUser {
  * Gestion investissements
 *******************************************************************************/
 	/**
-	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
+	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
 	 */
-	public function get_validated_investments() {
+	public function get_investments( $payment_status ) {
 		$buffer = array();
-		$payment_status = array("publish", "completed");
 		$purchases = edd_get_users_purchases( $this->wp_user->ID, -1, false, $payment_status );
 		
 		foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
@@ -152,6 +170,22 @@ class WDGUser {
 		}
 			
 		return $buffer;
+	}
+	
+	/**
+	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
+	 */
+	public function get_validated_investments() {
+		$payment_status = array( "publish", "completed" );
+		return $this->get_investments( $payment_status );
+	}
+	
+	/**
+	 * Retourne les ID d'investissements en attente d'un utilisateur, triés par ID de projets
+	 */
+	public function get_pending_investments() {
+		$payment_status = array( "pending" );
+		return $this->get_investments( $payment_status );
 	}
 	
 /*******************************************************************************
