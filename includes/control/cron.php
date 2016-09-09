@@ -73,6 +73,8 @@ class WDGCronActions {
 		while (have_posts()): the_post();
 			global $post;
 			$campaign = atcf_get_campaign( $post );
+			$organization = $campaign->get_organisation();
+			$organization_obj = new YPOrganisation( $organization->organisation_wpref );
 			
 			//*****************
 			//Formatage pour RSS
@@ -104,8 +106,8 @@ class WDGCronActions {
 			$buffer_partners .= '<mode_financement>ROY</mode_financement>' . "\n"; //TNP :: Mode de financement (DON, DOC, PRE, PRR, ACT, OBL) - invention ROY
 			$buffer_partners .= '<type_porteur_projet>ENT</type_porteur_projet>' . "\n"; //TNP :: Statut du PP (ENT, ASS, PAR, COL)
 			$buffer_partners .= '<qualif_ESS>non</qualif_ESS>' . "\n"; //TNP :: Qualification ESS du porteur projet
-			$buffer_partners .= '<code_postal></code_postal>' . "\n"; //TNP :: Code postal TODO
-			$buffer_partners .= '<ville></ville>' . "\n"; //TNP :: Ville TODO
+			$buffer_partners .= '<code_postal>' .$organization_obj->get_postal_code(). '</code_postal>' . "\n";
+			$buffer_partners .= '<ville>' .$organization_obj->get_city(). '</ville>' . "\n";
 			
 			$buffer_partners .= '<titre><![CDATA['.$campaign->data->post_title.']]></titre>' . "\n"; //TNP
 			$buffer_partners .= '<description><![CDATA['.html_entity_decode($campaign->summary()).']]></description>' . "\n"; //TNP
@@ -113,6 +115,7 @@ class WDGCronActions {
 			$buffer_partners .= '<url_photo>'.$campaign->get_home_picture_src().'</url_photo>' . "\n"; //TNP
 			$buffer_partners .= '<date_debut_collecte>'.$campaign->begin_collecte_date('Y-m-d').'</date_debut_collecte>' . "\n"; //TNP :: YYYY-MM-DD 
 			$buffer_partners .= '<date_fin_collecte>'.$campaign->end_date('Y-m-d').'</date_fin_collecte>' . "\n"; //TNP :: YYYY-MM-DD 
+			$buffer_partners .= '<nb_jours_restants>'.$campaign->days_remaining().'</nb_jours_restants>' . "\n";
 			$buffer_partners .= '<montant_recherche>'.$campaign->minimum_goal(false).'</montant_recherche>' . "\n"; //TNP :: Somme recherchée
 			$buffer_partners .= '<montant_collecte>'.$campaign->current_amount(false).'</montant_collecte>' . "\n"; //TNP :: Somme collectée
 			
