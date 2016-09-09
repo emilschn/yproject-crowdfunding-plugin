@@ -333,6 +333,13 @@ class YPOrganisation {
 	public function set_nationality($value) {
 		$this->nationality = $value;
 	}
+	// Retourne le texte complet du pays à partir du code de nationalité
+	public function get_country() {
+		$nationality_code = $this->get_nationality();
+		require_once("country_list.php");
+		global $country_list;
+		return $country_list[ $nationality_code ];
+	}
 	
 	public function get_type() {
 		return $this->type;
@@ -840,6 +847,44 @@ class YPOrganisation {
 			$buffer = $wallet_details->BAL;
 		}
 		return $buffer;
+	}
+	
+	/**
+	 * Liste les mandats enregistrés auprès de LW
+	 * @return array
+	 */
+	public function get_lemonway_mandates() {
+		$wallet_details = $this->get_wallet_details();
+		$buffer = array();
+		if ( isset( $wallet_details->SDDMANDATES ) && isset( $wallet_details->SDDMANDATES->SDDMANDATE ) ) {
+			foreach ( $wallet_details->SDDMANDATES as $mandate_temp ) {
+				$return_item = array(
+					"ID"	=> $mandate_temp->ID,
+					"S"		=> $mandate_temp->S,
+					"DATA"	=> $mandate_temp->DATA,
+					"SWIFT"	=> $mandate_temp->SWIFT
+				);
+				array_push( $buffer, $return_item );
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Ajoute un mandat de prélévement lié au wallet de l'organisation
+	 */
+	public function add_lemonway_mandate() {
+		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 1, $this->get_address(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
+	}
+	
+	/**
+	 * Retourne un token pour se rendre sur la page d'acceptation de mandat de prélèvement
+	 */
+	public function get_sign_mandate_token( $phone_number, $url_return, $url_error ) {
+		// Récupération du dernier mandat de la liste
+		$mandate_list = $this->get_lemonway_mandates();
+		$last_mandate = end( $mandate_list );
+		return LemonwayLib::wallet_sign_mandate_init( $this->get_lemonway_id(), $phone_number, $last_mandate['ID'], $url_return, $url_error );;
 	}
     
 /*******************************************************************************
