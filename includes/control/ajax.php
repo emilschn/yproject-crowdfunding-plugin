@@ -865,7 +865,7 @@ class WDGAjaxActions {
 		$success = array();
 
 		$new_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'new_planning_gdrive'));
-        if(empty($new_gdoc_url) || strpos($new_gdoc_url,"https://docs.google.com/document/d/")===0){
+        if(empty($new_gdoc_url) || strpos($new_gdoc_url,"https://docs.google.com/spreadsheets/d/")===0){
             $campaign->__set(ATCF_Campaign::$key_google_doc, $new_gdoc_url);
 			$success['new_planning_gdrive']=1;
         } else if (!empty($new_gdoc_url)) {

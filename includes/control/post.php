@@ -69,13 +69,15 @@ class WDGPostActions {
             update_user_meta( $WPuserID, 'user_mobile_phone', $new_phone );
         }
 
-        if(!empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_notoriety)){
+        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $new_email ) && !empty( $new_phone )
+				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_notoriety)) {
             //Project data
             $newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
             $newcampaign = atcf_get_campaign($newcampaign_id);
 
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_WDG_notoriety, $project_notoriety);
+			$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 
 
             //Company data
