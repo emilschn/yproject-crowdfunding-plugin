@@ -220,18 +220,19 @@ class WDGPostActions {
         $organization_id = sanitize_text_field( filter_input( INPUT_POST, 'organization_id' ) );
 		$WDGUser_current = WDGUser::current();
 		$phone_number = $WDGUser_current->wp_user->get('user_mobile_phone');
-		$url_return = wp_get_referer() . '#wallet';
+		$url_return = wp_get_referer();
 		
 		// Récupération de l'organisation
 		$organization_obj = new YPOrganisation( $organization_id );
 		$token = $organization_obj->get_sign_mandate_token( $phone_number, $url_return, $url_return );
 		
-		if ( $token == FALSE ) {
-			wp_safe_redirect( $url_return );
-		} else {
+		if ( $token != FALSE ) {
 			// Redirection vers la page de signature de document
-			wp_safe_redirect( YP_LW_WEBKIT_URL .'?signingToken='. $token->TOKEN );
-			exit();
+			wp_redirect( YP_LW_WEBKIT_URL .'?signingToken='. $token->SIGNDOCUMENT->TOKEN );
+			die();
 		}
+		
+		wp_redirect( $url_return );
+		die();
 	}
 }
