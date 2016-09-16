@@ -122,7 +122,7 @@ class WDGROIDeclaration {
 		$buffer = 0;
 		
 		//Si le porteur de projet a déjà payé, on considère qu'on a déjà enregistré la commission
-		if ( false/*$this->status == WDGROIDeclaration::$status_transfer || $this->status == WDGROIDeclaration::$status_finished*/ ) {
+		if ( $this->status == WDGROIDeclaration::$status_transfer || $this->status == WDGROIDeclaration::$status_finished ) {
 			$cost = $this->percent_commission;
 			
 		//Sinon, on la calcule avec les frais enregistrés en rapport avec la campagne
