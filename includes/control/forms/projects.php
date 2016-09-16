@@ -456,6 +456,7 @@ class WDGFormProjects {
 						$date_now = new DateTime();
 						$declaration->date_paid = $date_now->format( 'Y-m-d' );
 						$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
+						$declaration->amount_commission = $declaration->get_commission_to_pay();
 						$declaration->status = WDGROIDeclaration::$status_transfer;
 						$declaration->save();
 						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );

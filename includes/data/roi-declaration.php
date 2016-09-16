@@ -19,6 +19,7 @@ class WDGROIDeclaration {
 	public $date_paid;
 	public $date_transfer;
 	public $amount;
+	public $percent_commission;
 	public $status;
 	public $mean_payment;
 	public $payment_token;
@@ -38,6 +39,7 @@ class WDGROIDeclaration {
 			$this->date_paid = $declaration_item->date_paid;
 			$this->date_transfer = $declaration_item->date_transfer;
 			$this->amount = $declaration_item->amount;
+			$this->percent_commission = $declaration_item->percent_commission;
 			$this->status = $declaration_item->status;
 			$this->mean_payment = $declaration_item->mean_payment;
 			$this->payment_token = $declaration_item->payment_token;
@@ -52,16 +54,17 @@ class WDGROIDeclaration {
 		$result = $wpdb->update( 
 			$table_name, 
 			array( 
-				'id_campaign' => $this->id_campaign, 
-				'date_due' => $this->date_due, 
-				'date_paid' => $this->date_paid, 
-				'date_transfer' => $this->date_transfer, 
-				'amount' => $this->amount, 
-				'status' => $this->status, 
-				'mean_payment' => $this->mean_payment, 
-				'payment_token' => $this->payment_token, 
-				'file_list' => $this->file_list, 
-				'turnover' => $this->turnover, 
+				'id_campaign' => $this->id_campaign,
+				'date_due' => $this->date_due,
+				'date_paid' => $this->date_paid,
+				'date_transfer' => $this->date_transfer,
+				'amount' => $this->amount,
+				'percent_commission' => $this->percent_commission,
+				'status' => $this->status,
+				'mean_payment' => $this->mean_payment,
+				'payment_token' => $this->payment_token,
+				'file_list' => $this->file_list,
+				'turnover' => $this->turnover
 			),
 			array(
 				'id' => $this->id
@@ -117,8 +120,17 @@ class WDGROIDeclaration {
 	 */
 	public function get_commission_to_pay() {
 		$buffer = 0;
-		$campaign = new ATCF_Campaign( $this->id_campaign );
-		$cost = $campaign->get_costs_to_organization();
+		
+		//Si le porteur de projet a déjà payé, on considère qu'on a déjà enregistré la commission
+		if ( false/*$this->status == WDGROIDeclaration::$status_transfer || $this->status == WDGROIDeclaration::$status_finished*/ ) {
+			$cost = $this->percent_commission;
+			
+		//Sinon, on la calcule avec les frais enregistrés en rapport avec la campagne
+		} else {
+			$campaign = new ATCF_Campaign( $this->id_campaign );
+			$cost = $campaign->get_costs_to_organization();
+		}
+		
 		if ( $cost > 0 ) {
 			$buffer = (round(($this->amount * $cost / 100) * 100) / 100);
 		}
@@ -321,6 +333,7 @@ class WDGROIDeclaration {
 			date_paid date DEFAULT '0000-00-00',
 			date_transfer date DEFAULT '0000-00-00',
 			amount float,
+			percent_commission float,
 			status tinytext,
 			mean_payment tinytext,
 			payment_token tinytext,
