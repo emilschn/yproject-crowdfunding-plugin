@@ -220,7 +220,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		<?php endif;
 	    endif;
 	    
-	    if (current_user_can('manage_options') && !$campaign->is_remaining_time() && $campaign->campaign_status() != 'preview' && $campaign->campaign_status() != 'vote' && !$group_exists) : 
+	    if (current_user_can('manage_options') && !$campaign->is_remaining_time() && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_preview && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && !$group_exists) : 
 	    ?>
 	    <form action="" method="post" class="atcf-update-campaign" enctype="multipart/form-data">
 		    <input type="submit" value="Cr&eacute;er le groupe d&apos;investisseurs" class="button" />

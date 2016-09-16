@@ -42,110 +42,6 @@ class WDGFormProjects {
 			NotificationsEmails::new_project_post_posted($campaign_id, $post_id);
 		}
 	}
-		
-	/**
-	 * Vérifie si l'utilisateur essaie d'envoyer des mails via la lightbox dashboard-mail
-	 */
-	public static function form_validate_send_mail() {
-		if (isset($_POST['send_mail'])){
-			global $campaign_id, $feedback, $preview;
-			$feedback = "";
-			if ((isset($_POST['mail_title']) && isset($_POST['mail_content']))
-					&&($_POST['mail_title']!='' && $_POST['mail_content']!='')){
-				$jycrois = isset($_POST['jycrois']) && ($_POST['jycrois']=='on');
-				$voted = isset($_POST['voted']) && ($_POST['voted']=='on');
-				$invested = isset($_POST['invested']) && ($_POST['invested']=='on');
-				$id_investors_list = explode(",", $_POST['investors_id']);
-
-					if ($_POST['send_mail']=='send'){
-						//Au moins une catégorie sélectionnée
-						if ($jycrois || $voted || $invested){
-							$feedback_email = NotificationsEmails::project_mail($campaign_id, 
-								$_POST['mail_title'], 
-								$_POST['mail_content'], 
-								$jycrois, 
-								$voted, 
-								$invested,
-								$id_investors_list);
-
-							$nb_try = count($feedback_email);
-							$nb_errors = $nb_try - count(array_filter($feedback_email));
-							if ($nb_errors <= 0){
-								$feedback .= "Les messages ont &eacute;t&eacute; correctement envoy&eacute;s !";
-							} else {
-								$feedback .= "Les messages ont &eacute;t&eacute; envoy&eacute;s mais des erreurs ont eu lieu.";
-							}
-
-						} else {
-							$feedback .= "Vous n'avez pas s&eacute;lectionn&eacute; de groupe &agrave; qui envoyer le message. ";
-						}
-					}
-					else if ($_POST['send_mail']=='preview'){
-						unset($feedback);
-						$preview = NotificationsEmails::project_mail($campaign_id, 
-								$_POST['mail_title'], 
-								$_POST['mail_content'], 
-								false, 
-								false, 
-								false,
-								array(),
-								true);
-					}
-
-			} else {
-				$feedback .= "Il faut donner un objet et un contenu &agrave; votre mail. ";
-			}
-		}
-		return $feedback;
-	}
-	
-	/**
-	 * Formulaire d'envoi des mails automatiques
-	 */
-	public static function form_validate_send_automail() {
-		$send_automail = filter_input(INPUT_POST, 'send_automail');
-		if ($send_automail != 'send') { return FALSE; }
-		
-		$automailvoters_object = filter_input(INPUT_POST, 'automailvoters_object');
-		$automailvoters_content = filter_input(INPUT_POST, 'automailvoters_content');
-		
-		if (empty($automailvoters_object) || empty($automailvoters_content)) {
-			$feedback = __("L'objet et le contenu du mail doivent &ecirc;tre renseign&eacute;s", 'yproject');
-			
-		} else {
-			$automailvoters_minwish = filter_input(INPUT_POST, 'automailvoters_minwish');
-			if (!($automailvoters_minwish > 0)) { $automailvoters_minwish = 0; }
-			
-			global $wpdb;
-			$campaign_id = filter_input(INPUT_GET, 'campaign_id');
-			$post_campaign = get_post($campaign_id);
-			$object = $post_campaign->post_title. ' : ' .$automailvoters_object;
-			$campaign_url_str = '<a href="'.get_permalink($post_campaign->ID).'">'.get_permalink($post_campaign->ID).'</a>';
-			$author = get_userdata($post_campaign->post_author);
-			$campaign_author_str = $author->first_name . ' ' . $author->last_name;
-			if (empty($campaign_author_str)) { $campaign_author_str = $author->user_login; }
-
-			$table_vote = $wpdb->prefix . "ypcf_project_votes";
-			$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_sum >= ". $automailvoters_minwish );
-
-			$nb_mail = count($list_user_voters);
-			foreach ($list_user_voters as $vote) {
-				$user = get_userdata(intval($vote->user_id));
-				$to = $user->user_email;
-				$user_str = $user->first_name . ' ' . $user->last_name;
-				if (empty($user_str)) { $user_str = $user->user_login; }
-				$automailvoters_content = str_replace('%projectname%', $post_campaign->post_title, $automailvoters_content);
-				$automailvoters_content = str_replace('%projecturl%', $campaign_url_str, $automailvoters_content);
-				$automailvoters_content = str_replace('%projectauthor%', $campaign_author_str, $automailvoters_content);
-				$automailvoters_content = str_replace('%username%', $user_str, $automailvoters_content);
-				$automailvoters_content = str_replace('%investwish%', $vote->invest_sum, $automailvoters_content);
-				NotificationsEmails::send_mail($to, $object, $automailvoters_content, true);
-			}
-			$feedback = __("Votre message a &eacute;t&eacute; envoy&eacute; &agrave; ", 'yproject') . $nb_mail . __(" utilisateur(s).", 'yproject');
-		}
-		
-		return $feedback;
-	}
 	
 	/**
 	 * Check si on veut valider un paiement
@@ -229,12 +125,6 @@ class WDGFormProjects {
 			$cat_ids = array_map( 'intval', array($cat_cat_id, $cat_act_id) );
 			wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
 		}
-                
-                if (isset($_POST['phone'])) {
-			update_post_meta($campaign_id, 'campaign_contact_phone', sanitize_text_field($_POST['phone']));
-		} else {
-			$buffer = FALSE;
-		}
 		
 		if (isset($_POST['project-location'])) {
 			update_post_meta($campaign_id, 'campaign_location', $_POST['project-location']);
@@ -242,96 +132,17 @@ class WDGFormProjects {
 			$buffer = FALSE;
 		}
 		
-		if (isset($_POST['video'])) {
-			update_post_meta($campaign_id, 'campaign_video', esc_url($_POST['video']));
-		}
 		
 		/* Gestion fichiers / images */
 		$image_header = $_FILES[ 'image_header' ];
-		if (!empty($image_header)) {
-			$upload_overrides = array( 'test_form' => false );
 
-			$upload = wp_handle_upload( $image_header, $upload_overrides );
-			if (isset($upload[ 'url' ])) {
-				$path = $_FILES['image_header']['name'];
-				$ext = pathinfo($path, PATHINFO_EXTENSION);
-				$is_image_accepted = true;
-				switch (strtolower($ext)) {
-					case 'png':
-						$image_header = imagecreatefrompng($upload[ 'file' ]);
-						break;
-					case 'jpg':
-					case 'jpeg':
-						$image_header = imagecreatefromjpeg($upload[ 'file' ]);
-						break;
-					default:
-						$is_image_accepted = false;
-						break;
-				}
-				if ($is_image_accepted) {
-					for ($i = 0; $i < 10; $i++) {
-						imagefilter($image_header, IMG_FILTER_GAUSSIAN_BLUR);
-						imagefilter($image_header, IMG_FILTER_SELECTIVE_BLUR);
-					}
-					$withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $upload[ 'file' ]);
-					$img_name = $withoutExt.'_blur.jpg';
-					imagejpeg($image_header,$img_name);
-
-					//Suppression dans la base de données de l'ancienne image
-					global $wpdb;
-					$table_posts = $wpdb->prefix . "posts";
-					$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_header'" );
-					wp_delete_attachment( $old_attachement_id, true );
-					
-					$attachment = array(
-						'guid'           => $upload[ 'url' ], 
-						'post_mime_type' => $upload[ 'type' ],
-						'post_title'     => 'image_header',
-						'post_content'   => '',
-						'post_status'    => 'inherit'
-					);
-					$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign_id );		
-
-					wp_update_attachment_metadata( 
-						$attach_id, 
-						wp_generate_attachment_metadata( $attach_id, $img_name ) 
-					);
-					//Suppression de la position de la couverture
-					delete_post_meta($campaign_id, 'campaign_cover_position');
-
-					add_post_meta( $campaign_id, '_thumbnail_id', absint( $attach_id ) );
-				}
-			}
-		}
+		WDGFormProjects::edit_image_banniere($image_header, $campaign_id);
 		
-		
+
 		$image = $_FILES[ 'image_home' ];
-		if (!empty($image)) {
-			$upload_overrides = array( 'test_form' => false );
-			$upload = wp_handle_upload( $image, $upload_overrides );
-			if (isset($upload[ 'url' ])) {
-				$attachment = array(
-					'guid'           => $upload[ 'url' ], 
-					'post_mime_type' => $upload[ 'type' ],
-					'post_title'     => 'image_home',
-					'post_content'   => '',
-					'post_status'    => 'inherit'
-				);
 
-				//Suppression dans la base de données de l'ancienne image
-				global $wpdb;
-				$table_posts = $wpdb->prefix . "posts";
-				$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_home'" );
-				wp_delete_attachment($old_attachement_id, true);
+		WDGFormProjects::edit_image_url_video($image, $_POST['video'], $campaign_id);
 
-				$attach_id = wp_insert_attachment($attachment, $upload[ 'file' ], $campaign_id);		
-
-				wp_update_attachment_metadata( 
-					$attach_id, 
-					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
-				);
-			}
-		}
 		
 		$temp_blur = $_POST['image_header_blur'];
 		if (empty($temp_blur)) $temp_blur = 'FALSE';
@@ -457,7 +268,103 @@ class WDGFormProjects {
 		    
 		return $buffer;
 	}
-	
+
+	/**
+	 * Gère l'édition image bannière
+	 */
+	public static function edit_image_banniere($image_header, $campaign_id) {
+		if (!empty($image_header)) {
+			$upload_overrides = array( 'test_form' => false );
+
+			$upload = wp_handle_upload( $image_header, $upload_overrides );
+			if (isset($upload[ 'url' ])) {
+				$path = $image_header['name'];
+				$ext = pathinfo($path, PATHINFO_EXTENSION);
+				$is_image_accepted = true;
+				switch (strtolower($ext)) {
+					case 'png':
+						$image_header = imagecreatefrompng($upload[ 'file' ]);
+						break;
+					case 'jpg':
+					case 'jpeg':
+						$image_header = imagecreatefromjpeg($upload[ 'file' ]);
+						break;
+					default:
+						$is_image_accepted = false;
+						break;
+				}
+				if ($is_image_accepted) {
+					/*for ($i = 0; $i < 10; $i++) {
+						imagefilter($image_header, IMG_FILTER_GAUSSIAN_BLUR);
+						imagefilter($image_header, IMG_FILTER_SELECTIVE_BLUR);
+					}*/
+					$withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $upload[ 'file' ]);
+					$img_name = $withoutExt.'_noblur.jpg';
+					imagejpeg($image_header,$img_name);
+
+					//Suppression dans la base de données de l'ancienne image
+					global $wpdb;
+					$table_posts = $wpdb->prefix . "posts";
+					$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_header'" );
+					wp_delete_attachment( $old_attachement_id, true );
+					
+					$attachment = array(
+						'guid'           => $upload[ 'url' ], 
+						'post_mime_type' => $upload[ 'type' ],
+						'post_title'     => 'image_header',
+						'post_content'   => '',
+						'post_status'    => 'inherit'
+					);
+					$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign_id );		
+
+					wp_update_attachment_metadata( 
+						$attach_id, 
+						wp_generate_attachment_metadata( $attach_id, $img_name ) 
+					);
+					//Suppression de la position de la couverture
+					delete_post_meta($campaign_id, 'campaign_cover_position');
+
+					add_post_meta( $campaign_id, '_thumbnail_id', absint( $attach_id ) );
+				}
+			}
+		}
+	}
+
+
+	public static function edit_image_url_video($image, $post_video, $campaign_id) {
+		//ajout de l'image
+		if (!empty($image)) {
+			$upload_overrides = array( 'test_form' => false );
+			$upload = wp_handle_upload( $image, $upload_overrides );
+			if (isset($upload[ 'url' ])) {
+				$attachment = array(
+					'guid'           => $upload[ 'url' ], 
+					'post_mime_type' => $upload[ 'type' ],
+					'post_title'     => 'image_home',
+					'post_content'   => '',
+					'post_status'    => 'inherit'
+				);
+
+				//Suppression dans la base de données de l'ancienne image
+				global $wpdb;
+				$table_posts = $wpdb->prefix . "posts";
+				$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_home'" );
+				wp_delete_attachment($old_attachement_id, true);
+
+				$attach_id = wp_insert_attachment($attachment, $upload[ 'file' ], $campaign_id);		
+
+				wp_update_attachment_metadata( 
+					$attach_id, 
+					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
+				);
+			}
+		}
+		//ajout de l'url de la vidéo
+		if (isset($post_video)) {
+			update_post_meta($campaign_id, 'campaign_video', esc_url($post_video));
+		}
+	}
+
 	public static function form_submit_turnover() {
 		if (!isset($_GET["campaign_id"]) || !isset($_POST["action"]) || $_POST["action"] != 'save-turnover-declaration') { return FALSE; }
 		$declaration_id = filter_input( INPUT_POST, 'declaration-id' );
@@ -580,4 +487,69 @@ class WDGFormProjects {
 			$roi_declaration->make_transfer();
 		}
 	}
+
+    /**
+     * Crée le contenu du mail envoyé via le dashboard
+     * @param $initial_content Texte brut entré par l'utilisateur
+     * @param $mail_title Titre brut
+     * @param $campaign_id
+     * @param array $variables Données pour remplacer les éléments de texte
+     *          ['investwish'] Valeur pour remplacer %investwish%
+     *          ['username'] Valeur pour remplacer %username%
+     * @return array
+     *          ['title'] Titre transformé
+     *          ['body'] Contenu du mail transformé
+     */
+    public static function build_mail_text($initial_content, $mail_title, $campaign_id, $variables = array()){
+        $post_campaign = get_post($campaign_id);
+
+        $author = get_userdata($post_campaign->post_author);
+        $campaign_author_str = $author->first_name . ' ' . $author->last_name;
+        if (empty($campaign_author_str)) { $campaign_author_str = $author->user_login; }
+
+        $username = $variables['username'];
+        if(empty($username)){
+            $username = "<i>(Nom du destinataire)</i>";
+        }
+
+        $investwish = $variables['investwish'];
+        if(empty($investwish)){
+            $investwish = "<i>(Intention d'investissement)</i>";
+        }
+
+
+        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
+            .'<h1 style="text-align: center;">'.$mail_title.'</h1>';
+
+        $body_content .= $initial_content.'<br/>';
+
+        $body_content .= '<div style="text-align: center;">'
+            .'<a href="'.get_permalink($post_campaign->ID).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
+                    Voir le projet</a><br/>'
+            .'Message envoy&eacute; par '
+            .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
+            .$post_campaign->post_title.'</a><br/><br/>'
+            .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet %projectname%
+            . Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
+            .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
+            . '</div></div>';
+
+        $body_content = str_replace('%projectname%', $post_campaign->post_title, $body_content);
+        $body_content = str_replace('%projecturl%', '<a target="_blank" href="'.get_permalink($post_campaign->ID).'">'.get_permalink($post_campaign->ID).'</a>', $body_content);
+        $body_content = str_replace('%projectauthor%', $campaign_author_str, $body_content);
+        $body_content = str_replace('%username%', $username, $body_content);
+        $body_content = str_replace('%investwish%', $investwish, $body_content);
+
+        $transformed_title = $post_campaign->post_title.' : '.$mail_title;
+        $transformed_title = str_replace('%projectname%', $post_campaign->post_title, $transformed_title);
+        $transformed_title = str_replace('%projecturl%', '<a target="_blank" href="'.get_permalink($post_campaign->ID).'">'.get_permalink($post_campaign->ID).'</a>', $transformed_title);
+        $transformed_title = str_replace('%projectauthor%', $campaign_author_str, $transformed_title);
+        $transformed_title = str_replace('%username%', $username, $transformed_title);
+        $transformed_title = str_replace('%investwish%', $investwish, $transformed_title);
+
+        return array(
+            'title'=>$transformed_title,
+            'body'=>$body_content
+        );
+    }
 }

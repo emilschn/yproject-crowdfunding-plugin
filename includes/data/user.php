@@ -350,7 +350,34 @@ class WDGUser {
 	 */
 	public function get_lemonway_wallet_amount() {
 		$wallet_details = $this->get_wallet_details();
-		return $wallet_details->BAL;
+		$buffer = 0;
+		if (isset($wallet_details->BAL)) {
+			$buffer = $wallet_details->BAL;
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Détermine si l'utilisateur peut payer avec son porte-monnaie
+	 * @param int $amount
+	 * @param ATCF_Campaign $campaign
+	 * @return bool
+	 */
+	public function can_pay_with_wallet( $amount, $campaign ) {
+		$lemonway_amount = $this->get_lemonway_wallet_amount();
+		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+	}
+	
+	/**
+	 * Détermine si l'utilisateur peut payer avec sa carte et son porte-monnaie
+	 * @param int $amount
+	 * @param ATCF_Campaign $campaign
+	 * @return bool
+	 */
+	public function can_pay_with_card_and_wallet( $amount, $campaign ) {
+		$lemonway_amount = $this->get_lemonway_wallet_amount();
+		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5€ à payer par carte
+		return ($lemonway_amount > 0 && $amount - $lemonway_amount > 5 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
 	/**
@@ -526,7 +553,7 @@ class WDGUser {
 		if ($complete === FALSE) {
 			$args['meta_key'] = 'campaign_vote';
 			$args['meta_compare'] = '!='; 
-			$args['meta_value'] = 'preparing';
+			$args['meta_value'] = ATCF_Campaign::$campaign_status_preparing;
 		}
 		query_posts($args);
 		if (have_posts()) {

@@ -102,7 +102,7 @@ function ypcf_check_is_user_logged_invest() {
 function ypcf_check_is_project_investable() {
     $post_camp = get_post($_GET['campaign_id']);
     $campaign = atcf_get_campaign( $post_camp );
-    if (!ypcf_check_user_is_complete($post_camp->post_author) || !$campaign->is_remaining_time() || $campaign->campaign_status() != 'collecte') {
+    if (!ypcf_check_user_is_complete($post_camp->post_author) || !$campaign->is_remaining_time() || $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte) {
 		wp_redirect(get_permalink($_GET['campaign_id']));
 		exit();
     }
@@ -110,8 +110,8 @@ function ypcf_check_is_project_investable() {
 
 /**
  * Détermine si les informations utilisateurs sont complètes (nécessaires pour les porteurs de projet)
- * @param type $user_id
- * @return type
+ * @param int $user_id
+ * @return bool
  */
 function ypcf_check_user_is_complete($user_id) {
     $is_complete = true;
@@ -192,7 +192,7 @@ function ypcf_check_invest_redirections() {
     }
     
     //Si le projet n'est pas en collecte ou que le montant de la part est à 0 (donc non-défini), on retourne à la page projet
-    if ($campaign->campaign_status() != 'collecte' || $campaign->part_value() == 0) {
+    if ($campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte || $campaign->part_value() == 0) {
 		wp_redirect(get_permalink($campaign->ID));
 		exit();
     }
@@ -274,12 +274,12 @@ function ypcf_check_meanofpayment_redirections() {
     if (is_user_logged_in() && isset($_GET['campaign_id']) && isset($_SESSION['redirect_current_amount_part']) && isset($_GET['meanofpayment'])) {
 	    $amount_part = $_SESSION['redirect_current_amount_part'];
 	    $current_user = wp_get_current_user();
-	    $amount = $amount_part * ypcf_get_part_value();
+		$campaign = atcf_get_current_campaign();
+	    $amount = $amount_part * $campaign->part_value();
 
 	    switch ($_GET['meanofpayment']) {
 		    //Paiement par carte
 		    case 'card':
-				$campaign = atcf_get_current_campaign();
 			    //Récupération de l'url de la page qui indique que le paiement est bien effectué
 			    $page_payment_done = get_page_by_path('paiement-effectue');
 				
@@ -313,10 +313,54 @@ function ypcf_check_meanofpayment_redirections() {
 					}
 				}
 		    break;
+			
+		    case 'cardwallet':
+				if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					$page_payment_done = get_page_by_path('paiement-effectue');
+					$organization = $campaign->get_organisation();
+					$organization_obj = new YPOrganisation($organization->organisation_wpref);
+					$WDGuser_current = WDGUser::current();
+					$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $campaign->ID;
+					$wk_token = LemonwayLib::make_token($current_token_id);
+					$return_url = get_permalink($page_payment_done) . '?meanofpayment=cardwallet&campaign_id='. $campaign->ID;
+					$error_url = $return_url . '&error=1';
+					$cancel_url = $return_url . '&cancel=1';
+					$WDGuser_current_wallet_amount = $WDGuser_current->get_lemonway_wallet_amount();
+					$amount -= $WDGuser_current_wallet_amount;
+					$_SESSION['need_wallet_completion'] = $WDGuser_current_wallet_amount;
+					$return = LemonwayLib::ask_payment_webkit( $organization_obj->get_lemonway_id(), $amount, 0, $wk_token, $return_url, $error_url, $cancel_url );
+					if ( !empty($return->MONEYINWEB->TOKEN) ) {
+						$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
+						$url_css_encoded = urlencode($url_css);
+						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&p=' . $url_css_encoded);
+						exit();
+					}
+				}
+		    break;
+			
+			//Paiement par wallet
+			case 'wallet':
+				$WDGUser_current = WDGUser::current();
+				
+				$can_use_wallet = false;
+				if ($_SESSION['redirect_current_invest_type'] == 'user') {
+					$can_use_wallet = $WDGUser_current->can_pay_with_wallet($amount, $campaign);
+				} else {
+					$invest_type = $_SESSION['redirect_current_invest_type'];
+					$organisation = new YPOrganisation($invest_type);
+					$can_use_wallet = $organisation->can_pay_with_wallet($amount, $campaign);
+				}
+				if ($can_use_wallet) {
+					$_SESSION['amount_to_save'] = $amount;
+					if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
+					if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
+				    $page_payment_done = get_page_by_path('paiement-effectue');
+					wp_redirect(get_permalink($page_payment_done->ID) . '?meanofpayment=wallet&campaign_id=' . $_GET['campaign_id']);
+				}
+			break;
 
 		    //Paiement par virement
 		    case 'wire':
-			    $campaign = atcf_get_current_campaign();
 			    if ($campaign->can_use_wire($_SESSION['redirect_current_amount_part'])) {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-virement');
@@ -343,8 +387,8 @@ function ypcf_check_meanofpayment_redirections() {
 			    }
 		    break;
 		    
+			//Paiement par chèque
 		    case 'check':
-			    $campaign = atcf_get_current_campaign();
 			    if ($campaign->can_use_check($_SESSION['redirect_current_amount_part'])) {
 				    //Récupération de l'url pour permettre le paiement
 				    $page_payment = get_page_by_path('paiement-cheque');
@@ -583,6 +627,11 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 			
 		} else {
 			$contribution_id = edd_get_payment_key($payment_id);
+			if (strpos($contribution_id, '_wallet_') !== FALSE) {
+				$split_contribution_id = explode('_wallet_', $contribution_id);
+				$contribution_id = $split_contribution_id[0];
+			}
+			
 			if (isset($contribution_id) && $contribution_id != '' && $contribution_id != 'check') {
 				$update_post = FALSE;
 				$is_card_contribution = TRUE;
@@ -612,6 +661,10 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						//TODO
 					}
 
+				//Paiement par wallet uniquement
+				} else if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
+					$buffer = 'publish';
+					$update_post = TRUE;
 
 				//On teste une contribution classique
 				} else {
