@@ -1117,24 +1117,24 @@ class WDGAjaxActions {
                 $user_data = get_userdata($user_id);
 
                 $array_contacts[$user_id]["user_link"] = bp_core_get_userlink($user_id);
-                $array_contacts[$user_id]["user_email"] = $user_data->get('user_email');
+                $array_contacts[$user_id]["user_email"] = $user_data->user_email;
 
 				//Infos supplémentaires pour les votants
 				if($array_contacts[$user_id]["vote"] == 1 || $array_contacts[$user_id]["invest"] == 1){
 					$array_contacts[$user_id]["user_last_name"] = $user_data->last_name;
 					$array_contacts[$user_id]["user_first_name"] = $user_data->first_name;
-					$array_contacts[$user_id]["user_city"] = $user_data->get('user_city');
-					$array_contacts[$user_id]["user_postal_code"] = $user_data->get('user_postal_code');
-					$array_contacts[$user_id]["user_nationality"] = ucfirst(strtolower($country_list[$user_data->get('user_nationality')]));
+					$array_contacts[$user_id]["user_city"] = get_user_meta( $user_id, 'user_city', TRUE );
+					$array_contacts[$user_id]["user_postal_code"] = get_user_meta( $user_id, 'user_postal_code', TRUE );
+					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ get_user_meta( $user_id, 'user_nationality', TRUE ) ] ) );
 
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
 						$count_distinct_investors++;
 						$array_contacts[$user_id]["user_birthday"] = $user_data->user_birthday_year.'-'.$user_data->user_birthday_month.'-'.$user_data->user_birthday_day;
-						$array_contacts[$user_id]["user_birthplace"] = $user_data->get('user_birthplace');
+						$array_contacts[$user_id]["user_birthplace"] = get_user_meta( $user_id, 'user_birthplace', TRUE );
 						$array_contacts[$user_id]["user_address"] = $user_data->user_address;
 						$array_contacts[$user_id]["user_country"] = $user_data->user_country;
-						$array_contacts[$user_id]["user_mobile_phone"] = $user_data->get('user_mobile_phone');
+						$array_contacts[$user_id]["user_mobile_phone"] = get_user_meta( $user_id, 'user_mobile_phone', TRUE );
 					}
 				}
             }
