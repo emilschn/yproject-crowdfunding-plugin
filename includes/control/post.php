@@ -79,6 +79,7 @@ class WDGPostActions {
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_WDG_notoriety, $project_notoriety);
 			$newcampaign->__set( 'campaign_contact_phone', $new_phone );
+			$newcampaign->set_forced_mandate( 1 );
 
 
             //Company data
