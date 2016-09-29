@@ -27,6 +27,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_contract');
 		WDGAjaxActions::add_action('save_project_status');
+		WDGAjaxActions::add_action('save_project_force_mandate');
 		WDGAjaxActions::add_action('save_user_infos_dashboard');
 
         WDGAjaxActions::add_action('create_contacts_table');
@@ -967,6 +968,28 @@ class WDGAjaxActions {
 			"response" => "edit_status",
 			"errors" => $errors,
 			"success" => $success
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+	
+	/**
+	 * Enregistre l'obligation de signer une autorisation de prélévement
+	 */
+	public static function save_project_force_mandate() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$errors = array();
+		$success = array();
+
+		$new_status = (sanitize_text_field(filter_input(INPUT_POST, 'new_force_mandate')));
+		$campaign->set_forced_mandate($new_status);
+		$success['new_force_mandate'] = 1;
+		
+		$return_values = array(
+			"response"	=> "edit_force_mandate",
+			"errors"	=> $errors,
+			"success"	=> $success
 		);
 		echo json_encode($return_values);
 		exit();

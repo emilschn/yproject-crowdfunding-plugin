@@ -425,6 +425,15 @@ class ATCF_Campaign {
 /*******************************************************************************
  * GESTION ROI
  ******************************************************************************/
+	public static $key_forced_mandate = 'campaign_forced_mandate';
+	public function is_forced_mandate() {
+		$buffer = $this->__get( ATCF_Campaign::$key_forced_mandate );
+		return ($buffer == 1);
+	}
+	public function set_forced_mandate( $new_value ) {
+		update_post_meta( $this->ID, ATCF_Campaign::$key_forced_mandate, $new_value );
+	}
+
     public static $key_funding_duration = 'campaign_funding_duration';
     public function funding_duration() {
 	    return $this->__get(ATCF_Campaign::$key_funding_duration);

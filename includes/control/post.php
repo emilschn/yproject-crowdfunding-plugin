@@ -16,6 +16,7 @@ class WDGPostActions {
         self::add_action("send_project_mail");
         self::add_action("create_project_form");
         self::add_action("change_project_status");
+        self::add_action("organization_sign_mandate");
     }
 
     /**
@@ -78,6 +79,7 @@ class WDGPostActions {
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_WDG_notoriety, $project_notoriety);
 			$newcampaign->__set( 'campaign_contact_phone', $new_phone );
+			$newcampaign->set_forced_mandate( 1 );
 
 
             //Company data
@@ -211,4 +213,27 @@ class WDGPostActions {
         wp_safe_redirect(wp_get_referer());
         die();
     }
+	
+	/**
+	 * Redirige vers la signature de mandat d'autorisation de prélèvement automatique
+	 */
+	public static function organization_sign_mandate() {
+        $organization_id = sanitize_text_field( filter_input( INPUT_POST, 'organization_id' ) );
+		$WDGUser_current = WDGUser::current();
+		$phone_number = $WDGUser_current->wp_user->get('user_mobile_phone');
+		$url_return = wp_get_referer();
+		
+		// Récupération de l'organisation
+		$organization_obj = new YPOrganisation( $organization_id );
+		$token = $organization_obj->get_sign_mandate_token( $phone_number, $url_return, $url_return );
+		
+		if ( $token != FALSE ) {
+			// Redirection vers la page de signature de document
+			wp_redirect( YP_LW_WEBKIT_URL .'?signingToken='. $token->SIGNDOCUMENT->TOKEN );
+			die();
+		}
+		
+		wp_redirect( $url_return );
+		die();
+	}
 }

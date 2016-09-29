@@ -128,6 +128,13 @@ class LemonwayLib {
 		return $amount;
 	}
 	
+	public static function check_phone_number( $phone_number ) {
+		$buffer = str_replace( array(' ', '.', '-', '+'), '', $phone_number);
+		$buffer = substr( $buffer, -9 );
+		$buffer = '33' . $buffer;
+		return $buffer;
+	}
+	
 	public static function make_token($invest_id = '', $roi_id = '') {
 		$buffer = FALSE;
 		$random = rand(10000, 99999);
@@ -299,8 +306,8 @@ class LemonwayLib {
 	 * Enregistre un RIB associé à un porte-monnaie
 	 * @param int $wallet_id
 	 * @param string $holder_name
-	 * @param string $bic
 	 * @param string $iban
+	 * @param string $bic
 	 * @param string $dom1
 	 * @param string $dom2
 	 * @return boolean or string
@@ -329,6 +336,90 @@ class LemonwayLib {
 		return $result;
 	}
 	
+	/**
+	 * Enregistre un mandat de prélévement automatique lié à un wallet
+	 * @param int $wallet_id
+	 * @param string $holder_name
+	 * @param string $iban
+	 * @param string $bic
+	 * @param int $is_recurring
+	 * @param int $is_b2b
+	 * @param string $street
+	 * @param string $post_code
+	 * @param string $city
+	 * @param string $country
+	 * @param string $language
+	 * @return boolean or string
+	 */
+	public static function wallet_register_mandate( $wallet_id, $holder_name, $iban, $bic, $is_recurring, $is_b2b, $street, $post_code, $city, $country, $language = 'fr' ) {
+		if (!isset($wallet_id)) return FALSE;
+		if (!isset($holder_name)) return FALSE;
+		if (!isset($bic)) return FALSE;
+		if (!isset($iban)) return FALSE;
+		
+		//wallet ; holder ; iban ; bic ; isRecurring (1/0) ; isB2B (1/0) ; street ; postCode ; city ; country (FRANCE) ; mandateLanguage(fr/en/es/de)
+		$param_list = array(
+			'wallet'		=> $wallet_id,
+			'holder'		=> $holder_name,
+			'iban'			=> $iban,
+			'bic'			=> $bic,
+			'isRecurring'	=> $is_recurring,
+			'isB2B'			=> $is_b2b,
+			'street'		=> $street,
+			'postCode'		=> $post_code,
+			'city'			=> $city,
+			'country'		=> $country,
+			'mandateLanguage'	=> $language,
+		);
+		
+		$result = LemonwayLib::call('RegisterSddMandate', $param_list);
+		if ($result !== FALSE) {
+			//Retourne : ID ; S (status)
+		}
+		return $result;
+	}
+	
+	/**
+	 * Démarre la signature d'un mandat
+	 * @param int $wallet_id
+	 * @param int $mobile_number
+	 * @param int $document_id
+	 * @param string $url_return
+	 * @param string $url_error
+	 * @param int $document_type (21)
+	 * @return boolean or int
+	 */
+	public static function wallet_sign_mandate_init( $wallet_id, $mobile_number, $document_id, $url_return, $url_error, $document_type = 21 ) {
+		if (!isset($wallet_id)) return FALSE;
+		if (!isset($mobile_number)) return FALSE;
+		if (!isset($document_id)) return FALSE;
+		if (!isset($url_return)) return FALSE;
+		if (!isset($url_error)) return FALSE;
+		
+		$phone_number = LemonwayLib::check_phone_number( $mobile_number );
+		
+		//wallet ; mobileNumber ; documentId ; documentType (21 pour SDD) ; returnUrl ; errorUrl
+		$param_list = array(
+			'wallet'		=> $wallet_id,
+			'mobileNumber'	=> $phone_number,
+			'documentId'	=> $document_id,
+			'documentType'	=> $document_type,
+			'returnUrl'		=> $url_return,
+			'errorUrl'		=> $url_error
+		);
+		
+		$result = LemonwayLib::call('SignDocumentInit', $param_list);
+		if ($result !== FALSE) {
+			//Retourne : TOKEN
+		}
+		return $result;
+	}
+			
+	/**
+	 * Retourne un statut correspondant à un KYC
+	 * @param object $document_object
+	 * @return string
+	 */
 	public static function document_get_status_string($document_object) {
 		$buffer = '';
 		if ($document_object !== FALSE) {
