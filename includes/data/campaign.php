@@ -1727,6 +1727,174 @@ class ATCF_Campaign {
 		}
 		return array();
 	}
+	
+	
+	
+	
+/*******************************************************************************
+ * RECUPERATION DE LISTE DE PROJETS
+ ******************************************************************************/
+	public static function get_list_most_recent( $nb = 1, $client = '' ) {
+		$buffer = array();
+		
+		$projectlist_funding = ATCF_Campaign::get_list_funding( $nb, $client );
+		$count_projectlist = count( $projectlist_funding );
+		foreach ( $projectlist_funding as $project ) { array_push( $buffer, $project->ID ); }
+		
+		if ( $count_projectlist < $nb ) {
+			$projectlist_vote = ATCF_Campaign::get_list_vote( $nb - $count_projectlist, $client );
+			$count_projectlist += count( $projectlist_vote );
+			foreach ( $projectlist_vote as $project ) { array_push( $buffer, $project->ID ); }
+		}
+		
+		if ( $count_projectlist < $nb ) {
+			$projectlist_funded = ATCF_Campaign::get_list_funded( $nb - $count_projectlist, $client );
+			$count_projectlist += count( $projectlist_funded );
+			foreach ( $projectlist_funded as $project ) { array_push( $buffer, $project->ID ); }
+		}
+		
+		return $buffer;
+	}
+	
+	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
+	public static function get_list_vote( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, 'desc', $client ); }
+	public static function get_list_funding( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client ); }
+	public static function get_list_funded($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_funded, $client ); }
+	public static function get_list_archive($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_archive, $client ); }
+	
+	
+	public static function get_list_current( $nb, $type, $order, $client ) {
+		$query_options = array(
+			'numberposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array (
+					'key' => 'campaign_vote',
+					'value' => $type
+					),
+				array (
+					'key' => 'campaign_end_date',
+					'compare' => '>',
+					'value' => date('Y-m-d H:i:s')
+				)
+			),
+			'orderby' => 'post_date',
+			'order' => $order
+		);
+		if (!empty($client)) {
+			$query_options['tax_query'] = array( array( 
+				'taxonomy' => 'download_tag',
+				'field' => 'slug', 
+				'terms' => array($client) 
+			) );
+		}
+		return get_posts( $query_options );
+	}
+	public static function get_list_finished( $nb, $type, $client ) {
+		$query_options = array(
+			'numberposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array (
+					'key' => 'campaign_vote',
+					'value' => $type
+				)
+			),
+			'meta_key' => 'campaign_end_date',
+			'orderby' => 'meta_value',
+			'order' => 'desc'
+		);
+		if (!empty($client)) {
+			$query_options['tax_query'] = array( array( 
+				'taxonomy' => 'download_tag',
+				'field' => 'slug', 
+				'terms' => array($client) 
+			) );
+		}
+		return get_posts( $query_options );
+	}
+	
+	
+	
+	
+	
+	public static function list_projects_preview($nb = 0, $client = '') { return ATCF_Campaign::list_projects_current($nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client); }
+	public static function list_projects_vote($nb = 0, $client = '') { return ATCF_Campaign::list_projects_current($nb, ATCF_Campaign::$campaign_status_vote, 'desc', $client); }
+	public static function list_projects_funding($nb = 0, $client = '') { return ATCF_Campaign::list_projects_current($nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client); }
+	public static function list_projects_funded($nb = 0, $client = '') { return ATCF_Campaign::list_projects_finished($nb, ATCF_Campaign::$campaign_status_funded, $client); }
+	public static function list_projects_archive($nb = 0, $client = '') { return ATCF_Campaign::list_projects_finished($nb, ATCF_Campaign::$campaign_status_archive, $client); }
+	
+	public static function list_projects_current($nb, $type, $order, $client) {
+		$query_options = array(
+			'showposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+
+				array (
+					'key' => 'campaign_vote',
+					'value' => $type
+					),
+				array (
+					'key' => 'campaign_end_date',
+					'compare' => '>',
+					'value' => date('Y-m-d H:i:s')
+				)
+			),
+			'orderby' => 'post_date',
+			'order' => $order
+		);
+		if (!empty($client)) {
+			$query_options['tax_query'] = array( array( 
+				'taxonomy' => 'download_tag',
+				'field' => 'slug', 
+				'terms' => array($client) 
+			) );
+		}
+		return query_posts( $query_options );
+	}
+	
+	public static function list_projects_finished($nb, $type, $client) {
+		$query_options = array(
+			'showposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array (
+					'key' => 'campaign_vote',
+					'value' => $type
+				)
+			),
+			'meta_key' => 'campaign_end_date',
+			'orderby' => 'meta_value',
+			'order' => 'desc'
+		);
+		if (!empty($client)) {
+			$query_options['tax_query'] = array( array( 
+				'taxonomy' => 'download_tag',
+				'field' => 'slug', 
+				'terms' => array($client) 
+			) );
+		}
+		return query_posts( $query_options );
+	}
+	
+	public static function list_projects_started() {
+		$query_options = array(
+			'showposts' => 0,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				'relation' => 'OR',
+				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_collecte ),
+				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_funded ),
+				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_archive )
+			)
+		);
+		return query_posts( $query_options );
+	}
 }
 
 function atcf_get_locations() {
