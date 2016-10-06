@@ -1093,14 +1093,28 @@ class WDGAjaxActions {
                 $payment_state .= '<br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
                 $payment_state .= '<br /><br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
             }
-            $array_contacts[$u_id]["invest"] = 1;
-
-            $array_contacts[$u_id]["invest_payment_type"] = $payment_type;
-			$array_contacts[$u_id]["invest_payment_state"] = $investment_state;
-			$array_contacts[$u_id]["invest_state"] = $payment_state;
-            $array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
-            $array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
-            $array_contacts[$u_id]["invest_sign"] = $item_invest['signsquid_status_text'];
+			
+			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
+			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
+				$more_invest = array();
+				$more_invest["invest_payment_type"] = $payment_type;
+				$more_invest["invest_payment_state"] = $investment_state;
+				$more_invest["invest_state"] = $payment_state;
+				$more_invest["invest_amount"] = $item_invest['amount'];
+				$more_invest["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
+				$more_invest["invest_sign"] = $item_invest['signsquid_status_text'];
+				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
+				
+			} else {
+				$array_contacts[$u_id]["invest"] = 1;
+				$array_contacts[$u_id]["more_invest"] = array();
+				$array_contacts[$u_id]["invest_payment_type"] = $payment_type;
+				$array_contacts[$u_id]["invest_payment_state"] = $investment_state;
+				$array_contacts[$u_id]["invest_state"] = $payment_state;
+				$array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
+				$array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
+				$array_contacts[$u_id]["invest_sign"] = $item_invest['signsquid_status_text'];
+			}
         }
 
         //Extraction infos utilisateur
@@ -1134,9 +1148,8 @@ class WDGAjaxActions {
 					}
 				}
 
-            }
             //Données si l'investisseur est un utilisateur normal
-            else {
+            } else {
                 $user_data = get_userdata($user_id);
 
                 $array_contacts[$user_id]["user_link"] = bp_core_get_userlink($user_id);
@@ -1166,18 +1179,16 @@ class WDGAjaxActions {
         /*********Intitulés et paramètres des colonnes***********/
         $status = $campaign->campaign_status();
         $display_invest_infos = false;
-        if($status == ATCF_Campaign::$campaign_status_collecte ||
-            $status == ATCF_Campaign::$campaign_status_funded ||
-            $status == ATCF_Campaign::$campaign_status_archive
-        ){
+        if ( $status == ATCF_Campaign::$campaign_status_collecte
+				|| $status == ATCF_Campaign::$campaign_status_funded
+				|| $status == ATCF_Campaign::$campaign_status_archive ){
             $display_invest_infos = true;
         }
 
         $display_vote_infos = true;
-        if($status == ATCF_Campaign::$campaign_status_collecte ||
-            $status == ATCF_Campaign::$campaign_status_funded ||
-            $status == ATCF_Campaign::$campaign_status_archive
-        ){
+        if ( $status == ATCF_Campaign::$campaign_status_collecte
+				|| $status == ATCF_Campaign::$campaign_status_funded
+				|| $status == ATCF_Campaign::$campaign_status_archive ){
             $display_vote_infos = false;
         }
 
@@ -1231,25 +1242,69 @@ class WDGAjaxActions {
             </thead>
 
             <tbody>
-            <?php foreach($array_contacts as $id_contact=>$data_contact) { ?>
-                <tr data-DT_RowId="<?php echo $id_contact; ?>">
-                <?php foreach($array_columns as $column) {
-                	echo "<td>";
-					if($column->columnData == "follow" && $data_contact[$column->columnData]==1){
-						?><div class="dirty-hide">1</div><?php echo $imggood;
+            <?php foreach($array_contacts as $id_contact => $data_contact): ?>
+				<?php
+				$has_more = array();
+				if ( $data_contact["more_invest"] ){
+					$has_more = $data_contact["more_invest"];
+				}
+				?>
+				<tr data-DT_RowId="<?php echo $id_contact; ?>">
+					<?php foreach($array_columns as $column): ?>
+                	<td>
+					<?php if ( $column->columnData == "follow" && $data_contact[$column->columnData]==1 ): ?>
+						<div class="dirty-hide">1</div>
+						<?php echo $imggood; ?>
 
-					} else if($column->columnData == "vote" && $data_contact[$column->columnData]==1){
-						?><div class="dirty-hide">1</div><?php echo $imggoodvote;
+					<?php elseif ( $column->columnData == "vote" && $data_contact[$column->columnData]==1 ): ?>
+						<div class="dirty-hide">1</div>
+						<?php echo $imggoodvote; ?>
 
-					} else if ($column->columnData == "invest" && $data_contact[$column->columnData]==1){
-						?><div class="dirty-hide">1</div><?php echo $imggoodmains;
-					} else {
-						echo $data_contact[$column->columnData];
-					}
-					echo "</td>";
-                }?>
-                </tr>
-            <?php }?>
+					<?php elseif ( $column->columnData == "invest" && $data_contact[$column->columnData]==1 ): ?>
+						<div class="dirty-hide">1</div>
+						<?php echo $imggoodmains; ?>
+						
+					<?php else: ?>
+						<?php echo $data_contact[$column->columnData]; ?>
+					<?php endif; ?>
+					</td>
+					<?php endforeach; ?>
+				</tr>
+				
+				<?php //Gestion de plusieurs investissements par la même personne
+				foreach ($has_more as $has_more_item): ?>
+				<tr data-DT_RowId="<?php echo $id_contact; ?>">
+					<?php foreach($array_columns as $column): ?>
+                	<td>
+					<?php if ( $column->columnData == "follow" && $data_contact[$column->columnData]==1 ): ?>
+						<div class="dirty-hide">1</div>
+						<?php echo $imggood; ?>
+
+					<?php elseif ( $column->columnData == "vote" && $data_contact[$column->columnData]==1 ): ?>
+						<div class="dirty-hide">1</div>
+						<?php echo $imggoodvote; ?>
+
+					<?php elseif ( $column->columnData == "invest" && $data_contact[$column->columnData]==1 ): ?>
+						<div class="dirty-hide">1</div>
+						<?php echo $imggoodmains; ?>
+						
+					<?php elseif ( $column->columnData == "invest_payment_type"
+										|| $column->columnData == "invest_payment_state"
+										|| $column->columnData == "invest_state"
+										|| $column->columnData == "invest_amount"
+										|| $column->columnData == "invest_date"
+										|| $column->columnData == "invest_sign" ): ?>
+						<?php echo $has_more_item[$column->columnData]; ?>
+						
+					<?php else: ?>
+						<?php echo $data_contact[$column->columnData]; ?>
+					<?php endif; ?>
+					</td>
+					<?php endforeach; ?>
+				</tr>
+				<?php endforeach; ?>
+				
+			<?php endforeach; ?>
             </tbody>
 
             <tfoot>
