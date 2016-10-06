@@ -12,6 +12,7 @@ function atcf_get_campaign( $post_campaign ) {
  * @return objet campagne
  */
 function atcf_get_current_campaign() {
+        $campaign = false;
 	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign, $post;
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
 	if (empty($campaign_id)) {
