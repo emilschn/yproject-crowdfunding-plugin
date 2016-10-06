@@ -335,6 +335,14 @@ class ATCF_Campaign {
     }
 
     /**
+     * @return string This summary is used in the back-office to introduce the project
+     */
+    public static $key_backoffice_businessplan = 'campaign_backoffice_businessplan';
+    public function backoffice_businessplan() {
+        return $this->__get(ATCF_Campaign::$key_backoffice_businessplan);
+    }
+
+    /**
      * @var string How did the author knew about WDG
      */
     public static $key_backoffice_WDG_notoriety = 'campaign_backoffice_WDG_notoriety';
