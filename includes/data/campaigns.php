@@ -761,7 +761,7 @@ function _atcf_metabox_campaign_status() {
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	    <option></option>
 		<option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preparing; ?>>Préparation</option>
-		<option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_validated) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preparing; ?>>Validé</option>
+		<option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_validated) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_validated; ?>>Validé</option>
 	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_preview) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preview; ?>>Avant-première</option>
 	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_vote; ?>>En cours de vote</option>
 	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_collecte ; ?>>En cours de collecte</option>
