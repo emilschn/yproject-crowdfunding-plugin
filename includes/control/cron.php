@@ -69,7 +69,7 @@ class WDGCronActions {
 		$buffer_partners .= '<partenaire>' . "\n";
 		
 		//Parcours des projets en cours de collecte
-		ATCF_Campaigns::list_projects_funding();
+		ATCF_Campaign::list_projects_funding();
 		while (have_posts()): the_post();
 			global $post;
 			$campaign = atcf_get_campaign( $post );
