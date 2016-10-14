@@ -986,6 +986,10 @@ class WDGAjaxActions {
 		$campaign->set_forced_mandate($new_status);
 		$success['new_force_mandate'] = 1;
 		
+		$new_mandate_conditions = (filter_input(INPUT_POST, 'new_mandate_conditions'));
+		$campaign->__set(ATCF_Campaign::$key_mandate_conditions, $new_mandate_conditions);
+		$success['new_mandate_conditions'] = 1;
+		
 		$return_values = array(
 			"response"	=> "edit_force_mandate",
 			"errors"	=> $errors,

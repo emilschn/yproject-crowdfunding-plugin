@@ -441,6 +441,11 @@ class ATCF_Campaign {
 	public function set_forced_mandate( $new_value ) {
 		update_post_meta( $this->ID, ATCF_Campaign::$key_forced_mandate, $new_value );
 	}
+	
+	public static $key_mandate_conditions = 'campaign_mandate_conditions';
+	public function mandate_conditions() {
+		return $this->__get( ATCF_Campaign::$key_mandate_conditions );
+	}
 
     public static $key_funding_duration = 'campaign_funding_duration';
     public function funding_duration() {
