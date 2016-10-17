@@ -319,6 +319,7 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
 		$current_user = WDGUser::current();
+		$email = filter_input(INPUT_POST, 'email');
 		$gender = filter_input(INPUT_POST, 'gender');
 		$firstname = filter_input(INPUT_POST, 'firstname');
 		$lastname = filter_input(INPUT_POST, 'lastname');
@@ -332,7 +333,7 @@ class WDGAjaxActions {
 		$city = filter_input(INPUT_POST, 'city');
 		$country = filter_input(INPUT_POST, 'country');
 		$telephone = filter_input(INPUT_POST, 'telephone');
-		$current_user->save_data($gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+		$current_user->save_data($email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
 
 		$is_project_holder = false;
 		if (filter_input(INPUT_POST, 'is_project_holder')=="1"){$is_project_holder = true;}
@@ -985,6 +986,10 @@ class WDGAjaxActions {
 		$new_status = (sanitize_text_field(filter_input(INPUT_POST, 'new_force_mandate')));
 		$campaign->set_forced_mandate($new_status);
 		$success['new_force_mandate'] = 1;
+		
+		$new_mandate_conditions = (filter_input(INPUT_POST, 'new_mandate_conditions'));
+		$campaign->__set(ATCF_Campaign::$key_mandate_conditions, $new_mandate_conditions);
+		$success['new_mandate_conditions'] = 1;
 		
 		$return_values = array(
 			"response"	=> "edit_force_mandate",

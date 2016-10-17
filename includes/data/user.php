@@ -58,7 +58,8 @@ class WDGUser {
 	/**
 	 * Enregistre les données nécessaires pour l'investissement
 	 */
-	public function save_data($gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone) {
+	public function save_data($email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone) {
+		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		update_user_meta( $this->wp_user->ID, 'user_gender', $gender );
 		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
 		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
