@@ -570,7 +570,7 @@ class YPOrganisation {
 	 */
 	public function has_sent_all_documents() {
 		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_bank, WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 			$current_document = $document_filelist[0];
