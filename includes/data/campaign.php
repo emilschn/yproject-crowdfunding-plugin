@@ -1908,6 +1908,21 @@ class ATCF_Campaign {
 		);
 		return query_posts( $query_options );
 	}
+	
+	public static function list_projects_searchable() {
+		$query_options = array(
+			'showposts' => 0,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				'relation' => 'OR',
+				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_vote ),
+				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_collecte ),
+				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_funded )
+			)
+		);
+		return query_posts( $query_options );
+	}
 }
 
 function atcf_get_locations() {
