@@ -609,7 +609,7 @@ class WDGAjaxActions {
 
 		$birthplace = sanitize_text_field(filter_input(INPUT_POST, 'new_birthplace'));
 		if(!empty($birthplace)){
-			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'user_birthplace' => $birthplace ) ) ;
+			update_user_meta( $current_user->wp_user->ID, 'user_birthplace', $birthplace );
 			$success['new_birthplace']=1;
 		} else {
 			$errors['new_birthplace']= __("Vous devez renseigner votre lieu de naissance",'yproject');
@@ -617,7 +617,7 @@ class WDGAjaxActions {
 
 		$nationality = sanitize_text_field(filter_input(INPUT_POST, 'new_nationality'));
 		if(!empty($nationality)){
-			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'user_nationality' => $nationality ) ) ;
+			update_user_meta( $current_user->wp_user->ID, 'user_nationality', $nationality );
 			$success['new_nationality']=1;
 		} else {
 			$errors['new_nationality']= __("Vous devez renseigner votre nationalit&eacute;",'yproject');
