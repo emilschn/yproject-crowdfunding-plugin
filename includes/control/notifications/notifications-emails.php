@@ -251,31 +251,42 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_purchase_admin_success($payment_id, $complement_object = '', $complement_content = '', $attachments = array()) {
-	ypcf_debug_log('NotificationsEmails::new_purchase_admin_success > ' . $payment_id);
-	$admin_email = get_option('admin_email');
-	$object = 'Nouvel achat' . $complement_object;
-	
-	$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-	$campaign = atcf_get_campaign($post_campaign);
-	$payment_amount = edd_get_payment_amount( $payment_id );
-	$user_id = edd_get_payment_user_id( $payment_id );
-	$user_data = get_userdata($user_id);
-	$payment_date = get_post_field( 'post_date', $payment_id );
+		ypcf_debug_log('NotificationsEmails::new_purchase_admin_success > ' . $payment_id);
+		$admin_email = get_option('admin_email');
+		$object = 'Nouvel achat' . $complement_object;
 
-	$body_content = 'Nouvel investissement avec l\'identifiant de paiement ' . $payment_id . '<br /><br />';
-	$body_content .= "<strong>Détails de l'investissement</strong><br />";
-	$body_content .= "Utilisateur : " . $user_data->user_login . "<br />";
-	$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-	$body_content .= "Montant investi : ".$payment_amount."&euro;<br />";
-        if ($campaign->funding_type()=="fundingdonation"){
-            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
-            $body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
-        }
-	$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
-	$body_content .= $complement_content;
-	
-	return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$user_id = edd_get_payment_user_id( $payment_id );
+		$user_data = get_userdata($user_id);
+		$payment_date = get_post_field( 'post_date', $payment_id );
+
+		$body_content = 'Nouvel investissement avec l\'identifiant de paiement ' . $payment_id . '<br /><br />';
+		$body_content .= "<strong>Détails de l'investissement</strong><br />";
+		$body_content .= "Utilisateur : " . $user_data->user_login . "<br />";
+		$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
+		$body_content .= "Montant investi : ".$payment_amount."&euro;<br />";
+		if ($campaign->funding_type()=="fundingdonation"){
+			$reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
+			$body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
+		}
+		$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
+		$body_content .= $complement_content;
+
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
     }
+	
+    public static function new_purchase_admin_error( $user_data, $int_msg ) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
+		$admin_email = 'investir@wedogood.co';
+		$object = 'Erreur investissement';
+		$body_content = "Tentative d'investissement avec erreur :<br />";
+		$body_content .= "Login : " .$user_data->user_login. "<br />";
+		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
+		$body_content .= "Erreur LW : " .$int_msg. "<br />";
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
+	}
     //*******************************************************
     // FIN ACHATS
     //*******************************************************
