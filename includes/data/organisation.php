@@ -570,7 +570,7 @@ class YPOrganisation {
 	 */
 	public function has_sent_all_documents() {
 		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_bank, WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 			$current_document = $document_filelist[0];
@@ -835,6 +835,18 @@ class YPOrganisation {
 	public function can_pay_with_wallet( $amount, $campaign ) {
 		$lemonway_amount = $this->get_lemonway_balance();
 		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+	}
+	
+	/**
+	 * Détermine si l'utilisateur peut payer avec sa carte et son porte-monnaie
+	 * @param int $amount
+	 * @param ATCF_Campaign $campaign
+	 * @return bool
+	 */
+	public function can_pay_with_card_and_wallet( $amount, $campaign ) {
+		$lemonway_amount = $this->get_lemonway_balance();
+		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5€ à payer par carte
+		return ($lemonway_amount > 0 && $amount - $lemonway_amount > 5 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
 	/**

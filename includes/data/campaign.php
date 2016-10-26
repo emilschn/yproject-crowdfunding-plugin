@@ -1045,7 +1045,7 @@ class ATCF_Campaign {
 	}
 	
 	public function is_remaining_time() {
-	    date_default_timezone_set('Europe/Paris');
+	    date_default_timezone_set('Europe/London');
 		$expires = strtotime( $this->end_date() );
 		$now     = current_time( 'timestamp' );
 		return ( $now < $expires );
