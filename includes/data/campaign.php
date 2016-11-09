@@ -721,14 +721,23 @@ class ATCF_Campaign {
 	}
 
 	/**
-	 * Campaign Location
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign Location
+	 * Le département complet du projet
 	 */
 	public function location() {
 		return $this->__get( 'campaign_location' );
+	}
+	/**
+	 * Le département en prenant les deux premiers caractères, et en supprimant le premier 0
+	 */
+	public function get_location_number() {
+		$location_complete = $this->location();
+		$first_car = substr( $location_complete, 0, 1 );
+		if ( $first_car == '0' ) {
+			$buffer = substr( $location_complete, 1, 1 );
+		} else {
+			$buffer = substr( $location_complete, 0, 2 );
+		}
+		return $buffer;
 	}
 
 	/**
@@ -2028,6 +2037,29 @@ function atcf_get_locations() {
 		'973 Guyane',
 		'974 La Réunion',
 		'976 Mayotte'
+	);
+	return $buffer;
+}
+function atcf_get_regions() {
+	$buffer = array(
+		"Auvergne-Rhône-Alpes"			=> array( 1, 3, 7, 15, 26, 38, 42, 43, 63, 69, 73, 74 ),
+		"Bourgogne-Franche-Comté"		=> array( 21, 25, 39, 58, 70, 71, 89, 90 ),
+		"Bretagne"						=> array( 22, 29 ,35, 56 ),
+		"Centre-Val de Loire"			=> array( 18, 28, 36, 37, 41, 45 ),
+		"Corse"							=> array( '2A', '2B' ),
+		"Grand Est"						=> array( 8, 10, 51, 52, 54, 55, 57, 67, 68, 88 ),
+		"Guadeloupe"					=> array( 971 ),
+		"Guyane"						=> array( 973 ),
+		"Hauts-de-France"				=> array( 2, 59, 60, 62, 80 ),
+		"Île-de-France"					=> array( 75, 77, 78, 91, 92, 93, 94, 95 ),
+		"La Réunion"					=> array( 974 ),
+		"Martinique"					=> array( 972 ),
+		"Mayotte"						=> array( 976 ),
+		"Normandie"						=> array( 14, 27, 50, 61, 76 ),
+		"Nouvelle-Aquitaine"			=> array( 16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87 ),
+		"Occitanie"						=> array( 9, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82 ),
+		"Pays de la Loire"				=> array( 44, 49, 53, 72, 85 ),
+		"Provence-Alpes-Côte d'Azur"	=> array( 4, 5, 6, 13, 83, 84 )
 	);
 	return $buffer;
 }
