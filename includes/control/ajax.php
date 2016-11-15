@@ -533,15 +533,11 @@ class WDGAjaxActions {
 		}
 
 		//Catégories du projet
-		$cat_cat_id = -1; $cat_act_id = -1;
-		if (isset($_POST['new_project_category'])) { $cat_cat_id = $_POST['new_project_category']; }
-		if (isset($_POST['new_project_activity'])) { $cat_act_id = $_POST['new_project_activity']; }
-		if ($cat_cat_id != -1 && $cat_act_id != -1) {
-			$cat_ids = array_map( 'intval', array($cat_cat_id, $cat_act_id) );
-			wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
-			$success["new_project_category"]=1;
-			$success["new_project_activity"]=1;
-		}
+		$cat_ids = array_merge($_POST["new_project_categories"], $_POST["new_project_activities"]);
+		$cat_ids = array_map( 'intval', $cat_ids );
+		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
+		$success["new_project_category"] = 1;
+		$success["new_project_activity"] = 1;
 
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));
