@@ -571,7 +571,26 @@ class ATCF_Campaign {
 		return $posts_in_category;
 	}
 	
-        
+	public function get_categories() {
+		$buffer = wp_get_object_terms( $this->ID, 'download_category' );
+		return $buffer;
+	}
+	public function get_categories_str() {
+		$buffer = '';
+		$categories = $this->get_categories();
+		foreach ($categories as $category) {
+			if (!empty($buffer)) {
+				$buffer .= ', ';
+			}
+			$buffer .= $category->slug;
+		}
+			
+		return $buffer;
+	}
+	
+/*******************************************************************************
+ * GESTION STATUTS
+ ******************************************************************************/
 	/**
 	 * Indique si le porteur de projet est autorisé à passer à l'étape
 	 * suivante par la modération
