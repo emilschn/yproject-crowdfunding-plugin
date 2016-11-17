@@ -825,7 +825,26 @@ class WDGAjaxActions {
 		$return_values = array(
 			"response" => "edit_organisation",
 			"errors" => array(),
-			"success" => $success
+			"success" => $success,
+                        "organisation" => array(
+                            "name" => $organisation_selected->get_name(),
+                            "email" => $organisation_selected->get_email(),
+                            "description" => $organisation_selected->get_description(),
+                            "legalForm" => $organisation_selected->get_legalform(),
+                            "idNumber" => $organisation_selected->get_idnumber(),
+                            "rcs" => $organisation_selected->get_rcs(),
+                            "capital" => $organisation_selected->get_capital(),
+                            "ape" => $organisation_selected->get_ape(),
+                            "address" => $organisation_selected->get_address(),
+                            "postal_code" =>$organisation_selected->get_postal_code(),
+                            "city" => $organisation_selected->get_city(),
+                            "nationality" => $organisation_selected->get_nationality(),
+                            "bankownername" => $organisation_selected->get_bank_owner(),
+                            "bankowneraddress" => $organisation_selected->get_bank_address(),
+                            "bankowneriban" => $organisation_selected->get_bank_iban(),
+                            "bankownerbic" => $organisation_selected->get_bank_bic(),                                                    
+                        )
+                                                   
 		);
 		echo json_encode($return_values);
 		exit();
