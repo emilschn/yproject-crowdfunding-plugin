@@ -24,6 +24,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
 		WDGAjaxActions::add_action('save_project_organisation');
+                WDGAjaxActions::add_action('save_new_organisation');
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_contract');
 		WDGAjaxActions::add_action('save_project_status');
@@ -849,6 +850,57 @@ class WDGAjaxActions {
 		echo json_encode($return_values);
 		exit();
 	}
+        
+        /**
+         * Enregistre les informations du formulaire de création d'une organisation
+         * et lie cette organisation au projet
+         */
+        public static function save_new_organisation(){
+                global $errors_submit_new;
+
+                $campaign_id = filter_input(INPUT_POST, 'campaign_id');
+                
+                //validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
+                $org_object = YPOrganisation::submit_new(FALSE);    
+                
+                //liaison de l'organisation au projet             
+                $current_organisation = FALSE;
+     
+                //Récupération de l'ancienne organisation
+		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
+		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+		$current_organisation = FALSE;
+		if (count($current_organisations) > 0) {
+			$current_organisation = $current_organisations[0];
+		}
+                
+                $delete = ($current_organisation == FALSE) ? FALSE : TRUE; 
+                
+                //on a déjà une organisation, donc on supprime la liaison
+		if ($delete) {
+                    BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+                }
+                //on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation                
+                $api_organisation_id = $org_object->get_bopp_id();
+                BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+                
+                ////////////////////
+                
+                $return_values = array(
+                    "response" => "save_new_organisation",
+                    "errors" => $errors_submit_new,
+                    "organisation" => array(
+                        "wpref" => $org_object->get_wpref(),
+                        "name" => $org_object->get_name(),
+                                               
+                    ),
+                    "campaign_id" => $campaign_id,
+                );
+                echo json_encode($return_values);
+                exit();
+ 
+        }
+        
 
 	/**
 	 * Enregistre les informations de communication du projet

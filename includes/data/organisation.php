@@ -914,16 +914,19 @@ class YPOrganisation {
 	/**
 	 * Formulaire de nouvelle organisation
 	 */
-	public static function submit_new() {
+	public static function submit_new($redirect = TRUE) {
 		global $errors_submit_new;
 		$errors_submit_new = new WP_Error();
-		
-		//Vérification que l'on a posté le formulaire
-		$action = filter_input(INPUT_POST, 'action');
-		if ($action !== 'submit-new-organisation') { 
+				
+                //Dans le TB, data-action = save_new_organisation
+                if($redirect){
+                    //Vérification que l'on a posté le formulaire
+                    $action = filter_input(INPUT_POST, 'action');
+                    if ($action !== 'submit-new-organisation') { 
 			return FALSE;
-		}
-		
+                    }
+                }
+				
 		//Vérification que l'utilisateur est connecté
 		if (!is_user_logged_in()) {
 			$errors_submit_new->add('not-loggedin', __('Vous devez vous connecter.', 'yproject'));
@@ -951,7 +954,7 @@ class YPOrganisation {
 		} else {
 			if (strlen($org_postal_code) === 4) { $org_postal_code = '0' . $org_postal_code; }
 		}
-		
+
 		//Vérification du capital
 		$org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_VALIDATE_INT);
 		if ($org_capital === FALSE) {
@@ -970,7 +973,7 @@ class YPOrganisation {
 		if (!$necessary_fields_full) {
 			$errors_submit_new->add('empty-fields', __('Certains champs obligatoires sont vides. Veuillez les renseigner.', 'yproject'));
 		}
-		
+
 		//On poursuit la procédure
 		if (count($errors_submit_new->errors) > 0) {
 			return FALSE;
@@ -997,20 +1000,23 @@ class YPOrganisation {
 		$org_object->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
 		$org_object->set_bank_bic(filter_input(INPUT_POST, 'org_bankownerbic'));
 		$wp_orga_user_id = $org_object->create();
-		
+		               
 		if ($wp_orga_user_id !== FALSE) {
 			$org_object->set_creator($current_user->ID);
-			if (session_id() == '') session_start();
-			if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
-				$_SESSION['redirect_current_invest_type'] = $wp_orga_user_id;
-				wp_redirect(ypcf_login_gobackinvest_url());
-				exit();
-				
-			} else {
-				wp_safe_redirect(bp_loggedin_user_domain() . '#community');
-				exit();
-			}
+                        if($redirect){
+                            if (session_id() == '') session_start();
+                            if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
+                                    $_SESSION['redirect_current_invest_type'] = $wp_orga_user_id;
+                                    wp_redirect(ypcf_login_gobackinvest_url());                              
+                                    exit();
+
+                            } else {
+                                    wp_safe_redirect(bp_loggedin_user_domain() . '#community');
+                                    exit();
+                            }
+                        }			
 		}
+                return $org_object;
 	}
 	
 	public static function edit($org_object) {
