@@ -1106,11 +1106,11 @@ class ATCF_Campaign {
 		} else {
 			$diff = $expires - $now;
 			$nb_days = floor($diff / (60 * 60 * 24));
-			if ($nb_days > 0) {
+			if ($nb_days > 1) {
 				$buffer = 'J-' . $nb_days;
 			} else {
 				$nb_hours = floor($diff / (60 * 60));
-				if ($nb_hours > 0) {
+				if ($nb_hours > 1) {
 					$buffer = 'H-' . $nb_hours;
 				} else {
 					$nb_minutes = floor($diff / 60);
