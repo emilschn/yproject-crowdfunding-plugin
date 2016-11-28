@@ -1027,6 +1027,7 @@ class WDGAjaxActions {
 		//Extraction infos suiveurs
 		foreach ( $list_user_follow as $item_follow ) {
 			$array_contacts[$item_follow]["follow"]=1;
+			$array_contacts[$u_id]["invest_id"] = 0;
 		}
 
         //Extraction infos de vote
@@ -1034,6 +1035,7 @@ class WDGAjaxActions {
             $u_id = $item_vote->user_id;
             $array_contacts[$u_id]["vote"]=1;
             $array_contacts[$u_id]["vote_date"]=$item_vote->date;
+			$array_contacts[$u_id]["invest_id"] = 0;
 
 
             $array_contacts[$u_id]["vote_advice"]='<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>';
@@ -1071,15 +1073,7 @@ class WDGAjaxActions {
 
                 $refund_id = get_post_meta($item_invest['ID'], 'refund_id', TRUE);
                 if (isset($refund_id) && !empty($refund_id)) {
-                    $refund_obj = ypcf_mangopay_get_refund_by_id($refund_id);
-                    $investment_state = 'Remboursement en cours';
-                    if ($refund_obj->IsCompleted) {
-                        if ($refund_obj->IsSucceeded) {
-                            $investment_state = 'Remboursé';
-                        } else {
-                            $investment_state = 'Remboursement échoué';
-                        }
-                    }
+					$investment_state = 'Remboursé';
 
                 } else {
                     $refund_id = get_post_meta($item_invest['ID'], 'refund_wire_id', TRUE);
@@ -1106,6 +1100,7 @@ class WDGAjaxActions {
 				$more_invest["invest_amount"] = $item_invest['amount'];
 				$more_invest["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
 				$more_invest["invest_sign"] = $item_invest['signsquid_status_text'];
+				$more_invest["invest_id"] = $item_invest['ID'];
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 				
 			} else {
@@ -1117,6 +1112,7 @@ class WDGAjaxActions {
 				$array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
 				$array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
 				$array_contacts[$u_id]["invest_sign"] = $item_invest['signsquid_status_text'];
+				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
 			}
         }
 
@@ -1252,7 +1248,7 @@ class WDGAjaxActions {
 					$has_more = $data_contact["more_invest"];
 				}
 				?>
-				<tr data-DT_RowId="<?php echo $id_contact; ?>">
+				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $data_contact["invest_id"]; ?>">
 					<?php foreach($array_columns as $column): ?>
                 	<td>
 					<?php if ( $column->columnData == "follow" && $data_contact[$column->columnData]==1 ): ?>
@@ -1276,7 +1272,7 @@ class WDGAjaxActions {
 				
 				<?php //Gestion de plusieurs investissements par la même personne
 				foreach ($has_more as $has_more_item): ?>
-				<tr data-DT_RowId="<?php echo $id_contact; ?>">
+				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $data_contact["invest_id"]; ?>">
 					<?php foreach($array_columns as $column): ?>
                 	<td>
 					<?php if ( $column->columnData == "follow" && $data_contact[$column->columnData]==1 ): ?>

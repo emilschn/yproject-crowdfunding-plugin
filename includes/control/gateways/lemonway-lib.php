@@ -48,6 +48,7 @@ class LemonwayLib {
 		}
 		//Appel de la fonction avec les paramètres complets
 		try {
+			LemonwayLib::set_error('', '');
 			if (!isset($lemonway_lib->soap_client)) $lemonway_lib->soap_client = @new SoapClient(YP_LW_URL);
 		} catch (SoapFault $E) {
 			LemonwayLib::set_error('SOAPCLIENTINIT', $E->faultstring);
@@ -716,6 +717,26 @@ class LemonwayLib {
 		if ($result !== FALSE) {
 			//Retourne : 
 			//  - TRANS->HPAY => ID ; MLABEL ; MID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
+		}
+		return $result;
+	}
+	
+	public static function ask_refund($transaction_id, $amount = 0) {
+		if (!isset($transaction_id)) return FALSE;
+		
+		$param_list = array(
+			'transactionId' => $transaction_id
+		);
+		
+		$amount = LemonwayLib::check_amount($amount);
+		if ($amount > 0) {
+			$param_list['amountToRefund'] = $amount;
+		}
+		
+		$result = LemonwayLib::call('RefundMoneyIn', $param_list);
+		if ($result !== FALSE) {
+			//Retourne : 
+			//  - TRANS->HPAY => ID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; STATUS
 		}
 		return $result;
 	}

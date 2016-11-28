@@ -1507,6 +1507,27 @@ class ATCF_Campaign {
 	}
 	
 	/**
+	 * Rembourse les investisseurs
+	 */
+	public function refund() {
+		$payments_data = $this->payments_data();
+		foreach ( $payments_data as $payment_data ) {
+			$payment_key = edd_get_payment_key( $payment_data['ID'] );
+			if ($payment_key != 'check') {
+				$contribution_token = $payment_key;
+				if ( strpos($payment_key, 'wire_') !== FALSE ) {
+					$contribution_token = substr( $payment_key, 5 );
+				}
+				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_token );
+				$lw_refund = LemonwayLib::ask_refund( $lw_transaction_result->ID );
+				if (LemonwayLib::get_last_error_code() == '') {
+					update_post_meta( $payment_data['ID'], 'refund_id', $lw_refund->HPAY->ID );
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Retourne la liste des paiement, augmentée par les informations utiles pour un ROI particulier
 	 * @param WDGROIDeclaration $declaration
 	 */
