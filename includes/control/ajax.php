@@ -816,14 +816,13 @@ class WDGAjaxActions {
 		if ($delete) {
 			BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
 		}
-
+                
 		if ($update) {
 			$api_organisation_id = $organisation_selected->get_bopp_id();
 			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			$success['new_project_organisation']=1;
-		}
-
-		$return_values = array(
+                        
+                        $return_values = array(
 			"response" => "edit_organisation",
 			"errors" => array(),
 			"success" => $success,
@@ -846,8 +845,9 @@ class WDGAjaxActions {
                             "bankownerbic" => $organisation_selected->get_bank_bic(),                                                    
                         )
                                                    
-		);
-		echo json_encode($return_values);
+                    );
+                    echo json_encode($return_values);
+		}
 		exit();
 	}
         
