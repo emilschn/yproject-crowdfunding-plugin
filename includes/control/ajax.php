@@ -822,7 +822,7 @@ class WDGAjaxActions {
 			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			$success['new_project_organisation']=1;
                         
-                        $return_values = array(
+                    $return_values = array(
 			"response" => "edit_organisation",
 			"errors" => array(),
 			"success" => $success,
@@ -843,8 +843,8 @@ class WDGAjaxActions {
                             "bankowneraddress" => $organisation_selected->get_bank_address(),
                             "bankowneriban" => $organisation_selected->get_bank_iban(),
                             "bankownerbic" => $organisation_selected->get_bank_bic(),                                                    
-                        )
-                                                   
+                        ),
+                        "orga_object" => $organisation_selected,
                     );
                     echo json_encode($return_values);
 		}
