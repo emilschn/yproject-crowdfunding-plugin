@@ -1869,7 +1869,7 @@ class ATCF_Campaign {
 	
 	public static function list_projects_current($nb, $type, $order, $client) {
 		$query_options = array(
-			'showposts' => $nb,
+			'posts_per_page' => $nb,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
@@ -1899,7 +1899,7 @@ class ATCF_Campaign {
 	
 	public static function list_projects_finished($nb, $type, $client) {
 		$query_options = array(
-			'showposts' => $nb,
+			'posts_per_page' => $nb,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
@@ -1924,7 +1924,7 @@ class ATCF_Campaign {
 	
 	public static function list_projects_started() {
 		$query_options = array(
-			'showposts' => 0,
+			'posts_per_page' => -1,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
@@ -1939,7 +1939,7 @@ class ATCF_Campaign {
 	
 	public static function list_projects_searchable() {
 		$query_options = array(
-			'showposts' => 0,
+			'posts_per_page' => -1,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
