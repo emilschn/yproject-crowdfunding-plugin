@@ -1838,10 +1838,9 @@ class ATCF_Campaign {
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
-				array (
-					'key' => 'campaign_vote',
-					'value' => $type
-				)
+				'relation' => 'AND',
+				array ( 'key' => 'campaign_vote', 'value' => $type ),
+				array ( 'key' => 'campaign_funding_type', 'value' => 'fundingproject' )
 			),
 			'meta_key' => 'campaign_end_date',
 			'orderby' => 'meta_value',
