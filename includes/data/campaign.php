@@ -1958,18 +1958,15 @@ class ATCF_Campaign {
 	}
 	
 	public static function list_projects_searchable() {
-		$query_options = array(
-			'posts_per_page' => -1,
-			'post_type' => 'download',
-			'post_status' => 'publish',
-			'meta_query' => array (
-				'relation' => 'OR',
-				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_vote ),
-				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_collecte ),
-				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_funded )
-			)
-		);
-		return query_posts( $query_options );
+		global $wpdb;
+		$results = $wpdb->get_results( "
+			SELECT ID, post_title FROM ".$wpdb->posts."
+			INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id
+			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' 
+				AND (".$wpdb->postmeta.".meta_value = 'vote' OR ".$wpdb->postmeta.".meta_value = 'collecte' OR ".$wpdb->postmeta.".meta_value = 'funded' OR ".$wpdb->postmeta.".meta_value = 'archive')
+			ORDER BY ".$wpdb->posts.".post_date DESC
+		", OBJECT );
+		return $results;
 	}
 }
 
