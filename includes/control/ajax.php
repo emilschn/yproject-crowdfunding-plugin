@@ -585,7 +585,7 @@ class WDGAjaxActions {
 			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'last_name' => $lastname ) ) ;
 			$success['new_lastname']=1;
 		} else {
-			$errors['new_lastname']= __("Vous devez renseigner votre prénom",'yproject');
+			$errors['new_lastname']= __("Vous devez renseigner votre nom",'yproject');
 		}
 
 		$birthday = filter_input(INPUT_POST, 'new_birthday');
@@ -632,7 +632,7 @@ class WDGAjaxActions {
 			update_user_meta( $current_user->wp_user->ID, 'user_postal_code', $postal_code );
 			$success['new_postal_code']=1;
 		} else {
-			$errors['new_postal_code']= __("Vous devez renseigner votre adresse",'yproject');
+			$errors['new_postal_code']= __("Vous devez renseigner votre code postal",'yproject');
 		}
 
 		$city = sanitize_text_field(filter_input(INPUT_POST, 'new_city'));
