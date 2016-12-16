@@ -446,6 +446,11 @@ class ATCF_Campaign {
 	public function mandate_conditions() {
 		return $this->__get( ATCF_Campaign::$key_mandate_conditions );
 	}
+	
+	public static $key_declaration_info = 'campaign_declaration_info';
+	public function declaration_info() {
+		return $this->__get( ATCF_Campaign::$key_declaration_info );
+	}
 
     public static $key_funding_duration = 'campaign_funding_duration';
     public function funding_duration() {

@@ -28,6 +28,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_contract');
 		WDGAjaxActions::add_action('save_project_status');
 		WDGAjaxActions::add_action('save_project_force_mandate');
+		WDGAjaxActions::add_action('save_project_declaration_info');
 		WDGAjaxActions::add_action('save_user_infos_dashboard');
 
         WDGAjaxActions::add_action('create_contacts_table');
@@ -987,6 +988,28 @@ class WDGAjaxActions {
 		
 		$return_values = array(
 			"response"	=> "edit_force_mandate",
+			"errors"	=> $errors,
+			"success"	=> $success
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+	
+	/**
+	 * Enregistre les informations concernant la déclaration de royalties
+	 */
+	public static function save_project_declaration_info() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$errors = array();
+		$success = array();
+		
+		$new_declaration_info = (filter_input(INPUT_POST, 'new_declaration_info'));
+		$campaign->__set(ATCF_Campaign::$key_declaration_info, $new_declaration_info);
+		$success['new_declaration_info'] = 1;
+		
+		$return_values = array(
+			"response"	=> "edit_declaration_info",
 			"errors"	=> $errors,
 			"success"	=> $success
 		);
