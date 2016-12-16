@@ -1973,6 +1973,17 @@ class ATCF_Campaign {
 		", OBJECT );
 		return $results;
 	}
+	
+	public static function list_projects_by_status($status) {
+		global $wpdb;
+		$results = $wpdb->get_results( "
+			SELECT ".$wpdb->posts.".ID FROM ".$wpdb->posts."
+			INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id
+			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' "
+				. "AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' AND ".$wpdb->postmeta.".meta_value = '".$status."'
+		", OBJECT );
+		return $results;
+	}
 }
 
 function atcf_get_locations() {
