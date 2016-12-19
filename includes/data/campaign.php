@@ -335,7 +335,7 @@ class ATCF_Campaign {
     }
 
     /**
-     * @return string This summary is used in the back-office to introduce the project
+     * @return string Business plan filename
      */
     public static $key_backoffice_businessplan = 'campaign_backoffice_businessplan';
     public function backoffice_businessplan() {
@@ -348,6 +348,18 @@ class ATCF_Campaign {
     public static $key_backoffice_WDG_notoriety = 'campaign_backoffice_WDG_notoriety';
     public function backoffice_WDG_notoriety() {
         return $this->__get(ATCF_Campaign::$key_backoffice_WDG_notoriety);
+    }
+
+    /**
+     * @return string Contracts filename
+     */
+    public static $key_backoffice_contract_user = 'campaign_backoffice_contract_user';
+    public function backoffice_contract_user() {
+        return $this->__get(ATCF_Campaign::$key_backoffice_contract_user);
+    }
+    public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
+    public function backoffice_contract_orga() {
+        return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
     }
 
 	public function rewards() {

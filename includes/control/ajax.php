@@ -25,7 +25,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_communication');
 		WDGAjaxActions::add_action('save_project_organisation');
 		WDGAjaxActions::add_action('save_project_campaigntab');
-		WDGAjaxActions::add_action('save_project_contract');
 		WDGAjaxActions::add_action('save_project_status');
 		WDGAjaxActions::add_action('save_project_force_mandate');
 		WDGAjaxActions::add_action('save_project_declaration_info');
@@ -918,25 +917,6 @@ class WDGAjaxActions {
 		$return_values = array(
 			"response" => "save_project_campaigntab",
 			"errors" => $errors,
-			"success" => $success
-		);
-		echo json_encode($return_values);
-		exit();
-	}
-
-	/**
-	 * Enregistre les informations de l'onglet "contractualisation" du projet
-	 */
-	public static function save_project_contract(){
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$campaign = new ATCF_Campaign($campaign_id);
-
-		$campaign->__set(ATCF_Campaign::$key_contract_doc_url, (sanitize_text_field(filter_input(INPUT_POST, 'new_contract_url'))));
-		$success['new_contract_url']=1;
-
-		$return_values = array(
-			"response" => "edit_contract",
-			"errors" => array(),
 			"success" => $success
 		);
 		echo json_encode($return_values);

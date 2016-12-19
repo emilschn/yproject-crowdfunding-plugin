@@ -1,4 +1,5 @@
 includes/accounts/*
+includes/contracts/*
 includes/kyc/*
 includes/logs/*
 includes/pdf_files/*
