@@ -553,12 +553,10 @@ function atcf_campaign_save_declarations() {
 			$ROIdeclaration->date_due = $formatted_date;
 		}
 		$declaration_files = filter_input( INPUT_POST, 'declaration-files-' . $ROIdeclaration->id );
-		if ( !empty($declaration_files) ) {
-			if ($declaration_files && $ROIdeclaration->file_list == "") {
-				$ROIdeclaration->file_list = '1';
-			} elseif (!$declaration_files) {
-				$ROIdeclaration->file_list = '';
-			}
+		if ($declaration_files && $ROIdeclaration->file_list == "") {
+			$ROIdeclaration->file_list = '1';
+		} elseif (!$declaration_files && $ROIdeclaration->file_list == '1') {
+			$ROIdeclaration->file_list = '';
 		}
 		$ROIdeclaration->save();
 	}

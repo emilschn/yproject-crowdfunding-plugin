@@ -336,7 +336,7 @@ class ATCF_Campaign {
     }
 
     /**
-     * @return string This summary is used in the back-office to introduce the project
+     * @return string Business plan filename
      */
     public static $key_backoffice_businessplan = 'campaign_backoffice_businessplan';
     public function backoffice_businessplan() {
@@ -349,6 +349,18 @@ class ATCF_Campaign {
     public static $key_backoffice_WDG_notoriety = 'campaign_backoffice_WDG_notoriety';
     public function backoffice_WDG_notoriety() {
         return $this->__get(ATCF_Campaign::$key_backoffice_WDG_notoriety);
+    }
+
+    /**
+     * @return string Contracts filename
+     */
+    public static $key_backoffice_contract_user = 'campaign_backoffice_contract_user';
+    public function backoffice_contract_user() {
+        return $this->__get(ATCF_Campaign::$key_backoffice_contract_user);
+    }
+    public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
+    public function backoffice_contract_orga() {
+        return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
     }
 
 	public function rewards() {
@@ -446,6 +458,11 @@ class ATCF_Campaign {
 	public static $key_mandate_conditions = 'campaign_mandate_conditions';
 	public function mandate_conditions() {
 		return $this->__get( ATCF_Campaign::$key_mandate_conditions );
+	}
+	
+	public static $key_declaration_info = 'campaign_declaration_info';
+	public function declaration_info() {
+		return $this->__get( ATCF_Campaign::$key_declaration_info );
 	}
 
     public static $key_funding_duration = 'campaign_funding_duration';
@@ -1966,6 +1983,17 @@ class ATCF_Campaign {
 			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' 
 				AND (".$wpdb->postmeta.".meta_value = 'vote' OR ".$wpdb->postmeta.".meta_value = 'collecte' OR ".$wpdb->postmeta.".meta_value = 'funded' OR ".$wpdb->postmeta.".meta_value = 'archive')
 			ORDER BY ".$wpdb->posts.".post_date DESC
+		", OBJECT );
+		return $results;
+	}
+	
+	public static function list_projects_by_status($status) {
+		global $wpdb;
+		$results = $wpdb->get_results( "
+			SELECT ".$wpdb->posts.".ID FROM ".$wpdb->posts."
+			INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id
+			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' "
+				. "AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' AND ".$wpdb->postmeta.".meta_value = '".$status."'
 		", OBJECT );
 		return $results;
 	}
