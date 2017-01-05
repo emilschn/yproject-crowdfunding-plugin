@@ -922,7 +922,7 @@ class YPOrganisation {
                 if($redirect){
                     //Vérification que l'on a posté le formulaire
                     $action = filter_input(INPUT_POST, 'action');
-                    if ($action !== 'submit-new-organisation') { 
+                    if ($action !== 'save_new_organisation') { 
 			return FALSE;
                     }
                 }
