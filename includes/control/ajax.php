@@ -822,7 +822,7 @@ class WDGAjaxActions {
 			$api_organisation_id = $organisation_selected->get_bopp_id();
 			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			$success['new_project_organisation']=1;
-                        
+                                          
                     $return_values = array(
 			"response" => "edit_organisation",
 			"errors" => array(),
@@ -843,7 +843,7 @@ class WDGAjaxActions {
                             "bankownername" => $organisation_selected->get_bank_owner(),
                             "bankowneraddress" => $organisation_selected->get_bank_address(),
                             "bankowneriban" => $organisation_selected->get_bank_iban(),
-                            "bankownerbic" => $organisation_selected->get_bank_bic(),                                                    
+                            "bankownerbic" => $organisation_selected->get_bank_bic(),
                         ),
                         "orga_object" => $organisation_selected,
                     );
@@ -918,7 +918,7 @@ class WDGAjaxActions {
                 $organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
                 
                 //enregistrement des données avec la fonction edit
-                YPOrganisation::edit($organisation_obj);// à revoir, renvoit false
+                YPOrganisation::edit($organisation_obj);
                 
                 $return_values = array(
                     "response" => "edit_organisation",
