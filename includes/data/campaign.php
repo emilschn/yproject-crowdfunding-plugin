@@ -1463,12 +1463,17 @@ class ATCF_Campaign {
 	 * Ajoute un investissement dans la liste des investissements
 	 * @param string $type
 	 * @param string $email
-	 * @param string $date
 	 * @param string $value
 	 * @param string $new_username
-	 * @param string $new_pwd
+	 * @param string $new_password
 	 */
-	public function add_investment($type, $email, $value, $new_username = '', $new_password = '', $new_gender = '', $new_firstname = '', $new_lastname = '', $orga_email = '', $orga_name = '') {
+	public function add_investment(
+			$type, $email, $value, 
+			$new_username = '', $new_password = '', 
+			$new_gender = '', $new_firstname = '', $new_lastname = '', 
+			$birthday_day = '', $birthday_month = '', $birthday_year = '', $birthplace = '', $nationality = '', 
+			$address = '', $postal_code = '', $city = '', $country = '', $iban = '', 
+			$orga_email = '', $orga_name = '') {
 		$user_id = FALSE;
 	    
 		//Vérification si un utilisateur existe avec l'email en paramètre
@@ -1478,14 +1483,15 @@ class ATCF_Campaign {
 			$new_gender = $user_payment->get('user_gender');
 			$new_firstname = $user_payment->user_firstname;
 			$new_lastname = $user_payment->user_lastname;
+			$wdg_user = new WDGUser( $user_id );
+			$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
 		
 		//Sinon, on vérifie si il y a un login et pwd transmis, pour créer le nouvel utilisateur
 		} else {
 			if (!empty($new_username) && !empty($new_password)) {
 				$user_id = wp_create_user($new_username, $new_password, $email);
-				if (!empty($new_gender)) update_user_meta($user_id, 'user_gender', $new_gender);
-				if (!empty($new_firstname)) wp_update_user( array ( 'ID' => $user_id, 'first_name' => $new_firstname ) );
-				if (!empty($new_lastname)) wp_update_user( array ( 'ID' => $user_id, 'last_name' => $new_lastname ) );
+				$wdg_user = new WDGUser( $user_id );
+				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
 			}
 		}
 		$saved_user_id = $user_id;
