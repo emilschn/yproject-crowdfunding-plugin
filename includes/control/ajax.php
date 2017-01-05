@@ -24,7 +24,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
 		WDGAjaxActions::add_action('save_project_organisation');
-                WDGAjaxActions::add_action('save_new_organisation');
+		WDGAjaxActions::add_action('save_new_organisation');
+		WDGAjaxActions::add_action('save_edit_organisation');
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_contract');
 		WDGAjaxActions::add_action('save_project_status');
@@ -898,9 +899,36 @@ class WDGAjaxActions {
                 echo json_encode($return_values);
                 exit();
         }
+        /**
+         * Enregistre les informations du formulaire d'édition d'une organisation
+         */
+        public static function save_edit_organisation(){
+                global $errors_edit;
+                $campaign_id = filter_input(INPUT_POST, 'campaign_id');
+                
+                //Récupération de l'organisation
+		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
+		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+		$current_organisation = FALSE;
+		if (count($current_organisations) > 0) {
+			$current_organisation = $current_organisations[0];
+		}
+                
+                // enregistrement des données dans l'organisation
+                $organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
+                
+                //enregistrement des données avec la fonction edit
+                YPOrganisation::edit($organisation_obj);// à revoir, renvoit false
+                
+                $return_values = array(
+                    "response" => "edit_organisation",
+                    "errors" => $errors_edit,
+                    );
+                echo json_encode($return_values);
+                exit();
+        }
 
-
-	/**
+        /**
 	 * Enregistre les informations de communication du projet
 	 */
 	public static function save_project_communication(){

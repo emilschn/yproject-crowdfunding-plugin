@@ -1025,7 +1025,7 @@ class YPOrganisation {
 		
 		//Vérification que l'on a posté le formulaire
 		$action = filter_input(INPUT_POST, 'action');
-		if ($action !== 'edit-organisation') { 
+		if ($action !== 'save_edit_organisation') { 
 			return FALSE;
 		}
 		
