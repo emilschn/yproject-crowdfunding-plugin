@@ -807,7 +807,7 @@ class WDGAjaxActions {
 				$success['new_project_organisation']=1;
 			}
 
-			//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
+		//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
 		} else {
 			if ($current_organisation !== FALSE) {
 				$delete = TRUE;
@@ -823,51 +823,51 @@ class WDGAjaxActions {
 			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			$success['new_project_organisation']=1;
                                           
-                    $return_values = array(
-			"response" => "edit_organisation",
-			"errors" => array(),
-			"success" => $success,
-                        "organisation" => array(
-                            "name" => $organisation_selected->get_name(),
-                            "email" => $organisation_selected->get_email(),
-                            "description" => $organisation_selected->get_description(),
-                            "legalForm" => $organisation_selected->get_legalform(),
-                            "idNumber" => $organisation_selected->get_idnumber(),
-                            "rcs" => $organisation_selected->get_rcs(),
-                            "capital" => $organisation_selected->get_capital(),
-                            "ape" => $organisation_selected->get_ape(),
-                            "address" => $organisation_selected->get_address(),
-                            "postal_code" =>$organisation_selected->get_postal_code(),
-                            "city" => $organisation_selected->get_city(),
-                            "nationality" => $organisation_selected->get_nationality(),
-                            "bankownername" => $organisation_selected->get_bank_owner(),
-                            "bankowneraddress" => $organisation_selected->get_bank_address(),
-                            "bankowneriban" => $organisation_selected->get_bank_iban(),
-                            "bankownerbic" => $organisation_selected->get_bank_bic(),
-                        ),
-                        "orga_object" => $organisation_selected,
-                    );
-                    echo json_encode($return_values);
+			$return_values = array(
+				"response" => "edit_organisation",
+				"errors" => array(),
+				"success" => $success,
+					"organisation" => array(
+						"name" => $organisation_selected->get_name(),
+						"email" => $organisation_selected->get_email(),
+						"description" => $organisation_selected->get_description(),
+						"legalForm" => $organisation_selected->get_legalform(),
+						"idNumber" => $organisation_selected->get_idnumber(),
+						"rcs" => $organisation_selected->get_rcs(),
+						"capital" => $organisation_selected->get_capital(),
+						"ape" => $organisation_selected->get_ape(),
+						"address" => $organisation_selected->get_address(),
+						"postal_code" =>$organisation_selected->get_postal_code(),
+						"city" => $organisation_selected->get_city(),
+						"nationality" => $organisation_selected->get_nationality(),
+						"bankownername" => $organisation_selected->get_bank_owner(),
+						"bankowneraddress" => $organisation_selected->get_bank_address(),
+						"bankowneriban" => $organisation_selected->get_bank_iban(),
+						"bankownerbic" => $organisation_selected->get_bank_bic(),
+					),
+					"orga_object" => $organisation_selected,
+				);
+			echo json_encode($return_values);
 		}
 		exit();
 	}
         
-        /**
-         * Enregistre les informations du formulaire de création d'une organisation
-         * et lie cette organisation au projet
-         */
-        public static function save_new_organisation(){
-                global $errors_submit_new;
+	/**
+	 * Enregistre les informations du formulaire de création d'une organisation
+	 * et lie cette organisation au projet
+	 */
+	public static function save_new_organisation(){
+		global $errors_submit_new;
 
-                $campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
-                //validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
-                $org_object = YPOrganisation::submit_new(FALSE);    
+		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
+		$org_object = YPOrganisation::submit_new(FALSE);
 
-                /////////// Liaison de l'organisation au projet ////////////////            
-                $current_organisation = FALSE;
+		/////////// Liaison de l'organisation au projet ////////////////
+		$current_organisation = FALSE;
 
-                //Récupération de l'ancienne organisation
+		//Récupération de l'ancienne organisation
 		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
 		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 		$current_organisation = FALSE;
@@ -875,75 +875,76 @@ class WDGAjaxActions {
 			$current_organisation = $current_organisations[0];
 		}
 
-                $delete = ($current_organisation == FALSE) ? FALSE : TRUE; 
+			$delete = ($current_organisation == FALSE) ? FALSE : TRUE;
 
-                //on a déjà une organisation, donc on supprime la liaison
+		//on a déjà une organisation, donc on supprime la liaison
 		if ($delete) {
-                    BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
-                }
-                //on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation             
-                $api_organisation_id = $org_object->get_bopp_id();
-                BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+			BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+		}
+		//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
+		$api_organisation_id = $org_object->get_bopp_id();
+		BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 
-                ////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////
 
-                $return_values = array(
-                    "response" => "save_new_organisation",
-                    "errors" => $errors_submit_new,
-                    "organisation" => array(
-                            "wpref" => $org_object->get_wpref(),
-                            "name" => $org_object->get_name(),
-                            "email" => $org_object->get_email(),
-                            "description" => $org_object->get_description(),
-                            "legalForm" => $org_object->get_legalform(),
-                            "idNumber" => $org_object->get_idnumber(),
-                            "rcs" => $org_object->get_rcs(),
-                            "capital" => $org_object->get_capital(),
-                            "ape" => $org_object->get_ape(),
-                            "address" => $org_object->get_address(),
-                            "postal_code" =>$org_object->get_postal_code(),
-                            "city" => $org_object->get_city(),
-                            "nationality" => $org_object->get_nationality(),
-                            "bankownername" => $org_object->get_bank_owner(),
-                            "bankowneraddress" => $org_object->get_bank_address(),
-                            "bankowneriban" => $org_object->get_bank_iban(),
-                            "bankownerbic" => $org_object->get_bank_bic(),
-                        ),
-                    "campaign_id" => $campaign_id,
-                );
-                echo json_encode($return_values);
-                exit();
-        }
-        /**
-         * Enregistre les informations du formulaire d'édition d'une organisation
-         */
-        public static function save_edit_organisation(){
-                global $errors_edit;
-                $campaign_id = filter_input(INPUT_POST, 'campaign_id');
-                
-                //Récupération de l'organisation
+		$return_values = array(
+			"response" => "save_new_organisation",
+			"errors" => $errors_submit_new,
+			"organisation" => array(
+				"wpref" => $org_object->get_wpref(),
+				"name" => $org_object->get_name(),
+				"email" => $org_object->get_email(),
+				"description" => $org_object->get_description(),
+				"legalForm" => $org_object->get_legalform(),
+				"idNumber" => $org_object->get_idnumber(),
+				"rcs" => $org_object->get_rcs(),
+				"capital" => $org_object->get_capital(),
+				"ape" => $org_object->get_ape(),
+				"address" => $org_object->get_address(),
+				"postal_code" =>$org_object->get_postal_code(),
+				"city" => $org_object->get_city(),
+				"nationality" => $org_object->get_nationality(),
+				"bankownername" => $org_object->get_bank_owner(),
+				"bankowneraddress" => $org_object->get_bank_address(),
+				"bankowneriban" => $org_object->get_bank_iban(),
+				"bankownerbic" => $org_object->get_bank_bic(),
+				),
+			"campaign_id" => $campaign_id,
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+	
+	/**
+	 * Enregistre les informations du formulaire d'édition d'une organisation
+	 */
+	public static function save_edit_organisation(){
+		global $errors_edit;
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+
+		//Récupération de l'organisation
 		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
 		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 		$current_organisation = FALSE;
 		if (count($current_organisations) > 0) {
 			$current_organisation = $current_organisations[0];
 		}
-                
-                // enregistrement des données dans l'organisation
-                $organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
-                
-                //enregistrement des données avec la fonction edit
-                YPOrganisation::edit($organisation_obj);
-                
-                $return_values = array(
-                    "response" => "edit_organisation",
-                    "errors" => $errors_edit,
-                    );
-                echo json_encode($return_values);
-                exit();
-        }
 
-        /**
+		// enregistrement des données dans l'organisation
+		$organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
+
+		//enregistrement des données avec la fonction edit
+		YPOrganisation::edit($organisation_obj);
+
+		$return_values = array(
+			"response" => "edit_organisation",
+			"errors" => $errors_edit,
+			);
+		echo json_encode($return_values);
+		exit();
+	}
+
+    /**
 	 * Enregistre les informations de communication du projet
 	 */
 	public static function save_project_communication(){
