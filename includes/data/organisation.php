@@ -548,22 +548,30 @@ class YPOrganisation {
 			'org_doc_id'		=> WDGKYCFile::$type_id,
 			'org_doc_home'		=> WDGKYCFile::$type_home
 		);
+		$fileInfo = array();//stocke les infos d'un fichier uploadé
 		$notify = 0;
 		foreach ($documents_list as $document_key => $document_type) {
 			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
 				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
 				if ($result == 'ext') {
 					$errors_submit->add('document-wrong-extension', __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
-				} else if ($result == 'size') {
+					$fileInfo[$document_key] = $errors_submit;
+				} 
+				else if ($result == 'size') {
 					$errors_submit->add('document-heavy-size', __("Le fichier est trop lourd.", 'yproject'));
+					$fileInfo[$document_key] = $errors_submit;
 				} else if ($result != FALSE) {
 					$notify++;
+					$kycfile = new WDGKYCFile($result);
+					$filepath = $kycfile->get_public_filepath();
+					$fileInfo[$document_key] = $filepath;
 				}
 			}
 		}
 		if ($notify > 0) {
 			NotificationsEmails::document_uploaded_admin($this, $notify);
 		}
+		return $fileInfo;
 	}
 	/**
 	 * Détermine si l'organisation a envoyé tous ses documents
@@ -1051,6 +1059,8 @@ class YPOrganisation {
 		$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 		$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 		$org_object->submit_bank_info();
-		$org_object->submit_documents();
+		$fileInfo = $org_object->submit_documents();
+		
+		return $fileInfo;
 	}
 }

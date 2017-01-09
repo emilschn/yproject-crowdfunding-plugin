@@ -827,25 +827,25 @@ class WDGAjaxActions {
 				"response" => "edit_organisation",
 				"errors" => array(),
 				"success" => $success,
-					"organisation" => array(
-						"name" => $organisation_selected->get_name(),
-						"email" => $organisation_selected->get_email(),
-						"description" => $organisation_selected->get_description(),
-						"legalForm" => $organisation_selected->get_legalform(),
-						"idNumber" => $organisation_selected->get_idnumber(),
-						"rcs" => $organisation_selected->get_rcs(),
-						"capital" => $organisation_selected->get_capital(),
-						"ape" => $organisation_selected->get_ape(),
-						"address" => $organisation_selected->get_address(),
-						"postal_code" =>$organisation_selected->get_postal_code(),
-						"city" => $organisation_selected->get_city(),
-						"nationality" => $organisation_selected->get_nationality(),
-						"bankownername" => $organisation_selected->get_bank_owner(),
-						"bankowneraddress" => $organisation_selected->get_bank_address(),
-						"bankowneriban" => $organisation_selected->get_bank_iban(),
-						"bankownerbic" => $organisation_selected->get_bank_bic(),
-					),
-					"orga_object" => $organisation_selected,
+				"organisation" => array(
+					"name" => $organisation_selected->get_name(),
+					"email" => $organisation_selected->get_email(),
+					"description" => $organisation_selected->get_description(),
+					"legalForm" => $organisation_selected->get_legalform(),
+					"idNumber" => $organisation_selected->get_idnumber(),
+					"rcs" => $organisation_selected->get_rcs(),
+					"capital" => $organisation_selected->get_capital(),
+					"ape" => $organisation_selected->get_ape(),
+					"address" => $organisation_selected->get_address(),
+					"postal_code" =>$organisation_selected->get_postal_code(),
+					"city" => $organisation_selected->get_city(),
+					"nationality" => $organisation_selected->get_nationality(),
+					"bankownername" => $organisation_selected->get_bank_owner(),
+					"bankowneraddress" => $organisation_selected->get_bank_address(),
+					"bankowneriban" => $organisation_selected->get_bank_iban(),
+					"bankownerbic" => $organisation_selected->get_bank_bic(),
+				),
+				"orga_object" => $organisation_selected,
 				);
 			echo json_encode($return_values);
 		}
@@ -933,13 +933,21 @@ class WDGAjaxActions {
 		// enregistrement des données dans l'organisation
 		$organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
 
-		//enregistrement des données avec la fonction edit
-		YPOrganisation::edit($organisation_obj);
-
+		//enregistrement des données avec la fonction edit et récupération des 
+		//infos sur les fichiers uploadés
+		$fileInfo = YPOrganisation::edit($organisation_obj);
+		
 		$return_values = array(
 			"response" => "edit_organisation",
 			"errors" => $errors_edit,
-			);
+			"fileInfo" => array(
+				"org_doc_bank" => $fileInfo["org_doc_bank"],
+				"org_doc_kbis" => $fileInfo["org_doc_kbis"],
+				"org_doc_status" => $fileInfo["org_doc_status"],
+				"org_doc_id" => $fileInfo["org_doc_id"],
+				"org_doc_home" => $fileInfo["org_doc_home"],
+			),
+		);
 		echo json_encode($return_values);
 		exit();
 	}
