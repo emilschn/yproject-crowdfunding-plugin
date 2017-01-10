@@ -9,7 +9,7 @@ class WDGFormUsers {
 			return FALSE;
 		}
 		$WDGUser_current = WDGUser::current();
-		if (bp_displayed_user_id() != $user_id && !$WDGUser_current->is_admin()) {
+		if ($WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin()) {
 			return FALSE;
 		}
 		

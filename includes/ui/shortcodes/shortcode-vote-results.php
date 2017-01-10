@@ -300,7 +300,7 @@ function ypcf_printable_value($val) {
 	    foreach ( $conseils as $cons ) {
     ?>
     <tr>
-	<td><a href="<?php echo bp_core_get_userlink($cons->user_id, false, true); ?>"><?php echo $cons->user_login; ?></a></td>
+	<td><?php echo $cons->user_login; ?></td>
 	<td><?php echo $cons->conseil; ?></td>
     </tr>
     <?php
@@ -353,7 +353,8 @@ function ypcf_printable_value($val) {
 			if ($i % 2 == 0) $bgcolor = "#FFF";
 			else $bgcolor = "#EEE";
 
-			$user_link = bp_core_get_userlink($item['user']);
+			$user_data = get_userdata($item['user']);
+			$user_link = $user_data->user_login;
 
 			$post_invest = get_post($item['ID']);
 			$mangopay_is_succeeded = ($payment_status == 'publish') ? 'Oui' : 'Non';
@@ -478,7 +479,7 @@ function ypcf_csv_investors_add_line($user_id, $amount) {
     
     $buffer .= '"' . $user->first_name . '";';
     $buffer .= '"' . $user->last_name . '";';
-    $buffer .= '"' . bp_core_get_user_email($user_id) . '";';
+    $buffer .= '"' . $user->user_login . '";';
     $buffer .= '"' . $amount . '€";';
     $buffer .= '"' . $user->get('user_gender') . '";';
     $buffer .= '"' . $user->get('user_birthday_day') . '/' . $user->get('user_birthday_month') . '/' . $user->get('user_birthday_year') . '";';

@@ -434,8 +434,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		if ($_POST["user_description"] != "") update_user_meta($current_user->ID, 'description', $_POST["user_description"]);
 		if (isset($_POST["update_email_contact"])) {
 			if (($_POST["update_email_contact"] != "" && $_POST["update_email_contact"] != $current_user->user_email)) {
-				$validate_email = bp_core_validate_email_address($_POST["update_email_contact"]);
-				if ($validate_email === true) {
+				if (is_email( $_POST["update_email_contact"] )) {
 					wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email_contact"] ) );
 					$current_user->user_email = $_POST["update_email_contact"];
 				}
@@ -446,8 +445,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 			if (!isset($_POST["update_email"])) $validate_email = true;
 			if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
 				if (($_POST["update_email"] != "" && $_POST["update_email"] != $current_user->user_email)) {
-				$validate_email = bp_core_validate_email_address($_POST["update_email"]);
-				if ($validate_email === true) {
+				if (is_email( $_POST["update_email"] )) {
 					wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
 					$current_user->user_email = $_POST["update_email"];
 				}
@@ -460,8 +458,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 		$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
 		//Nouvelle organisation
 		if (isset($_POST['new_organisation'])) {
-			$validate_email = bp_core_validate_email_address($_POST["new_org_email"]);
-			if ($_POST['new_org_name'] != '' && isset($_POST['new_organisation_capable']) && $_POST['new_organisation_capable'] && $validate_email) {
+			if ($_POST['new_org_name'] != '' && isset($_POST['new_organisation_capable']) && $_POST['new_organisation_capable'] && is_email( $_POST["new_org_email"] )) {
 			//Création d'un utilisateur pour l'organisation
 			$username = 'org_' . sanitize_title_with_dashes($_POST['new_org_name']);
 			$password = wp_generate_password();
@@ -481,25 +478,7 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 				update_user_meta($organisation_user_id, 'organisation_idnumber', $_POST['new_org_idnumber']);
 				update_user_meta($organisation_user_id, 'organisation_rcs', $_POST['new_org_rcs']);
 
-				//Création d'un groupe pour l'organisation
-				$new_group_id = groups_create_group( array( 
-				'creator_id' => $organisation_user_id,
-				'name' => $_POST['new_org_name'],
-				'description' => $_POST['new_org_name'],
-				'slug' => groups_check_slug( sanitize_title( esc_attr( $_POST['new_org_name'] ) ) ), 
-				'date_created' => bp_core_current_time(), 
-				'enable_forum' => 0,
-				'status' => 'private' ) );
-				groups_update_groupmeta( $new_group_id, 'group_type', 'organisation');
-
-				//Ajout de l'utilisateur créé et de l'utilisateur en cours dans le groupe (et on les passe admin)
-				groups_accept_invite( $organisation_user_id, $new_group_id);
-				$org_group_member = new BP_Groups_Member($organisation_user_id, $new_group_id);
-				$org_group_member->promote('admin');
-				groups_accept_invite( $current_user->ID, $new_group_id);
-				$current_group_member = new BP_Groups_Member($current_user->ID, $new_group_id);
-				$current_group_member->promote('admin');
-				$_SESSION['redirect_current_invest_type'] = $new_group_id;
+				$_SESSION['redirect_current_invest_type'] = $organisation_user_id;
 
 				$organisation_user = get_user_by('id', $organisation_user_id);
 				$url_request = ypcf_init_mangopay_user_strongauthentification($organisation_user);
