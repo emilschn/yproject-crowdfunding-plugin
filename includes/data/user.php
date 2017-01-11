@@ -158,15 +158,17 @@ class WDGUser {
 		$buffer = array();
 		$purchases = edd_get_users_purchases( $this->wp_user->ID, -1, false, $payment_status );
 		
-		foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
-			$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
-			$download_id = '';
-			if ( !is_array( $downloads[0] ) ){
-				$download_id = $downloads[0];
-				if ( !isset($buffer[$download_id]) ) {
-					$buffer[$download_id] = array();
+		if ( !empty($purchases) ) {
+			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
+				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
+				$download_id = '';
+				if ( !is_array( $downloads[0] ) ){
+					$download_id = $downloads[0];
+					if ( !isset($buffer[$download_id]) ) {
+						$buffer[$download_id] = array();
+					}
+					array_push( $buffer[$download_id], $purchase_post->ID );
 				}
-				array_push( $buffer[$download_id], $purchase_post->ID );
 			}
 		}
 			
