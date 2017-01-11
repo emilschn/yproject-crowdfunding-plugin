@@ -711,7 +711,94 @@ class WDGUser {
 	}
 	
 	public static function register() {
-		if (is_user_logged_in()) { return FALSE; }
+		if ( is_user_logged_in() ) { return FALSE; }
+			
+		global $signup_errors, $signup_step;
+		$signup_errors = new WP_Error();
+		$signup_step = 'request-details';
+		
+		$register_form_posted = filter_input(INPUT_POST, 'signup_submit');
+		if ( empty( $register_form_posted ) ) { return FALSE; }
+		
+		// Si le formulaire d'inscription est rempli
+		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) ) {
+			
+			// Vérifications concernant le nom d'utilisateur et l'e-mail
+			$user_name = filter_input(INPUT_POST, 'signup_username');
+			$user_name = apply_filters( 'pre_user_login', $user_name );
+			if ( empty( $user_name ) ) {
+				$signup_errors->add( 'user_name', __( "Merci de saisir un identifiant", 'yproject' ) );
+			}
+			if ( !validate_username( $user_name ) ) {
+				$signup_errors->add( 'user_name', __( "Les identifiants peuvent uniquement contenir des lettres, des chiffres, ., -, and @", 'yproject' ) );
+			}
+			if ( strlen( $user_name ) < 4 ) {
+				$signup_errors->add( 'user_name',  __( "L'identifiant doit contenir au moins 4 caract&egrave;res", 'yproject' ) );
+			}
+			if ( false !== strpos( ' ' . $user_name, '_' ) ) {
+				$signup_errors->add( 'user_name', __( "Le caract&egrave;re _ ne peut pas &ecirc;tre utilis&eacute;.", 'yproject' ) );
+			}
+			$match = array();
+			preg_match( '/[0-9]*/', $user_name, $match );
+			if ( $match[0] == $user_name ) {
+				$signup_errors->add( 'user_name', __( "Les identifiants ne peuvent pas contenir uniquement des chiffres.", 'yproject' ) );
+			}
+			if ( username_exists( $user_name ) ) {
+				$signup_errors->add( 'user_name', __( "Cet identifiant est d&eacute;j&agrave; utilis&eacute;.", 'yproject' ) );
+			}
+			
+			$user_email = filter_input(INPUT_POST, 'signup_email');
+			if ( !is_email( $user_email ) ) {
+				$signup_errors->add( 'user_email', __( "Cette adresse e-mail n'est pas valide.", 'yproject' ) );
+			}
+
+			// Vérifications concernant le mot de passe
+			$password = filter_input(INPUT_POST, 'signup_password');
+			$password_confirm = filter_input(INPUT_POST, 'signup_password_confirm');
+			if ( empty( $password ) || empty( $password_confirm ) ) {
+				$signup_errors->add( 'user_password', __( "Avez-vous saisi deux fois le mot de passe ?", 'yproject' ) );
+			}
+			if ( !empty( $password ) && !empty( $password_confirm ) && $password != $password_confirm ) {
+				$signup_errors->add( 'user_password', __( "Les mots de passe saisis ne correspondent pas.", 'yproject' ) );
+			}
+
+			// Vérifications CGU
+			$validate_terms_check = filter_input(INPUT_POST, 'validate-terms-check');
+			if ( empty( $validate_terms_check ) ) {
+				$signup_errors->add( 'validate_terms_check', __( "Merci de cocher la case pour accepter les conditions g&eacute;n&eacute;rales d&apos;utilisation.", 'yproject' ) );
+			}
+
+			$signup_error_message = $signup_errors->get_error_message();
+			if ( empty( $signup_error_message ) ) {
+
+				$wp_user_id = wp_insert_user( array(
+					'user_login' => $user_name,
+					'user_pass' => $password,
+					'display_name' => sanitize_title( $user_name ),
+					'user_email' => $user_email
+				) );
+
+				if ( is_wp_error( $wp_user_id ) ) {
+					$signup_errors->add( 'user_insert', __( "Probl&egrave;me de cr&eacute;ation d'utilisateur.", 'yproject' ) );
+					
+				} else {
+					global $wpdb, $edd_options;
+					$signup_step = 'completed-confirmation';
+					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
+					update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
+					NotificationsEmails::new_user_admin($wp_user_id); //Envoi mail à l'admin
+					NotificationsEmails::new_user_user($wp_user_id); //Envoi mail à l'utilisateur
+					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
+					if (isset($_POST['redirect-home'])) {
+						wp_redirect(home_url());
+					} else {
+						wp_redirect(wp_unslash( $_SERVER['REQUEST_URI'] ));
+					}
+					exit();
+				}
+			}
+
+		}
 	}
 	
 	/**
