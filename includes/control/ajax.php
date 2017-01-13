@@ -936,7 +936,6 @@ class WDGAjaxActions {
 		//enregistrement des données avec la fonction edit et récupération des 
 		//infos sur les fichiers uploadés
 		$fileInfo = YPOrganisation::edit($organisation_obj);
-		
 		$return_values = array(
 			"response" => "edit_organisation",
 			"errors" => $errors_edit,

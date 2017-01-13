@@ -548,24 +548,31 @@ class YPOrganisation {
 			'org_doc_id'		=> WDGKYCFile::$type_id,
 			'org_doc_home'		=> WDGKYCFile::$type_home
 		);
-		$fileInfo = array();//stocke les infos d'un fichier uploadé
+		$fileInfo = array();//stocke les infos des fichiers uploadés
 		$notify = 0;
 		foreach ($documents_list as $document_key => $document_type) {
 			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
 				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
 				if ($result == 'ext') {
 					$errors_submit->add('document-wrong-extension', __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
-					$fileInfo[$document_key] = $errors_submit;
+					$fileInfo[$document_key]['code'] = 1;
+					$fileInfo[$document_key]['info'] = $errors_submit->get_error_message();
 				} 
 				else if ($result == 'size') {
 					$errors_submit->add('document-heavy-size', __("Le fichier est trop lourd.", 'yproject'));
-					$fileInfo[$document_key] = $errors_submit;
+					$fileInfo[$document_key]['code'] = 1;
+					$fileInfo[$document_key]['info'] = $errors_submit->get_error_message();
 				} else if ($result != FALSE) {
 					$notify++;
 					$kycfile = new WDGKYCFile($result);
 					$filepath = $kycfile->get_public_filepath();
-					$fileInfo[$document_key] = $filepath;
+					$fileInfo[$document_key]['code'] = 0;
+					$fileInfo[$document_key]['info'] = $filepath;
 				}
+			}
+			else {
+				$fileInfo[$document_key]['code'] = 0;
+				$fileInfo[$document_key]['info'] = null;
 			}
 		}
 		if ($notify > 0) {
@@ -1047,20 +1054,19 @@ class YPOrganisation {
 			return FALSE;
 		}
 		
-		$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
-		$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
-		$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
-		$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
-		$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
-		$org_object->set_capital(filter_input(INPUT_POST, 'org_capital'));
-		$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
-		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
-		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 		$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 		$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
+		$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
+		$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
+		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
+		$org_object->set_capital(filter_input(INPUT_POST, 'org_capital'));
+		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
+		$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
+		$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
+		$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
+		$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
 		$org_object->submit_bank_info();
 		$fileInfo = $org_object->submit_documents();
-		
 		return $fileInfo;
 	}
 }
