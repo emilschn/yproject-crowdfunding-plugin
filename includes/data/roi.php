@@ -81,6 +81,39 @@ class WDGROI {
 	}
 	
 	/**
+	 * Retenter transfert de fonds
+	 */
+	public function retry() {
+		//Si il y avait une erreur sur le transfert
+		if ( $this->status == WDGROI::$status_error && $this->id_transfer == 0 ) {
+			
+			$organisation_obj = new YPOrganisation( $this->id_orga );
+			
+			//Gestion versement organisation vers projet
+			if (YPOrganisation::is_user_organisation( $this->id_user )) {
+				$WDGOrga = new YPOrganisation( $this->id_user );
+				$WDGOrga->register_lemonway();
+				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $this->amount );
+
+			//Versement utilisateur personne physique vers projet
+			} else {
+				$WDGUser = new WDGUser( $this->id_user );
+				$WDGUser->register_lemonway();
+				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $this->amount );
+			}
+			
+			if ($transfer != FALSE) {
+				$this->status = WDGROIDeclaration::$status_finished;
+				$this->id_transfer = $transfer->ID;
+				$date_now = new DateTime();
+				$date_now_formatted = $date_now->format( 'Y-m-d' );
+				$this->date_transfer = $date_now_formatted;
+				$this->save();
+			}
+		}
+	}
+	
+	/**
 	 * Annule un transfert de ROI
 	 */
 	public function cancel() {
