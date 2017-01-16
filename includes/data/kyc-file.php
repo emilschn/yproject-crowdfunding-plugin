@@ -85,7 +85,13 @@ class WDGKYCFile {
 		return base64_encode($byte_array);
 	}
 	
-	
+	/**
+	 * Retourne la date d'upload au format "Y-m-d"
+	 */
+	public function get_date_uploaded() {
+		return $this->date_uploaded;
+	}
+
 /*******************************************************************************
  * REQUETES STATIQUES
  ******************************************************************************/

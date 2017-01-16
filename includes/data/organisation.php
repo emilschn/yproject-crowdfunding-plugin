@@ -551,6 +551,7 @@ class YPOrganisation {
 		$fileInfo = array();//stocke les infos des fichiers uploadés
 		$notify = 0;
 		foreach ($documents_list as $document_key => $document_type) {
+			$fileInfo[$document_key]['date'] = "";
 			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
 				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
 				if ($result == 'ext') {
@@ -566,8 +567,10 @@ class YPOrganisation {
 					$notify++;
 					$kycfile = new WDGKYCFile($result);
 					$filepath = $kycfile->get_public_filepath();
+					$date_upload = $kycfile->get_date_uploaded();
 					$fileInfo[$document_key]['code'] = 0;
 					$fileInfo[$document_key]['info'] = $filepath;
+					$fileInfo[$document_key]['date'] = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject').$date_upload."maj";
 				}
 			}
 			else {
