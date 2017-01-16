@@ -936,12 +936,6 @@ class YPOrganisation {
 			$errors_submit_new->add('not-capable', __('Vous devez cocher la case pour certifier que vous &ecirc;tes en capacit&eacute; de repr&eacute;senter l&apos;organisation.', 'yproject'));
 		}
 		
-		//Vérification de l'adresse e-mail
-		/*$org_email = filter_input(INPUT_POST, 'org_email');
-		if (bp_core_validate_email_address($org_email) !== TRUE) {
-			$errors_submit_new->add('not-email', __('Cet e-mail n&apos;est pas valide.', 'yproject'));
-		}*/
-		
 		//Vérification du code postal
 		$org_postal_code = filter_input(INPUT_POST, 'org_postal_code');
 		if (substr($org_postal_code, 0, 1) === '0') { $org_postal_code = substr($org_postal_code, 1); }
@@ -1007,7 +1001,7 @@ class YPOrganisation {
 				exit();
 				
 			} else {
-				wp_safe_redirect(bp_loggedin_user_domain() . '#community');
+				wp_safe_redirect( home_url( '/mon-compte' ) );
 				exit();
 			}
 		}

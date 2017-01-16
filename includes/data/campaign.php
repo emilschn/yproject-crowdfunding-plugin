@@ -1624,7 +1624,7 @@ class ATCF_Campaign {
 		$user_item = ($user_id === FALSE) ? wp_get_current_user() : get_userdata($user_id);
 		$user_id = $user_item->ID;
 		$user_display_name = $user_item->display_name;
-		$url_profile = '<a href="' . bp_core_get_userlink($user_id, false, true) . '">' . $user_display_name . '</a>';
+		$url_profile = $user_display_name;
 		$user_avatar = UIHelpers::get_user_avatar($user_id);
 
 		//J'y crois
@@ -1635,12 +1635,7 @@ class ATCF_Campaign {
 					'user_id'	=> $user_id,
 					'campaign_id'   => $this->ID
 				)
-			); 
-			bp_activity_add(array (
-				'component' => 'profile',
-				'type'      => 'jycrois',
-				'action'    => $user_avatar . $url_profile.' croit au projet '.$url_campaign
-			));
+			);
 
 		//J'y crois pas
 		} else if (isset($_POST['jy_crois']) && $_POST['jy_crois'] == 0) { 
@@ -1651,13 +1646,6 @@ class ATCF_Campaign {
 					'campaign_id'  => $this->ID
 				)
 			);
-			// Inserer l'information dans la table du fil d'activité  de la BDD wp_bp_activity 
-			bp_activity_delete(array (
-				'user_id'   => $user_id,
-				'component' => 'profile',
-				'type'      => 'jycrois',
-				'action'    => $user_avatar . $url_profile . ' croit au projet '.$url_campaign
-			));
 		}
 		
 		return $this->get_jycrois_nb();
