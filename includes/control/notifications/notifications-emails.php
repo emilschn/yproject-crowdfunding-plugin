@@ -382,7 +382,7 @@ class NotificationsEmails {
 		$campaign = atcf_get_campaign($post_campaign);
 		$project_title = $post_campaign->post_title;
 		$object = '[Nouveau Projet] '. $project_title;
-		$body_content = "Un nouveau projet viens d'être publié.<br />";
+		$body_content = "Un nouveau projet vient d'être publié.<br />";
 		$body_content .= "Il est accessible depuis le back-office :<br />";
 		$body_content .= '<a href="'. get_permalink($campaign_id) .'" target="_blank">'. $project_title .'</a><br /><br />';
 		$user_author = get_user_by('id', $post_campaign->post_author);

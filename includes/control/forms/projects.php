@@ -387,6 +387,7 @@ class WDGFormProjects {
 			}
 		}
 		$declaration->set_turnover($saved_declaration);
+		$declaration->percent_commission = $campaign->get_costs_to_organization();
 		$declaration->amount = round( ($total_turnover * $campaign->roi_percent() / 100) * 100 ) / 100;
 		if ($declaration->amount == 0) {
 			NotificationsEmails::turnover_declaration_null( $declaration_id );
@@ -459,8 +460,6 @@ class WDGFormProjects {
 						$date_now = new DateTime();
 						$declaration->date_paid = $date_now->format( 'Y-m-d' );
 						$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
-						$campaign = new ATCF_Campaign( $declaration->id_campaign );
-						$declaration->amount_commission = $campaign->get_costs_to_organization();
 						$declaration->status = WDGROIDeclaration::$status_transfer;
 						$declaration->save();
 						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
