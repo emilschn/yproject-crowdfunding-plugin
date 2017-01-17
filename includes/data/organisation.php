@@ -570,7 +570,7 @@ class YPOrganisation {
 					$date_upload = $kycfile->get_date_uploaded();
 					$fileInfo[$document_key]['code'] = 0;
 					$fileInfo[$document_key]['info'] = $filepath;
-					$fileInfo[$document_key]['date'] = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject').$date_upload."maj";
+					$fileInfo[$document_key]['date'] = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject').$date_upload;
 				}
 			}
 			else {
@@ -622,6 +622,52 @@ class YPOrganisation {
 		}
 	}
 	
+	/**
+	 * Récupère les infos du fichier uploadé concernant la banque
+	 * @return fichier banque
+	 */
+	public function get_doc_bank(){
+		$filelist_bank = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_bank);
+		$file_bank = $filelist_bank[0];
+		return (isset($file_bank)) ? $file_bank : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant le kbis
+	 * @return fichier kbis
+	 */
+	public function get_doc_kbis(){
+		$filelist_kbis = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_kbis);
+		$file_kbis = $filelist_kbis[0];
+		return (isset($file_kbis)) ? $file_kbis : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant les statuts
+	 * @return fichier statuts
+	 */
+	public function get_doc_status(){
+		$filelist_status = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_status);
+		$file_status = $filelist_status[0];
+		return (isset($file_status)) ? $file_status : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant l'identité
+	 * @return fichier identité
+	 */
+	public function get_doc_id(){
+		$filelist_id = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_id);
+		$file_id = $filelist_id[0];
+		return (isset($file_id)) ? $file_id : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant le domicile
+	 * @return fichier domicile
+	 */
+	public function get_doc_home(){
+		$filelist_home = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_home);
+		$file_home = $filelist_home[0];
+		return (isset($file_home)) ? $file_home : null;
+	}
+
 /*******************************************************************************
  * Gestion RIB
 *******************************************************************************/

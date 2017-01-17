@@ -822,7 +822,50 @@ class WDGAjaxActions {
 			$api_organisation_id = $organisation_selected->get_bopp_id();
 			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			$success['new_project_organisation']=1;
-                                          
+
+			//documents
+			$msg_upload = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject');
+
+			$doc_bank = $organisation_selected->get_doc_bank();
+			if($doc_bank != null) {
+				$bank_path = $doc_bank->get_public_filepath();
+				$bank_date_uploaded = $msg_upload.$doc_bank->get_date_uploaded();
+			} else {
+				$bank_path = $bank_date_uploaded = null;
+			}
+
+			$doc_kbis = $organisation_selected->get_doc_kbis();
+			if($doc_kbis != null) {
+				$kbis_path = $doc_kbis->get_public_filepath();
+				$kbis_date_uploaded = $msg_upload.$doc_kbis->get_date_uploaded();
+			} else {
+				$kbis_path = $kbis_date_uploaded = null;
+			}
+
+			$doc_status = $organisation_selected->get_doc_status();
+			if($doc_status != null) {
+				$status_path = $doc_status->get_public_filepath();
+				$status_date_uploaded = $msg_upload.$doc_status->get_date_uploaded();
+			} else {
+				$status_path = $status_date_uploaded = null;
+			}
+
+			$doc_id = $organisation_selected->get_doc_id();
+			if($doc_id != null) {
+				$id_path = $doc_id->get_public_filepath();
+				$id_date_uploaded = $msg_upload.$doc_id->get_date_uploaded();
+			} else {
+				$id_path = $id_date_uploaded = null;
+			}
+
+			$doc_home = $organisation_selected->get_doc_home();
+			if($doc_home != null) {
+				$home_path = $doc_home->get_public_filepath();
+				$home_date_uploaded = $msg_upload.$doc_home->get_date_uploaded();
+			} else {
+				$home_path = $home_date_uploaded = null;
+			}
+
 			$return_values = array(
 				"response" => "edit_organisation",
 				"errors" => array(),
@@ -844,6 +887,26 @@ class WDGAjaxActions {
 					"bankowneraddress" => $organisation_selected->get_bank_address(),
 					"bankowneriban" => $organisation_selected->get_bank_iban(),
 					"bankownerbic" => $organisation_selected->get_bank_bic(),
+					"doc_bank" => array(
+						"path" => $bank_path,
+						"date_uploaded" => $bank_date_uploaded,
+					),
+					"doc_kbis" => array(
+						"path" => $kbis_path,
+						"date_uploaded" => $kbis_date_uploaded,
+					),
+					"doc_status" => array(
+						"path" => $status_path,
+						"date_uploaded" => $status_date_uploaded,
+					),
+					"doc_id" => array(
+						"path" => $id_path,
+						"date_uploaded" => $id_date_uploaded,
+					),
+					"doc_home" => array(
+						"path" => $home_path,
+						"date_uploaded" => $home_date_uploaded,
+					),
 				),
 				"orga_object" => $organisation_selected,
 				);
@@ -851,7 +914,7 @@ class WDGAjaxActions {
 		}
 		exit();
 	}
-        
+
 	/**
 	 * Enregistre les informations du formulaire de création d'une organisation
 	 * et lie cette organisation au projet
@@ -931,14 +994,33 @@ class WDGAjaxActions {
 		}
 
 		// enregistrement des données dans l'organisation
-		$organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
+		$org_object = new YPOrganisation($current_organisation->organisation_wpref);
 
 		//enregistrement des données avec la fonction edit et récupération des 
 		//infos sur les fichiers uploadés
-		$fileInfo = YPOrganisation::edit($organisation_obj);
+		$fileInfo = YPOrganisation::edit($org_object);
 		$return_values = array(
 			"response" => "edit_organisation",
 			"errors" => $errors_edit,
+			"organisation" => array(
+				"wpref" => $org_object->get_wpref(),
+				"name" => $org_object->get_name(),
+				"email" => $org_object->get_email(),
+				"description" => $org_object->get_description(),
+				"legalForm" => $org_object->get_legalform(),
+				"idNumber" => $org_object->get_idnumber(),
+				"rcs" => $org_object->get_rcs(),
+				"capital" => $org_object->get_capital(),
+				"ape" => $org_object->get_ape(),
+				"address" => $org_object->get_address(),
+				"postal_code" =>$org_object->get_postal_code(),
+				"city" => $org_object->get_city(),
+				"nationality" => $org_object->get_nationality(),
+				"bankownername" => $org_object->get_bank_owner(),
+				"bankowneraddress" => $org_object->get_bank_address(),
+				"bankowneriban" => $org_object->get_bank_iban(),
+				"bankownerbic" => $org_object->get_bank_bic(),
+			),
 			"fileInfo" => array(
 				"org_doc_bank" => $fileInfo["org_doc_bank"],
 				"org_doc_kbis" => $fileInfo["org_doc_kbis"],
