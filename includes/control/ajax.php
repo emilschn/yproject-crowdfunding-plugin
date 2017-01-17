@@ -998,7 +998,7 @@ class WDGAjaxActions {
 
 		//enregistrement des données avec la fonction edit et récupération des 
 		//infos sur les fichiers uploadés
-		$fileInfo = YPOrganisation::edit($org_object);
+		$files_info = YPOrganisation::edit($org_object);
 		$return_values = array(
 			"response" => "edit_organisation",
 			"errors" => $errors_edit,
@@ -1021,12 +1021,12 @@ class WDGAjaxActions {
 				"bankowneriban" => $org_object->get_bank_iban(),
 				"bankownerbic" => $org_object->get_bank_bic(),
 			),
-			"fileInfo" => array(
-				"org_doc_bank" => $fileInfo["org_doc_bank"],
-				"org_doc_kbis" => $fileInfo["org_doc_kbis"],
-				"org_doc_status" => $fileInfo["org_doc_status"],
-				"org_doc_id" => $fileInfo["org_doc_id"],
-				"org_doc_home" => $fileInfo["org_doc_home"],
+			"files_info" => array(
+				"org_doc_bank" => $files_info["org_doc_bank"],
+				"org_doc_kbis" => $files_info["org_doc_kbis"],
+				"org_doc_status" => $files_info["org_doc_status"],
+				"org_doc_id" => $files_info["org_doc_id"],
+				"org_doc_home" => $files_info["org_doc_home"],
 			),
 		);
 		echo json_encode($return_values);
