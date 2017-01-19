@@ -999,37 +999,42 @@ class WDGAjaxActions {
 		//enregistrement des données avec la fonction edit et récupération des 
 		//infos sur les fichiers uploadés
 		$files_info = YPOrganisation::edit($org_object);
-		$return_values = array(
-			"response" => "edit_organisation",
-			"errors" => $errors_edit,
-			"organisation" => array(
-				"wpref" => $org_object->get_wpref(),
-				"name" => $org_object->get_name(),
-				"email" => $org_object->get_email(),
-				"description" => $org_object->get_description(),
-				"legalForm" => $org_object->get_legalform(),
-				"idNumber" => $org_object->get_idnumber(),
-				"rcs" => $org_object->get_rcs(),
-				"capital" => $org_object->get_capital(),
-				"ape" => $org_object->get_ape(),
-				"address" => $org_object->get_address(),
-				"postal_code" =>$org_object->get_postal_code(),
-				"city" => $org_object->get_city(),
-				"nationality" => $org_object->get_nationality(),
-				"bankownername" => $org_object->get_bank_owner(),
-				"bankowneraddress" => $org_object->get_bank_address(),
-				"bankowneriban" => $org_object->get_bank_iban(),
-				"bankownerbic" => $org_object->get_bank_bic(),
-			),
-			"files_info" => array(
-				"org_doc_bank" => $files_info["org_doc_bank"],
-				"org_doc_kbis" => $files_info["org_doc_kbis"],
-				"org_doc_status" => $files_info["org_doc_status"],
-				"org_doc_id" => $files_info["org_doc_id"],
-				"org_doc_home" => $files_info["org_doc_home"],
-			),
-		);
-		echo json_encode($return_values);
+
+		if($files_info === FALSE){//user non connecté
+			$buffer = "FALSE";
+		}else{
+			$return_values = array(
+				"response" => "edit_organisation",
+				"organisation" => array(
+					"wpref" => $org_object->get_wpref(),
+					"name" => $org_object->get_name(),
+					"email" => $org_object->get_email(),
+					"description" => $org_object->get_description(),
+					"legalForm" => $org_object->get_legalform(),
+					"idNumber" => $org_object->get_idnumber(),
+					"rcs" => $org_object->get_rcs(),
+					"capital" => $org_object->get_capital(),
+					"ape" => $org_object->get_ape(),
+					"address" => $org_object->get_address(),
+					"postal_code" =>$org_object->get_postal_code(),
+					"city" => $org_object->get_city(),
+					"nationality" => $org_object->get_nationality(),
+					"bankownername" => $org_object->get_bank_owner(),
+					"bankowneraddress" => $org_object->get_bank_address(),
+					"bankowneriban" => $org_object->get_bank_iban(),
+					"bankownerbic" => $org_object->get_bank_bic(),
+				),
+				"files_info" => array(
+					"org_doc_bank" => $files_info["org_doc_bank"],
+					"org_doc_kbis" => $files_info["org_doc_kbis"],
+					"org_doc_status" => $files_info["org_doc_status"],
+					"org_doc_id" => $files_info["org_doc_id"],
+					"org_doc_home" => $files_info["org_doc_home"],
+				),
+			);
+			$buffer = json_encode($return_values);
+		}
+		echo $buffer;
 		exit();
 	}
 
