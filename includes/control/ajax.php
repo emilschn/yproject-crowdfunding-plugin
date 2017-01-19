@@ -925,56 +925,69 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
 		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
-		$org_object = YPOrganisation::submit_new(FALSE);
+		$return = YPOrganisation::submit_new(FALSE);
+		$org_object = $return['org_object'];
 
-		/////////// Liaison de l'organisation au projet ////////////////
-		$current_organisation = FALSE;
+		if($org_object != null){
+			/////////// Liaison de l'organisation au projet ////////////////
+			$current_organisation = FALSE;
 
-		//Récupération de l'ancienne organisation
-		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
-		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-		$current_organisation = FALSE;
-		if (count($current_organisations) > 0) {
-			$current_organisation = $current_organisations[0];
+			//Récupération de l'ancienne organisation
+			$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
+			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+			$current_organisation = FALSE;
+			if (count($current_organisations) > 0) {
+				$current_organisation = $current_organisations[0];
+			}
+
+				$delete = ($current_organisation == FALSE) ? FALSE : TRUE;
+
+			//on a déjà une organisation, donc on supprime la liaison
+			if ($delete) {
+				BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+			}
+			//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
+			$api_organisation_id = $org_object->get_bopp_id();
+			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+
+			////////////////////////////////////////////////////////////////
 		}
 
-			$delete = ($current_organisation == FALSE) ? FALSE : TRUE;
-
-		//on a déjà une organisation, donc on supprime la liaison
-		if ($delete) {
-			BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+		if($return === FALSE){//user non connecté
+			$buffer = "FALSE";
+		}else if ($return['org_object'] != null){
+			$return_values = array(
+				"response" => "save_new_organisation",
+				//"errors" => $return['errors_edit'],
+				"organisation" => array(
+					"wpref" => $org_object->get_wpref(),
+					"name" => $org_object->get_name(),
+					"email" => $org_object->get_email(),
+					"description" => $org_object->get_description(),
+					"legalForm" => $org_object->get_legalform(),
+					"idNumber" => $org_object->get_idnumber(),
+					"rcs" => $org_object->get_rcs(),
+					"capital" => $org_object->get_capital(),
+					"ape" => $org_object->get_ape(),
+					"address" => $org_object->get_address(),
+					"postal_code" =>$org_object->get_postal_code(),
+					"city" => $org_object->get_city(),
+					"nationality" => $org_object->get_nationality(),
+					"bankownername" => $org_object->get_bank_owner(),
+					"bankowneraddress" => $org_object->get_bank_address(),
+					"bankowneriban" => $org_object->get_bank_iban(),
+					"bankownerbic" => $org_object->get_bank_bic(),
+					),
+				"campaign_id" => $campaign_id,
+			);
+			$buffer = json_encode($return_values);
+		}else{
+			$return_values = array(
+				"errors" => $return['errors_edit'],
+			);
+			$buffer = json_encode($return_values);
 		}
-		//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
-		$api_organisation_id = $org_object->get_bopp_id();
-		BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-
-		////////////////////////////////////////////////////////////////
-
-		$return_values = array(
-			"response" => "save_new_organisation",
-			"errors" => $errors_submit_new,
-			"organisation" => array(
-				"wpref" => $org_object->get_wpref(),
-				"name" => $org_object->get_name(),
-				"email" => $org_object->get_email(),
-				"description" => $org_object->get_description(),
-				"legalForm" => $org_object->get_legalform(),
-				"idNumber" => $org_object->get_idnumber(),
-				"rcs" => $org_object->get_rcs(),
-				"capital" => $org_object->get_capital(),
-				"ape" => $org_object->get_ape(),
-				"address" => $org_object->get_address(),
-				"postal_code" =>$org_object->get_postal_code(),
-				"city" => $org_object->get_city(),
-				"nationality" => $org_object->get_nationality(),
-				"bankownername" => $org_object->get_bank_owner(),
-				"bankowneraddress" => $org_object->get_bank_address(),
-				"bankowneriban" => $org_object->get_bank_iban(),
-				"bankownerbic" => $org_object->get_bank_bic(),
-				),
-			"campaign_id" => $campaign_id,
-		);
-		echo json_encode($return_values);
+		echo $buffer;
 		exit();
 	}
 	
