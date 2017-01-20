@@ -723,7 +723,7 @@ class WDGUser {
 		if ( empty( $register_form_posted ) ) { return FALSE; }
 		
 		// Si le formulaire d'inscription est rempli
-		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) ) {
+		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && yp_check_recaptcha($_POST['g-recaptcha-response']) ) {
 			
 			// Vérifications concernant le nom d'utilisateur et l'e-mail
 			$user_name = filter_input(INPUT_POST, 'signup_username');
