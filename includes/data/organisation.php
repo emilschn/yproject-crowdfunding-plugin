@@ -548,22 +548,40 @@ class YPOrganisation {
 			'org_doc_id'		=> WDGKYCFile::$type_id,
 			'org_doc_home'		=> WDGKYCFile::$type_home
 		);
+		$files_info = array();//stocke les infos des fichiers uploadés
 		$notify = 0;
 		foreach ($documents_list as $document_key => $document_type) {
+			$files_info[$document_key]['date'] = "";
 			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
 				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
 				if ($result == 'ext') {
 					$errors_submit->add('document-wrong-extension', __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
-				} else if ($result == 'size') {
+					$files_info[$document_key]['code'] = 1;
+					$files_info[$document_key]['info'] = $errors_submit->get_error_message('document-wrong-extension');
+				} 
+				else if ($result == 'size') {
 					$errors_submit->add('document-heavy-size', __("Le fichier est trop lourd.", 'yproject'));
+					$files_info[$document_key]['code'] = 1;
+					$files_info[$document_key]['info'] = $errors_submit->get_error_message('document-heavy-size');
 				} else if ($result != FALSE) {
 					$notify++;
+					$kycfile = new WDGKYCFile($result);
+					$filepath = $kycfile->get_public_filepath();
+					$date_upload = $kycfile->get_date_uploaded();
+					$files_info[$document_key]['code'] = 0;
+					$files_info[$document_key]['info'] = $filepath;
+					$files_info[$document_key]['date'] = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject').$date_upload;
 				}
+			}
+			else {
+				$files_info[$document_key]['code'] = 0;
+				$files_info[$document_key]['info'] = null;
 			}
 		}
 		if ($notify > 0) {
 			NotificationsEmails::document_uploaded_admin($this, $notify);
 		}
+		return $files_info;
 	}
 	/**
 	 * Détermine si l'organisation a envoyé tous ses documents
@@ -604,6 +622,52 @@ class YPOrganisation {
 		}
 	}
 	
+	/**
+	 * Récupère les infos du fichier uploadé concernant la banque
+	 * @return fichier banque
+	 */
+	public function get_doc_bank(){
+		$filelist_bank = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_bank);
+		$file_bank = $filelist_bank[0];
+		return (isset($file_bank)) ? $file_bank : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant le kbis
+	 * @return fichier kbis
+	 */
+	public function get_doc_kbis(){
+		$filelist_kbis = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_kbis);
+		$file_kbis = $filelist_kbis[0];
+		return (isset($file_kbis)) ? $file_kbis : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant les statuts
+	 * @return fichier statuts
+	 */
+	public function get_doc_status(){
+		$filelist_status = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_status);
+		$file_status = $filelist_status[0];
+		return (isset($file_status)) ? $file_status : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant l'identité
+	 * @return fichier identité
+	 */
+	public function get_doc_id(){
+		$filelist_id = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_id);
+		$file_id = $filelist_id[0];
+		return (isset($file_id)) ? $file_id : null;
+	}
+	/**
+	 * Récupère les infos du fichier uploadé concernant le domicile
+	 * @return fichier domicile
+	 */
+	public function get_doc_home(){
+		$filelist_home = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_home);
+		$file_home = $filelist_home[0];
+		return (isset($file_home)) ? $file_home : null;
+	}
+
 /*******************************************************************************
  * Gestion RIB
 *******************************************************************************/
@@ -914,19 +978,23 @@ class YPOrganisation {
 	/**
 	 * Formulaire de nouvelle organisation
 	 */
-	public static function submit_new() {
-		global $errors_submit_new;
+	public static function submit_new($redirect = TRUE) {
+		$errors_edit = array();
 		$errors_submit_new = new WP_Error();
-		
-		//Vérification que l'on a posté le formulaire
-		$action = filter_input(INPUT_POST, 'action');
-		if ($action !== 'submit-new-organisation') { 
-			return FALSE;
+				
+		//Dans le TB, data-action = save_new_organisation
+		if($redirect){
+			//Vérification que l'on a posté le formulaire
+			$action = filter_input(INPUT_POST, 'action');
+			if ($action !== 'save_new_organisation') {
+				return FALSE;
+			}
 		}
-		
+				
 		//Vérification que l'utilisateur est connecté
 		if (!is_user_logged_in()) {
 			$errors_submit_new->add('not-loggedin', __('Vous devez vous connecter.', 'yproject'));
+			return FALSE;
 		} else {
 			$current_user = wp_get_current_user();
 		}
@@ -934,6 +1002,7 @@ class YPOrganisation {
 		//Vérification de la case à cocher
 		if (filter_input(INPUT_POST, 'org_capable', FILTER_VALIDATE_BOOLEAN) !== TRUE) {
 			$errors_submit_new->add('not-capable', __('Vous devez cocher la case pour certifier que vous &ecirc;tes en capacit&eacute; de repr&eacute;senter l&apos;organisation.', 'yproject'));
+			$errors_edit['org_capable'] = $errors_submit_new->get_error_message('not-capable');
 		}
 		
 		//Vérification du code postal
@@ -942,14 +1011,16 @@ class YPOrganisation {
 		$org_postal_code = filter_var($org_postal_code, FILTER_VALIDATE_INT);
 		if ($org_postal_code === FALSE) {
 			$errors_submit_new->add('postalcode-not-integer', __('Le code postal doit &ecirc;tre un nombre entier.', 'yproject'));
+			$errors_edit['org_postal_code'] = $errors_submit_new->get_error_message('postalcode-not-integer');
 		} else {
 			if (strlen($org_postal_code) === 4) { $org_postal_code = '0' . $org_postal_code; }
 		}
-		
+
 		//Vérification du capital
 		$org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_VALIDATE_INT);
 		if ($org_capital === FALSE) {
 			$errors_submit_new->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier.', 'yproject'));
+			$errors_edit['org_capital'] = $errors_submit_new->get_error_message('capital-not-integer');
 		}
 		
 		//Vérification des données obligatoires
@@ -963,48 +1034,54 @@ class YPOrganisation {
 		}
 		if (!$necessary_fields_full) {
 			$errors_submit_new->add('empty-fields', __('Certains champs obligatoires sont vides. Veuillez les renseigner.', 'yproject'));
+			$errors_edit['empty-fields'] = $errors_submit_new->get_error_message('empty-fields');
 		}
-		
-		//On poursuit la procédure
-		if (count($errors_submit_new->errors) > 0) {
-			return FALSE;
-		}
-		
-		//Création de l'objet organisation
-		global $current_user;
-		$org_object = new YPOrganisation();
-		$org_object->set_strong_authentication(FALSE);
-		$org_object->set_name(filter_input(INPUT_POST, 'org_name'));
-		$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
-		$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
-		$org_object->set_postal_code($org_postal_code);
-		$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
-		$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
-		$org_object->set_type('society');
-		$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
-		$org_object->set_capital($org_capital);
-		$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
-		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
-		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
-		$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
-		$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
-		$org_object->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
-		$org_object->set_bank_bic(filter_input(INPUT_POST, 'org_bankownerbic'));
-		$wp_orga_user_id = $org_object->create();
-		
-		if ($wp_orga_user_id !== FALSE) {
-			$org_object->set_creator($current_user->ID);
-			if (session_id() == '') session_start();
-			if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
-				$_SESSION['redirect_current_invest_type'] = $wp_orga_user_id;
-				wp_redirect(ypcf_login_gobackinvest_url());
-				exit();
-				
-			} else {
-				wp_safe_redirect( home_url( '/mon-compte' ) );
-				exit();
+
+		//Si on n'a pas d'erreur, on crée l'organisation
+		if($errors_edit == array()){
+			//Création de l'objet organisation
+			global $current_user;
+			$org_object = new YPOrganisation();
+			$org_object->set_strong_authentication(FALSE);
+			$org_object->set_name(filter_input(INPUT_POST, 'org_name'));
+			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
+			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
+			$org_object->set_postal_code($org_postal_code);
+			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
+			$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
+			$org_object->set_type('society');
+			$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
+			$org_object->set_capital($org_capital);
+			$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
+			$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
+			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
+			$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
+			$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
+			$org_object->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
+			$org_object->set_bank_bic(filter_input(INPUT_POST, 'org_bankownerbic'));
+			$wp_orga_user_id = $org_object->create();
+
+			if ($wp_orga_user_id !== FALSE) {
+				$org_object->set_creator($current_user->ID);
+				if($redirect){
+					if (session_id() == '') session_start();
+					if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
+							$_SESSION['redirect_current_invest_type'] = $wp_orga_user_id;
+							wp_redirect(ypcf_login_gobackinvest_url());
+							exit();
+
+					} else {
+							wp_safe_redirect(bp_loggedin_user_domain() . '#community');
+							exit();
+					}
+				}
 			}
+		}else{
+			$org_object = null;
 		}
+		$return['org_object'] = $org_object;
+		$return['errors_edit'] = $errors_edit;
+		return $return;
 	}
 	
 	public static function edit($org_object) {
@@ -1013,7 +1090,7 @@ class YPOrganisation {
 		
 		//Vérification que l'on a posté le formulaire
 		$action = filter_input(INPUT_POST, 'action');
-		if ($action !== 'edit-organisation') { 
+		if ($action !== 'save_edit_organisation') { 
 			return FALSE;
 		}
 		
@@ -1027,18 +1104,19 @@ class YPOrganisation {
 			return FALSE;
 		}
 		
-		$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
-		$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
-		$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
-		$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
-		$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
-		$org_object->set_capital(filter_input(INPUT_POST, 'org_capital'));
-		$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
-		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
-		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 		$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 		$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
+		$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
+		$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
+		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
+		$org_object->set_capital(filter_input(INPUT_POST, 'org_capital'));
+		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
+		$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
+		$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
+		$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
+		$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
 		$org_object->submit_bank_info();
-		$org_object->submit_documents();
+		$files_info = $org_object->submit_documents();
+		return $files_info;
 	}
 }

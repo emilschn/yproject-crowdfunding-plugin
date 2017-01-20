@@ -24,6 +24,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
 		WDGAjaxActions::add_action('save_project_organisation');
+		WDGAjaxActions::add_action('save_new_organisation');
+		WDGAjaxActions::add_action('save_edit_organisation');
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_status');
 		WDGAjaxActions::add_action('save_project_force_mandate');
@@ -801,7 +803,7 @@ class WDGAjaxActions {
 				$success['new_project_organisation']=1;
 			}
 
-			//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
+		//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
 		} else {
 			if ($current_organisation !== FALSE) {
 				$delete = TRUE;
@@ -811,23 +813,241 @@ class WDGAjaxActions {
 		if ($delete) {
 			BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
 		}
-
+                
 		if ($update) {
 			$api_organisation_id = $organisation_selected->get_bopp_id();
 			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
 			$success['new_project_organisation']=1;
-		}
 
-		$return_values = array(
-			"response" => "edit_organisation",
-			"errors" => array(),
-			"success" => $success
-		);
-		echo json_encode($return_values);
+			//documents
+			$msg_upload = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject');
+
+			$doc_bank = $organisation_selected->get_doc_bank();
+			if($doc_bank != null) {
+				$bank_path = $doc_bank->get_public_filepath();
+				$bank_date_uploaded = $msg_upload.$doc_bank->get_date_uploaded();
+			} else {
+				$bank_path = $bank_date_uploaded = null;
+			}
+
+			$doc_kbis = $organisation_selected->get_doc_kbis();
+			if($doc_kbis != null) {
+				$kbis_path = $doc_kbis->get_public_filepath();
+				$kbis_date_uploaded = $msg_upload.$doc_kbis->get_date_uploaded();
+			} else {
+				$kbis_path = $kbis_date_uploaded = null;
+			}
+
+			$doc_status = $organisation_selected->get_doc_status();
+			if($doc_status != null) {
+				$status_path = $doc_status->get_public_filepath();
+				$status_date_uploaded = $msg_upload.$doc_status->get_date_uploaded();
+			} else {
+				$status_path = $status_date_uploaded = null;
+			}
+
+			$doc_id = $organisation_selected->get_doc_id();
+			if($doc_id != null) {
+				$id_path = $doc_id->get_public_filepath();
+				$id_date_uploaded = $msg_upload.$doc_id->get_date_uploaded();
+			} else {
+				$id_path = $id_date_uploaded = null;
+			}
+
+			$doc_home = $organisation_selected->get_doc_home();
+			if($doc_home != null) {
+				$home_path = $doc_home->get_public_filepath();
+				$home_date_uploaded = $msg_upload.$doc_home->get_date_uploaded();
+			} else {
+				$home_path = $home_date_uploaded = null;
+			}
+
+			$return_values = array(
+				"response" => "edit_organisation",
+				"errors" => array(),
+				"success" => $success,
+				"organisation" => array(
+					"name" => $organisation_selected->get_name(),
+					"email" => $organisation_selected->get_email(),
+					"description" => $organisation_selected->get_description(),
+					"legalForm" => $organisation_selected->get_legalform(),
+					"idNumber" => $organisation_selected->get_idnumber(),
+					"rcs" => $organisation_selected->get_rcs(),
+					"capital" => $organisation_selected->get_capital(),
+					"ape" => $organisation_selected->get_ape(),
+					"address" => $organisation_selected->get_address(),
+					"postal_code" =>$organisation_selected->get_postal_code(),
+					"city" => $organisation_selected->get_city(),
+					"nationality" => $organisation_selected->get_nationality(),
+					"bankownername" => $organisation_selected->get_bank_owner(),
+					"bankowneraddress" => $organisation_selected->get_bank_address(),
+					"bankowneriban" => $organisation_selected->get_bank_iban(),
+					"bankownerbic" => $organisation_selected->get_bank_bic(),
+					"doc_bank" => array(
+						"path" => $bank_path,
+						"date_uploaded" => $bank_date_uploaded,
+					),
+					"doc_kbis" => array(
+						"path" => $kbis_path,
+						"date_uploaded" => $kbis_date_uploaded,
+					),
+					"doc_status" => array(
+						"path" => $status_path,
+						"date_uploaded" => $status_date_uploaded,
+					),
+					"doc_id" => array(
+						"path" => $id_path,
+						"date_uploaded" => $id_date_uploaded,
+					),
+					"doc_home" => array(
+						"path" => $home_path,
+						"date_uploaded" => $home_date_uploaded,
+					),
+				),
+				"orga_object" => $organisation_selected,
+				);
+			echo json_encode($return_values);
+		}
 		exit();
 	}
 
 	/**
+	 * Enregistre les informations du formulaire de création d'une organisation
+	 * et lie cette organisation au projet
+	 */
+	public static function save_new_organisation(){
+		global $errors_submit_new;
+
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+
+		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
+		$return = YPOrganisation::submit_new(FALSE);
+		$org_object = $return['org_object'];
+
+		if($org_object != null){
+			/////////// Liaison de l'organisation au projet ////////////////
+			$current_organisation = FALSE;
+
+			//Récupération de l'ancienne organisation
+			$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
+			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+			$current_organisation = FALSE;
+			if (count($current_organisations) > 0) {
+				$current_organisation = $current_organisations[0];
+			}
+
+				$delete = ($current_organisation == FALSE) ? FALSE : TRUE;
+
+			//on a déjà une organisation, donc on supprime la liaison
+			if ($delete) {
+				BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+			}
+			//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
+			$api_organisation_id = $org_object->get_bopp_id();
+			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+
+			////////////////////////////////////////////////////////////////
+		}
+
+		if($return === FALSE){//user non connecté
+			$buffer = "FALSE";
+		}else if ($return['org_object'] != null){
+			$return_values = array(
+				"response" => "save_new_organisation",
+				//"errors" => $return['errors_edit'],
+				"organisation" => array(
+					"wpref" => $org_object->get_wpref(),
+					"name" => $org_object->get_name(),
+					"email" => $org_object->get_email(),
+					"description" => $org_object->get_description(),
+					"legalForm" => $org_object->get_legalform(),
+					"idNumber" => $org_object->get_idnumber(),
+					"rcs" => $org_object->get_rcs(),
+					"capital" => $org_object->get_capital(),
+					"ape" => $org_object->get_ape(),
+					"address" => $org_object->get_address(),
+					"postal_code" =>$org_object->get_postal_code(),
+					"city" => $org_object->get_city(),
+					"nationality" => $org_object->get_nationality(),
+					"bankownername" => $org_object->get_bank_owner(),
+					"bankowneraddress" => $org_object->get_bank_address(),
+					"bankowneriban" => $org_object->get_bank_iban(),
+					"bankownerbic" => $org_object->get_bank_bic(),
+					),
+				"campaign_id" => $campaign_id,
+			);
+			$buffer = json_encode($return_values);
+		}else{
+			$return_values = array(
+				"errors" => $return['errors_edit'],
+			);
+			$buffer = json_encode($return_values);
+		}
+		echo $buffer;
+		exit();
+	}
+	
+	/**
+	 * Enregistre les informations du formulaire d'édition d'une organisation
+	 */
+	public static function save_edit_organisation(){
+		global $errors_edit;
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+
+		//Récupération de l'organisation
+		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
+		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+		$current_organisation = FALSE;
+		if (count($current_organisations) > 0) {
+			$current_organisation = $current_organisations[0];
+		}
+
+		// enregistrement des données dans l'organisation
+		$org_object = new YPOrganisation($current_organisation->organisation_wpref);
+
+		//enregistrement des données avec la fonction edit et récupération des 
+		//infos sur les fichiers uploadés
+		$files_info = YPOrganisation::edit($org_object);
+
+		if($files_info === FALSE){//user non connecté
+			$buffer = "FALSE";
+		}else{
+			$return_values = array(
+				"response" => "edit_organisation",
+				"organisation" => array(
+					"wpref" => $org_object->get_wpref(),
+					"name" => $org_object->get_name(),
+					"email" => $org_object->get_email(),
+					"description" => $org_object->get_description(),
+					"legalForm" => $org_object->get_legalform(),
+					"idNumber" => $org_object->get_idnumber(),
+					"rcs" => $org_object->get_rcs(),
+					"capital" => $org_object->get_capital(),
+					"ape" => $org_object->get_ape(),
+					"address" => $org_object->get_address(),
+					"postal_code" =>$org_object->get_postal_code(),
+					"city" => $org_object->get_city(),
+					"nationality" => $org_object->get_nationality(),
+					"bankownername" => $org_object->get_bank_owner(),
+					"bankowneraddress" => $org_object->get_bank_address(),
+					"bankowneriban" => $org_object->get_bank_iban(),
+					"bankownerbic" => $org_object->get_bank_bic(),
+				),
+				"files_info" => array(
+					"org_doc_bank" => $files_info["org_doc_bank"],
+					"org_doc_kbis" => $files_info["org_doc_kbis"],
+					"org_doc_status" => $files_info["org_doc_status"],
+					"org_doc_id" => $files_info["org_doc_id"],
+					"org_doc_home" => $files_info["org_doc_home"],
+				),
+			);
+			$buffer = json_encode($return_values);
+		}
+		echo $buffer;
+		exit();
+	}
+
+    /**
 	 * Enregistre les informations de communication du projet
 	 */
 	public static function save_project_communication(){
