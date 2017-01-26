@@ -25,6 +25,7 @@ class WDGROIDeclaration {
 	public $payment_token;
 	public $file_list;
 	private $turnover;
+	private $message;
 	
 	
 	public function __construct( $declaration_id ) {
@@ -45,6 +46,7 @@ class WDGROIDeclaration {
 			$this->payment_token = $declaration_item->payment_token;
 			$this->file_list = $declaration_item->file_list;
 			$this->turnover = $declaration_item->turnover;
+			$this->message = $declaration_item->message;
 		}
 	}
 	
@@ -64,7 +66,8 @@ class WDGROIDeclaration {
 				'mean_payment' => $this->mean_payment,
 				'payment_token' => $this->payment_token,
 				'file_list' => $this->file_list,
-				'turnover' => $this->turnover
+				'turnover' => $this->turnover,
+				'message' => $this->message
 			),
 			array(
 				'id' => $this->id
@@ -210,6 +213,13 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
+	public function get_message() {
+		return html_entity_decode( $this->message );
+	}
+	public function set_message( $message ) {
+		$this->message = htmlentities( $message );
+	}
+	
 	/**
 	 * S'occuper des versements vers les utilisateurs
 	 */
@@ -249,9 +259,9 @@ class WDGROIDeclaration {
 						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
-								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'] );
+								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'], $this->message );
 							} else {
-								NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'] );
+								NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'], $this->message );
 							}
 						}
 
@@ -339,6 +349,7 @@ class WDGROIDeclaration {
 			payment_token tinytext,
 			file_list text,
 			turnover text,
+			message text,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );

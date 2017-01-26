@@ -648,7 +648,7 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
 	
-	public static function roi_transfer_success_user( $declaration_id, $user_id ) {
+	public static function roi_transfer_success_user( $declaration_id, $user_id, $message = '' ) {
 		ypcf_debug_log('NotificationsEmails::roi_transfer_success_user > ' . $declaration_id . ' ; ' . $user_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
@@ -663,14 +663,19 @@ class NotificationsEmails {
 		$body_content .= "2. Je consulte le montant des royalties perçues dans mon <b>porte monnaie électronique</b><br />";
 		$body_content .= "3. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)</b><br />";
 		$body_content .= "OU 4. Je décide de conserver cette somme sur mon porte-monnaie électronique.<br /><br />";
-		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe WE DO GOOD à cette adresse : bonjour@wedogood.co<br />";
+		if ( !empty( $message ) ) {
+			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
+			$body_content .= $message;
+			$body_content .= "<br /><br />";
+		}
+		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe WE DO GOOD à cette adresse : bonjour@wedogood.co<br /><br />";
 		$body_content .= "Toute l'équipe WE DO GOOD vous souhaite une belle journée.";
 		
 		
 		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
 	}
 	
-	public static function roi_transfer_null_user( $declaration_id, $user_id ) {
+	public static function roi_transfer_null_user( $declaration_id, $user_id, $message = '' ) {
 		ypcf_debug_log('NotificationsEmails::roi_transfer_null_user > ' . $declaration_id . ' ; ' . $user_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
@@ -680,6 +685,11 @@ class NotificationsEmails {
 		$body_content = "Bonjour,<br /><br />";
 		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et le versement de vos royalties était annoncé pour le ".$roi_declaration->get_formatted_date().". ";
 		$body_content .= "La déclaration du porteur de projet a bien été reçue et traitée par WE DO GOOD. Cependant, le projet n'a généré aucun chiffre d'affaires sur la période concernée et ne peut donc pas vous verser de royaltiez.<br /><br />";
+		if ( !empty( $message ) ) {
+			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
+			$body_content .= $message;
+			$body_content .= "<br /><br />";
+		}
 		$body_content .= "Nous vous remercions de votre compréhension et restons joignables à cette adresse : bonjour@wedogood.co.<br /><br />";
 		$body_content .= "Nous vous souhaitons une belle journée,<br />";
 		$body_content .= "L'équipe WE DO GOOD";

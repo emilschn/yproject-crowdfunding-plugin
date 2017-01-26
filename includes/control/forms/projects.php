@@ -372,6 +372,8 @@ class WDGFormProjects {
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign($_GET["campaign_id"]);
 		
+		$declaration_message = filter_input( INPUT_POST, 'declaration-message' );
+		
 		$turnover_declaration = filter_input( INPUT_POST, 'turnover-total' );
 		$saved_declaration = array();
 		$total_turnover = 0;
@@ -392,6 +394,7 @@ class WDGFormProjects {
 		if ($declaration->amount == 0) {
 			NotificationsEmails::turnover_declaration_null( $declaration_id );
 		}
+		$declaration->set_message( $declaration_message );
 		$declaration->status = WDGROIDeclaration::$status_payment;
 		$declaration->save();
 	}
