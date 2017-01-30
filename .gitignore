@@ -1,6 +1,8 @@
 includes/accounts/*
 includes/contracts/*
+!includes/contracts/index.php
 includes/kyc/*
+!includes/kyc/index.php
 includes/logs/*
 includes/pdf_files/*
 dploy.yaml
