@@ -726,7 +726,7 @@ class WDGUser {
 		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && yp_check_recaptcha($_POST['g-recaptcha-response']) ) {
 			
 			// Vérifications concernant le nom d'utilisateur et l'e-mail
-			$user_name = filter_input(INPUT_POST, 'signup_username');
+			$user_name = filter_input(INPUT_POST, 'signup_username_login');
 			$user_name = apply_filters( 'pre_user_login', $user_name );
 			if ( empty( $user_name ) ) {
 				$signup_errors->add( 'user_name', __( "Merci de saisir un identifiant", 'yproject' ) );
@@ -800,6 +800,9 @@ class WDGUser {
 				}
 			}
 
+		} else {
+			$signup_errors->add( 'user_insert', __( "Probl&egrave;me de validation du formulaire.", 'yproject' ) );
+			
 		}
 	}
 	
