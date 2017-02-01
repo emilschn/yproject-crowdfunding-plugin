@@ -94,18 +94,15 @@ class UIHelpers {
 		$avatar_path = '';
 		$upload_dir = wp_upload_dir();
 
-		if ( file_exists( BP_AVATAR_UPLOAD_PATH . '/avatars/' . $user_id . '/avatar.jpg' )) {
+		if ( file_exists( $upload_dir['path'] . '/avatars/' . $user_id . '/avatar.jpg' )) {
 			$avatar_path = $upload_dir['baseurl'] . '/avatars/' . $user_id . '/avatar.jpg';
 			return '<img src="' .$avatar_path . '" width="' . $width . '" height="' . $width . '"/>';
 
-		} elseif (file_exists( BP_AVATAR_UPLOAD_PATH. '/avatars/' . $user_id . '/avatar.png' )) {
+		} elseif (file_exists( $upload_dir['path'] . '/avatars/' . $user_id . '/avatar.png' )) {
 			$avatar_path = $upload_dir['baseurl'] . '/avatars/' . $user_id . '/avatar.png';
 			return '<img src="' . $avatar_path . '" width="' . $width . '" height="' . $width . '"/>';
 
 		} else {
-			$bp = buddypress();
-			$bp->avatar->full->default = get_stylesheet_directory_uri() . "/images/default_avatar.jpg";
-
 			$profile_type = "";
 			$google_meta = get_user_meta($user_id, 'social_connect_google_id', true);
 			if (isset($google_meta) && $google_meta != "") $profile_type = ""; //TODO : Remplir avec "google" quand on gÃƒÂ¨rera correctement
@@ -115,20 +112,22 @@ class UIHelpers {
 			$url = get_stylesheet_directory_uri() . "/images/default_avatar.jpg";
 			switch ($profile_type) {
 			    case "google":
-				$meta_explode = explode("id?id=", $google_meta);
-				$social_id = $meta_explode[1];
-				$url = "http://plus.google.com/s2/photos/profile/" . $social_id . "?sz=".($width-1);
-				return '<img src="' .$url . '" width="'.$width.'"/>';
+					$meta_explode = explode("id?id=", $google_meta);
+					$social_id = $meta_explode[1];
+					$url = "http://plus.google.com/s2/photos/profile/" . $social_id . "?sz=".($width-1);
+					return '<img src="' .$url . '" width="'.$width.'"/>';
 				break;
+			
 			    case "facebook":
-				if ($size == 'thumb') {
-				    $size = 'square';
-				}
-				$url = "https://graph.facebook.com/" . $facebook_meta . "/picture?type=" . $size;
-				return '<img src="' .$url . '" width="'.$width.'"/>';
+					if ($size == 'thumb') {
+						$size = 'square';
+					}
+					$url = "https://graph.facebook.com/" . $facebook_meta . "/picture?type=" . $size;
+					return '<img src="' .$url . '" width="'.$width.'"/>';
 				break;
+				
 			    default :
-				return '<img src="'.$url.'" width="'.$width.'" />';
+					return '<img src="'.$url.'" width="'.$width.'" />';
 				break;
 			}
 		}

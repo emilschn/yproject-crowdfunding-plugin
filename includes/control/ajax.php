@@ -1150,7 +1150,7 @@ class WDGAjaxActions {
             } else {
                 $user_data = get_userdata($user_id);
 
-                $array_contacts[$user_id]["user_link"] = bp_core_get_userlink($user_id);
+                $array_contacts[$user_id]["user_link"] = $user_data->user_login;
                 $array_contacts[$user_id]["user_email"] = $user_data->user_email;
 
 				//Infos supplémentaires pour les votants
