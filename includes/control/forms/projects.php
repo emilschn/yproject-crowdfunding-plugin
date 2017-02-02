@@ -372,6 +372,8 @@ class WDGFormProjects {
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign($_GET["campaign_id"]);
 		
+		$declaration_message = filter_input( INPUT_POST, 'declaration-message' );
+		
 		$turnover_declaration = filter_input( INPUT_POST, 'turnover-total' );
 		$saved_declaration = array();
 		$total_turnover = 0;
@@ -392,6 +394,7 @@ class WDGFormProjects {
 		if ($declaration->amount == 0) {
 			NotificationsEmails::turnover_declaration_null( $declaration_id );
 		}
+		$declaration->set_message( $declaration_message );
 		$declaration->status = WDGROIDeclaration::$status_payment;
 		$declaration->save();
 	}
@@ -427,8 +430,8 @@ class WDGFormProjects {
 		
 		if (isset($_POST['payment_card'])) {
 			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url
-			$page_wallet = get_page_by_path('gestion-financiere');	// Gestion financière
-			$campaign_id_param = '?campaign_id=' . $campaign->ID;
+			$page_wallet = get_page_by_path('tableau-de-bord');	// Tableau de bord
+			$campaign_id_param = '?campaign_id=' . $campaign->ID . '#wallet';
 			$return_url = get_permalink($page_wallet->ID) . $campaign_id_param;
 			$wk_token = LemonwayLib::make_token('', $roi_id);
 			$roi_declaration->payment_token = $wk_token;
