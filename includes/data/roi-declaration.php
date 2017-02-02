@@ -214,7 +214,7 @@ class WDGROIDeclaration {
 	}
 	
 	public function get_message() {
-		return html_entity_decode( $this->message );
+		return nl2br( $this->message, ENT_HTML5 );
 	}
 	public function set_message( $message ) {
 		$this->message = htmlentities( $message );
@@ -259,9 +259,9 @@ class WDGROIDeclaration {
 						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
-								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'], $this->message );
+								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'], $this->get_message() );
 							} else {
-								NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'], $this->message );
+								NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'], $this->get_message() );
 							}
 						}
 
