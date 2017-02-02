@@ -29,18 +29,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 	
 	if ($campaign->current_user_can_edit()) {
 	    
-	    //Si on demande la création d'un groupe d'utilisateurs
-	    $investors_group_id = get_post_meta($campaign->ID, 'campaign_investors_group', true);
-	    $group_exists = (is_numeric($investors_group_id) && ($investors_group_id > 0));
-	    if (isset($_POST['action']) && $_POST['action'] == 'ypcf-campaign-create-investors-group' && !$group_exists) {
-		$create_investors_success = false;
-		//Si c'est bien l'admin qui demande et qu'il ne reste plus de temps pour investir
-		if (current_user_can('manage_options') && !$campaign->is_remaining_time()) {
-		    $create_investors_success = ypcf_campaign_create_investors_group($post_campaign, $campaign);
-		    $group_exists = $create_investors_success;
-		}
-	    }
-	
 	    if (isset($_POST['action']) && $_POST['action'] == 'atcf-campaign-submit') {
 		$post_update = array();
 		$post_update['ID'] = $campaign->ID;
@@ -456,76 +444,6 @@ function atcf_shortcode_update_field_implementation( $editing, $campaign, $post_
 <?php
 }
 add_action( 'atcf_shortcode_update_fields', 'atcf_shortcode_update_field_implementation', 10, 3);
-
-/**
- * Permet de créer le groupe d'utilisateurs
- * @param type $campaign
- */
-function ypcf_campaign_create_investors_group($post_campaign, $campaign) {
-    //Création du groupe
-    $name = 'Investisseurs du projet ' . $post_campaign->post_title;
-    $description = 'Groupe de discussion et d&apos;information pour le projet ' . $post_campaign->post_title;
-    $create_group_args = array(
-	'name' => $name,
-	'description' => $description,
-	'slug' => sanitize_title( esc_attr( $name ) ),
-	'date_created' => bp_core_current_time(), 
-	'enable_forum' => 1,
-	'status' => 'hidden'
-    );
-    $new_group_id = groups_create_group($create_group_args);
-    update_post_meta($campaign->ID, 'campaign_investors_group', $new_group_id);
-    groups_update_groupmeta($new_group_id, 'campaign_id', $post_campaign->ID);
-    
-    //Création d'un forum
-    $new_forum_id = bbp_insert_forum( $forum_data = array('post_title' => 'Forum pour le groupe du projet ' . $post_campaign->post_title ) );
-    groups_update_groupmeta( $new_group_id, 'forum_id', $new_forum_id );
-    
-    //Ajout des utilisateurs à ce groupe
-    $invite_users_args = array(
-	'user_id'       => false,
-	'group_id'      => $new_group_id,
-	'inviter_id'    => $post_campaign->post_author,
-	'date_modified' => bp_core_current_time(),
-	'is_confirmed'  => 1
-    );
-    //Le porteur de projet
-    $invite_users_args['user_id'] = $post_campaign->post_author;
-    groups_invite_user( $invite_users_args );
-    //L'admin
-    $invite_users_args['user_id'] = 1;
-    groups_invite_user( $invite_users_args );
-    //Les investisseurs
-    $payments_data = get_payments_data($post_campaign->ID);
-    foreach ( $payments_data as $item ) {
-	if ($item['signsquid_status'] == 'Agreed') {
-	    $payment_status = ypcf_get_updated_payment_status($item['ID']);
-	    if ($payment_status == 'publish') {
-		$mangopay_id = edd_get_payment_key($item['ID']);
-		$mangopay_contribution = ypcf_mangopay_get_contribution_by_id($mangopay_id);
-		$mangopay_is_succeeded = (isset($mangopay_contribution->IsSucceeded) && $mangopay_contribution->IsSucceeded);
-		if ($mangopay_is_succeeded) {
-		    $invite_users_args['user_id'] = $item['user'];
-		    groups_invite_user( $invite_users_args );
-		}
-	    }
-	}
-    }
-    //Envoi des invitations à venir voir le groupe
-    global $send_invite_message;
-    $group_obj = groups_get_group(array('group_id' => $new_group_id));
-    $group_link = bp_get_group_permalink($group_obj);
-    $send_invite_message = 'Bonjour %1$s,<br />
-Afin de communiquer entre vous, un groupe privé regroupant les investisseurs du projet '.$post_campaign->post_title.' a été créé.<br />
-Vous pouvez y accéder en cliquandt sur ce <a href="'.$group_link.'" target="_blank">lien</a> ou en vous connectant à votre compte, puis en vous rendant sur la page "Mes investissements".<br />
-Encore merci pour votre investissement et à bientôt sur <a href="http://www.wedogood.co" target="_blank">WEDOGOOD.co</a> !<br /><br />
-
-';
-    groups_send_invites( $post_campaign->post_author, $new_group_id );
-    unset($GLOBALS['send_invite_message']);
-    
-    return true;
-}
 
 
 function atcf_editor_filter($buttons) {
