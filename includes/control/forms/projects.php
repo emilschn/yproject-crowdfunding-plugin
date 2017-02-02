@@ -150,43 +150,37 @@ class WDGFormProjects {
 		/* FIN Gestion fichiers / images */
 		
 		
-		if (isset($_POST['project-organisation'])) {
+		if (isset($_POST['project-organization'])) {
 			//Récupération de l'ancienne organisation
-			$api_project_id = BoppLibHelpers::get_api_project_id($post_campaign->ID);
-			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-			$current_organisation = FALSE;
-			if (count($current_organisations) > 0) {
-			    $current_organisation = $current_organisations[0];
-			}
+			$current_organization = $campaign->get_organization();
 			
 			$delete = FALSE;
 			$update = FALSE;
 			
 			//On met à jour : si une nouvelle organisation est renseignée et différente de celle d'avant
 			//On supprime : si la nouvelle organisation renseignée est différente de celle d'avant
-			if (!empty($_POST['project-organisation'])) {
-				$organisation_selected = new YPOrganisation($_POST['project-organisation']);
-				if ($current_organisation === FALSE || $current_organisation->organisation_wpref != $organisation_selected->get_wpref()) {
+			if (!empty($_POST['project-organization'])) {
+				$organization_selected = new WDGOrganization($_POST['project-organization']);
+				if ( !empty($current_organization) || $current_organization->wpref != $organization_selected->get_wpref()) {
 					$update = TRUE;
-					if ($current_organisation !== FALSE) {
+					if (!empty($current_organization)) {
 						$delete = TRUE;
 					}
 				}
 				
 			//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
 			} else {
-				if ($current_organisation !== FALSE) {
+				if (!empty($current_organization)) {
 					$delete = TRUE;
 				}
 			}
 			
 			if ($delete) {
-				BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+				$campaign->unlink_organization( $current_organization->id );
 			}
 				
 			if ($update) {
-				$api_organisation_id = $organisation_selected->get_bopp_id();
-				BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+				$campaign->link_organization( $organization_selected->get_api_id() );
 			}
 			
 		} else {
@@ -420,10 +414,8 @@ class WDGFormProjects {
 		$roi_id = filter_input( INPUT_POST, 'proceed_roi_id' );
 		$roi_declaration = new WDGROIDeclaration( $roi_id );
 		$campaign = atcf_get_current_campaign();
-		$api_project_id = BoppLibHelpers::get_api_project_id($campaign->ID);
-		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-		$current_organisation = $current_organisations[0];
-		$organisation = new YPOrganisation($current_organisation->organisation_wpref);
+		$current_organization = $campaign->get_organization();
+		$organization = new WDGOrganization($current_organization->wpref);
 		
 		if (isset($_POST['payment_card'])) {
 			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url
@@ -433,8 +425,8 @@ class WDGFormProjects {
 			$wk_token = LemonwayLib::make_token('', $roi_id);
 			$roi_declaration->payment_token = $wk_token;
 			$roi_declaration->save();
-			$organisation->register_lemonway();
-			$return = LemonwayLib::ask_payment_webkit($organisation->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
+			$organization->register_lemonway();
+			$return = LemonwayLib::ask_payment_webkit($organization->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
 			if ( !empty($return->MONEYINWEB->TOKEN) ) {
 				wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
 			} else {
