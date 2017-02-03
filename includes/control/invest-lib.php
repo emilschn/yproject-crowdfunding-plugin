@@ -306,7 +306,7 @@ function ypcf_check_meanofpayment_redirections() {
 				if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 					$page_payment_done = get_page_by_path('paiement-effectue');
 					$organization = $campaign->get_organization();
-					$organization_obj = new WDGOrganization($organization->wpref;
+					$organization_obj = new WDGOrganization($organization->wpref);
 					$WDGuser_current = WDGUser::current();
 					$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $campaign->ID;
 					$wk_token = LemonwayLib::make_token($current_token_id);
