@@ -406,7 +406,11 @@ class WDGAjaxActions {
 		}
 
 		//Catégories du projet
-		$cat_ids = array_merge($_POST["new_project_categories"], $_POST["new_project_activities"]);
+		$new_project_categories = array();
+		if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
+		$new_project_activities = array();
+		if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
+		$cat_ids = array_merge( $new_project_categories, $new_project_activities );
 		$cat_ids = array_map( 'intval', $cat_ids );
 		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
 		$success["new_project_category"] = 1;
@@ -650,12 +654,8 @@ class WDGAjaxActions {
 		$success = array();
 
 		//Récupération de l'ancienne organisation
-		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
-		$current_organizations = BoppLib::get_project_organizations_by_role($api_project_id, BoppLibHelpers::$project_organization_manager_role['slug']);
-		$current_organization = FALSE;
-		if (count($current_organizations) > 0) {
-			$current_organization = $current_organizations[0];
-		}
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_organization = $campaign->get_organization();
 
 		$delete = FALSE;
 		$update = FALSE;
@@ -682,12 +682,11 @@ class WDGAjaxActions {
 		}
 
 		if ($delete) {
-			BoppLib::unlink_organization_from_project($api_project_id, $current_organization->id);
+			$campaign->unlink_organization( $current_organization->id );
 		}
 
 		if ($update) {
-			$api_organization_id = $organization_selected->get_bopp_id();
-			BoppLib::link_organization_to_project($api_project_id, $api_organization_id, BoppLibHelpers::$project_organization_manager_role['slug']);
+			$campaign->link_organization( $organization_selected->get_api_id() );
 			$success['new_project_organization']=1;
 		}
 
