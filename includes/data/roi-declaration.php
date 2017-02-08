@@ -7,6 +7,7 @@ class WDGROIDeclaration {
 	
 	public static $status_declaration = 'declaration';
 	public static $status_payment = 'payment';
+	public static $status_waiting_transfer = 'waiting_transfer';
 	public static $status_transfer = 'transfer';
 	public static $status_finished = 'finished';
 	
