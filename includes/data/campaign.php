@@ -1140,10 +1140,12 @@ class ATCF_Campaign {
 		//Si on a dépassé la date de fin, on retourne "-"
 		if ( $now > $expires ) {
 			$buffer = '-';
-			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte && $this->is_funded() ) {
-				$this->set_status( ATCF_Campaign::$campaign_status_funded );
-			} else {
-				$this->set_status( ATCF_Campaign::$campaign_status_archive );
+			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+				if ( $this->is_funded() ) {
+					$this->set_status( ATCF_Campaign::$campaign_status_funded );
+				} else {
+					$this->set_status( ATCF_Campaign::$campaign_status_archive );
+				}
 			}
 		} else {
 			$diff = $expires - $now;
