@@ -491,9 +491,10 @@ class WDGFormProjects {
 		
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		$declaration_id = filter_input(INPUT_POST, 'roi_id');
+		$send_notifications = filter_input( INPUT_POST, 'send_notifications' );
 		if ( current_user_can('manage_options') && !empty( $campaign_id ) && !empty( $declaration_id ) ) {
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$roi_declaration->make_transfer();
+			$roi_declaration->make_transfer( ($send_notifications == 1) );
 		}
 	}
 
