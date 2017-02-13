@@ -444,8 +444,13 @@ class WDGFormProjects {
 				return "error_lw_payment";
 			}
 			
-		} elseif (isset($_POST['payment_wire'])) {
-			
+		} elseif (isset($_POST['payment_bank_transfer'])) {
+			$date_now = new DateTime();
+			$roi_declaration->date_paid = $date_now->format( 'Y-m-d' );
+			$roi_declaration->mean_payment = WDGROIDeclaration::$mean_payment_wire;
+			$roi_declaration->status = WDGROIDeclaration::$status_waiting_transfer;
+			$roi_declaration->save();
+			NotificationsEmails::send_notification_roi_payment_bank_transfer_admin( $roi_declaration->id );
 		}
 	}
 	
@@ -489,9 +494,10 @@ class WDGFormProjects {
 		
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		$declaration_id = filter_input(INPUT_POST, 'roi_id');
+		$send_notifications = filter_input( INPUT_POST, 'send_notifications' );
 		if ( current_user_can('manage_options') && !empty( $campaign_id ) && !empty( $declaration_id ) ) {
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$roi_declaration->make_transfer();
+			$roi_declaration->make_transfer( ($send_notifications == 1) );
 		}
 	}
 

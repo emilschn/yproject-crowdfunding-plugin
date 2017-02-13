@@ -634,6 +634,19 @@ class NotificationsEmails {
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
+
+	public static function send_notification_roi_payment_bank_transfer_admin( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_bank_transfer_admin > ' . $declaration_id);
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		
+		$admin_email = get_option('admin_email');
+		$object = "Projet " . $campaign->data->post_title . " - Paiement par virement déclaré";
+		$body_content = "Hello !<br /><br />";
+		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € est en attente de virement.<br /><br />";
+		
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
 	
     public static function send_notification_roi_payment_error_admin( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_error_admin > ' . $declaration_id);
