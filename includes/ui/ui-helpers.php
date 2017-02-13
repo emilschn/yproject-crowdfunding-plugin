@@ -89,6 +89,9 @@ class UIHelpers {
 			case 'thumb':
 			    $width = 50;
 			    break;
+			case 'icon':
+				$width = 40;
+				break;
 		}
 
 		$avatar_path = '';
@@ -109,7 +112,7 @@ class UIHelpers {
 			$facebook_meta = get_user_meta($user_id, 'social_connect_facebook_id', true);
 			if (isset($facebook_meta) && $facebook_meta != "") $profile_type = "facebook";
 
-			$url = get_stylesheet_directory_uri() . "/images/default_avatar.jpg";
+			$url = get_stylesheet_directory_uri() . "/images/navbar/profil-icon-par-defaut.png";
 			switch ($profile_type) {
 			    case "google":
 					$meta_explode = explode("id?id=", $google_meta);

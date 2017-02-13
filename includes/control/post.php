@@ -47,7 +47,7 @@ class WDGPostActions {
 				"email"		=> $email,
 				"listid"	=> array( 5, 6 )
 			) );
-			
+			$_SESSION['subscribe_newsletter_sendinblue'] = true;
 			if (empty( $init_email )) {
 				wp_safe_redirect( wp_get_referer() );
 				die();
