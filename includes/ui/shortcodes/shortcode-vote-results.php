@@ -322,7 +322,7 @@ function ypcf_printable_value($val) {
 	<td>Date</td>
 	<td>Montant</td>
 	<td>Paiement</td>
-	<td>Paiement Mangopay</td>
+	<td>Paiement</td>
 	<td>Signature</td>
     </tr>
     </thead>
@@ -333,7 +333,7 @@ function ypcf_printable_value($val) {
 	<td>Date</td>
 	<td>Montant</td>
 	<td>Paiement</td>
-	<td>Paiement Mangopay</td>
+	<td>Paiement</td>
 	<td>Signature</td>
     </tr>
     </tfoot>
@@ -357,7 +357,7 @@ function ypcf_printable_value($val) {
 			$user_link = $user_data->user_login;
 
 			$post_invest = get_post($item['ID']);
-			$mangopay_is_succeeded = ($payment_status == 'publish') ? 'Oui' : 'Non';
+			$is_succeeded = ($payment_status == 'publish') ? 'Oui' : 'Non';
 			$edd_payment_status = edd_get_payment_status( $post_invest, true );
 			?>
 			<tr style="background-color: <?php echo $bgcolor; ?>">
@@ -365,11 +365,11 @@ function ypcf_printable_value($val) {
 				<td><?php echo date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $item['ID'] ) ) ); ?></td>
 				<td><?php echo $item['amount']; ?>&euro;</td>
 				<td <?php if ($edd_payment_status == "Echec") echo 'style="background-color: #EF876D"'; ?>><?php echo $edd_payment_status; ?></td>
-				<td <?php if ($mangopay_is_succeeded == 'Oui') echo 'style="background-color: #EF876D"'; ?>><?php echo $mangopay_is_succeeded; ?></td>
+				<td <?php if ($is_succeeded == 'Oui') echo 'style="background-color: #EF876D"'; ?>><?php echo $is_succeeded; ?></td>
 				<td <?php if ($item['signsquid_status'] != 'Agreed') echo 'style="background-color: #EF876D"'; ?>><?php echo $item['signsquid_status_text']; ?></td>
 			</tr>
 			<?php
-			if ($payment_status == 'publish' && $item['signsquid_status'] == 'Agreed' && $mangopay_is_succeeded == 'Oui') $csv_buffer .= ypcf_csv_investors_add_line($item['user'], $item['amount']);
+			if ($payment_status == 'publish' && $item['signsquid_status'] == 'Agreed' && $is_succeeded == 'Oui') $csv_buffer .= ypcf_csv_investors_add_line($item['user'], $item['amount']);
 	    }
 	}
 	

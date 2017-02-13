@@ -2,11 +2,11 @@
 /**
  * Classe de gestion des organisations
  */
-class YPOrganisation {
+class WDGOrganization {
 	/**
 	 * Clés d'accès à l'api BOPP
 	 */
-	public static $key_bopp_id = 'organisation_bopp_id';
+	public static $key_api_id = 'organisation_bopp_id';
 	public static $key_description = 'description';
 	public static $key_lemonway_status = 'lemonway_status';
 	
@@ -14,9 +14,8 @@ class YPOrganisation {
 	 * Données
 	 */
 	private $creator;
-	private $bopp_id;
+	private $api_id;
 	private $bopp_object;
-	private $mangopay_id;
 	private $wpref;
 	private $name;
 	private $email;
@@ -50,10 +49,10 @@ class YPOrganisation {
      * @param $user_id int The organization creator id
      * @param $orga_name string Name of the new organization
      * @param $orga_email string Mail
-     * @return bool|YPOrganisation The new organisation or FALSE if failure
+     * @return bool|WDGOrganization The new organization or FALSE if failure
      */
-	public static function createSimpleOrganisation($user_id, $orga_name, $orga_email){
-        $org_object = new YPOrganisation();
+	public static function createSimpleOrganization($user_id, $orga_name, $orga_email){
+        $org_object = new WDGOrganization();
         $org_object->set_strong_authentication(FALSE);
         $org_object->set_name($orga_name);
         $org_object->set_email($orga_email);
@@ -89,11 +88,11 @@ class YPOrganisation {
 			
 		if (!empty($user_id)) {
 			$this->creator = get_user_by('id', $user_id);
-			$this->bopp_id = get_user_meta($user_id, YPOrganisation::$key_bopp_id, TRUE);
-			$this->bopp_object = BoppOrganisations::get($this->bopp_id);
+			$this->api_id = get_user_meta($user_id, WDGOrganization::$key_api_id, TRUE);
+			$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->api_id );
 			$this->wpref = $user_id;
 			
-			$this->name = $this->bopp_object->organisation_name;
+			$this->name = $this->bopp_object->name;
 			
 			$meta_email = get_user_meta( $user_id, 'orga_contact_email', TRUE );
 			if (empty($meta_email)) {
@@ -102,23 +101,23 @@ class YPOrganisation {
 				$this->email = $meta_email;
 			}
 			
-			$this->description = get_user_meta($user_id, YPOrganisation::$key_description, TRUE);
-			$this->strong_authentication = $this->bopp_object->organisation_strong_authentication;
-			$this->address = $this->bopp_object->organisation_address;
-			$this->postal_code = $this->bopp_object->organisation_postalcode;
-			$this->city = $this->bopp_object->organisation_city;
-			$this->nationality = $this->bopp_object->organisation_country;
-			$this->type = $this->bopp_object->organisation_type;
-			$this->legalform = $this->bopp_object->organisation_legalform;
-			$this->capital = $this->bopp_object->organisation_capital;
-			$this->idnumber = $this->bopp_object->organisation_idnumber;
-			$this->rcs = $this->bopp_object->organisation_rcs;
-			$this->ape = $this->bopp_object->organisation_ape;
+			$this->description = get_user_meta($user_id, WDGOrganization::$key_description, TRUE);
+			$this->strong_authentication = $this->bopp_object->strong_authentication;
+			$this->address = $this->bopp_object->address;
+			$this->postal_code = $this->bopp_object->postalcode;
+			$this->city = $this->bopp_object->city;
+			$this->nationality = $this->bopp_object->country;
+			$this->type = $this->bopp_object->type;
+			$this->legalform = $this->bopp_object->legalform;
+			$this->capital = $this->bopp_object->capital;
+			$this->idnumber = $this->bopp_object->idnumber;
+			$this->rcs = $this->bopp_object->rcs;
+			$this->ape = $this->bopp_object->ape;
 			
-			$this->bank_owner = $this->bopp_object->organisation_bank_owner;
-			$this->bank_address = $this->bopp_object->organisation_bank_address;
-			$this->bank_iban = $this->bopp_object->organisation_bank_iban;
-			$this->bank_bic = $this->bopp_object->organisation_bank_bic;
+			$this->bank_owner = $this->bopp_object->bank_owner;
+			$this->bank_address = $this->bopp_object->bank_address;
+			$this->bank_iban = $this->bopp_object->bank_iban;
+			$this->bank_bic = $this->bopp_object->bank_bic;
 		}
 	}
 	
@@ -148,12 +147,12 @@ class YPOrganisation {
 			return FALSE;
 		}
 		
-		$organisation_user_id = $this->create_user($this->get_name());
-		$this->set_wpref($organisation_user_id);
+		$organization_user_id = $this->create_user($this->get_name());
+		$this->set_wpref($organization_user_id);
 		
 		//Si il y a eu une erreur lors de la création de l'utilisateur, on arrête la procédure
-		if (isset($organisation_user_id->errors) && count($organisation_user_id->errors) > 0) {
-			$errors_submit_new = $organisation_user_id;
+		if (isset($organization_user_id->errors) && count($organization_user_id->errors) > 0) {
+			$errors_submit_new = $organization_user_id;
 			return FALSE;
 		}
                 
@@ -162,36 +161,18 @@ class YPOrganisation {
 		if ( $this->get_bank_iban() == '' ) { $this->set_bank_iban("---"); }
 		if ( $this->get_bank_bic() == '' ) { $this->set_bank_bic("---"); }
 		
-		$return_obj = BoppOrganisations::create(
-			$this->get_wpref(),
-			$this->get_name(), 
-			FALSE,
-			$this->get_type(), 
-			$this->get_legalform(), 
-			$this->get_idnumber(), 
-			$this->get_rcs(), 
-			$this->get_capital(), 
-			$this->get_address(), 
-			$this->get_postal_code(), 
-			$this->get_city(), 
-			$this->get_nationality(), 
-			$this->get_ape(),
-			$this->get_bank_owner(),
-			$this->get_bank_address(),
-			$this->get_bank_iban(),
-			$this->get_bank_bic()
-		);
-		$this->bopp_id = $return_obj;
+		$return_obj = WDGWPREST_Entity_Organization::create( $this );
+		$this->api_id = $return_obj->id;
 		
 		//Vérification si on reçoit bien un entier pour identifiant
-		if (filter_var($this->bopp_id, FILTER_VALIDATE_INT) === FALSE) {
+		if (filter_var($this->api_id, FILTER_VALIDATE_INT) === FALSE) {
 			array_push( $errors_create_orga, __("Probl&egrave;me interne de cr&eacute;ation d'organisation.", 'yproject') );
 			return FALSE;
 		}
 		
-		update_user_meta($organisation_user_id, YPOrganisation::$key_bopp_id, $this->bopp_id);
+		update_user_meta($organization_user_id, WDGOrganization::$key_api_id, $this->api_id);
 		
-		return $organisation_user_id;
+		return $organization_user_id;
 	}
 	
 	/**
@@ -208,35 +189,19 @@ class YPOrganisation {
 		} else {
 			$email = $email_input;
 		}
-		$organisation_user_id = wp_create_user($username, $password, $email);
+		$organization_user_id = wp_create_user($username, $password, $email);
 		if (email_exists($email_input) && !empty($email_input)) {
-			update_user_meta($organisation_user_id, 'orga_contact_email', $email_input);
+			update_user_meta($organization_user_id, 'orga_contact_email', $email_input);
 		}
-		return $organisation_user_id;
+		return $organization_user_id;
 	}
 	
 	/**
 	 * Enregistre les modifications sur l'api bopp
 	 */
 	public function save() {
-		BoppOrganisations::update($this->bopp_id, 
-			$this->get_strong_authentication(),
-			$this->get_type(), 
-			$this->get_legalform(), 
-			$this->get_idnumber(), 
-			$this->get_rcs(), 
-			$this->get_capital(), 
-			$this->get_address(), 
-			$this->get_postal_code(), 
-			$this->get_city(), 
-			$this->get_nationality(), 
-			$this->get_ape(),
-			$this->get_bank_owner(),
-			$this->get_bank_address(),
-			$this->get_bank_iban(),
-			$this->get_bank_bic()
-		);
-		update_user_meta( $this->wpref, YPOrganisation::$key_description, $this->get_description() );
+		WDGWPREST_Entity_Organization::update( $this );
+		update_user_meta( $this->wpref, WDGOrganization::$key_description, $this->get_description() );
 		
 		
 		$new_mail = $this->get_email();
@@ -254,21 +219,15 @@ class YPOrganisation {
 	public function get_creator() {
 		return $this->creator;
 	}
-	public function get_bopp_id() {
-		return $this->bopp_id;
+	public function get_api_id() {
+		return $this->api_id;
 	}
 	
-	public function get_mangopay_id() {
-		if (!isset($this->mangopay_id)) {
-			$this->mangopay_id = ypcf_mangopay_get_mp_user_id($this->get_wpref());
-		}
-		return $this->mangopay_id;
-	}
 	/**
 	 * Définir l'identifiant de l'orga sur lemonway
 	 */
 	public function get_lemonway_id() {
-		return 'ORGA'.$this->bopp_id.'W'.$this->wpref;
+		return 'ORGA'.$this->api_id.'W'.$this->wpref;
 	}
 	
 	
@@ -433,15 +392,6 @@ class YPOrganisation {
 		return (empty($organization_can_invest_errors));
 	}
 	
-	
-	public function get_wallet_amount() {
-		return 0; //ypcf_mangopay_get_user_personalamount_by_wpid($this->get_wpref()) / 100;
-	}
-	
-	public function get_operations() {
-		return 0; //ypcf_mangopay_get_operations_by_user_id($this->get_mangopay_id());
-	}
-	
 	public function get_transfers() {
 		$args = array(
 		    'author'    => $this->wpref,
@@ -453,6 +403,7 @@ class YPOrganisation {
 		$transfers = get_posts($args);
 		return $transfers;
 	}
+	
 	public function get_pending_transfers() {
 		$args = array(
 			'author'    => $this->wpref,
@@ -463,72 +414,15 @@ class YPOrganisation {
 		return $pending_transfers;
 	}
 	
-	public function transfer_wallet($beneficiary_id) {
-		$mp_amount = $this->get_wallet_amount() * 100;
-//		$withdrawal_obj = ypcf_mangopay_make_withdrawal($this->get_wpref(), $beneficiary_id, $mp_amount);
-
-		//Si il y a une erreur lors du retrait
-		if (is_string($withdrawal_obj)) {
-			return $withdrawal_obj;
-
-		//Enregistrer le withdrawal pour garder une trace
-		} else {
-			//Enregistrement de l'id du withdrawal (en tant que post wp)
-			$withdrawal_post = array(
-			    'post_author'   => $this->get_wpref(),
-			    'post_title'    => $mp_amount,
-			    'post_content'  => $withdrawal_obj->ID,
-			    'post_status'   => 'pending',
-			    'post_type'	    => 'withdrawal_order'
-			);
-			wp_insert_post( $withdrawal_post );
-			
-			return TRUE;
-		}
-	}
-	
 	/**
 	 * Liaisons utilisateurs
      * ATTENTION : L'organisation doit être déjà créée sur l'API (avec create()) avant d'y lier un compte
 	 */
-	public function set_creator($wp_user_id) {
-		$bopp_user_id = BoppLibHelpers::get_api_user_id($wp_user_id);
-		BoppOrganisations::link_user_to_organisation($this->bopp_id, $bopp_user_id, BoppLibHelpers::$organisation_creator_role['slug']);
-	}
-	
-	/**
-	 * Mise à jour du statut de strong authentication
-	 */
-	public function check_strong_authentication() {
-		$save = FALSE;
-		/*
-		switch ($this->strong_authentication) {
-			case 0:
-				//Vérifie si les docs ont été vérifiés
-				if (ypcf_mangopay_is_user_strong_authenticated($this->wpref)) {
-					$this->strong_authentication = '1';
-					$save = TRUE;
-				} else {
-					$this->strong_authentication = '5';
-					$save = TRUE;
-				}
-			    break;
-			case 1:
-			    //Envoyé et vérifié, on ne fait rien
-			    break;
-			case 5:
-			    //Vérifie si les docs ont été vérifiés
-			    if (ypcf_mangopay_is_user_strong_authenticated($this->wpref)) {
-				    $this->strong_authentication = '1';
-				    $save = TRUE;
-			    }
-			    break;
-		}
-		 * 
-		 */
-		if ($save == TRUE) {
-			$this->save();
-		}
+
+	public function set_creator( $wp_user_id ) {
+		$wdg_current_user = new WDGUser( $wp_user_id );
+		$api_user_id = $wdg_current_user->get_api_id();
+		WDGWPREST_Entity_Organization::link_user( $this->api_id, $api_user_id, WDGWPREST_Entity_Organization::$link_user_type_creator );
 	}
 	
 	/**
@@ -643,36 +537,6 @@ class YPOrganisation {
 /*******************************************************************************
  * Gestion transferts bancaires
 *******************************************************************************/
-	public function submit_transfer_wallet() {
-		/*
-		global $errors_submit;
-		$errors_submit = new WP_Error();
-		
-		if ($this->get_wallet_amount() > 0 && filter_input(INPUT_POST, 'mangopaytoaccount') != '') {
-			$beneficiary_id = ypcf_mangopay_get_mp_user_beneficiary_id($this->get_wpref());
-			if ($beneficiary_id == '' && $this->get_bank_owner() != '' && $this->get_bank_address() != '' && $this->get_bank_iban() != '' && $this->get_bank_bic() != '') {
-				$beneficiary_id = ypcf_init_mangopay_beneficiary(
-					$this->get_wpref(),
-					$this->get_bank_owner(),
-					$this->get_bank_address(),
-					$this->get_bank_iban(),
-					$this->get_bank_bic()
-				);
-			}
-			if ($beneficiary_id != '') {
-				$result = $this->transfer_wallet($beneficiary_id);
-				if ($result !== TRUE) {
-					$errors_submit->add('transfer-wallet', $result);
-				}
-				
-			} else {
-				$errors_submit->add('transfer-wallet', __('Il y a eu une erreur lors du transfert.', 'yproject'));
-			}
-		}
-		 * 
-		 */
-	}
-	
 	/**
 	 * Formulaire de transfert de fonds pour une organisation
 	 */
@@ -770,28 +634,28 @@ class YPOrganisation {
 	 */
 	public function get_lemonway_status( $force_reload = TRUE ) {
 		if ( $force_reload ) {
-			$user_meta_status = get_user_meta( $this->wpref, YPOrganisation::$key_lemonway_status, TRUE );
-			if ( $user_meta_status == YPOrganisation::$lemonway_status_registered ) {
+			$user_meta_status = get_user_meta( $this->wpref, WDGOrganization::$key_lemonway_status, TRUE );
+			if ( $user_meta_status == WDGOrganization::$lemonway_status_registered ) {
 				$buffer = $user_meta_status;
 
 			} else {
 				if (!$this->can_register_lemonway()) {
-					$buffer = YPOrganisation::$lemonway_status_blocked;
+					$buffer = WDGOrganization::$lemonway_status_blocked;
 				} else {
-					$buffer = YPOrganisation::$lemonway_status_ready;
+					$buffer = WDGOrganization::$lemonway_status_ready;
 					$wallet_details = $this->get_wallet_details();
 					if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
 						switch ($wallet_details->STATUS) {
 							case '2':
 							case '8':
-								$buffer = YPOrganisation::$lemonway_status_incomplete;
+								$buffer = WDGOrganization::$lemonway_status_incomplete;
 								break;
 							case '3':
 							case '9':
-								$buffer = YPOrganisation::$lemonway_status_rejected;
+								$buffer = WDGOrganization::$lemonway_status_rejected;
 								break;
 							case '6':
-								$buffer = YPOrganisation::$lemonway_status_registered;
+								$buffer = WDGOrganization::$lemonway_status_registered;
 								break;
 
 							default:
@@ -800,7 +664,7 @@ class YPOrganisation {
 									if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
 										switch ($document_object->S) {
 											case '1':
-												$buffer = YPOrganisation::$lemonway_status_waiting;
+												$buffer = WDGOrganization::$lemonway_status_waiting;
 												break;
 										}
 									}
@@ -810,10 +674,10 @@ class YPOrganisation {
 					}
 				}
 
-				update_user_meta( $this->wpref, YPOrganisation::$key_lemonway_status, $buffer );
+				update_user_meta( $this->wpref, WDGOrganization::$key_lemonway_status, $buffer );
 			}
 		} else {
-			$buffer = get_user_meta( $this->wpref, YPOrganisation::$key_lemonway_status, TRUE );
+			$buffer = get_user_meta( $this->wpref, WDGOrganization::$key_lemonway_status, TRUE );
 		}
 		return $buffer;
 	}
@@ -822,7 +686,7 @@ class YPOrganisation {
 	 * Retourne si l'identification sur lemonway est validée
 	 */
 	public function is_registered_lemonway_wallet() {
-		return ( $this->get_lemonway_status() == YPOrganisation::$lemonway_status_registered );
+		return ( $this->get_lemonway_status() == WDGOrganization::$lemonway_status_registered );
 	}
 
 	/**
@@ -905,8 +769,8 @@ class YPOrganisation {
 	 * Retourne TRUE si l'utilisateur dont l'id est passé en paramètre est une organisation
 	 * @param type $user_id
 	 */
-	public static function is_user_organisation($user_id) {
-		$result = get_user_meta($user_id, YPOrganisation::$key_bopp_id, TRUE);
+	public static function is_user_organization($user_id) {
+		$result = get_user_meta($user_id, WDGOrganization::$key_api_id, TRUE);
 		return (isset($result) && !empty($result));
 	}
 	
@@ -919,7 +783,7 @@ class YPOrganisation {
 		
 		//Vérification que l'on a posté le formulaire
 		$action = filter_input(INPUT_POST, 'action');
-		if ($action !== 'submit-new-organisation') { 
+		if ($action !== 'submit-new-organization') { 
 			return FALSE;
 		}
 		
@@ -971,7 +835,7 @@ class YPOrganisation {
 		
 		//Création de l'objet organisation
 		global $current_user;
-		$org_object = new YPOrganisation();
+		$org_object = new WDGOrganization();
 		$org_object->set_strong_authentication(FALSE);
 		$org_object->set_name(filter_input(INPUT_POST, 'org_name'));
 		$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
@@ -994,7 +858,7 @@ class YPOrganisation {
 		if ($wp_orga_user_id !== FALSE) {
 			$org_object->set_creator($current_user->ID);
 			if (session_id() == '') session_start();
-			if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organisation') {
+			if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organization') {
 				$_SESSION['redirect_current_invest_type'] = $wp_orga_user_id;
 				wp_redirect(ypcf_login_gobackinvest_url());
 				exit();
@@ -1012,7 +876,7 @@ class YPOrganisation {
 		
 		//Vérification que l'on a posté le formulaire
 		$action = filter_input(INPUT_POST, 'action');
-		if ($action !== 'edit-organisation') { 
+		if ($action !== 'edit-organization') { 
 			return FALSE;
 		}
 		

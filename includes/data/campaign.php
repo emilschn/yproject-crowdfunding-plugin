@@ -198,6 +198,20 @@ class ATCF_Campaign {
  * METAS
  ******************************************************************************/
 	/**
+	 * Liaison API
+	 */
+	public static $key_api_id = 'id_api';
+	public function get_api_id() {
+		$api_project_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
+		if ( empty($api_project_id) ) {
+			$api_project_id = WDGWPREST_Entity_Project::create( $this );
+			ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $api_project_id);
+			update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $api_project_id );
+		}
+		return $api_project_id;
+	}
+	
+	/**
 	 * Version du type de projet
 	 * @return int 
 	 */
@@ -275,7 +289,7 @@ class ATCF_Campaign {
 	public function get_payment_provider() {
 		$provider = $this->__get( ATCF_Campaign::$key_payment_provider );
 		if ( $provider != ATCF_Campaign::$payment_provider_mangopay && $provider != ATCF_Campaign::$payment_provider_lemonway ) {
-			$provider = ATCF_Campaign::$payment_provider_mangopay;
+			$provider = ATCF_Campaign::$payment_provider_lemonway;
 		}
 		return $provider;
 	}
@@ -792,16 +806,47 @@ class ATCF_Campaign {
 			return $post_campaign->post_author;
 	}
 	
-	private $organisation;
-	public function get_organisation() {
-		if (!isset($this->organisation)) {
-			$api_project_id = BoppLibHelpers::get_api_project_id($this->ID);
-			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-			if (isset($current_organisations) && count($current_organisations) > 0) {
-				$this->organisation = $current_organisations[0];
+	private $organization;
+	public function get_organization() {
+		if ( !isset( $this->organization ) ) {
+			global $WDG_cache_plugin;
+			$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
+			$cache_version = 1;
+			$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );
+			$this->organization = unserialize($result_cached);
+
+			if ( empty( $this->organization ) ) {
+				$api_project_id = $this->get_api_id();
+				$current_organizations = WDGWPREST_Entity_Project::get_organizations_by_role( $api_project_id, WDGWPREST_Entity_Project::$link_organization_type_manager );
+				if (isset($current_organizations) && count($current_organizations) > 0) {
+					$this->organization = $current_organizations[0];
+				
+					$result_save = serialize( $this->organization );
+					if ( !empty( $result_save ) ) {
+						$WDG_cache_plugin->set_cache( $cache_id, $result_save, 60*60*12, $cache_version );
+					}
+				}
 			}
 		}
-		return $this->organisation;
+		return $this->organization;
+	}
+	
+	public function link_organization( $id_api_organization, $link_type = '' ) {
+		if ( empty( $link_type ) ) {
+			$link_type = WDGWPREST_Entity_Project::$link_organization_type_manager;
+		}
+		WDGWPREST_Entity_Project::link_organization( $this->get_api_id(), $id_api_organization, $link_type );
+		$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
+		do_action( 'wdg_delete_cache', array( $cache_id ) );
+	}
+	
+	public function unlink_organization( $id_api_organization, $link_type = '' ) {
+		if ( empty( $link_type ) ) {
+			$link_type = WDGWPREST_Entity_Project::$link_organization_type_manager;
+		}
+		WDGWPREST_Entity_Project::unlink_organization( $this->get_api_id(), $id_api_organization, $link_type );
+		$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
+		do_action( 'wdg_delete_cache', array( $cache_id ) );
 	}
 
     /**
@@ -1434,19 +1479,7 @@ class ATCF_Campaign {
 					
 					$mangopay_contribution = FALSE;
 					$lemonway_contribution = FALSE;
-					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay) {
-						$mangopay_id = edd_get_payment_key($payment->ID);
-						if ($mangopay_id == 'check') {
-							//Rien
-
-						} else if (strpos($mangopay_id, 'wire_') !== FALSE) {
-							$mangopay_id = substr($mangopay_id, 5);
-							$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_withdrawalcontribution_by_id($mangopay_id) : '';
-						} else {
-							$mangopay_contribution = ($skip_apis == FALSE) ? ypcf_mangopay_get_contribution_by_id($mangopay_id) : '';
-						}
-						
-					} else if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						$lemonway_id = edd_get_payment_key($payment->ID);
 						
 						if ($lemonway_id == 'check') {
@@ -1532,7 +1565,7 @@ class ATCF_Campaign {
 
 				//Sinon, on la crée juste avec un e-mail et un nom
 				} else {
-                    $wp_orga_user_id = YPOrganisation::createSimpleOrganisation($user_id,$orga_name,$orga_email);
+                    $wp_orga_user_id = WDGOrganization::createSimpleOrganization($user_id, $orga_name, $orga_email);
 					$saved_user_id = $wp_orga_user_id;
 				}
 			}
@@ -1760,8 +1793,8 @@ class ATCF_Campaign {
 		if ($current_user_id == $post_campaign->post_author) return TRUE;
 		
 		//On autorise les personnes de l'équipe projet
-		$project_api_id = BoppLibHelpers::get_api_project_id($this->ID);
-		$team_member_list = BoppLib::get_project_members_by_role($project_api_id, BoppLibHelpers::$project_team_member_role['slug']);
+		$project_api_id = $this->get_api_id();
+		$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $project_api_id, WDGWPREST_Entity_Project::$link_user_type_team );
 		foreach ($team_member_list as $team_member) {
 			if ($current_user_id == $team_member->wp_user_id) return TRUE;
 		}
