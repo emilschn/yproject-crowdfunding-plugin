@@ -53,6 +53,102 @@ class WDGUser {
 	}
 	
 /*******************************************************************************
+ * Accès aux données classiques
+*******************************************************************************/
+	public function get_wpref() {
+		return $this->wp_user->ID;
+	}
+	
+	public static $key_api_id = 'id_api';
+	public function get_api_id() {
+		$api_user_id = get_user_meta( $this->get_wpref(), WDGUser::$key_api_id, TRUE );
+		if ( empty($api_user_id) ) {
+			$user_create_result = WDGWPREST_Entity_User::create( $this );
+			$api_user_id = $user_create_result->id;
+			ypcf_debug_log('WDGUser::get_api_id > ' . $api_user_id);
+			update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $api_user_id );
+		}
+		return $api_user_id;
+		
+	}
+	
+	public function get_gender() {
+		return $this->wp_user->get('user_gender');
+	}
+	
+	public function get_firstname() {
+		return $this->wp_user->first_name;
+	}
+	
+	public function get_lastname() {
+		return $this->wp_user->last_name;
+	}
+	
+	public function get_login() {
+		return $this->wp_user->user_login;
+	}
+	
+	public function get_birthday_date() {
+		return $this->wp_user->get('user_birthday_year'). '-' .$this->wp_user->get('user_birthday_month'). '-' .$this->wp_user->get('user_birthday_day');
+	}
+	
+	public function get_projects_list() {
+		global $WDG_cache_plugin;
+		$cache_id = 'WDGUser::' .$this->get_wpref(). '::get_projects_list';
+		$cache_version = 1;
+		$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );
+		$buffer = unserialize($result_cached);
+		
+		if ( empty($buffer) ) {
+			$buffer = array();
+			//Récupération des projets dont l'utilisateur est porteur
+			$campaign_status = array('publish');
+			$args = array(
+				'post_type' => 'download',
+				'author' => $this->get_wpref(),
+				'post_status' => $campaign_status
+			);
+			$args['meta_key'] = 'campaign_vote';
+			$args['meta_compare'] = '!='; 
+			$args['meta_value'] = 'preparing';
+
+			query_posts($args);
+			if (have_posts()) {
+				while (have_posts()) {
+					the_post();
+					array_push($buffer, get_the_ID());
+				}
+			}
+			wp_reset_query();
+
+			//Récupération des projets dont l'utilisateur appartient à l'équipe
+			$project_list = WDGWPREST_Entity_User::get_projects_by_role( $this->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+			if ( !empty( $project_list ) ) {
+				foreach ( $project_list as $project ) {
+					$post_campaign = get_post( $project->wpref );
+					if ( !empty( $post_campaign ) ) {
+						array_push( $buffer, $project->wpref );
+					}
+				}
+			}
+			
+			$result_save = serialize($buffer);
+			if ( !empty( $result_save ) ) {
+				$WDG_cache_plugin->set_cache( $cache_id, $result_save, 60*60*12, $cache_version );
+			}
+		}
+		
+		return $buffer;
+	}
+	
+	public function get_organizations_list() {
+		if ( !isset( $this->organizations_list ) ) {
+			$this->organizations_list = WDGWPREST_Entity_User::get_organizations_by_role( $this->get_api_id(), WDGWPREST_Entity_Organization::$link_user_type_creator );
+		}
+		return $this->organizations_list;
+	}
+	
+/*******************************************************************************
  * Fonctions de sauvegarde
 *******************************************************************************/
 	/**
@@ -568,8 +664,8 @@ class WDGUser {
 		wp_reset_query();
 		
 		//Récupération des projets dont l'utilisateur appartient à l'équipe
-		$api_user_id = BoppLibHelpers::get_api_user_id($user_id);
-		$project_list = BoppUsers::get_projects_by_role($api_user_id, BoppLibHelpers::$project_team_member_role['slug']);
+		$wdg_user = new WDGUser( $user_id );
+		$project_list = WDGWPREST_Entity_User::get_projects_by_role( $wdg_user->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 		if (!empty($project_list)) {
 			foreach ($project_list as $project) {
 				array_push($buffer, $project->project_wp_id);

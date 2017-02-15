@@ -100,12 +100,13 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/roi-declaration.php' );
 		require( $this->includes_dir . 'data/kyc-file.php' );
 		require( $this->includes_dir . 'data/rewards.php');
-		require( $this->includes_dir . 'data/organisation.php' );
+		require( $this->includes_dir . 'data/organization.php' );
 		require( $this->includes_dir . 'data/user.php' );
-		require( $this->includes_dir . 'data/bopp/bopp-lib.php' );
-		require( $this->includes_dir . 'data/bopp/bopp-lib-helpers.php' );
-		require( $this->includes_dir . 'data/bopp/bopp-entities/bopp-users.php' );
-		require( $this->includes_dir . 'data/bopp/bopp-entities/bopp-organisations.php' );
+		require( $this->includes_dir . 'data/staticpage.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-lib.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-organization.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-project.php' );
 		
 		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
 		require( $this->includes_dir . 'control/social/twitter/TwitterAPIExchange.php' );
@@ -117,8 +118,6 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/logs.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
-		require( $this->includes_dir . 'control/mangopay/common.php' );
-		require( $this->includes_dir . 'control/mangopay/utils.php' );
 		require( $this->includes_dir . 'control/signsquid/common.php' );
 		require( $this->includes_dir . 'control/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'control/pdf_generator.php' );
@@ -134,6 +133,10 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-update.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
+		
+		if ( is_admin() ) {
+			require( $this->includes_dir . 'ui/admin/posts.php' );
+		}
 		
 
 		do_action( 'atcf_include_files' );

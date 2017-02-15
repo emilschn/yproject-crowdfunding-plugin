@@ -23,9 +23,9 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
-		WDGAjaxActions::add_action('save_project_organisation');
-		WDGAjaxActions::add_action('save_new_organisation');
-		WDGAjaxActions::add_action('save_edit_organisation');
+		WDGAjaxActions::add_action('save_project_organization');
+		WDGAjaxActions::add_action('save_new_organization');
+		WDGAjaxActions::add_action('save_edit_organization');
 		WDGAjaxActions::add_action('save_project_campaigntab');
 		WDGAjaxActions::add_action('save_project_status');
 		WDGAjaxActions::add_action('save_project_force_mandate');
@@ -95,133 +95,6 @@ class WDGAjaxActions {
 			$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 			$campaign_post = get_post($campaign_id);
 			$campaign = atcf_get_campaign($campaign_post);
-			if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_mangopay):
-			$campaign_organisation = $campaign->get_organisation();
-				$mp_wallet_campaign_id = ypcf_mangopay_get_mp_campaign_wallet_id($campaign_id);
-				$mp_wallet_campaign_infos = ypcf_mangopay_get_wallet_by_id($mp_wallet_campaign_id);
-				$organisation_obj = new YPOrganisation($campaign_organisation->organisation_wpref);
-				$mp_operations_campaign = ypcf_mangopay_get_operations_by_wallet_id($mp_wallet_campaign_id);
-				$mp_operations_organisation = $organisation_obj->get_operations();
-			?>
-
-			Montant collect&eacute; : <?php echo $campaign->current_amount(FALSE); ?><br />
-			Montant actuel sur le porte-monnaie du projet : <?php echo ($mp_wallet_campaign_infos->Amount / 100); ?><br />
-			Montant actuel sur le porte-monnaie de l'organisation : <?php echo $organisation_obj->get_wallet_amount(); ?><br /><br />
-			
-			<strong>Liste des transactions sur le porte-monnaie projet :</strong><br />
-			<div class="wdg-datatable">
-			    <table cellspacing="0" width="100%">
-				<thead><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></thead>
-				<tfoot><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></tfoot>
-				<tbody>
-				<?php 
-				//Tri des doublons renvoyés par MP
-				$operation_list = array();
-				foreach($mp_operations_campaign as $operation_item) {
-					$operation_list[$operation_item->TransactionID] = $operation_item;
-				}
-
-				foreach($operation_list as $operation_item): ?>
-				    <?php
-				    $operation_date = new DateTime();
-				    $operation_date->setTimestamp($operation_item->CreationDate);
-				    $object = '';
-				    $credit = '';
-				    $debit = '';
-				    switch ($operation_item->TransactionType) {
-					    case 'Contribution':
-						    $user_list = get_users(array('meta_key' => 'mangopay_user_id', 'meta_value' => $operation_item->UserID));
-						    $object = 'Investissement utilisateur ' . $user_list[0]->data->user_nicename;
-						    $credit = $operation_item->Amount / 100;
-						    break;
-					    case 'Transfer':
-						    $operation_infos = ypcf_mangopay_get_transfer_by_id($operation_item->TransactionID);
-						    $beneficiary_infos = ypcf_mangopay_get_user_by_id($operation_infos->BeneficiaryID);
-						    if ($beneficiary_infos->FirstName != $beneficiary_infos->LastName) {
-							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' ' .$beneficiary_infos->LastName. ' (' .$beneficiary_infos->ID. ')';
-						    } else {
-							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' (' .$beneficiary_infos->ID. ')';
-						    }
-						    $debit = $operation_item->Amount / 100;
-						    break;
-					    case 'Withdrawal':
-						    $object = 'Retrait';
-						    $debit = $operation_item->Amount / 100;
-						    break;
-
-				    }
-				    ?>
-				    <tr data-transaction="<?php echo $operation_item->TransactionID; ?>">
-					<td><?php echo $operation_date->format('Y-m-d H:i:s'); ?></td>
-					<td><?php echo $object; ?></td>
-					<td><?php echo $debit; ?></td>
-					<td><?php echo $credit; ?></td>
-				    </tr>
-				<?php endforeach; ?>
-				</tbody>
-			    </table>
-			</div><br /><br />
-			
-			<strong>Liste des transactions sur le porte-monnaie organisation :</strong><br />
-			<div class="wdg-datatable">
-			    <table cellspacing="0" width="100%">
-				<thead><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></thead>
-				<tfoot><tr><td>Date</td><td>Objet</td><td>Débit</td><td>Crédit</td></tr></tfoot>
-				<tbody>
-				<?php 
-				//Tri des doublons renvoyés par MP
-				$operation_list = array();
-				foreach($mp_operations_organisation as $operation_item) {
-					$operation_list[$operation_item->TransactionID] = $operation_item;
-				}
-
-				foreach($operation_list as $operation_item): ?>
-				    <?php
-				    $operation_date = new DateTime();
-				    $operation_date->setTimestamp($operation_item->CreationDate);
-				    $object = '';
-				    $credit = '';
-				    $debit = '';
-				    switch ($operation_item->TransactionType) {
-					    case 'Contribution':
-						    $user_list = get_users(array('meta_key' => 'mangopay_user_id', 'meta_value' => $operation_item->UserID));
-						    $object = 'Investissement utilisateur ' . $user_list[0]->data->user_nicename;
-						    if ($organisation_obj->get_wpref() == $user_list[0]->data->ID) {
-							    $object = 'Paiement pour reversement';
-						    }
-						    
-						    $credit = $operation_item->Amount / 100;
-						    break;
-					    case 'Transfer':
-						    $operation_infos = ypcf_mangopay_get_transfer_by_id($operation_item->TransactionID);
-						    $beneficiary_infos = ypcf_mangopay_get_user_by_id($operation_infos->BeneficiaryID);
-						    if ($beneficiary_infos->FirstName != $beneficiary_infos->LastName) {
-							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' ' .$beneficiary_infos->LastName. ' (' .$beneficiary_infos->ID. ')';
-						    } else {
-							    $object = 'Transfert vers ' .$beneficiary_infos->FirstName. ' (' .$beneficiary_infos->ID. ')';
-						    }
-						    $debit = $operation_item->Amount / 100;
-						    break;
-					    case 'Withdrawal':
-						    $object = 'Retrait';
-						    $debit = $operation_item->Amount / 100;
-						    break;
-
-				    }
-				    ?>
-				    <tr data-transaction="<?php echo $operation_item->TransactionID; ?>">
-					<td><?php echo $operation_date->format('Y-m-d H:i:s'); ?></td>
-					<td><?php echo $object; ?></td>
-					<td><?php echo $debit; ?></td>
-					<td><?php echo $credit; ?></td>
-				    </tr>
-				<?php endforeach; ?>
-				</tbody>
-			    </table>
-			</div>
-			
-			<?php
-			endif;
 			exit();
 		}
 	}
@@ -260,7 +133,7 @@ class WDGAjaxActions {
 		}
 		
 		//Vérifie si on crée une organisation
-		if ($invest_type == "new_organisation") {
+		if ($invest_type == "new_organization") {
 			$return_values = array(
 				"response" => "new_organization",
 				"errors" => array()
@@ -272,23 +145,23 @@ class WDGAjaxActions {
 		} else if ($invest_type != "user") {
 			//Vérifie si les informations de l'organisation sont bien remplies
 			global $organization_can_invest_errors;
-			$organisation = new YPOrganisation($invest_type);
-			if (!$organisation->has_filled_invest_infos()) {
+			$organization = new WDGOrganization($invest_type);
+			if (!$organization->has_filled_invest_infos()) {
 				$return_values = array(
 					"response" => "edit_organization",
 					"errors" => $organization_can_invest_errors,
-					"org_name" => $organisation->get_name(),
-					"org_email" => $organisation->get_email(),
+					"org_name" => $organization->get_name(),
+					"org_email" => $organization->get_email(),
 					
-					"org_legalform" => $organisation->get_legalform(),
-					"org_idnumber" => $organisation->get_idnumber(),
-					"org_rcs" => $organisation->get_rcs(),
-					"org_capital" => $organisation->get_capital(),
-					"org_ape" => $organisation->get_ape(),
-					"org_address" => $organisation->get_address(),
-					"org_postal_code" => $organisation->get_postal_code(),
-					"org_city" => $organisation->get_city(),
-					"org_nationality" => $organisation->get_nationality()
+					"org_legalform" => $organization->get_legalform(),
+					"org_idnumber" => $organization->get_idnumber(),
+					"org_rcs" => $organization->get_rcs(),
+					"org_capital" => $organization->get_capital(),
+					"org_ape" => $organization->get_ape(),
+					"org_address" => $organization->get_address(),
+					"org_postal_code" => $organization->get_postal_code(),
+					"org_city" => $organization->get_city(),
+					"org_nationality" => $organization->get_nationality()
 				);
 				echo json_encode($return_values);
 				exit();
@@ -356,7 +229,7 @@ class WDGAjaxActions {
 	
 	public static function save_orga_infos() {
 		$invest_type = filter_input(INPUT_POST, 'invest_type');
-		if ($invest_type == "new_organisation") {
+		if ($invest_type == "new_organization") {
 			$current_user = WDGUser::current();
 
 			global $errors_create_orga;
@@ -365,7 +238,7 @@ class WDGAjaxActions {
 			$new_orga_id = FALSE;
 			$orga_capable = filter_input( INPUT_POST, 'org_capable' );
 			if ($orga_capable == '1') {
-				$new_orga = new YPOrganisation();
+				$new_orga = new WDGOrganization();
 				$new_orga->set_name( filter_input( INPUT_POST, 'org_name' ) );
 				$new_orga->set_email( filter_input( INPUT_POST, 'org_email' ) );
 				$new_orga->set_type('society');
@@ -402,7 +275,7 @@ class WDGAjaxActions {
 			}
 			
 		} else {
-			$edit_orga = new YPOrganisation($invest_type);
+			$edit_orga = new WDGOrganization($invest_type);
 			$edit_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
 			$edit_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
 			$edit_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
@@ -535,7 +408,11 @@ class WDGAjaxActions {
 		}
 
 		//Catégories du projet
-		$cat_ids = array_merge($_POST["new_project_categories"], $_POST["new_project_activities"]);
+		$new_project_categories = array();
+		if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
+		$new_project_activities = array();
+		if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
+		$cat_ids = array_merge( $new_project_categories, $new_project_activities );
 		$cat_ids = array_map( 'intval', $cat_ids );
 		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
 		$success["new_project_category"] = 1;
@@ -774,55 +651,50 @@ class WDGAjaxActions {
 	/**
 	 * Enregistre les informations de l'organisation liée à un projet
 	 */
-	public static function save_project_organisation(){
+	public static function save_project_organization(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$success = array();
 
 		//Récupération de l'ancienne organisation
-		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
-		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-		$current_organisation = FALSE;
-		if (count($current_organisations) > 0) {
-			$current_organisation = $current_organisations[0];
-		}
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_organization = $campaign->get_organization();
 
 		$delete = FALSE;
 		$update = FALSE;
 
 		//On met à jour : si une nouvelle organisation est renseignée et différente de celle d'avant
 		//On supprime : si la nouvelle organisation renseignée est différente de celle d'avant
-		$project_organization = filter_input(INPUT_POST, 'new_project_organisation');
+		$project_organization = filter_input(INPUT_POST, 'new_project_organization');
 		if (!empty($project_organization)) {
-			$organisation_selected = new YPOrganisation($project_organization);
-			if ($current_organisation === FALSE || $current_organisation->organisation_wpref != $organisation_selected->get_wpref()) {
+			$organization_selected = new WDGOrganization($project_organization);
+			if ($current_organization === FALSE || $current_organization->wpref != $organization_selected->get_wpref()) {
 				$update = TRUE;
-				if ($current_organisation !== FALSE) {
+				if ($current_organization !== FALSE) {
 					$delete = TRUE;
 				}
 			} else {
-				$success['new_project_organisation']=1;
+				$success['new_project_organization']=1;
 			}
 
 		//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
 		} else {
-			if ($current_organisation !== FALSE) {
+			if ($current_organization !== FALSE) {
 				$delete = TRUE;
 			}
 		}
 
 		if ($delete) {
-			BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+			$campaign->unlink_organization( $current_organization->id );
 		}
                 
 		if ($update) {
-			$api_organisation_id = $organisation_selected->get_bopp_id();
-			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-			$success['new_project_organisation']=1;
+			$campaign->link_organization( $organization_selected->get_api_id() );
+			$success['new_project_organization']=1;
 
 			//documents
 			$msg_upload = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject');
 
-			$doc_bank = $organisation_selected->get_doc_bank();
+			$doc_bank = $organization_selected->get_doc_bank();
 			if($doc_bank != null) {
 				$bank_path = $doc_bank->get_public_filepath();
 				$bank_date_uploaded = $msg_upload.$doc_bank->get_date_uploaded();
@@ -830,7 +702,7 @@ class WDGAjaxActions {
 				$bank_path = $bank_date_uploaded = null;
 			}
 
-			$doc_kbis = $organisation_selected->get_doc_kbis();
+			$doc_kbis = $organization_selected->get_doc_kbis();
 			if($doc_kbis != null) {
 				$kbis_path = $doc_kbis->get_public_filepath();
 				$kbis_date_uploaded = $msg_upload.$doc_kbis->get_date_uploaded();
@@ -838,7 +710,7 @@ class WDGAjaxActions {
 				$kbis_path = $kbis_date_uploaded = null;
 			}
 
-			$doc_status = $organisation_selected->get_doc_status();
+			$doc_status = $organization_selected->get_doc_status();
 			if($doc_status != null) {
 				$status_path = $doc_status->get_public_filepath();
 				$status_date_uploaded = $msg_upload.$doc_status->get_date_uploaded();
@@ -846,7 +718,7 @@ class WDGAjaxActions {
 				$status_path = $status_date_uploaded = null;
 			}
 
-			$doc_id = $organisation_selected->get_doc_id();
+			$doc_id = $organization_selected->get_doc_id();
 			if($doc_id != null) {
 				$id_path = $doc_id->get_public_filepath();
 				$id_date_uploaded = $msg_upload.$doc_id->get_date_uploaded();
@@ -854,7 +726,7 @@ class WDGAjaxActions {
 				$id_path = $id_date_uploaded = null;
 			}
 
-			$doc_home = $organisation_selected->get_doc_home();
+			$doc_home = $organization_selected->get_doc_home();
 			if($doc_home != null) {
 				$home_path = $doc_home->get_public_filepath();
 				$home_date_uploaded = $msg_upload.$doc_home->get_date_uploaded();
@@ -863,26 +735,26 @@ class WDGAjaxActions {
 			}
 
 			$return_values = array(
-				"response" => "edit_organisation",
+				"response" => "edit_organization",
 				"errors" => array(),
 				"success" => $success,
-				"organisation" => array(
-					"name" => $organisation_selected->get_name(),
-					"email" => $organisation_selected->get_email(),
-					"description" => $organisation_selected->get_description(),
-					"legalForm" => $organisation_selected->get_legalform(),
-					"idNumber" => $organisation_selected->get_idnumber(),
-					"rcs" => $organisation_selected->get_rcs(),
-					"capital" => $organisation_selected->get_capital(),
-					"ape" => $organisation_selected->get_ape(),
-					"address" => $organisation_selected->get_address(),
-					"postal_code" =>$organisation_selected->get_postal_code(),
-					"city" => $organisation_selected->get_city(),
-					"nationality" => $organisation_selected->get_nationality(),
-					"bankownername" => $organisation_selected->get_bank_owner(),
-					"bankowneraddress" => $organisation_selected->get_bank_address(),
-					"bankowneriban" => $organisation_selected->get_bank_iban(),
-					"bankownerbic" => $organisation_selected->get_bank_bic(),
+				"organization" => array(
+					"name" => $organization_selected->get_name(),
+					"email" => $organization_selected->get_email(),
+					"description" => $organization_selected->get_description(),
+					"legalForm" => $organization_selected->get_legalform(),
+					"idNumber" => $organization_selected->get_idnumber(),
+					"rcs" => $organization_selected->get_rcs(),
+					"capital" => $organization_selected->get_capital(),
+					"ape" => $organization_selected->get_ape(),
+					"address" => $organization_selected->get_address(),
+					"postal_code" =>$organization_selected->get_postal_code(),
+					"city" => $organization_selected->get_city(),
+					"nationality" => $organization_selected->get_nationality(),
+					"bankownername" => $organization_selected->get_bank_owner(),
+					"bankowneraddress" => $organization_selected->get_bank_address(),
+					"bankowneriban" => $organization_selected->get_bank_iban(),
+					"bankownerbic" => $organization_selected->get_bank_bic(),
 					"doc_bank" => array(
 						"path" => $bank_path,
 						"date_uploaded" => $bank_date_uploaded,
@@ -904,8 +776,8 @@ class WDGAjaxActions {
 						"date_uploaded" => $home_date_uploaded,
 					),
 				),
-				"orga_object" => $organisation_selected,
-				);
+				"orga_object" => $organization_selected,
+			);
 			echo json_encode($return_values);
 		}
 		exit();
@@ -915,36 +787,29 @@ class WDGAjaxActions {
 	 * Enregistre les informations du formulaire de création d'une organisation
 	 * et lie cette organisation au projet
 	 */
-	public static function save_new_organisation(){
+	public static function save_new_organization(){
 		global $errors_submit_new;
 
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
 		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
-		$return = YPOrganisation::submit_new(FALSE);
+		$return = WDGOrganization::submit_new(FALSE);
 		$org_object = $return['org_object'];
 
 		if($org_object != null){
 			/////////// Liaison de l'organisation au projet ////////////////
-			$current_organisation = FALSE;
 
 			//Récupération de l'ancienne organisation
-			$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
-			$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-			$current_organisation = FALSE;
-			if (count($current_organisations) > 0) {
-				$current_organisation = $current_organisations[0];
-			}
-
-				$delete = ($current_organisation == FALSE) ? FALSE : TRUE;
+			$campaign = new ATCF_Campaign($campaign_id);
+			$current_organization = $campaign->get_organization();
+			$delete = ( empty($current_organization) ) ? FALSE : TRUE;
 
 			//on a déjà une organisation, donc on supprime la liaison
 			if ($delete) {
-				BoppLib::unlink_organisation_from_project($api_project_id, $current_organisation->id);
+				$campaign->unlink_organization( $current_organization->id );
 			}
 			//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
-			$api_organisation_id = $org_object->get_bopp_id();
-			BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+			$campaign->link_organization( $org_object->get_api_id() );
 
 			////////////////////////////////////////////////////////////////
 		}
@@ -953,9 +818,9 @@ class WDGAjaxActions {
 			$buffer = "FALSE";
 		}else if ($return['org_object'] != null){
 			$return_values = array(
-				"response" => "save_new_organisation",
+				"response" => "save_new_organization",
 				//"errors" => $return['errors_edit'],
-				"organisation" => array(
+				"organization" => array(
 					"wpref" => $org_object->get_wpref(),
 					"name" => $org_object->get_name(),
 					"email" => $org_object->get_email(),
@@ -990,31 +855,27 @@ class WDGAjaxActions {
 	/**
 	 * Enregistre les informations du formulaire d'édition d'une organisation
 	 */
-	public static function save_edit_organisation(){
+	public static function save_edit_organization(){
 		global $errors_edit;
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
 		//Récupération de l'organisation
-		$api_project_id = BoppLibHelpers::get_api_project_id(intval($campaign_id));
-		$current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
-		$current_organisation = FALSE;
-		if (count($current_organisations) > 0) {
-			$current_organisation = $current_organisations[0];
-		}
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_organization = $campaign->get_organization();
 
 		// enregistrement des données dans l'organisation
-		$org_object = new YPOrganisation($current_organisation->organisation_wpref);
+		$org_object = new WDGOrganization( $current_organization->wpref );
 
 		//enregistrement des données avec la fonction edit et récupération des 
 		//infos sur les fichiers uploadés
-		$files_info = YPOrganisation::edit($org_object);
+		$files_info = WDGOrganization::edit($org_object);
 
 		if($files_info === FALSE){//user non connecté
 			$buffer = "FALSE";
 		}else{
 			$return_values = array(
-				"response" => "edit_organisation",
-				"organisation" => array(
+				"response" => "edit_organization",
+				"organization" => array(
 					"wpref" => $org_object->get_wpref(),
 					"name" => $org_object->get_name(),
 					"email" => $org_object->get_email(),
@@ -1342,8 +1203,8 @@ class WDGAjaxActions {
             //Données si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"]= $user_id;
 
-            if(YPOrganisation::is_user_organisation($user_id)){
-                $orga = new YPOrganisation($user_id);
+            if(WDGOrganization::is_user_organization($user_id)){
+                $orga = new WDGOrganization($user_id);
                 $orga_creator = $orga->get_creator();
 				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
                 $array_contacts[$user_id]["user_email"]= $orga->get_email();

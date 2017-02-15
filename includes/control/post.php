@@ -111,10 +111,8 @@ class WDGPostActions {
 
 
             //Company data
-            $organisation_created = YPOrganisation::createSimpleOrganisation($WPuserID,$orga_name,$WDGUser_current->wp_user->user_email);
-            $api_organisation_id = $organisation_created->get_bopp_id();
-            $api_project_id = BoppLibHelpers::get_api_project_id($newcampaign_id);
-            BoppLib::link_organisation_to_project($api_project_id, $api_organisation_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+            $organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
+			$newcampaign->link_organization( $organization_created->get_api_id() );
 
 
             //Redirect then
@@ -183,16 +181,11 @@ class WDGPostActions {
 
                     //Vérifiation organisation complète
                     $orga_done=false;
-                    $api_project_id = BoppLibHelpers::get_api_project_id($campaign_id);
-                    $current_organisations = BoppLib::get_project_organisations_by_role($api_project_id, BoppLibHelpers::$project_organisation_manager_role['slug']);
+                    $campaign_organization = $campaign->get_organization();
 
-                    if (isset($current_organisations) && count($current_organisations) > 0) {
-                        $campaign_organisation = $campaign->get_organisation();
-
-                        //Vérification validation lemonway
-                        $organization_obj = new YPOrganisation($campaign_organisation->organisation_wpref);
-                        if ($organization_obj->is_registered_lemonway_wallet()) { $orga_done = true; }
-                    }
+                    //Vérification validation lemonway
+                    $organization_obj = new WDGOrganization($campaign_organization->wpref);
+                    if ($organization_obj->is_registered_lemonway_wallet()) { $orga_done = true; }
 
                     //Validation données
                     if($orga_done && ypcf_check_user_is_complete($campaign->post_author())&& isset($_POST['innbdayvote'])){
@@ -252,7 +245,7 @@ class WDGPostActions {
 		$url_return = wp_get_referer();
 		
 		// Récupération de l'organisation
-		$organization_obj = new YPOrganisation( $organization_id );
+		$organization_obj = new WDGOrganization( $organization_id );
 		$token = $organization_obj->get_sign_mandate_token( $phone_number, $url_return, $url_return );
 		
 		if ( $token != FALSE ) {

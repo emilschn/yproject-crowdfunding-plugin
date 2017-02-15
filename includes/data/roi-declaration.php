@@ -229,12 +229,10 @@ class WDGROIDeclaration {
 		$date_now = new DateTime();
 		$date_now_formatted = $date_now->format( 'Y-m-d' );
 		$campaign = new ATCF_Campaign($this->id_campaign);
-		$current_organisation = $campaign->get_organisation();
-		if (isset($current_organisation)) {
-			$organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
-		}
-		if (isset($organisation_obj)) {
-			$organisation_obj->register_lemonway();
+		$current_organization = $campaign->get_organization();
+		if ( !empty( $current_organization ) ) {
+			$organization_obj = new WDGOrganization($current_organization->wpref);
+			$organization_obj->register_lemonway();
 			$investments_list = $campaign->roi_payments_data($this);
 			$total_fees = 0;
 			foreach ($investments_list as $investment_item) {
@@ -244,20 +242,20 @@ class WDGROIDeclaration {
 					$total_fees += $investment_item['roi_fees'];
 
 					//Versement vers organisation
-					if (YPOrganisation::is_user_organisation( $investment_item['user'] )) {
-						$WDGOrga = new YPOrganisation( $investment_item['user'] );
+					if (WDGOrganization::is_user_organization( $investment_item['user'] )) {
+						$WDGOrga = new WDGOrganization( $investment_item['user'] );
 						$WDGOrga->register_lemonway();
-						$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
+						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
 
 					//Versement vers utilisateur personne physique
 					} else {
 						$WDGUser = new WDGUser( $investment_item['user'] );
 						$WDGUser->register_lemonway();
-						$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
+						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
 					}
 
 					if ( $transfer != FALSE ) {
-						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
+						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organization->wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
 								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'], $this->get_message() );
@@ -267,14 +265,14 @@ class WDGROIDeclaration {
 						}
 
 					} else {
-						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organisation->organisation_wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
+						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organization->wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
 
 					}
 					
 				}
 			}
 			if ($total_fees > 0) {
-				LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), "SC", $total_fees);
+				LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees);
 			}
 			$this->status = WDGROIDeclaration::$status_finished;
 			$this->date_transfer = $date_now_formatted;
@@ -289,9 +287,9 @@ class WDGROIDeclaration {
 	 */
 	public function redo_transfers() {
 		$campaign = new ATCF_Campaign($this->id_campaign);
-		$current_organisation = $campaign->get_organisation();
-		if (isset($current_organisation)) {
-			$organisation_obj = new YPOrganisation($current_organisation->organisation_wpref);
+		$current_organization = $campaign->get_organization();
+		if (!empty($current_organization)) {
+			$organization_obj = new WDGOrganization($current_organization->wpref);
 		}
 		
 		global $wpdb;
@@ -306,16 +304,16 @@ class WDGROIDeclaration {
 			$ROI = new WDGROI( $roi_item->id );
 			
 			//Gestion versement vers organisation
-			if (YPOrganisation::is_user_organisation( $ROI->id_user )) {
-				$WDGOrga = new YPOrganisation( $ROI->id_user );
+			if (WDGOrganization::is_user_organization( $ROI->id_user )) {
+				$WDGOrga = new WDGOrganization( $ROI->id_user );
 				$WDGOrga->register_lemonway();
-				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
+				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
 				
 			//Versement vers utilisateur personne physique
 			} else {
 				$WDGUser = new WDGUser( $ROI->id_user );
 				$WDGUser->register_lemonway();
-				$transfer = LemonwayLib::ask_transfer_funds( $organisation_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
 			}
 			
 			$ROI->id_transfer = $transfer->ID;

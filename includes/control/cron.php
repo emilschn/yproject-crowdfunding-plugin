@@ -46,16 +46,16 @@ class WDGCronActions {
 		//Parcours de tous les utilisateurs
 		$users = get_users();
 		foreach ($users as $user) {
-			if ( YPOrganisation::is_user_organisation( $user->ID ) ) {
-				$organisation = new YPOrganisation( $user->ID );
-				$init_kyc_status = $organisation->get_lemonway_status( FALSE );
-				if ( $init_kyc_status == YPOrganisation::$lemonway_status_waiting ) {
-					$new_kyc_status = $organisation->get_lemonway_status();
+			if ( WDGOrganization::is_user_organization( $user->ID ) ) {
+				$organization = new WDGOrganization( $user->ID );
+				$init_kyc_status = $organization->get_lemonway_status( FALSE );
+				if ( $init_kyc_status == WDGOrganization::$lemonway_status_waiting ) {
+					$new_kyc_status = $organization->get_lemonway_status();
 					switch ( $new_kyc_status ) {
-						case YPOrganisation::$lemonway_status_rejected:
+						case WDGOrganization::$lemonway_status_rejected:
 							NotificationsEmails::send_notification_kyc_rejected_admin($user);
 							break;
-						case YPOrganisation::$lemonway_status_registered:
+						case WDGOrganization::$lemonway_status_registered:
 							NotificationsEmails::send_notification_kyc_accepted_admin($user);
 							break;
 					}
@@ -85,8 +85,8 @@ class WDGCronActions {
 		while (have_posts()): the_post();
 			global $post;
 			$campaign = atcf_get_campaign( $post );
-			$organization = $campaign->get_organisation();
-			$organization_obj = new YPOrganisation( $organization->organisation_wpref );
+			$organization = $campaign->get_organization();
+			$organization_obj = new WDGOrganization( $organization->wpref );
 			
 			//*****************
 			//Formatage pour RSS
