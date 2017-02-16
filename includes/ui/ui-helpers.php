@@ -122,7 +122,7 @@ class UIHelpers {
 				break;
 			
 			    case "facebook":
-					if ($size == 'thumb') {
+					if ($size == 'thumb' || $size == 'icon') {
 						$size = 'square';
 					}
 					$url = "https://graph.facebook.com/" . $facebook_meta . "/picture?type=" . $size;
