@@ -205,7 +205,8 @@ class ATCF_Campaign {
 	public function get_api_id() {
 		$api_project_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
 		if ( empty($api_project_id) ) {
-			$api_project_id = WDGWPREST_Entity_Project::create( $this );
+			$api_project_return = WDGWPREST_Entity_Project::create( $this );
+			$api_project_id = $api_project_return->id;
 			ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $api_project_id);
 			update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $api_project_id );
 		}
