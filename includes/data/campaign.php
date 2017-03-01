@@ -204,7 +204,7 @@ class ATCF_Campaign {
 	public static $key_api_id = 'id_api';
 	public function get_api_id() {
 		$api_project_id = FALSE;
-		$is_campaign = (get_post_meta($campaign_id, 'campaign_funding_type', TRUE) != '');
+		$is_campaign = ( get_post_meta( $this->data->ID, 'campaign_funding_type', TRUE ) != '' );
 		if ($is_campaign) {
 			$api_project_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
 			if ( empty($api_project_id) ) {
