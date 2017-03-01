@@ -189,6 +189,7 @@ class WDGOrganization {
 		} else {
 			$email = $email_input;
 		}
+		remove_action( 'user_register', 'yproject_user_register' );
 		$organization_user_id = wp_create_user($username, $password, $email);
 		if (email_exists($email_input) && !empty($email_input)) {
 			update_user_meta($organization_user_id, 'orga_contact_email', $email_input);
