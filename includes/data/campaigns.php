@@ -42,7 +42,9 @@ class ATCF_Campaigns {
 	 * @return void
 	 */
 	function setup() {
-		define( 'EDD_SLUG', apply_filters( 'atcf_edd_slug', 'campaigns' ) );
+		define( 'EDD_SLUG', 'campaigns' );
+		add_filter( 'post_type_link', array( $this, 'campaigns_type_links' ), 1, 3 );
+		add_action( 'pre_get_posts', array( $this, 'campaigns_type_get_posts' ) );
 		
 		add_filter( 'edd_download_labels', array( $this, 'download_labels' ) );
 		add_filter( 'edd_default_downloads_name', array( $this, 'download_names' ) );
@@ -78,6 +80,40 @@ class ATCF_Campaigns {
 
 		do_action( 'atcf_campaigns_actions_admin' );
 	}
+
+	/**
+	* Réécritures des liens des campagnes
+	*/
+	function campaigns_type_links( $post_link, $post = 0 ) {
+		if ($post->post_type === 'download' ) {
+			return home_url( $post->post_name . '/' );
+		}
+		return $post_link;
+	}
+
+	/**
+	* Fait en sorte que les liens directs fonctionnent
+	*/
+	function campaigns_type_get_posts( $query ) {
+		//Si c'est l'ancienne url (/campaigns/) qui est appelée, on redirige vers l'url directe
+		if ( isset( $query->query )
+			&& isset( $query->query['post_type'] ) && $query->query['post_type'] == 'download'
+			&& isset( $query->query['download'] ) ) {
+			wp_redirect( home_url( $query->query['download'] . '/' ) );
+			exit();
+		}
+
+		//Si on n'est pas sur la page directe, on ne tient pas compte du reste
+		if ( ! $query->is_main_query() || 2 != count( $query->query ) || ! isset( $query->query['page'] ) ) {
+			return;
+		}
+
+		//On accepte le type "download" pour être appelé directement
+		if ( ! empty( $query->query['name'] ) ) {
+			$query->set( 'post_type', array( 'post', 'page', 'download' ) );
+		}
+	}
+
 
 	/**
 	 * Download labels. Change it to "Campaigns".
