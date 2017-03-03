@@ -819,7 +819,6 @@ class WDGAjaxActions {
 		}else if ($return['org_object'] != null){
 			$return_values = array(
 				"response" => "save_new_organization",
-				//"errors" => $return['errors_edit'],
 				"organization" => array(
 					"wpref" => $org_object->get_wpref(),
 					"name" => $org_object->get_name(),

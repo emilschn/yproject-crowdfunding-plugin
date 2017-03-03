@@ -900,12 +900,6 @@ class WDGOrganization {
 			$errors_edit['empty-fields'] = $errors_submit_new->get_error_message('empty-fields');
 		}
 
-
-		//On poursuit la procédure
-		if (count($errors_submit_new->errors) > 0) {
-			return FALSE;
-		}
-
 		//Si on n'a pas d'erreur, on crée l'organisation
 		if($errors_edit == array()){
 			//Création de l'objet organisation
