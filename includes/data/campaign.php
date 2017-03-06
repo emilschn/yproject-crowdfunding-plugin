@@ -1371,6 +1371,7 @@ class ATCF_Campaign {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
 			if (strpos($total, '.00') !== false) $total = substr ($total, 0, -3);
+			$total = number_format($total, 0, ".", " ");
 			return $total . ' &euro;';
 		    } else {
 			return edd_currency_filter( edd_format_amount( $total ) );
