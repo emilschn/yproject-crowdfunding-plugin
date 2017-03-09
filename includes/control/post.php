@@ -109,8 +109,16 @@ class WDGPostActions {
 
 
             //Company data
-            $organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
-			$newcampaign->link_organization( $organization_created->get_api_id() );
+			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
+			//sinon si aucune organisation, elle est créée à la volée à la création du projet
+			if(is_numeric($orga_name)){
+				$existing_orga = new WDGOrganization($orga_name);
+				$newcampaign->link_organization($existing_orga->get_api_id());
+			}
+			else{
+				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
+				$newcampaign->link_organization( $organization_created->get_api_id() );
+			}
 
 
             //Redirect then
