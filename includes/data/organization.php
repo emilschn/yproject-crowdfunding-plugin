@@ -25,6 +25,8 @@ class WDGOrganization {
 	private $postal_code;
 	private $city;
 	private $nationality;
+	private $latitude;
+	private $longitude;
 	private $type;
 	private $legalform;
 	private $capital;
@@ -113,6 +115,11 @@ class WDGOrganization {
 			$this->idnumber = $this->bopp_object->idnumber;
 			$this->rcs = $this->bopp_object->rcs;
 			$this->ape = $this->bopp_object->ape;
+			$geolocation = explode( ',', $this->bopp_object->geolocation );
+			if ( count( $geolocation ) > 1 ) {
+				$this->latitude = $geolocation[0];
+				$this->longitude = $geolocation[1];
+			}
 			
 			$this->bank_owner = $this->bopp_object->bank_owner;
 			$this->bank_address = $this->bopp_object->bank_address;
@@ -299,6 +306,13 @@ class WDGOrganization {
 		require_once("country_list.php");
 		global $country_list;
 		return $country_list[ $nationality_code ];
+	}
+
+	public function get_latitude() {
+		return $this->latitude;
+	}
+	public function get_longitude() {
+		return $this->longitude;
 	}
 	
 	public function get_type() {
