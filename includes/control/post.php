@@ -82,7 +82,6 @@ class WDGPostActions {
 
         $project_name = sanitize_text_field(filter_input(INPUT_POST,'project-name'));
         $project_desc = sanitize_text_field(filter_input(INPUT_POST,'project-description'));
-        $project_notoriety = sanitize_text_field(filter_input(INPUT_POST,'project-WDGnotoriety'));
 
         //User data
         if(!empty($new_firstname)){
@@ -99,20 +98,27 @@ class WDGPostActions {
         }
 
         if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $new_email ) && !empty( $new_phone )
-				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_notoriety)) {
+				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) ) {
             //Project data
             $newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
             $newcampaign = atcf_get_campaign($newcampaign_id);
 
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
-            $newcampaign->__set(ATCF_Campaign::$key_backoffice_WDG_notoriety, $project_notoriety);
 			$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 			$newcampaign->set_forced_mandate( 1 );
 
 
             //Company data
-            $organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
-			$newcampaign->link_organization( $organization_created->get_api_id() );
+			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
+			//sinon si aucune organisation, elle est créée à la volée à la création du projet
+			if(is_numeric($orga_name)){
+				$existing_orga = new WDGOrganization($orga_name);
+				$newcampaign->link_organization($existing_orga->get_api_id());
+			}
+			else{
+				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
+				$newcampaign->link_organization( $organization_created->get_api_id() );
+			}
 
 
             //Redirect then
