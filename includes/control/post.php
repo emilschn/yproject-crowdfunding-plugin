@@ -107,6 +107,9 @@ class WDGPostActions {
 			$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 			$newcampaign->set_forced_mandate( 1 );
 
+			//Mail pour l'équipe
+			NotificationsEmails::new_project_posted($newcampaign_id, '');
+			NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
 
             //Company data
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
