@@ -815,6 +815,9 @@ class ATCF_Campaign {
 	public function get_organization() {
 		if ( !isset( $this->organization ) ) {
 			global $WDG_cache_plugin;
+			if ($WDG_cache_plugin == null) {
+				$WDG_cache_plugin = new WDG_Cache_Plugin();
+			}
 			$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
 			$cache_version = 1;
 			$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );
