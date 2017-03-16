@@ -231,6 +231,11 @@ class WDGPostActions {
             }
         }
 
+		do_action('wdg_delete_cache', array(
+			'home-projects',
+			'list-projects-current',
+			'list-projects-funded'
+		));
         wp_safe_redirect(wp_get_referer());
         die();
     }
