@@ -408,7 +408,7 @@ class NotificationsEmails {
 		
 		$body_content = 'Bonjour '.$user_author->first_name.',<br />';
 		$body_content .= 'Les informations de votre dossier ont bien été enregistrées sur WEDOGOOD.co. ';
-		$body_content .= 'Vous pouvez dès à présent compléter les information en accédant à votre dossier en cliquant sur <a href="'. home_url('/tableau-de-bord').'?campaign_id='.$campaign_id.'">ce lien</a>.<br />';
+		$body_content .= 'Vous pouvez dès à présent compléter ces informations en accédant à votre dossier en cliquant sur <a href="'. home_url('/tableau-de-bord').'?campaign_id='.$campaign_id.'">ce lien</a>.<br />';
 		$body_content .= 'Toutes les informations communiquées à WE DO GOOD sont gardées confidentielles.<br /><br />';
 		$body_content .= 'Notre équipe vous contactera très prochainement pour en savoir plus sur votre projet.<br /><br />';
 		$body_content .= 'Bien à vous,<br />';
