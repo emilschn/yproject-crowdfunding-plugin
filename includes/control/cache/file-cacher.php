@@ -5,7 +5,8 @@
 class WDG_File_Cacher {
 	private $website;
 	private $page_list = array(
-		"home" => ""
+		"home" => "",
+		"les-projets" => "les-projets"
 	);
 	
 	/**
@@ -13,13 +14,15 @@ class WDG_File_Cacher {
 	 */
 	public function __construct() {
 		$this->website = home_url( '/' );
+
+		add_action( 'wdg_delete_cache', array( $this, 'delete_db_cache' ), 10, 1 );
 	}
 	
 	/**
 	 * Parcourt la liste des pages à mettre en cache, supprime l'existant et réenregistre
 	 */
 	public function rebuild_cache() {
-		if ( false && defined('WDG_DISABLE_CACHE') && WDG_DISABLE_CACHE === true ) {
+		if ( defined('WDG_DISABLE_CACHE') && WDG_DISABLE_CACHE === true ) {
 			return false;
 		}
 		
@@ -67,7 +70,27 @@ class WDG_File_Cacher {
 	 * @param string $name
 	 */
 	public function delete( $name ) {
-		@unlink( $this->get_filepath( $name ) );
+		ypcf_debug_log( 'WDG_File_Cacher::delete > ' . $name );
+		if ( !empty( $name ) ) {
+			@unlink( $this->get_filepath( $name ) );
+		}
+	}
+	
+	/**
+	 * Récupération action de suppression de cache de la base de données
+	 */
+	public function delete_db_cache( $array_name ) {
+		foreach ( $array_name as $name ) {
+			switch ( $name ) {
+				case 'home-projects':
+					$this->delete( 'home' );
+					break;
+				case 'list-projects-current':
+				case 'list-projects-funded':
+					$this->delete( 'les-projets' );
+					break;
+			}
+		}
 	}
 }
 
