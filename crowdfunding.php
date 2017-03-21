@@ -90,6 +90,8 @@ final class ATCF_CrowdFunding {
 	 * @return void
 	 */
 	private function includes() {
+		require( $this->includes_dir . 'control/cache/db-cacher.php' );
+		require( $this->includes_dir . 'control/cache/file-cacher.php' );
 		
 		require( $this->includes_dir . 'data/language_list.php' );
 		require( $this->includes_dir . 'data/campaign.php' );
@@ -162,6 +164,7 @@ final class ATCF_CrowdFunding {
 			WDGROIDeclaration::upgrade_db();
 			WDGROI::upgrade_db();
 			WDGKYCFile::upgrade_db();
+			WDG_Cache_Plugin::upgrade_db();
 			update_option('wdg_version', $this->version);
 		}
 		

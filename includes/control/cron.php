@@ -40,6 +40,8 @@ class WDGCronActions {
 	
 	public static function hourly_actions() {
 		WDGCronActions::check_completed_projects();
+		global $WDG_File_Cacher;
+		$WDG_File_Cacher->rebuild_cache();
 	}
 	
 	public static function check_kycs() {
