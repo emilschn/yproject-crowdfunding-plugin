@@ -82,6 +82,8 @@ class WDGPostActions {
 
         $project_name = sanitize_text_field(filter_input(INPUT_POST,'project-name'));
         $project_desc = sanitize_text_field(filter_input(INPUT_POST,'project-description'));
+        $project_terms = filter_input( INPUT_POST, 'project-terms' );
+		print_r($project_terms);
 
         //User data
         if(!empty($new_firstname)){
@@ -98,7 +100,7 @@ class WDGPostActions {
         }
 
         if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $new_email ) && !empty( $new_phone )
-				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) ) {
+				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms) ) {
             //Project data
             $newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
             $newcampaign = atcf_get_campaign($newcampaign_id);
@@ -131,12 +133,10 @@ class WDGPostActions {
 
             $redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject#informations" ;
             wp_safe_redirect( $redirect_url);
-            exit();
         } else {
-            echo "0";
-            die();
+            wp_safe_redirect( home_url( '/financement#newproject' ) );
         }
-
+		exit();
     }
 
     public static function change_project_status(){
@@ -240,6 +240,11 @@ class WDGPostActions {
             }
         }
 
+		do_action('wdg_delete_cache', array(
+			'home-projects',
+			'list-projects-current',
+			'list-projects-funded'
+		));
         wp_safe_redirect(wp_get_referer());
         die();
     }

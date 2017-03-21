@@ -59,9 +59,8 @@ class WDGFormProjects {
 			wp_update_post($postdata);
 			
 			do_action('wdg_delete_cache', array(
-				'project-header-right-'.$campaign_id,
-				'projects-current',
-				'project-investments-data-'.$campaign_id
+				'home-projects',
+				'list-projects-current'
 			));
 			
 			$page_dashboard = get_page_by_path('tableau-de-bord');
