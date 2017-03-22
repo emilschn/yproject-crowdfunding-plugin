@@ -322,6 +322,115 @@ class WDGROIDeclaration {
 		
 	}
 	
+	/**
+	 * Détermine le nom du fichier d'attestation qui va être créé
+	 * @return string
+	 */
+	private function get_payment_certificate_filename() {
+		$buffer = 'roi-declaration-' .$this->id_campaign. '-' .$this->id. '.pdf';
+		return $buffer;
+	}
+	
+	/**
+	 * Crée le fichier pdf d'attestation
+	 * @param boolean $force Si $force est à true, on crée même si le fichier existe déjà
+	 */
+	public function make_payment_certificate( $force = false ) {
+		$filename = $this->get_payment_certificate_filename();
+		$filepath = __DIR__ . '/../../files/certificate-roi-payment/' . $filename;
+		if ( !$force && file_exists( $filepath ) ) {
+			return;
+		}
+		
+		$date_now = new DateTime();
+		$certificate_date = $date_now->format( 'd/m/Y' );
+		
+		$campaign = new ATCF_Campaign( $this->id_campaign );
+		$current_organization = $campaign->get_organization();
+		if ( !empty( $current_organization ) ) {
+			$organization_obj = new WDGOrganization( $current_organization->wpref );
+		}
+		$project_roi_percent = $campaign->roi_percent();
+		$project_amount_collected = $campaign->current_amount( false );
+		$date_first_payment = new DateTime( $campaign->first_payment_date() );
+		$project_roi_start_date = $date_first_payment->format( "d/m/Y" );
+		$project_investors_list = array();
+		$investments_list = $campaign->roi_payments_data( $this );
+		foreach ($investments_list as $investment_item) {
+			$user_data = get_userdata($investment_item['user']);
+			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'] ) );
+		}
+		$project_roi_nb_years = $campaign->funding_duration();
+		$organization_name = $organization_obj->get_name();
+		$organization_address = $organization_obj->get_address();
+		$organization_postalcode = $organization_obj->get_postal_code();
+		$organization_city = $organization_obj->get_city();
+		$declaration_date = $this->get_formatted_date();
+		$declaration_date_object = new DateTime( $this->date_due );
+		$declaration_month_num = $declaration_date_object->format( 'n' );
+		$declaration_trimester = 4;
+		switch ( $declaration_month_num ) {
+			case 4:
+			case 5:
+			case 6:
+				$declaration_trimester = 1;
+				break;
+			case 7:
+			case 8:
+			case 9:
+				$declaration_trimester = 2;
+				break;
+			case 10:
+			case 11:
+			case 12:
+				$declaration_trimester = 3;
+				break;
+		}
+		$declaration_year = $declaration_date_object->format( 'Y' );
+		$declaration_declared_turnover = $this->get_turnover_total();
+		$declaration_amount = $this->amount;
+		$declaration_percent_commission = $this->percent_commission;
+		$declaration_amount_commission = $this->get_commission_to_pay();
+		$declaration_amount_and_commission = $this->get_amount_with_commission();
+		
+		
+		require __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
+		$html_content = WDG_Template_PDF_Certificate_ROI_Payment::get(
+			$certificate_date,
+			$project_roi_percent,
+			$project_amount_collected,
+			$project_roi_start_date,
+			$project_investors_list,
+			$project_roi_nb_years,
+			$organization_name,
+			$organization_address,
+			$organization_postalcode,
+			$organization_city,
+			$declaration_date,
+			$declaration_trimester,
+			$declaration_year,
+			$declaration_declared_turnover,
+			$declaration_amount,
+			$declaration_percent_commission,
+			$declaration_amount_commission,
+			$declaration_amount_and_commission
+		);
+		
+		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(5, 5, 5, 8) );
+		$html2pdf->WriteHTML( urldecode( $html_content ) );
+		$html2pdf->Output( $filepath, 'F' );
+	}
+	
+	/**
+	 * Détermine l'URL où le fichier d'attestation peut être téléchargé
+	 * @return string
+	 */
+	public function get_payment_certificate_url() {
+		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-payment/';
+		$buffer .= $this->get_payment_certificate_filename();
+		return $buffer;
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
