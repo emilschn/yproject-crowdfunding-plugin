@@ -687,22 +687,29 @@ class WDGUser {
 		//Si on est sur la page de connexion ou d'identification,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
 		if ($post->post_name == 'connexion' || $post->post_name == 'register') {
-			//Récupération de la page précédente
-			$referer_url = wp_get_referer();
-			//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
-			if (strpos($referer_url, $buffer) !== FALSE) {
+			//On vérifie d'abord si cela a été passé en paramètre d'URL
+			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
+			if ( !empty( $get_redirect_page ) ) {
+				$buffer = home_url( $get_redirect_page );
 				
-				//Si la page précédente était déjà la page connexion ou enregistrement, 
-				// on tente de voir si la redirection était passée en paramètre
-				if (strpos($referer_url, '/connexion') !== FALSE || strpos($referer_url, '/register') !== FALSE) {
-					$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
-					if (!empty($posted_redirect_page)) {
-						$buffer = $posted_redirect_page;
+			} else {
+				//Récupération de la page précédente
+				$referer_url = wp_get_referer();
+				//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
+				if (strpos($referer_url, $buffer) !== FALSE) {
+
+					//Si la page précédente était déjà la page connexion ou enregistrement, 
+					// on tente de voir si la redirection était passée en paramètre
+					if (strpos($referer_url, '/connexion') !== FALSE || strpos($referer_url, '/register') !== FALSE) {
+						$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
+						if (!empty($posted_redirect_page)) {
+							$buffer = $posted_redirect_page;
+						}
+
+					//Sinon on peut effectivement rediriger vers la page précédente
+					} else {
+						$buffer = $referer_url;
 					}
-					
-				//Sinon on peut effectivement rediriger vers la page précédente
-				} else {
-					$buffer = $referer_url;
 				}
 			}
 			
