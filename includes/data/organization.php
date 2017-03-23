@@ -171,7 +171,8 @@ class WDGOrganization {
 		}
 		
 		update_user_meta($organization_user_id, WDGOrganization::$key_api_id, $this->api_id);
-		
+		update_user_meta($organization_user_id, WDGOrganization::$key_description, $this->description);
+
 		return $organization_user_id;
 	}
 	
