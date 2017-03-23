@@ -62,6 +62,7 @@ class ATCF_Campaigns {
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_boxes_save' ) );
+		add_filter( 'edd_metabox_save_campaign_postname', 'atcf_campaign_save_postname' );
 		add_filter( 'edd_metabox_save_campaign_end_date', 'atcf_campaign_save_end_date' );
 		add_filter( 'edd_metabox_save_campaign_begin_collecte_date', 'atcf_campaign_save_begin_collecte_date' );
 		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
@@ -296,6 +297,7 @@ class ATCF_Campaigns {
 	 * @return array $fields An updated array of fields to save
 	 */
 	function meta_boxes_save( $fields ) {
+		$fields[] = 'campaign_postname';
 		$fields[] = '_campaign_featured';
 		$fields[] = ATCF_Campaign::$key_edit_version;
 		$fields[] = ATCF_Campaign::$key_payment_provider;
@@ -421,6 +423,29 @@ class ATCF_Campaigns {
 
 		return $messages;
 	}
+}
+
+function atcf_campaign_save_postname( $new_name ) {
+	$campaign_id = filter_input( INPUT_POST, 'post_ID' );
+	$current_post = get_post( $campaign_id );
+	
+	if ( !empty( $new_name ) && $current_post->post_name != $new_name ) {
+		if ( $posts = get_posts( array(
+			'name' => $new_name,
+			'post_type' => array( 'post', 'page', 'download' )
+		) ) ) {
+			return new WP_Error( 'invalid_name', "L'URL est déjà utilisée." );
+			
+		} else {
+			wp_update_post( array(
+				'ID'		=> $campaign_id,
+				'post_name' => $new_name
+			) );
+			return $new_name;
+		}
+	}
+	
+	return $current_post->post_name;
 }
 
 /**
@@ -1073,6 +1098,12 @@ function _atcf_metabox_campaign_info() {
 	wp_nonce_field( 'cf', 'cf-save' );
 	do_action( 'atcf_metabox_campaign_info_before', $campaign );
 ?>
+	<p>
+		<label for="campaign_postname">
+			URL (unique - celle-ci ne sera pas enregistrée si elle existe déjà) :
+			<input type="text" name="campaign_postname" id="campaign_postname" value="<?php echo $post->post_name; ?>" />
+		</label>
+	</p>
 
 	<p>
 		<label for="_campaign_featured">
