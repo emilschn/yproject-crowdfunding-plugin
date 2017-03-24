@@ -239,6 +239,7 @@ class WDGAjaxActions {
 				$new_orga = new WDGOrganization();
 				$new_orga->set_name( filter_input( INPUT_POST, 'org_name' ) );
 				$new_orga->set_email( filter_input( INPUT_POST, 'org_email' ) );
+				$new_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
 				$new_orga->set_type('society');
 				$new_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
 				$new_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
