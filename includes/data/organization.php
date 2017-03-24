@@ -141,6 +141,7 @@ class WDGOrganization {
 		if ($this->get_name() == "") { array_push( $errors_create_orga, __("Merci de remplir le nom de l'organisation", 'yproject') ); }
 		if ($this->get_email() == "") { array_push( $errors_create_orga, __("Merci de remplir l'adresse e-mail de l'organisation", 'yproject') ); }
 		if ($this->get_type() == "") { array_push( $errors_create_orga, __("Merci de remplir le type de l'organisation", 'yproject') ); }
+		if ($this->get_description() == "") { array_push( $errors_create_orga, __("Merci de remplir le descriptif de l'activit&eacute;", 'yproject') ); }
 		if ($this->get_legalform() == "") { array_push( $errors_create_orga, __("Merci de remplir la forme juridique de l'organisation", 'yproject') ); }
 		if ($this->get_idnumber() == "") { array_push( $errors_create_orga, __("Merci de remplir le num&eacute;ro SIREN de l'organisation", 'yproject') ); }
 		if ($this->get_rcs() == "") { array_push( $errors_create_orga, __("Merci de remplir le RCS de l'organisation", 'yproject') ); }
@@ -178,7 +179,8 @@ class WDGOrganization {
 		}
 		
 		update_user_meta($organization_user_id, WDGOrganization::$key_api_id, $this->api_id);
-		
+		update_user_meta($organization_user_id, WDGOrganization::$key_description, $this->description);
+
 		return $organization_user_id;
 	}
 	

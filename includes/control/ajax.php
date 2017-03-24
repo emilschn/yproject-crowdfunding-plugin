@@ -241,6 +241,7 @@ class WDGAjaxActions {
 				$new_orga = new WDGOrganization();
 				$new_orga->set_name( filter_input( INPUT_POST, 'org_name' ) );
 				$new_orga->set_email( filter_input( INPUT_POST, 'org_email' ) );
+				$new_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
 				$new_orga->set_type('society');
 				$new_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
 				$new_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
@@ -306,16 +307,31 @@ class WDGAjaxActions {
 	 * Enregistre les documents KYC liés à l'utilisateur
 	 */
 	public static function save_user_docs() {
-		$WDGuser_current = WDGUser::current();
 		$user_kyc_errors = array();
+		$WDGuser_current = WDGUser::current();
+		$user_id = $WDGuser_current->wp_user->ID;
+		$owner_type = WDGKYCFile::$owner_user;
 		$documents_list = array(
 			'user_doc_id'		=> WDGKYCFile::$type_id,
 			'user_doc_home'		=> WDGKYCFile::$type_home
 		);
+				
+		if ( $_SESSION['redirect_current_invest_type'] != 'user' ) {
+			$invest_type = $_SESSION['redirect_current_invest_type'];
+			$organization = new WDGOrganization($invest_type);
+			$user_id = $organization->get_wpref();
+			$owner_type = WDGKYCFile::$owner_organization;
+			$documents_list = array(
+				'org_doc_id'		=> WDGKYCFile::$type_id,
+				'org_doc_home'		=> WDGKYCFile::$type_home,
+				'org_doc_kbis'		=> WDGKYCFile::$type_kbis,
+				'org_doc_status'		=> WDGKYCFile::$type_status
+			);
+		}
 		
 		foreach ($documents_list as $document_key => $document_type) {
 			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
-				$result = WDGKYCFile::add_file( $document_type, $WDGuser_current->wp_user->ID, WDGKYCFile::$owner_user, $_FILES[$document_key] );
+				$result = WDGKYCFile::add_file( $document_type, $user_id, $owner_type, $_FILES[$document_key] );
 				if ($result == 'ext') {
 					array_push($user_kyc_errors, __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
 				} else if ($result == 'size') {
@@ -326,16 +342,30 @@ class WDGAjaxActions {
 			}
 		}
 		
-		if (!$WDGuser_current->has_sent_all_documents()) {
-			$return_values = array(
-				"response" => "kyc",
-				"errors" => $user_kyc_errors
-			);
-			echo json_encode($return_values);
-			exit();
-			
+		if ( $_SESSION['redirect_current_invest_type'] == 'user' ) {
+			if (!$WDGuser_current->has_sent_all_documents()) {
+				$return_values = array(
+					"response" => "kyc",
+					"errors" => $user_kyc_errors
+				);
+				echo json_encode($return_values);
+				exit();
+
+			} else {
+				$WDGuser_current->send_kyc();
+			}
 		} else {
-			$WDGuser_current->send_kyc();
+			if (!$organization->has_sent_all_documents()) {
+				$return_values = array(
+					"response" => "kyc",
+					"errors" => $user_kyc_errors
+				);
+				echo json_encode($return_values);
+				exit();
+
+			} else {
+				$organization->send_kyc();
+			}
 		}
 	}
 
