@@ -1,6 +1,8 @@
 includes/accounts/*
 includes/contracts/*
 !includes/contracts/index.php
+includes/control/cache/files/*
+!includes/control/cache/files/index.php
 includes/kyc/*
 !includes/kyc/index.php
 includes/logs/*

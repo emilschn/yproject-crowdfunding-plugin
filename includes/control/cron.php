@@ -40,6 +40,8 @@ class WDGCronActions {
 	
 	public static function hourly_actions() {
 		WDGCronActions::check_completed_projects();
+		global $WDG_File_Cacher;
+		$WDG_File_Cacher->rebuild_cache();
 	}
 	
 	public static function check_kycs() {
@@ -135,7 +137,12 @@ class WDGCronActions {
 			$buffer_partners .= '<type>royalty</type>' . "\n";
 			$buffer_partners .= '<pourcentage>'.$campaign->percent_completed(false).'</pourcentage>' . "\n";
 			$buffer_partners .= '<nb>'.$campaign->backers_count().'</nb>' . "\n";
-			$buffer_partners .= '<url_video>'.$campaign->video().'</url_video>' . "\n";
+			$buffer_partners .= '<url_video><![CDATA['.$campaign->video().']]></url_video>' . "\n";
+
+			//Données complémentaires pour mon petit voisinage
+			$buffer_partners .= '<latitude>'.$organization_obj->get_latitude().'</latitude>' . "\n";
+			$buffer_partners .= '<longitude>'.$organization_obj->get_longitude().'</longitude>' . "\n";
+
 		
 			$buffer_partners .= '</projet>' . "\n";
 			//*****************

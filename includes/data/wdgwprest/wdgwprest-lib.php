@@ -124,6 +124,9 @@ class WDGWPRESTLib {
  ******************************************************************************/
 	public static function get_staticpages_list() {
 		global $WDG_cache_plugin;
+		if ($WDG_cache_plugin == null) {
+			$WDG_cache_plugin = new WDG_Cache_Plugin();
+		}
 		$cache_wdgwpapi_version = 1;
 		$cache_wdgwpapi_id = 'wdgwpapi_get_static_pages';
 		$cache_wdgwpapi_duration = 60*15;

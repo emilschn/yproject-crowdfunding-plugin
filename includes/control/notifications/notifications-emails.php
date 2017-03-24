@@ -131,7 +131,7 @@ class NotificationsEmails {
 		$body_content = '';
 		$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
 		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br /><br />";
-		$body_content .= $post_campaign->post_title . " vous remercie pour votre " . $funding_type . ". N'oubliez pas qu'il ne sera définitivement validé ";
+		$body_content .= $post_campaign->post_title . " vous remercie pour votre " . $funding_type . ". Votre compte a été débité mais n'oubliez pas que l'investissement ne sera définitivement validé ";
 		$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br/>"
                 . "Retrouvez le projet à l'adresse suivante : "
                 .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a></br>'
@@ -674,10 +674,10 @@ class NotificationsEmails {
 		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et nous avons le plaisir de vous informer que le versement des royalties de ce projet a été effectué !<br />";
 		$body_content .= "Nous vous invitons à vous connecter sur WEDOGOOD.co afin de consulter votre porte monnaie électronique.<br /><br />";
 		$body_content .= "<b>Comment percevoir les royalties de mon investissement ?</b><br />";
-		$body_content .= "1. Je me connecte à mon <b>compte utilisateur</b> sur www.wedogood.co<br />";
-		$body_content .= "2. Je consulte le montant des royalties perçues dans mon <b>porte monnaie électronique</b><br />";
-		$body_content .= "3. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)</b><br />";
-		$body_content .= "OU 4. Je décide de conserver cette somme sur mon porte-monnaie électronique.<br /><br />";
+		$body_content .= "1. <b>Je me connecte</b> sur <a href=\"https://www.wedogood.co/mon-compte\">www.wedogood.co/mon-compte</a>";
+		$body_content .= " et je consulte le montant des royalties perçues dans la partie <b>Mon porte monnaie électronique</b><br />";
+		$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
+		$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
 		if ( !empty( $message ) ) {
 			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
 			$body_content .= $message;

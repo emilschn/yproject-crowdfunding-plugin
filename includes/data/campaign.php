@@ -816,6 +816,9 @@ class ATCF_Campaign {
 	public function get_organization() {
 		if ( !isset( $this->organization ) ) {
 			global $WDG_cache_plugin;
+			if ($WDG_cache_plugin == null) {
+				$WDG_cache_plugin = new WDG_Cache_Plugin();
+			}
 			$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
 			$cache_version = 1;
 			$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );
@@ -1278,14 +1281,21 @@ class ATCF_Campaign {
 
 	public static $invest_amount_min_wire = 300;
 	public static $invest_time_min_wire = 7;
+	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
 		return ($this->days_remaining() > ATCF_Campaign::$invest_time_min_wire);
 	}
 	public function can_use_wire_amount($amount_part) {
 		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
 	}
+	public function can_use_wire_remaining_amount() {
+		$goal    = $this->goal(false);
+		$current = $this->current_amount(false);
+		$remaining = $goal - $current;
+		return ($remaining > ATCF_Campaign::$campaign_max_remaining_amount);
+	}
 	public function can_use_wire($amount_part) {
-		return ($this->can_use_wire_remaining_time() && $this->can_use_wire_amount($amount_part));
+		return ($this->can_use_wire_remaining_time() && $this->can_use_wire_amount($amount_part) && $this->can_use_wire_remaining_amount());
 	}
 	
 	public static $invest_amount_min_check = 500;
@@ -1371,6 +1381,7 @@ class ATCF_Campaign {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
 			if (strpos($total, '.00') !== false) $total = substr ($total, 0, -3);
+			$total = number_format($total, 0, ".", " ");
 			return $total . ' &euro;';
 		    } else {
 			return edd_currency_filter( edd_format_amount( $total ) );
