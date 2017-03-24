@@ -178,7 +178,8 @@ class WDGOrganization {
 		}
 		
 		update_user_meta($organization_user_id, WDGOrganization::$key_api_id, $this->api_id);
-		
+		update_user_meta($organization_user_id, WDGOrganization::$key_description, $this->description);
+
 		return $organization_user_id;
 	}
 	
@@ -901,7 +902,7 @@ class WDGOrganization {
 		}
 		
 		//Vérification des données obligatoires
-		$necessary_fields = array('org_name', 'org_address', 'org_city', 'org_nationality', 'org_legalform', 'org_idnumber', 'org_ape', 'org_rcs');
+		$necessary_fields = array('org_name', 'org_description', 'org_address', 'org_city', 'org_nationality', 'org_legalform', 'org_idnumber', 'org_ape', 'org_rcs');
 		$necessary_fields_full = TRUE;
 		foreach ($necessary_fields as $field) {
 			$value = filter_input(INPUT_POST, $field);
@@ -922,6 +923,7 @@ class WDGOrganization {
 			$org_object->set_strong_authentication(FALSE);
 			$org_object->set_name(filter_input(INPUT_POST, 'org_name'));
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
+			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 			$org_object->set_postal_code($org_postal_code);
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
