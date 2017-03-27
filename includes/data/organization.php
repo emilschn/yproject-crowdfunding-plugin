@@ -58,7 +58,7 @@ class WDGOrganization {
         $org_object->set_strong_authentication(FALSE);
         $org_object->set_name($orga_name);
         $org_object->set_email($orga_email);
-
+		$org_object->set_description('---');
         $org_object->set_address('---');
         $org_object->set_postal_code('00000');
         $org_object->set_city('---');
