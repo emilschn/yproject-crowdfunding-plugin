@@ -697,10 +697,10 @@ class NotificationsEmails {
 		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et nous avons le plaisir de vous informer que le versement des royalties de ce projet a été effectué !<br />";
 		$body_content .= "Nous vous invitons à vous connecter sur WEDOGOOD.co afin de consulter votre porte monnaie électronique.<br /><br />";
 		$body_content .= "<b>Comment percevoir les royalties de mon investissement ?</b><br />";
-		$body_content .= "1. Je me connecte à mon <b>compte utilisateur</b> sur www.wedogood.co<br />";
-		$body_content .= "2. Je consulte le montant des royalties perçues dans mon <b>porte monnaie électronique</b><br />";
-		$body_content .= "3. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)</b><br />";
-		$body_content .= "OU 4. Je décide de conserver cette somme sur mon porte-monnaie électronique.<br /><br />";
+		$body_content .= "1. <b>Je me connecte</b> sur <a href=\"https://www.wedogood.co/mon-compte\">www.wedogood.co/mon-compte</a>";
+		$body_content .= " et je consulte le montant des royalties perçues dans la partie <b>Mon porte monnaie électronique</b><br />";
+		$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
+		$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
 		if ( !empty( $message ) ) {
 			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
 			$body_content .= $message;

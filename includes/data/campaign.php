@@ -1467,6 +1467,7 @@ class ATCF_Campaign {
          */
 	public function payments_data($skip_apis = FALSE) {
 		global $WDG_cache_plugin;
+		if (!isset($WDG_cache_plugin)) { $WDG_cache_plugin = new WDG_Cache_Plugin(); }
 		$payments_data = array();
 
 		$payments = edd_get_payments( array(
