@@ -374,14 +374,12 @@ class NotificationsEmails {
      * @param string $copy_recipient
      * @return bool
      */
-    public static function new_project_posted($campaign_id, $copy_recipient) {
+    public static function new_project_posted($campaign_id, $orga_name, $copy_recipient) {
 		$admin_email = get_option('admin_email');
 		$to = $admin_email . ',' . $copy_recipient;
 
 		$post_campaign = get_post($campaign_id);
 		$campaign = atcf_get_campaign($post_campaign);
-		$organization = $campaign->get_organization();
-		$organization_obj = new WDGOrganization( $organization->wpref );
 		$project_title = $post_campaign->post_title;
 		$object = '[Nouveau Projet] '. $project_title;
 		$body_content = "Un nouveau projet vient d'être publié.<br />";
@@ -393,7 +391,7 @@ class NotificationsEmails {
 		$body_content .= "- Mail : ".$user_author->user_email."<br />";
 		$user_phone = get_user_meta( $post_campaign->post_author, 'user_mobile_phone', TRUE );
 		$body_content .= "- Téléphone : ".$user_phone."<br /><br />";
-		$body_content .= "- Organisation : ".$organization_obj->get_name()."<br />";
+		$body_content .= "- Organisation : ".$orga_name."<br />";
 		$body_content .= "- Description : ".$campaign->backoffice_summary()."<br />";
 
 		return NotificationsEmails::send_mail($to, $object, $body_content);
