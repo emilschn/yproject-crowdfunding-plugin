@@ -29,6 +29,7 @@ class WDGWPREST_Entity_Organization {
 			'name'						=> $organization->get_name(),
 			'strong_authentication'		=> ( $organization->get_strong_authentication() === TRUE ) ? 1 : 0,
 			'type'						=> $organization->get_type(),
+			'description'				=> $organization->get_description(),
 			'legalform'					=> $organization->get_legalform(),
 			'idnumber'					=> $organization->get_idnumber(),
 			'rcs'						=> $organization->get_rcs(),
