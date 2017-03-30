@@ -869,7 +869,7 @@ class WDGOrganization {
 				return FALSE;
 			}
 		}
-				
+
 		//Vérification que l'utilisateur est connecté
 		if (!is_user_logged_in()) {
 			$errors_submit_new->add('not-loggedin', __('Vous devez vous connecter.', 'yproject'));
@@ -897,9 +897,16 @@ class WDGOrganization {
 
 		//Vérification du capital
 		$org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_VALIDATE_INT);
-		if ($org_capital === FALSE) {
-			$errors_submit_new->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier.', 'yproject'));
+		if ($org_capital === FALSE || $org_capital === 0) {
+			$errors_submit_new->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier et sup&eacute;rieur &agrave; z&eacute;ro.', 'yproject'));
 			$errors_edit['org_capital'] = $errors_submit_new->get_error_message('capital-not-integer');
+		}
+
+		//Vérification du code APE
+		$org_ape = filter_input(INPUT_POST, 'org_ape');
+		if ($org_ape == 0) {
+			$errors_submit_new->add('ape-not-valid', __('Le code APE ne doit pas &ecirc;tre &eacute;gal &agrave; z&eacute;ro.', 'yproject'));
+			$errors_edit['org_ape'] = $errors_submit_new->get_error_message('ape-not-valid');
 		}
 		
 		//Vérification des données obligatoires
@@ -917,8 +924,8 @@ class WDGOrganization {
 			);
 		foreach ($necessary_fields as $name => $field) {
 			$value = filter_input(INPUT_POST, $field);
-			if (empty($value)) {
-				$errors_submit_new->add('empty_'.$field, __('Le champ', 'yproject').' '.$name.' '.__('ne doit pas &ecirc;tre vide', 'yproject'));
+			if ($value === "") {
+				$errors_submit_new->add('empty_'.$field, __('Le champ', 'yproject').' '.$name.' '.__('ne doit pas &ecirc;tre vide.', 'yproject'));
 				$errors_edit[$field] = $errors_submit_new->get_error_message('empty_'.$field);
 			}
 		}
