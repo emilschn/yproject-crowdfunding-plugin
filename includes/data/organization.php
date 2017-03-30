@@ -924,7 +924,7 @@ class WDGOrganization {
 		}
 
 		//Si on n'a pas d'erreur, on crée l'organisation
-		if($errors_edit == array()){
+		if(count($errors_edit) == 0){
 			//Création de l'objet organisation
 			global $current_user;
 			$org_object = new WDGOrganization();
