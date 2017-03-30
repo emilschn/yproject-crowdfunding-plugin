@@ -903,17 +903,24 @@ class WDGOrganization {
 		}
 		
 		//Vérification des données obligatoires
-		$necessary_fields = array('org_name', 'org_description', 'org_address', 'org_city', 'org_nationality', 'org_legalform', 'org_idnumber', 'org_ape', 'org_rcs');
-		$necessary_fields_full = TRUE;
-		foreach ($necessary_fields as $field) {
+		$necessary_fields = array(
+				'd&eacute;nomination sociale' => 'org_name',
+				'e-mail' => 'org_email',
+				'descriptif de l\'activit&eacute;' => 'org_description',
+				'adresse' => 'org_address',
+				'ville' => 'org_city',
+				'pays' => 'org_nationality',
+				'forme juridique' =>'org_legalform',
+				'num&eacute;ro SIREN' =>'org_idnumber',
+				'APE' =>'org_ape',
+				'RCS' => 'org_rcs'
+			);
+		foreach ($necessary_fields as $name => $field) {
 			$value = filter_input(INPUT_POST, $field);
 			if (empty($value)) {
-				$necessary_fields_full = FALSE;
+				$errors_submit_new->add('empty_'.$field, __('Le champ', 'yproject').' '.$name.' '.__('ne doit pas &ecirc;tre vide', 'yproject'));
+				$errors_edit[$field] = $errors_submit_new->get_error_message('empty_'.$field);
 			}
-		}
-		if (!$necessary_fields_full) {
-			$errors_submit_new->add('empty-fields', __('Certains champs obligatoires sont vides. Veuillez les renseigner.', 'yproject'));
-			$errors_edit['empty-fields'] = $errors_submit_new->get_error_message('empty-fields');
 		}
 
 		//Si on n'a pas d'erreur, on crée l'organisation
