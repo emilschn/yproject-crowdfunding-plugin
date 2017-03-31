@@ -374,7 +374,7 @@ class NotificationsEmails {
      * @param string $copy_recipient
      * @return bool
      */
-    public static function new_project_posted($campaign_id, $copy_recipient) {
+    public static function new_project_posted($campaign_id, $orga_name, $copy_recipient) {
 		$admin_email = get_option('admin_email');
 		$to = $admin_email . ',' . $copy_recipient;
 
@@ -389,10 +389,31 @@ class NotificationsEmails {
 		$body_content .= "Quelques informations supplémentaires :<br />";
 		$body_content .= "- Porteur de projet : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")<br />";
 		$body_content .= "- Mail : ".$user_author->user_email."<br />";
-		$body_content .= "- Téléphone : ".$campaign->contact_phone()."<br />";
+		$user_phone = get_user_meta( $post_campaign->post_author, 'user_mobile_phone', TRUE );
+		$body_content .= "- Téléphone : ".$user_phone."<br /><br />";
+		$body_content .= "- Organisation : ".$orga_name."<br />";
+		$body_content .= "- Description : ".$campaign->backoffice_summary()."<br />";
 
 		return NotificationsEmails::send_mail($to, $object, $body_content);
     }
+	
+	public static function new_project_posted_owner($campaign_id) {
+		$post_campaign = get_post($campaign_id);
+		$user_author = get_user_by('id', $post_campaign->post_author);
+		
+		$to = $user_author->user_email;
+		$object = 'Votre dossier a bien été enregistré sur WEDOGOOD.co';
+		
+		$body_content = 'Bonjour '.$user_author->first_name.',<br />';
+		$body_content .= 'Les informations de votre campagne ont bien été enregistrées sur WEDOGOOD.co. ';
+		$body_content .= 'Vous pouvez dès à présent les compléter en accédant à votre <a href="'. home_url('/tableau-de-bord').'?campaign_id='.$campaign_id.'">tableau de bord</a>.<br />';
+		$body_content .= 'Toutes les informations communiquées à WE DO GOOD sont gardées confidentielles.<br /><br />';
+		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre campagne.<br /><br />';
+		$body_content .= 'Bien à vous,<br />';
+		$body_content .= "L'équipe de WE DO GOOD";
+
+		return NotificationsEmails::send_mail($to, $object, $body_content);
+	}
     //*******************************************************
     // FIN NOUVEAU PROJET
     //*******************************************************

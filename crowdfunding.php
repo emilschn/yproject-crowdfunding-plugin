@@ -110,8 +110,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-project.php' );
 		
-		require( $this->includes_dir . '../../social-connect/facebook/facebook.php' );
-		require( $this->includes_dir . 'control/social/twitter/TwitterAPIExchange.php' );
+		require( $this->includes_dir . 'control/social/FacebookApp/autoload.php' );
 
 		require( $this->includes_dir . 'control/ajax.php' );
 		require( $this->includes_dir . 'control/post.php' );

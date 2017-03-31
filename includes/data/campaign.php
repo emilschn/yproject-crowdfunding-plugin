@@ -112,11 +112,6 @@ function atcf_create_campaign($author_ID, $title){
     add_post_meta( $newcampaign_id, ATCF_Campaign::$key_payment_provider, ATCF_Campaign::$payment_provider_lemonway );
     add_post_meta( $newcampaign_id, 'edd_variable_prices', array(1) );
 
-
-    //Mail pour l'équipe
-    if (!WP_IS_DEV_SITE) $copy_recipient = 'communication@wedogood.co';
-    NotificationsEmails::new_project_posted($newcampaign_id, '');
-
     return $newcampaign_id;
 
 }
@@ -1472,6 +1467,7 @@ class ATCF_Campaign {
          */
 	public function payments_data($skip_apis = FALSE) {
 		global $WDG_cache_plugin;
+		if (!isset($WDG_cache_plugin)) { $WDG_cache_plugin = new WDG_Cache_Plugin(); }
 		$payments_data = array();
 
 		$payments = edd_get_payments( array(
