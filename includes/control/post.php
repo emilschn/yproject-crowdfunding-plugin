@@ -83,7 +83,6 @@ class WDGPostActions {
         $project_name = sanitize_text_field(filter_input(INPUT_POST,'project-name'));
         $project_desc = sanitize_text_field(filter_input(INPUT_POST,'project-description'));
         $project_terms = filter_input( INPUT_POST, 'project-terms' );
-		print_r($project_terms);
 
         //User data
         if(!empty($new_firstname)){
@@ -108,31 +107,45 @@ class WDGPostActions {
             $newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
 			$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 			$newcampaign->set_forced_mandate( 1 );
+			$success = true;
 
-			//Mail pour l'équipe
-			NotificationsEmails::new_project_posted($newcampaign_id, '');
-			NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
-
-            //Company data
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
 			//sinon si aucune organisation, elle est créée à la volée à la création du projet
-			if(is_numeric($orga_name)){
+			if ( is_numeric( $orga_name ) ) {
 				$existing_orga = new WDGOrganization($orga_name);
 				$newcampaign->link_organization($existing_orga->get_api_id());
-			}
-			else{
+			//Si on sélectionne "new_orga", il faut prendre le champ texte qui est apparu
+			} else if ( $orga_name == 'new_orga' ) {
+				$orga_name = sanitize_text_field( filter_input( INPUT_POST, 'new-company-name' ) );
+				if ( !empty( $orga_name ) ) {
+					$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
+					$newcampaign->link_organization( $organization_created->get_api_id() );
+				}
+			//Sinon, si c'était directement un texte, on crée l'organisation
+			} else if ( !empty( $orga_name ) ) {
 				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
 				$newcampaign->link_organization( $organization_created->get_api_id() );
+			//Sinon on arrête la procédure
+			} else {
+				$success = false;
 			}
 
+			if ( $success ) {
+				//Mail pour l'équipe
+				NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
+				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
 
-            //Redirect then
-            $page_dashboard = get_page_by_path('tableau-de-bord');
-            $campaign_id_param = '?campaign_id=';
-            $campaign_id_param .= $newcampaign_id;
 
-            $redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject#informations" ;
-            wp_safe_redirect( $redirect_url);
+				//Redirect then
+				$page_dashboard = get_page_by_path('tableau-de-bord');
+				$campaign_id_param = '?campaign_id=';
+				$campaign_id_param .= $newcampaign_id;
+
+				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject#informations" ;
+				wp_safe_redirect( $redirect_url);
+			} else {
+				wp_safe_redirect( home_url( '/financement#newproject' ) );
+			}
         } else {
             wp_safe_redirect( home_url( '/financement#newproject' ) );
         }

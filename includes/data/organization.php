@@ -58,6 +58,7 @@ class WDGOrganization {
         $org_object->set_strong_authentication(FALSE);
         $org_object->set_name($orga_name);
         $org_object->set_email($orga_email);
+		
 		$org_object->set_description('---');
         $org_object->set_address('---');
         $org_object->set_postal_code('00000');
@@ -75,7 +76,10 @@ class WDGOrganization {
         $org_object->set_bank_bic('---');
 
         $org_user_id = $org_object->create();
-        if($org_user_id==false) return false;
+        if ($org_user_id == false) {
+			ypcf_debug_log( "WDGOrganization::createSimpleOrganization renvoie false" );
+			return false;
+		}
         $org_object->set_creator( $user_id );
         return $org_object;
     }
@@ -152,6 +156,7 @@ class WDGOrganization {
 		if ($this->get_city() == "") { array_push( $errors_create_orga, __("Merci de remplir la ville de l'organisation", 'yproject') ); }
 		if ($this->get_nationality() == "") { array_push( $errors_create_orga, __("Merci de remplir le pays de l'organisation", 'yproject') ); }
 		if (!empty($errors_create_orga)) {
+			ypcf_debug_log( "WDGOrganization::create renvoie des erreurs" );
 			return FALSE;
 		}
 		
@@ -161,6 +166,7 @@ class WDGOrganization {
 		//Si il y a eu une erreur lors de la création de l'utilisateur, on arrête la procédure
 		if (isset($organization_user_id->errors) && count($organization_user_id->errors) > 0) {
 			$errors_submit_new = $organization_user_id;
+			ypcf_debug_log( "WDGOrganization::create a eu un souci pour créer l'utilisateur" );
 			return FALSE;
 		}
                 
@@ -175,6 +181,7 @@ class WDGOrganization {
 		//Vérification si on reçoit bien un entier pour identifiant
 		if (filter_var($this->api_id, FILTER_VALIDATE_INT) === FALSE) {
 			array_push( $errors_create_orga, __("Probl&egrave;me interne de cr&eacute;ation d'organisation.", 'yproject') );
+			ypcf_debug_log( "WDGOrganization::create a eu un souci pour créer l'organisation sur l'API" );
 			return FALSE;
 		}
 		
@@ -199,7 +206,9 @@ class WDGOrganization {
 			$email = $email_input;
 		}
 		remove_action( 'user_register', 'yproject_user_register' );
+		ypcf_debug_log( "WDGOrganization::create_user > " .$username. " ; " . $email);
 		$organization_user_id = wp_create_user($username, $password, $email);
+		ypcf_debug_log( "WDGOrganization::create_user >>> " .print_r($organization_user_id, true));
 		if (email_exists($email_input) && !empty($email_input)) {
 			update_user_meta($organization_user_id, 'orga_contact_email', $email_input);
 		}
