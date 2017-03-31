@@ -109,20 +109,25 @@ class WDGPostActions {
 			$newcampaign->set_forced_mandate( 1 );
 			$success = true;
 
-            //Company data
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
 			//sinon si aucune organisation, elle est créée à la volée à la création du projet
 			if ( is_numeric( $orga_name ) ) {
 				$existing_orga = new WDGOrganization($orga_name);
 				$newcampaign->link_organization($existing_orga->get_api_id());
-			} else {
+			//Si on sélectionne "new_orga", il faut prendre le champ texte qui est apparu
+			} else if ( $orga_name == 'new_orga' ) {
 				$orga_name = sanitize_text_field( filter_input( INPUT_POST, 'new-company-name' ) );
 				if ( !empty( $orga_name ) ) {
 					$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
 					$newcampaign->link_organization( $organization_created->get_api_id() );
-				} else {
-					$success = false;
 				}
+			//Sinon, si c'était directement un texte, on crée l'organisation
+			} else if ( !empty( $orga_name ) ) {
+				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
+				$newcampaign->link_organization( $organization_created->get_api_id() );
+			//Sinon on arrête la procédure
+			} else {
+				$success = false;
 			}
 
 			if ( $success ) {
