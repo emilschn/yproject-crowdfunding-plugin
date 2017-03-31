@@ -416,7 +416,7 @@ class WDGROIDeclaration {
 			$declaration_amount_and_commission
 		);
 		
-		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(5, 5, 5, 8) );
+		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
 		$html2pdf->WriteHTML( urldecode( $html_content ) );
 		$html2pdf->Output( $filepath, 'F' );
 	}

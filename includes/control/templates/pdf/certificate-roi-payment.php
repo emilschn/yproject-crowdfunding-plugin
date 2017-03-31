@@ -27,10 +27,10 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 		ob_start();
 ?>
 
-<div style="font-family: Arial; font-size: 10pt;" width="750">
+<div style="font-family: Arial; font-size: 10pt;" width="600">
 	
-	<div>
-		<img src="<?php echo __DIR__; ?>/../img/grenade-noire.png" />
+	<div style="margin-top: 50px;">
+		<img src="<?php echo __DIR__; ?>/../img/wdg-logo-red.png" />
 	</div>
 
 	<div style="margin-top: 20px;">
@@ -38,7 +38,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 			<tr>
 				<td width="400">
 					WEDOGOOD.co<br />
-					L'investissement participatif à impact positif<br />
+					Changeons le monde par la finance<br />
 					<br />
 					www.wedogood.co<br />
 					bonjour@wedogood.co
@@ -52,7 +52,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 		</table>
 	</div>
 
-	<div style="margin-top: 20px;">
+	<div style="margin-top: 70px;">
 		<p>
 			<span style="font-weight: bold; font-size: 18pt;">ATTESTATION DE VERSEMENT DE ROYALTIES T<?php echo $declaration_trimester; ?> <?php echo $declaration_year; ?></span><br />
 			<span>Date : <?php echo $certificate_date; ?></span>
@@ -104,7 +104,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 	</div>
 	
 	
-	<div style="margin-top: 40px;">
+	<div style="margin-top: 70px;">
 		<b>Fait pour valoir ce que de droit</b><br />
 		<br />
 		WE DO GOOD SAS<br />
@@ -112,7 +112,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 	</div>
 	
 	<?php // FOOTER ?>
-	<div style="width: 100%; margin-top: 40px; text-align: center;">
+	<div style="width: 100%; margin-top: 80px; text-align: center;">
 		<hr />
 		WE DO GOOD | 3 place du général Giraud - 35000 Rennes | 7 rue Mathurin Brissonneau - 44100 Nantes<br />
 		SAS à capital variable au capital minimum de 10 000 € - RCS Rennes 797 519 105 - APE 7021Z - TVA FR 44 797519105<br />
@@ -126,7 +126,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 <?php // PAGE 2 ?>
 
 <div>
-	<img src="<?php echo __DIR__; ?>/../img/grenade-noire.png" />
+	<img src="<?php echo __DIR__; ?>/../img/wdg-logo-red.png" />
 </div>
 
 <div style="margin-top: 20px;">
