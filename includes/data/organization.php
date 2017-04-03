@@ -878,7 +878,7 @@ class WDGOrganization {
 				return FALSE;
 			}
 		}
-				
+
 		//Vérification que l'utilisateur est connecté
 		if (!is_user_logged_in()) {
 			$errors_submit_new->add('not-loggedin', __('Vous devez vous connecter.', 'yproject'));
@@ -906,27 +906,41 @@ class WDGOrganization {
 
 		//Vérification du capital
 		$org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_VALIDATE_INT);
-		if ($org_capital === FALSE) {
-			$errors_submit_new->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier.', 'yproject'));
+		if ($org_capital === FALSE || $org_capital === 0) {
+			$errors_submit_new->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier et sup&eacute;rieur &agrave; z&eacute;ro.', 'yproject'));
 			$errors_edit['org_capital'] = $errors_submit_new->get_error_message('capital-not-integer');
+		}
+
+		//Vérification du code APE
+		$org_ape = filter_input(INPUT_POST, 'org_ape');
+		if ($org_ape == 0) {
+			$errors_submit_new->add('ape-not-valid', __('Le code APE ne doit pas &ecirc;tre &eacute;gal &agrave; z&eacute;ro.', 'yproject'));
+			$errors_edit['org_ape'] = $errors_submit_new->get_error_message('ape-not-valid');
 		}
 		
 		//Vérification des données obligatoires
-		$necessary_fields = array('org_name', 'org_description', 'org_address', 'org_city', 'org_nationality', 'org_legalform', 'org_idnumber', 'org_ape', 'org_rcs');
-		$necessary_fields_full = TRUE;
-		foreach ($necessary_fields as $field) {
+		$necessary_fields = array(
+				'd&eacute;nomination sociale' => 'org_name',
+				'e-mail' => 'org_email',
+				'descriptif de l\'activit&eacute;' => 'org_description',
+				'adresse' => 'org_address',
+				'ville' => 'org_city',
+				'pays' => 'org_nationality',
+				'forme juridique' =>'org_legalform',
+				'num&eacute;ro SIREN' =>'org_idnumber',
+				'APE' =>'org_ape',
+				'RCS' => 'org_rcs'
+			);
+		foreach ($necessary_fields as $name => $field) {
 			$value = filter_input(INPUT_POST, $field);
-			if (empty($value)) {
-				$necessary_fields_full = FALSE;
+			if ($value === "") {
+				$errors_submit_new->add('empty_'.$field, __('Le champ', 'yproject').' '.$name.' '.__('ne doit pas &ecirc;tre vide.', 'yproject'));
+				$errors_edit[$field] = $errors_submit_new->get_error_message('empty_'.$field);
 			}
-		}
-		if (!$necessary_fields_full) {
-			$errors_submit_new->add('empty-fields', __('Certains champs obligatoires sont vides. Veuillez les renseigner.', 'yproject'));
-			$errors_edit['empty-fields'] = $errors_submit_new->get_error_message('empty-fields');
 		}
 
 		//Si on n'a pas d'erreur, on crée l'organisation
-		if($errors_edit == array()){
+		if(count($errors_edit) == 0){
 			//Création de l'objet organisation
 			global $current_user;
 			$org_object = new WDGOrganization();
