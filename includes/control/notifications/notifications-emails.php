@@ -692,18 +692,21 @@ class NotificationsEmails {
 		
 		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;
 		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et nous avons le plaisir de vous informer que le versement des royalties de ce projet a été effectué !<br />";
+		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et nous avons le plaisir de vous informer que le versement des royalties de ce projet a été effectué !<br /><br />";
+		
+		if ( !empty( $message ) ) {
+			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
+			$body_content .= $message;
+			$body_content .= "<br /><br />";
+		}
+		
 		$body_content .= "Nous vous invitons à vous connecter sur WEDOGOOD.co afin de consulter votre porte monnaie électronique.<br /><br />";
 		$body_content .= "<b>Comment percevoir les royalties de mon investissement ?</b><br />";
 		$body_content .= "1. <b>Je me connecte</b> sur <a href=\"https://www.wedogood.co/mon-compte\">www.wedogood.co/mon-compte</a>";
 		$body_content .= " et je consulte le montant des royalties perçues dans la partie <b>Mon porte monnaie électronique</b><br />";
 		$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
 		$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
-		if ( !empty( $message ) ) {
-			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
-			$body_content .= $message;
-			$body_content .= "<br /><br />";
-		}
+		
 		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe WE DO GOOD à cette adresse : bonjour@wedogood.co<br /><br />";
 		$body_content .= "Toute l'équipe WE DO GOOD vous souhaite une belle journée.";
 		
