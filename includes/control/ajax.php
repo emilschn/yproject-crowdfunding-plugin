@@ -899,9 +899,9 @@ class WDGAjaxActions {
 		//infos sur les fichiers uploadés
 		$files_info = WDGOrganization::edit($org_object);
 
-		if($files_info === FALSE){//user non connecté
+		if($files_info === FALSE) {//user non connecté
 			$buffer = "FALSE";
-		}else{
+		} else if($files_info['files_info'] != null) {
 			$return_values = array(
 				"response" => "edit_organization",
 				"organization" => array(
@@ -924,12 +924,17 @@ class WDGAjaxActions {
 					"bankownerbic" => $org_object->get_bank_bic(),
 				),
 				"files_info" => array(
-					"org_doc_bank" => $files_info["org_doc_bank"],
-					"org_doc_kbis" => $files_info["org_doc_kbis"],
-					"org_doc_status" => $files_info["org_doc_status"],
-					"org_doc_id" => $files_info["org_doc_id"],
-					"org_doc_home" => $files_info["org_doc_home"],
+					"org_doc_bank" => $files_info['files_info']["org_doc_bank"],
+					"org_doc_kbis" => $files_info['files_info']["org_doc_kbis"],
+					"org_doc_status" => $files_info['files_info']["org_doc_status"],
+					"org_doc_id" => $files_info['files_info']["org_doc_id"],
+					"org_doc_home" => $files_info['files_info']["org_doc_home"],
 				),
+			);
+			$buffer = json_encode($return_values);
+		} else{
+			$return_values = array(
+				"errors" => $files_info['errors_edit'],
 			);
 			$buffer = json_encode($return_values);
 		}
