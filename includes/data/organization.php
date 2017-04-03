@@ -749,12 +749,14 @@ class WDGOrganization {
 
 							default:
 							case '5':
-								foreach($wallet_details->DOCS->DOC as $document_object) {
-									if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
-										switch ($document_object->S) {
-											case '1':
-												$buffer = WDGOrganization::$lemonway_status_waiting;
-												break;
+								if ($wallet_details->DOCS && $wallet_details->DOCS->DOC) {
+									foreach($wallet_details->DOCS->DOC as $document_object) {
+										if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
+											switch ($document_object->S) {
+												case '1':
+													$buffer = WDGOrganization::$lemonway_status_waiting;
+													break;
+											}
 										}
 									}
 								}
