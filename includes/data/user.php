@@ -668,7 +668,7 @@ class WDGUser {
 		$project_list = WDGWPREST_Entity_User::get_projects_by_role( $wdg_user->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 		if (!empty($project_list)) {
 			foreach ($project_list as $project) {
-				array_push($buffer, $project->project_wp_id);
+				array_push($buffer, $project->wpref);
 			}
 		}
 		
