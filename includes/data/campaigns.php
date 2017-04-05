@@ -1243,9 +1243,12 @@ function _atcf_metabox_campaign_info() {
 			?>
 			<li>CA prévisionnel :
 				<ul style="margin-left: 10px; list-style: disc;">
-				<?php for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
+				<?php foreach ($estimated_turnover as $year => $turnover): ?>
+					<li><?php echo $fp_yy; ?> : <input type="text" name="<?php echo 'est-turnover-' . $fp_yy; ?>" value="<?php echo $turnover; ?>" />&euro;</li>
+				<?php $fp_yy++; endforeach; ?>
+				<?php /*for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
 					<li><?php echo $i; ?> : <input type="text" name="<?php echo 'est-turnover-' . $i; ?>" value="<?php echo $estimated_turnover[$i]; ?>" />&euro;</li>
-				<?php endfor; ?>
+				<?php endfor;*/ ?>
 				<input type="hidden" name="campaign_estimated_turnover" value="1" />
 				</ul>
 			</li>
