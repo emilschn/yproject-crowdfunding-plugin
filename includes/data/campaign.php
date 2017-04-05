@@ -1809,7 +1809,7 @@ class ATCF_Campaign {
 		$project_api_id = $this->get_api_id();
 		$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $project_api_id, WDGWPREST_Entity_Project::$link_user_type_team );
 		foreach ($team_member_list as $team_member) {
-			if ($current_user_id == $team_member->wp_user_id) return TRUE;
+			if ($current_user_id == $team_member->wpref) return TRUE;
 		}
 		
 		return FALSE;
