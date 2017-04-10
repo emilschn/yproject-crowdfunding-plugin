@@ -72,6 +72,24 @@ class WDGUser {
 		
 	}
 	
+	public function get_metadata( $key ) {
+		if ( !empty( $key ) ) {
+			return $this->wp_user->get( 'user_' . $key );
+		}
+	}
+	
+	public function get_login() {
+		return $this->wp_user->user_login;
+	}
+	
+	public function get_api_login() {
+		return $this->get_metadata( 'api_login' );
+	}
+	
+	public function get_api_password() {
+		return $this->get_metadata( 'api_password' );
+	}
+	
 	public function get_gender() {
 		return $this->wp_user->get('user_gender');
 	}
@@ -82,10 +100,6 @@ class WDGUser {
 	
 	public function get_lastname() {
 		return $this->wp_user->last_name;
-	}
-	
-	public function get_login() {
-		return $this->wp_user->user_login;
 	}
 	
 	public function get_birthday_date() {
@@ -180,6 +194,15 @@ class WDGUser {
 	 */
 	public function is_admin() {
 		return ($this->wp_user->has_cap('manage_options'));
+	}
+	
+	/**
+	 * Détermine si l'utilisateur a un accès direct à l'API
+	 */
+	public function has_access_to_api() {
+		$api_login = $this->get_api_login();
+		$api_password = $this->get_api_password();
+		return ( !empty( $api_login ) && !empty( $api_password ) );
 	}
 	
 	/**

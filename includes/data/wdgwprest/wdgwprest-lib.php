@@ -17,7 +17,13 @@ class WDGWPRESTLib {
 	private static function call_get( $route ) {
 		ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
 		
-		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
+		$login_pwd = YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD;
+		$WDGUser_current = WDGUser::current();
+		if ( $WDGUser_current->has_access_to_api() ) {
+			$login_pwd = $WDGUser_current->get_api_login() . ':' . $WDGUser_current->get_api_password();
+		}
+		
+		$headers = array( "Authorization" => "Basic " . base64_encode( $login_pwd ) );
 		$result = wp_remote_get(
 			YP_WDGWPREST_URL . $route,
 			array( 
