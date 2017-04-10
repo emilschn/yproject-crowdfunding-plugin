@@ -50,6 +50,12 @@ class WDGROIDeclaration {
 			$this->file_list = $declaration_item->file_list;
 			$this->turnover = $declaration_item->turnover;
 			$this->message = $declaration_item->message;
+			
+			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
+			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_turnover_total() == 0 ) {
+				$this->status = WDGROIDeclaration::$status_finished;
+				$this->save();
+			}
 		}
 	}
 	
