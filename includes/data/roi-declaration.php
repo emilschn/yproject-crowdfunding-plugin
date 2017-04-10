@@ -14,6 +14,8 @@ class WDGROIDeclaration {
 	public static $mean_payment_card = 'card';
 	public static $mean_payment_wire = 'wire';
 	
+	public static $min_amount_for_wire_payment = 1000;
+	
 	public $id;
 	public $id_campaign;
 	public $date_due;
@@ -429,6 +431,14 @@ class WDGROIDeclaration {
 		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-payment/';
 		$buffer .= $this->get_payment_certificate_filename();
 		return $buffer;
+	}
+	
+	/**
+	 * Renvoie true si la déclaration de ROI peut être payée via virement
+	 * @return boolean
+	 */
+	public function can_pay_with_wire() {
+		return ($this->amount >= WDGROIDeclaration::$min_amount_for_wire_payment);
 	}
 	
 	
