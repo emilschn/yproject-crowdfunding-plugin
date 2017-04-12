@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class WDGWPRESTLib {
 	public static $wp_route_standard = 'wp/v2/';
 	public static $wp_route_wdg = 'wdg/v1/';
+	public static $wp_route_external = 'external/v1/';
 	
 	private static $http_request_timeout = 10;
 	
@@ -76,6 +77,10 @@ class WDGWPRESTLib {
 	
 	public static function call_post_wdg( $route, $parameters ) {
 		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_wdg . $route, $parameters );
+	}
+	
+	public static function call_post_external( $route, $parameters ) {
+		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_external . $route, $parameters );
 	}
 	
 /*******************************************************************************
