@@ -858,7 +858,7 @@ class WDGUser {
 				$signup_errors->add( 'user_name', __( "Merci de saisir un identifiant", 'yproject' ) );
 			}
 			if ( !validate_username( $user_name ) ) {
-				$signup_errors->add( 'user_name', __( "Les identifiants peuvent uniquement contenir des lettres, des chiffres, ., -, and @", 'yproject' ) );
+				$signup_errors->add( 'user_name', __( "Les identifiants peuvent uniquement contenir des lettres sans caract&egrave;res sp&eacute;ciaux, des chiffres, ., -, ou @", 'yproject' ) );
 			}
 			if ( strlen( $user_name ) < 4 ) {
 				$signup_errors->add( 'user_name',  __( "L'identifiant doit contenir au moins 4 caract&egrave;res", 'yproject' ) );
