@@ -48,6 +48,9 @@ class WDGWPRESTLib {
 	public static function call_get_wdg( $route ) {
 		return WDGWPRESTLib::call_get( WDGWPRESTLib::$wp_route_wdg . $route );
 	}
+	public static function call_get_external( $route ) {
+		return WDGWPRESTLib::call_get( WDGWPRESTLib::$wp_route_external . $route );
+	}
 	
 /*******************************************************************************
  * Appels génériques en POST

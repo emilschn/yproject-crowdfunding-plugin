@@ -216,8 +216,10 @@ class WDGROIDeclaration {
 	public function get_turnover_total() {
 		$buffer = 0;
 		$turnover_array = $this->get_turnover();
-		foreach ($turnover_array as $turnover_amount) {
-			$buffer += $turnover_amount;
+		if ( is_array( $turnover_array ) ) {
+			foreach ($turnover_array as $turnover_amount) {
+				$buffer += $turnover_amount;
+			}
 		}
 		return $buffer;
 	}
