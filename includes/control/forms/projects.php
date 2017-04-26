@@ -325,6 +325,7 @@ class WDGFormProjects {
 
 
 	public static function edit_image_url_video($image, $post_video, $campaign_id) {
+		$buffer = '';
 		//ajout de l'image
 		if (!empty($image)) {
 			$upload_overrides = array( 'test_form' => false );
@@ -350,12 +351,15 @@ class WDGFormProjects {
 					$attach_id, 
 					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
 				);
+				$buffer .= $upload[ 'url' ] . '|';
 			}
 		}
 		//ajout de l'url de la vidéo
 		if (isset($post_video)) {
 			update_post_meta($campaign_id, 'campaign_video', esc_url($post_video));
+			$buffer .= $post_video . '|';
 		}
+		return $buffer;
 	}
 
 	public static function form_submit_turnover() {
