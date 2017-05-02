@@ -352,8 +352,8 @@ class WDGROIDeclaration {
 			return;
 		}
 		
-		$date_now = new DateTime();
-		$certificate_date = $date_now->format( 'd/m/Y' );
+		$date_due = new DateTime( $this->date_due );
+		$certificate_date = $date_due->format( 'd/m/Y' );
 		
 		$campaign = new ATCF_Campaign( $this->id_campaign );
 		$current_organization = $campaign->get_organization();
@@ -378,8 +378,12 @@ class WDGROIDeclaration {
 		$declaration_date = $this->get_formatted_date();
 		$declaration_date_object = new DateTime( $this->date_due );
 		$declaration_month_num = $declaration_date_object->format( 'n' );
+		$declaration_year = $declaration_date_object->format( 'Y' );
 		$declaration_trimester = 4;
 		switch ( $declaration_month_num ) {
+			case 1:
+				$declaration_year--;
+				break;
 			case 4:
 			case 5:
 			case 6:
@@ -396,7 +400,6 @@ class WDGROIDeclaration {
 				$declaration_trimester = 3;
 				break;
 		}
-		$declaration_year = $declaration_date_object->format( 'Y' );
 		$declaration_declared_turnover = $this->get_turnover_total();
 		$declaration_amount = $this->amount;
 		$declaration_percent_commission = $this->percent_commission;
