@@ -74,10 +74,10 @@ class WDGCronActions {
 		$buffer_rss = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
 		$buffer_rss .= '<rss version="2.0">' . "\n";
 		$buffer_rss .= '<channel>' . "\n";
-		$buffer_rss .= '<title><![CDATA[Les projets de WE DO GOOD]]></title>' . "\n";
-		$buffer_rss .= '<description><![CDATA[Tous les projets en cours de collecte sur WE DO GOOD]]></description>' . "\n";
+		$buffer_rss .= '<title><![CDATA[Les projets de '.ATCF_CrowdFunding::get_platform_name().']]></title>' . "\n";
+		$buffer_rss .= '<description><![CDATA[Tous les projets en cours de collecte sur '.ATCF_CrowdFunding::get_platform_name().']]></description>' . "\n";
 		$buffer_rss .= '<lastBuildDate>'.$date->format(DateTime::RFC822).'</lastBuildDate>' . "\n";
-		$buffer_rss .= '<link>http://www.wedogood.co</link>' . "\n";
+		$buffer_rss .= '<link>' .home_url(). '</link>' . "\n";
 		
 		$buffer_partners = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
 		$buffer_partners .= '<partenaire>' . "\n";

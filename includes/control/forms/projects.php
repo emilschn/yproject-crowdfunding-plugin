@@ -536,11 +536,13 @@ class WDGFormProjects {
                     Voir le projet</a><br/>'
             .'Message envoy&eacute; par '
             .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
-            .$post_campaign->post_title.'</a><br/><br/>'
-            .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet %projectname%
-            . Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
-            .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
-            . '</div></div>';
+            .$post_campaign->post_title.'</a><br/><br/>';
+		if ( ATCF_CrowdFunding::get_platform_context() == "wedogood" ) {
+            $body_content .= '<em>Vous avez re&ccedil;u ce mail car vous croyez au projet %projectname%.
+				Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
+				.'votre page "Mon Compte" '.ATCF_CrowdFunding::get_platform_name().' pour désactiver les notifications de ce projet.</em>';
+		}
+        $body_content .= '</div></div>';
 
         $body_content = str_replace('%projectname%', $post_campaign->post_title, $body_content);
         $body_content = str_replace('%projecturl%', '<a target="_blank" href="'.get_permalink($post_campaign->ID).'">'.get_permalink($post_campaign->ID).'</a>', $body_content);

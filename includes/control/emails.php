@@ -127,7 +127,7 @@ function atcf_get_email_body_content( $payment_id = 0, $payment_data = array() )
 	return apply_filters( 'atcf_pending_purchase_receipt', $email_body, $payment_id, $payment_data );
 }
 
-function custom_notification( $notify_message, $comment_id ) {
+function yp_custom_notification( $notify_message, $comment_id ) {
 	try {
 		$comment_obj = get_comment( $comment_id );
 		$is_campaign = ( get_post_meta( $comment_obj->comment_post_ID, 'campaign_goal', TRUE ) != '' );
@@ -140,7 +140,7 @@ function custom_notification( $notify_message, $comment_id ) {
 			$notify_message = "Bonjour ".$first_name." ".$last_name.",</br>";
 			$notify_message .= 'Vous avez reçu un nouveau commentaire sur la page de votre projet "'.$comment_post->post_title.'".</br>';
 			$notify_message .= 'Vous pouvez le lire en vous rendant la section "Commentaires" de votre page projet : <a href="'.get_permalink($comment_obj->comment_post_ID).'">'.get_permalink($comment_obj->comment_post_ID)."</a>. </br>";
-			$notify_message .= "Bonne journée de la part de toute l'équipe WE DO GOOD !";
+			$notify_message .= "Bonne journée de la part de toute l'équipe de ".ATCF_CrowdFunding::get_platform_name()." !";
 			return $notify_message;
 		} else {
 			return $notify_message;
@@ -150,4 +150,4 @@ function custom_notification( $notify_message, $comment_id ) {
 	}
 }
 
-add_filter('comment_notification_text', 'custom_notification', 10, 2);
+add_filter('comment_notification_text', 'yp_custom_notification', 10, 2);

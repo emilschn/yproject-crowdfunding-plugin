@@ -180,7 +180,7 @@ class NotificationsEmails {
 		$body_content .= "</ul><br /><br />";
 		
 		$body_content .= "N'h&eacute;sitez pas &agrave; nous contacter si vous avez eu un souci lors de l'envoi des documents.<br /><br />";
-		$body_content .= "Toute l'&eacute;quipe de WE DO GOOD vous remercie pour votre investissement !";
+		$body_content .= "Toute l'&eacute;quipe de ".ATCF_CrowdFunding::get_platform_name()." vous remercie pour votre investissement !";
 		
 		
 		return NotificationsEmails::send_mail( $email, $object, $body_content, true );
@@ -351,11 +351,11 @@ class NotificationsEmails {
 	
 	$user_data = get_userdata($wp_user_id);
 	
-	$object = "Bienvenue chez WE DO GOOD !";
+	$object = "Bienvenue chez ".ATCF_CrowdFunding::get_platform_name()." !";
 	
 	$name = ($user_data->first_name != '') ? $user_data->first_name : $user_data->user_login;
 	$body_content = 'Bonjour ' .$name. ',<br />';
-	$body_content .= 'Nous vous souhaitons la bienvenue chez <a href="http://www.wedogood.co">WE DO GOOD</a>';
+	$body_content .= 'Nous vous souhaitons la bienvenue chez <a href="'.home_url().'">'.ATCF_CrowdFunding::get_platform_name().'</a>';
 	$body_content .= ' et esp&eacute;rons vous retrouver bient&ocirc;t pour vous faire d&eacute;couvrir les projets que nous accompagnons !';
         
 	return NotificationsEmails::send_mail($user_data->user_email, $object, $body_content, true);
@@ -402,15 +402,15 @@ class NotificationsEmails {
 		$user_author = get_user_by('id', $post_campaign->post_author);
 		
 		$to = $user_author->user_email;
-		$object = 'Votre dossier a bien été enregistré sur WEDOGOOD.co';
+		$object = 'Votre dossier a bien été enregistré sur '.ATCF_CrowdFunding::get_platform_name();
 		
 		$body_content = 'Bonjour '.$user_author->first_name.',<br />';
-		$body_content .= 'Les informations de votre campagne ont bien été enregistrées sur WEDOGOOD.co. ';
+		$body_content .= 'Les informations de votre campagne ont bien été enregistrées sur '.ATCF_CrowdFunding::get_platform_name().'. ';
 		$body_content .= 'Vous pouvez dès à présent les compléter en accédant à votre <a href="'. home_url('/tableau-de-bord').'?campaign_id='.$campaign_id.'">tableau de bord</a>.<br />';
-		$body_content .= 'Toutes les informations communiquées à WE DO GOOD sont gardées confidentielles.<br /><br />';
+		$body_content .= 'Toutes les informations communiquées à '.ATCF_CrowdFunding::get_platform_name().' sont gardées confidentielles.<br /><br />';
 		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre campagne.<br /><br />';
 		$body_content .= 'Bien à vous,<br />';
-		$body_content .= "L'équipe de WE DO GOOD";
+		$body_content .= "L'équipe de ".ATCF_CrowdFunding::get_platform_name();
 
 		return NotificationsEmails::send_mail($to, $object, $body_content);
 	}
@@ -593,7 +593,7 @@ class NotificationsEmails {
                 .$project_title.'</a><br/><br/>'
                 .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$project_title
                 .'. Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
-                .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
+                .'votre page "Mon Compte" '.ATCF_CrowdFunding::get_platform_name().' pour désactiver les notifications de ce projet.</em>'
                 . '</div></div>';
         //TODO : Lien vers "Mon compte" personnalisé (sauf s'il existe un général ?)
         
@@ -641,7 +641,7 @@ class NotificationsEmails {
 		$object = "Paiement de votre reversement effectué";
 		$body_content = "Bonjour,<br /><br />";
 		$body_content .= "Le paiement de votre reversement de ".$roi_declaration->get_amount_with_commission()." € a bien été pris en compte.<br />";
-		$body_content .= "Merci et à bientôt sur WE DO GOOD !<br /><br />";
+		$body_content .= "Merci et à bientôt sur ".ATCF_CrowdFunding::get_platform_name()." !<br /><br />";
 		
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
 	}
@@ -692,7 +692,7 @@ class NotificationsEmails {
 		
 		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;
 		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et nous avons le plaisir de vous informer que le versement des royalties de ce projet a été effectué !<br /><br />";
+		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur ".ATCF_CrowdFunding::get_platform_name()." et nous avons le plaisir de vous informer que le versement des royalties de ce projet a été effectué !<br /><br />";
 		
 		if ( !empty( $message ) ) {
 			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
@@ -700,15 +700,15 @@ class NotificationsEmails {
 			$body_content .= "<br /><br />";
 		}
 		
-		$body_content .= "Nous vous invitons à vous connecter sur WEDOGOOD.co afin de consulter votre porte monnaie électronique.<br /><br />";
+		$body_content .= "Nous vous invitons à vous connecter sur ".ATCF_CrowdFunding::get_platform_name()." afin de consulter votre porte monnaie électronique.<br /><br />";
 		$body_content .= "<b>Comment percevoir les royalties de mon investissement ?</b><br />";
-		$body_content .= "1. <b>Je me connecte</b> sur <a href=\"https://www.wedogood.co/mon-compte\">www.wedogood.co/mon-compte</a>";
+		$body_content .= "1. <b>Je me connecte</b> sur <a href=\"". home_url('/mon-compte'). "\">". home_url('/mon-compte'). "</a>";
 		$body_content .= " et je consulte le montant des royalties perçues dans la partie <b>Mon porte monnaie électronique</b><br />";
 		$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
 		$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
 		
-		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe WE DO GOOD à cette adresse : bonjour@wedogood.co<br /><br />";
-		$body_content .= "Toute l'équipe WE DO GOOD vous souhaite une belle journée.";
+		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe ".ATCF_CrowdFunding::get_platform_name()." à cette adresse : bonjour@wedogood.co<br /><br />";
+		$body_content .= "Toute l'équipe ".ATCF_CrowdFunding::get_platform_name()." vous souhaite une belle journée.";
 		
 		
 		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
@@ -722,8 +722,8 @@ class NotificationsEmails {
 		
 		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;
 		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur WEDOGOOD.co et le versement de vos royalties était annoncé pour le ".$roi_declaration->get_formatted_date().". ";
-		$body_content .= "La déclaration du porteur de projet a bien été reçue et traitée par WE DO GOOD. Cependant, le projet n'a généré aucun chiffre d'affaires sur la période concernée et ne peut donc pas vous verser de royaltiez.<br /><br />";
+		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur ".ATCF_CrowdFunding::get_platform_name()." et le versement de vos royalties était annoncé pour le ".$roi_declaration->get_formatted_date().". ";
+		$body_content .= "La déclaration du porteur de projet a bien été reçue et traitée par ".ATCF_CrowdFunding::get_platform_name().". Cependant, le projet n'a généré aucun chiffre d'affaires sur la période concernée et ne peut donc pas vous verser de royaltiez.<br /><br />";
 		if ( !empty( $message ) ) {
 			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
 			$body_content .= $message;
@@ -731,7 +731,7 @@ class NotificationsEmails {
 		}
 		$body_content .= "Nous vous remercions de votre compréhension et restons joignables à cette adresse : bonjour@wedogood.co.<br /><br />";
 		$body_content .= "Nous vous souhaitons une belle journée,<br />";
-		$body_content .= "L'équipe WE DO GOOD";
+		$body_content .= "L'équipe ".ATCF_CrowdFunding::get_platform_name();
 		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
 	}
     //*******************************************************
@@ -747,8 +747,8 @@ class NotificationsEmails {
 		
 		$object = "Transfert d'argent vers votre compte bancaire";
 		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "La somme de ".$amount." € a bien été virée de votre porte-monnaie électronique WE DO GOOD vers votre compte bancaire.<br />";
-		$body_content .= "Toute l’équipe WE DO GOOD vous souhaite une agréable journée.";
+		$body_content .= "La somme de ".$amount." € a bien été virée de votre porte-monnaie électronique ".ATCF_CrowdFunding::get_platform_name()." vers votre compte bancaire.<br />";
+		$body_content .= "Toute l’équipe ".ATCF_CrowdFunding::get_platform_name()." vous souhaite une agréable journée.";
 		
 		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
 	}

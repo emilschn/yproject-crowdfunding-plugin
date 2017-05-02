@@ -227,6 +227,11 @@ final class ATCF_CrowdFunding {
 		}
 	}
 	
+	public static function get_platform_setting( $setting_key ) {
+		$option_platform = get_option('wdg_platform');
+		return $option_platform[ $setting_key ];
+	}
+	
 	public static function get_translated_setting( $setting_id, $locale = '' ) {
 		if ($locale == '') {
 			$locale = get_locale();
@@ -238,6 +243,26 @@ final class ATCF_CrowdFunding {
 		} else {
 			global $edd_options;
 			$buffer = $edd_options[$setting_id];
+		}
+		
+		return $buffer;
+	}
+	
+	public static function get_platform_context() {
+		$buffer = ATCF_CrowdFunding::get_platform_setting( "context" );
+		if ( empty( $buffer ) ) {
+			$buffer = "wedogood";
+		}
+		return $buffer;
+	}
+	
+	public static function get_platform_name() {
+		$buffer = "WE DO GOOD";
+		$platform_context = ATCF_CrowdFunding::get_platform_context();
+		switch ( $platform_context ) {
+			case "royaltycrowdfunding":
+				$buffer = "royaltycrowdfunding.fr";
+				break;
 		}
 		
 		return $buffer;
