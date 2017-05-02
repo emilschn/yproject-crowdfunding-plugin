@@ -248,7 +248,7 @@ class WDGOrganization {
 	 */
 	public function get_lemonway_id() {
 		// Récupération dans la BDD
-		$db_lw_id = $this->wp_user->get( 'lemonway_id' );
+		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_id', true );
 		if ( empty( $db_lw_id ) ) {
 			
 			// Cross-platform
@@ -265,7 +265,7 @@ class WDGOrganization {
 				}
 			}
 			
-			update_user_meta( $this->wp_user->ID, 'lemonway_id', $db_lw_id );
+			update_user_meta( $this->wpref, 'lemonway_id', $db_lw_id );
 		}
 		return $db_lw_id;
 	}
