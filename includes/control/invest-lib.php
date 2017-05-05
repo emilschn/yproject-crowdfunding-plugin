@@ -29,13 +29,11 @@ function ypcf_check_redirections() {
 			break;
 
 			case 'investir' :
-				if (isset($_GET['invest_start'])) {
-					ypcf_session_start();
-					if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
-					if (isset($_SESSION['redirect_current_invest_type'])) unset($_SESSION['redirect_current_invest_type']);
-					if (isset($_SESSION['new_orga_just_created'])) unset($_SESSION['new_orga_just_created']);
-					if (isset($_SESSION['error_invest'])) unset($_SESSION['error_invest']);
-					if (isset($_SESSION['redirect_current_selected_reward'])) unset($_SESSION['redirect_current_selected_reward']);
+				$init_result = WDGInvestment::init();
+				if ( !$init_result ) {
+					$wdginvestment = WDGInvestment::current();
+					ypcf_debug_log( 'ypcf_check_redirections > investir > ERRORS > ' . print_r( $wdginvestment->get_error(), TRUE ) );
+					exit();
 				}
 				//D'abord on teste si l'utilisateur est bien connecté
 				ypcf_check_is_user_logged_invest();
@@ -125,8 +123,9 @@ function ypcf_check_is_user_logged_invest() {
     ypcf_session_start();
 
     if (!is_user_logged_in()) {
-		if (isset($_GET['campaign_id'])) {
-			$_SESSION['redirect_current_campaign_id'] = $_GET['campaign_id'];
+		$wdginvestment = WDGInvestment::current();
+		if ( isset( $wdginvestment->get_campaign()->ID ) ) {
+			$_SESSION['redirect_current_campaign_id'] = $wdginvestment->get_campaign()->ID;
 			$page_connexion = get_page_by_path('connexion');
 			wp_redirect(get_permalink($page_connexion->ID));
 		} else {
@@ -137,10 +136,9 @@ function ypcf_check_is_user_logged_invest() {
 }
 
 function ypcf_check_is_project_investable() {
-    $post_camp = get_post($_GET['campaign_id']);
-    $campaign = atcf_get_campaign( $post_camp );
-    if (!ypcf_check_user_is_complete($post_camp->post_author) || !$campaign->is_remaining_time() || $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte) {
-		wp_redirect(get_permalink($_GET['campaign_id']));
+	$wdginvestment = WDGInvestment::current();
+    if ( !$wdginvestment->get_campaign()->is_investable() ) {
+		wp_redirect( get_permalink( $wdginvestment->get_campaign()->ID ) );
 		exit();
     }
 }

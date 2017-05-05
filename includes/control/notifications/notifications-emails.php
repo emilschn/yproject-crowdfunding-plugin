@@ -333,7 +333,7 @@ class NotificationsEmails {
 	
 	$user_data = get_userdata($wp_user_id);
 
-	$body_content = 'Nouvel utilisateur inscrit (' . $wp_user_id . ')<br /><br />';
+	$body_content = 'Nouvel utilisateur inscrit (' . $wp_user_id . ') sur '.ATCF_CrowdFunding::get_platform_name().'<br /><br />';
 	$body_content .= "<strong>Détails de l'utilisateur</strong><br />";
 	$body_content .= "Identifiant : " . $user_data->user_login . "<br />";
 	$body_content .= "E-mail : " . $user_data->user_email . "<br />";
