@@ -277,13 +277,16 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
     }
 	
-    public static function new_purchase_admin_error( $user_data, $int_msg ) {
+    public static function new_purchase_admin_error( $user_data, $int_msg, $project_title = '' ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
 		$admin_email = 'investir@wedogood.co';
 		$object = 'Erreur investissement';
 		$body_content = "Tentative d'investissement avec erreur :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
+		if (!empty($project_title)) {
+			$body_content .= "Projet : " .$project_title. "<br />";
+		}
 		$body_content .= "Erreur LW : " .$int_msg. "<br />";
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
 	}
