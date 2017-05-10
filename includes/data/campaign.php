@@ -572,6 +572,32 @@ class ATCF_Campaign {
 	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
 	
+	public function get_roi_declarations() {
+		$buffer = array();
+		
+		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
+		foreach ( $declaration_list as $declaration_item ) {
+			$buffer_declaration_object = array();
+			$buffer_declaration_object["project"] = $this->ID;
+			$buffer_declaration_object["date_due"] = $declaration_item->date_due;
+			$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
+			$buffer_declaration_object["total_turnover"] = $declaration_item->get_turnover_total();
+			$buffer_declaration_object["total_roi"] = $declaration_item->amount;
+			$buffer_declaration_object["roi_list"] = array();
+			$roi_list = WDGROI::get_roi_list_by_declaration( $declaration_item->id );
+			foreach ( $roi_list as $roi_item ) {
+				$roi_object = array();
+				$roi_user = new WP_User( $roi_item->id_user );
+				$roi_object["user_email"] = $roi_user->user_email;
+				$roi_object["amount"] = $roi_item->amount;
+				array_push( $buffer_declaration_object["roi_list"], $roi_object );
+			}
+			array_push( $buffer, $buffer_declaration_object );
+		}
+		
+		return $buffer;
+	}
+	
 	
 /*******************************************************************************
  * GESTION CATEGORIES
@@ -1809,7 +1835,7 @@ class ATCF_Campaign {
 		$project_api_id = $this->get_api_id();
 		$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $project_api_id, WDGWPREST_Entity_Project::$link_user_type_team );
 		foreach ($team_member_list as $team_member) {
-			if ($current_user_id == $team_member->wp_user_id) return TRUE;
+			if ($current_user_id == $team_member->wpref) return TRUE;
 		}
 		
 		return FALSE;

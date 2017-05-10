@@ -72,6 +72,24 @@ class WDGUser {
 		
 	}
 	
+	public function get_metadata( $key ) {
+		if ( !empty( $key ) ) {
+			return $this->wp_user->get( 'user_' . $key );
+		}
+	}
+	
+	public function get_login() {
+		return $this->wp_user->user_login;
+	}
+	
+	public function get_api_login() {
+		return $this->get_metadata( 'api_login' );
+	}
+	
+	public function get_api_password() {
+		return $this->get_metadata( 'api_password' );
+	}
+	
 	public function get_gender() {
 		return $this->wp_user->get('user_gender');
 	}
@@ -82,10 +100,6 @@ class WDGUser {
 	
 	public function get_lastname() {
 		return $this->wp_user->last_name;
-	}
-	
-	public function get_login() {
-		return $this->wp_user->user_login;
 	}
 	
 	public function get_birthday_date() {
@@ -180,6 +194,15 @@ class WDGUser {
 	 */
 	public function is_admin() {
 		return ($this->wp_user->has_cap('manage_options'));
+	}
+	
+	/**
+	 * Détermine si l'utilisateur a un accès direct à l'API
+	 */
+	public function has_access_to_api() {
+		$api_login = $this->get_api_login();
+		$api_password = $this->get_api_password();
+		return ( !empty( $api_login ) && !empty( $api_password ) );
 	}
 	
 	/**
@@ -329,9 +352,13 @@ class WDGUser {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
-	private function get_wallet_details( $reload = false ) {
+	private function get_wallet_details( $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
-			$this->wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+			if ( $by_email ) {
+				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->wp_user->user_email );
+			} else {
+				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
+			}
 		}
 		return $this->wallet_details;
 	}
@@ -360,9 +387,30 @@ class WDGUser {
 	
 	/**
 	 * Définit l'identifiant de l'orga sur lemonway
+	 * @return string
 	 */
 	public function get_lemonway_id() {
-		return 'USERW'.$this->wp_user->ID;
+		// Récupération dans la BDD
+		$db_lw_id = $this->wp_user->get( 'lemonway_id' );
+		if ( empty( $db_lw_id ) ) {
+			
+			// Cross-platform
+			// Si n'existe pas dans la BDD, 
+			// -> on vérifie d'abord, via l'e-mail, si il existe sur LW
+			$wallet_details_by_email = $this->get_wallet_details( true, true );
+			if ( isset( $wallet_details_by_email->ID ) ) {
+				$db_lw_id = $wallet_details_by_email->ID;
+				
+			} else {
+				$db_lw_id = 'USERW'.$this->wp_user->ID;
+				if ( defined( YP_LW_USERID_PREFIX ) ) {
+					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
+				}
+			}
+			
+			update_user_meta( $this->wp_user->ID, 'lemonway_id', $db_lw_id );
+		}
+		return $db_lw_id;
 	}
 	
 	/**
@@ -668,7 +716,7 @@ class WDGUser {
 		$project_list = WDGWPREST_Entity_User::get_projects_by_role( $wdg_user->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 		if (!empty($project_list)) {
 			foreach ($project_list as $project) {
-				array_push($buffer, $project->project_wp_id);
+				array_push($buffer, $project->wpref);
 			}
 		}
 		
@@ -835,7 +883,7 @@ class WDGUser {
 				$signup_errors->add( 'user_name', __( "Merci de saisir un identifiant", 'yproject' ) );
 			}
 			if ( !validate_username( $user_name ) ) {
-				$signup_errors->add( 'user_name', __( "Les identifiants peuvent uniquement contenir des lettres, des chiffres, ., -, and @", 'yproject' ) );
+				$signup_errors->add( 'user_name', __( "Les identifiants peuvent uniquement contenir des lettres sans caract&egrave;res sp&eacute;ciaux, des chiffres, ., -, ou @", 'yproject' ) );
 			}
 			if ( strlen( $user_name ) < 4 ) {
 				$signup_errors->add( 'user_name',  __( "L'identifiant doit contenir au moins 4 caract&egrave;res", 'yproject' ) );

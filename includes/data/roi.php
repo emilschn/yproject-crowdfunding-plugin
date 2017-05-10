@@ -195,6 +195,28 @@ class WDGROI {
 	}
 	
 	/**
+	 * Retourne une liste de ROI enregistrés en fonction d'un utilisateur
+	 * @param int $id_user
+	 */
+	public static function get_roi_list_by_user( $id_user ) {
+		$buffer = array();
+		
+		global $wpdb;
+		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
+		$query .= " WHERE id_user=".$id_user;
+		$query .= " AND status='".WDGROI::$status_transferred."'";
+		$query .= " ORDER BY date_transfer ASC";
+		
+		$roi_list = $wpdb->get_results( $query );
+		foreach ( $roi_list as $roi_item ) {
+			$ROI = new WDGROI( $roi_item->id );
+			array_push($buffer, $ROI);
+		}
+		
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne une liste de ROI enregistrés en fonction d'un projet et d'un utilisateur
 	 * @param int $id_campaign
 	 * @param int $id_user
@@ -206,6 +228,28 @@ class WDGROI {
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
 		$query .= " WHERE id_campaign=".$id_campaign;
 		$query .= " AND id_user=".$id_user;
+		$query .= " AND status='".WDGROI::$status_transferred."'";
+		$query .= " ORDER BY date_transfer ASC";
+		
+		$roi_list = $wpdb->get_results( $query );
+		foreach ( $roi_list as $roi_item ) {
+			$ROI = new WDGROI( $roi_item->id );
+			array_push($buffer, $ROI);
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne une liste de ROI enregistrés en fonction d'une déclaration
+	 * @param int $id_declaration
+	 */
+	public static function get_roi_list_by_declaration( $id_declaration ) {
+		$buffer = array();
+		
+		global $wpdb;
+		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
+		$query .= " WHERE id_declaration=".$id_declaration;
 		$query .= " AND status='".WDGROI::$status_transferred."'";
 		$query .= " ORDER BY date_transfer ASC";
 		

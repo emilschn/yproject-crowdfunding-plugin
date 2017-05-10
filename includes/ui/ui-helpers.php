@@ -135,4 +135,8 @@ class UIHelpers {
 			}
 		}
 	}
+	
+	public static function format_number( $input ) {
+		return number_format( $input, 2, ',', ' ' );
+	}
 }

@@ -439,7 +439,9 @@ function ypcf_setup_wdg_menu() {
 
 function ypcf_display_wdg_admin() {
 	if (!current_user_can('manage_options')) { wp_die( __('You do not have sufficient permissions to access this page.') ); }
+
 	
+	// Données de traductions
 	$lang_list = array(
 		'en_US' => 'Anglais'
 	);
@@ -451,6 +453,11 @@ function ypcf_display_wdg_admin() {
 	//Sauvegarde toutes les données
 	$need_save = filter_input(INPUT_POST, 'save-wdg');
 	if (!empty($need_save)) {
+		// Données de la plateforme
+		$option = array();
+		$option[ "context" ] = filter_input( INPUT_POST, 'platform_context' );
+		update_option( 'wdg_platform',  $option );
+	
 		foreach ($lang_list as $lang_key => $lang_name) {
 			$option = array();
 			foreach ($properties_list as $property_key => $property_label) {
@@ -460,11 +467,22 @@ function ypcf_display_wdg_admin() {
 			update_option(ATCF_CrowdFunding::$option_name .'_'. $lang_key, $option);
 		}
 	}
+	
 	?>
-
-	<h2>Traduction WE DO GOOD</h2>
 	
 	<form method="post" action="">
+
+		<h2>Paramétrage plateforme</h2>
+		<label for="platform_context">
+			Contexte de la plateforme :
+			<select id="platform_context" name="platform_context">
+				<option value="wedogood" <?php selected( ATCF_CrowdFunding::get_platform_context(), "wedogood" ); ?>>WE DO GOOD</option>
+				<option value="royaltycrowdfunding" <?php selected( ATCF_CrowdFunding::get_platform_context(), "royaltycrowdfunding" ); ?>>royaltycrowdfunding.fr</option>
+			</select>
+		</label>
+
+
+		<h2>Traduction WE DO GOOD</h2>
 		<?php foreach ($lang_list as $lang_key => $lang_name): ?>
 			<h3><?php echo $lang_name; ?></h3>
 

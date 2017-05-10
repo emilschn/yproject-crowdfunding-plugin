@@ -325,6 +325,7 @@ class WDGFormProjects {
 
 
 	public static function edit_image_url_video($image, $post_video, $campaign_id) {
+		$buffer = '';
 		//ajout de l'image
 		if (!empty($image)) {
 			$upload_overrides = array( 'test_form' => false );
@@ -350,12 +351,15 @@ class WDGFormProjects {
 					$attach_id, 
 					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
 				);
+				$buffer .= $upload[ 'url' ] . '|';
 			}
 		}
 		//ajout de l'url de la vidéo
 		if (isset($post_video)) {
 			update_post_meta($campaign_id, 'campaign_video', esc_url($post_video));
+			$buffer .= $post_video . '|';
 		}
+		return $buffer;
 	}
 
 	public static function form_submit_turnover() {
@@ -422,7 +426,7 @@ class WDGFormProjects {
 		if (isset($_POST['payment_card'])) {
 			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url
 			$page_wallet = get_page_by_path('tableau-de-bord');	// Tableau de bord
-			$campaign_id_param = '?campaign_id=' . $campaign->ID . '#wallet';
+			$campaign_id_param = '?campaign_id=' . $campaign->ID;
 			$return_url = get_permalink($page_wallet->ID) . $campaign_id_param;
 			$wk_token = LemonwayLib::make_token('', $roi_id);
 			$roi_declaration->payment_token = $wk_token;
@@ -522,21 +526,17 @@ class WDGFormProjects {
         }
 
 
-        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
-            .'<h1 style="text-align: center;">'.$mail_title.'</h1>';
+        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">';
 
         $body_content .= $initial_content.'<br/>';
 
-        $body_content .= '<div style="text-align: center;">'
-            .'<a href="'.get_permalink($post_campaign->ID).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
-                    Voir le projet</a><br/>'
-            .'Message envoy&eacute; par '
-            .'<a style="color: rgb(255, 73, 76);" href="'.get_permalink($campaign_id).'" target="_blank">'
-            .$post_campaign->post_title.'</a><br/><br/>'
-            .'<em>Vous avez re&ccedil;u ce mail car vous croyez au projet %projectname%
-            . Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
-            .'votre page "Mon Compte" WE DO GOOD pour désactiver les notifications de ce projet.</em>'
-            . '</div></div>';
+        $body_content .= '<div style="text-align: center;">';
+		if ( ATCF_CrowdFunding::get_platform_context() == "wedogood" ) {
+            $body_content .= '<em>Vous avez re&ccedil;u ce mail car vous croyez au projet %projectname%.
+				Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
+				.'votre page "Mon Compte" '.ATCF_CrowdFunding::get_platform_name().' pour désactiver les notifications de ce projet.</em>';
+		}
+        $body_content .= '</div></div>';
 
         $body_content = str_replace('%projectname%', $post_campaign->post_title, $body_content);
         $body_content = str_replace('%projecturl%', '<a target="_blank" href="'.get_permalink($post_campaign->ID).'">'.get_permalink($post_campaign->ID).'</a>', $body_content);
