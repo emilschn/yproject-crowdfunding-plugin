@@ -598,6 +598,34 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	private $current_roi_declarations;
+	public function has_current_roi_declaration() {
+		$current_roi_declarations = $this->get_current_roi_declarations();
+		return ( !empty( $current_roi_declarations ) );
+	}
+	/**
+	 * Retourne la liste des déclarations qui sont en cours
+	 * Ce sont les déclarations dont 
+	 * - le statut n'est pas "finished"
+	 * - la date est dépassée ou la différence par rapport à aujourd'hui est de moins de 10 jours
+	 * @return array
+	 */
+	public function get_current_roi_declarations() {
+		if ( !isset( $this->current_roi_declarations ) ) {
+			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
+			$this->current_roi_declarations = array();
+			$date_now = new DateTime();
+			foreach ( $declaration_list as $declaration_item ) {
+				$date_due = new DateTime( $declaration_item->date_due );
+				$date_interval = $date_now->diff( $date_due );
+				if ( $declaration_item->status != WDGROIDeclaration::$status_finished && ( $date_due < $date_now || $date_interval->format( '%a' ) < 10 ) ) {
+					array_push( $this->current_roi_declarations, $declaration_item );
+				}
+			}
+		}
+		return $this->current_roi_declarations;
+	}
+	
 	
 /*******************************************************************************
  * GESTION CATEGORIES
