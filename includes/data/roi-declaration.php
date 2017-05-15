@@ -504,12 +504,15 @@ class WDGROIDeclaration {
 	/**
 	 * Liste des déclarations ROI pour un projet
 	 */
-	public static function get_list_by_campaign_id( $id_campaign ) {
+	public static function get_list_by_campaign_id( $id_campaign, $status = '' ) {
 		$buffer = array();
 		
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
 		$query .= " WHERE id_campaign=".$id_campaign;
+		if ( !empty( $status ) ) {
+		$query .= " AND status='".$status."'";
+		}
 		$query .= " ORDER BY date_due ASC";
 		
 		$declaration_list = $wpdb->get_results( $query );

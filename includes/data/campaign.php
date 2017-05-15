@@ -572,27 +572,79 @@ class ATCF_Campaign {
 	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
 	
+	private $roi_declarations;
 	public function get_roi_declarations() {
+		if ( !isset( $this->roi_declarations ) ) {
+			$this->roi_declarations = array();
+
+			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
+			foreach ( $declaration_list as $declaration_item ) {
+				$buffer_declaration_object = array();
+				$buffer_declaration_object["project"] = $this->ID;
+				$buffer_declaration_object["date_due"] = $declaration_item->date_due;
+				$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
+				$buffer_declaration_object["total_turnover"] = $declaration_item->get_turnover_total();
+				$buffer_declaration_object["total_roi"] = $declaration_item->amount;
+				$buffer_declaration_object["roi_list"] = array();
+				$roi_list = WDGROI::get_roi_list_by_declaration( $declaration_item->id );
+				foreach ( $roi_list as $roi_item ) {
+					$roi_object = array();
+					$roi_user = new WP_User( $roi_item->id_user );
+					$roi_object["user_email"] = $roi_user->user_email;
+					$roi_object["amount"] = $roi_item->amount;
+					array_push( $buffer_declaration_object["roi_list"], $roi_object );
+				}
+				array_push( $this->roi_declarations, $buffer_declaration_object );
+			}
+		}
+		
+		return $this->roi_declarations;
+	}
+	
+	/**
+	 * Retourne le nombre de déclarations de ROI (total)
+	 * @return int
+	 */
+	public function get_roi_declarations_number() {
+		$roi_declarations = $this->get_roi_declarations();
+		return count( $roi_declarations );
+	}
+	
+	/**
+	 * Retourne le montant des ROI versées
+	 * @return int
+	 */
+	public function get_roi_declarations_total_turnover_amount() {
+		$buffer = 0;
+		$declaration_list = $this->get_roi_declarations();
+		foreach ( $declaration_list as $declaration_item ) {
+			$buffer += $declaration_item["total_turnover"];
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le montant des ROI versées
+	 * @return int
+	 */
+	public function get_roi_declarations_total_roi_amount() {
+		$buffer = 0;
+		$declaration_list = $this->get_roi_declarations();
+		foreach ( $declaration_list as $declaration_item ) {
+			$buffer += $declaration_item["total_roi"];
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Renvoie la liste des déclarations selon un statut particulier
+	 * @param string $status
+	 */
+	public function get_roi_declarations_by_status( $status ) {
 		$buffer = array();
 		
-		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
-		foreach ( $declaration_list as $declaration_item ) {
-			$buffer_declaration_object = array();
-			$buffer_declaration_object["project"] = $this->ID;
-			$buffer_declaration_object["date_due"] = $declaration_item->date_due;
-			$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
-			$buffer_declaration_object["total_turnover"] = $declaration_item->get_turnover_total();
-			$buffer_declaration_object["total_roi"] = $declaration_item->amount;
-			$buffer_declaration_object["roi_list"] = array();
-			$roi_list = WDGROI::get_roi_list_by_declaration( $declaration_item->id );
-			foreach ( $roi_list as $roi_item ) {
-				$roi_object = array();
-				$roi_user = new WP_User( $roi_item->id_user );
-				$roi_object["user_email"] = $roi_user->user_email;
-				$roi_object["amount"] = $roi_item->amount;
-				array_push( $buffer_declaration_object["roi_list"], $roi_object );
-			}
-			array_push( $buffer, $buffer_declaration_object );
+		if ( !empty( $status ) ) {
+			$buffer = WDGROIDeclaration::get_list_by_campaign_id( $this->ID, $status );
 		}
 		
 		return $buffer;
