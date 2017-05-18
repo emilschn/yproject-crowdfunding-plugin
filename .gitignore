@@ -1,5 +1,7 @@
 files/certificate-roi-payment/*
 !files/certificate-roi-payment/index.php
+files/certificate-roi-yearly-user/*
+!files/certificate-roi-yearly-user/index.php
 includes/accounts/*
 includes/contracts/*
 !includes/contracts/index.php
