@@ -454,9 +454,13 @@ function ypcf_display_wdg_admin() {
 	$need_save = filter_input(INPUT_POST, 'save-wdg');
 	if (!empty($need_save)) {
 		// Données de la plateforme
-		$option = array();
-		$option[ "context" ] = filter_input( INPUT_POST, 'platform_context' );
-		update_option( 'wdg_platform',  $option );
+		$option_platform = array();
+		$option_platform[ "context" ] = filter_input( INPUT_POST, 'platform_context' );
+		update_option( 'wdg_platform',  $option_platform );
+		
+		$option_roi = array();
+		$option_roi[ "info_yearly_certificate" ] = filter_input( INPUT_POST, 'royalties_yearly_certificate' );
+		update_option( WDGROI::$option_name,  $option_roi );
 	
 		foreach ($lang_list as $lang_key => $lang_name) {
 			$option = array();
@@ -480,6 +484,11 @@ function ypcf_display_wdg_admin() {
 				<option value="royaltycrowdfunding" <?php selected( ATCF_CrowdFunding::get_platform_context(), "royaltycrowdfunding" ); ?>>royaltycrowdfunding.fr</option>
 			</select>
 		</label>
+
+		
+		<h2>Royalties</h2>
+		<label for="royalties_yearly_certificate">Informations relatives au site de l'administration :</label><br />
+		<?php wp_editor( WDGROI::get_parameter( 'info_yearly_certificate' ), 'royalties_yearly_certificate' ); ?>
 
 
 		<h2>Traduction WE DO GOOD</h2>

@@ -146,6 +146,15 @@ class WDGROI {
  * REQUETES STATIQUES
  ******************************************************************************/
 	/**
+	 * Renvoie le contenu d'un paramètre de la base de données (réglé en BO)
+	 */
+	public static $option_name = 'wdg_roi_options';
+	public static function get_parameter( $parameter_key ) {
+		$options_roi = get_option( WDGROI::$option_name );
+		return $options_roi[ $parameter_key ];
+	}
+	
+	/**
 	 * Mise à jour base de données
 	 */
 	public static function upgrade_db() {
