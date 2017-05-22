@@ -9,6 +9,15 @@ class WDGInvestment {
 	private $error;
 	private $campaign;
 	
+	public static $status_init = 'init';
+	public static $status_expired = 'expired';
+	public static $status_started = 'started';
+	public static $status_waiting_check = 'waiting-check';
+	public static $status_waiting_wire = 'waiting-wire';
+	public static $status_error = 'error';
+	public static $status_canceled = 'canceled';
+	public static $status_validated = 'validated';
+	
 	public function __construct( $post_id = FALSE, $invest_token = FALSE ) {
 		if ( !empty( $post_id ) ) {
 			$this->id = $post_id;
@@ -25,7 +34,8 @@ class WDGInvestment {
 	 */
 	public static function current() {
 		if ( is_null( self::$_current ) ) {
-			self::$_current = new self();
+			ypcf_session_start();
+			self::$_current = new self( FALSE, $_SESSION[ 'investment_token' ] );
 		}
 		return self::$_current;
 	}
@@ -49,6 +59,45 @@ class WDGInvestment {
 		}
 		
 		return $buffer;
+	}
+	
+	/**
+	 * Retourne le montant de l'investissement
+	 * @return int
+	 */
+	public function get_amount() {
+		return $this->token_info->amount;
+	}
+	
+	/**
+	 * Retourne l'url de redirection
+	 * @param string $redirection_type
+	 * @return string
+	 */
+	public function get_redirection( $redirection_type ) {
+		$buffer = '';
+		switch ( $redirection_type ) {
+			case 'error':
+				$buffer = $this->token_info->redirect_url_nok;
+				break;
+			case 'success':
+				$buffer = $this->token_info->redirect_url_ok;
+				break;
+				
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Détermine le nouveau statut de l'investissement
+	 * @param string $status
+	 */
+	public function set_status( $status ) {
+		$parameters = array(
+			'token' => $this->token,
+			'status' => $status
+		);
+		WDGWPRESTLib::call_post_external( 'investment', $parameters );
 	}
 	
 	/**
@@ -123,18 +172,15 @@ class WDGInvestment {
 		wp_destroy_current_session();
 		wp_clear_auth_cookie();
 		
-		// Vérifier que le statut du token est valide
-		if ( $this->token_info->status != 'init' ) {
-			array_push( $this->error, __( "Le statut du jeton d'investissement n'est pas valable.", 'yproject' ) );
+		// Vérifier que la date d'expiration du token n'est pas passée
+		if ( $this->token_info->status == WDGInvestment::$status_expired ) {
+			array_push( $this->error, __( "Le jeton d'investissement a expir&eacute;.", 'yproject' ) );
 			return FALSE;
 		}
 		
-		// Vérifier que la date d'expiration du token n'est pas passée
-	    date_default_timezone_set('Europe/Paris');
-		$date_now = new DateTime();
-		$date_expiration = new DateTime( $this->token_info->token_expiration );
-		if ( $date_now > $date_expiration ) {
-			array_push( $this->error, __( "Le jeton d'investissement a expir&eacute;.", 'yproject' ) );
+		// Vérifier que le statut du token est valide
+		if ( $this->token_info->status != WDGInvestment::$status_init ) {
+			array_push( $this->error, __( "Le statut du jeton d'investissement n'est pas valable.", 'yproject' ) );
 			return FALSE;
 		}
 		
@@ -180,7 +226,7 @@ class WDGInvestment {
 		wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 		
 		// On enregistre les informations
-		$wdg_current_user = WDGUser::current();
+		$wdg_current_user = new WDGUser( $wp_user_id );
 		$wdg_current_user->save_data(
 			$this->token_info->email,
 			$this->token_info->gender,
@@ -192,7 +238,7 @@ class WDGInvestment {
 			$this->token_info->birthday_city,
 			$this->token_info->nationality,
 			$this->token_info->address,
-			$this->token_info->postal_code,
+			$this->token_info->postalcode,
 			$this->token_info->city,
 			$this->token_info->country,
 			''
@@ -222,6 +268,9 @@ class WDGInvestment {
 			'legal_entity_nationality'	=> array( 'type' => 'varchar', 'other' => '' ),
 			 */
 		}
+		
+		// On dit à l'API que la procédure a démarré
+		$this->set_status( WDGInvestment::$status_started );
 		
 		return $buffer;
 	}
