@@ -14,6 +14,8 @@ class WDGROIDeclaration {
 	public static $mean_payment_card = 'card';
 	public static $mean_payment_wire = 'wire';
 	
+	public static $min_amount_for_wire_payment = 1000;
+	
 	public $id;
 	public $id_campaign;
 	public $date_due;
@@ -48,6 +50,12 @@ class WDGROIDeclaration {
 			$this->file_list = $declaration_item->file_list;
 			$this->turnover = $declaration_item->turnover;
 			$this->message = $declaration_item->message;
+			
+			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
+			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_turnover_total() == 0 ) {
+				$this->status = WDGROIDeclaration::$status_finished;
+				$this->save();
+			}
 		}
 	}
 	
@@ -208,8 +216,10 @@ class WDGROIDeclaration {
 	public function get_turnover_total() {
 		$buffer = 0;
 		$turnover_array = $this->get_turnover();
-		foreach ($turnover_array as $turnover_amount) {
-			$buffer += $turnover_amount;
+		if ( is_array( $turnover_array ) ) {
+			foreach ($turnover_array as $turnover_amount) {
+				$buffer += $turnover_amount;
+			}
 		}
 		return $buffer;
 	}
@@ -342,8 +352,8 @@ class WDGROIDeclaration {
 			return;
 		}
 		
-		$date_now = new DateTime();
-		$certificate_date = $date_now->format( 'd/m/Y' );
+		$date_due = new DateTime( $this->date_due );
+		$certificate_date = $date_due->format( 'd/m/Y' );
 		
 		$campaign = new ATCF_Campaign( $this->id_campaign );
 		$current_organization = $campaign->get_organization();
@@ -368,8 +378,12 @@ class WDGROIDeclaration {
 		$declaration_date = $this->get_formatted_date();
 		$declaration_date_object = new DateTime( $this->date_due );
 		$declaration_month_num = $declaration_date_object->format( 'n' );
+		$declaration_year = $declaration_date_object->format( 'Y' );
 		$declaration_trimester = 4;
 		switch ( $declaration_month_num ) {
+			case 1:
+				$declaration_year--;
+				break;
 			case 4:
 			case 5:
 			case 6:
@@ -386,7 +400,6 @@ class WDGROIDeclaration {
 				$declaration_trimester = 3;
 				break;
 		}
-		$declaration_year = $declaration_date_object->format( 'Y' );
 		$declaration_declared_turnover = $this->get_turnover_total();
 		$declaration_amount = $this->amount;
 		$declaration_percent_commission = $this->percent_commission;
@@ -429,6 +442,14 @@ class WDGROIDeclaration {
 		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-payment/';
 		$buffer .= $this->get_payment_certificate_filename();
 		return $buffer;
+	}
+	
+	/**
+	 * Renvoie true si la déclaration de ROI peut être payée via virement
+	 * @return boolean
+	 */
+	public function can_pay_with_wire() {
+		return ($this->amount >= WDGROIDeclaration::$min_amount_for_wire_payment);
 	}
 	
 	
@@ -483,12 +504,15 @@ class WDGROIDeclaration {
 	/**
 	 * Liste des déclarations ROI pour un projet
 	 */
-	public static function get_list_by_campaign_id( $id_campaign ) {
+	public static function get_list_by_campaign_id( $id_campaign, $status = '' ) {
 		$buffer = array();
 		
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
 		$query .= " WHERE id_campaign=".$id_campaign;
+		if ( !empty( $status ) ) {
+		$query .= " AND status='".$status."'";
+		}
 		$query .= " ORDER BY date_due ASC";
 		
 		$declaration_list = $wpdb->get_results( $query );

@@ -243,10 +243,31 @@ class WDGOrganization {
 	}
 	
 	/**
-	 * Définir l'identifiant de l'orga sur lemonway
+	 * Définit l'identifiant de l'orga sur lemonway
+	 * @return string
 	 */
 	public function get_lemonway_id() {
-		return 'ORGA'.$this->api_id.'W'.$this->wpref;
+		// Récupération dans la BDD
+		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_id', true );
+		if ( empty( $db_lw_id ) ) {
+			
+			// Cross-platform
+			// Si n'existe pas dans la BDD, 
+			// -> on vérifie d'abord, via l'e-mail, si il existe sur LW
+			$wallet_details_by_email = $this->get_wallet_details( true, true );
+			if ( isset( $wallet_details_by_email->ID ) ) {
+				$db_lw_id = $wallet_details_by_email->ID;
+				
+			} else {
+				$db_lw_id = 'ORGA'.$this->api_id.'W'.$this->wpref;
+				if ( defined( YP_LW_USERID_PREFIX ) ) {
+					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
+				}
+			}
+			
+			update_user_meta( $this->wpref, 'lemonway_id', $db_lw_id );
+		}
+		return $db_lw_id;
 	}
 	
 	
@@ -681,9 +702,13 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
-	private function get_wallet_details( $reload = false ) {
+	private function get_wallet_details( $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
-			$this->wallet_details = LemonwayLib::wallet_get_details($this->get_lemonway_id());
+			if ( $by_email ) {
+				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
+			} else {
+				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
+			}
 		}
 		return $this->wallet_details;
 	}

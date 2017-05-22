@@ -234,10 +234,16 @@ class LemonwayLib {
 	 * @param type $wallet_id
 	 * @return boolean or object
 	 */
-	public static function wallet_get_details($wallet_id) {
-		if (!isset($wallet_id)) return FALSE;
+	public static function wallet_get_details( $wallet_id = FALSE, $wallet_email = FALSE ) {
+		if ( empty( $wallet_id ) && empty( $wallet_email ) ) return FALSE;
 		
-		$param_list = array( 'wallet' => $wallet_id );
+		if ( !empty( $wallet_id ) ) {
+			$param_list = array( 'wallet' => $wallet_id );
+			
+		} elseif ( !empty( $wallet_email ) ) {
+			$param_list = array( 'email' => $wallet_email );
+		
+		}
 		
 		$result = LemonwayLib::call('GetWalletDetails', $param_list);
 		

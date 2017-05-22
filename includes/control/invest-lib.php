@@ -17,6 +17,8 @@ function ypcf_check_redirections() {
 
 		switch ($page_name) {
 			case 'connexion' :
+				//Modification très crade temporaire pour gérer une partie de l'API
+				ypcf_check_api_calls();
 				//Redirection vers la page d'investissement après login, si on venait de l'investissement
 				ypcf_check_is_user_logged_connexion();
 			break;
@@ -67,6 +69,41 @@ function ypcf_check_redirections() {
     }
 }
 add_action( 'template_redirect', 'ypcf_check_redirections' );
+
+/**
+ * DEPRECATED !!
+ * Temporaire : sert à gérer certains appels API pour les données qui n'y figurent pas encore
+ */
+function ypcf_check_api_calls() {
+	$input_action = filter_input( INPUT_GET, 'action' );
+	$input_param = filter_input( INPUT_GET, 'param' );
+	switch ( $input_action ) {
+		case "get_royalties_by_project":
+			if ( !empty( $input_param ) ) {
+				$campaign = new ATCF_Campaign( $input_param );
+				$result = $campaign->get_roi_declarations();
+				exit( json_encode( $result ) );
+			}
+		break;
+	
+		case "get_royalties_by_user":
+			if ( !empty( $input_param ) ) {
+				$query_user = get_user_by( 'email', $input_param );
+				$result = WDGROI::get_roi_list_by_user( $query_user->ID );
+				$buffer = array();
+				foreach ( $result as $roi ) {
+					$roi_item = array();
+					$roi_item["project"] = $roi->id_campaign;
+					$roi_item["date"] = $roi->date_transfer;
+					$roi_item["amount"] = $roi->amount;
+					array_push( $buffer, $roi_item );
+				}
+				exit( json_encode( $buffer ) );
+			}
+		break;
+	}
+}
+
 
 /**
  * Après le login, si on venait de l'investissement, il faut y retourner
@@ -296,7 +333,7 @@ function ypcf_check_meanofpayment_redirections() {
 					if ( !empty($return->MONEYINWEB->TOKEN) ) {
 						$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
 						$url_css_encoded = urlencode($url_css);
-						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&p=' . $url_css_encoded);
+						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded);
 						exit();
 					}
 				}
@@ -320,7 +357,7 @@ function ypcf_check_meanofpayment_redirections() {
 					if ( !empty($return->MONEYINWEB->TOKEN) ) {
 						$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
 						$url_css_encoded = urlencode($url_css);
-						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&p=' . $url_css_encoded);
+						wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded);
 						exit();
 					}
 				}

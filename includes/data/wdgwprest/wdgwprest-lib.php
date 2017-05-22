@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class WDGWPRESTLib {
 	public static $wp_route_standard = 'wp/v2/';
 	public static $wp_route_wdg = 'wdg/v1/';
+	public static $wp_route_external = 'external/v1/';
 	
 	private static $http_request_timeout = 10;
 	
@@ -17,7 +18,13 @@ class WDGWPRESTLib {
 	private static function call_get( $route ) {
 		ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
 		
-		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
+		$login_pwd = YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD;
+		$WDGUser_current = WDGUser::current();
+		if ( $WDGUser_current->has_access_to_api() ) {
+			$login_pwd = $WDGUser_current->get_api_login() . ':' . $WDGUser_current->get_api_password();
+		}
+		
+		$headers = array( "Authorization" => "Basic " . base64_encode( $login_pwd ) );
 		$result = wp_remote_get(
 			YP_WDGWPREST_URL . $route,
 			array( 
@@ -40,6 +47,9 @@ class WDGWPRESTLib {
 	}
 	public static function call_get_wdg( $route ) {
 		return WDGWPRESTLib::call_get( WDGWPRESTLib::$wp_route_wdg . $route );
+	}
+	public static function call_get_external( $route ) {
+		return WDGWPRESTLib::call_get( WDGWPRESTLib::$wp_route_external . $route );
 	}
 	
 /*******************************************************************************
@@ -70,6 +80,10 @@ class WDGWPRESTLib {
 	
 	public static function call_post_wdg( $route, $parameters ) {
 		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_wdg . $route, $parameters );
+	}
+	
+	public static function call_post_external( $route, $parameters ) {
+		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_external . $route, $parameters );
 	}
 	
 /*******************************************************************************
