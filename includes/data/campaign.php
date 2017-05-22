@@ -12,7 +12,7 @@ function atcf_get_campaign( $post_campaign ) {
  * @return objet campagne
  */
 function atcf_get_current_campaign() {
-        $campaign = false;
+	$campaign = false;
 	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign, $post;
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
 	if (empty($campaign_id)) {
@@ -29,7 +29,8 @@ function atcf_get_current_campaign() {
 			$campaign_id = atcf_get_campaign_id_from_category($cat);
 			
 		} else {
-			$campaign_id = (isset($_GET['campaign_id'])) ? $_GET['campaign_id'] : $post->ID;
+			$wdginvestment = WDGInvestment::current();
+			$campaign_id = ( isset( $wdginvestment->get_campaign()->ID ) ) ? $wdginvestment->get_campaign()->ID : $post->ID;
 		}
 	}
 	
@@ -1110,6 +1111,13 @@ class ATCF_Campaign {
 	 */
 	public function vote() {
 		return $this->__get(ATCF_Campaign::$key_campaign_status);
+	}
+	
+	/**
+	 * Returns true if it is possible to invest on the project
+	 */
+	public function is_investable() {
+		return ( ypcf_check_user_is_complete( $this->data->post_author ) && $this->is_remaining_time() && $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte );
 	}
 	
 	/**
