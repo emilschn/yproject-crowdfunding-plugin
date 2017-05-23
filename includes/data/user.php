@@ -381,7 +381,9 @@ class WDGUser {
 		$royalties_list = $this->get_royalties_for_year( $year );
 		foreach ( $royalties_list as $wdg_roi ) {
 			$roi_item = array();
-			array_push( $invest_list, $wdg_roi->id_investment );
+			if ( $wdg_roi->id_investment > 0 ) {
+				array_push( $invest_list, $wdg_roi->id_investment );
+			}
 			$wdg_organization = new WDGOrganization( $wdg_roi->id_orga );
 			$wdg_roi_declaration = new WDGROIDeclaration( $wdg_roi->id_declaration );
 			$roi_item[ 'organization_name' ] = $wdg_organization->get_name();
