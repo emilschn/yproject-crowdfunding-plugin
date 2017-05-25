@@ -206,14 +206,18 @@ class WDGROI {
 	/**
 	 * Retourne une liste de ROI enregistrés en fonction d'un utilisateur
 	 * @param int $id_user
+	 * @param int $year
 	 */
-	public static function get_roi_list_by_user( $id_user ) {
+	public static function get_roi_list_by_user( $id_user, $year = '' ) {
 		$buffer = array();
 		
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
 		$query .= " WHERE id_user=".$id_user;
 		$query .= " AND status='".WDGROI::$status_transferred."'";
+		if ( !empty( $year ) ) {
+			$query .= " AND YEAR(date_transfer)=".$year;
+		}
 		$query .= " ORDER BY date_transfer ASC";
 		
 		$roi_list = $wpdb->get_results( $query );
