@@ -643,17 +643,40 @@ class WDGAjaxActions {
 			$errors['new_roi_percent_estimated']="Le pourcentage de CA reversé doit être positif";
 		}
 
-		//Update first_payment_date
-		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
-		if(empty($new_first_payment_date)){
-			$errors['new_first_payment']= "La date est invalide";
+		//Update contract_start_date
+		$new_contract_start_date = filter_input(INPUT_POST, 'new_contract_start_date');
+		if ( empty( $new_contract_start_date ) ) {
+			$errors[ 'new_contract_start_date' ] = "La date est invalide";
 		} else {
 			try {
-				$new_first_payment_date = new DateTime(filter_input(INPUT_POST, 'new_first_payment'));
-				update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
-				$success['new_first_payment'] = 1;
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_contract_start_date, $new_contract_start_date );
+				$success[ 'new_contract_start_date']  = 1;
 			} catch (Exception $e) {
-				$errors['new_first_payment'] = "La date est invalide";
+				$errors[ 'new_contract_start_date' ] = "La date est invalide";
+			}
+		}
+
+		//Update first_payment_date
+		$old_first_payment_date = $campaign->first_payment_date();
+		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
+		if ( empty( $old_first_payment_date ) && empty( $new_first_payment_date ) && !empty( $new_contract_start_date ) ) {
+			// Si non défini, on chope le 10 du trimestre suivant le début de contrat pour automatiser un peu !
+			$contract_start_date_time = new DateTime( $new_contract_start_date );
+			$contract_start_date_time->add( new DateInterval( 'P9D' ) );
+			$contract_start_date_time->add( new DateInterval( 'P3M' ) );
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_first_payment_date, date_format( $contract_start_date_time, 'Y-m-d H:i:s' ) );
+			
+		} else {
+			if(empty($new_first_payment_date)){
+				$errors['new_first_payment']= "La date est invalide";
+			} else {
+				try {
+					$new_first_payment_date = new DateTime(filter_input(INPUT_POST, 'new_first_payment'));
+					update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
+					$success['new_first_payment'] = 1;
+				} catch (Exception $e) {
+					$errors['new_first_payment'] = "La date est invalide";
+				}
 			}
 		}
 
