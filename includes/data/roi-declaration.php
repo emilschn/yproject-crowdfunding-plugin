@@ -452,6 +452,39 @@ class WDGROIDeclaration {
 		return ($this->amount >= WDGROIDeclaration::$min_amount_for_wire_payment);
 	}
 	
+	/**
+	 * Renvoie la liste des mois concernés par une déclaration
+	 * @return array
+	 */
+	public function get_month_list() {
+		$buffer = array();
+		
+		$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+		$campaign = atcf_get_campaign( $this->id_campaign );
+		$nb_fields = $campaign->get_turnover_per_declaration();
+
+		$date_due = new DateTime( $this->date_due );
+		$declaration_year = $date_due->format( 'Y' );
+		$date_due->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
+		// Si l'année de déclaration est différente de la première date de déclaration,
+			// on recule d'une année
+		if ( $declaration_year > $date_due->format( 'Y' ) ) {
+			$declaration_year--;
+		}
+		
+		for ($i = 0; $i < $nb_fields; $i++) {
+			// Si on est en janvier, et que ce n'est pas la première déclaration,
+				// on avance d'une année
+			if ( $i > 0 && $date_due->format( 'n' ) == 1 ) {
+				$declaration_year++;
+			}
+			array_push( $buffer, ucfirst( __( $months[ $date_due->format('m') - 1 ] ) ) . ' ' . $declaration_year );
+			$date_due->add( new DateInterval( 'P1M' ) );
+		}
+
+		return $buffer;
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
@@ -504,12 +537,15 @@ class WDGROIDeclaration {
 	/**
 	 * Liste des déclarations ROI pour un projet
 	 */
-	public static function get_list_by_campaign_id( $id_campaign ) {
+	public static function get_list_by_campaign_id( $id_campaign, $status = '' ) {
 		$buffer = array();
 		
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
 		$query .= " WHERE id_campaign=".$id_campaign;
+		if ( !empty( $status ) ) {
+		$query .= " AND status='".$status."'";
+		}
 		$query .= " ORDER BY date_due ASC";
 		
 		$declaration_list = $wpdb->get_results( $query );

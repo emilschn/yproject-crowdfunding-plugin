@@ -146,6 +146,15 @@ class WDGROI {
  * REQUETES STATIQUES
  ******************************************************************************/
 	/**
+	 * Renvoie le contenu d'un paramètre de la base de données (réglé en BO)
+	 */
+	public static $option_name = 'wdg_roi_options';
+	public static function get_parameter( $parameter_key ) {
+		$options_roi = get_option( WDGROI::$option_name );
+		return $options_roi[ $parameter_key ];
+	}
+	
+	/**
 	 * Mise à jour base de données
 	 */
 	public static function upgrade_db() {
@@ -197,14 +206,18 @@ class WDGROI {
 	/**
 	 * Retourne une liste de ROI enregistrés en fonction d'un utilisateur
 	 * @param int $id_user
+	 * @param int $year
 	 */
-	public static function get_roi_list_by_user( $id_user ) {
+	public static function get_roi_list_by_user( $id_user, $year = '' ) {
 		$buffer = array();
 		
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
 		$query .= " WHERE id_user=".$id_user;
 		$query .= " AND status='".WDGROI::$status_transferred."'";
+		if ( !empty( $year ) ) {
+			$query .= " AND YEAR(date_transfer)=".$year;
+		}
 		$query .= " ORDER BY date_transfer ASC";
 		
 		$roi_list = $wpdb->get_results( $query );
