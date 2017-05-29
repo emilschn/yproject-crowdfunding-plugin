@@ -455,6 +455,17 @@ class WDGAjaxActions {
 			update_post_meta($campaign_id, 'campaign_location', $location);
 			$success["new_project_location"]=1;
 		}
+		
+		//Champs personnalisés
+		$WDGAuthor = new WDGUser( $campaign->data->post_author );
+		$nb_custom_fields = $WDGAuthor->wp_user->get('wdg-contract-nb-custom-fields');
+		if ( $nb_custom_fields > 0 ) {
+			for ( $i = 1; $i <= $nb_custom_fields; $i++ ) {
+				$custom_field_value = sanitize_text_field( filter_input( INPUT_POST,'custom_field_' . $i ) );
+				update_post_meta( $campaign_id, 'custom_field_' . $i, $custom_field_value );
+				$success['custom_field_' . $i] = 1;
+			}
+		}
 
 		$return_values = array(
 			"response" => "edit_project",
