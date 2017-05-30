@@ -1,4 +1,40 @@
-<?php 
+<?php
+class WDG_PDF_Generator {
+	
+/******************************************************************************/
+	/* Shortcodes spécifiques aux contrats */
+/******************************************************************************/
+	/**
+	 * Shortcode affichant la date de démarrage du contrat
+	 */
+	public static function shortcode_contract_start_date( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		$buffer = "";
+		global $shortcode_campaign_obj;
+		$data_contract_start_date = $shortcode_campaign_obj->contract_start_date();
+		if ( !empty( $data_contract_start_date ) ) {
+			$start_datetime = new DateTime( $data_contract_start_date );
+			$buffer = $start_datetime->format( 'd/m/Y' );
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant le contenu d'un champ personnalisé
+	 */
+	public static function shortcode_custom_field( $atts, $content = '' ) {
+		$atts = shortcode_atts( array(
+			'id'	=> '1'
+		), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = get_post_meta( $shortcode_campaign_obj->ID, 'custom_field_' . $atts['id'], TRUE);
+		return $buffer;
+	}
+	
+	
+	
+}
+
 /**
  * Creates a pdf file with the content
  * @param type $html_content
@@ -9,10 +45,10 @@ function generatePDF($html_content, $filename) {
     ypcf_debug_log('generatePDF > ' . $filename);
     $buffer = false;
     if (isset($html_content) && isset($filename) && ($filename != "") && !file_exists($filename)) {
-	$html2pdf = new HTML2PDF('P','A4','fr');
-	$html2pdf->WriteHTML(urldecode($html_content));
-	$html2pdf->Output($filename, 'F');
-	$buffer = true;
+		$html2pdf = new HTML2PDF('P','A4','fr');
+		$html2pdf->WriteHTML(urldecode($html_content));
+		$html2pdf->Output($filename, 'F');
+		$buffer = true;
     }
     return $buffer;
 }
@@ -162,7 +198,23 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     $buffer .= '</p>';
     
     $buffer .= '<p>';
-    $buffer .= html_entity_decode($campaign_obj->powers_params());
+	$user_author = new WDGUser( $campaign_obj->post_author() );
+	$override_contract = $user_author->wp_user->get('wdg-contract-override');
+	if ( !empty( $override_contract ) ) {
+		global $shortcode_campaign_obj;
+		$shortcode_campaign_obj = $campaign_obj;
+		add_shortcode( 'wdg_campaign_contract_start_date', 'WDG_PDF_Generator::shortcode_contract_start_date' );
+		$nb_custom_fields = $user_author->wp_user->get('wdg-contract-nb-custom-fields');
+		if ( $nb_custom_fields > 0 ) {
+			for ( $i = 1; $i <= $nb_custom_fields; $i++ ) {
+				add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
+			}
+		}
+		$override_contract_filtered = apply_filters( 'the_content', $override_contract );
+		$buffer .= html_entity_decode( $override_contract_filtered );
+	} else {
+		$buffer .= html_entity_decode( $campaign_obj->powers_params() );
+	}
     $buffer .= '</p>';
     
     $buffer .= '<table style="border:0px;"><tr><td>';
