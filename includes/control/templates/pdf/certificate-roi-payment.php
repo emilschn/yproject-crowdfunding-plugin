@@ -111,15 +111,6 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 		Jean-David BAR, Président<br />
 	</div>
 	
-	<?php // FOOTER ?>
-	<div style="width: 100%; margin-top: 80px; text-align: center;">
-		<hr />
-		WE DO GOOD | 3 place du général Giraud - 35000 Rennes | 7 rue Mathurin Brissonneau - 44100 Nantes<br />
-		SAS à capital variable au capital minimum de 10 000 € - RCS Rennes 797 519 105 - APE 7021Z - TVA FR 44 797519105<br />
-		WE DO GOOD est membre de l’association professionnelle Financement Participatif France et agréée par le Pôle de compétitivité Finance Innovation.
-	</div>
-	<?php // FIN FOOTER ?>
-	
 </div>
 	
 
@@ -154,6 +145,8 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 		<?php endforeach; ?>
 	</table>
 </div>
+	
+<?php require_once( 'common/footer.php' ); ?>
 
 <?php
 		$buffer = ob_get_clean();
