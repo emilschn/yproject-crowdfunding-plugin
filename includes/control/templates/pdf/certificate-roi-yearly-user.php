@@ -42,9 +42,10 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 				<td>
 					<?php if (!empty($user_organization_name)): ?>
 						<?php echo $user_organization_name; ?><br />
-						<?php echo $user_organization_id; ?><br />
+						Numéro SIREN : <?php echo $user_organization_id; ?><br />
+					<?php else: ?>
+						<?php echo $user_name; ?><br />
 					<?php endif; ?>
-					<?php echo $user_name; ?><br />
 					<?php echo $user_email; ?><br />
 					<?php echo $user_address; ?><br />
 					<?php echo $user_postal_code; ?> <?php echo $user_city; ?>
