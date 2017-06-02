@@ -20,6 +20,7 @@ class WDGOrganization {
 	private $name;
 	private $email;
 	private $description;
+	private $website;
 	private $strong_authentication;
 	private $address;
 	private $postal_code;
@@ -108,6 +109,7 @@ class WDGOrganization {
 			}
 			
 			$this->description = get_user_meta($user_id, WDGOrganization::$key_description, TRUE);
+			$this->website = "";
 			$this->strong_authentication = $this->bopp_object->strong_authentication;
 			$this->address = $this->bopp_object->address;
 			$this->postal_code = $this->bopp_object->postalcode;
@@ -296,6 +298,13 @@ class WDGOrganization {
 	}
 	public function set_description($value) {
 		$this->description = $value;
+	}
+	
+	public function get_website() {
+		return $this->website;
+	}
+	public function set_website($value) {
+		$this->website = $value;
 	}
 	
 	public function get_strong_authentication() {
@@ -721,7 +730,20 @@ class WDGOrganization {
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
 			$WDGUser_creator = new WDGUser();
-			return LemonwayLib::wallet_company_register( $this->get_lemonway_id(), $this->get_email(), $WDGUser_creator->wp_user->user_firstname, $WDGUser_creator->wp_user->user_lastname, $this->get_name(), $this->get_description() );
+			return LemonwayLib::wallet_company_register(
+				$this->get_lemonway_id(),
+				$this->get_email(),
+				$WDGUser_creator->wp_user->user_firstname,
+				$WDGUser_creator->wp_user->user_lastname,
+				$this->get_name(),
+				$this->get_description(),
+				$this->get_website(),
+				$this->get_country(),
+				$WDGUser_creator->get_country( 'iso3' ),
+				$WDGUser_creator->get_lemonway_birthdate(),
+				$WDGUser_creator->get_lemonway_phone_number(),
+				$this->get_idnumber()
+			);
 		}
 		return TRUE;
 	}

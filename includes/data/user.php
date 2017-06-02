@@ -106,6 +106,19 @@ class WDGUser {
 		return $this->wp_user->last_name;
 	}
 	
+	public function get_nationality( $format = '' ) {
+		$buffer = $this->wp_user->get('user_nationality');
+		if ( !empty( $format ) && $format == 'iso3' ) {
+			// La nationalité est enregistrée au format iso2, il faut juste la convertir
+			require( 'country_list.php' );
+			global $country_list_iso2_to_iso3;
+			if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
+				$buffer = $country_list_iso2_to_iso3[ $buffer ];
+			}
+		}
+		return $buffer;
+	}
+	
 	public function get_address() {
 		return $this->wp_user->get('user_address');
 	}
@@ -116,6 +129,28 @@ class WDGUser {
 	
 	public function get_city() {
 		return $this->wp_user->get('user_city');
+	}
+	
+	public function get_country( $format = '' ) {
+		$buffer = $this->wp_user->get('user_country');
+		if ( !empty( $format ) && $format == 'iso3' ) {
+			// Le pays est saisi, il faut tenter de le convertir
+			require( 'country_list.php' );
+			global $country_list, $country_list_iso2_to_iso3;
+			// D'abord, on le met en majuscule
+			$upper_country = strtoupper( $buffer );
+			// On le cherche en iso2
+			$iso2_key = array_search( $upper_country, $country_list );
+			// On le transforme en iso3
+			if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
+				$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
+			}
+		}
+		return $buffer;
+	}
+	
+	public function get_phone_number() {
+		return $this->wp_user->get('user_mobile_phone');
 	}
 	
 	public function get_birthday_date() {
@@ -522,7 +557,18 @@ class WDGUser {
 		//Vérifie que le wallet n'est pas déjà enregistré
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
-			return LemonwayLib::wallet_register( $this->get_lemonway_id(), $this->wp_user->user_email, $this->get_lemonway_title(), $this->wp_user->user_firstname, $this->wp_user->user_lastname );
+			return LemonwayLib::wallet_register(
+				$this->get_lemonway_id(),
+				$this->wp_user->user_email,
+				$this->get_lemonway_title(),
+				$this->wp_user->user_firstname, 
+				$this->wp_user->user_lastname,
+				$this->get_country( 'iso3' ),
+				$this->get_lemonway_phone_number(),
+				$this->get_lemonway_birthdate(),
+				$this->get_nationality( 'iso3' ),
+				''
+			);
 		}
 		return TRUE;
 	}
@@ -577,6 +623,18 @@ class WDGUser {
 			$buffer = "F";
 		}
 		return $buffer;
+	}
+	
+	public function get_lemonway_phone_number() {
+		$phone_number = $this->get_phone_number();
+		$lemonway_phone_number = LemonwayLib::check_phone_number( $phone_number );
+		return $lemonway_phone_number;
+	}
+	
+	public function get_lemonway_birthdate() {
+		// format : dd/MM/yyyy
+		$lemonway_birthdate = $this->wp_user->get('user_birthday_day'). '/' .$this->wp_user->get('user_birthday_month'). '/' .$this->wp_user->get('user_birthday_year');
+		return $lemonway_birthdate;
 	}
 	
 	/**
