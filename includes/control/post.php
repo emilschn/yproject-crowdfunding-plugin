@@ -119,12 +119,20 @@ class WDGPostActions {
 				$orga_name = sanitize_text_field( filter_input( INPUT_POST, 'new-company-name' ) );
 				if ( !empty( $orga_name ) ) {
 					$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
-					$newcampaign->link_organization( $organization_created->get_api_id() );
+					if ( $organization_created != false ) {
+						$newcampaign->link_organization( $organization_created->get_api_id() );
+					} else {
+						$success = false;
+					}
 				}
 			//Sinon, si c'était directement un texte, on crée l'organisation
 			} else if ( !empty( $orga_name ) ) {
 				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
-				$newcampaign->link_organization( $organization_created->get_api_id() );
+				if ( $organization_created != false ) {
+					$newcampaign->link_organization( $organization_created->get_api_id() );
+				} else {
+					$success = false;
+				}
 			//Sinon on arrête la procédure
 			} else {
 				$success = false;
