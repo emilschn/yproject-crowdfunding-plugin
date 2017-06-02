@@ -497,6 +497,11 @@ class ATCF_Campaign {
 	    return $this->__get('campaign_roi_percent');
 	}
 
+    public static $key_contract_start_date = 'campaign_contract_start_date';
+	public function contract_start_date() {
+	    return $this->__get(ATCF_Campaign::$key_contract_start_date);
+	}
+
     public static $key_first_payment_date = 'campaign_first_payment_date';
 	public function first_payment_date() {
 	    return $this->__get(ATCF_Campaign::$key_first_payment_date);
