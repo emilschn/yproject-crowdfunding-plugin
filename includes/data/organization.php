@@ -877,6 +877,142 @@ class WDGOrganization {
 		$last_mandate = end( $mandate_list );
 		return LemonwayLib::wallet_sign_mandate_init( $this->get_lemonway_id(), $phone_number, $last_mandate['ID'], $url_return, $url_error );;
 	}
+	
+/*******************************************************************************
+ * Gestion royalties
+*******************************************************************************/
+	private $royalties_per_year;
+	/**
+	 * Retourne la liste des royalties d'une année
+	 * @param int $year
+	 * @return array
+	 */
+	public function get_royalties_for_year( $year ) {
+		if ( !isset( $this->royalties_per_year ) ) {
+			$this->royalties_per_year = array();
+		}
+		if ( !isset( $this->royalties_per_year[ $year ] ) ) {
+			$this->royalties_per_year[ $year ] = WDGROI::get_roi_list_by_user( $this->creator->ID, $year );
+		}
+		
+		return $this->royalties_per_year[ $year ];
+	}
+	
+	/**
+	 * Retourne TRUE si l'utilisateur a reçu des royalties pour l'année en paramètre
+	 * @param int $year
+	 * @return boolean
+	 */
+	public function has_royalties_for_year( $year ) {
+		$royalties_list = $this->get_royalties_for_year( $year );
+		return ( count( $royalties_list ) > 0 );
+	}
+	
+	/**
+	 * Retourne le nom du fichier de certificat
+	 * @return string
+	 */
+	private function get_royalties_yearly_certificate_filename( $year ) {
+		$buffer = 'certificate-roi-' .$year. '-user-' .$this->creator->id. '.pdf';
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le lien vers l'attestation de royalties d'une année
+	 * - Si le fichier n'existe pas, crée le fichier auparavant
+	 * @param int $year
+	 * @return string
+	 */
+	public function get_royalties_certificate_per_year( $year, $force = false ) {
+		$filename = $this->get_royalties_yearly_certificate_filename( $year );
+		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-yearly-user/' . $filename;
+		$filepath = __DIR__ . '/../../files/certificate-roi-yearly-user/' . $filename;
+		if ( !$force && file_exists( $filepath ) ) {
+			return $buffer;
+		}
+		
+		$invest_list = array();
+		$roi_list = array();
+		$roi_number = 0;
+		$roi_total = 0;
+		$royalties_list = $this->get_royalties_for_year( $year );
+		foreach ( $royalties_list as $wdg_roi ) {
+			$roi_item = array();
+			if ( $wdg_roi->id_investment > 0 ) {
+				array_push( $invest_list, $wdg_roi->id_investment );
+			}
+			$wdg_organization = new WDGOrganization( $wdg_roi->id_orga );
+			$wdg_roi_declaration = new WDGROIDeclaration( $wdg_roi->id_declaration );
+			$roi_item[ 'organization_name' ] = $wdg_organization->get_name();
+			$roi_item[ 'trimester_months' ] = '';
+			$month_list = $wdg_roi_declaration->get_month_list();
+			foreach ( $month_list as $month_item ) {
+				if ( !empty( $roi_item[ 'trimester_months' ] ) ) {
+					$roi_item[ 'trimester_months' ] .= ', ';
+				}
+				$roi_item[ 'trimester_months' ] .= $month_item;
+			}
+			
+			$date_transfer = new DateTime( $wdg_roi->date_transfer );
+			$roi_item[ 'date' ] = $date_transfer->format('d/m/Y');
+			$roi_item[ 'amount' ] = UIHelpers::format_number( $wdg_roi->amount ) . ' &euro;';
+			$roi_number++;
+			$roi_total += $wdg_roi->amount;
+			array_push( $roi_list, $roi_item );
+		}
+		
+		require( 'country_list.php' );
+		global $country_list;
+		$investment_list = array();
+		$invest_list_unique = array_unique( $invest_list );
+		foreach ( $invest_list_unique as $invest_id ) {
+			$invest_item = array();
+			
+			$invest_item['organization_name'] = '';
+			$invest_item['organization_id'] = '';
+			$downloads = edd_get_payment_meta_downloads( $invest_id );
+			if ( !is_array( $downloads[0] ) ){
+				$campaign = atcf_get_campaign( $downloads[0] );
+				$campaign_organization = $campaign->get_organization();
+				$wdg_organization = new WDGOrganization( $campaign_organization->wpref );
+				$invest_item['organization_name'] = $wdg_organization->get_name();
+				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
+				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
+				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
+			}
+			
+			$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
+			$invest_item['date'] = $date_invest->format('d/m/Y');
+			$invest_item['amount'] = UIHelpers::format_number( edd_get_payment_amount( $invest_id ) ) . ' &euro;';
+			array_push( $investment_list, $invest_item );
+		}
+ 		
+		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
+		
+		require __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
+		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get(
+			$this->get_name(),
+			$this->get_idnumber(),
+			'',
+			$this->get_email(),
+			$this->get_address(),
+			$this->get_postal_code(),
+			$this->get_city(),
+			'01/01/'.($year + 1),
+			$year,
+			$investment_list,
+			$roi_number,
+			$roi_list,
+			UIHelpers::format_number( $roi_total ). ' &euro;',
+			$info_yearly_certificate
+		);
+		
+		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
+		$html2pdf->WriteHTML( urldecode( $html_content ) );
+		$html2pdf->Output( $filepath, 'F' );
+		
+		return $buffer;
+	}
     
 /*******************************************************************************
  * Fonctions statiques

@@ -515,9 +515,13 @@ class WDGFormProjects {
         $campaign_author_str = $author->first_name . ' ' . $author->last_name;
         if (empty($campaign_author_str)) { $campaign_author_str = $author->user_login; }
 
-        $username = $variables['username'];
-        if(empty($username)){
-            $username = "<i>(Nom du destinataire)</i>";
+        $userfirstname = $variables[ 'userfirstname' ];
+        if ( empty( $userfirstname ) ){
+            $userfirstname = "<i>(Nom du destinataire)</i>";
+        }
+        $userlastname = $variables[ 'userlastname' ];
+        if ( empty( $userlastname ) ){
+            $userlastname = "<i>(Nom du destinataire)</i>";
         }
 
         $investwish = $variables['investwish'];
@@ -532,23 +536,19 @@ class WDGFormProjects {
 
         $body_content .= '<div style="text-align: center;">';
 		if ( ATCF_CrowdFunding::get_platform_context() == "wedogood" ) {
-            $body_content .= '<em>Vous avez re&ccedil;u ce mail car vous croyez au projet %projectname%.
+            $body_content .= '<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$post_campaign->post_title.'.
 				Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
 				.'votre page "Mon Compte" '.ATCF_CrowdFunding::get_platform_name().' pour désactiver les notifications de ce projet.</em>';
 		}
         $body_content .= '</div></div>';
 
-        $body_content = str_replace('%projectname%', $post_campaign->post_title, $body_content);
-        $body_content = str_replace('%projecturl%', '<a target="_blank" href="'.get_permalink($post_campaign->ID).'">'.get_permalink($post_campaign->ID).'</a>', $body_content);
-        $body_content = str_replace('%projectauthor%', $campaign_author_str, $body_content);
-        $body_content = str_replace('%username%', $username, $body_content);
+        $body_content = str_replace('%userfirstname%', $userfirstname, $body_content);
+        $body_content = str_replace('%userlastname%', $userlastname, $body_content);
         $body_content = str_replace('%investwish%', $investwish, $body_content);
 
         $transformed_title = $post_campaign->post_title.' : '.$mail_title;
-        $transformed_title = str_replace('%projectname%', $post_campaign->post_title, $transformed_title);
-        $transformed_title = str_replace('%projecturl%', '<a target="_blank" href="'.get_permalink($post_campaign->ID).'">'.get_permalink($post_campaign->ID).'</a>', $transformed_title);
-        $transformed_title = str_replace('%projectauthor%', $campaign_author_str, $transformed_title);
-        $transformed_title = str_replace('%username%', $username, $transformed_title);
+        $transformed_title = str_replace('%userfirstname%', $userfirstname, $transformed_title);
+        $transformed_title = str_replace('%userlastname%', $userlastname, $transformed_title);
         $transformed_title = str_replace('%investwish%', $investwish, $transformed_title);
 
         return array(

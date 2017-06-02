@@ -90,6 +90,10 @@ class WDGUser {
 		return $this->get_metadata( 'api_password' );
 	}
 	
+	public function get_email() {
+		return $this->wp_user->user_email;
+	}
+	
 	public function get_gender() {
 		return $this->wp_user->get('user_gender');
 	}
@@ -377,6 +381,7 @@ class WDGUser {
 		
 		$invest_list = array();
 		$roi_list = array();
+		$roi_number = 0;
 		$roi_total = 0;
 		$royalties_list = $this->get_royalties_for_year( $year );
 		foreach ( $royalties_list as $wdg_roi ) {
@@ -399,22 +404,29 @@ class WDGUser {
 			$date_transfer = new DateTime( $wdg_roi->date_transfer );
 			$roi_item[ 'date' ] = $date_transfer->format('d/m/Y');
 			$roi_item[ 'amount' ] = UIHelpers::format_number( $wdg_roi->amount ) . ' &euro;';
+			$roi_number++;
 			$roi_total += $wdg_roi->amount;
 			array_push( $roi_list, $roi_item );
 		}
 		
+		require( 'country_list.php' );
+		global $country_list;
 		$investment_list = array();
 		$invest_list_unique = array_unique( $invest_list );
 		foreach ( $invest_list_unique as $invest_id ) {
 			$invest_item = array();
 			
 			$invest_item['organization_name'] = '';
+			$invest_item['organization_id'] = '';
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
 			if ( !is_array( $downloads[0] ) ){
 				$campaign = atcf_get_campaign( $downloads[0] );
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
+				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
+				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
+				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
 			}
 			
 			$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
@@ -423,18 +435,21 @@ class WDGUser {
 			array_push( $investment_list, $invest_item );
 		}
  		
-		$info_yearly_certificate = WDGROI::get_parameter( 'info_yearly_certificate' );
+		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
 		
 		require __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get(
 			'',
+			'',
 			$this->get_firstname(). ' ' .$this->get_lastname(),
+			$this->get_email(),
 			$this->get_address(),
 			$this->get_postal_code(),
 			$this->get_city(),
 			'01/01/'.($year + 1),
 			$year,
 			$investment_list,
+			$roi_number,
 			$roi_list,
 			UIHelpers::format_number( $roi_total ). ' &euro;',
 			$info_yearly_certificate

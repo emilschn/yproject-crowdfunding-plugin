@@ -277,15 +277,18 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
     }
 	
-    public static function new_purchase_admin_error( $user_data, $int_msg, $project_title = '' ) {
+    public static function new_purchase_admin_error( $user_data, $int_msg, $project_title = '', $amount = '' ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
 		$admin_email = 'investir@wedogood.co';
 		$object = 'Erreur investissement';
 		$body_content = "Tentative d'investissement avec erreur :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
-		if (!empty($project_title)) {
+		if ( !empty( $project_title ) ) {
 			$body_content .= "Projet : " .$project_title. "<br />";
+		}
+		if ( !empty( $amount ) ) {
+			$body_content .= "Montant : " .$amount. "<br />";
 		}
 		$body_content .= "Erreur LW : " .$int_msg. "<br />";
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
@@ -539,11 +542,10 @@ class NotificationsEmails {
             //TODO : Vérifier si l'utilisateur peut bien envoyer à la personne (vérifier si dans la liste des suiveurs/votants/investisseurs)
             $user = get_userdata(intval($id_user));
             $to = $user->user_email;
-            $user_str = $user->first_name . ' ' . $user->last_name;
-            if (empty($user_str)) { $user_str = $user->user_login; }
             $user_data= array(
-                'username'=> $user_str,
-                'investwish'=>$list_user_voters[$id_user]->invest_sum
+                'userfirstname'	=> $user->first_name,
+                'userlastname'	=> $user->last_name,
+                'investwish'	=> $list_user_voters[$id_user]->invest_sum
             );
 
             $this_mail_content = WDGFormProjects::build_mail_text($mail_content,$mail_title,$campaign_id, $user_data);
