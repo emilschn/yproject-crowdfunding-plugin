@@ -136,6 +136,10 @@ class LemonwayLib {
 		return $buffer;
 	}
 	
+	public static function get_country_code( $country ) {
+		
+	}
+	
 	public static function make_token($invest_id = '', $roi_id = '') {
 		$buffer = FALSE;
 		$random = rand(10000, 99999);
@@ -163,7 +167,7 @@ class LemonwayLib {
 	 * @param type $phone_number : Facultatif ; format MSISDN (code pays sans + ni 00)
 	 * @return boolean or string
 	 */
-	public static function wallet_register($new_wallet_id, $client_mail, $client_title, $client_first_name, $client_last_name, $country = '', $phone_number = '') {
+	public static function wallet_register($new_wallet_id, $client_mail, $client_title, $client_first_name, $client_last_name, $country = '', $phone_number = '', $birthdate = '', $nationality = '', $payer_or_beneficiary = '') {
 		$param_list = array(
 			'wallet' => $new_wallet_id,
 			'clientMail' => $client_mail,
@@ -171,7 +175,11 @@ class LemonwayLib {
 			'clientFirstName' => $client_first_name,
 			'clientLastName' => $client_last_name,
 			'ctry' => $country,
-			'phoneNumber' => $phone_number
+			'phoneNumber' => $phone_number,
+			'birthdate' => $birthdate,
+			'nationality' => $nationality/*,
+			'payerOrBeneficiary' => $payer_or_beneficiary
+			 */
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
@@ -180,7 +188,7 @@ class LemonwayLib {
 		return $result;
 	}
 	
-	public static function wallet_company_register($new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description) {
+	public static function wallet_company_register($new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '') {
 		$param_list = array(
 			'wallet' => $new_wallet_id,
 			'clientMail' => $client_mail,
@@ -188,8 +196,15 @@ class LemonwayLib {
 			'clientLastName' => $client_last_name,
 			'companyName' => $company_name,
 			'companyDescription' => $company_description,
+			'companyWebsite' => $company_website,
+			'ctry' => $country,
+			'birthdate' => $birthdate,
+			'phoneNumber' => $phone_number,
+			'companyIdentificationNumber' => $company_idnumber,
 			'isCompany' => '1',
-			'isDebtor' => '1'
+			'isDebtor' => '1'/*,
+			'payerOrBeneficiary' => $payer_or_beneficiary
+			 */
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
