@@ -542,11 +542,10 @@ class NotificationsEmails {
             //TODO : Vérifier si l'utilisateur peut bien envoyer à la personne (vérifier si dans la liste des suiveurs/votants/investisseurs)
             $user = get_userdata(intval($id_user));
             $to = $user->user_email;
-            $user_str = $user->first_name . ' ' . $user->last_name;
-            if (empty($user_str)) { $user_str = $user->user_login; }
             $user_data= array(
-                'username'=> $user_str,
-                'investwish'=>$list_user_voters[$id_user]->invest_sum
+                'userfirstname'	=> $user->first_name,
+                'userlastname'	=> $user->last_name,
+                'investwish'	=> $list_user_voters[$id_user]->invest_sum
             );
 
             $this_mail_content = WDGFormProjects::build_mail_text($mail_content,$mail_title,$campaign_id, $user_data);
