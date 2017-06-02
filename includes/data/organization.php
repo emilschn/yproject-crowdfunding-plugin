@@ -738,7 +738,6 @@ class WDGOrganization {
 				$this->get_name(),
 				$this->get_description(),
 				$this->get_website(),
-				$this->get_country(),
 				$WDGUser_creator->get_country( 'iso3' ),
 				$WDGUser_creator->get_lemonway_birthdate(),
 				$WDGUser_creator->get_lemonway_phone_number(),
