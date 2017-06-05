@@ -705,6 +705,13 @@ class NotificationsEmails {
 			$body_content .= "<br /><br />";
 		}
 		
+		$adjustment_message = $roi_declaration->get_adjustment_message( 'investors' );
+		if ( $roi_declaration->get_adjustment_validated() && !empty( $adjustment_message ) ) {
+			$body_content .= $adjustment_message;
+			$body_content .= "<br /><br />";
+		}
+		
+		
 		$body_content .= "Nous vous invitons à vous connecter sur ".ATCF_CrowdFunding::get_platform_name()." afin de consulter votre porte monnaie électronique.<br /><br />";
 		$body_content .= "<b>Comment percevoir les royalties de mon investissement ?</b><br />";
 		$body_content .= "1. <b>Je me connecte</b> sur <a href=\"". home_url('/mon-compte'). "\">". home_url('/mon-compte'). "</a>";
