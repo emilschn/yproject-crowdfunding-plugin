@@ -1111,6 +1111,9 @@ class WDGUser {
 			}
 			
 			$user_email = filter_input(INPUT_POST, 'signup_email');
+			if ( email_exists( $user_email ) ) {
+				$signup_errors->add( 'user_name', __( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ) );
+			}
 			if ( !is_email( $user_email ) ) {
 				$signup_errors->add( 'user_email', __( "Cette adresse e-mail n'est pas valide.", 'yproject' ) );
 			}
