@@ -684,6 +684,22 @@ class ATCF_Campaign {
 		return $this->current_roi_declarations;
 	}
 	
+	private $next_roi_declaration;
+	public function has_next_roi_declaration() {
+		$next_roi_declaration = $this->get_next_roi_declaration();
+		return ( !empty( $next_roi_declaration ) );
+	}
+	public function get_next_roi_declaration() {
+		if ( !isset( $this->next_roi_declaration ) ) {
+			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID, WDGROIDeclaration::$status_declaration );
+			$this->next_roi_declaration = FALSE;
+			if ( !empty( $declaration_list ) ) {
+				$this->next_roi_declaration = $declaration_list[ 0 ];
+			}
+		}
+		return $this->next_roi_declaration;
+	}
+	
 	
 /*******************************************************************************
  * GESTION CATEGORIES

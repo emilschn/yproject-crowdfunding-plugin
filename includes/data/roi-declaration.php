@@ -29,6 +29,7 @@ class WDGROIDeclaration {
 	public $file_list;
 	private $turnover;
 	private $message;
+	private $adjustment;
 	
 	
 	public function __construct( $declaration_id ) {
@@ -50,6 +51,7 @@ class WDGROIDeclaration {
 			$this->file_list = $declaration_item->file_list;
 			$this->turnover = $declaration_item->turnover;
 			$this->message = $declaration_item->message;
+			$this->adjustment = $declaration_item->adjustment;
 			
 			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
 			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_turnover_total() == 0 ) {
@@ -76,7 +78,8 @@ class WDGROIDeclaration {
 				'payment_token' => $this->payment_token,
 				'file_list' => $this->file_list,
 				'turnover' => $this->turnover,
-				'message' => $this->message
+				'message' => $this->message,
+				'adjustment' => $this->adjustment
 			),
 			array(
 				'id' => $this->id
@@ -119,11 +122,19 @@ class WDGROIDeclaration {
 	}
 	
 	/**
+	 * Retourne le montant additionné l'ajustement
+	 * @return number
+	 */
+	public function get_amount_with_adjustment() {
+		return ( $this->amount + $this->get_adjustment_value() );
+	}
+	
+	/**
 	 * Retourne le montant additionné avec la commission
 	 * @return number
 	 */
 	public function get_amount_with_commission() {
-		return ($this->amount + $this->get_commission_to_pay());
+		return ( $this->get_amount_with_adjustment() + $this->get_commission_to_pay() );
 	}
 	
 	/**
@@ -144,7 +155,7 @@ class WDGROIDeclaration {
 		}
 		
 		if ( $cost > 0 ) {
-			$buffer = (round(($this->amount * $cost / 100) * 100) / 100);
+			$buffer = (round(($this->get_amount_with_adjustment() * $cost / 100) * 100) / 100);
 		}
 		return $buffer;
 	}
@@ -153,7 +164,7 @@ class WDGROIDeclaration {
 	 * Traite un fichier uploadé qui doit être ajouté à la liste
 	 * @param array $file_uploaded_data
 	 */
-	public function add_file( $file_uploaded_data ) {
+	public function add_file( $file_uploaded_data, $file_description ) {
 		$file_name = $file_uploaded_data['name'];
 		$file_name_exploded = explode('.', $file_name);
 		$ext = $file_name_exploded[count($file_name_exploded) - 1];
@@ -170,14 +181,18 @@ class WDGROIDeclaration {
 		$random_filename = $random_filename . '.' . $ext;
 		move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../accounts/' . $random_filename );
 		
-		if ( empty($this->file_list) ) {
-			$this->file_list = $random_filename;
-		} else {
-			$this->file_list .= ';' . $random_filename;
-		}
+		$file_item = array(
+			'file'	=> $random_filename,
+			'text'	=> $file_description
+		);
+		$file_list = $this->get_file_list();
+		array_push( $file_list, $file_item );
+		
+		$this->file_list = json_encode( $file_list );
 		
 		$this->save();
 	}
+	
 	/**
 	 * Renvoie la liste des fichiers avec leur bonne url
 	 * @return array
@@ -185,12 +200,17 @@ class WDGROIDeclaration {
 	public function get_file_list() {
 		$buffer = array();
 		if ( !empty( $this->file_list ) ) {
-			$filename_array = explode(';', $this->file_list);
-			foreach ($filename_array as $filename) {
-				array_push($buffer, home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/accounts/' . $filename);
-			}
+			$buffer = json_decode( $this->file_list );
 		}
 		return $buffer;
+	}
+	
+	/**
+	 * Renvoie le chemin de fichier pour les comptes
+	 * @return string
+	 */
+	public function get_file_path() {
+		return home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/accounts/';
 	}
 	
 	/**
@@ -449,7 +469,7 @@ class WDGROIDeclaration {
 	 * @return boolean
 	 */
 	public function can_pay_with_wire() {
-		return ($this->amount >= WDGROIDeclaration::$min_amount_for_wire_payment);
+		return ($this->get_amount_with_commission() >= WDGROIDeclaration::$min_amount_for_wire_payment);
 	}
 	
 	/**
@@ -485,6 +505,68 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
+	/**
+	 * Enregistre les données d'ajustement
+	 * @param boolean $is_validated
+	 * @param number $value
+	 * @param string $message_to_investors
+	 * @param string $message_to_author
+	 */
+	public function set_adjustment( $is_validated, $value, $message_to_author, $message_to_investors ) {
+		$buffer = array(
+			'validated'			=> ( $is_validated ) ? 1 : 0,
+			'value'				=> $value,
+			'msg_to_author'		=> $message_to_author,
+			'msg_to_investors'	=> $message_to_investors
+		);
+		$this->adjustment = json_encode( $buffer );
+		$this->save();
+	}
+	
+	/**
+	 * Détermine le statut validé ou non
+	 * @return boolean
+	 */
+	public function get_adjustment_validated() {
+		$buffer = false;
+		if ( !empty( $this->adjustment ) ) {
+			$temp = json_decode( $this->adjustment );
+			$buffer = ( $temp->validated == 1 );
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Détermine la valeur de l'ajustement
+	 * @return number
+	 */
+	public function get_adjustment_value() {
+		$buffer = 0;
+		if ( !empty( $this->adjustment ) ) {
+			$temp = json_decode( $this->adjustment );
+			$temp_value = $temp->value;
+			if ( is_numeric( $temp_value ) ) {
+				$buffer = $temp_value;
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le message enregistré pour les investisseurs pour le porteur de projet
+	 * @param string $type
+	 * @return string
+	 */
+	public function get_adjustment_message( $type ) {
+		$buffer = '';
+		if ( !empty( $this->adjustment ) ) {
+			$temp = json_decode( $this->adjustment );
+			$var_type = 'msg_to_' .$type;
+			$buffer = $temp->$var_type;
+		}
+		return $buffer;
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
@@ -512,6 +594,7 @@ class WDGROIDeclaration {
 			file_list text,
 			turnover text,
 			message text,
+			adjustment text,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );
