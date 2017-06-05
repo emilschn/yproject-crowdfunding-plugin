@@ -405,9 +405,10 @@ class WDGFormProjects {
 		
 		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 		foreach ( $declaration_list as $declaration ) {
-			$file = $_FILES[ 'accounts_file_' . $declaration->id ];
+			$file = $_FILES[ 'accounts_file_' .$declaration->id ];
 			if ( !empty( $file ) ) {
-				$declaration->add_file($file);
+				$file_description = htmlentities( filter_input( INPUT_POST, 'info_file_' .$declaration->id ) );
+				$declaration->add_file( $file, $file_description );
 			}
 		}
 	}

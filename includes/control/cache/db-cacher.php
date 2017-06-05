@@ -102,7 +102,8 @@ class WDG_Cache_Plugin {
 	 * Permet de vérifier si la table existe dans la base de données.
 	 */
 	private static function table_exists() {
-		if ($this->wpdb->get_var("SHOW TABLES LIKE '$this->table_name'") != $this->table_name) {
+		global $wpdb;
+		if ( $wpdb->get_var("SHOW TABLES LIKE 'wp_wdg_cache'") != "wp_wdg_cache" ) {
 			return false;
 		} else {
 			return true;
