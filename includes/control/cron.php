@@ -39,7 +39,6 @@ class WDGCronActions {
 	}
 	
 	public static function hourly_actions() {
-		WDGCronActions::check_completed_projects();
 		global $WDG_File_Cacher;
 		$WDG_File_Cacher->rebuild_cache();
 	}
@@ -162,21 +161,5 @@ class WDGCronActions {
 		$file_handle_rss = fopen($filename_rss, 'w');
 		fwrite($file_handle_rss, $buffer_rss);
 		fclose($file_handle_rss);
-	}
-	
-	public static function check_completed_projects() {
-		$list_projects_funding = ATCF_Campaign::list_projects_by_status( ATCF_Campaign::$campaign_status_collecte );
-		foreach ($list_projects_funding as $project_post) {
-			$campaign = atcf_get_campaign( $project_post->ID );
-			
-			if ( !$campaign->is_remaining_time() ) {
-				if ( $campaign->is_funded() ) {
-					$campaign->set_status( ATCF_Campaign::$campaign_status_funded );
-				} else {
-					$campaign->set_status( ATCF_Campaign::$campaign_status_archive );
-				}
-			}
-			
-		}
 	}
 }
