@@ -70,11 +70,19 @@ class WDGInvestment {
 	}
 	
 	/**
+	 * Retourne le token d'investissement
+	 * @return string
+	 */
+	public function get_token() {
+		return $this->token;
+	}
+	
+	/**
 	 * Retourne l'url de redirection
 	 * @param string $redirection_type
 	 * @return string
 	 */
-	public function get_redirection( $redirection_type ) {
+	public function get_redirection( $redirection_type, $param = '', $param2 = '' ) {
 		$buffer = '';
 		switch ( $redirection_type ) {
 			case 'error':
@@ -83,7 +91,12 @@ class WDGInvestment {
 			case 'success':
 				$buffer = $this->token_info->redirect_url_ok;
 				break;
-				
+		}
+		if ( !empty( $param ) ) {
+			$buffer .= '?param=' . $param;
+			if ( !empty( $param2 ) ) {
+				$buffer .= '&param2=' . $param2;
+			}
 		}
 		return $buffer;
 	}
@@ -171,6 +184,9 @@ class WDGInvestment {
 		// Déconnecter l'utilisateur en cours, au cas où
 		wp_destroy_current_session();
 		wp_clear_auth_cookie();
+		global $current_user;
+		$current_user = null;
+		wp_set_current_user( 0 );
 		
 		// Vérifier que la date d'expiration du token n'est pas passée
 		if ( $this->token_info->status == WDGInvestment::$status_expired ) {

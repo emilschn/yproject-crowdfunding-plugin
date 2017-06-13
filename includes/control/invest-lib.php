@@ -33,7 +33,7 @@ function ypcf_check_redirections() {
 				if ( !$init_result ) {
 					$wdginvestment = WDGInvestment::current();
 					ypcf_debug_log( 'ypcf_check_redirections > investir > TOKEN ERRORS > ' . print_r( $wdginvestment->get_error(), TRUE ) );
-					wp_redirect( $wdginvestment->get_redirection('error') );
+					wp_redirect( $wdginvestment->get_redirection( 'error', 'token-error' ) );
 					exit();
 				}
 				//D'abord on teste si l'utilisateur est bien connecté
