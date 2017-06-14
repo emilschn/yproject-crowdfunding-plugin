@@ -1274,6 +1274,8 @@ class ATCF_Campaign {
 	 * Retourne une chaine avec le temps restant (J-6, H-2, M-23)
 	 */
 	public function time_remaining_str() {
+		date_default_timezone_set("Europe/London");
+		
 		//Récupération de la date de fin et de la date actuelle
 		$buffer = '';
 		switch ($this->campaign_status()) {
@@ -1288,7 +1290,6 @@ class ATCF_Campaign {
 			    break;
 		}
 		
-		date_default_timezone_set("Europe/London");
 		$now = current_time( 'timestamp' );
 		
 		//Si on a dépassé la date de fin, on retourne "-"
