@@ -102,15 +102,33 @@ class WDGInvestment {
 	}
 	
 	/**
+	 * Fait un post sur l'url transmise pour les notifications
+	 */
+	public function post_token_notification() {
+		if ( !empty( $this->token_info->notification_url ) ) {
+			$parameters = array(
+				'token'		=> $this->token,
+				'status'	=> $this->token_info->status
+			);
+			wp_remote_post( 
+				$this->token_info->notification_url, 
+				array(
+					'body'		=> $parameters
+				) 
+			);
+		}
+	}
+	
+	/**
 	 * Détermine le nouveau statut de l'investissement
 	 * @param string $status
 	 */
 	public function set_status( $status ) {
+		$this->token_info->status = $status;
 		$parameters = array(
-			'token' => $this->token,
 			'status' => $status
 		);
-		WDGWPRESTLib::call_post_external( 'investment', $parameters );
+		WDGWPRESTLib::call_post_wdg( 'investment/' . $this->token, $parameters );
 	}
 	
 	/**

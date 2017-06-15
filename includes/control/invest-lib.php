@@ -1072,13 +1072,12 @@ function ypcf_get_current_step() {
     ypcf_session_start();
     $buffer = 1;
     $max_part_value = ypcf_get_max_part_value();
-	$token_start = filter_input( INPUT_GET, 'token' );
+	$wdginvestment = WDGInvestment::current();
     
     $amount_part = FALSE;
     $invest_type = FALSE;
     
-	if (!empty($token_start)) {
-		$wdginvestment = WDGInvestment::current();
+	if ( !empty( $wdginvestment->has_token() ) ) {
 		$amount_part = $wdginvestment->get_amount();
 		$_SESSION['redirect_current_amount_part'] = $amount_part;
 		$invest_type = 'user';
