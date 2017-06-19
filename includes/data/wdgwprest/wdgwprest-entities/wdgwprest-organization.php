@@ -34,6 +34,7 @@ class WDGWPREST_Entity_Organization {
 			'idnumber'					=> $organization->get_idnumber(),
 			'rcs'						=> $organization->get_rcs(),
 			'ape'						=> $organization->get_ape(),
+			'vat'						=> $organization->get_vat(),
 			'capital'					=> $organization->get_capital(),
 			'address'					=> $organization->get_address(),
 			'postalcode'				=> $organization->get_postal_code(),

@@ -462,6 +462,7 @@ class WDGUser {
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
 				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
 				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
+				$invest_item['organization_vat'] = $wdg_organization->get_vat();
 			}
 			
 			$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
@@ -474,6 +475,7 @@ class WDGUser {
 		
 		require __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get(
+			'',
 			'',
 			'',
 			$this->get_firstname(). ' ' .$this->get_lastname(),
@@ -1111,6 +1113,9 @@ class WDGUser {
 			}
 			
 			$user_email = filter_input(INPUT_POST, 'signup_email');
+			if ( email_exists( $user_email ) ) {
+				$signup_errors->add( 'user_name', __( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ) );
+			}
 			if ( !is_email( $user_email ) ) {
 				$signup_errors->add( 'user_email', __( "Cette adresse e-mail n'est pas valide.", 'yproject' ) );
 			}

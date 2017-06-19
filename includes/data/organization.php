@@ -34,6 +34,7 @@ class WDGOrganization {
 	private $idnumber;
 	private $rcs;
 	private $ape;
+	private $vat;
 	private $bank_owner;
 	private $bank_address;
 	private $bank_iban;
@@ -71,6 +72,7 @@ class WDGOrganization {
         $org_object->set_idnumber('---');
         $org_object->set_rcs('---');
         $org_object->set_ape('---');
+        $org_object->set_vat('---');
         $org_object->set_bank_owner('---');
         $org_object->set_bank_address('---');
         $org_object->set_bank_iban('---');
@@ -121,6 +123,7 @@ class WDGOrganization {
 			$this->idnumber = $this->bopp_object->idnumber;
 			$this->rcs = $this->bopp_object->rcs;
 			$this->ape = $this->bopp_object->ape;
+			$this->vat = $this->bopp_object->vat;
 			$geolocation = explode( ',', $this->bopp_object->geolocation );
 			if ( count( $geolocation ) > 1 ) {
 				$this->latitude = $geolocation[0];
@@ -396,6 +399,13 @@ class WDGOrganization {
 	}
 	public function set_ape($value) {
 		$this->ape = $value;
+	}
+	
+	public function get_vat() {
+		return $this->vat;
+	}
+	public function set_vat($value) {
+		$this->vat = $value;
 	}
 	
 	public function get_bank_owner() {
@@ -998,6 +1008,7 @@ class WDGOrganization {
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
 				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
 				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
+				$invest_item['organization_vat'] = $wdg_organization->get_vat();
 			}
 			
 			$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
@@ -1012,6 +1023,7 @@ class WDGOrganization {
 		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get(
 			$this->get_name(),
 			$this->get_idnumber(),
+			$this->get_vat(),
 			'',
 			$this->get_email(),
 			$this->get_address(),
@@ -1140,6 +1152,7 @@ class WDGOrganization {
 			$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
 			$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
 			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
+			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
 			$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
 			$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
 			$org_object->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
@@ -1196,6 +1209,7 @@ class WDGOrganization {
 		$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
 		$org_object->set_capital(filter_input(INPUT_POST, 'org_capital'));
 		$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
+		$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
 		$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 		$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
 		$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
