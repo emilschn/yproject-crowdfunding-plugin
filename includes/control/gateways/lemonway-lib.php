@@ -156,6 +156,9 @@ class LemonwayLib {
 
 
 /*********************** WALLETS ***********************/
+	public static $wallet_type_payer = 'payer';
+	public static $wallet_type_beneficiary = 'beneficiary';
+	
 	/**
 	 * Création d'un porte-monnaie
 	 * @param type $new_wallet_id : Identifiant du porte-monnaie sur la plateforme
@@ -177,9 +180,8 @@ class LemonwayLib {
 			'ctry' => $country,
 			'phoneNumber' => $phone_number,
 			'birthdate' => $birthdate,
-			'nationality' => $nationality/*,
+			'nationality' => $nationality,
 			'payerOrBeneficiary' => $payer_or_beneficiary
-			 */
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
