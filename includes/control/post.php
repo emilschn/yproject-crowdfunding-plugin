@@ -19,6 +19,7 @@ class WDGPostActions {
         self::add_action("organization_sign_mandate");
         self::add_action("upload_information_files");
         self::add_action("upload_contract_files");
+        self::add_action("cancel_token_investment");
     }
 
     /**
@@ -369,5 +370,26 @@ class WDGPostActions {
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );
 		die();
+	}
+	
+	public static function cancel_token_investment() {
+		$wdginvestment = WDGInvestment::current();
+		$redirect_url = home_url();
+		
+		if ( $wdginvestment->has_token() ) {
+			$wdginvestment->set_status( WDGInvestment::$status_canceled );
+			$wdginvestment->post_token_notification();
+			$redirect_url = $wdginvestment->get_redirection( 'error', 'canceled' );
+			
+		} else {
+			$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+			if ( !empty( $campaign_id ) ) {
+				$redirect_url = get_permalink( $campaign_id );
+			}
+			
+		}
+		
+		wp_redirect( $redirect_url );
+		exit();
 	}
 }
