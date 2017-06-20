@@ -1077,7 +1077,7 @@ function ypcf_get_current_step() {
     $amount_part = FALSE;
     $invest_type = FALSE;
     
-	if ( !empty( $wdginvestment->has_token() ) ) {
+	if ( $wdginvestment->has_token() ) {
 		$amount_part = $wdginvestment->get_amount();
 		$_SESSION['redirect_current_amount_part'] = $amount_part;
 		$invest_type = 'user';
