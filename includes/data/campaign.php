@@ -493,7 +493,11 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	public function roi_percent() {
-	    return $this->__get('campaign_roi_percent');
+		$buffer = $this->__get('campaign_roi_percent');
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
+	    return $buffer;
 	}
 
     public static $key_first_payment_date = 'campaign_first_payment_date';
