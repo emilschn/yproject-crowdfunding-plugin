@@ -1790,12 +1790,12 @@ class ATCF_Campaign {
 	 * Retourne la liste des paiement, augmentée par les informations utiles pour un ROI particulier
 	 * @param WDGROIDeclaration $declaration
 	 */
-	public function roi_payments_data($declaration) {
+	public function roi_payments_data( $declaration, $transfer_remaining_amount = false ) {
 		$buffer = array();
 		$investments_list = $this->payments_data(TRUE);
 		//Calculs des montants à reverser
 		$total_amount = $this->current_amount(FALSE);
-		$roi_amount = $declaration->amount;
+		$roi_amount = $declaration->amount + $declaration->get_previous_remaining_amount();
 		foreach ($investments_list as $investment_item) {
 			//Calcul de la part de l'investisseur dans le total
 			$investor_proportion = $investment_item['amount'] / $total_amount; //0.105

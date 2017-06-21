@@ -6,6 +6,7 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 	public static function get(
 		$user_organization_name,
 		$user_organization_id,
+		$user_organisation_vat,
 		$user_name,
 		$user_email,
 		$user_address,
@@ -43,6 +44,9 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 					<?php if (!empty($user_organization_name)): ?>
 						<?php echo $user_organization_name; ?><br />
 						Numéro SIREN : <?php echo $user_organization_id; ?><br />
+						<?php if (!empty($user_organisation_vat)): ?>
+						Numéro TVA : <?php echo $user_organisation_vat; ?><br />
+						<?php endif; ?>
 					<?php else: ?>
 						<?php echo $user_name; ?><br />
 					<?php endif; ?>
@@ -89,6 +93,9 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 					Investissement sur le projet de la société <?php echo $investment['organization_name']; ?><br />
 					<?php echo $investment['organization_address']; ?><br />
 					Numéro SIREN : <?php echo $investment['organization_id']; ?>
+					<?php if (!empty($investment['organization_vat'])): ?>
+					Numéro TVA : <?php echo $investment['organization_vat']; ?><br />
+					<?php endif; ?>
 				</td>
 				<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $investment['date']; ?></td>
 				<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $investment['amount']; ?></td>

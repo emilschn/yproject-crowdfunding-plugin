@@ -22,6 +22,7 @@ class WDGROIDeclaration {
 	public $date_paid;
 	public $date_transfer;
 	public $amount;
+	public $remaining_amount;
 	public $percent_commission;
 	public $status;
 	public $mean_payment;
@@ -30,6 +31,7 @@ class WDGROIDeclaration {
 	private $turnover;
 	private $message;
 	private $adjustment;
+	public $transfered_previous_remaining_amount;
 	
 	
 	public function __construct( $declaration_id ) {
@@ -44,6 +46,7 @@ class WDGROIDeclaration {
 			$this->date_paid = $declaration_item->date_paid;
 			$this->date_transfer = $declaration_item->date_transfer;
 			$this->amount = $declaration_item->amount;
+			$this->remaining_amount = $declaration_item->remaining_amount;
 			$this->percent_commission = $declaration_item->percent_commission;
 			$this->status = $declaration_item->status;
 			$this->mean_payment = $declaration_item->mean_payment;
@@ -52,6 +55,7 @@ class WDGROIDeclaration {
 			$this->turnover = $declaration_item->turnover;
 			$this->message = $declaration_item->message;
 			$this->adjustment = $declaration_item->adjustment;
+			$this->transfered_previous_remaining_amount = $declaration_item->transfered_previous_remaining_amount;
 			
 			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
 			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_turnover_total() == 0 ) {
@@ -72,6 +76,7 @@ class WDGROIDeclaration {
 				'date_paid' => $this->date_paid,
 				'date_transfer' => $this->date_transfer,
 				'amount' => $this->amount,
+				'remaining_amount' => $this->remaining_amount,
 				'percent_commission' => $this->percent_commission,
 				'status' => $this->status,
 				'mean_payment' => $this->mean_payment,
@@ -79,7 +84,8 @@ class WDGROIDeclaration {
 				'file_list' => $this->file_list,
 				'turnover' => $this->turnover,
 				'message' => $this->message,
-				'adjustment' => $this->adjustment
+				'adjustment' => $this->adjustment,
+				'transfered_previous_remaining_amount' => $this->transfered_previous_remaining_amount
 			),
 			array(
 				'id' => $this->id
@@ -254,7 +260,7 @@ class WDGROIDeclaration {
 	/**
 	 * S'occuper des versements vers les utilisateurs
 	 */
-	public function make_transfer( $send_notifications = true ) {
+	public function make_transfer( $send_notifications = true, $transfer_remaining_amount = false ) {
 		$buffer = false;
 		$date_now = new DateTime();
 		$date_now_formatted = $date_now->format( 'Y-m-d' );
@@ -263,13 +269,20 @@ class WDGROIDeclaration {
 		if ( !empty( $current_organization ) ) {
 			$organization_obj = new WDGOrganization($current_organization->wpref);
 			$organization_obj->register_lemonway();
-			$investments_list = $campaign->roi_payments_data($this);
+			$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount );
 			$total_fees = 0;
+			$remaining_amount = $this->amount;
+			if ( $transfer_remaining_amount ) {
+				$previous_remaining_amount = $this->get_previous_remaining_amount();
+				$remaining_amount += $previous_remaining_amount;
+			}
 			foreach ($investments_list as $investment_item) {
 				
 				$saved_roi = WDGROI::get_roi_by_declaration_invest( $this->id, $investment_item['ID'] );
 				if ( empty( $saved_roi ) ) {
 					$total_fees += $investment_item['roi_fees'];
+					$remaining_amount -= $investment_item['roi_fees'];
+					$remaining_amount -= $investment_item['roi_amount'];
 
 					//Versement vers organisation
 					if (WDGOrganization::is_user_organization( $investment_item['user'] )) {
@@ -304,6 +317,13 @@ class WDGROIDeclaration {
 			if ($total_fees > 0) {
 				LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees);
 			}
+			if ( $transfer_remaining_amount ) {
+				// Mise à jour de la somme des reliquats précédents qui ont été reversés
+				if ( $previous_remaining_amount > $remaining_amount ) {
+					$this->transfered_previous_remaining_amount = $previous_remaining_amount - $remaining_amount;
+				}
+			}
+			$this->remaining_amount = $remaining_amount;
 			$this->status = WDGROIDeclaration::$status_finished;
 			$this->date_transfer = $date_now_formatted;
 			$this->save();
@@ -425,6 +445,8 @@ class WDGROIDeclaration {
 		$declaration_percent_commission = $this->percent_commission;
 		$declaration_amount_commission = $this->get_commission_to_pay();
 		$declaration_amount_and_commission = $this->get_amount_with_commission();
+		$declaration_adjustment_value = $this->get_adjustment_value();
+		$declaration_remaining_amount_transfered = $this->transfered_previous_remaining_amount;
 		
 		
 		require __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
@@ -446,7 +468,9 @@ class WDGROIDeclaration {
 			$declaration_amount,
 			$declaration_percent_commission,
 			$declaration_amount_commission,
-			$declaration_amount_and_commission
+			$declaration_amount_and_commission,
+			$declaration_adjustment_value,
+			$declaration_remaining_amount_transfered
 		);
 		
 		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
@@ -567,6 +591,57 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
+	/**
+	 * Enregistre le reliquat (utile surtout pour les anciennes déclarations à mettre à jour)
+	 */
+	public function save_remaining_amount() {
+		if ( $this->status == WDGROIDeclaration::$status_finished ) {
+			$campaign = atcf_get_campaign( $this->id_campaign );
+			$investments_list = $campaign->roi_payments_data( $this );
+			$remaining_amount = $this->amount;
+			foreach ($investments_list as $investment_item) {
+				$remaining_amount -= $investment_item['roi_fees'];
+				$remaining_amount -= $investment_item['roi_amount'];
+			}
+			$this->remaining_amount = $remaining_amount;
+			$this->save();
+		}
+	}
+	
+	/**
+	 * Retourne la liste des déclarations qui précèdent celles-ci
+	 */
+	public function get_previous_declarations() {
+		$buffer = array();
+		
+		global $wpdb;
+		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
+		$query .= " WHERE date_due < " .$this->date_due;
+		
+		$declaration_list = $wpdb->get_results( $query );
+		foreach ( $declaration_list as $declaration_item ) {
+			$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id );
+			array_push($buffer, $ROIdeclaration);
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne la valeur des reliquats qui n'ont pas été versés aux investisseurs sur les déclarations précédentes
+	 */
+	public function get_previous_remaining_amount() {
+		$buffer = 0;
+		
+		$previous_declarations = $this->get_previous_declarations();
+		foreach ( $previous_declarations as $declaration_item ) {
+			$buffer += $declaration_item->remaining_amount;
+			$buffer -= $declaration_item->transfered_previous_remaining_amount;
+		}
+		
+		return $buffer;
+	}
+	
 	
 /*******************************************************************************
  * REQUETES STATIQUES
@@ -587,6 +662,7 @@ class WDGROIDeclaration {
 			date_paid date DEFAULT '0000-00-00',
 			date_transfer date DEFAULT '0000-00-00',
 			amount float,
+			remaining_amount float,
 			percent_commission float,
 			status tinytext,
 			mean_payment tinytext,
@@ -595,6 +671,7 @@ class WDGROIDeclaration {
 			turnover text,
 			message text,
 			adjustment text,
+			transfered_previous_remaining_amount float,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );
@@ -627,7 +704,7 @@ class WDGROIDeclaration {
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
 		$query .= " WHERE id_campaign=".$id_campaign;
 		if ( !empty( $status ) ) {
-		$query .= " AND status='".$status."'";
+			$query .= " AND status='".$status."'";
 		}
 		$query .= " ORDER BY date_due ASC";
 		

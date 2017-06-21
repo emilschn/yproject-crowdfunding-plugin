@@ -21,7 +21,9 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 		$declaration_amount,
 		$declaration_percent_commission,
 		$declaration_amount_commission,
-		$declaration_amount_and_commission
+		$declaration_amount_and_commission,
+		$declaration_adjustment_value,
+		$declaration_remaining_amount_transfered
 			
 	) {
 		ob_start();
@@ -86,6 +88,24 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 				</td>
 				<td style="border-bottom: 1px solid gray; padding: 10px; text-align: right;"><?php echo number_format( $declaration_amount, 2, ',', ' ' ); ?> €</td>
 			</tr>
+			
+			<?php if ( !empty( $declaration_adjustment_value ) ): ?>
+			<tr>
+				<td style="border-bottom: 1px solid gray; padding: 10px;">
+					AJUSTEMENT EFFECTU&Eacute; PAR WE DO GOOD<br />
+				</td>
+				<td style="border-bottom: 1px solid gray; padding: 10px; text-align: right;"><?php echo number_format( $declaration_adjustment_value, 2, ',', ' ' ); ?> €</td>
+			</tr>
+			<?php endif; ?>
+			
+			<?php if ( !empty( $declaration_remaining_amount_transfered ) ): ?>
+			<tr>
+				<td style="border-bottom: 1px solid gray; padding: 10px;">
+					RELIQUATS DES D&Eacute;CLARATIONS PR&Eacute;C&Eacute;DENTES REVERS&Eacute;S<br />
+				</td>
+				<td style="border-bottom: 1px solid gray; padding: 10px; text-align: right;"><?php echo number_format( $declaration_remaining_amount_transfered, 2, ',', ' ' ); ?> €</td>
+			</tr>
+			<?php endif; ?>
 			
 			<tr>
 				<td style="border-bottom: 1px solid; padding: 10px;">
