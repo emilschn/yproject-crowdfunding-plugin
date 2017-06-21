@@ -76,6 +76,7 @@ add_action( 'template_redirect', 'ypcf_check_redirections' );
 function ypcf_check_api_calls() {
 	$input_action = filter_input( INPUT_GET, 'action' );
 	$input_param = filter_input( INPUT_GET, 'param' );
+	ypcf_debug_log( 'ypcf_check_api_calls > $input_action : ' .$input_action. ' ; $input_param : ' .$input_param );
 	switch ( $input_action ) {
 		case "get_royalties_by_project":
 			if ( !empty( $input_param ) ) {
@@ -99,6 +100,42 @@ function ypcf_check_api_calls() {
 				}
 				exit( json_encode( $buffer ) );
 			}
+		break;
+		
+		case "update_user_email":
+			$buffer = 'error';
+			if ( !empty( $input_param ) ) {
+				
+				// On récupère l'utilisateur à modifier
+				$init_email = html_entity_decode( $input_param );
+				ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $init_email : ' .$init_email );
+				$query_user = get_user_by( 'email', $init_email );
+				if ( !empty( $query_user ) ) {
+					
+					// On vérifie que le nouvel e-mail est renseigné
+					$new_email = filter_input( INPUT_POST, 'new_email' );
+					ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $new_email : ' .$new_email );
+					if ( !empty( $new_email ) ) {
+						
+						// On vérifie que le nouvel e-mail n'est pas déjà pris
+						$find_existing_user = get_user_by( 'email', $new_email );
+						if ( empty( $find_existing_user ) ) {
+							wp_update_user( array ( 'ID' => $query_user->ID, 'user_email' => $new_email ) );
+							$buffer = 'success';
+							
+						} else {
+							ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $find_existing_user : ' .$find_existing_user->ID );
+							$buffer = 'E-mail alreay in use';
+							
+						}
+					}
+					
+				} else {
+					$buffer = 'Did not find user with this e-mail';
+				}
+			}
+			ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $buffer : ' .$buffer );
+			exit( $buffer );
 		break;
 	}
 }
