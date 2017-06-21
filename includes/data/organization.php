@@ -751,7 +751,8 @@ class WDGOrganization {
 				$WDGUser_creator->get_country( 'iso3' ),
 				$WDGUser_creator->get_lemonway_birthdate(),
 				$WDGUser_creator->get_lemonway_phone_number(),
-				$this->get_idnumber()
+				$this->get_idnumber(),
+				LemonwayLib::$wallet_type_beneficiary
 			);
 		}
 		return TRUE;

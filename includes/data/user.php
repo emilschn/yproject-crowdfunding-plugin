@@ -569,7 +569,7 @@ class WDGUser {
 				$this->get_lemonway_phone_number(),
 				$this->get_lemonway_birthdate(),
 				$this->get_nationality( 'iso3' ),
-				''
+				LemonwayLib::$wallet_type_payer
 			);
 		}
 		return TRUE;
