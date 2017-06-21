@@ -105,7 +105,7 @@ class LemonwayLibErrors {
 							$this->error_message .= __( LemonwayLibErrors::$column_errors[ $i ][ $code_column ], 'yproject' ) . '<br />';
 						}
 
-						$this->ask_restart = $this->ask_restart || isset( LemonwayLibErrors::$column_restart[ $i ][ $code_column ] );
+						$this->ask_restart = $this->ask_restart || in_array( $code_column, LemonwayLibErrors::$column_restart[ $i ] );
 
 					}
 					
