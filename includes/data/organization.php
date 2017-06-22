@@ -728,6 +728,7 @@ class WDGOrganization {
 			} else {
 				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
 			}
+			$this->update_lemonway();
 		}
 		return $this->wallet_details;
 	}
@@ -773,6 +774,30 @@ class WDGOrganization {
 					&& ($this->get_idnumber() != "")
 					&& $this->has_sent_all_documents();
 		return $buffer;
+	}
+	
+	/**
+	 * Met à jour les données sur LW si nécessaire
+	 */
+	private function update_lemonway() {
+		$need_update = false;
+		
+		if ( $need_update ) {
+			$WDGUser_creator = new WDGUser();
+			LemonwayLib::wallet_company_update(
+				$this->get_lemonway_id(),
+				$this->get_email(),
+				$WDGUser_creator->wp_user->user_firstname,
+				$WDGUser_creator->wp_user->user_lastname,
+				$WDGUser_creator->get_country( 'iso3' ),
+				$WDGUser_creator->get_lemonway_phone_number(),
+				$WDGUser_creator->get_lemonway_birthdate(),
+				$this->get_name(),
+				$this->get_description(),
+				$this->get_website(),
+				$this->get_idnumber()
+			);
+		}
 	}
 	
 	/**

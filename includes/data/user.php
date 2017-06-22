@@ -541,12 +541,22 @@ class WDGUser {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
+	/**
+	 * Récupère les infos sur LW, via l'ID ou via l'e-mail
+	 * @param boolean $reload
+	 * @param boolean $by_email
+	 * @return object
+	 */
 	private function get_wallet_details( $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
 			if ( $by_email ) {
 				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->wp_user->user_email );
 			} else {
 				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
+			}
+
+			if ( $wallet_details->EMAIL != $this->wp_user->user_email ) {
+				$this->update_lemonway( $this->wallet_details );
 			}
 		}
 		return $this->wallet_details;
@@ -583,6 +593,23 @@ class WDGUser {
 				&& ($this->wp_user->user_firstname != "")
 				&& ($this->wp_user->user_lastname != "");
 		return $buffer;
+	}
+	
+	/**
+	 * Met à jour les données sur LW si nécessaire
+	 */
+	private function update_lemonway( $wallet_details ) {
+		LemonwayLib::wallet_update(
+			$this->get_lemonway_id(),
+			$this->wp_user->user_email,
+			$this->get_lemonway_title(),
+			$this->wp_user->user_firstname, 
+			$this->wp_user->user_lastname,
+			$this->get_country( 'iso3' ),
+			$this->get_lemonway_phone_number(),
+			$this->get_lemonway_birthdate(),
+			$this->get_nationality( 'iso3' )
+		);
 	}
 	
 	/**
