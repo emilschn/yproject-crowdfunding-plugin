@@ -718,6 +718,8 @@ class NotificationsEmails {
 		$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
 		$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
 		
+		$body_content .= apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) ) . "<br /><br />";
+		
 		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe ".ATCF_CrowdFunding::get_platform_name()." à cette adresse : bonjour@wedogood.co<br /><br />";
 		$body_content .= "Toute l'équipe ".ATCF_CrowdFunding::get_platform_name()." vous souhaite une belle journée.";
 		
