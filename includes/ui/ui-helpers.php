@@ -5,32 +5,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class UIHelpers {
 	/**
 	 * 
-	 * @global type $post
-	 * @global type $cat
-	 * @return string
-	 */
-	public static function current_page_title() {
-		global $post;
-		$buffer = '';
-		if ( is_category() ) {
-			global $cat;
-			$this_category = get_category($cat);
-			$this_category_name = $this_category->name;
-			$name_exploded = explode('cat', $this_category_name);
-			$campaign_post = get_post($name_exploded[1]);
-			$buffer = 'Actualit&eacute;s du projet ' . (is_object($campaign_post) ? $campaign_post->post_title : '') . ' | ' . get_bloginfo( 'name' );
-		} else if (isset($post)) {
-			$page_name = get_post($post)->post_name;
-			if ($page_name == 'forum' && isset($_GET['campaign_id'])) {
-				$campaign_post = get_post($_GET['campaign_id']);
-				$buffer = 'Commentaires du projet ' . $campaign_post->post_title . ' | ' . get_bloginfo( 'name' );
-			}
-		}
-		return $buffer;
-	}
-
-	/**
-	 * 
 	 * @global type $WDG_cache_plugin
 	 * @global type $facebook_infos
 	 * @global type $twitter_infos

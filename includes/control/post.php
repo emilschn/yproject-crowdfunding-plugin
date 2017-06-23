@@ -20,6 +20,8 @@ class WDGPostActions {
         self::add_action("upload_information_files");
         self::add_action("upload_contract_files");
         self::add_action("cancel_token_investment");
+        self::add_action("post_invest_check");
+        self::add_action("post_confirm_check");
     }
 
     /**
@@ -391,5 +393,57 @@ class WDGPostActions {
 		
 		wp_redirect( $redirect_url );
 		exit();
+	}
+		
+	public static function post_invest_check() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_user = wp_get_current_user();
+		$amount_total = $_SESSION['redirect_current_amount_part'];
+		$investment_id = $campaign->add_investment( 'check', $current_user->user_email, $amount_total, 'pending' );
+		
+		
+		$file_uploaded_data = $_FILES['check_picture'];
+		$file_name = $file_uploaded_data['name'];
+		$file_name_exploded = explode('.', $file_name);
+		$ext = $file_name_exploded[ count( $file_name_exploded ) - 1];
+		
+		$random_filename = '';
+		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		$size = strlen( $chars );
+		for( $i = 0; $i < 15; $i++ ) {
+			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
+		}
+		while ( file_exists( __DIR__ . '/../../files/investment-check/' . $random_filename . '.' . $ext ) ) {
+			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
+		}
+		$random_filename .= '.' . $ext;
+		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../files/investment-check/' . $random_filename );
+		
+		NotificationsEmails::new_purchase_pending_check_user( $investment_id, TRUE );
+		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, TRUE );
+		
+		if ( $has_moved ) {
+			update_post_meta( $investment_id, 'check_picture', $random_filename );
+			wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&check-return=post_invest_check' );
+			
+		} else {
+			wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&check-return=post_confirm_check&error-upload=1' );
+			
+		}
+		exit();
+	}
+	
+	public static function post_confirm_check() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$current_user = wp_get_current_user();
+		$amount_total = $_SESSION['redirect_current_amount_part'];
+		$investment_id = $campaign->add_investment( 'check', $current_user->user_email, $amount_total, 'pending' );
+		
+		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
+		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
+		
+		wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&check-return=post_confirm_check' );
 	}
 }
