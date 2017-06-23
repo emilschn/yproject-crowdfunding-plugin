@@ -279,9 +279,6 @@ class LemonwayLib {
 		
 		
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
-		if ($result !== FALSE) {
-			$result = $result->WALLET->LWID->__toString();
-		}
 		return $result;
 	}
 	
@@ -339,9 +336,6 @@ class LemonwayLib {
 		
 		
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
-		if ($result !== FALSE) {
-			$result = $result->WALLET->LWID->__toString();
-		}
 		return $result;
 	}
 	

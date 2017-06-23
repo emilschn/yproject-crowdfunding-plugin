@@ -555,8 +555,8 @@ class WDGUser {
 				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
 			}
 
-			if ( $wallet_details->EMAIL != $this->wp_user->user_email ) {
-				$this->update_lemonway( $this->wallet_details );
+			if ( $this->wallet_details->EMAIL != $this->wp_user->user_email ) {
+				$this->update_lemonway();
 			}
 		}
 		return $this->wallet_details;
@@ -598,7 +598,7 @@ class WDGUser {
 	/**
 	 * Met à jour les données sur LW si nécessaire
 	 */
-	private function update_lemonway( $wallet_details ) {
+	private function update_lemonway() {
 		LemonwayLib::wallet_update(
 			$this->get_lemonway_id(),
 			$this->wp_user->user_email,
