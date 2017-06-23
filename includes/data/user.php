@@ -551,12 +551,13 @@ class WDGUser {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
 			if ( $by_email ) {
 				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->wp_user->user_email );
+				
 			} else {
 				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
-			}
 
-			if ( $this->wallet_details->EMAIL != $this->wp_user->user_email ) {
-				$this->update_lemonway();
+				if ( isset( $this->wallet_details->EMAIL ) && $this->wallet_details->EMAIL != $this->wp_user->user_email ) {
+					$this->update_lemonway();
+				}
 			}
 		}
 		return $this->wallet_details;
