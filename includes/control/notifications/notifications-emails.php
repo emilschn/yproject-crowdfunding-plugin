@@ -186,6 +186,41 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $email, $object, $body_content, true );
 		
 	}
+	
+	public static function new_purchase_pending_check_user( $payment_id, $with_picture ) {
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		$campaign_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $campaign_organization->wpref );
+		
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);
+		$WDGUser_current = new WDGUser( $user_data->ID );
+		
+		$object = "Rappels pour votre chèque";
+		
+		$body_content = "Bonjour,<br /><br />";
+		$body_content .= "Vous avez demand&eacute; un investissement de ".$payment_amount." &euro; par chèque pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		
+		$body_content .= "Voici le rappel des informations pour valider votre chèque, si vous ne l'avez pas encore fait :<br />";
+		
+		if ( !$with_picture ) {
+			$body_content .= "Envoyez-nous une photo du chèque à l'adresse investir@wedogood.co<br /><br />";
+		}
+		$body_content .= "Envoyez-nous le chèque à l'ordre de ".$organization_obj->get_name()." à l'adresse suivante :<br />";
+		$body_content .= "WE DO GOOD<br />";
+		$body_content .= "7 rue Mathurin Brissonneau<br />";
+		$body_content .= "44100 Nantes<br /><br />";
+		
+		$body_content .= "N'h&eacute;sitez pas &agrave; nous contacter si vous avez eu un souci lors de cette procédure à l'adresse investir@wedogood.co.<br /><br />";
+		$body_content .= "Toute l'&eacute;quipe de ".ATCF_CrowdFunding::get_platform_name()." vous remercie pour votre investissement !";
+		
+		
+		return NotificationsEmails::send_mail( $email, $object, $body_content, true );
+		
+	}
     
     /**
      * Mail pour l'équipe projet lors d'un achat
@@ -321,6 +356,36 @@ class NotificationsEmails {
 		$body_content .= "- e-mail : " .$email. "<br />";
 		$body_content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
 		$body_content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
+	
+	public static function new_purchase_pending_check_admin( $payment_id, $with_picture ) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_pending_check_admin > ' . $payment_id);
+		$admin_email = 'investir@wedogood.co';
+		
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);
+		
+		$object = "Un nouveau chèque a été enregistré";
+		
+		$body_content = "Bonjour,<br /><br />";
+		$body_content .= "Un nouveau chèque de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		$body_content .= "Utilisateur :<br />";
+		$body_content .= "- login : " .$user_data->user_login. "<br />";
+		$body_content .= "- e-mail : " .$email. "<br />";
+		$body_content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
+		$body_content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		if ( $with_picture ) {
+			$body_content .= "Une photo a été envoyée.<br />";
+		} else {
+			$body_content .= "Aucune photo n'a été envoyée.<br />";
+		}
 		
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}

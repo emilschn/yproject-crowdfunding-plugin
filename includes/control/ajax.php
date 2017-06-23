@@ -1178,7 +1178,17 @@ class WDGAjaxActions {
             if (strpos($mangopay_id, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
             } else if ($mangopay_id == 'check') {
-                $payment_type = 'Ch&egrave;que';
+				
+				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
+				if ( !empty( $check_file_url ) ) {
+					$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
+				}
+				if ( !empty( $check_file_url ) && $current_wdg_user->is_admin() ) {
+					$payment_type = '<a href="'.$check_file_url.'" target="_blank">Ch&egrave;que</a>';
+				} else {
+					$payment_type = 'Ch&egrave;que';
+				}
+				
             }
 
             $investment_state = 'Validé';

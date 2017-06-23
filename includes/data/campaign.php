@@ -1647,11 +1647,10 @@ class ATCF_Campaign {
 	 * @param string $type
 	 * @param string $email
 	 * @param string $value
-	 * @param string $new_username
-	 * @param string $new_password
+	 * @param string $status
 	 */
 	public function add_investment(
-			$type, $email, $value, 
+			$type, $email, $value, $status = 'publish',
 			$new_username = '', $new_password = '', 
 			$new_gender = '', $new_firstname = '', $new_lastname = '', 
 			$birthday_day = '', $birthday_month = '', $birthday_year = '', $birthplace = '', $nationality = '', 
@@ -1728,16 +1727,16 @@ class ATCF_Campaign {
 				'downloads'	=> array($this->ID),
 				'user_info'	=> $user_info,
 				'cart_details'	=> $cart_details,
-				'status'	=> 'publish'
+				'status'	=> $status
 			);
 			$payment_id = edd_insert_payment( $payment_data );
 			edd_record_sale_in_log($this->ID, $payment_id);
 
 		} else {
-			$saved_user_id = FALSE;
+			$payment_id = FALSE;
 		}
 		
-		return $saved_user_id;
+		return $payment_id;
 	}
 	
 	/**
