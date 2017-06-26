@@ -156,8 +156,8 @@ class LemonwayLib {
 
 
 /*********************** WALLETS ***********************/
-	public static $wallet_type_payer = 'payer';
-	public static $wallet_type_beneficiary = 'beneficiary';
+	public static $wallet_type_payer = '1';
+	public static $wallet_type_beneficiary = '2';
 	
 	/**
 	 * Création d'un porte-monnaie
