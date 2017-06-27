@@ -436,6 +436,7 @@ class WDGFormProjects {
 			$return = LemonwayLib::ask_payment_webkit($organization->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
 			if ( !empty($return->MONEYINWEB->TOKEN) ) {
 				wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
+				exit();
 			} else {
 				return "error_lw_payment";
 			}
