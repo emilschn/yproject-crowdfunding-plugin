@@ -493,7 +493,11 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	public function roi_percent() {
-	    return $this->__get('campaign_roi_percent');
+		$buffer = $this->__get('campaign_roi_percent');
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
+	    return $buffer;
 	}
 
     public static $key_first_payment_date = 'campaign_first_payment_date';
@@ -2025,8 +2029,8 @@ class ATCF_Campaign {
 	}
 	
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
-	public static function get_list_vote( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, 'desc', $client ); }
-	public static function get_list_funding( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client ); }
+	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
+	public static function get_list_funding( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client ); }
 	public static function get_list_funded($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_funded, $client ); }
 	public static function get_list_archive($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_archive, $client ); }
 	
@@ -2046,10 +2050,18 @@ class ATCF_Campaign {
 					'compare' => '>',
 					'value' => date('Y-m-d H:i:s')
 				)
-			),
-			'orderby' => 'post_date',
-			'order' => $order
+			)
 		);
+		
+		if ( $order == 'rand' ) {
+			$query_options[ 'orderby' ] = 'rand';
+			
+		} else {
+			$query_options[ 'orderby' ] = 'post_date';
+			$query_options[ 'order' ] = $order;
+			
+		}
+		
 		if (!empty($client)) {
 			$query_options['tax_query'] = array( array( 
 				'taxonomy' => 'download_tag',

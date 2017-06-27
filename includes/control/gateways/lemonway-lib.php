@@ -156,30 +156,35 @@ class LemonwayLib {
 
 
 /*********************** WALLETS ***********************/
+	public static $wallet_type_payer = '1';
+	public static $wallet_type_beneficiary = '2';
+	
 	/**
 	 * Création d'un porte-monnaie
 	 * @param type $new_wallet_id : Identifiant du porte-monnaie sur la plateforme
-	 * @param type $client_mail : Mail du porteur de projet
+	 * @param type $client_mail
 	 * @param type $client_title : Civilité (1 char) 
 	 * @param type $client_first_name
 	 * @param type $client_last_name
 	 * @param type $country : Pays au format ISO-3
 	 * @param type $phone_number : Facultatif ; format MSISDN (code pays sans + ni 00)
-	 * @return boolean or string
+	 * @param type $birthdate : Format JJ/MM/AAAA
+	 * @param type $nationality : Pays au format ISO-3
+	 * @param type $payer_or_beneficiary : Statut payer/beneficiary
+	 * @return type
 	 */
-	public static function wallet_register($new_wallet_id, $client_mail, $client_title, $client_first_name, $client_last_name, $country = '', $phone_number = '', $birthdate = '', $nationality = '', $payer_or_beneficiary = '') {
+	public static function wallet_register( $new_wallet_id, $client_mail, $client_title, $client_first_name, $client_last_name, $country = '', $phone_number = '', $birthdate = '', $nationality = '', $payer_or_beneficiary = '' ) {
 		$param_list = array(
-			'wallet' => $new_wallet_id,
-			'clientMail' => $client_mail,
-			'clientTitle' => $client_title,
-			'clientFirstName' => $client_first_name,
-			'clientLastName' => $client_last_name,
-			'ctry' => $country,
-			'phoneNumber' => $phone_number,
-			'birthdate' => $birthdate,
-			'nationality' => $nationality/*,
+			'wallet'			=> $new_wallet_id,
+			'clientMail'		=> $client_mail,
+			'clientTitle'		=> $client_title,
+			'clientFirstName'	=> $client_first_name,
+			'clientLastName'	=> $client_last_name,
+			'ctry'				=> $country,
+			'phoneNumber'		=> $phone_number,
+			'birthdate'			=> $birthdate,
+			'nationality'		=> $nationality,
 			'payerOrBeneficiary' => $payer_or_beneficiary
-			 */
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
@@ -188,23 +193,38 @@ class LemonwayLib {
 		return $result;
 	}
 	
-	public static function wallet_company_register($new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '') {
+	/**
+	 * Création d'un wallet pour entité morale
+	 * @param type $new_wallet_id
+	 * @param type $client_mail
+	 * @param type $client_first_name
+	 * @param type $client_last_name
+	 * @param type $company_name
+	 * @param type $company_description
+	 * @param type $company_website
+	 * @param type $country : Pays au format ISO-3
+	 * @param type $birthdate : Format JJ/MM/AAAA
+	 * @param type $phone_number : Facultatif ; format MSISDN (code pays sans + ni 00)
+	 * @param type $company_idnumber
+	 * @param type $payer_or_beneficiary
+	 * @return type
+	 */
+	public static function wallet_company_register( $new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '', $payer_or_beneficiary = '' ) {
 		$param_list = array(
-			'wallet' => $new_wallet_id,
-			'clientMail' => $client_mail,
-			'clientFirstName' => $client_first_name,
-			'clientLastName' => $client_last_name,
-			'companyName' => $company_name,
-			'companyDescription' => $company_description,
-			'companyWebsite' => $company_website,
-			'ctry' => $country,
-			'birthdate' => $birthdate,
-			'phoneNumber' => $phone_number,
-			'companyIdentificationNumber' => $company_idnumber,
-			'isCompany' => '1',
-			'isDebtor' => '1'/*,
-			'payerOrBeneficiary' => $payer_or_beneficiary
-			 */
+			'wallet'						=> $new_wallet_id,
+			'clientMail'					=> $client_mail,
+			'clientFirstName'				=> $client_first_name,
+			'clientLastName'				=> $client_last_name,
+			'companyName'					=> $company_name,
+			'companyDescription'			=> $company_description,
+			'companyWebsite'				=> $company_website,
+			'ctry'							=> $country,
+			'birthdate'						=> $birthdate,
+			'phoneNumber'					=> $phone_number,
+			'companyIdentificationNumber'	=> $company_idnumber,
+			'isCompany'						=> '1',
+			'isDebtor'						=> '1',
+			'payerOrBeneficiary'			=> $payer_or_beneficiary
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
@@ -215,32 +235,107 @@ class LemonwayLib {
 	
 	/**
 	 * Mise à jour d'un porte-monnaie
-	 * @param type $wallet_id
+	 * @param type $wallet_id : Identifiant du porte-monnaie sur la plateforme
 	 * @param type $client_mail
-	 * @param type $client_title
+	 * @param type $client_title : Civilité (1 char) 
 	 * @param type $client_first_name
 	 * @param type $client_last_name
-	 * @param type $country
-	 * @param type $ip
-	 * @param type $phone_number
-	 * @return boolean or string
+	 * @param type $country : Pays au format ISO-3
+	 * @param type $phone_number : Facultatif ; format MSISDN (code pays sans + ni 00)
+	 * @param type $birthdate : Format JJ/MM/AAAA
+	 * @param type $nationality : Pays au format ISO-3
+	 * @return type
 	 */
-	public static function wallet_update($wallet_id, $client_mail = '', $client_title = '', $client_first_name = '', $client_last_name = '', $country = '', $ip = '',  $phone_number = '') {
-		if (!isset($wallet_id)) return FALSE;
+	public static function wallet_update( $wallet_id, $client_mail = '', $client_title = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $nationality = '' ) {
+		if ( empty( $wallet_id ) ) {
+			return FALSE;
+		}
 		
 		$param_list = array( 'wallet' => $wallet_id );
-		if ($client_mail != '') $param_list['newEmail'] = $client_mail;
-		if ($client_title != '') $param_list['newTitle'] = $client_title;
-		if ($client_first_name != '') $param_list['newFirstName'] = $client_first_name;
-		if ($client_last_name != '') $param_list['newLastName'] = $client_last_name;
-		if ($country != '') $param_list['newCtry'] = $country;
-		if ($ip != '') $param_list['newIp'] = $ip;
-		if ($phone_number != '') $param_list['newPhoneNumber'] = $phone_number;
+		if ( !empty( $client_mail ) ) {
+			$param_list['newEmail'] = $client_mail;
+		}
+		if ( !empty( $client_title ) ) {
+			$param_list['newTitle'] = $client_title;
+		}
+		if ( !empty( $client_first_name ) ) {
+			$param_list['newFirstName'] = $client_first_name;
+		}
+		if ( !empty( $client_last_name ) ) {
+			$param_list['newLastName'] = $client_last_name;
+		}
+		if ( !empty( $country ) ) {
+			$param_list['newCtry'] = $country;
+		}
+		if ( !empty( $phone_number ) ) {
+			$param_list['newPhoneNumber'] = $phone_number;
+		}
+		if ( !empty( $birthdate ) ) {
+			$param_list['newBirthDate'] = $birthdate;
+		}
+		if ( !empty( $nationality ) ) {
+			$param_list['newNationality'] = $nationality;
+		}
+		
 		
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
-		if ($result !== FALSE) {
-			$result = $result->WALLET->LWID->__toString();
+		return $result;
+	}
+	
+	/**
+	 * Mise à jour d'un porte-monnaie d'entité morale
+	 * @param type $wallet_id : Identifiant du porte-monnaie sur la plateforme
+	 * @param type $client_mail
+	 * @param type $client_first_name
+	 * @param type $client_last_name
+	 * @param type $country : Pays au format ISO-3
+	 * @param type $phone_number : Facultatif ; format MSISDN (code pays sans + ni 00)
+	 * @param type $birthdate : Format JJ/MM/AAAA
+	 * @param type $company_name
+	 * @param type $company_description
+	 * @param type $company_website
+	 * @param type $company_idnumber
+	 * @return type
+	 */
+	public static function wallet_company_update( $wallet_id, $client_mail = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $company_name = '', $company_description = '', $company_website = '', $company_idnumber = '' ) {
+		if ( empty( $wallet_id ) ) {
+			return FALSE;
 		}
+		
+		$param_list = array( 'wallet' => $wallet_id );
+		if ( !empty( $client_mail ) ) {
+			$param_list['newEmail'] = $client_mail;
+		}
+		if ( !empty( $client_first_name ) ) {
+			$param_list['newFirstName'] = $client_first_name;
+		}
+		if ( !empty( $client_last_name ) ) {
+			$param_list['newLastName'] = $client_last_name;
+		}
+		if ( !empty( $country ) ) {
+			$param_list['newCtry'] = $country;
+		}
+		if ( !empty( $phone_number ) ) {
+			$param_list['newPhoneNumber'] = $phone_number;
+		}
+		if ( !empty( $birthdate ) ) {
+			$param_list['newBirthDate'] = $birthdate;
+		}
+		if ( !empty( $company_name ) ) {
+			$param_list['newCompanyName'] = $company_name;
+		}
+		if ( !empty( $company_description ) ) {
+			$param_list['newCompanyDescription'] = $company_description;
+		}
+		if ( !empty( $company_website ) ) {
+			$param_list['newCompanyWebsite'] = $company_website;
+		}
+		if ( !empty( $company_idnumber ) ) {
+			$param_list['newCompanyIdentificationNumber'] = $company_idnumber;
+		}
+		
+		
+		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
 		return $result;
 	}
 	

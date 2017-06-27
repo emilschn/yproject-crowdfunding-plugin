@@ -96,12 +96,12 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		$buffer .= 'E-mail address: '.$user_obj->user_email;
 
 	} else {
-		$birthday_month = mb_strtoupper(__($months[$user_obj->get('user_birthday_month') - 1]));
+		$birthday_month = htmlentities( mb_strtoupper(__($months[$user_obj->get('user_birthday_month') - 1])) );
 		$suffix_born = ($user_obj->get('user_gender') == "female") ? 'e' : '';
 		$buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' &agrave; '.$user_obj->get('user_birthplace').'<br />';
 		$buffer .= 'de nationalité '.$nationality.'<br />';
 		$buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address').'<br />';;
-		$buffer .= 'Addresse e-mail : '.$user_obj->user_email;
+		$buffer .= 'Adresse e-mail : '.$user_obj->user_email;
 	}
     
     if ($campaign_obj->funding_type() == 'fundingproject') {

@@ -277,7 +277,7 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
     }
 	
-    public static function new_purchase_admin_error( $user_data, $int_msg, $project_title = '', $amount = '' ) {
+    public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
 		$admin_email = 'investir@wedogood.co';
 		$object = 'Erreur investissement';
@@ -291,6 +291,12 @@ class NotificationsEmails {
 			$body_content .= "Montant : " .$amount. "<br />";
 		}
 		$body_content .= "Erreur LW : " .$int_msg. "<br />";
+		$body_content .= "Texte d'erreur pour l'utilisateur : " .$txt_msg. "<br />";
+		if ($ask_restart) {
+			$body_content .= "A proposé de recommencer<br />";
+		} else {
+			$body_content .= "N'a pas proposé de recommencer<br />";
+		}
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
 	}
 	
@@ -718,6 +724,8 @@ class NotificationsEmails {
 		$body_content .= " et je consulte le montant des royalties perçues dans la partie <b>Mon porte monnaie électronique</b><br />";
 		$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
 		$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
+		
+		$body_content .= apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) ) . "<br /><br />";
 		
 		$body_content .= "Pour toute demande, vous pouvez joindre l'équipe ".ATCF_CrowdFunding::get_platform_name()." à cette adresse : bonjour@wedogood.co<br /><br />";
 		$body_content .= "Toute l'équipe ".ATCF_CrowdFunding::get_platform_name()." vous souhaite une belle journée.";
