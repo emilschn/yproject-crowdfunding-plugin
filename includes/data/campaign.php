@@ -12,7 +12,7 @@ function atcf_get_campaign( $post_campaign ) {
  * @return objet campagne
  */
 function atcf_get_current_campaign() {
-        $campaign = false;
+	$campaign = false;
 	global $campaign_id, $is_campaign, $is_campaign_page, $post_campaign, $post;
 	//Si l'id de campagne n'a pas encore été trouvé, on va le récupérer
 	if (empty($campaign_id)) {
@@ -29,7 +29,8 @@ function atcf_get_current_campaign() {
 			$campaign_id = atcf_get_campaign_id_from_category($cat);
 			
 		} else {
-			$campaign_id = (isset($_GET['campaign_id'])) ? $_GET['campaign_id'] : $post->ID;
+			$wdginvestment = WDGInvestment::current();
+			$campaign_id = ( isset( $wdginvestment->get_campaign()->ID ) ) ? $wdginvestment->get_campaign()->ID : $post->ID;
 		}
 	}
 	
@@ -498,6 +499,11 @@ class ATCF_Campaign {
 			$buffer = 0;
 		}
 	    return $buffer;
+	}
+
+    public static $key_contract_start_date = 'campaign_contract_start_date';
+	public function contract_start_date() {
+	    return $this->__get(ATCF_Campaign::$key_contract_start_date);
 	}
 
     public static $key_first_payment_date = 'campaign_first_payment_date';
@@ -1133,6 +1139,13 @@ class ATCF_Campaign {
 	}
 	
 	/**
+	 * Returns true if it is possible to invest on the project
+	 */
+	public function is_investable() {
+		return ( ypcf_check_user_is_complete( $this->data->post_author ) && $this->is_remaining_time() && $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte );
+	}
+	
+	/**
 	 * Campaign Updates
 	 *
 	 * @since Appthemer CrowdFunding 0.9
@@ -1663,11 +1676,10 @@ class ATCF_Campaign {
 	 * @param string $type
 	 * @param string $email
 	 * @param string $value
-	 * @param string $new_username
-	 * @param string $new_password
+	 * @param string $status
 	 */
 	public function add_investment(
-			$type, $email, $value, 
+			$type, $email, $value, $status = 'publish',
 			$new_username = '', $new_password = '', 
 			$new_gender = '', $new_firstname = '', $new_lastname = '', 
 			$birthday_day = '', $birthday_month = '', $birthday_year = '', $birthplace = '', $nationality = '', 
@@ -1744,16 +1756,16 @@ class ATCF_Campaign {
 				'downloads'	=> array($this->ID),
 				'user_info'	=> $user_info,
 				'cart_details'	=> $cart_details,
-				'status'	=> 'publish'
+				'status'	=> $status
 			);
 			$payment_id = edd_insert_payment( $payment_data );
 			edd_record_sale_in_log($this->ID, $payment_id);
 
 		} else {
-			$saved_user_id = FALSE;
+			$payment_id = FALSE;
 		}
 		
-		return $saved_user_id;
+		return $payment_id;
 	}
 	
 	/**

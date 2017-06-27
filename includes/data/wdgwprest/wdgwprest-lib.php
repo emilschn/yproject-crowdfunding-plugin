@@ -83,6 +83,10 @@ class WDGWPRESTLib {
 		return $buffer;
 	}
 	
+	public static function call_post_standard( $route, $parameters ) {
+		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_standard . $route, $parameters );
+	}
+	
 	public static function call_post_wdg( $route, $parameters ) {
 		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_wdg . $route, $parameters );
 	}

@@ -109,6 +109,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-organization.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-project.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment.php' );
 		
 		require( $this->includes_dir . 'control/social/FacebookApp/autoload.php' );
 
@@ -119,6 +120,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/logs.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
+		require( $this->includes_dir . 'control/investment.php' );
 		require( $this->includes_dir . 'control/signsquid/common.php' );
 		require( $this->includes_dir . 'control/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'control/pdf_generator.php' );

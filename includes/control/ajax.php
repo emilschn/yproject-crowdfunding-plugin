@@ -457,6 +457,17 @@ class WDGAjaxActions {
 			update_post_meta($campaign_id, 'campaign_location', $location);
 			$success["new_project_location"]=1;
 		}
+		
+		//Champs personnalisés
+		$WDGAuthor = new WDGUser( $campaign->data->post_author );
+		$nb_custom_fields = $WDGAuthor->wp_user->get('wdg-contract-nb-custom-fields');
+		if ( $nb_custom_fields > 0 ) {
+			for ( $i = 1; $i <= $nb_custom_fields; $i++ ) {
+				$custom_field_value = sanitize_text_field( filter_input( INPUT_POST,'custom_field_' . $i ) );
+				update_post_meta( $campaign_id, 'custom_field_' . $i, $custom_field_value );
+				$success['custom_field_' . $i] = 1;
+			}
+		}
 
 		$return_values = array(
 			"response" => "edit_project",
@@ -691,17 +702,40 @@ class WDGAjaxActions {
 			$errors['new_roi_percent_estimated']="Le pourcentage de CA reversé doit être positif";
 		}
 
-		//Update first_payment_date
-		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
-		if(empty($new_first_payment_date)){
-			$errors['new_first_payment']= "La date est invalide";
+		//Update contract_start_date
+		$new_contract_start_date = filter_input(INPUT_POST, 'new_contract_start_date');
+		if ( empty( $new_contract_start_date ) ) {
+			$errors[ 'new_contract_start_date' ] = "La date est invalide";
 		} else {
 			try {
-				$new_first_payment_date = new DateTime(filter_input(INPUT_POST, 'new_first_payment'));
-				update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
-				$success['new_first_payment'] = 1;
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_contract_start_date, $new_contract_start_date );
+				$success[ 'new_contract_start_date']  = 1;
 			} catch (Exception $e) {
-				$errors['new_first_payment'] = "La date est invalide";
+				$errors[ 'new_contract_start_date' ] = "La date est invalide";
+			}
+		}
+
+		//Update first_payment_date
+		$old_first_payment_date = $campaign->first_payment_date();
+		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
+		if ( empty( $old_first_payment_date ) && empty( $new_first_payment_date ) && !empty( $new_contract_start_date ) ) {
+			// Si non défini, on chope le 10 du trimestre suivant le début de contrat pour automatiser un peu !
+			$contract_start_date_time = new DateTime( $new_contract_start_date );
+			$contract_start_date_time->add( new DateInterval( 'P9D' ) );
+			$contract_start_date_time->add( new DateInterval( 'P3M' ) );
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_first_payment_date, date_format( $contract_start_date_time, 'Y-m-d H:i:s' ) );
+			
+		} else {
+			if(empty($new_first_payment_date)){
+				$errors['new_first_payment']= "La date est invalide";
+			} else {
+				try {
+					$new_first_payment_date = new DateTime(filter_input(INPUT_POST, 'new_first_payment'));
+					update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
+					$success['new_first_payment'] = 1;
+				} catch (Exception $e) {
+					$errors['new_first_payment'] = "La date est invalide";
+				}
 			}
 		}
 
@@ -961,9 +995,9 @@ class WDGAjaxActions {
 		//infos sur les fichiers uploadés
 		$files_info = WDGOrganization::edit($org_object);
 
-		if($files_info === FALSE){//user non connecté
+		if($files_info === FALSE) {//user non connecté
 			$buffer = "FALSE";
-		}else{
+		} else if($files_info['files_info'] != null) {
 			$return_values = array(
 				"response" => "edit_organization",
 				"organization" => array(
@@ -987,12 +1021,17 @@ class WDGAjaxActions {
 					"bankownerbic" => $org_object->get_bank_bic(),
 				),
 				"files_info" => array(
-					"org_doc_bank" => $files_info["org_doc_bank"],
-					"org_doc_kbis" => $files_info["org_doc_kbis"],
-					"org_doc_status" => $files_info["org_doc_status"],
-					"org_doc_id" => $files_info["org_doc_id"],
-					"org_doc_home" => $files_info["org_doc_home"],
+					"org_doc_bank" => $files_info['files_info']["org_doc_bank"],
+					"org_doc_kbis" => $files_info['files_info']["org_doc_kbis"],
+					"org_doc_status" => $files_info['files_info']["org_doc_status"],
+					"org_doc_id" => $files_info['files_info']["org_doc_id"],
+					"org_doc_home" => $files_info['files_info']["org_doc_home"],
 				),
+			);
+			$buffer = json_encode($return_values);
+		} else{
+			$return_values = array(
+				"errors" => $files_info['errors_edit'],
 			);
 			$buffer = json_encode($return_values);
 		}
@@ -1236,7 +1275,17 @@ class WDGAjaxActions {
             if (strpos($mangopay_id, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
             } else if ($mangopay_id == 'check') {
-                $payment_type = 'Ch&egrave;que';
+				
+				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
+				if ( !empty( $check_file_url ) ) {
+					$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
+				}
+				if ( !empty( $check_file_url ) && $current_wdg_user->is_admin() ) {
+					$payment_type = '<a href="'.$check_file_url.'" target="_blank">Ch&egrave;que</a>';
+				} else {
+					$payment_type = 'Ch&egrave;que';
+				}
+				
             }
 
             $investment_state = 'Validé';
