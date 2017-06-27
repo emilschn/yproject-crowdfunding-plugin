@@ -619,6 +619,16 @@ class WDGAjaxActions {
 			$errors['new_declaration_adjustment_validated'] = __("Validation non conforme",'yproject');
 		}
 		
+		$needed = filter_input( INPUT_POST, 'new_declaration_adjustment_needed' );
+		if ( $needed != 0 && $needed != 1 ) {
+			$errors['new_declaration_adjustment_needed'] = __("Obligation non conforme",'yproject');
+		}
+		
+		$turnover_difference = filter_input( INPUT_POST, 'new_declaration_adjustment_turnover_difference' );
+		if ( !is_numeric( $turnover_difference ) ) {
+			$errors['new_declaration_adjustment_turnover_difference'] = __("Valeur non conforme",'yproject');
+		}
+		
 		$value = filter_input( INPUT_POST, 'new_declaration_adjustment_value' );
 		if ( !is_numeric( $value ) ) {
 			$errors['new_declaration_adjustment_value'] = __("Valeur non conforme",'yproject');
@@ -629,8 +639,10 @@ class WDGAjaxActions {
 		
 		if ( empty( $errors ) ) {
 			$wdg_declaration = new WDGROIDeclaration( $declaration_id );
-			$wdg_declaration->set_adjustment( ( $validated == 1 ), $value, $message_to_author, $message_to_investors );
+			$wdg_declaration->set_adjustment( ( $validated == 1 ), ( $needed == 1 ), $turnover_difference, $value, $message_to_author, $message_to_investors );
 			$success[ 'new_declaration_adjustment_validated' ] = 1;
+			$success[ 'new_declaration_adjustment_needed' ] = 1;
+			$success[ 'new_declaration_adjustment_turnover_difference' ] = 1;
 			$success[ 'new_declaration_adjustment_value' ] = 1;
 			$success[ 'new_declaration_adjustment_message_author' ] = 1;
 			$success[ 'new_declaration_adjustment_message_investors' ] = 1;

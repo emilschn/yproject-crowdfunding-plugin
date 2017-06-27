@@ -532,13 +532,17 @@ class WDGROIDeclaration {
 	/**
 	 * Enregistre les données d'ajustement
 	 * @param boolean $is_validated
+	 * @param boolean $is_needed
+	 * @param number $turnover_difference
 	 * @param number $value
-	 * @param string $message_to_investors
 	 * @param string $message_to_author
+	 * @param string $message_to_investors
 	 */
-	public function set_adjustment( $is_validated, $value, $message_to_author, $message_to_investors ) {
+	public function set_adjustment( $is_validated, $is_needed, $turnover_difference, $value, $message_to_author, $message_to_investors ) {
 		$buffer = array(
 			'validated'			=> ( $is_validated ) ? 1 : 0,
+			'needed'			=> ( $is_needed ) ? 1 : 0,
+			'turnover_difference' => $turnover_difference,
 			'value'				=> $value,
 			'msg_to_author'		=> $message_to_author,
 			'msg_to_investors'	=> $message_to_investors
@@ -561,6 +565,19 @@ class WDGROIDeclaration {
 	}
 	
 	/**
+	 * Détermine si l'ajustement est obligatoire ou non
+	 * @return boolean
+	 */
+	public function get_adjustment_needed() {
+		$buffer = false;
+		if ( !empty( $this->adjustment ) ) {
+			$temp = json_decode( $this->adjustment );
+			$buffer = ( isset( $temp->needed ) && $temp->needed == 1 );
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Détermine la valeur de l'ajustement
 	 * @return number
 	 */
@@ -569,6 +586,22 @@ class WDGROIDeclaration {
 		if ( !empty( $this->adjustment ) ) {
 			$temp = json_decode( $this->adjustment );
 			$temp_value = $temp->value;
+			if ( is_numeric( $temp_value ) ) {
+				$buffer = $temp_value;
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Détermine la valeur de la différence de chiffre d'affaires
+	 * @return number
+	 */
+	public function get_adjustment_turnover_difference() {
+		$buffer = 0;
+		if ( !empty( $this->adjustment ) ) {
+			$temp = json_decode( $this->adjustment );
+			$temp_value = $temp->turnover_difference;
 			if ( is_numeric( $temp_value ) ) {
 				$buffer = $temp_value;
 			}
