@@ -94,6 +94,7 @@ function ypcf_check_api_calls() {
 					$result = WDGROI::get_roi_list_by_user( $query_user->ID );
 					foreach ( $result as $roi ) {
 						$roi_item = array();
+						$roi_item["id"] = $roi->id;
 						$roi_item["project"] = $roi->id_campaign;
 						$roi_item["date"] = $roi->date_transfer;
 						$roi_item["amount"] = $roi->amount;

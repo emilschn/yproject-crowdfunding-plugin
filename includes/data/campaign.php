@@ -590,6 +590,7 @@ class ATCF_Campaign {
 			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
 			foreach ( $declaration_list as $declaration_item ) {
 				$buffer_declaration_object = array();
+				$buffer_declaration_object["id"] = $declaration_item->id;
 				$buffer_declaration_object["project"] = $this->ID;
 				$buffer_declaration_object["date_due"] = $declaration_item->date_due;
 				$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
@@ -600,6 +601,7 @@ class ATCF_Campaign {
 				foreach ( $roi_list as $roi_item ) {
 					$roi_object = array();
 					$roi_user = new WP_User( $roi_item->id_user );
+					$roi_object["id"] = $roi_item->id;
 					$roi_object["user_email"] = $roi_user->user_email;
 					$roi_object["amount"] = $roi_item->amount;
 					array_push( $buffer_declaration_object["roi_list"], $roi_object );
