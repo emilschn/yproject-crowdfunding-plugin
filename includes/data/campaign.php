@@ -30,7 +30,7 @@ function atcf_get_current_campaign() {
 			
 		} else {
 			$wdginvestment = WDGInvestment::current();
-			$campaign_id = ( isset( $wdginvestment->get_campaign()->ID ) ) ? $wdginvestment->get_campaign()->ID : $post->ID;
+			$campaign_id = ( !empty( $wdginvestment) && isset( $wdginvestment->get_campaign()->ID ) ) ? $wdginvestment->get_campaign()->ID : $post->ID;
 		}
 	}
 	
