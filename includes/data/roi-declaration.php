@@ -58,7 +58,7 @@ class WDGROIDeclaration {
 			$this->transfered_previous_remaining_amount = $declaration_item->transfered_previous_remaining_amount;
 			
 			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
-			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_turnover_total() == 0 ) {
+			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->save();
 			}
