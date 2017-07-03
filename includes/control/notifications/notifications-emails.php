@@ -199,20 +199,19 @@ class NotificationsEmails {
 		$user_data = get_user_by('email', $email);
 		$WDGUser_current = new WDGUser( $user_data->ID );
 		
-		$object = "Rappels pour votre chèque";
+		$object = "Votre investissement par chèque est en attente de validation";
 		
 		$body_content = "Bonjour,<br /><br />";
 		$body_content .= "Vous avez demand&eacute; un investissement de ".$payment_amount." &euro; par chèque pour le projet " .$campaign->data->post_title. ".<br /><br />";
 		
-		$body_content .= "Voici le rappel des informations pour valider votre chèque, si vous ne l'avez pas encore fait :<br />";
-		
-		if ( !$with_picture ) {
-			$body_content .= "Envoyez-nous une photo du chèque à l'adresse investir@wedogood.co<br /><br />";
-		}
-		$body_content .= "Envoyez-nous le chèque à l'ordre de ".$organization_obj->get_name()." à l'adresse suivante :<br />";
+		$body_content .= "Afin de valider votre investissement, nous vous rappelons que vous devez envoyer votre chèque (à l'ordre de ".$organization_obj->get_name().") par courrier à l'adresse suivante :<br />";
 		$body_content .= "WE DO GOOD<br />";
 		$body_content .= "7 rue Mathurin Brissonneau<br />";
 		$body_content .= "44100 Nantes<br /><br />";
+
+		if ( !$with_picture ) {
+			$body_content .= "Si vous souhaitez que votre investissement soit pris en compte plus rapidement, envoyez-nous d'abord une photo du chèque à investir@wedogood.co<br /><br />";
+		}
 		
 		$body_content .= "N'h&eacute;sitez pas &agrave; nous contacter si vous avez eu un souci lors de cette procédure à l'adresse investir@wedogood.co.<br /><br />";
 		$body_content .= "Toute l'&eacute;quipe de ".ATCF_CrowdFunding::get_platform_name()." vous remercie pour votre investissement !";
@@ -360,7 +359,7 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
 	
-	public static function new_purchase_pending_check_admin( $payment_id, $with_picture ) {
+	public static function new_purchase_pending_check_admin( $payment_id, $picture_url ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_pending_check_admin > ' . $payment_id);
 		$admin_email = 'investir@wedogood.co';
 		
@@ -381,8 +380,9 @@ class NotificationsEmails {
 		$body_content .= "- e-mail : " .$email. "<br />";
 		$body_content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
 		$body_content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
-		if ( $with_picture ) {
-			$body_content .= "Une photo a été envoyée.<br />";
+		if ( $picture_url ) {
+			$body_content .= "Une photo a été envoyée :<br />";
+			$body_content .= "<img src='".$picture_url."' /><br />";
 		} else {
 			$body_content .= "Aucune photo n'a été envoyée.<br />";
 		}
