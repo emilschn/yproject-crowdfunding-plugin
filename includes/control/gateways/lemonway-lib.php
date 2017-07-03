@@ -837,6 +837,36 @@ class LemonwayLib {
 		return $result;
 	}
 	
+	public static function ask_payment_with_mandate( $wallet_id, $amount, $mandate_id, $amount_com = 0, $comment = '', $auto_commission = 0, $date = '' ) {
+		if ( !isset( $wallet_id ) || !isset( $amount ) || !isset( $mandate_id ) ) {
+			return FALSE;
+		}
+		
+		$amount = LemonwayLib::check_amount($amount);
+		$amount_com = LemonwayLib::check_amount($amount_com);
+		
+		$param_list = array(
+			'wallet' => $wallet_id,
+			'amountTot' => $amount,
+			'amountCom' => $amount_com,
+			'comment' => $comment,
+			'autoCommission' => $auto_commission,
+			'sddMandateId' => $mandate_id
+		);
+		
+		if ( !empty( $date ) ) {
+			$param_list['collectionDate'] = $date;
+		}
+		
+		$result = LemonwayLib::call('MoneyInSddInit', $param_list);
+		if ($result !== FALSE) {
+			//Retourne : 
+			//  - TRANS->HPAY => ID ; MLABEL ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS ; REFUND
+		}
+		return $result;
+		
+	}
+	
 	public static function ask_refund($transaction_id, $amount = 0) {
 		if (!isset($transaction_id)) return FALSE;
 		
