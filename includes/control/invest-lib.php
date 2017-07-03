@@ -87,19 +87,22 @@ function ypcf_check_api_calls() {
 		break;
 	
 		case "get_royalties_by_user":
+			$buffer = array();
 			if ( !empty( $input_param ) ) {
 				$query_user = get_user_by( 'email', $input_param );
-				$result = WDGROI::get_roi_list_by_user( $query_user->ID );
-				$buffer = array();
-				foreach ( $result as $roi ) {
-					$roi_item = array();
-					$roi_item["project"] = $roi->id_campaign;
-					$roi_item["date"] = $roi->date_transfer;
-					$roi_item["amount"] = $roi->amount;
-					array_push( $buffer, $roi_item );
+				if ( $query_user ) {
+					$result = WDGROI::get_roi_list_by_user( $query_user->ID );
+					foreach ( $result as $roi ) {
+						$roi_item = array();
+						$roi_item["id"] = $roi->id;
+						$roi_item["project"] = $roi->id_campaign;
+						$roi_item["date"] = $roi->date_transfer;
+						$roi_item["amount"] = $roi->amount;
+						array_push( $buffer, $roi_item );
+					}
 				}
-				exit( json_encode( $buffer ) );
 			}
+			exit( json_encode( $buffer ) );
 		break;
 		
 		case "update_user_email":
