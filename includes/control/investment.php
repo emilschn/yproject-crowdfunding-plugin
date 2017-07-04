@@ -33,9 +33,13 @@ class WDGInvestment {
 	 * @return WDGInvestment
 	 */
 	public static function current() {
-		if ( is_null( self::$_current ) && isset( $_SESSION[ 'investment_token' ] ) ) {
+		if ( is_null( self::$_current ) ) {
 			ypcf_session_start();
-			self::$_current = new self( FALSE, $_SESSION[ 'investment_token' ] );
+			if ( isset( $_SESSION[ 'investment_token' ] ) ) {
+				self::$_current = new self( FALSE, $_SESSION[ 'investment_token' ] );
+			} else {
+				self::$_current = new self();
+			}
 		}
 		return self::$_current;
 	}
