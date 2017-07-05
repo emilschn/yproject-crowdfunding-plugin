@@ -39,8 +39,8 @@ class WDGCronActions {
 	}
 	
 	public static function hourly_actions() {
-		global $WDG_File_Cacher;
-		$WDG_File_Cacher->rebuild_cache();
+//		global $WDG_File_Cacher;
+//		$WDG_File_Cacher->rebuild_cache();
 	}
 	
 	public static function check_kycs() {
