@@ -62,6 +62,7 @@ class WDGAjaxActions {
 		$permissions = ['email'];
 		$loginUrl = $helper->getLoginUrl( home_url( '/connexion/?fbcallback=1' ) , $permissions);
 		echo $loginUrl;
+		exit();
 	}
     
 	/**

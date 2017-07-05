@@ -23,24 +23,12 @@ class WDGCronActions {
 				update_option( 'last_daily_call', $date_now->format('Y-m-d H:i:s') );
 				WDGCronActions::daily_actions();
 			}
-			
-			$last_hourly_call = get_option( 'last_hourly_call' );
-			$saved_hourly_date = new DateTime( $last_hourly_call );
-			if ($last_hourly_call == FALSE || $saved_hourly_date->diff($date_now)->h >= 1) {
-				update_option( 'last_hourly_call', $date_now->format('Y-m-d H:i:s') );
-				WDGCronActions::hourly_actions();
-			}
 		}
 	}
 	
 	public static function daily_actions() {
 //		WDGCronActions::check_kycs();
 		WDGCronActions::make_projects_rss();
-	}
-	
-	public static function hourly_actions() {
-		global $WDG_File_Cacher;
-		$WDG_File_Cacher->rebuild_cache();
 	}
 	
 	public static function check_kycs() {
