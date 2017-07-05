@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class NotificationsSlack {
-    private static $channel_dev = "breeze-dev-en-cours";
+    private static $channel_dev = "dev-divers";
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 	    $data = "payload=" . json_encode(array(
