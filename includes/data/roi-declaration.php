@@ -57,6 +57,11 @@ class WDGROIDeclaration {
 			$this->adjustment = $declaration_item->adjustment;
 			$this->transfered_previous_remaining_amount = $declaration_item->transfered_previous_remaining_amount;
 			
+			// Les déclarations sans statut doivent passer en statut "Déclaration"
+			if ( empty( $this->status ) || $this->status == null ) {
+				$this->status = WDGROIDeclaration::$status_declaration;
+			}
+			
 			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
 			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
 				$this->status = WDGROIDeclaration::$status_finished;
@@ -118,12 +123,6 @@ class WDGROIDeclaration {
 	}
 	
 	public function get_status() {
-		if ( empty( $this->status ) ) {
-			$this->status = WDGROIDeclaration::$status_declaration;
-		}
-		if ( $this->status == WDGROIDeclaration::$status_declaration && $this->amount > 0 ) {
-			$this->status = WDGROIDeclaration::$status_payment;
-		}
 		return $this->status;
 	}
 	
@@ -737,7 +736,13 @@ class WDGROIDeclaration {
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
 		$query .= " WHERE id_campaign=".$id_campaign;
 		if ( !empty( $status ) ) {
-			$query .= " AND status='".$status."'";
+			$query .= " AND ";
+			if ( $status == WDGROIDeclaration::$status_declaration ) {
+				$query .= "( status='".$status."' OR status='' OR status IS NULL )";
+				
+			} else {
+				$query .= "status='".$status."'";
+			}
 		}
 		$query .= " ORDER BY date_due ASC";
 		

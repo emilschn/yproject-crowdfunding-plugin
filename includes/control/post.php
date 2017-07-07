@@ -419,9 +419,10 @@ class WDGPostActions {
 		}
 		$random_filename .= '.' . $ext;
 		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../files/investment-check/' . $random_filename );
+		$picture_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 		
 		NotificationsEmails::new_purchase_pending_check_user( $investment_id, TRUE );
-		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, TRUE );
+		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, $picture_url );
 		
 		if ( $has_moved ) {
 			update_post_meta( $investment_id, 'check_picture', $random_filename );

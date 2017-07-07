@@ -32,6 +32,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_declaration_info');
 		WDGAjaxActions::add_action('save_user_infos_dashboard');
 		WDGAjaxActions::add_action('save_declaration_adjustment');
+		WDGAjaxActions::add_action('pay_with_mandate');
 
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
@@ -650,6 +651,73 @@ class WDGAjaxActions {
 
 		$return_values = array(
 			"response"	=> "declaration_adjustment",
+			"errors"	=> $errors,
+			"success"	=> $success
+		);
+		echo json_encode($return_values);
+
+		exit();
+	}
+	
+	/**
+	 * Déclenchement de paiement via prélèvement automatique
+	 */
+	public static function pay_with_mandate() {
+        $current_wdg_user = WDGUser::current();
+		if ( !$current_wdg_user->is_admin() ) {
+			exit();
+		}
+		
+		$errors = array();
+		$success = array();
+		
+		$amount_for_organization = filter_input( INPUT_POST, 'pay_with_mandate_amount_for_organization' );
+		if ( $amount_for_organization < 0 || !is_numeric( $amount_for_organization ) ) {
+			$errors['pay_with_mandate_amount_for_organization'] = __("Somme non conforme",'yproject');
+		}
+		$amount_for_commission = filter_input( INPUT_POST, 'pay_with_mandate_amount_for_commission' );
+		if ( $amount_for_commission < 0 || !is_numeric( $amount_for_commission ) ) {
+			$errors['pay_with_mandate_amount_for_commission'] = __("Somme non conforme",'yproject');
+		}
+		$organization_id = filter_input( INPUT_POST, 'organization_id' );
+		if ( empty( $organization_id ) ) {
+			$errors['organization_id'] = __("Probl&egrave;me interne",'yproject');
+		}
+		
+		$organization_obj = new WDGOrganization( $organization_id );
+		$wallet_id = $organization_obj->get_lemonway_id();
+		$saved_mandates_list = $organization_obj->get_lemonway_mandates();
+		if ( !empty( $saved_mandates_list ) ) {
+			$last_mandate = end( $saved_mandates_list );
+		}
+		$mandate_id = $last_mandate['ID'];
+		
+		if ( empty( $errors ) ) {
+			$result = LemonwayLib::ask_payment_with_mandate( $wallet_id, $amount_for_organization, $mandate_id, $amount_for_commission );
+			$buffer = ($result->TRANS->HPAY->ID) ? "success" : $result->TRANS->HPAY->MSG;
+
+			if ($buffer == "success") {
+				// Enregistrement de l'objet Lemon Way
+				$withdrawal_post = array(
+					'post_author'   => $organization_id,
+					'post_title'    => $amount_for_organization . ' + ' . $amount_for_commission,
+					'post_content'  => print_r( $result, TRUE ),
+					'post_status'   => 'publish',
+					'post_type'		=> 'mandate_payment'
+				);
+				wp_insert_post( $withdrawal_post );
+				
+				$success[ 'pay_with_mandate_amount_for_organization' ] = 1;
+				$success[ 'pay_with_mandate_amount_for_commission' ] = 1;
+				
+			} else {
+				$errors['pay_with_mandate_amount_for_organization'] = __("Probl&egrave;me Lemon Way",'yproject');
+				
+			}
+		}
+
+		$return_values = array(
+			"response"	=> "pay_with_mandate",
 			"errors"	=> $errors,
 			"success"	=> $success
 		);
