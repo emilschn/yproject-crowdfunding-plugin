@@ -75,6 +75,16 @@ class WDG_PDF_Generator {
 	}
 	
 	/**
+	 * Shortcode affichant le gain maximal
+	 */
+	public static function shortcode_contract_maximum_profit( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->maximum_profit();
+		return $buffer;
+	}
+	
+	/**
 	 * Shortcode affichant le CA prévisionnel pour une année spécifique
 	 */
 	public static function shortcode_contract_estimated_turnover_per_year( $atts, $content = '' ) {
@@ -285,6 +295,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
 		add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
 		add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
+		add_shortcode( 'wdg_campaign_contract_maximum_profit', 'WDG_PDF_Generator::shortcode_contract_maximum_profit' );
 		add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
 		add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
 		$override_contract_filtered = apply_filters( 'the_content', $override_contract );
