@@ -1807,7 +1807,10 @@ class ATCF_Campaign {
 		$investments_list = $this->payments_data(TRUE);
 		//Calculs des montants à reverser
 		$total_amount = $this->current_amount(FALSE);
-		$roi_amount = $declaration->amount + $declaration->get_previous_remaining_amount();
+		$roi_amount = $declaration->get_amount_with_adjustment();
+		if ( $transfer_remaining_amount ) {
+			$roi_amount += $declaration->get_previous_remaining_amount();
+		}
 		foreach ($investments_list as $investment_item) {
 			//Calcul de la part de l'investisseur dans le total
 			$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
