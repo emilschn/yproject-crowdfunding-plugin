@@ -20,6 +20,82 @@ class WDG_PDF_Generator {
 	}
 	
 	/**
+	 * Shortcode affichant le descriptif de l'activité
+	 */
+	public static function shortcode_contract_organization_description( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		$buffer = "";
+		global $shortcode_campaign_obj;
+		$campaign_organization = $shortcode_campaign_obj->get_organization();
+		if ( !empty( $campaign_organization->wpref ) ) {
+			$wdg_organization = new WDGOrganization( $campaign_organization->wpref );
+			$buffer = $wdg_organization->get_description();
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant l'objectif minimum
+	 */
+	public static function shortcode_contract_minimum_goal( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->minimum_goal();
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant l'objectif maximum
+	 */
+	public static function shortcode_contract_maximum_goal( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->goal( false );
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant le pourcentage de versement maximal
+	 */
+	public static function shortcode_contract_roi_percent_max( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->roi_percent_estimated();
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant la durée du contrat
+	 */
+	public static function shortcode_contract_duration( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->funding_duration();
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant le CA prévisionnel pour une année spécifique
+	 */
+	public static function shortcode_contract_estimated_turnover_per_year( $atts, $content = '' ) {
+		$atts = shortcode_atts( array(
+			'year'	=> '1'
+		), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = 0;
+		$estimated_turnover = $shortcode_campaign_obj->estimated_turnover();
+		if ( !empty( $estimated_turnover ) ){
+			$i = 1;
+			foreach ( $estimated_turnover as $turnover ) {
+				if ( $i == $atts[ 'year' ] ) {
+					$buffer = $turnover;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Shortcode affichant le contenu d'un champ personnalisé
 	 */
 	public static function shortcode_custom_field( $atts, $content = '' ) {
@@ -204,12 +280,13 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		global $shortcode_campaign_obj;
 		$shortcode_campaign_obj = $campaign_obj;
 		add_shortcode( 'wdg_campaign_contract_start_date', 'WDG_PDF_Generator::shortcode_contract_start_date' );
-		$nb_custom_fields = $user_author->wp_user->get('wdg-contract-nb-custom-fields');
-		if ( $nb_custom_fields > 0 ) {
-			for ( $i = 1; $i <= $nb_custom_fields; $i++ ) {
-				add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
-			}
-		}
+		add_shortcode( 'wdg_campaign_contract_organization_description', 'WDG_PDF_Generator::shortcode_contract_organization_description' );
+		add_shortcode( 'wdg_campaign_contract_minimum_goal', 'WDG_PDF_Generator::shortcode_contract_minimum_goal' );
+		add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
+		add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
+		add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
+		add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
+		add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
 		$override_contract_filtered = apply_filters( 'the_content', $override_contract );
 		$buffer .= html_entity_decode( $override_contract_filtered );
 	} else {

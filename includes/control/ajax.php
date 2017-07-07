@@ -10,6 +10,8 @@ class WDGAjaxActions {
 	 * Initialise la liste des actions ajax
 	 */
 	public static function init_actions() {
+		WDGAjaxActions::add_action('get_connect_to_facebook_url');
+		
 		WDGAjaxActions::add_action('display_roi_user_list');
 		WDGAjaxActions::add_action('show_project_money_flow');
 		WDGAjaxActions::add_action('check_invest_input');
@@ -45,6 +47,22 @@ class WDGAjaxActions {
 	public static function add_action($action_name) {
 		add_action('wp_ajax_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
 		add_action('wp_ajax_nopriv_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
+	}
+	
+	/**
+	 * Retourne une URL de redirection vers la connexion Facebook
+	 */
+	public static function get_connect_to_facebook_url() {
+		$fb = new Facebook\Facebook([
+			'app_id' => YP_FB_APP_ID,
+			'app_secret' => YP_FB_SECRET,
+			'default_graph_version' => 'v2.8',
+		]);
+		$helper = $fb->getRedirectLoginHelper();
+		$permissions = ['email'];
+		$loginUrl = $helper->getLoginUrl( home_url( '/connexion/?fbcallback=1' ) , $permissions);
+		echo $loginUrl;
+		exit();
 	}
     
 	/**

@@ -381,7 +381,12 @@ class WDGPostActions {
 		if ( $wdginvestment->has_token() ) {
 			$wdginvestment->set_status( WDGInvestment::$status_canceled );
 			$wdginvestment->post_token_notification();
-			$redirect_url = $wdginvestment->get_redirection( 'error', 'canceled' );
+			$reason = 'canceled';
+			$post_reason = filter_input( INPUT_POST, 'reason' );
+			if ( !empty( $post_reason ) ) {
+				$reason = $post_reason;
+			}
+			$redirect_url = $wdginvestment->get_redirection( 'error', $reason );
 			
 		} else {
 			$campaign_id = filter_input( INPUT_POST, 'campaign_id' );

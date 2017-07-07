@@ -33,9 +33,13 @@ class WDGInvestment {
 	 * @return WDGInvestment
 	 */
 	public static function current() {
-		if ( is_null( self::$_current ) && isset( $_SESSION[ 'investment_token' ] ) ) {
+		if ( is_null( self::$_current ) ) {
 			ypcf_session_start();
-			self::$_current = new self( FALSE, $_SESSION[ 'investment_token' ] );
+			if ( isset( $_SESSION[ 'investment_token' ] ) ) {
+				self::$_current = new self( FALSE, $_SESSION[ 'investment_token' ] );
+			} else {
+				self::$_current = new self();
+			}
 		}
 		return self::$_current;
 	}
@@ -49,7 +53,7 @@ class WDGInvestment {
 		if ( isset( $this->campaign ) ) {
 			$buffer = $this->campaign;
 			
-		} elseif ( isset( $this->token_info->project ) ) {
+		} elseif ( $this->has_token() && isset( $this->token_info->project ) ) {
 			$this->campaign = new ATCF_Campaign( $this->token_info->project );
 			$buffer = $this->campaign;
 			
@@ -84,18 +88,20 @@ class WDGInvestment {
 	 */
 	public function get_redirection( $redirection_type, $param = '', $param2 = '' ) {
 		$buffer = '';
-		switch ( $redirection_type ) {
-			case 'error':
-				$buffer = $this->token_info->redirect_url_nok;
-				break;
-			case 'success':
-				$buffer = $this->token_info->redirect_url_ok;
-				break;
-		}
-		if ( !empty( $param ) ) {
-			$buffer .= '?param=' . $param;
-			if ( !empty( $param2 ) ) {
-				$buffer .= '&param2=' . $param2;
+		if ( $this->has_token() ) {
+			switch ( $redirection_type ) {
+				case 'error':
+					$buffer = $this->token_info->redirect_url_nok;
+					break;
+				case 'success':
+					$buffer = $this->token_info->redirect_url_ok;
+					break;
+			}
+			if ( !empty( $param ) ) {
+				$buffer .= '?param=' . $param;
+				if ( !empty( $param2 ) ) {
+					$buffer .= '&param2=' . $param2;
+				}
 			}
 		}
 		return $buffer;
@@ -105,7 +111,7 @@ class WDGInvestment {
 	 * Fait un post sur l'url transmise pour les notifications
 	 */
 	public function post_token_notification() {
-		if ( !empty( $this->token_info->notification_url ) ) {
+		if ( $this->has_token() && !empty( $this->token_info->notification_url ) ) {
 			$parameters = array(
 				'token'		=> $this->token,
 				'status'	=> $this->token_info->status
@@ -124,11 +130,13 @@ class WDGInvestment {
 	 * @param string $status
 	 */
 	public function set_status( $status ) {
-		$this->token_info->status = $status;
-		$parameters = array(
-			'status' => $status
-		);
-		WDGWPRESTLib::call_post_wdg( 'investment/' . $this->token, $parameters );
+		if ( $this->has_token() ) {
+			$this->token_info->status = $status;
+			$parameters = array(
+				'status' => $status
+			);
+			WDGWPRESTLib::call_post_wdg( 'investment/' . $this->token, $parameters );
+		}
 	}
 	
 	/**
@@ -314,7 +322,10 @@ class WDGInvestment {
 	 * @return boolean
 	 */
 	public function is_amount_valid() {
-		$amount = $this->token_info->amount;
+		$amount = 0;
+		if ( $this->has_token() ) {
+			$amount = $this->token_info->amount;
+		}
 		return isset( $amount ) && is_numeric( $amount ) && ctype_digit( $amount ) 
 			&& intval( $amount ) == $amount && $amount >= 1 && $amount <= $this->get_max_value_to_invest();
 	}
