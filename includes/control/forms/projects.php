@@ -82,7 +82,7 @@ class WDGFormProjects {
 			
 			do_action('wdg_delete_cache', array(
 				'home-projects',
-				'list-projects-current'
+				'projectlist-projects-current'
 			));
 			
 			$page_dashboard = get_page_by_path('tableau-de-bord');

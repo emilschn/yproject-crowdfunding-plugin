@@ -794,7 +794,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					if (isset($download_id) && !empty($download_id)) {
 						do_action('wdg_delete_cache', array(
 							'home-projects',
-							'list-projects-current'
+							'projectlist-projects-current'
 						));
 					}
 				}
