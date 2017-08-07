@@ -365,6 +365,9 @@ class WDGROIDeclaration {
 				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
 			}
 			
+			if ( $transfer != FALSE ) {
+				$ROI->status = WDGROI::$status_transferred;
+			}
 			$ROI->id_transfer = $transfer->ID;
 			$ROI->save();
 		}
