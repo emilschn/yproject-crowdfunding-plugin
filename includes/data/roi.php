@@ -89,13 +89,13 @@ class WDGROI {
 			
 			$organization_obj = new WDGOrganization( $this->id_orga );
 			
-			//Gestion versement organisation vers projet
+			// Versement projet vers organisation
 			if (WDGOrganization::is_user_organization( $this->id_user )) {
 				$WDGOrga = new WDGOrganization( $this->id_user );
 				$WDGOrga->register_lemonway();
 				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $this->amount );
 
-			//Versement utilisateur personne physique vers projet
+			// Versement projet vers utilisateur personne physique
 			} else {
 				$WDGUser = new WDGUser( $this->id_user );
 				$WDGUser->register_lemonway();
@@ -103,7 +103,7 @@ class WDGROI {
 			}
 			
 			if ($transfer != FALSE) {
-				$this->status = WDGROIDeclaration::$status_finished;
+				$this->status = WDGROI::$status_transferred;
 				$this->id_transfer = $transfer->ID;
 				$date_now = new DateTime();
 				$date_now_formatted = $date_now->format( 'Y-m-d' );
