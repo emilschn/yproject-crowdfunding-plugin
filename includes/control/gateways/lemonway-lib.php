@@ -131,8 +131,10 @@ class LemonwayLib {
 	
 	public static function check_phone_number( $phone_number ) {
 		$buffer = str_replace( array(' ', '.', '-', '+'), '', $phone_number);
-		$buffer = substr( $buffer, -9 );
-		$buffer = '33' . $buffer;
+		if ( !empty( $buffer ) ) {
+			$buffer = substr( $buffer, -9 );
+			$buffer = '33' . $buffer;
+		}
 		return $buffer;
 	}
 	
@@ -181,11 +183,13 @@ class LemonwayLib {
 			'clientFirstName'	=> $client_first_name,
 			'clientLastName'	=> $client_last_name,
 			'ctry'				=> $country,
-			'phoneNumber'		=> $phone_number,
 			'birthdate'			=> $birthdate,
 			'nationality'		=> $nationality,
 			'payerOrBeneficiary' => $payer_or_beneficiary
 		);
+		if ( !empty( $phone_number ) ) {
+			$param_list['phoneNumber'] = $phone_number;
+		}
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
 			$result = $result->WALLET->LWID;

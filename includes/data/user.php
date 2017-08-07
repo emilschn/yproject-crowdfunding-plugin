@@ -657,7 +657,9 @@ class WDGUser {
 	
 	public function get_lemonway_phone_number() {
 		$phone_number = $this->get_phone_number();
-		$lemonway_phone_number = LemonwayLib::check_phone_number( $phone_number );
+		if ( !empty( $phone_number ) ) {
+			$lemonway_phone_number = LemonwayLib::check_phone_number( $phone_number );
+		}
 		return $lemonway_phone_number;
 	}
 	

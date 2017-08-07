@@ -346,7 +346,7 @@ class WDGROIDeclaration {
 		$query .= " WHERE id_declaration=".$this->id;
 		$query .= " AND amount>0";
 		$query .= " AND id_transfer=0";
-		$query .= " AND status='" .WDGROI::$status_transferred. "'";
+		$query .= " AND ( status='" .WDGROI::$status_transferred. "' OR status='" .WDGROI::$status_error. "' )";
 		
 		$roi_list = $wpdb->get_results( $query );
 		foreach ( $roi_list as $roi_item ) {
