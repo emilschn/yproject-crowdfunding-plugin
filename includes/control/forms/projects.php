@@ -393,29 +393,44 @@ class WDGFormProjects {
 		
 		$declaration_message = filter_input( INPUT_POST, 'declaration-message' );
 		
-		$turnover_declaration = filter_input( INPUT_POST, 'turnover-total' );
+		$has_error = false;
 		$saved_declaration = array();
 		$total_turnover = 0;
+		$turnover_declaration = filter_input( INPUT_POST, 'turnover-total' );
 		if (!empty($turnover_declaration)) {
-			$total_turnover += $turnover_declaration;
-			array_push($saved_declaration, $turnover_declaration);
+			$turnover_declaration = str_replace( ',', '.', $turnover_declaration );
+			if ( is_numeric( $turnover_declaration ) ) {
+				$total_turnover += $turnover_declaration;
+				array_push($saved_declaration, $turnover_declaration);
+			} else {
+				$has_error = true;
+			}
+			
 		} else {
 			$nb_turnover = $campaign->get_turnover_per_declaration();
 			for ($i = 0; $i < $nb_turnover; $i++) {
 				$turnover_declaration = filter_input( INPUT_POST, 'turnover-' . $i );
-				$total_turnover += $turnover_declaration;
-				array_push($saved_declaration, $turnover_declaration);
+				$turnover_declaration = str_replace( ',', '.', $turnover_declaration );
+				if ( is_numeric( $turnover_declaration ) ) {
+					$total_turnover += $turnover_declaration;
+					array_push($saved_declaration, $turnover_declaration);
+				} else {
+					$has_error = true;
+				}
 			}
 		}
-		$declaration->set_turnover($saved_declaration);
-		$declaration->percent_commission = $campaign->get_costs_to_organization();
-		$declaration->amount = round( ($total_turnover * $campaign->roi_percent() / 100) * 100 ) / 100;
-		if ($declaration->amount == 0) {
-			NotificationsEmails::turnover_declaration_null( $declaration_id );
+		
+		if ( !$has_error ) {
+			$declaration->set_turnover($saved_declaration);
+			$declaration->percent_commission = $campaign->get_costs_to_organization();
+			$declaration->amount = round( ($total_turnover * $campaign->roi_percent() / 100) * 100 ) / 100;
+			if ($declaration->amount == 0) {
+				NotificationsEmails::turnover_declaration_null( $declaration_id );
+			}
+			$declaration->set_message( $declaration_message );
+			$declaration->status = WDGROIDeclaration::$status_payment;
+			$declaration->save();
 		}
-		$declaration->set_message( $declaration_message );
-		$declaration->status = WDGROIDeclaration::$status_payment;
-		$declaration->save();
 	}
 	
 	/**
