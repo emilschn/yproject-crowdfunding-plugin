@@ -85,8 +85,8 @@ class WDG_File_Cacher {
 				case 'home-projects':
 					$this->delete( 'home' );
 					break;
-				case 'list-projects-current':
-				case 'list-projects-funded':
+				case 'projectlist-projects-current':
+				case 'projectlist-projects-funded':
 					$this->delete( 'les-projets' );
 					break;
 			}
