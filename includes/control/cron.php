@@ -12,7 +12,6 @@ class WDGCronActions {
 		$force_cron = filter_input(INPUT_GET, 'force_cron');
 		if ( $force_cron == '1' && $wdg_current_user->is_admin() ) {
 			WDGCronActions::daily_actions();
-			WDGCronActions::hourly_actions();
 			
 		} else {
 			$date_now = new DateTime();
