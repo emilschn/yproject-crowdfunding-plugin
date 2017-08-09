@@ -246,7 +246,7 @@ class WDGFormUsers {
 		if ( empty( $register_form_posted ) ) { return FALSE; }
 		
 		// Si le formulaire d'inscription est rempli
-		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && yp_check_recaptcha($_POST['g-recaptcha-response']) ) {
+		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && WDGFormUsers::check_recaptcha($_POST['g-recaptcha-response']) ) {
 			
 			// Vérifications concernant le nom d'utilisateur et l'e-mail
 			$user_name = filter_input(INPUT_POST, 'signup_username_login');
@@ -330,6 +330,33 @@ class WDGFormUsers {
 			$signup_errors->add( 'user_insert', __( "Probl&egrave;me de validation du formulaire.", 'yproject' ) );
 			
 		}
+	}
+	
+	public static function check_recaptcha( $code ) {
+		if (WP_IS_DEV_SITE){ return TRUE; }
+
+		if (empty($code)) { return false; }
+		$params = [
+			'secret'    => RECAPTCHA_SECRET,
+			'response'  => $code
+		];
+		if( $ip ){
+			$params['remoteip'] = $ip;
+		}
+		$url = "https://www.google.com/recaptcha/api/siteverify?" . http_build_query($params);
+		$curl = curl_init($url);
+		curl_setopt($curl, CURLOPT_HEADER, false);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_TIMEOUT, 1);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		$response = curl_exec($curl);
+
+		if (empty($response) || is_null($response)) {
+			return false;
+		}
+
+		$json = json_decode($response);
+		return $json->success;
 	}
 	
 	
