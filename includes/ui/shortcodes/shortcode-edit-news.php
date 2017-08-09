@@ -99,7 +99,7 @@ function ypcf_shortcode_edit_news_field_postcontent($post) {
 				'theme_advanced_path'     => false,
 				'paste_remove_styles'     => true,
 				'theme_advanced_resizing_use_cookie' => false,
-                                'plugins'		    => 'paste, wplink, textcolor'
+                                'plugins'		    => 'wordpress, paste, wplink, textcolor'
 			)
 
 		    ) 
