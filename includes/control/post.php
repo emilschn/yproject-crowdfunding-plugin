@@ -403,9 +403,14 @@ class WDGPostActions {
 	public static function post_invest_check() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$current_user = wp_get_current_user();
 		$amount_total = $_SESSION['redirect_current_amount_part'];
-		$investment_id = $campaign->add_investment( 'check', $current_user->user_email, $amount_total, 'pending' );
+		$current_user = wp_get_current_user();
+		$invest_email = $current_user->user_email;
+		if ( isset( $_SESSION['redirect_current_invest_type'] ) && $_SESSION['redirect_current_invest_type'] != 'user' ) {
+			$orga_creator = get_user_by( 'id', $_SESSION['redirect_current_invest_type'] );
+			$invest_email = $orga_creator->user_email;
+		}
+		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
 		
 		
 		$file_uploaded_data = $_FILES['check_picture'];
@@ -443,9 +448,14 @@ class WDGPostActions {
 	public static function post_confirm_check() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$current_user = wp_get_current_user();
 		$amount_total = $_SESSION['redirect_current_amount_part'];
-		$investment_id = $campaign->add_investment( 'check', $current_user->user_email, $amount_total, 'pending' );
+		$current_user = wp_get_current_user();
+		$invest_email = $current_user->user_email;
+		if ( isset( $_SESSION['redirect_current_invest_type'] ) && $_SESSION['redirect_current_invest_type'] != 'user' ) {
+			$orga_creator = get_user_by( 'id', $_SESSION['redirect_current_invest_type'] );
+			$invest_email = $orga_creator->user_email;
+		}
+		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
 		
 		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
