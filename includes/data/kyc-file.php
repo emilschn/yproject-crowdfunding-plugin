@@ -128,7 +128,7 @@ class WDGKYCFile {
 		if ( !in_array( $ext, WDGKYCFile::$authorized_format_list ) ) {
 			return 'ext';
 		}
-		if ( ($file_uploaded_data['size'] / 1024) / 1024 > 4 ) {
+		if ( ($file_uploaded_data['size'] / 1024) / 1024 > 6 ) {
 			return 'size';
 		}
 		
