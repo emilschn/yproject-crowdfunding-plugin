@@ -1144,8 +1144,16 @@ function ypcf_get_current_step() {
 	}
 	if (isset($_SESSION['redirect_current_amount_part'])) $amount_part = $_SESSION['redirect_current_amount_part'];
 	if (isset($_SESSION['redirect_current_invest_type'])) $invest_type = $_SESSION['redirect_current_invest_type'];
+	$_SESSION['error_own_organization'] = FALSE;
+	
+	$current_campaign = atcf_get_current_campaign();
+	$organization = $current_campaign->get_organization();
+	$organization_id = $organization->wpref;
+	if ( $invest_type == $organization_id ) {
+		$_SESSION['error_own_organization'] = '1';
+	}
     
-    if ($invest_type != FALSE && $amount_part !== FALSE && is_numeric($amount_part) && ctype_digit($amount_part) 
+    if ($invest_type != FALSE && $invest_type != $organization_id && $amount_part !== FALSE && is_numeric($amount_part) && ctype_digit($amount_part) 
 			&& intval($amount_part) == $amount_part && $amount_part >= 1 && $amount_part <= $max_part_value ) {
 		$buffer = 2;
     }
