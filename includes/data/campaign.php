@@ -589,6 +589,32 @@ class ATCF_Campaign {
 	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
 	
+	public function generate_missing_declarations( $month_count = 3 ) {
+		// Calcul du nombre de déclarations que devra faire le projet
+		$nb_in_a_year = 12 / $month_count;
+		$nb_declarations = $this->funding_duration() * $nb_in_a_year;
+		
+		if ( isset( $nb_declarations ) && $nb_declarations > 0 ) {
+			// Récupération des déclarations existantes
+			$existing_roi_declarations = $this->get_roi_declarations();
+			// On part de la date de début de versement
+			$current_date = new DateTime( $this->first_payment_date() );
+			for ( $i = 0; $i < $nb_declarations; $i++ ) {
+				// On ne l'ajoute que si elle n'existe pas déjà
+				$add_date = TRUE;
+				foreach ( $existing_roi_declarations as $declaration_object ) {
+					if ( $current_date->format( 'Y-m-d' ) == $declaration_object[ 'date_due' ] ) {
+						$add_date = FALSE;
+					}
+				}
+				if ( $add_date ) {
+					WDGROIDeclaration::insert( $this->ID, $current_date->format( 'Y-m-d' ) );
+				}
+				$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
+			}
+		}
+	}
+	
 	private $roi_declarations;
 	public function get_roi_declarations() {
 		if ( !isset( $this->roi_declarations ) ) {

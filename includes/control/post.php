@@ -22,6 +22,7 @@ class WDGPostActions {
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
         self::add_action("post_confirm_check");
+        self::add_action("declaration_auto_generate");
     }
 
     /**
@@ -461,5 +462,30 @@ class WDGPostActions {
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
 		
 		wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&check-return=post_confirm_check' );
+	}
+	
+	public static function declaration_auto_generate() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$result = 'error';
+		
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() ) {
+			$campaign = new ATCF_Campaign($campaign_id);
+			$month_count = filter_input( INPUT_POST, 'month_count' );
+			if ( empty( $month_count ) ) {
+				$month_count = 3;
+			}
+			$campaign->generate_missing_declarations( $month_count );
+			$result = 'success';
+		
+			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#wallet' );
+			exit();
+			
+		} else {
+			wp_redirect( home_url() );
+			exit();
+			
+		}
+		
 	}
 }
