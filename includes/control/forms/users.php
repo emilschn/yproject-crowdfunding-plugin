@@ -153,18 +153,31 @@ class WDGFormUsers {
 	public static function filter_login_email( $user, $username, $password ) {
 		if ( is_a( $user, 'WP_User' ) ) return $user;
 		
+		// Vérifie que des champs ont bien été remplis
 		if (empty($username) || empty($password)) {
 			global $signon_errors;
 			$signon_errors = new WP_Error();
 			$signon_errors->add('empty_authentication', __('Champs vides', 'yproject'));
-			WDGFormUsers::redirect_after_login_failed();
+			WDGFormUsers::redirect_after_login_failed( 'empty_fields' );
 		}
 
 		if ( !empty( $username ) ) {
+			// Récupération éventuelle d'un utilisateur en fonction de l'e-mail
 			$username = str_replace( '&', '&amp;', stripslashes( $username ) );
 			$user = get_user_by( 'email', $username );
-			if ( isset( $user, $user->user_login, $user->user_status ) && 0 == (int) $user->user_status )
+			if ( isset( $user, $user->user_login, $user->user_status ) && 0 == (int) $user->user_status ) {
 				$username = $user->user_login;
+			}
+		}
+		
+		if ( !empty( $username ) ) {
+			$user_by_login = get_user_by( 'login', $username );
+			if ( WDGOrganization::is_user_organization( $user_by_login->ID ) ) {
+				global $signon_errors;
+				$signon_errors = new WP_Error();
+				$signon_errors->add('empty_authentication', __('Ce compte correspond &agrave; une organisation', 'yproject'));
+				WDGFormUsers::redirect_after_login_failed( 'orga_account' );
+			}
 		}
 
 		return wp_authenticate_username_password( null, $username, $password );
@@ -227,12 +240,18 @@ class WDGFormUsers {
 	/**
 	 * Redirige après une connexion échouée
 	 */
-	public static function redirect_after_login_failed() {
+	public static function redirect_after_login_failed( $reason ) {
 		$posted_redirect_error_page = filter_input(INPUT_POST, 'redirect-error');
 		if (!empty($posted_redirect_error_page)) {
 			wp_safe_redirect($posted_redirect_error_page);
-			exit();
+		} else {
+			$url_reason = '';
+			if ( !empty( $reason ) ) {
+				$url_reason = '?error_reason=' .$reason;
+			}
+			wp_redirect( home_url( '/connexion' ) . $url_reason );
 		}
+		exit();
 	}
 	
 	public static function register() {
