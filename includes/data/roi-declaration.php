@@ -375,6 +375,16 @@ class WDGROIDeclaration {
 	}
 	
 	/**
+	 * Si la déclaration était en attente de virement, on valide que le virement a été reçu
+	 */
+	public function mark_transfer_received() {
+		if ( $this->status == WDGROIDeclaration::$status_waiting_transfer ) {
+			$this->status = WDGROIDeclaration::$status_transfer;
+			$this->save();
+		}
+	}
+	
+	/**
 	 * Détermine le nom du fichier d'attestation qui va être créé
 	 * @return string
 	 */
