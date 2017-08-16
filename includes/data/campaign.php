@@ -1721,6 +1721,10 @@ class ATCF_Campaign {
 			$address = '', $postal_code = '', $city = '', $country = '', $iban = '', 
 			$orga_email = '', $orga_name = '') {
 		$user_id = FALSE;
+		
+		if ( empty( $email ) || empty( $value ) ) {
+			return;
+		}
 	    
 		//Vérification si un utilisateur existe avec l'email en paramètre
 		$user_payment = get_user_by('email', $email);
