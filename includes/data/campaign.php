@@ -629,6 +629,7 @@ class ATCF_Campaign {
 				$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
 				$buffer_declaration_object["total_turnover"] = $declaration_item->get_turnover_total();
 				$buffer_declaration_object["total_roi"] = $declaration_item->amount;
+				$buffer_declaration_object["total_roi_with_adjustment"] = $declaration_item->get_amount_with_adjustment();
 				$buffer_declaration_object["roi_list"] = array();
 				$roi_list = WDGROI::get_roi_list_by_declaration( $declaration_item->id );
 				foreach ( $roi_list as $roi_item ) {
