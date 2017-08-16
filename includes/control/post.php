@@ -105,45 +105,54 @@ class WDGPostActions {
 
         if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $new_email ) && !empty( $new_phone )
 				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms) ) {
-            //Project data
-            $newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
-            $newcampaign = atcf_get_campaign($newcampaign_id);
 
-            $newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
-			$newcampaign->__set( 'campaign_contact_phone', $new_phone );
-			$newcampaign->set_forced_mandate( 1 );
-			$success = true;
-
+			//On commence par essayer de créer l'organisation d'abord
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
 			//sinon si aucune organisation, elle est créée à la volée à la création du projet
+			$success = true;
+			$orga_api_id = FALSE;
+			
 			if ( is_numeric( $orga_name ) ) {
 				$existing_orga = new WDGOrganization($orga_name);
-				$newcampaign->link_organization($existing_orga->get_api_id());
+				$orga_api_id = $existing_orga->get_api_id();
+				
 			//Si on sélectionne "new_orga", il faut prendre le champ texte qui est apparu
 			} else if ( $orga_name == 'new_orga' ) {
 				$orga_name = sanitize_text_field( filter_input( INPUT_POST, 'new-company-name' ) );
 				if ( !empty( $orga_name ) ) {
 					$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
 					if ( $organization_created != false ) {
-						$newcampaign->link_organization( $organization_created->get_api_id() );
+						$orga_api_id = $organization_created->get_api_id();
+						
 					} else {
 						$success = false;
 					}
 				}
+				
 			//Sinon, si c'était directement un texte, on crée l'organisation
 			} else if ( !empty( $orga_name ) ) {
 				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
 				if ( $organization_created != false ) {
-					$newcampaign->link_organization( $organization_created->get_api_id() );
+					$orga_api_id = $organization_created->get_api_id();
 				} else {
 					$success = false;
 				}
+				
 			//Sinon on arrête la procédure
 			} else {
 				$success = false;
 			}
 
-			if ( $success ) {
+			if ( $success && !empty( $orga_api_id ) ) {
+				//Project data
+				$newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
+				$newcampaign = atcf_get_campaign($newcampaign_id);
+
+				$newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
+				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
+				$newcampaign->set_forced_mandate( 1 );
+				$newcampaign->link_organization( $orga_api_id );
+			
 				//Mail pour l'équipe
 				NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
 				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
