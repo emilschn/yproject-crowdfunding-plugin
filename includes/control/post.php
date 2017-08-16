@@ -157,10 +157,10 @@ class WDGPostActions {
 				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject#informations" ;
 				wp_safe_redirect( $redirect_url);
 			} else {
-				wp_safe_redirect( home_url( '/financement#newproject' ) );
+				wp_safe_redirect( home_url( '/lancement#newproject' ) );
 			}
         } else {
-            wp_safe_redirect( home_url( '/financement#newproject' ) );
+            wp_safe_redirect( home_url( '/lancement#newproject' ) );
         }
 		exit();
     }
