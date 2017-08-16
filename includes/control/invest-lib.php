@@ -470,6 +470,8 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
     $current_user = wp_get_current_user();
     ypcf_debug_log("ypcf_check_has_user_filled_infos_and_redirect --- ".$current_user->ID);
     if (is_user_logged_in() && isset($_POST["update_user_posted"]) && $_POST["update_user_id"] == $current_user->ID) {
+		$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
+		
 		//Infos utilisateurs
 		if ($_POST["update_gender"] != "") update_user_meta($current_user->ID, 'user_gender', $_POST["update_gender"]);
 		if ($_POST["update_firstname"] != "") wp_update_user( array ( 'ID' => $current_user->ID, 'first_name' => $_POST["update_firstname"] ) ) ;
@@ -499,20 +501,23 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 
 		} else {
 			if (isset($_POST["update_password_current"])) {
-			if (!isset($_POST["update_email"])) $validate_email = true;
-			if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) :
-				if (($_POST["update_email"] != "" && $_POST["update_email"] != $current_user->user_email)) {
-				if (is_email( $_POST["update_email"] )) {
-					wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $_POST["update_email"] ) );
-					$current_user->user_email = $_POST["update_email"];
+				if (!isset($_POST["update_email"])) $validate_email = true;
+				if (wp_check_password( $_POST["update_password_current"], $current_user->data->user_pass, $current_user->ID)) {
+					$update_email = filter_input( INPUT_POST, 'update_email' );
+					if ( !empty( $update_email ) && $update_email != $current_user->user_email && is_email( $update_email ) ) {
+						$user_existing_with_email = get_user_by( 'email', $update_email );
+						if ( empty( $user_existing_with_email ) ) {
+							wp_update_user( array ( 'ID' => $current_user->ID, 'user_email' => $update_email ) );
+							$current_user->user_email = $update_email;
+						} else {
+							array_push( $errors, "L'adresse e-mail est déjà utilisée." );
+						}
+					}
+					if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
 				}
-				}
-				if ($_POST["update_password"] != "" && $_POST["update_password"] == $_POST["update_password_confirm"]) wp_update_user( array ( 'ID' => $current_user->ID, 'user_pass' => $_POST["update_password"] ) );
-			endif;
 			}
 		}
 
-		$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
 		//Nouvelle organisation
 		if (isset($_POST['new_organization'])) {
 			if ($_POST['new_org_name'] != '' && isset($_POST['new_organization_capable']) && $_POST['new_organization_capable'] && is_email( $_POST["new_org_email"] )) {
@@ -540,13 +545,13 @@ function ypcf_check_has_user_filled_infos_and_redirect() {
 				$organization_user = get_user_by('id', $organization_user_id);
 			} else {
 				foreach ($organization_user_id->errors as $error) {
-				array_push($errors, $error[0]);
+					array_push($errors, $error[0]);
 				}
 			}
 			} else {
-			if ($_POST['new_org_name'] == '') array_push($errors, 'Merci de renseigner une dénomination sociale.');
-			if (!isset($_POST['new_organization_capable']) || !$_POST['new_organization_capable']) array_push($errors, 'Merci de valider que vous êtes en capacité de représenter cette organisation.');
-			if (!$validate_email) array_push($errors, 'L\'adresse e-mail de l\'organisation n\'est pas correcte.');
+				if ($_POST['new_org_name'] == '') array_push($errors, 'Merci de renseigner une dénomination sociale.');
+				if (!isset($_POST['new_organization_capable']) || !$_POST['new_organization_capable']) array_push($errors, 'Merci de valider que vous êtes en capacité de représenter cette organisation.');
+				if (!$validate_email) array_push($errors, 'L\'adresse e-mail de l\'organisation n\'est pas correcte.');
 			}
 
 		//Mise à jour d'une organisation
