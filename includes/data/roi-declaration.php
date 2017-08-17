@@ -28,10 +28,11 @@ class WDGROIDeclaration {
 	public $mean_payment;
 	public $payment_token;
 	public $file_list;
-	private $turnover;
-	private $message;
-	private $adjustment;
+	public $turnover;
+	public $message;
+	public $adjustment;
 	public $transfered_previous_remaining_amount;
+	public $on_api;
 	
 	
 	public function __construct( $declaration_id ) {
@@ -47,7 +48,13 @@ class WDGROIDeclaration {
 			$this->date_transfer = $declaration_item->date_transfer;
 			$this->amount = $declaration_item->amount;
 			$this->remaining_amount = $declaration_item->remaining_amount;
+			if ( !is_numeric( $this->remaining_amount ) ) {
+				$this->remaining_amount = 0;
+			}
 			$this->percent_commission = $declaration_item->percent_commission;
+			if ( !is_numeric( $this->percent_commission ) ) {
+				$this->percent_commission = 0;
+			}
 			$this->status = $declaration_item->status;
 			$this->mean_payment = $declaration_item->mean_payment;
 			$this->payment_token = $declaration_item->payment_token;
@@ -55,7 +62,14 @@ class WDGROIDeclaration {
 			$this->turnover = $declaration_item->turnover;
 			$this->message = $declaration_item->message;
 			$this->adjustment = $declaration_item->adjustment;
+			if ( is_null( $this->adjustment ) ) {
+				$this->adjustment = '';
+			}
 			$this->transfered_previous_remaining_amount = $declaration_item->transfered_previous_remaining_amount;
+			if ( !is_numeric( $this->transfered_previous_remaining_amount ) ) {
+				$this->transfered_previous_remaining_amount = 0;
+			}
+			$this->on_api = ( $declaration_item->on_api == 1 );
 			
 			// Les déclarations sans statut doivent passer en statut "Déclaration"
 			if ( empty( $this->status ) || $this->status == null ) {
@@ -90,7 +104,8 @@ class WDGROIDeclaration {
 				'turnover' => $this->turnover,
 				'message' => $this->message,
 				'adjustment' => $this->adjustment,
-				'transfered_previous_remaining_amount' => $this->transfered_previous_remaining_amount
+				'transfered_previous_remaining_amount' => $this->transfered_previous_remaining_amount,
+				'on_api' => ( $this->on_api ? 1 : 0 )
 			),
 			array(
 				'id' => $this->id
@@ -717,6 +732,7 @@ class WDGROIDeclaration {
 			message text,
 			adjustment text,
 			transfered_previous_remaining_amount float,
+			on_api tinyint DEFAULT 0,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );
@@ -786,5 +802,21 @@ class WDGROIDeclaration {
 		}
 		
 		return $buffer;
+	}
+	
+	
+	public static function transfer_to_api() {
+		global $wpdb;
+		$query = "SELECT id, on_api FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
+		
+		$declaration_list = $wpdb->get_results( $query );
+		foreach ( $declaration_list as $declaration_item ) {
+			if ( !$declaration_item->on_api ) {
+				$declaration = new WDGROIDeclaration( $declaration_item->id );
+				WDGWPREST_Entity_Declaration::create( $declaration );
+				$declaration->on_api = true;
+				$declaration->save();
+			}
+		}
 	}
 }

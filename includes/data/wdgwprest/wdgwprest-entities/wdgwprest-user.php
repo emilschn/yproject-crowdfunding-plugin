@@ -68,7 +68,7 @@ class WDGWPREST_Entity_User {
 	 * @return object
 	 */
 	public static function update( WDGUser $user ) {
-		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $user );
+		$parameters = WDGWPREST_Entity_User::set_post_parameters( $user );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'user/' . $user->get_api_id(), $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
