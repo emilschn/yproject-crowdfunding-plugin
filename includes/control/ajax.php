@@ -1487,6 +1487,7 @@ class WDGAjaxActions {
         $display_invest_infos = false;
         if ( $status == ATCF_Campaign::$campaign_status_collecte
 				|| $status == ATCF_Campaign::$campaign_status_funded
+				|| $status == ATCF_Campaign::$campaign_status_closed
 				|| $status == ATCF_Campaign::$campaign_status_archive ){
             $display_invest_infos = true;
         }
@@ -1494,6 +1495,7 @@ class WDGAjaxActions {
         $display_vote_infos = true;
         if ( $status == ATCF_Campaign::$campaign_status_collecte
 				|| $status == ATCF_Campaign::$campaign_status_funded
+				|| $status == ATCF_Campaign::$campaign_status_closed
 				|| $status == ATCF_Campaign::$campaign_status_archive ){
             $display_vote_infos = false;
         }

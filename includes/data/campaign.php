@@ -161,17 +161,19 @@ class ATCF_Campaign {
 	public static $campaign_status_vote = 'vote';
 	public static $campaign_status_collecte = 'collecte';
 	public static $campaign_status_funded = 'funded';
+	public static $campaign_status_closed = 'closed';
 	public static $campaign_status_archive = 'archive';
 
 	static public function get_campaign_status_list(){
 		return array(
-			ATCF_Campaign::$campaign_status_preparing => 'D&eacute;pot de dossier',
-            ATCF_Campaign::$campaign_status_validated => 'Pr&eacute;paration',
-			ATCF_Campaign::$campaign_status_preview => 'Avant-premi&egrave;re',
-			ATCF_Campaign::$campaign_status_vote => 'Vote',
-			ATCF_Campaign::$campaign_status_collecte=> 'Lev&eacute;e de fonds',
-			ATCF_Campaign::$campaign_status_funded => 'Versement des royalties',
-			ATCF_Campaign::$campaign_status_archive => 'Projet cl&ocirc;tur&eacute;'
+			ATCF_Campaign::$campaign_status_preparing	=> 'D&eacute;pot de dossier',
+            ATCF_Campaign::$campaign_status_validated	=> 'Pr&eacute;paration',
+			ATCF_Campaign::$campaign_status_preview		=> 'Avant-premi&egrave;re',
+			ATCF_Campaign::$campaign_status_vote		=> 'Vote',
+			ATCF_Campaign::$campaign_status_collecte	=> 'Lev&eacute;e de fonds',
+			ATCF_Campaign::$campaign_status_funded		=> 'Versement des royalties',
+			ATCF_Campaign::$campaign_status_closed		=> 'Projet termin&eacute;',
+			ATCF_Campaign::$campaign_status_archive		=> 'Projet &eacute;chou&eacute;'
 		);
 	}
 
@@ -2086,7 +2088,7 @@ class ATCF_Campaign {
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
 	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
 	public static function get_list_funding( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client ); }
-	public static function get_list_funded($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_funded, $client ); }
+	public static function get_list_funded($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client ); }
 	public static function get_list_archive($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_archive, $client ); }
 	
 	
@@ -2157,7 +2159,7 @@ class ATCF_Campaign {
 	public static function list_projects_preview($nb = 0, $client = '') { return ATCF_Campaign::list_projects_current($nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client); }
 	public static function list_projects_vote($nb = 0, $client = '') { return ATCF_Campaign::list_projects_current($nb, ATCF_Campaign::$campaign_status_vote, 'desc', $client); }
 	public static function list_projects_funding($nb = 0, $client = '') { return ATCF_Campaign::list_projects_current($nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client); }
-	public static function list_projects_funded($nb = 0, $client = '') { return ATCF_Campaign::list_projects_finished($nb, ATCF_Campaign::$campaign_status_funded, $client); }
+	public static function list_projects_funded($nb = 0, $client = '') { return ATCF_Campaign::list_projects_finished($nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client); }
 	public static function list_projects_archive($nb = 0, $client = '') { return ATCF_Campaign::list_projects_finished($nb, ATCF_Campaign::$campaign_status_archive, $client); }
 	
 	public static function list_projects_current($nb, $type, $order, $client) {
@@ -2224,6 +2226,7 @@ class ATCF_Campaign {
 				'relation' => 'OR',
 				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_collecte ),
 				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_funded ),
+				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_closed ),
 				array ( 'key' => 'campaign_vote', 'value' => ATCF_Campaign::$campaign_status_archive )
 			)
 		);
@@ -2236,19 +2239,8 @@ class ATCF_Campaign {
 			SELECT ID, post_title FROM ".$wpdb->posts."
 			INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id
 			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' 
-				AND (".$wpdb->postmeta.".meta_value = 'vote' OR ".$wpdb->postmeta.".meta_value = 'collecte' OR ".$wpdb->postmeta.".meta_value = 'funded' OR ".$wpdb->postmeta.".meta_value = 'archive')
+				AND (".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_vote."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_collecte."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_funded."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_closed."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_archive."')
 			ORDER BY ".$wpdb->posts.".post_date DESC
-		", OBJECT );
-		return $results;
-	}
-	
-	public static function list_projects_by_status($status) {
-		global $wpdb;
-		$results = $wpdb->get_results( "
-			SELECT ".$wpdb->posts.".ID FROM ".$wpdb->posts."
-			INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id
-			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' "
-				. "AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' AND ".$wpdb->postmeta.".meta_value = '".$status."'
 		", OBJECT );
 		return $results;
 	}

@@ -741,15 +741,12 @@ function _atcf_metabox_campaign_status() {
 	$campaign = atcf_get_campaign( $post );
 ?>  
 	<p>Choisir le statut de la campagne</p>
+	<?php $status_list = ATCF_Campaign::get_campaign_status_list(); ?>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	    <option></option>
-		<option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preparing; ?>>Préparation</option>
-		<option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_validated) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_validated; ?>>Validé</option>
-	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_preview) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_preview; ?>>Avant-première</option>
-	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_vote; ?>>En cours de vote</option>
-	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte) { ?>selected="selected"<?php } ?> value=<?php echo ATCF_Campaign::$campaign_status_collecte ; ?>>En cours de collecte</option>
-	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_funded; ?>>Terminé</option>
-	    <option <?php if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive) { ?>selected="selected"<?php } ?>value=<?php echo ATCF_Campaign::$campaign_status_archive; ?>>Archivé</option>
+		<?php foreach ($status_list as $status => $status_label): ?>
+		<option <?php if ($campaign->campaign_status() == $status) { ?>selected="selected"<?php } ?> value=<?php echo $status; ?>><?php echo $status_label; ?></option>
+		<?php endforeach; ?>
 	</select>
         
 	<p>Autoriser le porteur de projet &agrave;  passer &agrave;  l'&eacute;tape suivante</p>
