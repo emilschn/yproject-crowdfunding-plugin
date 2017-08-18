@@ -24,6 +24,7 @@ class WDGPostActions {
         self::add_action("post_confirm_check");
         self::add_action("declaration_auto_generate");
         self::add_action("roi_mark_transfer_received");
+        self::add_action("refund_investors");
     }
 
     /**
@@ -517,5 +518,23 @@ class WDGPostActions {
 			
 		}
 		
+	}
+	
+	public static function refund_investors() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+		
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$campaign->refund();
+			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id );
+			exit();
+			
+		} else {
+			wp_redirect( home_url() );
+			exit();
+			
+		}
 	}
 }

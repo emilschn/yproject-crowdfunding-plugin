@@ -1378,15 +1378,12 @@ class WDGAjaxActions {
             if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing) {
                 $investment_state = 'Annulé';
 
-                $refund_id = get_post_meta($item_invest['ID'], 'refund_id', TRUE);
-                if (isset($refund_id) && !empty($refund_id)) {
+                $refund_card_id = get_post_meta($item_invest['ID'], 'refund_id', TRUE);
+				$refund_wire_id = get_post_meta($item_invest['ID'], 'refund_wire_id', TRUE);
+				$refund_wallet_id = get_post_meta($item_invest['ID'], 'refund_wallet_id', TRUE);
+                if ( !empty( $refund_card_id ) || !empty( $refund_wire_id ) || !empty( $refund_wallet_id ) ) {
 					$investment_state = 'Remboursé';
 
-                } else {
-                    $refund_id = get_post_meta($item_invest['ID'], 'refund_wire_id', TRUE);
-                    if (isset($refund_id) && !empty($refund_id)) {
-                        $investment_state = 'Remboursé';
-                    }
                 }
             }
 
