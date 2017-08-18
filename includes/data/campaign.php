@@ -1582,6 +1582,16 @@ class ATCF_Campaign {
 
 		return $amount_check;
 	}
+	
+	public static $key_campaign_is_hidden = '_campaign_is_hidden';
+	public function is_hidden() {
+		$buffer = false;
+		$meta_hidden = $this->__get( ATCF_Campaign::$key_campaign_is_hidden );
+		if ( !empty( $meta_hidden ) ) {
+			$buffer = ( $meta_hidden == '1' );
+		}
+		return $buffer;
+	}
 
 	/**
 	 * Campaign Active
@@ -2136,7 +2146,8 @@ class ATCF_Campaign {
 			'meta_query' => array (
 				'relation' => 'AND',
 				array ( 'key' => 'campaign_vote', 'value' => $type ),
-				array ( 'key' => 'campaign_funding_type', 'value' => 'fundingproject' )
+				array ( 'key' => 'campaign_funding_type', 'value' => 'fundingproject' ),
+				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
 			),
 			'meta_key' => 'campaign_end_date',
 			'orderby' => 'meta_value',
@@ -2242,7 +2253,15 @@ class ATCF_Campaign {
 				AND (".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_vote."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_collecte."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_funded."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_closed."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_archive."')
 			ORDER BY ".$wpdb->posts.".post_date DESC
 		", OBJECT );
-		return $results;
+		
+		$buffer = array();
+		foreach ( $results as $project_post ) {
+			$meta_is_hidden = get_post_meta( $project_post->ID, ATCF_Campaign::$key_campaign_is_hidden, TRUE );
+			if ( empty( $meta_is_hidden ) ) {
+				array_push( $buffer, $project_post );
+			}
+		}
+		return $buffer;
 	}
 }
 

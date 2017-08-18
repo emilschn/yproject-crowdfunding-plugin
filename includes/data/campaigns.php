@@ -299,6 +299,7 @@ class ATCF_Campaigns {
 	function meta_boxes_save( $fields ) {
 		$fields[] = 'campaign_postname';
 		$fields[] = '_campaign_featured';
+		$fields[] = ATCF_Campaign::$key_campaign_is_hidden;
 		$fields[] = ATCF_Campaign::$key_edit_version;
 		$fields[] = ATCF_Campaign::$key_payment_provider;
 		$fields[] = '_campaign_physical';
@@ -1106,6 +1107,13 @@ function _atcf_metabox_campaign_info() {
 		<label for="_campaign_featured">
 			<input type="checkbox" name="_campaign_featured" id="_campaign_featured" value="1" <?php checked( 1, $campaign->featured() ); ?> />
 			Mise en avant
+		</label>
+	</p>
+
+	<p>
+		<label for="<?php echo ATCF_Campaign::$key_campaign_is_hidden; ?>">
+			<input type="checkbox" name="<?php echo ATCF_Campaign::$key_campaign_is_hidden; ?>" id="<?php echo ATCF_Campaign::$key_campaign_is_hidden; ?>" value="1" <?php checked( 1, $campaign->is_hidden() ); ?> />
+			Masquée du public
 		</label>
 	</p>
 	
