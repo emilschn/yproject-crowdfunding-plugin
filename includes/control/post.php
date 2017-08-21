@@ -81,11 +81,10 @@ class WDGPostActions {
 
         $new_lastname = sanitize_text_field(filter_input(INPUT_POST,'lastname'));
         $new_firstname = sanitize_text_field(filter_input(INPUT_POST,'firstname'));
-        $new_email = sanitize_email(filter_input(INPUT_POST,'email'));
         $new_phone = sanitize_text_field(filter_input(INPUT_POST,'phone'));
 
         $orga_name = sanitize_text_field(filter_input(INPUT_POST,'company-name'));
-
+		$orga_email = sanitize_text_field( filter_input( INPUT_POST, 'email-organization' ) );
         $project_name = sanitize_text_field(filter_input(INPUT_POST,'project-name'));
         $project_desc = sanitize_text_field(filter_input(INPUT_POST,'project-description'));
         $project_terms = filter_input( INPUT_POST, 'project-terms' );
@@ -97,14 +96,11 @@ class WDGPostActions {
         if(!empty($new_lastname)){
             wp_update_user( array ( 'ID' => $WPuserID, 'last_name' => $new_lastname ) ) ;
         }
-        if (is_email($new_email)==$new_email) {
-            wp_update_user( array ( 'ID' => $WPuserID, 'user_email' => $new_email ) );
-        }
         if(!empty($new_phone)){
             update_user_meta( $WPuserID, 'user_mobile_phone', $new_phone );
         }
 
-        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $new_email ) && !empty( $new_phone )
+        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $orga_email ) && !empty( $new_phone )
 				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms) ) {
 
 			//On commence par essayer de créer l'organisation d'abord
@@ -121,7 +117,7 @@ class WDGPostActions {
 			} else if ( $orga_name == 'new_orga' ) {
 				$orga_name = sanitize_text_field( filter_input( INPUT_POST, 'new-company-name' ) );
 				if ( !empty( $orga_name ) ) {
-					$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
+					$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $orga_email );
 					if ( $organization_created != false ) {
 						$orga_api_id = $organization_created->get_api_id();
 						
@@ -132,7 +128,7 @@ class WDGPostActions {
 				
 			//Sinon, si c'était directement un texte, on crée l'organisation
 			} else if ( !empty( $orga_name ) ) {
-				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $WDGUser_current->wp_user->user_email );
+				$organization_created = WDGOrganization::createSimpleOrganization( $WPuserID, $orga_name, $orga_email );
 				if ( $organization_created != false ) {
 					$orga_api_id = $organization_created->get_api_id();
 				} else {
@@ -146,6 +142,7 @@ class WDGPostActions {
 
 			if ( $success && !empty( $orga_api_id ) ) {
 				//Project data
+				$_SESSION[ 'newproject-errors' ] = FALSE;
 				$newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
 				$newcampaign = atcf_get_campaign($newcampaign_id);
 
@@ -167,9 +164,15 @@ class WDGPostActions {
 				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject#informations" ;
 				wp_safe_redirect( $redirect_url);
 			} else {
+				global $errors_submit_new, $errors_create_orga;
+				$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
+				$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
 				wp_safe_redirect( home_url( '/lancement#newproject' ) );
 			}
         } else {
+			global $errors_submit_new, $errors_create_orga;
+			$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
+			$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
             wp_safe_redirect( home_url( '/lancement#newproject' ) );
         }
 		exit();

@@ -149,6 +149,7 @@ class WDGOrganization {
 		
 		if ($this->get_name() == "") { array_push( $errors_create_orga, __("Merci de remplir le nom de l'organisation", 'yproject') ); }
 		if ($this->get_email() == "") { array_push( $errors_create_orga, __("Merci de remplir l'adresse e-mail de l'organisation", 'yproject') ); }
+		if ( email_exists( $this->get_email() ) ) { array_push( $errors_create_orga, __("L'e-mail est d&eacute;j&agrave; utilis&eacute.", 'yproject') ); }
 		if ($this->get_type() == "") { array_push( $errors_create_orga, __("Merci de remplir le type de l'organisation", 'yproject') ); }
 		if ($this->get_description() == "") { array_push( $errors_create_orga, __("Merci de remplir le descriptif de l'activit&eacute;", 'yproject') ); }
 		if ($this->get_legalform() == "") { array_push( $errors_create_orga, __("Merci de remplir la forme juridique de l'organisation", 'yproject') ); }
