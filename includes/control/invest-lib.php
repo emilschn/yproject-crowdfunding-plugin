@@ -725,29 +725,29 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
 							if ($contract_id != '') {
 								$contract_infos = signsquid_get_contract_infos($contract_id);
-								if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
+//								if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
 									NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution);
-								}
+//								}
 								NotificationsEmails::new_purchase_admin_success($payment_id);
 							} else {
 								global $contract_errors;
 								$contract_errors = 'contract_failed';
-								if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
+//								if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
 									NotificationsEmails::new_purchase_user_error_contract($payment_id);
-								}
+//								}
 								NotificationsEmails::new_purchase_admin_error_contract($payment_id);
 							}
 						} else {
 							$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-							if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
+//							if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
 								NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file, $is_card_contribution);
-							}
+//							}
 							NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
 						}
 					} else {
-						if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
+//						if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
 							NotificationsEmails::new_purchase_user($payment_id, '');
-						}
+//						}
 						NotificationsEmails::new_purchase_admin_success($payment_id);
 					}
 					NotificationsSlack::send_to_dev('Nouvel achat !');
