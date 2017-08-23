@@ -160,4 +160,42 @@ class WDGAPICalls {
 		
 	}
 	
+	private function get_users_stats() {
+		
+		$buffer = array();
+		
+		$result = count_users();
+		
+		$buffer[ 'total' ] = $result['total_users'];
+		$buffer[ 'merchant_wallet' ] = 0;
+		
+		try {
+			$wallet_details = LemonwayLib::wallet_get_details( 'SC' );
+			if ( $wallet_details ) {
+				$buffer[ 'merchant_wallet' ] = $wallet_details->BAL;
+			}
+		} catch (Exception $exc) {
+		}
+		
+		$project_list_funded = ATCF_Campaign::get_list_funded( 100 );
+		$people_list = array();
+		foreach ( $project_list_funded as $project_post ) {
+			$campaign = atcf_get_campaign( $project_post->ID );
+			$backers_id_list = $campaign->backers_id_list();
+			$people_list = array_merge( $people_list, $backers_id_list );
+		}
+		$people_list_unique = array_unique( $people_list );
+		$buffer[ 'investors_count' ] = count( $people_list_unique );
+		$count_values_people_list = array_count_values( $people_list );
+		$buffer[ 'investors_multi_count' ] = 0;
+		foreach ( $count_values_people_list as $user_id => $nb_invest ) {
+			if ( $nb_invest > 1 ) {
+				$buffer[ 'investors_multi_count' ]++;
+			}
+		}
+		
+		exit( json_encode( $buffer ) );
+		
+	}
+	
 }
