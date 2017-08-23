@@ -140,6 +140,19 @@ class WDGInvestment {
 	}
 	
 	/**
+	 * Met à jour l'URL du contrat sur l'API
+	 * @param string $contract_url
+	 */
+	public function update_contract_url( $contract_url ) {
+		if ( $this->has_token() ) {
+			$parameters = array(
+				'contract_url' => $contract_url
+			);
+			WDGWPRESTLib::call_post_wdg( 'investment/' . $this->token, $parameters );
+		}
+	}
+	
+	/**
 	 * Retourne le tableau d'erreurs d'investissements
 	 * @return array
 	 */

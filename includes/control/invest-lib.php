@@ -729,6 +729,12 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 									NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution);
 //								}
 								NotificationsEmails::new_purchase_admin_success($payment_id);
+								if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
+									global $contract_filename;
+									$new_contract_pdf_filename = basename( $contract_filename );
+									$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
+									$wdginvestment->update_contract_url( $new_contract_pdf_url );
+								}
 							} else {
 								global $contract_errors;
 								$contract_errors = 'contract_failed';
@@ -743,6 +749,11 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 								NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file, $is_card_contribution);
 //							}
 							NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
+							if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
+								$new_contract_pdf_filename = basename( $new_contract_pdf_file );
+								$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
+								$wdginvestment->update_contract_url( $new_contract_pdf_url );
+							}
 						}
 					} else {
 //						if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
@@ -926,7 +937,8 @@ function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
 	    $mobile_phone = '';
 	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = ypcf_format_french_phonenumber($user->get('user_mobile_phone'));
 	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email, $mobile_phone)) $contract_errors = 'contract_addsignatories_failed';
-	    $contract_filename = getNewPdfToSign($campaign_id, $payment_id, $user_id);
+	    global $contract_filename;
+		$contract_filename = getNewPdfToSign($campaign_id, $payment_id, $user_id);
 	    if (!signsquid_add_file($contract_id, $contract_filename)) $contract_errors = 'contract_addfile_failed';
 	    if (!signsquid_send_invite($contract_id)) $contract_errors = 'contract_sendinvite_failed';
 	} else {
