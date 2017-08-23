@@ -659,7 +659,7 @@ class ATCF_Campaign {
 	}
 	
 	/**
-	 * Retourne le montant des ROI versées
+	 * Retourne le montant des CA déclarés
 	 * @return int
 	 */
 	public function get_roi_declarations_total_turnover_amount() {
