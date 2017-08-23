@@ -177,7 +177,19 @@ class WDGAPICalls {
 		} catch (Exception $exc) {
 		}
 		
-		$project_list_funded = ATCF_Campaign::get_list_funded( 100 );
+		
+		$query_options = array(
+			'numberposts' => -1,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array (
+					'key' => 'campaign_vote',
+					'value' => array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed )
+				)
+			)
+		);
+		$project_list_funded = get_posts( $query_options );
 		$people_list = array();
 		foreach ( $project_list_funded as $project_post ) {
 			$campaign = atcf_get_campaign( $project_post->ID );
@@ -193,6 +205,63 @@ class WDGAPICalls {
 				$buffer[ 'investors_multi_count' ]++;
 			}
 		}
+		
+		exit( json_encode( $buffer ) );
+		
+	}
+	
+	private function get_investments_stats() {
+		
+		$buffer = array();
+		
+		$query_options = array(
+			'numberposts' => -1,
+			'post_type' => 'edd_payment',
+			'post_status' => 'publish'
+		);
+		$investments_list = get_posts( $query_options );
+		$buffer[ 'total' ] = count( $investments_list );
+		
+		
+		$query_options = array(
+			'numberposts' => -1,
+			'post_type' => 'edd_payment',
+			'post_status' => 'publish',
+			'date_query' => array(
+				array(
+					'after' => '-30 days',
+					'column' => 'post_date',
+				)
+			)
+		);
+		$investments_monthly_list = get_posts( $query_options );
+		$buffer[ 'total_monthly' ] = count( $investments_monthly_list );
+		
+		
+		$query_options = array(
+			'numberposts' => -1,
+			'post_type' => 'edd_payment',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array (
+					'key'		=> '_edd_payment_purchase_key',
+					'value'		=> 'wallet',
+					'compare'	=> 'LIKE'
+				)
+			)
+		);
+		$investments_wallet_list = get_posts( $query_options );
+
+		
+		$buffer[ 'total_with_royalties' ] = count( $investments_wallet_list );
+		$buffer[ 'amount_with_royalties' ] = 0;
+		foreach ( $investments_wallet_list as $investment_post ) {
+			$buffer[ 'amount_with_royalties' ] += edd_get_payment_amount( $investment_post->ID );
+		}
+		
+		
+		$buffer[ 'payment_errors' ] = 0; //TODO
+		$buffer[ 'payment_errors_monthly' ] = 0; //TODO
 		
 		exit( json_encode( $buffer ) );
 		
