@@ -1592,6 +1592,16 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	
+	public static $key_skip_vote = '_campaign_skip_vote';
+	public function skip_vote() {
+		$buffer = false;
+		$meta_skip_vote = $this->__get( ATCF_Campaign::$key_skip_vote );
+		if ( !empty( $meta_skip_vote ) ) {
+			$buffer = ( $meta_skip_vote == '1' );
+		}
+		return $buffer;
+	}
 
 	/**
 	 * Campaign Active
