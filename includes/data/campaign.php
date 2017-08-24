@@ -1742,13 +1742,15 @@ class ATCF_Campaign {
 		//Vérification si un utilisateur existe avec l'email en paramètre
 		$user_payment = get_user_by('email', $email);
 		if ($user_payment) {
-			$user_id = $user_payment->ID;
-			$new_gender = $user_payment->get('user_gender');
-			$new_firstname = $user_payment->user_firstname;
-			$new_lastname = $user_payment->user_lastname;
-			$wdg_user = new WDGUser( $user_id );
-			$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
-		
+			if (!WDGOrganization::is_user_organization($user_payment->ID)) {
+				$user_id = $user_payment->ID;
+				$new_gender = $user_payment->get('user_gender');
+				$new_firstname = $user_payment->user_firstname;
+				$new_lastname = $user_payment->user_lastname;
+				$wdg_user = new WDGUser( $user_id );
+				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+			}
+				
 		//Sinon, on vérifie si il y a un login et pwd transmis, pour créer le nouvel utilisateur
 		} else {
 			if (!empty($new_username) && !empty($new_password)) {
@@ -1765,7 +1767,12 @@ class ATCF_Campaign {
 				//Vérification si organisation existante
 				$orga_payment = get_user_by('email', $orga_email);
 				if ($orga_payment) {
-					$saved_user_id = $orga_payment->ID;
+					if ( WDGOrganization::is_user_organization( $orga_payment->ID ) ) {
+						$saved_user_id = $orga_payment->ID;
+						
+					} else {
+						$saved_user_id = FALSE;
+					}
 
 				//Sinon, on la crée juste avec un e-mail et un nom
 				} else {

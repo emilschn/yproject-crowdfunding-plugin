@@ -38,6 +38,7 @@ class WDGAjaxActions {
 
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
+		WDGAjaxActions::add_action('search_user_by_email');
 	}
     
 	/**
@@ -1702,6 +1703,75 @@ class WDGAjaxActions {
 			"errors" => $errors
 		);
 		echo json_encode($return_values);
+		exit();
+	}
+	
+	/**
+	 * Recherche un utilisateur par son e-mail
+	 */
+	public static function search_user_by_email() {
+		$email = filter_input(INPUT_POST, 'email');
+		$user_by_email = get_user_by( 'email', $email );
+		
+		$user_type = FALSE;
+		$user_data = FALSE;
+		if ( $user_by_email != FALSE ) {
+			if ( WDGOrganization::is_user_organization( $user_by_email->ID ) ) {
+				$user_type = 'orga';
+				$organization = new WDGOrganization( $user_by_email->ID );
+				$linked_users = $organization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+				$linked_user = $linked_users[ 0 ];
+				$user_data = array(
+					'user' => array(
+						'login'				=> $linked_user->get_login(),
+						'firstname'			=> $linked_user->get_firstname(),
+						'lastname'			=> $linked_user->get_lastname(),
+						'gender'			=> $linked_user->get_gender(),
+						'birthday_day'		=> $linked_user->wp_user->get( 'user_birthday_day' ),
+						'birthday_month'	=> $linked_user->wp_user->get( 'user_birthday_month' ),
+						'birthday_year'		=> $linked_user->wp_user->get( 'user_birthday_year' ),
+						'birthplace'		=> $linked_user->wp_user->get( 'user_birthplace' ),
+						'nationality'		=> $linked_user->get_nationality(),
+						'address'			=> $linked_user->get_address(),
+						'postal_code'		=> $linked_user->get_postal_code(),
+						'city'				=> $linked_user->get_city(),
+						'country'			=> $linked_user->get_country()
+					),
+					'orga' => array(
+						'email'				=> $organization->get_email(),
+						'name'				=> $organization->get_name()
+					)
+				);
+			} else {
+				$user_type = 'user';
+				$user = new WDGUser( $user_by_email->ID );
+				$user_data = array(
+					'user' => array(
+						'login'				=> $user->get_login(),
+						'firstname'			=> $user->get_firstname(),
+						'lastname'			=> $user->get_lastname(),
+						'gender'			=> $user->get_gender(),
+						'birthday_day'		=> $user->wp_user->get( 'user_birthday_day' ),
+						'birthday_month'	=> $user->wp_user->get( 'user_birthday_month' ),
+						'birthday_year'		=> $user->wp_user->get( 'user_birthday_year' ),
+						'birthplace'		=> $user->wp_user->get( 'user_birthplace' ),
+						'nationality'		=> $user->get_nationality(),
+						'address'			=> $user->get_address(),
+						'postal_code'		=> $user->get_postal_code(),
+						'city'				=> $user->get_city(),
+						'country'			=> $user->get_country()
+					),
+					'orga' => FALSE
+				);
+			}
+		}
+		
+		$return_values = array(
+			'user_type'	=> $user_type,
+			'user_data'	=> $user_data
+		);
+		
+		echo json_encode( $return_values );
 		exit();
 	}
 }
