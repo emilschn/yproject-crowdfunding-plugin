@@ -19,24 +19,45 @@ class WDGROI {
 	public $amount;
 	public $id_transfer;
 	public $status;
+	public $on_api;
 	
 	
 	public function __construct( $roi_id ) {
-		global $wpdb;
-		$table_name = $wpdb->prefix . WDGROI::$table_name;
-		$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$roi_id;
-		$roi_item = $wpdb->get_row( $query );
-		if ( $roi_item ) {
-			$this->id = $roi_item->id;
-			$this->id_investment = $roi_item->id_investment;
-			$this->id_campaign = $roi_item->id_campaign;
-			$this->id_orga = $roi_item->id_orga;
-			$this->id_user = $roi_item->id_user;
-			$this->id_declaration = $roi_item->id_declaration;
-			$this->date_transfer = $roi_item->date_transfer;
-			$this->amount = $roi_item->amount;
-			$this->id_transfer = $roi_item->id_transfer;
-			$this->status = $roi_item->status;
+		// Récupération en priorité depuis l'API
+		$roi_api_item = WDGWPREST_Entity_ROI::get( $roi_id );
+		if ( $roi_api_item != FALSE ) {
+			
+			$this->id = $roi_id;
+			$this->id_investment = $roi_api_item->id_investment;
+			$this->id_campaign = $roi_api_item->id_project;
+			$this->id_orga = $roi_api_item->id_orga;
+			$this->id_user = $roi_api_item->id_user;
+			$this->id_declaration = $roi_api_item->id_declaration;
+			$this->date_transfer = $roi_api_item->date_transfer;
+			$this->amount = $roi_api_item->amount;
+			$this->id_transfer = $roi_api_item->id_transfer;
+			$this->status = $roi_api_item->status;
+			$this->on_api = TRUE;
+			
+		// Sinon récupération sur la bdd locale (deprecated)
+		} else {
+			global $wpdb;
+			$table_name = $wpdb->prefix . WDGROI::$table_name;
+			$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$roi_id;
+			$roi_item = $wpdb->get_row( $query );
+			if ( $roi_item ) {
+				$this->id = $roi_item->id;
+				$this->id_investment = $roi_item->id_investment;
+				$this->id_campaign = $roi_item->id_campaign;
+				$this->id_orga = $roi_item->id_orga;
+				$this->id_user = $roi_item->id_user;
+				$this->id_declaration = $roi_item->id_declaration;
+				$this->date_transfer = $roi_item->date_transfer;
+				$this->amount = $roi_item->amount;
+				$this->id_transfer = $roi_item->id_transfer;
+				$this->status = $roi_item->status;
+				$this->on_api = ( $roi_item->on_api == 1 );
+			}
 		}
 	}
 	
@@ -54,7 +75,8 @@ class WDGROI {
 				'date_transfer' => $this->date_transfer, 
 				'amount' => $this->amount,
 				'id_transfer' => $this->id_transfer,
-				'status' => $this->status
+				'status' => $this->status,
+				'on_api' => ( $this->on_api ? 1 : 0 )
 			),
 			array(
 				'id' => $this->id
@@ -174,6 +196,7 @@ class WDGROI {
 			amount float,
 			id_transfer mediumint(9) NOT NULL,
 			status tinytext,
+			on_api tinyint DEFAULT 0,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );
@@ -335,6 +358,58 @@ class WDGROI {
 				$ROI->cancel();
 			}
 			
+		}
+	}
+	
+	/**
+	 * Transfère les données du ROI vers l'API
+	 */
+	public static function transfer_to_api( $old_declaration_id, $new_declaration_id ) {
+		global $wpdb;
+		$campaign_wpref_to_api = array();
+		$orga_wpref_to_api = array();
+		$user_wpref_to_api = array();
+		
+		$query = "SELECT id, on_api FROM " .$wpdb->prefix. WDGROI::$table_name. " WHERE id_declaration=" .$old_declaration_id;
+		$roi_list = $wpdb->get_results( $query );
+		foreach ( $roi_list as $roi_item ) {
+			if ( !$roi_item->on_api ) {
+				$roi = new WDGROI( $roi_item->id );
+				
+				if ( empty( $campaign_wpref_to_api[ $roi->id_campaign ] ) ) {
+					$campaign = new ATCF_Campaign( $roi->id_campaign );
+					$campaign_wpref_to_api[ $roi->id_campaign ] = $campaign->get_api_id();
+				}
+				$temp_campaign_id = $roi->id_campaign;
+				if ( empty( $orga_wpref_to_api[ $roi->id_orga ] ) ) {
+					$orga = new WDGOrganization( $roi->id_orga );
+					$orga_wpref_to_api[ $roi->id_orga ] = $orga->get_api_id();
+				}
+				$temp_orga_id = $roi->id_orga;
+				if ( empty( $user_wpref_to_api[ $roi->id_user ] ) ) {
+					if ( WDGOrganization::is_user_organization( $roi->id_user ) ) {
+						$orga = new WDGOrganization( $roi->id_user );
+						$user_wpref_to_api[ $roi->id_user ] = $orga->get_api_id();
+					} else {
+						$user = new WDGUser( $roi->id_user );
+						$user_wpref_to_api[ $roi->id_user ] = $user->get_api_id();
+					}
+				}
+				$temp_user_id = $roi->id_user;
+				
+				$roi->id_campaign = $campaign_wpref_to_api[ $roi->id_campaign ];
+				$roi->id_declaration = $new_declaration_id;
+				$roi->id_orga = $orga_wpref_to_api[ $roi->id_orga ];
+				$roi->id_user = $user_wpref_to_api[ $roi->id_user ];
+				WDGWPREST_Entity_ROI::create( $roi );
+				
+				$roi->on_api = true;
+				$roi->id_campaign = $temp_campaign_id;
+				$roi->id_declaration = $old_declaration_id;
+				$roi->id_orga = $temp_orga_id;
+				$roi->id_user = $temp_user_id;
+				$roi->save();
+			}
 		}
 	}
 }
