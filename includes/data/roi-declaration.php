@@ -303,16 +303,33 @@ class WDGROIDeclaration {
 						$WDGOrga = new WDGOrganization( $investment_item['user'] );
 						$WDGOrga->register_lemonway();
 						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
+						$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGOrga->get_email() );
+						if ( $credit_bank_info != FALSE ) {
+							$send_notifications = FALSE;
+							/*$WDGOrga->set_bank_owner( $credit_bank_info->holdername );
+							$WDGOrga->set_bank_iban( $credit_bank_info->iban );
+							$WDGOrga->set_bank_bic( $credit_bank_info->bic );
+							$WDGOrga->set_bank_address( $credit_bank_info->address1. ' ' .$credit_bank_info->address2 );
+							$WDGOrga->save();
+							$WDGOrga->submit_transfer_wallet_lemonway();*/
+						}
 
 					//Versement vers utilisateur personne physique
 					} else {
 						$WDGUser = new WDGUser( $investment_item['user'] );
 						$WDGUser->register_lemonway();
 						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
+						$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGUser->get_email() );
+						if ( $credit_bank_info != FALSE ) {
+							$send_notifications = FALSE;
+							$WDGUser->save_iban( $credit_bank_info->holdername, $credit_bank_info->iban, $credit_bank_info->bic, $credit_bank_info->address1. ' ' .$credit_bank_info->address2 );
+							$WDGUser->transfer_wallet_to_bankaccount( $investment_item['roi_amount'] );
+						}
 					}
 
 					if ( $transfer != FALSE ) {
 						WDGROI::insert($investment_item['ID'], $this->id_campaign, $current_organization->wpref, $investment_item['user'], $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
+						
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
 								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'], $this->get_message() );
