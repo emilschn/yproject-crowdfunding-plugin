@@ -633,14 +633,16 @@ class ATCF_Campaign {
 				$buffer_declaration_object["total_roi"] = $declaration_item->amount;
 				$buffer_declaration_object["total_roi_with_adjustment"] = $declaration_item->get_amount_with_adjustment();
 				$buffer_declaration_object["roi_list"] = array();
-				$roi_list = WDGROI::get_roi_list_by_declaration( $declaration_item->id );
+				$roi_list = $declaration_item->get_rois();
 				foreach ( $roi_list as $roi_item ) {
-					$roi_object = array();
-					$roi_user = new WP_User( $roi_item->id_user );
-					$roi_object["id"] = $roi_item->id;
-					$roi_object["user_email"] = $roi_user->user_email;
-					$roi_object["amount"] = $roi_item->amount;
-					array_push( $buffer_declaration_object["roi_list"], $roi_object );
+					if ( $roi_item->status == WDGROI::$status_transferred ) {
+						$roi_object = array();
+						$roi_user = new WP_User( $roi_item->id_user );
+						$roi_object["id"] = $roi_item->id;
+						$roi_object["user_email"] = $roi_user->user_email;
+						$roi_object["amount"] = $roi_item->amount;
+						array_push( $buffer_declaration_object["roi_list"], $roi_object );
+					}
 				}
 				array_push( $this->roi_declarations, $buffer_declaration_object );
 			}

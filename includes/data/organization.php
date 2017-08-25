@@ -937,6 +937,14 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/
+	private $rois;
+	public function get_rois() {
+		if ( !isset( $this->rois ) ) {
+			$this->rois = WDGWPREST_Entity_User::get_rois( $this->get_api_id() );
+		}
+		return $this->rois;
+	}
+	
 	private $royalties_per_year;
 	/**
 	 * Retourne la liste des royalties d'une année
@@ -948,7 +956,14 @@ class WDGOrganization {
 			$this->royalties_per_year = array();
 		}
 		if ( !isset( $this->royalties_per_year[ $year ] ) ) {
-			$this->royalties_per_year[ $year ] = WDGROI::get_roi_list_by_user( $this->creator->ID, $year );
+			$this->royalties_per_year[ $year ] = array();
+			$rois = $this->get_rois();
+			foreach ( $rois as $roi_item ) {
+				$roi_date_transfer = new DateTime( $roi_item->date_transfer );
+				if ( $roi_date_transfer->format('Y') == $year ) {
+					array_push( $this->royalties_per_year[ $year ], $roi_item );
+				}
+			}
 		}
 		
 		return $this->royalties_per_year[ $year ];

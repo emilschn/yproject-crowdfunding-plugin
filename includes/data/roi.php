@@ -61,6 +61,13 @@ class WDGROI {
 		}
 	}
 	
+	/**
+	 * Sauvegarde les données dans l'API
+	 */
+	public function update() {
+		WDGWPREST_Entity_ROI::update( $this );
+	}
+	
 	public function save() {
 		global $wpdb;
 		$table_name = $wpdb->prefix . WDGROI::$table_name;
@@ -130,7 +137,7 @@ class WDGROI {
 				$date_now = new DateTime();
 				$date_now_formatted = $date_now->format( 'Y-m-d' );
 				$this->date_transfer = $date_now_formatted;
-				$this->save();
+				$this->update();
 			}
 		}
 	}
@@ -159,7 +166,7 @@ class WDGROI {
 			}
 
 			$this->status = WDGROI::$status_canceled;
-			$this->save();
+			$this->update();
 		}
 	}
 	
@@ -224,122 +231,6 @@ class WDGROI {
 		if ($result !== FALSE) {
 			return $wpdb->insert_id;
 		}
-	}
-	
-	/**
-	 * Retourne une liste de ROI enregistrés en fonction d'un utilisateur
-	 * @param int $id_user
-	 * @param int $year
-	 */
-	public static function get_roi_list_by_user( $id_user, $year = '' ) {
-		$buffer = array();
-		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
-		$query .= " WHERE id_user=".$id_user;
-		$query .= " AND status='".WDGROI::$status_transferred."'";
-		if ( !empty( $year ) ) {
-			$query .= " AND YEAR(date_transfer)=".$year;
-		}
-		$query .= " ORDER BY date_transfer ASC";
-		
-		$roi_list = $wpdb->get_results( $query );
-		foreach ( $roi_list as $roi_item ) {
-			$ROI = new WDGROI( $roi_item->id );
-			array_push($buffer, $ROI);
-		}
-		
-		return $buffer;
-	}
-	
-	/**
-	 * Retourne une liste de ROI enregistrés en fonction d'un projet et d'un utilisateur
-	 * @param int $id_campaign
-	 * @param int $id_user
-	 */
-	public static function get_roi_list_by_campaign_user( $id_campaign, $id_user ) {
-		$buffer = array();
-		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
-		$query .= " WHERE id_campaign=".$id_campaign;
-		$query .= " AND id_user=".$id_user;
-		$query .= " AND status='".WDGROI::$status_transferred."'";
-		$query .= " ORDER BY date_transfer ASC";
-		
-		$roi_list = $wpdb->get_results( $query );
-		foreach ( $roi_list as $roi_item ) {
-			$ROI = new WDGROI( $roi_item->id );
-			array_push($buffer, $ROI);
-		}
-		
-		return $buffer;
-	}
-	
-	/**
-	 * Retourne une liste de ROI enregistrés en fonction d'une déclaration
-	 * @param int $id_declaration
-	 */
-	public static function get_roi_list_by_declaration( $id_declaration ) {
-		$buffer = array();
-		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
-		$query .= " WHERE id_declaration=".$id_declaration;
-		$query .= " AND status='".WDGROI::$status_transferred."'";
-		$query .= " ORDER BY date_transfer ASC";
-		
-		$roi_list = $wpdb->get_results( $query );
-		foreach ( $roi_list as $roi_item ) {
-			$ROI = new WDGROI( $roi_item->id );
-			array_push($buffer, $ROI);
-		}
-		
-		return $buffer;
-	}
-	
-	/**
-	 * Retourne les ID de ROI concernés par une déclaration, un utilisateur et un montant
-	 * @param int $id_declaration
-	 * @param int $id_user
-	 * @param float $amount
-	 * @return array
-	 */
-	public static function get_roiid_list_by_declaration_user_amount( $id_declaration, $id_user, $amount ) {
-		$buffer = array();
-		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
-		$query .= " WHERE id_declaration=".$id_declaration;
-		$query .= " AND id_user=".$id_user;
-		$query .= " AND amount LIKE '".$amount."'";
-		$query .= " AND status='".WDGROI::$status_transferred."'";
-		$query .= " ORDER BY date_transfer ASC";
-		
-		$roi_list = $wpdb->get_results( $query );
-		foreach ( $roi_list as $roi_item ) {
-			array_push($buffer, $roi_item->id);
-		}
-		
-		return $buffer;
-	}
-	
-	public static function get_roi_by_declaration_invest( $id_declaration, $id_investment ) {
-		$buffer = array();
-		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
-		$query .= " WHERE id_investment=".$id_investment;
-		$query .= " AND id_declaration=".$id_declaration;
-		$query .= " AND status='".WDGROI::$status_transferred."'";
-		
-		$roi_list = $wpdb->get_results( $query );
-		foreach ( $roi_list as $roi_item ) {
-			$ROI = new WDGROI( $roi_item->id );
-			array_push($buffer, $ROI);
-		}
-		
-		return $buffer;
 	}
 	
 	/**

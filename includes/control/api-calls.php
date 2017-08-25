@@ -40,7 +40,8 @@ class WDGAPICalls {
 		if ( !empty( $email ) ) {
 			$query_user = get_user_by( 'email', $email );
 			if ( $query_user ) {
-				$result = WDGROI::get_roi_list_by_user( $query_user->ID );
+				$user = new WDGUser( $query_user->ID );
+				$result = $user->get_rois();
 				foreach ( $result as $roi ) {
 					$roi_item = array();
 					$roi_item["id"] = $roi->id;

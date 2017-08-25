@@ -355,7 +355,7 @@ class WDGROIDeclaration {
 			}
 			foreach ($investments_list as $investment_item) {
 				
-				$saved_roi = WDGROI::get_roi_by_declaration_invest( $this->id, $investment_item['ID'] );
+				$saved_roi = $this->get_roi_by_investment( $investment_item['ID'] );
 				if ( empty( $saved_roi ) ) {
 					$total_fees += $investment_item['roi_fees'];
 					$remaining_amount -= $investment_item['roi_fees'];
@@ -420,35 +420,30 @@ class WDGROIDeclaration {
 			$organization_obj = new WDGOrganization($current_organization->wpref);
 		}
 		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROI::$table_name;
-		$query .= " WHERE id_declaration=".$this->id;
-		$query .= " AND amount>0";
-		$query .= " AND id_transfer=0";
-		$query .= " AND ( status='" .WDGROI::$status_transferred. "' OR status='" .WDGROI::$status_error. "' )";
-		
-		$roi_list = $wpdb->get_results( $query );
+		$roi_list = $this->get_rois();
 		foreach ( $roi_list as $roi_item ) {
-			$ROI = new WDGROI( $roi_item->id );
-			
-			//Gestion versement vers organisation
-			if (WDGOrganization::is_user_organization( $ROI->id_user )) {
-				$WDGOrga = new WDGOrganization( $ROI->id_user );
-				$WDGOrga->register_lemonway();
-				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
-				
-			//Versement vers utilisateur personne physique
-			} else {
-				$WDGUser = new WDGUser( $ROI->id_user );
-				$WDGUser->register_lemonway();
-				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+			if ( $roi_item->amount > 0 && $roi_item->id_transfer == 0 && ( $roi_item->status == WDGROI::$status_transferred || $roi_item->status == WDGROI::$status_error ) ) {
+				$ROI = new WDGROI( $roi_item->id );
+
+				//Gestion versement vers organisation
+				if (WDGOrganization::is_user_organization( $ROI->id_user )) {
+					$WDGOrga = new WDGOrganization( $ROI->id_user );
+					$WDGOrga->register_lemonway();
+					$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
+
+				//Versement vers utilisateur personne physique
+				} else {
+					$WDGUser = new WDGUser( $ROI->id_user );
+					$WDGUser->register_lemonway();
+					$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+				}
+
+				if ( $transfer != FALSE ) {
+					$ROI->status = WDGROI::$status_transferred;
+				}
+				$ROI->id_transfer = $transfer->ID;
+				$ROI->save();
 			}
-			
-			if ( $transfer != FALSE ) {
-				$ROI->status = WDGROI::$status_transferred;
-			}
-			$ROI->id_transfer = $transfer->ID;
-			$ROI->save();
 		}
 		
 	}
@@ -741,6 +736,7 @@ class WDGROIDeclaration {
 	public function get_previous_declarations() {
 		$buffer = array();
 		
+		//TO MOVE
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
 		$query .= " WHERE date_due < " .$this->date_due;
@@ -765,6 +761,35 @@ class WDGROIDeclaration {
 		foreach ( $previous_declarations as $declaration_item ) {
 			$buffer += $declaration_item->remaining_amount;
 			$buffer -= $declaration_item->transfered_previous_remaining_amount;
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Récupère la liste de tous les ROIs liés à cette déclaration
+	 */
+	private $roi_list;
+	public function get_rois() {
+		if ( !isset( $this->roi_list ) ) {
+			$this->roi_list = WDGWPREST_Entity_Declaration::get_roi_list( $this->id );
+		}
+		return $this->roi_list;
+	}
+	
+	/**
+	 * Récupère le ROI qui concerne cette déclaration et un id d'investissement
+	 * @param int $investment_id
+	 */
+	public function get_roi_by_investment( $investment_id ) {
+		$buffer = array();
+		
+		$roi_list = $this->get_rois();
+		foreach ( $roi_list as $roi_item ) {
+			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
+				$ROI = new WDGROI( $roi_item->id );
+				array_push($buffer, $ROI);
+			}
 		}
 		
 		return $buffer;
@@ -829,6 +854,7 @@ class WDGROIDeclaration {
 	public static function get_list_by_campaign_id( $id_campaign, $status = '' ) {
 		$buffer = array();
 		
+		// TO MOVE
 		global $wpdb;
 		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
 		$query .= " WHERE id_campaign=".$id_campaign;
@@ -860,13 +886,9 @@ class WDGROIDeclaration {
 	public static function get_by_payment_token( $token ) {
 		$buffer = FALSE;
 		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
-		$query .= " WHERE payment_token='" .$token. "'";
-		
-		$declaration_list = $wpdb->get_results( $query );
-		foreach ( $declaration_list as $declaration_item ) {
-			$buffer = new WDGROIDeclaration( $declaration_item->id );
+		$declaration = WDGWPREST_Entity_Declaration::get_by_payment_token( $token );
+		if ( $declaration ) {
+			$buffer = new WDGROIDeclaration( $declaration->id );
 		}
 		
 		return $buffer;
