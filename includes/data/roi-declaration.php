@@ -1,6 +1,6 @@
 <?php
 /**
- * Classe de gestion des déclarations de ROI
+ * Classe de gestion des dÃ©clarations de ROI
  */
 class WDGROIDeclaration {
 	public static $table_name = 'ypcf_roideclaration';
@@ -36,7 +36,7 @@ class WDGROIDeclaration {
 	
 	
 	public function __construct( $declaration_id ) {
-		// Récupération en priorité depuis l'API
+		// RÃ©cupÃ©ration en prioritÃ© depuis l'API
 		$declaration_api_item = WDGWPREST_Entity_Declaration::get( $declaration_id );
 		if ( $declaration_api_item != FALSE ) {
 			
@@ -70,18 +70,18 @@ class WDGROIDeclaration {
 			}
 			$this->on_api = TRUE;
 
-			// Les déclarations sans statut doivent passer en statut "Déclaration"
+			// Les dÃ©clarations sans statut doivent passer en statut "DÃ©claration"
 			if ( empty( $this->status ) || $this->status == null ) {
 				$this->status = WDGROIDeclaration::$status_declaration;
 			}
 
-			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
+			// Les dÃ©clarations Ã  zero pour les projets en mode "paiement" doivent Ãªtre marquÃ©es comme terminÃ©es
 			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->update();
 			}
 			
-		// Sinon récupération sur la bdd locale (deprecated)
+		// Sinon rÃ©cupÃ©ration sur la bdd locale (deprecated)
 		} else {
 		
 			global $wpdb;
@@ -119,12 +119,12 @@ class WDGROIDeclaration {
 				}
 				$this->on_api = ( $declaration_item->on_api == 1 );
 
-				// Les déclarations sans statut doivent passer en statut "Déclaration"
+				// Les dÃ©clarations sans statut doivent passer en statut "DÃ©claration"
 				if ( empty( $this->status ) || $this->status == null ) {
 					$this->status = WDGROIDeclaration::$status_declaration;
 				}
 
-				// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
+				// Les dÃ©clarations Ã  zero pour les projets en mode "paiement" doivent Ãªtre marquÃ©es comme terminÃ©es
 				if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
 					$this->status = WDGROIDeclaration::$status_finished;
 					$this->save();
@@ -135,7 +135,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Sauvegarde les données dans l'API
+	 * Sauvegarde les donnÃ©es dans l'API
 	 */
 	public function update() {
 		WDGWPREST_Entity_Declaration::update( $this );
@@ -204,7 +204,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Retourne le montant additionné l'ajustement
+	 * Retourne le montant additionnÃ© l'ajustement
 	 * @return number
 	 */
 	public function get_amount_with_adjustment() {
@@ -212,7 +212,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Retourne le montant additionné avec la commission
+	 * Retourne le montant additionnÃ© avec la commission
 	 * @return number
 	 */
 	public function get_amount_with_commission() {
@@ -220,19 +220,19 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Retourne la commission éventuelle que doit payer le porteur de projet au moment de reverser les fonds
+	 * Retourne la commission Ã©ventuelle que doit payer le porteur de projet au moment de reverser les fonds
 	 * @return number
 	 */
 	public function get_commission_to_pay() {
 		$buffer = 0;
 		
-		//Si le porteur de projet a déjà payé, on considère qu'on a déjà enregistré la commission
+		//Si le porteur de projet a dÃ©jÃ  payÃ©, on considÃ¨re qu'on a dÃ©jÃ  enregistrÃ© la commission
 		if ( $this->status == WDGROIDeclaration::$status_transfer || $this->status == WDGROIDeclaration::$status_finished ) {
 			$cost = $this->percent_commission;
 			
-		//Sinon, on la calcule avec les frais enregistrés en rapport avec la campagne
+		//Sinon, on la calcule avec les frais enregistrÃ©s en rapport avec la campagne
 		} else {
-			$campaign = new ATCF_Campaign( $this->id_campaign );
+			$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 			$cost = $campaign->get_costs_to_organization();
 		}
 		
@@ -243,7 +243,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Traite un fichier uploadé qui doit être ajouté à la liste
+	 * Traite un fichier uploadÃ© qui doit Ãªtre ajoutÃ© Ã  la liste
 	 * @param array $file_uploaded_data
 	 */
 	public function add_file( $file_uploaded_data, $file_description ) {
@@ -313,7 +313,7 @@ class WDGROIDeclaration {
 		$this->turnover = $saved_turnover;
 	}
 	/**
-	 * Retourne le montant total de CA déclaré
+	 * Retourne le montant total de CA dÃ©clarÃ©
 	 * @return int
 	 */
 	public function get_turnover_total() {
@@ -341,7 +341,7 @@ class WDGROIDeclaration {
 		$buffer = false;
 		$date_now = new DateTime();
 		$date_now_formatted = $date_now->format( 'Y-m-d' );
-		$campaign = new ATCF_Campaign($this->id_campaign);
+		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
 			$organization_obj = new WDGOrganization($current_organization->wpref);
@@ -395,7 +395,7 @@ class WDGROIDeclaration {
 				LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees);
 			}
 			if ( $transfer_remaining_amount ) {
-				// Mise à jour de la somme des reliquats précédents qui ont été reversés
+				// Mise Ã  jour de la somme des reliquats prÃ©cÃ©dents qui ont Ã©tÃ© reversÃ©s
 				if ( $previous_remaining_amount > $remaining_amount ) {
 					$this->transfered_previous_remaining_amount = $previous_remaining_amount - $remaining_amount;
 				}
@@ -411,10 +411,10 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Répare un versement qui n'a pas eu lieu vers un utilisateur
+	 * RÃ©pare un versement qui n'a pas eu lieu vers un utilisateur
 	 */
 	public function redo_transfers() {
-		$campaign = new ATCF_Campaign($this->id_campaign);
+		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 		$current_organization = $campaign->get_organization();
 		if (!empty($current_organization)) {
 			$organization_obj = new WDGOrganization($current_organization->wpref);
@@ -442,14 +442,14 @@ class WDGROIDeclaration {
 					$ROI->status = WDGROI::$status_transferred;
 				}
 				$ROI->id_transfer = $transfer->ID;
-				$ROI->save();
+				$ROI->update();
 			}
 		}
 		
 	}
 	
 	/**
-	 * Si la déclaration était en attente de virement, on valide que le virement a été reçu
+	 * Si la dÃ©claration Ã©tait en attente de virement, on valide que le virement a Ã©tÃ© reÃ§u
 	 */
 	public function mark_transfer_received() {
 		if ( $this->status == WDGROIDeclaration::$status_waiting_transfer ) {
@@ -460,7 +460,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Détermine le nom du fichier d'attestation qui va être créé
+	 * DÃ©termine le nom du fichier d'attestation qui va Ãªtre crÃ©Ã©
 	 * @return string
 	 */
 	private function get_payment_certificate_filename() {
@@ -469,8 +469,8 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Crée le fichier pdf d'attestation
-	 * @param boolean $force Si $force est à true, on crée même si le fichier existe déjà
+	 * CrÃ©e le fichier pdf d'attestation
+	 * @param boolean $force Si $force est Ã  true, on crÃ©e mÃªme si le fichier existe dÃ©jÃ 
 	 */
 	public function make_payment_certificate( $force = false ) {
 		$filename = $this->get_payment_certificate_filename();
@@ -482,7 +482,7 @@ class WDGROIDeclaration {
 		$date_due = new DateTime( $this->date_due );
 		$certificate_date = $date_due->format( 'd/m/Y' );
 		
-		$campaign = new ATCF_Campaign( $this->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
 			$organization_obj = new WDGOrganization( $current_organization->wpref );
@@ -566,7 +566,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Détermine l'URL où le fichier d'attestation peut être téléchargé
+	 * DÃ©termine l'URL oÃ¹ le fichier d'attestation peut Ãªtre tÃ©lÃ©chargÃ©
 	 * @return string
 	 */
 	public function get_payment_certificate_url() {
@@ -576,7 +576,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Renvoie true si la déclaration de ROI peut être payée via virement
+	 * Renvoie true si la dÃ©claration de ROI peut Ãªtre payÃ©e via virement
 	 * @return boolean
 	 */
 	public function can_pay_with_wire() {
@@ -584,7 +584,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Renvoie la liste des mois concernés par une déclaration
+	 * Renvoie la liste des mois concernÃ©s par une dÃ©claration
 	 * @return array
 	 */
 	public function get_month_list() {
@@ -597,15 +597,15 @@ class WDGROIDeclaration {
 		$date_due = new DateTime( $this->date_due );
 		$declaration_year = $date_due->format( 'Y' );
 		$date_due->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
-		// Si l'année de déclaration est différente de la première date de déclaration,
-			// on recule d'une année
+		// Si l'annÃ©e de dÃ©claration est diffÃ©rente de la premiÃ¨re date de dÃ©claration,
+			// on recule d'une annÃ©e
 		if ( $declaration_year > $date_due->format( 'Y' ) ) {
 			$declaration_year--;
 		}
 		
 		for ($i = 0; $i < $nb_fields; $i++) {
-			// Si on est en janvier, et que ce n'est pas la première déclaration,
-				// on avance d'une année
+			// Si on est en janvier, et que ce n'est pas la premiÃ¨re dÃ©claration,
+				// on avance d'une annÃ©e
 			if ( $i > 0 && $date_due->format( 'n' ) == 1 ) {
 				$declaration_year++;
 			}
@@ -617,7 +617,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Enregistre les données d'ajustement
+	 * Enregistre les donnÃ©es d'ajustement
 	 * @param boolean $is_validated
 	 * @param boolean $is_needed
 	 * @param number $turnover_difference
@@ -640,7 +640,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Détermine le statut validé ou non
+	 * DÃ©termine le statut validÃ© ou non
 	 * @return boolean
 	 */
 	public function get_adjustment_validated() {
@@ -653,7 +653,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Détermine si l'ajustement est obligatoire ou non
+	 * DÃ©termine si l'ajustement est obligatoire ou non
 	 * @return boolean
 	 */
 	public function get_adjustment_needed() {
@@ -666,7 +666,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Détermine la valeur de l'ajustement
+	 * DÃ©termine la valeur de l'ajustement
 	 * @return number
 	 */
 	public function get_adjustment_value() {
@@ -682,7 +682,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Détermine la valeur de la différence de chiffre d'affaires
+	 * DÃ©termine la valeur de la diffÃ©rence de chiffre d'affaires
 	 * @return number
 	 */
 	public function get_adjustment_turnover_difference() {
@@ -698,7 +698,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Retourne le message enregistré pour les investisseurs pour le porteur de projet
+	 * Retourne le message enregistrÃ© pour les investisseurs pour le porteur de projet
 	 * @param string $type
 	 * @return string
 	 */
@@ -713,7 +713,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Enregistre le reliquat (utile surtout pour les anciennes déclarations à mettre à jour)
+	 * Enregistre le reliquat (utile surtout pour les anciennes dÃ©clarations Ã  mettre Ã  jour)
 	 */
 	public function save_remaining_amount() {
 		if ( $this->status == WDGROIDeclaration::$status_finished ) {
@@ -731,28 +731,25 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Retourne la liste des déclarations qui précèdent celles-ci
+	 * Retourne la liste des dÃ©clarations qui prÃ©cÃ¨dent celles-ci
 	 */
 	public function get_previous_declarations() {
 		$buffer = array();
 		
-		//TO MOVE
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
-		$query .= " WHERE date_due < " .$this->date_due;
-		$query .= " AND id_campaign = " .$this->id_campaign;
-		
-		$declaration_list = $wpdb->get_results( $query );
-		foreach ( $declaration_list as $declaration_item ) {
-			$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id );
-			array_push($buffer, $ROIdeclaration);
+		$declarations = WDGROIDeclaration::get_list_by_campaign_id( $this->id_campaign );
+		foreach ( $declarations as $declaration_item ) {
+			$declaration_date_due = new DateTime( $declaration_item->date_due );
+			$this_date_due = new DateTime( $this->date_due );
+			if ( $declaration_date_due < $this_date_due ) {
+				array_push( $buffer, $declaration_item );
+			}
 		}
 		
 		return $buffer;
 	}
 	
 	/**
-	 * Retourne la valeur des reliquats qui n'ont pas été versés aux investisseurs sur les déclarations précédentes
+	 * Retourne la valeur des reliquats qui n'ont pas Ã©tÃ© versÃ©s aux investisseurs sur les dÃ©clarations prÃ©cÃ©dentes
 	 */
 	public function get_previous_remaining_amount() {
 		$buffer = 0;
@@ -767,7 +764,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Récupère la liste de tous les ROIs liés à cette déclaration
+	 * RÃ©cupÃ¨re la liste de tous les ROIs liÃ©s Ã  cette dÃ©claration
 	 */
 	private $roi_list;
 	public function get_rois() {
@@ -778,7 +775,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Récupère le ROI qui concerne cette déclaration et un id d'investissement
+	 * RÃ©cupÃ¨re le ROI qui concerne cette dÃ©claration et un id d'investissement
 	 * @param int $investment_id
 	 */
 	public function get_roi_by_investment( $investment_id ) {
@@ -800,7 +797,7 @@ class WDGROIDeclaration {
  * REQUETES STATIQUES
  ******************************************************************************/
 	/**
-	 * Mise à jour base de données
+	 * Mise Ã  jour base de donnÃ©es
 	 */
 	public static function upgrade_db() {
 		global $wpdb;
@@ -832,7 +829,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Ajout d'une nouvelle déclaration
+	 * Ajout d'une nouvelle dÃ©claration
 	 */
 	public static function insert( $id_campaign, $date_due ) {
 		global $wpdb;
@@ -849,37 +846,42 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Liste des déclarations ROI pour un projet
+	 * Liste des dÃ©clarations ROI pour un projet
 	 */
-	public static function get_list_by_campaign_id( $id_campaign, $status = '' ) {
+	public static function get_list_by_campaign_id( $idwp_campaign, $status = '' ) {
 		$buffer = array();
 		
-		// TO MOVE
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
-		$query .= " WHERE id_campaign=".$id_campaign;
-		if ( !empty( $status ) ) {
-			$query .= " AND ";
-			if ( $status == WDGROIDeclaration::$status_declaration ) {
-				$query .= "( status='".$status."' OR status='' OR status IS NULL )";
-				
-			} else {
-				$query .= "status='".$status."'";
+		$campaign = new ATCF_Campaign( $idwp_campaign );
+		$declarations = WDGWPREST_Entity_Project::get_declarations( $campaign->get_api_id() );
+		if ( $declarations ) {
+			foreach ( $declarations as $declaration_item ) {
+				$add = TRUE;
+
+				if ( !empty( $status ) ) {
+					if ( $status == WDGROIDeclaration::$status_declaration ) {
+						if ( $declaration_item->status != WDGROIDeclaration::$status_declaration && !empty( $declaration_item->status ) ) {
+							$add = FALSE;
+						}
+
+					} else {
+						if ( $declaration_item->status != $status ) {
+							$add = FALSE;
+						}
+					}
+				}
+
+				if ( $add ) {
+					$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id );
+					array_push($buffer, $ROIdeclaration);
+				}
 			}
-		}
-		$query .= " ORDER BY date_due ASC";
-		
-		$declaration_list = $wpdb->get_results( $query );
-		foreach ( $declaration_list as $declaration_item ) {
-			$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id );
-			array_push($buffer, $ROIdeclaration);
 		}
 		
 		return $buffer;
 	}
 	
 	/**
-	 * Retourne une déclaration ROI par son token de paiement
+	 * Retourne une dÃ©claration ROI par son token de paiement
 	 * @param string $token
 	 * @return WDGROIDeclaration
 	 */
@@ -895,7 +897,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Transfère les données de la déclaration vers l'API
+	 * TransfÃ¨re les donnÃ©es de la dÃ©claration vers l'API
 	 */
 	public static function transfer_to_api() {
 		global $wpdb;

@@ -130,6 +130,7 @@ function atcf_create_campaign($author_ID, $title){
 class ATCF_Campaign {
 	public $ID;
 	public $data;
+	public $api_data;
         
 	/**
 	 * Default number of days of vote
@@ -177,7 +178,11 @@ class ATCF_Campaign {
 		);
 	}
 
-	function __construct( $post ) {
+	function __construct( $post, $api_id = FALSE ) {
+		if ( !empty( $api_id ) ) {
+			$this->api_data = WDGWPREST_Entity_Project::get( $api_id );
+			$post = $this->api_data->wpref;
+		}
 		$this->data = get_post( $post );
 		$this->ID   = $this->data->ID;
 	}
