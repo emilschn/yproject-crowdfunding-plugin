@@ -218,13 +218,16 @@ class WDGPostActions {
 				$campaign->set_validation_step_status( 'has_filled_presentation', $has_filled_presentation );
 
             } else if ($campaign->can_go_next_status()){
-                if ($status==ATCF_Campaign::$campaign_status_validated && ($next_status==1)){
+				
+                if ( $status == ATCF_Campaign::$campaign_status_validated && $next_status == 1 ) {
                     //Validé -> Avant-première
                     $campaign->set_status(ATCF_Campaign::$campaign_status_preview);
                     $campaign->set_validation_next_status(0);
 
-                } else if ($status==ATCF_Campaign::$campaign_status_preview
-                    || ($status==ATCF_Campaign::$campaign_status_validated &&($next_status==2))){
+					
+                } else if (
+					$status == ATCF_Campaign::$campaign_status_preview
+                    || ( $status == ATCF_Campaign::$campaign_status_validated && !$campaign->skip_vote() && $next_status == 2 ) ) {
                     //Validé/Avant-première -> Vote
 
                     //Vérifiation organisation complète
@@ -251,7 +254,9 @@ class WDGPostActions {
                     }
 
 
-                } else if ($status==ATCF_Campaign::$campaign_status_vote){
+                } else if (
+					( $status == ATCF_Campaign::$campaign_status_validated && $campaign->skip_vote() && $next_status == 2 )
+					|| $status == ATCF_Campaign::$campaign_status_vote ) {
                     //Vote -> Collecte
                     if(isset($_POST['innbdaycollecte'])
                         && isset($_POST['inendh'])

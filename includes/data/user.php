@@ -803,7 +803,7 @@ class WDGUser {
 	/**
 	 * Transfère l'argent du porte-monnaie utilisateur vers son compte bancaire
 	 */
-	public function transfer_wallet_to_bankaccount() {
+	public function transfer_wallet_to_bankaccount( $amount = FALSE ) {
 		$buffer = FALSE;
 		
 		//Il faut qu'un iban ait déjà été enregistré
@@ -825,14 +825,16 @@ class WDGUser {
 			
 			if ($buffer == FALSE) {
 				//Exécution du transfert vers le compte du montant du solde
-				$amount = $wallet_details->BAL;
-				$result_transfer = LemonwayLib::ask_transfer_to_iban($this->get_lemonway_id(), $wallet_details->BAL);
+				if ( empty( $amount ) ) {
+					$amount = $wallet_details->BAL;
+				}
+				$result_transfer = LemonwayLib::ask_transfer_to_iban($this->get_lemonway_id(), $amount);
 				$buffer = ($result_transfer->TRANS->HPAY->ID) ? "success" : $result_transfer->TRANS->HPAY->MSG;
 				if ($buffer == "success") {
 					NotificationsEmails::wallet_transfer_to_account( $this->wp_user->ID, $amount );
 					$withdrawal_post = array(
 						'post_author'   => $this->wp_user->ID,
-						'post_title'    => $wallet_details->BAL,
+						'post_title'    => $amount,
 						'post_content'  => print_r($result_transfer, TRUE),
 						'post_status'   => 'publish',
 						'post_type'	    => 'withdrawal_order_lw'

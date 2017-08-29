@@ -91,4 +91,13 @@ class WDGWPREST_Entity_Organization {
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' .$organization_id. '/users', $request_params );
 		return $result_obj;
 	}
+	
+	/**
+	 * 
+	 * @param type $organization_id
+	 */
+	public static function get_linked_users( $organization_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/users' );
+		return $result_obj;
+	}
 }

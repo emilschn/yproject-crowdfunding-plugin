@@ -488,7 +488,27 @@ class WDGOrganization {
 	public function set_creator( $wp_user_id ) {
 		$wdg_current_user = new WDGUser( $wp_user_id );
 		$api_user_id = $wdg_current_user->get_api_id();
-		WDGWPREST_Entity_Organization::link_user( $this->api_id, $api_user_id, WDGWPREST_Entity_Organization::$link_user_type_creator );
+		if ( !empty( $this->api_id ) && !empty( $api_user_id ) ) {
+			WDGWPREST_Entity_Organization::link_user( $this->api_id, $api_user_id, WDGWPREST_Entity_Organization::$link_user_type_creator );
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	public function get_linked_users( $type = '' ) {
+		$buffer = array();
+		$result = WDGWPREST_Entity_Organization::get_linked_users( $this->api_id );
+		foreach ( $result as $user_item ) {
+			if ( empty( $type ) || $user_item->type == $type ) {
+				$user_api = WDGWPREST_Entity_User::get( $user_item->id_user );
+				if ( $user_api != FALSE ) {
+					$user = new WDGUser( $user_api->wpref );
+					array_push( $buffer, $user );
+				}
+			}
+		}
+		return $buffer;
 	}
 	
 	/**
