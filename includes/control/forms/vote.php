@@ -5,6 +5,8 @@ class WDG_Form_Vote extends WDG_Form {
 	public static $field_group_validate = 'vote-validate';
 	public static $field_group_risk = 'vote-risk';
 	public static $field_group_info = 'vote-info';
+	public static $field_group_invest = 'vote-invest';
+	public static $field_group_advice = 'vote-advice';
 	
 	public function __construct() {
 		parent::__construct();
@@ -99,7 +101,7 @@ class WDG_Form_Vote extends WDG_Form {
 		);
 		
 		
-		// Risk : $field_group_risk
+		// Info : $field_group_info
 		$this->addField(
 			'checkboxes',
 			'info',
@@ -119,6 +121,37 @@ class WDG_Form_Vote extends WDG_Form {
 			'more-info-other',
 			__( "Autre", 'yproject' ),
 			WDG_Form_Vote::$field_group_info
+		);
+		
+		
+		// Invest : $field_group_invest
+		
+		$this->addField(
+			'text-money',
+			'invest-sum',
+			__( "Je serais int&eacute;ress&eacute; pour investir :", 'yproject' ),
+			WDG_Form_Vote::$field_group_invest
+		);
+		
+		
+		// Advice : $field_group_advice
+		
+		$this->addField(
+			'textarea',
+			'advice',
+			__( "Quels conseils ou encouragements souhaitez‐vous donner au(x) porteur(s) de ce projet ?", 'yproject' ),
+			WDG_Form_Vote::$field_group_advice
+		);
+		
+		$this->addField(
+			'checkboxes',
+			'',
+			'',
+			WDG_Form_Vote::$field_group_advice,
+			FALSE,
+			[
+				'publish-advice'	=> __( "Je veux que mes conseils soient publi&eacute;s en commentaires.", 'yproject' )
+			]
 		);
 		
 	}
