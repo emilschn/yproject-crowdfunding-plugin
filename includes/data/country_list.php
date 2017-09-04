@@ -257,7 +257,7 @@ $country_list = array(
 
 /* iso3 */
 global $country_list_iso2_to_iso3;
-$country_list_iso3 = array(
+$country_list_iso2_to_iso3 = array(
 	"AF" => "AFG",
 	"AX" => "ALA",
 	"AL" => "ALB",

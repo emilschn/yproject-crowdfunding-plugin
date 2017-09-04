@@ -1303,7 +1303,6 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
 		$campaign = new ATCF_Campaign($campaign_id);
         $current_wdg_user = WDGUser::current();
-        require_once("country_list.php");
         global $country_list;
 		global $wpdb;
 		$table_vote = $wpdb->prefix . "ypcf_project_votes";

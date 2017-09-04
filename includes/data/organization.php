@@ -348,7 +348,6 @@ class WDGOrganization {
 	// Retourne le texte complet du pays à partir du code de nationalité
 	public function get_country() {
 		$nationality_code = $this->get_nationality();
-		require_once("country_list.php");
 		global $country_list;
 		return $country_list[ $nationality_code ];
 	}
@@ -1037,7 +1036,6 @@ class WDGOrganization {
 			array_push( $roi_list, $roi_item );
 		}
 		
-		require( 'country_list.php' );
 		global $country_list;
 		$investment_list = array();
 		$invest_list_unique = array_unique( $invest_list );
