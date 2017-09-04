@@ -106,11 +106,15 @@ class WDGUser {
 		return $this->wp_user->last_name;
 	}
 	
+	/**
+	 * La nationalité est enregistrée en ISO2
+	 * @param string $format
+	 * @return string
+	 */
 	public function get_nationality( $format = '' ) {
 		$buffer = $this->wp_user->get('user_nationality');
 		if ( !empty( $format ) && $format == 'iso3' ) {
 			// La nationalité est enregistrée au format iso2, il faut juste la convertir
-			require( 'country_list.php' );
 			global $country_list_iso2_to_iso3;
 			if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
 				$buffer = $country_list_iso2_to_iso3[ $buffer ];
@@ -135,7 +139,6 @@ class WDGUser {
 		$buffer = $this->wp_user->get('user_country');
 		if ( !empty( $format ) && $format == 'iso3' ) {
 			// Le pays est saisi, il faut tenter de le convertir
-			require( 'country_list.php' );
 			global $country_list, $country_list_iso2_to_iso3;
 			// D'abord, on le met en majuscule
 			$upper_country = strtoupper( $buffer );
@@ -444,7 +447,6 @@ class WDGUser {
 			array_push( $roi_list, $roi_item );
 		}
 		
-		require( 'country_list.php' );
 		global $country_list;
 		$investment_list = array();
 		$invest_list_unique = array_unique( $invest_list );
@@ -665,7 +667,9 @@ class WDGUser {
 	
 	public function get_lemonway_birthdate() {
 		// format : dd/MM/yyyy
-		$lemonway_birthdate = $this->wp_user->get('user_birthday_day'). '/' .$this->wp_user->get('user_birthday_month'). '/' .$this->wp_user->get('user_birthday_year');
+		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
+		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
+		$lemonway_birthdate = $birthday_day. '/' .$birthday_month. '/' .$this->wp_user->get('user_birthday_year');
 		return $lemonway_birthdate;
 	}
 	
