@@ -216,6 +216,13 @@ class WDGUser {
 		return $this->organizations_list;
 	}
 	
+	public function has_voted_on_campaign( $campaign_id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . "ypcf_project_votes";
+		$hasvoted_results = $wpdb->get_results( 'SELECT id FROM '.$table_name.' WHERE post_id = '.$campaign_id.' AND user_id = '.$this->get_wpref() );
+		return ( !empty( $hasvoted_results[0]->id ) );
+	}
+	
 /*******************************************************************************
  * Fonctions de sauvegarde
 *******************************************************************************/
