@@ -18,7 +18,7 @@ class WDG_Form {
 		
 	}
 	
-	protected function addField( $type, $name, $label, $group = '0', $decription = FALSE, $options = FALSE ) {
+	protected function addField( $type, $name, $label, $group = '0', $value = FALSE, $decription = FALSE, $options = FALSE ) {
 		
 		if ( !isset( $this->fields[ $group ] ) ) {
 			$this->fields[ $group ] = array();
@@ -28,6 +28,7 @@ class WDG_Form {
 			'type'			=> $type,
 			'name'			=> $name,
 			'label'			=> $label,
+			'value'			=> $value,
 			'description'	=> $decription,
 			'options'		=> $options
 		);

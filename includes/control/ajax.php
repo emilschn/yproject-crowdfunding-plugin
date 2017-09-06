@@ -7,7 +7,8 @@ class WDGAjaxActions {
 	private static $class_name = 'WDGAjaxActions';
 	
 	private static $class_to_filename = array(
-		'WDG_Form_Vote' => 'vote.php'
+		'WDG_Form_Vote'			=> 'vote.php',
+		'WDG_Form_User_Details' => 'user-details.php'
 	);
     
 	/**
@@ -15,6 +16,7 @@ class WDGAjaxActions {
 	 */
 	public static function init_actions() {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Vote' );
+		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		

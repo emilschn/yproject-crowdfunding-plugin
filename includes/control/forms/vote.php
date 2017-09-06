@@ -28,7 +28,6 @@ class WDG_Form_Vote extends WDG_Form {
 			'action',
 			'',
 			WDG_Form_Vote::$field_group_hidden,
-			'',
 			WDG_Form_Vote::$name
 		);
 		
@@ -37,7 +36,6 @@ class WDG_Form_Vote extends WDG_Form {
 			'campaign_id',
 			'',
 			WDG_Form_Vote::$field_group_hidden,
-			'',
 			$this->campaign_id
 		);
 		
@@ -47,6 +45,7 @@ class WDG_Form_Vote extends WDG_Form {
 			'rate-economy',
 			__( "Economie", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts,
+			FALSE,
 			FALSE,
 			[
 				__( "Tr&egrave;s faible", 'yproject' ),
@@ -63,6 +62,7 @@ class WDG_Form_Vote extends WDG_Form {
 			__( "Ecologie", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts,
 			FALSE,
+			FALSE,
 			[
 				__( "Tr&egrave;s faible", 'yproject' ),
 				__( "Faible", 'yproject' ),
@@ -77,6 +77,7 @@ class WDG_Form_Vote extends WDG_Form {
 			'rate-social',
 			__( "Social", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts,
+			FALSE,
 			FALSE,
 			[
 				__( "Tr&egrave;s faible", 'yproject' ),
@@ -102,6 +103,7 @@ class WDG_Form_Vote extends WDG_Form {
 			__( "Souhaitez-vous soutenir cette campagne de financement sur WE DO GOOD ?", 'yproject' ),
 			WDG_Form_Vote::$field_group_validate,
 			FALSE,
+			FALSE,
 			[
 				'1'	=> __( "Oui", 'yproject' ),
 				'0' => __( "Non", 'yproject' )
@@ -115,6 +117,7 @@ class WDG_Form_Vote extends WDG_Form {
 			'risk',
 			__( "Je pense que le risque est :", 'yproject' ),
 			WDG_Form_Vote::$field_group_risk,
+			FALSE,
 			FALSE,
 			[
 				__( "Tr&egrave;s faible", 'yproject' ),
@@ -132,6 +135,7 @@ class WDG_Form_Vote extends WDG_Form {
 			'info',
 			__( "Avez-vous besoin de plus d'informations concernant l'un des aspects suivants ?", 'yproject' ),
 			WDG_Form_Vote::$field_group_info,
+			FALSE,
 			FALSE,
 			[
 				'more_info_service'	=> __( "Le produit / service", 'yproject' ),
@@ -173,6 +177,7 @@ class WDG_Form_Vote extends WDG_Form {
 			'',
 			'',
 			WDG_Form_Vote::$field_group_advice,
+			FALSE,
 			FALSE,
 			[
 				'publish-advice'	=> __( "Je veux que mes conseils soient publi&eacute;s en commentaires.", 'yproject' )
