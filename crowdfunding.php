@@ -105,6 +105,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/organization.php' );
 		require( $this->includes_dir . 'data/user.php' );
 		require( $this->includes_dir . 'data/staticpage.php' );
+		require( $this->includes_dir . 'data/country_list.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-lib.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-organization.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
@@ -130,8 +131,10 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/pdf_generator.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-slack.php' );
+		require( $this->includes_dir . 'control/forms/form.php' );
 		require( $this->includes_dir . 'control/forms/projects.php' );
 		require( $this->includes_dir . 'control/forms/users.php' );
+		require( $this->includes_dir . 'control/forms/user-details.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-lib.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-lib-errors.php' );
 		
@@ -141,6 +144,10 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-update.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
+		
+		if ( is_single() ) {
+			require( $this->includes_dir . 'control/forms/vote.php' );
+		}
 		
 		if ( is_admin() ) {
 			require( $this->includes_dir . 'ui/admin/posts.php' );

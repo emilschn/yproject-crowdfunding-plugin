@@ -146,7 +146,6 @@ function generatePDF($html_content, $filename) {
 function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $organization = false) {
     ypcf_debug_log('fillPDFHTMLDefaultContent > ' . $payment_data["amount"]);
     $buffer = '';
-    require_once("country_list.php");
 	
 	//Si on doit faire une version anglaise
 	if (get_locale() == 'en_US') {
