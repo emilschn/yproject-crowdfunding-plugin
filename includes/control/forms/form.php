@@ -125,7 +125,7 @@ class WDG_Form {
 	 * Récupération d'un booléen
 	 * @param string $name
 	 * @param boolean $force
-	 * @return string
+	 * @return boolean or int
 	 */
 	public function getInputBoolean( $name, $force = false ) {
 		$buffer = false;
@@ -138,6 +138,23 @@ class WDG_Form {
 			if ( $input_result !== '0' && $force ) {
 				$buffer = -1;
 			}
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Récupération d'une checkbox
+	 * @param string $name
+	 * @return boolean
+	 */
+	public function getInputChecked( $name ) {
+		$buffer = false;
+		$input_result = filter_input( INPUT_POST, $name );
+		
+		if ( !empty( $input_result ) && $input_result == $name ) {
+			$buffer = true;
+			
 		}
 		
 		return $buffer;

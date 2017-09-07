@@ -260,6 +260,15 @@ class WDGUser {
 		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
 	}
 	
+	/**
+	 * Enregistre une meta particulière
+	 * @param string $meta_name
+	 * @param string $meta_value
+	 */
+	public function save_meta( $meta_name, $meta_value ) {
+		update_user_meta( $this->wp_user->ID, $meta_name, $meta_value );
+	}
+	
 /*******************************************************************************
  * Fonctions meta
 *******************************************************************************/

@@ -4,11 +4,13 @@ class WDG_Form_User_Details extends WDG_Form {
 	public static $name = 'user-details';
 	
 	public static $type_basics = 'basics';
+	public static $type_vote = 'vote';
 	public static $type_complete = 'complete';
 	
 	public static $field_group_hidden = 'user-details-hidden';
 	public static $field_group_basics = 'user-details-basics';
 	public static $field_group_complete = 'user-details-complete';
+	public static $field_group_vote = 'user-details-vote';
 	
 	private $user_id;
 	private $user_details_type;
@@ -153,6 +155,19 @@ class WDG_Form_User_Details extends WDG_Form {
 			);
 			
 		}
+		
+		// $field_group_vote : A la fin du formulaire de vote, on rajoute le téléphone
+		if ( $this->user_details_type == WDG_Form_User_Details::$type_vote ) {
+			$this->addField(
+				'text',
+				'phone_number',
+				__( "T&eacute;l&eacute;phone", 'yproject' ),
+				WDG_Form_User_Details::$field_group_vote,
+				$WDGUser->get_phone_number()
+			);
+		
+		}
+		
 	}
 	
 	public function postForm() {
@@ -217,6 +232,10 @@ class WDG_Form_User_Details extends WDG_Form {
 				$country = $this->getInputText( 'country' );
 			}
 			
+			if ( $user_details_type == WDG_Form_User_Details::$type_vote ) {
+				$phone_number = $this->getInputText( 'phone_number' );
+			}
+			
 			
 			if ( empty( $feedback_errors ) ) {
 				if ( $user_details_type == WDG_Form_User_Details::$type_complete ) {
@@ -228,6 +247,9 @@ class WDG_Form_User_Details extends WDG_Form {
 					
 				} else {
 					$WDGUser->save_basics( $email, $firstname, $lastname );
+					if ( $user_details_type == WDG_Form_User_Details::$type_vote ) {
+						$WDGUser->save_meta( 'user_mobile_phone', $phone_number );
+					}
 				}
 			}
 		}

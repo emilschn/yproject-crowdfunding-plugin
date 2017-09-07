@@ -43,7 +43,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'rate',
 			'rate-economy',
-			__( "Economie", 'yproject' ),
+			__( "Sur l'&eacute;conomie (emploi, &eacute;conomie locale, innovation) :", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts,
 			FALSE,
 			FALSE,
@@ -59,7 +59,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'rate',
 			'rate-ecology',
-			__( "Ecologie", 'yproject' ),
+			__( "Sur l'environnement (ressources, biodiversit&eacute;, pollution) :", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts,
 			FALSE,
 			FALSE,
@@ -75,7 +75,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'rate',
 			'rate-social',
-			__( "Social", 'yproject' ),
+			__( "Au niveau social (conditions de vie et de travail, lien social) :", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts,
 			FALSE,
 			FALSE,
@@ -91,7 +91,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'text',
 			'rate-other',
-			__( "Autre", 'yproject' ),
+			__( "Autre(s)", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts
 		);
 		
@@ -100,7 +100,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'radio',
 			'validate-project',
-			__( "Souhaitez-vous soutenir cette campagne de financement sur WE DO GOOD ?", 'yproject' ),
+			__( "Je souhaite soutenir cette campagne de financement sur WE DO GOOD :", 'yproject' ),
 			WDG_Form_Vote::$field_group_validate,
 			FALSE,
 			FALSE,
@@ -115,7 +115,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'rate',
 			'risk',
-			__( "Je pense que le risque est :", 'yproject' ),
+			__( "Je pense qu'investir sur ce projet repr&eacute;sente un risque :", 'yproject' ),
 			WDG_Form_Vote::$field_group_risk,
 			FALSE,
 			FALSE,
@@ -133,7 +133,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'checkboxes',
 			'info',
-			__( "Avez-vous besoin de plus d'informations concernant l'un des aspects suivants ?", 'yproject' ),
+			__( "J'ai besoin de plus d'information concernant ces aspects :", 'yproject' ),
 			WDG_Form_Vote::$field_group_info,
 			FALSE,
 			FALSE,
@@ -148,7 +148,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'text',
 			'more-info-other',
-			__( "Autre", 'yproject' ),
+			__( "Autre(s)", 'yproject' ),
 			WDG_Form_Vote::$field_group_info
 		);
 		
@@ -158,7 +158,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'text-money',
 			'invest-sum',
-			__( "Je serais int&eacute;ress&eacute; pour investir :", 'yproject' ),
+			__( "Je serais int&eacute;ress&eacute;(e) pour investir :", 'yproject' ),
 			WDG_Form_Vote::$field_group_invest
 		);
 		
@@ -168,7 +168,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'textarea',
 			'advice',
-			__( "Quels conseils ou encouragements souhaitez‐vous donner au(x) porteur(s) de ce projet ?", 'yproject' ),
+			__( "Mes conseils ou encouragements pour le(s) porteur(s) de projet :", 'yproject' ),
 			WDG_Form_Vote::$field_group_advice
 		);
 		
@@ -180,7 +180,7 @@ class WDG_Form_Vote extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'publish-advice'	=> __( "Je veux que mes conseils soient publi&eacute;s en commentaires.", 'yproject' )
+				'publish-advice'	=> __( "Je souhaite que mes conseils soient publi&eacute;s sur la page de pr&eacute;sentation du projet", 'yproject' )
 			]
 		);
 		
@@ -255,13 +255,13 @@ class WDG_Form_Vote extends WDG_Form {
 				$rate_social = $this->getInputRate( 'rate-social', 5 );
 				$rate_other = $this->getInputText( 'rate-other' );
 				$rate_risk = $this->getInputRate( 'risk', 5 );
-				$more_info_service = $this->getInputBoolean( 'more_info_service' );
-				$more_info_impact = $this->getInputBoolean( 'more_info_impact' );
-				$more_info_team = $this->getInputBoolean( 'more_info_team' );
-				$more_info_finance = $this->getInputBoolean( 'more_info_finance' );
+				$more_info_service = $this->getInputChecked( 'more_info_service' );
+				$more_info_impact = $this->getInputChecked( 'more_info_impact' );
+				$more_info_team = $this->getInputChecked( 'more_info_team' );
+				$more_info_finance = $this->getInputChecked( 'more_info_finance' );
 				$more_info_other = $this->getInputText( 'more-info-other' );
 				$advice = $this->getInputText( 'advice' );
-				$publish_advice = $this->getInputBoolean( 'publish-advice' );
+				$publish_advice = $this->getInputChecked( 'publish-advice' );
 
 				// Ajout à la base de données
 				global $wpdb;
@@ -291,6 +291,20 @@ class WDG_Form_Vote extends WDG_Form {
 						'element'	=> 'general'
 					);
 					array_push( $feedback_errors, $error );
+				}
+				
+				if ( $validate_project == 1 ) {
+					$table_jcrois = $wpdb->prefix . "jycrois";
+					$users = $wpdb->get_results( "SELECT * FROM $table_jcrois WHERE campaign_id = ".$campaign_id." AND user_id=".$WDGUser_current->get_wpref() );
+					if ( empty($users[0]->ID) ) {
+						$wpdb->insert( 
+							$table_jcrois,
+							array(
+								'user_id'		=> $WDGUser_current->get_wpref(),
+								'campaign_id'   => $campaign_id
+							)
+						);
+					}
 				}
 
 				if ( $publish_advice && !empty( $advice ) ) {
