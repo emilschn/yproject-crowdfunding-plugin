@@ -368,7 +368,7 @@ class WDGUser {
 				$buffer = WDG_Form_User_Details::$type_basics;
 				
 			// Si ça fait plus de 180 jours (6 mois), on demande une vérification complète des informations
-			} else if ( true/*$date_diff->days > 180*/ ) {
+			} else if ( $date_diff->days > 180 ) {
 				$buffer = WDG_Form_User_Details::$type_complete;
 			}
 		}
