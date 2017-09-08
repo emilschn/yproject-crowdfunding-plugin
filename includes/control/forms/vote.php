@@ -91,7 +91,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'text',
 			'rate-other',
-			__( "Autre(s)", 'yproject' ),
+			__( "Autre(s) :", 'yproject' ),
 			WDG_Form_Vote::$field_group_impacts
 		);
 		
@@ -148,7 +148,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'text',
 			'more-info-other',
-			__( "Autre(s)", 'yproject' ),
+			__( "Autre(s) :", 'yproject' ),
 			WDG_Form_Vote::$field_group_info
 		);
 		

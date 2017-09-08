@@ -484,11 +484,14 @@ class WDGAjaxActions {
 		if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
 		$new_project_activities = array();
 		if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
-		$cat_ids = array_merge( $new_project_categories, $new_project_activities );
+		$new_project_types = array();
+		if ( isset( $_POST["new_project_types"] ) ) $new_project_types = $_POST["new_project_types"];
+		$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types );
 		$cat_ids = array_map( 'intval', $cat_ids );
 		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
-		$success["new_project_category"] = 1;
-		$success["new_project_activity"] = 1;
+		$success["new_project_categories"] = 1;
+		$success["new_project_activities"] = 1;
+		$success["new_project_types"] = 1;
 
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));

@@ -56,7 +56,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'email',
-			__( "E-mail", 'yproject' ),
+			__( "E-mail *", 'yproject' ),
 			WDG_Form_User_Details::$field_group_basics,
 			$WDGUser->get_email(),
 			FALSE,
@@ -66,7 +66,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'firstname',
-			__( "Pr&eacute;nom", 'yproject' ),
+			__( "Pr&eacute;nom *", 'yproject' ),
 			WDG_Form_User_Details::$field_group_basics,
 			$WDGUser->get_firstname()
 		);
@@ -74,7 +74,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'lastname',
-			__( "Nom", 'yproject' ),
+			__( "Nom *", 'yproject' ),
 			WDG_Form_User_Details::$field_group_basics,
 			$WDGUser->get_lastname()
 		);
