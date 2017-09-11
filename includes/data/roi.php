@@ -69,28 +69,33 @@ class WDGROI {
 	}
 	
 	public function save() {
-		global $wpdb;
-		$table_name = $wpdb->prefix . WDGROI::$table_name;
-		$result = $wpdb->update( 
-			$table_name, 
-			array( 
-				'id_investment' => $this->id_investment,
-				'id_campaign' => $this->id_campaign,
-				'id_orga' => $this->id_orga,
-				'id_user' => $this->id_user,
-				'id_declaration' => $this->id_declaration,
-				'date_transfer' => $this->date_transfer, 
-				'amount' => $this->amount,
-				'id_transfer' => $this->id_transfer,
-				'status' => $this->status,
-				'on_api' => ( $this->on_api ? 1 : 0 )
-			),
-			array(
-				'id' => $this->id
-			)
-		);
-		if ($result !== FALSE) {
-			return $this->id;
+		if ( $this->on_api ) {
+			$this->update();
+			
+		} else {
+			global $wpdb;
+			$table_name = $wpdb->prefix . WDGROI::$table_name;
+			$result = $wpdb->update( 
+				$table_name, 
+				array( 
+					'id_investment' => $this->id_investment,
+					'id_campaign' => $this->id_campaign,
+					'id_orga' => $this->id_orga,
+					'id_user' => $this->id_user,
+					'id_declaration' => $this->id_declaration,
+					'date_transfer' => $this->date_transfer, 
+					'amount' => $this->amount,
+					'id_transfer' => $this->id_transfer,
+					'status' => $this->status,
+					'on_api' => ( $this->on_api ? 1 : 0 )
+				),
+				array(
+					'id' => $this->id
+				)
+			);
+			if ($result !== FALSE) {
+				return $this->id;
+			}
 		}
 	}
 	

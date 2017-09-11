@@ -32,6 +32,10 @@ class WDGROIDeclaration {
 	public $message;
 	public $adjustment;
 	public $transfered_previous_remaining_amount;
+	
+	public $employees_number;
+	public $other_fundings;
+	
 	public $on_api;
 	
 	
@@ -68,6 +72,10 @@ class WDGROIDeclaration {
 			if ( !is_numeric( $this->transfered_previous_remaining_amount ) ) {
 				$this->transfered_previous_remaining_amount = 0;
 			}
+			
+			$this->employees_number = $declaration_api_item->employees_number;
+			$this->other_fundings = $declaration_api_item->other_fundings;
+			
 			$this->on_api = TRUE;
 
 			// Les dÃ©clarations sans statut doivent passer en statut "DÃ©claration"
@@ -118,6 +126,8 @@ class WDGROIDeclaration {
 					$this->transfered_previous_remaining_amount = 0;
 				}
 				$this->on_api = ( $declaration_item->on_api == 1 );
+				$this->employees_number = 0;
+				$this->other_fundings = '';
 
 				// Les dÃ©clarations sans statut doivent passer en statut "DÃ©claration"
 				if ( empty( $this->status ) || $this->status == null ) {
@@ -147,34 +157,39 @@ class WDGROIDeclaration {
 	 * @return integer
 	 */
 	public function save() {
-		global $wpdb;
-		$table_name = $wpdb->prefix . WDGROIDeclaration::$table_name;
-		$result = $wpdb->update( 
-			$table_name, 
-			array( 
-				'id_campaign' => $this->id_campaign,
-				'date_due' => $this->date_due,
-				'date_paid' => $this->date_paid,
-				'date_transfer' => $this->date_transfer,
-				'amount' => $this->amount,
-				'remaining_amount' => $this->remaining_amount,
-				'percent_commission' => $this->percent_commission,
-				'status' => $this->status,
-				'mean_payment' => $this->mean_payment,
-				'payment_token' => $this->payment_token,
-				'file_list' => $this->file_list,
-				'turnover' => $this->turnover,
-				'message' => $this->message,
-				'adjustment' => $this->adjustment,
-				'transfered_previous_remaining_amount' => $this->transfered_previous_remaining_amount,
-				'on_api' => ( $this->on_api ? 1 : 0 )
-			),
-			array(
-				'id' => $this->id
-			)
-		);
-		if ($result !== FALSE) {
-			return $this->id;
+		if ( $this->on_api ) {
+			$this->update();
+			
+		} else {
+			global $wpdb;
+			$table_name = $wpdb->prefix . WDGROIDeclaration::$table_name;
+			$result = $wpdb->update( 
+				$table_name, 
+				array( 
+					'id_campaign' => $this->id_campaign,
+					'date_due' => $this->date_due,
+					'date_paid' => $this->date_paid,
+					'date_transfer' => $this->date_transfer,
+					'amount' => $this->amount,
+					'remaining_amount' => $this->remaining_amount,
+					'percent_commission' => $this->percent_commission,
+					'status' => $this->status,
+					'mean_payment' => $this->mean_payment,
+					'payment_token' => $this->payment_token,
+					'file_list' => $this->file_list,
+					'turnover' => $this->turnover,
+					'message' => $this->message,
+					'adjustment' => $this->adjustment,
+					'transfered_previous_remaining_amount' => $this->transfered_previous_remaining_amount,
+					'on_api' => ( $this->on_api ? 1 : 0 )
+				),
+				array(
+					'id' => $this->id
+				)
+			);
+			if ($result !== FALSE) {
+				return $this->id;
+			}
 		}
 	}
 	
@@ -332,6 +347,13 @@ class WDGROIDeclaration {
 	}
 	public function set_message( $message ) {
 		$this->message = htmlentities( $message );
+	}
+	
+	public function get_other_fundings() {
+		return nl2br( $this->other_fundings, ENT_HTML5 );
+	}
+	public function set_other_fundings( $other_fundings ) {
+		$this->other_fundings = htmlentities( $other_fundings );
 	}
 	
 	/**
