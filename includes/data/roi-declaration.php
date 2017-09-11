@@ -1,9 +1,10 @@
 <?php
 /**
- * Classe de gestion des dÃ©clarations de ROI
+ * Classe de gestion des déclarations de ROI
  */
 class WDGROIDeclaration {
 	public static $table_name = 'ypcf_roideclaration';
+	protected static $collection_by_id;
 	
 	public static $status_declaration = 'declaration';
 	public static $status_payment = 'payment';
@@ -40,106 +41,133 @@ class WDGROIDeclaration {
 	
 	
 	public function __construct( $declaration_id ) {
-		// RÃ©cupÃ©ration en prioritÃ© depuis l'API
-		$declaration_api_item = WDGWPREST_Entity_Declaration::get( $declaration_id );
-		if ( $declaration_api_item != FALSE ) {
+		// Si déjà chargé précédemment
+		if ( isset( self::$collection_by_id[ $declaration_id ] ) ) {
+			$collection_item = self::$collection_by_id[ $declaration_id ];
+			$this->id = $collection_item->id;
+			$this->id_campaign = $collection_item->id_campaign;
+			$this->date_due = $collection_item->date_due;
+			$this->date_paid = $collection_item->date_paid;
+			$this->date_transfer = $collection_item->date_transfer;
+			$this->amount = $collection_item->amount;
+			$this->remaining_amount = $collection_item->remaining_amount;
+			$this->percent_commission = $collection_item->percent_commission;
+			$this->status = $collection_item->status;
+			$this->mean_payment = $collection_item->mean_payment;
+			$this->payment_token = $collection_item->payment_token;
+			$this->file_list = $collection_item->file_list;
+			$this->turnover = $collection_item->turnover;
+			$this->message = $collection_item->message;
+			$this->adjustment = $collection_item->adjustment;
+			$this->transfered_previous_remaining_amount = $collection_item->transfered_previous_remaining_amount;
+			$this->employees_number = $collection_item->employees_number;
+			$this->other_fundings = $collection_item->other_fundings;
+			$this->on_api = $collection_item->on_api;
 			
-			$this->id = $declaration_id;
-			$this->id_campaign = $declaration_api_item->id_project;
-			$this->date_due = $declaration_api_item->date_due;
-			$this->date_paid = $declaration_api_item->date_paid;
-			$this->date_transfer = $declaration_api_item->date_transfer;
-			$this->amount = $declaration_api_item->amount;
-			$this->remaining_amount = $declaration_api_item->remaining_amount;
-			if ( !is_numeric( $this->remaining_amount ) ) {
-				$this->remaining_amount = 0;
-			}
-			$this->percent_commission = $declaration_api_item->percent_commission;
-			if ( !is_numeric( $this->percent_commission ) ) {
-				$this->percent_commission = 0;
-			}
-			$this->status = $declaration_api_item->status;
-			$this->mean_payment = $declaration_api_item->mean_payment;
-			$this->payment_token = $declaration_api_item->payment_token;
-			$this->file_list = $declaration_api_item->file_list;
-			$this->turnover = $declaration_api_item->turnover;
-			$this->message = $declaration_api_item->message;
-			$this->adjustment = $declaration_api_item->adjustment;
-			if ( is_null( $this->adjustment ) ) {
-				$this->adjustment = '';
-			}
-			$this->transfered_previous_remaining_amount = $declaration_api_item->transfered_previous_remaining_amount;
-			if ( !is_numeric( $this->transfered_previous_remaining_amount ) ) {
-				$this->transfered_previous_remaining_amount = 0;
-			}
-			
-			$this->employees_number = $declaration_api_item->employees_number;
-			$this->other_fundings = $declaration_api_item->other_fundings;
-			
-			$this->on_api = TRUE;
-
-			// Les dÃ©clarations sans statut doivent passer en statut "DÃ©claration"
-			if ( empty( $this->status ) || $this->status == null ) {
-				$this->status = WDGROIDeclaration::$status_declaration;
-			}
-
-			// Les dÃ©clarations Ã  zero pour les projets en mode "paiement" doivent Ãªtre marquÃ©es comme terminÃ©es
-			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
-				$this->status = WDGROIDeclaration::$status_transfer;
-				$this->save();
-			}
-			
-		// Sinon rÃ©cupÃ©ration sur la bdd locale (deprecated)
 		} else {
-		
-			global $wpdb;
-			$table_name = $wpdb->prefix . WDGROIDeclaration::$table_name;
-			$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$declaration_id;
-			$declaration_item = $wpdb->get_row( $query );
-			if ( $declaration_item ) {
-				$this->id = $declaration_item->id;
-				$this->id_campaign = $declaration_item->id_campaign;
-				$this->date_due = $declaration_item->date_due;
-				$this->date_paid = $declaration_item->date_paid;
-				$this->date_transfer = $declaration_item->date_transfer;
-				$this->amount = $declaration_item->amount;
-				$this->remaining_amount = $declaration_item->remaining_amount;
+			// Récupération en priorité depuis l'API
+			$declaration_api_item = WDGWPREST_Entity_Declaration::get( $declaration_id );
+			if ( $declaration_api_item != FALSE ) {
+
+				$this->id = $declaration_id;
+				$this->id_campaign = $declaration_api_item->id_project;
+				$this->date_due = $declaration_api_item->date_due;
+				$this->date_paid = $declaration_api_item->date_paid;
+				$this->date_transfer = $declaration_api_item->date_transfer;
+				$this->amount = $declaration_api_item->amount;
+				$this->remaining_amount = $declaration_api_item->remaining_amount;
 				if ( !is_numeric( $this->remaining_amount ) ) {
 					$this->remaining_amount = 0;
 				}
-				$this->percent_commission = $declaration_item->percent_commission;
+				$this->percent_commission = $declaration_api_item->percent_commission;
 				if ( !is_numeric( $this->percent_commission ) ) {
 					$this->percent_commission = 0;
 				}
-				$this->status = $declaration_item->status;
-				$this->mean_payment = $declaration_item->mean_payment;
-				$this->payment_token = $declaration_item->payment_token;
-				$this->file_list = $declaration_item->file_list;
-				$this->turnover = $declaration_item->turnover;
-				$this->message = $declaration_item->message;
-				$this->adjustment = $declaration_item->adjustment;
+				$this->status = $declaration_api_item->status;
+				$this->mean_payment = $declaration_api_item->mean_payment;
+				$this->payment_token = $declaration_api_item->payment_token;
+				$this->file_list = $declaration_api_item->file_list;
+				$this->turnover = $declaration_api_item->turnover;
+				$this->message = $declaration_api_item->message;
+				$this->adjustment = $declaration_api_item->adjustment;
 				if ( is_null( $this->adjustment ) ) {
 					$this->adjustment = '';
 				}
-				$this->transfered_previous_remaining_amount = $declaration_item->transfered_previous_remaining_amount;
+				$this->transfered_previous_remaining_amount = $declaration_api_item->transfered_previous_remaining_amount;
 				if ( !is_numeric( $this->transfered_previous_remaining_amount ) ) {
 					$this->transfered_previous_remaining_amount = 0;
 				}
-				$this->on_api = ( $declaration_item->on_api == 1 );
-				$this->employees_number = 0;
-				$this->other_fundings = '';
 
-				// Les dÃ©clarations sans statut doivent passer en statut "DÃ©claration"
+				$this->employees_number = $declaration_api_item->employees_number;
+				$this->other_fundings = $declaration_api_item->other_fundings;
+
+				$this->on_api = TRUE;
+
+				// Les déclarations sans statut doivent passer en statut "Déclaration"
 				if ( empty( $this->status ) || $this->status == null ) {
 					$this->status = WDGROIDeclaration::$status_declaration;
 				}
 
-				// Les dÃ©clarations Ã  zero pour les projets en mode "paiement" doivent Ãªtre marquÃ©es comme terminÃ©es
+				// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
 				if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
-					$this->status = WDGROIDeclaration::$status_finished;
+					$this->status = WDGROIDeclaration::$status_transfer;
 					$this->save();
 				}
+
+			// Sinon récupération sur la bdd locale (deprecated)
+			} else {
+
+				global $wpdb;
+				$table_name = $wpdb->prefix . WDGROIDeclaration::$table_name;
+				$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$declaration_id;
+				$declaration_item = $wpdb->get_row( $query );
+				if ( $declaration_item ) {
+					$this->id = $declaration_item->id;
+					$this->id_campaign = $declaration_item->id_campaign;
+					$this->date_due = $declaration_item->date_due;
+					$this->date_paid = $declaration_item->date_paid;
+					$this->date_transfer = $declaration_item->date_transfer;
+					$this->amount = $declaration_item->amount;
+					$this->remaining_amount = $declaration_item->remaining_amount;
+					if ( !is_numeric( $this->remaining_amount ) ) {
+						$this->remaining_amount = 0;
+					}
+					$this->percent_commission = $declaration_item->percent_commission;
+					if ( !is_numeric( $this->percent_commission ) ) {
+						$this->percent_commission = 0;
+					}
+					$this->status = $declaration_item->status;
+					$this->mean_payment = $declaration_item->mean_payment;
+					$this->payment_token = $declaration_item->payment_token;
+					$this->file_list = $declaration_item->file_list;
+					$this->turnover = $declaration_item->turnover;
+					$this->message = $declaration_item->message;
+					$this->adjustment = $declaration_item->adjustment;
+					if ( is_null( $this->adjustment ) ) {
+						$this->adjustment = '';
+					}
+					$this->transfered_previous_remaining_amount = $declaration_item->transfered_previous_remaining_amount;
+					if ( !is_numeric( $this->transfered_previous_remaining_amount ) ) {
+						$this->transfered_previous_remaining_amount = 0;
+					}
+					$this->on_api = ( $declaration_item->on_api == 1 );
+					$this->employees_number = 0;
+					$this->other_fundings = '';
+
+					// Les déclarations sans statut doivent passer en statut "Déclaration"
+					if ( empty( $this->status ) || $this->status == null ) {
+						$this->status = WDGROIDeclaration::$status_declaration;
+					}
+
+					// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
+					if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
+						$this->status = WDGROIDeclaration::$status_transfer;
+						$this->save();
+					}
+				}
+
 			}
+			self::$collection_by_id[ $declaration_id ] = $this;
 			
 		}
 	}
