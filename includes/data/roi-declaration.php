@@ -78,7 +78,7 @@ class WDGROIDeclaration {
 			
 			// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
 			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
-				$this->status = WDGROIDeclaration::$status_finished;
+				$this->status = WDGROIDeclaration::$status_transfer;
 				$this->save();
 			}
 		}
