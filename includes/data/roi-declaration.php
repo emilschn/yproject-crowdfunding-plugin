@@ -77,8 +77,8 @@ class WDGROIDeclaration {
 
 			// Les dÃ©clarations Ã  zero pour les projets en mode "paiement" doivent Ãªtre marquÃ©es comme terminÃ©es
 			if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
-				$this->status = WDGROIDeclaration::$status_finished;
-				$this->update();
+				$this->status = WDGROIDeclaration::$status_transfer;
+				$this->save();
 			}
 			
 		// Sinon rÃ©cupÃ©ration sur la bdd locale (deprecated)

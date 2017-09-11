@@ -745,7 +745,7 @@ class NotificationsEmails {
 		
 		$object = "Paiement de votre reversement effectué";
 		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Le paiement de votre reversement de ".$roi_declaration->get_amount_with_commission()." € a bien été pris en compte.<br />";
+		$body_content .= "Le paiement de votre versement de ".$roi_declaration->get_amount_with_commission()." € a bien été pris en compte.<br />";
 		$body_content .= "Merci et à bientôt sur ".ATCF_CrowdFunding::get_platform_name()." !<br /><br />";
 		
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
@@ -811,13 +811,18 @@ class NotificationsEmails {
 			$body_content .= "<br /><br />";
 		}
 		
-		
 		$body_content .= "Nous vous invitons à vous connecter sur ".ATCF_CrowdFunding::get_platform_name()." afin de consulter votre porte monnaie électronique.<br /><br />";
 		$body_content .= "<b>Comment percevoir les royalties de mon investissement ?</b><br />";
 		$body_content .= "1. <b>Je me connecte</b> sur <a href=\"". home_url('/mon-compte'). "\">". home_url('/mon-compte'). "</a>";
 		$body_content .= " et je consulte le montant des royalties perçues dans la partie <b>Mon porte monnaie électronique</b><br />";
-		$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
-		$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
+		
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$body_content .= "2. En tant que personne morale, l'accès direct à vos royalties arrivera prochainement. En attendant, contactez-nous pour les recevoir par transfert bancaire.<br /><br />";
+			
+		} else {
+			$body_content .= "2. Je clique sur <b>Reverser sur mon compte bancaire</b> et je saisis mes coordonnées bancaires (mon RIB)";
+			$body_content .= " OU <b>Je conserve cette somme pour la réinvestir</b> dans d'autres projets.<br /><br />";
+		}
 		
 		$body_content .= apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) ) . "<br /><br />";
 		

@@ -426,9 +426,11 @@ class WDGFormProjects {
 			$declaration->amount = round( ($total_turnover * $campaign->roi_percent() / 100) * 100 ) / 100;
 			if ($declaration->amount == 0) {
 				NotificationsEmails::turnover_declaration_null( $declaration_id );
+				$declaration->status = WDGROIDeclaration::$status_transfer;
+			} else {
+				$declaration->status = WDGROIDeclaration::$status_payment;
 			}
 			$declaration->set_message( $declaration_message );
-			$declaration->status = WDGROIDeclaration::$status_payment;
 			$declaration->save();
 		}
 	}
