@@ -141,6 +141,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
 		
 		if ( is_admin() ) {
+			require( $this->includes_dir . 'ui/admin/general.php' );
 			require( $this->includes_dir . 'ui/admin/posts.php' );
 		}
 		
