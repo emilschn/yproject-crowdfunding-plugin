@@ -13,6 +13,7 @@ class WDGPostActions {
      * Initialise la liste des actions post
      */
     public static function init_actions() {
+        self::add_action("subscribe_newsletter_sendinblue");
         self::add_action("send_project_mail");
         self::add_action("create_project_form");
         self::add_action("change_project_status");
