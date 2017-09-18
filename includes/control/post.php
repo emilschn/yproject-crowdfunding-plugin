@@ -389,6 +389,8 @@ class WDGPostActions {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 		
+		$new_override_contract = filter_input( INPUT_POST, 'new_override_contract' );
+		$campaign->__set( ATCF_Campaign::$key_override_contract, $new_override_contract );
 		
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );

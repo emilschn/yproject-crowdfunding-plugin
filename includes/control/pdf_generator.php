@@ -256,14 +256,17 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     }
     $buffer .= '</p>';
 	
-	
-	// Si il y a un contrat standard défini, on le prend directement
+	global $shortcode_campaign_obj;
+	$shortcode_campaign_obj = $campaign_obj;
 	$edd_settings = get_option( 'edd_settings' );
-	if ( !empty( $edd_settings[ 'standard_contract' ] ) ) {
-		global $shortcode_campaign_obj;
-		$shortcode_campaign_obj = $campaign_obj;
-		$buffer .= apply_filters( 'the_content', $edd_settings[ 'standard_contract' ] );
+	// Si le projet surcharge le contrat standard
+	$project_override_contract = $campaign_obj->override_contract();
+	if ( !empty( $project_override_contract ) ) {
+		$buffer .= apply_filters( 'the_content', $project_override_contract );
 		
+	// Si il y a un contrat standard défini, on le prend directement
+	} else if ( !empty( $edd_settings[ 'standard_contract' ] ) ) {
+		$buffer .= apply_filters( 'the_content', $edd_settings[ 'standard_contract' ] );
 		
 	
 	} else {
