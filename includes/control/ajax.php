@@ -459,6 +459,43 @@ class WDGAjaxActions {
 		} else {
 			$errors['new_backoffice_summary'].="Décrivez votre projet";
 		}
+	
+		// URL du projet
+		$new_name = sanitize_text_field( filter_input( INPUT_POST, 'new_project_url') );
+		if ( !empty( $new_name ) && $campaign->data->post_name != $new_name ) {
+			$posts = get_posts( array(
+				'name' => $new_name,
+				'post_type' => array( 'post', 'page', 'download' )
+			) );
+			if ( $posts ) {
+				$errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
+
+			} else {
+				wp_update_post( array(
+					'ID'		=> $campaign_id,
+					'post_name' => $new_name
+				) );
+				$success[ 'new_project_url' ] = 1;
+			}
+		}
+		
+		// Masquer au public
+		$new_is_hidden = filter_input( INPUT_POST, 'new_is_hidden');
+        if ( $new_is_hidden === true || $new_is_hidden === "true" || $new_is_hidden === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden );
+		}
+		$success[ 'new_is_hidden' ] = 1;
+		
+		// Passer la phase de vote
+		$new_skip_vote = filter_input( INPUT_POST, 'new_skip_vote');
+        if ( $new_skip_vote === true || $new_skip_vote === "true" || $new_skip_vote === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote );
+		}
+		$success[ 'new_skip_vote' ] = 1;
 
 		//Catégories du projet
 		$new_project_categories = array();
@@ -782,14 +819,30 @@ class WDGAjaxActions {
 		} else {
 			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
 		}
+		
+		$new_maximum_profit = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) ) );
+		if ( $new_maximum_profit >= 1  ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
+			$success[ 'new_maximum_profit' ] = 1;
+		} else {
+			$errors[ 'new_maximum_profit' ] = "Le gain maximum doit &ecirc;tre sup&eacutre;rieur &agrave; x1";
+		}
 
 		//Update roi_percent_estimated duration
-		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent_estimated'))),2);
-		if($new_roi_percent>=0){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent);
+		$new_roi_percent_estimated = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent_estimated'))),2);
+		if($new_roi_percent_estimated>=0){
+			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated);
 			$success['new_roi_percent_estimated']=1;
 		} else {
 			$errors['new_roi_percent_estimated']="Le pourcentage de CA reversé doit être positif";
+		}
+		
+		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent'))),2);
+		if($new_roi_percent>=0){
+			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent, $new_roi_percent);
+			$success['new_roi_percent']=1;
+		} else {
+			$errors['new_roi_percent']="Le pourcentage de CA reversé doit être positif";
 		}
 
 		//Update contract_start_date
@@ -804,6 +857,31 @@ class WDGAjaxActions {
 				$errors[ 'new_contract_start_date' ] = "La date est invalide";
 			}
 		}
+		
+		$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );
+		if ( $new_turnover_per_declaration >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_turnover_per_declaration, $new_turnover_per_declaration );
+			$success['new_turnover_per_declaration'] = 1;
+		} else {
+			$errors['new_turnover_per_declaration'] = "Nombre non valide";
+		}
+		
+		$new_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_organization') ) ), 2 );
+		if ( $new_costs_to_organization >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
+			$success['new_costs_to_organization'] = 1;
+		} else {
+			$errors['new_costs_to_organization'] = "Nombre non valide";
+		}
+		
+		$new_costs_to_investors = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_investors') ) ), 2 );
+		if ( $new_costs_to_investors >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
+			$success['new_costs_to_investors'] = 1;
+		} else {
+			$errors['new_costs_to_investors'] = "Nombre non valide";
+		}
+		
 
 		//Update first_payment_date
 		$old_first_payment_date = $campaign->first_payment_date();

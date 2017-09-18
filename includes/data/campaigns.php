@@ -299,13 +299,8 @@ class ATCF_Campaigns {
 	function meta_boxes_save( $fields ) {
 		$fields[] = 'campaign_postname';
 		$fields[] = '_campaign_featured';
-		$fields[] = ATCF_Campaign::$key_campaign_is_hidden;
-		$fields[] = ATCF_Campaign::$key_skip_vote;
-		$fields[] = ATCF_Campaign::$key_edit_version;
 		$fields[] = ATCF_Campaign::$key_payment_provider;
 		$fields[] = '_campaign_physical';
-		$fields[] = 'campaign_goal';
-		$fields[] = 'campaign_minimum_goal';
 		$fields[] = 'campaign_part_value';
 		$fields[] = 'campaign_end_vote';
 		$fields[] = 'campaign_begin_collecte_date';
@@ -324,18 +319,10 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_contract_title';
 		$fields[] = 'campaign_contract_title_en_US';
 		$fields[] = 'campaign_amount_check';
-		$fields[] = 'campaign_company_name';
 		$fields[] = 'campaign_company_status';
 		$fields[] = 'campaign_company_status_other';
 		$fields[] = 'campaign_init_capital';
 		$fields[] = 'campaign_funding_type';
-		$fields[] = ATCF_Campaign::$key_maximum_profit;
-		$fields[] = 'campaign_funding_duration';
-		$fields[] = 'campaign_roi_percent_estimated';
-		$fields[] = 'campaign_roi_percent';
-		$fields[] = ATCF_Campaign::$key_costs_to_organization;
-		$fields[] = ATCF_Campaign::$key_costs_to_investors;
-		$fields[] = ATCF_Campaign::$key_turnover_per_declaration;
 		$fields[] = 'save_declarations';
 		$fields[] = 'add_first_declaration';
 		$fields[] = 'add_new_declaration';
@@ -1047,19 +1034,6 @@ function _atcf_metabox_campaign_updates() {
 	do_action( 'atcf_metabox_campaign_updates_after', $campaign );
 }
 
-
-/**
- * Goal Save
- *
- * Sanitize goal before it is saved, to remove commas.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @return string $price The formatted price
- */
-add_filter( 'edd_metabox_save_campaign_goal', 'edd_sanitize_price_save' );
-add_filter( 'edd_metabox_save_campaign_minimum_goal', 'edd_sanitize_price_save' );
-
 /**
  * Updates Save
  *
@@ -1110,24 +1084,6 @@ function _atcf_metabox_campaign_info() {
 			Mise en avant
 		</label>
 	</p>
-
-	<p>
-		<label for="<?php echo ATCF_Campaign::$key_campaign_is_hidden; ?>">
-			<input type="checkbox" name="<?php echo ATCF_Campaign::$key_campaign_is_hidden; ?>" id="<?php echo ATCF_Campaign::$key_campaign_is_hidden; ?>" value="1" <?php checked( 1, $campaign->is_hidden() ); ?> />
-			Masquée du public
-		</label>
-	</p>
-
-	<p>
-		<label for="<?php echo ATCF_Campaign::$key_skip_vote; ?>">
-			<input type="checkbox" name="<?php echo ATCF_Campaign::$key_skip_vote; ?>" id="<?php echo ATCF_Campaign::$key_skip_vote; ?>" value="1" <?php checked( 1, $campaign->skip_vote() ); ?> />
-			Passer la phase de vote
-		</label>
-	</p>
-	
-	<p>
-		Version d'affichage : <input type="text" name="<?php echo ATCF_Campaign::$key_edit_version; ?>" value="<?php echo $campaign->edit_version(); ?>" />
-	</p>
 	
 	<p>
 		Prestataire de paiement : 
@@ -1170,16 +1126,7 @@ function _atcf_metabox_campaign_info() {
 		<input type="radio" name="campaign_funding_type" value="fundingdevelopment" <?php echo $fundingdevelopment; ?>>Capital<br />
 		<input type="radio" name="campaign_funding_type" value="fundingdonation" <?php echo $fundingdonation; ?>>Don<br />
 	</p>
-
-	<p>
-		<label for="campaign_goal"><strong>Objectif maximal</strong></label><br />	
-		<input type="text" name="campaign_goal" id="campaign_goal" value="<?php echo edd_format_amount($campaign->goal(false) ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
-	</p>
-
-	<p>
-		<label for="campaign_minimum_goal"><strong>Seuil minimum</strong></label><br />	
-		<input type="text" name="campaign_minimum_goal" id="campaign_minimum_goal" value="<?php echo edd_format_amount($campaign->minimum_goal() ); ?>" style="width:80px" /> &euro;
-	</p>
+	
 	<p>
 		<label for="campaign_part_value"><strong><?php _e( 'Valeur de la part', 'yproject' ); ?></strong></label><br />
 		<input type="text" name="campaign_part_value" id="campaign_part_value" value="<?php echo edd_format_amount($campaign->part_value() ); ?>" style="width:80px" /><?php echo edd_currency_filter( '' ); ?>
@@ -1197,23 +1144,12 @@ function _atcf_metabox_campaign_info() {
 		Lien video (supporté par oembed) :
 		<input type="text" name="campaign_video" value="<?php echo esc_url( $campaign->video() ); ?>" />
 	</p>
+	
 	<p>
 		Lien Google Doc :
 		<input type="text" name="campaign_google_doc" value="<?php echo $campaign->google_doc(); ?>" />
 	</p>
 	
-	<p>
-		Nom de la société :
-		<input type="text" name="campaign_company_name" value="<?php echo $campaign->company_name(); ?>" />
-	</p>
-	<p>
-		Titre du contrat :
-		<input type="text" name="campaign_contract_title" value="<?php echo $campaign->contract_title(); ?>" />
-	</p>
-	<p>
-		Titre du contrat ANGLAIS :
-		<input type="text" name="campaign_contract_title_en_US" value="<?php $campaign->set_current_lang('en_US'); echo $campaign->contract_title(); $campaign->set_current_lang(''); ?>" />
-	</p>
 	<p>
 		Total des investissements par chèque :
 		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check(FALSE); ?>" />
@@ -1223,13 +1159,6 @@ function _atcf_metabox_campaign_info() {
 	<p>
 	    <h4 style="font-size: 1.2em">Paramètres de reversement :</h4>
 	    <ul style="margin-left: 10px; list-style: disc;">
-			<li>Gain maximum : x<input type="text" name="<?php echo ATCF_Campaign::$key_maximum_profit; ?>" value="<?php echo $campaign->maximum_profit(); ?>" /></li>
-			
-			<li>Durée du financement : <input type="text" name="campaign_funding_duration" value="<?php echo $campaign->funding_duration(); ?>" /></li>
-
-			<li>Pourcentage de reversement estimé : <input type="text" name="campaign_roi_percent_estimated" value="<?php echo $campaign->roi_percent_estimated(); ?>" /> %</li>
-			
-			<li>Pourcentage de reversement réel : <input type="text" name="campaign_roi_percent" value="<?php echo $campaign->roi_percent(); ?>" /> %</li>
 			
 			<li>
 				Première date de versement :
@@ -1267,18 +1196,6 @@ function _atcf_metabox_campaign_info() {
 			</li>
 			
 			<li>
-				Nb déclaration CA par versement : 
-				<select name="<?php echo ATCF_Campaign::$key_turnover_per_declaration; ?>">
-					<option <?php selected($campaign->get_turnover_per_declaration(), 1); ?>>1</option>
-					<option <?php selected($campaign->get_turnover_per_declaration(), 3); ?>>3</option>
-				</select>
-			</li>
-			
-			<li>Pourcentage de frais appliqués au PP : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_organization; ?>" value="<?php echo $campaign->get_costs_to_organization(); ?>" /> %</li>
-			
-			<li>Pourcentage de frais appliqués aux investisseurs : <input type="text" name="<?php echo ATCF_Campaign::$key_costs_to_investors; ?>" value="<?php echo $campaign->get_costs_to_investors(); ?>" /> %</li>
-
-			<li>
 				Dates et montants des versements :
 				<?php $declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign->ID ); ?>
 				<ul style="margin-left: 10px; list-style: disc;">
@@ -1313,6 +1230,14 @@ function _atcf_metabox_campaign_info() {
 				<li><span style="color: red;">Définissez les paramètres ci-dessus pour pouvoir paramétrer les sommes à reverser par date.</span></li>
 			<?php endif; ?>
 	    </ul>
+	</p>
+	<p>
+		Titre du contrat :
+		<input type="text" name="campaign_contract_title" value="<?php echo $campaign->contract_title(); ?>" />
+	</p>
+	<p>
+		Titre du contrat ANGLAIS :
+		<input type="text" name="campaign_contract_title_en_US" value="<?php $campaign->set_current_lang('en_US'); echo $campaign->contract_title(); $campaign->set_current_lang(''); ?>" />
 	</p>
 	
 <?php

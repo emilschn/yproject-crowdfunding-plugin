@@ -228,11 +228,7 @@ class ATCF_Campaign {
 	 */
 	public static $key_edit_version = 'campaign_edit_version';
 	public function edit_version() {
-		$version = $this->__get(ATCF_Campaign::$key_edit_version);
-		if (!isset($version) || !is_numeric($version) || $version < 1) { $version = 1; }
-		$display_version = filter_input(INPUT_GET, 'display-version');
-		if (!empty($display_version)) { $version = $display_version; }
-		return $version;
+		return 3;
 	}
 	
 	/**
@@ -440,9 +436,6 @@ class ATCF_Campaign {
         return $this->__get(ATCF_Campaign::$key_contract_doc_url);
     }
 	
-	public function company_name() {
-	    return $this->__get('campaign_company_name');
-	}
 	public function company_status() {
 	    return $this->__get('campaign_company_status');
 	}
@@ -502,8 +495,9 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	public static $key_roi_percent = 'campaign_roi_percent';
 	public function roi_percent() {
-		$buffer = $this->__get('campaign_roi_percent');
+		$buffer = $this->__get( ATCF_Campaign::$key_roi_percent );
 		if ( empty( $buffer ) ) {
 			$buffer = 0;
 		}
