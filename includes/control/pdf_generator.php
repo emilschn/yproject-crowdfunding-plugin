@@ -162,6 +162,16 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	}
 	$campaign_obj->set_current_lang($lang);
 	
+	add_shortcode( 'wdg_campaign_contract_start_date', 'WDG_PDF_Generator::shortcode_contract_start_date' );
+	add_shortcode( 'wdg_campaign_contract_organization_description', 'WDG_PDF_Generator::shortcode_contract_organization_description' );
+	add_shortcode( 'wdg_campaign_contract_minimum_goal', 'WDG_PDF_Generator::shortcode_contract_minimum_goal' );
+	add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
+	add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
+	add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
+	add_shortcode( 'wdg_campaign_contract_maximum_profit', 'WDG_PDF_Generator::shortcode_contract_maximum_profit' );
+	add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
+	add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
+	
     global $country_list;
     $nationality = $country_list[$user_obj->get('user_nationality')];
     $months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
@@ -245,64 +255,71 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		
     }
     $buffer .= '</p>';
-    
-    switch ($campaign_obj->funding_type()) {
-	    case 'fundingproject': 
-		break;
-	    case 'fundingdevelopment':
-	    default:
-		$buffer .= '<p>';
-		if ($lang == 'en_US') {
-			$buffer .= '<h2>DECLARES</h2>';
-		} else {
-			$buffer .= '<h2>DECLARE</h2>';
-		}
-		$buffer .= '</p>';
-		break;
-    }
-    
-    $buffer .= '<p>';
-    switch ($campaign_obj->funding_type()) {
-	    case 'fundingproject': 
-		break;
-	    case 'fundingdevelopment':
-	    default:
-		$plurial = '';
-		if ($lang == 'en_US') {
-			if ($payment_data["amount_part"] > 1) $plurial = 's';
-			$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following:<br />';
-		} else {
-			if ($payment_data["amount_part"] > 1) $plurial = 's';
-			$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
-			
-		}
-		break;
-    }
-    
-    $buffer .= html_entity_decode($campaign_obj->subscription_params());
-    $buffer .= '</p>';
-    
-    $buffer .= '<p>';
-	$user_author = new WDGUser( $campaign_obj->post_author() );
-	$override_contract = $user_author->wp_user->get('wdg-contract-override');
-	if ( !empty( $override_contract ) ) {
+	
+	
+	// Si il y a un contrat standard défini, on le prend directement
+	$edd_settings = get_option( 'edd_settings' );
+	if ( !empty( $edd_settings[ 'standard_contract' ] ) ) {
 		global $shortcode_campaign_obj;
 		$shortcode_campaign_obj = $campaign_obj;
-		add_shortcode( 'wdg_campaign_contract_start_date', 'WDG_PDF_Generator::shortcode_contract_start_date' );
-		add_shortcode( 'wdg_campaign_contract_organization_description', 'WDG_PDF_Generator::shortcode_contract_organization_description' );
-		add_shortcode( 'wdg_campaign_contract_minimum_goal', 'WDG_PDF_Generator::shortcode_contract_minimum_goal' );
-		add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
-		add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
-		add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
-		add_shortcode( 'wdg_campaign_contract_maximum_profit', 'WDG_PDF_Generator::shortcode_contract_maximum_profit' );
-		add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
-		add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
-		$override_contract_filtered = apply_filters( 'the_content', $override_contract );
-		$buffer .= html_entity_decode( $override_contract_filtered );
+		$buffer .= apply_filters( 'the_content', $edd_settings[ 'standard_contract' ] );
+		
+		
+	
 	} else {
-		$buffer .= html_entity_decode( $campaign_obj->powers_params() );
+    
+		switch ($campaign_obj->funding_type()) {
+			case 'fundingproject': 
+			break;
+			case 'fundingdevelopment':
+			default:
+			$buffer .= '<p>';
+			if ($lang == 'en_US') {
+				$buffer .= '<h2>DECLARES</h2>';
+			} else {
+				$buffer .= '<h2>DECLARE</h2>';
+			}
+			$buffer .= '</p>';
+			break;
+		}
+
+		$buffer .= '<p>';
+		switch ($campaign_obj->funding_type()) {
+			case 'fundingproject': 
+			break;
+			case 'fundingdevelopment':
+			default:
+			$plurial = '';
+			if ($lang == 'en_US') {
+				if ($payment_data["amount_part"] > 1) $plurial = 's';
+				$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following:<br />';
+			} else {
+				if ($payment_data["amount_part"] > 1) $plurial = 's';
+				$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
+
+			}
+			break;
+		}
+
+		$buffer .= html_entity_decode($campaign_obj->subscription_params());
+		$buffer .= '</p>';
+
+		$buffer .= '<p>';
+		$user_author = new WDGUser( $campaign_obj->post_author() );
+		$override_contract = $user_author->wp_user->get('wdg-contract-override');
+		if ( !empty( $override_contract ) ) {
+			global $shortcode_campaign_obj;
+			$shortcode_campaign_obj = $campaign_obj;
+			$override_contract_filtered = apply_filters( 'the_content', $override_contract );
+			$buffer .= html_entity_decode( $override_contract_filtered );
+		} else {
+			$buffer .= html_entity_decode( $campaign_obj->powers_params() );
+		}
+		$buffer .= '</p>';
+		
 	}
-    $buffer .= '</p>';
+	
+	
     
     $buffer .= '<table style="border:0px;"><tr><td>';
 	if ($lang == 'en_US') {

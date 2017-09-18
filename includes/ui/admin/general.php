@@ -25,7 +25,7 @@ class WDG_Admin_General {
 	);
 	private static $translation_properties = array(
 		'investment_generalities' => 'Explications g&eacute;n&eacute;rales sur l&apos;investissement',
-		'contract' => 'Contrat d&apos;investissement'
+		'standard_contract' => 'Contrat d&apos;investissement standard'
 	);
 
 	public static function add_actions() {
@@ -84,8 +84,8 @@ class WDG_Admin_General {
 	public static function save_investment() {
 		$edd_settings = get_option( 'edd_settings' );
 		$edd_settings[ 'investment_generalities' ] = filter_input( INPUT_POST, 'investment_generalities' );
-		$edd_settings[ 'contract_label' ] = filter_input( INPUT_POST, 'contract_label' );
 		$edd_settings[ 'contract' ] = filter_input( INPUT_POST, 'contract' );
+		$edd_settings[ 'standard_contract' ] = filter_input( INPUT_POST, 'standard_contract' );
 		update_option( 'edd_settings', $edd_settings );
 	}
 	
@@ -240,15 +240,15 @@ class WDG_Admin_General {
 		</label>
 		<br /><br />
 		
-		<h3>Libelles du contrat d&apos;investissement</h3>
-		<label for="contract_label">
-			<input type="text" value="<?php echo $edd_settings[ 'contract_label' ]; ?>" name="contract_label" />
+		<h3>Avertissements sur l&apos;investissement</h3>
+		<label for="contract">
+			<?php wp_editor( $edd_settings[ 'contract' ], 'contract' ); ?>
 		</label>
 		<br /><br />
 		
-		<h3>Contrat d&apos;investissement</h3>
-		<label for="contract">
-			<?php wp_editor( $edd_settings[ 'contract' ], 'contract' ); ?>
+		<h3>Contrat d&apos;investissement standard</h3>
+		<label for="standard_contract">
+			<?php wp_editor( $edd_settings[ 'standard_contract' ], 'standard_contract' ); ?>
 		</label>
 		<br /><br />
 		
