@@ -386,6 +386,18 @@ class ATCF_Campaign {
     public function override_contract() {
         return $this->__get( ATCF_Campaign::$key_override_contract );
     }
+	public static $key_contract_budget_type = 'contract_budget_type';
+	public static $contract_budget_types = array(
+		'maximum'			=> "Plafond",
+		'collected_funds'	=> "Montant collect&eacute;"
+	);
+	public function contract_budget_type() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_budget_type );
+		if ( empty( $buffer ) ) {
+			$buffer = 'maximum';
+		}
+        return $buffer;
+	}
 
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
