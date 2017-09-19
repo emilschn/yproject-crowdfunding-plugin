@@ -272,6 +272,7 @@ class WDGROI {
 			if ( !$roi_item->on_api ) {
 				$roi = new WDGROI( $roi_item->id );
 				
+				$temp_id = $roi_item->id;
 				if ( empty( $campaign_wpref_to_api[ $roi->id_campaign ] ) ) {
 					$campaign = new ATCF_Campaign( $roi->id_campaign );
 					$campaign_wpref_to_api[ $roi->id_campaign ] = $campaign->get_api_id();
@@ -304,6 +305,7 @@ class WDGROI {
 				$roi->id_declaration = $old_declaration_id;
 				$roi->id_orga = $temp_orga_id;
 				$roi->id_user = $temp_user_id;
+				$roi->id = $temp_id;
 				$roi->save( TRUE );
 			}
 		}
