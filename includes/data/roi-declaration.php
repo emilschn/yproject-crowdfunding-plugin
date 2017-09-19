@@ -184,8 +184,8 @@ class WDGROIDeclaration {
 	 * @deprecated
 	 * @return integer
 	 */
-	public function save() {
-		if ( $this->on_api ) {
+	public function save( $local = FALSE ) {
+		if ( $this->on_api && !$local ) {
 			$this->update();
 			
 		} else {
@@ -985,7 +985,7 @@ class WDGROIDeclaration {
 				WDGROI::transfer_to_api( $declaration_item->id, $created_declaration->id );
 				$declaration->on_api = true;
 				$declaration->id_campaign = $temp_campaign_id;
-				$declaration->save();
+				$declaration->save( TRUE );
 			}
 		}
 	}

@@ -68,8 +68,8 @@ class WDGROI {
 		WDGWPREST_Entity_ROI::update( $this );
 	}
 	
-	public function save() {
-		if ( $this->on_api ) {
+	public function save( $local = FALSE ) {
+		if ( $this->on_api && !$local ) {
 			$this->update();
 			
 		} else {
@@ -304,7 +304,7 @@ class WDGROI {
 				$roi->id_declaration = $old_declaration_id;
 				$roi->id_orga = $temp_orga_id;
 				$roi->id_user = $temp_user_id;
-				$roi->save();
+				$roi->save( TRUE );
 			}
 		}
 	}
