@@ -40,7 +40,7 @@ class WDGROIDeclaration {
 	public $on_api;
 	
 	
-	public function __construct( $declaration_id ) {
+	public function __construct( $declaration_id, $local = FALSE ) {
 		// Si déjà chargé précédemment
 		if ( isset( self::$collection_by_id[ $declaration_id ] ) ) {
 			$collection_item = self::$collection_by_id[ $declaration_id ];
@@ -66,7 +66,7 @@ class WDGROIDeclaration {
 			
 		} else {
 			// Récupération en priorité depuis l'API
-			$declaration_api_item = WDGWPREST_Entity_Declaration::get( $declaration_id );
+			$declaration_api_item = ( $local ) ? WDGWPREST_Entity_Declaration::get( $declaration_id ) : FALSE;
 			if ( $declaration_api_item != FALSE ) {
 
 				$this->id = $declaration_id;
@@ -974,7 +974,7 @@ class WDGROIDeclaration {
 		$declaration_list = $wpdb->get_results( $query );
 		foreach ( $declaration_list as $declaration_item ) {
 			if ( !$declaration_item->on_api ) {
-				$declaration = new WDGROIDeclaration( $declaration_item->id );
+				$declaration = new WDGROIDeclaration( $declaration_item->id, TRUE );
 				if ( empty( $campaign_wpref_to_api[ $declaration->id_campaign ] ) ) {
 					$campaign = new ATCF_Campaign( $declaration->id_campaign );
 					$campaign_wpref_to_api[ $declaration->id_campaign ] = $campaign->get_api_id();

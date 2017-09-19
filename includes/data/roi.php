@@ -22,9 +22,9 @@ class WDGROI {
 	public $on_api;
 	
 	
-	public function __construct( $roi_id ) {
+	public function __construct( $roi_id, $local = FALSE ) {
 		// Récupération en priorité depuis l'API
-		$roi_api_item = WDGWPREST_Entity_ROI::get( $roi_id );
+		$roi_api_item = ( $local ) ? WDGWPREST_Entity_ROI::get( $roi_id ) : FALSE;
 		if ( $roi_api_item != FALSE ) {
 			
 			$this->id = $roi_id;
@@ -270,9 +270,9 @@ class WDGROI {
 		$roi_list = $wpdb->get_results( $query );
 		foreach ( $roi_list as $roi_item ) {
 			if ( !$roi_item->on_api ) {
-				$roi = new WDGROI( $roi_item->id );
+				$roi = new WDGROI( $roi_item->id, TRUE );
 				
-				$temp_id = $roi_item->id;
+				$temp_id = $roi->id;
 				if ( empty( $campaign_wpref_to_api[ $roi->id_campaign ] ) ) {
 					$campaign = new ATCF_Campaign( $roi->id_campaign );
 					$campaign_wpref_to_api[ $roi->id_campaign ] = $campaign->get_api_id();
