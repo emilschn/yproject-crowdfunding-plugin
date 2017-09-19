@@ -392,6 +392,18 @@ class WDGFormProjects {
 		$campaign = new ATCF_Campaign($_GET["campaign_id"]);
 		
 		$declaration_message = filter_input( INPUT_POST, 'declaration-message' );
+		$employees_number = filter_input( INPUT_POST, 'employees-number' );
+		if ( !is_numeric( $employees_number ) ) {
+			$employees_number = 0;
+		} else {
+			if ( !is_int( $employees_number ) ) {
+				$employees_number = round( $employees_number );
+			}
+			if ( $employees_number < 0 ) {
+				$employees_number = 0;
+			}
+		}
+		$other_fundings = filter_input( INPUT_POST, 'other-fundings' );
 		
 		$has_error = false;
 		$saved_declaration = array();
@@ -430,6 +442,8 @@ class WDGFormProjects {
 			} else {
 				$declaration->status = WDGROIDeclaration::$status_payment;
 			}
+			$declaration->employees_number = $employees_number;
+			$declaration->set_other_fundings( $other_fundings );
 			$declaration->set_message( $declaration_message );
 			$declaration->save();
 		}

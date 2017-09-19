@@ -130,6 +130,7 @@ function atcf_create_campaign($author_ID, $title){
 class ATCF_Campaign {
 	public $ID;
 	public $data;
+	public $api_data;
         
 	/**
 	 * Default number of days of vote
@@ -177,7 +178,11 @@ class ATCF_Campaign {
 		);
 	}
 
-	function __construct( $post ) {
+	function __construct( $post, $api_id = FALSE ) {
+		if ( !empty( $api_id ) ) {
+			$this->api_data = WDGWPREST_Entity_Project::get( $api_id );
+			$post = $this->api_data->wpref;
+		}
 		$this->data = get_post( $post );
 		$this->ID   = $this->data->ID;
 	}
@@ -626,21 +631,25 @@ class ATCF_Campaign {
 			foreach ( $declaration_list as $declaration_item ) {
 				$buffer_declaration_object = array();
 				$buffer_declaration_object["id"] = $declaration_item->id;
+				$buffer_declaration_object["item"] = $declaration_item;
 				$buffer_declaration_object["project"] = $this->ID;
 				$buffer_declaration_object["date_due"] = $declaration_item->date_due;
 				$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
 				$buffer_declaration_object["total_turnover"] = $declaration_item->get_turnover_total();
 				$buffer_declaration_object["total_roi"] = $declaration_item->amount;
 				$buffer_declaration_object["total_roi_with_adjustment"] = $declaration_item->get_amount_with_adjustment();
+				$buffer_declaration_object["status"] = $declaration_item->status;
 				$buffer_declaration_object["roi_list"] = array();
-				$roi_list = WDGROI::get_roi_list_by_declaration( $declaration_item->id );
+				$roi_list = $declaration_item->get_rois();
 				foreach ( $roi_list as $roi_item ) {
-					$roi_object = array();
-					$roi_user = new WP_User( $roi_item->id_user );
-					$roi_object["id"] = $roi_item->id;
-					$roi_object["user_email"] = $roi_user->user_email;
-					$roi_object["amount"] = $roi_item->amount;
-					array_push( $buffer_declaration_object["roi_list"], $roi_object );
+					if ( $roi_item->status == WDGROI::$status_transferred ) {
+						$roi_object = array();
+						$roi_user = new WP_User( $roi_item->id_user );
+						$roi_object["id"] = $roi_item->id;
+						$roi_object["user_email"] = $roi_user->user_email;
+						$roi_object["amount"] = $roi_item->amount;
+						array_push( $buffer_declaration_object["roi_list"], $roi_object );
+					}
 				}
 				array_push( $this->roi_declarations, $buffer_declaration_object );
 			}
@@ -659,7 +668,7 @@ class ATCF_Campaign {
 	}
 	
 	/**
-	 * Retourne le montant des ROI versées
+	 * Retourne le montant des CA déclarés
 	 * @return int
 	 */
 	public function get_roi_declarations_total_turnover_amount() {
@@ -692,7 +701,12 @@ class ATCF_Campaign {
 		$buffer = array();
 		
 		if ( !empty( $status ) ) {
-			$buffer = WDGROIDeclaration::get_list_by_campaign_id( $this->ID, $status );
+			$declaration_list = $this->get_roi_declarations();
+			foreach ( $declaration_list as $declaration_item ) {
+				if ( $declaration_item[ 'status' ] != $status ) {
+					array_push( $buffer, $declaration_item[ 'item' ] );
+				}
+			}
 		}
 		
 		return $buffer;
@@ -712,14 +726,14 @@ class ATCF_Campaign {
 	 */
 	public function get_current_roi_declarations() {
 		if ( !isset( $this->current_roi_declarations ) ) {
-			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
+			$declaration_list = $this->get_roi_declarations();
 			$this->current_roi_declarations = array();
 			$date_now = new DateTime();
 			foreach ( $declaration_list as $declaration_item ) {
-				$date_due = new DateTime( $declaration_item->date_due );
+				$date_due = new DateTime( $declaration_item[ 'date_due' ] );
 				$date_interval = $date_now->diff( $date_due );
-				if ( $declaration_item->status != WDGROIDeclaration::$status_finished && ( $date_due < $date_now || $date_interval->format( '%a' ) < 10 ) ) {
-					array_push( $this->current_roi_declarations, $declaration_item );
+				if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_finished && ( $date_due < $date_now || $date_interval->format( '%a' ) < 10 ) ) {
+					array_push( $this->current_roi_declarations, $declaration_item[ 'item' ] );
 				}
 			}
 		}
@@ -733,7 +747,7 @@ class ATCF_Campaign {
 	}
 	public function get_next_roi_declaration() {
 		if ( !isset( $this->next_roi_declaration ) ) {
-			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID, WDGROIDeclaration::$status_declaration );
+			$declaration_list = $this->get_roi_declarations_by_status( WDGROIDeclaration::$status_declaration );
 			$this->next_roi_declaration = FALSE;
 			if ( !empty( $declaration_list ) ) {
 				$this->next_roi_declaration = $declaration_list[ 0 ];

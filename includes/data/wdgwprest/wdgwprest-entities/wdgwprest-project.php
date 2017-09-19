@@ -187,4 +187,14 @@ class WDGWPREST_Entity_Project {
 		$result_obj = WDGWPRESTLib::call_delete_wdg( 'project/' .$project_id. '/organization/' .$organization_id. '/type/' .$role_slug );
 		return $result_obj;
 	}
+	
+	/**
+	 * Retourne la liste des déclarations liées à un projet
+	 * @param int $project_id
+	 * @return array
+	 */
+	public static function get_declarations( $project_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations' );
+		return $result_obj;
+	}
 }

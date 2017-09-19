@@ -621,6 +621,7 @@ function atcf_campaign_save_declarations() {
 		} elseif (!$declaration_files && $ROIdeclaration->file_list == '1') {
 			$ROIdeclaration->file_list = '';
 		}
+		$ROIdeclaration->update();
 		$ROIdeclaration->save();
 	}
 }
@@ -641,6 +642,7 @@ function atcf_campaign_add_first_declaration() {
 	if ( !empty( $save_first ) ) {
 		$new_declaration = new WDGROIDeclaration($declaration_id);
 		$new_declaration->file_list = '1';
+		$new_declaration->update();
 		$new_declaration->save();
 	}
 }

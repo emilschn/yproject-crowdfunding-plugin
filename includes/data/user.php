@@ -157,7 +157,9 @@ class WDGUser {
 	}
 	
 	public function get_birthday_date() {
-		return $this->wp_user->get('user_birthday_year'). '-' .$this->wp_user->get('user_birthday_month'). '-' .$this->wp_user->get('user_birthday_day');
+		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
+		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
+		return $this->wp_user->get('user_birthday_year'). '-' .$birthday_month. '-' .$birthday_day;
 	}
 	
 	public function get_projects_list() {
@@ -216,6 +218,13 @@ class WDGUser {
 		return $this->organizations_list;
 	}
 	
+	public function has_voted_on_campaign( $campaign_id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . "ypcf_project_votes";
+		$hasvoted_results = $wpdb->get_results( 'SELECT id FROM '.$table_name.' WHERE post_id = '.$campaign_id.' AND user_id = '.$this->get_wpref() );
+		return ( !empty( $hasvoted_results[0]->id ) );
+	}
+	
 /*******************************************************************************
  * Fonctions de sauvegarde
 *******************************************************************************/
@@ -237,6 +246,27 @@ class WDGUser {
 		update_user_meta( $this->wp_user->ID, 'user_city', $city );
 		update_user_meta( $this->wp_user->ID, 'user_country', $country );
 		update_user_meta( $this->wp_user->ID, 'user_mobile_phone', $telephone );
+	}
+	
+	/**
+	 * Enregistre les données de base d'un utilisateur
+	 * @param string $email
+	 * @param string $firstname
+	 * @param string $lastname
+	 */
+	public function save_basics( $email, $firstname, $lastname ) {
+		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
+		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
+		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+	}
+	
+	/**
+	 * Enregistre une meta particulière
+	 * @param string $meta_name
+	 * @param string $meta_value
+	 */
+	public function save_meta( $meta_name, $meta_value ) {
+		update_user_meta( $this->wp_user->ID, $meta_name, $meta_value );
 	}
 	
 /*******************************************************************************
@@ -321,6 +351,45 @@ class WDGUser {
 		return (empty($user_can_invest_errors));
 	}
 	
+	/**
+	 * Retourne true si on doit afficher une lightbox de mise à jour des informations de l'utilisateur
+	 * @return boolean
+	 */
+	public function get_show_details_confirmation() {
+		$buffer = false;
+		
+		$last_details_confirmation = $this->wp_user->get( 'last_details_confirmation' );
+		// Si ça n'a jamais été fait, on demande validation e-mail, prénom et nom
+		if ( empty( $last_details_confirmation ) ) {
+			$buffer = WDG_Form_User_Details::$type_basics;
+			
+		} else {
+			
+			$current_date_time = new DateTime();
+			$last_confirmation_date_time = new DateTime( $last_details_confirmation );
+			$date_diff = $current_date_time->diff( $last_confirmation_date_time );
+			$email = $this->get_email();
+			$firstname = $this->get_firstname();
+			$lastname = $this->get_lastname();
+			
+			// Si ça fait plus de 7 jours et qu'il n'y a pas d'adresse e-mail, de prénom ou de nom
+			if ( $date_diff->days > 7 && ( empty( $email ) || empty( $firstname ) || empty( $lastname ) ) ) {
+				$buffer = WDG_Form_User_Details::$type_basics;
+				
+			// Si ça fait plus de 180 jours (6 mois), on demande une vérification complète des informations
+			} else if ( $date_diff->days > 180 ) {
+				$buffer = WDG_Form_User_Details::$type_complete;
+			}
+		}
+		
+		return $buffer;
+	}
+	
+	public function update_last_details_confirmation() {
+		$current_date = new DateTime();
+		update_user_meta( $this->get_wpref(), 'last_details_confirmation', $current_date->format( 'Y-m-d' ) );
+	}
+	
 /*******************************************************************************
  * Gestion investissements
 *******************************************************************************/
@@ -367,6 +436,14 @@ class WDGUser {
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/
+	private $rois;
+	public function get_rois() {
+		if ( !isset( $this->rois ) ) {
+			$this->rois = WDGWPREST_Entity_User::get_rois( $this->get_api_id() );
+		}
+		return $this->rois;
+	}
+	
 	private $royalties_per_year;
 	/**
 	 * Retourne la liste des royalties d'une année
@@ -378,10 +455,33 @@ class WDGUser {
 			$this->royalties_per_year = array();
 		}
 		if ( !isset( $this->royalties_per_year[ $year ] ) ) {
-			$this->royalties_per_year[ $year ] = WDGROI::get_roi_list_by_user( $this->wp_user->ID, $year );
+			$this->royalties_per_year[ $year ] = array();
+			$rois = $this->get_rois();
+			foreach ( $rois as $roi_item ) {
+				$roi_date_transfer = new DateTime( $roi_item->date_transfer );
+				if ( $roi_date_transfer->format('Y') == $year ) {
+					array_push( $this->royalties_per_year[ $year ], $roi_item );
+				}
+			}
 		}
 		
 		return $this->royalties_per_year[ $year ];
+	}
+	
+	/**
+	 * Retourne la liste des royalties par campagne
+	 * @param int $campaign_id
+	 * @return array
+	 */
+	public function get_royalties_by_campaign_id( $campaign_id ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_project == $campaign_id ) {
+				array_push( $buffer, $roi_item );
+			}
+		}
+		return $buffer;
 	}
 	
 	/**
@@ -667,8 +767,8 @@ class WDGUser {
 	
 	public function get_lemonway_birthdate() {
 		// format : dd/MM/yyyy
-		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
-		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
+		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10 && strlen($this->wp_user->get('user_birthday_day')) < 2) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
+		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10 && strlen($this->wp_user->get('user_birthday_month')) < 2) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
 		$lemonway_birthdate = $birthday_day. '/' .$birthday_month. '/' .$this->wp_user->get('user_birthday_year');
 		return $lemonway_birthdate;
 	}
