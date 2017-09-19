@@ -66,7 +66,7 @@ class WDGROIDeclaration {
 			
 		} else {
 			// Récupération en priorité depuis l'API
-			$declaration_api_item = ( $local ) ? WDGWPREST_Entity_Declaration::get( $declaration_id ) : FALSE;
+			$declaration_api_item = ( !$local ) ? WDGWPREST_Entity_Declaration::get( $declaration_id ) : FALSE;
 			if ( $declaration_api_item != FALSE ) {
 
 				$this->id = $declaration_id;

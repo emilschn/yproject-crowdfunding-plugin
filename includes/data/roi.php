@@ -24,7 +24,7 @@ class WDGROI {
 	
 	public function __construct( $roi_id, $local = FALSE ) {
 		// Récupération en priorité depuis l'API
-		$roi_api_item = ( $local ) ? WDGWPREST_Entity_ROI::get( $roi_id ) : FALSE;
+		$roi_api_item = ( !$local ) ? WDGWPREST_Entity_ROI::get( $roi_id ) : FALSE;
 		if ( $roi_api_item != FALSE ) {
 			
 			$this->id = $roi_id;
