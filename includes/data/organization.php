@@ -652,7 +652,7 @@ class WDGOrganization {
 	/**
 	 * Gère la mise à jour du RIB
 	 */
-	public function submit_bank_info() {
+	public function submit_bank_info( $skip_save = FALSE ) {
 		$save = FALSE;
 		if (filter_input(INPUT_POST, 'org_bankownername') != '') {
 			$this->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
@@ -670,7 +670,7 @@ class WDGOrganization {
 			$this->set_bank_bic(filter_input(INPUT_POST, 'org_bankownerbic'));
 			$save = TRUE;
 		}
-		if ($save) {
+		if ( !$skip_save && $save ) {
 			$this->save();
 		}
 	}
@@ -1276,7 +1276,8 @@ class WDGOrganization {
 			$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
 			$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
-			$org_object->submit_bank_info();
+			$org_object->submit_bank_info( TRUE );
+			$org_object->save();
 			$files_info = $org_object->submit_documents();
 		} else {
 			$files_info = null;
