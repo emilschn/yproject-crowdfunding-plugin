@@ -81,6 +81,88 @@ class WDG_PDF_Generator {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
 		$buffer = $shortcode_campaign_obj->maximum_profit();
+		if ( $buffer == 'infinite' ) {
+			$buffer = __( "Infini", 'yproject' );
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant le type de budget : todo
+	 */
+	public static function shortcode_contract_budget_type( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = '';
+		if ( isset( ATCF_Campaign::$contract_budget_types[ $shortcode_campaign_obj->contract_budget_type() ] ) ) {
+			$buffer = ATCF_Campaign::$contract_budget_types[ $shortcode_campaign_obj->contract_budget_type() ];
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant le type de plafond : todo
+	 */
+	public static function shortcode_contract_maximum_type( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = '';
+		if ( isset( ATCF_Campaign::$contract_maximum_types[ $shortcode_campaign_obj->contract_maximum_type() ] ) ) {
+			$buffer = ATCF_Campaign::$contract_maximum_types[ $shortcode_campaign_obj->contract_maximum_type() ];
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant le type d'estimation de revenus trimestriels : todo
+	 */
+	public static function shortcode_contract_quarter_earnings_estimation_type( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = '';
+		if ( isset( ATCF_Campaign::$quarter_earnings_estimation_types[ $shortcode_campaign_obj->quarter_earnings_estimation_type() ] ) ) {
+			$buffer = ATCF_Campaign::$quarter_earnings_estimation_types[ $shortcode_campaign_obj->quarter_earnings_estimation_type() ];
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant la description des revenus
+	 */
+	public static function shortcode_contract_earnings_description( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->contract_earnings_description();
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant la description des dépenses
+	 */
+	public static function shortcode_contract_spendings_description( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->contract_spendings_description();
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant les informations simples
+	 */
+	public static function shortcode_contract_simple_info( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->contract_simple_info();
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant les informations détaillées
+	 */
+	public static function shortcode_contract_detailed_info( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->contract_detailed_info();
 		return $buffer;
 	}
 	
@@ -169,6 +251,13 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
 	add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
 	add_shortcode( 'wdg_campaign_contract_maximum_profit', 'WDG_PDF_Generator::shortcode_contract_maximum_profit' );
+	add_shortcode( 'wdg_campaign_contract_budget_type', 'WDG_PDF_Generator::shortcode_contract_budget_type' );
+	add_shortcode( 'wdg_campaign_contract_maximum_type', 'WDG_PDF_Generator::shortcode_contract_maximum_type' );
+	add_shortcode( 'wdg_campaign_contract_quarter_earnings_estimation_type', 'WDG_PDF_Generator::shortcode_contract_quarter_earnings_estimation_type' );
+	add_shortcode( 'wdg_campaign_contract_earnings_description', 'WDG_PDF_Generator::shortcode_contract_earnings_description' );
+	add_shortcode( 'wdg_campaign_contract_spendings_description', 'WDG_PDF_Generator::shortcode_contract_spendings_description' );
+	add_shortcode( 'wdg_campaign_contract_simple_info', 'WDG_PDF_Generator::shortcode_contract_simple_info' );
+	add_shortcode( 'wdg_campaign_contract_detailed_info', 'WDG_PDF_Generator::shortcode_contract_detailed_info' );
 	add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
 	add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
 	
