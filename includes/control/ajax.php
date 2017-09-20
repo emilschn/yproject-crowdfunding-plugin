@@ -537,6 +537,16 @@ class WDGAjaxActions {
 			$success["new_project_location"]=1;
 		}
 		
+		// Infos contractuelles
+		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
+		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
+		$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
+		$new_project_contract_detailed_info= sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
+		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
 		$nb_custom_fields = $WDGAuthor->wp_user->get('wdg-contract-nb-custom-fields');
@@ -839,12 +849,13 @@ class WDGAjaxActions {
 			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
 		}
 		
-		$new_maximum_profit = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) ) );
-		if ( $new_maximum_profit >= 1  ){
+		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
+		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
+		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ){
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
 			$success[ 'new_maximum_profit' ] = 1;
 		} else {
-			$errors[ 'new_maximum_profit' ] = "Le gain maximum doit &ecirc;tre sup&eacutre;rieur &agrave; x1";
+			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
 		}
 
 		//Update roi_percent_estimated duration

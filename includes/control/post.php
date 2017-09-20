@@ -392,6 +392,12 @@ class WDGPostActions {
 		$new_contract_budget_type = filter_input( INPUT_POST, 'new_contract_budget_type' );
 		$campaign->__set( ATCF_Campaign::$key_contract_budget_type, $new_contract_budget_type );
 		
+		$new_contract_maximum_type = filter_input( INPUT_POST, 'new_contract_maximum_type' );
+		$campaign->__set( ATCF_Campaign::$key_contract_maximum_type, $new_contract_maximum_type );
+		
+		$new_quarter_earnings_estimation_type = filter_input( INPUT_POST, 'new_quarter_earnings_estimation_type' );
+		$campaign->__set( ATCF_Campaign::$key_quarter_earnings_estimation_type, $new_quarter_earnings_estimation_type );
+		
 		$new_override_contract = filter_input( INPUT_POST, 'new_override_contract' );
 		$campaign->__set( ATCF_Campaign::$key_override_contract, $new_override_contract );
 		

@@ -376,21 +376,37 @@ class ATCF_Campaign {
         return $this->__get(ATCF_Campaign::$key_backoffice_WDG_notoriety);
     }
 
-    /**
-     * @return string Contracts filename
-     */
+	/****************
+	 * Données de contrat
+	 ****************/
+    // Contrat vierge pour les personnes physiques
     public static $key_backoffice_contract_user = 'campaign_backoffice_contract_user';
     public function backoffice_contract_user() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_user);
     }
+    // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
     }
-	public static $key_override_contract = 'campaign_override_contract';
-    public function override_contract() {
-        return $this->__get( ATCF_Campaign::$key_override_contract );
-    }
+	// Contrat : descriptions des revenus
+    public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
+	public function contract_earnings_description() {
+        return $this->__get( ATCF_Campaign::$key_contract_earnings_description );
+	}
+    public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
+	public function contract_spendings_description() {
+        return $this->__get( ATCF_Campaign::$key_contract_spendings_description );
+	}
+    public static $key_contract_simple_info = 'campaign_contract_simple_info';
+	public function contract_simple_info() {
+        return $this->__get( ATCF_Campaign::$key_contract_simple_info );
+	}
+    public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
+	public function contract_detailed_info() {
+        return $this->__get( ATCF_Campaign::$key_contract_detailed_info );
+	}
+	// Contrat : Type de budget
 	public static $key_contract_budget_type = 'contract_budget_type';
 	public static $contract_budget_types = array(
 		'maximum'			=> "Plafond",
@@ -403,6 +419,41 @@ class ATCF_Campaign {
 		}
         return $buffer;
 	}
+	// Contrat : Type de plafond
+	public static $key_contract_maximum_type = 'contract_maximum_type';
+	public static $contract_maximum_types = array(
+		'fixed'				=> "D&eacute;t&eacute;rmin&eacute;",
+		'infinite'			=> "Infini"
+	);
+	public function contract_maximum_type() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_maximum_type );
+		if ( empty( $buffer ) ) {
+			$buffer = ( $this->goal( false ) > 0 ) ? 'fixed' : 'infinite';
+		}
+        return $buffer;
+	}
+	// Contrat : Type d'estimation de revenus trimestriels
+	public static $key_quarter_earnings_estimation_type = 'contract_quarter_earnings_estimation_type';
+	public static $quarter_earnings_estimation_types = array(
+		'progressive'		=> "Progressif (10%, 20%, 30%, 40%)",
+		'linear'			=> "Lin&eacute;aire (25%, 25%, 25%, 25%)"
+	);
+	public function quarter_earnings_estimation_type() {
+		$buffer = $this->__get( ATCF_Campaign::$key_quarter_earnings_estimation_type );
+		if ( empty( $buffer ) ) {
+			$buffer = 'progressive';
+		}
+        return $buffer;
+	}
+    // Contrat : Rédaction surchargeant le contrat standard
+	public static $key_override_contract = 'campaign_override_contract';
+    public function override_contract() {
+        return $this->__get( ATCF_Campaign::$key_override_contract );
+    }
+	/****************
+	 * FIN - Données de contrat
+	 ****************/
+	
 
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
@@ -471,6 +522,19 @@ class ATCF_Campaign {
 	}
 	
 	
+	public static $maximum_profit_list = array(
+		'infinite'		=> "Infini",
+		'1'				=> "1",
+		'2'				=> "2",
+		'3'				=> "3",
+		'4'				=> "4",
+		'5'				=> "5",
+		'6'				=> "6",
+		'7'				=> "7",
+		'8'				=> "8",
+		'9'				=> "9",
+		'10'			=> "10",
+	);
 	public static $key_maximum_profit = 'maximum_profit';
 	public function maximum_profit() {
 	    $buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
