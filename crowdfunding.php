@@ -58,7 +58,7 @@ final class ATCF_CrowdFunding {
 	private function setup_globals() {
 		/** Versions **********************************************************/
 
-		$this->version    = '1.816';
+		$this->version    = '1.817';
 		$this->db_version = '1';
 
 		/** Paths *************************************************************/
@@ -112,6 +112,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-project.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-declaration.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php' );
 		
 		require( $this->includes_dir . 'control/social/FacebookApp/autoload.php' );
 
@@ -121,6 +122,8 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/settings.php' );
 		require( $this->includes_dir . 'control/logs.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
+		require( $this->includes_dir . 'control/routes.php' );
+		require( $this->includes_dir . 'control/api-calls.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
 		require( $this->includes_dir . 'control/investment.php' );
 		require( $this->includes_dir . 'control/signsquid/common.php' );
@@ -128,8 +131,10 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/pdf_generator.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-slack.php' );
+		require( $this->includes_dir . 'control/forms/form.php' );
 		require( $this->includes_dir . 'control/forms/projects.php' );
 		require( $this->includes_dir . 'control/forms/users.php' );
+		require( $this->includes_dir . 'control/forms/user-details.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-lib.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-lib-errors.php' );
 		
@@ -139,6 +144,10 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-update.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
+		
+		if ( is_single() ) {
+			require( $this->includes_dir . 'control/forms/vote.php' );
+		}
 		
 		if ( is_admin() ) {
 			require( $this->includes_dir . 'ui/admin/general.php' );

@@ -17,6 +17,13 @@ class WDGWPREST_Entity_Declaration {
 	}
 	
 	/**
+	 * Retourne une déclaration à partir de son token de paiement
+	 */
+	public static function get_by_payment_token( $token ) {
+		return WDGWPRESTLib::call_get_wdg( 'declaration/token/' . $token );
+	}
+	
+	/**
 	 * Définit les paramètres en fonction de ce qu'on sait sur le site
 	 * @param WDGROIDeclaration $declaration
 	 * @return array
@@ -37,7 +44,9 @@ class WDGWPREST_Entity_Declaration {
 			'file_list'				=> $declaration->file_list,
 			'turnover'				=> $declaration->turnover,
 			'message'				=> $declaration->message,
-			'adjustment'			=> $declaration->adjustment
+			'adjustment'			=> $declaration->adjustment,
+			'employees_number'		=> $declaration->employees_number,
+			'other_fundings'		=> $declaration->other_fundings
 		);
 		return $parameters;
 	}
@@ -65,6 +74,15 @@ class WDGWPREST_Entity_Declaration {
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'declaration/' . $declaration->id, $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne la liste des ROIs liés à une déclaration
+	 * @param int $declaration_id
+	 */
+	public static function get_roi_list( $declaration_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'declaration/' .$declaration_id. '/rois' );
 		return $result_obj;
 	}
 }

@@ -132,4 +132,13 @@ class WDGWPREST_Entity_User {
 		}
 		return $buffer;
 	}
+	
+	/**
+	 * Retourne les ROIs liés à un utilisateur
+	 * @return array
+	 */
+	public static function get_rois( $user_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/rois' );
+		return $result_obj;
+	}
 }

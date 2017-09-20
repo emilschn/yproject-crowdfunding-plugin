@@ -5,11 +5,19 @@
  */
 class WDGAjaxActions {
 	private static $class_name = 'WDGAjaxActions';
+	
+	private static $class_to_filename = array(
+		'WDG_Form_Vote'			=> 'vote.php',
+		'WDG_Form_User_Details' => 'user-details.php'
+	);
     
 	/**
 	 * Initialise la liste des actions ajax
 	 */
 	public static function init_actions() {
+		WDGAjaxActions::add_action_by_class( 'WDG_Form_Vote' );
+		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
+		
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		
 		WDGAjaxActions::add_action('display_roi_user_list');
@@ -39,6 +47,17 @@ class WDGAjaxActions {
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
 		WDGAjaxActions::add_action('search_user_by_email');
+	}
+	
+	/**
+	 * Gère de manière automatisée les classes de formulaires (standardisées)
+	 * @param string $class_name
+	 */
+	public static function add_action_by_class( $class_name ) {
+		require_once( 'forms/' . WDGAjaxActions::$class_to_filename[ $class_name ] );
+		$form_object = new $class_name();
+		add_action( 'wp_ajax_' .$form_object->getFormID(), array( $form_object, postForm ) );
+		add_action( 'wp_ajax_nopriv_' .$form_object->getFormID(), array( $form_object, postForm ) );
 	}
     
 	/**
