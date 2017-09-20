@@ -40,7 +40,7 @@ class NotificationsEmails {
 	ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
 	if ($decorate) {
 		global $edd_options;
-		$content = wpautop( $edd_options['header_global_mail'] ) . $content . wpautop( $edd_options['footer_global_mail'] );
+		$content = wpautop( $edd_options['header_global_mail'] ) .'<br /><br />'. $content .'<br /><br />'. wpautop( $edd_options['footer_global_mail'] );
 	}
 
 	$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
