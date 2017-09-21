@@ -339,7 +339,7 @@ class WDGFormUsers {
 					if (isset($_POST['redirect-home'])) {
 						wp_redirect(home_url());
 					} else {
-						wp_redirect(wp_unslash( $_SERVER['REQUEST_URI'] ));
+						wp_redirect( wp_unslash( WDGUser::get_login_redirect_page() ) );
 					}
 					exit();
 				}
