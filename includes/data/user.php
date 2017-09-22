@@ -1082,7 +1082,7 @@ class WDGUser {
 		
 		//Si on est sur la page de connexion ou d'identification,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
-		if ($post->post_name == 'connexion' || $post->post_name == 'register') {
+		if ( $post->post_name == 'connexion' ) {
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
@@ -1096,7 +1096,7 @@ class WDGUser {
 
 					//Si la page précédente était déjà la page connexion ou enregistrement, 
 					// on tente de voir si la redirection était passée en paramètre
-					if (strpos($referer_url, '/connexion') !== FALSE || strpos($referer_url, '/register') !== FALSE) {
+					if ( strpos($referer_url, '/connexion') !== FALSE ) {
 						$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 						if (!empty($posted_redirect_page)) {
 							$buffer = $posted_redirect_page;
