@@ -789,9 +789,9 @@ class WDGROIDeclaration {
 	 */
 	public function save_remaining_amount() {
 		if ( $this->status == WDGROIDeclaration::$status_finished ) {
-			$campaign = atcf_get_campaign( $this->id_campaign );
+			$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 			$investments_list = $campaign->roi_payments_data( $this );
-			$remaining_amount = $this->amount;
+			$remaining_amount = $this->get_amount_with_adjustment();
 			foreach ($investments_list as $investment_item) {
 				$remaining_amount -= $investment_item['roi_fees'];
 				$remaining_amount -= $investment_item['roi_amount'];
