@@ -384,11 +384,31 @@ class ATCF_Campaign {
     public function backoffice_contract_user() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_user);
     }
+	public function generate_contract_pdf_blank_user() {
+		$filename = 'blank-contract-user-'.$this->ID.'.pdf';
+		$filepath = __DIR__ . '/../contracts/' . $filename;
+		if ( file_exists( $filepath ) ) {
+			unlink( $filepath );
+		}
+		if ( getNewPdfToSign( $this->ID, FALSE, 'user', $filepath ) != FALSE ) {
+			$this->__set( ATCF_Campaign::$key_backoffice_contract_user, $filename );
+		}
+	}
     // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
     }
+	public function generate_contract_pdf_blank_organization() {
+		$filename = 'blank-contract-organization-'.$this->ID.'.pdf';
+		$filepath = __DIR__ . '/../contracts/' . $filename;
+		if ( file_exists( $filepath ) ) {
+			unlink( $filepath );
+		}
+		if ( getNewPdfToSign( $this->ID, FALSE, 'orga', $filepath ) != FALSE ) {
+			$this->__set( ATCF_Campaign::$key_backoffice_contract_orga, $filename );
+		}
+	}
 	// Contrat : descriptions des revenus
     public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
 	public function contract_earnings_description() {

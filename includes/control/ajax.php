@@ -282,6 +282,7 @@ class WDGAjaxActions {
 				$new_orga = new WDGOrganization();
 				$new_orga->set_name( filter_input( INPUT_POST, 'org_name' ) );
 				$new_orga->set_email( filter_input( INPUT_POST, 'org_email' ) );
+				$new_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
 				$new_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
 				$new_orga->set_type('society');
 				$new_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
@@ -318,6 +319,8 @@ class WDGAjaxActions {
 			
 		} else {
 			$edit_orga = new WDGOrganization($invest_type);
+			$edit_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
+			$edit_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
 			$edit_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
 			$edit_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
 			$edit_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
@@ -1063,6 +1066,7 @@ class WDGAjaxActions {
 				"organization" => array(
 					"name" => $organization_selected->get_name(),
 					"email" => $organization_selected->get_email(),
+					"representative_function" => $organization_selected->get_representative_function(),
 					"description" => $organization_selected->get_description(),
 					"legalForm" => $organization_selected->get_legalform(),
 					"idNumber" => $organization_selected->get_idnumber(),
@@ -1146,6 +1150,7 @@ class WDGAjaxActions {
 					"wpref" => $org_object->get_wpref(),
 					"name" => $org_object->get_name(),
 					"email" => $org_object->get_email(),
+					"representative_function" => $org_object->get_representative_function(),
 					"description" => $org_object->get_description(),
 					"legalForm" => $org_object->get_legalform(),
 					"idNumber" => $org_object->get_idnumber(),
@@ -1202,6 +1207,7 @@ class WDGAjaxActions {
 					"wpref" => $org_object->get_wpref(),
 					"name" => $org_object->get_name(),
 					"email" => $org_object->get_email(),
+					"representative_function" => $org_object->get_representative_function(),
 					"description" => $org_object->get_description(),
 					"legalForm" => $org_object->get_legalform(),
 					"idNumber" => $org_object->get_idnumber(),

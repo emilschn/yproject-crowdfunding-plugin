@@ -19,6 +19,7 @@ class WDGPostActions {
         self::add_action("change_project_status");
         self::add_action("organization_sign_mandate");
         self::add_action("upload_information_files");
+        self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
@@ -340,6 +341,16 @@ class WDGPostActions {
 		
 		$campaign->__set( ATCF_Campaign::$key_backoffice_businessplan, $random_filename );
 		
+		$url_return = wp_get_referer() . "#informations";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function generate_contract_files() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$campaign->generate_contract_pdf_blank_user();
+		$campaign->generate_contract_pdf_blank_organization();
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );
 		die();
