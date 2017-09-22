@@ -615,7 +615,7 @@ class ATCF_Campaign {
 					}
 				}
 				if ( $add_date ) {
-					WDGROIDeclaration::insert( $this->ID, $current_date->format( 'Y-m-d' ) );
+					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
 				}
 				$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
 			}
