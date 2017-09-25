@@ -25,7 +25,9 @@ function ypcf_check_redirections() {
 			break;
 
 			case 'investir' :
+				ypcf_debug_log( 'ypcf_check_redirections > investir 1' );
 				$init_result = WDGInvestment::init();
+				ypcf_debug_log( 'ypcf_check_redirections > investir 2' );
 				if ( !$init_result ) {
 					$wdginvestment = WDGInvestment::current();
 					ypcf_debug_log( 'ypcf_check_redirections > investir > TOKEN ERRORS > ' . print_r( $wdginvestment->get_error(), TRUE ) );
@@ -34,13 +36,18 @@ function ypcf_check_redirections() {
 				}
 				//D'abord on teste si l'utilisateur est bien connecté
 				ypcf_check_is_user_logged_invest();
+				ypcf_debug_log( 'ypcf_check_redirections > investir 3' );
 				ypcf_check_is_project_investable();
+				ypcf_debug_log( 'ypcf_check_redirections > investir 4' );
 				$current_step = ypcf_get_current_step();
+				ypcf_debug_log( 'ypcf_check_redirections > investir $current_step : ' . $current_step );
 				if ($current_step == 2) {
 					//On vérifie que les données utilisateurs sont valables
 					ypcf_check_user_can_invest(true);
+					ypcf_debug_log( 'ypcf_check_redirections > investir 5' );
 					//On vérifie les redirections nécessaires à l'investissement
 					ypcf_check_invest_redirections();
+					ypcf_debug_log( 'ypcf_check_redirections > investir 6' );
 				}
 			break;
 
