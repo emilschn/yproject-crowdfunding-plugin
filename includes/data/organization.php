@@ -953,6 +953,17 @@ class WDGOrganization {
 		return LemonwayLib::wallet_sign_mandate_init( $this->get_lemonway_id(), $phone_number, $last_mandate['ID'], $url_return, $url_error );;
 	}
 	
+	public function has_signed_mandate() {
+		$buffer = FALSE;
+		$mandates_list = $this->get_lemonway_mandates();
+		if ( !empty( $mandates_list ) ) {
+			$last_mandate = end( $mandates_list );
+			$last_mandate_status = $last_mandate[ "S" ];
+			$buffer = ( $last_mandate_status == 5 && $last_mandate_status == 6 );
+		}
+		return $buffer;
+	}
+	
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/

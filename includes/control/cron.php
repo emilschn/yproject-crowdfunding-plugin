@@ -23,18 +23,77 @@ class WDGCronActions {
 						$nb_days_diff = $date_due->diff( $current_date )->days;
 						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
 						$organization = $campaign->get_organization();
+						$wdgorganization = new WDGOrganization( $organization->id );
+						$wdguser_author = new WDGUser( $campaign->data->post_author );
+						
+						// Données qui seront transmises à SiB
+						$date_due_previous_day = new DateTime( $declaration_data->date_due );
+						$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
+						$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+						$nb_fields = $campaign->get_turnover_per_declaration();
+						$date_last_months =  new DateTime( $declaration_data->date_due );
+						$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
+						$last_months_str = '';
+						for ( $i = 0; $i < $nb_fields; $i++ ) {
+							$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
+							if ( $i < $nb_fields - 2 ) {
+								$last_months_str .= ', ';
+							}
+							if ( $i == $nb_fields - 2 ) {
+								$last_months_str .= ' et ';
+							}
+							$date_last_months->add( new DateInterval( 'P1M' ) );
+						}
+						$year = $date_due->format( 'Y' );
+						if ( $date_due->format( 'n' ) < 4 ) {
+							$year--;
+						}
+						$last_months_str .= ' ' . $year;
+						$options = array(
+							'NOM'					=> $wdguser_author->get_firstname(),
+							'TROIS_DERNIERS_MOIS'	=> $last_months_str,
+							'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
+							'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
+						);
+						
+						// Initialisation des tableaux de données à transmettre
 						if ( !isset( $recipients_by_days[ $nb_days_diff ] ) ) {
 							$recipients_by_days[ $nb_days_diff ] = array();
+							$recipients_by_days[ $nb_days_diff ][ 'mandate' ] = array();
+							$recipients_by_days[ $nb_days_diff ][ 'nomandate' ] = array();
 						}
-						array_push( $recipients_by_days[ $nb_days_diff ], $organization->email );
+						
+						// Ajout à la liste des données à transmettre
+						if ( $wdgorganization->has_signed_mandate() ) {
+							if ( !isset( $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ] ) ) {
+								$recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ] = array();
+							}
+							array_push( $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ], $organization->email );
+							if ( !isset( $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'options' ] ) ) {
+								$recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'options' ] = $options;
+							}
+						} else {
+							if ( !isset( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ] ) ) {
+								$recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ] = array();
+							}
+							array_push( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ], $organization->email );
+							if ( !isset( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'options' ] ) ) {
+								$recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'options' ] = $options;
+							}
+						}
 					}
 				}
 
 			}
 
 			// On regroupe les envois qui concernent le même jour
-			foreach ( $recipients_by_days as $nb_days => $recipients ) {
-				NotificationsAPI::declaration_to_do( $recipients, $nb_days );
+			foreach ( $recipients_by_days as $nb_days_diff => $mandate_type ) {
+				if ( !empty( $recipients_by_days[ $nb_days_diff ][ 'mandate' ] )  && !empty( $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ] ) ) {
+					NotificationsAPI::declaration_to_do( $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ], $nb_days_diff, TRUE, $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'options' ] );
+				}
+				if ( !empty( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ] )  && !empty( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ] ) ) {
+					NotificationsAPI::declaration_to_do( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ], $nb_days_diff, FALSE, $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'options' ] );
+				}
 			}
 		}
 		

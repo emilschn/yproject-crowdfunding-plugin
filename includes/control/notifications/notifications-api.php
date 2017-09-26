@@ -7,22 +7,41 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
-	public static function declaration_to_do( $recipients, $nb_remaining_days ) {
+	/**
+	 * Envoie la notification de déclaration à faire aux porteurs de projet
+	 * @param string or array $recipients
+	 * @param int $nb_remaining_days
+	 * @param boolean $has_mandate
+	 * @return boolean
+	 */
+	public static function declaration_to_do( $recipients, $nb_remaining_days, $has_mandate, $options ) {
 		$param_template_by_remaining_days = array(
-			'10' => '99',
-			'5' => '99',
-			'1' => '99'
+			'10-mandate'	=> '114',
+			'10-nomandate'	=> '115',
+			'2-mandate'		=> '119',
+			'2-nomandate'	=> '116',
+			'0-mandate'		=> '121',
+			'0-nomandate'	=> '120'
 		);
-		$param_template = isset( $param_template_by_remaining_days[ $nb_remaining_days ] ) ? $param_template_by_remaining_days[ $nb_remaining_days ] : FALSE;
+		$index = $nb_remaining_days;
+		if ( $has_mandate ) {
+			$index .= '-mandate';
+		} else {
+			$index .= '-nomandate';
+		}
+		$param_template = isset( $param_template_by_remaining_days[ $index ] ) ? $param_template_by_remaining_days[ $index ] : FALSE;
 		
 		if ( !empty( $param_template ) ) {
 			$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
 			$parameters = array(
 				'tool'		=> 'sendinblue',
 				'template'	=> $param_template,
-				'recipient'	=> $param_recipients
+				'recipient'	=> $param_recipients,
+				'options'	=> json_encode( $options )
 			);
-			//return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+			if ( WP_IS_DEV_SITE ) {
+				return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+			}
 		}
 		
 		return FALSE;
