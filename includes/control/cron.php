@@ -3,53 +3,41 @@
  * Classe de gestion des appels Cron
  */
 class WDGCronActions {
-	/**
-	 * Initialise la liste des actions ajax
-	 */
-	public static function init_actions() {
-//		ypcf_debug_log('WDGCronActions::init_actions');
-		$wdg_current_user = WDGUser::current();
-		$force_cron = filter_input(INPUT_GET, 'force_cron');
-		if ( $force_cron == '1' && $wdg_current_user->is_admin() ) {
-			WDGCronActions::daily_actions();
-			
-		} else {
-			$date_now = new DateTime();
-			
-			$last_daily_call = get_option( 'last_daily_call' );
-			$saved_date = new DateTime( $last_daily_call );
-			if ($last_daily_call == FALSE || $saved_date->diff($date_now)->days >= 1) {
-				update_option( 'last_daily_call', $date_now->format('Y-m-d H:i:s') );
-				WDGCronActions::daily_actions();
-			}
-		}
-	}
 	
-	public static function daily_actions() {
-//		WDGCronActions::check_kycs();
-		WDGCronActions::make_projects_rss();
-	}
-	
-	public static function check_kycs() {
-		//Parcours de tous les utilisateurs
-		$users = get_users();
-		foreach ($users as $user) {
-			if ( WDGOrganization::is_user_organization( $user->ID ) ) {
-				$organization = new WDGOrganization( $user->ID );
-				$init_kyc_status = $organization->get_lemonway_status( FALSE );
-				if ( $init_kyc_status == WDGOrganization::$lemonway_status_waiting ) {
-					$new_kyc_status = $organization->get_lemonway_status();
-					switch ( $new_kyc_status ) {
-						case WDGOrganization::$lemonway_status_rejected:
-							NotificationsEmails::send_notification_kyc_rejected_admin($user);
-							break;
-						case WDGOrganization::$lemonway_status_registered:
-							NotificationsEmails::send_notification_kyc_accepted_admin($user);
-							break;
+	public static function send_notifications() {
+		
+		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 10 jours
+		$recipients_by_days = array();
+		$current_date = new DateTime();
+		$current_date->setTime( 0, 0, 1 );
+		$date_in_10_days = new DateTime();
+		$date_in_10_days->add( new DateInterval('P10D') );
+		$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
+		if ( $declaration_list ) {
+			foreach ( $declaration_list as $declaration_data ) {
+				// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
+				if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
+					$date_due = new DateTime( $declaration_data->date_due );
+					$date_due->setTime( 10, 30, 0 );
+					if ( $date_due > $current_date ) {
+						$nb_days_diff = $date_due->diff( $current_date )->days;
+						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
+						$organization = $campaign->get_organization();
+						if ( !isset( $recipients_by_days[ $nb_days_diff ] ) ) {
+							$recipients_by_days[ $nb_days_diff ] = array();
+						}
+						array_push( $recipients_by_days[ $nb_days_diff ], $organization->email );
 					}
 				}
+
+			}
+
+			// On regroupe les envois qui concernent le même jour
+			foreach ( $recipients_by_days as $nb_days => $recipients ) {
+				NotificationsAPI::declaration_to_do( $recipients, $nb_days );
 			}
 		}
+		
 	}
 	
 	public static function make_projects_rss() {

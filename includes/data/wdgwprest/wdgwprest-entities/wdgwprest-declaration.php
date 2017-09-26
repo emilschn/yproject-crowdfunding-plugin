@@ -78,6 +78,15 @@ class WDGWPREST_Entity_Declaration {
 	}
 	
 	/**
+	 * Retourne des déclarations en fonction d'une date
+	 */
+	public static function get_list_by_date( $in_date_start, $in_date_end = FALSE, $type = 'due' ) {
+		$date_start = $in_date_start;
+		$date_end = ( !empty( $in_date_end ) ) ? $in_date_end : $in_date_start;
+		return WDGWPRESTLib::call_get_wdg( 'declarations?type=' .$type. '&start_date=' .$date_start. '&end_date=' .$date_end );
+	}
+	
+	/**
 	 * Retourne la liste des ROIs liés à une déclaration
 	 * @param int $declaration_id
 	 */
