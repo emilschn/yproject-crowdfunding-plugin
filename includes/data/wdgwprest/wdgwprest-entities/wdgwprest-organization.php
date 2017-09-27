@@ -27,6 +27,7 @@ class WDGWPREST_Entity_Organization {
 		$parameters = array(
 			'wpref'						=> $organization->get_wpref(),
 			'name'						=> $organization->get_name(),
+			'email'						=> $organization->get_email(),
 			'strong_authentication'		=> ( $organization->get_strong_authentication() === TRUE ) ? 1 : 0,
 			'type'						=> $organization->get_type(),
 			'description'				=> $organization->get_description(),
