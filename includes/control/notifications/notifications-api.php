@@ -46,6 +46,25 @@ class NotificationsAPI {
 		
 		return FALSE;
 	}
+	
+	
+	public static function declaration_to_do_sms( $recipients, $nb_remaining_days, $date_due_previous_day ) {
+		if ( $nb_remaining_days == 10 ) {
+		
+			$param_content = "Bonjour, les déclarations sont ouvertes ! Déclarez votre chiffre d'affaires trimestriel avant le ".$date_due_previous_day->format( 'd/m' )." sur www.wedogood.co. A bientôt !";
+			$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+			$parameters = array(
+				'tool'		=> 'sms',
+				'template'	=> $param_content,
+				'recipient'	=> $param_recipients
+			);
+			if ( WP_IS_DEV_SITE ) {
+				return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+			}
+			
+		}
+		return FALSE;
+	}
     //*******************************************************
     // FIN NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************

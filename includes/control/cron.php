@@ -88,12 +88,16 @@ class WDGCronActions {
 
 			// On regroupe les envois qui concernent le même jour
 			foreach ( $recipients_by_days as $nb_days_diff => $mandate_type ) {
+				$recipients_sms = array();
 				if ( !empty( $recipients_by_days[ $nb_days_diff ][ 'mandate' ] )  && !empty( $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ] ) ) {
 					NotificationsAPI::declaration_to_do( $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ], $nb_days_diff, TRUE, $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'options' ] );
+					$recipients_sms = array_merge( $recipients_sms, $recipients_by_days[ $nb_days_diff ][ 'mandate' ][ 'emails' ] );
 				}
 				if ( !empty( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ] )  && !empty( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ] ) ) {
 					NotificationsAPI::declaration_to_do( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ], $nb_days_diff, FALSE, $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'options' ] );
+					$recipients_sms = array_merge( $recipients_sms, $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ] );
 				}
+				NotificationsAPI::declaration_to_do_sms( $recipients_sms, $nb_days_diff, $date_due_previous_day );
 			}
 		}
 		
