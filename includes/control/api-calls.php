@@ -215,28 +215,86 @@ class WDGAPICalls {
 		
 		$buffer = array();
 		
+		// Totaux
 		$query_options = array(
-			'numberposts' => -1,
-			'post_type' => 'edd_payment',
-			'post_status' => 'publish'
+			'numberposts'	=> -1,
+			'post_type'		=> 'edd_payment',
+			'post_status'	=> 'publish'
 		);
 		$investments_list = get_posts( $query_options );
 		$buffer[ 'total' ] = count( $investments_list );
 		
+		$query_options[ 'post_status' ] = 'failed';
+		$investments_list = get_posts( $query_options );
+		$buffer[ 'payment_errors' ] = count( $investments_list );
 		
+		
+		// Totaux 30 derniers jours
 		$query_options = array(
-			'numberposts' => -1,
-			'post_type' => 'edd_payment',
-			'post_status' => 'publish',
-			'date_query' => array(
+			'numberposts'	=> -1,
+			'post_type'		=> 'edd_payment',
+			'post_status'	=> 'publish',
+			'date_query'	=> array(
 				array(
-					'after' => '-30 days',
-					'column' => 'post_date',
+					'after'		=> '-30 days',
+					'column'	=> 'post_date',
 				)
 			)
 		);
 		$investments_monthly_list = get_posts( $query_options );
-		$buffer[ 'total_monthly' ] = count( $investments_monthly_list );
+		$buffer[ 'total_last_30_days' ] = count( $investments_monthly_list );
+		
+		$query_options[ 'post_status' ] = 'failed';
+		$investments_monthly_list = get_posts( $query_options );
+		$buffer[ 'payment_errors_monthly' ] = count( $investments_monthly_list );
+		
+		
+		// Totaux par mois
+		$date_now = new DateTime();
+		$buffer[ 'total_by_month' ] = array();
+		for ( $i = 1; $i <= 12; $i++ ) {
+			$query_options = array(
+				'numberposts'	=> -1,
+				'post_type'		=> 'edd_payment',
+				'post_status'	=> 'publish',
+				'date_query'	=> array(
+					array(
+						'year'	=> $date_now->format( 'Y' ),
+						'month' => $i
+					)
+				)
+			);
+			$investments_monthly_list = get_posts( $query_options );
+			$buffer[ 'total_by_month' ][ $i ][ 'success' ] = count( $investments_monthly_list );
+			
+			$query_options[ 'post_status' ] = 'failed';
+			$investments_monthly_list = get_posts( $query_options );
+			$buffer[ 'total_by_month' ][ $i ][ 'failed' ] = count( $investments_monthly_list );
+		}
+		
+		
+		// Totaux par jour ce mois-ci
+		$buffer[ 'total_by_day_this_month' ] = array();
+		for ( $i = 1; $i <= 31; $i++ ) {
+			$query_options = array(
+				'numberposts'	=> -1,
+				'post_type'		=> 'edd_payment',
+				'post_status'	=> 'publish',
+				'date_query'	=> array(
+					array(
+						'year'	=> $date_now->format( 'Y' ),
+						'month'	=> $date_now->format( 'm' ),
+						'day'	=> $i
+					)
+				)
+			);
+			$investments_monthly_list = get_posts( $query_options );
+			$buffer[ 'total_by_day_this_month' ][ $i ][ 'success' ] = count( $investments_monthly_list );
+			
+			$query_options[ 'post_status' ] = 'failed';
+			$investments_monthly_list = get_posts( $query_options );
+			$buffer[ 'total_by_day_this_month' ][ $i ][ 'failed' ] = count( $investments_monthly_list );
+		}
 		
 		
 		$query_options = array(
@@ -259,10 +317,6 @@ class WDGAPICalls {
 		foreach ( $investments_wallet_list as $investment_post ) {
 			$buffer[ 'amount_with_royalties' ] += edd_get_payment_amount( $investment_post->ID );
 		}
-		
-		
-		$buffer[ 'payment_errors' ] = 0; //TODO
-		$buffer[ 'payment_errors_monthly' ] = 0; //TODO
 		
 		exit( json_encode( $buffer ) );
 		
