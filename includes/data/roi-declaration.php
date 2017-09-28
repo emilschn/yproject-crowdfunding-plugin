@@ -40,11 +40,11 @@ class WDGROIDeclaration {
 	public $on_api;
 	
 	
-	public function __construct( $declaration_id = FALSE, $local = FALSE ) {
+	public function __construct( $declaration_id = FALSE, $local = FALSE, $data = FALSE ) {
 		if ( !empty( $declaration_id ) ) {
 			// Si déjà chargé précédemment
-			if ( isset( self::$collection_by_id[ $declaration_id ] ) ) {
-				$collection_item = self::$collection_by_id[ $declaration_id ];
+			if ( isset( self::$collection_by_id[ $declaration_id ] ) || $data !== FALSE ) {
+				$collection_item = isset( self::$collection_by_id[ $declaration_id ] ) ? self::$collection_by_id[ $declaration_id ] : $data;
 				$this->id = $collection_item->id;
 				$this->id_campaign = $collection_item->id_campaign;
 				$this->date_due = $collection_item->date_due;
@@ -937,7 +937,7 @@ class WDGROIDeclaration {
 				}
 
 				if ( $add ) {
-					$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id );
+					$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id, false, $declaration_item );
 					array_push($buffer, $ROIdeclaration);
 				}
 			}
