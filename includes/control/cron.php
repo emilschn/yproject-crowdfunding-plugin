@@ -97,7 +97,6 @@ class WDGCronActions {
 					NotificationsAPI::declaration_to_do( $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ], $nb_days_diff, FALSE, $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'options' ] );
 					$recipients_sms = array_merge( $recipients_sms, $recipients_by_days[ $nb_days_diff ][ 'nomandate' ][ 'emails' ] );
 				}
-				NotificationsAPI::declaration_to_do_sms( $recipients_sms, $nb_days_diff, $date_due_previous_day );
 			}
 		}
 		

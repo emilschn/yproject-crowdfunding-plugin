@@ -39,9 +39,7 @@ class NotificationsAPI {
 				'recipient'	=> $param_recipients,
 				'options'	=> json_encode( $options )
 			);
-			if ( WP_IS_DEV_SITE ) {
-				return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-			}
+			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		}
 		
 		return FALSE;
