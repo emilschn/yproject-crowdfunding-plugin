@@ -16,8 +16,8 @@ class NotificationsAPI {
 	 */
 	public static function declaration_to_do( $recipients, $nb_remaining_days, $has_mandate, $options ) {
 		$param_template_by_remaining_days = array(
-			'10-mandate'	=> '114',
-			'10-nomandate'	=> '115',
+			'9-mandate'	=> '114',
+			'9-nomandate'	=> '115',
 			'2-mandate'		=> '119',
 			'2-nomandate'	=> '116',
 			'0-mandate'		=> '121',

@@ -959,7 +959,7 @@ class WDGOrganization {
 		if ( !empty( $mandates_list ) ) {
 			$last_mandate = end( $mandates_list );
 			$last_mandate_status = $last_mandate[ "S" ];
-			$buffer = ( $last_mandate_status == 5 && $last_mandate_status == 6 );
+			$buffer = ( $last_mandate_status == 5 || $last_mandate_status == 6 );
 		}
 		return $buffer;
 	}
