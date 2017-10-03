@@ -7,11 +7,10 @@ class WDGCronActions {
 	public static function send_notifications() {
 		
 		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 10 jours
-		$recipients_by_days = array();
 		$current_date = new DateTime();
 		$current_date->setTime( 0, 0, 1 );
 		$date_in_10_days = new DateTime();
-		$date_in_10_days->add( new DateInterval('P10D') );
+		$date_in_10_days->add( new DateInterval('P9D') );
 		$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
 		if ( $declaration_list ) {
 			foreach ( $declaration_list as $declaration_data ) {
@@ -23,18 +22,43 @@ class WDGCronActions {
 						$nb_days_diff = $date_due->diff( $current_date )->days;
 						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
 						$organization = $campaign->get_organization();
-						if ( !isset( $recipients_by_days[ $nb_days_diff ] ) ) {
-							$recipients_by_days[ $nb_days_diff ] = array();
+						$wdgorganization = new WDGOrganization( $organization->id );
+						$wdguser_author = new WDGUser( $campaign->data->post_author );
+						
+						// Données qui seront transmises à SiB
+						$date_due_previous_day = new DateTime( $declaration_data->date_due );
+						$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
+						$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+						$nb_fields = $campaign->get_turnover_per_declaration();
+						$date_last_months =  new DateTime( $declaration_data->date_due );
+						$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
+						$last_months_str = '';
+						for ( $i = 0; $i < $nb_fields; $i++ ) {
+							$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
+							if ( $i < $nb_fields - 2 ) {
+								$last_months_str .= ', ';
+							}
+							if ( $i == $nb_fields - 2 ) {
+								$last_months_str .= ' et ';
+							}
+							$date_last_months->add( new DateInterval( 'P1M' ) );
 						}
-						array_push( $recipients_by_days[ $nb_days_diff ], $organization->email );
+						$year = $date_due->format( 'Y' );
+						if ( $date_due->format( 'n' ) < 4 ) {
+							$year--;
+						}
+						$last_months_str .= ' ' . $year;
+						$options = array(
+							'NOM'					=> $wdguser_author->get_firstname(),
+							'TROIS_DERNIERS_MOIS'	=> $last_months_str,
+							'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
+							'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
+						);
+						
+						NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
 					}
 				}
 
-			}
-
-			// On regroupe les envois qui concernent le même jour
-			foreach ( $recipients_by_days as $nb_days => $recipients ) {
-				NotificationsAPI::declaration_to_do( $recipients, $nb_days );
 			}
 		}
 		
