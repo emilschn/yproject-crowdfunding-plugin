@@ -472,6 +472,13 @@ class WDGROIDeclaration {
 					$this->transfered_previous_remaining_amount = $previous_remaining_amount - $remaining_amount;
 				}
 			}
+			
+			$wdguser_author = new WDGUser( $campaign->data->post_author );
+			if ( $this->get_amount_with_adjustment() > 0 ) {
+				NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str(), $this->get_amount_with_adjustment() );
+			} else {
+				NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str() );
+			}
 			$this->remaining_amount = $remaining_amount;
 			$this->status = WDGROIDeclaration::$status_finished;
 			$this->date_transfer = $date_now_formatted;
@@ -685,6 +692,22 @@ class WDGROIDeclaration {
 			$date_due->add( new DateInterval( 'P1M' ) );
 		}
 
+		return $buffer;
+	}
+	
+	public function get_month_list_str() {
+		$buffer = '';
+		$month_list = $this->get_month_list();
+		$count_months = count( $month_list );
+		for ( $i = 0; $i < $count_months; $i++ ) {
+			$buffer .= strtolower( $month_list[ $i ] );
+			if ( $i < $count_months - 2 ) {
+				$buffer .= ', ';
+			}
+			if ( $i == $count_months - 2 ) {
+				$buffer .= ' et ';
+			}
+		}
 		return $buffer;
 	}
 	
