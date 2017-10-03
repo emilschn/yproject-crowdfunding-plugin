@@ -368,11 +368,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	$blank_space = '________________________________________________';
 	$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
 	
-	if ( $user_obj == 'user' ) {
-		$nationality = $blank_space;
-		$user_name = "<i>(NOM Pr&eacute;nom)</i> " . $blank_space;
-		
-	} else {
+	if ( $user_obj != 'user' ) {
 		global $country_list;
 		$nationality = $country_list[$user_obj->get('user_nationality')];
 
@@ -387,7 +383,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     
     $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().'</h1></div>';
     
-    $buffer .= '<p>';
+    $buffer .= '<p style="line-height: 1.8;">';
     switch ($campaign_obj->funding_type()) {
 	    case 'fundingproject':
 			if ($lang == 'en_US') {
@@ -406,37 +402,17 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			}
 		break;
     }
-    if ($organization !== false) {
-		if ( is_object($organization) ) {
-			if ($lang == 'en_US') {
-				$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' with the capital of '.$organization->get_capital().'&euro;</strong><br />';
-				$buffer .= 'which address is '.$organization->get_city().' ('.$organization->get_postal_code().') - '.$organization->get_address().'<br />';
-				$buffer .= 'registered with the number '.$organization->get_idnumber().' in '.$organization->get_rcs().'<br />';
-				$buffer .= 'represented by ';
-			} else {
-				$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' au capital de '.$organization->get_capital().'&euro;</strong><br />';
-				$buffer .= 'dont le siège social est à '.$organization->get_city().' ('.$organization->get_postal_code().') - '.$organization->get_address().'<br />';
-				$buffer .= 'immatriculée sous le numéro '.$organization->get_idnumber().' au RCS de '.$organization->get_rcs().'<br />';
-				$buffer .= 'représentée par ';
-			}
-		} elseif ( $organization == 'orga' ) {
-			$buffer .= "<i>(Nom de l'organisation)</i> " . $blank_space . ", ";
-			$buffer .= "<i>(Forme légale)</i> " . $blank_space . " ";
-			$buffer .= "<i>au capital de</i> " . $blank_space_small . " &euro;<br />";
-			$buffer .= "dont le siège social est à <i>(ville et CP)</i>" . $blank_space . " <i>(adresse)</i>" . $blank_space . "<br />";
-			$buffer .= "immatriculée sous le numéro " . $blank_space_small . " au RCS de " . $blank_space . "<br />";
-			$buffer .= "représentée par ";
-		}
-    }
 	
-    $buffer .= '<strong>'.$user_name.'</strong><br />';
 	if ( $user_obj == 'user' ) {
-		$buffer .= "né(e) le ".$blank_space_small." &agrave; ".$blank_space.'<br />';
+		$buffer .= "<i>(Civilité Prénom Nom)</i> " . $blank_space."<br />";
+		$buffer .= "né(e) le ".$blank_space_small." &agrave; ".$blank_space."<br />";
 		$buffer .= "de nationalité ".$blank_space."<br />";
-		$buffer .= "demeurant à <i>(ville et CP)</i>".$blank_space." <i>(adresse)</i>" . $blank_space.'<br />';;
+		$buffer .= "demeurant <i>(adresse)</i>".$blank_space."<br />";
+		$buffer .= "<i>(ville et CP)</i>" . $blank_space."<br />";
 		$buffer .= "Adresse e-mail : ".$blank_space;
 		
 	} else {
+		$buffer .= '<strong>'.$user_name.'</strong><br />';
 		if ($lang == 'en_US') {
 			$birthday_month = mb_strtoupper($months[$user_obj->get('user_birthday_month') - 1]);
 			$buffer .= 'born on '.$birthday_month.' '.$user_obj->get('user_birthday_day').' '.$user_obj->get('user_birthday_year').' in '.$user_obj->get('user_birthplace').'<br />';
@@ -449,16 +425,41 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			$suffix_born = ($user_obj->get('user_gender') == "female") ? 'e' : '';
 			$buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' &agrave; '.$user_obj->get('user_birthplace').'<br />';
 			$buffer .= 'de nationalité '.$nationality.'<br />';
-			$buffer .= 'demeurant à '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address').'<br />';;
+			$buffer .= 'demeurant ' . $user_obj->get('user_address').' '.$user_obj->get('user_postal_code').' '.$user_obj->get('user_city').'<br />';;
 			$buffer .= 'Adresse e-mail : '.$user_obj->user_email;
 		}
 	}
+	
+    if ($organization !== false) {
+	    $buffer .= '<br /><br />';
+		if ( is_object($organization) ) {
+			if ($lang == 'en_US') {
+				$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' with the capital of '.$organization->get_capital().'&euro;</strong><br />';
+				$buffer .= 'which address is '.$organization->get_city().' ('.$organization->get_postal_code().') - '.$organization->get_address().'<br />';
+				$buffer .= 'registered with the number '.$organization->get_idnumber().' in '.$organization->get_rcs().'<br />';
+			} else {
+				$buffer .= "agissant, ayant tous pouvoirs à l'effet des présentes, pour le compte de :<br />";
+				$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' au capital de '.$organization->get_capital().'&euro;</strong><br />';
+				$buffer .= 'dont le siège social est '.$organization->get_address().' '.$organization->get_postal_code().' '.$organization->get_city().'<br />';
+				$buffer .= 'immatriculée sous le numéro SIREN '.$organization->get_idnumber().' au RCS de '.$organization->get_rcs().'<br />';
+			}
+		} elseif ( $organization == 'orga' ) {
+			$buffer .= "<i>&nbsp;&nbsp;&nbsp;A remplir si personne morale</i><br />";
+			$buffer .= "agissant, ayant tous pouvoirs à l'effet des présentes, pour le compte de :<br />";
+			$buffer .= "<i>(Nom de l'organisation)</i> " . $blank_space . ",<br />";
+			$buffer .= "<i>(Forme légale)</i> " . $blank_space . " ";
+			$buffer .= "<i>au capital de</i> " . $blank_space_small . " &euro;<br />";
+			$buffer .= "dont le siège social est <i>(adresse)</i>" . $blank_space . " <i>(ville et CP)</i>" . $blank_space . "<br />";
+			$buffer .= "immatriculée sous le numéro " . $blank_space_small . " au RCS de " . $blank_space . "<br />";
+		}
+    }
     
     if ($campaign_obj->funding_type() == 'fundingproject') {
 	    $buffer .= '<br /><br />';
 
 		if ( empty( $payment_data ) ) {
-			$buffer .= 'qui paie la somme de '.$blank_space_small.' € ci-après désignée la « Souscription »,<br /><br />';
+			$buffer .= "<i>&nbsp;&nbsp;&nbsp;A remplir dans tous les cas</i><br />";
+			$buffer .= 'qui paie la somme de '.$blank_space_small.' € ci-après désignée la « <strong>Souscription</strong> »,<br /><br />';
 			$buffer .= 'ci-après désigné le « Souscripteur »,<br />';
 			$buffer .= 'D\'UNE PART<br />';
 			
@@ -582,15 +583,17 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 				$buffer .= 'représentée par ';
 			}
 		}
+		$buffer .= $user_name.'<br />';
 		
 	} else {
+		$buffer .= '<span style="line-height: 1.8">';
 		$buffer .= 'Le (<i>date</i>)'.$blank_space_small.'<br />';
 		if ( $organization == 'orga' ) {
 			$buffer .= "LA (<i>forme légale et nom de l'organisation</i>)".$blank_space.'<br />';
-			$buffer .= 'représentée par ';
+			$buffer .= 'représentée par ' .$blank_space;
 		}
+		$buffer .= '</span>';
 	}
-    $buffer .= $user_name.'<br />';
     $buffer .= '(1)<br />';
     $buffer .= 'Bon pour souscription';
     $buffer .= '</td>';

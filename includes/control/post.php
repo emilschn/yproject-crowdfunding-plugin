@@ -349,7 +349,6 @@ class WDGPostActions {
 	public static function generate_contract_files() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$campaign->generate_contract_pdf_blank_user();
 		$campaign->generate_contract_pdf_blank_organization();
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );
