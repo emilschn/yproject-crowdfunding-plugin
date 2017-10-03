@@ -688,7 +688,7 @@ class NotificationsEmails {
         $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
                 .'<h1 style="text-align: center;">'.$post_title.'</h1>';
         
-        $body_content .= $new_post->post_content.'<br/>';
+        $body_content .= apply_filters( 'the_content', $new_post->post_content ).'<br /><br />';
         
         $body_content .= '<div style="text-align: center;">'
                 .'<a href="'.get_permalink($post_id).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
