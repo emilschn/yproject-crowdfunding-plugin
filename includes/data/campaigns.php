@@ -624,7 +624,7 @@ function atcf_campaign_add_first_declaration() {
 	$fp_mm = mysql2date( 'm', $fp_date, false );
 	$fp_yy = mysql2date( 'Y', $fp_date, false );
 	$date_formatted = $fp_yy. '-' .$fp_mm. '-' .$fp_dd;
-	$declaration_id = WDGROIDeclaration::insert($campaign_id, $date_formatted);
+	$declaration_id = WDGROIDeclaration::insert($campaign->get_api_id(), $date_formatted);
 	
 	if ( !empty( $save_first ) ) {
 		$new_declaration = new WDGROIDeclaration($declaration_id);
@@ -637,10 +637,11 @@ function atcf_campaign_add_first_declaration() {
 function atcf_campaign_add_new_declaration() {
 	$due_date = filter_input(INPUT_POST, 'declaration-date_due-new');
 	$campaign_id = filter_input(INPUT_POST, 'post_ID');
+	$campaign = new ATCF_Campaign( $campaign_id );
 	if ( !empty( $due_date ) ) {
 		$date_exploded = explode('/', $due_date);
 		$date_formatted = $date_exploded[2] .'-'. $date_exploded[1] .'-'. $date_exploded[0];
-		WDGROIDeclaration::insert($campaign_id, $date_formatted);
+		WDGROIDeclaration::insert( $campaign->get_api_id(), $date_formatted );
 	}
 }
 

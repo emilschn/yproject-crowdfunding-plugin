@@ -22,41 +22,43 @@ class WDGROI {
 	public $on_api;
 	
 	
-	public function __construct( $roi_id, $local = FALSE ) {
-		// Récupération en priorité depuis l'API
-		$roi_api_item = ( !$local ) ? WDGWPREST_Entity_ROI::get( $roi_id ) : FALSE;
-		if ( $roi_api_item != FALSE ) {
-			
-			$this->id = $roi_id;
-			$this->id_investment = $roi_api_item->id_investment;
-			$this->id_campaign = $roi_api_item->id_project;
-			$this->id_orga = $roi_api_item->id_orga;
-			$this->id_user = $roi_api_item->id_user;
-			$this->id_declaration = $roi_api_item->id_declaration;
-			$this->date_transfer = $roi_api_item->date_transfer;
-			$this->amount = $roi_api_item->amount;
-			$this->id_transfer = $roi_api_item->id_transfer;
-			$this->status = $roi_api_item->status;
-			$this->on_api = TRUE;
-			
-		// Sinon récupération sur la bdd locale (deprecated)
-		} else {
-			global $wpdb;
-			$table_name = $wpdb->prefix . WDGROI::$table_name;
-			$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$roi_id;
-			$roi_item = $wpdb->get_row( $query );
-			if ( $roi_item ) {
-				$this->id = $roi_item->id;
-				$this->id_investment = $roi_item->id_investment;
-				$this->id_campaign = $roi_item->id_campaign;
-				$this->id_orga = $roi_item->id_orga;
-				$this->id_user = $roi_item->id_user;
-				$this->id_declaration = $roi_item->id_declaration;
-				$this->date_transfer = $roi_item->date_transfer;
-				$this->amount = $roi_item->amount;
-				$this->id_transfer = $roi_item->id_transfer;
-				$this->status = $roi_item->status;
-				$this->on_api = ( $roi_item->on_api == 1 );
+	public function __construct( $roi_id = FALSE, $local = FALSE ) {
+		if ( !empty( $roi_id ) ) {
+			// Récupération en priorité depuis l'API
+			$roi_api_item = ( !$local ) ? WDGWPREST_Entity_ROI::get( $roi_id ) : FALSE;
+			if ( $roi_api_item != FALSE ) {
+
+				$this->id = $roi_id;
+				$this->id_investment = $roi_api_item->id_investment;
+				$this->id_campaign = $roi_api_item->id_project;
+				$this->id_orga = $roi_api_item->id_orga;
+				$this->id_user = $roi_api_item->id_user;
+				$this->id_declaration = $roi_api_item->id_declaration;
+				$this->date_transfer = $roi_api_item->date_transfer;
+				$this->amount = $roi_api_item->amount;
+				$this->id_transfer = $roi_api_item->id_transfer;
+				$this->status = $roi_api_item->status;
+				$this->on_api = TRUE;
+
+			// Sinon récupération sur la bdd locale (deprecated)
+			} else {
+				global $wpdb;
+				$table_name = $wpdb->prefix . WDGROI::$table_name;
+				$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$roi_id;
+				$roi_item = $wpdb->get_row( $query );
+				if ( $roi_item ) {
+					$this->id = $roi_item->id;
+					$this->id_investment = $roi_item->id_investment;
+					$this->id_campaign = $roi_item->id_campaign;
+					$this->id_orga = $roi_item->id_orga;
+					$this->id_user = $roi_item->id_user;
+					$this->id_declaration = $roi_item->id_declaration;
+					$this->date_transfer = $roi_item->date_transfer;
+					$this->amount = $roi_item->amount;
+					$this->id_transfer = $roi_item->id_transfer;
+					$this->status = $roi_item->status;
+					$this->on_api = ( $roi_item->on_api == 1 );
+				}
 			}
 		}
 	}
@@ -218,24 +220,17 @@ class WDGROI {
 	 * Ajout d'une nouvelle déclaration
 	 */
 	public static function insert( $id_investment, $id_campaign, $id_orga, $id_user, $id_declaration, $date_transfer, $amount, $id_transfer, $status ) {
-		global $wpdb;
-		$result = $wpdb->insert( 
-			$wpdb->prefix . WDGROI::$table_name, 
-			array( 
-				'id_investment'	=> $id_investment, 
-				'id_campaign'	=> $id_campaign, 
-				'id_orga'		=> $id_orga,
-				'id_user'		=> $id_user,
-				'id_declaration'=> $id_declaration,
-				'date_transfer'	=> $date_transfer,
-				'amount'		=> $amount,
-				'id_transfer'	=> $id_transfer,
-				'status'		=> $status
-			) 
-		);
-		if ($result !== FALSE) {
-			return $wpdb->insert_id;
-		}
+		$roi = new WDGROI();
+		$roi->id_investment = $id_investment;
+		$roi->id_campaign = $id_campaign;
+		$roi->id_orga = $id_orga;
+		$roi->id_user = $id_user;
+		$roi->id_declaration = $id_declaration;
+		$roi->date_transfer = $date_transfer;
+		$roi->amount = $amount;
+		$roi->id_transfer = $id_transfer;
+		$roi->status = $status;
+		WDGWPREST_Entity_Declaration::create( $declaration );
 	}
 	
 	/**

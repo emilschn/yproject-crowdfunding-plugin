@@ -688,7 +688,7 @@ class NotificationsEmails {
         $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">'
                 .'<h1 style="text-align: center;">'.$post_title.'</h1>';
         
-        $body_content .= $new_post->post_content.'<br/>';
+        $body_content .= apply_filters( 'the_content', $new_post->post_content ).'<br /><br />';
         
         $body_content .= '<div style="text-align: center;">'
                 .'<a href="'.get_permalink($post_id).'" style="background-color: rgb(255, 73, 76); margin-bottom:10px; padding: 10px; color: rgb(255, 255, 255); text-decoration: none; display: inline-block;" target="_blank">
@@ -727,7 +727,7 @@ class NotificationsEmails {
 	public static function turnover_declaration_null( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::turnover_declaration_null > ' . $declaration_id);
 		$declaration = new WDGROIDeclaration($declaration_id);
-		$campaign = new ATCF_Campaign( $declaration->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 		
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA à zero";
@@ -740,7 +740,7 @@ class NotificationsEmails {
     public static function send_notification_roi_payment_success_user( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_success_user > ' . $declaration_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
-		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		$author = get_user_by( 'id', $campaign->data->post_author );
 		
 		$object = "Paiement de votre reversement effectué";
@@ -753,7 +753,7 @@ class NotificationsEmails {
     public static function send_notification_roi_payment_success_admin( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_success_admin > ' . $declaration_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
-		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI effectué";
@@ -766,7 +766,7 @@ class NotificationsEmails {
 	public static function send_notification_roi_payment_bank_transfer_admin( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_bank_transfer_admin > ' . $declaration_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
-		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Paiement par virement déclaré";
@@ -779,7 +779,7 @@ class NotificationsEmails {
     public static function send_notification_roi_payment_error_admin( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_error_admin > ' . $declaration_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
-		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
 		$admin_email = get_option('admin_email');
 		$object = "Projet " . $campaign->data->post_title . " - Problème de paiement de ROI";
@@ -792,7 +792,7 @@ class NotificationsEmails {
 	public static function roi_transfer_success_user( $declaration_id, $user_id, $message = '' ) {
 		ypcf_debug_log('NotificationsEmails::roi_transfer_success_user > ' . $declaration_id . ' ; ' . $user_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
-		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		$WDGUser = new WDGUser( $user_id );
 		
 		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;
@@ -836,7 +836,7 @@ class NotificationsEmails {
 	public static function roi_transfer_null_user( $declaration_id, $user_id, $message = '' ) {
 		ypcf_debug_log('NotificationsEmails::roi_transfer_null_user > ' . $declaration_id . ' ; ' . $user_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
-		$campaign = new ATCF_Campaign( $roi_declaration->id_campaign );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		$WDGUser = new WDGUser( $user_id );
 		
 		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;

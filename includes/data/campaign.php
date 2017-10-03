@@ -709,7 +709,7 @@ class ATCF_Campaign {
 					}
 				}
 				if ( $add_date ) {
-					WDGROIDeclaration::insert( $this->ID, $current_date->format( 'Y-m-d' ) );
+					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
 				}
 				$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
 			}
@@ -734,9 +734,9 @@ class ATCF_Campaign {
 				$buffer_declaration_object["total_roi_with_adjustment"] = $declaration_item->get_amount_with_adjustment();
 				$buffer_declaration_object["status"] = $declaration_item->status;
 				$buffer_declaration_object["roi_list"] = array();
-				$roi_list = $declaration_item->get_rois();
-				foreach ( $roi_list as $roi_item ) {
-					if ( $roi_item->status == WDGROI::$status_transferred ) {
+				if ( $roi_item->status == WDGROI::$status_transferred ) {
+					$roi_list = $declaration_item->get_rois();
+					foreach ( $roi_list as $roi_item ) {
 						$roi_object = array();
 						$roi_user = new WP_User( $roi_item->id_user );
 						$roi_object["id"] = $roi_item->id;

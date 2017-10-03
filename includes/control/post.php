@@ -68,7 +68,7 @@ class WDGPostActions {
         global $wpdb;
         $campaign_id = sanitize_text_field(filter_input(INPUT_POST,'campaign_id'));
         $mail_title = sanitize_text_field(filter_input(INPUT_POST,'mail_title'));
-        $mail_content = filter_input(INPUT_POST,'mail_content');
+        $mail_content = nl2br( filter_input( INPUT_POST, 'mail_content' ) );
         $mail_recipients = (json_decode("[".filter_input(INPUT_POST,'mail_recipients')."]"));
 
         NotificationsEmails::project_mail($campaign_id, $mail_title, $mail_content, $mail_recipients);

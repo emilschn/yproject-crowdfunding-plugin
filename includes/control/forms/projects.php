@@ -588,10 +588,11 @@ class WDGFormProjects {
 
         $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">';
 
-        $body_content .= $initial_content.'<br/>';
+        $body_content .= $initial_content.'<br />';
 
         $body_content .= '<div style="text-align: center;">';
 		if ( ATCF_CrowdFunding::get_platform_context() == "wedogood" ) {
+			$body_content .= '<br /><br />';
             $body_content .= '<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$post_campaign->post_title.'.
 				Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
 				.'votre page "Mon Compte" '.ATCF_CrowdFunding::get_platform_name().' pour désactiver les notifications de ce projet.</em>';

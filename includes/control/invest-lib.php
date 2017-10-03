@@ -557,6 +557,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 									break;
 								case 4:
 									$buffer = 'failed';
+									$wdginvestment->set_status( WDGInvestment::$status_error );
 									break;
 								case 0:
 								default:
