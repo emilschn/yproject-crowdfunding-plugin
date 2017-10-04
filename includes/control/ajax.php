@@ -94,10 +94,10 @@ class WDGAjaxActions {
 		    //Récupération des éléments à traiter
 		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
 			$declaration = new WDGROIDeclaration($declaration_id);
-		    $campaign = new ATCF_Campaign($declaration->id_campaign);
+		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 		    $total_roi = 0;
 		    $total_fees = 0;
-		    $investments_list = $campaign->roi_payments_data($declaration);
+		    $investments_list = $campaign->roi_payments_data( $declaration );
 		    foreach ($investments_list as $investment_item) {
 			    $total_fees += $investment_item['roi_fees'];
 			    $total_roi += $investment_item['roi_amount']; 
