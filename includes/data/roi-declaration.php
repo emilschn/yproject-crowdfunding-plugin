@@ -451,14 +451,16 @@ class WDGROIDeclaration {
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
 								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'], $this->get_message() );
-							} else {
-								NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'], $this->get_message() );
 							}
 						}
 
 					} else {
 						WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_lemonway_id(), $recipient_lw_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
 
+					}
+					
+					if ( $send_notifications && $investment_item['roi_amount'] == 0 ) {
+						NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'], $this->get_message() );
 					}
 					
 				}

@@ -842,7 +842,7 @@ class NotificationsEmails {
 		$object = "Versement de vos royalties pour le projet " . $campaign->data->post_title;
 		$body_content = "Bonjour,<br /><br />";
 		$body_content .= "Vous avez investi dans le projet " . $campaign->data->post_title . " sur ".ATCF_CrowdFunding::get_platform_name()." et le versement de vos royalties était annoncé pour le ".$roi_declaration->get_formatted_date().". ";
-		$body_content .= "La déclaration du porteur de projet a bien été reçue et traitée par ".ATCF_CrowdFunding::get_platform_name().". Cependant, le projet n'a généré aucun chiffre d'affaires sur la période concernée et ne peut donc pas vous verser de royaltiez.<br /><br />";
+		$body_content .= "La déclaration du porteur de projet a bien été reçue et traitée par ".ATCF_CrowdFunding::get_platform_name().". Cependant, le projet n'a pas généré assez de chiffre d'affaires sur la période concernée et ne peut donc pas vous verser de royalties.<br /><br />";
 		if ( !empty( $message ) ) {
 			$body_content .= "<b>Le porteur de projet vous adresse le message suivant :</b><br />";
 			$body_content .= $message;
