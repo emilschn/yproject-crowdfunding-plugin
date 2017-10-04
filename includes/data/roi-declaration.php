@@ -46,7 +46,7 @@ class WDGROIDeclaration {
 			if ( isset( self::$collection_by_id[ $declaration_id ] ) || $data !== FALSE ) {
 				$collection_item = isset( self::$collection_by_id[ $declaration_id ] ) ? self::$collection_by_id[ $declaration_id ] : $data;
 				$this->id = $collection_item->id;
-				$this->id_campaign = $collection_item->id_campaign;
+				$this->id_campaign = isset( $collection_item->id_campaign ) ? $collection_item->id_campaign : $collection_item->id_project;
 				$this->date_due = $collection_item->date_due;
 				$this->date_paid = $collection_item->date_paid;
 				$this->date_transfer = $collection_item->date_transfer;
