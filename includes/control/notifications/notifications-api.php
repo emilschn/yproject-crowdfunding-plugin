@@ -16,7 +16,7 @@ class NotificationsAPI {
 	 */
 	public static function declaration_to_do( $recipients, $nb_remaining_days, $has_mandate, $options ) {
 		$param_template_by_remaining_days = array(
-			'9-mandate'	=> '114',
+			'9-mandate'		=> '114',
 			'9-nomandate'	=> '115',
 			'2-mandate'		=> '119',
 			'2-nomandate'	=> '116',
@@ -65,6 +65,43 @@ class NotificationsAPI {
 	}
     //*******************************************************
     // FIN NOTIFICATIONS DECLARATIONS ROI A FAIRE
+    //*******************************************************
+	
+    //*******************************************************
+    // NOTIFICATIONS DECLARATIONS APROUVEES
+    //*******************************************************
+	public static function declaration_done_with_turnover( $recipient, $name, $last_three_months, $turnover_amount ) {
+		$id_template = '127';
+		$options = array(
+			'NOM'					=> $name,
+			'TROIS_DERNIERS_MOIS'	=> $last_three_months,
+			'MONTANT_ROYALTIES'		=> $turnover_amount
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_done_without_turnover( $recipient, $name, $last_three_months ) {
+		$id_template = '128';
+		$options = array(
+			'NOM'					=> $name,
+			'TROIS_DERNIERS_MOIS'	=> $last_three_months
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
 	
 }

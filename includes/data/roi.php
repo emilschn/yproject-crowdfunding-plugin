@@ -230,7 +230,7 @@ class WDGROI {
 		$roi->amount = $amount;
 		$roi->id_transfer = $id_transfer;
 		$roi->status = $status;
-		WDGWPREST_Entity_Declaration::create( $declaration );
+		WDGWPREST_Entity_ROI::create( $roi );
 	}
 	
 	/**

@@ -105,11 +105,14 @@ class WDGOrganization {
 			
 			$this->name = $this->bopp_object->name;
 			
-			$meta_email = get_user_meta( $user_id, 'orga_contact_email', TRUE );
-			if (empty($meta_email)) {
-				$this->email = $this->creator->user_email;
-			} else {
-				$this->email = $meta_email;
+			$this->email = $this->bopp_object->email;
+			if ( empty( $this->email ) ) {
+				$meta_email = get_user_meta( $user_id, 'orga_contact_email', TRUE );
+				if (empty($meta_email)) {
+					$this->email = $this->creator->user_email;
+				} else {
+					$this->email = $meta_email;
+				}
 			}
 			
 			$this->representative_function = $this->bopp_object->representative_function;
