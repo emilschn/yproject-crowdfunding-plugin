@@ -85,6 +85,7 @@ class WDG_Admin_General {
 		$edd_settings = get_option( 'edd_settings' );
 		$edd_settings[ 'investment_generalities' ] = filter_input( INPUT_POST, 'investment_generalities' );
 		$edd_settings[ 'contract' ] = filter_input( INPUT_POST, 'contract' );
+		$edd_settings[ 'investment_terms' ] = filter_input( INPUT_POST, 'investment_terms' );
 		$edd_settings[ 'standard_contract' ] = filter_input( INPUT_POST, 'standard_contract' );
 		update_option( 'edd_settings', $edd_settings );
 	}
@@ -243,6 +244,12 @@ class WDG_Admin_General {
 		<h3>Avertissements sur l&apos;investissement</h3>
 		<label for="contract">
 			<?php wp_editor( $edd_settings[ 'contract' ], 'contract' ); ?>
+		</label>
+		<br /><br />
+		
+		<h3>Modalités d'investissement</h3>
+		<label for="investment_terms">
+			<?php wp_editor( $edd_settings[ 'investment_terms' ], 'investment_terms' ); ?>
 		</label>
 		<br /><br />
 		

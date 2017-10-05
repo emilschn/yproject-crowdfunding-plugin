@@ -2,8 +2,38 @@
 class WDG_PDF_Generator {
 	
 /******************************************************************************/
-	/* Shortcodes spécifiques aux contrats */
+/* Shortcodes spécifiques aux contrats */
 /******************************************************************************/
+	public static function add_shortcodes() {
+		add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
+		add_shortcode( 'wdg_campaign_contract_organization_legalform', 'WDG_PDF_Generator::shortcode_contract_organization_legalform' );
+		add_shortcode( 'wdg_campaign_contract_organization_capital', 'WDG_PDF_Generator::shortcode_contract_organization_capital' );
+		add_shortcode( 'wdg_campaign_contract_organization_address', 'WDG_PDF_Generator::shortcode_contract_organization_address' );
+		add_shortcode( 'wdg_campaign_contract_organization_postalcode', 'WDG_PDF_Generator::shortcode_contract_organization_postalcode' );
+		add_shortcode( 'wdg_campaign_contract_organization_city', 'WDG_PDF_Generator::shortcode_contract_organization_city' );
+		add_shortcode( 'wdg_campaign_contract_organization_rcs', 'WDG_PDF_Generator::shortcode_contract_organization_rcs' );
+		add_shortcode( 'wdg_campaign_contract_organization_idnumber', 'WDG_PDF_Generator::shortcode_contract_organization_idnumber' );
+		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_civility', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_civility' );
+		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_firstname', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_firstname' );
+		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_lastname', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_lastname' );
+		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_function', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_function' );
+		add_shortcode( 'wdg_campaign_contract_start_date', 'WDG_PDF_Generator::shortcode_contract_start_date' );
+		add_shortcode( 'wdg_campaign_contract_organization_description', 'WDG_PDF_Generator::shortcode_contract_organization_description' );
+		add_shortcode( 'wdg_campaign_contract_minimum_goal', 'WDG_PDF_Generator::shortcode_contract_minimum_goal' );
+		add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
+		add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
+		add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
+		add_shortcode( 'wdg_campaign_contract_maximum_profit', 'WDG_PDF_Generator::shortcode_contract_maximum_profit' );
+		add_shortcode( 'wdg_campaign_contract_budget_type', 'WDG_PDF_Generator::shortcode_contract_budget_type' );
+		add_shortcode( 'wdg_campaign_contract_quarter_earnings_estimation_type', 'WDG_PDF_Generator::shortcode_contract_quarter_earnings_estimation_type' );
+		add_shortcode( 'wdg_campaign_contract_earnings_description', 'WDG_PDF_Generator::shortcode_contract_earnings_description' );
+		add_shortcode( 'wdg_campaign_contract_spendings_description', 'WDG_PDF_Generator::shortcode_contract_spendings_description' );
+		add_shortcode( 'wdg_campaign_contract_simple_info', 'WDG_PDF_Generator::shortcode_contract_simple_info' );
+		add_shortcode( 'wdg_campaign_contract_detailed_info', 'WDG_PDF_Generator::shortcode_contract_detailed_info' );
+		add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
+		add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
+	}
+	
 	/**
 	 * Shortcode affichant le nom de l'organisation qui porte le projet
 	 */
@@ -51,6 +81,14 @@ class WDG_PDF_Generator {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_obj;
 		return $shortcode_organization_obj->get_city();
+	}
+	/**
+	 * Shortcode affichant le RCS de l'organisation qui porte le projet
+	 */
+	public static function shortcode_contract_organization_rcs( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_organization_obj;
+		return $shortcode_organization_obj->get_rcs();
 	}
 	/**
 	 * Shortcode affichant le numéro SIREN de l'organisation qui porte le projet
@@ -140,6 +178,9 @@ class WDG_PDF_Generator {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
 		$buffer = $shortcode_campaign_obj->goal( false );
+		if ( $shortcode_campaign_obj->contract_maximum_type() == 'infinite' ) {
+			$buffer = ATCF_Campaign::$contract_maximum_types[ $shortcode_campaign_obj->contract_maximum_type() ];
+		}
 		return $buffer;
 	}
 	
@@ -149,7 +190,17 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_roi_percent_max( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = $shortcode_campaign_obj->roi_percent_estimated();
+		$roi_percent_estimated = $shortcode_campaign_obj->roi_percent_estimated();
+		
+		require_once('number-words/Numbers/Words.php');
+		$nbwd_class = new Numbers_Words();
+		$buffer_in_words = $nbwd_class->toWords( $roi_percent_estimated, 'fr' );
+		if ( !is_int( $roi_percent_estimated ) ) {
+			$number_exploded = explode( '.', $roi_percent_estimated );
+			$buffer_in_words .= " VIRGULE " . $nbwd_class->toWords( $number_exploded[ 1 ], 'fr' );
+		}
+	
+		$buffer = $roi_percent_estimated. '% (' . strtoupper( $buffer_in_words ) . ' POURCENTS)';
 		return $buffer;
 	}
 	
@@ -190,27 +241,22 @@ class WDG_PDF_Generator {
 	}
 	
 	/**
-	 * Shortcode affichant le type de plafond : todo
-	 */
-	public static function shortcode_contract_maximum_type( $atts, $content = '' ) {
-		$atts = shortcode_atts( array( ), $atts );
-		global $shortcode_campaign_obj;
-		$buffer = '';
-		if ( isset( ATCF_Campaign::$contract_maximum_types[ $shortcode_campaign_obj->contract_maximum_type() ] ) ) {
-			$buffer = ATCF_Campaign::$contract_maximum_types[ $shortcode_campaign_obj->contract_maximum_type() ];
-		}
-		return $buffer;
-	}
-	
-	/**
 	 * Shortcode affichant le type d'estimation de revenus trimestriels : todo
 	 */
 	public static function shortcode_contract_quarter_earnings_estimation_type( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
 		$buffer = '';
-		if ( isset( ATCF_Campaign::$quarter_earnings_estimation_types[ $shortcode_campaign_obj->quarter_earnings_estimation_type() ] ) ) {
-			$buffer = ATCF_Campaign::$quarter_earnings_estimation_types[ $shortcode_campaign_obj->quarter_earnings_estimation_type() ];
+		if ( $shortcode_campaign_obj->quarter_earnings_estimation_type() == 'linear' ) {
+			$buffer = "- 25% pour le premier trimestre<br />";
+			$buffer .= "- 25% pour le deuxième trimestre<br />";
+			$buffer .= "- 25% pour le troisième trimestre<br />";
+			$buffer .= "- 25% pour le quatrième trimestre<br />";
+		} elseif ( $shortcode_campaign_obj->quarter_earnings_estimation_type() == 'progressive' ) {
+			$buffer = "- 10% pour le premier trimestre<br />";
+			$buffer .= "- 20% pour le deuxième trimestre<br />";
+			$buffer .= "- 30% pour le troisième trimestre<br />";
+			$buffer .= "- 40% pour le quatrième trimestre<br />";
 		}
 		return $buffer;
 	}
@@ -335,34 +381,10 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		setlocale( LC_CTYPE, 'fr_FR' );
 	}
 	$campaign_obj->set_current_lang($lang);
+	$campaign_orga = $campaign_obj->get_organization();
+	$organization_obj = new WDGOrganization( $campaign_orga->wpref );
 	
-	add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
-	add_shortcode( 'wdg_campaign_contract_organization_legalform', 'WDG_PDF_Generator::shortcode_contract_organization_legalform' );
-	add_shortcode( 'wdg_campaign_contract_organization_capital', 'WDG_PDF_Generator::shortcode_contract_organization_capital' );
-	add_shortcode( 'wdg_campaign_contract_organization_address', 'WDG_PDF_Generator::shortcode_contract_organization_address' );
-	add_shortcode( 'wdg_campaign_contract_organization_postalcode', 'WDG_PDF_Generator::shortcode_contract_organization_postalcode' );
-	add_shortcode( 'wdg_campaign_contract_organization_city', 'WDG_PDF_Generator::shortcode_contract_organization_city' );
-	add_shortcode( 'wdg_campaign_contract_organization_idnumber', 'WDG_PDF_Generator::shortcode_contract_organization_idnumber' );
-	add_shortcode( 'wdg_campaign_contract_organization_reprensentative_civility', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_civility' );
-	add_shortcode( 'wdg_campaign_contract_organization_reprensentative_firstname', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_firstname' );
-	add_shortcode( 'wdg_campaign_contract_organization_reprensentative_lastname', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_lastname' );
-	add_shortcode( 'wdg_campaign_contract_organization_reprensentative_function', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_function' );
-	add_shortcode( 'wdg_campaign_contract_start_date', 'WDG_PDF_Generator::shortcode_contract_start_date' );
-	add_shortcode( 'wdg_campaign_contract_organization_description', 'WDG_PDF_Generator::shortcode_contract_organization_description' );
-	add_shortcode( 'wdg_campaign_contract_minimum_goal', 'WDG_PDF_Generator::shortcode_contract_minimum_goal' );
-	add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
-	add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
-	add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
-	add_shortcode( 'wdg_campaign_contract_maximum_profit', 'WDG_PDF_Generator::shortcode_contract_maximum_profit' );
-	add_shortcode( 'wdg_campaign_contract_budget_type', 'WDG_PDF_Generator::shortcode_contract_budget_type' );
-	add_shortcode( 'wdg_campaign_contract_maximum_type', 'WDG_PDF_Generator::shortcode_contract_maximum_type' );
-	add_shortcode( 'wdg_campaign_contract_quarter_earnings_estimation_type', 'WDG_PDF_Generator::shortcode_contract_quarter_earnings_estimation_type' );
-	add_shortcode( 'wdg_campaign_contract_earnings_description', 'WDG_PDF_Generator::shortcode_contract_earnings_description' );
-	add_shortcode( 'wdg_campaign_contract_spendings_description', 'WDG_PDF_Generator::shortcode_contract_spendings_description' );
-	add_shortcode( 'wdg_campaign_contract_simple_info', 'WDG_PDF_Generator::shortcode_contract_simple_info' );
-	add_shortcode( 'wdg_campaign_contract_detailed_info', 'WDG_PDF_Generator::shortcode_contract_detailed_info' );
-	add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
-	add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
+	WDG_PDF_Generator::add_shortcodes();
 	
 	$blank_space_small = '________________';
 	$blank_space = '________________________________________________';
@@ -381,7 +403,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	}
 		
     
-    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().'</h1></div>';
+    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
     
     $buffer .= '<p style="line-height: 1.8;">';
     switch ($campaign_obj->funding_type()) {
@@ -485,8 +507,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	
 	global $shortcode_campaign_obj, $shortcode_organization_obj, $shortcode_organization_creator;
 	$shortcode_campaign_obj = $campaign_obj;
-	$campaign_orga = $campaign_obj->get_organization();
-	$shortcode_organization_obj = new WDGOrganization( $campaign_orga->wpref );
+	$shortcode_organization_obj = $organization_obj;
 	$campaign_orga_linked_users = $shortcode_organization_obj->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 	$shortcode_organization_creator = $campaign_orga_linked_users[0];
 	$edd_settings = get_option( 'edd_settings' );

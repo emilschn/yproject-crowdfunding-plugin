@@ -510,12 +510,14 @@ class WDGOrganization {
 	public function get_linked_users( $type = '' ) {
 		$buffer = array();
 		$result = WDGWPREST_Entity_Organization::get_linked_users( $this->api_id );
-		foreach ( $result as $user_item ) {
-			if ( empty( $type ) || $user_item->type == $type ) {
-				$user_api = WDGWPREST_Entity_User::get( $user_item->id_user );
-				if ( $user_api != FALSE ) {
-					$user = new WDGUser( $user_api->wpref );
-					array_push( $buffer, $user );
+		if ( $result ) {
+			foreach ( $result as $user_item ) {
+				if ( empty( $type ) || $user_item->type == $type ) {
+					$user_api = WDGWPREST_Entity_User::get( $user_item->id_user );
+					if ( $user_api != FALSE ) {
+						$user = new WDGUser( $user_api->wpref );
+						array_push( $buffer, $user );
+					}
 				}
 			}
 		}

@@ -277,11 +277,6 @@ class ATCF_Campaigns {
 		add_meta_box( 'atcf_campaign_status', 'Statut de la campagne', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
 		add_meta_box( 'atcf_campaign_date_vote', 'Dates de la campagne', '_atcf_metabox_campaign_dates', 'download', 'side', 'high' );
 		
-		add_meta_box( 'atcf_campaign_investment_terms', 'Modalités d&apos;investissement', '_atcf_metabox_campaign_investment_terms', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_subscription_params', 'Paramètres de souscriptions (apports, domicile, ...)', '_atcf_metabox_campaign_subscription_params', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_powers_params', 'Paramètres de pouvoirs (déposer, signer, ...)', '_atcf_metabox_campaign_powers_params', 'download', 'normal', 'high' );
-		add_meta_box( 'atcf_campaign_constitution_terms', 'Modalités de constitutions', '_atcf_metabox_campaign_constitution_terms', 'download', 'normal', 'high' );
-		
 		add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
 	}
 

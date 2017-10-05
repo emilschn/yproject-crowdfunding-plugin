@@ -437,6 +437,9 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) {
 			$buffer = 'maximum';
 		}
+		if ( $this->contract_maximum_type() == 'infinite' ) {
+			$buffer = 'collected_funds';
+		}
         return $buffer;
 	}
 	// Contrat : Type de plafond
