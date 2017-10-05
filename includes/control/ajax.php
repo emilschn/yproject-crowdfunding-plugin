@@ -1355,6 +1355,7 @@ class WDGAjaxActions {
             $array_contacts[$u_id]["vote"]=1;
             $array_contacts[$u_id]["vote_date"]=$item_vote->date;
 			$array_contacts[$u_id]["invest_id"] = 0;
+			$array_contacts[$u_id]["vote_invest_sum"]=$item_vote->invest_sum;
 
 
             $array_contacts[$u_id]["vote_advice"]='<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>';
@@ -1362,12 +1363,10 @@ class WDGAjaxActions {
             switch ($item_vote->validate_project) {
                 case '1':
                     $array_contacts[$u_id]["vote_validate"]="Oui";
-                    $array_contacts[$u_id]["vote_invest_sum"]=$item_vote->invest_sum;
                     break;
                 case '0' :
                 default :
                     $array_contacts[$u_id]["vote_validate"]="Non";
-                    $array_contacts[$u_id]["vote_invest_sum"]="";
                     break;
             }
         }
