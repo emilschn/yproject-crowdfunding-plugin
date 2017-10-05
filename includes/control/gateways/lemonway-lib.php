@@ -119,7 +119,7 @@ class LemonwayLib {
 			$amount *= 100;
 			$amount /= 100;
 			//Modification pour les montants en .5 (doivent devenir .50)
-			if (strpos($amount, '.') == strlen($amount) - 2) {
+			if (strpos($amount, '.') !== FALSE && strpos($amount, '.') == strlen($amount) - 2) {
 				$amount .= '0';
 			}
 			if (strpos($amount, '.') === FALSE) {
