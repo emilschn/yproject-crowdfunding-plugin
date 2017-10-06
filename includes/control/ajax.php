@@ -724,36 +724,39 @@ class WDGAjaxActions {
 		if ( empty( $organization_id ) ) {
 			$errors['organization_id'] = __("Probl&egrave;me interne",'yproject');
 		}
-		
-		$organization_obj = new WDGOrganization( $organization_id );
-		$wallet_id = $organization_obj->get_lemonway_id();
-		$saved_mandates_list = $organization_obj->get_lemonway_mandates();
-		if ( !empty( $saved_mandates_list ) ) {
-			$last_mandate = end( $saved_mandates_list );
-		}
-		$mandate_id = $last_mandate['ID'];
+		ypcf_debug_log( 'pay_with_mandate : ' .$amount_for_organization. ' + ' .$amount_for_commission. ' for ' .$organization_id );
 		
 		if ( empty( $errors ) ) {
-			$result = LemonwayLib::ask_payment_with_mandate( $wallet_id, $amount_for_organization + $amount_for_commission, $mandate_id, $amount_for_commission );
-			$buffer = ($result->TRANS->HPAY->ID) ? "success" : $result->TRANS->HPAY->MSG;
+			$organization_obj = new WDGOrganization( $organization_id );
+			$wallet_id = $organization_obj->get_lemonway_id();
+			$saved_mandates_list = $organization_obj->get_lemonway_mandates();
+			if ( !empty( $saved_mandates_list ) ) {
+				$last_mandate = end( $saved_mandates_list );
+			}
+			$mandate_id = $last_mandate['ID'];
+		
+			if ( $wallet_id ) {
+				$result = LemonwayLib::ask_payment_with_mandate( $wallet_id, $amount_for_organization + $amount_for_commission, $mandate_id, $amount_for_commission );
+				$buffer = ($result->TRANS->HPAY->ID) ? "success" : $result->TRANS->HPAY->MSG;
 
-			if ($buffer == "success") {
-				// Enregistrement de l'objet Lemon Way
-				$withdrawal_post = array(
-					'post_author'   => $organization_id,
-					'post_title'    => $amount_for_organization . ' + ' . $amount_for_commission,
-					'post_content'  => print_r( $result, TRUE ),
-					'post_status'   => 'publish',
-					'post_type'		=> 'mandate_payment'
-				);
-				wp_insert_post( $withdrawal_post );
-				
-				$success[ 'pay_with_mandate_amount_for_organization' ] = 1;
-				$success[ 'pay_with_mandate_amount_for_commission' ] = 1;
-				
-			} else {
-				$errors['pay_with_mandate_amount_for_organization'] = __("Probl&egrave;me Lemon Way",'yproject');
-				
+				if ($buffer == "success") {
+					// Enregistrement de l'objet Lemon Way
+					$withdrawal_post = array(
+						'post_author'   => $organization_id,
+						'post_title'    => $amount_for_organization . ' + ' . $amount_for_commission,
+						'post_content'  => print_r( $result, TRUE ),
+						'post_status'   => 'publish',
+						'post_type'		=> 'mandate_payment'
+					);
+					wp_insert_post( $withdrawal_post );
+
+					$success[ 'pay_with_mandate_amount_for_organization' ] = 1;
+					$success[ 'pay_with_mandate_amount_for_commission' ] = 1;
+
+				} else {
+					$errors['pay_with_mandate_amount_for_organization'] = __("Probl&egrave;me Lemon Way",'yproject');
+
+				}
 			}
 		}
 
