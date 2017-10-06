@@ -118,10 +118,6 @@ class WDGAPICalls {
 		foreach ( $project_list as $project ) {
 			$campaign = new ATCF_Campaign( $project->ID );
 			$campaign_status = $campaign->campaign_status();
-			if ( $campaign_status == ATCF_Campaign::$campaign_status_funded || $campaign_status == ATCF_Campaign::$campaign_status_closed ) {
-				$buffer[ 'funded_amount' ] += $campaign->current_amount( false );
-				$buffer[ 'royalties_amount' ] += $campaign->get_roi_declarations_total_roi_amount();
-			}
 			if ( $campaign_status == ATCF_Campaign::$campaign_status_preparing ) {
 				$buffer[ 'statuses' ][ 'posted' ][ 'count' ]++;
 			}
@@ -138,13 +134,15 @@ class WDGAPICalls {
 				$buffer[ 'statuses' ][ 'declaring' ][ 'count' ]++;
 			}
 			if ( $campaign_status == ATCF_Campaign::$campaign_status_funded ) {
-				$current_declarations = $campaign->get_current_roi_declarations();
-				if ( !empty( $current_declarations ) ) {
-					$buffer[ 'statuses' ][ 'declaring_late' ][ 'count' ]++;
-				}
+//				$current_declarations = $campaign->get_current_roi_declarations();
+//				if ( !empty( $current_declarations ) ) {
+//					$buffer[ 'statuses' ][ 'declaring_late' ][ 'count' ]++;
+//				}
 			}
 			if ( $campaign_status == ATCF_Campaign::$campaign_status_funded || $campaign_status == ATCF_Campaign::$campaign_status_closed ) {
+				$buffer[ 'funded_amount' ] += $campaign->current_amount( false );
 				$buffer[ 'statuses' ][ 'funded' ][ 'count' ]++;
+//				$buffer[ 'royalties_amount' ] += $campaign->get_roi_declarations_total_roi_amount();
 			}
 			if ( $campaign_status == ATCF_Campaign::$campaign_status_archive ) {
 				$buffer[ 'statuses' ][ 'archive' ][ 'count' ]++;
