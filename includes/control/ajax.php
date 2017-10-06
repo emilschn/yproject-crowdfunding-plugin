@@ -734,7 +734,7 @@ class WDGAjaxActions {
 		$mandate_id = $last_mandate['ID'];
 		
 		if ( empty( $errors ) ) {
-			$result = LemonwayLib::ask_payment_with_mandate( $wallet_id, $amount_for_organization, $mandate_id, $amount_for_commission );
+			$result = LemonwayLib::ask_payment_with_mandate( $wallet_id, $amount_for_organization + $amount_for_commission, $mandate_id, $amount_for_commission );
 			$buffer = ($result->TRANS->HPAY->ID) ? "success" : $result->TRANS->HPAY->MSG;
 
 			if ($buffer == "success") {
