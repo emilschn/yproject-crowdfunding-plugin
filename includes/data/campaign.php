@@ -2022,30 +2022,37 @@ class ATCF_Campaign {
 		return $src;
 	}
 	
-	public function get_home_picture_src($force = true) {
-		return $this->get_picture_src('image_home', $force);
+	public function get_home_picture_src( $force = true, $size = 'full' ) {
+		return $this->get_picture_src( 'image_home', $force, $size );
 	}
 	
-	public function get_picture_src($type, $force) {
-		$image_obj = '';
-		$img_src = '';
+	public function get_picture_src( $type, $force, $size = 'full' ) {
+		$buffer = '';
 		$attachments = get_posts( array(
 			'post_type' => 'attachment',
 			'post_parent' => $this->ID,
 			'post_mime_type' => 'image'
 		));
 		
-		if (count($attachments) > 0) {
+		if ( count( $attachments ) > 0 ) {
+			$image_obj = '';
+			
 			//Si on en trouve bien une avec le titre "image_home" on prend celle-là
-			foreach ($attachments as $attachment) {
-				if ($attachment->post_title == $type) $image_obj = wp_get_attachment_image_src($attachment->ID, "full");
+			foreach ( $attachments as $attachment ) {
+				if ( $attachment->post_title == $type ) {
+					$image_obj = wp_get_attachment_image_src( $attachment->ID, $size );
+				}
 			}
 			//Sinon on prend la première image rattachée à l'article
-			if ($force && $image_obj == '') $image_obj = wp_get_attachment_image_src($attachments[0]->ID, "full");
-			if ($image_obj != '') $img_src = $image_obj[0];
+			if ($force && $image_obj == '') {
+				$image_obj = wp_get_attachment_image_src( $attachments[0]->ID, $size );
+			}
+			if ($image_obj != '') {
+				$buffer = $image_obj[0];
+			}
 		}
 		
-		return $img_src;
+		return $buffer;
 	}
 	
 	public function is_header_blur() {
