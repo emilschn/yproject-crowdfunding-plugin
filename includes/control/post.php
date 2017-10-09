@@ -19,6 +19,7 @@ class WDGPostActions {
         self::add_action("change_project_status");
         self::add_action("organization_sign_mandate");
         self::add_action("upload_information_files");
+        self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
@@ -345,6 +346,15 @@ class WDGPostActions {
 		die();
 	}
 	
+	public static function generate_contract_files() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$campaign->generate_contract_pdf_blank_organization();
+		$url_return = wp_get_referer() . "#informations";
+		wp_redirect( $url_return );
+		die();
+	}
+	
 	public static function upload_contract_files() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
@@ -389,6 +399,17 @@ class WDGPostActions {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 		
+		$new_contract_budget_type = filter_input( INPUT_POST, 'new_contract_budget_type' );
+		$campaign->__set( ATCF_Campaign::$key_contract_budget_type, $new_contract_budget_type );
+		
+		$new_contract_maximum_type = filter_input( INPUT_POST, 'new_contract_maximum_type' );
+		$campaign->__set( ATCF_Campaign::$key_contract_maximum_type, $new_contract_maximum_type );
+		
+		$new_quarter_earnings_estimation_type = filter_input( INPUT_POST, 'new_quarter_earnings_estimation_type' );
+		$campaign->__set( ATCF_Campaign::$key_quarter_earnings_estimation_type, $new_quarter_earnings_estimation_type );
+		
+		$new_override_contract = filter_input( INPUT_POST, 'new_override_contract' );
+		$campaign->__set( ATCF_Campaign::$key_override_contract, $new_override_contract );
 		
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );

@@ -19,6 +19,7 @@ class WDGOrganization {
 	private $wpref;
 	private $name;
 	private $email;
+	private $representative_function;
 	private $description;
 	private $website;
 	private $strong_authentication;
@@ -61,6 +62,7 @@ class WDGOrganization {
         $org_object->set_name($orga_name);
         $org_object->set_email($orga_email);
 		
+		$org_object->set_representative_function('---');
 		$org_object->set_description('---');
         $org_object->set_address('---');
         $org_object->set_postal_code('00000');
@@ -113,6 +115,7 @@ class WDGOrganization {
 				}
 			}
 			
+			$this->representative_function = $this->bopp_object->representative_function;
 			$this->description = get_user_meta($user_id, WDGOrganization::$key_description, TRUE);
 			$this->website = "";
 			$this->strong_authentication = $this->bopp_object->strong_authentication;
@@ -299,6 +302,12 @@ class WDGOrganization {
 	}
 	public function set_email($value) {
 		$this->email = $value;
+	}
+	public function get_representative_function() {
+		return $this->representative_function;
+	}
+	public function set_representative_function( $value ) {
+		$this->representative_function = $value;
 	}
 	public function get_description() {
 		return $this->description;
@@ -501,12 +510,14 @@ class WDGOrganization {
 	public function get_linked_users( $type = '' ) {
 		$buffer = array();
 		$result = WDGWPREST_Entity_Organization::get_linked_users( $this->api_id );
-		foreach ( $result as $user_item ) {
-			if ( empty( $type ) || $user_item->type == $type ) {
-				$user_api = WDGWPREST_Entity_User::get( $user_item->id_user );
-				if ( $user_api != FALSE ) {
-					$user = new WDGUser( $user_api->wpref );
-					array_push( $buffer, $user );
+		if ( $result ) {
+			foreach ( $result as $user_item ) {
+				if ( empty( $type ) || $user_item->type == $type ) {
+					$user_api = WDGWPREST_Entity_User::get( $user_item->id_user );
+					if ( $user_api != FALSE ) {
+						$user = new WDGUser( $user_api->wpref );
+						array_push( $buffer, $user );
+					}
 				}
 			}
 		}
@@ -1215,6 +1226,7 @@ class WDGOrganization {
 			$org_object->set_strong_authentication(FALSE);
 			$org_object->set_name(filter_input(INPUT_POST, 'org_name'));
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
+			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 			$org_object->set_postal_code($org_postal_code);
@@ -1279,6 +1291,7 @@ class WDGOrganization {
 		
 		if (count($errors_data) == 0) {
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
+			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 			$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
 			$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));

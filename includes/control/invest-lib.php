@@ -1108,27 +1108,3 @@ function ypcf_get_backers() {
     }
     return $buffer;
 }
-
-
-function ypcf_terms_agreement() {
-    global $edd_options;
-    if ( isset( $edd_options['show_agree_to_terms'] ) ) {
-?>
-	<fieldset id="edd_terms_agreement">
-	    <div id="edd_terms" style="display:none;">
-		<?php
-		    do_action( 'edd_before_terms' );
-		    echo wpautop( $edd_options['contract'] );
-		    do_action( 'edd_after_terms' );
-		?>
-	    </div>
-	    <div id="edd_show_terms">
-		<a href="#" class="edd_terms_links"><?php _e( 'Show Terms', 'edd' ); ?></a>
-		<a href="#" class="edd_terms_links" style="display:none;"><?php _e( 'Hide Terms', 'edd' ); ?></a>
-	    </div>
-	    <label for="edd_agree_to_terms"><?php echo isset( $edd_options['contract_label'] ) ? $edd_options['contract_label'] : __( 'Agree to Terms?', 'edd' ); ?></label>
-	    <input name="edd_agree_to_terms" class="required" type="checkbox" id="edd_agree_to_terms" value="1"/>
-	</fieldset>
-<?php
-    }
-}

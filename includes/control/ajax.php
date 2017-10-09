@@ -283,6 +283,7 @@ class WDGAjaxActions {
 				$new_orga = new WDGOrganization();
 				$new_orga->set_name( filter_input( INPUT_POST, 'org_name' ) );
 				$new_orga->set_email( filter_input( INPUT_POST, 'org_email' ) );
+				$new_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
 				$new_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
 				$new_orga->set_type('society');
 				$new_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
@@ -319,6 +320,8 @@ class WDGAjaxActions {
 			
 		} else {
 			$edit_orga = new WDGOrganization($invest_type);
+			$edit_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
+			$edit_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
 			$edit_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
 			$edit_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
 			$edit_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
@@ -479,6 +482,43 @@ class WDGAjaxActions {
 		} else {
 			$errors['new_backoffice_summary'].="Décrivez votre projet";
 		}
+	
+		// URL du projet
+		$new_name = sanitize_text_field( filter_input( INPUT_POST, 'new_project_url') );
+		if ( !empty( $new_name ) && $campaign->data->post_name != $new_name ) {
+			$posts = get_posts( array(
+				'name' => $new_name,
+				'post_type' => array( 'post', 'page', 'download' )
+			) );
+			if ( $posts ) {
+				$errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
+
+			} else {
+				wp_update_post( array(
+					'ID'		=> $campaign_id,
+					'post_name' => $new_name
+				) );
+				$success[ 'new_project_url' ] = 1;
+			}
+		}
+		
+		// Masquer au public
+		$new_is_hidden = filter_input( INPUT_POST, 'new_is_hidden');
+        if ( $new_is_hidden === true || $new_is_hidden === "true" || $new_is_hidden === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden );
+		}
+		$success[ 'new_is_hidden' ] = 1;
+		
+		// Passer la phase de vote
+		$new_skip_vote = filter_input( INPUT_POST, 'new_skip_vote');
+        if ( $new_skip_vote === true || $new_skip_vote === "true" || $new_skip_vote === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote );
+		}
+		$success[ 'new_skip_vote' ] = 1;
 
 		//Catégories du projet
 		$new_project_categories = array();
@@ -500,6 +540,16 @@ class WDGAjaxActions {
 			update_post_meta($campaign_id, 'campaign_location', $location);
 			$success["new_project_location"]=1;
 		}
+		
+		// Infos contractuelles
+		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
+		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
+		$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
+		$new_project_contract_detailed_info= sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
 		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
@@ -805,14 +855,31 @@ class WDGAjaxActions {
 		} else {
 			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
 		}
+		
+		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
+		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
+		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
+			$success[ 'new_maximum_profit' ] = 1;
+		} else {
+			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
+		}
 
 		//Update roi_percent_estimated duration
-		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent_estimated'))),2);
-		if($new_roi_percent>=0){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent);
+		$new_roi_percent_estimated = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent_estimated'))),2);
+		if($new_roi_percent_estimated>=0){
+			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated);
 			$success['new_roi_percent_estimated']=1;
 		} else {
 			$errors['new_roi_percent_estimated']="Le pourcentage de CA reversé doit être positif";
+		}
+		
+		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent'))),2);
+		if($new_roi_percent>=0){
+			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent, $new_roi_percent);
+			$success['new_roi_percent']=1;
+		} else {
+			$errors['new_roi_percent']="Le pourcentage de CA reversé doit être positif";
 		}
 
 		//Update contract_start_date
@@ -827,6 +894,31 @@ class WDGAjaxActions {
 				$errors[ 'new_contract_start_date' ] = "La date est invalide";
 			}
 		}
+		
+		$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );
+		if ( $new_turnover_per_declaration >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_turnover_per_declaration, $new_turnover_per_declaration );
+			$success['new_turnover_per_declaration'] = 1;
+		} else {
+			$errors['new_turnover_per_declaration'] = "Nombre non valide";
+		}
+		
+		$new_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_organization') ) ), 2 );
+		if ( $new_costs_to_organization >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
+			$success['new_costs_to_organization'] = 1;
+		} else {
+			$errors['new_costs_to_organization'] = "Nombre non valide";
+		}
+		
+		$new_costs_to_investors = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_investors') ) ), 2 );
+		if ( $new_costs_to_investors >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
+			$success['new_costs_to_investors'] = 1;
+		} else {
+			$errors['new_costs_to_investors'] = "Nombre non valide";
+		}
+		
 
 		//Update first_payment_date
 		$old_first_payment_date = $campaign->first_payment_date();
@@ -978,6 +1070,7 @@ class WDGAjaxActions {
 				"organization" => array(
 					"name" => $organization_selected->get_name(),
 					"email" => $organization_selected->get_email(),
+					"representative_function" => $organization_selected->get_representative_function(),
 					"description" => $organization_selected->get_description(),
 					"legalForm" => $organization_selected->get_legalform(),
 					"idNumber" => $organization_selected->get_idnumber(),
@@ -1061,6 +1154,7 @@ class WDGAjaxActions {
 					"wpref" => $org_object->get_wpref(),
 					"name" => $org_object->get_name(),
 					"email" => $org_object->get_email(),
+					"representative_function" => $org_object->get_representative_function(),
 					"description" => $org_object->get_description(),
 					"legalForm" => $org_object->get_legalform(),
 					"idNumber" => $org_object->get_idnumber(),
@@ -1117,6 +1211,7 @@ class WDGAjaxActions {
 					"wpref" => $org_object->get_wpref(),
 					"name" => $org_object->get_name(),
 					"email" => $org_object->get_email(),
+					"representative_function" => $org_object->get_representative_function(),
 					"description" => $org_object->get_description(),
 					"legalForm" => $org_object->get_legalform(),
 					"idNumber" => $org_object->get_idnumber(),

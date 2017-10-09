@@ -30,6 +30,7 @@ class WDGWPREST_Entity_Organization {
 			'email'						=> $organization->get_email(),
 			'strong_authentication'		=> ( $organization->get_strong_authentication() === TRUE ) ? 1 : 0,
 			'type'						=> $organization->get_type(),
+			'representative_function'	=> $organization->get_representative_function(),
 			'description'				=> $organization->get_description(),
 			'legalform'					=> $organization->get_legalform(),
 			'idnumber'					=> $organization->get_idnumber(),

@@ -233,11 +233,7 @@ class ATCF_Campaign {
 	 */
 	public static $key_edit_version = 'campaign_edit_version';
 	public function edit_version() {
-		$version = $this->__get(ATCF_Campaign::$key_edit_version);
-		if (!isset($version) || !is_numeric($version) || $version < 1) { $version = 1; }
-		$display_version = filter_input(INPUT_GET, 'display-version');
-		if (!empty($display_version)) { $version = $display_version; }
-		return $version;
+		return 3;
 	}
 	
 	/**
@@ -380,13 +376,25 @@ class ATCF_Campaign {
         return $this->__get(ATCF_Campaign::$key_backoffice_WDG_notoriety);
     }
 
-    /**
-     * @return string Contracts filename
-     */
+	/****************
+	 * Données de contrat
+	 ****************/
+    // Contrat vierge pour les personnes physiques
     public static $key_backoffice_contract_user = 'campaign_backoffice_contract_user';
     public function backoffice_contract_user() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_user);
     }
+	public function generate_contract_pdf_blank_user() {
+		$filename = 'blank-contract-user-'.$this->ID.'.pdf';
+		$filepath = __DIR__ . '/../contracts/' . $filename;
+		if ( file_exists( $filepath ) ) {
+			unlink( $filepath );
+		}
+		if ( getNewPdfToSign( $this->ID, FALSE, 'user', $filepath ) != FALSE ) {
+			$this->__set( ATCF_Campaign::$key_backoffice_contract_user, $filename );
+		}
+	}
+    // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
@@ -396,6 +404,84 @@ class ATCF_Campaign {
 	public function contract_modifications() {
         return $this->__get( ATCF_Campaign::$key_backoffice_contract_modifications );
 	}
+	public function generate_contract_pdf_blank_organization() {
+		$filename = 'blank-contract-organization-'.$this->ID.'.pdf';
+		$filepath = __DIR__ . '/../contracts/' . $filename;
+		if ( file_exists( $filepath ) ) {
+			unlink( $filepath );
+		}
+		if ( getNewPdfToSign( $this->ID, FALSE, 'orga', $filepath ) != FALSE ) {
+			$this->__set( ATCF_Campaign::$key_backoffice_contract_orga, $filename );
+		}
+	}
+	// Contrat : descriptions des revenus
+    public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
+	public function contract_earnings_description() {
+        return $this->__get( ATCF_Campaign::$key_contract_earnings_description );
+	}
+    public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
+	public function contract_spendings_description() {
+        return $this->__get( ATCF_Campaign::$key_contract_spendings_description );
+	}
+    public static $key_contract_simple_info = 'campaign_contract_simple_info';
+	public function contract_simple_info() {
+        return $this->__get( ATCF_Campaign::$key_contract_simple_info );
+	}
+    public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
+	public function contract_detailed_info() {
+        return $this->__get( ATCF_Campaign::$key_contract_detailed_info );
+	}
+	// Contrat : Type de budget
+	public static $key_contract_budget_type = 'contract_budget_type';
+	public static $contract_budget_types = array(
+		'maximum'			=> "Plafond",
+		'collected_funds'	=> "Montant collect&eacute;"
+	);
+	public function contract_budget_type() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_budget_type );
+		if ( empty( $buffer ) ) {
+			$buffer = 'maximum';
+		}
+		if ( $this->contract_maximum_type() == 'infinite' ) {
+			$buffer = 'collected_funds';
+		}
+        return $buffer;
+	}
+	// Contrat : Type de plafond
+	public static $key_contract_maximum_type = 'contract_maximum_type';
+	public static $contract_maximum_types = array(
+		'fixed'				=> "D&eacute;t&eacute;rmin&eacute;",
+		'infinite'			=> "Infini"
+	);
+	public function contract_maximum_type() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_maximum_type );
+		if ( empty( $buffer ) ) {
+			$buffer = ( $this->goal( false ) > 0 ) ? 'fixed' : 'infinite';
+		}
+        return $buffer;
+	}
+	// Contrat : Type d'estimation de revenus trimestriels
+	public static $key_quarter_earnings_estimation_type = 'contract_quarter_earnings_estimation_type';
+	public static $quarter_earnings_estimation_types = array(
+		'progressive'		=> "Progressif (10%, 20%, 30%, 40%)",
+		'linear'			=> "Lin&eacute;aire (25%, 25%, 25%, 25%)"
+	);
+	public function quarter_earnings_estimation_type() {
+		$buffer = $this->__get( ATCF_Campaign::$key_quarter_earnings_estimation_type );
+		if ( empty( $buffer ) ) {
+			$buffer = 'progressive';
+		}
+        return $buffer;
+	}
+    // Contrat : Rédaction surchargeant le contrat standard
+	public static $key_override_contract = 'campaign_override_contract';
+    public function override_contract() {
+        return $this->__get( ATCF_Campaign::$key_override_contract );
+    }
+	/****************
+	 * FIN - Données de contrat
+	 ****************/
+	
 
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
@@ -431,7 +517,11 @@ class ATCF_Campaign {
 	
 	//Ajouts contrat
 	public function contract_title() {
-		return $this->__get_translated_property('campaign_contract_title');
+		$buffer = $this->__get_translated_property('campaign_contract_title');
+		if ( empty( $buffer ) ) {
+			$buffer = __( "Contrat de session de revenus futurs", 'yproject' );
+		}
+		return $buffer;
 	}
 	public function investment_terms() {
 		return $this->__get_translated_property('campaign_investment_terms');
@@ -450,9 +540,6 @@ class ATCF_Campaign {
         return $this->__get(ATCF_Campaign::$key_contract_doc_url);
     }
 	
-	public function company_name() {
-	    return $this->__get('campaign_company_name');
-	}
 	public function company_status() {
 	    return $this->__get('campaign_company_status');
 	}
@@ -467,6 +554,19 @@ class ATCF_Campaign {
 	}
 	
 	
+	public static $maximum_profit_list = array(
+		'infinite'		=> "Infini",
+		'1'				=> "1",
+		'2'				=> "2",
+		'3'				=> "3",
+		'4'				=> "4",
+		'5'				=> "5",
+		'6'				=> "6",
+		'7'				=> "7",
+		'8'				=> "8",
+		'9'				=> "9",
+		'10'			=> "10",
+	);
 	public static $key_maximum_profit = 'maximum_profit';
 	public function maximum_profit() {
 	    $buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
@@ -512,8 +612,9 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	public static $key_roi_percent = 'campaign_roi_percent';
 	public function roi_percent() {
-		$buffer = $this->__get('campaign_roi_percent');
+		$buffer = $this->__get( ATCF_Campaign::$key_roi_percent );
 		if ( empty( $buffer ) ) {
 			$buffer = 0;
 		}
