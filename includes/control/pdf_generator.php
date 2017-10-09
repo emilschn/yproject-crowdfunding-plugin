@@ -607,18 +607,23 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			}
 		}
 		$buffer .= $user_name.'<br />';
+		$buffer .= '(1)<br />';
+		$buffer .= 'Bon pour souscription';
 		
 	} else {
 		$buffer .= '<span style="line-height: 1.8">';
-		$buffer .= 'Le (<i>date</i>)'.$blank_space_small.'<br />';
+		$buffer .= 'Fait à (<i>ville</i>) '.$blank_space.', le (<i>date</i>)'.$blank_space_small.'<br /><br />';
+		$buffer .= '<strong>Le souscripteur</strong><br />';
+		$buffer .= '(<i>Nom prénom</i>) '.$blank_space.'<br /><br />';
 		if ( $organization == 'orga' ) {
-			$buffer .= "LA (<i>forme légale et nom de l'organisation</i>)".$blank_space.'<br />';
-			$buffer .= 'représentée par ' .$blank_space;
+			$buffer .= "<i>&nbsp;&nbsp;&nbsp;Si personne morale</i><br />";
+			$buffer .= "Représentant :<br />";
+			$buffer .= "(<i>Dénomination sociale</i>) ".$blank_space."<br /><br />";
 		}
+		$buffer .= "<i>&nbsp;&nbsp;&nbsp;Dans les deux cas</i><br />";
+		$buffer .= 'Signature, accompagnée de la mention "Bon pour souscription"<br /><br /><br />';
 		$buffer .= '</span>';
 	}
-    $buffer .= '(1)<br />';
-    $buffer .= 'Bon pour souscription';
     $buffer .= '</td>';
     
     $buffer .= '<td></td></tr></table>';
