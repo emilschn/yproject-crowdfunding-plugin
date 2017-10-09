@@ -391,6 +391,11 @@ class ATCF_Campaign {
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
     }
+	
+    public static $key_backoffice_contract_modifications = 'campaign_contract_modifications';
+	public function contract_modifications() {
+        return $this->__get( ATCF_Campaign::$key_backoffice_contract_modifications );
+	}
 
 	public function rewards() {
 		return $this->__get_translated_property( 'campaign_rewards' );
