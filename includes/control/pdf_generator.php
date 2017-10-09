@@ -482,9 +482,12 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	    $buffer .= '<br /><br />';
 
 		if ( empty( $payment_data ) ) {
-			$buffer .= "<i>&nbsp;&nbsp;&nbsp;A remplir dans tous les cas</i><br />";
-			$buffer .= 'qui paie la somme de '.$blank_space_small.' € ci-après désignée la « <strong>Souscription</strong> »,<br /><br />';
-			$buffer .= 'ci-après désigné le « Souscripteur »,<br />';
+			$buffer .= "<i>&nbsp;&nbsp;&nbsp;A remplir dans les deux cas</i><br />";
+			$buffer .= 'qui paie la somme ci-après désignée la « <strong>Souscription</strong> » de :<br />';
+			$buffer .= "<i>(en chiffres)</i> " . $blank_space_small . " €<br />";
+			$buffer .= "(<i>(en lettres)</i> " . $blank_space . " EUROS)<br />";
+			$buffer .= "par chèque à l'ordre de ".$organization_obj->get_name().",<br /><br />";
+			$buffer .= 'ci-après désigné le « <strong>Souscripteur</strong> »,<br />';
 			$buffer .= 'D\'UNE PART<br />';
 			
 		} else {
