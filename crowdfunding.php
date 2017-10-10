@@ -32,7 +32,7 @@ final class ATCF_CrowdFunding {
 	 *
 	 * @since Appthemer CrowdFunding 0.1-alpha
 	 *
-	 * @return The one true Crowd Funding
+	 * @return ATCF_CrowdFunding
 	 */
 	public static function instance() {
 		if ( ! isset ( self::$instance ) ) {
@@ -163,6 +163,10 @@ final class ATCF_CrowdFunding {
 			return ;
 
 		do_action( 'atcf_include_admin_files' );
+	}
+	
+	public function include_form( $form_name ) {
+		require( $this->includes_dir . 'control/forms/'.$form_name.'.php' );
 	}
 
 	/**
