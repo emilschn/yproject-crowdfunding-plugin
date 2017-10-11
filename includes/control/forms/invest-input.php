@@ -8,6 +8,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 	
 	private $campaign_id;
 	private $input_value;
+	private $errors;
 	
 	public function __construct( $campaign_id = FALSE, $input_value = FALSE ) {
 		parent::__construct( WDG_Form_Invest_Input::$name );
@@ -18,6 +19,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 	
 	protected function initFields() {
 		parent::initFields();
+		$campaign = new ATCF_Campaign( $this->campaign_id );
 		
 		// Champs masqués : $field_group_hidden
 		$this->addField(
@@ -68,6 +70,21 @@ class WDG_Form_Invest_Input extends WDG_Form {
 			ypcf_get_current_amount()
 		);
 		
+		$this->addField(
+			'hidden',
+			'roi_percent_project',
+			'',
+			WDG_Form_Invest_Input::$field_group_hidden,
+			$campaign->roi_percent_estimated()
+		);
+		
+		$this->addField(
+			'hidden',
+			'roi_goal_project',
+			'',
+			WDG_Form_Invest_Input::$field_group_hidden,
+			$campaign->goal( false )
+		);
 		
 		// Valeur : $field_group_value
 		$this->addField(
@@ -79,10 +96,13 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		
 	}
 	
+	public function getPostErrors() {
+		return $this->errors;
+	}
+	
 	public function postForm() {
 		parent::postForm();
 		
-		$feedback_success = array();
 		$feedback_errors = array();
 		
 		if ( !is_user_logged_in() ) {
@@ -122,7 +142,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 			);
 			array_push( $feedback_errors, $error );
 			
-		} elseif ( intval( $invest_amount ) == $invest_amount ) {
+		} elseif ( intval( $invest_amount ) != $invest_amount ) {
 			$error = array(
 				'code'		=> 'amount-not-integer',
 				'text'		=> __( "Vous n'avez pas saisi un nombre entier.", 'yproject' ),
@@ -153,13 +173,8 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		    $_SESSION[ 'redirect_current_amount' ] = $amount;
 		}
 		
-		$buffer = array(
-			'success'	=> $feedback_success,
-			'errors'	=> $feedback_errors
-		);
-		
-		echo json_encode( $buffer );
-		exit();
+		$this->errors = $feedback_errors;
+		return empty( $this->errors );
 	}
 	
 }
