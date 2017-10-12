@@ -3,6 +3,7 @@ class WDG_Form {
 	
 	private $formID;
 	protected $fields;
+	private $errors;
 	
 	public function __construct( $formid ) {
 		$this->formID = $formid;
@@ -13,11 +14,22 @@ class WDG_Form {
 	}
 	
 	protected function initFields() {
-		
 		$this->fields = array();
-		
 	}
 	
+	public function reinitFields() {
+	}
+	
+	/**
+	 * Ajoute un champ au formulaire
+	 * @param string $type (text, textarea, text-money, checkboxes, date, hidden, radio, rate, select)
+	 * @param string $name
+	 * @param string $label
+	 * @param string $group
+	 * @param string $value
+	 * @param string $decription
+	 * @param array $options
+	 */
 	protected function addField( $type, $name, $label, $group = '0', $value = FALSE, $decription = FALSE, $options = FALSE ) {
 		
 		if ( !isset( $this->fields[ $group ] ) ) {
@@ -53,6 +65,7 @@ class WDG_Form {
 	 * Vérifications standardes sur les champs
 	 */
 	protected function postForm() {
+		$this->errors = array();
 		
 		$nb_fields = count( $this->fields );
 		for( $i = 0; $i < $nb_fields; $i++ ) {
@@ -82,6 +95,23 @@ class WDG_Form {
 			}
 		}
 		
+	}
+	
+	public function getPostErrors() {
+		return $this->errors;
+	}
+	
+	public function hasErrors() {
+		return ( !empty( $this->errors ) );
+	}
+	
+	protected function addPostError( $code, $text, $element ) {
+		$error = array(
+			'code'		=> $code,
+			'text'		=> $text,
+			'element'	=> $element
+		);
+		array_push( $this->errors, $error );
 	}
 	
 	/**

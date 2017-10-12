@@ -1918,8 +1918,8 @@ class ATCF_Campaign {
 
 				//Sinon, on la crée juste avec un e-mail et un nom
 				} else {
-                    $wp_orga_user_id = WDGOrganization::createSimpleOrganization($user_id, $orga_name, $orga_email);
-					$saved_user_id = $wp_orga_user_id;
+                    $wp_orga = WDGOrganization::createSimpleOrganization($user_id, $orga_name, $orga_email);
+					$saved_user_id = $wp_orga->get_wpref();
 				}
 			}
 		}
