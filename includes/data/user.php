@@ -475,9 +475,10 @@ class WDGUser {
 	 */
 	public function get_royalties_by_campaign_id( $campaign_id ) {
 		$buffer = array();
+		$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
-			if ( $roi_item->id_project == $campaign_id ) {
+			if ( $roi_item->id_project == $campaign_api_id ) {
 				array_push( $buffer, $roi_item );
 			}
 		}
