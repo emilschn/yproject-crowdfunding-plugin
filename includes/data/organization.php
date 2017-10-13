@@ -36,6 +36,7 @@ class WDGOrganization {
 	private $rcs;
 	private $ape;
 	private $vat;
+	private $fiscal_year_end_month;
 	private $bank_owner;
 	private $bank_address;
 	private $bank_iban;
@@ -75,6 +76,7 @@ class WDGOrganization {
         $org_object->set_rcs('---');
         $org_object->set_ape('---');
         $org_object->set_vat('---');
+        $org_object->set_fiscal_year_end_month('---');
         $org_object->set_bank_owner('---');
         $org_object->set_bank_address('---');
         $org_object->set_bank_iban('---');
@@ -130,6 +132,7 @@ class WDGOrganization {
 			$this->rcs = $this->bopp_object->rcs;
 			$this->ape = $this->bopp_object->ape;
 			$this->vat = $this->bopp_object->vat;
+			$this->fiscal_year_end_month = $this->bopp_object->fiscal_year_end_month;
 			$geolocation = explode( ',', $this->bopp_object->geolocation );
 			if ( count( $geolocation ) > 1 ) {
 				$this->latitude = $geolocation[0];
@@ -418,6 +421,13 @@ class WDGOrganization {
 	}
 	public function set_vat($value) {
 		$this->vat = $value;
+	}
+	
+	public function get_fiscal_year_end_month() {
+		return $this->fiscal_year_end_month;
+	}
+	public function set_fiscal_year_end_month($value) {
+		$this->fiscal_year_end_month = $value;
 	}
 	
 	public function get_bank_owner() {
@@ -1239,6 +1249,7 @@ class WDGOrganization {
 			$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
 			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
+			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
 			$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
 			$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
 			$org_object->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
@@ -1299,6 +1310,7 @@ class WDGOrganization {
 			$org_object->set_capital(filter_input(INPUT_POST, 'org_capital'));
 			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
+			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
 			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 			$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
