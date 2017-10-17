@@ -1291,6 +1291,11 @@ class ATCF_Campaign {
 		return $this->__get(ATCF_Campaign::$key_campaign_status);
 	}
 	
+	public function is_preparing() {
+		$campaign_status = $this->campaign_status();
+		return ( $campaign_status == ATCF_Campaign::$campaign_status_preparing || $campaign_status == ATCF_Campaign::$campaign_status_validated );
+	}
+	
 	/**
 	 * Returns true if it is possible to invest on the project
 	 */
