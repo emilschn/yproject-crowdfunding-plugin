@@ -964,7 +964,7 @@ class WDGOrganization {
 	 * Ajoute un mandat de prélévement lié au wallet de l'organisation
 	 */
 	public function add_lemonway_mandate() {
-		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 1, $this->get_address(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
+		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 0, $this->get_address(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
 	}
 	
 	/**
