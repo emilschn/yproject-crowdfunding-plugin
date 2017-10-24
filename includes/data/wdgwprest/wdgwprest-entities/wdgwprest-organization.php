@@ -37,6 +37,7 @@ class WDGWPREST_Entity_Organization {
 			'rcs'						=> $organization->get_rcs(),
 			'ape'						=> $organization->get_ape(),
 			'vat'						=> $organization->get_vat(),
+			'fiscal_year_end_month'		=> $organization->get_fiscal_year_end_month(),
 			'capital'					=> $organization->get_capital(),
 			'address'					=> $organization->get_address(),
 			'postalcode'				=> $organization->get_postal_code(),

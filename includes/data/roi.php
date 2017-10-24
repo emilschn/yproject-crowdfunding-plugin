@@ -22,10 +22,13 @@ class WDGROI {
 	public $on_api;
 	
 	
-	public function __construct( $roi_id = FALSE, $local = FALSE ) {
+	public function __construct( $roi_id = FALSE, $local = FALSE, $data = FALSE ) {
 		if ( !empty( $roi_id ) ) {
 			// Récupération en priorité depuis l'API
-			$roi_api_item = ( !$local ) ? WDGWPREST_Entity_ROI::get( $roi_id ) : FALSE;
+			$roi_api_item = ( $data !== FALSE ) ? $data : FALSE;
+			if ( empty( $roi_api_item ) ) {
+				$roi_api_item = ( !$local ) ? WDGWPREST_Entity_ROI::get( $roi_id ) : FALSE;
+			}
 			if ( $roi_api_item != FALSE ) {
 
 				$this->id = $roi_id;
