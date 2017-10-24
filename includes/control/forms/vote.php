@@ -98,15 +98,18 @@ class WDG_Form_Vote extends WDG_Form {
 		
 		// Validate : $field_group_validate
 		$this->addField(
-			'radio',
-			'validate-project',
-			__( "Je souhaite soutenir cette campagne de financement sur WE DO GOOD :", 'yproject' ),
+			'rate',
+			'rate-project',
+			__( "Globalement, ce projet...", 'yproject' ),
 			WDG_Form_Vote::$field_group_validate,
-			FALSE,
+			4,
 			FALSE,
 			[
-				'1'	=> __( "Oui", 'yproject' ),
-				'0' => __( "Non", 'yproject' )
+				__( "Je n'y crois pas", 'yproject' ),
+				__( "Je ne suis pas convaincu", 'yproject' ),
+				__( "Je ne sais pas", 'yproject' ),
+				__( "Je pense qu'il a du potentiel", 'yproject' ),
+				__( "J'y crois !", 'yproject' )
 			]
 		);
 		
@@ -222,13 +225,13 @@ class WDG_Form_Vote extends WDG_Form {
 		} else {
 			
 			// C'est la seule réponse forcée mais pas initialisée
-			$validate_project = $this->getInputBoolean( 'validate-project', true );
-			if ( $validate_project === -1 ) {
+			$rate_project = $this->getInputRate( 'rate-project', 5 );
+			if ( $rate_project === 0 ) {
 				$feedback_slide = 1;
 				$error = array(
-					'code'		=> 'validate-project',
+					'code'		=> 'rate-project',
 					'text'		=> __( "Vous n'avez pas exprim&eacute; votre vote.", 'yproject' ),
-					'element'	=> 'validate-project'
+					'element'	=> 'rate-project'
 				);
 				array_push( $feedback_errors, $error );
 			}
@@ -273,7 +276,8 @@ class WDG_Form_Vote extends WDG_Form {
 					'impact_environment'=> $rate_ecology,
 					'impact_social'		=> $rate_social,
 					'impact_other'		=> $rate_other,
-					'validate_project'	=> $validate_project,
+					'validate_project'	=> ( $rate_project > 2 ) ? 1 : 0,
+					'rate_project'		=> $rate_project,
 					'invest_sum'		=> $invest_sum,
 					'invest_risk'		=> $rate_risk,
 					'more_info_impact'	=> $more_info_impact,
@@ -293,7 +297,7 @@ class WDG_Form_Vote extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				
-				if ( $validate_project == 1 ) {
+				if ( $rate_project > 1 ) {
 					$table_jcrois = $wpdb->prefix . "jycrois";
 					$users = $wpdb->get_results( "SELECT * FROM $table_jcrois WHERE campaign_id = ".$campaign_id." AND user_id=".$WDGUser_current->get_wpref() );
 					if ( empty($users[0]->ID) ) {

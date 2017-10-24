@@ -58,7 +58,7 @@ final class ATCF_CrowdFunding {
 	private function setup_globals() {
 		/** Versions **********************************************************/
 
-		$this->version    = '1.817';
+		$this->version    = '1.82';
 		$this->db_version = '1';
 
 		/** Paths *************************************************************/
@@ -181,6 +181,7 @@ final class ATCF_CrowdFunding {
 			WDGROI::upgrade_db();
 			WDGKYCFile::upgrade_db();
 			WDG_Cache_Plugin::upgrade_db();
+			WDGCampaignVotes::upgrade_db();
 			update_option('wdg_version', $this->version);
 		}
 		

@@ -1433,13 +1433,13 @@ class WDGAjaxActions {
 		$table_jcrois = $wpdb->prefix . "jycrois";
 
 		//Données suiveurs
-		$list_user_follow = $wpdb->get_col( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
-
+		$list_user_follow = $wpdb->get_col( "SELECT DISTINCT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id. " GROUP BY user_id");
+		
 		//Données d'investissement
 		$investments_list = (json_decode(filter_input(INPUT_POST, 'data'),true));
 
 		//Données de vote
-		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, validate_project, advice FROM ".$table_vote." WHERE post_id = ".$campaign_id );
+		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, rate_project, advice FROM ".$table_vote." WHERE post_id = ".$campaign_id );
 
 
         /******************Lignes du tableau*********************/
@@ -1460,17 +1460,8 @@ class WDGAjaxActions {
 			$array_contacts[$u_id]["vote_invest_sum"]=$item_vote->invest_sum;
 
 
-            $array_contacts[$u_id]["vote_advice"]='<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>';
-
-            switch ($item_vote->validate_project) {
-                case '1':
-                    $array_contacts[$u_id]["vote_validate"]="Oui";
-                    break;
-                case '0' :
-                default :
-                    $array_contacts[$u_id]["vote_validate"]="Non";
-                    break;
-            }
+            $array_contacts[$u_id]["vote_advice"]= ( !empty( $item_vote->advice ) ) ? '<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>' : '';
+			$array_contacts[$u_id]["vote_rate"] = $item_vote->rate_project;
         }
 
         //Extraction infos d'investissements
@@ -1645,7 +1636,7 @@ class WDGAjaxActions {
             new ContactColumn('user_mobile_phone', 'Téléphone', false),
 
             new ContactColumn('vote_date','Date de vote',$display_vote_infos, "date"),
-            new ContactColumn('vote_validate','A valid&eacute;',true),
+            new ContactColumn('vote_rate','Note du vote',true),
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
 			new ContactColumn('vote_advice','Conseil',$display_vote_infos),
 
