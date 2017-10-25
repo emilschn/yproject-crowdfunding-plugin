@@ -159,7 +159,8 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		if ( !$this->hasErrors() ) {
 			$part_value = ypcf_get_part_value();
 			$amount = $invest_amount * $part_value;
-			$_SESSION[ 'redirect_current_amount' ] = $amount;
+			$current_investment = WDGInvestment::current();
+			$current_investment->update_session( $amount );
 		}
 		
 		return !$this->hasErrors();

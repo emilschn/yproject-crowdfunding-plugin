@@ -4,6 +4,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 	public static $name = 'project-invest-user-details';
 	
 	public static $field_group_hidden = 'invest-hidden';
+	public static $field_group_user_type = 'invest-user-type';
 	public static $field_group_user_info = 'invest-user-info';
 	public static $field_group_orga_select = 'invest-orga-select';
 	public static $field_group_confirm = 'invest-confirm-info';
@@ -33,6 +34,21 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'',
 			WDG_Form_Invest_User_Details::$field_group_hidden,
 			WDG_Form_Invest_User_Details::$name
+		);
+		
+		//**********************************************************************
+		// Données de l'investisseur : $field_group_user_type
+		$this->addField(
+			'radio',
+			'user-type',
+			__( "Je souhaite investir", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_type,
+			FALSE,
+			FALSE,
+			[
+				'user'	=> __( "En mon nom (personne physique)", 'yproject' ),
+				'orga'	=> __( "En tant qu'organisation (personne morale)", 'yproject' )
+			]
 		);
 		
 		//**********************************************************************
@@ -141,19 +157,6 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			__( "Num&eacute;ro de t&eacute;l&eacute;phone", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_phone_number()
-		);
-		
-		$this->addField(
-			'radio',
-			'user-type',
-			__( "Je souhaite investir", 'yproject' ),
-			WDG_Form_Invest_User_Details::$field_group_user_info,
-			FALSE,
-			FALSE,
-			[
-				'user'	=> __( "En mon nom (personne physique)", 'yproject' ),
-				'orga'	=> __( "En tant qu'organisation (personne morale)", 'yproject' )
-			]
 		);
 		
 		//**********************************************************************
@@ -477,7 +480,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		
 		$this->initFields();
 		
-		$_SESSION[ 'redirect_current_user_type' ] = $user_type;
+		$current_investment = WDGInvestment::current();
+		$current_investment->update_session( FALSE, $user_type );
 		
 		return !$this->hasErrors();
 	}

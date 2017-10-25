@@ -18,6 +18,8 @@ class WDGInvestment {
 	public static $status_canceled = 'canceled';
 	public static $status_validated = 'validated';
 	
+	public static $session_max_duration_hours = '2';
+	
 	public function __construct( $post_id = FALSE, $invest_token = FALSE ) {
 		if ( !empty( $post_id ) ) {
 			$this->id = $post_id;
@@ -44,6 +46,42 @@ class WDGInvestment {
 		return self::$_current;
 	}
 	
+	
+	/**
+	 * Détermine si les valeurs de sessions sont correctes pour l'investissement
+	 */
+	public function is_session_correct() {
+		if ( !isset( $_SESSION[ 'invest_update_date' ] ) ) {
+			return FALSE;
+		}
+		$invest_update_date = $_SESSION[ 'invest_update_date' ];
+		
+		$current_date = new DateTime();
+		$difference_in_hours = floor( ( strtotime( $current_date->format( 'Y-m-d h:i:s' ) ) - strtotime( $invest_update_date ) ) / 3600 );
+		if ( $difference_in_hours > self::$session_max_duration_hours ) {
+			return FALSE;
+		}
+		
+		return TRUE;
+	}
+	
+	/**
+	 * Met à jour les valeurs de session qui concernent l'investissement en cours
+	 * @param int $amount
+	 * @param string $user_type
+	 */
+	public function update_session( $amount = FALSE, $user_type = FALSE ) {
+		$current_datetime = new DateTime();
+		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d h:i:s' );
+		
+		if ( !empty( $amount ) ) {
+			$_SESSION[ 'redirect_current_amount' ] = $amount;
+		}
+		if ( !empty( $user_type ) ) {
+			$_SESSION[ 'redirect_current_user_type' ] = $user_type;
+		}
+	}
+	
 	/**
 	 * Retourne la campagne en cours
 	 * @return ATCF_Campaign
@@ -62,6 +100,22 @@ class WDGInvestment {
 			$buffer = $this->campaign;
 		}
 		
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne la valeur d'investissement stockée en session
+	 */
+	public function get_session_amount() {
+		$buffer = $_SESSION[ 'redirect_current_amount' ];
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le type d'utilisateur / id d'organisation stocké en session
+	 */
+	public function get_session_user_type() {
+		$buffer = $_SESSION[ 'redirect_current_user_type' ];
 		return $buffer;
 	}
 	
@@ -191,6 +245,7 @@ class WDGInvestment {
 	 */
 	public static function unset_session() {
 		$session_vars_list = array(
+			'invest_update_date',
 			'redirect_current_amount_part',
 			'redirect_current_invest_type',
 			'new_orga_just_created',
