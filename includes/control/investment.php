@@ -8,6 +8,8 @@ class WDGInvestment {
 	private $token_info;
 	private $error;
 	private $campaign;
+	private $session_amount;
+	private $session_user_type;
 	
 	public static $status_init = 'init';
 	public static $status_expired = 'expired';
@@ -107,16 +109,20 @@ class WDGInvestment {
 	 * Retourne la valeur d'investissement stockée en session
 	 */
 	public function get_session_amount() {
-		$buffer = $_SESSION[ 'redirect_current_amount' ];
-		return $buffer;
+		if ( !isset( $this->session_amount ) ) {
+			$this->session_amount = $_SESSION[ 'redirect_current_amount' ];
+		}
+		return $this->session_amount;
 	}
 	
 	/**
 	 * Retourne le type d'utilisateur / id d'organisation stocké en session
 	 */
 	public function get_session_user_type() {
-		$buffer = $_SESSION[ 'redirect_current_user_type' ];
-		return $buffer;
+		if ( !isset( $this->session_user_type ) ) {
+			$this->session_user_type = $_SESSION[ 'redirect_current_user_type' ];
+		}
+		return $this->session_user_type;
 	}
 	
 	/**
@@ -404,5 +410,174 @@ class WDGInvestment {
 	 */
 	public function get_max_value_to_invest() {
 		return ( $this->campaign->goal( FALSE ) - $this->campaign->current_amount( FALSE ) );
+	}
+	
+/******************************************************************************/
+// PAYMENT
+/******************************************************************************/
+	private function save_payment( $payment_key ) {
+		if ( $this->exists_payment( $payment_key ) ) {
+			return FALSE;
+		}
+		
+		//Récupération des bonnes informations utilisateur
+		$WDGUser_current = WDGUser::current();
+		$save_user_id = $WDGUser_current->get_wpref();
+		$save_display_name = $WDGUser_current->wp_user->display_name;
+		$invest_type = $this->get_session_user_type();
+		if ( $invest_type != 'user' ) {
+			$WDGOrganization = new WDGOrganization( $invest_type );
+			if ( $WDGOrganization ) {
+				$current_user_organization = $WDGOrganization->get_creator();
+				$save_user_id = $current_user_organization->ID;
+				$save_display_name = $WDGOrganization->get_name();
+			}
+		}
+		
+		// GESTION DU PAIEMENT COTE EDD
+		WDGInvestment::unset_session();
+
+		//Création d'un paiement pour edd
+		$user_info = array(
+			'id'			=> $save_user_id,
+			'gender'		=> $WDGUser_current->get_gender(),
+			'email'			=> $WDGUser_current->get_email(),
+			'first_name'	=> $WDGUser_current->get_firstname(),
+			'last_name'		=> $WDGUser_current->get_lastname(),
+			'discount'		=> '',
+			'address'		=> array()
+		);
+
+		$cart_details = array(
+			array(
+				'name'			=> $this->campaign->data->post_title,
+				'id'			=> $this->campaign->ID,
+				'item_number'	=> array(
+					'id'			=> $this->campaign->ID,
+					'options'		=> array()
+				),
+				'price'			=> 1,
+				'quantity'		=> $this->get_session_amount()
+			)
+		);
+
+		$this->set_status( WDGInvestment::$status_validated );
+
+		$payment_data = array( 
+			'price'			=> $this->get_session_amount(), 
+			'date'			=> date('Y-m-d H:i:s'), 
+			'user_email'	=> $WDGUser_current->get_email(),
+			'purchase_key'	=> $payment_key,
+			'currency'		=> edd_get_currency(),
+			'downloads'		=> array( $this->campaign->ID ),
+			'user_info'		=> $user_info,
+			'cart_details'	=> $cart_details,
+			'status'		=> 'pending'
+		);
+		$payment_id = edd_insert_payment( $payment_data );
+		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
+		
+		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
+		// FIN GESTION DU PAIEMENT COTE EDD
+
+		// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
+		ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+		$this->post_token_notification();
+		
+		//Si un utilisateur investit, il croit au projet
+		global $wpdb;
+		$table_jcrois = $wpdb->prefix . "jycrois";
+		$users = $wpdb->get_results( "SELECT user_id FROM " .$table_jcrois. " WHERE campaign_id = " .$this->campaign->ID. " AND user_id = " . $WDGUser_current->get_wpref() );
+		if ( !$users ) {
+			$wpdb->insert( $table_jcrois,
+				array(
+					'user_id'		=> $WDGUser_current->get_wpref(),
+					'campaign_id'	=> $this->campaign->ID
+				)
+			);
+		}
+	}
+	
+	/**
+	 * Vérifie si un paiement avec la même clé a déjà été enregistré, pour ne pas le faire 2 fois
+	 */
+	private function exists_payment( $payment_key ) {
+		$buffer = FALSE;
+		$paymentlist = edd_get_payments(array(
+		    'number'	 => -1,
+		    'download'   => $this->campaign->ID
+		));
+		foreach ( $paymentlist as $payment ) {
+			if (edd_get_payment_key( $payment->ID ) == $payment_key) {
+				$buffer = TRUE;
+				array_push( $this->error, __( "Le paiement a d&eacute;j&agrave; &eacute;t&eacute; pris en compte. Merci de nous contacter.", 'yproject' ) );
+				break;
+			}
+		}
+		return $buffer;
+	}
+	
+	public function try_payment( $meanofpayment ) {
+		$payment_key = FALSE;
+		switch ( $meanofpayment ) {
+			case 'wallet':
+				$payment_key = $this->try_payment_wallet();
+				$buffer = $this->save_payment( $payment_key );
+				break;
+			case 'cardwallet':
+				$payment_key = $this->try_payment_card( TRUE );
+				break;
+			case 'card':
+				$payment_key = $this->try_payment_card();
+				break;
+		}
+		
+		return $buffer;
+	}
+	
+	private function try_payment_wallet() {
+		$buffer = FALSE;
+		$WDGUser_current = WDGUser::current();
+
+		// Vérifications de sécurité
+		$can_use_wallet = FALSE;
+		$invest_type = $this->get_session_user_type();
+		if ( $invest_type == 'user' ) {
+			$can_use_wallet = $WDGUser_current->can_pay_with_wallet( $this->get_session_amount(), $this->campaign );
+			
+		} else {
+			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $this->get_session_amount(), $this->campaign );
+		}
+		
+		// Tentative d'exécution du transfert d'argent
+		$transfer_funds_result = FALSE;
+		if ( $can_use_wallet ) {
+			$campaign_organization = $this->campaign->get_organization();
+			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref );
+			
+			if ( $invest_type == 'user' ) { 
+				if ( $WDGUser_current->can_pay_with_wallet( $this->get_session_amount(), $this->campaign ) ) {
+					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $this->get_session_amount() );
+				}
+			
+			} else if ( $WDGOrganization_debit->can_pay_with_wallet( $this->get_session_amount(), $this->campaign ) ) {
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGOrganization_debit->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $this->get_session_amount() );
+			}
+		}
+		
+		// Enregistrement des données selon résultat du transfert
+		if ( !empty( $transfer_funds_result ) && isset( $transfer_funds_result->ID ) ) {
+			$buffer = 'wallet_'. $transfer_funds_result->ID;
+
+		} else {
+			NotificationsEmails::new_purchase_admin_error_wallet( $WDGUser_current, $this->campaign->data->post_title, $this->get_session_amount() );
+		}
+		
+		return $buffer;
+	}
+	
+	private function try_payment_card( $with_wallet = FALSE) {
+		
 	}
 }

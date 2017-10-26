@@ -530,6 +530,17 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$WDGOrganization = new WDGOrganization( $orga_id );
 		}
 		
+		$campaign = new ATCF_Campaign( $this->campaign_id );
+		$campaign_organization = $campaign->get_organization();
+		if ( $orga_id == $campaign_organization->wpref ) {
+			$buffer = FALSE;
+			$this->addPostError(
+				'orga-same-project',
+				__( "Vous ne pouvez pas investir avec l'organisation qui porte le projet.", 'yproject' ),
+				'orga-id'
+			);
+		}
+		
 		$org_name = $this->getInputText( 'org_name' );
 		if ( empty( $org_name ) ) {
 			$buffer = FALSE;

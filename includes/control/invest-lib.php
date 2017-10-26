@@ -18,32 +18,17 @@ function ypcf_check_is_user_logged_connexion() {
     }
 }
 
-
 /**
- * Si l'utilisateur n'est pas connecté, on redirige vers la page de connexion en enregistrant la page d'investissement pour y revenir
+ * @deprecated
  */
 function ypcf_check_is_user_logged_invest() {
-    ypcf_session_start();
-
-    if (!is_user_logged_in()) {
-		$wdginvestment = WDGInvestment::current();
-		if ( isset( $wdginvestment->get_campaign()->ID ) ) {
-			$_SESSION['redirect_current_campaign_id'] = $wdginvestment->get_campaign()->ID;
-			$page_connexion = get_page_by_path('connexion');
-			wp_redirect(get_permalink($page_connexion->ID));
-		} else {
-			wp_redirect(site_url());
-		}
-		exit();
-    } 
+	WDGRoutes::redirect_invest_if_not_logged_in();
 }
-
+/**
+ * @deprecated
+ */
 function ypcf_check_is_project_investable() {
-	$wdginvestment = WDGInvestment::current();
-    if ( !$wdginvestment->get_campaign()->is_investable() ) {
-		wp_redirect( get_permalink( $wdginvestment->get_campaign()->ID ) );
-		exit();
-    }
+	WDGRoutes::redirect_invest_if_project_not_investable();
 }
 
 /**
