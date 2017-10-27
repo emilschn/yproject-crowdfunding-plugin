@@ -56,8 +56,8 @@ class WDGAjaxActions {
 	public static function add_action_by_class( $class_name ) {
 		require_once( 'forms/' . WDGAjaxActions::$class_to_filename[ $class_name ] );
 		$form_object = new $class_name();
-		add_action( 'wp_ajax_' .$form_object->getFormID(), array( $form_object, postForm ) );
-		add_action( 'wp_ajax_nopriv_' .$form_object->getFormID(), array( $form_object, postForm ) );
+		add_action( 'wp_ajax_' .$form_object->getFormID(), array( $form_object, 'postForm' ) );
+		add_action( 'wp_ajax_nopriv_' .$form_object->getFormID(), array( $form_object, 'postForm' ) );
 	}
     
 	/**
