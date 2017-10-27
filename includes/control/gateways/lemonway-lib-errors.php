@@ -83,6 +83,14 @@ class LemonwayLibErrors {
 	}
 	
 	/**
+	 * Retourne le code d'erreur LW
+	 * @return string
+	 */
+	public function get_error_code() {
+		return $this->error_code;
+	}
+	
+	/**
 	 * Retourne un message humain en découpant le code erreur LW
 	 * @param string $code (Ex : 05-00-51-ERR_PSP_REFUSED)
 	 * @return string

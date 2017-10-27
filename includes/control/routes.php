@@ -16,18 +16,12 @@ function ypcf_check_redirections() {
 				//Modification très crade temporaire pour gérer une partie de l'API
 				new WDGAPICalls();
 				//Redirection vers la page d'investissement après login, si on venait de l'investissement
-				ypcf_check_is_user_logged_connexion();
+				WDGRoutes::redirect_to_invest_if_logged_in();
 			break;
 
 			case 'modifier-mon-compte' :
 				//On teste si l'utilisateur vient de remplir ses données pour les enregistrer
 				ypcf_check_has_user_filled_infos_and_redirect();
-			break;
-
-			case 'paiement-virement':
-			case 'paiement-cheque':
-			case 'paiement-partager':
-				WDGRoutes::redirect_invest_if_not_logged_in();
 			break;
 
 			case 'paiement-effectue':
@@ -41,6 +35,17 @@ function ypcf_check_redirections() {
 add_action( 'template_redirect', 'ypcf_check_redirections' );
 
 class WDGRoutes {
+	/**
+	 * Après le login, si on venait de l'investissement, il faut y retourner
+	 */
+	public static function redirect_to_invest_if_logged_in() {
+		ypcf_session_start();
+
+		if ( is_user_logged_in() && isset($_SESSION['redirect_current_campaign_id']) && $_SESSION['redirect_current_campaign_id'] != "" ) {
+			wp_redirect( ypcf_login_gobackinvest_url() );
+			exit();
+		}
+	}
 	
 	/**
 	 * Redirige vers la page de connexion si utilisateur pas connecté
