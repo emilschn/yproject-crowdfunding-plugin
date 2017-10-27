@@ -29,6 +29,8 @@ class WDGCampaignVotes {
 			'count_project_validated' => 0,
 			'percent_project_validated' => 0,
 			'percent_project_not_validated' => 0,
+			'rate_project_list' => array(1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0),
+			'rate_project_average' => 0,
 			'count_invest_ready' => 0,
 			'sum_invest_ready' => 0,
 			'average_invest_ready' => 0,
@@ -69,29 +71,39 @@ class WDGCampaignVotes {
 			$buffer['count_project_validated'] = $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
 			$buffer['percent_project_validated'] = round($buffer['count_project_validated'] / $buffer['count_voters'], 2) * 100;
 			$buffer['percent_project_not_validated'] = round(($buffer['count_voters'] - $buffer['count_project_validated']) / $buffer['count_voters'], 2) * 100;
+			
+			$buffer[ 'rate_project_list' ] = array(
+				1 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id. " AND rate_project=1" ), 
+				2 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id. " AND rate_project=2" ), 
+				3 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id. " AND rate_project=3" ), 
+				4 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id. " AND rate_project=4" ), 
+				5 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id. " AND rate_project=5" )
+			);
+			$sum_rate_project = $wpdb->get_var( "SELECT sum(rate_project) FROM ".$table_name." WHERE post_id = ".$campaign_id );
+			$buffer[ 'rate_project_average' ] = round( $sum_rate_project / $buffer[ 'count_voters' ], 2 );
 
-			$buffer['count_invest_ready'] = $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_sum > 0" );
+			$buffer['count_invest_ready'] = $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND invest_sum > 0" );
 			if ($buffer['count_invest_ready'] > 0) {
-			    $buffer['sum_invest_ready'] = $wpdb->get_var( "SELECT sum(invest_sum) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_sum > 0" );
+			    $buffer['sum_invest_ready'] = $wpdb->get_var( "SELECT sum(invest_sum) FROM ".$table_name." WHERE post_id = ".$campaign_id );
 			    $buffer['average_invest_ready'] = $buffer['sum_invest_ready'] / $buffer['count_invest_ready'];
 			    if ($buffer['count_invest_ready'] == 1) {
 				$buffer['median_invest_ready'] = $buffer['average_invest_ready'];
 			    } else {
 				$median = 0;
 				if ($buffer['count_invest_ready'] > 2) $median = round(($buffer['count_invest_ready'] + 1) / 2);
-				$buffer['median_invest_ready'] = $wpdb->get_var( "SELECT invest_sum FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_sum > 0 ORDER BY `invest_sum` LIMIT ".$median.", 1" );
+				$buffer['median_invest_ready'] = $wpdb->get_var( "SELECT invest_sum FROM ".$table_name." WHERE post_id = ".$campaign_id." AND invest_sum > 0 ORDER BY `invest_sum` LIMIT ".$median.", 1" );
 			    }
 			}
 
-			$buffer['count_risk'] = $wpdb->get_var( "SELECT sum(invest_risk) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1" );
-			$buffer['average_risk'] = $buffer['count_risk'] / $buffer['count_project_validated'];
+			$buffer['count_risk'] = $wpdb->get_var( "SELECT sum(invest_risk) FROM ".$table_name." WHERE post_id = ".$campaign_id );
+			$buffer['average_risk'] = $buffer['count_risk'] / $buffer['count_voters'];
 
 			$buffer['risk_list'] = array(
-			    1 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_risk = 1" ),
-			    2 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_risk = 2" ),
-			    3 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_risk = 3" ),
-			    4 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_risk = 4" ),
-			    5 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND validate_project = 1 AND invest_risk = 5" ),
+			    1 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND invest_risk = 1" ),
+			    2 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND invest_risk = 2" ),
+			    3 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND invest_risk = 3" ),
+			    4 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND invest_risk = 4" ),
+			    5 => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND invest_risk = 5" ),
 			);
 
 			$buffer['count_more_info_impact'] = $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND more_info_impact = 1" );
@@ -140,5 +152,58 @@ class WDGCampaignVotes {
 		}
 
 		return $buffer;
+	}
+	
+	public static function upgrade_db() {
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		
+		$table_name = $wpdb->prefix . WDGCampaignVotes::$table_name_votes;
+		$sql = "CREATE TABLE " .$table_name. " (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			post_id bigint(20) NOT NULL,
+			impact_economy smallint(2) NOT NULL,
+			impact_environment smallint(2) NOT NULL,
+			impact_social smallint(2) NOT NULL,
+			impact_other text NOT NULL,
+			validate_project tinyint(1) NOT NULL,
+			rate_project smallint(2) NOT NULL,
+			invest_sum bigint(20) NOT NULL,
+			invest_risk smallint(2) NOT NULL,
+			more_info_impact tinyint(1) NOT NULL,
+			more_info_service tinyint(1) NOT NULL,
+			more_info_team tinyint(1) NOT NULL,
+			more_info_finance tinyint(1) NOT NULL,
+			more_info_other text NOT NULL,
+			advice text NOT NULL,
+			date date NOT NULL,
+			UNIQUE KEY id (id)
+		) $charset_collate;";
+		$result = dbDelta( $sql );
+	}
+	
+	public static function move_validate_to_rate() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . WDGCampaignVotes::$table_name_votes;
+		$wpdb->update(
+			$table_name,
+			array(
+				'rate_project' => '5'
+			),
+			array(
+				'validate_project' => '1'
+			)
+		);
+		$wpdb->update(
+			$table_name,
+			array(
+				'rate_project' => '1'
+			),
+			array(
+				'validate_project' => '0'
+			)
+		);
 	}
 }
