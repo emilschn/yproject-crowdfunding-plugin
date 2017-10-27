@@ -502,7 +502,7 @@ class WDGPostActions {
 		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
 		
-		wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
+		wp_redirect( home_url( '/moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
 	}
 	
 	public static function declaration_auto_generate() {
