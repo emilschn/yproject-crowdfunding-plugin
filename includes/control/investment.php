@@ -40,6 +40,7 @@ class WDGInvestment {
 			$this->token = $invest_token;
 			$this->token_info = WDGWPREST_Entity_Investment::get( $this->token );
 		}
+		$this->error = array();
 	}
 	
 	protected static $_current = null;
