@@ -684,6 +684,7 @@ class WDGInvestment {
 			$this->set_status( WDGInvestment::$status_waiting_wire );
 			$this->post_token_notification();
 			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
+			WDGInvestment::unset_session();
 		}
 
 		edd_empty_cart();

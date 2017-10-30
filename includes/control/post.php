@@ -445,11 +445,13 @@ class WDGPostActions {
 	public static function post_invest_check() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$amount_total = $_SESSION['redirect_current_amount_part'];
+		$WDGInvestment = WDGInvestment::current();
+		$amount_total = $WDGInvestment->get_session_amount();
+		$user_type_session = $WDGInvestment->get_session_user_type();
 		$current_user = wp_get_current_user();
 		$invest_email = $current_user->user_email;
-		if ( isset( $_SESSION['redirect_current_invest_type'] ) && $_SESSION['redirect_current_invest_type'] != 'user' ) {
-			$orga_creator = get_user_by( 'id', $_SESSION['redirect_current_invest_type'] );
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$orga_creator = get_user_by( 'id', $user_type_session );
 			$invest_email = $orga_creator->user_email;
 		}
 		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
@@ -490,11 +492,13 @@ class WDGPostActions {
 	public static function post_confirm_check() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$amount_total = $_SESSION['redirect_current_amount_part'];
+		$WDGInvestment = WDGInvestment::current();
+		$amount_total = $WDGInvestment->get_session_amount();
+		$user_type_session = $WDGInvestment->get_session_user_type();
 		$current_user = wp_get_current_user();
 		$invest_email = $current_user->user_email;
-		if ( isset( $_SESSION['redirect_current_invest_type'] ) && $_SESSION['redirect_current_invest_type'] != 'user' ) {
-			$orga_creator = get_user_by( 'id', $_SESSION['redirect_current_invest_type'] );
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$orga_creator = get_user_by( 'id', $user_type_session );
 			$invest_email = $orga_creator->user_email;
 		}
 		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
