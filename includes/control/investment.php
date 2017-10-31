@@ -433,7 +433,7 @@ class WDGInvestment {
 /******************************************************************************/
 // PAYMENT
 /******************************************************************************/
-	private function save_payment( $payment_key, $mean_of_payment ) {
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE ) {
 		if ( $this->exists_payment( $payment_key ) ) {
 			return FALSE;
 		}
@@ -498,8 +498,19 @@ class WDGInvestment {
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
 		// FIN GESTION DU PAIEMENT COTE EDD
 
-		// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
-		$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+		// Si on sait déjà que ça a échoué, pas la peine de tester
+		if ( $is_failed ) {
+			$buffer = 'failed';
+			$postdata = array(
+				'ID'			=> $payment_id,
+				'post_status'	=> $buffer
+			);
+			wp_update_post($postdata);
+			
+		} else {
+			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
+			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+		}
 		$this->post_token_notification();
 		
 		// Notifications
@@ -670,9 +681,9 @@ class WDGInvestment {
 				}
 			}
 			
-			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
+			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed );
 			
-			if ( $buffer == 'error' ) {
+			if ( $buffer == 'failed' ) {
 				$WDGUser_current = WDGUser::current();
 				$this->error_item = new LemonwayLibErrors( $lw_transaction_result->INT_MSG );
 				NotificationsEmails::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
