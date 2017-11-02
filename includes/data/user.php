@@ -770,7 +770,8 @@ class WDGUser {
 		// format : dd/MM/yyyy
 		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10 && strlen($this->wp_user->get('user_birthday_day')) < 2) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
 		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10 && strlen($this->wp_user->get('user_birthday_month')) < 2) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
-		$lemonway_birthdate = $birthday_day. '/' .$birthday_month. '/' .$this->wp_user->get('user_birthday_year');
+		$birthday_year = ( $this->wp_user->get('user_birthday_year') != '' ) ? $this->wp_user->get('user_birthday_year') : '0';
+		$lemonway_birthdate = $birthday_day. '/' .$birthday_month. '/' .$birthday_year;
 		return $lemonway_birthdate;
 	}
 	

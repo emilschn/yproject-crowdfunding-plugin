@@ -92,12 +92,16 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$WDGUser->get_lastname()
 		);
 
+		$lemonway_birthdate = $WDGUser->get_lemonway_birthdate();
+		if ( $lemonway_birthdate == '0/0/0' ) {
+			$lemonway_birthdate = '00/00/0000';
+		}
 		$this->addField(
 			'date',
 			'birthday',
 			__( "Date de naissance *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
-			$WDGUser->get_lemonway_birthdate()
+			$lemonway_birthdate
 		);
 
 		$this->addField(
