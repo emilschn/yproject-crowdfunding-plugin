@@ -236,9 +236,15 @@ class WDGUser {
 		update_user_meta( $this->wp_user->ID, 'user_gender', $gender );
 		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
 		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
-		update_user_meta( $this->wp_user->ID, 'user_birthday_day', $birthday_day );
-		update_user_meta( $this->wp_user->ID, 'user_birthday_month', $birthday_month );
-		update_user_meta( $this->wp_user->ID, 'user_birthday_year', $birthday_year );
+		if ( !empty( $birthday_day ) && $birthday_day != '00' && $birthday_day > 0 ) {
+			update_user_meta( $this->wp_user->ID, 'user_birthday_day', $birthday_day );
+		}
+		if ( !empty( $birthday_month ) && $birthday_month != '00' && $birthday_month > 0 ) {
+			update_user_meta( $this->wp_user->ID, 'user_birthday_month', $birthday_month );
+		}
+		if ( !empty( $birthday_year ) && $birthday_year != '00' && $birthday_year > 0 ) {
+			update_user_meta( $this->wp_user->ID, 'user_birthday_year', $birthday_year );
+		}
 		update_user_meta( $this->wp_user->ID, 'user_birthplace', $birthplace );
 		update_user_meta( $this->wp_user->ID, 'user_nationality', $nationality );
 		update_user_meta( $this->wp_user->ID, 'user_address', $address );
@@ -297,16 +303,20 @@ class WDGUser {
 		$day = $this->wp_user->get('user_birthday_day');
 		$month = $this->wp_user->get('user_birthday_month');
 		$year = $this->wp_user->get('user_birthday_year');
-		$today_day = date('j');
-		$today_month = date('n');
-		$today_year = date('Y');
-		$years_diff = $today_year - $year;
-		if ($today_month <= $month) {
-		if ($month == $today_month) {
-			if ($day > $today_day) $years_diff--;
+		if ( !empty( $day ) && !empty( $month ) && !empty( $year ) ) {
+			$today_day = date('j');
+			$today_month = date('n');
+			$today_year = date('Y');
+			$years_diff = $today_year - $year;
+			if ($today_month <= $month) {
+				if ($month == $today_month) {
+					if ($day > $today_day) $years_diff--;
+				} else {
+					$years_diff--;
+				}
+			}
 		} else {
-			$years_diff--;
-		}
+			$years_diff = 0;
 		}
 		return $years_diff;
 	}
@@ -316,7 +326,8 @@ class WDGUser {
 	 * @return boolean
 	 */
 	public function is_major() {
-		return ($this->get_age() >= 18);
+		$age = $this->get_age();
+		return ( !empty( $age ) && $age >= 18 );
 	}
 	
 	/**

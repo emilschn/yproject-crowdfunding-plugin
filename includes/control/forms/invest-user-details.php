@@ -423,7 +423,6 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				);
 			}
 			
-			
 			if ( !$this->hasErrors() ) {
 			
 				$gender = $this->getInputText( 'gender' );
