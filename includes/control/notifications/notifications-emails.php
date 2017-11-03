@@ -57,10 +57,10 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_error_contract($payment_id) {
-	ypcf_debug_log('NotificationsEmails::new_purchase_user_error_contract > ' . $payment_id);
-	$particular_content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span>";
-	return NotificationsEmails::new_purchase_user($payment_id, $particular_content);
+    public static function new_purchase_user_error_contract( $payment_id, $preinvestment = FALSE ) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_user_error_contract > ' . $payment_id);
+		$particular_content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span>";
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment );
     }
     
     /**
@@ -68,7 +68,7 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_success($payment_id, $code, $is_card_contribution = true) {
+    public static function new_purchase_user_success( $payment_id, $code, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
 
 		$particular_content = "";
@@ -79,7 +79,7 @@ class NotificationsEmails {
 		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
 		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
 		$particular_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong>";
-		return NotificationsEmails::new_purchase_user($payment_id, $particular_content);
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment );
     }
     
     /**
@@ -87,7 +87,7 @@ class NotificationsEmails {
      * @param type $payment_id
      * @return type
      */
-    public static function new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file, $is_card_contribution = true) {
+    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
 		
 		$particular_content = "";
@@ -98,7 +98,7 @@ class NotificationsEmails {
 		$particular_content .= "Vous trouverez votre contrat d'investissement ci-joint.";
 		
 		$attachments = array($new_contract_pdf_file);
-		return NotificationsEmails::new_purchase_user($payment_id, $particular_content, $attachments);
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
     }
 	
 	private static function new_purchase_lemonway_conditions() {
@@ -114,7 +114,7 @@ class NotificationsEmails {
      * @param string $particular_content
      * @return bool
      */
-    public static function new_purchase_user($payment_id, $particular_content, $attachments = array()) {
+    public static function new_purchase_user( $payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
@@ -125,27 +125,30 @@ class NotificationsEmails {
 		$email = $payment_data['email'];
 		$user_data = get_user_by('email', $email);
 
-		$funding_type = ($campaign->funding_type() == 'fundingdonation') ? 'soutien' : 'investissement';
-
-		$object = "Merci pour votre " . $funding_type;
+		$object = "Merci pour votre investissement";
 		$body_content = '';
 		$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
-		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br /><br />";
-		$body_content .= $post_campaign->post_title . " vous remercie pour votre " . $funding_type . ". Votre compte a été débité mais n'oubliez pas que l'investissement ne sera définitivement validé ";
-		$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br/>"
+		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br><br>";
+		$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. Votre compte a été débité mais n'oubliez pas que l'investissement ne sera définitivement validé ";
+		$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>"
                 . "Retrouvez le projet à l'adresse suivante : "
-                .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a></br>'
-                ."<br /><br />";
-		$body_content .= $particular_content . "<br /><br />";
+                .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a><br>'
+                ."<br><br>";
+		if ( !empty( $particular_content ) ) {
+			$body_content .= $particular_content . "<br><br>";
+		}
+		
+		if ( !empty( $preinvestment ) ) {
+			$body_content .= "Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
+							. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase de vote.<br>"
+							. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
+							. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
+		}
 
-		$body_content .= "<strong>Détails concernant votre ".$funding_type."</strong><br />";
-		$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-		$body_content .= "Montant : ".$payment_amount."&euro;<br />";
-        if ($campaign->funding_type()=="fundingdonation"){
-            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
-            $body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
-        }
-		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br /><br />";
+		$body_content .= "<strong>Détails concernant votre investissement</strong><br>";
+		$body_content .= "Projet : " . $post_campaign->post_title . "<br>";
+		$body_content .= "Montant : ".$payment_amount."&euro;<br>";
+		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br><br>";
 
 		return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
