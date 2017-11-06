@@ -3,7 +3,9 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class NotificationsSlack {
-    private static $channel_dev = "dev-divers";
+    private static $channel_notifications = "wdg-notifications";
+	
+	private static $icon_bell = ':bell:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 	    $data = "payload=" . json_encode(array(
@@ -22,14 +24,21 @@ class NotificationsSlack {
 	    print_r($data);
 	    print_r($result);
 	    print_r($error);
-	    print_r($errorno);*/
+	    print_r($errorno);
+		exit();*/
 	    curl_close($ch);
     }
-    
-    public static function send_to_dev($message, $icon = ':bell:') {
-	    if (!defined( 'YP_SLACK_DEV_WEBHOOK_URL')) { return; }
+	
+	public static function send_to_notifications( $message, $icon ) {
+	    if (!defined( 'YP_SLACK_WEBHOOK_URL')) { return; }
 	    
-	    NotificationsSlack::send(YP_SLACK_DEV_WEBHOOK_URL, NotificationsSlack::$channel_dev, $message, $icon);
-    }
+	    NotificationsSlack::send( YP_SLACK_WEBHOOK_URL, NotificationsSlack::$channel_notifications, $message, $icon );
+	}
+	
+	public static function send_new_user( $wp_user_id ) {
+		$user_data = get_userdata( $wp_user_id );
+		$message = "Nouvel utilisateur : " . $user_data->user_login . ' (' . $wp_user_id . ') => ' . $user_data->user_email;
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_bell );
+	}
     
 }

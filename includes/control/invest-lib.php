@@ -624,7 +624,6 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 //						}
 						NotificationsEmails::new_purchase_admin_success($payment_id);
 					}
-					NotificationsSlack::send_to_dev('Nouvel achat !');
 					NotificationsEmails::new_purchase_team_members($payment_id);
 
 				//Le paiement vient d'échouer
