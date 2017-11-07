@@ -18,14 +18,10 @@ class NotificationsSlack {
 	    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 	    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	    /*$result = curl_exec($ch);
+	    $result = curl_exec($ch);
 	    $error = curl_error($ch);
 	    $errorno = curl_errno($ch);
-	    print_r($data);
-	    print_r($result);
-	    print_r($error);
-	    print_r($errorno);
-		exit();*/
+		ypcf_debug_log( 'NotificationsSlack::send > ' . print_r( $result, true ) . ' ; ' . print_r( $error, true ) . ' ; ' . print_r( $errorno, true ) );
 	    curl_close($ch);
     }
 	
