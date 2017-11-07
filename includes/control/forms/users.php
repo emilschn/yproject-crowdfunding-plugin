@@ -99,6 +99,7 @@ class WDGFormUsers {
 						$user_id = wp_insert_user( $userdata );
 
 						if ( $user_id && is_integer( $user_id ) ) {
+							NotificationsSlack::send_new_user( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );
 						}
 					}
@@ -333,7 +334,8 @@ class WDGFormUsers {
 					$signup_step = 'completed-confirmation';
 					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 					update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
-					NotificationsEmails::new_user_admin($wp_user_id); //Envoi mail à l'admin
+					NotificationsSlack::send_new_user( $wp_user_id );
+//					NotificationsEmails::new_user_admin($wp_user_id); //Envoi mail à l'admin
 					NotificationsEmails::new_user_user($wp_user_id); //Envoi mail à l'utilisateur
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 					if (isset($_POST['redirect-home'])) {

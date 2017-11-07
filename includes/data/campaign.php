@@ -519,7 +519,7 @@ class ATCF_Campaign {
 	public function contract_title() {
 		$buffer = $this->__get_translated_property('campaign_contract_title');
 		if ( empty( $buffer ) ) {
-			$buffer = __( "Contrat de session de revenus futurs", 'yproject' );
+			$buffer = __( "Contrat de cession de revenus futurs", 'yproject' );
 		}
 		return $buffer;
 	}

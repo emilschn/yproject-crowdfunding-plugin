@@ -344,7 +344,7 @@ class WDGInvestment {
 			global $wpdb, $edd_options;
 			$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 			update_user_meta( $wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version] );
-			NotificationsEmails::new_user_admin( $wp_user_id ); //Envoi mail à l'admin
+			NotificationsSlack::send_new_user( $wp_user_id );
 			
 		} else {
 			$wp_user_id = $wdg_user_by_email->ID;
