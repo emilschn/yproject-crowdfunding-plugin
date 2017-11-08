@@ -21,6 +21,7 @@ class WDGPostActions {
         self::add_action("upload_information_files");
         self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
+        self::add_action("send_project_contract_modification_notification");
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
         self::add_action("post_confirm_check");
@@ -410,6 +411,31 @@ class WDGPostActions {
 		
 		$new_override_contract = filter_input( INPUT_POST, 'new_override_contract' );
 		$campaign->__set( ATCF_Campaign::$key_override_contract, $new_override_contract );
+		
+		$url_return = wp_get_referer() . "#informations";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function send_project_contract_modification_notification() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		
+		if ( !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$contract_has_been_modified = ( $campaign->contract_modifications() != '' );
+			$pending_preinvestements = $campaign->pending_preinvestments();
+			foreach ( $pending_preinvestements as $preinvestment ) {
+				$preinvestment = new WDGInvestment( $preinvestment->ID );
+				$user_info = edd_get_payment_meta_user_info( $preinvestment->ID );
+				if ( $contract_has_been_modified ) {
+					NotificationsEmails::preinvestment_to_validate( $user_info, $campaign );
+					
+				} else {
+					NotificationsEmails::preinvestment_auto_validated( $user_info, $campaign );
+					$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
+				}
+			}
+		}
 		
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );

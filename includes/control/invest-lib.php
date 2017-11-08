@@ -331,6 +331,7 @@ function ypcf_login_gobackinvest_url() {
  * @return string
  */
 function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = FALSE, $lemonway_transaction = FALSE, $wdginvestment = FALSE ) {
+	$payment_investment = new WDGInvestment( $payment_id );
     $payment_post = get_post($payment_id);
 	$downloads = edd_get_payment_meta_downloads($payment_id);
 	$download_id = '';
@@ -341,6 +342,11 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 	
     $init_payment_status = $payment_post->post_status;
     $buffer = $init_payment_status;
+	
+	$contract_status = $payment_investment->get_contract_status();
+	if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated || $contract_status == WDGInvestment::$contract_status_investment_refused ) {
+		return $buffer;
+	}
     
 	if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed' && $init_payment_status != 'publish') {
 

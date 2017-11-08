@@ -1484,6 +1484,7 @@ class WDGAjaxActions {
 
         //Extraction infos d'investissements
         foreach ( $investments_list['payments_data'] as $item_invest ) {
+			$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
             $post_invest = get_post($item_invest['ID']);
             $mangopay_id = edd_get_payment_key($item_invest['ID']);
 
@@ -1507,7 +1508,7 @@ class WDGAjaxActions {
             }
 
             $investment_state = 'Validé';
-            if ($campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing) {
+            if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing ) {
                 $investment_state = 'Annulé';
 
                 $refund_card_id = get_post_meta($item_invest['ID'], 'refund_id', TRUE);
@@ -1518,6 +1519,9 @@ class WDGAjaxActions {
 
                 }
             }
+			if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+				$investment_state = 'Pré-investissement non-validé';
+			}
 
             $page_dashboard = get_page_by_path('tableau-de-bord');
             $campaign_id_param = '?campaign_id=' . $campaign->ID;

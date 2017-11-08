@@ -1796,11 +1796,11 @@ class ATCF_Campaign {
 		return false;
 	}
 	
-        /**
-         * Return payments data. 
-         * This function is very slow, it is advisable to use it as few as possible
-         * @return array
-         */
+	/**
+	 * Return payments data. 
+	 * This function is very slow, it is advisable to use it as few as possible
+	 * @return array
+	 */
 	public function payments_data($skip_apis = FALSE) {
 		global $WDG_cache_plugin;
 		if (!isset($WDG_cache_plugin)) { $WDG_cache_plugin = new WDG_Cache_Plugin(); }
@@ -1864,6 +1864,25 @@ class ATCF_Campaign {
 //		}
 		
 		return $payments_data;
+	}
+	
+	public function pending_preinvestments() {
+		$buffer = array();
+
+		$payments = edd_get_payments( array(
+		    'number'	=> -1,
+		    'download'	=> $this->ID,
+			'status'	=> 'pending'
+		) );
+		
+		foreach ( $payments as $payment ) {
+			$payment_investment = new WDGInvestment( $payment->ID );
+			if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+				array_push( $buffer, $payment_investment );
+			}
+		}
+		
+		return $buffer;
 	}
 	
 	/**

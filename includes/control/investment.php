@@ -24,6 +24,11 @@ class WDGInvestment {
 	public static $status_canceled = 'canceled';
 	public static $status_validated = 'validated';
 	
+	public static $contract_status_meta = 'contract_status';
+	public static $contract_status_preinvestment_validated = 'preinvestment_validated';
+	public static $contract_status_investment_refused = 'investment_refused';
+	public static $contract_status_investment_validated = 'investment_validated';
+	
 	public static $meanofpayment_wallet = 'wallet';
 	public static $meanofpayment_cardwallet = 'cardwallet';
 	public static $meanofpayment_card = 'card';
@@ -208,6 +213,16 @@ class WDGInvestment {
 			);
 			WDGWPRESTLib::call_post_wdg( 'investment/' . $this->token, $parameters );
 		}
+	}
+	
+	public function set_contract_status( $status ) {
+		if ( !empty( $this->id ) ) {
+			update_post_meta( $this->id, WDGInvestment::$contract_status_meta, $status );
+		}
+	}
+	
+	public function get_contract_status() {
+		return get_post_meta( $this->id, WDGInvestment::$contract_status_meta, TRUE );
 	}
 	
 	/**
@@ -510,7 +525,20 @@ class WDGInvestment {
 		} else {
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
 			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+			
+			// Si c'est un préinvestissement,
+			//	on passe le statut de préinvestissement
+			//  et on repasse l'investissement comme en attente
+			if ( $this->campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+				$this->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
+				$postdata = array(
+					'ID'			=> $payment_id,
+					'post_status'	=> 'pending'
+				);
+				wp_update_post( $postdata );
+			}
 		}
+
 		$this->post_token_notification();
 		
 		// Notifications
