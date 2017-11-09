@@ -122,6 +122,23 @@ class WDGInvestment {
 	}
 	
 	/**
+	 * Retourne la campagne liée dans l'investissement
+	 * @return \ATCF_Campaign
+	 */
+	public function get_saved_campaign() {
+		$buffer = FALSE;
+		if ( !empty( $this->id ) ) {
+			$downloads = edd_get_payment_meta_downloads( $this->id ); 
+			$download_id = '';
+			if ( !is_array( $downloads[0] ) ){
+				$download_id = $downloads[0];
+				$buffer = new ATCF_Campaign( $download_id );
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne la valeur d'investissement stockée en session
 	 */
 	public function get_session_amount() {
@@ -132,6 +149,26 @@ class WDGInvestment {
 	}
 	
 	/**
+	 * Retourne le montant de l'investissement
+	 * @return int
+	 */
+	public function get_amount() {
+		return $this->token_info->amount;
+	}
+	
+	/**
+	 * Retourne le montant de l'investissement enregistré
+	 * @return int
+	 */
+	public function get_saved_amount() {
+		$buffer = FALSE;
+		if ( !empty( $this->id ) ) {
+			$buffer = edd_get_payment_amount( $this->id  );
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne le type d'utilisateur / id d'organisation stocké en session
 	 */
 	public function get_session_user_type() {
@@ -139,14 +176,6 @@ class WDGInvestment {
 			$this->session_user_type = $_SESSION[ 'redirect_current_user_type' ];
 		}
 		return $this->session_user_type;
-	}
-	
-	/**
-	 * Retourne le montant de l'investissement
-	 * @return int
-	 */
-	public function get_amount() {
-		return $this->token_info->amount;
 	}
 	
 	/**
