@@ -1077,7 +1077,7 @@ class WDGUser {
 	 * @global type $post
 	 * @return type
 	 */
-	public static function get_login_redirect_page() {
+	public static function get_login_redirect_page( $anchor = '' ) {
 		global $post;
 		$buffer = home_url();
 		
@@ -1105,6 +1105,15 @@ class WDGUser {
 
 					//Sinon on peut effectivement rediriger vers la page précédente
 					} else {
+						//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
+						$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
+						$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
+						if ( !empty( $page_by_path->ID ) ) {
+							$campaign = new ATCF_Campaign( $page_by_path->ID );
+							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
+								$anchor = '#vote';
+							}
+						}
 						$buffer = $referer_url;
 					}
 				}
@@ -1125,6 +1134,6 @@ class WDGUser {
 			}
 		}
 		
-		return $buffer;
+		return $buffer . $anchor;
 	}
 }
