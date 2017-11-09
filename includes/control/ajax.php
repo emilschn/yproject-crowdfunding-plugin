@@ -1662,10 +1662,10 @@ class WDGAjaxActions {
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
 			new ContactColumn('vote_advice','Conseil',$display_vote_infos),
 
-			new ContactColumn('invest_amount', 'Montant investi', $display_invest_infos, "range"),
+			new ContactColumn('invest_amount', 'Montant investi', ( $display_vote_infos || $display_invest_infos ), "range" ),
             new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
-            new ContactColumn('invest_payment_type', 'Type de paiement', $display_invest_infos),
-            new ContactColumn('invest_payment_state', 'Etat du paiement', $display_invest_infos),
+            new ContactColumn('invest_payment_type', 'Type de paiement', ( $display_vote_infos || $display_invest_infos )),
+            new ContactColumn('invest_payment_state', 'Etat du paiement', ( $display_vote_infos || $display_invest_infos )),
             new ContactColumn('invest_sign', 'Signature', false),
             new ContactColumn('invest_state', 'Investissement', $display_invest_infos),
         );

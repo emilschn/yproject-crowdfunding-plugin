@@ -1985,6 +1985,16 @@ class ATCF_Campaign {
 			);
 			$payment_id = edd_insert_payment( $payment_data );
 			edd_record_sale_in_log($this->ID, $payment_id);
+			
+			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+				$wdg_investment = new WDGInvestment( $payment_id );
+				$wdg_investment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
+				$postdata = array(
+					'ID'			=> $payment_id,
+					'post_status'	=> 'pending'
+				);
+				wp_update_post( $postdata );
+			}
 
 		} else {
 			$payment_id = FALSE;
