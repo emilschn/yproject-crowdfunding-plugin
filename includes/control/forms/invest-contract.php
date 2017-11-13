@@ -10,7 +10,7 @@ class WDG_Form_Invest_Contract extends WDG_Form {
 	private $user_id;
 	
 	public function __construct( $campaign_id = FALSE, $user_id = FALSE ) {
-		parent::__construct( WDG_Form_Invest_User_Details::$name );
+		parent::__construct( WDG_Form_Invest_Contract::$name );
 		$this->campaign_id = $campaign_id;
 		$this->user_id = $user_id;
 		$this->initFields();

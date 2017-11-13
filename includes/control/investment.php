@@ -64,6 +64,10 @@ class WDGInvestment {
 		return self::$_current;
 	}
 	
+	public function get_id() {
+		return $this->id;
+	}
+	
 	
 	/**
 	 * Détermine si les valeurs de sessions sont correctes pour l'investissement
@@ -176,6 +180,15 @@ class WDGInvestment {
 			$this->session_user_type = $_SESSION[ 'redirect_current_user_type' ];
 		}
 		return $this->session_user_type;
+	}
+	
+	/**
+	 * Retourne l'id de l'investisseur lié à l'investissement
+	 */
+	public function get_saved_user_id() {
+		$user_info = edd_get_payment_meta_user_info( $this->ID );
+		$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+		return $user_id;
 	}
 	
 	/**
