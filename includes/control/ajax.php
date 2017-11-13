@@ -308,9 +308,11 @@ class WDGAjaxActions {
 
 			} else {
 				global $errors_submit_new;
-				$error_messages = $errors_submit_new->get_error_messages();
-				foreach ($error_messages as $error_message) {
-					array_push($errors_create_orga, $error_message);
+				if ( !empty( $errors_submit_new ) ) { 
+					$error_messages = $errors_submit_new->get_error_messages();
+					foreach ($error_messages as $error_message) {
+						array_push($errors_create_orga, $error_message);
+					}
 				}
 				$return_values = array(
 					"response" => "new_organization",
