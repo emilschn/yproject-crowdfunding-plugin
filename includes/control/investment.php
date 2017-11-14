@@ -8,6 +8,12 @@ class WDGInvestment {
 	private $token_info;
 	private $error;
 	private $campaign;
+	private $session_amount;
+	private $session_user_type;
+	/**
+	 * @var LemonwayLibErrors
+	 */
+	private $error_item;
 	
 	public static $status_init = 'init';
 	public static $status_expired = 'expired';
@@ -18,6 +24,14 @@ class WDGInvestment {
 	public static $status_canceled = 'canceled';
 	public static $status_validated = 'validated';
 	
+	public static $meanofpayment_wallet = 'wallet';
+	public static $meanofpayment_cardwallet = 'cardwallet';
+	public static $meanofpayment_card = 'card';
+	public static $meanofpayment_wire = 'wire';
+	public static $meanofpayment_check = 'check';
+	
+	public static $session_max_duration_hours = '2';
+	
 	public function __construct( $post_id = FALSE, $invest_token = FALSE ) {
 		if ( !empty( $post_id ) ) {
 			$this->id = $post_id;
@@ -26,6 +40,7 @@ class WDGInvestment {
 			$this->token = $invest_token;
 			$this->token_info = WDGWPREST_Entity_Investment::get( $this->token );
 		}
+		$this->error = array();
 	}
 	
 	protected static $_current = null;
@@ -42,6 +57,42 @@ class WDGInvestment {
 			}
 		}
 		return self::$_current;
+	}
+	
+	
+	/**
+	 * Détermine si les valeurs de sessions sont correctes pour l'investissement
+	 */
+	public function is_session_correct() {
+		if ( !isset( $_SESSION[ 'invest_update_date' ] ) ) {
+			return FALSE;
+		}
+		$invest_update_date = $_SESSION[ 'invest_update_date' ];
+		
+		$current_date = new DateTime();
+		$difference_in_hours = floor( ( strtotime( $current_date->format( 'Y-m-d h:i:s' ) ) - strtotime( $invest_update_date ) ) / 3600 );
+		if ( $difference_in_hours > self::$session_max_duration_hours ) {
+			return FALSE;
+		}
+		
+		return TRUE;
+	}
+	
+	/**
+	 * Met à jour les valeurs de session qui concernent l'investissement en cours
+	 * @param int $amount
+	 * @param string $user_type
+	 */
+	public function update_session( $amount = FALSE, $user_type = FALSE ) {
+		$current_datetime = new DateTime();
+		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d h:i:s' );
+		
+		if ( !empty( $amount ) ) {
+			$_SESSION[ 'redirect_current_amount' ] = $amount;
+		}
+		if ( !empty( $user_type ) ) {
+			$_SESSION[ 'redirect_current_user_type' ] = $user_type;
+		}
 	}
 	
 	/**
@@ -63,6 +114,26 @@ class WDGInvestment {
 		}
 		
 		return $buffer;
+	}
+	
+	/**
+	 * Retourne la valeur d'investissement stockée en session
+	 */
+	public function get_session_amount() {
+		if ( !isset( $this->session_amount ) ) {
+			$this->session_amount = $_SESSION[ 'redirect_current_amount' ];
+		}
+		return $this->session_amount;
+	}
+	
+	/**
+	 * Retourne le type d'utilisateur / id d'organisation stocké en session
+	 */
+	public function get_session_user_type() {
+		if ( !isset( $this->session_user_type ) ) {
+			$this->session_user_type = $_SESSION[ 'redirect_current_user_type' ];
+		}
+		return $this->session_user_type;
 	}
 	
 	/**
@@ -191,6 +262,7 @@ class WDGInvestment {
 	 */
 	public static function unset_session() {
 		$session_vars_list = array(
+			'invest_update_date',
 			'redirect_current_amount_part',
 			'redirect_current_invest_type',
 			'new_orga_just_created',
@@ -349,5 +421,286 @@ class WDGInvestment {
 	 */
 	public function get_max_value_to_invest() {
 		return ( $this->campaign->goal( FALSE ) - $this->campaign->current_amount( FALSE ) );
+	}
+	
+	/**
+	 * @return LemonwayLibErrors
+	 */
+	public function get_error_item() {
+		return $this->error_item;
+	}
+	
+/******************************************************************************/
+// PAYMENT
+/******************************************************************************/
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE ) {
+		if ( $this->exists_payment( $payment_key ) ) {
+			return FALSE;
+		}
+		
+		//Récupération des bonnes informations utilisateur
+		$WDGUser_current = WDGUser::current();
+		$save_user_id = $WDGUser_current->get_wpref();
+		$save_display_name = $WDGUser_current->wp_user->display_name;
+		$invest_type = $this->get_session_user_type();
+		if ( $invest_type != 'user' ) {
+			$WDGOrganization = new WDGOrganization( $invest_type );
+			if ( $WDGOrganization ) {
+				$current_user_organization = $WDGOrganization->get_creator();
+				$save_user_id = $current_user_organization->ID;
+				$save_display_name = $WDGOrganization->get_name();
+			}
+		}
+		
+		// GESTION DU PAIEMENT COTE EDD
+		WDGInvestment::unset_session();
+
+		//Création d'un paiement pour edd
+		$user_info = array(
+			'id'			=> $save_user_id,
+			'gender'		=> $WDGUser_current->get_gender(),
+			'email'			=> $WDGUser_current->get_email(),
+			'first_name'	=> $WDGUser_current->get_firstname(),
+			'last_name'		=> $WDGUser_current->get_lastname(),
+			'discount'		=> '',
+			'address'		=> array()
+		);
+
+		$cart_details = array(
+			array(
+				'name'			=> $this->campaign->data->post_title,
+				'id'			=> $this->campaign->ID,
+				'item_number'	=> array(
+					'id'			=> $this->campaign->ID,
+					'options'		=> array()
+				),
+				'price'			=> 1,
+				'quantity'		=> $this->get_session_amount()
+			)
+		);
+
+		$this->set_status( WDGInvestment::$status_validated );
+
+		$payment_data = array( 
+			'price'			=> $this->get_session_amount(), 
+			'date'			=> date('Y-m-d H:i:s'), 
+			'user_email'	=> $WDGUser_current->get_email(),
+			'purchase_key'	=> $payment_key,
+			'currency'		=> edd_get_currency(),
+			'downloads'		=> array( $this->campaign->ID ),
+			'user_info'		=> $user_info,
+			'cart_details'	=> $cart_details,
+			'status'		=> 'pending'
+		);
+		$payment_id = edd_insert_payment( $payment_data );
+		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
+		
+		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
+		// FIN GESTION DU PAIEMENT COTE EDD
+
+		// Si on sait déjà que ça a échoué, pas la peine de tester
+		if ( $is_failed ) {
+			$buffer = 'failed';
+			$postdata = array(
+				'ID'			=> $payment_id,
+				'post_status'	=> $buffer
+			);
+			wp_update_post($postdata);
+			
+		} else {
+			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
+			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+		}
+		$this->post_token_notification();
+		
+		// Notifications
+		if ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
+			NotificationsEmails::new_purchase_pending_wire_admin( $payment_id );
+			NotificationsEmails::new_purchase_pending_wire_user( $payment_id );
+		}
+		
+		//Si un utilisateur investit, il croit au projet
+		global $wpdb;
+		$table_jcrois = $wpdb->prefix . "jycrois";
+		$users = $wpdb->get_results( "SELECT user_id FROM " .$table_jcrois. " WHERE campaign_id = " .$this->campaign->ID. " AND user_id = " . $WDGUser_current->get_wpref() );
+		if ( !$users ) {
+			$wpdb->insert( $table_jcrois,
+				array(
+					'user_id'		=> $WDGUser_current->get_wpref(),
+					'campaign_id'	=> $this->campaign->ID
+				)
+			);
+		}
+		
+		if ( $buffer == 'publish' ) {
+			do_action('wdg_delete_cache', array(
+				'home-projects',
+				'projectlist-projects-current'
+			));
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Vérifie si un paiement avec la même clé a déjà été enregistré, pour ne pas le faire 2 fois
+	 */
+	private function exists_payment( $payment_key ) {
+		$buffer = FALSE;
+		$paymentlist = edd_get_payments(array(
+		    'number'	 => -1,
+		    'download'   => $this->campaign->ID
+		));
+		foreach ( $paymentlist as $payment ) {
+			if (edd_get_payment_key( $payment->ID ) == $payment_key) {
+				$buffer = TRUE;
+				array_push( $this->error, __( "Le paiement a d&eacute;j&agrave; &eacute;t&eacute; pris en compte. Merci de nous contacter.", 'yproject' ) );
+				break;
+			}
+		}
+		return $buffer;
+	}
+	
+	public function try_payment( $meanofpayment ) {
+		$payment_key = FALSE;
+		switch ( $meanofpayment ) {
+			case WDGInvestment::$meanofpayment_wallet:
+				$payment_key = $this->try_payment_wallet();
+				$buffer = $this->save_payment( $payment_key, $mean_of_payment );
+				break;
+			case WDGInvestment::$meanofpayment_cardwallet:
+				$buffer = $this->try_payment_card( TRUE );
+				break;
+			case WDGInvestment::$meanofpayment_card:
+				$buffer = $this->try_payment_card();
+				break;
+		}
+		
+		return $buffer;
+	}
+	
+	private function try_payment_wallet( $entire_wallet = FALSE ) {
+		$buffer = FALSE;
+		$WDGUser_current = WDGUser::current();
+		
+		$amount = ( $entire_wallet ) ? $WDGUser_current->get_lemonway_wallet_amount() : $this->get_session_amount();
+
+		// Vérifications de sécurité
+		$can_use_wallet = FALSE;
+		$invest_type = $this->get_session_user_type();
+		if ( $invest_type == 'user' ) {
+			$can_use_wallet = $WDGUser_current->can_pay_with_wallet( $amount, $this->campaign );
+			
+		} else {
+			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $amount, $this->campaign );
+		}
+		
+		// Tentative d'exécution du transfert d'argent
+		$transfer_funds_result = FALSE;
+		if ( $can_use_wallet ) {
+			$campaign_organization = $this->campaign->get_organization();
+			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref );
+			
+			if ( $invest_type == 'user' ) { 
+				if ( $WDGUser_current->can_pay_with_wallet( $amount, $this->campaign ) ) {
+					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $amount );
+				}
+			
+			} else if ( $WDGOrganization_debit->can_pay_with_wallet( $amount, $this->campaign ) ) {
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGOrganization_debit->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $amount );
+			}
+		}
+		
+		// Enregistrement des données selon résultat du transfert
+		if ( !empty( $transfer_funds_result ) && isset( $transfer_funds_result->ID ) ) {
+			$buffer = 'wallet_'. $transfer_funds_result->ID;
+
+		} else {
+			NotificationsEmails::new_purchase_admin_error_wallet( $WDGUser_current, $this->campaign->data->post_title, $amount );
+		}
+		
+		return $buffer;
+	}
+	
+	private function try_payment_card( $with_wallet = FALSE) {
+		$organization_campaign = $this->campaign->get_organization();
+		$WDGOrganization = new WDGOrganization( $organization_campaign->wpref );
+		$WDGuser_current = WDGUser::current();
+		$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $this->campaign->ID;
+		$wk_token = LemonwayLib::make_token($current_token_id);
+		
+		$return_url = home_url( '/paiement-effectue' ) . '?campaign_id='. $this->campaign->ID;
+		
+		$amount = $this->get_session_amount();
+		if ( $with_wallet ) {
+			$amount -= $WDGuser_current->get_lemonway_wallet_amount();
+			$return_url .= '&meanofpayment=' .WDGInvestment::$meanofpayment_cardwallet;
+		}
+		
+		$error_url = $return_url . '&error=1';
+		$cancel_url = $return_url . '&cancel=1';
+		
+		$return = LemonwayLib::ask_payment_webkit( $WDGOrganization->get_lemonway_id(), $amount, 0, $wk_token, $return_url, $error_url, $cancel_url );
+		if ( !empty($return->MONEYINWEB->TOKEN) ) {
+			$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
+			$url_css_encoded = urlencode( $url_css );
+			wp_redirect( YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded );
+			exit();
+			
+		} else {
+			ypcf_debug_log( 'WDGInvestment::try_payment_card > error' );
+			return FALSE;
+		}
+	}
+	
+	public function payment_return( $mean_of_payment ) {
+		$buffer = FALSE;
+		
+		if ( empty( $mean_of_payment ) ) {
+			$mean_of_payment = WDGInvestment::$meanofpayment_card;
+		}
+		
+		// Retour de paiement par carte
+		if ( $mean_of_payment == WDGInvestment::$meanofpayment_card || $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet ) {
+			
+			$payment_key = $_REQUEST["response_wkToken"];
+			$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key );
+			$return_cancel = filter_input( INPUT_GET, 'cancel' );
+			$return_error = filter_input( INPUT_GET, 'error' );
+			$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
+			$is_failed = $is_failed || ( $lw_transaction_result->STATUS != 3 && $lw_transaction_result->STATUS != 0 );
+			
+			// Compléter par wallet
+			if ( $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet && !$is_failed ) {
+				$wallet_payment_key = $this->try_payment_wallet( TRUE );
+				if ( !empty( $wallet_payment_key ) ) {
+					$payment_key .= '_' . $wallet_payment_key;
+				} else {
+					$payment_key .= '_wallet_FAILED';
+				}
+			}
+			
+			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed );
+			
+			if ( $buffer == 'failed' ) {
+				$WDGUser_current = WDGUser::current();
+				$this->error_item = new LemonwayLibErrors( $lw_transaction_result->INT_MSG );
+				NotificationsEmails::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
+			}
+			
+		// Retour de paiement par virement
+		} elseif ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
+			$random = rand(10000, 99999);
+			$payment_key = 'wire_TEMP_' . $random;
+			$this->set_status( WDGInvestment::$status_waiting_wire );
+			$this->post_token_notification();
+			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
+			WDGInvestment::unset_session();
+		}
+
+		edd_empty_cart();
+		
+		return $buffer;
 	}
 }

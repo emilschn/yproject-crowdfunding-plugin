@@ -399,6 +399,11 @@ class ATCF_Campaign {
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
     }
+	
+    public static $key_backoffice_contract_modifications = 'campaign_contract_modifications';
+	public function contract_modifications() {
+        return $this->__get( ATCF_Campaign::$key_backoffice_contract_modifications );
+	}
 	public function generate_contract_pdf_blank_organization() {
 		$filename = 'blank-contract-organization-'.$this->ID.'.pdf';
 		$filepath = __DIR__ . '/../contracts/' . $filename;
@@ -1282,13 +1287,13 @@ class ATCF_Campaign {
 	 */
 	public static $key_campaign_status = 'campaign_vote';
 	public function campaign_status() {
-		return $this->vote();
+		return $this->__get(ATCF_Campaign::$key_campaign_status);
 	}
 	/**
 	 * Deprecated : use campaign_status instead
 	 */
 	public function vote() {
-		return $this->__get(ATCF_Campaign::$key_campaign_status);
+		return $this->campaign_status();
 	}
 	
 	public function is_preparing() {
@@ -1300,7 +1305,14 @@ class ATCF_Campaign {
 	 * Returns true if it is possible to invest on the project
 	 */
 	public function is_investable() {
-		return ( ypcf_check_user_is_complete( $this->data->post_author ) && $this->is_remaining_time() && $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte );
+		// Possible d'investir si le porteur de projet a bien rempli ses informations et qu'il reste du temps (peu importe l'étape)
+		$buffer = ypcf_check_user_is_complete( $this->data->post_author ) && $this->is_remaining_time();
+		// Si en vote, il faut que l'utilisateur ait voté
+		$WDGUser_current = WDGUser::current();
+		$is_vote_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) && ( $WDGUser_current->has_voted_on_campaign( $this->ID ) );
+		// Si en collecte
+		$is_collecte_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte );
+		return $buffer && ( $is_vote_investable || $is_collecte_investable );
 	}
 	
 	/**
@@ -1455,58 +1467,63 @@ class ATCF_Campaign {
 	}
 	
 	public function is_remaining_time() {
-	    date_default_timezone_set('Europe/London');
-		$expires = strtotime( $this->end_date() );
-		$now     = current_time( 'timestamp' );
-		return ( $now < $expires );
+		return ( $this->time_remaining_str() != '-' );
 	}
 	
 	/**
 	 * Retourne une chaine avec le temps restant (J-6, H-2, M-23)
 	 */
+	private $time_remaining_str;
 	public function time_remaining_str() {
-		date_default_timezone_set("Europe/London");
-		
-		//Récupération de la date de fin et de la date actuelle
-		$buffer = '';
-		switch ($this->campaign_status()) {
-			case ATCF_Campaign::$campaign_status_vote:
-			    $expires = strtotime( $this->end_vote() );
-			    break;
-			case ATCF_Campaign::$campaign_status_collecte:
-			    $expires = strtotime( $this->end_date() );
-			    break;
-			default:
-			    $expires = 0;
-			    break;
-		}
-		
-		$now = current_time( 'timestamp' );
-		
-		//Si on a dépassé la date de fin, on retourne "-"
-		if ( $now > $expires ) {
-			$buffer = '-';
-			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
-				if ( $this->is_funded() ) {
-					$this->set_status( ATCF_Campaign::$campaign_status_funded );
-				} else {
-					$this->set_status( ATCF_Campaign::$campaign_status_archive );
-				}
+		if ( !isset( $this->time_remaining_str ) ) {
+			date_default_timezone_set("Europe/London");
+
+			//Récupération de la date de fin et de la date actuelle
+			$buffer = '';
+			switch ($this->campaign_status()) {
+				case ATCF_Campaign::$campaign_status_vote:
+					$expires = strtotime( $this->end_vote() );
+					break;
+				case ATCF_Campaign::$campaign_status_collecte:
+					$expires = strtotime( $this->end_date() );
+					break;
+				default:
+					$expires = 0;
+					break;
 			}
-		} else {
-			$diff = $expires - $now;
-			$nb_days = floor($diff / (60 * 60 * 24));
-			if ($nb_days > 1) {
-				$buffer = 'J-' . $nb_days;
+
+			$now = current_time( 'timestamp' );
+
+			//Si on a dépassé la date de fin, on retourne "-"
+			if ( $now > $expires ) {
+				$buffer = '-';
+				if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+					if ( $this->is_funded() ) {
+						$this->set_status( ATCF_Campaign::$campaign_status_funded );
+					} else {
+						$this->set_status( ATCF_Campaign::$campaign_status_archive );
+					}
+				}
 			} else {
-				$nb_hours = floor($diff / (60 * 60));
-				if ($nb_hours > 1) {
-					$buffer = 'H-' . $nb_hours;
+				$diff = $expires - $now;
+				$nb_days = floor($diff / (60 * 60 * 24));
+				if ($nb_days > 1) {
+					$buffer = 'J-' . $nb_days;
 				} else {
-					$nb_minutes = floor($diff / 60);
-					$buffer = 'M-' . $nb_minutes;
+					$nb_hours = floor($diff / (60 * 60));
+					if ($nb_hours > 1) {
+						$buffer = 'H-' . $nb_hours;
+					} else {
+						$nb_minutes = floor($diff / 60);
+						$buffer = 'M-' . $nb_minutes;
+					}
 				}
 			}
+			
+			$this->time_remaining_str = $buffer;
+			
+		} else {
+			$buffer = $this->time_remaining_str;
 		}
 		    
 		return $buffer;
@@ -1906,8 +1923,8 @@ class ATCF_Campaign {
 
 				//Sinon, on la crée juste avec un e-mail et un nom
 				} else {
-                    $wp_orga_user_id = WDGOrganization::createSimpleOrganization($user_id, $orga_name, $orga_email);
-					$saved_user_id = $wp_orga_user_id;
+                    $wp_orga = WDGOrganization::createSimpleOrganization($user_id, $orga_name, $orga_email);
+					$saved_user_id = $wp_orga->get_wpref();
 				}
 			}
 		}

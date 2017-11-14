@@ -581,6 +581,9 @@ class LemonwayLib {
 		
 		
 		global $WDG_cache_plugin;
+		if ($WDG_cache_plugin == null) {
+			$WDG_cache_plugin = new WDG_Cache_Plugin();
+		}
 		$url_called = 'transaction::'.$type.'::'.$transaction_id;
 		$result_cached = $WDG_cache_plugin->get_cache( $url_called, 1 );
 		$result = unserialize( $result_cached );

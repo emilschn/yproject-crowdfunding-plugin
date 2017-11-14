@@ -519,11 +519,11 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	// Si le projet surcharge le contrat standard
 	$project_override_contract = $campaign_obj->override_contract();
 	if ( !empty( $project_override_contract ) ) {
-		$buffer .= apply_filters( 'the_content', $project_override_contract );
+		$buffer .= wpautop( $project_override_contract );
 		
 	// Si il y a un contrat standard défini, on le prend directement
 	} else if ( !empty( $edd_settings[ 'standard_contract' ] ) ) {
-		$buffer .= apply_filters( 'the_content', $edd_settings[ 'standard_contract' ] );
+		$buffer .= wpautop( $edd_settings[ 'standard_contract' ] );
 		
 	
 	} else {
@@ -572,7 +572,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		if ( !empty( $override_contract ) ) {
 			global $shortcode_campaign_obj;
 			$shortcode_campaign_obj = $campaign_obj;
-			$override_contract_filtered = apply_filters( 'the_content', $override_contract );
+			$override_contract_filtered = wpautop( $override_contract );
 			$buffer .= html_entity_decode( $override_contract_filtered );
 		} else {
 			$buffer .= html_entity_decode( $campaign_obj->powers_params() );

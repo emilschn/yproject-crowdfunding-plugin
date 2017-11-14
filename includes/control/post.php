@@ -445,11 +445,13 @@ class WDGPostActions {
 	public static function post_invest_check() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$amount_total = $_SESSION['redirect_current_amount_part'];
+		$WDGInvestment = WDGInvestment::current();
+		$amount_total = $WDGInvestment->get_session_amount();
+		$user_type_session = $WDGInvestment->get_session_user_type();
 		$current_user = wp_get_current_user();
 		$invest_email = $current_user->user_email;
-		if ( isset( $_SESSION['redirect_current_invest_type'] ) && $_SESSION['redirect_current_invest_type'] != 'user' ) {
-			$orga_creator = get_user_by( 'id', $_SESSION['redirect_current_invest_type'] );
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$orga_creator = get_user_by( 'id', $user_type_session );
 			$invest_email = $orga_creator->user_email;
 		}
 		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
@@ -478,10 +480,10 @@ class WDGPostActions {
 		
 		if ( $has_moved ) {
 			update_post_meta( $investment_id, 'check_picture', $random_filename );
-			wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&check-return=post_invest_check' );
+			wp_redirect( home_url( '/moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_invest_check' );
 			
 		} else {
-			wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&check-return=post_confirm_check&error-upload=1' );
+			wp_redirect( home_url( '/moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check&error-upload=1' );
 			
 		}
 		exit();
@@ -490,11 +492,13 @@ class WDGPostActions {
 	public static function post_confirm_check() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
-		$amount_total = $_SESSION['redirect_current_amount_part'];
+		$WDGInvestment = WDGInvestment::current();
+		$amount_total = $WDGInvestment->get_session_amount();
+		$user_type_session = $WDGInvestment->get_session_user_type();
 		$current_user = wp_get_current_user();
 		$invest_email = $current_user->user_email;
-		if ( isset( $_SESSION['redirect_current_invest_type'] ) && $_SESSION['redirect_current_invest_type'] != 'user' ) {
-			$orga_creator = get_user_by( 'id', $_SESSION['redirect_current_invest_type'] );
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$orga_creator = get_user_by( 'id', $user_type_session );
 			$invest_email = $orga_creator->user_email;
 		}
 		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
@@ -502,7 +506,7 @@ class WDGPostActions {
 		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
 		
-		wp_redirect( home_url( '/paiement-cheque' ) . '?campaign_id='.$campaign_id.'&check-return=post_confirm_check' );
+		wp_redirect( home_url( '/moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
 	}
 	
 	public static function declaration_auto_generate() {

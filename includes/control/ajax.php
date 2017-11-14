@@ -33,6 +33,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
+		WDGAjaxActions::add_action('save_project_contract_modification');
 		WDGAjaxActions::add_action('save_project_organization');
 		WDGAjaxActions::add_action('save_new_organization');
 		WDGAjaxActions::add_action('save_edit_organization');
@@ -1271,6 +1272,23 @@ class WDGAjaxActions {
 			"response" => "edit_communication",
 			"errors" => array(),
 			"success" => $success
+		);
+		echo json_encode($return_values);
+		exit();
+	}
+	
+	public static function save_project_contract_modification() {
+		$success = array();
+		
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$campaign->__set( ATCF_Campaign::$key_backoffice_contract_modifications, filter_input( INPUT_POST, 'new_contract_modification' ) );
+		$success[ 'new_contract_modification' ] = 1;
+
+		$return_values = array(
+			'response'	=> 'edit_contract_modifications',
+			'errors'	=> array(),
+			'success'	=> $success
 		);
 		echo json_encode($return_values);
 		exit();
