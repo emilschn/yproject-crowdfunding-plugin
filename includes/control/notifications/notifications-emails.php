@@ -447,6 +447,21 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $user_data->user_email, $object, $body_content, true );
 	}
 	
+	public static function preinvestment_canceled( $user_data, $campaign ) {
+		$object = "Votre pré-investissement est annulé";
+		
+		$body_content = "Bonjour,<br><br>";
+		$body_content .= "Suite à votre demande, le pré-investissement que vous aviez effectué sur le projet ".$campaign->data->post_title." a été annulé.<br>";
+		$body_content .= "Si vous aviez payé par carte, la somme vous est directement remboursée sur votre compte bancaire.<br>";
+		$body_content .= "Si vous aviez payé par porte-monnaie WE DO GOOD, la somme est versée sur votre porte-monnaie.<br>";
+		$body_content .= "Si vous aviez payé par virement, la somme est versée sur votre porte-monnaie WE DO GOOD (rendez-vous sur votre compte).<br>";
+		$body_content .= "Si vous aviez payé par chèque, celui-ci ne sera pas encaissé.<br><br>";
+		
+		$body_content .= "A bientôt sur WE DO GOOD !<br>";
+		
+		return NotificationsEmails::send_mail( $user_data->user_email, $object, $body_content, true );
+	}
+	
     //*******************************************************
     // FIN ACHATS
     //*******************************************************

@@ -186,7 +186,7 @@ class WDGInvestment {
 	 * Retourne l'id de l'investisseur lié à l'investissement
 	 */
 	public function get_saved_user_id() {
-		$user_info = edd_get_payment_meta_user_info( $this->ID );
+		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
 		$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 		return $user_id;
 	}
@@ -772,5 +772,69 @@ class WDGInvestment {
 		edd_empty_cart();
 		
 		return $buffer;
+	}
+	
+/******************************************************************************/
+// REFUND
+/******************************************************************************/
+	public function refund() {
+		$payment_key = edd_get_payment_key( $this->get_id() );
+		if ($payment_key != 'check') {
+
+			// Si c'est un virement
+			if ( strpos($payment_key, 'wire_') !== FALSE ) {
+				$organization = $this->get_organization();
+				$organization_obj = new WDGOrganization( $organization->wpref );
+				$credit_wallet_id = '';
+				$user_id = $this->get_saved_user_id();
+				if ( WDGOrganization::is_user_organization( $user_id ) ) {
+					$credit_organization = new WDGOrganization( $user_id );
+					$credit_wallet_id = $credit_organization->get_lemonway_id();
+				} else {
+					$credit_user = new WDGUser( $user_id );
+					$credit_wallet_id = $credit_user->get_lemonway_id();
+				}
+				$amount = $this->get_saved_amount();
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount );
+				if (LemonwayLib::get_last_error_code() == '') {
+					update_post_meta( $this->get_id(), 'refund_wire_id', $transfer_funds_result->ID );
+				}
+
+			// Si c'est par carte ou wallet
+			} else {
+				$card_token = '';
+				$wallet_token = '';
+				if ( strpos( $payment_key, '_wallet_' ) !== FALSE ) {
+					$key_exploded = explode( '_wallet_', $payment_key );
+					$card_token = $key_exploded[0];
+					$wallet_token = $key_exploded[1];
+
+				} elseif ( strpos( $payment_key, 'wallet_' ) !== FALSE ) {
+					$key_exploded = explode( 'wallet_', $payment_key );
+					$wallet_token = $key_exploded[1];
+
+				} else {
+					$card_token = $payment_key;
+				}
+
+				if ( !empty( $card_token ) ) {
+					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
+					$lw_refund = LemonwayLib::ask_refund( $lw_transaction_result->ID );
+					if (LemonwayLib::get_last_error_code() == '') {
+						update_post_meta( $this->get_id(), 'refund_id', $lw_refund->HPAY->ID );
+					}
+				}
+				if ( !empty( $wallet_token ) ) {
+					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
+					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $lw_transaction_result->REC, $lw_transaction_result->SEN, $lw_transaction_result->DEB );
+					if (LemonwayLib::get_last_error_code() == '') {
+						update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
+					}
+
+				}
+
+			}
+
+		}
 	}
 }
