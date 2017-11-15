@@ -18,6 +18,7 @@ class WDGPostActions {
         self::add_action("create_project_form");
         self::add_action("change_project_status");
         self::add_action("organization_sign_mandate");
+        self::add_action("organization_remove_mandate");
         self::add_action("upload_information_files");
         self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
@@ -315,6 +316,17 @@ class WDGPostActions {
 		}
 		
 		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function organization_remove_mandate() {
+        $organization_id = sanitize_text_field( filter_input( INPUT_POST, 'organization_id' ) );
+        $mandate_id = sanitize_text_field( filter_input( INPUT_POST, 'mandate_id' ) );
+		$WDGOrganization = new WDGOrganization( $organization_id );
+		$WDGOrganization->remove_lemonway_mandate( $mandate_id );
+		$WDGOrganization->add_lemonway_mandate();
+		
+		wp_redirect( wp_get_referer() );
 		die();
 	}
 	
