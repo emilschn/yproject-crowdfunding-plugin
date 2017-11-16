@@ -363,7 +363,7 @@ function generatePDF($html_content, $filename) {
  * Fill the pdf default content with infos
  * @return string
  */
-function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $organization = false) {
+function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $organization = false, $preview = false) {
 	if ( !empty( $payment_data ) ) {
 		ypcf_debug_log('fillPDFHTMLDefaultContent > ' . $payment_data["amount"]);
 	}
@@ -371,14 +371,14 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
 	
 	//Si on doit faire une version anglaise
 	if (get_locale() == 'en_US') {
-		$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, 'en_US');
+		$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $preview, 'en_US');
 	}
-	$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization);
+	$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $preview);
 	
 	return $buffer;
 }
 
-function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $lang = '') {
+function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $preview, $lang = '') {
 	if (empty($lang)) {
 		setlocale( LC_CTYPE, 'fr_FR' );
 	}
@@ -519,11 +519,19 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	// Si le projet surcharge le contrat standard
 	$project_override_contract = $campaign_obj->override_contract();
 	if ( !empty( $project_override_contract ) ) {
-		$buffer .= wpautop( $project_override_contract );
+		if ( $preview ) {
+			$buffer .= wpautop( $project_override_contract );
+		} else {
+			$buffer .= apply_filters( 'the_content', $project_override_contract );
+		}
 		
 	// Si il y a un contrat standard défini, on le prend directement
 	} else if ( !empty( $edd_settings[ 'standard_contract' ] ) ) {
-		$buffer .= wpautop( $edd_settings[ 'standard_contract' ] );
+		if ( $preview ) {
+			$buffer .= wpautop( $edd_settings[ 'standard_contract' ] );
+		} else {
+			$buffer .= apply_filters( 'the_content', $edd_settings[ 'standard_contract' ] );
+		}
 		
 	
 	} else {
@@ -572,7 +580,12 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		if ( !empty( $override_contract ) ) {
 			global $shortcode_campaign_obj;
 			$shortcode_campaign_obj = $campaign_obj;
-			$override_contract_filtered = wpautop( $override_contract );
+			
+			if ( $preview ) {
+				$override_contract_filtered = wpautop( $override_contract );
+			} else {
+				$override_contract_filtered = apply_filters( 'the_content', $override_contract );
+			}
 			$buffer .= html_entity_decode( $override_contract_filtered );
 		} else {
 			$buffer .= html_entity_decode( $campaign_obj->powers_params() );
