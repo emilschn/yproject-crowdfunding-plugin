@@ -387,6 +387,10 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	$organization_obj = new WDGOrganization( $campaign_orga->wpref );
 	
 	WDG_PDF_Generator::add_shortcodes();
+	add_filter( 'WDG_PDF_Generator_filter', 'wptexturize' );
+	add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
+	add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
+	add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
 	
 	$blank_space_small = '________________';
 	$blank_space = '________________________________________________';
@@ -522,7 +526,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		if ( $preview ) {
 			$buffer .= wpautop( $project_override_contract );
 		} else {
-			$buffer .= apply_filters( 'the_content', $project_override_contract );
+			$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $project_override_contract );
 		}
 		
 	// Si il y a un contrat standard défini, on le prend directement
@@ -530,7 +534,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		if ( $preview ) {
 			$buffer .= wpautop( $edd_settings[ 'standard_contract' ] );
 		} else {
-			$buffer .= apply_filters( 'the_content', $edd_settings[ 'standard_contract' ] );
+			$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $edd_settings[ 'standard_contract' ] );
 		}
 		
 	
@@ -584,7 +588,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			if ( $preview ) {
 				$override_contract_filtered = wpautop( $override_contract );
 			} else {
-				$override_contract_filtered = apply_filters( 'the_content', $override_contract );
+				$override_contract_filtered = apply_filters( 'WDG_PDF_Generator_filter', $override_contract );
 			}
 			$buffer .= html_entity_decode( $override_contract_filtered );
 		} else {
