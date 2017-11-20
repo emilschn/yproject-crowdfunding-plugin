@@ -24,6 +24,11 @@ class WDGInvestment {
 	public static $status_canceled = 'canceled';
 	public static $status_validated = 'validated';
 	
+	public static $contract_status_meta = 'contract_status';
+	public static $contract_status_preinvestment_validated = 'preinvestment_validated';
+	public static $contract_status_investment_refused = 'investment_refused';
+	public static $contract_status_investment_validated = 'investment_validated';
+	
 	public static $meanofpayment_wallet = 'wallet';
 	public static $meanofpayment_cardwallet = 'cardwallet';
 	public static $meanofpayment_card = 'card';
@@ -57,6 +62,10 @@ class WDGInvestment {
 			}
 		}
 		return self::$_current;
+	}
+	
+	public function get_id() {
+		return $this->id;
 	}
 	
 	
@@ -117,6 +126,23 @@ class WDGInvestment {
 	}
 	
 	/**
+	 * Retourne la campagne liée dans l'investissement
+	 * @return \ATCF_Campaign
+	 */
+	public function get_saved_campaign() {
+		$buffer = FALSE;
+		if ( !empty( $this->id ) ) {
+			$downloads = edd_get_payment_meta_downloads( $this->id ); 
+			$download_id = '';
+			if ( !is_array( $downloads[0] ) ){
+				$download_id = $downloads[0];
+				$buffer = new ATCF_Campaign( $download_id );
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne la valeur d'investissement stockée en session
 	 */
 	public function get_session_amount() {
@@ -124,6 +150,26 @@ class WDGInvestment {
 			$this->session_amount = $_SESSION[ 'redirect_current_amount' ];
 		}
 		return $this->session_amount;
+	}
+	
+	/**
+	 * Retourne le montant de l'investissement
+	 * @return int
+	 */
+	public function get_amount() {
+		return $this->token_info->amount;
+	}
+	
+	/**
+	 * Retourne le montant de l'investissement enregistré
+	 * @return int
+	 */
+	public function get_saved_amount() {
+		$buffer = FALSE;
+		if ( !empty( $this->id ) ) {
+			$buffer = edd_get_payment_amount( $this->id  );
+		}
+		return $buffer;
 	}
 	
 	/**
@@ -137,11 +183,12 @@ class WDGInvestment {
 	}
 	
 	/**
-	 * Retourne le montant de l'investissement
-	 * @return int
+	 * Retourne l'id de l'investisseur lié à l'investissement
 	 */
-	public function get_amount() {
-		return $this->token_info->amount;
+	public function get_saved_user_id() {
+		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
+		$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+		return $user_id;
 	}
 	
 	/**
@@ -208,6 +255,16 @@ class WDGInvestment {
 			);
 			WDGWPRESTLib::call_post_wdg( 'investment/' . $this->token, $parameters );
 		}
+	}
+	
+	public function set_contract_status( $status ) {
+		if ( !empty( $this->id ) ) {
+			update_post_meta( $this->id, WDGInvestment::$contract_status_meta, $status );
+		}
+	}
+	
+	public function get_contract_status() {
+		return get_post_meta( $this->id, WDGInvestment::$contract_status_meta, TRUE );
 	}
 	
 	/**
@@ -510,7 +567,20 @@ class WDGInvestment {
 		} else {
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
 			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+			
+			// Si c'est un préinvestissement,
+			//	on passe le statut de préinvestissement
+			//  et on repasse l'investissement comme en attente
+			if ( $this->campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+				$this->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
+				$postdata = array(
+					'ID'			=> $payment_id,
+					'post_status'	=> 'pending'
+				);
+				wp_update_post( $postdata );
+			}
 		}
+
 		$this->post_token_notification();
 		
 		// Notifications
@@ -702,5 +772,69 @@ class WDGInvestment {
 		edd_empty_cart();
 		
 		return $buffer;
+	}
+	
+/******************************************************************************/
+// REFUND
+/******************************************************************************/
+	public function refund() {
+		$payment_key = edd_get_payment_key( $this->get_id() );
+		if ($payment_key != 'check') {
+
+			// Si c'est un virement
+			if ( strpos($payment_key, 'wire_') !== FALSE ) {
+				$organization = $this->get_organization();
+				$organization_obj = new WDGOrganization( $organization->wpref );
+				$credit_wallet_id = '';
+				$user_id = $this->get_saved_user_id();
+				if ( WDGOrganization::is_user_organization( $user_id ) ) {
+					$credit_organization = new WDGOrganization( $user_id );
+					$credit_wallet_id = $credit_organization->get_lemonway_id();
+				} else {
+					$credit_user = new WDGUser( $user_id );
+					$credit_wallet_id = $credit_user->get_lemonway_id();
+				}
+				$amount = $this->get_saved_amount();
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount );
+				if (LemonwayLib::get_last_error_code() == '') {
+					update_post_meta( $this->get_id(), 'refund_wire_id', $transfer_funds_result->ID );
+				}
+
+			// Si c'est par carte ou wallet
+			} else {
+				$card_token = '';
+				$wallet_token = '';
+				if ( strpos( $payment_key, '_wallet_' ) !== FALSE ) {
+					$key_exploded = explode( '_wallet_', $payment_key );
+					$card_token = $key_exploded[0];
+					$wallet_token = $key_exploded[1];
+
+				} elseif ( strpos( $payment_key, 'wallet_' ) !== FALSE ) {
+					$key_exploded = explode( 'wallet_', $payment_key );
+					$wallet_token = $key_exploded[1];
+
+				} else {
+					$card_token = $payment_key;
+				}
+
+				if ( !empty( $card_token ) ) {
+					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
+					$lw_refund = LemonwayLib::ask_refund( $lw_transaction_result->ID );
+					if (LemonwayLib::get_last_error_code() == '') {
+						update_post_meta( $this->get_id(), 'refund_id', $lw_refund->HPAY->ID );
+					}
+				}
+				if ( !empty( $wallet_token ) ) {
+					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
+					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $lw_transaction_result->REC, $lw_transaction_result->SEN, $lw_transaction_result->DEB );
+					if (LemonwayLib::get_last_error_code() == '') {
+						update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
+					}
+
+				}
+
+			}
+
+		}
 	}
 }

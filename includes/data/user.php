@@ -444,6 +444,41 @@ class WDGUser {
 		return $this->get_investments( $payment_status );
 	}
 	
+	/**
+	 * Gestion des pré-investissements
+	 */
+	private $pending_preinvestments;
+	private function get_pending_preinvestments() {
+		if ( !isset( $this->pending_preinvestments ) ) {
+			$this->pending_preinvestments = array();
+			$pending_investments = $this->get_pending_investments();
+			foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
+				$investment_campaign = new ATCF_Campaign( $campaign_id );
+				if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+					foreach ( $campaign_investments as $investment_id ) {
+						$wdg_investment = new WDGInvestment( $investment_id );
+						array_push( $this->pending_preinvestments, $wdg_investment );
+					}
+				}
+			}
+		}
+		return $this->pending_preinvestments;
+	}
+	
+	public function get_first_pending_preinvestment() {
+		$buffer = FALSE;
+		if ( $this->has_pending_preinvestments() ) {
+			$pending_preinvestments = $this->get_pending_preinvestments();
+			$buffer = $pending_preinvestments[0];
+		}
+		return $buffer;
+	}
+	
+	public function has_pending_preinvestments() {
+		$pending_preinvestments = $this->get_pending_preinvestments();
+		return ( !empty( $pending_preinvestments ) );
+	}
+	
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/

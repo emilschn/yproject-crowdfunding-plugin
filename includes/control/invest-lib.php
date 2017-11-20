@@ -331,6 +331,7 @@ function ypcf_login_gobackinvest_url() {
  * @return string
  */
 function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = FALSE, $lemonway_transaction = FALSE, $wdginvestment = FALSE ) {
+	$payment_investment = new WDGInvestment( $payment_id );
     $payment_post = get_post($payment_id);
 	$downloads = edd_get_payment_meta_downloads($payment_id);
 	$download_id = '';
@@ -341,6 +342,11 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 	
     $init_payment_status = $payment_post->post_status;
     $buffer = $init_payment_status;
+	
+	$contract_status = $payment_investment->get_contract_status();
+	if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated || $contract_status == WDGInvestment::$contract_status_investment_refused ) {
+		return $buffer;
+	}
     
 	if (isset($payment_id) && $payment_id != '' && $init_payment_status != 'failed' && $init_payment_status != 'publish') {
 
@@ -424,11 +430,9 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							//Création du contrat à signer
 							$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
 							if ($contract_id != '') {
-								$contract_infos = signsquid_get_contract_infos($contract_id);
-//								if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
-									NotificationsEmails::new_purchase_user_success($payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution);
-//								}
-								NotificationsEmails::new_purchase_admin_success($payment_id);
+								$contract_infos = signsquid_get_contract_infos( $contract_id );
+								NotificationsEmails::new_purchase_user_success( $payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+								NotificationsEmails::new_purchase_admin_success( $payment_id );
 								if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 									global $contract_filename;
 									$new_contract_pdf_filename = basename( $contract_filename );
@@ -438,17 +442,13 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							} else {
 								global $contract_errors;
 								$contract_errors = 'contract_failed';
-//								if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
-									NotificationsEmails::new_purchase_user_error_contract($payment_id);
-//								}
-								NotificationsEmails::new_purchase_admin_error_contract($payment_id);
+								NotificationsEmails::new_purchase_user_error_contract( $payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+								NotificationsEmails::new_purchase_admin_error_contract( $payment_id );
 							}
 						} else {
 							$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-//							if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
-								NotificationsEmails::new_purchase_user_success_nocontract($payment_id, $new_contract_pdf_file, $is_card_contribution);
-//							}
-							NotificationsEmails::new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file);
+							NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+							NotificationsEmails::new_purchase_admin_success_nocontract( $payment_id, $new_contract_pdf_file );
 							if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 								$new_contract_pdf_filename = basename( $new_contract_pdf_file );
 								$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
@@ -456,12 +456,10 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							}
 						}
 					} else {
-//						if ( empty( $wdginvestment ) || !$wdginvestment->has_token() ) {
-							NotificationsEmails::new_purchase_user($payment_id, '');
-//						}
-						NotificationsEmails::new_purchase_admin_success($payment_id);
+						NotificationsEmails::new_purchase_user( $payment_id, '', array(), ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+						NotificationsEmails::new_purchase_admin_success( $payment_id );
 					}
-					NotificationsEmails::new_purchase_team_members($payment_id);
+					NotificationsEmails::new_purchase_team_members( $payment_id );
 
 				//Le paiement vient d'échouer
 				} else if ($buffer == 'failed' && $buffer !== $init_payment_status) {

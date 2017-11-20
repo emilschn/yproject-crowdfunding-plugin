@@ -1814,11 +1814,11 @@ class ATCF_Campaign {
 		return false;
 	}
 	
-        /**
-         * Return payments data. 
-         * This function is very slow, it is advisable to use it as few as possible
-         * @return array
-         */
+	/**
+	 * Return payments data. 
+	 * This function is very slow, it is advisable to use it as few as possible
+	 * @return array
+	 */
 	public function payments_data($skip_apis = FALSE) {
 		global $WDG_cache_plugin;
 		if (!isset($WDG_cache_plugin)) { $WDG_cache_plugin = new WDG_Cache_Plugin(); }
@@ -1882,6 +1882,25 @@ class ATCF_Campaign {
 //		}
 		
 		return $payments_data;
+	}
+	
+	public function pending_preinvestments() {
+		$buffer = array();
+
+		$payments = edd_get_payments( array(
+		    'number'	=> -1,
+		    'download'	=> $this->ID,
+			'status'	=> 'pending'
+		) );
+		
+		foreach ( $payments as $payment ) {
+			$payment_investment = new WDGInvestment( $payment->ID );
+			if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+				array_push( $buffer, $payment_investment );
+			}
+		}
+		
+		return $buffer;
 	}
 	
 	/**
@@ -1984,6 +2003,16 @@ class ATCF_Campaign {
 			);
 			$payment_id = edd_insert_payment( $payment_data );
 			edd_record_sale_in_log($this->ID, $payment_id);
+			
+			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+				$wdg_investment = new WDGInvestment( $payment_id );
+				$wdg_investment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
+				$postdata = array(
+					'ID'			=> $payment_id,
+					'post_status'	=> 'pending'
+				);
+				wp_update_post( $postdata );
+			}
 
 		} else {
 			$payment_id = FALSE;
@@ -1998,63 +2027,8 @@ class ATCF_Campaign {
 	public function refund() {
 		$payments_data = $this->payments_data();
 		foreach ( $payments_data as $payment_data ) {
-			$payment_key = edd_get_payment_key( $payment_data['ID'] );
-			if ($payment_key != 'check') {
-				
-				// Si c'est un virement
-				if ( strpos($payment_key, 'wire_') !== FALSE ) {
-					$organization = $this->get_organization();
-					$organization_obj = new WDGOrganization( $organization->wpref );
-					$credit_wallet_id = '';
-					if ( WDGOrganization::is_user_organization( $payment_data['user'] ) ) {
-						$credit_organization = new WDGOrganization( $payment_data['user'] );
-						$credit_wallet_id = $credit_organization->get_lemonway_id();
-					} else {
-						$credit_user = new WDGUser( $payment_data['user'] );
-						$credit_wallet_id = $credit_user->get_lemonway_id();
-					}
-					$amount = $payment_data[ 'amount' ];
-					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount );
-					if (LemonwayLib::get_last_error_code() == '') {
-						update_post_meta( $payment_data['ID'], 'refund_wire_id', $transfer_funds_result->ID );
-					}
-					
-				// Si c'est par carte ou wallet
-				} else {
-					$card_token = '';
-					$wallet_token = '';
-					if ( strpos( $payment_key, '_wallet_' ) !== FALSE ) {
-						$key_exploded = explode( '_wallet_', $payment_key );
-						$card_token = $key_exploded[0];
-						$wallet_token = $key_exploded[1];
-						
-					} elseif ( strpos( $payment_key, 'wallet_' ) !== FALSE ) {
-						$key_exploded = explode( 'wallet_', $payment_key );
-						$wallet_token = $key_exploded[1];
-						
-					} else {
-						$card_token = $payment_key;
-					}
-					
-					if ( !empty( $card_token ) ) {
-						$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
-						$lw_refund = LemonwayLib::ask_refund( $lw_transaction_result->ID );
-						if (LemonwayLib::get_last_error_code() == '') {
-							update_post_meta( $payment_data['ID'], 'refund_id', $lw_refund->HPAY->ID );
-						}
-					}
-					if ( !empty( $wallet_token ) ) {
-						$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
-						$transfer_funds_result = LemonwayLib::ask_transfer_funds( $lw_transaction_result->REC, $lw_transaction_result->SEN, $lw_transaction_result->DEB );
-						if (LemonwayLib::get_last_error_code() == '') {
-							update_post_meta( $payment_data['ID'], 'refund_wallet_id', $transfer_funds_result->ID );
-						}
-						
-					}
-					
-				}
-				
-			}
+			$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
+			$WDGInvestment->refund();
 		}
 	}
 	
