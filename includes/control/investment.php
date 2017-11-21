@@ -500,12 +500,27 @@ class WDGInvestment {
 
 		// Si on sait déjà que ça a échoué, pas la peine de tester
 		if ( $is_failed ) {
+			// Paiement
 			$buffer = 'failed';
 			$postdata = array(
 				'ID'			=> $payment_id,
 				'post_status'	=> $buffer
 			);
 			wp_update_post($postdata);
+			
+			// Log du paiement
+			$log_post_items = get_posts(array(
+				'post_type'		=> 'edd_log',
+				'meta_key'		=> '_edd_log_payment_id',
+				'meta_value'	=> $payment_id
+			));
+			foreach ( $log_post_items as $log_post_item ) {
+				$postdata = array(
+					'ID'		=> $log_post_item->ID,
+					'post_status' => $buffer
+				);
+				wp_update_post($postdata);
+			}
 			
 		} else {
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
