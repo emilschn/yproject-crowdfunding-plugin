@@ -1567,6 +1567,11 @@ class WDGAjaxActions {
         foreach ( $array_contacts as $user_id=>$user_item ){
             //Données si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"]= $user_id;
+			if ( WDGOrganization::is_user_organization( $user_id ) ) {
+				$WDGOrganization = new WDGOrganization( $user_id );
+				$linked_users = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+			}
 
             if(WDGOrganization::is_user_organization($user_id)){
                 $orga = new WDGOrganization($user_id);
