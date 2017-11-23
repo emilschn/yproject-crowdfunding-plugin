@@ -68,7 +68,6 @@ class ATCF_Campaigns {
 		add_filter( 'edd_metabox_save_campaign_end_vote', 'atcf_campaign_save_end_vote' );
 		add_filter( 'edd_metabox_save_campaign_first_payment_date', 'atcf_campaign_save_first_payment_date' );
 		add_filter( 'edd_metabox_save_campaign_payment_list', 'atcf_campaign_save_payment_list' );
-		add_filter( 'edd_metabox_save_campaign_estimated_turnover', 'atcf_campaign_save_estimated_turnover' );
 		add_filter( 'edd_metabox_save_save_declarations', 'atcf_campaign_save_declarations' );
 		add_filter( 'edd_metabox_save_add_first_declaration', 'atcf_campaign_add_first_declaration' );
 		add_filter( 'edd_metabox_save_add_new_declaration', 'atcf_campaign_add_new_declaration' );
@@ -304,7 +303,6 @@ class ATCF_Campaigns {
 		$fields[] = 'campaign_validated_next_step';
 		$fields[] = 'campaign_first_payment_date';
 		$fields[] = 'campaign_payment_list';
-		$fields[] = 'campaign_estimated_turnover';
 		$fields[] = 'campaign_video';
 		$fields[] = 'campaign_images';
 		$fields[] = 'campaign_location';
@@ -575,16 +573,6 @@ function atcf_campaign_save_payment_list() {
 	}
 	$payment_list = json_encode($payment_list);
 	return $payment_list;
-}
-
-function atcf_campaign_save_estimated_turnover() {
-	$estimated_turnover = array();
-	$fp_yy = $_POST['first-payment-yy'];
-	for ($i = $fp_yy; $i < $_POST['campaign_funding_duration'] + $fp_yy; $i++) {
-		$estimated_turnover[$i] = $_POST["est-turnover-" . $i];
-	}
-	$estimated_turnover = json_encode($estimated_turnover);
-	return $estimated_turnover;
 }
 
 function atcf_campaign_save_declarations() {
@@ -1178,21 +1166,7 @@ function _atcf_metabox_campaign_info() {
 				<input type="hidden" name="campaign_first_payment_date" value="1" />
 			</li>
 			
-			<?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): 
-				$estimated_turnover = $campaign->estimated_turnover();
-			?>
-			<li>CA prévisionnel :
-				<ul style="margin-left: 10px; list-style: disc;">
-				<?php foreach ($estimated_turnover as $year => $turnover): ?>
-					<li><?php echo $fp_yy; ?> : <input type="text" name="<?php echo 'est-turnover-' . $fp_yy; ?>" value="<?php echo $turnover; ?>" />&euro;</li>
-				<?php $fp_yy++; endforeach; ?>
-				<?php /*for ($i = $fp_yy; $i < $campaign->funding_duration() + $fp_yy; $i++): ?>
-					<li><?php echo $i; ?> : <input type="text" name="<?php echo 'est-turnover-' . $i; ?>" value="<?php echo $estimated_turnover[$i]; ?>" />&euro;</li>
-				<?php endfor;*/ ?>
-				<input type="hidden" name="campaign_estimated_turnover" value="1" />
-				</ul>
-			</li>
-			
+			<?php if ($campaign->funding_duration() > 0 && !empty($fp_date)): ?>
 			<li>
 				Dates et montants des versements :
 				<?php $declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign->ID ); ?>

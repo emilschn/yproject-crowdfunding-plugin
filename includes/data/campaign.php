@@ -205,6 +205,24 @@ class ATCF_Campaign {
         }
     }
 	
+	public function get_api_data( $data_name ) {
+		$buffer = FALSE;
+		if ( !isset( $this->api_data ) ) {
+			$this->api_data = WDGWPREST_Entity_Project::get( $this->get_api_id() );
+		}
+		if ( !empty( $data_name ) ) {
+			$buffer = $this->api_data->{$data_name};
+		}
+		return $buffer;
+	}
+	
+	public function set_api_data( $data_name, $data_value, $update = TRUE ) {
+		$this->api_data->{$data_name} = $data_value;
+		if ( $update ) {
+			WDGWPREST_Entity_Project::update_data( $this->get_api_id(), $data_name, $data_value );
+		}
+	}
+	
 /*******************************************************************************
  * METAS
  ******************************************************************************/
@@ -2278,7 +2296,19 @@ class ATCF_Campaign {
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
 	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
 	public static function get_list_funding( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client ); }
-	public static function get_list_funded($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client ); }
+	public static function get_list_funded( $nb = 0, $client = '', $include_current = false ) {
+		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client );
+		if ( $include_current ) {
+			$list_current = ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client );
+			foreach ( $list_current as $campaign_post ) {
+				$campaign = atcf_get_campaign( $campaign_post->ID );
+				if ( $campaign->is_funded() ) {
+					array_push( $buffer, $campaign_post );
+				}
+			}
+		}
+		return $buffer;
+	}
 	public static function get_list_archive($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_archive, $client ); }
 	
 	

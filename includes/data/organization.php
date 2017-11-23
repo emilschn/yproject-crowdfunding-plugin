@@ -988,6 +988,10 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
+	public function remove_lemonway_mandate( $mandate_id ) {
+		LemonwayLib::wallet_unregister_mandate( $this->get_lemonway_id(), $mandate_id );
+	}
+	
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/

@@ -61,6 +61,22 @@ class WDGWPREST_Entity_Project {
 	}
 	
 	/**
+	 * Mise à jour d'une donnée particulière d'un projet
+	 * @param int $project_id
+	 * @param string $data_name
+	 * @param string $data_value
+	 * @return string
+	 */
+	public static function update_data( $project_id, $data_name, $data_value ) {
+		$parameters = array();
+		$parameters[ $data_name ] = $data_value;
+		
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'project/' . $project_id, $parameters );
+		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
+		return $result_obj;
+	}
+	
+	/**
 	 * Retourne la liste des utilisateurs liés au projet
 	 * @param int $project_id
 	 * @return array

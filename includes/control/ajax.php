@@ -544,6 +544,13 @@ class WDGAjaxActions {
 			$success["new_project_location"]=1;
 		}
 		
+		$new_employees_number = sanitize_text_field( filter_input( INPUT_POST, 'new_employees_number' ) );
+		if (is_numeric($location)) {
+			$campaign->set_api_data( 'employees_number', $new_employees_number );
+			$success[ "new_employees_number" ] = 1;
+		}
+		
+		
 		// Infos contractuelles
 		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
 		$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );

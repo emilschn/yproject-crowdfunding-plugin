@@ -500,6 +500,23 @@ class LemonwayLib {
 		return $result;
 	}
 	
+	public static function wallet_unregister_mandate( $wallet_id, $mandate_id ) {
+		if ( empty ( $wallet_id ) || empty ( $mandate_id ) ) {
+			return FALSE;
+		}
+		
+		$param_list = array(
+			'wallet'		=> $wallet_id,
+			'sddMandateId'	=> $mandate_id
+		);
+		
+		$result = LemonwayLib::call( 'UnregisterSddMandate', $param_list );
+		if ($result !== FALSE) {
+			//Retourne : ID ; S (status)
+		}
+		return $result;
+	}
+	
 	/**
 	 * Démarre la signature d'un mandat
 	 * @param int $wallet_id
