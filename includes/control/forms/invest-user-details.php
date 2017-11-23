@@ -24,6 +24,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 	protected function initFields() {
 		parent::initFields();
 		$campaign = new ATCF_Campaign( $this->campaign_id );
+		$campaign_organization = $campaign->get_organization();
 		$WDGUser = new WDGUser( $this->user_id );
 		
 		//**********************************************************************
@@ -184,8 +185,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$organization_list[ 'new-orga' ] = __( "Une nouvelle organisation", 'yproject' );
 		$user_orga_list = $WDGUser->get_organizations_list();
 		foreach ( $user_orga_list as $organization_item ) {
-			$organization_list[ $organization_item->wpref ] = $organization_item->name;
-			$this->initFieldsHiddenOrga( $organization_item->wpref );
+			if ( $campaign_organization->wpref != $organization_item->wpref ) {
+				$organization_list[ $organization_item->wpref ] = $organization_item->name;
+				$this->initFieldsHiddenOrga( $organization_item->wpref );
+			}
 		}
 		$this->addField(
 			'select',

@@ -87,6 +87,9 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		
 		// Valeur : $field_group_value
 		$invest_amount = $this->getInputText( 'amount' );
+		if ( empty( $invest_amount ) ) {
+			$invest_amount = $this->input_value;
+		}
 		$this->addField(
 			'text-money',
 			'amount',

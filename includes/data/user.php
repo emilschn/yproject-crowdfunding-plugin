@@ -225,6 +225,17 @@ class WDGUser {
 		return ( !empty( $hasvoted_results[0]->id ) );
 	}
 	
+	public function get_amount_voted_on_campaign( $campaign_id ) {
+		global $wpdb;
+		$buffer = 0;
+		$table_name = $wpdb->prefix . "ypcf_project_votes";
+		$hasvoted_results = $wpdb->get_results( 'SELECT id, invest_sum FROM '.$table_name.' WHERE post_id = '.$campaign_id.' AND user_id = '.$this->get_wpref() );
+		if ( !empty( $hasvoted_results[0]->id ) ) {
+			$buffer = $hasvoted_results[0]->invest_sum;
+		}
+		return $buffer;
+	}
+	
 /*******************************************************************************
  * Fonctions de sauvegarde
 *******************************************************************************/
