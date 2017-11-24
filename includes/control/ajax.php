@@ -1528,14 +1528,15 @@ class WDGAjaxActions {
 
                 }
             }
-			if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+			$contract_status = $payment_investment->get_contract_status();
+			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$investment_state = 'Pré-investissement non-validé';
 			}
 
             $page_dashboard = get_page_by_path('tableau-de-bord');
             $campaign_id_param = '?campaign_id=' . $campaign->ID;
             $payment_state = edd_get_payment_status( $post_invest, true );
-            if ($payment_state == "En attente" && $current_wdg_user->is_admin()) {
+            if ($payment_state == "En attente" && $current_wdg_user->is_admin() && empty( $contract_status ) ) {
                 $payment_state .= '<br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
                 $payment_state .= '<br /><br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
             }
