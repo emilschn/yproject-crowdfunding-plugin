@@ -422,7 +422,7 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
 	
-	public static function preinvestment_auto_validated( $user_data, $campaign ) {
+	public static function preinvestment_auto_validated( $user_email, $campaign ) {
 		$object = "Votre pré-investissement est validé";
 		
 		$body_content = "Bonjour,<br><br>";
@@ -431,10 +431,10 @@ class NotificationsEmails {
 		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
 		
-		return NotificationsEmails::send_mail( $user_data->user_email, $object, $body_content, true );
+		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
 	}
 	
-	public static function preinvestment_to_validate( $user_data, $campaign ) {
+	public static function preinvestment_to_validate( $user_email, $campaign ) {
 		$object = "Votre pré-investissement doit être validé";
 		
 		$body_content = "Bonjour,<br><br>";
@@ -444,10 +444,10 @@ class NotificationsEmails {
 		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
 		
-		return NotificationsEmails::send_mail( $user_data->user_email, $object, $body_content, true );
+		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
 	}
 	
-	public static function preinvestment_canceled( $user_data, $campaign ) {
+	public static function preinvestment_canceled( $user_email, $campaign ) {
 		$object = "Votre pré-investissement est annulé";
 		
 		$body_content = "Bonjour,<br><br>";
@@ -459,7 +459,7 @@ class NotificationsEmails {
 		
 		$body_content .= "A bientôt sur WE DO GOOD !<br>";
 		
-		return NotificationsEmails::send_mail( $user_data->user_email, $object, $body_content, true );
+		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
 	}
 	
     //*******************************************************

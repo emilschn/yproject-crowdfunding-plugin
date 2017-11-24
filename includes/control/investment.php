@@ -260,6 +260,14 @@ class WDGInvestment {
 	public function set_contract_status( $status ) {
 		if ( !empty( $this->id ) ) {
 			update_post_meta( $this->id, WDGInvestment::$contract_status_meta, $status );
+			if ( $status == WDGInvestment::$contract_status_investment_validated ) {
+				$buffer = 'publish';
+				$postdata = array(
+					'ID'			=> $this->id,
+					'post_status'	=> $buffer
+				);
+				wp_update_post($postdata);
+			}
 		}
 	}
 	
@@ -587,6 +595,7 @@ class WDGInvestment {
 			//	on passe le statut de préinvestissement
 			//  et on repasse l'investissement comme en attente
 			if ( $this->campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+				$this->id = $payment_id;
 				$this->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
 				$postdata = array(
 					'ID'			=> $payment_id,

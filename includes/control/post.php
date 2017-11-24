@@ -440,15 +440,14 @@ class WDGPostActions {
 		if ( !empty( $campaign_id ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$contract_has_been_modified = ( $campaign->contract_modifications() != '' );
-			$pending_preinvestements = $campaign->pending_preinvestments();
-			foreach ( $pending_preinvestements as $preinvestment ) {
-				$preinvestment = new WDGInvestment( $preinvestment->ID );
-				$user_info = edd_get_payment_meta_user_info( $preinvestment->ID );
+			$pending_preinvestments = $campaign->pending_preinvestments();
+			foreach ( $pending_preinvestments as $preinvestment ) {
+				$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
 				if ( $contract_has_been_modified ) {
-					NotificationsEmails::preinvestment_to_validate( $user_info, $campaign );
+					NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
 					
 				} else {
-					NotificationsEmails::preinvestment_auto_validated( $user_info, $campaign );
+					NotificationsEmails::preinvestment_auto_validated( $user_info['email'], $campaign );
 					$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
 				}
 			}
