@@ -29,20 +29,17 @@ class WDGWPREST_Entity_User {
 			'surname'			=> $user->get_lastname(),
 			'username'			=> $user->get_login(),
 			'birthday_date'		=> $user->get_birthday_date(),
-			'birthday_city'		=> '---',
-			'address'			=> '---',
-			'postalcode'		=> '---',
-			'city'				=> '---',
-			'email'				=> '---',
-			'picture_url'		=> '---',
-			'website_url'		=> '---',
-			'twitter_url'		=> '---',
-			'facebook_url'		=> '---',
-			'linkedin_url'		=> '---',
-			'viadeo_url'		=> '---',
-			'activation_key'	=> '---',
-			'password'			=> '---',
-			'signup_date'		=> '---'
+			'birthday_city'		=> $user->get_birthplace(),
+			'address'			=> $user->get_address(),
+			'postalcode'		=> $user->get_postal_code(),
+			'city'				=> $user->get_city(),
+			'email'				=> $user->get_email(),
+			'phone_number'		=> $user->get_phone_number(),
+			'bank_iban'			=> $user->get_iban_info( 'iban' ),
+			'bank_bic'			=> $user->get_iban_info( 'bic' ),
+			'bank_holdername'	=> $user->get_iban_info( 'holdername' ),
+			'bank_address'		=> $user->get_iban_info( 'address1' ),
+			'bank_address2'		=> $user->get_iban_info( 'address2' )
 		);
 		return $parameters;
 	}
