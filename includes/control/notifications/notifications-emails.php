@@ -439,7 +439,7 @@ class NotificationsEmails {
 		
 		$body_content = "Bonjour,<br><br>";
 		$body_content .= "Suite à la phase de vote, des modifications ont été apportées sur les conditions d'investissement pour le projet ".$campaign->data->post_title.".";
-		$body_content .= "le pré-investissemnt que vous avez effectué doit donc être à nouveau validé.<br>";
+		$body_content .= "Le pré-investissemnt que vous avez effectué doit donc être à nouveau validé.<br>";
 		$body_content .= "Merci de vous rendre sur la plateforme pour vous identifier et suivre le processus de validation qui sera affiché.<br><br>";
 		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
