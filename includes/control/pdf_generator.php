@@ -663,15 +663,15 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			}
 			$buffer .= '</div>';
 		}
-	}
     
-    $buffer .= '<div style="padding-top: 60px;">';
-	if ($lang == 'en_US') {
-		$buffer .= '(1) signature with the mention "Bon pour souscription"<br /><br />';
-	} else {
-		$buffer .= '(1) signature accompagnée de la mention "Bon pour souscription"<br /><br />';
+		$buffer .= '<div style="padding-top: 60px;">';
+		if ($lang == 'en_US') {
+			$buffer .= '(1) signature with the mention "Bon pour souscription"<br /><br />';
+		} else {
+			$buffer .= '(1) signature accompagnée de la mention "Bon pour souscription"<br /><br />';
+		}
+		$buffer .= '</div>';
 	}
-    $buffer .= '</div>';
    
     
     return $buffer;
