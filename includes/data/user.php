@@ -232,10 +232,18 @@ class WDGUser {
 	 * Enregistre les données nécessaires pour l'investissement
 	 */
 	public function save_data($email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone) {
-		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
-		update_user_meta( $this->wp_user->ID, 'user_gender', $gender );
-		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
-		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+		if ( !empty( $email ) ) {
+			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
+		}
+		if ( !empty( $gender ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_gender', $gender );
+		}
+		if ( !empty( $firstname ) ) {
+			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
+		}
+		if ( !empty( $lastname ) ) {
+			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+		}
 		if ( !empty( $birthday_day ) && $birthday_day != '00' && $birthday_day > 0 ) {
 			update_user_meta( $this->wp_user->ID, 'user_birthday_day', $birthday_day );
 		}
@@ -245,13 +253,27 @@ class WDGUser {
 		if ( !empty( $birthday_year ) && $birthday_year != '00' && $birthday_year > 0 ) {
 			update_user_meta( $this->wp_user->ID, 'user_birthday_year', $birthday_year );
 		}
-		update_user_meta( $this->wp_user->ID, 'user_birthplace', $birthplace );
-		update_user_meta( $this->wp_user->ID, 'user_nationality', $nationality );
-		update_user_meta( $this->wp_user->ID, 'user_address', $address );
-		update_user_meta( $this->wp_user->ID, 'user_postal_code', $postal_code );
-		update_user_meta( $this->wp_user->ID, 'user_city', $city );
-		update_user_meta( $this->wp_user->ID, 'user_country', $country );
-		update_user_meta( $this->wp_user->ID, 'user_mobile_phone', $telephone );
+		if ( !empty( $birthplace ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_birthplace', $birthplace );
+		}
+		if ( !empty( $nationality ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_nationality', $nationality );
+		}
+		if ( !empty( $address ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_address', $address );
+		}
+		if ( !empty( $postal_code ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_postal_code', $postal_code );
+		}
+		if ( !empty( $city ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_city', $city );
+		}
+		if ( !empty( $country ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_country', $country );
+		}
+		if ( !empty( $telephone ) ) {
+			update_user_meta( $this->wp_user->ID, 'user_mobile_phone', $telephone );
+		}
 	}
 	
 	/**
