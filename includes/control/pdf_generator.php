@@ -405,7 +405,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		} else {
 			$user_title = ($user_obj->get('user_gender') == "male") ? "Monsieur" : "Madame";
 		}
-		$user_name = mb_strtoupper($user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name);
+		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name ) );
 	}
 		
     
