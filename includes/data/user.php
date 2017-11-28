@@ -1112,15 +1112,18 @@ class WDGUser {
 	 * @return type
 	 */
 	public static function get_login_redirect_page( $anchor = '' ) {
+		ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page' );
 		global $post;
 		$buffer = home_url();
 		
 		//Si on est sur la page de connexion ou d'identification,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
 		if ( $post->post_name == 'connexion' ) {
+			ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A1' );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
+				ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A2' );
 				$buffer = home_url( $get_redirect_page );
 				
 			} else {
@@ -1134,6 +1137,7 @@ class WDGUser {
 					if ( strpos($referer_url, '/connexion') !== FALSE ) {
 						$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 						if (!empty($posted_redirect_page)) {
+							ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A3' );
 							$buffer = $posted_redirect_page;
 						}
 
@@ -1148,6 +1152,7 @@ class WDGUser {
 								$anchor = '#vote';
 							}
 						}
+						ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A4' );
 						$buffer = $referer_url;
 					}
 				}
@@ -1155,14 +1160,17 @@ class WDGUser {
 			
 		//Sur les autres pages
 		} else {
+			ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > B1' );
 			//On tente de voir si une redirection n'avait pas été demandée auparavant
 			$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 			if (!empty($posted_redirect_page)) {
+				ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > B2' );
 				$buffer = $posted_redirect_page;
 			
 			//Sinon, on récupère simplement la page en cours
 			} else {
 				if (isset($post->ID)) {
+					ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > B3' );
 					$buffer = get_permalink($post->ID);
 				}
 			}
