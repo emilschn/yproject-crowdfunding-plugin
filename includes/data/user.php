@@ -490,7 +490,9 @@ class WDGUser {
 				if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 					foreach ( $campaign_investments as $investment_id ) {
 						$wdg_investment = new WDGInvestment( $investment_id );
-						array_push( $this->pending_preinvestments, $wdg_investment );
+						if ( $wdg_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+							array_push( $this->pending_preinvestments, $wdg_investment );
+						}
 					}
 				}
 			}
