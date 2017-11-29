@@ -51,14 +51,19 @@ class WDGPostActions {
 				$email = sanitize_text_field( filter_input( INPUT_POST, 'subscribe-nl-mail' ) );
 			}
 
-			require_once( 'sendinblue/mailin.php' );
-			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
-			$return = $mailin->create_update_user( array(
-				"email"		=> $email,
-				"listid"	=> array( 5, 6 )
-			) );
-			$_SESSION['subscribe_newsletter_sendinblue'] = true;
-			if (empty( $init_email )) {
+			try {
+				require_once( 'sendinblue/mailin.php' );
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+				$return = $mailin->create_update_user( array(
+					"email"		=> $email,
+					"listid"	=> array( 5, 6 )
+				) );
+				$_SESSION['subscribe_newsletter_sendinblue'] = true;
+			} catch ( Exception $e ) {
+				ypcf_debug_log( "subscribe_newsletter_sendinblue > erreur d'inscription à la NL" );
+			}
+			
+			if ( !empty( $action ) && ( $action == 'subscribe_newsletter_sendinblue' ) ) {
 				wp_safe_redirect( wp_get_referer() );
 				die();
 			}

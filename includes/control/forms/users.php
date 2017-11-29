@@ -250,6 +250,7 @@ class WDGFormUsers {
 			if ( !empty( $reason ) ) {
 				$url_reason = '?error_reason=' .$reason;
 			}
+			ypcf_debug_log( 'WDGFormUsers::redirect_after_login_failed' );
 			wp_redirect( home_url( '/connexion' ) . $url_reason );
 		}
 		exit();
@@ -339,8 +340,10 @@ class WDGFormUsers {
 					NotificationsEmails::new_user_user($wp_user_id); //Envoi mail à l'utilisateur
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 					if (isset($_POST['redirect-home'])) {
+						ypcf_debug_log( 'WDGFormUsers::register > redirect home' );
 						wp_redirect(home_url());
 					} else {
+						ypcf_debug_log( 'WDGFormUsers::register > redirect page' );
 						wp_redirect( wp_unslash( WDGUser::get_login_redirect_page() ) );
 					}
 					exit();

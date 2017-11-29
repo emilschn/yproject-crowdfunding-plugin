@@ -405,7 +405,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		} else {
 			$user_title = ($user_obj->get('user_gender') == "male") ? "Monsieur" : "Madame";
 		}
-		$user_name = mb_strtoupper($user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name);
+		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name ) );
 	}
 		
     
@@ -663,15 +663,15 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			}
 			$buffer .= '</div>';
 		}
-	}
     
-    $buffer .= '<div style="padding-top: 60px;">';
-	if ($lang == 'en_US') {
-		$buffer .= '(1) signature with the mention "Bon pour souscription"<br /><br />';
-	} else {
-		$buffer .= '(1) signature accompagnée de la mention "Bon pour souscription"<br /><br />';
+		$buffer .= '<div style="padding-top: 60px;">';
+		if ($lang == 'en_US') {
+			$buffer .= '(1) signature with the mention "Bon pour souscription"<br /><br />';
+		} else {
+			$buffer .= '(1) signature accompagnée de la mention "Bon pour souscription"<br /><br />';
+		}
+		$buffer .= '</div>';
 	}
-    $buffer .= '</div>';
    
     
     return $buffer;
