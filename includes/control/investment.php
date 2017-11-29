@@ -65,7 +65,10 @@ class WDGInvestment {
 	 */
 	public function is_session_correct() {
 		if ( !isset( $_SESSION[ 'invest_update_date' ] ) ) {
+			ypcf_debug_log( 'WDGInvestment::is_session_correct >> invest_update_date not set' );
 			return FALSE;
+		} else {
+			ypcf_debug_log( 'WDGInvestment::is_session_correct >> invest_update_date = ' . $_SESSION[ 'invest_update_date' ] );
 		}
 		$invest_update_date = $_SESSION[ 'invest_update_date' ];
 		
