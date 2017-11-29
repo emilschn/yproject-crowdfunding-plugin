@@ -807,7 +807,8 @@ class WDGInvestment {
 
 			// Si c'est un virement
 			if ( strpos($payment_key, 'wire_') !== FALSE ) {
-				$organization = $this->get_organization();
+				$campaign = $this->get_saved_campaign();
+				$organization = $campaign->get_organization();
 				$organization_obj = new WDGOrganization( $organization->wpref );
 				$credit_wallet_id = '';
 				$user_id = $this->get_saved_user_id();
