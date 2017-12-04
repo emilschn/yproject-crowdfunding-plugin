@@ -72,6 +72,9 @@ class LemonwayLibErrors {
 	private static $raw_message = "Il y a eu un probl&egrave;me lors de votre investissement. Merci de bien vouloir r&eacute;essayer, d'utiliser une autre carte bancaire ou de choisir un autre mode de paiement.";
 	private static $generic_message = "Si besoin, nous sommes &agrave; votre disposition sur le chat en ligne ou &agrave; l'adresse suivante : investir@wedogood.co. Merci de nous pr&eacute;ciser le code d'erreur ci-dessous.";
 	
+	private static $generic_errors = array(
+		'75---ERR_PSP_REFUSED'
+	);
 	
 	/**
 	 * 
@@ -100,33 +103,44 @@ class LemonwayLibErrors {
 			
 			$this->error_message = '';
 			
-			$code_exploded = explode( '-', $this->error_code );
-			if ( count( $code_exploded ) >= 3 ) {
+			// Si le code complet est listé dans les erreurs génériques
+			if ( in_array( $this->error_code, LemonwayLibErrors::$generic_errors ) ) {
+				
+				$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
+				$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
+				
+				
+			// Sinon, on coupe en morceaux pour savoir quoi afficher par partie
+			} else {
+			
+				$code_exploded = explode( '-', $this->error_code );
+				if ( count( $code_exploded ) >= 3 ) {
 
-				for ( $i = 0; $i < 3; $i++ ) {
-					
-					if ( !empty( $code_exploded[ $i ] ) ) {
+					for ( $i = 0; $i < 3; $i++ ) {
 
-						$code_column = $code_exploded[ $i ];
+						if ( !empty( $code_exploded[ $i ] ) ) {
 
-						if ( isset( LemonwayLibErrors::$column_errors[ $i ][ $code_column ] ) ) {
-							$this->error_message .= __( LemonwayLibErrors::$column_errors[ $i ][ $code_column ], 'yproject' ) . '<br />';
+							$code_column = $code_exploded[ $i ];
+
+							if ( isset( LemonwayLibErrors::$column_errors[ $i ][ $code_column ] ) ) {
+								$this->error_message .= __( LemonwayLibErrors::$column_errors[ $i ][ $code_column ], 'yproject' ) . '<br />';
+							}
+
+							$this->ask_restart = $this->ask_restart || in_array( $code_column, LemonwayLibErrors::$column_restart[ $i ] );
+
 						}
 
-						$this->ask_restart = $this->ask_restart || in_array( $code_column, LemonwayLibErrors::$column_restart[ $i ] );
-
 					}
-					
+
 				}
 
+				if ( empty ( $this->error_message ) ) {
+					$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
+				}
+
+				$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
+				
 			}
-			
-			
-			if ( empty ( $this->error_message ) ) {
-				$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
-			}
-			
-			$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
 			
 		}
 		
