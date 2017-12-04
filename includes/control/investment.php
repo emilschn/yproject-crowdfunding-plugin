@@ -13,7 +13,7 @@ class WDGInvestment {
 	/**
 	 * @var LemonwayLibErrors
 	 */
-	private $error_item;
+	public $error_item;
 	
 	public static $status_init = 'init';
 	public static $status_expired = 'expired';
