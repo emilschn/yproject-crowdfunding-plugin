@@ -1127,33 +1127,40 @@ class WDGUser {
 				$buffer = home_url( $get_redirect_page );
 				
 			} else {
-				//Récupération de la page précédente
-				$referer_url = wp_get_referer();
-				//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
-				if (strpos($referer_url, $buffer) !== FALSE) {
+				ypcf_session_start();
+				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
+					ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A2b' );
+					$buffer = $_SESSION[ 'login-fb-referer' ];
+					
+				} else {
+					//Récupération de la page précédente
+					$referer_url = wp_get_referer();
+					//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
+					if (strpos($referer_url, $buffer) !== FALSE) {
 
-					//Si la page précédente était déjà la page connexion ou enregistrement, 
-					// on tente de voir si la redirection était passée en paramètre
-					if ( strpos($referer_url, '/connexion') !== FALSE ) {
-						$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
-						if (!empty($posted_redirect_page)) {
-							ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A3' );
-							$buffer = $posted_redirect_page;
-						}
-
-					//Sinon on peut effectivement rediriger vers la page précédente
-					} else {
-						//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
-						$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
-						$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
-						if ( !empty( $page_by_path->ID ) ) {
-							$campaign = new ATCF_Campaign( $page_by_path->ID );
-							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
-								$anchor = '#vote';
+						//Si la page précédente était déjà la page connexion ou enregistrement, 
+						// on tente de voir si la redirection était passée en paramètre
+						if ( strpos($referer_url, '/connexion') !== FALSE ) {
+							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
+							if (!empty($posted_redirect_page)) {
+								ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A3' );
+								$buffer = $posted_redirect_page;
 							}
+
+						//Sinon on peut effectivement rediriger vers la page précédente
+						} else {
+							//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
+							$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
+							$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
+							if ( !empty( $page_by_path->ID ) ) {
+								$campaign = new ATCF_Campaign( $page_by_path->ID );
+								if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
+									$anchor = '#vote';
+								}
+							}
+							ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A4' );
+							$buffer = $referer_url;
 						}
-						ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A4' );
-						$buffer = $referer_url;
 					}
 				}
 			}
