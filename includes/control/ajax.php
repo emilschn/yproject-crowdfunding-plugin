@@ -83,6 +83,11 @@ class WDGAjaxActions {
 		$permissions = ['email'];
 		$loginUrl = $helper->getLoginUrl( home_url( '/connexion/?fbcallback=1' ) , $permissions);
 		echo $loginUrl;
+		
+		ypcf_session_start();
+		$_SESSION[ 'login-fb-referer' ] = wp_get_referer();
+		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
+		
 		exit();
 	}
     

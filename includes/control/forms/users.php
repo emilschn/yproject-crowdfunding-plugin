@@ -2,9 +2,6 @@
 class WDGFormUsers {
 	
 	public static function login_facebook() {
-		ypcf_session_start();
-		$_SESSION[ 'login-fb-referer' ] = wp_get_referer();
-		
 		$do_fb_login = FALSE;
 		$fbcallback = filter_input( INPUT_GET, 'fbcallback' );
 		if ( !empty( $fbcallback ) ) {
