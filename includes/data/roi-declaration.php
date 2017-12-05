@@ -14,6 +14,7 @@ class WDGROIDeclaration {
 	
 	public static $mean_payment_card = 'card';
 	public static $mean_payment_wire = 'wire';
+	public static $mean_payment_mandate = 'mandate';
 	
 	public static $min_amount_for_wire_payment = 1000;
 	
