@@ -501,6 +501,39 @@ class WDGFormProjects {
 			$roi_declaration->status = WDGROIDeclaration::$status_waiting_transfer;
 			$roi_declaration->save();
 			NotificationsEmails::send_notification_roi_payment_bank_transfer_admin( $roi_declaration->id );
+			
+		} elseif ( isset( $_POST[ 'payment_mandate' ] ) ) {
+			$wallet_id = $organization->get_lemonway_id();
+			$saved_mandates_list = $organization->get_lemonway_mandates();
+			if ( !empty( $saved_mandates_list ) ) {
+				$last_mandate = end( $saved_mandates_list );
+			}
+			$mandate_id = $last_mandate['ID'];
+
+			if ( !empty( $wallet_id ) && !empty( $mandate_id ) ) {
+				$result = LemonwayLib::ask_payment_with_mandate( $wallet_id, $roi_declaration->get_amount_with_commission(), $mandate_id, $roi_declaration->get_commission_to_pay() );
+				$buffer = ($result->TRANS->HPAY->ID) ? "success" : $result->TRANS->HPAY->MSG;
+
+				if ($buffer == "success") {
+					// Enregistrement de l'objet Lemon Way
+					$withdrawal_post = array(
+						'post_author'   => $current_organization->wpref,
+						'post_title'    => $roi_declaration->get_amount_with_commission() . ' - ' . $roi_declaration->get_commission_to_pay(),
+						'post_content'  => print_r( $result, TRUE ),
+						'post_status'   => 'publish',
+						'post_type'		=> 'mandate_payment'
+					);
+					wp_insert_post( $withdrawal_post );
+					
+					// Enregistrement de la déclaration
+					$date_now = new DateTime();
+					$roi_declaration->date_paid = $date_now->format( 'Y-m-d' );
+					$roi_declaration->mean_payment = WDGROIDeclaration::$mean_payment_mandate;
+					$roi_declaration->status = WDGROIDeclaration::$status_finished;
+					$roi_declaration->save();
+
+				}
+			}
 		}
 	}
 	
