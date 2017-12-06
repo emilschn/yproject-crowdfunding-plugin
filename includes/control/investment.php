@@ -72,8 +72,9 @@ class WDGInvestment {
 		}
 		$invest_update_date = $_SESSION[ 'invest_update_date' ];
 		
+		date_default_timezone_set("Europe/Paris");
 		$current_date = new DateTime();
-		$difference_in_hours = floor( ( strtotime( $current_date->format( 'Y-m-d h:i:s' ) ) - strtotime( $invest_update_date ) ) / 3600 );
+		$difference_in_hours = floor( ( strtotime( $current_date->format( 'Y-m-d H:i:s' ) ) - strtotime( $invest_update_date ) ) / 3600 );
 		if ( $difference_in_hours > self::$session_max_duration_hours ) {
 			return FALSE;
 		}
@@ -87,8 +88,9 @@ class WDGInvestment {
 	 * @param string $user_type
 	 */
 	public function update_session( $amount = FALSE, $user_type = FALSE ) {
+		date_default_timezone_set("Europe/Paris");
 		$current_datetime = new DateTime();
-		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d h:i:s' );
+		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d H:i:s' );
 		
 		if ( !empty( $amount ) ) {
 			$_SESSION[ 'redirect_current_amount' ] = $amount;
