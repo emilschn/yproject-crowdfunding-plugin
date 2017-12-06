@@ -98,17 +98,17 @@ class LemonwayLibErrors {
 	 * @param string $code (Ex : 05-00-51-ERR_PSP_REFUSED)
 	 * @return string
 	 */
-	public function get_error_message( $add_generic_message = TRUE ) {
-		if ( !isset( $this->error_message ) ) {
+	public function get_error_message( $add_generic_message = TRUE, $use_cache = TRUE ) {
+		if ( !isset( $this->error_message ) || !$use_cache ) {
 			
-			$this->error_message = '';
+			$buffer = '';
 			
 			// Si le code complet est listé dans les erreurs génériques
 			if ( in_array( $this->error_code, LemonwayLibErrors::$generic_errors ) ) {
 				
-				$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br>';
+				$buffer = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br>';
 				if ( $add_generic_message ) {
-					$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br>';
+					$buffer .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br>';
 				}
 				
 				
@@ -125,7 +125,7 @@ class LemonwayLibErrors {
 							$code_column = $code_exploded[ $i ];
 
 							if ( isset( LemonwayLibErrors::$column_errors[ $i ][ $code_column ] ) ) {
-								$this->error_message .= __( LemonwayLibErrors::$column_errors[ $i ][ $code_column ], 'yproject' ) . '<br />';
+								$buffer .= __( LemonwayLibErrors::$column_errors[ $i ][ $code_column ], 'yproject' ) . '<br />';
 							}
 
 							$this->ask_restart = $this->ask_restart || in_array( $code_column, LemonwayLibErrors::$column_restart[ $i ] );
@@ -136,19 +136,26 @@ class LemonwayLibErrors {
 
 				}
 
-				if ( empty ( $this->error_message ) ) {
-					$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
+				if ( empty ( $buffer ) ) {
+					$buffer = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
 				}
 
 				if ( $add_generic_message ) {
-					$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
+					$buffer .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
 				}
 				
 			}
 			
+			if ( $use_cache ) {
+				$this->error_message = $buffer;
+			}
+			
+		} else {
+			$buffer = $this->error_message;
+			
 		}
 		
-		return $this->error_message;
+		return $buffer;
 	}
 	
 	/**
