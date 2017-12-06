@@ -13,6 +13,9 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		parent::__construct( WDG_Form_Invest_Input::$name );
 		$this->campaign_id = $campaign_id;
 		$this->input_value = $input_value;
+		if ( empty( $this->input_value ) ) {
+			$this->invest_amount = $this->getInputText( 'amount' );
+		}
 		$this->initFields();
 	}
 	
@@ -86,13 +89,12 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		);
 		
 		// Valeur : $field_group_value
-		$invest_amount = $this->getInputText( 'amount' );
 		$this->addField(
 			'text-money',
 			'amount',
 			__( "Je souhaite investir", 'yproject' ),
 			WDG_Form_Invest_Input::$field_group_amount,
-			$invest_amount
+			$this->input_value
 		);
 		
 	}
