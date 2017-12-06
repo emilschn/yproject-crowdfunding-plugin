@@ -5,6 +5,30 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class NotificationsAPI {
 	
     //*******************************************************
+    // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+    //*******************************************************
+	public static function investment_error( $recipient, $name, $amount, $project_name, $lemonway_reason, $investment_link ) {
+		$id_template = '175';
+		$options = array(
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount,
+			'NOM_PROJET'			=> $project_name,
+			'RAISON_LEMONWAY'		=> $lemonway_reason,
+			'LIEN_INVESTISSEMENT'	=> $investment_link,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+    //*******************************************************
+	
+    //*******************************************************
     // NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
 	/**
