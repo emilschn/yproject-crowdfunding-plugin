@@ -98,7 +98,7 @@ class LemonwayLibErrors {
 	 * @param string $code (Ex : 05-00-51-ERR_PSP_REFUSED)
 	 * @return string
 	 */
-	public function get_error_message() {
+	public function get_error_message( $add_generic_message = TRUE ) {
 		if ( !isset( $this->error_message ) ) {
 			
 			$this->error_message = '';
@@ -106,8 +106,10 @@ class LemonwayLibErrors {
 			// Si le code complet est listé dans les erreurs génériques
 			if ( in_array( $this->error_code, LemonwayLibErrors::$generic_errors ) ) {
 				
-				$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
-				$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
+				$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br>';
+				if ( !empty( $add_generic_message ) ) {
+					$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br>';
+				}
 				
 				
 			// Sinon, on coupe en morceaux pour savoir quoi afficher par partie
@@ -138,7 +140,9 @@ class LemonwayLibErrors {
 					$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
 				}
 
-				$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
+				if ( !empty( $add_generic_message ) ) {
+					$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
+				}
 				
 			}
 			
