@@ -213,7 +213,9 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'text',
 			'org_email',
 			__( "E-mail de contact *", 'yproject' ),
-			WDG_Form_Invest_User_Details::$field_group_orga_info
+			WDG_Form_Invest_User_Details::$field_group_orga_info,
+			FALSE,
+			__( "Cette adresse doit &ecirc;tre diff&eacute;rente de celle de votre compte.", 'yproject' )
 		);
 		
 		$this->addField(

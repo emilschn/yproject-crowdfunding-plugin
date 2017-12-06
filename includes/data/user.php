@@ -783,8 +783,8 @@ class WDGUser {
 				$this->get_lemonway_id(),
 				$this->wp_user->user_email,
 				$this->get_lemonway_title(),
-				$this->wp_user->user_firstname, 
-				$this->wp_user->user_lastname,
+				html_entity_decode( $this->wp_user->user_firstname ), 
+				html_entity_decode( $this->wp_user->user_lastname ),
 				$this->get_country( 'iso3' ),
 				$this->get_lemonway_phone_number(),
 				$this->get_lemonway_birthdate(),
@@ -1185,65 +1185,73 @@ class WDGUser {
 	 * @return type
 	 */
 	public static function get_login_redirect_page( $anchor = '' ) {
-		ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page' );
+		ypcf_debug_log( 'WDGUser::get_login_redirect_page' );
 		global $post;
 		$buffer = home_url();
 		
 		//Si on est sur la page de connexion ou d'identification,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
 		if ( $post->post_name == 'connexion' ) {
-			ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A1' );
+			ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1' );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
-				ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A2' );
+				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2' );
 				$buffer = home_url( $get_redirect_page );
 				
 			} else {
-				//Récupération de la page précédente
-				$referer_url = wp_get_referer();
-				//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
-				if (strpos($referer_url, $buffer) !== FALSE) {
+				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1b' );
+				ypcf_session_start();
+				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
+					ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b' );
+					$buffer = $_SESSION[ 'login-fb-referer' ];
+					
+				} else {
+					//Récupération de la page précédente
+					$referer_url = wp_get_referer();
+					//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
+					if (strpos($referer_url, $buffer) !== FALSE) {
 
-					//Si la page précédente était déjà la page connexion ou enregistrement, 
-					// on tente de voir si la redirection était passée en paramètre
-					if ( strpos($referer_url, '/connexion') !== FALSE ) {
-						$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
-						if (!empty($posted_redirect_page)) {
-							ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A3' );
-							$buffer = $posted_redirect_page;
-						}
-
-					//Sinon on peut effectivement rediriger vers la page précédente
-					} else {
-						//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
-						$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
-						$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
-						if ( !empty( $page_by_path->ID ) ) {
-							$campaign = new ATCF_Campaign( $page_by_path->ID );
-							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
-								$anchor = '#vote';
+						//Si la page précédente était déjà la page connexion ou enregistrement, 
+						// on tente de voir si la redirection était passée en paramètre
+						if ( strpos($referer_url, '/connexion') !== FALSE ) {
+							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
+							if (!empty($posted_redirect_page)) {
+								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3' );
+								$buffer = $posted_redirect_page;
 							}
+
+						//Sinon on peut effectivement rediriger vers la page précédente
+						} else {
+							//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
+							$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
+							$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
+							if ( !empty( $page_by_path->ID ) ) {
+								$campaign = new ATCF_Campaign( $page_by_path->ID );
+								if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
+									$anchor = '#vote';
+								}
+							}
+							ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4' );
+							$buffer = $referer_url;
 						}
-						ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > A4' );
-						$buffer = $referer_url;
 					}
 				}
 			}
 			
 		//Sur les autres pages
 		} else {
-			ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > B1' );
+			ypcf_debug_log( 'WDGUser::get_login_redirect_page > B1' );
 			//On tente de voir si une redirection n'avait pas été demandée auparavant
 			$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 			if (!empty($posted_redirect_page)) {
-				ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > B2' );
+				ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2' );
 				$buffer = $posted_redirect_page;
 			
 			//Sinon, on récupère simplement la page en cours
 			} else {
 				if (isset($post->ID)) {
-					ypcf_debug_log( 'WDGFormUsers::get_login_redirect_page > B3' );
+					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
 					$buffer = get_permalink($post->ID);
 				}
 			}
