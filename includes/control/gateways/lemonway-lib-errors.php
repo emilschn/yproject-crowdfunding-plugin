@@ -107,7 +107,7 @@ class LemonwayLibErrors {
 			if ( in_array( $this->error_code, LemonwayLibErrors::$generic_errors ) ) {
 				
 				$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br>';
-				if ( !empty( $add_generic_message ) ) {
+				if ( $add_generic_message ) {
 					$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br>';
 				}
 				
@@ -140,7 +140,7 @@ class LemonwayLibErrors {
 					$this->error_message = __( LemonwayLibErrors::$raw_message, 'yproject' ) . '<br />';
 				}
 
-				if ( !empty( $add_generic_message ) ) {
+				if ( $add_generic_message ) {
 					$this->error_message .= __( LemonwayLibErrors::$generic_message, 'yproject' ) . '<br />';
 				}
 				
