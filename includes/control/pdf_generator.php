@@ -167,7 +167,7 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_minimum_goal( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = $shortcode_campaign_obj->minimum_goal();
+		$buffer = YPUIHelpers::display_number( $shortcode_campaign_obj->minimum_goal() );
 		return $buffer;
 	}
 	
@@ -177,7 +177,7 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_maximum_goal( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = $shortcode_campaign_obj->goal( false );
+		$buffer = YPUIHelpers::display_number( $shortcode_campaign_obj->goal( false ) );
 		if ( $shortcode_campaign_obj->contract_maximum_type() == 'infinite' ) {
 			$buffer = ATCF_Campaign::$contract_maximum_types[ $shortcode_campaign_obj->contract_maximum_type() ];
 		}
@@ -200,7 +200,7 @@ class WDG_PDF_Generator {
 			$buffer_in_words .= " VIRGULE " . $nbwd_class->toWords( $number_exploded[ 1 ], 'fr' );
 		}
 	
-		$buffer = $roi_percent_estimated. '% (' . strtoupper( $buffer_in_words ) . ' POURCENTS)';
+		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' POURCENTS)';
 		return $buffer;
 	}
 	
