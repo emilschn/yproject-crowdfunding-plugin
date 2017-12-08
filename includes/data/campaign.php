@@ -827,7 +827,7 @@ class ATCF_Campaign {
 		if ( !empty( $status ) ) {
 			$declaration_list = $this->get_roi_declarations();
 			foreach ( $declaration_list as $declaration_item ) {
-				if ( $declaration_item[ 'status' ] != $status ) {
+				if ( $declaration_item[ 'status' ] == $status ) {
 					array_push( $buffer, $declaration_item[ 'item' ] );
 				}
 			}

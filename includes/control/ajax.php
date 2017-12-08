@@ -83,6 +83,11 @@ class WDGAjaxActions {
 		$permissions = ['email'];
 		$loginUrl = $helper->getLoginUrl( home_url( '/connexion/?fbcallback=1' ) , $permissions);
 		echo $loginUrl;
+		
+		ypcf_session_start();
+		$_SESSION[ 'login-fb-referer' ] = wp_get_referer();
+		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
+		
 		exit();
 	}
     
@@ -617,7 +622,7 @@ class WDGAjaxActions {
 		$birthday = filter_input(INPUT_POST, 'new_birthday');
 		if(!empty($birthday)){
 			try {
-				$new_birthday_date = new DateTime($birthday);
+				$new_birthday_date = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				update_user_meta( $current_user->wp_user->ID, 'user_birthday_day', $new_birthday_date->format('d') );
 				update_user_meta( $current_user->wp_user->ID, 'user_birthday_month', $new_birthday_date->format('n') );
 				update_user_meta( $current_user->wp_user->ID, 'user_birthday_year', $new_birthday_date->format('Y') );

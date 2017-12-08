@@ -13,7 +13,7 @@ class WDGInvestment {
 	/**
 	 * @var LemonwayLibErrors
 	 */
-	private $error_item;
+	public $error_item;
 	
 	public static $status_init = 'init';
 	public static $status_expired = 'expired';
@@ -81,8 +81,9 @@ class WDGInvestment {
 		}
 		$invest_update_date = $_SESSION[ 'invest_update_date' ];
 		
+		date_default_timezone_set("Europe/Paris");
 		$current_date = new DateTime();
-		$difference_in_hours = floor( ( strtotime( $current_date->format( 'Y-m-d h:i:s' ) ) - strtotime( $invest_update_date ) ) / 3600 );
+		$difference_in_hours = floor( ( strtotime( $current_date->format( 'Y-m-d H:i:s' ) ) - strtotime( $invest_update_date ) ) / 3600 );
 		if ( $difference_in_hours > self::$session_max_duration_hours ) {
 			return FALSE;
 		}
@@ -96,8 +97,9 @@ class WDGInvestment {
 	 * @param string $user_type
 	 */
 	public function update_session( $amount = FALSE, $user_type = FALSE ) {
+		date_default_timezone_set("Europe/Paris");
 		$current_datetime = new DateTime();
-		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d h:i:s' );
+		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d H:i:s' );
 		
 		if ( !empty( $amount ) ) {
 			$_SESSION[ 'redirect_current_amount' ] = $amount;
@@ -784,6 +786,9 @@ class WDGInvestment {
 				$WDGUser_current = WDGUser::current();
 				$this->error_item = new LemonwayLibErrors( $lw_transaction_result->INT_MSG );
 				NotificationsEmails::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
+				$investment_link = home_url( '/investir' ) . '?campaign_id=' . $this->campaign->ID . '&invest_start=1&init_invest=' . $this->get_session_amount();
+				$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
+				NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
 			}
 			
 		// Retour de paiement par virement
