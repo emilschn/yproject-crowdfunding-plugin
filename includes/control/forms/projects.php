@@ -38,8 +38,20 @@ class WDGFormProjects {
 		do_action('wdg_delete_cache', array( 'project-header-menu-'.$post_campaign->ID ));
                 
 		//Envoi de notifications mails
-		if (isset($_POST['send_mail']) && ($_POST['send_mail'])=='on'){
-			NotificationsEmails::new_project_post_posted($campaign_id, $post_id);
+		$send_mail = filter_input( INPUT_POST, 'send_mail' );
+		if ( $send_mail == 'on' ) {
+			$campaign_author = $campaign->post_author();
+			$author_user = get_user_by( 'ID', $campaign_author );
+			$replyto_mail = $author_user->user_email;
+			global $wpdb;
+			$table_jcrois = $wpdb->prefix . "jycrois";
+			$result_jcrois = $wpdb->get_results( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+			$recipients = array();
+			foreach ($result_jcrois as $item) {
+				array_push( $recipients, get_userdata( $item->user_id )->user_email );
+			}
+			$recipients_string = implode( ',', $recipients );
+			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $_POST[ 'posttitle' ], $_POST[ 'postcontent' ] );
 		}
 	}
 	
