@@ -3,7 +3,10 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class NotificationsAPI {
-	
+
+	//**************************************************************************
+	// Campagne
+	//**************************************************************************
     //*******************************************************
     // ENVOI ACTUALITE DE PROJET
     //*******************************************************
@@ -54,7 +57,11 @@ class NotificationsAPI {
     //*******************************************************
     // FIN ENVOI ACTUALITE DE PROJET
     //*******************************************************
-	
+
+
+	//**************************************************************************
+	// Investissement
+	//**************************************************************************
     //*******************************************************
     // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************
@@ -78,7 +85,11 @@ class NotificationsAPI {
     //*******************************************************
     // FIN NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************
-	
+
+
+	//**************************************************************************
+	// Déclarations
+	//**************************************************************************
     //*******************************************************
     // NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
@@ -139,7 +150,7 @@ class NotificationsAPI {
 		return FALSE;
 	}
     //*******************************************************
-    // FIN NOTIFICATIONS DECLARATIONS ROI A FAIRE
+    // FIN - NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
 	
     //*******************************************************
@@ -176,7 +187,58 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
     //*******************************************************
-    // NOTIFICATIONS DECLARATIONS APROUVEES
+    // FIN - NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
+	//**************************************************************************
+	// FIN - Déclarations
+	//**************************************************************************
+	
+	
+	//**************************************************************************
+	// Versements
+	//**************************************************************************
+    //*******************************************************
+    // NOTIFICATIONS VERSEMENT AVEC ROYALTIES
+    //*******************************************************
+	public static function roi_transfer_with_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message ) {
+		$id_template = '140';
+		$options = array(
+			'NOM_UTILISATEUR'					=> $name,
+			'NOM_PROJET'						=> $project_name,
+			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
+			'MESSAGE_VERSEMENT_ENTREPRENEUR'	=> $declaration_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+			
+    //*******************************************************
+    // NOTIFICATIONS VERSEMENT SANS ROYALTIES
+    //*******************************************************
+	public static function roi_transfer_without_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message ) {
+		$id_template = '167';
+		$options = array(
+			'NOM_UTILISATEUR'					=> $name,
+			'NOM_PROJET'						=> $project_name,
+			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
+			'MESSAGE_VERSEMENT_ENTREPRENEUR'	=> $declaration_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	//**************************************************************************
+	// FIN - Versements
+	//**************************************************************************
 	
 }
