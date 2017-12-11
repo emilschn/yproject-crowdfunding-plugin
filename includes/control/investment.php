@@ -858,7 +858,7 @@ class WDGInvestment {
 					}
 				}
 				if ( !empty( $wallet_token ) ) {
-					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
+					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $wallet_token, 'payment' );
 					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $lw_transaction_result->REC, $lw_transaction_result->SEN, $lw_transaction_result->DEB );
 					if (LemonwayLib::get_last_error_code() == '') {
 						update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
