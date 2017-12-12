@@ -594,6 +594,66 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function get_funded_certificate_url() {
+		$this->make_funded_certificate();
+		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/campaign-funded/';
+		$buffer .= $this->get_funded_certificate_filename();
+		return $buffer;
+	}
+	private function get_funded_certificate_filename() {
+		$buffer = 'funded-certificate-' .$this->ID. '-' .$this->get_api_id(). '.pdf';
+		return $buffer;
+	}
+	public function make_funded_certificate( $force = FALSE ) {
+		$filename = $this->get_funded_certificate_filename();
+		$filepath = __DIR__ . '/../../files/campaign-funded/' . $filename;
+		if ( !$force && file_exists( $filepath ) ) {
+			return;
+		}
+		$platform_commission = $this->platform_commission();
+		if ( empty( $platform_commission ) ) {
+			return;
+		}
+		$data_contract_start_date = $this->contract_start_date();
+		if ( !empty( $data_contract_start_date ) ) {
+			$start_datetime = new DateTime( $data_contract_start_date );
+		} else {
+			return;
+		}
+		$edd_settings = get_option( 'edd_settings' );
+		$fiscal_info = apply_filters( 'the_content', $edd_settings[ 'accounting_fiscal_info' ] );
+		if ( empty( $fiscal_info ) ) {
+			return;
+		}
+		
+		$WDGUser = new WDGUser( $this->data->post_author );
+		$campaign_organization = $this->get_organization();
+		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
+		
+		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
+		$html_content = WDG_Template_PDF_Campaign_Funded::get(
+			$WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(),
+			$WDGUser->get_email(),
+			$WDGOrganization->get_name(),
+			$WDGOrganization->get_address(),
+			$WDGOrganization->get_postal_code(),
+			$WDGOrganization->get_city(),
+			$this->end_date( 'd/m/Y' ),
+			$this->backers_count(),
+			$this->current_amount( FALSE ),
+			$this->platform_commission(),
+			$this->platform_commission_amount(),
+			( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
+			$start_datetime->format( 'd/m/Y' ),
+			$this->funding_duration(),
+			$this->roi_percent(),
+			$fiscal_info
+		);
+		
+		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
+		$html2pdf->WriteHTML( urldecode( $html_content ) );
+		$html2pdf->Output( $filepath, 'F' );
+	}
 	
 /*******************************************************************************
  * GESTION ROI
@@ -1061,6 +1121,15 @@ class ATCF_Campaign {
 	
 	public function total_parts() {
 	    return round($this->goal(false) / $this->part_value());
+	}
+	
+    public static $key_platform_commission = 'campaign_platform_commission';
+	public function platform_commission() {
+	    return $this->__get( ATCF_Campaign::$key_platform_commission );
+	}
+	public function platform_commission_amount() {
+		$buffer = round( $this->current_amount( false ) * $this->platform_commission() / 100, 2 );
+		return $buffer;
 	}
 
 	/**
