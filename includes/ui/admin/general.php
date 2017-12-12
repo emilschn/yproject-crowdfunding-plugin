@@ -87,6 +87,7 @@ class WDG_Admin_General {
 		$edd_settings[ 'investment_terms' ] = filter_input( INPUT_POST, 'investment_terms' );
 		$edd_settings[ 'preinvest_warning' ] = filter_input( INPUT_POST, 'preinvest_warning' );
 		$edd_settings[ 'standard_contract' ] = filter_input( INPUT_POST, 'standard_contract' );
+		$edd_settings[ 'accounting_fiscal_info' ] = filter_input( INPUT_POST, 'accounting_fiscal_info' );
 		update_option( 'edd_settings', $edd_settings );
 	}
 	
@@ -239,25 +240,31 @@ class WDG_Admin_General {
 		<label for="investment_generalities">
 			<?php wp_editor( $edd_settings[ 'investment_generalities' ], 'investment_generalities' ); ?>
 		</label>
-		<br /><br />
+		<br><br>
 		
 		<h3>Avertissements sur le pré-investissement</h3>
 		<label for="preinvest_warning">
 			<?php wp_editor( $edd_settings[ 'preinvest_warning' ], 'preinvest_warning' ); ?>
 		</label>
-		<br /><br />
+		<br><br>
 		
 		<h3>Modalités d'investissement</h3>
 		<label for="investment_terms">
 			<?php wp_editor( $edd_settings[ 'investment_terms' ], 'investment_terms' ); ?>
 		</label>
-		<br /><br />
+		<br><br>
 		
 		<h3>Contrat d&apos;investissement standard</h3>
 		<label for="standard_contract">
 			<?php wp_editor( $edd_settings[ 'standard_contract' ], 'standard_contract' ); ?>
 		</label>
-		<br /><br />
+		<br><br>
+		
+		<h3>Informations comptables et fiscales pour attestation</h3>
+		<label for="accounting_fiscal_info">
+			<?php wp_editor( $edd_settings[ 'accounting_fiscal_info' ], 'accounting_fiscal_info' ); ?>
+		</label>
+		<br><br>
 		
 		<?php
 	}

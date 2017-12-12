@@ -38,8 +38,20 @@ class WDGFormProjects {
 		do_action('wdg_delete_cache', array( 'project-header-menu-'.$post_campaign->ID ));
                 
 		//Envoi de notifications mails
-		if (isset($_POST['send_mail']) && ($_POST['send_mail'])=='on'){
-			NotificationsEmails::new_project_post_posted($campaign_id, $post_id);
+		$send_mail = filter_input( INPUT_POST, 'send_mail' );
+		if ( $send_mail == 'on' ) {
+			$campaign_author = $campaign->post_author();
+			$author_user = get_user_by( 'ID', $campaign_author );
+			$replyto_mail = $author_user->user_email;
+			global $wpdb;
+			$table_jcrois = $wpdb->prefix . "jycrois";
+			$result_jcrois = $wpdb->get_results( "SELECT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id);
+			$recipients = array();
+			foreach ($result_jcrois as $item) {
+				array_push( $recipients, get_userdata( $item->user_id )->user_email );
+			}
+			$recipients_string = implode( ',', $recipients );
+			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $_POST[ 'posttitle' ], $_POST[ 'postcontent' ] );
 		}
 	}
 	
@@ -624,14 +636,7 @@ class WDGFormProjects {
 
         $body_content .= $initial_content.'<br />';
 
-        $body_content .= '<div style="text-align: center;">';
-		if ( ATCF_CrowdFunding::get_platform_context() == "wedogood" ) {
-			$body_content .= '<br /><br />';
-            $body_content .= '<em>Vous avez re&ccedil;u ce mail car vous croyez au projet '.$post_campaign->post_title.'.
-				Si vous ne souhaitez plus recevoir de mail des actualités de ce projet, rendez-vous sur '
-				.'votre page "Mon Compte" '.ATCF_CrowdFunding::get_platform_name().' pour désactiver les notifications de ce projet.</em>';
-		}
-        $body_content .= '</div></div>';
+        $body_content .= '</div>';
 
         $body_content = str_replace('%userfirstname%', $userfirstname, $body_content);
         $body_content = str_replace('%userlastname%', $userlastname, $body_content);

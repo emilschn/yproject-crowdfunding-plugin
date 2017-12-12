@@ -3,7 +3,65 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class NotificationsAPI {
+
+	//**************************************************************************
+	// Campagne
+	//**************************************************************************
+    //*******************************************************
+    // ENVOI ACTUALITE DE PROJET
+    //*******************************************************
+	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $news_name, $news_content ) {
+		ypcf_debug_log( 'NotificationsAPI::new_project_news > ' . $recipients );
+		$id_template = '156';
+		$options = array(
+			'replyto'				=> $replyto_mail,
+			'NOM_PROJET'			=> $project_name,
+			'LIEN_PROJET'			=> $project_link,
+			'OBJET_ACTU'			=> $news_name,
+			'CONTENU_ACTU'			=> $news_content
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipients,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // FIN ENVOI ACTUALITE DE PROJET
+    //*******************************************************
 	
+    //*******************************************************
+    // ENVOI ACTUALITE DE PROJET
+    //*******************************************************
+	public static function project_mail( $recipient, $replyto_mail, $user_name, $project_name, $project_link, $news_name, $news_content ) {
+		ypcf_debug_log( 'NotificationsAPI::project_mail > ' . $recipient );
+		$id_template = '184';
+		$options = array(
+			'replyto'				=> $replyto_mail,
+			'NOM_UTILISATEUR'		=> $user_name,
+			'NOM_PROJET'			=> $project_name,
+			'LIEN_PROJET'			=> $project_link,
+			'OBJET_ACTU'			=> $news_name,
+			'CONTENU_ACTU'			=> $news_content
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // FIN ENVOI ACTUALITE DE PROJET
+    //*******************************************************
+
+
+	//**************************************************************************
+	// Investissement
+	//**************************************************************************
     //*******************************************************
     // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************
@@ -25,9 +83,13 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
     //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+    // FIN NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************
-	
+
+
+	//**************************************************************************
+	// Déclarations
+	//**************************************************************************
     //*******************************************************
     // NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
@@ -88,7 +150,7 @@ class NotificationsAPI {
 		return FALSE;
 	}
     //*******************************************************
-    // FIN NOTIFICATIONS DECLARATIONS ROI A FAIRE
+    // FIN - NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
 	
     //*******************************************************
@@ -125,7 +187,58 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
     //*******************************************************
-    // NOTIFICATIONS DECLARATIONS APROUVEES
+    // FIN - NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
+	//**************************************************************************
+	// FIN - Déclarations
+	//**************************************************************************
+	
+	
+	//**************************************************************************
+	// Versements
+	//**************************************************************************
+    //*******************************************************
+    // NOTIFICATIONS VERSEMENT AVEC ROYALTIES
+    //*******************************************************
+	public static function roi_transfer_with_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message ) {
+		$id_template = '140';
+		$options = array(
+			'NOM_UTILISATEUR'					=> $name,
+			'NOM_PROJET'						=> $project_name,
+			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
+			'MESSAGE_VERSEMENT_ENTREPRENEUR'	=> $declaration_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+			
+    //*******************************************************
+    // NOTIFICATIONS VERSEMENT SANS ROYALTIES
+    //*******************************************************
+	public static function roi_transfer_without_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message ) {
+		$id_template = '167';
+		$options = array(
+			'NOM_UTILISATEUR'					=> $name,
+			'NOM_PROJET'						=> $project_name,
+			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
+			'MESSAGE_VERSEMENT_ENTREPRENEUR'	=> $declaration_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	//**************************************************************************
+	// FIN - Versements
+	//**************************************************************************
 	
 }

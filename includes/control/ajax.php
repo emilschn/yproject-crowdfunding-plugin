@@ -535,12 +535,15 @@ class WDGAjaxActions {
 		if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
 		$new_project_types = array();
 		if ( isset( $_POST["new_project_types"] ) ) $new_project_types = $_POST["new_project_types"];
-		$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types );
+		$new_project_partners = array();
+		if ( isset( $_POST["new_project_partners"] ) ) $new_project_partners = $_POST["new_project_partners"];
+		$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types, $new_project_partners );
 		$cat_ids = array_map( 'intval', $cat_ids );
 		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
 		$success["new_project_categories"] = 1;
 		$success["new_project_activities"] = 1;
 		$success["new_project_types"] = 1;
+		$success["new_project_partners"] = 1;
 
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));
@@ -869,6 +872,14 @@ class WDGAjaxActions {
 			$success['new_funding_duration']=1;
 		} else {
 			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
+		}
+		
+		$new_platform_commission = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_platform_commission')));
+		if ( $new_platform_commission >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
+			$success['new_platform_commission'] = 1;
+		} else {
+			$errors['new_platform_commission'] = "Le pourcentage doit &ecirc;tre positif";
 		}
 		
 		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );

@@ -456,7 +456,17 @@ class WDGROIDeclaration {
 						
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
-								NotificationsEmails::roi_transfer_success_user( $this->id, $investment_item['user'], $this->get_message() );
+								$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+								$WDGUser = new WDGUser( $investment_item['user'] );
+								$adjustment_message_param = $this->get_adjustment_message( 'investors' );
+								if ( $this->get_adjustment_validated() && !empty( $adjustment_message_param ) ) {
+									$adjustment_message = $adjustment_message_param;
+								}
+								$declaration_message = $this->get_message();
+								if ( empty( $declaration_message ) ) {
+									$declaration_message = "Aucun message";
+								}
+								NotificationsAPI::roi_transfer_with_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message );
 							}
 						}
 
@@ -464,7 +474,17 @@ class WDGROIDeclaration {
 						if ( $investment_item['roi_amount'] == 0 ) {
 							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_transferred);
 							if ( $send_notifications ) {
-								NotificationsEmails::roi_transfer_null_user( $this->id, $investment_item['user'], $this->get_message() );
+								$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+								$WDGUser = new WDGUser( $investment_item['user'] );
+								$adjustment_message_param = $this->get_adjustment_message( 'investors' );
+								if ( $this->get_adjustment_validated() && !empty( $adjustment_message_param ) ) {
+									$adjustment_message = $adjustment_message_param;
+								}
+								$declaration_message = $this->get_message();
+								if ( empty( $declaration_message ) ) {
+									$declaration_message = "Aucun message";
+								}
+								NotificationsAPI::roi_transfer_without_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message );
 							}
 						} else {
 							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);

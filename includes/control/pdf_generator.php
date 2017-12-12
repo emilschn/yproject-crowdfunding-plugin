@@ -409,7 +409,13 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	}
 		
     
-    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
+    $buffer = '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
+	
+	if ( empty( $payment_data ) ) {
+		$buffer .= '<page_footer style="width: 100%; margin-top: 20px; text-align: right; font-size: 9pt;">';
+		$buffer .= 'Paraphe :<br><br><br>';
+		$buffer .= '</page_footer>';
+	}
     
     $buffer .= '<p style="line-height: 1.8;">';
     switch ($campaign_obj->funding_type()) {
