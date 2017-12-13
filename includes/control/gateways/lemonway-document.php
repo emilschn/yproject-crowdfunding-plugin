@@ -103,10 +103,12 @@ class LemonwayDocument {
 		$this->error_str = FALSE;
 		if ( !empty( $this->wallet_details->DOCS ) && !empty( $this->wallet_details->DOCS->DOC ) ) {
 			foreach( $this->wallet_details->DOCS->DOC as $document_object ) {
-				if ( isset( $document_object->TYPE ) && $document_object->TYPE !== $this->document_type ) {
+				if ( isset( $document_object->TYPE ) && $document_object->TYPE == $this->document_type ) {
 					$this->status = $document_object->S;
-					$this->error_str = $this->init_error_str();
+				} else {
+					$this->status = $this->wallet_details->DOCS->DOC->S;
 				}
+				$this->error_str = $this->init_error_str();
 			}
 		}
 	}
@@ -115,40 +117,40 @@ class LemonwayDocument {
 		$buffer = FALSE;
 		$contact_us_error = __( "Merci de nous contacter par chat ou par mail sur investir@wedogood.co." );
 		switch ( $this->status ) {
-			case LemonwayLib::$document_status_waiting_verification:
+			case LemonwayDocument::$document_status_waiting_verification:
 				$buffer = __( "Il manque des informations pour permettre la validation.", 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
-			case LemonwayLib::$document_status_waiting:
+			case LemonwayDocument::$document_status_waiting:
 				$buffer = __( "Le document est re&ccedil;u mais pas encore analys&eacute;.", 'yproject' );
 				break;
 			
-			case LemonwayLib::$document_status_accepted:
+			case LemonwayDocument::$document_status_accepted:
 				// Pas d'erreur
 				break;
 			
-			case LemonwayLib::$document_status_refused:
+			case LemonwayDocument::$document_status_refused:
 				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire.", 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
-			case LemonwayLib::$document_status_refused_unreadable:
+			case LemonwayDocument::$document_status_refused_unreadable:
 				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire qui l'a jug&eacute; illisible.", 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
-			case LemonwayLib::$document_status_refused_expired:
+			case LemonwayDocument::$document_status_refused_expired:
 				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire car le document a expir&eacute;.", 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
-			case LemonwayLib::$document_status_refused_wrong_type:
+			case LemonwayDocument::$document_status_refused_wrong_type:
 				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire car ce n'est pas le bon document.", 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
-			case LemonwayLib::$document_status_refused_wrong_person:
+			case LemonwayDocument::$document_status_refused_wrong_person:
 				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire car il ne correspond pas au propri&eacute;taire du porte-monnaie.", 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;

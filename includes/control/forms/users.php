@@ -424,6 +424,7 @@ class WDGFormUsers {
 		if ( isset( $_FILES[ 'rib' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'rib' ][ 'tmp_name' ] ) ) {
 			$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'rib' ] );
 			$WDGFile = new WDGKYCFile( $file_id );
+			$WDGUser->register_lemonway();
 			LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
 		}
 	}
