@@ -715,6 +715,7 @@ class WDGUser {
 	public static $key_bank_iban = "bank_iban";
 	public static $key_bank_bic = "bank_bic";
 	public static $key_bank_address1 = "bank_address1";
+	public static $key_bank_address2 = "bank_address2";
 	
 	/**
 	 * Retourne une info correspondante au IBAN
@@ -743,7 +744,7 @@ class WDGUser {
 		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, $bic );
 		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, $address1 );
 		if ( !empty( $address2 ) ) {
-			update_user_meta( $this->wp_user->ID, "bank_address2", $address2 );
+			update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address2, $address2 );
 		}
 	}
 	
@@ -1009,7 +1010,7 @@ class WDGUser {
 				if ( empty( $amount ) ) {
 					$amount = $wallet_details->BAL;
 				}
-				$result_transfer = LemonwayLib::ask_transfer_to_iban($this->get_lemonway_id(), $amount);
+				$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount );
 				$buffer = ($result_transfer->TRANS->HPAY->ID) ? "success" : $result_transfer->TRANS->HPAY->MSG;
 				if ($buffer == "success") {
 					NotificationsEmails::wallet_transfer_to_account( $this->wp_user->ID, $amount );
@@ -1029,7 +1030,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne true si l'iban est enregistré sur lemonway
+	 * Retourne true si l'iban est enregistré sur Lemon Way
 	 */
 	public function has_registered_iban() {
 		$buffer = true;
@@ -1039,6 +1040,29 @@ class WDGUser {
 			$buffer = false;
 		}
 		return $buffer;
+	}
+	
+	/**
+	 * Retourne true si le RIB est validé sur Lemon Way
+	 */
+	public function is_document_lemonway_registered( $document_type ) {
+		$lemonway_document = LemonwayDocument::get_by_id_and_type( $this->get_lemonway_id(), $document_type, $this->get_wallet_details() );
+		return ( $lemonway_document->get_status() == LemonwayDocument::$document_status_accepted );
+	}
+	
+	public function get_document_lemonway_status( $document_type ) {
+		$lemonway_document = LemonwayDocument::get_by_id_and_type( $this->get_lemonway_id(), $document_type, $this->get_wallet_details() );
+		return $lemonway_document->get_status();
+	}
+	
+	public function get_document_lemonway_error( $document_type ) {
+		$lemonway_document = LemonwayDocument::get_by_id_and_type( $this->get_lemonway_id(), $document_type, $this->get_wallet_details() );
+		return $lemonway_document->get_error_str();
+	}
+	
+	public function has_document_lemonway_error( $document_type ) {
+		$rib_lemonway_error = $this->get_document_lemonway_error( $document_type );
+		return ( !empty( $rib_lemonway_error ) );
 	}
 	
 /*******************************************************************************

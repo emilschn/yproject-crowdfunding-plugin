@@ -398,16 +398,33 @@ class WDGFormUsers {
 		}
 		
 		$WDGUser = new WDGUser( $user_id );
+		return $WDGUser->transfer_wallet_to_bankaccount();
+	}
+	
+	public static function register_rib() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		if (!isset( $user_id ) || !isset($_POST['action']) || $_POST['action'] != 'register_rib') {
+			return FALSE;
+		}
+		$WDGUser_current = WDGUser::current();
+		if ($WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin()) {
+			return FALSE;
+		}
 		
+		$WDGUser = new WDGUser( $user_id );
 		$save_iban = filter_input( INPUT_POST, 'iban' );
-		if (isset($save_iban) && !empty($save_iban)) {
+		if ( isset( $save_iban ) && !empty( $save_iban ) ) {
 			$save_holdername = filter_input( INPUT_POST, 'holdername' );
 			$save_bic = filter_input( INPUT_POST, 'bic' );
 			$save_address = filter_input( INPUT_POST, 'address' );
-			$WDGUser->save_iban($save_holdername, $save_iban, $save_bic, $save_address);
+			$save_address2 = filter_input( INPUT_POST, 'address2' );
+			$WDGUser->save_iban( $save_holdername, $save_iban, $save_bic, $save_address, $save_address2 );
 		}
 		
-		//Save RIB
-		return $WDGUser->transfer_wallet_to_bankaccount();
+		if ( isset( $_FILES[ 'rib' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'rib' ][ 'tmp_name' ] ) ) {
+			$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'rib' ] );
+			$WDGFile = new WDGKYCFile( $file_id );
+			LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+		}
 	}
 }
