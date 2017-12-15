@@ -27,6 +27,23 @@ class WDGAPICalls {
 		}
 	}
 	
+	private function get_projects_categories() {
+		$buffer = array();
+		
+		$categories_types = array( 'types', 'categories', 'activities', 'partners' );
+		foreach ( $categories_types as $category_name ) {
+			$buffer[ $category_name ] = array();
+			$terms_from_category = get_terms( 'download_category', array( 'slug' => $category_name, 'hide_empty' => false ) );
+			$term_category_id = $terms_from_category[0]->term_id;
+			$subterms_list = (array) get_terms( 'download_category', array( 'child_of' => $term_category_id, 'hierarchical' => 0, 'hide_empty' => 0 ) );
+			foreach ( $subterms_list as $term_item ) {
+				array_push( $buffer[ $category_name ], array( 'id' => $term_item->term_id, 'name' => $term_item->name ) );
+			}
+		}
+		
+		exit( json_encode( $buffer ) );
+	}
+	
 	private function get_royalties_by_project( $project_id ) {
 		if ( !empty( $project_id ) ) {
 			$campaign = new ATCF_Campaign( $project_id );
@@ -54,68 +71,10 @@ class WDGAPICalls {
 		}
 		exit( json_encode( $buffer ) );
 	}
-		
-	private function update_user_email( $input_email ) {
-		$buffer = 'error';
-		if ( !empty( $input_email ) ) {
 
-			// On récupère l'utilisateur à modifier
-			$init_email = html_entity_decode( $input_email );
-			ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $init_email : ' .$init_email );
-			$query_user = get_user_by( 'email', $init_email );
-			if ( !empty( $query_user ) ) {
-
-				// On vérifie que le nouvel e-mail est renseigné
-				$new_email = filter_input( INPUT_POST, 'new_email' );
-				ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $new_email : ' .$new_email );
-				if ( !empty( $new_email ) ) {
-
-					// On vérifie que le nouvel e-mail n'est pas déjà pris
-					$find_existing_user = get_user_by( 'email', $new_email );
-					if ( empty( $find_existing_user ) ) {
-						wp_update_user( array ( 'ID' => $query_user->ID, 'user_email' => $new_email ) );
-						$buffer = 'success';
-
-					} else {
-						ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $find_existing_user : ' .$find_existing_user->ID );
-						$buffer = 'E-mail alreay in use';
-
-					}
-				}
-
-			} else {
-				$buffer = 'Did not find user with this e-mail';
-			}
-		}
-		ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $buffer : ' .$buffer );
-		exit( $buffer );
-	}
-	
-	private function set_project_url( $campaign_id ) {
-		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $campaign_id : ' .$campaign_id );
-		$campaign = new ATCF_Campaign( $campaign_id );
-		$new_name = sanitize_text_field( filter_input( INPUT_POST, 'new_url') );
-		if ( !empty( $new_name ) && $campaign->data->post_name != $new_name ) {
-			$posts = get_posts( array(
-				'name' => $new_name,
-				'post_type' => array( 'post', 'page', 'download' )
-			) );
-			
-			if ( $posts ) {
-				$buffer = "L'URL est déjà utilisée.";
-
-			} else {
-				wp_update_post( array(
-					'ID'		=> $campaign_id,
-					'post_name' => $new_name
-				) );
-				$buffer = '1';
-			}
-		}
-		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $buffer : ' .$buffer );
-		exit( $buffer );
-	}
-	
+/*******************************************************************************
+ RECUPERATIONS STATISTIQUES
+*******************************************************************************/
 	private function get_projects_stats() {
 		
 		$buffer = array();
@@ -343,6 +302,70 @@ class WDGAPICalls {
 		
 		exit( json_encode( $buffer ) );
 		
+	}
+
+/*******************************************************************************
+ EDITION DEPUIS L'API
+*******************************************************************************/
+	private function update_user_email( $input_email ) {
+		$buffer = 'error';
+		if ( !empty( $input_email ) ) {
+
+			// On récupère l'utilisateur à modifier
+			$init_email = html_entity_decode( $input_email );
+			ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $init_email : ' .$init_email );
+			$query_user = get_user_by( 'email', $init_email );
+			if ( !empty( $query_user ) ) {
+
+				// On vérifie que le nouvel e-mail est renseigné
+				$new_email = filter_input( INPUT_POST, 'new_email' );
+				ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $new_email : ' .$new_email );
+				if ( !empty( $new_email ) ) {
+
+					// On vérifie que le nouvel e-mail n'est pas déjà pris
+					$find_existing_user = get_user_by( 'email', $new_email );
+					if ( empty( $find_existing_user ) ) {
+						wp_update_user( array ( 'ID' => $query_user->ID, 'user_email' => $new_email ) );
+						$buffer = 'success';
+
+					} else {
+						ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $find_existing_user : ' .$find_existing_user->ID );
+						$buffer = 'E-mail alreay in use';
+
+					}
+				}
+
+			} else {
+				$buffer = 'Did not find user with this e-mail';
+			}
+		}
+		ypcf_debug_log( 'ypcf_check_api_calls > update_user_email > $buffer : ' .$buffer );
+		exit( $buffer );
+	}
+	
+	private function set_project_url( $campaign_id ) {
+		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $campaign_id : ' .$campaign_id );
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$new_name = sanitize_text_field( filter_input( INPUT_POST, 'new_url') );
+		if ( !empty( $new_name ) && $campaign->data->post_name != $new_name ) {
+			$posts = get_posts( array(
+				'name' => $new_name,
+				'post_type' => array( 'post', 'page', 'download' )
+			) );
+			
+			if ( $posts ) {
+				$buffer = "L'URL est déjà utilisée.";
+
+			} else {
+				wp_update_post( array(
+					'ID'		=> $campaign_id,
+					'post_name' => $new_name
+				) );
+				$buffer = '1';
+			}
+		}
+		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $buffer : ' .$buffer );
+		exit( $buffer );
 	}
 	
 }
