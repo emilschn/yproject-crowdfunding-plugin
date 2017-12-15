@@ -91,6 +91,31 @@ class WDGAPICalls {
 		exit( $buffer );
 	}
 	
+	private function set_project_url( $campaign_id ) {
+		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $campaign_id : ' .$campaign_id );
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$new_name = sanitize_text_field( filter_input( INPUT_POST, 'new_url') );
+		if ( !empty( $new_name ) && $campaign->data->post_name != $new_name ) {
+			$posts = get_posts( array(
+				'name' => $new_name,
+				'post_type' => array( 'post', 'page', 'download' )
+			) );
+			
+			if ( $posts ) {
+				$buffer = "L'URL est déjà utilisée.";
+
+			} else {
+				wp_update_post( array(
+					'ID'		=> $campaign_id,
+					'post_name' => $new_name
+				) );
+				$buffer = '1';
+			}
+		}
+		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $buffer : ' .$buffer );
+		exit( $buffer );
+	}
+	
 	private function get_projects_stats() {
 		
 		$buffer = array();
