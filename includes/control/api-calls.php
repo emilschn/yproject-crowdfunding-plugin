@@ -44,6 +44,26 @@ class WDGAPICalls {
 		exit( json_encode( $buffer ) );
 	}
 	
+	private function get_status_by_project( $campaign_id ) {
+		if ( !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$vote_results = WDGCampaignVotes::get_results( $campaign_id );
+			$buffer = array(
+				'status'				=> $campaign->campaign_status(),
+				'vote_count'			=> $campaign->nb_voters(),
+				'vote_invest_amount'	=> $vote_results[ 'sum_invest_ready' ],
+				'vote_end_date'			=> $campaign->end_vote_date(),
+				'invest_count'			=> $campaign->backers_count(),
+				'invest_amount'			=> $campaign->current_amount( FALSE ),
+				'invest_percent'		=> $campaign->percent_minimum_completed( FALSE ),
+				'invest_end_date'		=> $campaign->end_date(),
+				'goal_minimum'			=> $campaign->minimum_goal(),
+				'goal_maximum'			=> $campaign->goal( FALSE )
+			);
+			exit( json_encode( $buffer ) );
+		}
+	}
+	
 	private function get_royalties_by_project( $project_id ) {
 		if ( !empty( $project_id ) ) {
 			$campaign = new ATCF_Campaign( $project_id );
