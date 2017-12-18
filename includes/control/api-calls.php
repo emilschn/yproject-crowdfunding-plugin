@@ -388,4 +388,61 @@ class WDGAPICalls {
 		exit( $buffer );
 	}
 	
+	private function post_project_equitearly() {
+		ypcf_debug_log( 'ypcf_check_api_calls > post_project_equitearly' );
+		
+		$buffer = "";
+		
+		$user_login = filter_input( INPUT_POST, 'user_login' );
+		$user_password = filter_input( INPUT_POST, 'user_password' );
+		$user_email = filter_input( INPUT_POST, 'user_email' );
+		$user_firstname = filter_input( INPUT_POST, 'user_firstname' );
+		$user_lastname = filter_input( INPUT_POST, 'user_lastname' );
+		if ( empty( $user_login ) || empty( $user_password ) || empty( $user_email ) || empty( $user_firstname ) || empty( $user_lastname ) ) {
+			$buffer = "Problème de données d'utilisateur";
+			
+		} else {
+			$user_id = wp_create_user( $user_login, $user_password, $user_email );
+			wp_update_user( array ( 'ID' => $user_id, 'first_name' => $user_firstname ) ) ;
+			wp_update_user( array ( 'ID' => $user_id, 'last_name' => $user_lastname ) ) ;
+		}
+		
+		
+		if ( empty( $buffer ) ) {
+			$orga_name = sanitize_text_field( filter_input( INPUT_POST, 'organization_name' ) );
+			$orga_email = sanitize_text_field( filter_input( INPUT_POST, 'organization_email' ) );
+			$organization_created = WDGOrganization::createSimpleOrganization( $user_id, $orga_name, $orga_email );
+			if ( $organization_created != false ) {
+				$orga_api_id = $organization_created->get_api_id();
+				
+			} else {
+				$buffer = "Problème de données d'organisation";
+			}
+			if ( empty( $orga_api_id ) ) {
+				$buffer = "Erreur récupération ID API de l'organisation";
+			}
+		}
+		
+		if ( empty( $buffer ) ) {
+			$campaign_name = sanitize_text_field( filter_input( INPUT_POST, 'campaign_name' ) );
+			$equitearly_investment = sanitize_text_field( filter_input( INPUT_POST, 'equitearly_investment' ) );
+			$equitearly_charges = sanitize_text_field( filter_input( INPUT_POST, 'equitearly_charges' ) );
+			
+			$newcampaign_id = atcf_create_campaign( $user_id, $campaign_name );
+			$newcampaign = atcf_get_campaign( $newcampaign_id );
+			$newcampaign->set_forced_mandate( 1 );
+			$newcampaign->link_organization( $orga_api_id );
+			add_post_meta( $newcampaign_id, 'equitearly_investment', $equitearly_investment );
+			add_post_meta( $newcampaign_id, 'equitearly_charges', $equitearly_charges );
+
+			//Mail pour l'équipe
+			NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
+			NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
+		}
+		
+		
+		ypcf_debug_log( 'ypcf_check_api_calls > post_project_equitearly > $buffer : ' .$buffer );
+		exit( $buffer );
+	}
+	
 }
