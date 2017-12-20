@@ -1138,7 +1138,7 @@ function _atcf_metabox_campaign_info() {
 	
 	<p>
 		Total des investissements par chèque :
-		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check(FALSE); ?>" />
+		<input type="text" name="campaign_amount_check" value="<?php echo $campaign->current_amount_check_meta(FALSE); ?>" />
 	</p>
 	
 	
