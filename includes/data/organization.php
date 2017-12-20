@@ -41,6 +41,7 @@ class WDGOrganization {
 	private $bank_address;
 	private $bank_iban;
 	private $bank_bic;
+	private $id_quickbooks;
 	
 	protected static $_current = null;
 	public static function current() {
@@ -143,6 +144,8 @@ class WDGOrganization {
 			$this->bank_address = $this->bopp_object->bank_address;
 			$this->bank_iban = $this->bopp_object->bank_iban;
 			$this->bank_bic = $this->bopp_object->bank_bic;
+			
+			$this->id_quickbooks = $this->bopp_object->id_quickbooks;
 		}
 	}
 	
@@ -416,6 +419,7 @@ class WDGOrganization {
 		$this->ape = $value;
 	}
 	
+	
 	public function get_vat() {
 		return $this->vat;
 	}
@@ -456,6 +460,15 @@ class WDGOrganization {
 	}
 	public function set_bank_bic($value) {
 		$this->bank_bic = $value;
+	}
+	
+	public function get_id_quickbooks() {
+		return $this->id_quickbooks;
+	}
+	public function set_id_quickbooks($value) {
+		if ( !empty( $value ) ) {
+			$this->id_quickbooks = $value;
+		}
 	}
 	
 	/**
@@ -1319,6 +1332,7 @@ class WDGOrganization {
 			$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
 			$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
+			$org_object->set_id_quickbooks( filter_input( INPUT_POST, 'org_id_quickbooks' ) );
 			$org_object->submit_bank_info( TRUE );
 			$org_object->save();
 			$files_info = $org_object->submit_documents();

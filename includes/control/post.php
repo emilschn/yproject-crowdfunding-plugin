@@ -20,6 +20,7 @@ class WDGPostActions {
         self::add_action("organization_sign_mandate");
         self::add_action("organization_remove_mandate");
         self::add_action("upload_information_files");
+        self::add_action("generate_campaign_bill");
         self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
         self::add_action("send_project_contract_modification_notification");
@@ -380,6 +381,18 @@ class WDGPostActions {
 		
 		$campaign->__set( ATCF_Campaign::$key_backoffice_businessplan, $random_filename );
 		
+		$url_return = wp_get_referer() . "#informations";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function generate_campaign_bill() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks );
+		if ( $campaign_bill->can_generate() ) {
+			$campaign_bill->generate();
+		}
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );
 		die();

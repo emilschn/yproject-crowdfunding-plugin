@@ -47,6 +47,7 @@ class WDGWPREST_Entity_Organization {
 			'bank_address'				=> $organization->get_bank_address(),
 			'bank_iban'					=> $organization->get_bank_iban(),
 			'bank_bic'					=> $organization->get_bank_bic(),
+			'id_quickbooks'				=> $organization->get_id_quickbooks(),
 		);
 		return $parameters;
 	}
