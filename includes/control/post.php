@@ -29,6 +29,7 @@ class WDGPostActions {
         self::add_action("post_confirm_check");
         self::add_action("declaration_auto_generate");
         self::add_action("roi_mark_transfer_received");
+        self::add_action("generate_royalties_bill");
         self::add_action("refund_investors");
     }
 
@@ -387,12 +388,16 @@ class WDGPostActions {
 	}
 	
 	public static function generate_campaign_bill() {
+		$WDGUser_current = WDGUser::current();
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
-		$campaign = new ATCF_Campaign( $campaign_id );
-		$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks );
-		if ( $campaign_bill->can_generate() ) {
-			$campaign_bill->generate();
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_crowdfunding_commission );
+			if ( $campaign_bill->can_generate() ) {
+				$campaign_bill->generate();
+			}
 		}
+		
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );
 		die();
@@ -618,6 +623,29 @@ class WDGPostActions {
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $roi_declaration_id ) && !empty( $campaign_id ) ) {
 			$roi_declaration = new WDGROIDeclaration( $roi_declaration_id );
 			$roi_declaration->mark_transfer_received();
+		
+			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#wallet' );
+			exit();
+			
+		} else {
+			wp_redirect( home_url() );
+			exit();
+			
+		}
+		
+	}
+	
+	public static function generate_royalties_bill() {
+		$WDGUser_current = WDGUser::current();
+		$roi_declaration_id = filter_input( INPUT_POST, 'roi_declaration_id' );
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $roi_declaration_id ) && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$roi_declaration = new WDGROIDeclaration( $roi_declaration_id );
+			$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
+			$campaign_bill->set_declaration( $roi_declaration );
+			$campaign_bill->generate();
 		
 			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#wallet' );
 			exit();

@@ -9,10 +9,16 @@ class WDGCampaignBill {
 	 */
 	private $campaign;
 	private $tool_name;
+	private $bill_type;
+	/**
+	 * @var WDGROIDeclaration
+	 */
+	private $roideclaration;
 	
 	public static $tool_name_quickbooks = 'quickbooks';
 	
 	public static $bill_type_crowdfunding_commission = 'crowdfunding-commission';
+	public static $bill_type_royalties_commission = 'royalties-commission';
 	
 	public static $item_types = array(
 		'crowdfunding' => array(
@@ -22,15 +28,24 @@ class WDGCampaignBill {
 		'selfservice' => array(
 			'quickbooks_id' => 16, // TODO
 			'label' => 'Formule Self-Service'
+		),
+		'royalties' => array(
+			'quickbooks_id' => 16, // TODO
+			'label' => 'Frais de gestion de royalties'
 		)
 	);
 	
 	public static $item_tax_20 = 31; // TODO
 
 
-	public function __construct( $campaign, $tool_name ) {
+	public function __construct( $campaign, $tool_name, $bill_type ) {
 		$this->campaign = $campaign;
 		$this->tool_name = $tool_name;
+		$this->bill_type = $bill_type;
+	}
+	
+	public function set_declaration( $roi_declaration ) {
+		$this->roideclaration = $roi_declaration;
 	}
 	
 	public function can_generate() {
@@ -51,6 +66,29 @@ class WDGCampaignBill {
 	}
 	
 	private function generate_quickbooks() {
+		$options = FALSE;
+		switch ( $this->bill_type ) {
+			case WDGCampaignBill::$bill_type_crowdfunding_commission:
+				$options = $this->get_quickbooks_crowdfunding_commission_options();
+				break;
+			case WDGCampaignBill::$bill_type_royalties_commission:
+				$options = $this->get_quickbooks_royalties_commission_options();
+				break;
+		}
+		
+		$params = array(
+			'tool'		=> WDGCampaignBill::$tool_name_quickbooks,
+			'object'	=> $this->bill_type,
+			'options'	=> json_encode( $options )
+		);
+		$result = WDGWPRESTLib::call_post_wdg( 'bill', $params );
+		return $result;
+	}
+	
+/*******************************************************************************
+ * FONCTIONS LIEES A LA COMMISSION SUR LA CAMPAGNE
+*******************************************************************************/
+	private function get_quickbooks_crowdfunding_commission_options() {
 		$line_description = $this->get_line_description();
 		$bill_description = $this->get_bill_description();
 		$platform_commission_amount = $this->campaign->platform_commission_amount();
@@ -65,12 +103,7 @@ class WDGCampaignBill {
 			'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
 			'billdescription'	=> $bill_description
 		);
-		$params = array(
-			'tool'		=> WDGCampaignBill::$tool_name_quickbooks,
-			'object'	=> WDGCampaignBill::$bill_type_crowdfunding_commission,
-			'options'	=> json_encode( $options )
-		);
-		$result = WDGWPRESTLib::call_post_wdg( 'bill', $params );
+		return $options;
 	}
 	
 	private function get_line_type_by_platform_commission() {
@@ -121,6 +154,65 @@ Montant reversé : ".$transfered_amount_formatted." €";
 Les chèques vous seront directement adressés.";
 		}
 		return $buffer; 
+	}
+	
+/*******************************************************************************
+ * FONCTIONS LIEES A LA COMMISSION SUR LES ROYALTIES
+*******************************************************************************/
+	private function get_quickbooks_royalties_commission_options() {
+		$line_description = $this->get_royalties_line_description();
+		$campaign_organization = $this->campaign->get_organization();
+		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
+		$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay() / 1.2;
+		$options = array(
+			'customerid'		=> $WDGOrganization->get_id_quickbooks(),
+			'customeremail'		=> $WDGOrganization->get_email(),
+			'itemtitle'			=> $this->get_royalties_line_title_id(),
+			'itemdescription'	=> $line_description,
+			'itemvalue'			=> $commission_to_pay_without_tax,
+			'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
+			'billdescription'	=> ''
+		);
+		return $options;
+	}
+	
+	public function get_royalties_line_title_id() {
+		return WDGCampaignBill::$item_types[ 'royalties' ][ 'quickbooks_id' ];
+	}
+	
+	public function get_royalties_line_description() {
+		$declaration_cost_to_organization = $this->campaign->get_costs_to_organization();
+		$this->roideclaration->get_month_list_str();
+		$declaration_amount = UIHelpers::format_number( $this->roideclaration->get_amount_with_commission() );
+		$declaration_date_object = new DateTime( $this->roideclaration->date_due );
+		$declaration_month_num = $declaration_date_object->format( 'n' );
+		$declaration_year = $declaration_date_object->format( 'Y' );
+		$declaration_trimester = 4;
+		switch ( $declaration_month_num ) {
+			case 1:
+				$declaration_year--;
+				break;
+			case 4:
+			case 5:
+			case 6:
+				$declaration_trimester = 1;
+				break;
+			case 7:
+			case 8:
+			case 9:
+				$declaration_trimester = 2;
+				break;
+			case 10:
+			case 11:
+			case 12:
+				$declaration_trimester = 3;
+				break;
+		}
+		
+		$buffer = "Frais de gestion royalties T".$declaration_trimester." ".$declaration_year."
+".$declaration_cost_to_organization." % TTC de la Redevance
+La Redevance de ce trimestre étant de ".$declaration_amount." euros";
+		return $buffer;
 	}
 	
 }
