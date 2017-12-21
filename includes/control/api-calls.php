@@ -402,9 +402,37 @@ class WDGAPICalls {
 			$buffer = "Problème de données d'utilisateur";
 			
 		} else {
-			$user_id = wp_create_user( $user_login, $user_password, $user_email );
-			wp_update_user( array ( 'ID' => $user_id, 'first_name' => $user_firstname ) ) ;
-			wp_update_user( array ( 'ID' => $user_id, 'last_name' => $user_lastname ) ) ;
+			
+			if ( !validate_username( $user_login ) ) {
+				$buffer =  __( "Les identifiants peuvent uniquement contenir des lettres sans caract&egrave;res sp&eacute;ciaux, des chiffres, ., -, ou @", 'yproject' );
+			}
+			if ( strlen( $user_login ) < 4 ) {
+				$buffer = __( "L'identifiant doit contenir au moins 4 caract&egrave;res", 'yproject' );
+			}
+			if ( false !== strpos( ' ' . $user_login, '_' ) ) {
+				$buffer = __( "Le caract&egrave;re _ ne peut pas &ecirc;tre utilis&eacute;.", 'yproject' );
+			}
+			$match = array();
+			preg_match( '/[0-9]*/', $user_login, $match );
+			if ( $match[0] == $user_login ) {
+				$buffer = __( "Les identifiants ne peuvent pas contenir uniquement des chiffres.", 'yproject' );
+			}
+			if ( username_exists( $user_login ) ) {
+				$buffer = __( "Cet identifiant est d&eacute;j&agrave; utilis&eacute;.", 'yproject' );
+			}
+			
+			if ( email_exists( $user_email ) ) {
+				$buffer = __( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' );
+			}
+			if ( !is_email( $user_email ) ) {
+				$buffer = __( "Cette adresse e-mail n'est pas valide.", 'yproject' );
+			}
+			
+			if ( empty( $buffer ) ) {
+				$user_id = wp_create_user( $user_login, $user_password, $user_email );
+				wp_update_user( array ( 'ID' => $user_id, 'first_name' => $user_firstname ) ) ;
+				wp_update_user( array ( 'ID' => $user_id, 'last_name' => $user_lastname ) ) ;
+			}
 		}
 		
 		
