@@ -640,13 +640,13 @@ class ATCF_Campaign {
 			$WDGOrganization->get_city(),
 			$this->end_date( 'd/m/Y' ),
 			$this->backers_count(),
-			$this->current_amount( FALSE ),
-			$this->platform_commission(),
-			$this->platform_commission_amount(),
-			( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
+			YPUIHelpers::display_number( $this->current_amount( FALSE ), TRUE ),
+			YPUIHelpers::display_number( $this->platform_commission() ),
+			YPUIHelpers::display_number( $this->platform_commission_amount(), TRUE ),
+			YPUIHelpers::display_number( $this->current_amount( FALSE ) - $this->platform_commission_amount(), TRUE ),
 			$start_datetime->format( 'd/m/Y' ),
 			$this->funding_duration(),
-			$this->roi_percent(),
+			YPUIHelpers::display_number( $this->roi_percent() ),
 			$fiscal_info
 		);
 		
