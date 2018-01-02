@@ -874,7 +874,8 @@ class WDGAjaxActions {
 			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
 		}
 		
-		$new_platform_commission = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_platform_commission')));
+		$new_platform_commission = sanitize_text_field( filter_input( INPUT_POST, 'new_platform_commission' ) );
+		$new_platform_commission = str_replace( ',', '.', $new_platform_commission );
 		if ( $new_platform_commission >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
 			$success['new_platform_commission'] = 1;
