@@ -162,6 +162,10 @@ class WDGUser {
 		return $this->wp_user->get('user_birthday_year'). '-' .$birthday_month. '-' .$birthday_day;
 	}
 	
+	public function get_description() {
+		return $this->wp_user->get( 'description' );
+	}
+	
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
 		$cache_id = 'WDGUser::' .$this->get_wpref(). '::get_projects_list';

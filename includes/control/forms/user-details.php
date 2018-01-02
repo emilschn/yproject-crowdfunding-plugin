@@ -6,10 +6,12 @@ class WDG_Form_User_Details extends WDG_Form {
 	public static $type_basics = 'basics';
 	public static $type_vote = 'vote';
 	public static $type_complete = 'complete';
+	public static $type_extended = 'extended';
 	
 	public static $field_group_hidden = 'user-details-hidden';
 	public static $field_group_basics = 'user-details-basics';
 	public static $field_group_complete = 'user-details-complete';
+	public static $field_group_extended = 'user-details-extended';
 	public static $field_group_vote = 'user-details-vote';
 	
 	private $user_id;
@@ -80,7 +82,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		);
 		
 		// $field_group_complete : Si on met le formulaire complet, on rajoute nationalité, ville et date de naissance, adresse, genre
-		if ( $this->user_details_type == WDG_Form_User_Details::$type_complete ) {
+		if ( $this->user_details_type == WDG_Form_User_Details::$type_complete || $this->user_details_type == WDG_Form_User_Details::$type_extended ) {
 		
 			$this->addField(
 				'select',
@@ -168,6 +170,26 @@ class WDG_Form_User_Details extends WDG_Form {
 		
 		}
 		
+		// $field_group_extended : A la fin du formulaire de vote, on rajoute le téléphone
+		if ( $this->user_details_type == WDG_Form_User_Details::$type_extended ) {
+			$this->addField(
+				'text',
+				'phone_number',
+				__( "T&eacute;l&eacute;phone", 'yproject' ),
+				WDG_Form_User_Details::$field_group_extended,
+				$WDGUser->get_phone_number()
+			);
+		
+			$this->addField(
+				'textarea',
+				'description',
+				__( "Description", 'yproject' ),
+				WDG_Form_User_Details::$field_group_extended,
+				$WDGUser->get_description()
+			);
+		
+		}
+		
 	}
 	
 	public function postForm() {
@@ -232,18 +254,26 @@ class WDG_Form_User_Details extends WDG_Form {
 				$country = $this->getInputText( 'country' );
 			}
 			
-			if ( $user_details_type == WDG_Form_User_Details::$type_vote ) {
+			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_vote ) {
 				$phone_number = $this->getInputText( 'phone_number' );
+			}
+			
+			if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
+				$description = $this->getInputText( 'description' );
 			}
 			
 			
 			if ( empty( $feedback_errors ) ) {
-				if ( $user_details_type == WDG_Form_User_Details::$type_complete ) {
+				if ( $user_details_type == WDG_Form_User_Details::$type_complete || $user_details_type == WDG_Form_User_Details::$type_extended ) {
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
 						$birthplace, $nationality, $address, $postal_code, $city, $country
 					);
+					if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
+						$WDGUser->save_meta( 'user_mobile_phone', $phone_number );
+						$WDGUser->save_meta( 'description', $description );
+					}
 					
 				} else {
 					$WDGUser->save_basics( $email, $firstname, $lastname );

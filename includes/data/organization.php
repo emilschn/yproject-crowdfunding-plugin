@@ -1016,10 +1016,12 @@ class WDGOrganization {
 		if ( !isset( $this->royalties_per_year[ $year ] ) ) {
 			$this->royalties_per_year[ $year ] = array();
 			$rois = $this->get_rois();
-			foreach ( $rois as $roi_item ) {
-				$roi_date_transfer = new DateTime( $roi_item->date_transfer );
-				if ( $roi_date_transfer->format('Y') == $year ) {
-					array_push( $this->royalties_per_year[ $year ], $roi_item );
+			if ( !empty( $rois ) ) {
+				foreach ( $rois as $roi_item ) {
+					$roi_date_transfer = new DateTime( $roi_item->date_transfer );
+					if ( $roi_date_transfer->format('Y') == $year ) {
+						array_push( $this->royalties_per_year[ $year ], $roi_item );
+					}
 				}
 			}
 		}
