@@ -428,7 +428,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					if ($campaign->funding_type() != 'fundingdonation') {
 						if ($amount > 1500) {
 							//Création du contrat à signer
-							$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+							$contract_id = WDGInvestment::create_contract( $payment_id, $download_id, $current_user->ID );
 							if ($contract_id != '') {
 								$contract_infos = signsquid_get_contract_infos( $contract_id );
 								NotificationsEmails::new_purchase_user_success( $payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
@@ -490,7 +490,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							$post_campaign = get_post($download_id);
 							$campaign = atcf_get_campaign($post_campaign);
 							if ($campaign->funding_type() != 'fundingdonation') {
-								$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
+								$contract_id = WDGInvestment::create_contract( $payment_id, $download_id, $current_user->ID );
 							}
 						}
 					}
@@ -605,234 +605,6 @@ function ypcf_get_max_value_to_invest() {
     return $buffer;
 }
 
-/**
- * Création du contrat à signer
- * @param type $payment_id
- * @param type $campaign_id
- * @param type $user_id
- */
-function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
-    $post = get_post($campaign_id);
-    $campaign = atcf_get_campaign( $post );
-    $user = get_userdata($user_id);
-    $contract_id = 0;
-    
-    ypcf_debug_log('ypcf_create_contract --- START');
-    if (isset($post, $campaign, $user)) {
-	//Nom du contrat = "NOM_PROJET - Investissement de INV€ de NOM_UTILISATEUR (MAIL_UTILISATEUR) - Le DATE"
-	$project_name = get_the_title( $campaign->ID );
-	$amount = edd_get_payment_amount($payment_id);
-	$user_name = $user->user_firstname . ' ' . $user->user_lastname . ' (' . $user->user_email . ')';
-	$date_payment = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_id ) ) );
-	$contract_name = $project_name .' - Investissement de ' .$amount. '€ de ' . $user_name . ' - Le ' . $date_payment;
-	
-	ypcf_debug_log('ypcf_create_contract --- CALL signsquid_create_contract');
-	$contract_id = signsquid_create_contract($contract_name);
-	if ($contract_id != '') {
-	    global $contract_errors;
-	    update_post_meta($payment_id, 'signsquid_contract_id', $contract_id);
-	    $mobile_phone = '';
-	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = ypcf_format_french_phonenumber($user->get('user_mobile_phone'));
-	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email, $mobile_phone)) $contract_errors = 'contract_addsignatories_failed';
-	    global $contract_filename;
-		$contract_filename = getNewPdfToSign($campaign_id, $payment_id, $user_id);
-	    if (!signsquid_add_file($contract_id, $contract_filename)) $contract_errors = 'contract_addfile_failed';
-	    if (!signsquid_send_invite($contract_id)) $contract_errors = 'contract_sendinvite_failed';
-	} else {
-	    global $contract_errors;
-	    $contract_errors = 'contract_creation_failed';
-	}
-    } else {
-	global $contract_errors;
-	$contract_errors = 'contract_creation_failed';
-    }
-    ypcf_debug_log('ypcf_create_contract --- $contract_errors : ' . $contract_errors);
-    ypcf_debug_log('ypcf_create_contract --- END');
-    
-    return $contract_id;
-}
-
-/**
- * Test pour vérifier que le numéro de téléphone est conforme
- * @param type $mobile_phone
- */
-function ypcf_check_user_phone_format($mobile_phone) {
-    $buffer = false;
-    
-    //Numéro de téléphone type que doit renvoyer ypcf_format_french_phonenumber
-    $classic_phone_number = '+33612345678';
-    if ($mobile_phone != '' && strlen(ypcf_format_french_phonenumber($mobile_phone)) == strlen($classic_phone_number)) {
-	$buffer = true;
-    }
-    
-    return $buffer;
-}
-
-/**
- * Retourne le bon numéro de téléphone
- * @param type $phoneNumber
- * @return type
- */
-function ypcf_format_french_phonenumber($phoneNumber){ 
-    //Supprimer tous les caractères qui ne sont pas des chiffres 
-    $phoneNumber = preg_replace('/[^0-9]+/', '', $phoneNumber); 
-    //Garder les 9 derniers chiffres 
-    $phoneNumber = substr($phoneNumber, -9); 
-    //On ajoute +33 
-    $motif = '+33\1\2\3\4\5';
-    $phoneNumber = preg_replace('/(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/', $motif, $phoneNumber); 
-    return $phoneNumber; 
-}
-
-
-function ypcf_fake_sharing_display($text = '', $echo = false ) {
-	global $post, $wp_current_filter;
-
-	if ( empty( $post ) )
-//		return $text;
-
-	if ( is_preview() ) {
-//		return $text;
-	}
-
-	// Don't output flair on excerpts
-	if ( in_array( 'get_the_excerpt', (array) $wp_current_filter ) ) {
-//		return $text;
-	}
-
-	// Don't allow flair to be added to the_content more than once (prevent infinite loops)
-	$done = false;
-	foreach ( $wp_current_filter as $filter ) {
-		if ( 'the_content' == $filter ) {
-			if ( $done )
-				return $text;
-			else
-				$done = true;
-		}
-	}
-
-	// check whether we are viewing the front page and whether the front page option is checked
-	$options = get_option( 'sharing-options' );
-	$display_options = $options['global']['show'];
-
-	if ( is_front_page() && ( is_array( $display_options ) && ! in_array( 'index', $display_options ) ) )
-//		return $text;
-
-	if ( is_attachment() && in_array( 'the_excerpt', (array) $wp_current_filter ) ) {
-		// Many themes run the_excerpt() conditionally on an attachment page, then run the_content().
-		// We only want to output the sharing buttons once.  Let's stick with the_content().
-//		return $text;
-	}
-
-	$sharer = new Sharing_Service();
-	$global = $sharer->get_global_options();
-
-	/*$show = false;
-	if ( !is_feed() ) {
-		if ( is_singular() && in_array( get_post_type(), $global['show'] ) ) {
-			$show = true;
-		} elseif ( in_array( 'index', $global['show'] ) && ( is_home() || is_archive() || is_search() ) ) {
-			$show = true;
-		}
-	}
-
-	// Pass through a filter for final say so
-	$show = apply_filters( 'sharing_show', $show, $post );*/
-	$show = true;
-
-	// Disabled for this post?
-	$switched_status = get_post_meta( $post->ID, 'sharing_disabled', false );
-
-	if ( !empty( $switched_status ) )
-		$show = false;
-
-	// Allow to be used on P2 ajax requests for latest posts.
-	if ( defined( 'DOING_AJAX' ) && DOING_AJAX && isset( $_REQUEST['action'] ) && 'get_latest_posts' == $_REQUEST['action'] )
-		$show = true;
-
-	$sharing_content = '';
-
-	if ( $show ) {
-		$enabled = apply_filters( 'sharing_enabled', $sharer->get_blog_services() );
-
-		if ( count( $enabled['all'] ) > 0 ) {
-			global $post;
-
-			$dir = get_option( 'text_direction' );
-
-			// Wrapper
-			$sharing_content .= '<div class="sharedaddy sd-sharing-enabled"><div class="robots-nocontent sd-block sd-social sd-social-' . $global['button_style'] . ' sd-sharing">';
-			if ( $global['sharing_label'] != '' )
-				$sharing_content .= '<h3 class="sd-title">' . $global['sharing_label'] . '</h3>';
-			$sharing_content .= '<div class="sd-content"><ul>';
-
-			// Visible items
-			$visible = '';
-			foreach ( $enabled['visible'] as $id => $service ) {
-				// Individual HTML for sharing service
-				$visible .= '<li class="share-' . $service->get_class() . '">' . $service->get_display( $post ) . '</li>';
-			}
-
-			$parts = array();
-			$parts[] = $visible;
-			if ( count( $enabled['hidden'] ) > 0 ) {
-				if ( count( $enabled['visible'] ) > 0 )
-					$expand = __( 'More', 'jetpack' );
-				else
-					$expand = __( 'Share', 'jetpack' );
-				$parts[] = '<li><a href="#" class="sharing-anchor sd-button share-more"><span>'.$expand.'</span></a></li>';
-			}
-
-			if ( $dir == 'rtl' )
-				$parts = array_reverse( $parts );
-
-			$sharing_content .= implode( '', $parts );
-			$sharing_content .= '<li class="share-end"></li></ul>';
-
-			if ( count( $enabled['hidden'] ) > 0 ) {
-				$sharing_content .= '<div class="sharing-hidden"><div class="inner" style="display: none;';
-
-				if ( count( $enabled['hidden'] ) == 1 )
-					$sharing_content .= 'width:150px;';
-
-				$sharing_content .= '">';
-
-				if ( count( $enabled['hidden'] ) == 1 )
-					$sharing_content .= '<ul style="background-image:none;">';
-				else
-					$sharing_content .= '<ul>';
-
-				$count = 1;
-				foreach ( $enabled['hidden'] as $id => $service ) {
-					// Individual HTML for sharing service
-					$sharing_content .= '<li class="share-'.$service->get_class().'">';
-					$sharing_content .= $service->get_display( $post );
-					$sharing_content .= '</li>';
-
-					if ( ( $count % 2 ) == 0 )
-						$sharing_content .= '<li class="share-end"></li>';
-
-					$count ++;
-				}
-
-				// End of wrapper
-				$sharing_content .= '<li class="share-end"></li></ul></div></div>';
-			}
-
-			$sharing_content .= '</div></div></div>';
-
-			// Register our JS
-//			wp_register_script( 'sharing-js', plugin_dir_url( __FILE__ ).'sharing.js', array( 'jquery' ), '20121205' );
-			add_action( 'wp_footer', 'sharing_add_footer' );
-		}
-	}
-
-	if ( $echo )
-		echo $text.$sharing_content;
-	else
-		return $text.$sharing_content;
-}
-
 function ypcf_get_current_step() {
     ypcf_session_start();
     $buffer = 1;
@@ -925,20 +697,6 @@ function ypcf_get_current_amount() {
     if ( $current_campaign ) {
 		//Récupérer la valeur maximale possible : la valeur totale du projet moins le montant déjà atteint
 		$buffer = $current_campaign->current_amount(false);
-    }
-    return $buffer;
-}
-
-/**
- * retourne le nombre d'investisseurs
- * @return type
- */
-function ypcf_get_backers() {
-    $buffer = 0;
-	$current_campaign = atcf_get_current_campaign();
-    if ( $current_campaign ) {
-		//Récupérer la valeur maximale possible : la valeur totale du projet moins le montant déjà atteint
-		$buffer = $current_campaign->backers_count();
     }
     return $buffer;
 }

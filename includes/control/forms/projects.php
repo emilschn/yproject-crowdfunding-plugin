@@ -76,7 +76,7 @@ class WDGFormProjects {
 			$amount = edd_get_payment_amount( $approve_payment_id );
 			$campaign = new ATCF_Campaign( $campaign_id );
 			if ( $amount > 1500 ) {
-				$contract_id = ypcf_create_contract( $approve_payment_id, $campaign_id, $user_info['id'] );
+				$contract_id = WDGInvestment::create_contract( $approve_payment_id, $campaign_id, $user_info['id'] );
 				if ($contract_id != '') {
 					$contract_infos = signsquid_get_contract_infos( $contract_id );
 					NotificationsEmails::new_purchase_user_success( $approve_payment_id, $contract_infos->{'signatories'}[0]->{'code'}, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );

@@ -807,6 +807,15 @@ class WDGInvestment {
 	}
 	
 /******************************************************************************/
+// CONTRACT
+/******************************************************************************/
+	public static function create_contract( $payment_id, $campaign_id, $user_id ) {
+		$contract_filename = getNewPdfToSign( $campaign_id, $payment_id, $user_id );
+		$WDGUser = new WDGUser( $user_id );
+		WDGInvestmentContract::create_contract( $contract_filename, $WDGUser );
+	}
+	
+/******************************************************************************/
 // REFUND
 /******************************************************************************/
 	public function refund() {
