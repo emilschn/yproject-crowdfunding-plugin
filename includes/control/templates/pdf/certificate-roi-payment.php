@@ -40,7 +40,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 			<tr>
 				<td width="400">
 					WEDOGOOD.co<br />
-					Changeons le monde par la finance<br />
+					Changeons le monde par la finance !<br>
 					<br />
 					www.wedogood.co<br />
 					bonjour@wedogood.co

@@ -893,20 +893,20 @@ class WDGAjaxActions {
 		}
 
 		//Update roi_percent_estimated duration
-		$new_roi_percent_estimated = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent_estimated'))),2);
-		if($new_roi_percent_estimated>=0){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated);
-			$success['new_roi_percent_estimated']=1;
+		$new_roi_percent_estimated = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent_estimated' ) ) );
+		if ( $new_roi_percent_estimated >= 0 ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated );
+			$success['new_roi_percent_estimated'] = 1;
 		} else {
-			$errors['new_roi_percent_estimated']="Le pourcentage de CA reversé doit être positif";
+			$errors['new_roi_percent_estimated'] = "Le pourcentage de CA reversé doit être positif";
 		}
 		
-		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent'))),2);
-		if($new_roi_percent>=0){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent, $new_roi_percent);
-			$success['new_roi_percent']=1;
+		$new_roi_percent = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent' ) ) );
+		if( $new_roi_percent >= 0 ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent, $new_roi_percent );
+			$success[ 'new_roi_percent' ] = 1;
 		} else {
-			$errors['new_roi_percent']="Le pourcentage de CA reversé doit être positif";
+			$errors[ 'new_roi_percent' ] ="Le pourcentage de CA reversé doit être positif";
 		}
 
 		//Update contract_start_date
@@ -962,7 +962,7 @@ class WDGAjaxActions {
 				$errors['new_first_payment']= "La date est invalide";
 			} else {
 				try {
-					$new_first_payment_date = new DateTime(filter_input(INPUT_POST, 'new_first_payment'));
+					$new_first_payment_date = DateTime::createFromFormat( 'd/m/Y', filter_input( INPUT_POST, 'new_first_payment' ) );
 					update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
 					$success['new_first_payment'] = 1;
 				} catch (Exception $e) {
