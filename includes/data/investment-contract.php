@@ -18,6 +18,47 @@ class WDGInvestmentContract {
 		$this->yousign_contract_id = get_post_meta( $payment_id, 'yousign_contract_id', true );
 	}
 	
+	public static $status_code_agreed = 'AGREED';
+	/**
+	 * Retourne une chaine qui indique le code de statut du contrat
+	 * @return string or boolean
+	 */
+	public function get_status_code() {
+		$buffer = FALSE;
+		if ( $this->is_signsquid_contract() ) {
+			$buffer = WDGInvestmentContract::$status_code_agreed;
+			
+		} elseif ( $this->is_yousign_contract() ) {
+			if ( $this->get_yousign_contract_status() ) {
+				$buffer = WDGInvestmentContract::$status_code_agreed;
+				
+			}
+		}
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le statut du contrat (signé ou non) en texte lisible
+	 */
+	public function get_status_str() {
+		$buffer = __( "Investissement valid&eacute;", 'yproject' );
+		if ( $this->is_signsquid_contract() ) {
+			$buffer = __( "Contrat sign&eacute;", 'yproject' );
+			
+		} elseif ( $this->is_yousign_contract() ) {
+			if ( $this->get_yousign_contract_status() ) {
+				$buffer = __( "Contrat sign&eacute;", 'yproject' );
+				
+			} else {
+				$buffer = __( "En attente de signature", 'yproject' );
+				
+			}
+		}
+		
+		return $buffer;
+	}
+	
 	/**
 	 * Retourne l'identifiant du contrat sur Signsquid
 	 */
@@ -38,6 +79,34 @@ class WDGInvestmentContract {
 	
 	public function is_yousign_contract() {
 		return ( !empty( $this->yousign_contract_id ) );
+	}
+	
+	public function get_yousign_contract_status() {
+		$buffer = FALSE;
+		
+		$client = WDGInvestmentContract::yousign_instance();
+		$result = $client->getCosignInfoFromIdDemand( $this->get_yousign_contract_id() );
+		$yousign_contract_status = $result->status;
+		switch ( $yousign_contract_status ) {
+			// when the process is still waiting for one signature
+			case 'COSIGNATURE_EVENT_REQUEST_PENDING':
+				break;
+			// when all signers have signed
+			case 'COSIGNATURE_EVENT_OK':
+				$buffer = TRUE;
+				break;
+			// when someone is signing a document
+			case 'COSIGNATURE_EVENT_PROCESSING':
+				break;
+			// if the process has been cancelled
+			case 'COSIGNATURE_EVENT_CANCELLED':
+				break;
+			// if the signature process is finished and contains at least one error
+			case 'COSIGNATURE_EVENT_PARTIAL_ERROR': 
+				break;
+		}
+		
+		return $buffer;
 	}
 	
 	

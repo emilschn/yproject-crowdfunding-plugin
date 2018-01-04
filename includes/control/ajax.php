@@ -1566,7 +1566,7 @@ class WDGAjaxActions {
 				$more_invest["invest_state"] = $payment_state;
 				$more_invest["invest_amount"] = $item_invest['amount'];
 				$more_invest["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
-				$more_invest["invest_sign"] = $item_invest['signsquid_status_text'];
+				$more_invest["invest_sign"] = $item_invest['contract_status_text'];
 				$more_invest["invest_id"] = $item_invest['ID'];
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 				
@@ -1578,7 +1578,7 @@ class WDGAjaxActions {
 				$array_contacts[$u_id]["invest_state"] = $payment_state;
 				$array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
 				$array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
-				$array_contacts[$u_id]["invest_sign"] = $item_invest['signsquid_status_text'];
+				$array_contacts[$u_id]["invest_sign"] = $item_invest['contract_status_text'];
 				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
 			}
         }

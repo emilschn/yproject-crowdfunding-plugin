@@ -480,15 +480,9 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				} else if ($buffer == 'publish') {
 					$amount = edd_get_payment_amount($payment_id);
 					if ( $amount > WDGInvestmentContract::$signature_minimum_amount ) {
-						$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
-						if (!isset($contract_id) || empty($contract_id)) {
+						$investment_contract = new WDGInvestmentContract( $payment_id );
+						if ( !$investment_contract->is_signsquid_contract() && !$investment_contract->is_yousign_contract() ) {
 							$current_user = get_user_by('id', $payment_post->post_author);
-							$downloads = edd_get_payment_meta_downloads($payment_id); 
-							$download_id = '';
-							if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
-							else $download_id = $downloads[0];
-							$post_campaign = get_post($download_id);
-							$campaign = atcf_get_campaign($post_campaign);
 							if ($campaign->funding_type() != 'fundingdonation') {
 								$contract_id = WDGInvestment::create_contract( $payment_id, $download_id, $current_user->ID );
 							}
@@ -524,50 +518,6 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 function ypcf_get_updated_transfer_status($transfer_post) {
 	$transfer_post_obj = get_post($transfer_post);
 	return $transfer_post_obj->post_status;
-}
-
-/**
- * Renvoie l'identifiant de contrat à partir d'un investissement donné
- * @param type $payment_id
- */
-function ypcf_get_signsquidcontractid_from_invest($payment_id) {
-    $contract_id = '';
-    if (isset($payment_id) && $payment_id != '') {
-	$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', true);
-    }
-    return $contract_id;
-}
-
-/**
- * Analyse les infos de contrat retournées par signsquid
- * @param type $contract_infos
- */
-function ypcf_get_signsquidstatus_from_infos($contract_infos, $amount) {
-    if ( $amount <= WDGInvestmentContract::$signature_minimum_amount ) {
-	    $buffer = 'Investissement valid&eacute;';
-    } else {
-	    $buffer = '- Pas de contrat -';
-	    if ($contract_infos != '' && is_object($contract_infos)) {
-		switch($contract_infos->{'status'}) {
-		    case 'NotPublished':
-			$buffer = 'Contrat non-cr&eacute;&eacute;';
-			break;
-		    case 'WaitingForSignatoryAction':
-			$buffer = 'En attente de signature';
-			break;
-		    case 'Refused':
-			$buffer = 'Contrat refus&eacute;';
-			break;
-		    case 'Agreed':
-			$buffer = 'Contrat sign&eacute;';
-			break;
-		    case 'NewVersionAvailable':
-			$buffer = 'Contrat mis &agrave; jour';
-			break;
-		}
-	    }
-    }
-    return $buffer;
 }
 
 /**

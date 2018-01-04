@@ -1908,9 +1908,9 @@ class ATCF_Campaign {
 
 					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 
-					$signsquid_contract = new SignsquidContract($payment->ID);
-					$signsquid_status = $signsquid_contract->get_status_code();
-					$signsquid_status_text = $signsquid_contract->get_status_str();
+					$investment_contract = new WDGInvestmentContract($payment->ID);
+					$investment_contract_status = $investment_contract->get_status_code();
+					$investment_contract_status_text = $investment_contract->get_status_str();
 					
 					$mangopay_contribution = FALSE;
 					$lemonway_contribution = FALSE;
@@ -1939,8 +1939,8 @@ class ATCF_Campaign {
 							'status'		=> $payment_status,
 							'mangopay_contribution' => $mangopay_contribution,
 							'lemonway_contribution' => $lemonway_contribution,
-							'signsquid_status'	=> $signsquid_status,
-							'signsquid_status_text' => $signsquid_status_text
+							'contract_status'		=> $investment_contract_status,
+							'contract_status_text'	=> $investment_contract_status_text
 						);
 					}
 				}
