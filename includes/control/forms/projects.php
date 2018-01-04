@@ -75,7 +75,7 @@ class WDGFormProjects {
 			$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
 			$amount = edd_get_payment_amount( $approve_payment_id );
 			$campaign = new ATCF_Campaign( $campaign_id );
-			if ( $amount > 1500 ) {
+			if ( $amount > WDGInvestmentContract::$signature_minimum_amount ) {
 				$contract_id = WDGInvestment::create_contract( $approve_payment_id, $campaign_id, $user_info['id'] );
 				if ($contract_id != '') {
 					$contract_infos = signsquid_get_contract_infos( $contract_id );

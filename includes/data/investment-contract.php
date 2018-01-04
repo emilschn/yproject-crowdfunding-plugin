@@ -9,6 +9,8 @@ class WDGInvestmentContract {
 	private $signsquid_contract_id;
 	private $yousign_contract_id;
 	
+	public static $signature_minimum_amount = 1500;
+	
 	public function __construct( $payment_id ) {
 		$this->payment_id = $payment_id;
 		$this->payment_amount = edd_get_payment_amount( $this->payment_id );

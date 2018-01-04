@@ -143,7 +143,7 @@ function ypcf_check_invest_redirections() {
 						&& (
 							isset($_POST['confirm_power']) 
 							&& strtolower($_POST['confirm_power']) == 'bon pour souscription'
-							&& ($amount > 1500 || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))
+							&& ($amount > WDGInvestmentContract::$signature_minimum_amount || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))
 						)
 					)
 					|| ($campaign->funding_type() == 'fundingdonation')
@@ -426,7 +426,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					$amount = edd_get_payment_amount($payment_id);
 					$current_user = get_user_by('id', $payment_post->post_author);
 					if ($campaign->funding_type() != 'fundingdonation') {
-						if ($amount > 1500) {
+						if ( $amount > WDGInvestmentContract::$signature_minimum_amount ) {
 							//Création du contrat à signer
 							$contract_id = WDGInvestment::create_contract( $payment_id, $download_id, $current_user->ID );
 							if ($contract_id != '') {
@@ -479,7 +479,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				//Le paiement est validé, mais aucun contrat n'existe
 				} else if ($buffer == 'publish') {
 					$amount = edd_get_payment_amount($payment_id);
-					if ($amount > 1500) {
+					if ( $amount > WDGInvestmentContract::$signature_minimum_amount ) {
 						$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
 						if (!isset($contract_id) || empty($contract_id)) {
 							$current_user = get_user_by('id', $payment_post->post_author);
@@ -543,7 +543,7 @@ function ypcf_get_signsquidcontractid_from_invest($payment_id) {
  * @param type $contract_infos
  */
 function ypcf_get_signsquidstatus_from_infos($contract_infos, $amount) {
-    if ($amount <= 1500) {
+    if ( $amount <= WDGInvestmentContract::$signature_minimum_amount ) {
 	    $buffer = 'Investissement valid&eacute;';
     } else {
 	    $buffer = '- Pas de contrat -';

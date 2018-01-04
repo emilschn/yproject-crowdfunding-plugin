@@ -656,7 +656,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     
 	
 	if ( !empty( $payment_data ) ) {
-		if ($payment_data["amount"] <= 1500) {
+		if ( $payment_data["amount"] <= WDGInvestmentContract::$signature_minimum_amount ) {
 			$buffer .= '<div style="margin-top: 20px; border: 1px solid green; color: green;">';
 			if ($lang == 'en_US') {
 				$buffer .= 'Investment done on '.$month.' '.$day.' '.$year.', at '.$hour.':'.$minute.'<br />';

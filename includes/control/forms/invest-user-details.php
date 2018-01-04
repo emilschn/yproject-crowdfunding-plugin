@@ -13,11 +13,13 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 	
 	private $campaign_id;
 	private $user_id;
+	private $invest_amount;
 	
-	public function __construct( $campaign_id = FALSE, $user_id = FALSE ) {
+	public function __construct( $campaign_id = FALSE, $user_id = FALSE, $invest_amount = FALSE ) {
 		parent::__construct( WDG_Form_Invest_User_Details::$name );
 		$this->campaign_id = $campaign_id;
 		$this->user_id = $user_id;
+		$this->invest_amount = $invest_amount;
 		$this->initFields();
 	}
 	
@@ -156,13 +158,24 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$WDGUser->get_country()
 		);
 
-		$this->addField(
-			'text',
-			'phone_number',
-			__( "Num&eacute;ro de t&eacute;l&eacute;phone", 'yproject' ),
-			WDG_Form_Invest_User_Details::$field_group_user_info,
-			$WDGUser->get_phone_number()
-		);
+		if ( !empty( $this->invest_amount ) && $this->invest_amount > WDGInvestmentContract::$signature_minimum_amount ) {
+			$this->addField(
+				'text',
+				'phone_number',
+				__( "Num&eacute;ro de t&eacute;l&eacute;phone mobile *", 'yproject' ),
+				WDG_Form_Invest_User_Details::$field_group_user_info,
+				$WDGUser->get_phone_number()
+			);
+			
+		} else {
+			$this->addField(
+				'text',
+				'phone_number',
+				__( "Num&eacute;ro de t&eacute;l&eacute;phone", 'yproject' ),
+				WDG_Form_Invest_User_Details::$field_group_user_info,
+				$WDGUser->get_phone_number()
+			);
+		}
 		
 		//**********************************************************************
 		// Validation des informations : $field_group_confirm
@@ -446,6 +459,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 					$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
 					$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number
 				);
+			
+				if ( !empty( $this->invest_amount ) && $this->invest_amount > WDGInvestmentContract::$signature_minimum_amount && empty( $phone_number ) ) {
+					$this->addPostError(
+						'phone_number',
+						__( "Afin de signer le contrat électroniquement, notre prestataire de signature &eacute;lectronique aura besoin de votre num&eacute;ro de t&eacute;l&eacute;phone mobile.", 'yproject' ),
+						'phone_number'
+					);
+				}
 				
 			}
 			
