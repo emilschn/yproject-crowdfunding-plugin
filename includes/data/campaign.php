@@ -630,6 +630,13 @@ class ATCF_Campaign {
 		$campaign_organization = $this->get_organization();
 		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
 		
+		$project_investors_list = array();
+		$investments_list = $this->payments_data( TRUE );
+		foreach ( $investments_list as $investment_item ) {
+			$user_data = get_userdata($investment_item['user']);
+			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'] ) );
+		}
+		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get(
 			$WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(),
@@ -640,14 +647,15 @@ class ATCF_Campaign {
 			$WDGOrganization->get_city(),
 			$this->end_date( 'd/m/Y' ),
 			$this->backers_count(),
-			UIHelpers::format_number( $this->current_amount( FALSE ), TRUE ),
+			UIHelpers::format_number( $this->current_amount( FALSE ) ),
 			UIHelpers::format_number( $this->platform_commission() ),
-			UIHelpers::format_number( $this->platform_commission_amount(), TRUE ),
-			UIHelpers::format_number( $this->current_amount( FALSE ) - $this->platform_commission_amount(), TRUE ),
+			UIHelpers::format_number( $this->platform_commission_amount() ),
+			UIHelpers::format_number( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
 			$start_datetime->format( 'd/m/Y' ),
 			$this->funding_duration(),
-			UIHelpers::format_number( $this->roi_percent() ),
-			$fiscal_info
+			UIHelpers::format_number( $this->roi_percent(), 10 ),
+			$fiscal_info,
+			$project_investors_list
 		);
 		
 		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
