@@ -874,7 +874,8 @@ class WDGAjaxActions {
 			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
 		}
 		
-		$new_platform_commission = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_platform_commission')));
+		$new_platform_commission = sanitize_text_field( filter_input( INPUT_POST, 'new_platform_commission' ) );
+		$new_platform_commission = str_replace( ',', '.', $new_platform_commission );
 		if ( $new_platform_commission >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
 			$success['new_platform_commission'] = 1;
@@ -892,20 +893,20 @@ class WDGAjaxActions {
 		}
 
 		//Update roi_percent_estimated duration
-		$new_roi_percent_estimated = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent_estimated'))),2);
-		if($new_roi_percent_estimated>=0){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated);
-			$success['new_roi_percent_estimated']=1;
+		$new_roi_percent_estimated = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent_estimated' ) ) );
+		if ( $new_roi_percent_estimated >= 0 ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated );
+			$success['new_roi_percent_estimated'] = 1;
 		} else {
-			$errors['new_roi_percent_estimated']="Le pourcentage de CA reversé doit être positif";
+			$errors['new_roi_percent_estimated'] = "Le pourcentage de CA reversé doit être positif";
 		}
 		
-		$new_roi_percent = round(floatval(sanitize_text_field(filter_input(INPUT_POST, 'new_roi_percent'))),2);
-		if($new_roi_percent>=0){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_roi_percent, $new_roi_percent);
-			$success['new_roi_percent']=1;
+		$new_roi_percent = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent' ) ) );
+		if( $new_roi_percent >= 0 ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent, $new_roi_percent );
+			$success[ 'new_roi_percent' ] = 1;
 		} else {
-			$errors['new_roi_percent']="Le pourcentage de CA reversé doit être positif";
+			$errors[ 'new_roi_percent' ] ="Le pourcentage de CA reversé doit être positif";
 		}
 
 		//Update contract_start_date
@@ -961,7 +962,7 @@ class WDGAjaxActions {
 				$errors['new_first_payment']= "La date est invalide";
 			} else {
 				try {
-					$new_first_payment_date = new DateTime(filter_input(INPUT_POST, 'new_first_payment'));
+					$new_first_payment_date = DateTime::createFromFormat( 'd/m/Y', filter_input( INPUT_POST, 'new_first_payment' ) );
 					update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
 					$success['new_first_payment'] = 1;
 				} catch (Exception $e) {
@@ -1566,7 +1567,7 @@ class WDGAjaxActions {
 				$more_invest["invest_state"] = $payment_state;
 				$more_invest["invest_amount"] = $item_invest['amount'];
 				$more_invest["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
-				$more_invest["invest_sign"] = $item_invest['signsquid_status_text'];
+				$more_invest["invest_sign"] = $item_invest['contract_status_text'];
 				$more_invest["invest_id"] = $item_invest['ID'];
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 				
@@ -1578,7 +1579,7 @@ class WDGAjaxActions {
 				$array_contacts[$u_id]["invest_state"] = $payment_state;
 				$array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
 				$array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
-				$array_contacts[$u_id]["invest_sign"] = $item_invest['signsquid_status_text'];
+				$array_contacts[$u_id]["invest_sign"] = $item_invest['contract_status_text'];
 				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
 			}
         }

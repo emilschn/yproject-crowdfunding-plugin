@@ -152,8 +152,26 @@ class WDGUser {
 		return $buffer;
 	}
 	
-	public function get_phone_number() {
-		return $this->wp_user->get('user_mobile_phone');
+	public function get_phone_number( $formatted = FALSE ) {
+		$buffer = $this->wp_user->get('user_mobile_phone');
+
+		if ( $formatted ) {
+			// Supprime tous les caractères qui ne sont pas des chiffres 
+			$buffer = preg_replace( '/[^0-9]+/', '', $buffer ); 
+			// Garde les 9 derniers chiffres 
+			$buffer = substr( $buffer, -9 ); 
+			// Ajoute +33 
+			$motif = '+33\1\2\3\4\5';
+			$buffer = preg_replace('/(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/', $motif, $buffer); 
+		}
+
+		return $buffer;
+	}
+	
+	public function has_phone_number_correct() {
+		$user_phone_number = $this->get_phone_number( TRUE );
+		$classic_phone_number = '+33612345678';
+		return ( !empty( $user_phone_number ) && strlen( $user_phone_number ) == strlen( $classic_phone_number ) );
 	}
 	
 	public function get_birthday_date() {

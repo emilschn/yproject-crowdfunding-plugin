@@ -366,10 +366,10 @@ function ypcf_printable_value($val) {
 				<td><?php echo $item['amount']; ?>&euro;</td>
 				<td <?php if ($edd_payment_status == "Echec") echo 'style="background-color: #EF876D"'; ?>><?php echo $edd_payment_status; ?></td>
 				<td <?php if ($is_succeeded == 'Oui') echo 'style="background-color: #EF876D"'; ?>><?php echo $is_succeeded; ?></td>
-				<td <?php if ($item['signsquid_status'] != 'Agreed') echo 'style="background-color: #EF876D"'; ?>><?php echo $item['signsquid_status_text']; ?></td>
+				<td <?php if ($item['contract_status'] != WDGInvestmentContract::$status_code_agreed) echo 'style="background-color: #EF876D"'; ?>><?php echo $item['contract_status_text']; ?></td>
 			</tr>
 			<?php
-			if ($payment_status == 'publish' && $item['signsquid_status'] == 'Agreed' && $is_succeeded == 'Oui') $csv_buffer .= ypcf_csv_investors_add_line($item['user'], $item['amount']);
+			if ($payment_status == 'publish' && $item['contract_status'] == WDGInvestmentContract::$status_code_agreed && $is_succeeded == 'Oui') $csv_buffer .= ypcf_csv_investors_add_line($item['user'], $item['amount']);
 	    }
 	}
 	
@@ -450,9 +450,9 @@ function get_payments_data($campaign_id = '') {
 
 		$user_id = isset( $user_info['id'] ) && $user_info['id'] != -1 ? $user_info['id'] : $user_info['email'];
 
-		$signsquid_contract = new SignsquidContract($payment->ID);
-		$signsquid_status = $signsquid_contract->get_status_code();
-		$signsquid_status_text = $signsquid_contract->get_status_str();
+		$investment_contract = new WDGInvestmentContract($payment->ID);
+		$investment_contract_status = $investment_contract->get_status_code();
+		$investment_contract_status_text = $investment_contract->get_status_str();
 
 
 		$payments_data[] = array(
@@ -463,8 +463,8 @@ function get_payments_data($campaign_id = '') {
 		    'date' 	=> $payment->post_date,
 		    'user' 	=> $user_id,
 		    'status' 	=> $payment->post_status,
-		    'signsquid_status' => $signsquid_status,
-		    'signsquid_status_text' => $signsquid_status_text
+		    'contract_status'		=> $investment_contract_status,
+		    'contract_status_text'	=> $investment_contract_status_text
 		);
 	    }
 	}

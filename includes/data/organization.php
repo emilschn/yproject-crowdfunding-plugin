@@ -960,7 +960,7 @@ class WDGOrganization {
 		$wallet_details = $this->get_wallet_details();
 		$buffer = array();
 		if ( isset( $wallet_details->SDDMANDATES ) && isset( $wallet_details->SDDMANDATES->SDDMANDATE ) ) {
-			foreach ( $wallet_details->SDDMANDATES as $mandate_temp ) {
+			foreach ( $wallet_details->SDDMANDATES->SDDMANDATE as $mandate_temp ) {
 				$return_item = array(
 					"ID"	=> $mandate_temp->ID,
 					"S"		=> $mandate_temp->S,

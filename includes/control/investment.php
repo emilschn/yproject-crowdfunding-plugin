@@ -57,6 +57,8 @@ class WDGInvestment {
 			ypcf_session_start();
 			if ( isset( $_SESSION[ 'investment_token' ] ) ) {
 				self::$_current = new self( FALSE, $_SESSION[ 'investment_token' ] );
+			} elseif ( isset( $_SESSION[ 'investment_id' ] ) ) {
+				self::$_current = new self( $_SESSION[ 'investment_id' ] );
 			} else {
 				self::$_current = new self();
 			}
@@ -338,7 +340,8 @@ class WDGInvestment {
 			'new_orga_just_created',
 			'error_invest',
 			'redirect_current_selected_reward',
-			'investment_token'
+			'investment_token',
+			'investment_id'
 		);
 		foreach ( $session_vars_list as $session_var_key ) {
 			if ( isset( $_SESSION[ $session_var_key ] ) ) {
@@ -523,7 +526,9 @@ class WDGInvestment {
 		}
 		
 		// GESTION DU PAIEMENT COTE EDD
-		WDGInvestment::unset_session();
+		if ( !$this->needs_signature() ) {
+			WDGInvestment::unset_session();
+		}
 
 		//Création d'un paiement pour edd
 		$user_info = array(
@@ -563,6 +568,7 @@ class WDGInvestment {
 			'status'		=> 'pending'
 		);
 		$payment_id = edd_insert_payment( $payment_data );
+		$_SESSION[ 'investment_id' ] = $payment_id;
 		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
@@ -798,12 +804,38 @@ class WDGInvestment {
 			$this->set_status( WDGInvestment::$status_waiting_wire );
 			$this->post_token_notification();
 			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
-			WDGInvestment::unset_session();
+			if ( !$this->needs_signature() ) {
+				WDGInvestment::unset_session();
+			}
 		}
 
 		edd_empty_cart();
 		
 		return $buffer;
+	}
+	
+/******************************************************************************/
+// SIGNATURE
+/******************************************************************************/
+	public function create_signature() {
+		$payment_id = $this->get_id();
+		$contract = new WDGInvestmentContract( $payment_id );
+		if ( !$contract->exists() ) {
+			$campaign_id = $this->get_campaign()->ID;
+			$user_id = $this->get_saved_user_id();
+			$contract_filename = getNewPdfToSign( $campaign_id, $payment_id, $user_id );
+			$WDGUser = new WDGUser( $user_id );
+			WDGInvestmentContract::create( $payment_id, $contract_filename, $WDGUser );
+		}
+	}
+	
+	public function needs_signature() {
+		return ( $this->get_saved_amount() > WDGInvestmentContract::$signature_minimum_amount ||  $this->get_session_amount() > WDGInvestmentContract::$signature_minimum_amount );
+	}
+	
+	public function get_signature_url() {
+		$contract = new WDGInvestmentContract( $this->get_id() );
+		return $contract->get_yousign_url();
 	}
 	
 /******************************************************************************/

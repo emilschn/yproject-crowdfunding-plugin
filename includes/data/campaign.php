@@ -630,6 +630,13 @@ class ATCF_Campaign {
 		$campaign_organization = $this->get_organization();
 		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
 		
+		$project_investors_list = array();
+		$investments_list = $this->payments_data( TRUE );
+		foreach ( $investments_list as $investment_item ) {
+			$user_data = get_userdata($investment_item['user']);
+			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'] ) );
+		}
+		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get(
 			$WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(),
@@ -640,14 +647,15 @@ class ATCF_Campaign {
 			$WDGOrganization->get_city(),
 			$this->end_date( 'd/m/Y' ),
 			$this->backers_count(),
-			$this->current_amount( FALSE ),
-			$this->platform_commission(),
-			$this->platform_commission_amount(),
-			( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
+			UIHelpers::format_number( $this->current_amount( FALSE ) ),
+			UIHelpers::format_number( $this->platform_commission() ),
+			UIHelpers::format_number( $this->platform_commission_amount() ),
+			UIHelpers::format_number( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
 			$start_datetime->format( 'd/m/Y' ),
 			$this->funding_duration(),
-			$this->roi_percent(),
-			$fiscal_info
+			UIHelpers::format_number( $this->roi_percent(), 10 ),
+			$fiscal_info,
+			$project_investors_list
 		);
 		
 		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
@@ -1926,9 +1934,9 @@ class ATCF_Campaign {
 
 					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 
-					$signsquid_contract = new SignsquidContract($payment->ID);
-					$signsquid_status = $signsquid_contract->get_status_code();
-					$signsquid_status_text = $signsquid_contract->get_status_str();
+					$investment_contract = new WDGInvestmentContract($payment->ID);
+					$investment_contract_status = $investment_contract->get_status_code();
+					$investment_contract_status_text = $investment_contract->get_status_str();
 					
 					$mangopay_contribution = FALSE;
 					$lemonway_contribution = FALSE;
@@ -1957,8 +1965,8 @@ class ATCF_Campaign {
 							'status'		=> $payment_status,
 							'mangopay_contribution' => $mangopay_contribution,
 							'lemonway_contribution' => $lemonway_contribution,
-							'signsquid_status'	=> $signsquid_status,
-							'signsquid_status_text' => $signsquid_status_text
+							'contract_status'		=> $investment_contract_status,
+							'contract_status_text'	=> $investment_contract_status_text
 						);
 					}
 				}
@@ -2089,6 +2097,7 @@ class ATCF_Campaign {
 				'status'	=> $status
 			);
 			$payment_id = edd_insert_payment( $payment_data );
+			$_SESSION[ 'investment_id' ] = $payment_id;
 			edd_record_sale_in_log($this->ID, $payment_id);
 			
 			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {

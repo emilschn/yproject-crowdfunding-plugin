@@ -302,7 +302,7 @@ class SignsquidContract {
 		$this->status_code = FALSE;
 		
 		//Si c'est une petite somme, on ne fait pas de vérification, c'est ok !
-		if ($this->payment_amount <= 1500) {
+		if ( $this->payment_amount <= WDGInvestmentContract::$signature_minimum_amount ) {
 			$this->status_code = "Small";
 			
 		} else {

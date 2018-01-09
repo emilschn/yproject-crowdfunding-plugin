@@ -110,7 +110,7 @@ class UIHelpers {
 		}
 	}
 	
-	public static function format_number( $input ) {
-		return number_format( $input, 2, ',', ' ' );
+	public static function format_number( $input, $decimals = 2 ) {
+		return number_format( $input, $decimals, ',', ' ' );
 	}
 }

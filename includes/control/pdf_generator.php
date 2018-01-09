@@ -613,11 +613,12 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		} else {
 			$buffer .= 'Fait avec l\'adresse IP '.$payment_data["ip"].'<br />';
 		}
-		$day = date("d");
-		$month = mb_strtoupper(__($months[date("m") - 1]));
-		$year = date("Y");
-		$hour = date("H");
-		$minute = date("i");
+		$payment_date = new DateTime( $payment_data[ "date" ] );
+		$day = $payment_date->format( 'd' );
+		$month = mb_strtoupper(__($months[$payment_date->format( 'm' ) - 1]));
+		$year = $payment_date->format( 'Y' );
+		$hour = $payment_date->format( 'H' );
+		$minute =$payment_date->format( 'i' );
 		if ($lang == 'en_US') {
 			$buffer .= 'On '.$month.' '.$day.' '.$year.'<br />';
 			if (is_object($organization) && $organization !== false) {
@@ -656,7 +657,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
     
 	
 	if ( !empty( $payment_data ) ) {
-		if ($payment_data["amount"] <= 1500) {
+		if ( $payment_data["amount"] <= WDGInvestmentContract::$signature_minimum_amount ) {
 			$buffer .= '<div style="margin-top: 20px; border: 1px solid green; color: green;">';
 			if ($lang == 'en_US') {
 				$buffer .= 'Investment done on '.$month.' '.$day.' '.$year.', at '.$hour.':'.$minute.'<br />';
@@ -708,13 +709,15 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE) 
 		$amount_part = $amount / $campaign->part_value();
 
 		$ip_address = get_post_meta($payment_id, '_edd_payment_ip', TRUE);
+		$payment_date = get_the_date( 'Y-m-d H:i:s', $payment_id );
 
 		$invest_data = array(
-			"amount_part" => $amount_part, 
-			"amount" => $amount, 
-			"total_parts_company" => $campaign->total_parts(), 
-			"total_minimum_parts_company" => $campaign->total_minimum_parts(),
-			"ip" => $ip_address
+			"date"					=> $payment_date,
+			"amount_part"			=> $amount_part, 
+			"amount"				=> $amount, 
+			"total_parts_company"	=> $campaign->total_parts(), 
+			"total_minimum_parts_company"	=> $campaign->total_minimum_parts(),
+			"ip"					=> $ip_address
 		);
 		
 	} else {
