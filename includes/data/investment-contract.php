@@ -18,6 +18,14 @@ class WDGInvestmentContract {
 		$this->yousign_contract_id = get_post_meta( $payment_id, 'yousign_contract_id', true );
 	}
 	
+	/**
+	 * Retourne vrai si un contrat a déjà été créé chez un prestataire
+	 * @return boolean
+	 */
+	public function exists() {
+		return ( $this->is_signsquid_contract() || $this->is_yousign_contract() );
+	}
+	
 	public static $status_code_agreed = 'AGREED';
 	/**
 	 * Retourne une chaine qui indique le code de statut du contrat
@@ -86,7 +94,7 @@ class WDGInvestmentContract {
 		
 		$client = WDGInvestmentContract::yousign_instance();
 		$result = $client->getCosignInfoFromIdDemand( $this->get_yousign_contract_id() );
-		$yousign_contract_status = $result->status;
+		$yousign_contract_status = $result[ 'status' ];
 		switch ( $yousign_contract_status ) {
 			// when the process is still waiting for one signature
 			case 'COSIGNATURE_EVENT_REQUEST_PENDING':
@@ -109,6 +117,24 @@ class WDGInvestmentContract {
 		return $buffer;
 	}
 	
+	public function get_yousign_url() {
+		$buffer = FALSE;
+		
+		$client = WDGInvestmentContract::yousign_instance();
+		$result = $client->getCosignInfoFromIdDemand( $this->get_yousign_contract_id() );
+		ypcf_debug_log( 'WDGInvestmentContract::get_yousign_url > getCosignInfoFromIdDemand : ' . print_r( $result, TRUE ) );
+		if ( !empty( $result ) ) {
+			$yousign_contract_token = $result[ 'cosignerInfos' ][ 'token' ];
+		}
+		ypcf_debug_log( 'WDGInvestmentContract::get_yousign_url > $yousign_contract_token : ' . $yousign_contract_token );
+		if ( !empty( $yousign_contract_token ) ) {
+			$buffer = $client->getIframeUrl( $yousign_contract_token );
+		}
+		ypcf_debug_log( 'WDGInvestmentContract::get_yousign_url > $buffer : ' . $buffer );
+		
+		return $buffer;
+	}
+	
 	
 /******************************************************************************/
 /* FONCTIONS STATIQUES */
@@ -119,7 +145,7 @@ class WDGInvestmentContract {
 	 * @param string $file_path
 	 * @param WDGUser $user_investor
 	 */
-	public static function create_contract( $payment_id, $file_path, $user_investor ) {
+	public static function create( $payment_id, $file_path, $user_investor ) {
 		// Liste des fichiers à signer
 		$list_files = array (
 			array (

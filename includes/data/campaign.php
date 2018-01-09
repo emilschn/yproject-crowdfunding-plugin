@@ -2079,6 +2079,7 @@ class ATCF_Campaign {
 				'status'	=> $status
 			);
 			$payment_id = edd_insert_payment( $payment_data );
+			$_SESSION[ 'investment_id' ] = $payment_id;
 			edd_record_sale_in_log($this->ID, $payment_id);
 			
 			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
