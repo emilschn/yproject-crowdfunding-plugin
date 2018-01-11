@@ -209,8 +209,15 @@ class WDGWPREST_Entity_Project {
 	 * @param int $project_id
 	 * @return array
 	 */
+	private static $declarations_by_project;
 	public static function get_declarations( $project_id ) {
-		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations' );
-		return $result_obj;
+		$buffer = FALSE;
+		if ( !empty( $project_id ) ) {
+			if ( !isset( self::$declarations_by_project[ $project_id ] ) ) {
+				self::$declarations_by_project[ $project_id ] = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations' );
+			}
+			$buffer = self::$declarations_by_project[ $project_id ];
+		}
+		return $buffer;
 	}
 }

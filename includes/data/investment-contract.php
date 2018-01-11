@@ -174,8 +174,7 @@ class WDGInvestmentContract {
 			$list_files[0]['idFile'] => array (
 				array (
 					'visibleSignaturePage'		=> '1',
-					'isVisibleSignature'		=> true,
-					'visibleRectangleSignature' => '48,32,248,132',
+					'isVisibleSignature'		=> false,
 					'mail'						=> $list_person[0]['mail']
 				)
 			)
