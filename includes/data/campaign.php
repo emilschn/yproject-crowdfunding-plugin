@@ -1925,9 +1925,16 @@ class ATCF_Campaign {
 					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						$lemonway_id = edd_get_payment_key($payment->ID);
 						
-						if ($lemonway_id == 'check') {
+						if ( $lemonway_id == 'check' ) {
 
-						} else if (strpos($lemonway_id, 'wire_') !== FALSE) {
+						} else if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
+							
+
+						} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
+							$lemonway_id_exploded = explode( '_wallet_' );
+							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
+							
+						} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
 							
 						} else {
 							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
