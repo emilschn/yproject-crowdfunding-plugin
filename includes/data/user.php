@@ -72,6 +72,14 @@ class WDGUser {
 		
 	}
 	
+	public function get_facebook_id() {
+		return $this->wp_user->get( 'social_connect_facebook_id' );
+	}
+	public function is_logged_in_with_facebook() {
+		$facebook_id = $this->get_facebook_id();
+		return ( !empty( $facebook_id ) );
+	}
+	
 	public function get_metadata( $key ) {
 		if ( !empty( $key ) ) {
 			return $this->wp_user->get( 'user_' . $key );

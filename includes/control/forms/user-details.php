@@ -280,6 +280,8 @@ class WDG_Form_User_Details extends WDG_Form {
 						$WDGUser->save_meta( 'description', $description );
 					}
 					
+					array_push( $feedback_success, __( "Vos informations ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s." ) );
+					
 				} else {
 					$WDGUser->save_basics( $email, $firstname, $lastname );
 					if ( $user_details_type == WDG_Form_User_Details::$type_vote ) {
