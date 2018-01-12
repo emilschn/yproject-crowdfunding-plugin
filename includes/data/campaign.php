@@ -630,6 +630,13 @@ class ATCF_Campaign {
 		$campaign_organization = $this->get_organization();
 		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
 		
+		$project_investors_list = array();
+		$investments_list = $this->payments_data( TRUE );
+		foreach ( $investments_list as $investment_item ) {
+			$user_data = get_userdata($investment_item['user']);
+			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'] ) );
+		}
+		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get(
 			$WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(),
@@ -640,14 +647,15 @@ class ATCF_Campaign {
 			$WDGOrganization->get_city(),
 			$this->end_date( 'd/m/Y' ),
 			$this->backers_count(),
-			$this->current_amount( FALSE ),
-			$this->platform_commission(),
-			$this->platform_commission_amount(),
-			( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
+			UIHelpers::format_number( $this->current_amount( FALSE ) ),
+			UIHelpers::format_number( $this->platform_commission() ),
+			UIHelpers::format_number( $this->platform_commission_amount() ),
+			UIHelpers::format_number( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
 			$start_datetime->format( 'd/m/Y' ),
 			$this->funding_duration(),
-			$this->roi_percent(),
-			$fiscal_info
+			UIHelpers::format_number( $this->roi_percent(), 10 ),
+			$fiscal_info,
+			$project_investors_list
 		);
 		
 		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
@@ -1917,9 +1925,16 @@ class ATCF_Campaign {
 					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 						$lemonway_id = edd_get_payment_key($payment->ID);
 						
-						if ($lemonway_id == 'check') {
+						if ( $lemonway_id == 'check' ) {
 
-						} else if (strpos($lemonway_id, 'wire_') !== FALSE) {
+						} else if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
+							
+
+						} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
+							$lemonway_id_exploded = explode( '_wallet_' );
+							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
+							
+						} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
 							
 						} else {
 							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
@@ -2526,7 +2541,7 @@ class ATCF_Campaign {
 	public static function list_projects_searchable() {
 		global $wpdb;
 		$results = $wpdb->get_results( "
-			SELECT ID, post_title FROM ".$wpdb->posts."
+			SELECT ID, post_title, post_name FROM ".$wpdb->posts."
 			INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id
 			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' 
 				AND (".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_vote."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_collecte."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_funded."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_closed."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_archive."')

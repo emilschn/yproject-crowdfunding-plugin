@@ -542,7 +542,7 @@ class WDGFormProjects {
 					$date_now = new DateTime();
 					$roi_declaration->date_paid = $date_now->format( 'Y-m-d' );
 					$roi_declaration->mean_payment = WDGROIDeclaration::$mean_payment_mandate;
-					$roi_declaration->status = WDGROIDeclaration::$status_finished;
+					$roi_declaration->status = WDGROIDeclaration::$status_transfer;
 					$roi_declaration->save();
 
 				}

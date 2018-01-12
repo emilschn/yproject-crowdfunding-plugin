@@ -13,6 +13,7 @@ class NotificationsAPI {
 	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $news_name, $news_content ) {
 		ypcf_debug_log( 'NotificationsAPI::new_project_news > ' . $recipients );
 		$id_template = '156';
+		$project_link = str_replace( 'https://', '', $project_link );
 		$options = array(
 			'replyto'				=> $replyto_mail,
 			'NOM_PROJET'			=> $project_name,
@@ -38,6 +39,7 @@ class NotificationsAPI {
 	public static function project_mail( $recipient, $replyto_mail, $user_name, $project_name, $project_link, $news_name, $news_content ) {
 		ypcf_debug_log( 'NotificationsAPI::project_mail > ' . $recipient );
 		$id_template = '184';
+		$project_link = str_replace( 'https://', '', $project_link );
 		$options = array(
 			'replyto'				=> $replyto_mail,
 			'NOM_UTILISATEUR'		=> $user_name,

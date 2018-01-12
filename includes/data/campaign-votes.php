@@ -22,6 +22,8 @@ class WDGCampaignVotes {
 
 		$buffer = array(
 			'count_voters' => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id ),
+			'count_preinvestments' => 0,
+			'amount_preinvestments' => 0,
 			'average_impact_economy' => 0,
 			'average_impact_environment' => 0,
 			'average_impact_social' => 0,
@@ -55,6 +57,17 @@ class WDGCampaignVotes {
 		);
 
 		if ($buffer['count_voters'] > 0) {
+			$payments_data = $campaign->payments_data();
+			foreach ( $payments_data as $item_invest ) {
+				$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
+				$contract_status = $payment_investment->get_contract_status();
+				if ( $contract_status == WDGInvestment::$contract_status_investment_validated || $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
+					$buffer['count_preinvestments']++;
+					$buffer['amount_preinvestments'] += $payment_investment->get_saved_amount();
+				}
+			}
+			
+			
 			$buffer['total_impact_economy'] = $wpdb->get_var( "SELECT sum(impact_economy) FROM ".$table_name." WHERE post_id = ".$campaign_id );
 			$buffer['average_impact_economy'] = $buffer['total_impact_economy'] / $buffer['count_voters'];
 			$buffer['total_impact_environment'] = $wpdb->get_var( "SELECT sum(impact_environment) FROM ".$table_name." WHERE post_id = ".$campaign_id );

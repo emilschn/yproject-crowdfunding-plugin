@@ -125,7 +125,7 @@ class WDGKYCFile {
 		$file_name_exploded = explode('.', $file_name);
 		$ext = $file_name_exploded[count($file_name_exploded) - 1];
 		
-		if ( !in_array( $ext, WDGKYCFile::$authorized_format_list ) ) {
+		if ( !in_array( strtolower( $ext ), WDGKYCFile::$authorized_format_list ) ) {
 			return 'ext';
 		}
 		if ( ($file_uploaded_data['size'] / 1024) / 1024 > 6 ) {

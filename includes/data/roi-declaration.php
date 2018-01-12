@@ -605,7 +605,7 @@ class WDGROIDeclaration {
 		$investments_list = $campaign->roi_payments_data( $this );
 		foreach ($investments_list as $investment_item) {
 			$user_data = get_userdata($investment_item['user']);
-			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'] ) );
+			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'], "roi_amount" => $investment_item['roi_amount'] ) );
 		}
 		$project_roi_nb_years = $campaign->funding_duration();
 		$organization_name = $organization_obj->get_name();

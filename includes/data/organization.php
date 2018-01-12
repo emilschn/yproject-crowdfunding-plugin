@@ -947,14 +947,27 @@ class WDGOrganization {
 		$wallet_details = $this->get_wallet_details();
 		$buffer = array();
 		if ( isset( $wallet_details->SDDMANDATES ) && isset( $wallet_details->SDDMANDATES->SDDMANDATE ) ) {
-			foreach ( $wallet_details->SDDMANDATES as $mandate_temp ) {
-				$return_item = array(
-					"ID"	=> $mandate_temp->ID,
-					"S"		=> $mandate_temp->S,
-					"DATA"	=> $mandate_temp->DATA,
-					"SWIFT"	=> $mandate_temp->SWIFT
-				);
-				array_push( $buffer, $return_item );
+			foreach ( $wallet_details->SDDMANDATES->SDDMANDATE as $mandate_temp ) {
+				if ( isset( $mandate_temp->ID ) ) {
+					$return_item = array(
+						"ID"	=> $mandate_temp->ID,
+						"S"		=> $mandate_temp->S,
+						"DATA"	=> $mandate_temp->DATA,
+						"SWIFT"	=> $mandate_temp->SWIFT
+					);
+					array_push( $buffer, $return_item );
+				}
+			}
+			if ( count( $buffer ) == 0 ) {
+				foreach ( $wallet_details->SDDMANDATES as $mandate_temp ) {
+					$return_item = array(
+						"ID"	=> $mandate_temp->ID,
+						"S"		=> $mandate_temp->S,
+						"DATA"	=> $mandate_temp->DATA,
+						"SWIFT"	=> $mandate_temp->SWIFT
+					);
+					array_push( $buffer, $return_item );
+				}
 			}
 		}
 		return $buffer;
