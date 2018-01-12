@@ -340,6 +340,11 @@ class WDG_Form_Vote extends WDG_Form {
 			'gotoslide'	=> $feedback_slide
 		);
 		
+		return $buffer;
+	}
+	
+	public function postFormAjax() {
+		$buffer = $this->postForm();
 		echo json_encode( $buffer );
 		exit();
 	}

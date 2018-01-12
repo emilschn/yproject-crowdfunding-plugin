@@ -170,7 +170,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		
 		}
 		
-		// $field_group_extended : A la fin du formulaire de vote, on rajoute le téléphone
+		// $field_group_extended : A la fin du formulaire étendu, on rajoute le téléphone et la description
 		if ( $this->user_details_type == WDG_Form_User_Details::$type_extended ) {
 			$this->addField(
 				'text',
@@ -242,7 +242,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			}
 			
 			$user_details_type = $this->getInputText( 'user_details_type' );
-			if ( $user_details_type == WDG_Form_User_Details::$type_complete ) {
+			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_complete ) {
 				$gender = $this->getInputText( 'gender' );
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
@@ -265,13 +265,18 @@ class WDG_Form_User_Details extends WDG_Form {
 			
 			if ( empty( $feedback_errors ) ) {
 				if ( $user_details_type == WDG_Form_User_Details::$type_complete || $user_details_type == WDG_Form_User_Details::$type_extended ) {
+					if ( $user_details_type == WDG_Form_User_Details::$type_complete ) {
+						// Quand on n'est pas au format étendu, le téléphone n'est pas transmis.
+						// Il faut enregistrer l'existant, pour ne pas le supprimer
+						$phone_number = $WDGUser->get_phone_number();
+					}
+						
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $nationality, $address, $postal_code, $city, $country
+						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number
 					);
 					if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
-						$WDGUser->save_meta( 'user_mobile_phone', $phone_number );
 						$WDGUser->save_meta( 'description', $description );
 					}
 					
@@ -289,6 +294,13 @@ class WDG_Form_User_Details extends WDG_Form {
 			'errors'	=> $feedback_errors
 		);
 		
+		$this->initFields(); // Reinit pour avoir les bonnes valeurs
+		
+		return $buffer;
+	}
+	
+	public function postFormAjax() {
+		$buffer = $this->postForm();
 		echo json_encode( $buffer );
 		exit();
 	}
