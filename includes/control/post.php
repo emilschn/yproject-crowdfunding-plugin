@@ -439,6 +439,12 @@ class WDGPostActions {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 		
+		$new_contract_premium = filter_input( INPUT_POST, 'new_contract_premium' );
+		$campaign->__set( ATCF_Campaign::$key_contract_premium, $new_contract_premium );
+		
+		$new_contract_warranty = filter_input( INPUT_POST, 'new_contract_warranty' );
+		$campaign->__set( ATCF_Campaign::$key_contract_warranty, $new_contract_warranty );
+		
 		$new_contract_budget_type = filter_input( INPUT_POST, 'new_contract_budget_type' );
 		$campaign->__set( ATCF_Campaign::$key_contract_budget_type, $new_contract_budget_type );
 		
