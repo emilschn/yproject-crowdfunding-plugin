@@ -449,6 +449,15 @@ class ATCF_Campaign {
 	public function contract_detailed_info() {
         return $this->__get( ATCF_Campaign::$key_contract_detailed_info );
 	}
+	// Contrat : prime et garantie
+    public static $key_contract_premium = 'campaign_contract_premium';
+	public function contract_premium() {
+        return $this->__get( ATCF_Campaign::$key_contract_premium );
+	}
+    public static $key_contract_warranty = 'campaign_contract_warranty';
+	public function contract_warranty() {
+        return $this->__get( ATCF_Campaign::$key_contract_warranty );
+	} 
 	// Contrat : Type de budget
 	public static $key_contract_budget_type = 'contract_budget_type';
 	public static $contract_budget_types = array(

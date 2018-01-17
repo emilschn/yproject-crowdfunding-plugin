@@ -48,6 +48,7 @@ class WDGAjaxActions {
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
 		WDGAjaxActions::add_action('search_user_by_email');
+		WDGAjaxActions::add_action('get_current_investment_signature_status');
 	}
 	
 	/**
@@ -1940,6 +1941,18 @@ class WDGAjaxActions {
 		);
 		
 		echo json_encode( $return_values );
+		exit();
+	}
+	
+	public static function get_current_investment_signature_status() {
+		$posted_paymentid = filter_input( INPUT_POST, 'paymentid' );
+		$WDGInvestmentContract = new WDGInvestmentContract( $posted_paymentid );
+		if ( $WDGInvestmentContract->get_status_code() == WDGInvestmentContract::$status_code_agreed ) {
+			WDGInvestment::unset_session();
+			echo '1';
+		} else {
+			echo '0';
+		}
 		exit();
 	}
 }
