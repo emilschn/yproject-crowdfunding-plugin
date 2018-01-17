@@ -152,7 +152,11 @@ class WDGFormUsers {
 	 * @return type
 	 */
 	public static function filter_login_email( $user, $username, $password ) {
-		if ( is_a( $user, 'WP_User' ) ) return $user;
+		if ( is_a( $user, 'WP_User' ) ) {
+			if ( !WDGOrganization::is_user_organization( $user->ID ) ) {
+				return $user;
+			}
+		}
 		
 		// Vérifie que des champs ont bien été remplis
 		if (empty($username) || empty($password)) {
