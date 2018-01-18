@@ -248,6 +248,22 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	private $has_invested_by_campaign;
+	public function has_invested_on_campaign( $campaign_id ) {
+		if ( !isset( $this->has_invested_by_campaign ) ) {
+			$this->has_invested_by_campaign = array();
+		}
+		if ( !isset( $this->has_invested_by_campaign[ $campaign_id ] ) ) {
+			$payments = edd_get_payments( array(
+				'number'	=> -1,
+				'download'	=> $campaign_id,
+				'user'		=> $this->get_wpref()
+			) );
+			$this->has_invested_by_campaign[ $campaign_id ] = ( count( $payments ) > 0 );
+		}
+		return $this->has_invested_by_campaign[ $campaign_id ];
+	}
+	
 /*******************************************************************************
  * Fonctions de sauvegarde
 *******************************************************************************/
