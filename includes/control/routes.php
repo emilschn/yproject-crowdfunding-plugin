@@ -19,11 +19,6 @@ function ypcf_check_redirections() {
 				WDGRoutes::redirect_to_invest_if_logged_in();
 			break;
 
-			case 'modifier-mon-compte' :
-				//On teste si l'utilisateur vient de remplir ses données pour les enregistrer
-				ypcf_check_has_user_filled_infos_and_redirect();
-			break;
-
 			case 'paiement-effectue':
 				WDGRoutes::redirect_invest_if_not_logged_in();
 				if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
