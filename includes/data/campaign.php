@@ -1940,7 +1940,7 @@ class ATCF_Campaign {
 							
 
 						} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
-							$lemonway_id_exploded = explode( '_wallet_' );
+							$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
 							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
 							
 						} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
