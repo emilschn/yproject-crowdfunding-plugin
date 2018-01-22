@@ -1958,7 +1958,7 @@ class ATCF_Campaign {
 							
 
 						} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
-							$lemonway_id_exploded = explode( '_wallet_' );
+							$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
 							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
 							
 						} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
@@ -2430,15 +2430,9 @@ class ATCF_Campaign {
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
-				array (
-					'key' => 'campaign_vote',
-					'value' => $type
-					),
-				array (
-					'key' => 'campaign_end_date',
-					'compare' => '>',
-					'value' => date('Y-m-d H:i:s')
-				)
+				array ( 'key' => 'campaign_vote', 'value' => $type ),
+				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') ),
+				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
 			)
 		);
 		

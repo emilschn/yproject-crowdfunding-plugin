@@ -49,6 +49,7 @@ class WDGCampaignVotes {
 			'objective' => $campaign->minimum_goal(),
 			'list_advice' => array(),
 			'list_date' => array(),
+			'list_cumul' => array(),
 			'list_cumul_pos' => array(),
 			'list_cumul_neg' => array(),
 			'list_evo_pos' => array(),
@@ -137,27 +138,23 @@ class WDGCampaignVotes {
 			//Parcours des votes par date :
 			foreach ( $dates_votes as $vote ) {
 			    if (end($buffer['list_date']) != $vote->date){
-				//Si on est sur un nouveau jour
-				$buffer['list_date'][]= $vote->date;
-				$buffer['list_evo_pos'][]=0;
-				$buffer['list_evo_neg'][]=0;
+					//Si on est sur un nouveau jour
+					$buffer['list_date'][]= $vote->date;
+					$buffer['list_evo_pos'][]=0;
+					$buffer['list_evo_neg'][]=0;
 
-				if(end($buffer['list_cumul_pos'])===false){
-				    $buffer['list_cumul_pos'][]=0;
-				    $buffer['list_cumul_neg'][]=0;
+					if(end($buffer['list_cumul'])===false){
+						$buffer['list_cumul'][]=0;
 
-				} else {
-				    $buffer['list_cumul_pos'][]=end($buffer['list_cumul_pos']);
-				    $buffer['list_cumul_neg'][]=end($buffer['list_cumul_neg']);
-				}
+					} else {
+						$buffer['list_cumul'][]=end($buffer['list_cumul']);
+					}
 			    }
 
 			    if ($vote->validate_project==1){
-				$buffer['list_cumul_pos'][count($buffer['list_cumul_pos'])-1]++;
-				$buffer['list_evo_pos'][count($buffer['list_evo_pos'])-1]++;
+					$buffer['list_cumul'][count($buffer['list_cumul'])-1]++;
 			    } else {
-				$buffer['list_cumul_neg'][count($buffer['list_cumul_neg'])-1]++;
-				$buffer['list_evo_neg'][count($buffer['list_evo_neg'])-1]++;
+					$buffer['list_cumul'][count($buffer['list_cumul'])-1]++;
 			    }
 			}
 		} else {

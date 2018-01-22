@@ -162,7 +162,7 @@ class WDGFormUsers {
 		if (empty($username) || empty($password)) {
 			global $signon_errors;
 			$signon_errors = new WP_Error();
-			$signon_errors->add('empty_authentication', __('Champs vides', 'yproject'));
+			$signon_errors->add('empty_authentication', __( "Merci de remplir tous les champs", 'yproject' ));
 			WDGFormUsers::redirect_after_login_failed( 'empty_fields' );
 		}
 

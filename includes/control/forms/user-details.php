@@ -6,10 +6,12 @@ class WDG_Form_User_Details extends WDG_Form {
 	public static $type_basics = 'basics';
 	public static $type_vote = 'vote';
 	public static $type_complete = 'complete';
+	public static $type_extended = 'extended';
 	
 	public static $field_group_hidden = 'user-details-hidden';
 	public static $field_group_basics = 'user-details-basics';
 	public static $field_group_complete = 'user-details-complete';
+	public static $field_group_extended = 'user-details-extended';
 	public static $field_group_vote = 'user-details-vote';
 	
 	private $user_id;
@@ -80,7 +82,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		);
 		
 		// $field_group_complete : Si on met le formulaire complet, on rajoute nationalité, ville et date de naissance, adresse, genre
-		if ( $this->user_details_type == WDG_Form_User_Details::$type_complete ) {
+		if ( $this->user_details_type == WDG_Form_User_Details::$type_complete || $this->user_details_type == WDG_Form_User_Details::$type_extended ) {
 		
 			$this->addField(
 				'select',
@@ -168,6 +170,26 @@ class WDG_Form_User_Details extends WDG_Form {
 		
 		}
 		
+		// $field_group_extended : A la fin du formulaire étendu, on rajoute le téléphone et la description
+		if ( $this->user_details_type == WDG_Form_User_Details::$type_extended ) {
+			$this->addField(
+				'text',
+				'phone_number',
+				__( "T&eacute;l&eacute;phone", 'yproject' ),
+				WDG_Form_User_Details::$field_group_extended,
+				$WDGUser->get_phone_number()
+			);
+		
+			$this->addField(
+				'textarea',
+				'description',
+				__( "Description", 'yproject' ),
+				WDG_Form_User_Details::$field_group_extended,
+				$WDGUser->get_description()
+			);
+		
+		}
+		
 	}
 	
 	public function postForm() {
@@ -220,7 +242,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			}
 			
 			$user_details_type = $this->getInputText( 'user_details_type' );
-			if ( $user_details_type == WDG_Form_User_Details::$type_complete ) {
+			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_complete ) {
 				$gender = $this->getInputText( 'gender' );
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
@@ -232,18 +254,33 @@ class WDG_Form_User_Details extends WDG_Form {
 				$country = $this->getInputText( 'country' );
 			}
 			
-			if ( $user_details_type == WDG_Form_User_Details::$type_vote ) {
+			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_vote ) {
 				$phone_number = $this->getInputText( 'phone_number' );
+			}
+			
+			if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
+				$description = $this->getInputText( 'description' );
 			}
 			
 			
 			if ( empty( $feedback_errors ) ) {
-				if ( $user_details_type == WDG_Form_User_Details::$type_complete ) {
+				if ( $user_details_type == WDG_Form_User_Details::$type_complete || $user_details_type == WDG_Form_User_Details::$type_extended ) {
+					if ( $user_details_type == WDG_Form_User_Details::$type_complete ) {
+						// Quand on n'est pas au format étendu, le téléphone n'est pas transmis.
+						// Il faut enregistrer l'existant, pour ne pas le supprimer
+						$phone_number = $WDGUser->get_phone_number();
+					}
+						
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $nationality, $address, $postal_code, $city, $country
+						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number
 					);
+					if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
+						$WDGUser->save_meta( 'description', $description );
+					}
+					
+					array_push( $feedback_success, __( "Vos informations ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s." ) );
 					
 				} else {
 					$WDGUser->save_basics( $email, $firstname, $lastname );
@@ -259,6 +296,13 @@ class WDG_Form_User_Details extends WDG_Form {
 			'errors'	=> $feedback_errors
 		);
 		
+		$this->initFields(); // Reinit pour avoir les bonnes valeurs
+		
+		return $buffer;
+	}
+	
+	public function postFormAjax() {
+		$buffer = $this->postForm();
 		echo json_encode( $buffer );
 		exit();
 	}
