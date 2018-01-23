@@ -330,6 +330,7 @@ class WDGAjaxActions {
 			$edit_orga = new WDGOrganization($invest_type);
 			$edit_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
 			$edit_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
+			$edit_orga->set_website( filter_input( INPUT_POST, 'org_website' ) );
 			$edit_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
 			$edit_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
 			$edit_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
