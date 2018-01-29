@@ -86,7 +86,8 @@ class WDGAjaxActions {
 		echo $loginUrl;
 		
 		ypcf_session_start();
-		$_SESSION[ 'login-fb-referer' ] = wp_get_referer();
+		$posted_redirect = filter_input( INPUT_POST, 'redirect' );
+		$_SESSION[ 'login-fb-referer' ] = ( !empty( $posted_redirect ) ) ? $posted_redirect : wp_get_referer();
 		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
 		
 		exit();
@@ -331,6 +332,7 @@ class WDGAjaxActions {
 			$edit_orga = new WDGOrganization($invest_type);
 			$edit_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
 			$edit_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
+			$edit_orga->set_website( filter_input( INPUT_POST, 'org_website' ) );
 			$edit_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
 			$edit_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
 			$edit_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
@@ -361,6 +363,7 @@ class WDGAjaxActions {
 	 * Enregistre les documents KYC liés à l'utilisateur
 	 */
 	public static function save_user_docs() {
+		ypcf_session_start();
 		$user_kyc_errors = array();
 		$WDGuser_current = WDGUser::current();
 		$user_id = $WDGuser_current->wp_user->ID;
@@ -369,8 +372,8 @@ class WDGAjaxActions {
 			'user_doc_id'		=> WDGKYCFile::$type_id,
 			'user_doc_home'		=> WDGKYCFile::$type_home
 		);
-				
-		if ( $_SESSION['redirect_current_invest_type'] != 'user' ) {
+		
+		if ( $_SESSION['redirect_current_invest_type'] != '' && $_SESSION['redirect_current_invest_type'] != 'user' ) {
 			$invest_type = $_SESSION['redirect_current_invest_type'];
 			$organization = new WDGOrganization($invest_type);
 			$user_id = $organization->get_wpref();
@@ -379,7 +382,7 @@ class WDGAjaxActions {
 				'org_doc_id'		=> WDGKYCFile::$type_id,
 				'org_doc_home'		=> WDGKYCFile::$type_home,
 				'org_doc_kbis'		=> WDGKYCFile::$type_kbis,
-				'org_doc_status'		=> WDGKYCFile::$type_status
+				'org_doc_status'	=> WDGKYCFile::$type_status
 			);
 		}
 		
@@ -396,7 +399,7 @@ class WDGAjaxActions {
 			}
 		}
 		
-		if ( $_SESSION['redirect_current_invest_type'] == 'user' ) {
+		if ( $_SESSION['redirect_current_invest_type'] == '' || $_SESSION['redirect_current_invest_type'] == 'user' ) {
 			if (!$WDGuser_current->has_sent_all_documents()) {
 				$return_values = array(
 					"response" => "kyc",

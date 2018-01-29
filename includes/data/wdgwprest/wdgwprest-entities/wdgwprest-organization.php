@@ -32,6 +32,7 @@ class WDGWPREST_Entity_Organization {
 			'type'						=> $organization->get_type(),
 			'representative_function'	=> $organization->get_representative_function(),
 			'description'				=> $organization->get_description(),
+			'website_url'				=> $organization->get_website(),
 			'legalform'					=> $organization->get_legalform(),
 			'idnumber'					=> $organization->get_idnumber(),
 			'rcs'						=> $organization->get_rcs(),

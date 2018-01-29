@@ -120,7 +120,7 @@ class WDGOrganization {
 			
 			$this->representative_function = $this->bopp_object->representative_function;
 			$this->description = get_user_meta($user_id, WDGOrganization::$key_description, TRUE);
-			$this->website = "";
+			$this->website = $this->bopp_object->website_url;
 			$this->strong_authentication = $this->bopp_object->strong_authentication;
 			$this->address = $this->bopp_object->address;
 			$this->postal_code = $this->bopp_object->postalcode;
@@ -796,6 +796,10 @@ class WDGOrganization {
 	 * Enregistrement sur Lemonway
 	 */
 	public function register_lemonway() {
+		if ( !$this->can_register_lemonway() ) {
+			return FALSE;
+		}
+		
 		//Vérifie que le wallet n'est pas déjà enregistré
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
