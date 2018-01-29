@@ -362,6 +362,7 @@ class WDGAjaxActions {
 	 * Enregistre les documents KYC liés à l'utilisateur
 	 */
 	public static function save_user_docs() {
+		ypcf_session_start();
 		$user_kyc_errors = array();
 		$WDGuser_current = WDGUser::current();
 		$user_id = $WDGuser_current->wp_user->ID;
@@ -370,8 +371,8 @@ class WDGAjaxActions {
 			'user_doc_id'		=> WDGKYCFile::$type_id,
 			'user_doc_home'		=> WDGKYCFile::$type_home
 		);
-				
-		if ( $_SESSION['redirect_current_invest_type'] != 'user' ) {
+		
+		if ( $_SESSION['redirect_current_invest_type'] != '' && $_SESSION['redirect_current_invest_type'] != 'user' ) {
 			$invest_type = $_SESSION['redirect_current_invest_type'];
 			$organization = new WDGOrganization($invest_type);
 			$user_id = $organization->get_wpref();
@@ -380,7 +381,7 @@ class WDGAjaxActions {
 				'org_doc_id'		=> WDGKYCFile::$type_id,
 				'org_doc_home'		=> WDGKYCFile::$type_home,
 				'org_doc_kbis'		=> WDGKYCFile::$type_kbis,
-				'org_doc_status'		=> WDGKYCFile::$type_status
+				'org_doc_status'	=> WDGKYCFile::$type_status
 			);
 		}
 		
@@ -397,7 +398,7 @@ class WDGAjaxActions {
 			}
 		}
 		
-		if ( $_SESSION['redirect_current_invest_type'] == 'user' ) {
+		if ( $_SESSION['redirect_current_invest_type'] == '' || $_SESSION['redirect_current_invest_type'] == 'user' ) {
 			if (!$WDGuser_current->has_sent_all_documents()) {
 				$return_values = array(
 					"response" => "kyc",
