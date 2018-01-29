@@ -85,7 +85,8 @@ class WDGAjaxActions {
 		echo $loginUrl;
 		
 		ypcf_session_start();
-		$_SESSION[ 'login-fb-referer' ] = wp_get_referer();
+		$posted_redirect = filter_input( INPUT_POST, 'redirect' );
+		$_SESSION[ 'login-fb-referer' ] = ( !empty( $posted_redirect ) ) ? $posted_redirect : wp_get_referer();
 		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
 		
 		exit();
