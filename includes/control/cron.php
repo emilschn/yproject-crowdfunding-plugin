@@ -68,7 +68,6 @@ class WDGCronActions {
 		$date = new DateTime();
 		$current_date = $date->format('Y-m-d');
 		
-		
 		$buffer_rss = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
 		$buffer_rss .= '<rss version="2.0">' . "\n";
 		$buffer_rss .= '<channel>' . "\n";
@@ -102,7 +101,7 @@ class WDGCronActions {
 				$campaign = atcf_get_campaign( $post );
 				$campaign_end_date_limit = new DateTime( $campaign->end_date( 'Y-m-d' ) );
 				$campaign_end_date_limit->add( new DateInterval( 'P1M' ) );
-				if ( !$campaign->is_hidden() && $campaign_end_date_limit > $current_date ) {
+				if ( !$campaign->is_hidden() && $campaign_end_date_limit > $date ) {
 					$result = WDGCronActions::make_single_project_rss( $campaign, $current_date );
 					$buffer_rss .= $result[ 'rss' ];
 					$buffer_partners .= $result[ 'partners' ];
@@ -111,7 +110,7 @@ class WDGCronActions {
 			wp_reset_query();
 			
 		} else {
-			ATCF_Campaign::list_projects_funded();
+			ATCF_Campaign::list_projects_funded( 40 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );
