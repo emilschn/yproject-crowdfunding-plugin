@@ -139,6 +139,10 @@ class WDGCronActions {
 				$buffer_partners .= '<nb_jours_restants>'.$campaign->days_remaining().'</nb_jours_restants>' . "\n";
 				$buffer_partners .= '<montant_recherche>'.$campaign->minimum_goal(false).'</montant_recherche>' . "\n"; //TNP :: Somme recherchée
 				$buffer_partners .= '<montant_collecte>'.$campaign->current_amount(false).'</montant_collecte>' . "\n"; //TNP :: Somme collectée
+				$buffer_partners .= '<nb_contributeurs>'.$campaign->backers_count().'</nb_contributeurs>' . "\n"; //TNP :: Nombre de contributeurs
+				if ( !$funding_project ) {
+					$buffer_partners .= '<succes>oui</succes>' . "\n"; //TNP :: Succès
+				}
 
 				//Données complémentaires pour BeCrowd
 				$buffer_partners .= '<type>royalty</type>' . "\n";
