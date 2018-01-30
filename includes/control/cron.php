@@ -64,7 +64,7 @@ class WDGCronActions {
 		
 	}
 	
-	public static function make_projects_rss() {
+	public static function make_projects_rss( $funding_project = TRUE ) {
 		$date = new DateTime();
 		$current_date = $date->format('Y-m-d');
 		
@@ -81,7 +81,12 @@ class WDGCronActions {
 		$buffer_partners .= '<partenaire>' . "\n";
 		
 		//Parcours des projets en cours de collecte
-		ATCF_Campaign::list_projects_funding();
+		if ( $funding_project ) {
+			ATCF_Campaign::list_projects_funding();
+		} else {
+			ATCF_Campaign::list_projects_funded();
+		}
+		
 		while (have_posts()): the_post();
 			global $post;
 			$campaign = atcf_get_campaign( $post );
@@ -154,6 +159,9 @@ class WDGCronActions {
 		$buffer_rss .= '</rss>';
 		
 		$filename = dirname ( __FILE__ ) . '/../../../../../current-projects.xml';
+		if ( !$funding_project ) {
+			$filename = dirname ( __FILE__ ) . '/../../../../../finished-projects.xml';
+		}
 		$file_handle = fopen($filename, 'w');
 		fwrite($file_handle, $buffer_partners);
 		fclose($file_handle);
