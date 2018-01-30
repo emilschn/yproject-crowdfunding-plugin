@@ -100,8 +100,8 @@ class WDGCronActions {
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );
-				$campaign_end_date_limit = new DateTime( $campaign->end_date() );
-				$campaign_end_date_limit->add( 'P1M' );
+				$campaign_end_date_limit = new DateTime( $campaign->end_date( 'Y-m-d' ) );
+				$campaign_end_date_limit->add( new DateInterval( 'P1M' ) );
 				if ( !$campaign->is_hidden() && $campaign_end_date_limit > $current_date ) {
 					$result = WDGCronActions::make_single_project_rss( $campaign, $current_date );
 					$buffer_rss .= $result[ 'rss' ];
