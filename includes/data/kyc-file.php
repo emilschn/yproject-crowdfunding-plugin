@@ -8,11 +8,16 @@ class WDGKYCFile {
 	public static $owner_user = 'user';
 	public static $owner_organization = 'organization';
 	
-	public static $type_home = 'home';
 	public static $type_bank = 'bank';
 	public static $type_id = 'id';
+	public static $type_home = 'home';
 	public static $type_kbis = 'kbis';
 	public static $type_status = 'status';
+	public static $type_capital_allocation = 'capital_allocation';
+	public static $type_id_2 = 'id_2';
+	public static $type_home_2 = 'home_2';
+	public static $type_id_3 = 'id_3';
+	public static $type_home_3 = 'home_3';
 	
 	public static $status_uploaded = 'uploaded';
 	public static $status_sent = 'sent';
