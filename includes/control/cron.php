@@ -202,7 +202,7 @@ class WDGCronActions {
 
 		//Données complémentaires pour BeCrowd
 		$buffer_partners .= '<type>royalty</type>' . "\n";
-		$buffer_partners .= '<pourcentage>'.$campaign->percent_completed(false).'</pourcentage>' . "\n";
+		$buffer_partners .= '<pourcentage>'.$campaign->percent_minimum_completed(false).'</pourcentage>' . "\n";
 		$buffer_partners .= '<nb>'.$campaign->backers_count().'</nb>' . "\n";
 		$buffer_partners .= '<url_video><![CDATA['.$campaign->video().']]></url_video>' . "\n";
 
