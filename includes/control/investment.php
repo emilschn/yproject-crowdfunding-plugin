@@ -508,7 +508,7 @@ class WDGInvestment {
 /******************************************************************************/
 	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE ) {
 		if ( $this->exists_payment( $payment_key ) ) {
-			return FALSE;
+			return 'publish';
 		}
 		
 		//Récupération des bonnes informations utilisateur
@@ -671,7 +671,7 @@ class WDGInvestment {
 		switch ( $meanofpayment ) {
 			case WDGInvestment::$meanofpayment_wallet:
 				$payment_key = $this->try_payment_wallet();
-				$buffer = $this->save_payment( $payment_key, $mean_of_payment );
+				$buffer = $this->save_payment( $payment_key, $meanofpayment );
 				break;
 			case WDGInvestment::$meanofpayment_cardwallet:
 				$buffer = $this->try_payment_card( TRUE );

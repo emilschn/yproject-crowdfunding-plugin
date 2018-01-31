@@ -557,11 +557,16 @@ class WDGOrganization {
 		}
 		
 		$documents_list = array(
-			'org_doc_bank'		=> WDGKYCFile::$type_bank,
-			'org_doc_kbis'		=> WDGKYCFile::$type_kbis,
-			'org_doc_status'	=> WDGKYCFile::$type_status,
-			'org_doc_id'		=> WDGKYCFile::$type_id,
-			'org_doc_home'		=> WDGKYCFile::$type_home
+			'org_doc_bank'					=> WDGKYCFile::$type_bank,
+			'org_doc_kbis'					=> WDGKYCFile::$type_kbis,
+			'org_doc_status'				=> WDGKYCFile::$type_status,
+			'org_doc_id'					=> WDGKYCFile::$type_id,
+			'org_doc_home'					=> WDGKYCFile::$type_home,
+			'org_doc_capital_allocation'	=> WDGKYCFile::$type_capital_allocation,
+			'org_doc_id_2'					=> WDGKYCFile::$type_id_2,
+			'org_doc_home_2'				=> WDGKYCFile::$type_home_2,
+			'org_doc_id_3'					=> WDGKYCFile::$type_id_3,
+			'org_doc_home_3'				=> WDGKYCFile::$type_home_3
 		);
 		$files_info = array();//stocke les infos des fichiers uploadés
 		$notify = 0;
@@ -622,16 +627,23 @@ class WDGOrganization {
 		if (isset($_POST['authentify_lw']) && $this->can_register_lemonway()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
-					WDGKYCFile::$type_bank		=> '2', 
-					WDGKYCFile::$type_kbis		=> '7', 
-					WDGKYCFile::$type_status	=> '11', 
-					WDGKYCFile::$type_id		=> '0', 
-					WDGKYCFile::$type_home		=> '1'
+					WDGKYCFile::$type_bank		=> '2',
+					WDGKYCFile::$type_kbis		=> '7',
+					WDGKYCFile::$type_status	=> '11',
+					WDGKYCFile::$type_id		=> '0',
+					WDGKYCFile::$type_home		=> '1',
+					WDGKYCFile::$type_capital_allocation		=> '20',
+					WDGKYCFile::$type_id_2		=> '16',
+					WDGKYCFile::$type_home_2	=> '17',
+					WDGKYCFile::$type_id_3		=> '18',
+					WDGKYCFile::$type_home_3	=> '19'
 				);
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
-					$current_document = $document_filelist[0];
-					LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+					if ( count( $document_filelist ) > 0 ) {
+						$current_document = $document_filelist[0];
+						LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+					}
 				}
 			}
 		}

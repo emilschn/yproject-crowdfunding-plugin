@@ -1269,6 +1269,11 @@ class WDGAjaxActions {
 					"org_doc_status" => $files_info['files_info']["org_doc_status"],
 					"org_doc_id" => $files_info['files_info']["org_doc_id"],
 					"org_doc_home" => $files_info['files_info']["org_doc_home"],
+					"org_doc_capital_allocation" => $files_info['files_info']["org_doc_capital_allocation"],
+					"org_doc_id_2" => $files_info['files_info']["org_doc_id_2"],
+					"org_doc_home_2" => $files_info['files_info']["org_doc_home_2"],
+					"org_doc_id_3" => $files_info['files_info']["org_doc_id_3"],
+					"org_doc_home_3" => $files_info['files_info']["org_doc_home_3"]
 				),
 			);
 			$buffer = json_encode($return_values);
