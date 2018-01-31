@@ -33,10 +33,10 @@ class WDGWPRESTLib {
 			)
 		);
 		
-		if ( isset( $result['response'] ) ) {
+		if ( !is_wp_error($result) && isset( $result['response'] ) ) {
 			ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[response] : ' . print_r( $result['response'], TRUE ) );
 		}
-		if ( isset( $result['body'] ) ) {
+		if ( !is_wp_error($result) && isset( $result['body'] ) ) {
 			ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[body] : ' . print_r( $result['body'], TRUE ) );
 		}
 		
