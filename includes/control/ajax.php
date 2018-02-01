@@ -1260,6 +1260,7 @@ class WDGAjaxActions {
 					"bankowneraddress" => $org_object->get_bank_address(),
 					"bankowneriban" => $org_object->get_bank_iban(),
 					"bankownerbic" => $org_object->get_bank_bic(),
+					"id_quickbooks" => $org_object->get_id_quickbooks(),
 				),
 				"files_info" => array(
 					"org_doc_bank" => $files_info['files_info']["org_doc_bank"],

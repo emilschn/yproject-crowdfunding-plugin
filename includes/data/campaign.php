@@ -1788,7 +1788,7 @@ class ATCF_Campaign {
 		    }
 		}
 		
-		$amount_check = $this->current_amount_check(FALSE);
+		$amount_check = $this->current_amount_check_meta(FALSE);
 		$total += $amount_check;
 		
 		if ( $formatted ) {
@@ -1805,7 +1805,25 @@ class ATCF_Campaign {
 		return $total;
 	}
 	
-	public function current_amount_check($formatted = true){
+	public function current_amount_with_check() {
+		$total   = 0;
+		$backers = $this->backers();
+
+		if ($backers > 0) {
+		    foreach ( $backers as $backer ) {
+			    $payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
+			    $payment    = get_post( $payment_id );
+				$payment_key = edd_get_payment_key( $payment_id );
+
+			    if ( empty( $payment ) || $payment_key != 'check' || $payment->post_status == 'pending' )
+				    continue;
+
+			    $total      = $total + edd_get_payment_amount( $payment_id );
+		    }
+		}
+	}
+	
+	public function current_amount_check_meta($formatted = true){
 		$amount_check = $this->__get( 'campaign_amount_check' );
 
 		if ( ! is_numeric( $amount_check ) )

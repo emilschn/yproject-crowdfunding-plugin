@@ -31,7 +31,7 @@ class WDGCampaignInvestments {
 			'median_invest' => 0,
 			'min_invest' => 0,
 			'max_invest' => 0,
-			'amount_check' => $campaign->current_amount_check(),
+			'amount_check' => $campaign->current_amount_check_meta(),
 			'investors_list' => array(),
 			'investors_string' => ''
 		);
