@@ -22,20 +22,28 @@ class WDGCampaignBill {
 	
 	public static $item_types = array(
 		'crowdfunding' => array(
-			'quickbooks_id' => 16, // TODO
-			'label' => 'Formule Crowdfunding'
+			'quickbooks_id' => 7,
+			'label' => 'WE ADVISE (Crowdfunding)'
 		),
 		'selfservice' => array(
-			'quickbooks_id' => 16, // TODO
-			'label' => 'Formule Self-Service'
+			'quickbooks_id' => 12,
+			'label' => 'WE FUND (Financement)'
+		),
+		'selfservice' => array(
+			'quickbooks_id' => 5,
+			'label' => 'WE LOVE (Love-Money)'
+		),
+		'selfservice' => array(
+			'quickbooks_id' => 6,
+			'label' => 'WE PROVIDE (Self-Service)'
 		),
 		'royalties' => array(
-			'quickbooks_id' => 16, // TODO
+			'quickbooks_id' => 13,
 			'label' => 'Frais de gestion de royalties'
 		)
 	);
 	
-	public static $item_tax_20 = 31; // TODO
+	public static $item_tax_20 = 31;
 
 
 	public function __construct( $campaign, $tool_name, $bill_type ) {
