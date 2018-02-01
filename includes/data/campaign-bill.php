@@ -89,6 +89,16 @@ class WDGCampaignBill {
 			'object'	=> $this->bill_type,
 			'options'	=> json_encode( $options )
 		);
+		
+		switch ( $this->bill_type ) {
+			case WDGCampaignBill::$bill_type_crowdfunding_commission:
+				$params[ 'object_id' ] = $this->campaign->ID;
+				break;
+			case WDGCampaignBill::$bill_type_royalties_commission:
+				$params[ 'object_id' ] = $this->roideclaration->id;
+				break;
+		}
+		
 		$result = WDGWPRESTLib::call_post_wdg( 'bill', $params );
 		return $result;
 	}
