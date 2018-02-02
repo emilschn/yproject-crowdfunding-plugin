@@ -22,6 +22,7 @@ class WDGPostActions {
         self::add_action("upload_information_files");
         self::add_action("add_contract_model");
         self::add_action("edit_contract_model");
+        self::add_action("send_contract_model");
         self::add_action("generate_campaign_bill");
         self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
@@ -411,6 +412,63 @@ class WDGPostActions {
 			$model_name = filter_input( INPUT_POST, 'contract_edit_model_name' );
 			$model_content = filter_input( INPUT_POST, 'contract_edit_model_content' );
 			WDGWPREST_Entity_ContractModel::edit( $contract_model_id, $model_name, $model_content );
+		}
+		
+		$url_return = wp_get_referer() . "#informations";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function send_contract_model() {
+		$WDGUser_current = WDGUser::current();
+		$contract_model_id = filter_input( INPUT_GET, 'model' );
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $contract_model_id ) ) {
+			// On récupère l'objet modèle, pour récupérer la campagne correspondante
+			$contract_model = WDGWPREST_Entity_ContractModel::get( $contract_model_id );
+			$campaign_api_id = $contract_model->entity_id;
+			$campaign = new ATCF_Campaign( FALSE, $campaign_api_id );
+			
+			// On récupère la liste des investissements
+			$payment_list = $campaign->payments_data();
+			foreach ( $payment_list as $payment_item ) {
+				$payment_id = $payment_item[ 'ID' ];
+				// Si le fichier n'existe pas, créer un fichier et sauvegarder dans meta amendment_file_ID
+				$meta_payment_amendment_file = get_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, TRUE );
+				if ( empty( $meta_payment_amendment_file ) ) {
+					$html_content = nl2br( $contract_model->model_content );
+					$buffer = __DIR__. '/../pdf_files/tmp';
+					if ( !is_dir( $buffer ) ) {
+						mkdir( $buffer, 0777, true );
+					}
+					$filepath = $buffer. '/' .$contract_model_id. '-' .$payment_id. '.pdf';
+					generatePDF( $html_content, $filepath );
+					$byte_array = file_get_contents( $filepath );
+					$file_create_item = WDGWPREST_Entity_File::create( $payment_id, 'investment', 'amendment', 'pdf', base64_encode( $byte_array ) );
+					update_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, $file_create_item->id );
+				}
+				// Si le contrat n'existe pas sur Signsquid, créer un contrat-elec sur Signsquid dans meta amendment_signsquid_ID
+				$meta_payment_amendment_signsquid = get_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, TRUE );
+				if ( empty( $meta_payment_amendment_signsquid ) ) {
+					$WDGUser = new WDGUser( $payment_item['user'] );
+					$user_name = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname();
+					$user_email = $WDGUser->get_email();
+					if ( WDGOrganization::is_user_organization( $WDGUser->get_wpref() ) ) {
+						$WDGOrganization = new WDGOrganization( $WDGUser->get_wpref() );
+						$user_name = $WDGOrganization->get_name();
+					}
+					$contract_name = $contract_model->model_name;
+					if ( ypcf_check_user_phone_format( $WDGUser->get_phone_number() ) ) {
+						$mobile_phone = ypcf_format_french_phonenumber( $WDGUser->get_phone_number() );
+					}
+					$signsquid_contract_id = signsquid_create_contract( $contract_name );
+					signsquid_add_signatory( $signsquid_contract_id, $user_name, $user_email, $mobile_phone );
+					signsquid_add_file( $signsquid_contract_id, $filepath );
+					signsquid_send_invite( $signsquid_contract_id );
+					update_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, $signsquid_contract_id );
+				}
+				// Si le contrat n'existe pas sur l'API, créer le contrat correspondant sur l'API et sauvegarder dans meta amendment_contract_ID
+				//TODO
+			}
 		}
 		
 		$url_return = wp_get_referer() . "#informations";
