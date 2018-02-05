@@ -21,8 +21,6 @@ function ypcf_check_redirections() {
 
 			case 'paiement-effectue':
 				WDGRoutes::redirect_invest_if_not_logged_in();
-				if (isset($_SESSION['redirect_current_campaign_id'])) unset($_SESSION['redirect_current_campaign_id']);
-				if (isset($_SESSION['redirect_current_amount_part'])) unset($_SESSION['redirect_current_amount_part']);
 			break;
 		}
     }
