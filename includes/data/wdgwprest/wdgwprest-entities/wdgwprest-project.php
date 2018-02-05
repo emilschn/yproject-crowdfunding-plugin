@@ -220,4 +220,14 @@ class WDGWPREST_Entity_Project {
 		}
 		return $buffer;
 	}
+	
+	public static function get_contract_models( $project_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/contract-models' );
+		return $result_obj;
+	}
+	
+	public static function get_contracts( $project_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/contracts' );
+		return $result_obj;
+	}
 }

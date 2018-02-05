@@ -20,6 +20,8 @@ class WDGPostActions {
         self::add_action("organization_sign_mandate");
         self::add_action("organization_remove_mandate");
         self::add_action("upload_information_files");
+        self::add_action("add_contract_model");
+        self::add_action("edit_contract_model");
         self::add_action("generate_campaign_bill");
         self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
@@ -382,6 +384,35 @@ class WDGPostActions {
 		move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../kyc/' . $random_filename );
 		
 		$campaign->__set( ATCF_Campaign::$key_backoffice_businessplan, $random_filename );
+		
+		$url_return = wp_get_referer() . "#informations";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function add_contract_model() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$model_name = filter_input( INPUT_POST, 'contract_model_name' );
+			$model_content = filter_input( INPUT_POST, 'contract_model_content' );
+			WDGWPREST_Entity_ContractModel::create( $campaign->get_api_id(), 'project', 'investment_amendment', $model_name, $model_content );
+		}
+		
+		$url_return = wp_get_referer() . "#informations";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function edit_contract_model() {
+		$WDGUser_current = WDGUser::current();
+		$contract_model_id = filter_input( INPUT_POST, 'contract_edit_model_id' );
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $contract_model_id ) ) {
+			$model_name = filter_input( INPUT_POST, 'contract_edit_model_name' );
+			$model_content = filter_input( INPUT_POST, 'contract_edit_model_content' );
+			WDGWPREST_Entity_ContractModel::edit( $contract_model_id, $model_name, $model_content );
+		}
 		
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );

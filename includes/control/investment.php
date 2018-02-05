@@ -104,7 +104,7 @@ class WDGInvestment {
 		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d H:i:s' );
 		
 		if ( !empty( $amount ) ) {
-			$_SESSION[ 'redirect_current_amount' ] = $amount;
+			$_SESSION[ 'redirect_current_amount_part' ] = $amount;
 		}
 		if ( !empty( $user_type ) ) {
 			$_SESSION[ 'redirect_current_user_type' ] = $user_type;
@@ -154,7 +154,7 @@ class WDGInvestment {
 	 */
 	public function get_session_amount() {
 		if ( !isset( $this->session_amount ) ) {
-			$this->session_amount = $_SESSION[ 'redirect_current_amount' ];
+			$this->session_amount = $_SESSION[ 'redirect_current_amount_part' ];
 		}
 		return $this->session_amount;
 	}

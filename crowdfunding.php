@@ -121,7 +121,8 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-declaration.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-bankinfo.php' );
-
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract-model.php' );
+		
 		require( $this->includes_dir . 'control/ajax.php' );
 		require( $this->includes_dir . 'control/post.php' );
 		require( $this->includes_dir . 'control/cron.php' );
