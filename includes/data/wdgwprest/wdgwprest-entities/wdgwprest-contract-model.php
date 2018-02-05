@@ -52,6 +52,19 @@ class WDGWPREST_Entity_ContractModel {
 	}
 	
 	/**
+	 * Met à jour le statut du contrat
+	 * @param int $contract_model_id
+	 * @param string $status
+	 * @return object
+	 */
+	public static function update_status( $contract_model_id, $status ) {
+		$parameters = array(
+			'status'	=> $status
+		);
+		return WDGWPRESTLib::call_post_wdg( 'contract-model/' .$contract_model_id, $parameters );
+	}
+	
+	/**
 	 * Récupère la liste des contrats liés à un modèle
 	 * @param int $contract_model_id
 	 * @return array
