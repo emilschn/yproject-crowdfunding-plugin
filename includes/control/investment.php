@@ -97,14 +97,17 @@ class WDGInvestment {
 	 * @param string $user_type
 	 */
 	public function update_session( $amount = FALSE, $user_type = FALSE ) {
+		ypcf_session_start();
 		date_default_timezone_set("Europe/Paris");
 		$current_datetime = new DateTime();
 		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d H:i:s' );
 		
 		if ( !empty( $amount ) ) {
+			$_SESSION[ 'invest_amount' ] = $amount;
 			$_SESSION[ 'redirect_current_amount_part' ] = $amount;
 		}
 		if ( !empty( $user_type ) ) {
+			$_SESSION[ 'invest_user_type' ] = $user_type;
 			$_SESSION[ 'redirect_current_user_type' ] = $user_type;
 		}
 	}
@@ -153,6 +156,9 @@ class WDGInvestment {
 	public function get_session_amount() {
 		if ( !isset( $this->session_amount ) ) {
 			$this->session_amount = $_SESSION[ 'redirect_current_amount_part' ];
+			if ( empty( $this->session_amount ) ) {
+				$this->session_amount = $_SESSION[ 'invest_amount' ];
+			}
 		}
 		return $this->session_amount;
 	}
@@ -183,6 +189,9 @@ class WDGInvestment {
 	public function get_session_user_type() {
 		if ( !isset( $this->session_user_type ) ) {
 			$this->session_user_type = $_SESSION[ 'redirect_current_user_type' ];
+			if ( empty( $this->session_user_type ) ) {
+				$this->session_user_type = $_SESSION[ 'invest_user_type' ];
+			}
 		}
 		return $this->session_user_type;
 	}
