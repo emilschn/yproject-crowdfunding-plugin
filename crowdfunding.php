@@ -116,6 +116,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-bankinfo.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract-model.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-file.php' );
 		
 		require( $this->includes_dir . 'control/social/FacebookApp/autoload.php' );
 
