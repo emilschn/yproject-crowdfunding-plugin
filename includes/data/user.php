@@ -335,7 +335,8 @@ class WDGUser {
 		if ( !empty( $telephone ) ) {
 			update_user_meta( $this->wp_user->ID, 'user_mobile_phone', $telephone );
 		}
-		WDGWPREST_Entity_User::update( $this );
+		
+		$this->update_api();
 	}
 	
 	/**
