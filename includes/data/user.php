@@ -173,6 +173,10 @@ class WDGUser {
 	public function get_description() {
 		return $this->wp_user->get( 'description' );
 	}
+		
+	public function get_birthplace() {
+		return $this->wp_user->get('user_birthplace');
+	}
 	
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
@@ -313,6 +317,8 @@ class WDGUser {
 		if ( !empty( $telephone ) ) {
 			update_user_meta( $this->wp_user->ID, 'user_mobile_phone', $telephone );
 		}
+		
+		$this->update_api();
 	}
 	
 	/**
@@ -334,6 +340,26 @@ class WDGUser {
 	 */
 	public function save_meta( $meta_name, $meta_value ) {
 		update_user_meta( $this->wp_user->ID, $meta_name, $meta_value );
+	}
+	
+	/**
+	 * Envoie les données sur l'API
+	 */
+	public function update_api() {
+		WDGWPREST_Entity_User::update( $this );
+	}
+	
+	/**
+	 * Déplace les données des utilisateurs sur l'API
+	 */
+	public static function move_users_to_api() {
+		$wpusers = get_users();
+		foreach ( $wpusers as $wpuser ) {
+			if ( !WDGOrganization::is_user_organization( $wpuser->ID ) ) {
+				$WDGUser = new WDGUser( $wpuser->ID );
+				$WDGUser->update_api();
+			}
+		}
 	}
 	
 /*******************************************************************************
