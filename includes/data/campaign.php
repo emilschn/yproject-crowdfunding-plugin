@@ -112,8 +112,6 @@ function atcf_create_campaign($author_ID, $title){
     add_post_meta( $newcampaign_id, 'campaign_economic_model', $edd_options['default_financiary']);
     add_post_meta( $newcampaign_id, 'campaign_implementation', $edd_options['default_team']);
 
-    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_edit_version, 3);
-
     // EDD Stuff
     add_post_meta( $newcampaign_id, '_variable_pricing', 0 );
     add_post_meta( $newcampaign_id, '_edd_price_options_mode', 1 );
@@ -223,6 +221,25 @@ class ATCF_Campaign {
 		}
 	}
 	
+	public function update_api() {
+		WDGWPREST_Entity_Project::update( $this );
+	}
+	
+	/**
+	 * Déplace les données des campagnes sur l'API
+	 */
+	public static function move_campaigns_to_api() {
+		$query_options = array(
+			'posts_per_page' => -1,
+			'post_type' => 'download'
+		);
+		$wpcampaigns = get_posts( $query_options );
+		foreach ( $wpcampaigns as $wpcampaign ) {
+			$WDGCampaign = new ATCF_Campaign( $wpcampaign->ID );
+			$WDGCampaign->update_api();
+		}
+	}
+	
 /*******************************************************************************
  * METAS
  ******************************************************************************/
@@ -249,7 +266,6 @@ class ATCF_Campaign {
 	 * Version du type de projet
 	 * @return int 
 	 */
-	public static $key_edit_version = 'campaign_edit_version';
 	public function edit_version() {
 		return 3;
 	}
@@ -1002,6 +1018,43 @@ class ATCF_Campaign {
 			$buffer .= $category->slug;
 		}
 			
+		return $buffer;
+	}
+	
+	/**
+	 * 
+	 * @param string $type Type de catégorie selon le parent : categories, activities, types, partners
+	 * @param boolean $return_str Si true, retourne une chaine de caractère
+	 * @return array or string
+	 */
+	public function get_categories_by_type( $type = 'categories', $return_str = FALSE ) {
+		// Récupération de la liste des catégories sous le slug en paramètre
+		$terms = get_terms( 'download_category', array( 'slug' => $type, 'hide_empty' => false ) );
+		$term_category_type_id = $terms[0]->term_id;
+		// Récupération de la liste des catégories de la campagne
+		$campaign_categories = $this->get_categories();
+		
+		// Construction chaine
+		if ( $return_str ) {
+			$buffer = '';
+			foreach ( $campaign_categories as $campaign_category ) {
+				if ( $campaign_category->parent == $term_category_type_id ) {
+					if ( !empty( $buffer ) ) {
+						$buffer .= ', ';
+					}
+					$buffer .= $campaign_category->name;
+				}
+			}
+			
+		// Construction tableau
+		} else {
+			$buffer = array();
+			foreach ( $campaign_categories as $campaign_category ) {
+				if ( $campaign_category->parent == $term_category_type_id ) {
+					array_push( $buffer, $campaign_category->term_id );
+				}
+			}
+		}
 		return $buffer;
 	}
 	

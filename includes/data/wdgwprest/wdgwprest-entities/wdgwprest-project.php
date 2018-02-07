@@ -25,9 +25,59 @@ class WDGWPREST_Entity_Project {
 	 * @return array
 	 */
 	public static function set_post_parameters( ATCF_Campaign $campaign ) {
+		$vote_results = WDGCampaignVotes::get_results( $campaign->ID );
+        $list_date = $vote_results['list_date'];
+        $beginvotedate = date_create( $list_date[0] );
+		$file_name_contract_orga = $campaign->backoffice_contract_orga();
+		if ( !empty( $file_name_contract_orga ) ) {
+			$file_name_exploded = explode( '.', $file_name_contract_orga );
+			$file_name_contract_orga = home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/contracts/' . $file_name_contract_orga;
+		}
+		$file_name_bp = $campaign->backoffice_businessplan();
+		if ( !empty( $file_name_bp ) ) {
+			$file_name_exploded = explode( '.', $file_name_bp );
+			$file_name = home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/kyc/' . $file_name_bp;
+		}
+		
 		$parameters = array(
 			'wpref'				=> $campaign->ID,
-			'name'				=> $campaign->data->post_title
+			'name'				=> $campaign->data->post_title,
+			'url'				=> $campaign->data->post_name,
+			'status'			=> $campaign->campaign_status(),
+			'description'		=> $campaign->backoffice_summary(),
+			'can_go_next'		=> $campaign->can_go_next_status(),
+			'type'				=> $campaign->get_categories_by_type( 'types', TRUE ),
+			'category'			=> $campaign->get_categories_by_type( 'activities', TRUE ),
+			'impacts'			=> $campaign->get_categories_by_type( 'categories', TRUE ),
+			'partners'			=> $campaign->get_categories_by_type( 'partners', TRUE ),
+			'amount_collected'	=> $campaign->current_amount( FALSE ),
+			'roi_percent_estimated'	=> $campaign->roi_percent_estimated(),
+			'roi_percent'			=> $campaign->roi_percent(),
+			'estimated_budget_file'	=> $file_name_bp,
+			'funding_duration'		=> $campaign->funding_duration(),
+			'goal_minimum'			=> $campaign->minimum_goal(),
+			'goal_maximum'			=> $campaign->goal( FALSE ),
+			'yield_for_investors'	=> '1', //TODO
+			'maximum_profit'		=> $campaign->maximum_profit(),
+			'minimum_profit'		=> '1', //TODO
+			'contract_start_date'	=> $campaign->contract_start_date(),
+			'declarations_start_date'	=> $campaign->first_payment_date(),
+			'spendings_description'	=> $campaign->contract_spendings_description(),
+			'earnings_description'	=> $campaign->contract_earnings_description(),
+			'simple_info'			=> $campaign->contract_simple_info(),
+			'detailed_info'			=> $campaign->contract_detailed_info(),
+			'estimated_turnover'	=> $campaign->estimated_turnover(),
+			'blank_contract_file'	=> $file_name_contract_orga,
+			'vote_start_datetime'	=> date_format( $beginvotedate, 'Y-m-d h:i:s'),
+			'vote_end_datetime'		=> $campaign->end_vote(),
+			'vote_count'			=> $campaign->nb_voters(),
+			'vote_invest_amount'	=> $vote_results[ 'sum_invest_ready' ],
+			'funding_start_datetime'	=> $campaign->begin_collecte_date(),
+			'funding_end_datetime'		=> $campaign->end_date(),
+			'investments_count'			=> $campaign->backers_count(),
+			'costs_to_organization'		=> $campaign->get_costs_to_organization(),
+			'costs_to_investors'		=> $campaign->get_costs_to_investors(),
+			'team_contacts'			=> ''
 		);
 		return $parameters;
 	}
