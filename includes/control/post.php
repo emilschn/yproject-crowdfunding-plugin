@@ -85,25 +85,27 @@ class WDGPostActions {
 		$author_user = get_user_by( 'ID', $post_campaign->post_author );
         $mail_title = sanitize_text_field(filter_input(INPUT_POST,'mail_title'));
         $mail_content = nl2br( filter_input( INPUT_POST, 'mail_content' ) );
-        $mail_recipients = (json_decode("[".filter_input(INPUT_POST,'mail_recipients')."]"));
+		$mail_recipients = explode( ',', filter_input( INPUT_POST, 'mail_recipients' ) );
 		
 		global $wpdb;
         $table_vote = $wpdb->prefix . "ypcf_project_votes";
         $list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum FROM ".$table_vote." WHERE post_id = ".$campaign_id." AND validate_project = 1", OBJECT_K);
 
         foreach ( $mail_recipients as $id_user ) {
-            //TODO : Re-vérifier si l'utilisateur peut bien envoyer à la personne (vérifier si dans la liste des suiveurs/votants/investisseurs)
-            $user = get_userdata( intval( $id_user ) );
-            $to = $user->user_email;
-            $user_data= array(
-                'userfirstname'	=> $user->first_name,
-                'userlastname'	=> $user->last_name,
-                'investwish'	=> $list_user_voters[ $id_user ]->invest_sum
-            );
+			if ( is_int( $id_user ) ) {
+				//TODO : Re-vérifier si l'utilisateur peut bien envoyer à la personne (vérifier si dans la liste des suiveurs/votants/investisseurs)
+				$user = get_userdata( intval( $id_user ) );
+				$to = $user->user_email;
+				$user_data= array(
+					'userfirstname'	=> $user->first_name,
+					'userlastname'	=> $user->last_name,
+					'investwish'	=> $list_user_voters[ $id_user ]->invest_sum
+				);
 
-            $this_mail_content = WDGFormProjects::build_mail_text( $mail_content, $mail_title, $campaign_id, $user_data );
-		
-			NotificationsAPI::project_mail( $to, $author_user->user_email, $user->first_name, $post_campaign->post_title, get_permalink( $campaign_id ), $mail_title, $this_mail_content['body'] );
+				$this_mail_content = WDGFormProjects::build_mail_text( $mail_content, $mail_title, $campaign_id, $user_data );
+
+				NotificationsAPI::project_mail( $to, $author_user->user_email, $user->first_name, $post_campaign->post_title, get_permalink( $campaign_id ), $mail_title, $this_mail_content['body'] );
+			}
         }
 
         wp_safe_redirect( wp_get_referer()."&send_mail_success=1#contacts" );
