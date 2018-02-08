@@ -438,17 +438,33 @@ class WDGPostActions {
 					// Si le fichier n'existe pas, créer un fichier et sauvegarder dans meta amendment_file_ID
 					$meta_payment_amendment_file = get_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_file ) ) {
-						$html_content = nl2br( $contract_model->model_content );
 						$buffer = __DIR__. '/../pdf_files/tmp';
 						if ( !is_dir( $buffer ) ) {
 							mkdir( $buffer, 0777, true );
 						}
 						$filepath = $buffer. '/' .$contract_model_id. '-' .$payment_id. '.pdf';
+						
+						global $shortcode_investor_user_obj, $shortcode_investor_orga_obj;
+						$shortcode_investor_user_obj = new WDGUser( $payment_item['user'] );
+						$shortcode_investor_orga_obj = FALSE;
+						if ( WDGOrganization::is_user_organization( $payment_item['user'] ) ) {
+							$shortcode_investor_orga_obj = new WDGOrganization( $payment_item['user'] );
+							$user_by_email = get_user_by( 'email', $payment_item['email'] );
+							$shortcode_investor_user_obj = new WDGUser( $user_by_email->ID );
+						}
+						WDG_PDF_Generator::add_shortcodes();
+						add_filter( 'WDG_PDF_Generator_filter', 'wptexturize' );
+						add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
+						add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
+						add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
+						$html_content = apply_filters( 'WDG_PDF_Generator_filter', nl2br( $contract_model->model_content ) );
+						
 						generatePDF( $html_content, $filepath );
 						$byte_array = file_get_contents( $filepath );
 						$file_create_item = WDGWPREST_Entity_File::create( $payment_id, 'investment', 'amendment', 'pdf', base64_encode( $byte_array ) );
 						update_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, $file_create_item->id );
 					}
+					/*
 					// Si le contrat n'existe pas sur Signsquid, créer un contrat electronique sur Signsquid dans meta amendment_signsquid_ID
 					$meta_payment_amendment_signsquid = get_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_signsquid ) ) {
@@ -469,12 +485,13 @@ class WDGPostActions {
 						signsquid_send_invite( $meta_payment_amendment_signsquid );
 						update_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, $meta_payment_amendment_signsquid );
 					}
+					
 					// Si le contrat n'existe pas sur l'API, créer le contrat correspondant sur l'API et sauvegarder dans meta amendment_contract_ID
 					$meta_payment_amendment_contract = get_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_contract ) && !empty( $meta_payment_amendment_signsquid ) ) {
 						$api_contract_item = WDGWPREST_Entity_Contract::create( $contract_model_id, 'investment', $payment_id, 'Signsquid', $meta_payment_amendment_signsquid );
 						update_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, $api_contract_item->id );
-					}
+					}*/
 				}
 			}
 			
@@ -638,9 +655,18 @@ class WDGPostActions {
 		$invest_email = $current_user->user_email;
 		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
 			$orga_creator = get_user_by( 'id', $user_type_session );
-			$invest_email = $orga_creator->user_email;
+			$orga_email = $orga_creator->user_email;
+			$investment_id = $campaign->add_investment(
+				'check', $invest_email, $amount_total, 'pending',
+				'', '', 
+				'', '', '', 
+				'', '', '', '', '', 
+				'', '', '', '', '', 
+				$orga_email
+			);
+		} else {
+			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
 		}
-		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
 		
 		
 		$file_uploaded_data = $_FILES['check_picture'];
@@ -685,9 +711,18 @@ class WDGPostActions {
 		$invest_email = $current_user->user_email;
 		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
 			$orga_creator = get_user_by( 'id', $user_type_session );
-			$invest_email = $orga_creator->user_email;
+			$orga_email = $orga_creator->user_email;
+			$investment_id = $campaign->add_investment(
+				'check', $invest_email, $amount_total, 'pending',
+				'', '', 
+				'', '', '', 
+				'', '', '', '', '', 
+				'', '', '', '', '', 
+				$orga_email
+			);
+		} else {
+			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
 		}
-		$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
 		
 		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
