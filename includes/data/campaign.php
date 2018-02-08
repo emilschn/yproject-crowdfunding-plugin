@@ -712,7 +712,11 @@ class ATCF_Campaign {
 
     public static $key_funding_duration = 'campaign_funding_duration';
     public function funding_duration() {
-	    return $this->__get(ATCF_Campaign::$key_funding_duration);
+		$buffer = $this->__get(ATCF_Campaign::$key_funding_duration);
+		if ( empty( $buffer ) ) {
+			$buffer = 5;
+		}
+	    return $buffer;
 	}
 
     public static $key_roi_percent_estimated = 'campaign_roi_percent_estimated';

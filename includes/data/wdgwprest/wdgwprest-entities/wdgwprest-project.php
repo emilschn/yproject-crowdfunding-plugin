@@ -68,7 +68,7 @@ class WDGWPREST_Entity_Project {
 			'detailed_info'			=> $campaign->contract_detailed_info(),
 			'estimated_turnover'	=> $campaign->estimated_turnover(),
 			'blank_contract_file'	=> $file_name_contract_orga,
-			'vote_start_datetime'	=> date_format( $beginvotedate, 'Y-m-d h:i:s'),
+			'vote_start_datetime'	=> date_format( $beginvotedate, 'Y-m-d H:i:s'),
 			'vote_end_datetime'		=> $campaign->end_vote(),
 			'vote_count'			=> $campaign->nb_voters(),
 			'vote_invest_amount'	=> $vote_results[ 'sum_invest_ready' ],
@@ -103,11 +103,16 @@ class WDGWPREST_Entity_Project {
 	 * @return object
 	 */
 	public static function update( ATCF_Campaign $campaign ) {
-		$parameters = WDGWPREST_Entity_Project::set_post_parameters( $campaign );
+		$buffer = FALSE;
 		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'project/' . $campaign->get_api_id(), $parameters );
-		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
-		return $result_obj;
+		$api_id = $campaign->get_api_id();
+		if ( !empty( $api_id ) ) {
+			$parameters = WDGWPREST_Entity_Project::set_post_parameters( $campaign );
+
+			$buffer = WDGWPRESTLib::call_post_wdg( 'project/' . $campaign->get_api_id(), $parameters );
+			if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
+		}
+		return $buffer;
 	}
 	
 	/**
