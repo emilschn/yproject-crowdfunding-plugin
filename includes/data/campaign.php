@@ -1055,7 +1055,7 @@ class ATCF_Campaign {
 			$buffer = array();
 			foreach ( $campaign_categories as $campaign_category ) {
 				if ( $campaign_category->parent == $term_category_type_id ) {
-					array_push( $buffer, $campaign_category->term_id );
+					array_push( $buffer, $campaign_category );
 				}
 			}
 		}

@@ -50,6 +50,7 @@ class WDGWPREST_Entity_Project {
 			'category'			=> $campaign->get_categories_by_type( 'activities', TRUE ),
 			'impacts'			=> $campaign->get_categories_by_type( 'categories', TRUE ),
 			'partners'			=> $campaign->get_categories_by_type( 'partners', TRUE ),
+			'tousnosprojets'	=> $campaign->get_categories_by_type( 'tousnosprojets', TRUE ),
 			'amount_collected'	=> $campaign->current_amount( FALSE ),
 			'roi_percent_estimated'	=> $campaign->roi_percent_estimated(),
 			'roi_percent'			=> $campaign->roi_percent(),
