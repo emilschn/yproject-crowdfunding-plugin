@@ -464,7 +464,7 @@ class WDGPostActions {
 						$file_create_item = WDGWPREST_Entity_File::create( $payment_id, 'investment', 'amendment', 'pdf', base64_encode( $byte_array ) );
 						update_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, $file_create_item->id );
 					}
-					/*
+					
 					// Si le contrat n'existe pas sur Signsquid, créer un contrat electronique sur Signsquid dans meta amendment_signsquid_ID
 					$meta_payment_amendment_signsquid = get_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_signsquid ) ) {
@@ -491,7 +491,7 @@ class WDGPostActions {
 					if ( empty( $meta_payment_amendment_contract ) && !empty( $meta_payment_amendment_signsquid ) ) {
 						$api_contract_item = WDGWPREST_Entity_Contract::create( $contract_model_id, 'investment', $payment_id, 'Signsquid', $meta_payment_amendment_signsquid );
 						update_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, $api_contract_item->id );
-					}*/
+					}
 				}
 			}
 			
