@@ -2464,8 +2464,8 @@ class ATCF_Campaign {
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
 	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
 	public static function get_list_funding( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client ); }
-	public static function get_list_funded( $nb = 0, $client = '', $include_current = false ) {
-		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client );
+	public static function get_list_funded( $nb = 0, $client = '', $include_current = false, $skip_hidden = true ) {
+		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client, $skip_hidden );
 		if ( $include_current ) {
 			$list_current = ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client );
 			foreach ( $list_current as $campaign_post ) {
@@ -2510,7 +2510,7 @@ class ATCF_Campaign {
 		}
 		return get_posts( $query_options );
 	}
-	public static function get_list_finished( $nb, $type, $client ) {
+	public static function get_list_finished( $nb, $type, $client, $skip_hidden = TRUE ) {
 		$query_options = array(
 			'numberposts' => $nb,
 			'post_type' => 'download',
@@ -2518,13 +2518,21 @@ class ATCF_Campaign {
 			'meta_query' => array (
 				'relation' => 'AND',
 				array ( 'key' => 'campaign_vote', 'value' => $type ),
-				array ( 'key' => 'campaign_funding_type', 'value' => 'fundingproject' ),
-				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
+				array ( 'key' => 'campaign_funding_type', 'value' => 'fundingproject' )
 			),
 			'meta_key' => 'campaign_end_date',
 			'orderby' => 'meta_value',
 			'order' => 'desc'
 		);
+		
+		// Si on ne veut pas les campagnes masquées, on ajoute une requete sur les META
+		if ( $skip_hidden ) {
+			array_push(
+				$query_options[ 'meta_query' ],
+				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
+			);	
+		}
+		
 		if (!empty($client)) {
 			$query_options['tax_query'] = array( array( 
 				'taxonomy' => 'download_tag',
