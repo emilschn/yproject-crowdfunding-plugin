@@ -487,6 +487,10 @@ class WDGPostActions {
 						signsquid_add_file( $meta_payment_amendment_signsquid, $filepath );
 						signsquid_send_invite( $meta_payment_amendment_signsquid );
 						update_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, $meta_payment_amendment_signsquid );
+						$new_contract_infos = signsquid_get_contract_infos( $meta_payment_amendment_signsquid );
+						if ( isset( $new_contract_infos ) && isset( $new_contract_infos->{'signatories'}[0]->{'code'} ) ) {
+							NotificationsEmails::send_new_contract_code_user( $user_name, $user_email, $contract_name, $new_contract_infos->{'signatories'}[0]->{'code'} );
+						}
 					}
 					
 					// Si le contrat n'existe pas sur l'API, créer le contrat correspondant sur l'API et sauvegarder dans meta amendment_contract_ID

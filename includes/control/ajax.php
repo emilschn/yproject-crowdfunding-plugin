@@ -1593,7 +1593,7 @@ class WDGAjaxActions {
 							if ( $wdg_contract->status == 'validated' ) {
 								$wdg_contract_status = 'Contrat signé';
 							} else {
-								$signsquid_contract = new SignsquidContract( $item_invest[ 'ID' ] );
+								$signsquid_contract = new SignsquidContract( FALSE, $wdg_contract->partner_id );
 								$signsquid_status = $signsquid_contract->get_status_code();
 								if ( $signsquid_status == 'Agreed' ) {
 									WDGWPREST_Entity_Contract::edit( $wdg_contract_id, 'validated' );
