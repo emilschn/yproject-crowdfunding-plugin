@@ -189,7 +189,7 @@ class WDGCronActions {
 		$buffer_partners .= '<mode_financement>ROY</mode_financement>' . "\n"; //TNP :: Mode de financement (DON, DOC, PRE, PRR, ACT, OBL) - invention ROY
 		$buffer_partners .= '<type_porteur_projet>ENT</type_porteur_projet>' . "\n"; //TNP :: Statut du PP (ENT, ASS, PAR, COL)
 		$buffer_partners .= '<qualif_ESS>non</qualif_ESS>' . "\n"; //TNP :: Qualification ESS du porteur projet
-		$buffer_partners .= '<code_postal>' .$organization_obj->get_postal_code(). '</code_postal>' . "\n";
+		$buffer_partners .= '<code_postal>' .$organization_obj->get_postal_code( true ). '</code_postal>' . "\n";
 		$buffer_partners .= '<ville>' .$organization_obj->get_city(). '</ville>' . "\n";
 
 		$buffer_partners .= '<titre><![CDATA['.$campaign->data->post_title.']]></titre>' . "\n"; //TNP
