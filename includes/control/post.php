@@ -428,10 +428,16 @@ class WDGPostActions {
 		$WDGUser_current = WDGUser::current();
 		$contract_model_id = filter_input( INPUT_GET, 'model' );
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $contract_model_id ) ) {
+			global $shortcode_campaign_obj, $shortcode_organization_obj, $shortcode_organization_creator;
 			// On récupère l'objet modèle, pour récupérer la campagne correspondante
 			$contract_model = WDGWPREST_Entity_ContractModel::get( $contract_model_id );
 			$campaign_api_id = $contract_model->entity_id;
 			$campaign = new ATCF_Campaign( FALSE, $campaign_api_id );
+			$shortcode_campaign_obj = $campaign;
+			$campaign_orga = $campaign->get_organization();
+			$shortcode_organization_obj = new WDGOrganization( $campaign_orga->wpref );
+			$campaign_orga_linked_users = $shortcode_organization_obj->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			$shortcode_organization_creator = $campaign_orga_linked_users[0];
 			
 			// On récupère la liste des investissements
 			$payment_list = $campaign->payments_data();
