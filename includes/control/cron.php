@@ -95,7 +95,7 @@ class WDGCronActions {
 			wp_reset_query();
 			
 			// Récupération des projets finis depuis moins d'un mois
-			ATCF_Campaign::list_projects_funded();
+			ATCF_Campaign::list_projects_funded( 50 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );
@@ -110,7 +110,7 @@ class WDGCronActions {
 			wp_reset_query();
 			
 		} else {
-			ATCF_Campaign::list_projects_funded( 40 );
+			ATCF_Campaign::list_projects_funded( 50 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );
