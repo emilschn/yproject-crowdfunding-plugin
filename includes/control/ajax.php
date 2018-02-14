@@ -541,13 +541,16 @@ class WDGAjaxActions {
 		if ( isset( $_POST["new_project_types"] ) ) $new_project_types = $_POST["new_project_types"];
 		$new_project_partners = array();
 		if ( isset( $_POST["new_project_partners"] ) ) $new_project_partners = $_POST["new_project_partners"];
-		$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types, $new_project_partners );
+		$new_project_tousnosprojets = array();
+		if ( isset( $_POST["new_project_tousnosprojets"] ) ) $new_project_tousnosprojets = $_POST["new_project_tousnosprojets"];
+		$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types, $new_project_partners, $new_project_tousnosprojets );
 		$cat_ids = array_map( 'intval', $cat_ids );
 		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
 		$success["new_project_categories"] = 1;
 		$success["new_project_activities"] = 1;
 		$success["new_project_types"] = 1;
 		$success["new_project_partners"] = 1;
+		$success["new_project_tousnosprojets"] = 1;
 
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));
@@ -1517,6 +1520,15 @@ class WDGAjaxActions {
             $array_contacts[$u_id]["vote_advice"]= ( !empty( $item_vote->advice ) ) ? '<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>' : '';
 			$array_contacts[$u_id]["vote_rate"] = $item_vote->rate_project;
         }
+		
+		// Contrats complémentaires éventuels
+		$contracts_to_add = array();
+		$contract_models = WDGWPREST_Entity_Project::get_contract_models( $campaign->get_api_id() );
+		foreach ( $contract_models as $contract_model ) {
+			if ( $contract_model->status == 'sent' ) {
+				array_push( $contracts_to_add, $contract_model );
+			}
+		}
 
         //Extraction infos d'investissements
         foreach ( $investments_list['payments_data'] as $item_invest ) {
@@ -1566,7 +1578,36 @@ class WDGAjaxActions {
             if ($payment_state == "En attente" && $current_wdg_user->is_admin() && empty( $contract_status ) ) {
                 $payment_state .= '<br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
                 $payment_state .= '<br /><br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
-            }
+            
+			} else if ( $payment_state == 'Terminé' ) {
+				$more_invest["invest_contracts"] = array();
+				$contract_model_index = 1;
+				foreach ( $contracts_to_add as $contract_model ) {
+					$wdg_contract_id = get_post_meta( $item_invest[ 'ID' ], 'amendment_contract_' . $contract_model->id, TRUE );
+					$wdg_contract_status = 'Pas de contrat';
+					
+					if ( !empty( $wdg_contract_id ) ) {
+						$wdg_contract = WDGWPREST_Entity_Contract::get( $wdg_contract_id );
+						if ( $wdg_contract ) {
+							
+							$wdg_contract_status = 'En attente';
+							if ( $wdg_contract->status == 'validated' ) {
+								$wdg_contract_status = 'Contrat signé';
+							} else {
+								$signsquid_contract = new SignsquidContract( FALSE, $wdg_contract->partner_id );
+								$signsquid_status = $signsquid_contract->get_status_code();
+								if ( $signsquid_status == 'Agreed' ) {
+									WDGWPREST_Entity_Contract::edit( $wdg_contract_id, 'validated' );
+								}
+								$wdg_contract_status = $signsquid_contract->get_status_str();
+							}
+						}
+					}
+					
+					$array_contacts[$u_id]['invest_contract_' .$contract_model_index] = $wdg_contract_status;
+					$contract_model_index++;
+				}
+			}
 			
 			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
 			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
@@ -1711,6 +1752,14 @@ class WDGAjaxActions {
             new ContactColumn('invest_sign', 'Signature', false),
             new ContactColumn('invest_state', 'Investissement', $display_invest_infos),
         );
+		
+		if ( $contracts_to_add ) {
+			$contract_model_index = 1;
+			foreach ( $contracts_to_add as $contract_model ) {
+				array_push( $array_columns, new ContactColumn('invest_contract_' .$contract_model_index, 'Contrat ' .$contract_model_index, $display_invest_infos) );
+				$contract_model_index++;
+			}
+		}
 
         ?>
         <div class="wdg-datatable" >

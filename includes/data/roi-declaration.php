@@ -64,7 +64,9 @@ class WDGROIDeclaration {
 				$this->transfered_previous_remaining_amount = $collection_item->transfered_previous_remaining_amount;
 				$this->employees_number = $collection_item->employees_number;
 				$this->other_fundings = $collection_item->other_fundings;
-				$this->on_api = $collection_item->on_api;
+				if ( isset( $collection_item->on_api ) ) {
+					$this->on_api = $collection_item->on_api;
+				}
 
 			} else {
 				// Récupération en priorité depuis l'API

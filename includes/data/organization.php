@@ -343,8 +343,12 @@ class WDGOrganization {
 		$this->address = $value;
 	}
 	
-	public function get_postal_code() {
-		return $this->postal_code;
+	public function get_postal_code( $complete_french = false ) {
+		$buffer = $this->postal_code;
+		if ( $complete_french && strlen( $buffer ) == 4 ) {
+			$buffer = '0' . $buffer;
+		}
+		return $buffer;
 	}
 	public function set_postal_code($value) {
 		$this->postal_code = $value;

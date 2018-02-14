@@ -263,10 +263,15 @@ class SignsquidContract {
 		'NewVersionAvailable' => 'Contrat mis &agrave; jour'
 	);
     
-	public function __construct($payment_id) {
-		$this->payment_id = $payment_id;
-		$this->payment_amount = edd_get_payment_amount($this->payment_id);
-		$this->contract_id = get_post_meta($payment_id, 'signsquid_contract_id', true);
+	public function __construct( $payment_id, $contract_id = FALSE ) {
+		if ( !empty( $payment_id ) ) {
+			$this->payment_id = $payment_id;
+			$this->payment_amount = edd_get_payment_amount($this->payment_id);
+			$this->contract_id = get_post_meta($payment_id, 'signsquid_contract_id', true);
+			
+		} else {
+			$this->contract_id = $contract_id;
+		}
 		
 		$this->update_status_code();
 	}
@@ -302,7 +307,7 @@ class SignsquidContract {
 		$this->status_code = FALSE;
 		
 		//Si c'est une petite somme, on ne fait pas de vérification, c'est ok !
-		if ( $this->payment_amount <= WDGInvestmentContract::$signature_minimum_amount ) {
+		if ( isset( $this->payment_amount ) && $this->payment_amount <= WDGInvestmentContract::$signature_minimum_amount ) {
 			$this->status_code = "Small";
 			
 		} else {

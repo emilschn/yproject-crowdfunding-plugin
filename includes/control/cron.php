@@ -95,7 +95,7 @@ class WDGCronActions {
 			wp_reset_query();
 			
 			// Récupération des projets finis depuis moins d'un mois
-			ATCF_Campaign::list_projects_funded();
+			ATCF_Campaign::list_projects_funded( 50 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );
@@ -110,7 +110,7 @@ class WDGCronActions {
 			wp_reset_query();
 			
 		} else {
-			ATCF_Campaign::list_projects_funded( 40 );
+			ATCF_Campaign::list_projects_funded( 50 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );
@@ -174,12 +174,22 @@ class WDGCronActions {
 		$buffer_partners .= '<impact_environnemental>non</impact_environnemental>' . "\n";
 		$buffer_partners .= '<impact_culturel>non</impact_culturel>' . "\n";
 		$buffer_partners .= '<impact_eco>oui</impact_eco>' . "\n";
+		
+		//TNP : catégories, 2 max
+		$tnp_categories = WDGCronActions::get_single_project_rss_tousnosprojet_categories( $campaign );
+		$buffer_partners .= '<categorie>' . "\n";
+		$index = 1;
+		foreach ( $tnp_categories as $tnp_category ) {
+			$buffer_partners .= '<categorie'.$index.'>'.$tnp_category.'</categorie'.$index.'>' . "\n";
+		}
+		$buffer_partners .= '</categorie>' . "\n";
+		
 
 		$buffer_partners .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>' . "\n"; //TNP :: Mots-clés TODO
 		$buffer_partners .= '<mode_financement>ROY</mode_financement>' . "\n"; //TNP :: Mode de financement (DON, DOC, PRE, PRR, ACT, OBL) - invention ROY
 		$buffer_partners .= '<type_porteur_projet>ENT</type_porteur_projet>' . "\n"; //TNP :: Statut du PP (ENT, ASS, PAR, COL)
 		$buffer_partners .= '<qualif_ESS>non</qualif_ESS>' . "\n"; //TNP :: Qualification ESS du porteur projet
-		$buffer_partners .= '<code_postal>' .$organization_obj->get_postal_code(). '</code_postal>' . "\n";
+		$buffer_partners .= '<code_postal>' .$organization_obj->get_postal_code( true ). '</code_postal>' . "\n";
 		$buffer_partners .= '<ville>' .$organization_obj->get_city(). '</ville>' . "\n";
 
 		$buffer_partners .= '<titre><![CDATA['.$campaign->data->post_title.']]></titre>' . "\n"; //TNP
@@ -217,6 +227,44 @@ class WDGCronActions {
 			'rss'		=> $buffer_rss,
 			'partners'	=> $buffer_partners
 		);
+		return $buffer;
+	}
+	
+	public static function get_single_project_rss_tousnosprojet_categories( $campaign ) {
+		$buffer = array();
+		
+		$categories_list_association = array(
+			'enfance-education'				=> '01',
+			'dependance-et-exclusion'		=> '02',
+			'sante-bien-etre-sport'			=> '03',
+			'solidarite'					=> '04',
+			'technologie'					=> '21',
+			'commerce-service-de-proximite'	=> '22',
+			'industrie'						=> '23',
+			'immobilier'					=> '24',
+			'agriculture-alimentation'		=> '41',
+			'biodiversite'					=> '42',
+			'energies-renouvelables'		=> '43',
+			'transport-ville-durable'		=> '44',
+			'musique'						=> '61',
+			'video-cinema-photo'			=> '62',
+			'multimedia-jeux'				=> '63',
+			'spectacle-vivant'				=> '64',
+			'mode-design'					=> '65',
+			'edition-journalisme'			=> '66',
+			'cuisine'						=> '67',
+			'beaux-arts-et-patrimoine'		=> '68',
+		);
+		
+		$campaign_categories = $campaign->get_categories_by_type( 'tousnosprojets' );
+		$i = 0;
+		foreach ( $campaign_categories as $campaign_category_term ) {
+			if ( $i < 2 ) {
+				array_push( $buffer, $categories_list_association[ $campaign_category_term->slug ] );
+				$i++;
+			}
+		}
+		
 		return $buffer;
 	}
 }

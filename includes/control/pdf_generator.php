@@ -5,6 +5,7 @@ class WDG_PDF_Generator {
 /* Shortcodes spécifiques aux contrats */
 /******************************************************************************/
 	public static function add_shortcodes() {
+		add_shortcode( 'wdg_campaign_contract_investor_info', 'WDG_PDF_Generator::shortcode_contract_investor_info' );
 		add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
 		add_shortcode( 'wdg_campaign_contract_organization_legalform', 'WDG_PDF_Generator::shortcode_contract_organization_legalform' );
 		add_shortcode( 'wdg_campaign_contract_organization_capital', 'WDG_PDF_Generator::shortcode_contract_organization_capital' );
@@ -36,6 +37,35 @@ class WDG_PDF_Generator {
 		add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
 	}
 	
+	/**
+	 * Shortcode affichant les infos de l'investisseur
+	 */
+	public static function shortcode_contract_investor_info( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_investor_user_obj, $shortcode_investor_orga_obj, $country_list;
+
+		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+		$nationality = $country_list[ $shortcode_investor_user_obj->get_nationality() ];
+		$user_title = ( $shortcode_investor_user_obj->get_gender() == "male" ) ? "Monsieur" : "Madame";
+		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $shortcode_investor_user_obj->get_firstname() . ' ' . $shortcode_investor_user_obj->get_lastname() ) );
+		$birthday_month = mb_strtoupper( $months[ $shortcode_investor_user_obj->wp_user->get( 'user_birthday_month' ) - 1 ] );
+		$suffix_born = ( $shortcode_investor_user_obj->get_gender() == "female" ) ? 'e' : '';
+		
+		$buffer = '<strong>'.$user_name.'</strong><br />';
+		$buffer .= 'né' .$suffix_born. ' le ' .$shortcode_investor_user_obj->wp_user->get('user_birthday_day'). ' ' .$birthday_month. ' ' .$shortcode_investor_user_obj->wp_user->get('user_birthday_year'). ' &agrave; ' .$shortcode_investor_user_obj->get_birthplace(). '<br>';
+		$buffer .= 'de nationalité ' .$nationality. '<br>';
+		$buffer .= 'demeurant ' .$shortcode_investor_user_obj->get_address(). ' ' .$shortcode_investor_user_obj->get_postal_code(). ' ' .$shortcode_investor_user_obj->get_city(). '<br>';
+		$buffer .= 'Adresse e-mail : ' .$shortcode_investor_user_obj->get_email(). '<br><br>';
+		
+		if ( !empty( $shortcode_investor_orga_obj ) ) {
+			$buffer .= "agissant, ayant tous pouvoirs à l'effet des présentes, pour le compte de :<br>";
+			$buffer .= '<strong>' .$shortcode_investor_orga_obj->get_name(). ', ' .$shortcode_investor_orga_obj->get_legalform(). ' au capital de ' .$shortcode_investor_orga_obj->get_capital(). '&euro;</strong><br>';
+			$buffer .= 'dont le siège social est ' .$shortcode_investor_orga_obj->get_address(). ' ' .$shortcode_investor_orga_obj->get_postal_code(). ' ' .$shortcode_investor_orga_obj->get_city(). '<br>';
+			$buffer .= 'immatriculée sous le numéro SIREN ' .$shortcode_investor_orga_obj->get_idnumber(). ' au RCS de ' .$shortcode_investor_orga_obj->get_rcs(). '<br>';
+		}
+		
+		return $buffer;
+	}
 	/**
 	 * Shortcode affichant le nom de l'organisation qui porte le projet
 	 */
