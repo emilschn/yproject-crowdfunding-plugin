@@ -861,7 +861,7 @@ class ATCF_Campaign {
 				$buffer_declaration_object["total_roi_with_adjustment"] = $declaration_item->get_amount_with_adjustment();
 				$buffer_declaration_object["status"] = $declaration_item->status;
 				$buffer_declaration_object["roi_list"] = array();
-				if ( $roi_item->status == WDGROI::$status_transferred ) {
+				if ( $declaration_item->status == WDGROIDeclaration::$status_finished ) {
 					$roi_list = $declaration_item->get_rois();
 					foreach ( $roi_list as $roi_item ) {
 						$roi_object = array();
