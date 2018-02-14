@@ -423,7 +423,6 @@ class WDGPostActions {
 		wp_redirect( $url_return );
 		die();
 	}
-	
 	public static function send_contract_model() {
 		$WDGUser_current = WDGUser::current();
 		$contract_model_id = filter_input( INPUT_GET, 'model' );
@@ -444,14 +443,17 @@ class WDGPostActions {
 			foreach ( $payment_list as $payment_item ) {
 				if ( $payment_item[ 'status' ] == 'publish' ) {
 					$payment_id = $payment_item[ 'ID' ];
+					ypcf_debug_log( 'send_contract_model > ' . $payment_id );
 					// Si le fichier n'existe pas, créer un fichier et sauvegarder dans meta amendment_file_ID
 					$meta_payment_amendment_file = get_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_file ) ) {
+						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_file : ' . $meta_payment_amendment_file );
 						$buffer = __DIR__. '/../pdf_files/tmp';
 						if ( !is_dir( $buffer ) ) {
 							mkdir( $buffer, 0777, true );
 						}
 						$filepath = $buffer. '/' .$contract_model_id. '-' .$payment_id. '.pdf';
+						ypcf_debug_log( 'send_contract_model > $filepath : ' . $filepath );
 						
 						global $shortcode_investor_user_obj, $shortcode_investor_orga_obj;
 						$shortcode_investor_user_obj = new WDGUser( $payment_item['user'] );
@@ -466,7 +468,7 @@ class WDGPostActions {
 						add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
 						add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
 						add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
-						$html_content = apply_filters( 'WDG_PDF_Generator_filter', nl2br( $contract_model->model_content ) );
+						$html_content = apply_filters( 'WDG_PDF_Generator_filter', $contract_model->model_content );
 						
 						generatePDF( $html_content, $filepath );
 						$byte_array = file_get_contents( $filepath );
@@ -477,6 +479,8 @@ class WDGPostActions {
 					// Si le contrat n'existe pas sur Signsquid, créer un contrat electronique sur Signsquid dans meta amendment_signsquid_ID
 					$meta_payment_amendment_signsquid = get_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_signsquid ) ) {
+						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_signsquid : ' . $meta_payment_amendment_signsquid );
+						ypcf_debug_log( 'send_contract_model > $payment_item[user] : ' . $payment_item['user'] );
 						$WDGUser = new WDGUser( $payment_item['user'] );
 						$user_name = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname();
 						$user_email = $WDGUser->get_email();
@@ -485,6 +489,7 @@ class WDGPostActions {
 							$user_name = $WDGOrganization->get_name();
 						}
 						$contract_name = $contract_model->model_name;
+						$mobile_phone = null;
 						if ( ypcf_check_user_phone_format( $WDGUser->get_phone_number() ) ) {
 							$mobile_phone = ypcf_format_french_phonenumber( $WDGUser->get_phone_number() );
 						}
@@ -502,6 +507,7 @@ class WDGPostActions {
 					// Si le contrat n'existe pas sur l'API, créer le contrat correspondant sur l'API et sauvegarder dans meta amendment_contract_ID
 					$meta_payment_amendment_contract = get_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_contract ) && !empty( $meta_payment_amendment_signsquid ) ) {
+						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_contract : ' . $meta_payment_amendment_contract );
 						$api_contract_item = WDGWPREST_Entity_Contract::create( $contract_model_id, 'investment', $payment_id, 'Signsquid', $meta_payment_amendment_signsquid );
 						update_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, $api_contract_item->id );
 					}
