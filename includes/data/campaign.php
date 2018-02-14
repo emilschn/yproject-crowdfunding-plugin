@@ -766,6 +766,15 @@ class ATCF_Campaign {
 	}
 	
 	
+	public static $key_estimated_turnover_unit = 'campaign_estimated_turnover_unit';
+	public function estimated_turnover_unit() {
+		// Values : euro, percent
+	    $buffer = $this->__get( ATCF_Campaign::$key_estimated_turnover_unit );
+		if ( empty( $buffer ) ) {
+			$buffer = 'euro';
+		}
+	    return $buffer;
+	}
 	public static $key_estimated_turnover = 'campaign_estimated_turnover';
 	public function estimated_turnover() {
 	    $buffer = $this->__get( ATCF_Campaign::$key_estimated_turnover );

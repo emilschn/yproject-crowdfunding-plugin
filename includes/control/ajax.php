@@ -976,6 +976,14 @@ class WDGAjaxActions {
 				}
 			}
 		}
+		
+		$new_estimated_turnover_unit = sanitize_text_field( filter_input( INPUT_POST, 'new_estimated_turnover_unit') );
+		if ( $new_estimated_turnover_unit == 'euro' || $new_estimated_turnover_unit == 'percent' ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_estimated_turnover_unit, $new_estimated_turnover_unit );
+			$success['new_estimated_turnover_unit'] = 1;
+		} else {
+			$errors['new_estimated_turnover_unit'] = "Valeur non valide";
+		}
 
 		//Update list of estimated turnover
 		$i = 0;
