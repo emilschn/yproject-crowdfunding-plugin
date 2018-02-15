@@ -273,36 +273,27 @@ class WDGFormUsers {
 		// Si le formulaire d'inscription est rempli
 		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && WDGFormUsers::check_recaptcha($_POST['g-recaptcha-response']) ) {
 			
-			// Vérifications concernant le nom d'utilisateur et l'e-mail
-			$user_name = filter_input(INPUT_POST, 'signup_username_login');
-			$user_name = apply_filters( 'pre_user_login', $user_name );
-			if ( empty( $user_name ) ) {
-				$signup_errors->add( 'user_name', __( "Merci de saisir un identifiant", 'yproject' ) );
-			}
-			if ( !validate_username( $user_name ) ) {
-				$signup_errors->add( 'user_name', __( "Les identifiants peuvent uniquement contenir des lettres sans caract&egrave;res sp&eacute;ciaux, des chiffres, ., -, ou @", 'yproject' ) );
-			}
-			if ( strlen( $user_name ) < 4 ) {
-				$signup_errors->add( 'user_name',  __( "L'identifiant doit contenir au moins 4 caract&egrave;res", 'yproject' ) );
-			}
-			if ( false !== strpos( ' ' . $user_name, '_' ) ) {
-				$signup_errors->add( 'user_name', __( "Le caract&egrave;re _ ne peut pas &ecirc;tre utilis&eacute;.", 'yproject' ) );
-			}
-			$match = array();
-			preg_match( '/[0-9]*/', $user_name, $match );
-			if ( $match[0] == $user_name ) {
-				$signup_errors->add( 'user_name', __( "Les identifiants ne peuvent pas contenir uniquement des chiffres.", 'yproject' ) );
-			}
-			if ( username_exists( $user_name ) ) {
-				$signup_errors->add( 'user_name', __( "Cet identifiant est d&eacute;j&agrave; utilis&eacute;.", 'yproject' ) );
-			}
-			
+			// Vérifications de l'e-mail
 			$user_email = filter_input(INPUT_POST, 'signup_email');
-			if ( email_exists( $user_email ) ) {
+			$user_name = $user_email;
+			if ( empty( $user_email ) ) {
+				$signup_errors->add( 'user_email', __( "L'adresse e-mail doit &ecirc;tre d&eacute;finie.", 'yproject' ) );
+			}
+			if ( email_exists( $user_email ) || username_exists( $user_email ) ) {
 				$signup_errors->add( 'user_name', __( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ) );
 			}
 			if ( !is_email( $user_email ) ) {
 				$signup_errors->add( 'user_email', __( "Cette adresse e-mail n'est pas valide.", 'yproject' ) );
+			}
+			
+			// Vérifications sur prénom et nom
+			$user_firstname = filter_input( INPUT_POST, 'signup_firstname' );
+			if ( empty( $user_firstname ) ) {
+				$signup_errors->add( 'user_firstname', __( "Le pr&eacute;nom doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
+			}
+			$user_lastname = filter_input( INPUT_POST, 'signup_lastname' );
+			if ( empty( $user_lastname ) ) {
+				$signup_errors->add( 'user_lastname', __( "Le nom de famille doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
 			}
 
 			// Vérifications concernant le mot de passe
@@ -324,11 +315,15 @@ class WDGFormUsers {
 			$signup_error_message = $signup_errors->get_error_message();
 			if ( empty( $signup_error_message ) ) {
 
+				$display_name = $user_firstname. ' ' .substr( $user_lastname, 0, 1 ). '.';
 				$wp_user_id = wp_insert_user( array(
-					'user_login' => $user_name,
-					'user_pass' => $password,
-					'display_name' => sanitize_title( $user_name ),
-					'user_email' => $user_email
+					'user_login'	=> $user_name,
+					'user_pass'		=> $password,
+					'user_email'	=> $user_email,
+					'first_name'	=> $user_firstname,
+					'last_name'		=> $user_lastname,
+					'display_name'	=> $display_name,
+					'user_nicename' => sanitize_title( $display_name )
 				) );
 
 				if ( is_wp_error( $wp_user_id ) ) {
