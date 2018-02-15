@@ -119,7 +119,10 @@ class WDGOrganization {
 			}
 			
 			$this->representative_function = $this->bopp_object->representative_function;
-			$this->description = get_user_meta($user_id, WDGOrganization::$key_description, TRUE);
+			$this->description = $this->bopp_object->description;
+			if ( empty( $this->description ) ) {
+				$this->description = get_user_meta( $user_id, WDGOrganization::$key_description, TRUE );
+			}
 			$this->website = $this->bopp_object->website_url;
 			$this->strong_authentication = $this->bopp_object->strong_authentication;
 			$this->address = $this->bopp_object->address;
@@ -204,7 +207,6 @@ class WDGOrganization {
 		}
 		
 		update_user_meta($organization_user_id, WDGOrganization::$key_api_id, $this->api_id);
-		update_user_meta($organization_user_id, WDGOrganization::$key_description, $this->description);
 
 		return $organization_user_id;
 	}
@@ -238,8 +240,6 @@ class WDGOrganization {
 	 */
 	public function save() {
 		WDGWPREST_Entity_Organization::update( $this );
-		update_user_meta( $this->wpref, WDGOrganization::$key_description, $this->get_description() );
-		
 		
 		$new_mail = $this->get_email();
 		$meta_email = get_user_meta( $this->wpref, 'orga_contact_email', TRUE );
@@ -927,6 +927,11 @@ class WDGOrganization {
 		} else {
 			$buffer = get_user_meta( $this->wpref, WDGOrganization::$key_lemonway_status, TRUE );
 		}
+		
+		if ( $buffer == WDGOrganization::$lemonway_status_registered ) {
+			$this->set_strong_authentication( true );
+		}
+		
 		return $buffer;
 	}
 
