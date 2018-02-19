@@ -1166,10 +1166,14 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
 		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
-		$return = WDGOrganization::submit_new(FALSE);
-		$org_object = $return['org_object'];
+		$return = WDGOrganization::submit_new( FALSE );
+		$org_object = FALSE;
+		if ( !empty( $return ) ) {
+			$org_object = $return['org_object'];
+			$org_api_id = $org_object->get_api_id();
+		}
 
-		if($org_object != null){
+		if ( !empty( $org_object ) && $org_object != null && !empty( $org_api_id ) ) {
 			/////////// Liaison de l'organisation au projet ////////////////
 
 			//Récupération de l'ancienne organisation
@@ -1178,18 +1182,18 @@ class WDGAjaxActions {
 			$delete = ( empty($current_organization) ) ? FALSE : TRUE;
 
 			//on a déjà une organisation, donc on supprime la liaison
-			if ($delete) {
+			if ( $delete ) {
 				$campaign->unlink_organization( $current_organization->id );
 			}
 			//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
-			$campaign->link_organization( $org_object->get_api_id() );
+			$campaign->link_organization( $org_api_id );
 
 			////////////////////////////////////////////////////////////////
 		}
 
-		if($return === FALSE){//user non connecté
+		if ( $return === FALSE ) {//user non connecté
 			$buffer = "FALSE";
-		}else if ($return['org_object'] != null){
+		} else if ( !empty( $org_object ) && $org_object != null ){
 			$return_values = array(
 				"response" => "save_new_organization",
 				"organization" => array(
