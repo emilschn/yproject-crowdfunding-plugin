@@ -114,6 +114,16 @@ class WDGUser {
 		return $this->wp_user->last_name;
 	}
 	
+	public function get_display_name() {
+		$buffer = $this->wp_user->display_name;
+		$user_firstname = $this->get_firstname();
+		$user_lastname = $this->get_lastname();
+		if ( !empty( $user_firstname ) && !empty( $user_lastname ) ) {
+			$buffer = $user_firstname. ' ' .substr( $user_lastname, 0, 1 ). '.';
+		}
+		return $buffer;
+	}
+	
 	/**
 	 * La nationalité est enregistrée en ISO2
 	 * @param string $format
