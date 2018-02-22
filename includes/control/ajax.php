@@ -871,6 +871,11 @@ class WDGAjaxActions {
 			$success['new_minimum_goal']=1;
 			$success['new_maximum_goal']=1;
 		}
+		
+		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
+		if ( !empty( $new_project_contract_spendings_description ) ) {
+			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
+		}
 
 		//Update funding duration
 		$new_duration = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_funding_duration')));
@@ -976,6 +981,14 @@ class WDGAjaxActions {
 					$errors['new_first_payment'] = "La date est invalide";
 				}
 			}
+		}
+		
+		$new_estimated_turnover_unit = sanitize_text_field( filter_input( INPUT_POST, 'new_estimated_turnover_unit') );
+		if ( $new_estimated_turnover_unit == 'euro' || $new_estimated_turnover_unit == 'percent' ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_estimated_turnover_unit, $new_estimated_turnover_unit );
+			$success['new_estimated_turnover_unit'] = 1;
+		} else {
+			$errors['new_estimated_turnover_unit'] = "Valeur non valide";
 		}
 
 		//Update list of estimated turnover
@@ -1159,10 +1172,14 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
 		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
-		$return = WDGOrganization::submit_new(FALSE);
-		$org_object = $return['org_object'];
+		$return = WDGOrganization::submit_new( FALSE );
+		$org_object = FALSE;
+		if ( !empty( $return ) ) {
+			$org_object = $return['org_object'];
+			$org_api_id = $org_object->get_api_id();
+		}
 
-		if($org_object != null){
+		if ( !empty( $org_object ) && $org_object != null && !empty( $org_api_id ) ) {
 			/////////// Liaison de l'organisation au projet ////////////////
 
 			//Récupération de l'ancienne organisation
@@ -1171,18 +1188,18 @@ class WDGAjaxActions {
 			$delete = ( empty($current_organization) ) ? FALSE : TRUE;
 
 			//on a déjà une organisation, donc on supprime la liaison
-			if ($delete) {
+			if ( $delete ) {
 				$campaign->unlink_organization( $current_organization->id );
 			}
 			//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
-			$campaign->link_organization( $org_object->get_api_id() );
+			$campaign->link_organization( $org_api_id );
 
 			////////////////////////////////////////////////////////////////
 		}
 
-		if($return === FALSE){//user non connecté
+		if ( $return === FALSE ) {//user non connecté
 			$buffer = "FALSE";
-		}else if ($return['org_object'] != null){
+		} else if ( !empty( $org_object ) && $org_object != null ){
 			$return_values = array(
 				"response" => "save_new_organization",
 				"organization" => array(

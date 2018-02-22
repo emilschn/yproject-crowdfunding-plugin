@@ -21,13 +21,45 @@ class NotificationsAPI {
 			'OBJET_ACTU'			=> $news_name,
 			'CONTENU_ACTU'			=> $news_content
 		);
+		
+		// Le maximum de destinataire est de 99, il faut découper
+		$buffer = FALSE;
+		$recipients_array = explode( ',', $recipients );
+		$recipients_array_count = count( $recipients_array );
+		if ( $recipients_array_count > 90 ) {
+			// On envoie par troupeaux de 99 investisseurs
+			$recipients = '';
+			$index = 0;
+			for ( $i = 0; $i < $recipients_array_count; $i++ ) {
+				$recipients .= $recipients_array[ $i ];
+				$index++;
+				if ( $index == 90 ) {
+					$parameters = array(
+						'tool'		=> 'sendinblue',
+						'template'	=> $id_template,
+						'recipient'	=> $recipients,
+						'options'	=> json_encode( $options )
+					);
+					$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+					$recipients = '';
+					$index = 0;
+					
+				} elseif( $i < $recipients_array_count - 1 ) {
+					$recipients .= ',';
+				}
+			}
+		}
+		
+		// On envoie de toute façon au restant des investisseurs à la fin
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
 			'recipient'	=> $recipients,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		
+		return $buffer;
 	}
     //*******************************************************
     // FIN ENVOI ACTUALITE DE PROJET

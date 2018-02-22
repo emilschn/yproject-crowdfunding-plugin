@@ -105,12 +105,18 @@ class NotificationsEmails {
 		$user_info = maybe_unserialize( $payment_data['user_info'] );
 		$email = $payment_data['email'];
 		$user_data = get_user_by('email', $email);
+		$payment_key = edd_get_payment_key( $payment_id );
 
 		$object = "Merci pour votre investissement";
 		$body_content = '';
 		$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
 		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br><br>";
-		$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. Votre compte a été débité mais n'oubliez pas que l'investissement ne sera définitivement validé ";
+		$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. ";
+		if ( $payment_key == 'check' ) {
+			$body_content .= "N'oubliez pas que l'investissement ne sera définitivement validé ";
+		} else {
+			$body_content .= "Votre compte a été débité mais n'oubliez pas que l'investissement ne sera définitivement validé ";
+		}
 		$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>"
                 . "Retrouvez le projet à l'adresse suivante : "
                 .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a><br>'

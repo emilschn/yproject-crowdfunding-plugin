@@ -48,7 +48,7 @@ class WDG_PDF_Generator {
 		$nationality = $country_list[ $shortcode_investor_user_obj->get_nationality() ];
 		$user_title = ( $shortcode_investor_user_obj->get_gender() == "male" ) ? "Monsieur" : "Madame";
 		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $shortcode_investor_user_obj->get_firstname() . ' ' . $shortcode_investor_user_obj->get_lastname() ) );
-		$birthday_month = mb_strtoupper( $months[ $shortcode_investor_user_obj->wp_user->get( 'user_birthday_month' ) - 1 ] );
+		$birthday_month = mb_strtoupper( __( $months[ $shortcode_investor_user_obj->wp_user->get( 'user_birthday_month' ) - 1 ] ) );
 		$suffix_born = ( $shortcode_investor_user_obj->get_gender() == "female" ) ? 'e' : '';
 		
 		$buffer = '<strong>'.$user_name.'</strong><br />';
