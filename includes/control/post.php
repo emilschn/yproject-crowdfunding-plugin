@@ -591,6 +591,19 @@ class WDGPostActions {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 		
+		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
+		if ( !empty( $new_project_contract_spendings_description ) ) {
+			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
+		}
+		$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
+		if ( !empty( $new_project_contract_simple_info ) ) {
+			$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
+		}
+		$new_project_contract_detailed_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
+		if ( !empty( $new_project_contract_detailed_info ) ) {
+			$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
+		}
+		
 		$new_contract_premium = filter_input( INPUT_POST, 'new_contract_premium' );
 		$campaign->__set( ATCF_Campaign::$key_contract_premium, $new_contract_premium );
 		
