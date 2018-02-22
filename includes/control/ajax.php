@@ -870,6 +870,11 @@ class WDGAjaxActions {
 			$success['new_minimum_goal']=1;
 			$success['new_maximum_goal']=1;
 		}
+		
+		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
+		if ( !empty( $new_project_contract_spendings_description ) ) {
+			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
+		}
 
 		//Update funding duration
 		$new_duration = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_funding_duration')));
