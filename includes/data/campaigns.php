@@ -43,6 +43,7 @@ class ATCF_Campaigns {
 	 */
 	function setup() {
 		define( 'EDD_SLUG', 'campaigns' );
+//		add_action( 'init', array( $this, 'campaigns_rewrite_news_links' ) );
 //		add_filter( 'pre_post_link', array( $this, 'campaigns_news_links' ), 1, 3 );
 		
 		add_filter( 'post_type_link', array( $this, 'campaigns_type_links' ), 1, 3 );
@@ -83,7 +84,12 @@ class ATCF_Campaigns {
 		do_action( 'atcf_campaigns_actions_admin' );
 	}
 	
-	/*function campaigns_news_links( $permalink, $post, $leavename ) {
+	/*function campaigns_rewrite_news_links() {
+		flush_rewrite_rules();
+		add_rewrite_rule( '(.+?)/actualites/(.+?)', 'index.php?pagename=$matches[2]', 'top' );
+	}
+	
+	function campaigns_news_links( $permalink, $post, $leavename ) {
 		if ( $post->post_type === 'post' ) {
 			$post_categories = get_the_category( $post );
 			$post_category = $post_categories[ 0 ];
@@ -93,7 +99,7 @@ class ATCF_Campaigns {
 				$campaign_id = $name_exploded[1];
 				if ( !empty( $campaign_id ) ) {
 					$campaign_post = get_post( $campaign_id );
-					return $campaign_post->post_name. '/' .$post->post_name. '/';
+					return $campaign_post->post_name. '/actualites/' .$post->post_name. '/';
 				}
 			}
 		}
@@ -121,26 +127,6 @@ class ATCF_Campaigns {
 			wp_redirect( home_url( $query->query['download'] . '/' ) );
 			exit();
 		}
-		
-		/*if ( isset( $query->query ) && isset( $query->query['attachment'] ) ) {
-			global $wpdb;
-			$query_post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type='post'", $query->query['attachment'] ));
-			if ( $query_post_id ) {
-				$post_categories = get_the_category( $query_post_id );
-				$post_category = $post_categories[ 0 ];
-				$post_category_name = $post_category->name;
-				$name_exploded = explode( 'cat', $post_category_name );
-				if ( count( $name_exploded ) > 1 ) {
-					$campaign_id = $name_exploded[1];
-					if ( !empty( $campaign_id ) ) {
-						$campaign_post = get_post( $campaign_id );
-						$query->query[ 'page' ] = '';
-						$query->query[ 'name' ] = $campaign_post->post_name. '/' .$query->query['attachment'];
-						unset( $query->query[ 'attachment' ] );
-					}
-				}
-			}
-		}*/
 
 		//Si on n'est pas sur la page directe, on ne tient pas compte du reste
 		if ( ! $query->is_main_query() || 2 != count( $query->query ) || ! isset( $query->query['page'] ) ) {
