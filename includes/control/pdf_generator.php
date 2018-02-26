@@ -460,8 +460,8 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name ) );
 	}
 		
-    
-    $buffer = '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
+    $buffer = '<page backbottom="15mm">';
+    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
 	
 	if ( empty( $payment_data ) ) {
 		$buffer .= '<page_footer style="width: 100%; margin-top: 20px; text-align: right; font-size: 9pt;">';
@@ -737,6 +737,8 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		}
 		$buffer .= '</div>';
 	}
+	
+    $buffer .= '</page>';
    
     
     return $buffer;
