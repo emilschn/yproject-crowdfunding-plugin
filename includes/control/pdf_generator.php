@@ -466,6 +466,11 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	if ( empty( $payment_data ) ) {
 		$buffer .= '<page_footer style="width: 100%; margin-top: 20px; text-align: right; font-size: 9pt;">';
 		$buffer .= 'Paraphe :<br><br><br>';
+		$buffer .= '[[page_cu]] / [[page_nb]]';
+		$buffer .= '</page_footer>';
+	} elseif ( !$preview ) {
+		$buffer .= '<page_footer style="width: 100%; margin-top: 20px; text-align: right; font-size: 9pt;">';
+		$buffer .= '[[page_cu]] / [[page_nb]]';
 		$buffer .= '</page_footer>';
 	}
     
