@@ -54,13 +54,13 @@ class WDG_PDF_Generator {
 		$buffer = '<strong>'.$user_name.'</strong><br />';
 		$buffer .= 'né' .$suffix_born. ' le ' .$shortcode_investor_user_obj->wp_user->get('user_birthday_day'). ' ' .$birthday_month. ' ' .$shortcode_investor_user_obj->wp_user->get('user_birthday_year'). ' &agrave; ' .$shortcode_investor_user_obj->get_birthplace(). '<br>';
 		$buffer .= 'de nationalité ' .$nationality. '<br>';
-		$buffer .= 'demeurant ' .$shortcode_investor_user_obj->get_address(). ' ' .$shortcode_investor_user_obj->get_postal_code(). ' ' .$shortcode_investor_user_obj->get_city(). '<br>';
+		$buffer .= 'demeurant ' .$shortcode_investor_user_obj->get_address(). ' ' .$shortcode_investor_user_obj->get_postal_code( true ). ' ' .$shortcode_investor_user_obj->get_city(). '<br>';
 		$buffer .= 'Adresse e-mail : ' .$shortcode_investor_user_obj->get_email(). '<br><br>';
 		
 		if ( !empty( $shortcode_investor_orga_obj ) ) {
 			$buffer .= "agissant, ayant tous pouvoirs à l'effet des présentes, pour le compte de :<br>";
 			$buffer .= '<strong>' .$shortcode_investor_orga_obj->get_name(). ', ' .$shortcode_investor_orga_obj->get_legalform(). ' au capital de ' .$shortcode_investor_orga_obj->get_capital(). '&euro;</strong><br>';
-			$buffer .= 'dont le siège social est ' .$shortcode_investor_orga_obj->get_address(). ' ' .$shortcode_investor_orga_obj->get_postal_code(). ' ' .$shortcode_investor_orga_obj->get_city(). '<br>';
+			$buffer .= 'dont le siège social est ' .$shortcode_investor_orga_obj->get_address(). ' ' .$shortcode_investor_orga_obj->get_postal_code( true ). ' ' .$shortcode_investor_orga_obj->get_city(). '<br>';
 			$buffer .= 'immatriculée sous le numéro SIREN ' .$shortcode_investor_orga_obj->get_idnumber(). ' au RCS de ' .$shortcode_investor_orga_obj->get_rcs(). '<br>';
 		}
 		
@@ -104,7 +104,7 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_organization_postalcode( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_obj;
-		return $shortcode_organization_obj->get_postal_code();
+		return $shortcode_organization_obj->get_postal_code( true );
 	}
 	/**
 	 * Shortcode affichant la ville de l'organisation qui porte le projet
@@ -242,7 +242,12 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_duration( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = $shortcode_campaign_obj->funding_duration();
+		$funding_duration = $shortcode_campaign_obj->funding_duration();
+		if ( $funding_duration > 0 ) {
+			$buffer = $funding_duration . __( " ans", 'yproject' );
+		} else {
+			$buffer = __( "dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
+		}
 		return $buffer;
 	}
 	
@@ -460,12 +465,17 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name ) );
 	}
 		
-    
-    $buffer = '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
+    $buffer = '<page backbottom="15mm">';
+    $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
 	
 	if ( empty( $payment_data ) ) {
 		$buffer .= '<page_footer style="width: 100%; margin-top: 20px; text-align: right; font-size: 9pt;">';
 		$buffer .= 'Paraphe :<br><br><br>';
+		$buffer .= '[[page_cu]] / [[page_nb]]';
+		$buffer .= '</page_footer>';
+	} elseif ( !$preview ) {
+		$buffer .= '<page_footer style="width: 100%; margin-top: 20px; text-align: right; font-size: 9pt;">';
+		$buffer .= '[[page_cu]] / [[page_nb]]';
 		$buffer .= '</page_footer>';
 	}
     
@@ -498,12 +508,13 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		$buffer .= "Adresse e-mail : ".$blank_space;
 		
 	} else {
+		$WDGUser = new WDGUser( $user_obj->ID );
 		$buffer .= '<strong>'.$user_name.'</strong><br />';
 		if ($lang == 'en_US') {
 			$birthday_month = mb_strtoupper($months[$user_obj->get('user_birthday_month') - 1]);
 			$buffer .= 'born on '.$birthday_month.' '.$user_obj->get('user_birthday_day').' '.$user_obj->get('user_birthday_year').' in '.$user_obj->get('user_birthplace').'<br />';
 			$buffer .= 'from '.$nationality.'<br />';
-			$buffer .= 'living in '.$user_obj->get('user_city').' ('.$user_obj->get('user_postal_code').') - ' . $user_obj->get('user_address').'<br />';;
+			$buffer .= 'living in '.$user_obj->get('user_city').' ('.$WDGUser->get_postal_code( true ).') - ' . $user_obj->get('user_address').'<br />';;
 			$buffer .= 'E-mail address: '.$user_obj->user_email;
 
 		} else {
@@ -511,7 +522,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			$suffix_born = ($user_obj->get('user_gender') == "female") ? 'e' : '';
 			$buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' &agrave; '.$user_obj->get('user_birthplace').'<br />';
 			$buffer .= 'de nationalité '.$nationality.'<br />';
-			$buffer .= 'demeurant ' . $user_obj->get('user_address').' '.$user_obj->get('user_postal_code').' '.$user_obj->get('user_city').'<br />';;
+			$buffer .= 'demeurant ' . $user_obj->get('user_address').' '.$WDGUser->get_postal_code( true ).' '.$user_obj->get('user_city').'<br />';;
 			$buffer .= 'Adresse e-mail : '.$user_obj->user_email;
 		}
 	}
@@ -521,12 +532,12 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		if ( is_object($organization) ) {
 			if ($lang == 'en_US') {
 				$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' with the capital of '.$organization->get_capital().'&euro;</strong><br />';
-				$buffer .= 'which address is '.$organization->get_city().' ('.$organization->get_postal_code().') - '.$organization->get_address().'<br />';
+				$buffer .= 'which address is '.$organization->get_city().' ('.$organization->get_postal_code( true ).') - '.$organization->get_address().'<br />';
 				$buffer .= 'registered with the number '.$organization->get_idnumber().' in '.$organization->get_rcs().'<br />';
 			} else {
 				$buffer .= "agissant, ayant tous pouvoirs à l'effet des présentes, pour le compte de :<br />";
 				$buffer .= '<strong>'.$organization->get_name().', '.$organization->get_legalform().' au capital de '.$organization->get_capital().'&euro;</strong><br />';
-				$buffer .= 'dont le siège social est '.$organization->get_address().' '.$organization->get_postal_code().' '.$organization->get_city().'<br />';
+				$buffer .= 'dont le siège social est '.$organization->get_address().' '.$organization->get_postal_code( true ).' '.$organization->get_city().'<br />';
 				$buffer .= 'immatriculée sous le numéro SIREN '.$organization->get_idnumber().' au RCS de '.$organization->get_rcs().'<br />';
 			}
 		} elseif ( $organization == 'orga' ) {
@@ -731,6 +742,8 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		}
 		$buffer .= '</div>';
 	}
+	
+    $buffer .= '</page>';
    
     
     return $buffer;

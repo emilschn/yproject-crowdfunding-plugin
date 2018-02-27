@@ -470,6 +470,7 @@ class WDGPostActions {
 						add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
 						add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
 						$html_content = apply_filters( 'WDG_PDF_Generator_filter', $contract_model->model_content );
+						ypcf_debug_log( 'send_contract_model > $html_content : ' . $html_content );
 						
 						generatePDF( $html_content, $filepath );
 						$byte_array = file_get_contents( $filepath );

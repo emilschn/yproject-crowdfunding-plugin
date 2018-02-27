@@ -145,8 +145,12 @@ class WDGUser {
 		return $this->wp_user->get('user_address');
 	}
 	
-	public function get_postal_code() {
-		return $this->wp_user->get('user_postal_code');
+	public function get_postal_code( $complete_french = false ) {
+		$buffer = $this->wp_user->get('user_postal_code');
+		if ( $complete_french && strlen( $buffer ) == 4 ) {
+			$buffer = '0' . $buffer;
+		}
+		return $buffer;
 	}
 	
 	public function get_city() {
