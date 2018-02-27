@@ -1287,9 +1287,10 @@ class WDGUser {
 						if ( strpos($referer_url, '/connexion') !== FALSE || strpos($referer_url, '/inscription') !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
-								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3' );
+								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a' );
 								$buffer = $posted_redirect_page;
 							} else {
+								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b' );
 								$buffer = home_url();
 							}
 
@@ -1298,15 +1299,19 @@ class WDGUser {
 							//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
 							$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
 							$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
+							ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4' );
 							if ( !empty( $page_by_path->ID ) ) {
 								$campaign = new ATCF_Campaign( $page_by_path->ID );
 								if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
+									ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4a' );
 									$anchor = '#vote';
 								}
 							}
-							ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4' );
 							$buffer = $referer_url;
 						}
+						
+					} else {
+						ypcf_debug_log( 'WDGUser::get_login_redirect_page > A5 ' . $referer_url );
 					}
 				}
 			}
@@ -1329,6 +1334,7 @@ class WDGUser {
 			}
 		}
 		
+		ypcf_debug_log( 'WDGUser::get_login_redirect_page > result = ' .$buffer . $anchor );
 		return $buffer . $anchor;
 	}
 }
