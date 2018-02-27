@@ -1171,7 +1171,7 @@ class ATCF_Campaign {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
 			if (strpos($goal, '.00') !== false) $goal = substr ($goal, 0, -3);
-				return $goal . ' &euro;';
+				return $goal . '&nbsp;&euro;';
 		    } else {
 				return edd_currency_filter( edd_format_amount( $goal ) );
 		    }
@@ -1187,7 +1187,7 @@ class ATCF_Campaign {
 	    if ( ! is_numeric( $goal ) && ($this->type() != 'flexible') )
 		    $goal = 0;
 	    if ($goal == 0) $goal = $this->goal(false);
-	    if ($formatted) $goal .= ' &euro;';
+	    if ($formatted) $goal .= '&nbsp;&euro;';
 	    return $goal;
 	}
 	
