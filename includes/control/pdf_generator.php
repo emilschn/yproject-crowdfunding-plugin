@@ -242,7 +242,12 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_duration( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = $shortcode_campaign_obj->funding_duration();
+		$funding_duration = $shortcode_campaign_obj->funding_duration();
+		if ( $funding_duration > 0 ) {
+			$buffer = $funding_duration . __( " ans", 'yproject' );
+		} else {
+			$buffer = __( "dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
+		}
 		return $buffer;
 	}
 	
