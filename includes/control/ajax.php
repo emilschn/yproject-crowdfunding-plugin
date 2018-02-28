@@ -1765,7 +1765,7 @@ class WDGAjaxActions {
 			new ContactColumn('invest_amount', 'Montant investi', ( $display_vote_infos || $display_invest_infos ), "range" ),
             new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
             new ContactColumn('invest_payment_type', 'Type de paiement', ( $display_vote_infos || $display_invest_infos )),
-            new ContactColumn('invest_payment_state', 'Etat du paiement', ( $display_vote_infos || $display_invest_infos )),
+            new ContactColumn('invest_payment_state', 'Etat', ( $display_vote_infos || $display_invest_infos )),
             new ContactColumn('invest_sign', 'Signature', false),
             new ContactColumn('invest_state', 'Investissement', $display_invest_infos),
         );
