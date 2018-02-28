@@ -878,12 +878,12 @@ class WDGAjaxActions {
 		}
 
 		//Update funding duration
-		$new_duration = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_funding_duration')));
-		if($new_duration>=1){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_funding_duration, $new_duration);
-			$success['new_funding_duration']=1;
+		$new_duration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_funding_duration' ) ) );
+		if ( $new_duration >= 0 ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_funding_duration, $new_duration );
+			$success[ 'new_funding_duration' ] = 1;
 		} else {
-			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
+			$errors[ 'new_funding_duration' ] = "Erreur de valeur";
 		}
 		
 		$new_platform_commission = sanitize_text_field( filter_input( INPUT_POST, 'new_platform_commission' ) );
@@ -904,7 +904,7 @@ class WDGAjaxActions {
 			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
 		}
 
-		//Update roi_percent_estimated duration
+		//Update roi_percent_estimated
 		$new_roi_percent_estimated = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent_estimated' ) ) );
 		if ( $new_roi_percent_estimated >= 0 ){
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated );
@@ -994,7 +994,11 @@ class WDGAjaxActions {
 		//Update list of estimated turnover
 		$i = 0;
 		$sanitized_list = array();
-		while(filter_input(INPUT_POST, 'new_estimated_turnover_'.$i)!='' && ($i+1 <= $campaign->funding_duration())){
+		$funding_duration = $campaign->funding_duration();
+		if ( $funding_duration == 0 ) {
+			$funding_duration = 5;
+		}
+		while(filter_input(INPUT_POST, 'new_estimated_turnover_'.$i)!='' && ($i+1 <= $funding_duration)){
 			$current_val = filter_input(INPUT_POST, 'new_estimated_turnover_'.$i);
 
 			if(is_numeric($current_val)){
