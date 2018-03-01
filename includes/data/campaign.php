@@ -1767,7 +1767,7 @@ class ATCF_Campaign {
 	public static $invest_time_min_wire = 7;
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
-		return ($this->days_remaining() > ATCF_Campaign::$invest_time_min_wire);
+		return true;
 	}
 	public function can_use_wire_amount($amount_part) {
 		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
