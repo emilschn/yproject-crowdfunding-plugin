@@ -361,7 +361,7 @@ class WDG_PDF_Generator {
 			'year'	=> '1'
 		), $atts );
 		global $shortcode_campaign_obj;
-		$is_euro = ( $shortcode_campaign_obj->contract_budget_type() != 'collected_funds' );
+		$is_euro = ( $shortcode_campaign_obj->estimated_turnover_unit() == 'euro' );
 		$symbol = $is_euro ? '€' : '%';
 		$buffer = 0;
 		$estimated_turnover = $shortcode_campaign_obj->estimated_turnover();
