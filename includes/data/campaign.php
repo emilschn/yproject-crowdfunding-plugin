@@ -1241,13 +1241,17 @@ class ATCF_Campaign {
 	 * Le département en prenant les deux premiers caractères, et en supprimant le premier 0
 	 */
 	public function get_location_number() {
-		$location_complete = $this->location();
-		$first_car = substr( $location_complete, 0, 1 );
+		$locations = atcf_get_locations();
+		$location_complete = $locations[ $this->location() ];
+		
+		$buffer = substr( $location_complete, 0, 3 );
+		
+		$first_car = substr( $buffer, 0, 1 );
 		if ( $first_car == '0' ) {
-			$buffer = substr( $location_complete, 1, 1 );
-		} else {
-			$buffer = substr( $location_complete, 0, 2 );
+			$buffer = substr( $buffer, 1, 3 );
 		}
+		$buffer = str_replace( ' ', '', $buffer );
+		
 		return $buffer;
 	}
 
@@ -2755,7 +2759,8 @@ function atcf_get_locations() {
 		'972 Martinique',
 		'973 Guyane',
 		'974 La Réunion',
-		'976 Mayotte'
+		'976 Mayotte',
+		'Italie'
 	);
 	return $buffer;
 }
@@ -2778,7 +2783,8 @@ function atcf_get_regions() {
 		"Nouvelle-Aquitaine"			=> array( 16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87 ),
 		"Occitanie"						=> array( 9, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82 ),
 		"Pays de la Loire"				=> array( 44, 49, 53, 72, 85 ),
-		"Provence-Alpes-Côte d'Azur"	=> array( 4, 5, 6, 13, 83, 84 )
+		"Provence-Alpes-Côte d'Azur"	=> array( 4, 5, 6, 13, 83, 84 ),
+		"Etranger"						=> array( 'Ita' )
 	);
 	return $buffer;
 }

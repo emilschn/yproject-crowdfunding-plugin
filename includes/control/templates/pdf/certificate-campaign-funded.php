@@ -1,6 +1,6 @@
 <?php
 /**
- * Template PDF : attestation de versement de royalties
+ * Template PDF : attestation de levée de fonds
  */
 class WDG_Template_PDF_Campaign_Funded {
 	public static function get(
