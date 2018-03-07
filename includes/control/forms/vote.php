@@ -161,7 +161,7 @@ class WDG_Form_Vote extends WDG_Form {
 		$this->addField(
 			'text-money',
 			'invest-sum',
-			__( "Je serais int&eacute;ress&eacute;(e) pour investir :", 'yproject' ),
+			__( "J'ai l'intention d'investir :", 'yproject' ),
 			WDG_Form_Vote::$field_group_invest
 		);
 		
