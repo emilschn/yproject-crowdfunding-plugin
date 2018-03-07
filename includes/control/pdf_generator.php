@@ -403,10 +403,18 @@ function generatePDF($html_content, $filename) {
     ypcf_debug_log('generatePDF > ' . $filename);
     $buffer = false;
     if (isset($html_content) && isset($filename) && ($filename != "") && !file_exists($filename)) {
-		$html2pdf = new HTML2PDF('P','A4','fr');
-		$html2pdf->WriteHTML(urldecode($html_content));
-		$html2pdf->Output($filename, 'F');
-		$buffer = true;
+		try {
+			$html2pdf = new HTML2PDF('P','A4','fr');
+			$html2pdf->WriteHTML(urldecode($html_content));
+			$html2pdf->Output($filename, 'F');
+			$buffer = true;
+		} catch ( Exception $ex ) {
+			$WDGUser_current = WDGUser::current();
+			if ( $WDGUser_current->is_admin() ) {
+				print_r( $ex );
+				exit();
+			}
+		}
     }
     return $buffer;
 }
