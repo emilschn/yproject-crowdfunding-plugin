@@ -236,32 +236,37 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_purchase_team_members($payment_id) {
-	ypcf_debug_log('NotificationsEmails::new_purchase_members > ' . $payment_id);
-	$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-	$campaign = atcf_get_campaign($post_campaign);
-	
-	$author_data = get_userdata($post_campaign->post_author);
-	$emails = $author_data->user_email;
-	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
-	
-	$object = "Nouvel investissement";
-	
-	$payment_data = edd_get_payment_meta( $payment_id );
-	$payment_amount = edd_get_payment_amount( $payment_id );
-	$email = $payment_data['email'];
-	$user_data = get_user_by('email', $email);
-	
-	$body_content = "Une nouvelle personne a investi sur votre projet ".$post_campaign->post_title.":<br />";
-	$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." &euro;";
-        if ($campaign->funding_type()=="fundingdonation"){
-            $reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
-            $body_content .= " et a choisi la contrepartie suivante : palier de <br/>".$reward['amount']."&euro; - ".$reward['name'];
-        }
-        $body_content .= ".<br />";
+		ypcf_debug_log('NotificationsEmails::new_purchase_members > ' . $payment_id);
+		$post_campaign = atcf_get_campaign_post_by_payment_id( $payment_id );
+		$campaign = atcf_get_campaign( $post_campaign );
 
-	$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
-        
-	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
+		$author_data = get_userdata( $post_campaign->post_author );
+		$emails = $author_data->user_email;
+		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+
+		$object = "Nouvel investissement";
+
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data[ 'email' ];
+		$user_data = get_user_by( 'email', $email );
+
+		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+			$body_content = "Une nouvelle personne a pré-investi sur votre projet ".$post_campaign->post_title.":<br />";
+		} else {
+			$body_content = "Une nouvelle personne a investi sur votre projet ".$post_campaign->post_title.":<br />";
+		}
+		
+		$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." &euro;";
+		$body_content .= ".<br />";
+
+		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+			$body_content .= "Bravo, continuez à inciter au pré-investissement (notamment auprès de ceux qui ont déjà voté), afin que votre levée de fonds démarre avec une belle dynamique déjà en place !";
+		} else {
+			$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
+		}
+
+		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     
     /**
