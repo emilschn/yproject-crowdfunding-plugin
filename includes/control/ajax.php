@@ -564,6 +564,11 @@ class WDGAjaxActions {
 			$campaign->set_api_data( 'employees_number', $new_employees_number );
 			$success[ "new_employees_number" ] = 1;
 		}
+		$new_minimum_goal_display = sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_goal_display' ) );
+		if ( $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max || $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_step ) {
+			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
+			$success[ "new_minimum_goal_display" ] = 1;
+		}
 		
 		
 		// Infos contractuelles
@@ -1769,7 +1774,7 @@ class WDGAjaxActions {
 			new ContactColumn('invest_amount', 'Montant investi', ( $display_vote_infos || $display_invest_infos ), "range" ),
             new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
             new ContactColumn('invest_payment_type', 'Type de paiement', ( $display_vote_infos || $display_invest_infos )),
-            new ContactColumn('invest_payment_state', 'Etat du paiement', ( $display_vote_infos || $display_invest_infos )),
+            new ContactColumn('invest_payment_state', 'Etat', ( $display_vote_infos || $display_invest_infos )),
             new ContactColumn('invest_sign', 'Signature', false),
             new ContactColumn('invest_state', 'Investissement', $display_invest_infos),
         );
