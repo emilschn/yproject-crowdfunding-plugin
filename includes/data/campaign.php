@@ -619,6 +619,17 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public static $key_minimum_goal_display = 'minimum_goal_display';
+	public static $key_minimum_goal_display_option_minimum_as_max = 'minimum_as_max';
+	public static $key_minimum_goal_display_option_minimum_as_step = 'minimum_as_step';
+	public function get_minimum_goal_display() {
+		$buffer = $this->get_api_data( ATCF_Campaign::$key_minimum_goal_display );
+		if ( empty( $buffer ) ) {
+			$buffer = ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max;
+		}
+		return $buffer;
+	}
+	
 	public function get_funded_certificate_url() {
 		$this->make_funded_certificate();
 		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/campaign-funded/';
