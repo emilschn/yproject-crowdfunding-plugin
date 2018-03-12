@@ -6,7 +6,9 @@ class WDG_File_Cacher {
 	private $website;
 	private $page_list = array(
 		"home" => "",
-		"les-projets" => "les-projets"
+		"les-projets" => "les-projets",
+		"financement" => "financement",
+		"investissement" => "investissement"
 	);
 	
 	/**
