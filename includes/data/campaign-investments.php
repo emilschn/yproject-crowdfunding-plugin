@@ -53,7 +53,7 @@ class WDGCampaignInvestments {
 					}
 					if ($invest_user->get('user_gender') == "female") $buffer['count_female']++;
 					if ($buffer['investors_string'] != '') $buffer['investors_string'] .= ', ';
-					$buffer['investors_string'] .= $invest_user->user_login;
+					$buffer['investors_string'] .= $wdg_invest_user->get_display_name();
 				}
 				$buffer['count_invest'] += $item['amount'];
 				$buffer['amounts_array'][] = $item['amount'];
