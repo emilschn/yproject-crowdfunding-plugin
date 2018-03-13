@@ -558,6 +558,13 @@ class WDGAjaxActions {
 			update_post_meta($campaign_id, 'campaign_location', $location);
 			$success["new_project_location"]=1;
 		}
+
+		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'new_website'))));
+		$success['new_website']=1;
+		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_facebook'))));
+		$success['new_facebook']=1;
+		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
+		$success['new_twitter']=1;
 		
 		$new_employees_number = sanitize_text_field( filter_input( INPUT_POST, 'new_employees_number' ) );
 		if (is_numeric($location)) {
@@ -1313,30 +1320,6 @@ class WDGAjaxActions {
 			$buffer = json_encode($return_values);
 		}
 		echo $buffer;
-		exit();
-	}
-
-    /**
-	 * Enregistre les informations de communication du projet
-	 */
-	public static function save_project_communication(){
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$campaign = new ATCF_Campaign($campaign_id);
-		$success = array();
-
-		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'new_website'))));
-		$success['new_website']=1;
-		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_facebook'))));
-		$success['new_facebook']=1;
-		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
-		$success['new_twitter']=1;
-
-		$return_values = array(
-			"response" => "edit_communication",
-			"errors" => array(),
-			"success" => $success
-		);
-		echo json_encode($return_values);
 		exit();
 	}
 	
