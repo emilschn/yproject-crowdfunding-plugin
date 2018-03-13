@@ -559,11 +559,23 @@ class WDGAjaxActions {
 			update_post_meta($campaign_id, 'campaign_location', $location);
 			$success["new_project_location"]=1;
 		}
+
+		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'new_website'))));
+		$success['new_website']=1;
+		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_facebook'))));
+		$success['new_facebook']=1;
+		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
+		$success['new_twitter']=1;
 		
 		$new_employees_number = sanitize_text_field( filter_input( INPUT_POST, 'new_employees_number' ) );
 		if (is_numeric($location)) {
 			$campaign->set_api_data( 'employees_number', $new_employees_number );
 			$success[ "new_employees_number" ] = 1;
+		}
+		$new_minimum_goal_display = sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_goal_display' ) );
+		if ( $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max || $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_step ) {
+			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
+			$success[ "new_minimum_goal_display" ] = 1;
 		}
 		
 		
@@ -1311,30 +1323,6 @@ class WDGAjaxActions {
 		echo $buffer;
 		exit();
 	}
-
-    /**
-	 * Enregistre les informations de communication du projet
-	 */
-	public static function save_project_communication(){
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$campaign = new ATCF_Campaign($campaign_id);
-		$success = array();
-
-		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'new_website'))));
-		$success['new_website']=1;
-		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_facebook'))));
-		$success['new_facebook']=1;
-		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
-		$success['new_twitter']=1;
-
-		$return_values = array(
-			"response" => "edit_communication",
-			"errors" => array(),
-			"success" => $success
-		);
-		echo json_encode($return_values);
-		exit();
-	}
 	
 	public static function save_project_contract_modification() {
 		$success = array();
@@ -1770,7 +1758,7 @@ class WDGAjaxActions {
 			new ContactColumn('invest_amount', 'Montant investi', ( $display_vote_infos || $display_invest_infos ), "range" ),
             new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
             new ContactColumn('invest_payment_type', 'Type de paiement', ( $display_vote_infos || $display_invest_infos )),
-            new ContactColumn('invest_payment_state', 'Etat du paiement', ( $display_vote_infos || $display_invest_infos )),
+            new ContactColumn('invest_payment_state', 'Etat', ( $display_vote_infos || $display_invest_infos )),
             new ContactColumn('invest_sign', 'Signature', false),
             new ContactColumn('invest_state', 'Investissement', $display_invest_infos),
         );

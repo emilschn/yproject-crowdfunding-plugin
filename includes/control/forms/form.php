@@ -124,7 +124,7 @@ class WDG_Form {
 		
 		// 15 est un nombre arbitraire pour être sûr de parcourir toutes les notes
 		// (de toutes façons, on est censé atteindre le break avant)
-		for ( $i = 1; $i < $max; $i++ ) {
+		for ( $i = 1; $i <= $max; $i++ ) {
 			$input_rate = filter_input( INPUT_POST, $name. '-' . $i );
 			if ( !empty( $input_rate ) && $input_rate == $i ) {
 				$buffer = $i;
