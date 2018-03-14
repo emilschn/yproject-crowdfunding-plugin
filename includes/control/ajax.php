@@ -591,6 +591,7 @@ class WDGAjaxActions {
 				$success['custom_field_' . $i] = 1;
 			}
 		}
+		$campaign->update_api();
 
 		$return_values = array(
 			"response" => "edit_project",
@@ -1018,6 +1019,7 @@ class WDGAjaxActions {
 			$i++;
 		}
  		$campaign->__set(ATCF_Campaign::$key_estimated_turnover,json_encode($sanitized_list));
+		$campaign->update_api();
 
 
 		$return_values = array(
@@ -1326,6 +1328,7 @@ class WDGAjaxActions {
 		$success['new_facebook']=1;
 		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
 		$success['new_twitter']=1;
+		$campaign->update_api();
 
 		$return_values = array(
 			"response" => "edit_communication",
@@ -1343,6 +1346,7 @@ class WDGAjaxActions {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$campaign->__set( ATCF_Campaign::$key_backoffice_contract_modifications, filter_input( INPUT_POST, 'new_contract_modification' ) );
 		$success[ 'new_contract_modification' ] = 1;
+		$campaign->update_api();
 
 		$return_values = array(
 			'response'	=> 'edit_contract_modifications',
@@ -1415,6 +1419,7 @@ class WDGAjaxActions {
 		} else {
 			$errors['new_end_collecte_date']="Il faut une date de fin de collecte !";
 		}
+		$campaign->update_api();
 
 		$return_values = array(
 			"response" => "save_project_campaigntab",
@@ -1441,6 +1446,7 @@ class WDGAjaxActions {
 		$new_validation_status = (sanitize_text_field(filter_input(INPUT_POST, 'new_can_go_next_status')));
 		$campaign->set_validation_next_status($new_validation_status);
 		$success['new_can_go_next_status']=1;
+		$campaign->update_api();
 
 		$return_values = array(
 			"response" => "edit_status",
@@ -1467,6 +1473,7 @@ class WDGAjaxActions {
 		$new_mandate_conditions = (filter_input(INPUT_POST, 'new_mandate_conditions'));
 		$campaign->__set(ATCF_Campaign::$key_mandate_conditions, $new_mandate_conditions);
 		$success['new_mandate_conditions'] = 1;
+		$campaign->update_api();
 		
 		$return_values = array(
 			"response"	=> "edit_force_mandate",
@@ -1489,6 +1496,7 @@ class WDGAjaxActions {
 		$new_declaration_info = (filter_input(INPUT_POST, 'new_declaration_info'));
 		$campaign->__set(ATCF_Campaign::$key_declaration_info, $new_declaration_info);
 		$success['new_declaration_info'] = 1;
+		$campaign->update_api();
 		
 		$return_values = array(
 			"response"	=> "edit_declaration_info",

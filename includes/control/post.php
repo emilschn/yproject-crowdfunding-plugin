@@ -190,6 +190,7 @@ class WDGPostActions {
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
 				$newcampaign->link_organization( $orga_api_id );
+				$newcampaign->update_api();
 			
 				//Mail pour l'équipe
 				NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
@@ -323,6 +324,7 @@ class WDGPostActions {
                 }
             }
         }
+		$campaign->update_api();
 
 		do_action('wdg_delete_cache', array(
 			'home-projects',
@@ -622,6 +624,8 @@ class WDGPostActions {
 		
 		$new_override_contract = filter_input( INPUT_POST, 'new_override_contract' );
 		$campaign->__set( ATCF_Campaign::$key_override_contract, $new_override_contract );
+		
+		$campaign->update_api();
 		
 		$url_return = wp_get_referer() . "#informations";
 		wp_redirect( $url_return );
