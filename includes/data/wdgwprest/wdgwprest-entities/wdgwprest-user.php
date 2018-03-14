@@ -17,6 +17,28 @@ class WDGWPREST_Entity_User {
 	}
 	
 	/**
+	 * Retourne la liste des utilisateurs de l'API avec des options
+	 * @param int $offset
+	 * @param int $limit
+	 * @param boolean $full
+	 * @param int $link_to_project
+	 */
+	public static function get_list( $offset = 0, $limit = FALSE, $full = FALSE, $link_to_project = FALSE ) {
+		$url = 'users';
+		$url .= '?offset=' . $offset;
+		if ( !empty( $limit ) ) {
+			$url .= '&limit=' . $limit;
+		}
+		if ( !empty( $full ) ) {
+			$url .= '&full=' . $full;
+		}
+		if ( !empty( $link_to_project ) ) {
+			$url .= '&link_to_project=' . $link_to_project;
+		}
+		return WDGWPRESTLib::call_get_wdg( $url );
+	}
+	
+	/**
 	 * Définit les paramètres en fonction de ce qu'on sait sur le site
 	 * @param WDGUser $user
 	 * @return array
