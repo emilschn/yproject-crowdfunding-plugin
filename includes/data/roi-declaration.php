@@ -459,6 +459,9 @@ class WDGROIDeclaration {
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
 								$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+								$campaign_author = $campaign->post_author();
+								$author_user = get_user_by( 'ID', $campaign_author );
+								$replyto_mail = $author_user->user_email;
 								$WDGUser = new WDGUser( $investment_item['user'] );
 								$adjustment_message_param = $this->get_adjustment_message( 'investors' );
 								if ( $this->get_adjustment_validated() && !empty( $adjustment_message_param ) ) {
@@ -468,7 +471,7 @@ class WDGROIDeclaration {
 								if ( empty( $declaration_message ) ) {
 									$declaration_message = "Aucun message";
 								}
-								NotificationsAPI::roi_transfer_with_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message );
+								NotificationsAPI::roi_transfer_with_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 							}
 						}
 
@@ -477,6 +480,9 @@ class WDGROIDeclaration {
 							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_transferred);
 							if ( $send_notifications ) {
 								$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+								$campaign_author = $campaign->post_author();
+								$author_user = get_user_by( 'ID', $campaign_author );
+								$replyto_mail = $author_user->user_email;
 								$WDGUser = new WDGUser( $investment_item['user'] );
 								$adjustment_message_param = $this->get_adjustment_message( 'investors' );
 								if ( $this->get_adjustment_validated() && !empty( $adjustment_message_param ) ) {
@@ -486,7 +492,7 @@ class WDGROIDeclaration {
 								if ( empty( $declaration_message ) ) {
 									$declaration_message = "Aucun message";
 								}
-								NotificationsAPI::roi_transfer_without_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message );
+								NotificationsAPI::roi_transfer_without_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 							}
 						} else {
 							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
