@@ -330,7 +330,7 @@ class SignsquidContract {
 				$contract_infos = $this->get_complete_infos();
 				if ($contract_infos != FALSE) {
 					$this->status_code = $contract_infos->{'status'};
-					$this->signing_code = $contract_infos->{'code'};
+					$this->signing_code = $contract_infos->{'signatories'}[0]->{'code'};
 					update_post_meta($this->payment_id, 'signsquid_contract_agreed', $this->status_code);
 				}
 			}
