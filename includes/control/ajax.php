@@ -1630,6 +1630,9 @@ class WDGAjaxActions {
 									WDGWPREST_Entity_Contract::edit( $wdg_contract_id, 'validated' );
 								}
 								$wdg_contract_status = $signsquid_contract->get_status_str();
+								if ( $signsquid_status == 'WaitingForSignatoryAction' && $current_wdg_user->is_admin() ) {
+									$wdg_contract_status .= ' - code (admin) : ' . $signsquid_contract->get_signing_code();
+								}
 							}
 						}
 					}

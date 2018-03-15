@@ -253,6 +253,7 @@ class SignsquidContract {
 	private $contract_id;
 	private $status_code;
 	private $status_str;
+	private $signing_code;
 	
 	private static $status_str_array = array(
 		'Small' => 'Investissement valid&eacute;',
@@ -298,6 +299,13 @@ class SignsquidContract {
 	public function get_status_str() {
 		return $this->status_str;
 	}
+	
+	/**
+	 * Retourne le code de signature lié au contrat
+	 */
+	public function get_signing_code() {
+		return $this->signing_code;
+	}
     
 	/**
 	 * Initialisation du statut du contrat
@@ -322,6 +330,7 @@ class SignsquidContract {
 				$contract_infos = $this->get_complete_infos();
 				if ($contract_infos != FALSE) {
 					$this->status_code = $contract_infos->{'status'};
+					$this->signing_code = $contract_infos->{'code'};
 					update_post_meta($this->payment_id, 'signsquid_contract_agreed', $this->status_code);
 				}
 			}
