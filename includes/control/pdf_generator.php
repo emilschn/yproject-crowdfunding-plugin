@@ -48,11 +48,11 @@ class WDG_PDF_Generator {
 		$nationality = $country_list[ $shortcode_investor_user_obj->get_nationality() ];
 		$user_title = ( $shortcode_investor_user_obj->get_gender() == "male" ) ? "Monsieur" : "Madame";
 		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $shortcode_investor_user_obj->get_firstname() . ' ' . $shortcode_investor_user_obj->get_lastname() ) );
-		$birthday_month = mb_strtoupper( __( $months[ $shortcode_investor_user_obj->wp_user->get( 'user_birthday_month' ) - 1 ] ) );
+		$birthday_month = mb_strtoupper( __( $months[ $shortcode_investor_user_obj->get_birthday_month() - 1 ] ) );
 		$suffix_born = ( $shortcode_investor_user_obj->get_gender() == "female" ) ? 'e' : '';
 		
 		$buffer = '<strong>'.$user_name.'</strong><br />';
-		$buffer .= 'né' .$suffix_born. ' le ' .$shortcode_investor_user_obj->wp_user->get('user_birthday_day'). ' ' .$birthday_month. ' ' .$shortcode_investor_user_obj->wp_user->get('user_birthday_year'). ' &agrave; ' .$shortcode_investor_user_obj->get_birthplace(). '<br>';
+		$buffer .= 'né' .$suffix_born. ' le ' .$shortcode_investor_user_obj->get_birthday_day(). ' ' .$birthday_month. ' ' .$shortcode_investor_user_obj->get_birthday_year(). ' &agrave; ' .$shortcode_investor_user_obj->get_birthplace(). '<br>';
 		$buffer .= 'de nationalité ' .$nationality. '<br>';
 		$buffer .= 'demeurant ' .$shortcode_investor_user_obj->get_address(). ' ' .$shortcode_investor_user_obj->get_postal_code( true ). ' ' .$shortcode_investor_user_obj->get_city(). '<br>';
 		$buffer .= 'Adresse e-mail : ' .$shortcode_investor_user_obj->get_email(). '<br><br>';
@@ -457,15 +457,16 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
 	
 	if ( $user_obj != 'user' ) {
+		$WDGUser = new WDGUser( $user_obj->ID );
 		global $country_list;
-		$nationality = $country_list[$user_obj->get('user_nationality')];
+		$nationality = $country_list[ $WDGUser->get_nationality() ];
 
 		if ($lang == 'en_US') {
-			$user_title = ($user_obj->get('user_gender') == "male") ? "Mr" : "Mrs";
+			$user_title = ( $WDGUser->get_gender() == "male" ) ? "Mr" : "Mrs";
 		} else {
-			$user_title = ($user_obj->get('user_gender') == "male") ? "Monsieur" : "Madame";
+			$user_title = ( $WDGUser->get_gender() == "male" ) ? "Monsieur" : "Madame";
 		}
-		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $user_obj->first_name . ' ' . $user_obj->last_name ) );
+		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname() ) );
 	}
 		
     $buffer = '<page backbottom="15mm">';
@@ -511,22 +512,21 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		$buffer .= "Adresse e-mail : ".$blank_space;
 		
 	} else {
-		$WDGUser = new WDGUser( $user_obj->ID );
 		$buffer .= '<strong>'.$user_name.'</strong><br />';
 		if ($lang == 'en_US') {
-			$birthday_month = mb_strtoupper($months[$user_obj->get('user_birthday_month') - 1]);
-			$buffer .= 'born on '.$birthday_month.' '.$user_obj->get('user_birthday_day').' '.$user_obj->get('user_birthday_year').' in '.$user_obj->get('user_birthplace').'<br />';
+			$birthday_month = mb_strtoupper($months[$WDGUser->get_birthday_month() - 1]);
+			$buffer .= 'born on '.$birthday_month.' '.$WDGUser->get_birthday_day().' '.$WDGUser->get_birthday_year().' in '.$WDGUser->get_birthplace().'<br />';
 			$buffer .= 'from '.$nationality.'<br />';
-			$buffer .= 'living in '.$user_obj->get('user_city').' ('.$WDGUser->get_postal_code( true ).') - ' . $user_obj->get('user_address').'<br />';;
-			$buffer .= 'E-mail address: '.$user_obj->user_email;
+			$buffer .= 'living in '.$WDGUser->get_city().' ('.$WDGUser->get_postal_code( true ).') - ' . $WDGUser->get_address().'<br />';;
+			$buffer .= 'E-mail address: '.$WDGUser->get_email();
 
 		} else {
-			$birthday_month = htmlentities( mb_strtoupper(__($months[$user_obj->get('user_birthday_month') - 1])) );
-			$suffix_born = ($user_obj->get('user_gender') == "female") ? 'e' : '';
-			$buffer .= 'né'.$suffix_born.' le '.$user_obj->get('user_birthday_day').' '.$birthday_month.' '.$user_obj->get('user_birthday_year').' &agrave; '.$user_obj->get('user_birthplace').'<br />';
+			$birthday_month = htmlentities( mb_strtoupper(__($months[$WDGUser->get_birthday_month() - 1])) );
+			$suffix_born = ( $WDGUser->get_gender() == "female" ) ? 'e' : '';
+			$buffer .= 'né'.$suffix_born.' le '.$WDGUser->get_birthday_day().' '.$birthday_month.' '.$WDGUser->get_birthday_year().' &agrave; '.$WDGUser->get_birthplace().'<br />';
 			$buffer .= 'de nationalité '.$nationality.'<br />';
-			$buffer .= 'demeurant ' . $user_obj->get('user_address').' '.$WDGUser->get_postal_code( true ).' '.$user_obj->get('user_city').'<br />';;
-			$buffer .= 'Adresse e-mail : '.$user_obj->user_email;
+			$buffer .= 'demeurant ' . $WDGUser->get_address().' '.$WDGUser->get_postal_code( true ).' '.$WDGUser->get_city().'<br />';;
+			$buffer .= 'Adresse e-mail : '.$WDGUser->get_email();
 		}
 	}
 	
