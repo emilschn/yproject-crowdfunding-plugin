@@ -335,8 +335,8 @@ class WDGUser {
 	}
 	
 	private function get_local_formatted_birthday_date() {
-		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
-		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
+		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10 && strlen($this->wp_user->get('user_birthday_day')) < 2) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
+		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10 && strlen($this->wp_user->get('user_birthday_month')) < 2) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
 		return $this->wp_user->get('user_birthday_year'). '-' .$birthday_month. '-' .$birthday_day;
 	}
 	public function get_birthday_date() {
