@@ -216,7 +216,7 @@ class WDGUser {
 	
 	public function get_email() {
 		$buffer = $this->email;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->user_email;
 		}
 		return $buffer;
@@ -224,7 +224,7 @@ class WDGUser {
 	
 	public function get_gender() {
 		$buffer = $this->gender;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_gender');
 		}
 		return $buffer;
@@ -232,7 +232,7 @@ class WDGUser {
 	
 	public function get_firstname() {
 		$buffer = $this->first_name;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->first_name;
 		}
 		return $buffer;
@@ -240,7 +240,7 @@ class WDGUser {
 	
 	public function get_lastname() {
 		$buffer = $this->last_name;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->last_name;
 		}
 		return $buffer;
@@ -263,7 +263,7 @@ class WDGUser {
 	 */
 	public function get_nationality( $format = '' ) {
 		$buffer = $this->nationality;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_nationality');
 		}
 		
@@ -279,7 +279,7 @@ class WDGUser {
 	
 	public function get_address() {
 		$buffer = $this->address;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_address');
 		}
 		return $buffer;
@@ -287,7 +287,7 @@ class WDGUser {
 	
 	public function get_postal_code( $complete_french = false ) {
 		$buffer = $this->postalcode;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_postal_code');
 		}
 		
@@ -299,7 +299,7 @@ class WDGUser {
 	
 	public function get_city() {
 		$buffer = $this->city;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_city');
 		}
 		return $buffer;
@@ -307,7 +307,7 @@ class WDGUser {
 	
 	public function get_country( $format = '' ) {
 		$buffer = $this->country;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_country');
 		}
 		
@@ -328,7 +328,7 @@ class WDGUser {
 	
 	public function get_phone_number() {
 		$buffer = $this->phone_number;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_mobile_phone');
 		}
 		return $buffer;
@@ -341,7 +341,7 @@ class WDGUser {
 	}
 	public function get_birthday_date() {
 		$buffer = $this->birthday_date;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->get_local_formatted_birthday_date();
 		}
 		return $buffer;
@@ -367,7 +367,7 @@ class WDGUser {
 	
 	public function get_description() {
 		$buffer = $this->description;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('description');
 		}
 		return $buffer;
@@ -375,7 +375,7 @@ class WDGUser {
 		
 	public function get_birthplace() {
 		$buffer = $this->birthday_city;
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer = '---' ) {
 			$buffer = $this->wp_user->get('user_birthplace');
 		}
 		return $buffer;
