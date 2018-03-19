@@ -10,6 +10,8 @@ class WDGWPRESTLib {
 	public static $wp_route_wdg = 'wdg/v1/';
 	public static $wp_route_external = 'external/v1/';
 	
+	private static $cache_by_route;
+	
 	private static $http_request_timeout = 10;
 	
 /*******************************************************************************
@@ -18,26 +20,37 @@ class WDGWPRESTLib {
 	private static function call_get( $route ) {
 		ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
 		
-		$login_pwd = YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD;
-		$WDGUser_current = WDGUser::current();
-		if ( $WDGUser_current->has_access_to_api() ) {
-			$login_pwd = $WDGUser_current->get_api_login() . ':' . $WDGUser_current->get_api_password();
+		if ( !isset( self::$cache_by_route ) ) {
+			self::$cache_by_route = array();
 		}
 		
-		$headers = array( "Authorization" => "Basic " . base64_encode( $login_pwd ) );
-		$result = wp_remote_get(
-			YP_WDGWPREST_URL . $route,
-			array( 
-				'headers' => $headers,
-				'timeout' => WDGWPRESTLib::$http_request_timeout
-			)
-		);
-		
-		if ( !is_wp_error($result) && isset( $result['response'] ) ) {
-			ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[response] : ' . print_r( $result['response'], TRUE ) );
-		}
-		if ( !is_wp_error($result) && isset( $result['body'] ) ) {
-			ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[body] : ' . print_r( $result['body'], TRUE ) );
+		if ( isset( self::$cache_by_route[ $route ] ) ) {
+			$result = self::$cache_by_route[ $route ];
+			
+		} else {
+			$login_pwd = YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD;
+			$WDGUser_current = WDGUser::current();
+			if ( $WDGUser_current->has_access_to_api() ) {
+				$login_pwd = $WDGUser_current->get_api_login() . ':' . $WDGUser_current->get_api_password();
+			}
+
+			$headers = array( "Authorization" => "Basic " . base64_encode( $login_pwd ) );
+			$result = wp_remote_get(
+				YP_WDGWPREST_URL . $route,
+				array( 
+					'headers' => $headers,
+					'timeout' => WDGWPRESTLib::$http_request_timeout
+				)
+			);
+
+			if ( !is_wp_error($result) && isset( $result['response'] ) ) {
+				ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[response] : ' . print_r( $result['response'], TRUE ) );
+			}
+			if ( !is_wp_error($result) && isset( $result['body'] ) ) {
+				ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[body] : ' . print_r( $result['body'], TRUE ) );
+			}
+			
+			self::$cache_by_route[ $route ] = $result;
 		}
 		
 		$buffer = FALSE;
@@ -74,6 +87,11 @@ class WDGWPRESTLib {
 		);
 		
 		ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $buffer : ' . print_r( $result, TRUE ) );
+		
+		
+		if ( isset( self::$cache_by_route[ $route ] ) ) {
+			unset( self::$cache_by_route[ $route ] );
+		}
 		
 		$buffer = FALSE;
 		if ( !is_wp_error($result) && isset( $result["response"] ) && isset( $result["response"]["code"] ) && $result["response"]["code"] == "200" ) {

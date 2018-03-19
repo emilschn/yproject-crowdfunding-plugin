@@ -44,14 +44,14 @@ class WDGCampaignInvestments {
 				if (!isset($buffer['investors_list'][$item['user']])) {
 					$buffer['count_validate_investors']++;
 					$buffer['investors_list'][$item['user']] = $item['user'];
-					if ($invest_user->get('user_gender') != "") {
+					if ($wdg_invest_user->get_gender() != "") {
 						$age = $wdg_invest_user->get_age();
 						if ($age < 200) {
 							$buffer['count_age'] += $age;
 							$buffer['count_average_age'] ++;
 						}
 					}
-					if ($invest_user->get('user_gender') == "female") $buffer['count_female']++;
+					if ($wdg_invest_user->get_gender() == "female") $buffer['count_female']++;
 					if ($buffer['investors_string'] != '') $buffer['investors_string'] .= ', ';
 					$buffer['investors_string'] .= $wdg_invest_user->get_display_name();
 				}

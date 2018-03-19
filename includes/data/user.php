@@ -8,28 +8,110 @@ class WDGUser {
 	public static $edd_general_terms_version = 'terms_general_version';
 	public static $edd_general_terms_excerpt = 'terms_general_excerpt';
 	
+/*******************************************************************************
+ * Variables statiques : clés des métas utilisées
+*******************************************************************************/
+	public static $key_api_id = 'id_api';
+	
 	/**
 	 * @var WP_User 
 	 */
 	public $wp_user;
+	private $api_data;
 	private $wallet_details;
+	
+	private $gender;
+	private $first_name;
+	private $last_name;
+	private $login;
+	private $birthday_date;
+	private $birthday_city;
+	private $nationality;
+	private $address;
+	private $postalcode;
+	private $city;
+	private $country;
+	private $email;
+	private $phone_number;
+	private $description;
+	private $bank_iban;
+	private $bank_bic;
+	private $bank_holdername;
+	private $bank_address;
+	private $bank_address2;
+	private $authentification_mode;
+	private $signup_date;
 	
 	protected static $_current = null;
 	
+	
+/*******************************************************************************
+ * Créations
+*******************************************************************************/
+	/**
+	 * Constructeur
+	 * @param int $user_id
+	 */
 	public function __construct($user_id = '') {
+		// Initialisation avec l'objet WP
 		if ($user_id === '') {
 			$this->wp_user = wp_get_current_user();
 		} else {
 			$this->wp_user = new WP_User($user_id);
 		}
+		
+		// Nécessaire pour éviter boucle infinie
+		// Dans cette fonction, il a des appels à l'API où on vérifie l'utilisateur en cours
+		// Il ne faut pas faire ces appels à l'API tant que l'inialisation n'est pas terminée
+		if ( !is_null( self::$_current ) ) {
+			$this->construct_with_api_data();
+		}
 	}
 	
 	/**
+	 * Initialisation des données avec les données de l'API
+	 */
+	public function construct_with_api_data() {
+		$api_id = $this->get_api_id();
+		
+		if ( !empty( $api_id ) && !WDGOrganization::is_user_organization( $this->get_wpref() ) ) {
+			if ( function_exists( 'is_user_logged_in' ) ) {
+				$this->api_data = WDGWPREST_Entity_User::get( $api_id );
+			
+				if ( isset( $this->api_data ) ) {
+					$this->gender = $this->api_data->gender;
+					$this->first_name = $this->api_data->name;
+					$this->last_name = $this->api_data->surname;
+					$this->birthday_date = $this->api_data->birthday_date;
+					$this->birthday_city = $this->api_data->birthday_city;
+					$this->nationality = $this->api_data->nationality;
+					$this->address = $this->api_data->address;
+					$this->postalcode = $this->api_data->postalcode;
+					$this->city = $this->api_data->city;
+					$this->country = $this->api_data->country;
+					$this->email = $this->api_data->email;
+					$this->phone_number = $this->api_data->phone_number;
+					$this->description = $this->api_data->description;
+					$this->bank_iban = $this->api_data->bank_iban;
+					$this->bank_bic = $this->api_data->bank_bic;
+					$this->bank_holdername = $this->api_data->bank_holdername;
+					$this->bank_address = $this->api_data->bank_address;
+					$this->bank_address2 = $this->api_data->bank_address2;
+					$this->authentification_mode = $this->api_data->authentification_mode;
+					$this->signup_date = $this->api_data->signup_date;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Récupération de l'utilisateur en cours
 	 * @return WDGUser
 	 */
 	public static function current() {
 		if ( is_null( self::$_current ) ) {
 			self::$_current = new self();
+			self::$_current->construct_with_api_data();
 		}
 		return self::$_current;
 	}
@@ -53,14 +135,24 @@ class WDGUser {
 	}
 	
 /*******************************************************************************
- * Accès aux données classiques
+ * Identification
 *******************************************************************************/
+	/**
+	 * Retourne l'identifiant WordPress
+	 * @return int
+	 */
 	public function get_wpref() {
 		return $this->wp_user->ID;
 	}
 	
-	public static $key_api_id = 'id_api';
+	/**
+	 * Retourne l'id au sein de l'API
+	 * @return int
+	 */
 	public function get_api_id() {
+		if ( $this->get_wpref() == '' ) {
+			return FALSE;
+		}
 		$api_user_id = get_user_meta( $this->get_wpref(), WDGUser::$key_api_id, TRUE );
 		if ( empty($api_user_id) ) {
 			$user_create_result = WDGWPREST_Entity_User::create( $this );
@@ -69,17 +161,33 @@ class WDGUser {
 			update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $api_user_id );
 		}
 		return $api_user_id;
-		
 	}
 	
+	/**
+	 * Retourne l'identifiant Facebook éventuellement lié au compte
+	 * @return int
+	 */
 	public function get_facebook_id() {
 		return $this->wp_user->get( 'social_connect_facebook_id' );
 	}
+	
+	/**
+	 * Retourne true si l'utilisateur est identifié grâce à Facebook
+	 * @return boolean
+	 */
 	public function is_logged_in_with_facebook() {
-		$facebook_id = $this->get_facebook_id();
-		return ( !empty( $facebook_id ) );
+		$authentication_mode = $this->authentification_mode;
+		if ( !empty( $authentication_mode ) ) {
+			return ( $authentication_mode == 'facebook' );
+		} else {
+			$facebook_id = $this->get_facebook_id();
+			return ( !empty( $facebook_id ) );
+		}
 	}
 	
+/*******************************************************************************
+ * Accès aux données standards
+*******************************************************************************/
 	public function get_metadata( $key ) {
 		if ( !empty( $key ) ) {
 			return $this->wp_user->get( 'user_' . $key );
@@ -88,6 +196,14 @@ class WDGUser {
 	
 	public function get_login() {
 		return $this->wp_user->user_login;
+	}
+	
+	public function get_signup_date() {
+		$buffer = $this->signup_date;
+		if ( empty( $buffer ) ) {
+			$buffer = $this->wp_user->user_registered;
+		}
+		return $buffer;
 	}
 	
 	public function get_api_login() {
@@ -99,19 +215,35 @@ class WDGUser {
 	}
 	
 	public function get_email() {
-		return $this->wp_user->user_email;
+		$buffer = $this->email;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->user_email;
+		}
+		return $buffer;
 	}
 	
 	public function get_gender() {
-		return $this->wp_user->get('user_gender');
+		$buffer = $this->gender;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_gender');
+		}
+		return $buffer;
 	}
 	
 	public function get_firstname() {
-		return $this->wp_user->first_name;
+		$buffer = $this->first_name;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->first_name;
+		}
+		return $buffer;
 	}
 	
 	public function get_lastname() {
-		return $this->wp_user->last_name;
+		$buffer = $this->last_name;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->last_name;
+		}
+		return $buffer;
 	}
 	
 	public function get_display_name() {
@@ -130,7 +262,11 @@ class WDGUser {
 	 * @return string
 	 */
 	public function get_nationality( $format = '' ) {
-		$buffer = $this->wp_user->get('user_nationality');
+		$buffer = $this->nationality;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_nationality');
+		}
+		
 		if ( !empty( $format ) && $format == 'iso3' ) {
 			// La nationalité est enregistrée au format iso2, il faut juste la convertir
 			global $country_list_iso2_to_iso3;
@@ -142,11 +278,19 @@ class WDGUser {
 	}
 	
 	public function get_address() {
-		return $this->wp_user->get('user_address');
+		$buffer = $this->address;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_address');
+		}
+		return $buffer;
 	}
 	
 	public function get_postal_code( $complete_french = false ) {
-		$buffer = $this->wp_user->get('user_postal_code');
+		$buffer = $this->postalcode;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_postal_code');
+		}
+		
 		if ( $complete_french && strlen( $buffer ) == 4 ) {
 			$buffer = '0' . $buffer;
 		}
@@ -154,11 +298,19 @@ class WDGUser {
 	}
 	
 	public function get_city() {
-		return $this->wp_user->get('user_city');
+		$buffer = $this->city;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_city');
+		}
+		return $buffer;
 	}
 	
 	public function get_country( $format = '' ) {
-		$buffer = $this->wp_user->get('user_country');
+		$buffer = $this->country;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_country');
+		}
+		
 		if ( !empty( $format ) && $format == 'iso3' ) {
 			// Le pays est saisi, il faut tenter de le convertir
 			global $country_list, $country_list_iso2_to_iso3;
@@ -175,23 +327,63 @@ class WDGUser {
 	}
 	
 	public function get_phone_number() {
-		return $this->wp_user->get('user_mobile_phone');
+		$buffer = $this->phone_number;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_mobile_phone');
+		}
+		return $buffer;
 	}
 	
-	public function get_birthday_date() {
-		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
-		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
+	private function get_local_formatted_birthday_date() {
+		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10 && strlen($this->wp_user->get('user_birthday_day')) < 2) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
+		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10 && strlen($this->wp_user->get('user_birthday_month')) < 2) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
 		return $this->wp_user->get('user_birthday_year'). '-' .$birthday_month. '-' .$birthday_day;
+	}
+	public function get_birthday_date() {
+		$buffer = $this->birthday_date;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->get_local_formatted_birthday_date();
+		}
+		return $buffer;
+	}
+	public function get_birthday_day() {
+		$birthday_date = $this->get_birthday_date();
+		$birthday_datetime = new DateTime( $birthday_date );
+		$buffer = $birthday_datetime->format( 'd' );
+		return $buffer;
+	}
+	public function get_birthday_month() {
+		$birthday_date = $this->get_birthday_date();
+		$birthday_datetime = new DateTime( $birthday_date );
+		$buffer = $birthday_datetime->format( 'm' );
+		return $buffer;
+	}
+	public function get_birthday_year() {
+		$birthday_date = $this->get_birthday_date();
+		$birthday_datetime = new DateTime( $birthday_date );
+		$buffer = $birthday_datetime->format( 'Y' );
+		return $buffer;
 	}
 	
 	public function get_description() {
-		return $this->wp_user->get( 'description' );
+		$buffer = $this->description;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('description');
+		}
+		return $buffer;
 	}
 		
 	public function get_birthplace() {
-		return $this->wp_user->get('user_birthplace');
+		$buffer = $this->birthday_city;
+		if ( empty( $buffer ) || $buffer = '---' ) {
+			$buffer = $this->wp_user->get('user_birthplace');
+		}
+		return $buffer;
 	}
 	
+/*******************************************************************************
+ * Fonctions nécessitant des requetes
+*******************************************************************************/
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
 		$cache_id = 'WDGUser::' .$this->get_wpref(). '::get_projects_list';
@@ -288,48 +480,71 @@ class WDGUser {
 	/**
 	 * Enregistre les données nécessaires pour l'investissement
 	 */
-	public function save_data($email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone) {
+	public function save_data( $email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description = '' ) {
 		if ( !empty( $email ) ) {
+			$this->email = $email;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		}
-		if ( !empty( $gender ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_gender', $gender );
-		}
 		if ( !empty( $firstname ) ) {
+			$this->first_name = $firstname;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
 		}
 		if ( !empty( $lastname ) ) {
+			$this->last_name = $lastname;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
 		}
+		
 		if ( !empty( $birthday_day ) && $birthday_day != '00' && $birthday_day > 0 ) {
-			update_user_meta( $this->wp_user->ID, 'user_birthday_day', $birthday_day );
+			$this->save_meta( 'user_birthday_day', $birthday_day );
 		}
 		if ( !empty( $birthday_month ) && $birthday_month != '00' && $birthday_month > 0 ) {
-			update_user_meta( $this->wp_user->ID, 'user_birthday_month', $birthday_month );
+			$this->save_meta( 'user_birthday_month', $birthday_month );
 		}
 		if ( !empty( $birthday_year ) && $birthday_year != '00' && $birthday_year > 0 ) {
-			update_user_meta( $this->wp_user->ID, 'user_birthday_year', $birthday_year );
+			$this->save_meta( 'user_birthday_year', $birthday_year );
+		}
+		if ( ( !empty( $birthday_day ) && $birthday_day != '00' && $birthday_day > 0 ) 
+				|| ( !empty( $birthday_month ) && $birthday_month != '00' && $birthday_month > 0 )
+				|| ( !empty( $birthday_year ) && $birthday_year != '00' && $birthday_year > 0 ) ) {
+			$this->birthday_date = $this->get_local_formatted_birthday_date();
+		}
+		
+		
+		if ( !empty( $gender ) ) {
+			$this->gender = $gender;
+			$this->save_meta( 'user_gender', $gender );
 		}
 		if ( !empty( $birthplace ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_birthplace', $birthplace );
+			$this->birthday_city = $birthplace;
+			$this->save_meta( 'user_birthplace', $birthplace );
 		}
 		if ( !empty( $nationality ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_nationality', $nationality );
+			$this->nationality = $nationality;
+			$this->save_meta( 'user_nationality', $nationality );
 		}
 		if ( !empty( $address ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_address', $address );
+			$this->address = $address;
+			$this->save_meta( 'user_address', $address );
 		}
 		if ( !empty( $postal_code ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_postal_code', $postal_code );
+			$this->postalcode = $postal_code;
+			$this->save_meta( 'user_postal_code', $postal_code );
 		}
 		if ( !empty( $city ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_city', $city );
+			$this->city = $city;
+			$this->save_meta( 'user_city', $city );
 		}
 		if ( !empty( $country ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_country', $country );
+			$this->country = $country;
+			$this->save_meta( 'user_country', $country );
 		}
-		if ( !empty( $telephone ) ) {
-			update_user_meta( $this->wp_user->ID, 'user_mobile_phone', $telephone );
+		if ( !empty( $phone_number ) ) {
+			$this->phone_number = $phone_number;
+			$this->save_meta( 'user_mobile_phone', $phone_number );
+		}
+		if ( !empty( $description ) ) {
+			$this->description = $description;
+			$this->save_meta( 'description', $description );
 		}
 		
 		$this->update_api();
@@ -342,9 +557,20 @@ class WDGUser {
 	 * @param string $lastname
 	 */
 	public function save_basics( $email, $firstname, $lastname ) {
-		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
-		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
-		wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+		if ( !empty( $email ) ) {
+			$this->email = $email;
+			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
+		}
+		if ( !empty( $firstname ) ) {
+			$this->first_name = $firstname;
+			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
+		}
+		if ( !empty( $lastname ) ) {
+			$this->last_name = $lastname;
+			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+		}
+		
+		$this->update_api();
 	}
 	
 	/**
@@ -384,7 +610,7 @@ class WDGUser {
 	 * @return boolean
 	 */
 	public function is_admin() {
-		return ($this->wp_user->has_cap('manage_options'));
+		return ( $this->wp_user->has_cap( 'manage_options' ) );
 	}
 	
 	/**
@@ -401,9 +627,9 @@ class WDGUser {
 	 * @return int
 	 */
 	public function get_age() {
-		$day = $this->wp_user->get('user_birthday_day');
-		$month = $this->wp_user->get('user_birthday_month');
-		$year = $this->wp_user->get('user_birthday_year');
+		$day = $this->get_birthday_day();
+		$month = $this->get_birthday_month();
+		$year = $this->get_birthday_year();
 		if ( !empty( $day ) && !empty( $month ) && !empty( $year ) ) {
 			$today_day = date('j');
 			$today_month = date('n');
@@ -441,23 +667,23 @@ class WDGUser {
 		$user_can_invest_errors = array();
 		
 		//Infos nécessaires pour tout type de financement
-		if ($this->wp_user->user_firstname == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
-		if ($this->wp_user->user_lastname == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre nom.', 'yproject')); }
-		if ($this->wp_user->user_email == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
-		if ($this->wp_user->get('user_nationality') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
-		if ($this->wp_user->get('user_birthday_day') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
-		if ($this->wp_user->get('user_birthday_month') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
-		if ($this->wp_user->get('user_birthday_year') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
+		if ( $this->get_firstname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
+		if ( $this->get_lastname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre nom.', 'yproject')); }
+		if ( $this->get_email() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
+		if ( $this->get_nationality() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
+		if ( $this->get_birthday_day() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
+		if ( $this->get_birthday_month() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
+		if ( $this->get_birthday_year() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
 		
 		//Infos nécessaires pour l'investissement
-		if ($campaign_funding_type != 'fundingdonation') {
-			if (!$this->is_major()) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
-			if ($this->wp_user->get('user_address') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
-			if ($this->wp_user->get('user_postal_code') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
-			if ($this->wp_user->get('user_city') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
-			if ($this->wp_user->get('user_country') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
-			if ($this->wp_user->get('user_birthplace') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
-			if ($this->wp_user->get('user_gender') == "") { array_push($user_can_invest_errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
+		if ( $campaign_funding_type != 'fundingdonation' ) {
+			if ( !$this->is_major() ) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
+			if ( $this->get_address() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
+			if ( $this->get_postal_code() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
+			if ( $this->get_city() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
+			if ( $this->get_country() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
+			if ( $this->get_birthplace() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
+			if ( $this->get_gender() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
 		}
 		
 		return (empty($user_can_invest_errors));
@@ -769,25 +995,70 @@ class WDGUser {
 		return get_user_meta( $this->wp_user->ID, "bank_" . $info, TRUE);
 	}
 	
+	public function get_bank_iban() {
+		$buffer = $this->bank_iban;
+		if ( empty( $buffer ) ) {
+			$buffer = $this->get_iban_info( 'iban' );
+		}
+		return $buffer;
+	}
+	
+	public function get_bank_bic() {
+		$buffer = $this->bank_bic;
+		if ( empty( $buffer ) ) {
+			$buffer = $this->get_iban_info( 'bic' );
+		}
+		return $buffer;
+	}
+	
+	public function get_bank_holdername() {
+		$buffer = $this->bank_holdername;
+		if ( empty( $buffer ) ) {
+			$buffer = $this->get_iban_info( 'holdername' );
+		}
+		return $buffer;
+	}
+	
+	public function get_bank_address() {
+		$buffer = $this->bank_address;
+		if ( empty( $buffer ) ) {
+			$buffer = $this->get_iban_info( 'address' );
+		}
+		return $buffer;
+	}
+	
+	public function get_bank_address2() {
+		$buffer = $this->bank_address2;
+		if ( empty( $buffer ) ) {
+			$buffer = $this->get_iban_info( 'address2' );
+		}
+		return $buffer;
+	}
+	
 	/**
 	 * Est-ce que le RIB est enregistré ?
 	 */
 	public function has_saved_iban() {
-		$saved_holdername = $this->get_iban_info("holdername");
-		$saved_iban = $this->get_iban_info("iban");
-		return (!empty($saved_holdername) && !empty($saved_iban));
+		$saved_holdername = $this->get_bank_holdername();
+		$saved_iban = $this->get_bank_iban();
+		return ( !empty( $saved_holdername ) && !empty( $saved_iban ) );
 	}
 	
 	/**
 	 * Enregistre le RIB
 	 */
 	public function save_iban( $holder_name, $iban, $bic, $address1, $address2 = '' ) {
-		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, $holder_name );
-		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, $iban );
-		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, $bic );
-		update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, $address1 );
+		$this->bank_holdername = $holder_name;
+		$this->save_meta( WDGUser::$key_bank_holdername, $holder_name );
+		$this->bank_iban = $iban;
+		$this->save_meta( WDGUser::$key_bank_iban, $iban );
+		$this->bank_bic = $bic;
+		$this->save_meta( WDGUser::$key_bank_bic, $bic );
+		$this->bank_address = $address1;
+		$this->save_meta( WDGUser::$key_bank_address1, $address1 );
 		if ( !empty( $address2 ) ) {
-			update_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address2, $address2 );
+			$this->bank_address2 = $address2;
+			$this->save_meta( WDGUser::$key_bank_address2, $address2 );
 		}
 	}
 	
@@ -803,12 +1074,12 @@ class WDGUser {
 	private function get_wallet_details( $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
 			if ( $by_email ) {
-				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->wp_user->user_email );
+				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
 				
 			} else {
 				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
 
-				if ( isset( $this->wallet_details->EMAIL ) && $this->wallet_details->EMAIL != $this->wp_user->user_email ) {
+				if ( isset( $this->wallet_details->EMAIL ) && $this->wallet_details->EMAIL != $this->get_email() ) {
 					$this->update_lemonway();
 				}
 			}
@@ -825,10 +1096,10 @@ class WDGUser {
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
 			return LemonwayLib::wallet_register(
 				$this->get_lemonway_id(),
-				$this->wp_user->user_email,
+				$this->get_email(),
 				$this->get_lemonway_title(),
-				html_entity_decode( $this->wp_user->user_firstname ), 
-				html_entity_decode( $this->wp_user->user_lastname ),
+				html_entity_decode( $this->get_firstname() ), 
+				html_entity_decode( $this->get_lastname() ),
 				$this->get_country( 'iso3' ),
 				$this->get_lemonway_phone_number(),
 				$this->get_lemonway_birthdate(),
@@ -843,9 +1114,7 @@ class WDGUser {
 	 * Détermine si les informations nécessaires sont remplies : mail, prénom, nom
 	 */
 	public function can_register_lemonway() {
-		$buffer = ($this->wp_user->user_email != "")
-				&& ($this->wp_user->user_firstname != "")
-				&& ($this->wp_user->user_lastname != "");
+		$buffer = ( $this->get_email() != "" ) && ($this->get_firstname() != "") && ($this->get_lastname() != "");
 		return $buffer;
 	}
 	
@@ -855,10 +1124,10 @@ class WDGUser {
 	private function update_lemonway() {
 		LemonwayLib::wallet_update(
 			$this->get_lemonway_id(),
-			$this->wp_user->user_email,
+			$this->get_email(),
 			$this->get_lemonway_title(),
-			$this->wp_user->user_firstname, 
-			$this->wp_user->user_lastname,
+			$this->get_firstname(), 
+			$this->get_lastname(),
 			$this->get_country( 'iso3' ),
 			$this->get_lemonway_phone_number(),
 			$this->get_lemonway_birthdate(),
@@ -900,9 +1169,9 @@ class WDGUser {
 	 */
 	public function get_lemonway_title() {
 		$buffer = "U";
-		if ($this->wp_user->get('user_gender') == "male") {
+		if ( $this->get_gender() == 'male' ) {
 			$buffer = "M";
-		} elseif ($this->wp_user->get('user_gender') == "female") {
+		} elseif ( $this->get_gender() == "female" ) {
 			$buffer = "F";
 		}
 		return $buffer;
@@ -918,11 +1187,8 @@ class WDGUser {
 	
 	public function get_lemonway_birthdate() {
 		// format : dd/MM/yyyy
-		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10 && strlen($this->wp_user->get('user_birthday_day')) < 2) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
-		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10 && strlen($this->wp_user->get('user_birthday_month')) < 2) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
-		$birthday_year = ( $this->wp_user->get('user_birthday_year') != '' ) ? $this->wp_user->get('user_birthday_year') : '0';
-		$lemonway_birthdate = $birthday_day. '/' .$birthday_month. '/' .$birthday_year;
-		return $lemonway_birthdate;
+		$birthday_datetime = new DateTime( $this->get_birthday_date() );
+		return $birthday_datetime->format( 'd/m/Y' );
 	}
 	
 	/**
