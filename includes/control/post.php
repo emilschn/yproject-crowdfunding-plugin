@@ -291,6 +291,7 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
+							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_vote );
                         }
                     }
 
@@ -319,6 +320,7 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
+							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
                         }
                     }
                 }

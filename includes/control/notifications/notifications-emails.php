@@ -840,4 +840,30 @@ class NotificationsEmails {
     //*******************************************************
     // FIN NOTIFICATIONS KYC
     //*******************************************************
+	
+    //*******************************************************
+    // NOTIFICATIONS STATUT
+    //*******************************************************
+    public static function campaign_change_status_admin( $campaign_id, $status ) {
+		ypcf_debug_log( 'NotificationsEmails::campaign_change_status_admin > ' .$campaign_id. ' ; ' .$status );
+		
+		$admin_email = get_option('admin_email');
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$status_str = 'vote';
+		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
+			$status_str = 'collecte';
+		}
+		
+		$object = "Changement d'étape projet";
+		$body_content = "Salut !!<br>";
+		$body_content .= "Un projet a changé d'étape :<br>";
+		$body_content .= "Il s'agit du projet " .$campaign->data->post_title. ".<br>";
+		$body_content .= "Il est passé en phase de " .$status_str. ".<br><br>";
+		$body_content .= "GO ! GO ! GO !";
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
+    }
+    //*******************************************************
+    // FIN NOTIFICATIONS STATUT
+    //*******************************************************
 }
