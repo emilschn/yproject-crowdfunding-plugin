@@ -1259,8 +1259,8 @@ class WDGOrganization {
 
 		//Vérification du code APE
 		$org_ape = filter_input(INPUT_POST, 'org_ape');
-		if ($org_ape == 0) {
-			$errors_submit_new->add('ape-not-valid', __('Le code APE ne doit pas &ecirc;tre &eacute;gal &agrave; z&eacute;ro.', 'yproject'));
+		if ( empty( $org_ape ) ) {
+			$errors_submit_new->add('ape-not-valid', __('Le code APE ne doit pas &ecirc;tre vide.', 'yproject'));
 			$errors_edit['org_ape'] = $errors_submit_new->get_error_message('ape-not-valid');
 		}
 		

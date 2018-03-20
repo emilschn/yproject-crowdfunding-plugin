@@ -1184,7 +1184,7 @@ class WDGAjaxActions {
 		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
 		$return = WDGOrganization::submit_new( FALSE );
 		$org_object = FALSE;
-		if ( !empty( $return ) ) {
+		if ( !empty( $return['org_object'] ) ) {
 			$org_object = $return['org_object'];
 			$org_api_id = $org_object->get_api_id();
 		}
