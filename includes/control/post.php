@@ -191,6 +191,7 @@ class WDGPostActions {
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
 				$newcampaign->link_organization( $orga_api_id );
+				$newcampaign->update_api();
 			
 				//Mail pour l'équipe
 				NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
@@ -291,6 +292,7 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
+							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_vote );
                         }
                     }
 
@@ -319,11 +321,13 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
+							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
                         }
                     }
                 }
             }
         }
+		$campaign->update_api();
 
 		do_action('wdg_delete_cache', array(
 			'home-projects',
@@ -593,6 +597,10 @@ class WDGPostActions {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 		
+		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
+		if ( !empty( $new_project_contract_earnings_description ) ) {
+			$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
+		}
 		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
 		if ( !empty( $new_project_contract_spendings_description ) ) {
 			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
@@ -623,6 +631,8 @@ class WDGPostActions {
 		
 		$new_override_contract = filter_input( INPUT_POST, 'new_override_contract' );
 		$campaign->__set( ATCF_Campaign::$key_override_contract, $new_override_contract );
+
+		$campaign->update_api();
 		
 		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );

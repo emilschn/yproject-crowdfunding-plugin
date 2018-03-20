@@ -163,19 +163,19 @@ class WDGAjaxActions {
 			$return_values = array(
 				"response" => "edit_user",
 				"errors" => $user_can_invest_errors,
-				"firstname" => $WDGuser_current->wp_user->user_firstname,
-				"lastname" => $WDGuser_current->wp_user->user_lastname,
-				"email" => $WDGuser_current->wp_user->user_email,
-				"nationality" => $WDGuser_current->wp_user->get('user_nationality'),
-				"birthday_day" => $WDGuser_current->wp_user->get('user_birthday_day'),
-				"birthday_month" => $WDGuser_current->wp_user->get('user_birthday_month'),
-				"birthday_year" => $WDGuser_current->wp_user->get('user_birthday_year'),
-				"address" => $WDGuser_current->wp_user->get('user_address'),
-				"postal_code" => $WDGuser_current->wp_user->get('user_postal_code'),
-				"city" => $WDGuser_current->wp_user->get('user_city'),
-				"country" => $WDGuser_current->wp_user->get('user_country'),
-				"birthplace" => $WDGuser_current->wp_user->get('user_birthplace'),
-				"gender" => $WDGuser_current->wp_user->get('user_gender'),
+				"firstname" => $WDGuser_current->get_firstname(),
+				"lastname" => $WDGuser_current->get_lastname(),
+				"email" => $WDGuser_current->get_email(),
+				"nationality" => $WDGuser_current->get_nationality(),
+				"birthday_day" => $WDGuser_current->get_birthday_day(),
+				"birthday_month" => $WDGuser_current->get_birthday_month(),
+				"birthday_year" => $WDGuser_current->get_birthday_year(),
+				"address" => $WDGuser_current->get_address(),
+				"postal_code" => $WDGuser_current->get_postal_code(),
+				"city" => $WDGuser_current->get_city(),
+				"country" => $WDGuser_current->get_country(),
+				"birthplace" => $WDGuser_current->get_birthplace(),
+				"gender" => $WDGuser_current->get_gender(),
 			);
 			echo json_encode($return_values);
 			exit();
@@ -599,6 +599,7 @@ class WDGAjaxActions {
 				$success['custom_field_' . $i] = 1;
 			}
 		}
+		$campaign->update_api();
 
 		$return_values = array(
 			"response" => "edit_project",
@@ -622,13 +623,11 @@ class WDGAjaxActions {
 
 		$gender = filter_input(INPUT_POST, 'new_gender');
 		if($gender == "male" || $gender == "female"){
-			update_user_meta( $current_user->wp_user->ID, 'user_gender', $gender );
 			$success['new_gender']=1;
 		}
 
 		$firstname = sanitize_text_field(filter_input(INPUT_POST, 'new_firstname'));
 		if(!empty($firstname)){
-			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'first_name' => $firstname ) ) ;
 			$success['new_firstname']=1;
 		} else {
 			$errors['new_firstname']= __("Vous devez renseigner votre prénom",'yproject');
@@ -636,7 +635,6 @@ class WDGAjaxActions {
 
 		$lastname = sanitize_text_field(filter_input(INPUT_POST, 'new_lastname'));
 		if(!empty($lastname)){
-			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'last_name' => $lastname ) ) ;
 			$success['new_lastname']=1;
 		} else {
 			$errors['new_lastname']= __("Vous devez renseigner votre nom",'yproject');
@@ -646,9 +644,6 @@ class WDGAjaxActions {
 		if(!empty($birthday)){
 			try {
 				$new_birthday_date = DateTime::createFromFormat( 'd/m/Y', $birthday );
-				update_user_meta( $current_user->wp_user->ID, 'user_birthday_day', $new_birthday_date->format('d') );
-				update_user_meta( $current_user->wp_user->ID, 'user_birthday_month', $new_birthday_date->format('n') );
-				update_user_meta( $current_user->wp_user->ID, 'user_birthday_year', $new_birthday_date->format('Y') );
 				$success['new_birthday']=1;
 			} catch (Exception $e) {
 				$errors['new_birthday']="La date est invalide";
@@ -659,7 +654,6 @@ class WDGAjaxActions {
 
 		$birthplace = sanitize_text_field(filter_input(INPUT_POST, 'new_birthplace'));
 		if(!empty($birthplace)){
-			update_user_meta( $current_user->wp_user->ID, 'user_birthplace', $birthplace );
 			$success['new_birthplace']=1;
 		} else {
 			$errors['new_birthplace']= __("Vous devez renseigner votre lieu de naissance",'yproject');
@@ -667,7 +661,6 @@ class WDGAjaxActions {
 
 		$nationality = sanitize_text_field(filter_input(INPUT_POST, 'new_nationality'));
 		if(!empty($nationality)){
-			update_user_meta( $current_user->wp_user->ID, 'user_nationality', $nationality );
 			$success['new_nationality']=1;
 		} else {
 			$errors['new_nationality']= __("Vous devez renseigner votre nationalit&eacute;",'yproject');
@@ -675,7 +668,6 @@ class WDGAjaxActions {
 
 		$address = sanitize_text_field(filter_input(INPUT_POST, 'new_address'));
 		if(!empty($address)){
-			update_user_meta( $current_user->wp_user->ID, 'user_address', $address );
 			$success['new_address']=1;
 		} else {
 			$errors['new_address']= __("Vous devez renseigner votre adresse",'yproject');
@@ -683,7 +675,6 @@ class WDGAjaxActions {
 
 		$postal_code = sanitize_text_field(filter_input(INPUT_POST, 'new_postal_code'));
 		if(!empty($postal_code)){
-			update_user_meta( $current_user->wp_user->ID, 'user_postal_code', $postal_code );
 			$success['new_postal_code']=1;
 		} else {
 			$errors['new_postal_code']= __("Vous devez renseigner votre code postal",'yproject');
@@ -691,7 +682,6 @@ class WDGAjaxActions {
 
 		$city = sanitize_text_field(filter_input(INPUT_POST, 'new_city'));
 		if(!empty($city)){
-			update_user_meta( $current_user->wp_user->ID, 'user_city', $city );
 			$success['new_city']=1;
 		} else {
 			$errors['new_city']= __("Vous devez renseigner votre ville",'yproject');
@@ -699,7 +689,6 @@ class WDGAjaxActions {
 
 		$country = sanitize_text_field(filter_input(INPUT_POST, 'new_country'));
 		if(!empty($country)){
-			update_user_meta( $current_user->wp_user->ID, 'user_country', $country );
 			$success['new_country']=1;
 		} else {
 			$errors['new_country']= __("Vous devez renseigner votre pays",'yproject');
@@ -707,7 +696,6 @@ class WDGAjaxActions {
 
 		$mobile_phone = sanitize_text_field(filter_input(INPUT_POST, 'new_mobile_phone'));
 		if(!empty($mobile_phone)){
-			update_user_meta( $current_user->wp_user->ID, 'user_mobile_phone', $mobile_phone );
 			$success['new_mobile_phone']=1;
 		} else {
 			$errors['new_mobile_phone']= __("Vous devez renseigner un numéro de téléphone",'yproject');
@@ -715,12 +703,17 @@ class WDGAjaxActions {
 
 		$mail = sanitize_text_field(filter_input(INPUT_POST, 'new_mail'));
 		if (is_email($mail)==$mail && !empty($mail)) {
-			wp_update_user( array ( 'ID' => $current_user->wp_user->ID, 'user_email' => $mail ) );
-			//$WDGUser_current->wp_user->user_email = $new_email;
 			$success['new_mail']=1;
 		} else {
 			$errors['new_mail']= __("Adresse mail non valide",'yproject');
 		}
+		
+		$current_user->save_data( 
+			$mail, $gender, $firstname, $lastname, 
+			$new_birthday_date->format('d'), $new_birthday_date->format('n'), $new_birthday_date->format('Y'), 
+			$birthplace, $nationality, 
+			$address, $postal_code, $city, $country, $mobile_phone
+		);
 
 		$return_values = array(
 			"response" => "edit_project",
@@ -1030,6 +1023,7 @@ class WDGAjaxActions {
 			$i++;
 		}
  		$campaign->__set(ATCF_Campaign::$key_estimated_turnover,json_encode($sanitized_list));
+		$campaign->update_api();
 
 
 		$return_values = array(
@@ -1191,7 +1185,7 @@ class WDGAjaxActions {
 		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
 		$return = WDGOrganization::submit_new( FALSE );
 		$org_object = FALSE;
-		if ( !empty( $return ) ) {
+		if ( !empty( $return['org_object'] ) ) {
 			$org_object = $return['org_object'];
 			$org_api_id = $org_object->get_api_id();
 		}
@@ -1331,6 +1325,7 @@ class WDGAjaxActions {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$campaign->__set( ATCF_Campaign::$key_backoffice_contract_modifications, filter_input( INPUT_POST, 'new_contract_modification' ) );
 		$success[ 'new_contract_modification' ] = 1;
+		$campaign->update_api();
 
 		$return_values = array(
 			'response'	=> 'edit_contract_modifications',
@@ -1403,6 +1398,7 @@ class WDGAjaxActions {
 		} else {
 			$errors['new_end_collecte_date']="Il faut une date de fin de collecte !";
 		}
+		$campaign->update_api();
 
 		$return_values = array(
 			"response" => "save_project_campaigntab",
@@ -1429,6 +1425,7 @@ class WDGAjaxActions {
 		$new_validation_status = (sanitize_text_field(filter_input(INPUT_POST, 'new_can_go_next_status')));
 		$campaign->set_validation_next_status($new_validation_status);
 		$success['new_can_go_next_status']=1;
+		$campaign->update_api();
 
 		$return_values = array(
 			"response" => "edit_status",
@@ -1455,6 +1452,7 @@ class WDGAjaxActions {
 		$new_mandate_conditions = (filter_input(INPUT_POST, 'new_mandate_conditions'));
 		$campaign->__set(ATCF_Campaign::$key_mandate_conditions, $new_mandate_conditions);
 		$success['new_mandate_conditions'] = 1;
+		$campaign->update_api();
 		
 		$return_values = array(
 			"response"	=> "edit_force_mandate",
@@ -1477,6 +1475,7 @@ class WDGAjaxActions {
 		$new_declaration_info = (filter_input(INPUT_POST, 'new_declaration_info'));
 		$campaign->__set(ATCF_Campaign::$key_declaration_info, $new_declaration_info);
 		$success['new_declaration_info'] = 1;
+		$campaign->update_api();
 		
 		$return_values = array(
 			"response"	=> "edit_declaration_info",
@@ -1610,6 +1609,9 @@ class WDGAjaxActions {
 									WDGWPREST_Entity_Contract::edit( $wdg_contract_id, 'validated' );
 								}
 								$wdg_contract_status = $signsquid_contract->get_status_str();
+								if ( $signsquid_status == 'WaitingForSignatoryAction' && $current_wdg_user->is_admin() ) {
+									$wdg_contract_status .= ' - code (admin) : ' . $signsquid_contract->get_signing_code();
+								}
 							}
 						}
 					}
@@ -1683,26 +1685,27 @@ class WDGAjaxActions {
             //Données si l'investisseur est un utilisateur normal
             } else {
                 $user_data = get_userdata($user_id);
+				$WDGUser = new WDGUser( $user_id );
 
-                $array_contacts[$user_id]["user_link"] = $user_data->user_login;
-                $array_contacts[$user_id]["user_email"] = $user_data->user_email;
+                $array_contacts[$user_id]["user_link"] = $WDGUser->get_login();
+                $array_contacts[$user_id]["user_email"] = $WDGUser->get_email();
 
 				//Infos supplémentaires pour les votants
 				if($array_contacts[$user_id]["vote"] == 1 || $array_contacts[$user_id]["invest"] == 1){
-					$array_contacts[$user_id]["user_last_name"] = $user_data->last_name;
-					$array_contacts[$user_id]["user_first_name"] = $user_data->first_name;
-					$array_contacts[$user_id]["user_city"] = get_user_meta( $user_id, 'user_city', TRUE );
-					$array_contacts[$user_id]["user_postal_code"] = get_user_meta( $user_id, 'user_postal_code', TRUE );
-					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ get_user_meta( $user_id, 'user_nationality', TRUE ) ] ) );
+					$array_contacts[$user_id]["user_last_name"] = $WDGUser->get_lastname();
+					$array_contacts[$user_id]["user_first_name"] = $WDGUser->get_firstname();
+					$array_contacts[$user_id]["user_city"] = $WDGUser->get_city();
+					$array_contacts[$user_id]["user_postal_code"] = $WDGUser->get_postal_code();
+					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
 						$count_distinct_investors++;
-						$array_contacts[$user_id]["user_birthday"] = $user_data->user_birthday_year.'-'.$user_data->user_birthday_month.'-'.$user_data->user_birthday_day;
-						$array_contacts[$user_id]["user_birthplace"] = get_user_meta( $user_id, 'user_birthplace', TRUE );
-						$array_contacts[$user_id]["user_address"] = $user_data->user_address;
-						$array_contacts[$user_id]["user_country"] = $user_data->user_country;
-						$array_contacts[$user_id]["user_mobile_phone"] = get_user_meta( $user_id, 'user_mobile_phone', TRUE );
+						$array_contacts[$user_id]["user_birthday"] = $WDGUser->get_birthday_date();
+						$array_contacts[$user_id]["user_birthplace"] = $WDGUser->get_birthplace();
+						$array_contacts[$user_id]["user_address"] = $WDGUser->get_address();
+						$array_contacts[$user_id]["user_country"] = $WDGUser->get_country();
+						$array_contacts[$user_id]["user_mobile_phone"] = $WDGUser->get_phone_number();
 					}
 				}
             }
@@ -1963,10 +1966,10 @@ class WDGAjaxActions {
 						'firstname'			=> $linked_user->get_firstname(),
 						'lastname'			=> $linked_user->get_lastname(),
 						'gender'			=> $linked_user->get_gender(),
-						'birthday_day'		=> $linked_user->wp_user->get( 'user_birthday_day' ),
-						'birthday_month'	=> $linked_user->wp_user->get( 'user_birthday_month' ),
-						'birthday_year'		=> $linked_user->wp_user->get( 'user_birthday_year' ),
-						'birthplace'		=> $linked_user->wp_user->get( 'user_birthplace' ),
+						'birthday_day'		=> $linked_user->get_birthday_day(),
+						'birthday_month'	=> $linked_user->get_birthday_month(),
+						'birthday_year'		=> $linked_user->get_birthday_year(),
+						'birthplace'		=> $linked_user->get_birthplace(),
 						'nationality'		=> $linked_user->get_nationality(),
 						'address'			=> $linked_user->get_address(),
 						'postal_code'		=> $linked_user->get_postal_code(),
@@ -1987,10 +1990,10 @@ class WDGAjaxActions {
 						'firstname'			=> $user->get_firstname(),
 						'lastname'			=> $user->get_lastname(),
 						'gender'			=> $user->get_gender(),
-						'birthday_day'		=> $user->wp_user->get( 'user_birthday_day' ),
-						'birthday_month'	=> $user->wp_user->get( 'user_birthday_month' ),
-						'birthday_year'		=> $user->wp_user->get( 'user_birthday_year' ),
-						'birthplace'		=> $user->wp_user->get( 'user_birthplace' ),
+						'birthday_day'		=> $user->get_birthday_day(),
+						'birthday_month'	=> $user->get_birthday_month(),
+						'birthday_year'		=> $user->get_birthday_year(),
+						'birthplace'		=> $user->get_birthplace(),
 						'nationality'		=> $user->get_nationality(),
 						'address'			=> $user->get_address(),
 						'postal_code'		=> $user->get_postal_code(),

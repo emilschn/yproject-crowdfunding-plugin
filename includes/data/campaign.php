@@ -1798,11 +1798,12 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
-	public static $invest_amount_min_wire = 300;
+	public static $invest_amount_min_wire = 500;
 	public static $invest_time_min_wire = 7;
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
-		return true;
+		// Si il reste assez de jours ou si la campagne est déjà validée
+		return ( $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->is_funded() );
 	}
 	public function can_use_wire_amount($amount_part) {
 		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
@@ -2144,10 +2145,10 @@ class ATCF_Campaign {
 		if ($user_payment) {
 			if (!WDGOrganization::is_user_organization($user_payment->ID)) {
 				$user_id = $user_payment->ID;
-				$new_gender = $user_payment->get('user_gender');
-				$new_firstname = $user_payment->user_firstname;
-				$new_lastname = $user_payment->user_lastname;
 				$wdg_user = new WDGUser( $user_id );
+				$new_gender = $wdg_user->get_gender();
+				$new_firstname = $wdg_user->get_firstname();
+				$new_lastname = $wdg_user->get_lastname();
 				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
 			}
 				

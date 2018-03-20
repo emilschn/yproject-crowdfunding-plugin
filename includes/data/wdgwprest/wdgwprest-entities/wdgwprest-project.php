@@ -38,6 +38,9 @@ class WDGWPREST_Entity_Project {
 			$file_name_exploded = explode( '.', $file_name_bp );
 			$file_name = home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/kyc/' . $file_name_bp;
 		}
+		$estimated_turnover = $campaign->estimated_turnover();
+		$estimated_turnover_param = json_encode( $estimated_turnover );
+		$can_go_next_str = $campaign->can_go_next_status() ? 1 : 0;
 		
 		$parameters = array(
 			'wpref'				=> $campaign->ID,
@@ -45,7 +48,7 @@ class WDGWPREST_Entity_Project {
 			'url'				=> $campaign->data->post_name,
 			'status'			=> $campaign->campaign_status(),
 			'description'		=> $campaign->backoffice_summary(),
-			'can_go_next'		=> $campaign->can_go_next_status(),
+			'can_go_next'		=> $can_go_next_str,
 			'type'				=> $campaign->get_categories_by_type( 'types', TRUE ),
 			'category'			=> $campaign->get_categories_by_type( 'activities', TRUE ),
 			'impacts'			=> $campaign->get_categories_by_type( 'categories', TRUE ),
@@ -67,7 +70,7 @@ class WDGWPREST_Entity_Project {
 			'earnings_description'	=> $campaign->contract_earnings_description(),
 			'simple_info'			=> $campaign->contract_simple_info(),
 			'detailed_info'			=> $campaign->contract_detailed_info(),
-			'estimated_turnover'	=> $campaign->estimated_turnover(),
+			'estimated_turnover'	=> $estimated_turnover_param,
 			'blank_contract_file'	=> $file_name_contract_orga,
 			'vote_start_datetime'	=> date_format( $beginvotedate, 'Y-m-d H:i:s'),
 			'vote_end_datetime'		=> $campaign->end_vote(),

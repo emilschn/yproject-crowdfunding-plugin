@@ -16,13 +16,13 @@ function ypcf_check_user_is_complete($user_id) {
     $is_complete = true;
     $current_user = get_user_by('id', $user_id);
 	$wdg_current_user = new WDGUser($user_id);
-    $is_complete = ($current_user->user_firstname != "") && ($current_user->user_lastname != "");
-    $is_complete = $is_complete && ($current_user->get('user_birthday_day') != "") && ($current_user->get('user_birthday_month') != "") && ($current_user->get('user_birthday_year') != "");
+    $is_complete = ( $wdg_current_user->get_firstname() != "" ) && ( $wdg_current_user->get_lastname() != "" );
+    $is_complete = $is_complete && ( $wdg_current_user->get_birthday_day() != "" ) && ( $wdg_current_user->get_birthday_month() != "" ) && ( $wdg_current_user->get_birthday_year() != "" );
     $is_complete = $is_complete && $wdg_current_user->is_major();
-    $is_complete = $is_complete && ($current_user->get('user_nationality') != "") && ($current_user->user_email != "");
-    $is_complete = $is_complete && ($current_user->get('user_address') != "") && ($current_user->get('user_postal_code') != "") && ($current_user->get('user_city') != "");
-    $is_complete = $is_complete && ($current_user->get('user_country') != "") && ($current_user->get('user_mobile_phone') != "");
-    $is_complete = $is_complete && ($current_user->get('user_gender') != "") && ($current_user->get('user_birthplace') != "");
+    $is_complete = $is_complete && ( $wdg_current_user->get_nationality() != "" ) && ( $wdg_current_user->get_email() != "" );
+    $is_complete = $is_complete && ( $wdg_current_user->get_address() != "" ) && ( $wdg_current_user->get_postal_code() != "" ) && ( $wdg_current_user->get_city() != "" );
+    $is_complete = $is_complete && ( $wdg_current_user->get_country() != "" ) && ( $wdg_current_user->get_phone_number() != "" );
+    $is_complete = $is_complete && ( $wdg_current_user->get_gender() != "" ) && ( $wdg_current_user->get_birthplace() != "" );
     return $is_complete;
 }
 

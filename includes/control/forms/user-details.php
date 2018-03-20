@@ -110,7 +110,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				'birthplace',
 				__( "Ville de naissance", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
-				$WDGUser->wp_user->get( 'user_birthplace' )
+				$WDGUser->get_birthplace()
 			);
 			
 			global $country_list;
@@ -258,6 +258,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				$phone_number = $this->getInputText( 'phone_number' );
 			}
 			
+			$description = '';
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
 				$description = $this->getInputText( 'description' );
 			}
@@ -270,15 +271,12 @@ class WDG_Form_User_Details extends WDG_Form {
 						// Il faut enregistrer l'existant, pour ne pas le supprimer
 						$phone_number = $WDGUser->get_phone_number();
 					}
-						
+					
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number
+						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description
 					);
-					if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
-						$WDGUser->save_meta( 'description', $description );
-					}
 					
 					array_push( $feedback_success, __( "Vos informations ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s." ) );
 					

@@ -341,9 +341,6 @@ function ypcf_printable_value($val) {
     <tbody id="the-list">
 	<?php
 	$payments_data = get_payments_data($_GET['campaign_id']);
-	$csv_buffer = "\xEF\xBB\xBF";
-	$csv_buffer .= 'Prénom;Nom;e-mail;Investissement;Genre;Date de naissance;Ville de naissance;Nationalité;Adresse;Code postal;Ville;Pays;Téléphone;Compte Facebook';
-	$csv_buffer .= PHP_EOL;
 	
 	$i = -1;
 	foreach ( $payments_data as $item ) {
@@ -369,23 +366,11 @@ function ypcf_printable_value($val) {
 				<td <?php if ($item['contract_status'] != WDGInvestmentContract::$status_code_agreed) echo 'style="background-color: #EF876D"'; ?>><?php echo $item['contract_status_text']; ?></td>
 			</tr>
 			<?php
-			if ($payment_status == 'publish' && $item['contract_status'] == WDGInvestmentContract::$status_code_agreed && $is_succeeded == 'Oui') $csv_buffer .= ypcf_csv_investors_add_line($item['user'], $item['amount']);
 	    }
 	}
-	
-	$filename = $campaign->ID . '_investors_' . time() . '.csv';
-        $filepath = dirname ( __FILE__ ) . '/pdf_files/' . $filename;
-	file_put_contents ($filepath, $csv_buffer);
 	?>
     </tbody>
 </table>
-
-<h2>Données des Investisseurs</h2>
-<div>
-    <a href="<?php echo site_url(); ?>/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/<?php echo $filename; ?>" target="_blank">Télécharger le fichier csv</a> (Ce fichier peut être lu dans un tableur)
-</div>
-
-
 
 
     <?php
@@ -470,28 +455,4 @@ function get_payments_data($campaign_id = '') {
 	}
     }
     return $payments_data;
-}
-
-function ypcf_csv_investors_add_line($user_id, $amount) {
-    $user = get_userdata($user_id);
-    
-    $buffer = '';
-    
-    $buffer .= '"' . $user->first_name . '";';
-    $buffer .= '"' . $user->last_name . '";';
-    $buffer .= '"' . $user->user_login . '";';
-    $buffer .= '"' . $amount . '€";';
-    $buffer .= '"' . $user->get('user_gender') . '";';
-    $buffer .= '"' . $user->get('user_birthday_day') . '/' . $user->get('user_birthday_month') . '/' . $user->get('user_birthday_year') . '";';
-    $buffer .= '"' . $user->get('user_birthplace') . '";';
-    $buffer .= '"' . $user->get('user_nationality') . '";';
-    $buffer .= '"' . $user->get('user_address') . '";';
-    $buffer .= '"' . $user->get('user_postal_code') . '";';
-    $buffer .= '"' . $user->get('user_city') . '";';
-    $buffer .= '"' . $user->get('user_country') . '";';
-    $buffer .= '"' . $user->get('user_mobile_phone') . '";';
-    $buffer .= '"' . $user->user_url . '";';
-    $buffer .= PHP_EOL;
-    
-    return $buffer;
 }

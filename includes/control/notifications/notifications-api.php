@@ -234,9 +234,10 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS VERSEMENT AVEC ROYALTIES
     //*******************************************************
-	public static function roi_transfer_with_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message ) {
+	public static function roi_transfer_with_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message, $replyto_mail ) {
 		$id_template = '140';
 		$options = array(
+			'replyto'							=> $replyto_mail,
 			'NOM_UTILISATEUR'					=> $name,
 			'NOM_PROJET'						=> $project_name,
 			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
@@ -254,9 +255,10 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS VERSEMENT SANS ROYALTIES
     //*******************************************************
-	public static function roi_transfer_without_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message ) {
+	public static function roi_transfer_without_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message, $replyto_mail ) {
 		$id_template = '167';
 		$options = array(
+			'replyto'							=> $replyto_mail,
 			'NOM_UTILISATEUR'					=> $name,
 			'NOM_PROJET'						=> $project_name,
 			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
