@@ -63,7 +63,7 @@ class WDGWPREST_Entity_Project {
 			'goal_maximum'			=> $campaign->goal( FALSE ),
 			'yield_for_investors'	=> '1', //TODO
 			'maximum_profit'		=> $campaign->maximum_profit(),
-			'minimum_profit'		=> '1', //TODO
+			'minimum_profit'		=> $campaign->minimum_profit(),
 			'contract_start_date'	=> $campaign->contract_start_date(),
 			'declarations_start_date'	=> $campaign->first_payment_date(),
 			'spendings_description'	=> $campaign->contract_spendings_description(),
@@ -82,7 +82,7 @@ class WDGWPREST_Entity_Project {
 			'costs_to_organization'		=> $campaign->get_costs_to_organization(),
 			'costs_to_investors'		=> $campaign->get_costs_to_investors(),
 			'turnover_per_declaration'	=> $campaign->get_turnover_per_declaration(),
-			'team_contacts'			=> ''
+			'team_contacts'			=> $campaign->team_contacts()
 		);
 		return $parameters;
 	}
