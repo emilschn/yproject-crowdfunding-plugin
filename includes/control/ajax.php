@@ -558,6 +558,13 @@ class WDGAjaxActions {
 			update_post_meta($campaign_id, 'campaign_location', $location);
 			$success["new_project_location"]=1;
 		}
+
+		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'new_website'))));
+		$success['new_website']=1;
+		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_facebook'))));
+		$success['new_facebook']=1;
+		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
+		$success['new_twitter']=1;
 		
 		$new_employees_number = sanitize_text_field( filter_input( INPUT_POST, 'new_employees_number' ) );
 		if (is_numeric($location)) {
@@ -876,12 +883,12 @@ class WDGAjaxActions {
 		}
 
 		//Update funding duration
-		$new_duration = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_funding_duration')));
-		if($new_duration>=1){
-			update_post_meta($campaign_id, ATCF_Campaign::$key_funding_duration, $new_duration);
-			$success['new_funding_duration']=1;
+		$new_duration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_funding_duration' ) ) );
+		if ( $new_duration >= 0 ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_funding_duration, $new_duration );
+			$success[ 'new_funding_duration' ] = 1;
 		} else {
-			$errors['new_funding_duration']="Le financement doit au moins durer une ann&eacute;e";
+			$errors[ 'new_funding_duration' ] = "Erreur de valeur";
 		}
 		
 		$new_platform_commission = sanitize_text_field( filter_input( INPUT_POST, 'new_platform_commission' ) );
@@ -902,7 +909,7 @@ class WDGAjaxActions {
 			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
 		}
 
-		//Update roi_percent_estimated duration
+		//Update roi_percent_estimated
 		$new_roi_percent_estimated = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent_estimated' ) ) );
 		if ( $new_roi_percent_estimated >= 0 ){
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated );
@@ -992,7 +999,11 @@ class WDGAjaxActions {
 		//Update list of estimated turnover
 		$i = 0;
 		$sanitized_list = array();
-		while(filter_input(INPUT_POST, 'new_estimated_turnover_'.$i)!='' && ($i+1 <= $campaign->funding_duration())){
+		$funding_duration = $campaign->funding_duration();
+		if ( $funding_duration == 0 ) {
+			$funding_duration = 5;
+		}
+		while(filter_input(INPUT_POST, 'new_estimated_turnover_'.$i)!='' && ($i+1 <= $funding_duration)){
 			$current_val = filter_input(INPUT_POST, 'new_estimated_turnover_'.$i);
 
 			if(is_numeric($current_val)){
@@ -1173,7 +1184,7 @@ class WDGAjaxActions {
 		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
 		$return = WDGOrganization::submit_new( FALSE );
 		$org_object = FALSE;
-		if ( !empty( $return ) ) {
+		if ( !empty( $return['org_object'] ) ) {
 			$org_object = $return['org_object'];
 			$org_api_id = $org_object->get_api_id();
 		}
@@ -1303,31 +1314,6 @@ class WDGAjaxActions {
 			$buffer = json_encode($return_values);
 		}
 		echo $buffer;
-		exit();
-	}
-
-    /**
-	 * Enregistre les informations de communication du projet
-	 */
-	public static function save_project_communication(){
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$campaign = new ATCF_Campaign($campaign_id);
-		$success = array();
-
-		$campaign->__set(ATCF_Campaign::$key_external_website, (sanitize_text_field(filter_input(INPUT_POST, 'new_website'))));
-		$success['new_website']=1;
-		$campaign->__set(ATCF_Campaign::$key_facebook_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_facebook'))));
-		$success['new_facebook']=1;
-		$campaign->__set(ATCF_Campaign::$key_twitter_name, (sanitize_text_field(filter_input(INPUT_POST, 'new_twitter'))));
-		$success['new_twitter']=1;
-		$campaign->update_api();
-
-		$return_values = array(
-			"response" => "edit_communication",
-			"errors" => array(),
-			"success" => $success
-		);
-		echo json_encode($return_values);
 		exit();
 	}
 	

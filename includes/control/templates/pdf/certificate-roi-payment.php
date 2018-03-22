@@ -148,7 +148,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 		<br />
 		Les contrats passés avec les personnes ci-dessous, qui ont investi un montant total de <?php echo number_format( $project_amount_collected, 2, ',', ' ' ); ?> euros,
 		ont engendré un engagement global de <?php echo $organization_name; ?> de <?php echo number_format( $project_roi_percent, 2, ',', ' ' ); ?> %
-		de son chiffre d'affaires pendant <?php echo $project_roi_nb_years; ?> ans &agrave; compter du <?php echo $project_roi_start_date; ?>.
+		de son chiffre d'affaires pendant <?php echo $project_roi_nb_years; ?> &agrave; compter du <?php echo $project_roi_start_date; ?>.
 		Cet engagement lie <?php echo $organization_name; ?> &agrave; chacune de ces personnes &agrave; proportion de leur investissement.
 	</div>
 </page>

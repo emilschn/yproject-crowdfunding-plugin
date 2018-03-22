@@ -721,13 +721,33 @@ class ATCF_Campaign {
 		return $this->__get( ATCF_Campaign::$key_declaration_info );
 	}
 
+	public static $funding_duration_list = array(
+		'1'				=> "1 an",
+		'2'				=> "2 ans",
+		'3'				=> "3 ans",
+		'4'				=> "4 ans",
+		'5'				=> "5 ans",
+		'6'				=> "6 ans",
+		'7'				=> "7 ans",
+		'8'				=> "8 ans",
+		'9'				=> "9 ans",
+		'10'			=> "10 ans",
+		'0'				=> "Dur&eacute;e ind&eacute;termin&eacute;e"
+	);
     public static $key_funding_duration = 'campaign_funding_duration';
     public function funding_duration() {
-		$buffer = $this->__get(ATCF_Campaign::$key_funding_duration);
-		if ( empty( $buffer ) ) {
+		$buffer = $this->__get( ATCF_Campaign::$key_funding_duration );
+		if ( empty( $buffer ) && $buffer != 0 ) {
 			$buffer = 5;
 		}
 	    return $buffer;
+	}
+    public function funding_duration_str() {
+		$buffer = $this->funding_duration() . __( " ans", 'yproject' );
+		if ( $this->funding_duration() == 0 ) {
+			$buffer = __( "une dur&eacute; ind&eacute;termin&eacute;e", 'yproject' );
+		}
+		return $buffer;
 	}
 
     public static $key_roi_percent_estimated = 'campaign_roi_percent_estimated';
@@ -840,7 +860,11 @@ class ATCF_Campaign {
 	public function generate_missing_declarations( $month_count = 3 ) {
 		// Calcul du nombre de déclarations que devra faire le projet
 		$nb_in_a_year = 12 / $month_count;
-		$nb_declarations = $this->funding_duration() * $nb_in_a_year;
+		$funding_duration = $this->funding_duration();
+		if ( $funding_duration == 0 ) {
+			$funding_duration = 1;
+		}
+		$nb_declarations = $funding_duration * $nb_in_a_year;
 		
 		if ( isset( $nb_declarations ) && $nb_declarations > 0 ) {
 			// Récupération des déclarations existantes

@@ -202,7 +202,7 @@ class WDGPostActions {
 				$campaign_id_param = '?campaign_id=';
 				$campaign_id_param .= $newcampaign_id;
 
-				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject#informations" ;
+				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject" ;
 				wp_safe_redirect( $redirect_url);
 			} else {
 				global $errors_submit_new, $errors_create_orga;
@@ -394,7 +394,7 @@ class WDGPostActions {
 		
 		$campaign->__set( ATCF_Campaign::$key_backoffice_businessplan, $random_filename );
 		
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#campaign";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -409,7 +409,7 @@ class WDGPostActions {
 			WDGWPREST_Entity_ContractModel::create( $campaign->get_api_id(), 'project', 'investment_amendment', $model_name, $model_content );
 		}
 		
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -423,7 +423,7 @@ class WDGPostActions {
 			WDGWPREST_Entity_ContractModel::edit( $contract_model_id, $model_name, $model_content );
 		}
 		
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -522,7 +522,7 @@ class WDGPostActions {
 			WDGWPREST_Entity_ContractModel::update_status( $contract_model_id, 'sent' );
 		}
 		
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -538,7 +538,7 @@ class WDGPostActions {
 			}
 		}
 		
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#documents";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -547,7 +547,7 @@ class WDGPostActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
 		$campaign->generate_contract_pdf_blank_organization();
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -596,6 +596,10 @@ class WDGPostActions {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 		
+		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
+		if ( !empty( $new_project_contract_earnings_description ) ) {
+			$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
+		}
 		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
 		if ( !empty( $new_project_contract_spendings_description ) ) {
 			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
@@ -626,10 +630,10 @@ class WDGPostActions {
 		
 		$new_override_contract = filter_input( INPUT_POST, 'new_override_contract' );
 		$campaign->__set( ATCF_Campaign::$key_override_contract, $new_override_contract );
-		
+
 		$campaign->update_api();
 		
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -653,7 +657,7 @@ class WDGPostActions {
 			}
 		}
 		
-		$url_return = wp_get_referer() . "#informations";
+		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );
 		die();
 	}
