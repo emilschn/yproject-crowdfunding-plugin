@@ -44,10 +44,10 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_user_infos_dashboard');
 		WDGAjaxActions::add_action('save_declaration_adjustment');
 		WDGAjaxActions::add_action('pay_with_mandate');
-
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
 		WDGAjaxActions::add_action('search_user_by_email');
+		WDGAjaxActions::add_action('proceed_roi_transfers');
 	}
 	
 	/**
@@ -2010,6 +2010,25 @@ class WDGAjaxActions {
 		);
 		
 		echo json_encode( $return_values );
+		exit();
+	}
+	
+	/**
+	 * Lance les transferts d'argent vers les différents investisseurs
+	 */
+	public static function proceed_roi_transfers() {
+		$buffer = FALSE;
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$declaration_id = filter_input(INPUT_POST, 'roi_id');
+		if ( !empty( $campaign_id ) && !empty( $declaration_id ) && $WDGUser_current->is_admin() ) {
+			$send_notifications = filter_input( INPUT_POST, 'send_notifications' );
+			$transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
+			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			$buffer = $roi_declaration->make_transfer( ($send_notifications == 1), ($transfer_remaining_amount == 1) );
+		}
+		
+		echo json_encode( $buffer );
 		exit();
 	}
 }
