@@ -1593,9 +1593,13 @@ class WDGUser {
 			
 			//Sinon, on récupère simplement la page en cours
 			} else {
-				if (isset($post->ID)) {
+				if ( isset( $post->ID ) ) {
 					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
-					$buffer = get_permalink($post->ID);
+					$buffer = get_permalink( $post->ID );
+					$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
+					if ( !empty( $input_get_campaign_id ) ) {
+						$buffer .= '?campaign_id=' . $input_get_campaign_id;
+					}
 				}
 			}
 		}
