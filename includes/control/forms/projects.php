@@ -394,23 +394,6 @@ class WDGFormProjects {
 		
 		return $buffer;
 	}
-	/**
-	 * Lance les transferts d'argent vers les différents investisseurs
-	 */
-	public static function form_proceed_roi_transfers() {
-		if (!isset($_POST['action']) || $_POST['action'] != 'proceed_roi_transfers' || !isset($_POST['roi_id']) || !isset($_GET['campaign_id'])) {
-			return FALSE;
-		}
-		
-		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
-		$declaration_id = filter_input(INPUT_POST, 'roi_id');
-		$send_notifications = filter_input( INPUT_POST, 'send_notifications' );
-		$transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
-		if ( current_user_can('manage_options') && !empty( $campaign_id ) && !empty( $declaration_id ) ) {
-			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$roi_declaration->make_transfer( ($send_notifications == 1), ($transfer_remaining_amount == 1) );
-		}
-	}
 
     /**
      * Crée le contenu du mail envoyé via le dashboard

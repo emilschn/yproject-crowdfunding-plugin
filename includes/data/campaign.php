@@ -1071,7 +1071,7 @@ class ATCF_Campaign {
 	
 	/**
 	 * 
-	 * @param string $type Type de catégorie selon le parent : categories, activities, types, partners
+	 * @param string $type Type de catégorie selon le parent : categories, activities, types, partners, tousnosprojets
 	 * @param boolean $return_str Si true, retourne une chaine de caractère
 	 * @return array or string
 	 */

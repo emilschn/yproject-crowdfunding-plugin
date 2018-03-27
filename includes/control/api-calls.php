@@ -30,14 +30,14 @@ class WDGAPICalls {
 	private function get_projects_categories() {
 		$buffer = array();
 		
-		$categories_types = array( 'types', 'categories', 'activities', 'partners' );
+		$categories_types = array( 'types', 'categories', 'activities', 'partners', 'tousnosprojets' );
 		foreach ( $categories_types as $category_name ) {
 			$buffer[ $category_name ] = array();
 			$terms_from_category = get_terms( 'download_category', array( 'slug' => $category_name, 'hide_empty' => false ) );
 			$term_category_id = $terms_from_category[0]->term_id;
 			$subterms_list = (array) get_terms( 'download_category', array( 'child_of' => $term_category_id, 'hierarchical' => 0, 'hide_empty' => 0 ) );
 			foreach ( $subterms_list as $term_item ) {
-				array_push( $buffer[ $category_name ], array( 'id' => $term_item->term_id, 'name' => $term_item->name ) );
+				array_push( $buffer[ $category_name ], array( 'id' => $term_item->term_id, 'slug' => $term_item->slug, 'name' => $term_item->name ) );
 			}
 		}
 		

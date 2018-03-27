@@ -403,18 +403,29 @@ class WDGROIDeclaration {
 			$organization_obj->register_lemonway();
 			$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount );
 			$total_fees = 0;
-			$remaining_amount = $this->get_amount_with_adjustment();
-			if ( $transfer_remaining_amount ) {
-				$previous_remaining_amount = $this->get_previous_remaining_amount();
-				$remaining_amount += $previous_remaining_amount;
+			
+			// Initialisation du montant restant pour que ce soit toujours la variable de classe qui soit mise à jour
+			if ( $this->remaining_amount == 0 ) {
+				$this->remaining_amount = $this->get_amount_with_adjustment();
+				if ( $transfer_remaining_amount ) {
+					$previous_remaining_amount = $this->get_previous_remaining_amount();
+					$this->remaining_amount += $previous_remaining_amount;
+				}
 			}
+			
+			// On différencie $count et $count_done
+			// Le premier sert à compter le nombre total (pour donner un pourcentage en retour)
+			// Le second sert à déterminer quand on s'arrête lors de ce passage
+			$count = 0;
+			$count_done = 0;
 			foreach ($investments_list as $investment_item) {
-				
+				$count++;
 				$saved_roi = $this->get_roi_by_investment( $investment_item['ID'] );
 				if ( empty( $saved_roi ) ) {
+					$count_done++;
 					$total_fees += $investment_item['roi_fees'];
-					$remaining_amount -= $investment_item['roi_fees'];
-					$remaining_amount -= $investment_item['roi_amount'];
+					$this->remaining_amount -= $investment_item['roi_fees'];
+					$this->remaining_amount -= $investment_item['roi_amount'];
 
 					//Versement vers organisation
 					$recipient_api_id = FALSE;
@@ -425,16 +436,16 @@ class WDGROIDeclaration {
 						$recipient_api_id = $WDGOrga->get_api_id();
 						if ( $investment_item['roi_amount'] > 0 ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
-							$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGOrga->get_email() );
+							/*$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGOrga->get_email() );
 							if ( $credit_bank_info != FALSE ) {
 								$send_notifications = FALSE;
-								/*$WDGOrga->set_bank_owner( $credit_bank_info->holdername );
+								$WDGOrga->set_bank_owner( $credit_bank_info->holdername );
 								$WDGOrga->set_bank_iban( $credit_bank_info->iban );
 								$WDGOrga->set_bank_bic( $credit_bank_info->bic );
 								$WDGOrga->set_bank_address( $credit_bank_info->address1. ' ' .$credit_bank_info->address2 );
 								$WDGOrga->save();
-								$WDGOrga->submit_transfer_wallet_lemonway();*/
-							}
+								$WDGOrga->submit_transfer_wallet_lemonway();
+							}*/
 						}
 
 					//Versement vers utilisateur personne physique
@@ -444,12 +455,12 @@ class WDGROIDeclaration {
 						$recipient_api_id = $WDGUser->get_api_id();
 						if ( $investment_item['roi_amount'] > 0 ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
-							$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGUser->get_email() );
+							/*$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGUser->get_email() );
 							if ( $credit_bank_info != FALSE ) {
 								$send_notifications = FALSE;
 								$WDGUser->save_iban( $credit_bank_info->holdername, $credit_bank_info->iban, $credit_bank_info->bic, $credit_bank_info->address1. ' ' .$credit_bank_info->address2 );
 								$WDGUser->transfer_wallet_to_bankaccount( $investment_item['roi_amount'] );
-							}
+							}*/
 						}
 					}
 
@@ -497,39 +508,50 @@ class WDGROIDeclaration {
 						} else {
 							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
 						}
-
 					}
 					
+					// Nombre arbitraire de versements avant de faire un retour au site
+					$max_transfer_per_try = 10;
+					if ( $count_done >= $max_transfer_per_try ) {
+						break;
+					}
 				}
-			}
-			if ($total_fees > 0) {
-				LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees);
-			}
-			if ( $transfer_remaining_amount ) {
-				// Mise Ã  jour de la somme des reliquats prÃ©cÃ©dents qui ont Ã©tÃ© reversÃ©s
-				if ( $previous_remaining_amount > $remaining_amount ) {
-					$this->transfered_previous_remaining_amount = $previous_remaining_amount - $remaining_amount;
-				}
+				
 			}
 			
-			$wdguser_author = new WDGUser( $campaign->data->post_author );
-			if ( $this->get_amount_with_adjustment() > 0 ) {
-				NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str(), $this->get_amount_with_adjustment() );
-			} else {
-				NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str() );
+			// En retour, on veut le pourcentage d'avancement
+			$buffer = $count / count( $investments_list ) * 100;
+			
+			// Si on a terminé, on finalise la déclaration
+			if ( $buffer == 100 ) {
+				if ( $transfer_remaining_amount ) {
+					// Mise à jour de la somme des reliquats précédents qui ont été reversés
+					if ( $previous_remaining_amount > $this->remaining_amount ) {
+						$this->transfered_previous_remaining_amount = $previous_remaining_amount - $this->remaining_amount;
+					}
+				}
+
+				if ($total_fees > 0) {
+					LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees);
+				}
+				$wdguser_author = new WDGUser( $campaign->data->post_author );
+				if ( $this->get_amount_with_adjustment() > 0 ) {
+					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str(), $this->get_amount_with_adjustment() );
+				} else {
+					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str() );
+				}
+				$this->status = WDGROIDeclaration::$status_finished;
+				$this->date_transfer = $date_now_formatted;
 			}
-			$this->remaining_amount = $remaining_amount;
-			$this->status = WDGROIDeclaration::$status_finished;
-			$this->date_transfer = $date_now_formatted;
+			
+			// On met à jour de toute façon pour mettre à jour le reliquat
 			$this->update();
-			$this->save();
-			$buffer = true;
 		}
 		return $buffer;
 	}
 	
 	/**
-	 * RÃ©pare un versement qui n'a pas eu lieu vers un utilisateur
+	 * Répare un versement qui n'a pas eu lieu vers un utilisateur
 	 */
 	public function redo_transfers() {
 		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
@@ -898,7 +920,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * RÃ©cupÃ¨re la liste de tous les ROIs liÃ©s Ã  cette dÃ©claration
+	 * Récupère la liste de tous les ROIs liés à cette déclaration
 	 */
 	private $roi_list;
 	public function get_rois() {
@@ -909,7 +931,7 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * RÃ©cupÃ¨re le ROI qui concerne cette dÃ©claration et un id d'investissement
+	 * Récupère le ROI qui concerne cette déclaration et un id d'investissement
 	 * @param int $investment_id
 	 */
 	public function get_roi_by_investment( $investment_id ) {
@@ -917,7 +939,7 @@ class WDGROIDeclaration {
 		
 		$roi_list = $this->get_rois();
 		foreach ( $roi_list as $roi_item ) {
-			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
+			if ( $roi_item->id_investment == $investment_id ) {
 				$ROI = new WDGROI( $roi_item->id, FALSE, $roi_item );
 				array_push($buffer, $ROI);
 			}
