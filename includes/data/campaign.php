@@ -152,7 +152,7 @@ class ATCF_Campaign {
 	 * The percent of min goal required in invest promises during vote
 	 * @var int
 	 */
-	public static $vote_percent_invest_ready_min_required = 50;
+	public static $vote_percent_invest_ready_min_required = 100;
 
 	public static $campaign_status_preparing = 'preparing';
 	public static $campaign_status_validated = 'validated';
