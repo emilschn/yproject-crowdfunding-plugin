@@ -557,26 +557,6 @@ class WDGPostActions {
 		$campaign = new ATCF_Campaign($campaign_id);
 		
 		
-		$file_uploaded_data = $_FILES['new_backoffice_contract_user'];
-		$file_name = $file_uploaded_data['name'];
-		if (!empty($file_name)) {
-			$file_name_exploded = explode('.', $file_name);
-			$ext = $file_name_exploded[count($file_name_exploded) - 1];
-			$random_filename = '';
-			$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-			$size = strlen( $chars );
-			for( $i = 0; $i < 15; $i++ ) {
-				$random_filename .= $chars[ rand( 0, $size - 1 ) ];
-			}
-			while ( file_exists( __DIR__ . '/../contracts/' . $random_filename . '.' . $ext ) ) {
-				$random_filename .= $chars[ rand( 0, $size - 1 ) ];
-			}
-			$random_filename .= '.' . $ext;
-			move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../contracts/' . $random_filename );
-			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_user, $random_filename );
-		}
-		
-		
 		$file_uploaded_data = $_FILES['new_backoffice_contract_orga'];
 		$file_name = $file_uploaded_data['name'];
 		if (!empty($file_name)) {

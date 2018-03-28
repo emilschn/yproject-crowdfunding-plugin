@@ -576,6 +576,7 @@ class WDGAjaxActions {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
+		$campaign->update_api();
 		
 		
 		// Infos contractuelles
