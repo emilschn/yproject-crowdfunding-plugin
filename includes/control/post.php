@@ -344,7 +344,7 @@ class WDGPostActions {
         $organization_id = sanitize_text_field( filter_input( INPUT_POST, 'organization_id' ) );
 		$WDGUser_current = WDGUser::current();
 		$phone_number = $WDGUser_current->wp_user->get('user_mobile_phone');
-		$url_return = wp_get_referer();
+		$url_return = wp_get_referer() . '&has_signed_mandate=1';
 		
 		// Récupération de l'organisation
 		$organization_obj = new WDGOrganization( $organization_id );
