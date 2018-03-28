@@ -192,7 +192,7 @@ class ATCF_Campaign {
 	private function load_api_data() {
 		if ( !isset( $this->api_data ) ) {
 			$this->api_data = WDGWPREST_Entity_Project::get( $this->get_api_id() );
-			$this->update_from_api();
+//			$this->update_from_api();
 		}
 	}
 
@@ -237,9 +237,9 @@ class ATCF_Campaign {
 	 * Mise à jour des données WP en fonction des données présentes sur l'API
 	 */
 	private function update_from_api() {
-		// Mise à jour du titre du post
+		/*// Mise à jour du titre du post
 		$api_data_name = $this->get_api_data( 'name' );
-		if ( empty( $api_data_name ) && $api_data_name != $this->data->post_title ) {
+		if ( !empty( $api_data_name ) && $api_data_name != $this->data->post_title ) {
 			wp_update_post(array(
 				'ID'			=> $this->ID,
 				'post_title'	=> $api_data_name
@@ -248,7 +248,7 @@ class ATCF_Campaign {
 		
 		// Mise à jour de l'url du post
 		$api_data_url = $this->get_api_data( 'url' );
-		if ( empty( $api_data_url ) && $api_data_url != $this->data->post_name ) {
+		if ( !empty( $api_data_url ) && $api_data_url != $this->data->post_name ) {
 			$posts = get_posts( array(
 				'name'		=> $api_data_url,
 				'post_type' => array( 'post', 'page', 'download' )
@@ -259,17 +259,20 @@ class ATCF_Campaign {
 					'post_name'	=> $api_data_url
 				));
 			}
-		}
+		}*/
 		
 		// Liaison aux catégories
-		$api_data_type = json_decode( $this->get_api_data( 'type' ) );
+		/*$api_data_type = json_decode( $this->get_api_data( 'type' ) );
 		$api_data_category = json_decode( $this->get_api_data( 'category' ) );
 		$api_data_impacts = json_decode( $this->get_api_data( 'impacts' ) );
 		$api_data_partners = json_decode( $this->get_api_data( 'partners' ) );
 		$api_data_tousnosprojets = json_decode( $this->get_api_data( 'tousnosprojets' ) );
 		$cat_ids = array_merge( $api_data_type, $api_data_category, $api_data_impacts, $api_data_partners, $api_data_tousnosprojets );
 		$cat_ids = array_map( 'intval', $cat_ids );
-		wp_set_object_terms( $this->ID, $cat_ids, 'download_category' );
+		if ( !empty( $cat_ids ) ) { 
+			wp_set_object_terms( $this->ID, $cat_ids, 'download_category' );
+		}
+		 */
 	}
 	
 	/**
@@ -1537,7 +1540,7 @@ class ATCF_Campaign {
     public static $key_end_collecte_date = 'campaign_end_date';
 	public function end_date( $format = 'Y-m-d H:i:s' ) {
 		$end_datetime_str = $this->get_api_data( 'funding_end_datetime' );
-		if ( empty( $end_datetime_str ) ) {
+		if ( empty( $end_datetime_str ) || $end_datetime_str == '0000-00-00 00:00:00' ) {
 			$end_datetime_str = $this->__get( ATCF_Campaign::$key_end_collecte_date );
 		}
 		return mysql2date( $format, $end_datetime_str, false );
@@ -1588,7 +1591,7 @@ class ATCF_Campaign {
 	
 	public function get_end_vote_str() {
 		$buffer = $this->get_api_data( 'vote_end_datetime' );
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer == '0000-00-00 00:00:00' ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_end_vote_date );
 		}
 		return $buffer;
