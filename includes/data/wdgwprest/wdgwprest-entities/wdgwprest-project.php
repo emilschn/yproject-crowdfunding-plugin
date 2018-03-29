@@ -47,7 +47,7 @@ class WDGWPREST_Entity_Project {
 		$parameters = array(
 			'wpref'				=> $campaign->ID,
 			'name'				=> $campaign->data->post_title,
-			'url'				=> $campaign->data->post_name,
+			'url'				=> $campaign->get_url(),
 			'status'			=> $campaign->campaign_status(),
 			'description'		=> $campaign->backoffice_summary(),
 			'can_go_next'		=> $can_go_next_str,

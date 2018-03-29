@@ -436,6 +436,14 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function get_url() {
+		$buffer = $this->get_api_data( 'url' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->data->post_name;
+		}
+		return $buffer;
+	}
+	
 	//Rédaction projet
 	public function subtitle() {
 		return $this->__get_translated_property( 'campaign_subtitle' );
