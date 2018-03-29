@@ -1210,12 +1210,15 @@ class ATCF_Campaign {
 	 * @return string Possible answers : see get_campaign_status_list()
 	 */
 	public static $key_campaign_status = 'campaign_vote';
+	private $status;
 	public function campaign_status() {
-		$buffer = $this->get_api_data( 'status' );
-		if ( empty( $buffer ) ) {
-			$buffer = $this->__get( ATCF_Campaign::$key_campaign_status );
+		if ( empty( $this->status ) ) {
+			$this->status = $this->get_api_data( 'status' );
+			if ( empty( $this->status ) ) {
+				$this->status = $this->__get( ATCF_Campaign::$key_campaign_status );
+			}
 		}
-		return $buffer;
+		return $this->status;
 	}
 	/**
 	 * Deprecated : use campaign_status instead
@@ -1252,12 +1255,15 @@ class ATCF_Campaign {
 	 * @return boolean
 	 */
     public static $key_validation_next_status = 'campaign_validated_next_step';
-    public function can_go_next_status(){
-		$buffer = $this->get_api_data( 'can_go_next' );
-		if ( empty( $buffer ) ) {
-			$buffer = $this->__get( ATCF_Campaign::$key_validation_next_status );
+	private $can_go_next;
+    public function can_go_next_status() {
+		if ( !isset( $this->can_go_next ) ) {
+			$this->can_go_next = $this->get_api_data( 'can_go_next' );
+			if ( empty( $this->can_go_next ) ) {
+				$this->can_go_next = $this->__get( ATCF_Campaign::$key_validation_next_status );
+			}
 		}
-		return ( $buffer == 1 );
+		return ( $this->can_go_next == 1 );
 	}
 
     /**
@@ -1267,10 +1273,12 @@ class ATCF_Campaign {
      */
     public function set_validation_next_status($value){
         if($value === true || $value === "true" || $value===1){
+			$this->can_go_next = 1;
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 1);
         }
 
         if($value === false || $value === "false" || $value===0){
+			$this->can_go_next = 0;
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 0);
         }
 
@@ -2576,8 +2584,9 @@ class ATCF_Campaign {
 	}
 
 	public function set_status($newstatus){
-		if(array_key_exists($newstatus, ATCF_Campaign::get_campaign_status_list())){
-			return update_post_meta($this->ID, ATCF_Campaign::$key_campaign_status, $newstatus);
+		if ( array_key_exists( $newstatus, ATCF_Campaign::get_campaign_status_list() ) ) {
+			$this->status = $newstatus;
+			return update_post_meta( $this->ID, ATCF_Campaign::$key_campaign_status, $newstatus );
 		} else {
 		    return false;
         }
