@@ -512,6 +512,7 @@ class WDGAjaxActions {
 					'ID'		=> $campaign_id,
 					'post_name' => $new_name
 				) );
+				$campaign->data->post_name = $new_name;
 				$success[ 'new_project_url' ] = 1;
 			}
 		}
