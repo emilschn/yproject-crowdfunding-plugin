@@ -117,6 +117,19 @@ class WDGUser {
 	}
 	
 	/**
+	 * Retourne un utilisateurs en découpant l'id de l'API
+	 * @param int $api_id
+	 */
+	public static function get_by_api_id( $api_id ) {
+		$buffer = FALSE;
+		if ( !empty( $api_id ) ) {
+			$api_data = WDGWPREST_Entity_User::get( $api_id );
+			$buffer = new WDGUser( $api_data->wpref );
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne un utilisateurs en découpant l'id transmis par LW
 	 * @param int $lemonway_id
 	 */
@@ -149,18 +162,22 @@ class WDGUser {
 	 * Retourne l'id au sein de l'API
 	 * @return int
 	 */
+	private $api_id;
 	public function get_api_id() {
-		if ( $this->get_wpref() == '' ) {
-			return FALSE;
+		if ( !isset( $this->api_id ) ) {
+			if ( $this->get_wpref() == '' ) {
+				return FALSE;
+			}
+			
+			$this->api_id = get_user_meta( $this->get_wpref(), WDGUser::$key_api_id, TRUE );
+			if ( empty( $this->api_id ) ) {
+				$user_create_result = WDGWPREST_Entity_User::create( $this );
+				$this->api_id = $user_create_result->id;
+				ypcf_debug_log('WDGUser::get_api_id > ' . $this->api_id);
+				update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $this->api_id );
+			}
 		}
-		$api_user_id = get_user_meta( $this->get_wpref(), WDGUser::$key_api_id, TRUE );
-		if ( empty($api_user_id) ) {
-			$user_create_result = WDGWPREST_Entity_User::create( $this );
-			$api_user_id = $user_create_result->id;
-			ypcf_debug_log('WDGUser::get_api_id > ' . $api_user_id);
-			update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $api_user_id );
-		}
-		return $api_user_id;
+		return $this->api_id;
 	}
 	
 	/**
