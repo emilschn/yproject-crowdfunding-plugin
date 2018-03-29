@@ -187,6 +187,7 @@ class WDGPostActions {
 				$newcampaign = atcf_get_campaign($newcampaign_id);
 
 				$newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
+				$newcampaign->set_api_data( 'description', $project_desc );
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
 				$newcampaign->link_organization( $orga_api_id );
@@ -579,18 +580,22 @@ class WDGPostActions {
 		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
 		if ( !empty( $new_project_contract_earnings_description ) ) {
 			$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
+			$campaign->set_api_data( 'earnings_description', $new_project_contract_earnings_description );
 		}
 		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
 		if ( !empty( $new_project_contract_spendings_description ) ) {
 			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
+			$campaign->set_api_data( 'spendings_description', $new_project_contract_spendings_description );
 		}
 		$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
 		if ( !empty( $new_project_contract_simple_info ) ) {
 			$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
+			$campaign->set_api_data( 'simple_info', $new_project_contract_simple_info );
 		}
 		$new_project_contract_detailed_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
 		if ( !empty( $new_project_contract_detailed_info ) ) {
 			$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
+			$campaign->set_api_data( 'detailed_info', $new_project_contract_detailed_info );
 		}
 		
 		$new_contract_premium = filter_input( INPUT_POST, 'new_contract_premium' );

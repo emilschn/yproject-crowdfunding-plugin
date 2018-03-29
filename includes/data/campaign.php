@@ -1573,6 +1573,7 @@ class ATCF_Campaign {
      */
     public static $key_end_vote_date = 'campaign_end_vote';
     public function set_end_vote_date($newDate){
+		$this->set_api_data( 'vote_end_datetime', date_format($newDate, 'Y-m-d H:i:s') );
 		$res = update_post_meta($this->ID, ATCF_Campaign::$key_end_vote_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
 	}
@@ -1583,6 +1584,7 @@ class ATCF_Campaign {
      * @return bool|int
      */
 	public function set_begin_collecte_date($newDate){
+		$this->set_api_data( 'funding_start_datetime', date_format($newDate, 'Y-m-d H:i:s') );
 		$res = update_post_meta($this->ID, ATCF_Campaign::$key_begin_collecte_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
 	}
@@ -1593,6 +1595,7 @@ class ATCF_Campaign {
      * @return bool|int
      */
 	public function set_end_date($newDate){
+		$this->set_api_data( 'funding_end_datetime', date_format($newDate, 'Y-m-d H:i:s') );
 		$res = update_post_meta($this->ID, ATCF_Campaign::$key_end_collecte_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
     }

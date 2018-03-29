@@ -41,6 +41,8 @@ class WDGWPREST_Entity_Project {
 		$estimated_turnover = $campaign->estimated_turnover();
 		$estimated_turnover_param = json_encode( $estimated_turnover );
 		$can_go_next_str = $campaign->can_go_next_status() ? 1 : 0;
+		$dt_first_payment_date = new DateTime( $campaign->first_payment_date() );
+		$first_payment_date = $dt_first_payment_date->format( 'Y-m-d' );
 		
 		$parameters = array(
 			'wpref'				=> $campaign->ID,
@@ -65,7 +67,7 @@ class WDGWPREST_Entity_Project {
 			'maximum_profit'		=> $campaign->maximum_profit(),
 			'minimum_profit'		=> $campaign->minimum_profit(),
 			'contract_start_date'	=> $campaign->contract_start_date(),
-			'declarations_start_date'	=> $campaign->first_payment_date(),
+			'declarations_start_date'	=> $first_payment_date,
 			'spendings_description'	=> $campaign->contract_spendings_description(),
 			'earnings_description'	=> $campaign->contract_earnings_description(),
 			'simple_info'			=> $campaign->contract_simple_info(),
