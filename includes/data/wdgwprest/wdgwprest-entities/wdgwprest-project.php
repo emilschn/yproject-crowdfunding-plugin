@@ -95,9 +95,14 @@ class WDGWPREST_Entity_Project {
 	 * @return object
 	 */
 	public static function create( ATCF_Campaign $campaign ) {
-		$parameters = WDGWPREST_Entity_Project::set_post_parameters( $campaign );
 		$date = new DateTime("NOW");
-		$parameters['creation_date'] = $date->format('Y') .'-'. $date->format('m') .'-'. $date->format('d');
+		
+		$parameters = array(
+			'wpref'				=> $campaign->ID,
+			'name'				=> $campaign->data->post_title,
+			'url'				=> $campaign->data->post_name,
+			'creation_date'		=> $date->format('Y-m-d')
+		);
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'project', $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }

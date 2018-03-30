@@ -364,7 +364,7 @@ class WDGAPICalls {
 	}
 	
 	private function set_project_url( $campaign_id ) {
-		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $campaign_id : ' .$campaign_id );
+		/*ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $campaign_id : ' .$campaign_id );
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$new_name = sanitize_text_field( filter_input( INPUT_POST, 'new_url') );
 		if ( !empty( $new_name ) && $campaign->data->post_name != $new_name ) {
@@ -385,7 +385,8 @@ class WDGAPICalls {
 			}
 		}
 		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $buffer : ' .$buffer );
-		exit( $buffer );
+		exit( $buffer );*/
+		exit( '1' );
 	}
 	
 	private function post_project_equitearly() {
