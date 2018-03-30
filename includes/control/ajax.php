@@ -1368,22 +1368,7 @@ class WDGAjaxActions {
 		$campaign = new ATCF_Campaign($campaign_id);
 		$errors = array();
 		$success = array();
-
-		$new_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'new_planning_gdrive'));
-        if(empty($new_gdoc_url) || strpos($new_gdoc_url,"https://docs.google.com/spreadsheets/d/")===0){
-            $campaign->__set(ATCF_Campaign::$key_google_doc, $new_gdoc_url);
-			$success['new_planning_gdrive']=1;
-        } else if (!empty($new_gdoc_url)) {
-            $errors['new_planning_gdrive']="L'URL du planning est invalide ";
-        }
-
-        $new_logbook_gdoc_url = sanitize_text_field(filter_input(INPUT_POST, 'new_logbook_gdrive'));
-        if(empty($new_logbook_gdoc_url) || strpos($new_logbook_gdoc_url,"https://docs.google.com/document/d/")===0){
-            $campaign->__set(ATCF_Campaign::$key_logbook_google_doc, $new_logbook_gdoc_url);
-			$success['new_logbook_gdrive']=1;
-        } else if (!empty($new_logbook_gdoc_url)) {
-			$errors['new_logbook_gdrive']="L'URL du journal de bord est invalide ";
-        }
+		
 		$end_vote_date = filter_input(INPUT_POST, 'new_end_vote_date');
 		if(!empty($end_vote_date)){
 			try {
