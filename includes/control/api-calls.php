@@ -181,7 +181,7 @@ class WDGAPICalls {
 		}
 		
 		
-		$query_options = array(
+		/*$query_options = array(
 			'numberposts' => -1,
 			'post_type' => 'download',
 			'post_status' => 'publish',
@@ -207,7 +207,9 @@ class WDGAPICalls {
 			if ( $nb_invest > 1 ) {
 				$buffer[ 'investors_multi_count' ]++;
 			}
-		}
+		}*/
+		$buffer[ 'investors_count' ] = 0;
+		$buffer[ 'investors_multi_count' ] = 0;
 		
 		exit( json_encode( $buffer ) );
 		
