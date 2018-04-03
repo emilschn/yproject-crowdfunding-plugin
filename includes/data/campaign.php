@@ -736,7 +736,7 @@ class ATCF_Campaign {
 			return;
 		}
 		$edd_settings = get_option( 'edd_settings' );
-		$fiscal_info = apply_filters( 'the_content', $edd_settings[ 'accounting_fiscal_info' ] );
+		$fiscal_info = $edd_settings[ 'accounting_fiscal_info' ];
 		if ( empty( $fiscal_info ) ) {
 			return;
 		}
