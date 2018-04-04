@@ -66,11 +66,10 @@ function atcf_log_type_preapproval( $types ) {
 add_filter( 'edd_log_types', 'atcf_log_type_preapproval' );
 
 
-function ypcf_debug_log( $debug_str ) {
+function ypcf_debug_log( $debug_str, $only_loggedin = FALSE ) {
     global $disable_logs;
     if ( $disable_logs !== TRUE ) {
 		$filename = dirname ( __FILE__ ) . '/../logs/the_logs_'.date( 'm.d.Y' ).'.txt';
-		$file_handle = fopen( $filename, 'a' );
 		date_default_timezone_set( "Europe/Paris" );
 		$current_user_str = 'UNLOGGED';
 		if ( is_user_logged_in() ) {
@@ -79,9 +78,12 @@ function ypcf_debug_log( $debug_str ) {
 		}
 		$current_user_str .= '::'. $_SERVER[ 'REMOTE_ADDR' ];
 		$first_line = date( 'H:i:s' ) . " [".$current_user_str."] (".$_SERVER['REQUEST_URI']."?".$_SERVER['QUERY_STRING'].")\n";
-		fwrite( $file_handle, $first_line );
-		fwrite( $file_handle, " -> " . $debug_str . "\n\n" );
-		fclose( $file_handle);
+		if ( !$only_loggedin ) {
+			$file_handle = fopen( $filename, 'a' );
+			fwrite( $file_handle, $first_line );
+			fwrite( $file_handle, " -> " . $debug_str . "\n\n" );
+			fclose( $file_handle);
+		}
 		
 		// Log dans un dossier par date, dans un fichier par utilisateur (si connecté)
 		if ( is_user_logged_in() ) {
