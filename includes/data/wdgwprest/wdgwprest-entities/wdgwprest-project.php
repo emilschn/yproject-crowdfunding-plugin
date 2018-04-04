@@ -16,6 +16,9 @@ class WDGWPREST_Entity_Project {
 	 * @return object
 	 */
 	public static function get( $id ) {
+		if ( empty( $id ) ) {
+			return FALSE;
+		}
 		return WDGWPRESTLib::call_get_wdg( 'project/' . $id );
 	}
 	

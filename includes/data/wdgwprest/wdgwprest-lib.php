@@ -18,8 +18,6 @@ class WDGWPRESTLib {
  * Appels génériques en GET
  ******************************************************************************/
 	private static function call_get( $route ) {
-		ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
-		
 		if ( !isset( self::$cache_by_route ) ) {
 			self::$cache_by_route = array();
 		}
@@ -28,6 +26,8 @@ class WDGWPRESTLib {
 			$result = self::$cache_by_route[ $route ];
 			
 		} else {
+			ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
+		
 			$login_pwd = YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD;
 			$WDGUser_current = WDGUser::current();
 			if ( $WDGUser_current->has_access_to_api() ) {

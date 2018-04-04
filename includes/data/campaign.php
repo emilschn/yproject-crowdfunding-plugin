@@ -190,8 +190,9 @@ class ATCF_Campaign {
 	 * Chargement des données dans l'API
 	 */
 	private function load_api_data() {
-		if ( !isset( $this->api_data ) ) {
-			$this->api_data = WDGWPREST_Entity_Project::get( $this->get_api_id() );
+		$api_id = $this->get_api_id();
+		if ( !isset( $this->api_data ) && !empty( $api_id ) ) {
+			$this->api_data = WDGWPREST_Entity_Project::get( $api_id );
 //			$this->update_from_api();
 		}
 	}
@@ -297,19 +298,22 @@ class ATCF_Campaign {
 	 * Liaison API
 	 */
 	public static $key_api_id = 'id_api';
+	private $api_id;
 	public function get_api_id() {
-		$api_project_id = FALSE;
-		$is_campaign = ( get_post_meta( $this->data->ID, 'campaign_funding_type', TRUE ) != '' );
-		if ($is_campaign) {
-			$api_project_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
-			if ( empty($api_project_id) ) {
-				$api_project_return = WDGWPREST_Entity_Project::create( $this );
-				$api_project_id = $api_project_return->id;
-				ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $api_project_id);
-				update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $api_project_id );
+		if ( !isset( $this->api_id ) ) {
+			$this->api_id = FALSE;
+			$is_campaign = ( get_post_meta( $this->data->ID, 'campaign_funding_type', TRUE ) != '' );
+			if ($is_campaign) {
+				$this->api_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
+				if ( empty( $this->api_id ) ) {
+					$api_project_return = WDGWPREST_Entity_Project::create( $this );
+					$this->api_id = $api_project_return->id;
+					ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $this->api_id);
+					update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $this->api_id );
+				}
 			}
 		}
-		return $api_project_id;
+		return $this->api_id;
 	}
 	
 	/**
