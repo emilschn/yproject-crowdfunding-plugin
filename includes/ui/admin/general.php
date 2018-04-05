@@ -68,6 +68,7 @@ class WDG_Admin_General {
 		$edd_settings = get_option( 'edd_settings' );
 		$edd_settings[ 'terms_general_version' ] = filter_input( INPUT_POST, 'terms_general_version' );
 		$edd_settings[ 'terms_general_excerpt' ] = filter_input( INPUT_POST, 'terms_general_excerpt' );
+		$edd_settings[ 'agree_text' ] = filter_input( INPUT_POST, 'agree_text' );
 		update_option( 'edd_settings', $edd_settings );
 	}
 	
@@ -193,6 +194,12 @@ class WDG_Admin_General {
 		<h3>Extrait des conditions générales à afficher dans la lightbox</h3>
 		<label for="terms_general_excerpt">
 			<?php wp_editor( $edd_settings[ 'terms_general_excerpt' ], 'terms_general_excerpt' ); ?>
+		</label>
+		<br /><br />
+		
+		<h3>Conditions particulières</h3>
+		<label for="agree_text">
+			<?php wp_editor( $edd_settings[ 'agree_text' ], 'agree_text' ); ?>
 		</label>
 		<?php
 	}
