@@ -344,7 +344,7 @@ class WDGPostActions {
 	public static function organization_sign_mandate() {
         $organization_id = sanitize_text_field( filter_input( INPUT_POST, 'organization_id' ) );
 		$WDGUser_current = WDGUser::current();
-		$phone_number = $WDGUser_current->wp_user->get('user_mobile_phone');
+		$phone_number = $WDGUser_current->get_phone_number();
 		$url_return = wp_get_referer() . '&has_signed_mandate=1';
 		
 		// Récupération de l'organisation
