@@ -87,7 +87,9 @@ class WDGWPREST_Entity_Project {
 			'costs_to_organization'		=> $campaign->get_costs_to_organization(),
 			'costs_to_investors'		=> $campaign->get_costs_to_investors(),
 			'turnover_per_declaration'	=> $campaign->get_turnover_per_declaration(),
-			'team_contacts'			=> $campaign->team_contacts()
+			'team_contacts'			=> $campaign->team_contacts(),
+			'employees_number'		=> $campaign->get_api_data( 'employees_number' ),
+			'minimum_goal_display'	=> $campaign->get_minimum_goal_display()
 		);
 		return $parameters;
 	}
