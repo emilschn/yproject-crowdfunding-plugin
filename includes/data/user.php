@@ -643,18 +643,27 @@ class WDGUser {
 	 * Détermine l'age de l'utilisateur
 	 * @return int
 	 */
-	public function get_age() {
+	public function get_age( $ref_date = FALSE ) {
 		$day = $this->get_birthday_day();
 		$month = $this->get_birthday_month();
 		$year = $this->get_birthday_year();
 		if ( !empty( $day ) && !empty( $month ) && !empty( $year ) ) {
-			$today_day = date('j');
-			$today_month = date('n');
-			$today_year = date('Y');
-			$years_diff = $today_year - $year;
-			if ($today_month <= $month) {
-				if ($month == $today_month) {
-					if ($day > $today_day) $years_diff--;
+			if ( !empty( $ref_date ) ) {
+				$ref_datetime = new DateTime( $ref_date );
+				$ref_day = $ref_datetime->format( 'j' );
+				$ref_month = $ref_datetime->format( 'n' );
+				$ref_year = $ref_datetime->format( 'Y' );
+			} else {
+				$ref_day = date('j');
+				$ref_month = date('n');
+				$ref_year = date('Y');
+			}
+			$years_diff = $ref_year - $year;
+			if ( $ref_month <= $month ) {
+				if ( $month == $ref_month ) {
+					if ( $day > $ref_day ) {
+						$years_diff--;
+					}
 				} else {
 					$years_diff--;
 				}

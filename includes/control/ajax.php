@@ -48,6 +48,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('preview_mail_message');
 		WDGAjaxActions::add_action('search_user_by_email');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
+		WDGAjaxActions::add_action('conclude_project');
 	}
 	
 	/**
@@ -2040,6 +2041,28 @@ class WDGAjaxActions {
 		
 		echo json_encode( $buffer );
 		exit();
+	}
+	
+	/**
+	 * Lance la finalisation du projet (transfert des données d'investissement sur l'API, ...)
+	 */
+	public static function conclude_project() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		
+		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded
+					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive
+					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+				// Transfert des données d'investissement sur l'API
+				WDGInvestment::save_campaign_to_api( $campaign );
+
+				// TODO : rassembler les contrats dans un zip
+			}
+		}
+		
+		exit( '1' );
 	}
 }
 
