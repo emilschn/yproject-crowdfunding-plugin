@@ -68,7 +68,7 @@ class WDGWPREST_Entity_Investment {
 			$info_address = $WDGUser->get_address();
 			$info_postalcode = $WDGUser->get_postal_code();
 			$info_city = $WDGUser->get_city();
-			$info_country = $WDGUser->get_country();
+			$info_country = $WDGUser->get_country( 'iso2' );
 			
 		} else {
 			return FALSE;
@@ -86,10 +86,10 @@ class WDGWPREST_Entity_Investment {
 		} else if ( strpos( $payment_key, '_wallet_' ) !== FALSE) {
 			$payment_key_exploded = explode( '_wallet_', $payment_key );
 			$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key_exploded[ 1 ], 'payment' );
-			$amount_with_royalties_in_cents = $lw_transaction_result->DEB;
+			$amount_with_royalties_in_cents = $lw_transaction_result->DEB * 100;
 			$mean_of_payment = 'card_wallet';
 		} else if ( strpos( $payment_key, 'wallet_' ) !== FALSE) {
-			$amount_with_royalties_in_cents = $amount;
+			$amount_with_royalties_in_cents = $amount * 100;
 			$mean_of_payment = 'wallet';
 		} else if ( $payment_key == 'check' ) {
 			$mean_of_payment = 'check';
@@ -99,6 +99,9 @@ class WDGWPREST_Entity_Investment {
 		
 		$parameters = array(
 			'wpref'				=> $edd_payment_item->ID,
+			'redirect_url_ok'	=> 'https://www.wedogood.co',
+			'redirect_url_nok'	=> 'https://www.wedogood.co',
+			'notification_url'	=> 'https://www.wedogood.co',
 			'user_id'			=> $info_user_api_id,
 			'email'				=> $info_email,
 			'gender'			=> $info_gender,

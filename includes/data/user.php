@@ -328,18 +328,23 @@ class WDGUser {
 			$buffer = $this->wp_user->get('user_country');
 		}
 		
-		if ( !empty( $format ) && $format == 'iso3' ) {
+		if ( !empty( $format ) ) {
 			// Le pays est saisi, il faut tenter de le convertir
 			global $country_list, $country_list_iso2_to_iso3;
 			// D'abord, on le met en majuscule
 			$upper_country = strtoupper( $buffer );
 			// On le cherche en iso2
 			$iso2_key = array_search( $upper_country, $country_list );
-			// On le transforme en iso3
-			if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
-				$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
+			if ( $format == 'iso3' ) {
+				// On le transforme en iso3
+				if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
+					$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
+				}
+			} else if ( $format == 'iso2' ) {
+				$buffer = $iso2_key;
 			}
 		}
+		
 		return $buffer;
 	}
 	
