@@ -109,6 +109,7 @@ class WDGWPREST_Entity_User {
 		$parameters = WDGWPREST_Entity_User::set_post_parameters( $user );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'user/' . $user->get_api_id(), $parameters );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user->get_api_id(). '?with_links=1' );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}

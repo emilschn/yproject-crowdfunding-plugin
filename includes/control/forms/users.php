@@ -418,6 +418,7 @@ class WDGFormUsers {
 			$save_address = filter_input( INPUT_POST, 'address' );
 			$save_address2 = filter_input( INPUT_POST, 'address2' );
 			$WDGUser->save_iban( $save_holdername, $save_iban, $save_bic, $save_address, $save_address2 );
+			$WDGUser->update_api();
 		}
 		
 		if ( isset( $_FILES[ 'rib' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'rib' ][ 'tmp_name' ] ) ) {
@@ -426,5 +427,7 @@ class WDGFormUsers {
 			$WDGUser->register_lemonway();
 			LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
 		}
+		
+		return TRUE;
 	}
 }

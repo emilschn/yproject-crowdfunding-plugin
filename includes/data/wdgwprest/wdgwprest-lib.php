@@ -113,6 +113,13 @@ class WDGWPRESTLib {
 		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_external . $route, $parameters );
 	}
 	
+	public static function unset_cache( $route ) {
+		ypcf_debug_log('unset_cache > ' . print_r( self::$cache_by_route, true ) );
+		if ( isset( self::$cache_by_route[ $route ] ) ) {
+			unset( self::$cache_by_route[ $route ] );
+		}
+	}
+	
 /*******************************************************************************
  * Appels générique en DELETE
  ******************************************************************************/
