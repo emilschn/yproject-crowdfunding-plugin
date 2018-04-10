@@ -75,20 +75,27 @@ class WDGWPREST_Entity_Investment {
 		}
 		
 		$amount = edd_get_payment_amount( $edd_payment_item->ID );
-		$amount_with_royalties_in_cents = ''; //TODO
+		$amount_with_royalties_in_cents = 0;
 		$payment_status = ypcf_get_updated_payment_status( $edd_payment_item->ID );
+		$contract_status = get_post_meta( $edd_payment_item->ID, WDGInvestment::$contract_status_meta, TRUE );
 		
 		$payment_key = edd_get_payment_key( $edd_payment_item->ID );
 		$mean_of_payment = 'card';
 		if ( strpos( $payment_key, 'wire_' ) !== FALSE) {
 			$mean_of_payment = 'wire';
 		} else if ( strpos( $payment_key, '_wallet_' ) !== FALSE) {
+			$payment_key_exploded = explode( '_wallet_', $payment_key );
+			$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key_exploded[ 1 ], 'payment' );
+			$amount_with_royalties_in_cents = $lw_transaction_result->DEB;
 			$mean_of_payment = 'card_wallet';
 		} else if ( strpos( $payment_key, 'wallet_' ) !== FALSE) {
+			$amount_with_royalties_in_cents = $amount;
 			$mean_of_payment = 'wallet';
 		} else if ( $payment_key == 'check' ) {
 			$mean_of_payment = 'check';
 		}
+		
+		$signsquid_contract = new SignsquidContract( $edd_payment_item->ID );
 		
 		$parameters = array(
 			'wpref'				=> $edd_payment_item->ID,
@@ -111,10 +118,15 @@ class WDGWPREST_Entity_Investment {
 			'project'					=> $campaign->get_api_id(),
 			'amount'					=> $amount,
 			'cents_with_royalties'		=> $amount_with_royalties_in_cents,
-			'contract_url'				=> '',
+			'contract_url'				=> '', // TODO
 			'invest_datetime'			=> $payment_date,
+			'is_preinvestment'			=> !empty( $contract_status ),
 			'mean_payment'				=> $mean_of_payment,
-			'status'					=> $payment_status
+			'status'					=> $payment_status,
+			'payment_key'				=> $payment_key,
+			'payment_status'			=> $payment_status,
+			'signature_key'				=> $signsquid_contract->get_contract_id(),
+			'signature_status'			=> $signsquid_contract->get_status_code()
 		);
 		if ( $WDGOrganization != FALSE ) {
 			$parameters[ 'legal_entity_form' ] = $WDGOrganization->get_legalform();
