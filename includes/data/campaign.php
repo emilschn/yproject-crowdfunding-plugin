@@ -752,8 +752,13 @@ class ATCF_Campaign {
 		$project_investors_list = array();
 		$investments_list = $this->payments_data( TRUE );
 		foreach ( $investments_list as $investment_item ) {
-			$user_data = get_userdata($investment_item['user']);
-			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'] ) );
+			if ( !empty( $investment_item['item'] ) ) {
+				array_push( $project_investors_list, array( "firstname" => $investment_item['item']->firstname, "lastname" => $investment_item['item']->lastname, "amount" => $investment_item['amount'] ) );
+				
+			} else {
+				$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
+				array_push( $project_investors_list, array( "firstname" => $WDGUserPayment->get_firstname(), "lastname" => $WDGUserPayment->get_lastname(), "amount" => $investment_item['amount'] ) );
+			}
 		}
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
@@ -2177,76 +2182,99 @@ class ATCF_Campaign {
 	 * This function is very slow, it is advisable to use it as few as possible
 	 * @return array
 	 */
+	private $payments_data;
 	public function payments_data($skip_apis = FALSE) {
-		global $WDG_cache_plugin;
-		if (!isset($WDG_cache_plugin)) { $WDG_cache_plugin = new WDG_Cache_Plugin(); }
-		$payments_data = array();
-
-		$payments = edd_get_payments( array(
-		    'number'	 => -1,
-		    'download'   => $this->ID
-		) );
-
+		if ( !isset( $this->payments_data ) ) {
 		
-//		$cache_stats = $WDG_cache_plugin->get_cache('project-investments-data-' . $this->ID, 2);
-//		if ($cache_stats === false) {
-			if ( $payments ) {
-				foreach ( $payments as $payment ) {
-					$user_info = edd_get_payment_meta_user_info( $payment->ID );
-					$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
-
-					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-
-					$signsquid_contract = new SignsquidContract($payment->ID);
-					$signsquid_status = $signsquid_contract->get_status_code();
-					$signsquid_status_text = $signsquid_contract->get_status_str();
+			$this->payments_data = array();
+		
+			if ( !empty( $this->api_data->investments ) ) {
+				foreach ( $this->api_data->investments as $investment_item ) {
 					
-					$mangopay_contribution = FALSE;
-					$lemonway_contribution = FALSE;
-					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-						$lemonway_id = edd_get_payment_key($payment->ID);
-						
-						if ( $lemonway_id == 'check' ) {
-
-						} else if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
-							
-
-						} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
-							$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
-							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
-							
-						} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
-							
-						} else {
-							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
-						}
-					}
-
-					$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
-
-					if ($payment_status != 'failed') {
-						$payments_data[] = array(
-							'ID'			=> $payment->ID,
-							'email'			=> edd_get_payment_user_email( $payment->ID ),
-							'products'		=> $cart_details,
-							'amount'		=> edd_get_payment_amount( $payment->ID ),
-							'date'			=> $payment->post_date,
-							'user'			=> $user_id,
-							'status'		=> $payment_status,
-							'mangopay_contribution' => $mangopay_contribution,
-							'lemonway_contribution' => $lemonway_contribution,
-							'signsquid_status'	=> $signsquid_status,
-							'signsquid_status_text' => $signsquid_status_text
+					if ( $investment_item->status != 'failed' ) {
+						// Récupération simple des paiements dans l'API
+						// On dégage 'products' et 'signsquid_status_text' pas très utile
+						// On simplifie 'mangopay_contribution' et 'lemonway_contribution' pour avoir les infos au cas où, mais pas les chercher de suite, car normalement pas besoin
+						$this->payments_data[] = array(
+							'item'			=> $investment_item,
+							'ID'			=> $investment_item->wpref,
+							'user'			=> $investment_item->user_wpref,
+							'email'			=> $investment_item->email,
+							'amount'		=> $investment_item->amount,
+							'date'			=> $investment_item->invest_datetime,
+							'user_api_id'	=> $investment_item->user_id,
+							'status'		=> $investment_item->status,
+							'mangopay_contribution'	=> ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_mangopay ) ? $investment_item->payment_key : FALSE,
+							'lemonway_contribution' => ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_lemonway ) ? $investment_item->payment_key : FALSE,
+							'signsquid_status'		=> $investment_item->signature_status
 						);
 					}
+					
 				}
+				
+			} else {
+				$payments = edd_get_payments( array(
+					'number'	 => -1,
+					'download'   => $this->ID
+				) );
+
+
+				if ( $payments ) {
+					foreach ( $payments as $payment ) {
+						$user_info = edd_get_payment_meta_user_info( $payment->ID );
+						$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
+
+						$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+
+						$signsquid_contract = new SignsquidContract($payment->ID);
+						$signsquid_status = $signsquid_contract->get_status_code();
+
+						$mangopay_contribution = FALSE;
+						$lemonway_contribution = FALSE;
+						if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+							$lemonway_id = edd_get_payment_key($payment->ID);
+
+							if ( $lemonway_id == 'check' ) {
+
+							} else if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
+
+
+							} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
+								$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
+								$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
+
+							} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
+
+							} else {
+								$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
+							}
+						}
+
+						$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
+
+						if ($payment_status != 'failed') {
+							$this->payments_data[] = array(
+								'ID'			=> $payment->ID,
+								'email'			=> edd_get_payment_user_email( $payment->ID ),
+								'products'		=> $cart_details,
+								'amount'		=> edd_get_payment_amount( $payment->ID ),
+								'date'			=> $payment->post_date,
+								'user'			=> $user_id,
+								'status'		=> $payment_status,
+								'mangopay_contribution' => $mangopay_contribution,
+								'lemonway_contribution' => $lemonway_contribution,
+								'payment_key' => $lemonway_id,
+								'signsquid_status'	=> $signsquid_status
+							);
+						}
+					}
+				}
+				
 			}
 			
-//			$cache_stats = json_encode($payments_data);
-//			$WDG_cache_plugin->set_cache('project-investments-data-' . $this->ID, $cache_stats, 60*60*3, 2);
-//		}
+		}
 		
-		return $payments_data;
+		return $this->payments_data;
 	}
 	
 	public function pending_preinvestments() {

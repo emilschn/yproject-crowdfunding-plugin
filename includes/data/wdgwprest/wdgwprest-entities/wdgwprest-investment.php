@@ -42,6 +42,7 @@ class WDGWPREST_Entity_Investment {
 		$info_postalcode = '';
 		$info_city = '';
 		$info_country = '';
+		$info_phone = '';
 		if ( !empty( $user_info['id'] ) ) {
 			if ( WDGOrganization::is_user_organization( $user_info['id'] ) ) {
 				$WDGOrganization = new WDGOrganization( $user_info['id'] );
@@ -69,6 +70,7 @@ class WDGWPREST_Entity_Investment {
 			$info_postalcode = $WDGUser->get_postal_code();
 			$info_city = $WDGUser->get_city();
 			$info_country = $WDGUser->get_country( 'iso2' );
+			$info_phone = $WDGUser->get_phone_number();
 			
 		} else {
 			return FALSE;
@@ -94,6 +96,7 @@ class WDGWPREST_Entity_Investment {
 		} else if ( $payment_key == 'check' ) {
 			$mean_of_payment = 'check';
 		}
+		$payment_provider = $campaign->get_payment_provider();
 		
 		$signsquid_contract = new SignsquidContract( $edd_payment_item->ID );
 		
@@ -103,6 +106,7 @@ class WDGWPREST_Entity_Investment {
 			'redirect_url_nok'	=> 'https://www.wedogood.co',
 			'notification_url'	=> 'https://www.wedogood.co',
 			'user_id'			=> $info_user_api_id,
+			'user_wpref'		=> $user_info['id'],
 			'email'				=> $info_email,
 			'gender'			=> $info_gender,
 			'firstname'			=> $info_firstname,
@@ -117,6 +121,7 @@ class WDGWPREST_Entity_Investment {
 			'postalcode'		=> $info_postalcode,
 			'city'				=> $info_city,
 			'country'			=> $info_country,
+			'phone_number'		=> $info_phone,
 			'is_legal_entity'			=> ( $WDGOrganization != FALSE ),
 			'project'					=> $campaign->get_api_id(),
 			'amount'					=> $amount,
@@ -125,6 +130,7 @@ class WDGWPREST_Entity_Investment {
 			'invest_datetime'			=> $payment_date,
 			'is_preinvestment'			=> !empty( $contract_status ),
 			'mean_payment'				=> $mean_of_payment,
+			'payment_provider'			=> $payment_provider,
 			'status'					=> $payment_status,
 			'payment_key'				=> $payment_key,
 			'payment_status'			=> $payment_status,

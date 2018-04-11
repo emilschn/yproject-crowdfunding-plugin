@@ -1524,7 +1524,7 @@ class WDGAjaxActions {
 		//Extraction infos suiveurs
 		foreach ( $list_user_follow as $item_follow ) {
 			$array_contacts[$item_follow]["follow"]=1;
-			$array_contacts[$u_id]["invest_id"] = 0;
+			$array_contacts[$item_follow]["invest_id"] = 0;
 		}
 
         //Extraction infos de vote
@@ -1553,14 +1553,18 @@ class WDGAjaxActions {
         foreach ( $investments_list['payments_data'] as $item_invest ) {
 			$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
             $post_invest = get_post($item_invest['ID']);
-            $mangopay_id = edd_get_payment_key($item_invest['ID']);
+			if ( !empty( $item_invest[ 'payment_key' ] ) ) {
+				$payment_key = $item_invest[ 'payment_key' ];
+			} else {
+				$payment_key = $item_invest[ 'lemonway_contribution' ] ? $item_invest[ 'lemonway_contribution' ] : $item_invest[ 'mangopay_contribution' ];
+			}
 
             $u_id = $item_invest['user'];
 
             $payment_type = 'Carte';
-            if (strpos($mangopay_id, 'wire_') !== FALSE) {
+            if (strpos($payment_key, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
-            } else if ($mangopay_id == 'check') {
+            } else if ($payment_key == 'check') {
 				
 				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
 				if ( !empty( $check_file_url ) ) {
@@ -1639,7 +1643,7 @@ class WDGAjaxActions {
 				$more_invest["invest_state"] = $payment_state;
 				$more_invest["invest_amount"] = $item_invest['amount'];
 				$more_invest["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
-				$more_invest["invest_sign"] = $item_invest['signsquid_status_text'];
+				$more_invest["invest_sign"] = SignsquidContract::get_status_str_by_code( $item_invest[ 'signsquid_status' ] );
 				$more_invest["invest_id"] = $item_invest['ID'];
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 				
@@ -1651,17 +1655,17 @@ class WDGAjaxActions {
 				$array_contacts[$u_id]["invest_state"] = $payment_state;
 				$array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
 				$array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
-				$array_contacts[$u_id]["invest_sign"] = $item_invest['signsquid_status_text'];
+				$array_contacts[$u_id]["invest_sign"] = SignsquidContract::get_status_str_by_code( $item_invest[ 'signsquid_status' ] );
 				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
+				$array_contacts[$u_id]["invest_item"] = $item_invest;
 			}
         }
 
         //Extraction infos utilisateur
-		$count_distinct_investors=0;
-
-        foreach ( $array_contacts as $user_id=>$user_item ){
+		$count_distinct_investors = 0;
+        foreach ( $array_contacts as $user_id => $user_item ){
             //Données si l'investisseur est une organisation
-			$array_contacts[$user_id]["user_id"]= $user_id;
+			$array_contacts[$user_id]["user_id"] = $user_id;
 			if ( WDGOrganization::is_user_organization( $user_id ) ) {
 				$WDGOrganization = new WDGOrganization( $user_id );
 				$linked_users = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
@@ -1694,29 +1698,49 @@ class WDGAjaxActions {
 
             //Données si l'investisseur est un utilisateur normal
             } else {
-                $user_data = get_userdata($user_id);
-				$WDGUser = new WDGUser( $user_id );
-
-                $array_contacts[$user_id]["user_link"] = $WDGUser->get_login();
-                $array_contacts[$user_id]["user_email"] = $WDGUser->get_email();
-
-				//Infos supplémentaires pour les votants
-				if($array_contacts[$user_id]["vote"] == 1 || $array_contacts[$user_id]["invest"] == 1){
-					$array_contacts[$user_id]["user_last_name"] = $WDGUser->get_lastname();
-					$array_contacts[$user_id]["user_first_name"] = $WDGUser->get_firstname();
-					$array_contacts[$user_id]["user_city"] = $WDGUser->get_city();
-					$array_contacts[$user_id]["user_postal_code"] = $WDGUser->get_postal_code();
-					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
-
-					//Infos supplémentaires pour les investisseurs
-					if($array_contacts[$user_id]["invest"] == 1){
-						$count_distinct_investors++;
+				//Infos supplémentaires pour les investisseurs
+				if($array_contacts[$user_id]["invest"] == 1){
+					$count_distinct_investors++;
+					if ( !empty( $user_item[ 'invest_item' ][ 'item' ] ) ) {
+						$array_contacts[$user_id]["user_link"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
+						$array_contacts[$user_id]["user_email"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
+						$array_contacts[$user_id]["user_last_name"] = $user_item[ 'invest_item' ][ 'item' ][ 'lastname' ];
+						$array_contacts[$user_id]["user_first_name"] = $user_item[ 'invest_item' ][ 'item' ][ 'firstname' ];
+						$array_contacts[$user_id]["user_city"] = $user_item[ 'invest_item' ][ 'item' ][ 'city' ];
+						$array_contacts[$user_id]["user_postal_code"] = $user_item[ 'invest_item' ][ 'item' ][ 'postalcode' ];
+						$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $user_item[ 'invest_item' ][ 'item' ][ 'nationality' ] ] ) );
+						$array_contacts[$user_id]["user_birthday"] = $user_item[ 'invest_item' ][ 'item' ][ 'birthday_year' ] .'-'. $user_item[ 'invest_item' ][ 'item' ][ 'birthday_month' ] .'-'. $user_item[ 'invest_item' ][ 'item' ][ 'birthday_day' ];
+						$array_contacts[$user_id]["user_birthplace"] = $user_item[ 'invest_item' ][ 'item' ][ 'birthday_city' ];
+						$array_contacts[$user_id]["user_address"] = $user_item[ 'invest_item' ][ 'item' ][ 'address' ];
+						$array_contacts[$user_id]["user_country"] = $user_item[ 'invest_item' ][ 'item' ][ 'country' ];
+						$array_contacts[$user_id]["user_mobile_phone"] = $user_item[ 'invest_item' ][ 'item' ][ 'birthday_city' ];
+						
+					} else {
+						$WDGUser = new WDGUser( $user_id );
+						$array_contacts[$user_id]["user_link"] = $WDGUser->get_email();
+						$array_contacts[$user_id]["user_email"] = $WDGUser->get_email();
+						$array_contacts[$user_id]["user_last_name"] = $WDGUser->get_lastname();
+						$array_contacts[$user_id]["user_first_name"] = $WDGUser->get_firstname();
+						$array_contacts[$user_id]["user_city"] = $WDGUser->get_city();
+						$array_contacts[$user_id]["user_postal_code"] = $WDGUser->get_postal_code();
+						$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 						$array_contacts[$user_id]["user_birthday"] = $WDGUser->get_birthday_date();
 						$array_contacts[$user_id]["user_birthplace"] = $WDGUser->get_birthplace();
 						$array_contacts[$user_id]["user_address"] = $WDGUser->get_address();
 						$array_contacts[$user_id]["user_country"] = $WDGUser->get_country();
 						$array_contacts[$user_id]["user_mobile_phone"] = $WDGUser->get_phone_number();
 					}
+					
+				//Infos supplémentaires pour les votants
+				} else {
+					$WDGUser = new WDGUser( $user_id );
+					$array_contacts[$user_id]["user_link"] = $WDGUser->get_email();
+					$array_contacts[$user_id]["user_email"] = $WDGUser->get_email();
+					$array_contacts[$user_id]["user_last_name"] = $WDGUser->get_lastname();
+					$array_contacts[$user_id]["user_first_name"] = $WDGUser->get_firstname();
+					$array_contacts[$user_id]["user_city"] = $WDGUser->get_city();
+					$array_contacts[$user_id]["user_postal_code"] = $WDGUser->get_postal_code();
+					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 				}
             }
         }

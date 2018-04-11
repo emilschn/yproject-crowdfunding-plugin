@@ -148,7 +148,6 @@ final class ATCF_CrowdFunding {
 		
 		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-submit.php' );
-		require( $this->includes_dir . 'ui/shortcodes/shortcode-vote-results.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-update.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
 		require( $this->includes_dir . 'ui/ui-helpers.php' );
