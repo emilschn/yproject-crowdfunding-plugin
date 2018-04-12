@@ -251,6 +251,19 @@ class WDGOrganization {
 	}
 	
 	/**
+	 * Retourne une organisation via l'id de l'API
+	 * @param int $api_id
+	 */
+	public static function get_by_api_id( $api_id ) {
+		$buffer = FALSE;
+		if ( !empty( $api_id ) ) {
+			$api_data = WDGWPREST_Entity_Organization::get( $api_id );
+			$buffer = new WDGOrganization( $api_data->wpref );
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Attributions / Récupération de données
 	 */
 	public function get_creator() {
