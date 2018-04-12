@@ -859,7 +859,7 @@ class ATCF_Campaign {
     public static $key_contract_start_date = 'campaign_contract_start_date';
 	public function contract_start_date() {
 		$buffer = $this->get_api_data( 'contract_start_date' );
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer == '0000-00-00' ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_start_date );
 		}
 	    return $buffer;
