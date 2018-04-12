@@ -519,6 +519,8 @@ class WDGROIDeclaration {
 				
 			}
 			
+			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
+			
 			// En retour, on veut le pourcentage d'avancement
 			$buffer = $count / count( $investments_list ) * 100;
 			
