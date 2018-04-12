@@ -4,6 +4,8 @@ class WDG_Cache_Plugin {
 	private $table_name;
 	private $wpdb;
 	
+	protected static $_current = null;
+	
 	/**
 	 * Constructeur
 	 */
@@ -13,6 +15,17 @@ class WDG_Cache_Plugin {
 		$this->table_name = "wp_wdg_cache";
 
 		add_action( 'wdg_delete_cache', array( $this, 'delete_cache' ), 10, 1 );
+	}
+	
+	/**
+	 * Récupération d'une instance statique
+	 * @return WDG_Cache_Plugin
+	 */
+	public static function current() {
+		if ( is_null( self::$_current ) ) {
+			self::$_current = new self();
+		}
+		return self::$_current;
 	}
 	
 	/**
