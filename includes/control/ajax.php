@@ -585,21 +585,6 @@ class WDGAjaxActions {
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
 		
-		
-		// Infos contractuelles
-		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
-		$campaign->set_api_data( 'earnings_description', $new_project_contract_earnings_description );
-		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
-		$campaign->set_api_data( 'spendings_description', $new_project_contract_spendings_description );
-		$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
-		$campaign->set_api_data( 'simple_info', $new_project_contract_simple_info );
-		$new_project_contract_detailed_info= sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
-		$campaign->set_api_data( 'detailed_info', $new_project_contract_detailed_info );
-		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
 		$nb_custom_fields = $WDGAuthor->wp_user->get('wdg-contract-nb-custom-fields');
