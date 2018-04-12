@@ -587,6 +587,8 @@ class WDGROIDeclaration {
 				$ROI->update();
 			}
 		}
+			
+		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
 		
 	}
 	
