@@ -2033,9 +2033,9 @@ class WDGAjaxActions {
 		$declaration_id = filter_input(INPUT_POST, 'roi_id');
 		if ( !empty( $campaign_id ) && !empty( $declaration_id ) && $WDGUser_current->is_admin() ) {
 			$input_send_notifications = filter_input( INPUT_POST, 'send_notifications' );
-			$send_notifications = ( $input_send_notifications == 1 || $input_send_notifications == TRUE || $input_send_notifications == 'TRUE' );
+			$send_notifications = ( $input_send_notifications != 'false' && ( $input_send_notifications === 1 || $input_send_notifications === TRUE || $input_send_notifications === 'TRUE' ) );
 			$input_transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
-			$transfer_remaining_amount = ( $input_transfer_remaining_amount == 1 || $input_transfer_remaining_amount == TRUE || $input_transfer_remaining_amount == 'TRUE' );
+			$transfer_remaining_amount = ( $input_transfer_remaining_amount != 'false' && ( $input_transfer_remaining_amount === 1 || $input_transfer_remaining_amount === TRUE || $input_transfer_remaining_amount === 'TRUE' ) );
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
 			$buffer = $roi_declaration->make_transfer( $send_notifications, $transfer_remaining_amount );
 		}
