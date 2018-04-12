@@ -165,7 +165,7 @@ class WDGROI {
 				$organization_obj = WDGOrganization::get_by_api_id( $this->id_orga );
 
 				//Gestion versement organisation vers projet
-				$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+				$WDGUser = WDGUser::get_by_api_id( $this->id_user );
 				if ( WDGOrganization::is_user_organization( $WDGUser->get_wpref() ) ) {
 					$WDGOrga = new WDGOrganization( $WDGUser->get_wpref() );
 					$transfer = LemonwayLib::ask_transfer_funds( $WDGOrga->get_lemonway_id(), $organization_obj->get_lemonway_id(), $this->amount );
