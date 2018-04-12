@@ -2035,7 +2035,7 @@ class WDGAjaxActions {
 			$send_notifications = filter_input( INPUT_POST, 'send_notifications' );
 			$transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$buffer = $roi_declaration->make_transfer( ($send_notifications == 1), ($transfer_remaining_amount == 1) );
+			$buffer = $roi_declaration->make_transfer( ( $send_notifications == 1 || $send_notifications == TRUE || $send_notifications == 'TRUE' ), ( $transfer_remaining_amount == 1 || $transfer_remaining_amount == TRUE || $transfer_remaining_amount == 'TRUE' ) );
 		}
 		
 		echo json_encode( $buffer );
