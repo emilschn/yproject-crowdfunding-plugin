@@ -1289,7 +1289,7 @@ class ATCF_Campaign {
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 1);
         }
 
-        if($value === false || $value === "false" || $value===0){
+        if($value === false || $value === "false" || $value===0 || $value===''){
 			$this->can_go_next = 0;
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 0);
         }
