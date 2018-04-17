@@ -207,7 +207,7 @@ class NotificationsAPI {
 	}
 	
 	public static function declaration_done_without_turnover( $recipient, $name, $last_three_months ) {
-		$id_template = '128';
+		$id_template = '150';
 		$options = array(
 			'NOM'					=> $name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months

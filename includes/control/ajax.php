@@ -586,21 +586,6 @@ class WDGAjaxActions {
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
 		
-		
-		// Infos contractuelles
-		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
-		$campaign->set_api_data( 'earnings_description', $new_project_contract_earnings_description );
-		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
-		$campaign->set_api_data( 'spendings_description', $new_project_contract_spendings_description );
-		$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
-		$campaign->set_api_data( 'simple_info', $new_project_contract_simple_info );
-		$new_project_contract_detailed_info= sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
-		$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
-		$campaign->set_api_data( 'detailed_info', $new_project_contract_detailed_info );
-		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
 		$nb_custom_fields = $WDGAuthor->wp_user->get('wdg-contract-nb-custom-fields');
@@ -2057,10 +2042,12 @@ class WDGAjaxActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$declaration_id = filter_input(INPUT_POST, 'roi_id');
 		if ( !empty( $campaign_id ) && !empty( $declaration_id ) && $WDGUser_current->is_admin() ) {
-			$send_notifications = filter_input( INPUT_POST, 'send_notifications' );
-			$transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
+			$input_send_notifications = filter_input( INPUT_POST, 'send_notifications' );
+			$send_notifications = ( $input_send_notifications != 'false' && ( $input_send_notifications === 1 || $input_send_notifications === TRUE || $input_send_notifications === 'true' ) );
+			$input_transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
+			$transfer_remaining_amount = ( $input_transfer_remaining_amount != 'false' && ( $input_transfer_remaining_amount === 1 || $input_transfer_remaining_amount === TRUE || $input_transfer_remaining_amount === 'true' ) );
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$buffer = $roi_declaration->make_transfer( ($send_notifications == 1), ($transfer_remaining_amount == 1) );
+			$buffer = $roi_declaration->make_transfer( $send_notifications, $transfer_remaining_amount );
 		}
 		
 		echo json_encode( $buffer );

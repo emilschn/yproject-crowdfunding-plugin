@@ -87,7 +87,7 @@ class WDGKYCFile {
 	 */
 	public function get_byte_array() {
 		$byte_array = file_get_contents( __DIR__ . '/../kyc/' . $this->file_name );
-		return $byte_array;
+		return base64_encode( $byte_array );
 	}
 	
 	/**

@@ -864,7 +864,7 @@ class ATCF_Campaign {
     public static $key_contract_start_date = 'campaign_contract_start_date';
 	public function contract_start_date() {
 		$buffer = $this->get_api_data( 'contract_start_date' );
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) || $buffer == '0000-00-00' ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_start_date );
 		}
 	    return $buffer;
@@ -1294,7 +1294,7 @@ class ATCF_Campaign {
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 1);
         }
 
-        if($value === false || $value === "false" || $value===0){
+        if($value === false || $value === "false" || $value===0 || $value===''){
 			$this->can_go_next = 0;
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 0);
         }
@@ -1865,6 +1865,7 @@ class ATCF_Campaign {
 					} else {
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );
 					}
+					$this->update_api();
 				}
 			} else {
 				$diff = $expires - $now;
