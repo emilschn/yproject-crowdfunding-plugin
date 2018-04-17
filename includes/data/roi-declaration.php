@@ -519,6 +519,8 @@ class WDGROIDeclaration {
 				
 			}
 			
+			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
+			
 			// En retour, on veut le pourcentage d'avancement
 			$buffer = $count / count( $investments_list ) * 100;
 			
@@ -565,26 +567,30 @@ class WDGROIDeclaration {
 			if ( $roi_item->amount > 0 && $roi_item->id_transfer == 0 && ( $roi_item->status == WDGROI::$status_transferred || $roi_item->status == WDGROI::$status_error ) ) {
 				$ROI = new WDGROI( $roi_item->id );
 
-				//Gestion versement vers organisation
-				if (WDGOrganization::is_user_organization( $ROI->id_user )) {
-					$WDGOrga = new WDGOrganization( $ROI->id_user );
-					$WDGOrga->register_lemonway();
-					$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
+				if ( $ROI->id_user > 0 ) {
+					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+					//Gestion versement vers organisation
+					if ( WDGOrganization::is_user_organization( $WDGUser->get_wpref() ) ) {
+						$WDGOrga = new WDGOrganization( $WDGUser->get_wpref() );
+						$WDGOrga->register_lemonway();
+						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
 
-				//Versement vers utilisateur personne physique
-				} else {
-					$WDGUser = new WDGUser( $ROI->id_user );
-					$WDGUser->register_lemonway();
-					$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
-				}
+					//Versement vers utilisateur personne physique
+					} else {
+						$WDGUser->register_lemonway();
+						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+					}
 
-				if ( $transfer != FALSE ) {
-					$ROI->status = WDGROI::$status_transferred;
+					if ( $transfer != FALSE ) {
+						$ROI->status = WDGROI::$status_transferred;
+					}
+					$ROI->id_transfer = $transfer->ID;
+					$ROI->update();
 				}
-				$ROI->id_transfer = $transfer->ID;
-				$ROI->update();
 			}
 		}
+			
+		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
 		
 	}
 	

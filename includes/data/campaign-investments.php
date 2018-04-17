@@ -9,8 +9,7 @@ class WDGCampaignInvestments {
 	 * @return array
 	 */
 	public static function get_list($camp_id, $include_pending = FALSE) {
-		$post_campaign = get_post($camp_id);
-		$campaign = atcf_get_campaign( $post_campaign );
+		$campaign = new ATCF_Campaign( $camp_id );
 		$payments_data = $campaign->payments_data();
 
 		$buffer = array(
@@ -39,21 +38,24 @@ class WDGCampaignInvestments {
 			//Prend en compte ou pas dans les stats les paiements non validés
 			if ($item['status'] == 'publish' || ($include_pending && $item['status'] == 'pending')) {
 
-			    $invest_user = get_user_by('id', $item['user']);
-				$wdg_invest_user = new WDGUser($item['user']);
 				if (!isset($buffer['investors_list'][$item['user']])) {
 					$buffer['count_validate_investors']++;
 					$buffer['investors_list'][$item['user']] = $item['user'];
-					if ($wdg_invest_user->get_gender() != "") {
-						$age = $wdg_invest_user->get_age();
+					$WDGUser = FALSE;
+					if ( empty( $item['item'] ) ) {
+						$WDGUser = new WDGUser( $item['user'] );
+					}
+					$gender = empty( $item['item'] ) ? $WDGUser->get_gender() : $item['item']->gender;
+					if ($gender != "") {
+						$age = empty( $item['item'] ) ? $WDGUser->get_age() : $item['item']->age;
 						if ($age < 200) {
 							$buffer['count_age'] += $age;
 							$buffer['count_average_age'] ++;
 						}
 					}
-					if ($wdg_invest_user->get_gender() == "female") $buffer['count_female']++;
+					if ($gender == "female") $buffer['count_female']++;
 					if ($buffer['investors_string'] != '') $buffer['investors_string'] .= ', ';
-					$buffer['investors_string'] .= $wdg_invest_user->get_display_name();
+					$buffer['investors_string'] .= empty( $item['item'] ) ? $WDGUser->get_display_name() : $item['item']->firstname. ' ' .substr( $item['item']->lastname, 0, 1 ). '.';;
 				}
 				$buffer['count_invest'] += $item['amount'];
 				$buffer['amounts_array'][] = $item['amount'];

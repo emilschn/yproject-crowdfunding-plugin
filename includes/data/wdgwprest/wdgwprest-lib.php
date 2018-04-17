@@ -18,8 +18,6 @@ class WDGWPRESTLib {
  * Appels génériques en GET
  ******************************************************************************/
 	private static function call_get( $route ) {
-		ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
-		
 		if ( !isset( self::$cache_by_route ) ) {
 			self::$cache_by_route = array();
 		}
@@ -28,26 +26,41 @@ class WDGWPRESTLib {
 			$result = self::$cache_by_route[ $route ];
 			
 		} else {
-			$login_pwd = YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD;
-			$WDGUser_current = WDGUser::current();
-			if ( $WDGUser_current->has_access_to_api() ) {
-				$login_pwd = $WDGUser_current->get_api_login() . ':' . $WDGUser_current->get_api_password();
-			}
+			$db_cacher = WDG_Cache_Plugin::current();
+			$cache_id = 'API::' .$route;
+			$cache_version = 1;
+			$result_cached = $db_cacher->get_cache( $cache_id, $cache_version );
+			$result = unserialize($result_cached);
+			
+			if ( empty( $result ) ) {
+				ypcf_debug_log( 'WDGWPRESTLib::call_get -- $route : ' . $route );
 
-			$headers = array( "Authorization" => "Basic " . base64_encode( $login_pwd ) );
-			$result = wp_remote_get(
-				YP_WDGWPREST_URL . $route,
-				array( 
-					'headers' => $headers,
-					'timeout' => WDGWPRESTLib::$http_request_timeout
-				)
-			);
+				$login_pwd = YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD;
+				$WDGUser_current = WDGUser::current();
+				if ( $WDGUser_current->has_access_to_api() ) {
+					$login_pwd = $WDGUser_current->get_api_login() . ':' . $WDGUser_current->get_api_password();
+				}
 
-			if ( !is_wp_error($result) && isset( $result['response'] ) ) {
-				ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[response] : ' . print_r( $result['response'], TRUE ) );
-			}
-			if ( !is_wp_error($result) && isset( $result['body'] ) ) {
-				ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[body] : ' . print_r( $result['body'], TRUE ) );
+				$headers = array( "Authorization" => "Basic " . base64_encode( $login_pwd ) );
+				$result = wp_remote_get(
+					YP_WDGWPREST_URL . $route,
+					array( 
+						'headers' => $headers,
+						'timeout' => WDGWPRESTLib::$http_request_timeout
+					)
+				);
+
+				if ( !is_wp_error($result) && isset( $result['response'] ) ) {
+					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[response] : ' . print_r( $result['response'], TRUE ) );
+				}
+				if ( !is_wp_error($result) && isset( $result['body'] ) ) {
+					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[body] : ' . print_r( $result['body'], TRUE ) );
+				}
+				
+				$result_save = serialize( $result );
+				if ( !empty( $result_save ) ) {
+					$db_cacher->set_cache( $cache_id, $result_save, 60*2, $cache_version );
+				}
 			}
 			
 			self::$cache_by_route[ $route ] = $result;
@@ -92,6 +105,8 @@ class WDGWPRESTLib {
 		if ( isset( self::$cache_by_route[ $route ] ) ) {
 			unset( self::$cache_by_route[ $route ] );
 		}
+		$db_cacher = WDG_Cache_Plugin::current();
+		$db_cacher->delete_cache( array( 'API::' .$route ) );
 		
 		$buffer = FALSE;
 		if ( !is_wp_error($result) && isset( $result["response"] ) && isset( $result["response"]["code"] ) && $result["response"]["code"] == "200" ) {
@@ -111,6 +126,15 @@ class WDGWPRESTLib {
 	
 	public static function call_post_external( $route, $parameters ) {
 		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_external . $route, $parameters );
+	}
+	
+	public static function unset_cache( $route ) {
+		ypcf_debug_log('unset_cache > ' . print_r( self::$cache_by_route, true ) );
+		if ( isset( self::$cache_by_route[ $route ] ) ) {
+			unset( self::$cache_by_route[ $route ] );
+		}
+		$db_cacher = WDG_Cache_Plugin::current();
+		$db_cacher->delete_cache( array( 'API::' .$route ) );
 	}
 	
 /*******************************************************************************

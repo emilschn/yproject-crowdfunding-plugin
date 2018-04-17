@@ -16,7 +16,10 @@ class WDGWPREST_Entity_Project {
 	 * @return object
 	 */
 	public static function get( $id ) {
-		return WDGWPRESTLib::call_get_wdg( 'project/' . $id );
+		if ( empty( $id ) ) {
+			return FALSE;
+		}
+		return WDGWPRESTLib::call_get_wdg( 'project/' .$id. '?with_investments=1' );
 	}
 	
 	/**
@@ -41,11 +44,13 @@ class WDGWPREST_Entity_Project {
 		$estimated_turnover = $campaign->estimated_turnover();
 		$estimated_turnover_param = json_encode( $estimated_turnover );
 		$can_go_next_str = $campaign->can_go_next_status() ? 1 : 0;
+		$dt_first_payment_date = new DateTime( $campaign->first_payment_date() );
+		$first_payment_date = $dt_first_payment_date->format( 'Y-m-d' );
 		
 		$parameters = array(
 			'wpref'				=> $campaign->ID,
 			'name'				=> $campaign->data->post_title,
-			'url'				=> $campaign->data->post_name,
+			'url'				=> $campaign->get_url(),
 			'status'			=> $campaign->campaign_status(),
 			'description'		=> $campaign->backoffice_summary(),
 			'can_go_next'		=> $can_go_next_str,
@@ -63,9 +68,9 @@ class WDGWPREST_Entity_Project {
 			'goal_maximum'			=> $campaign->goal( FALSE ),
 			'yield_for_investors'	=> '1', //TODO
 			'maximum_profit'		=> $campaign->maximum_profit(),
-			'minimum_profit'		=> '1', //TODO
+			'minimum_profit'		=> $campaign->minimum_profit(),
 			'contract_start_date'	=> $campaign->contract_start_date(),
-			'declarations_start_date'	=> $campaign->first_payment_date(),
+			'declarations_start_date'	=> $first_payment_date,
 			'spendings_description'	=> $campaign->contract_spendings_description(),
 			'earnings_description'	=> $campaign->contract_earnings_description(),
 			'simple_info'			=> $campaign->contract_simple_info(),
@@ -82,7 +87,9 @@ class WDGWPREST_Entity_Project {
 			'costs_to_organization'		=> $campaign->get_costs_to_organization(),
 			'costs_to_investors'		=> $campaign->get_costs_to_investors(),
 			'turnover_per_declaration'	=> $campaign->get_turnover_per_declaration(),
-			'team_contacts'			=> ''
+			'team_contacts'			=> $campaign->team_contacts(),
+			'employees_number'		=> $campaign->get_api_data( 'employees_number' ),
+			'minimum_goal_display'	=> $campaign->get_minimum_goal_display()
 		);
 		return $parameters;
 	}
@@ -93,9 +100,14 @@ class WDGWPREST_Entity_Project {
 	 * @return object
 	 */
 	public static function create( ATCF_Campaign $campaign ) {
-		$parameters = WDGWPREST_Entity_Project::set_post_parameters( $campaign );
 		$date = new DateTime("NOW");
-		$parameters['creation_date'] = $date->format('Y') .'-'. $date->format('m') .'-'. $date->format('d');
+		
+		$parameters = array(
+			'wpref'				=> $campaign->ID,
+			'name'				=> $campaign->data->post_title,
+			'url'				=> $campaign->data->post_name,
+			'creation_date'		=> $date->format('Y-m-d')
+		);
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'project', $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
@@ -115,6 +127,7 @@ class WDGWPREST_Entity_Project {
 			$parameters = WDGWPREST_Entity_Project::set_post_parameters( $campaign );
 
 			$buffer = WDGWPRESTLib::call_post_wdg( 'project/' . $campaign->get_api_id(), $parameters );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$campaign->get_api_id(). '?with_investments=1' );
 			if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
 		}
 		return $buffer;

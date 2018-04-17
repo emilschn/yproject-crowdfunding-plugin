@@ -21,41 +21,45 @@ class WDGCronActions {
 					if ( $date_due > $current_date ) {
 						$nb_days_diff = $date_due->diff( $current_date )->days;
 						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
-						$organization = $campaign->get_organization();
-						$wdgorganization = new WDGOrganization( $organization->id );
-						$wdguser_author = new WDGUser( $campaign->data->post_author );
-						
-						// Données qui seront transmises à SiB
-						$date_due_previous_day = new DateTime( $declaration_data->date_due );
-						$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
-						$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
-						$nb_fields = $campaign->get_turnover_per_declaration();
-						$date_last_months =  new DateTime( $declaration_data->date_due );
-						$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
-						$last_months_str = '';
-						for ( $i = 0; $i < $nb_fields; $i++ ) {
-							$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
-							if ( $i < $nb_fields - 2 ) {
-								$last_months_str .= ', ';
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+							
+							$organization = $campaign->get_organization();
+							$wdgorganization = new WDGOrganization( $organization->id );
+							$wdguser_author = new WDGUser( $campaign->data->post_author );
+
+							// Données qui seront transmises à SiB
+							$date_due_previous_day = new DateTime( $declaration_data->date_due );
+							$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
+							$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+							$nb_fields = $campaign->get_turnover_per_declaration();
+							$date_last_months =  new DateTime( $declaration_data->date_due );
+							$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
+							$last_months_str = '';
+							for ( $i = 0; $i < $nb_fields; $i++ ) {
+								$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
+								if ( $i < $nb_fields - 2 ) {
+									$last_months_str .= ', ';
+								}
+								if ( $i == $nb_fields - 2 ) {
+									$last_months_str .= ' et ';
+								}
+								$date_last_months->add( new DateInterval( 'P1M' ) );
 							}
-							if ( $i == $nb_fields - 2 ) {
-								$last_months_str .= ' et ';
+							$year = $date_due->format( 'Y' );
+							if ( $date_due->format( 'n' ) < 4 ) {
+								$year--;
 							}
-							$date_last_months->add( new DateInterval( 'P1M' ) );
+							$last_months_str .= ' ' . $year;
+							$options = array(
+								'NOM'					=> $wdguser_author->get_firstname(),
+								'TROIS_DERNIERS_MOIS'	=> $last_months_str,
+								'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
+								'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
+							);
+
+							NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+							
 						}
-						$year = $date_due->format( 'Y' );
-						if ( $date_due->format( 'n' ) < 4 ) {
-							$year--;
-						}
-						$last_months_str .= ' ' . $year;
-						$options = array(
-							'NOM'					=> $wdguser_author->get_firstname(),
-							'TROIS_DERNIERS_MOIS'	=> $last_months_str,
-							'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
-							'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
-						);
-						
-						NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
 					}
 				}
 

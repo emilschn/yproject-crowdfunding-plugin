@@ -117,6 +117,19 @@ class WDGUser {
 	}
 	
 	/**
+	 * Retourne un utilisateurs en découpant l'id de l'API
+	 * @param int $api_id
+	 */
+	public static function get_by_api_id( $api_id ) {
+		$buffer = FALSE;
+		if ( !empty( $api_id ) ) {
+			$api_data = WDGWPREST_Entity_User::get( $api_id );
+			$buffer = new WDGUser( $api_data->wpref );
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne un utilisateurs en découpant l'id transmis par LW
 	 * @param int $lemonway_id
 	 */
@@ -149,18 +162,22 @@ class WDGUser {
 	 * Retourne l'id au sein de l'API
 	 * @return int
 	 */
+	private $api_id;
 	public function get_api_id() {
-		if ( $this->get_wpref() == '' ) {
-			return FALSE;
+		if ( !isset( $this->api_id ) ) {
+			if ( $this->get_wpref() == '' ) {
+				return FALSE;
+			}
+			
+			$this->api_id = get_user_meta( $this->get_wpref(), WDGUser::$key_api_id, TRUE );
+			if ( empty( $this->api_id ) ) {
+				$user_create_result = WDGWPREST_Entity_User::create( $this );
+				$this->api_id = $user_create_result->id;
+				ypcf_debug_log('WDGUser::get_api_id > ' . $this->api_id);
+				update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $this->api_id );
+			}
 		}
-		$api_user_id = get_user_meta( $this->get_wpref(), WDGUser::$key_api_id, TRUE );
-		if ( empty($api_user_id) ) {
-			$user_create_result = WDGWPREST_Entity_User::create( $this );
-			$api_user_id = $user_create_result->id;
-			ypcf_debug_log('WDGUser::get_api_id > ' . $api_user_id);
-			update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $api_user_id );
-		}
-		return $api_user_id;
+		return $this->api_id;
 	}
 	
 	/**
@@ -216,7 +233,7 @@ class WDGUser {
 	
 	public function get_email() {
 		$buffer = $this->email;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->user_email;
 		}
 		return $buffer;
@@ -224,7 +241,7 @@ class WDGUser {
 	
 	public function get_gender() {
 		$buffer = $this->gender;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_gender');
 		}
 		return $buffer;
@@ -232,7 +249,7 @@ class WDGUser {
 	
 	public function get_firstname() {
 		$buffer = $this->first_name;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->first_name;
 		}
 		return $buffer;
@@ -240,7 +257,7 @@ class WDGUser {
 	
 	public function get_lastname() {
 		$buffer = $this->last_name;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->last_name;
 		}
 		return $buffer;
@@ -263,7 +280,7 @@ class WDGUser {
 	 */
 	public function get_nationality( $format = '' ) {
 		$buffer = $this->nationality;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_nationality');
 		}
 		
@@ -279,7 +296,7 @@ class WDGUser {
 	
 	public function get_address() {
 		$buffer = $this->address;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_address');
 		}
 		return $buffer;
@@ -287,7 +304,7 @@ class WDGUser {
 	
 	public function get_postal_code( $complete_french = false ) {
 		$buffer = $this->postalcode;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_postal_code');
 		}
 		
@@ -299,7 +316,7 @@ class WDGUser {
 	
 	public function get_city() {
 		$buffer = $this->city;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_city');
 		}
 		return $buffer;
@@ -307,28 +324,33 @@ class WDGUser {
 	
 	public function get_country( $format = '' ) {
 		$buffer = $this->country;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_country');
 		}
 		
-		if ( !empty( $format ) && $format == 'iso3' ) {
+		if ( !empty( $format ) ) {
 			// Le pays est saisi, il faut tenter de le convertir
 			global $country_list, $country_list_iso2_to_iso3;
 			// D'abord, on le met en majuscule
 			$upper_country = strtoupper( $buffer );
 			// On le cherche en iso2
 			$iso2_key = array_search( $upper_country, $country_list );
-			// On le transforme en iso3
-			if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
-				$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
+			if ( $format == 'iso3' ) {
+				// On le transforme en iso3
+				if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
+					$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
+				}
+			} else if ( $format == 'iso2' ) {
+				$buffer = $iso2_key;
 			}
 		}
+		
 		return $buffer;
 	}
 	
 	public function get_phone_number( $formatted = FALSE ) {
 		$buffer = $this->phone_number;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_mobile_phone');
 		}
 
@@ -358,7 +380,7 @@ class WDGUser {
 	}
 	public function get_birthday_date() {
 		$buffer = $this->birthday_date;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->get_local_formatted_birthday_date();
 		}
 		return $buffer;
@@ -384,7 +406,7 @@ class WDGUser {
 	
 	public function get_description() {
 		$buffer = $this->description;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('description');
 		}
 		return $buffer;
@@ -392,7 +414,7 @@ class WDGUser {
 	
 	public function get_birthplace() {
 		$buffer = $this->birthday_city;
-		if ( empty( $buffer ) || $buffer = '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_birthplace');
 		}
 		return $buffer;
@@ -643,18 +665,27 @@ class WDGUser {
 	 * Détermine l'age de l'utilisateur
 	 * @return int
 	 */
-	public function get_age() {
+	public function get_age( $ref_date = FALSE ) {
 		$day = $this->get_birthday_day();
 		$month = $this->get_birthday_month();
 		$year = $this->get_birthday_year();
 		if ( !empty( $day ) && !empty( $month ) && !empty( $year ) ) {
-			$today_day = date('j');
-			$today_month = date('n');
-			$today_year = date('Y');
-			$years_diff = $today_year - $year;
-			if ($today_month <= $month) {
-				if ($month == $today_month) {
-					if ($day > $today_day) $years_diff--;
+			if ( !empty( $ref_date ) ) {
+				$ref_datetime = new DateTime( $ref_date );
+				$ref_day = $ref_datetime->format( 'j' );
+				$ref_month = $ref_datetime->format( 'n' );
+				$ref_year = $ref_datetime->format( 'Y' );
+			} else {
+				$ref_day = date('j');
+				$ref_month = date('n');
+				$ref_year = date('Y');
+			}
+			$years_diff = $ref_year - $year;
+			if ( $ref_month <= $month ) {
+				if ( $month == $ref_month ) {
+					if ( $day > $ref_day ) {
+						$years_diff--;
+					}
 				} else {
 					$years_diff--;
 				}
@@ -1610,9 +1641,13 @@ class WDGUser {
 			
 			//Sinon, on récupère simplement la page en cours
 			} else {
-				if (isset($post->ID)) {
+				if ( isset( $post->ID ) ) {
 					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
-					$buffer = get_permalink($post->ID);
+					$buffer = get_permalink( $post->ID );
+					$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
+					if ( !empty( $input_get_campaign_id ) ) {
+						$buffer .= '?campaign_id=' . $input_get_campaign_id;
+					}
 				}
 			}
 		}

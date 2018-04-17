@@ -844,6 +844,21 @@ class NotificationsEmails {
 
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
     }
+	
+    public static function campaign_sign_mandate_admin( $orga_id ) {
+		ypcf_debug_log( 'NotificationsEmails::campaign_sign_mandate > ' .$orga_id );
+		
+		$admin_email = get_option('admin_email');
+		$WDGOrganization = new WDGOrganization( $orga_id );
+		
+		$object = "Signature de mandat de prélèvement";
+		$body_content = "Salut !!<br>";
+		$body_content .= "Une organisation a signé son mandat de prélèvement :<br>";
+		$body_content .= "Il s'agit de l'organisation " .$WDGOrganization->get_name(). ".<br>";
+		$body_content .= "WOUHOU !";
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
+    }
     //*******************************************************
     // FIN NOTIFICATIONS STATUT
     //*******************************************************

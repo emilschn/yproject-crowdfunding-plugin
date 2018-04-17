@@ -16,7 +16,7 @@ class WDGWPREST_Entity_User {
 		if ( empty( $id ) ) {
 			return FALSE;
 		}
-		return WDGWPRESTLib::call_get_wdg( 'user/' . $id );
+		return WDGWPRESTLib::call_get_wdg( 'user/' .$id. '?with_links=1' );
 	}
 	
 	/**
@@ -109,6 +109,7 @@ class WDGWPREST_Entity_User {
 		$parameters = WDGWPREST_Entity_User::set_post_parameters( $user );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'user/' . $user->get_api_id(), $parameters );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user->get_api_id(). '?with_links=1' );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
@@ -119,8 +120,8 @@ class WDGWPREST_Entity_User {
 	 * @return array
 	 */
 	public static function get_organizations( $user_id ) {
-		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/organizations' );
-		return $result_obj;
+		$result_get = WDGWPREST_Entity_User::get( $user_id );
+		return $result_get->organizations;
 	}
 	
 	/**
@@ -148,8 +149,8 @@ class WDGWPREST_Entity_User {
 	 * @return array
 	 */
 	public static function get_projects( $user_id ) {
-		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/projects' );
-		return $result_obj;
+		$result_get = WDGWPREST_Entity_User::get( $user_id );
+		return $result_get->projects;
 	}
 	
 	/**

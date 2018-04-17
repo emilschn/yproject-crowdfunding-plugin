@@ -911,4 +911,23 @@ class WDGInvestment {
 
 		}
 	}
+	
+	/**
+	 * A ne faire qu'une fois par campagne : enregistre les investissements
+	 * @param ATCF_Campaign $campaign
+	 */
+	public static function save_campaign_to_api( $campaign ) {
+		if ( !empty( $campaign->ID ) ) {
+			$payments = edd_get_payments( array(
+				'number'	 => -1,
+				'download'   => $campaign->ID
+			) );
+
+			if ( $payments ) {
+				foreach ( $payments as $payment ) {
+					WDGWPREST_Entity_Investment::create( $campaign, $payment );
+				}
+			}
+		}
+	}
 }

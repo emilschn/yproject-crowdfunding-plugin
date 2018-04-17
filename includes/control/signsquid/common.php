@@ -343,13 +343,23 @@ class SignsquidContract {
 	}
 	
 	/**
+	 * Retourne un statut lisible en fonction d'un code transmis
+	 * @param type $code
+	 * @return type
+	 */
+	public static function get_status_str_by_code( $code ) {
+		$buffer = '- Pas de contrat -';
+		if ( isset( SignsquidContract::$status_str_array[ $code ] ) ) {
+			$buffer = SignsquidContract::$status_str_array[ $code ];
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Initialisation de la chaine lisible pour le statut du contrat
 	 */
 	public function update_status_str() {
-		$this->status_str = '- Pas de contrat -';
-		if (isset(SignsquidContract::$status_str_array[$this->status_code])) {
-			$this->status_str = SignsquidContract::$status_str_array[$this->status_code];
-		}
+		$this->status_str = SignsquidContract::get_status_str_by_code( $this->status_code );
 	}
 	
 	/**

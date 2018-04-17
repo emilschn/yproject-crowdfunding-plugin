@@ -66,20 +66,36 @@ function atcf_log_type_preapproval( $types ) {
 add_filter( 'edd_log_types', 'atcf_log_type_preapproval' );
 
 
-function ypcf_debug_log($debug_str) {
+function ypcf_debug_log( $debug_str, $only_loggedin = FALSE ) {
     global $disable_logs;
-    if ($disable_logs !== TRUE) {
-		$filename = dirname ( __FILE__ ) . '/../logs/the_logs_'.date("m.d.Y").'.txt';
-		$file_handle = fopen($filename, 'a');
-		date_default_timezone_set("Europe/Paris");
+    if ( $disable_logs !== TRUE ) {
+		$filename = dirname ( __FILE__ ) . '/../logs/the_logs_'.date( 'm.d.Y' ).'.txt';
+		date_default_timezone_set( "Europe/Paris" );
 		$current_user_str = 'UNLOGGED';
-		if (is_user_logged_in()) {
+		if ( is_user_logged_in() ) {
 			global $current_user;
 			$current_user_str = $current_user->ID .'::'. $current_user->user_nicename;
 		}
 		$current_user_str .= '::'. $_SERVER[ 'REMOTE_ADDR' ];
-		fwrite($file_handle, date("m.d.Y H:i:s") . " [".$current_user_str."] (".$_SERVER['REQUEST_URI']."?".$_SERVER['QUERY_STRING'].")\n");
-		fwrite($file_handle, " -> " . $debug_str . "\n\n");
-		fclose($file_handle);
+		$first_line = date( 'H:i:s' ) . " [".$current_user_str."] (".$_SERVER['REQUEST_URI']."?".$_SERVER['QUERY_STRING'].")\n";
+		if ( !$only_loggedin ) {
+			$file_handle = fopen( $filename, 'a' );
+			fwrite( $file_handle, $first_line );
+			fwrite( $file_handle, " -> " . $debug_str . "\n\n" );
+			fclose( $file_handle);
+		}
+		
+		// Log dans un dossier par date, dans un fichier par utilisateur (si connecté)
+		if ( is_user_logged_in() ) {
+			$date_log_dir = dirname ( __FILE__ ) . '/../logs/' .date("Y-m-d"). '/';
+			if ( !is_dir( $date_log_dir ) ) {
+				mkdir( $date_log_dir, 0777, true );
+			}
+			$filename = $date_log_dir. 'the_logs_'.$current_user->ID.'.txt';
+			$file_handle = fopen( $filename, 'a' );
+			fwrite( $file_handle, $first_line );
+			fwrite( $file_handle, " -> " . $debug_str . "\n\n" );
+			fclose( $file_handle);
+		}
     }
 }

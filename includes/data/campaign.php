@@ -152,7 +152,7 @@ class ATCF_Campaign {
 	 * The percent of min goal required in invest promises during vote
 	 * @var int
 	 */
-	public static $vote_percent_invest_ready_min_required = 50;
+	public static $vote_percent_invest_ready_min_required = 100;
 
 	public static $campaign_status_preparing = 'preparing';
 	public static $campaign_status_validated = 'validated';
@@ -183,6 +183,18 @@ class ATCF_Campaign {
 		}
 		$this->data = get_post( $post );
 		$this->ID   = $this->data->ID;
+		$this->load_api_data();
+	}
+	
+	/**
+	 * Chargement des données dans l'API
+	 */
+	private function load_api_data() {
+		$api_id = $this->get_api_id();
+		if ( !isset( $this->api_data ) && !empty( $api_id ) ) {
+			$this->api_data = WDGWPREST_Entity_Project::get( $api_id );
+//			$this->update_from_api();
+		}
 	}
 
 	/**
@@ -205,16 +217,13 @@ class ATCF_Campaign {
 	
 	public function get_api_data( $data_name ) {
 		$buffer = FALSE;
-		if ( !isset( $this->api_data ) ) {
-			$this->api_data = WDGWPREST_Entity_Project::get( $this->get_api_id() );
-		}
-		if ( !empty( $data_name ) ) {
+		if ( !empty( $data_name ) && isset( $this->api_data->{$data_name} ) ) {
 			$buffer = $this->api_data->{$data_name};
 		}
 		return $buffer;
 	}
 	
-	public function set_api_data( $data_name, $data_value, $update = TRUE ) {
+	public function set_api_data( $data_name, $data_value, $update = FALSE ) {
 		$this->api_data->{$data_name} = $data_value;
 		if ( $update ) {
 			WDGWPREST_Entity_Project::update_data( $this->get_api_id(), $data_name, $data_value );
@@ -223,6 +232,48 @@ class ATCF_Campaign {
 	
 	public function update_api() {
 		WDGWPREST_Entity_Project::update( $this );
+	}
+	
+	/**
+	 * Mise à jour des données WP en fonction des données présentes sur l'API
+	 */
+	private function update_from_api() {
+		/*// Mise à jour du titre du post
+		$api_data_name = $this->get_api_data( 'name' );
+		if ( !empty( $api_data_name ) && $api_data_name != $this->data->post_title ) {
+			wp_update_post(array(
+				'ID'			=> $this->ID,
+				'post_title'	=> $api_data_name
+			));
+		}
+		
+		// Mise à jour de l'url du post
+		$api_data_url = $this->get_api_data( 'url' );
+		if ( !empty( $api_data_url ) && $api_data_url != $this->data->post_name ) {
+			$posts = get_posts( array(
+				'name'		=> $api_data_url,
+				'post_type' => array( 'post', 'page', 'download' )
+			) );
+			if ( $posts ) {
+				wp_update_post(array(
+					'ID'		=> $this->ID,
+					'post_name'	=> $api_data_url
+				));
+			}
+		}*/
+		
+		// Liaison aux catégories
+		/*$api_data_type = json_decode( $this->get_api_data( 'type' ) );
+		$api_data_category = json_decode( $this->get_api_data( 'category' ) );
+		$api_data_impacts = json_decode( $this->get_api_data( 'impacts' ) );
+		$api_data_partners = json_decode( $this->get_api_data( 'partners' ) );
+		$api_data_tousnosprojets = json_decode( $this->get_api_data( 'tousnosprojets' ) );
+		$cat_ids = array_merge( $api_data_type, $api_data_category, $api_data_impacts, $api_data_partners, $api_data_tousnosprojets );
+		$cat_ids = array_map( 'intval', $cat_ids );
+		if ( !empty( $cat_ids ) ) { 
+			wp_set_object_terms( $this->ID, $cat_ids, 'download_category' );
+		}
+		 */
 	}
 	
 	/**
@@ -247,19 +298,22 @@ class ATCF_Campaign {
 	 * Liaison API
 	 */
 	public static $key_api_id = 'id_api';
+	private $api_id;
 	public function get_api_id() {
-		$api_project_id = FALSE;
-		$is_campaign = ( get_post_meta( $this->data->ID, 'campaign_funding_type', TRUE ) != '' );
-		if ($is_campaign) {
-			$api_project_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
-			if ( empty($api_project_id) ) {
-				$api_project_return = WDGWPREST_Entity_Project::create( $this );
-				$api_project_id = $api_project_return->id;
-				ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $api_project_id);
-				update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $api_project_id );
+		if ( !isset( $this->api_id ) ) {
+			$this->api_id = FALSE;
+			$is_campaign = ( get_post_meta( $this->data->ID, 'campaign_funding_type', TRUE ) != '' );
+			if ($is_campaign) {
+				$this->api_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
+				if ( empty( $this->api_id ) ) {
+					$api_project_return = WDGWPREST_Entity_Project::create( $this );
+					$this->api_id = $api_project_return->id;
+					ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $this->api_id);
+					update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $this->api_id );
+				}
 			}
 		}
-		return $api_project_id;
+		return $this->api_id;
 	}
 	
 	/**
@@ -378,6 +432,22 @@ class ATCF_Campaign {
 /*******************************************************************************
  * DONNEES
  ******************************************************************************/
+	public function get_name() {
+		$buffer = $this->get_api_data( 'name' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->data->post_title;
+		}
+		return $buffer;
+	}
+	
+	public function get_url() {
+		$buffer = $this->get_api_data( 'url' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->data->post_name;
+		}
+		return $buffer;
+	}
+	
 	//Rédaction projet
 	public function subtitle() {
 		return $this->__get_translated_property( 'campaign_subtitle' );
@@ -391,9 +461,54 @@ class ATCF_Campaign {
      */
     public static $key_backoffice_summary = 'campaign_backoffice_summary';
     public function backoffice_summary() {
-        return $this->__get(ATCF_Campaign::$key_backoffice_summary);
+		$buffer = $this->get_api_data( 'description' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_backoffice_summary );
+		}
+		return $buffer;
     }
+	
 
+	public function rewards() {
+		return $this->__get_translated_property( 'campaign_rewards' );
+	}
+	public function description() {
+		$description = $this->__get_translated_property( 'campaign_description' );
+		if ( empty( $description ) ) {
+			$description = $this->data->post_content;
+		}
+		return $description;
+	}
+	public function added_value() {
+		return $this->__get_translated_property( 'campaign_added_value' );
+	}
+	public function development_strategy() {
+		return $this->__get_translated_property( 'campaign_development_strategy' );
+	}
+	public function economic_model() {
+		return $this->__get_translated_property( 'campaign_economic_model' );
+	}
+	public function measuring_impact() {
+		return $this->__get_translated_property( 'campaign_measuring_impact' );
+	}
+	public function implementation() {
+		return $this->__get_translated_property( 'campaign_implementation' );
+	}
+	public function impact_area() {
+		return $this->__get_translated_property( 'campaign_impact_area' );
+	}
+	public function societal_challenge() {
+		return $this->__get_translated_property( 'campaign_societal_challenge' );
+	}
+	
+    public function team_contacts() {
+        return $this->get_api_data( 'team_contacts' );
+    }
+	
+	
+/*******************************************************************************
+ * FICHIERS
+ ******************************************************************************/
     /**
      * @return string Business plan filename
      */
@@ -401,43 +516,16 @@ class ATCF_Campaign {
     public function backoffice_businessplan() {
         return $this->__get(ATCF_Campaign::$key_backoffice_businessplan);
     }
-
-    /**
-     * @var string How did the author knew about WDG
-     */
-    public static $key_backoffice_WDG_notoriety = 'campaign_backoffice_WDG_notoriety';
-    public function backoffice_WDG_notoriety() {
-        return $this->__get(ATCF_Campaign::$key_backoffice_WDG_notoriety);
-    }
-
-	/****************
-	 * Données de contrat
-	 ****************/
-    // Contrat vierge pour les personnes physiques
-    public static $key_backoffice_contract_user = 'campaign_backoffice_contract_user';
-    public function backoffice_contract_user() {
-        return $this->__get(ATCF_Campaign::$key_backoffice_contract_user);
-    }
-	public function generate_contract_pdf_blank_user() {
-		$filename = 'blank-contract-user-'.$this->ID.'.pdf';
-		$filepath = __DIR__ . '/../contracts/' . $filename;
-		if ( file_exists( $filepath ) ) {
-			unlink( $filepath );
-		}
-		if ( getNewPdfToSign( $this->ID, FALSE, 'user', $filepath ) != FALSE ) {
-			$this->__set( ATCF_Campaign::$key_backoffice_contract_user, $filename );
-		}
-	}
+	
+	
+/*******************************************************************************
+ * CONTRATS
+ ******************************************************************************/
     // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
     }
-	
-    public static $key_backoffice_contract_modifications = 'campaign_contract_modifications';
-	public function contract_modifications() {
-        return $this->__get( ATCF_Campaign::$key_backoffice_contract_modifications );
-	}
 	public function generate_contract_pdf_blank_organization() {
 		$filename = 'blank-contract-organization-'.$this->ID.'.pdf';
 		$filepath = __DIR__ . '/../contracts/' . $filename;
@@ -448,22 +536,45 @@ class ATCF_Campaign {
 			$this->__set( ATCF_Campaign::$key_backoffice_contract_orga, $filename );
 		}
 	}
-	// Contrat : descriptions des revenus
+	
+    public static $key_backoffice_contract_modifications = 'campaign_contract_modifications';
+	public function contract_modifications() {
+        return $this->__get( ATCF_Campaign::$key_backoffice_contract_modifications );
+	}
+	
+	// Contrat : descriptions des revenus, des dépenses
     public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
 	public function contract_earnings_description() {
-        return $this->__get( ATCF_Campaign::$key_contract_earnings_description );
+		$buffer = $this->get_api_data( 'earnings_description' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_contract_earnings_description );
+		}
+		return $buffer;
 	}
     public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
 	public function contract_spendings_description() {
-        return $this->__get( ATCF_Campaign::$key_contract_spendings_description );
+		$buffer = $this->get_api_data( 'spendings_description' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_contract_spendings_description );
+		}
+		return $buffer;
 	}
+	// Contrat : informations simples et détaillées
     public static $key_contract_simple_info = 'campaign_contract_simple_info';
 	public function contract_simple_info() {
-        return $this->__get( ATCF_Campaign::$key_contract_simple_info );
+		$buffer = $this->get_api_data( 'simple_info' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_contract_simple_info );
+		}
+		return $buffer;
 	}
     public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
 	public function contract_detailed_info() {
-        return $this->__get( ATCF_Campaign::$key_contract_detailed_info );
+		$buffer = $this->get_api_data( 'detailed_info' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_contract_detailed_info );
+		}
+		return $buffer;
 	}
 	// Contrat : prime et garantie
     public static $key_contract_premium = 'campaign_contract_premium';
@@ -521,42 +632,6 @@ class ATCF_Campaign {
     public function override_contract() {
         return $this->__get( ATCF_Campaign::$key_override_contract );
     }
-	/****************
-	 * FIN - Données de contrat
-	 ****************/
-	
-
-	public function rewards() {
-		return $this->__get_translated_property( 'campaign_rewards' );
-	}
-	public function description() {
-		$description = $this->__get_translated_property( 'campaign_description' );
-		if ( empty( $description ) ) {
-			$description = $this->data->post_content;
-		}
-		return $description;
-	}
-	public function added_value() {
-		return $this->__get_translated_property( 'campaign_added_value' );
-	}
-	public function development_strategy() {
-		return $this->__get_translated_property( 'campaign_development_strategy' );
-	}
-	public function economic_model() {
-		return $this->__get_translated_property( 'campaign_economic_model' );
-	}
-	public function measuring_impact() {
-		return $this->__get_translated_property( 'campaign_measuring_impact' );
-	}
-	public function implementation() {
-		return $this->__get_translated_property( 'campaign_implementation' );
-	}
-	public function impact_area() {
-		return $this->__get_translated_property( 'campaign_impact_area' );
-	}
-	public function societal_challenge() {
-		return $this->__get_translated_property( 'campaign_societal_challenge' );
-	}
 	
 	//Ajouts contrat
 	public function contract_title() {
@@ -612,11 +687,19 @@ class ATCF_Campaign {
 	);
 	public static $key_maximum_profit = 'maximum_profit';
 	public function maximum_profit() {
-	    $buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
+		$buffer = $this->get_api_data( 'maximum_profit' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
+		}
+		
 		if ( empty($buffer) ) {
 			$buffer = 2;
 		}
 		return $buffer;
+	}
+	
+	public function minimum_profit() {
+		return $this->get_api_data( 'minimum_profit' );
 	}
 	
 	public static $key_minimum_goal_display = 'minimum_goal_display';
@@ -657,7 +740,7 @@ class ATCF_Campaign {
 			return;
 		}
 		$edd_settings = get_option( 'edd_settings' );
-		$fiscal_info = apply_filters( 'the_content', $edd_settings[ 'accounting_fiscal_info' ] );
+		$fiscal_info = $edd_settings[ 'accounting_fiscal_info' ];
 		if ( empty( $fiscal_info ) ) {
 			return;
 		}
@@ -669,8 +752,13 @@ class ATCF_Campaign {
 		$project_investors_list = array();
 		$investments_list = $this->payments_data( TRUE );
 		foreach ( $investments_list as $investment_item ) {
-			$user_data = get_userdata($investment_item['user']);
-			array_push( $project_investors_list, array( "firstname" => $user_data->first_name, "lastname" => $user_data->last_name, "amount" => $investment_item['amount'] ) );
+			if ( !empty( $investment_item['item'] ) ) {
+				array_push( $project_investors_list, array( "firstname" => $investment_item['item']->firstname, "lastname" => $investment_item['item']->lastname, "amount" => $investment_item['amount'] ) );
+				
+			} else {
+				$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
+				array_push( $project_investors_list, array( "firstname" => $WDGUserPayment->get_firstname(), "lastname" => $WDGUserPayment->get_lastname(), "amount" => $investment_item['amount'] ) );
+			}
 		}
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
@@ -736,7 +824,10 @@ class ATCF_Campaign {
 	);
     public static $key_funding_duration = 'campaign_funding_duration';
     public function funding_duration() {
-		$buffer = $this->__get( ATCF_Campaign::$key_funding_duration );
+		$buffer = $this->get_api_data( 'funding_duration' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_funding_duration );
+		}
 		if ( empty( $buffer ) && $buffer != 0 ) {
 			$buffer = 5;
 		}
@@ -752,8 +843,11 @@ class ATCF_Campaign {
 
     public static $key_roi_percent_estimated = 'campaign_roi_percent_estimated';
 	public function roi_percent_estimated() {
-	    $buffer = $this->__get(ATCF_Campaign::$key_roi_percent_estimated);
-		if (empty($buffer)) {
+		$buffer = $this->get_api_data( 'roi_percent_estimated' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_roi_percent_estimated );
+		}
+		if ( empty( $buffer ) ) {
 			$buffer = $this->roi_percent();
 		}
 		return $buffer;
@@ -769,7 +863,11 @@ class ATCF_Campaign {
 
     public static $key_contract_start_date = 'campaign_contract_start_date';
 	public function contract_start_date() {
-	    return $this->__get(ATCF_Campaign::$key_contract_start_date);
+		$buffer = $this->get_api_data( 'contract_start_date' );
+		if ( empty( $buffer ) || $buffer == '0000-00-00' ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_contract_start_date );
+		}
+	    return $buffer;
 	}
 
     public static $key_first_payment_date = 'campaign_first_payment_date';
@@ -780,8 +878,11 @@ class ATCF_Campaign {
 	// Frais appliqués au porteur de projet
 	public static $key_costs_to_organization = 'costs_to_organization';
 	public function get_costs_to_organization() {
-		$buffer = $this->__get( ATCF_Campaign::$key_costs_to_organization );
-		if (empty($buffer)) {
+		$buffer = $this->get_api_data( 'costs_to_organization' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_costs_to_organization );
+		}
+		if ( empty( $buffer ) ) {
 			$buffer = 0;
 		}
 		return $buffer;
@@ -789,8 +890,11 @@ class ATCF_Campaign {
 	// Frais appliqués aux investisseurs
 	public static $key_costs_to_investors = 'costs_to_investors';
 	public function get_costs_to_investors() {
-		$buffer = $this->__get( ATCF_Campaign::$key_costs_to_investors );
-		if (empty($buffer)) {
+		$buffer = $this->get_api_data( 'costs_to_investors' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_costs_to_investors );
+		}
+		if ( empty( $buffer ) ) {
 			$buffer = 0;
 		}
 		return $buffer;
@@ -799,8 +903,11 @@ class ATCF_Campaign {
 	
 	public static $key_estimated_turnover_unit = 'campaign_estimated_turnover_unit';
 	public function estimated_turnover_unit() {
-		// Values : euro, percent
-	    $buffer = $this->__get( ATCF_Campaign::$key_estimated_turnover_unit );
+		$buffer = $this->get_api_data( 'estimated_turnover_unit' );
+		if ( empty( $buffer ) ) {
+			// Values : euro, percent
+			$buffer = $this->__get( ATCF_Campaign::$key_estimated_turnover_unit );
+		}
 		if ( empty( $buffer ) ) {
 			$buffer = 'euro';
 		}
@@ -808,13 +915,19 @@ class ATCF_Campaign {
 	}
 	public static $key_estimated_turnover = 'campaign_estimated_turnover';
 	public function estimated_turnover() {
-	    $buffer = $this->__get( ATCF_Campaign::$key_estimated_turnover );
+		$buffer = $this->get_api_data( 'estimated_turnover' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_estimated_turnover );
+		}
 	    return json_decode($buffer, TRUE);
 	}
 	public static $key_turnover_per_declaration = 'turnover_per_declaration';
 	public function get_turnover_per_declaration() {
-		$buffer = $this->__get( ATCF_Campaign::$key_turnover_per_declaration );
-		if (empty($buffer)) { $buffer = 3; }
+		$buffer = $this->get_api_data( 'turnover_per_declaration' );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_turnover_per_declaration );
+		}
+		if ( empty( $buffer ) ) { $buffer = 3; }
 		return $buffer;
 	}
 	
@@ -1110,18 +1223,64 @@ class ATCF_Campaign {
  * GESTION STATUTS
  ******************************************************************************/
 	/**
+	 * Returns the campaign current status
+	 * @return string Possible answers : see get_campaign_status_list()
+	 */
+	public static $key_campaign_status = 'campaign_vote';
+	private $status;
+	public function campaign_status() {
+		if ( empty( $this->status ) ) {
+			$this->status = $this->get_api_data( 'status' );
+			if ( empty( $this->status ) ) {
+				$this->status = $this->__get( ATCF_Campaign::$key_campaign_status );
+			}
+		}
+		return $this->status;
+	}
+	/**
+	 * Deprecated : use campaign_status instead
+	 */
+	public function vote() {
+		return $this->campaign_status();
+	}
+	
+	/**
+	 * Returns true the author is preparing the project
+	 */
+	public function is_preparing() {
+		$campaign_status = $this->campaign_status();
+		return ( $campaign_status == ATCF_Campaign::$campaign_status_preparing || $campaign_status == ATCF_Campaign::$campaign_status_validated );
+	}
+	
+	/**
+	 * Returns true if it is possible to invest on the project
+	 */
+	public function is_investable() {
+		// Possible d'investir si le porteur de projet a bien rempli ses informations et qu'il reste du temps (peu importe l'étape)
+		$buffer = ypcf_check_user_is_complete( $this->data->post_author ) && $this->is_remaining_time();
+		// Si en vote, il faut que l'utilisateur ait voté
+		$WDGUser_current = WDGUser::current();
+		$is_vote_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) && ( $WDGUser_current->has_voted_on_campaign( $this->ID ) );
+		// Si en collecte
+		$is_collecte_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte );
+		return $buffer && ( $is_vote_investable || $is_collecte_investable );
+	}
+	
+	/**
 	 * Indique si le porteur de projet est autorisé à passer à l'étape
 	 * suivante par la modération
 	 * @return boolean
 	 */
     public static $key_validation_next_status = 'campaign_validated_next_step';
-    public function can_go_next_status(){
-		$res = $this->__get(ATCF_Campaign::$key_validation_next_status);
-		if($res==1){
-			return true;
-		} else {
-			return false; //Y compris le cas où il n'y a pas de valeur
+	private $can_go_next;
+    public function can_go_next_status() {
+		if ( !isset( $this->can_go_next ) ) {
+			$this->can_go_next = $this->get_api_data( 'can_go_next' );
+			if ( empty( $this->can_go_next ) ) {
+				$this->can_go_next = $this->__get( ATCF_Campaign::$key_validation_next_status );
+			}
 		}
+		return ( $this->can_go_next == 1 );
 	}
 
     /**
@@ -1131,10 +1290,12 @@ class ATCF_Campaign {
      */
     public function set_validation_next_status($value){
         if($value === true || $value === "true" || $value===1){
+			$this->can_go_next = 1;
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 1);
         }
 
-        if($value === false || $value === "false" || $value===0){
+        if($value === false || $value === "false" || $value===0 || $value===''){
+			$this->can_go_next = 0;
             return update_post_meta($this->ID, ATCF_Campaign::$key_validation_next_status, 0);
         }
 
@@ -1161,6 +1322,7 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	
 	public function set_validation_step_status( $step, $status ) {
 		if ( !isset( $this->validation_steps ) ) {
 			$this->validation_steps = array();
@@ -1170,6 +1332,10 @@ class ATCF_Campaign {
 	}
 	
 
+	
+/*******************************************************************************
+ * AUTRES DONNEES
+ ******************************************************************************/
 	/**
 	 * Needs Shipping
 	 *
@@ -1197,7 +1363,10 @@ class ATCF_Campaign {
 	 */
     public static $key_goal = 'campaign_goal';
     public function goal( $formatted = true ) {
-		$goal = $this->__get( ATCF_Campaign::$key_goal );
+		$goal = $this->get_api_data( 'goal_maximum' );
+		if ( empty( $goal ) ) {
+			$goal = $this->__get( ATCF_Campaign::$key_goal );
+		}
 
 		if ( ! is_numeric( $goal ) )
 			return 0;
@@ -1217,7 +1386,10 @@ class ATCF_Campaign {
 	
 	public static $key_minimum_goal = 'campaign_minimum_goal';
 	public function minimum_goal($formatted = false) {
-	    $goal = $this->__get( ATCF_Campaign::$key_minimum_goal );
+		$goal = $this->get_api_data( 'goal_minimum' );
+		if ( empty( $goal ) ) {
+			$goal = $this->__get( ATCF_Campaign::$key_minimum_goal );
+		}
 	    if (strpos($goal, '.00') !== false) $goal = substr ($goal, 0, -3);
 	    if ( ! is_numeric( $goal ) && ($this->type() != 'flexible') )
 		    $goal = 0;
@@ -1391,8 +1563,12 @@ class ATCF_Campaign {
 	 * @return sting Campaign End Date
 	 */
     public static $key_end_collecte_date = 'campaign_end_date';
-	public function end_date($format = 'Y-m-d H:i:s') {
-		return mysql2date( $format, $this->__get( ATCF_Campaign::$key_end_collecte_date ), false );
+	public function end_date( $format = 'Y-m-d H:i:s' ) {
+		$end_datetime_str = $this->get_api_data( 'funding_end_datetime' );
+		if ( empty( $end_datetime_str ) || $end_datetime_str == '0000-00-00 00:00:00' ) {
+			$end_datetime_str = $this->__get( ATCF_Campaign::$key_end_collecte_date );
+		}
+		return mysql2date( $format, $end_datetime_str, false );
 	}
         
         /**
@@ -1414,6 +1590,7 @@ class ATCF_Campaign {
      */
     public static $key_end_vote_date = 'campaign_end_vote';
     public function set_end_vote_date($newDate){
+		$this->set_api_data( 'vote_end_datetime', date_format($newDate, 'Y-m-d H:i:s') );
 		$res = update_post_meta($this->ID, ATCF_Campaign::$key_end_vote_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
 	}
@@ -1424,6 +1601,7 @@ class ATCF_Campaign {
      * @return bool|int
      */
 	public function set_begin_collecte_date($newDate){
+		$this->set_api_data( 'funding_start_datetime', date_format($newDate, 'Y-m-d H:i:s') );
 		$res = update_post_meta($this->ID, ATCF_Campaign::$key_begin_collecte_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
 	}
@@ -1434,25 +1612,34 @@ class ATCF_Campaign {
      * @return bool|int
      */
 	public function set_end_date($newDate){
+		$this->set_api_data( 'funding_end_datetime', date_format($newDate, 'Y-m-d H:i:s') );
 		$res = update_post_meta($this->ID, ATCF_Campaign::$key_end_collecte_date, date_format($newDate, 'Y-m-d H:i:s'));
         return $res;
     }
+	
+	public function get_end_vote_str() {
+		$buffer = $this->get_api_data( 'vote_end_datetime' );
+		if ( empty( $buffer ) || $buffer == '0000-00-00 00:00:00' ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_end_vote_date );
+		}
+		return $buffer;
+	}
 
 	public function end_vote() {
-		return mysql2date( 'Y-m-d H:i:s', $this->__get( ATCF_Campaign::$key_end_vote_date ), false);
+		return mysql2date( 'Y-m-d H:i:s', $this->get_end_vote_str(), false);
 	}
 
 	public function end_vote_date() {
-		return mysql2date( 'Y-m-d H:i', $this->__get( ATCF_Campaign::$key_end_vote_date ), false);
+		return mysql2date( 'Y-m-d H:i', $this->get_end_vote_str(), false);
 	}
 	public function end_vote_date_home() {
 		setlocale(LC_TIME, array('fr_FR.UTF-8', 'fr_FR.UTF-8', 'fra'));
-		return strftime("%d %B", strtotime(mysql2date( 'm/d', $this->__get( ATCF_Campaign::$key_end_vote_date ), false)));
+		return strftime("%d %B", strtotime(mysql2date( 'm/d', $this->get_end_vote_str(), false)));
 	}
 	public function end_vote_remaining() {
 	    date_default_timezone_set('Europe/Paris');
 	    $dateJour = strtotime(date("d-m-Y H:i"));
-	    $fin = strtotime($this->__get( ATCF_Campaign::$key_end_vote_date ));
+	    $fin = strtotime( $this->get_end_vote_str() );
 	    $buffer = floor(($fin - $dateJour) / 60 / 60 / 24);
 	    $buffer = max(0, $buffer + 1);
 	    return $buffer;
@@ -1488,40 +1675,6 @@ class ATCF_Campaign {
 	 */
 	public function video() {
 		return $this->__get_translated_property( 'campaign_video' );
-	}
-
-	/**
-	 * Récupérer le statut du projet
-	 * @return string Possible answers : see get_campaign_status_list()
-	 */
-	public static $key_campaign_status = 'campaign_vote';
-	public function campaign_status() {
-		return $this->__get(ATCF_Campaign::$key_campaign_status);
-	}
-	/**
-	 * Deprecated : use campaign_status instead
-	 */
-	public function vote() {
-		return $this->campaign_status();
-	}
-	
-	public function is_preparing() {
-		$campaign_status = $this->campaign_status();
-		return ( $campaign_status == ATCF_Campaign::$campaign_status_preparing || $campaign_status == ATCF_Campaign::$campaign_status_validated );
-	}
-	
-	/**
-	 * Returns true if it is possible to invest on the project
-	 */
-	public function is_investable() {
-		// Possible d'investir si le porteur de projet a bien rempli ses informations et qu'il reste du temps (peu importe l'étape)
-		$buffer = ypcf_check_user_is_complete( $this->data->post_author ) && $this->is_remaining_time();
-		// Si en vote, il faut que l'utilisateur ait voté
-		$WDGUser_current = WDGUser::current();
-		$is_vote_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) && ( $WDGUser_current->has_voted_on_campaign( $this->ID ) );
-		// Si en collecte
-		$is_collecte_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte );
-		return $buffer && ( $is_vote_investable || $is_collecte_investable );
 	}
 	
 	/**
@@ -1712,6 +1865,7 @@ class ATCF_Campaign {
 					} else {
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );
 					}
+					$this->update_api();
 				}
 			} else {
 				$diff = $expires - $now;
@@ -2029,76 +2183,98 @@ class ATCF_Campaign {
 	 * This function is very slow, it is advisable to use it as few as possible
 	 * @return array
 	 */
+	private $payments_data;
 	public function payments_data($skip_apis = FALSE) {
-		global $WDG_cache_plugin;
-		if (!isset($WDG_cache_plugin)) { $WDG_cache_plugin = new WDG_Cache_Plugin(); }
-		$payments_data = array();
-
-		$payments = edd_get_payments( array(
-		    'number'	 => -1,
-		    'download'   => $this->ID
-		) );
-
+		if ( !isset( $this->payments_data ) ) {
 		
-//		$cache_stats = $WDG_cache_plugin->get_cache('project-investments-data-' . $this->ID, 2);
-//		if ($cache_stats === false) {
-			if ( $payments ) {
-				foreach ( $payments as $payment ) {
-					$user_info = edd_get_payment_meta_user_info( $payment->ID );
-					$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
-
-					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-
-					$investment_contract = new WDGInvestmentContract($payment->ID);
-					$investment_contract_status = $investment_contract->get_status_code();
-					$investment_contract_status_text = $investment_contract->get_status_str();
+			$this->payments_data = array();
+		
+			if ( !empty( $this->api_data->investments ) ) {
+				foreach ( $this->api_data->investments as $investment_item ) {
 					
-					$mangopay_contribution = FALSE;
-					$lemonway_contribution = FALSE;
-					if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-						$lemonway_id = edd_get_payment_key($payment->ID);
-						
-						if ( $lemonway_id == 'check' ) {
-
-						} else if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
-							
-
-						} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
-							$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
-							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
-							
-						} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
-							
-						} else {
-							$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
-						}
-					}
-
-					$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
-
-					if ($payment_status != 'failed') {
-						$payments_data[] = array(
-							'ID'			=> $payment->ID,
-							'email'			=> edd_get_payment_user_email( $payment->ID ),
-							'products'		=> $cart_details,
-							'amount'		=> edd_get_payment_amount( $payment->ID ),
-							'date'			=> $payment->post_date,
-							'user'			=> $user_id,
-							'status'		=> $payment_status,
-							'mangopay_contribution' => $mangopay_contribution,
-							'lemonway_contribution' => $lemonway_contribution,
-							'contract_status'		=> $investment_contract_status,
-							'contract_status_text'	=> $investment_contract_status_text
+					if ( $investment_item->status != 'failed' ) {
+						// Récupération simple des paiements dans l'API
+						// On dégage 'products' et 'signsquid_status_text' pas très utile
+						// On simplifie 'mangopay_contribution' et 'lemonway_contribution' pour avoir les infos au cas où, mais pas les chercher de suite, car normalement pas besoin
+						$this->payments_data[] = array(
+							'item'			=> $investment_item,
+							'ID'			=> $investment_item->wpref,
+							'user'			=> $investment_item->user_wpref,
+							'email'			=> $investment_item->email,
+							'amount'		=> $investment_item->amount,
+							'date'			=> $investment_item->invest_datetime,
+							'user_api_id'	=> $investment_item->user_id,
+							'status'		=> $investment_item->status,
+							'mangopay_contribution'	=> ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_mangopay ) ? $investment_item->payment_key : FALSE,
+							'lemonway_contribution' => ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_lemonway ) ? $investment_item->payment_key : FALSE,
+							'signsquid_status'		=> $investment_item->signature_status
 						);
 					}
+					
 				}
+				
+			} else {
+				$payments = edd_get_payments( array(
+					'number'	 => -1,
+					'download'   => $this->ID
+				) );
+
+				if ( $payments ) {
+					foreach ( $payments as $payment ) {
+						$user_info = edd_get_payment_meta_user_info( $payment->ID );
+						$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
+
+						$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+
+						$signsquid_contract = new SignsquidContract($payment->ID);
+						$signsquid_status = $signsquid_contract->get_status_code();
+
+						$mangopay_contribution = FALSE;
+						$lemonway_contribution = FALSE;
+						if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
+							$lemonway_id = edd_get_payment_key($payment->ID);
+
+							if ( $lemonway_id == 'check' ) {
+
+							} else if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
+
+
+							} else if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
+								$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
+								$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
+
+							} else if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
+
+							} else {
+								$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
+							}
+						}
+
+						$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
+
+						if ($payment_status != 'failed') {
+							$this->payments_data[] = array(
+								'ID'			=> $payment->ID,
+								'email'			=> edd_get_payment_user_email( $payment->ID ),
+								'products'		=> $cart_details,
+								'amount'		=> edd_get_payment_amount( $payment->ID ),
+								'date'			=> $payment->post_date,
+								'user'			=> $user_id,
+								'status'		=> $payment_status,
+								'mangopay_contribution' => $mangopay_contribution,
+								'lemonway_contribution' => $lemonway_contribution,
+								'payment_key' => $lemonway_id,
+								'signsquid_status'	=> $signsquid_status
+							);
+						}
+					}
+				}
+				
 			}
 			
-//			$cache_stats = json_encode($payments_data);
-//			$WDG_cache_plugin->set_cache('project-investments-data-' . $this->ID, $cache_stats, 60*60*3, 2);
-//		}
+		}
 		
-		return $payments_data;
+		return $this->payments_data;
 	}
 	
 	public function pending_preinvestments() {
@@ -2452,8 +2628,9 @@ class ATCF_Campaign {
 	}
 
 	public function set_status($newstatus){
-		if(array_key_exists($newstatus, ATCF_Campaign::get_campaign_status_list())){
-			return update_post_meta($this->ID, ATCF_Campaign::$key_campaign_status, $newstatus);
+		if ( array_key_exists( $newstatus, ATCF_Campaign::get_campaign_status_list() ) ) {
+			$this->status = $newstatus;
+			return update_post_meta( $this->ID, ATCF_Campaign::$key_campaign_status, $newstatus );
 		} else {
 		    return false;
         }

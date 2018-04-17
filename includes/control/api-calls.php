@@ -181,7 +181,7 @@ class WDGAPICalls {
 		}
 		
 		
-		$query_options = array(
+		/*$query_options = array(
 			'numberposts' => -1,
 			'post_type' => 'download',
 			'post_status' => 'publish',
@@ -207,7 +207,9 @@ class WDGAPICalls {
 			if ( $nb_invest > 1 ) {
 				$buffer[ 'investors_multi_count' ]++;
 			}
-		}
+		}*/
+		$buffer[ 'investors_count' ] = 0;
+		$buffer[ 'investors_multi_count' ] = 0;
 		
 		exit( json_encode( $buffer ) );
 		
@@ -364,7 +366,7 @@ class WDGAPICalls {
 	}
 	
 	private function set_project_url( $campaign_id ) {
-		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $campaign_id : ' .$campaign_id );
+		/*ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $campaign_id : ' .$campaign_id );
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$new_name = sanitize_text_field( filter_input( INPUT_POST, 'new_url') );
 		if ( !empty( $new_name ) && $campaign->data->post_name != $new_name ) {
@@ -385,7 +387,8 @@ class WDGAPICalls {
 			}
 		}
 		ypcf_debug_log( 'ypcf_check_api_calls > set_project_url > $buffer : ' .$buffer );
-		exit( $buffer );
+		exit( $buffer );*/
+		exit( '1' );
 	}
 	
 	private function post_project_equitearly() {
