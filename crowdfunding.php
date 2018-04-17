@@ -92,11 +92,11 @@ final class ATCF_CrowdFunding {
 	private function includes() {
 		require( $this->includes_dir . 'external/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'external/FacebookApp/autoload.php' );
-		require( $this->includes_dir . 'external/yousign/YsApi.php' );
 		require( $this->includes_dir . 'external/nusoap/nusoap.php' );
 		
 		require( $this->includes_dir . 'control/cache/db-cacher.php' );
 		require( $this->includes_dir . 'control/cache/file-cacher.php' );
+		require( $this->includes_dir . 'control/signsquid/common.php' );
 		
 		require( $this->includes_dir . 'data/language_list.php' );
 		require( $this->includes_dir . 'data/campaign.php' );
