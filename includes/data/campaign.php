@@ -1860,6 +1860,7 @@ class ATCF_Campaign {
 					} else {
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );
 					}
+					$this->update_api();
 				}
 			} else {
 				$diff = $expires - $now;
