@@ -168,7 +168,7 @@ class ATCF_Campaign {
 			ATCF_Campaign::$campaign_status_preparing	=> 'D&eacute;pot de dossier',
             ATCF_Campaign::$campaign_status_validated	=> 'Pr&eacute;paration',
 			ATCF_Campaign::$campaign_status_preview		=> 'Avant-premi&egrave;re',
-			ATCF_Campaign::$campaign_status_vote		=> 'Vote',
+			ATCF_Campaign::$campaign_status_vote		=> '&Eacute;valuation',
 			ATCF_Campaign::$campaign_status_collecte	=> 'Lev&eacute;e de fonds',
 			ATCF_Campaign::$campaign_status_funded		=> 'Versement des royalties',
 			ATCF_Campaign::$campaign_status_closed		=> 'Projet termin&eacute;',
@@ -1904,20 +1904,20 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_vote() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = __('Vote termin&eacute;', 'yproject');
+				    $buffer = __('&Eacute;valuation termin&eacute;', 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));
 				    $plural = ($nb_days > 1) ? 's' : '';
-				    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_days+1) . '</b> '. __('jour', 'yproject').$plural.__(' pour voter !', 'yproject');
+				    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_days+1) . '</b> '. __('jour', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
 				    if ($nb_days <= 0) {
 					    $nb_hours = floor($diff / (60 * 60));
 					    $plural = ($nb_hours > 1) ? 's' : '';
-					    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours+1) . '</b> '. __('heure', 'yproject').$plural.__(' pour voter !', 'yproject');
+					    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours+1) . '</b> '. __('heure', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
 					    if ($nb_hours <= 0) {
 						    $nb_minutes = floor($diff / 60);
 						    $plural = ($nb_minutes > 1) ? 's' : '';
-						    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes+1) . '</b> '. __('minute', 'yproject').$plural.__(' pour voter !', 'yproject');
+						    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes+1) . '</b> '. __('minute', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
 					    }
 				    }
 			    }
