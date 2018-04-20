@@ -1095,7 +1095,7 @@ class WDGOrganization {
 	private $rois;
 	public function get_rois() {
 		if ( !isset( $this->rois ) ) {
-			$this->rois = WDGWPREST_Entity_User::get_rois( $this->get_api_id() );
+			$this->rois = WDGWPREST_Entity_Organization::get_rois( $this->get_api_id() );
 		}
 		return $this->rois;
 	}

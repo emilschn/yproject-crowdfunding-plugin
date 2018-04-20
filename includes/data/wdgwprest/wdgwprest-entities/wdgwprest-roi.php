@@ -27,6 +27,7 @@ class WDGWPREST_Entity_ROI {
 			'id_project'			=> $roi->id_campaign,
 			'id_orga'				=> $roi->id_orga,
 			'id_user'				=> $roi->id_user,
+			'recipient_type'		=> $roi->recipient_type,
 			'id_declaration'		=> $roi->id_declaration,
 			'date_transfer'			=> $roi->date_transfer,
 			'amount'				=> $roi->amount,
