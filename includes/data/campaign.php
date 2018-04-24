@@ -2075,12 +2075,14 @@ class ATCF_Campaign {
 			    $payment    = get_post( $payment_id );
 				$payment_key = edd_get_payment_key( $payment_id );
 
-			    if ( empty( $payment ) || $payment_key != 'check' || $payment->post_status == 'pending' )
-				    continue;
+			    if ( !empty( $payment ) && $payment_key == 'check' && $payment->post_status != 'pending' ) {
+					$total += edd_get_payment_amount( $payment_id );
+				}
 
-			    $total      = $total + edd_get_payment_amount( $payment_id );
 		    }
 		}
+		
+		return $total;
 	}
 	
 	public function current_amount_check_meta($formatted = true){
