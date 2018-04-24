@@ -785,7 +785,7 @@ class WDGOrganization {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
-					$this->transfer_to_iban( $transfer_amount, $transfer_commission );
+					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission );
 				}
 			}
 		}
