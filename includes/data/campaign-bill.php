@@ -148,7 +148,7 @@ class WDGCampaignBill {
 	public function get_line_description() {
 		$amount_collected = UIHelpers::format_number( $this->campaign->current_amount( FALSE ) );
 		$amount_collected_check = UIHelpers::format_number( $this->campaign->current_amount_with_check() );
-		$platform_commission = UIHelpers::format_number( $this->campaign->platform_commission() );
+		$platform_commission = UIHelpers::format_number( $this->campaign->platform_commission( FALSE ) );
 		$platform_commission_amount = UIHelpers::format_number( $this->campaign->platform_commission_amount() );
 		$buffer = "Campagne de crowdfunding.
 Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
@@ -156,9 +156,9 @@ Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." 
 	}
 	
 	public function get_bill_description() {
-		$amount_collected = $this->campaign->current_amount( FALSE );
-		$amount_collected_formatted = UIHelpers::format_number( $amount_collected );
 		$amount_collected_check = $this->campaign->current_amount_with_check();
+		$amount_collected = $this->campaign->current_amount( FALSE ) - $amount_collected_check;
+		$amount_collected_formatted = UIHelpers::format_number( $amount_collected );
 		$platform_commission_amount = $this->campaign->platform_commission_amount();
 		$platform_commission_amount_with_tax_formatted = UIHelpers::format_number( $platform_commission_amount * 1.2 );
 		$transfered_amount_formatted = UIHelpers::format_number( $amount_collected - ( $platform_commission_amount * 1.2 ) );

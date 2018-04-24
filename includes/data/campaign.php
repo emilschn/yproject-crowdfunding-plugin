@@ -1414,11 +1414,17 @@ class ATCF_Campaign {
 	}
 	
     public static $key_platform_commission = 'campaign_platform_commission';
-	public function platform_commission() {
-	    return $this->__get( ATCF_Campaign::$key_platform_commission );
+	public function platform_commission( $with_tax = TRUE ) {
+		$commission_with_tax = $this->__get( ATCF_Campaign::$key_platform_commission );
+		if ( !empty( $commission_with_tax ) && !$with_tax ) {
+			$buffer = $commission_with_tax / 1.2;
+		} else {
+			$buffer = $commission_with_tax;
+		}
+	    return $buffer;
 	}
 	public function platform_commission_amount() {
-		$buffer = round( $this->current_amount( false ) * $this->platform_commission() / 100, 2 );
+		$buffer = round( $this->current_amount( FALSE ) * $this->platform_commission( FALSE ) / 100, 2 );
 		return $buffer;
 	}
 
