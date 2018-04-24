@@ -116,6 +116,7 @@ class WDGPostActions {
     }
 
     public static function create_project_form(){
+		ypcf_debug_log( 'create_project_form > $_POST > ' . print_r($_POST, true), TRUE );
         $WDGUser_current = WDGUser::current();
         $WPuserID = $WDGUser_current->wp_user->ID;
 
