@@ -25,11 +25,11 @@ class WDGCampaignBill {
 			'quickbooks_id' => 7,
 			'label' => 'WE ADVISE (Crowdfunding)'
 		),
-		'selfservice' => array(
+		'wefund' => array(
 			'quickbooks_id' => 12,
 			'label' => 'WE FUND (Financement)'
 		),
-		'selfservice' => array(
+		'lovemoney' => array(
 			'quickbooks_id' => 5,
 			'label' => 'WE LOVE (Love-Money)'
 		),
@@ -127,10 +127,10 @@ class WDGCampaignBill {
 	private function get_line_type_by_platform_commission() {
 		$buffer = FALSE;
 		switch ( $this->campaign->platform_commission() ) {
-			case 8:
+			case '9.6':
 				$buffer = 'crowdfunding';
 				break;
-			case 5:
+			case '6':
 				$buffer = 'selfservice';
 				break;
 		}
