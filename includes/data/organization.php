@@ -641,7 +641,7 @@ class WDGOrganization {
 	 * Upload des KYC vers Lemonway si possible
 	 */
 	public function send_kyc() {
-		if (isset($_POST['authentify_lw']) && $this->can_register_lemonway()) {
+		if (isset($_POST['authentify_lw']) && $this->has_sent_all_documents()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
 					WDGKYCFile::$type_bank		=> '2',
@@ -873,8 +873,7 @@ class WDGOrganization {
 	public function can_register_lemonway() {
 		$buffer = ($this->get_name() != "")
 					&& ($this->get_description() != "")
-					&& ($this->get_idnumber() != "")
-					&& $this->has_sent_all_documents();
+					&& ($this->get_idnumber() != "");
 		return $buffer;
 	}
 	
