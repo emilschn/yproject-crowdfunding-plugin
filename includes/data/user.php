@@ -363,7 +363,7 @@ class WDGUser {
 	}
 	public function get_birthday_date() {
 		$buffer = $this->birthday_date;
-		if ( empty( $buffer ) || $buffer == '---' ) {
+		if ( empty( $buffer ) || $buffer == '---' || $buffer == '0000-00-00' ) {
 			$buffer = $this->get_local_formatted_birthday_date();
 		}
 		return $buffer;
