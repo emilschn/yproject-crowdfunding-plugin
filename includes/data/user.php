@@ -966,7 +966,7 @@ class WDGUser {
 			if ( !is_array( $downloads[0] ) ){
 				$campaign = atcf_get_campaign( $downloads[0] );
 				$campaign_organization = $campaign->get_organization();
-				$wdg_organization = new WDGOrganization( $campaign_organization->wpref );
+				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
 				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;

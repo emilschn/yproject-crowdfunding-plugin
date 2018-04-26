@@ -708,7 +708,7 @@ class WDGInvestment {
 		$transfer_funds_result = FALSE;
 		if ( $can_use_wallet ) {
 			$campaign_organization = $this->campaign->get_organization();
-			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref );
+			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 			
 			if ( $invest_type == 'user' ) { 
 				if ( $WDGUser_current->can_pay_with_wallet( $amount, $this->campaign ) ) {
@@ -733,7 +733,7 @@ class WDGInvestment {
 	
 	private function try_payment_card( $with_wallet = FALSE) {
 		$organization_campaign = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $organization_campaign->wpref );
+		$WDGOrganization = new WDGOrganization( $organization_campaign->wpref, $organization_campaign );
 		$WDGuser_current = WDGUser::current();
 		$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $this->campaign->ID;
 		$wk_token = LemonwayLib::make_token($current_token_id);
@@ -826,7 +826,7 @@ class WDGInvestment {
 			if ( strpos($payment_key, 'wire_') !== FALSE ) {
 				$campaign = $this->get_saved_campaign();
 				$organization = $campaign->get_organization();
-				$organization_obj = new WDGOrganization( $organization->wpref );
+				$organization_obj = new WDGOrganization( $organization->wpref, $organization );
 				$credit_wallet_id = '';
 				$user_id = $this->get_saved_user_id();
 				if ( WDGOrganization::is_user_organization( $user_id ) ) {

@@ -95,7 +95,7 @@ class WDGOrganization {
 	/**
 	 * Constructeur
 	 */
-	public function __construct($user_id = FALSE) {
+	public function __construct( $user_id = FALSE, $api_object = FALSE ) {
 		if ($user_id === FALSE) {
 			$user_id = filter_input(INPUT_GET, 'orga_id');
 		}
@@ -103,7 +103,11 @@ class WDGOrganization {
 		if (!empty($user_id)) {
 			$this->creator = get_user_by('id', $user_id);
 			$this->api_id = get_user_meta($user_id, WDGOrganization::$key_api_id, TRUE);
-			$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->api_id );
+			if ( !empty( $api_object ) ) {
+				$this->bopp_object = $api_object;
+			} else {
+				$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->api_id );
+			}
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->name;

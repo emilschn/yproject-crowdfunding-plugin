@@ -200,7 +200,7 @@ class NotificationsEmails {
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
 		$campaign_organization = $campaign->get_organization();
-		$organization_obj = new WDGOrganization( $campaign_organization->wpref );
+		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		
 		$payment_data = edd_get_payment_meta( $payment_id );
 		$payment_amount = edd_get_payment_amount( $payment_id );

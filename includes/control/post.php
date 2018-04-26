@@ -280,7 +280,7 @@ class WDGPostActions {
                     $campaign_organization = $campaign->get_organization();
 
                     //Vérification validation lemonway
-                    $organization_obj = new WDGOrganization($campaign_organization->wpref);
+                    $organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
                     if ($organization_obj->is_registered_lemonway_wallet()) { $orga_done = true; }
 
                     //Validation données
@@ -442,7 +442,7 @@ class WDGPostActions {
 			$campaign = new ATCF_Campaign( FALSE, $campaign_api_id );
 			$shortcode_campaign_obj = $campaign;
 			$campaign_orga = $campaign->get_organization();
-			$shortcode_organization_obj = new WDGOrganization( $campaign_orga->wpref );
+			$shortcode_organization_obj = new WDGOrganization( $campaign_orga->wpref, $campaign_orga );
 			$campaign_orga_linked_users = $shortcode_organization_obj->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 			$shortcode_organization_creator = $campaign_orga_linked_users[0];
 			

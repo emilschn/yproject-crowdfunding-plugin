@@ -1270,7 +1270,7 @@ class WDGAjaxActions {
 		$current_organization = $campaign->get_organization();
 
 		// enregistrement des données dans l'organisation
-		$org_object = new WDGOrganization( $current_organization->wpref );
+		$org_object = new WDGOrganization( $current_organization->wpref, $current_organization );
 
 		//enregistrement des données avec la fonction edit et récupération des 
 		//infos sur les fichiers uploadés

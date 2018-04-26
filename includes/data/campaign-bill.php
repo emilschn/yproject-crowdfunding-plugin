@@ -59,7 +59,7 @@ class WDGCampaignBill {
 	public function can_generate() {
 		$platform_commission = $this->campaign->platform_commission();
 		$campaign_organization = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
+		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$id_quickbooks = $WDGOrganization->get_id_quickbooks();
 		$line_type = $this->get_line_type_by_platform_commission();
 		return ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $line_type ) );
@@ -111,7 +111,7 @@ class WDGCampaignBill {
 		$bill_description = $this->get_bill_description();
 		$platform_commission_amount = $this->campaign->platform_commission_amount();
 		$campaign_organization = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
+		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$options = array(
 			'customerid'		=> $WDGOrganization->get_id_quickbooks(),
 			'customeremail'		=> $WDGOrganization->get_email(),
@@ -180,7 +180,7 @@ Les chèques vous seront directement adressés.";
 	private function get_quickbooks_royalties_commission_options() {
 		$line_description = $this->get_royalties_line_description();
 		$campaign_organization = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
+		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay() / 1.2;
 		$options = array(
 			'customerid'		=> $WDGOrganization->get_id_quickbooks(),

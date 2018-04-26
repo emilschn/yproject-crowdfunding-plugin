@@ -187,7 +187,7 @@ class WDG_PDF_Generator {
 		global $shortcode_campaign_obj;
 		$campaign_organization = $shortcode_campaign_obj->get_organization();
 		if ( !empty( $campaign_organization->wpref ) ) {
-			$wdg_organization = new WDGOrganization( $campaign_organization->wpref );
+			$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 			$buffer = $wdg_organization->get_description();
 		}
 		return $buffer;
@@ -449,7 +449,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	}
 	$campaign_obj->set_current_lang($lang);
 	$campaign_orga = $campaign_obj->get_organization();
-	$organization_obj = new WDGOrganization( $campaign_orga->wpref );
+	$organization_obj = new WDGOrganization( $campaign_orga->wpref, $campaign_orga );
 	
 	WDG_PDF_Generator::add_shortcodes();
 	add_filter( 'WDG_PDF_Generator_filter', 'wptexturize' );

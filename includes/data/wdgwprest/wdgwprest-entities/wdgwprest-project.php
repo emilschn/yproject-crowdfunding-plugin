@@ -19,7 +19,7 @@ class WDGWPREST_Entity_Project {
 		if ( empty( $id ) ) {
 			return FALSE;
 		}
-		return WDGWPRESTLib::call_get_wdg( 'project/' .$id. '?with_investments=1' );
+		return WDGWPRESTLib::call_get_wdg( 'project/' .$id. '?with_investments=1&with_organization=1' );
 	}
 	
 	/**
@@ -127,7 +127,7 @@ class WDGWPREST_Entity_Project {
 			$parameters = WDGWPREST_Entity_Project::set_post_parameters( $campaign );
 
 			$buffer = WDGWPRESTLib::call_post_wdg( 'project/' . $campaign->get_api_id(), $parameters );
-			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$campaign->get_api_id(). '?with_investments=1' );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$campaign->get_api_id(). '?with_investments=1&with_organization=1' );
 			if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
 		}
 		return $buffer;
@@ -262,6 +262,7 @@ class WDGWPREST_Entity_Project {
 			'type' => $role_slug
 		);
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'project/' .$project_id. '/organizations', $request_params );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$project_id. '?with_investments=1&with_organization=1' );
 		return $result_obj;
 	}
 
@@ -274,6 +275,7 @@ class WDGWPREST_Entity_Project {
 	 */
 	public static function unlink_organization( $project_id, $organization_id, $role_slug ) {
 		$result_obj = WDGWPRESTLib::call_delete_wdg( 'project/' .$project_id. '/organization/' .$organization_id. '/type/' .$role_slug );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$project_id. '?with_investments=1&with_organization=1' );
 		return $result_obj;
 	}
 	
