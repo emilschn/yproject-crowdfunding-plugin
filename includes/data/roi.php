@@ -14,6 +14,7 @@ class WDGROI {
 	public $id_campaign;
 	public $id_orga;
 	public $id_user;
+	public $recipient_type;
 	public $id_declaration;
 	public $date_transfer;
 	public $amount;
@@ -36,6 +37,7 @@ class WDGROI {
 				$this->id_campaign = $roi_api_item->id_project;
 				$this->id_orga = $roi_api_item->id_orga;
 				$this->id_user = $roi_api_item->id_user;
+				$this->recipient_type = $roi_api_item->recipient_type;
 				$this->id_declaration = $roi_api_item->id_declaration;
 				$this->date_transfer = $roi_api_item->date_transfer;
 				$this->amount = $roi_api_item->amount;
@@ -55,6 +57,7 @@ class WDGROI {
 					$this->id_campaign = $roi_item->id_campaign;
 					$this->id_orga = $roi_item->id_orga;
 					$this->id_user = $roi_item->id_user;
+					$this->recipient_type = 'user';
 					$this->id_declaration = $roi_item->id_declaration;
 					$this->date_transfer = $roi_item->date_transfer;
 					$this->amount = $roi_item->amount;
@@ -223,12 +226,13 @@ class WDGROI {
 	/**
 	 * Ajout d'une nouvelle déclaration
 	 */
-	public static function insert( $id_investment, $id_campaign, $id_orga, $id_user, $id_declaration, $date_transfer, $amount, $id_transfer, $status ) {
+	public static function insert( $id_investment, $id_campaign, $id_orga, $id_user, $recipient_type, $id_declaration, $date_transfer, $amount, $id_transfer, $status ) {
 		$roi = new WDGROI();
 		$roi->id_investment = $id_investment;
 		$roi->id_campaign = $id_campaign;
 		$roi->id_orga = $id_orga;
 		$roi->id_user = $id_user;
+		$roi->recipient_type = $recipient_type;
 		$roi->id_declaration = $id_declaration;
 		$roi->date_transfer = $date_transfer;
 		$roi->amount = $amount;

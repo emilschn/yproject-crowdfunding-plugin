@@ -641,7 +641,7 @@ class WDGOrganization {
 	 * Upload des KYC vers Lemonway si possible
 	 */
 	public function send_kyc() {
-		if (isset($_POST['authentify_lw']) && $this->can_register_lemonway()) {
+		if (isset($_POST['authentify_lw']) && $this->has_sent_all_documents()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
 					WDGKYCFile::$type_bank		=> '2',
@@ -785,23 +785,33 @@ class WDGOrganization {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
-					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $transfer_amount + $transfer_commission, 0, $transfer_commission );
-					$buffer = ($result_transfer->TRANS->HPAY->ID) ? "success" : $result_transfer->TRANS->HPAY->MSG;
-
-					if ($buffer == "success") {
-						// Enregistrement de l'objet Lemon Way
-						$withdrawal_post = array(
-							'post_author'   => $this->get_wpref(),
-							'post_title'    => $transfer_amount,
-							'post_content'  => print_r( $result_transfer, TRUE ),
-							'post_status'   => 'publish',
-							'post_type'		=> 'withdrawal_order'
-						);
-						wp_insert_post( $withdrawal_post );
-					}
+					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission );
 				}
 			}
 		}
+	}
+	
+	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0 ) {
+		$buffer = FALSE;
+		
+		if ( !empty( $amount_without_commission ) ) {
+			$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount_without_commission + $amount_commission, 0, $amount_commission );
+			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
+
+			if ( $buffer === TRUE ) {
+				// Enregistrement de l'objet Lemon Way
+				$withdrawal_post = array(
+					'post_author'   => $this->get_wpref(),
+					'post_title'    => $amount_without_commission,
+					'post_content'  => print_r( $result_transfer, TRUE ),
+					'post_status'   => 'publish',
+					'post_type'		=> 'withdrawal_order'
+				);
+				wp_insert_post( $withdrawal_post );
+			}
+		}
+		
+		return $buffer;
 	}
 	
 /*******************************************************************************
@@ -863,8 +873,7 @@ class WDGOrganization {
 	public function can_register_lemonway() {
 		$buffer = ($this->get_name() != "")
 					&& ($this->get_description() != "")
-					&& ($this->get_idnumber() != "")
-					&& $this->has_sent_all_documents();
+					&& ($this->get_idnumber() != "");
 		return $buffer;
 	}
 	
@@ -1056,15 +1065,53 @@ class WDGOrganization {
 		LemonwayLib::wallet_unregister_mandate( $this->get_lemonway_id(), $mandate_id );
 	}
 	
+	/**
+	 * Retourne true si le RIB est validé sur Lemon Way
+	 */
+	public function is_document_lemonway_registered( $document_type ) {
+		$lemonway_document = LemonwayDocument::get_by_id_and_type( $this->get_lemonway_id(), $document_type, $this->get_wallet_details() );
+		return ( $lemonway_document->get_status() == LemonwayDocument::$document_status_accepted );
+	}
+	
+	public function get_document_lemonway_status( $document_type ) {
+		$lemonway_document = LemonwayDocument::get_by_id_and_type( $this->get_lemonway_id(), $document_type, $this->get_wallet_details() );
+		return $lemonway_document->get_status();
+	}
+	
+	public function get_document_lemonway_error( $document_type ) {
+		$lemonway_document = LemonwayDocument::get_by_id_and_type( $this->get_lemonway_id(), $document_type, $this->get_wallet_details() );
+		return $lemonway_document->get_error_str();
+	}
+	
+	public function has_document_lemonway_error( $document_type ) {
+		$rib_lemonway_error = $this->get_document_lemonway_error( $document_type );
+		return ( !empty( $rib_lemonway_error ) );
+	}
+	
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/
 	private $rois;
 	public function get_rois() {
 		if ( !isset( $this->rois ) ) {
-			$this->rois = WDGWPREST_Entity_User::get_rois( $this->get_api_id() );
+			$this->rois = WDGWPREST_Entity_Organization::get_rois( $this->get_api_id() );
 		}
 		return $this->rois;
+	}
+	
+	/**
+	 * Retourne la somme des royalties perçues
+	 * @return float
+	 */
+	public function get_rois_amount() {
+		$buffer = 0;
+		$rois = $this->get_rois();
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				$buffer += $roi_item->amount;
+			}
+		}
+		return $buffer;
 	}
 	
 	private $royalties_per_year;

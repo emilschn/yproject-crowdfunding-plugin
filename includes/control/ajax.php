@@ -1366,7 +1366,7 @@ class WDGAjaxActions {
 				$errors['new_end_vote_date']="La date est invalide";
 			}
 		} else {
-			$errors['new_end_vote_date']="Il faut une date de fin de vote !";
+			$errors['new_end_vote_date']="Il faut une date de fin d'&eacute;valuation !";
 		}
 
 		$begin_collecte_date = filter_input(INPUT_POST, 'new_begin_collecte_date');
@@ -1750,14 +1750,14 @@ class WDGAjaxActions {
         }
 
         $imggood = '<img src="'.get_stylesheet_directory_uri().'/images/good.png" alt="suit" title="Suit le projet" width="30px" class="infobutton" style="margin-left:0px;"/>';
-		$imggoodvote = '<img src="'.get_stylesheet_directory_uri().'/images/goodvote.png" alt="vote" title="A voté" width="30px" class="infobutton" style="margin-left:0px;"/>';
+		$imggoodvote = '<img src="'.get_stylesheet_directory_uri().'/images/goodvote.png" alt="vote" title="A évalué" width="30px" class="infobutton" style="margin-left:0px;"/>';
 		$imggoodmains = '<img src="'.get_stylesheet_directory_uri().'/images/goodmains.png" alt="investi" title="A investi" width="30px" class="infobutton" style="margin-left:0px;"/>';
 
         $array_columns = array(
         	new ContactColumn('checkbox','',true,"none"),
             new ContactColumn('user_link', 'Utilisateur', true),
 			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check","N'afficher que les contacts suivant le projet"),
-			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant voté"),
+			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant évalué"),
             new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,"check","N'afficher que les contacts ayant investi"),
 			new ContactColumn('user_id','',false),
 
@@ -1773,8 +1773,8 @@ class WDGAjaxActions {
             new ContactColumn('user_email', 'Mail', true),
             new ContactColumn('user_mobile_phone', 'Téléphone', false),
 
-            new ContactColumn('vote_date','Date de vote',$display_vote_infos, "date"),
-            new ContactColumn('vote_rate','Note du vote',true),
+            new ContactColumn('vote_date',"Date d'éval.",$display_vote_infos, "date"),
+            new ContactColumn('vote_rate',"Note d'éval.",true),
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
 			new ContactColumn('vote_advice','Conseil',$display_vote_infos),
 

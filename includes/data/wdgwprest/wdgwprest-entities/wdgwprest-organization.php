@@ -105,4 +105,13 @@ class WDGWPREST_Entity_Organization {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/users' );
 		return $result_obj;
 	}
+	
+	/**
+	 * Retourne les ROIs liés à un utilisateur
+	 * @return array
+	 */
+	public static function get_rois( $organization_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/rois' );
+		return $result_obj;
+	}
 }

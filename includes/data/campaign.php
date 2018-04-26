@@ -168,7 +168,7 @@ class ATCF_Campaign {
 			ATCF_Campaign::$campaign_status_preparing	=> 'D&eacute;pot de dossier',
             ATCF_Campaign::$campaign_status_validated	=> 'Pr&eacute;paration',
 			ATCF_Campaign::$campaign_status_preview		=> 'Avant-premi&egrave;re',
-			ATCF_Campaign::$campaign_status_vote		=> 'Vote',
+			ATCF_Campaign::$campaign_status_vote		=> '&Eacute;valuation',
 			ATCF_Campaign::$campaign_status_collecte	=> 'Lev&eacute;e de fonds',
 			ATCF_Campaign::$campaign_status_funded		=> 'Versement des royalties',
 			ATCF_Campaign::$campaign_status_closed		=> 'Projet termin&eacute;',
@@ -1414,11 +1414,17 @@ class ATCF_Campaign {
 	}
 	
     public static $key_platform_commission = 'campaign_platform_commission';
-	public function platform_commission() {
-	    return $this->__get( ATCF_Campaign::$key_platform_commission );
+	public function platform_commission( $with_tax = TRUE ) {
+		$commission_with_tax = $this->__get( ATCF_Campaign::$key_platform_commission );
+		if ( !empty( $commission_with_tax ) && !$with_tax ) {
+			$buffer = $commission_with_tax / 1.2;
+		} else {
+			$buffer = $commission_with_tax;
+		}
+	    return $buffer;
 	}
 	public function platform_commission_amount() {
-		$buffer = round( $this->current_amount( false ) * $this->platform_commission() / 100, 2 );
+		$buffer = round( $this->current_amount( FALSE ) * $this->platform_commission( FALSE ) / 100, 2 );
 		return $buffer;
 	}
 
@@ -1904,20 +1910,20 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_vote() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = __('Vote termin&eacute;', 'yproject');
+				    $buffer = __('&Eacute;valuation termin&eacute;', 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));
 				    $plural = ($nb_days > 1) ? 's' : '';
-				    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_days+1) . '</b> '. __('jour', 'yproject').$plural.__(' pour voter !', 'yproject');
+				    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_days+1) . '</b> '. __('jour', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
 				    if ($nb_days <= 0) {
 					    $nb_hours = floor($diff / (60 * 60));
 					    $plural = ($nb_hours > 1) ? 's' : '';
-					    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours+1) . '</b> '. __('heure', 'yproject').$plural.__(' pour voter !', 'yproject');
+					    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours+1) . '</b> '. __('heure', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
 					    if ($nb_hours <= 0) {
 						    $nb_minutes = floor($diff / 60);
 						    $plural = ($nb_minutes > 1) ? 's' : '';
-						    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes+1) . '</b> '. __('minute', 'yproject').$plural.__(' pour voter !', 'yproject');
+						    $buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes+1) . '</b> '. __('minute', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
 					    }
 				    }
 			    }
@@ -2075,12 +2081,14 @@ class ATCF_Campaign {
 			    $payment    = get_post( $payment_id );
 				$payment_key = edd_get_payment_key( $payment_id );
 
-			    if ( empty( $payment ) || $payment_key != 'check' || $payment->post_status == 'pending' )
-				    continue;
+			    if ( !empty( $payment ) && $payment_key == 'check' && $payment->post_status != 'pending' ) {
+					$total += edd_get_payment_amount( $payment_id );
+				}
 
-			    $total      = $total + edd_get_payment_amount( $payment_id );
 		    }
 		}
+		
+		return $total;
 	}
 	
 	public function current_amount_check_meta($formatted = true){

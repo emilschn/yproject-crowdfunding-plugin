@@ -429,11 +429,13 @@ class WDGROIDeclaration {
 
 					//Versement vers organisation
 					$recipient_api_id = FALSE;
+					$recipient_type = 'user';
 					$transfer = FALSE;
 					if (WDGOrganization::is_user_organization( $investment_item['user'] )) {
 						$WDGOrga = new WDGOrganization( $investment_item['user'] );
 						$WDGOrga->register_lemonway();
 						$recipient_api_id = $WDGOrga->get_api_id();
+						$recipient_type = 'orga';
 						if ( $investment_item['roi_amount'] > 0 ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
 							/*$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGOrga->get_email() );
@@ -465,7 +467,7 @@ class WDGROIDeclaration {
 					}
 
 					if ( $transfer != FALSE ) {
-						WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
+						WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer->ID, WDGROI::$status_transferred);
 						
 						if ( $send_notifications ) {
 							if ($investment_item['roi_amount'] > 0) {
@@ -488,7 +490,7 @@ class WDGROIDeclaration {
 
 					} else {
 						if ( $investment_item['roi_amount'] == 0 ) {
-							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_transferred);
+							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_transferred);
 							if ( $send_notifications ) {
 								$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 								$campaign_author = $campaign->post_author();
@@ -506,7 +508,7 @@ class WDGROIDeclaration {
 								NotificationsAPI::roi_transfer_without_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 							}
 						} else {
-							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
+							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
 						}
 					}
 					

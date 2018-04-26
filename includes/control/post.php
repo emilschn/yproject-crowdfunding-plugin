@@ -117,6 +117,7 @@ class WDGPostActions {
     }
 
     public static function create_project_form(){
+		ypcf_debug_log( 'create_project_form > $_POST > ' . print_r($_POST, true), TRUE );
         $WDGUser_current = WDGUser::current();
         $WPuserID = $WDGUser_current->wp_user->ID;
 
@@ -208,15 +209,17 @@ class WDGPostActions {
 				wp_safe_redirect( $redirect_url);
 			} else {
 				global $errors_submit_new, $errors_create_orga;
+				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_submit_new, true) );
+				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_create_orga, true) );
 				$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 				$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-				wp_safe_redirect( home_url( '/lancement#newproject' ) );
+				wp_safe_redirect( home_url( '/lancement?error=creation#newproject' ) );
 			}
         } else {
 			global $errors_submit_new, $errors_create_orga;
 			$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 			$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-            wp_safe_redirect( home_url( '/lancement#newproject' ) );
+            wp_safe_redirect( home_url( '/lancement?error=field_empty#newproject' ) );
         }
 		exit();
     }
