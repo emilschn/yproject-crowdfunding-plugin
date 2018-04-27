@@ -1118,6 +1118,38 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
+	/**
+	 * 
+	 */
+	public function get_available_rois_amount() {
+		$buffer = 0;
+		$rois_amount = $this->get_rois_amount();
+		if ( $rois_amount > 0 ) {
+			$buffer = $this->get_rois_amount() - $this->get_transferred_amount();
+		}
+		$buffer = max( $buffer, 0 );
+		return $buffer;
+	}
+	
+	/**
+	 * Récupération des sommes déjà transférées sur le compte bancaire
+	 */
+	public function get_transferred_amount() {
+		$buffer = 0;
+		$args = array(
+			'author'		=> get_current_user_id(),
+			'post_type'		=> 'withdrawal_order_lw',
+			'post_status'	=> 'any',
+			'orderby'		=> 'post_date',
+			'order'			=> 'ASC'
+		);
+		$transfers = get_posts($args);
+		foreach ( $transfers as $post_transfer ){
+			$post_transfer = get_post( $post_transfer );
+			$buffer += $post_transfer->post_title;
+		}
+	}
+	
 	private $royalties_per_year;
 	/**
 	 * Retourne la liste des royalties d'une année
