@@ -402,7 +402,7 @@ class WDGFormUsers {
 		if ( !empty( $orga_id ) ) {
 			$WDGOrganization = new WDGOrganization( $orga_id );
 			if ( $WDGOrganization->has_saved_iban() && $WDGOrganization->get_rois_amount() > 0 ) {
-				$buffer = $WDGOrganization->transfer_wallet_to_bankaccount( $WDGOrganization->get_rois_amount() );
+				$buffer = $WDGOrganization->transfer_wallet_to_bankaccount( $WDGOrganization->get_available_rois_amount() );
 			}
 			
 		} else {
