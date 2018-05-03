@@ -357,9 +357,16 @@ class WDGUser {
 	}
 	
 	private function get_local_formatted_birthday_date() {
-		$birthday_day = ($this->wp_user->get('user_birthday_day') < 10 && strlen($this->wp_user->get('user_birthday_day')) < 2) ? '0' . $this->wp_user->get('user_birthday_day') : $this->wp_user->get('user_birthday_day');
-		$birthday_month = ($this->wp_user->get('user_birthday_month') < 10 && strlen($this->wp_user->get('user_birthday_month')) < 2) ? '0' . $this->wp_user->get('user_birthday_month') : $this->wp_user->get('user_birthday_month');
-		return $this->wp_user->get('user_birthday_year'). '-' .$birthday_month. '-' .$birthday_day;
+		$buffer = FALSE;
+		$birthday_day = $this->wp_user->get('user_birthday_day');
+		$birthday_month = $this->wp_user->get('user_birthday_month');
+		$birthday_year = $this->wp_user->get('user_birthday_year');
+		if ( !empty( $birthday_day ) && !empty( $birthday_month ) && !empty( $birthday_year ) ) {
+			$birthday_day = ( $birthday_day < 10 && strlen( $birthday_day ) < 2 ) ? '0' . $birthday_day : $birthday_day;
+			$birthday_month = ( $birthday_month < 10 && strlen( $birthday_month ) < 2 ) ? '0' . $birthday_month : $birthday_month;
+			$buffer = $birthday_year. '-' .$birthday_month. '-' .$birthday_day;
+		}
+		return $buffer;
 	}
 	public function get_birthday_date() {
 		$buffer = $this->birthday_date;
@@ -1142,10 +1149,11 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si les informations nécessaires sont remplies : mail, prénom, nom
+	 * Détermine si les informations nécessaires sont remplies : mail, prénom, nom, pays, date de naissance, nationality
 	 */
 	public function can_register_lemonway() {
-		$buffer = ( $this->get_email() != "" ) && ($this->get_firstname() != "") && ($this->get_lastname() != "");
+		$buffer = ( $this->get_email() != "" ) && ( $this->get_firstname() != "" ) && ( $this->get_lastname() != "" )
+						&& ( $this->get_country() != "" ) && ( $this->get_birthday_date() != "" )&& ( $this->get_nationality() != "" );
 		return $buffer;
 	}
 	
@@ -1232,40 +1240,36 @@ class WDGUser {
 				$buffer = $user_meta_status;
 
 			} else {
-				if (!$this->can_register_lemonway()) {
-					$buffer = LemonwayLib::$status_blocked;
-				} else {
-					$buffer = LemonwayLib::$status_ready;
-					$wallet_details = $this->get_wallet_details();
-					if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
-						switch ($wallet_details->STATUS) {
-							case '2':
-							case '8':
-								$buffer = LemonwayLib::$status_incomplete;
-								break;
-							case '3':
-							case '9':
-								$buffer = LemonwayLib::$status_rejected;
-								break;
-							case '6':
-								$buffer = LemonwayLib::$status_registered;
-								break;
+				$buffer = LemonwayLib::$status_ready;
+				$wallet_details = $this->get_wallet_details();
+				if ( isset($wallet_details->STATUS) && !empty($wallet_details->STATUS) ) {
+					switch ($wallet_details->STATUS) {
+						case '2':
+						case '8':
+							$buffer = LemonwayLib::$status_incomplete;
+							break;
+						case '3':
+						case '9':
+							$buffer = LemonwayLib::$status_rejected;
+							break;
+						case '6':
+							$buffer = LemonwayLib::$status_registered;
+							break;
 
-							default:
-							case '5':
-								if ( !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
-									foreach($wallet_details->DOCS->DOC as $document_object) {
-										if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
-											switch ($document_object->S) {
-												case '1':
-													$buffer = LemonwayLib::$status_waiting;
-													break;
-											}
+						default:
+						case '5':
+							if ( !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+								foreach($wallet_details->DOCS->DOC as $document_object) {
+									if (isset($document_object->TYPE) && $document_object->TYPE !== FALSE) {
+										switch ($document_object->S) {
+											case '1':
+												$buffer = LemonwayLib::$status_waiting;
+												break;
 										}
 									}
 								}
-								break;
-						}
+							}
+							break;
 					}
 				}
 
