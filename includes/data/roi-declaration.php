@@ -399,7 +399,7 @@ class WDGROIDeclaration {
 		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
-			$organization_obj = new WDGOrganization($current_organization->wpref);
+			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 			$organization_obj->register_lemonway();
 			$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount );
 			$total_fees = 0;
@@ -561,7 +561,7 @@ class WDGROIDeclaration {
 		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 		$current_organization = $campaign->get_organization();
 		if (!empty($current_organization)) {
-			$organization_obj = new WDGOrganization($current_organization->wpref);
+			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		}
 		
 		$roi_list = $this->get_rois();
@@ -633,7 +633,7 @@ class WDGROIDeclaration {
 		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
-			$organization_obj = new WDGOrganization( $current_organization->wpref );
+			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		}
 		$project_roi_percent = $campaign->roi_percent();
 		$project_amount_collected = $campaign->current_amount( false );

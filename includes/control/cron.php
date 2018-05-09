@@ -24,7 +24,7 @@ class WDGCronActions {
 						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 							
 							$organization = $campaign->get_organization();
-							$wdgorganization = new WDGOrganization( $organization->id );
+							$wdgorganization = new WDGOrganization( $organization->id, $organization );
 							$wdguser_author = new WDGUser( $campaign->data->post_author );
 
 							// Données qui seront transmises à SiB
@@ -151,7 +151,7 @@ class WDGCronActions {
 		$buffer_partners = '';
 		
 		$organization = $campaign->get_organization();
-		$organization_obj = new WDGOrganization( $organization->wpref );
+		$organization_obj = new WDGOrganization( $organization->wpref, $organization );
 
 		//*****************
 		//Formatage pour RSS

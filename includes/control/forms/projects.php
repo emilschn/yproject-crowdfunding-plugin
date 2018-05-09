@@ -302,7 +302,7 @@ class WDGFormProjects {
 		$roi_declaration = new WDGROIDeclaration( $roi_id );
 		$campaign = atcf_get_current_campaign();
 		$current_organization = $campaign->get_organization();
-		$organization = new WDGOrganization($current_organization->wpref);
+		$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
 		
 		if (isset($_POST['payment_card'])) {
 			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url

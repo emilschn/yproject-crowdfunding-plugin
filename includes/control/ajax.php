@@ -76,6 +76,12 @@ class WDGAjaxActions {
 	 * Retourne une URL de redirection vers la connexion Facebook
 	 */
 	public static function get_connect_to_facebook_url() {
+		ypcf_session_start();
+		$posted_redirect = filter_input( INPUT_POST, 'redirect' );
+		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > $posted_redirect : ' . $posted_redirect );
+		$_SESSION[ 'login-fb-referer' ] = ( !empty( $posted_redirect ) ) ? $posted_redirect : wp_get_referer();
+		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
+		
 		$fb = new Facebook\Facebook([
 			'app_id' => YP_FB_APP_ID,
 			'app_secret' => YP_FB_SECRET,
@@ -85,12 +91,6 @@ class WDGAjaxActions {
 		$permissions = ['email'];
 		$loginUrl = $helper->getLoginUrl( home_url( '/connexion/?fbcallback=1' ) , $permissions);
 		echo $loginUrl;
-		
-		ypcf_session_start();
-		$posted_redirect = filter_input( INPUT_POST, 'redirect' );
-		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > $posted_redirect : ' . $posted_redirect );
-		$_SESSION[ 'login-fb-referer' ] = ( !empty( $posted_redirect ) ) ? $posted_redirect : wp_get_referer();
-		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
 		
 		exit();
 	}
@@ -1271,7 +1271,7 @@ class WDGAjaxActions {
 		$current_organization = $campaign->get_organization();
 
 		// enregistrement des données dans l'organisation
-		$org_object = new WDGOrganization( $current_organization->wpref );
+		$org_object = new WDGOrganization( $current_organization->wpref, $current_organization );
 
 		//enregistrement des données avec la fonction edit et récupération des 
 		//infos sur les fichiers uploadés
@@ -1699,7 +1699,7 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_birthplace"] = $user_item[ 'invest_item' ][ 'item' ][ 'birthday_city' ];
 						$array_contacts[$user_id]["user_address"] = $user_item[ 'invest_item' ][ 'item' ][ 'address' ];
 						$array_contacts[$user_id]["user_country"] = $user_item[ 'invest_item' ][ 'item' ][ 'country' ];
-						$array_contacts[$user_id]["user_mobile_phone"] = $user_item[ 'invest_item' ][ 'item' ][ 'birthday_city' ];
+						$array_contacts[$user_id]["user_mobile_phone"] = $user_item[ 'invest_item' ][ 'item' ][ 'phone_number' ];
 						
 					} else {
 						$WDGUser = new WDGUser( $user_id );

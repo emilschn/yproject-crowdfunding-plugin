@@ -95,7 +95,7 @@ class WDGOrganization {
 	/**
 	 * Constructeur
 	 */
-	public function __construct($user_id = FALSE) {
+	public function __construct( $user_id = FALSE, $api_object = FALSE ) {
 		if ($user_id === FALSE) {
 			$user_id = filter_input(INPUT_GET, 'orga_id');
 		}
@@ -103,7 +103,11 @@ class WDGOrganization {
 		if (!empty($user_id)) {
 			$this->creator = get_user_by('id', $user_id);
 			$this->api_id = get_user_meta($user_id, WDGOrganization::$key_api_id, TRUE);
-			$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->api_id );
+			if ( !empty( $api_object ) ) {
+				$this->bopp_object = $api_object;
+			} else {
+				$this->bopp_object = WDGWPREST_Entity_Organization::get( $this->api_id );
+			}
 			$this->wpref = $user_id;
 			
 			$this->name = $this->bopp_object->name;
@@ -1114,6 +1118,38 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
+	/**
+	 * 
+	 */
+	public function get_available_rois_amount() {
+		$buffer = 0;
+		$rois_amount = $this->get_rois_amount();
+		if ( $rois_amount > 0 ) {
+			$buffer = $this->get_rois_amount() - $this->get_transferred_amount();
+		}
+		$buffer = max( $buffer, 0 );
+		return $buffer;
+	}
+	
+	/**
+	 * Récupération des sommes déjà transférées sur le compte bancaire
+	 */
+	public function get_transferred_amount() {
+		$buffer = 0;
+		$args = array(
+			'author'		=> get_current_user_id(),
+			'post_type'		=> 'withdrawal_order_lw',
+			'post_status'	=> 'any',
+			'orderby'		=> 'post_date',
+			'order'			=> 'ASC'
+		);
+		$transfers = get_posts($args);
+		foreach ( $transfers as $post_transfer ){
+			$post_transfer = get_post( $post_transfer );
+			$buffer += $post_transfer->post_title;
+		}
+	}
+	
 	private $royalties_per_year;
 	/**
 	 * Retourne la liste des royalties d'une année
@@ -1215,7 +1251,7 @@ class WDGOrganization {
 			if ( !is_array( $downloads[0] ) ){
 				$campaign = atcf_get_campaign( $downloads[0] );
 				$campaign_organization = $campaign->get_organization();
-				$wdg_organization = new WDGOrganization( $campaign_organization->wpref );
+				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
 				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;

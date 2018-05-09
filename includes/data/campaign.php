@@ -747,7 +747,7 @@ class ATCF_Campaign {
 		
 		$WDGUser = new WDGUser( $this->data->post_author );
 		$campaign_organization = $this->get_organization();
-		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
+		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		
 		$project_investors_list = array();
 		$investments_list = $this->payments_data( TRUE );
@@ -1486,30 +1486,7 @@ class ATCF_Campaign {
 	
 	private $organization;
 	public function get_organization() {
-		if ( !isset( $this->organization ) ) {
-			global $WDG_cache_plugin;
-			if ($WDG_cache_plugin == null) {
-				$WDG_cache_plugin = new WDG_Cache_Plugin();
-			}
-			$cache_id = 'ATCF_Campaign::' .$this->ID. '::get_organization';
-			$cache_version = 1;
-			$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );
-			$this->organization = unserialize($result_cached);
-
-			if ( empty( $this->organization ) ) {
-				$api_project_id = $this->get_api_id();
-				$current_organizations = WDGWPREST_Entity_Project::get_organizations_by_role( $api_project_id, WDGWPREST_Entity_Project::$link_organization_type_manager );
-				if (isset($current_organizations) && count($current_organizations) > 0) {
-					$this->organization = $current_organizations[0];
-				
-					$result_save = serialize( $this->organization );
-					if ( !empty( $result_save ) ) {
-						$WDG_cache_plugin->set_cache( $cache_id, $result_save, 60*60*12, $cache_version );
-					}
-				}
-			}
-		}
-		return $this->organization;
+		return $this->api_data->organization;
 	}
 	
 	public function link_organization( $id_api_organization, $link_type = '' ) {

@@ -68,6 +68,9 @@ class WDGWPREST_Entity_Investment {
 			$info_age = $WDGUser->get_age( $payment_date );
 			$info_address = $WDGUser->get_address();
 			$info_postalcode = $WDGUser->get_postal_code();
+			if ( strlen( $info_postalcode ) == 4 ) {
+				$info_postalcode = '0' . $info_postalcode;
+			}
 			$info_city = $WDGUser->get_city();
 			$info_country = $WDGUser->get_country( 'iso2' );
 			$info_phone = $WDGUser->get_phone_number();
