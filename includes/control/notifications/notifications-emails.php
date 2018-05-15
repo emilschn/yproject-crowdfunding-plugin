@@ -146,7 +146,7 @@ class NotificationsEmails {
 		
 		if ( !empty( $preinvestment ) ) {
 			$body_content .= "Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
-							. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase de vote.<br>"
+							. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
 							. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
 							. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
 		}
@@ -449,7 +449,7 @@ class NotificationsEmails {
 		$object = "Votre pré-investissement doit être validé";
 		
 		$body_content = "Bonjour,<br><br>";
-		$body_content .= "Suite à la phase de vote, des modifications ont été apportées sur les conditions d'investissement pour le projet ".$campaign->data->post_title.".";
+		$body_content .= "Suite à la phase d'&eacute;valuation, des modifications ont été apportées sur les conditions d'investissement pour le projet ".$campaign->data->post_title.".";
 		$body_content .= "Le pré-investissemnt que vous avez effectué doit donc être à nouveau validé.<br>";
 		$body_content .= "Merci de vous rendre sur la plateforme pour vous identifier et suivre le processus de validation qui sera affiché.<br><br>";
 		
@@ -849,16 +849,16 @@ class NotificationsEmails {
 		
 		$admin_email = get_option('admin_email');
 		$campaign = new ATCF_Campaign( $campaign_id );
-		$status_str = 'vote';
+		$status_str = "d'&eacute;valuation";
 		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
-			$status_str = 'collecte';
+			$status_str = "de collecte";
 		}
 		
 		$object = "Changement d'étape projet";
 		$body_content = "Salut !!<br>";
 		$body_content .= "Un projet a changé d'étape :<br>";
 		$body_content .= "Il s'agit du projet " .$campaign->data->post_title. ".<br>";
-		$body_content .= "Il est passé en phase de " .$status_str. ".<br><br>";
+		$body_content .= "Il est passé en phase " .$status_str. ".<br><br>";
 		$body_content .= "GO ! GO ! GO !";
 
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
