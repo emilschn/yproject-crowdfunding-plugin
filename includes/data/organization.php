@@ -412,8 +412,14 @@ class WDGOrganization {
 		$this->legalform = $value;
 	}
 	
+	//Supprime les espaces
 	public function get_capital() {
-		return $this->capital;
+		$temp_capital = $this->capital;
+		if(preg_match('#\s#', $temp_capital)){
+			$temp_capital = str_replace(' ','',$temp_capital);
+			$this->set_capital($temp_capital);
+		}
+		return $temp_capital;
 	}
 	public function set_capital($value) {
 		$this->capital = $value;
@@ -1346,8 +1352,10 @@ class WDGOrganization {
 			if (strlen($org_postal_code) === 4) { $org_postal_code = '0' . $org_postal_code; }
 		}
 
-		//Vérification du capital
-		$org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_VALIDATE_INT);
+		//Vérification du capital (autorise nombre décimal)
+		$temp_org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_SANITIZE_NUMBER_FLOAT);
+		$org_capital = filter_var($temp_org_capital, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+
 		if ($org_capital === FALSE || $org_capital === 0) {
 			$errors_submit_new->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier et sup&eacute;rieur &agrave; z&eacute;ro.', 'yproject'));
 			$errors_edit['org_capital'] = $errors_submit_new->get_error_message('capital-not-integer');
@@ -1498,8 +1506,10 @@ class WDGOrganization {
 			if (strlen($org_postal_code) === 4) { $org_postal_code = '0' . $org_postal_code; }
 		}
 
-		//Vérification du capital
-		$org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_VALIDATE_INT);
+		//Vérification du capital (autorise nombre décimal)
+		$temp_org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_SANITIZE_NUMBER_FLOAT);
+		$org_capital = filter_var($temp_org_capital, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+
 		if ($org_capital === FALSE || $org_capital === 0) {
 			$errors_submit->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier et sup&eacute;rieur &agrave; z&eacute;ro.', 'yproject'));
 			$errors_edit['org_capital'] = $errors_submit->get_error_message('capital-not-integer');
