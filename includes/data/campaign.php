@@ -841,7 +841,7 @@ class ATCF_Campaign {
     public function funding_duration_str() {
 		$buffer = $this->funding_duration() . __( " ans", 'yproject' );
 		if ( $this->funding_duration() == 0 ) {
-			$buffer = __( "une dur&eacute; ind&eacute;termin&eacute;e", 'yproject' );
+			$buffer = __( "une dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
 		}
 		return $buffer;
 	}
