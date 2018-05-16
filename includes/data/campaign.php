@@ -713,6 +713,11 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public static $key_archive_message = 'archive_message';
+	public function archive_message() {
+		return $this->__get( ATCF_Campaign::$key_archive_message );
+	}
+	
 	public function get_funded_certificate_url() {
 		$this->make_funded_certificate();
 		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/campaign-funded/';

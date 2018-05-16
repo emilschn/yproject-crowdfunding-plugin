@@ -585,6 +585,11 @@ class WDGAjaxActions {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
+		$new_archive_message = sanitize_text_field( filter_input( INPUT_POST, 'new_archive_message' ) );
+		if ( !empty( $new_archive_message ) ) {
+			$campaign->__set( ATCF_Campaign::$key_archive_message, $new_archive_message );
+			$success[ "new_archive_message" ] = 1;
+		}
 		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
