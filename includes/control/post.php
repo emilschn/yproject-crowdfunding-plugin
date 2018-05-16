@@ -775,7 +775,7 @@ class WDGPostActions {
 			$campaign->generate_missing_declarations( $month_count );
 			$result = 'success';
 		
-			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#wallet' );
+			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#royalties' );
 			exit();
 			
 		} else {
@@ -795,7 +795,7 @@ class WDGPostActions {
 			$roi_declaration = new WDGROIDeclaration( $roi_declaration_id );
 			$roi_declaration->mark_transfer_received();
 		
-			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#wallet' );
+			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
 			exit();
 			
 		} else {
@@ -818,7 +818,7 @@ class WDGPostActions {
 			$campaign_bill->set_declaration( $roi_declaration );
 			$campaign_bill->generate();
 		
-			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#wallet' );
+			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
 			exit();
 			
 		} else {
