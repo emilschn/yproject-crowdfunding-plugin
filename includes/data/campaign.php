@@ -2111,6 +2111,16 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	
+	public static $key_skip_in_stats = '_campaign_skip_in_stats';
+	public function skip_in_stats() {
+		$buffer = false;
+		$meta_skip_in_stats = $this->__get( ATCF_Campaign::$key_skip_in_stats );
+		if ( !empty( $meta_skip_in_stats ) ) {
+			$buffer = ( $meta_skip_in_stats == '1' );
+		}
+		return $buffer;
+	}
 
 	/**
 	 * Campaign Active
@@ -2747,6 +2757,11 @@ class ATCF_Campaign {
 			array_push(
 				$query_options[ 'meta_query' ],
 				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
+			);	
+		} else {
+			array_push(
+				$query_options[ 'meta_query' ],
+				array ( 'key' => ATCF_Campaign::$key_skip_in_stats, 'compare' => 'NOT EXISTS' )
 			);	
 		}
 		

@@ -535,6 +535,15 @@ class WDGAjaxActions {
 			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote );
 		}
 		$success[ 'new_skip_vote' ] = 1;
+		
+		// Ne pas compter dans les stats
+		$new_skip_in_stats = filter_input( INPUT_POST, 'new_skip_in_stats' );
+        if ( $new_skip_in_stats === true || $new_skip_in_stats === "true" || $new_skip_in_stats === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats );
+		}
+		$success[ 'new_skip_in_stats' ] = 1;
 
 		//Catégories du projet
 		$new_project_categories = array();
