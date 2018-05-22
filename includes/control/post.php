@@ -212,13 +212,13 @@ class WDGPostActions {
 				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_create_orga, true) );
 				$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 				$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-				wp_safe_redirect( home_url( '/lancement?error=creation#newproject' ) );
+				wp_safe_redirect( home_url( '/lancement/?error=creation#newproject' ) );
 			}
         } else {
 			global $errors_submit_new, $errors_create_orga;
 			$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 			$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-            wp_safe_redirect( home_url( '/lancement?error=field_empty#newproject' ) );
+            wp_safe_redirect( home_url( '/lancement/?error=field_empty#newproject' ) );
         }
 		exit();
     }
@@ -723,10 +723,10 @@ class WDGPostActions {
 		
 		if ( $has_moved ) {
 			update_post_meta( $investment_id, 'check_picture', $random_filename );
-			wp_redirect( home_url( '/moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_invest_check' );
+			wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_invest_check' );
 			
 		} else {
-			wp_redirect( home_url( '/moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check&error-upload=1' );
+			wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check&error-upload=1' );
 			
 		}
 		exit();
@@ -758,7 +758,7 @@ class WDGPostActions {
 		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
 		
-		wp_redirect( home_url( '/moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
+		wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
 	}
 	
 	public static function declaration_auto_generate() {
@@ -775,7 +775,7 @@ class WDGPostActions {
 			$campaign->generate_missing_declarations( $month_count );
 			$result = 'success';
 		
-			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#royalties' );
+			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#royalties' );
 			exit();
 			
 		} else {
@@ -795,7 +795,7 @@ class WDGPostActions {
 			$roi_declaration = new WDGROIDeclaration( $roi_declaration_id );
 			$roi_declaration->mark_transfer_received();
 		
-			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
+			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#royalties' );
 			exit();
 			
 		} else {
@@ -818,7 +818,7 @@ class WDGPostActions {
 			$campaign_bill->set_declaration( $roi_declaration );
 			$campaign_bill->generate();
 		
-			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
+			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#royalties' );
 			exit();
 			
 		} else {
@@ -837,7 +837,7 @@ class WDGPostActions {
 		
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$campaign->refund();
-			wp_redirect( home_url( '/tableau-de-bord' ) . '?campaign_id=' .$campaign_id );
+			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id );
 			exit();
 			
 		} else {

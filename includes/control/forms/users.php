@@ -255,7 +255,7 @@ class WDGFormUsers {
 				$url_reason = '?error_reason=' .$reason;
 			}
 			ypcf_debug_log( 'WDGFormUsers::redirect_after_login_failed' );
-			wp_redirect( home_url( '/connexion' ) . $url_reason );
+			wp_redirect( home_url( '/connexion/' ) . $url_reason );
 		}
 		exit();
 	}
