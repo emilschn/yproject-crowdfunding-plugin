@@ -523,7 +523,7 @@ class WDGOrganization {
 	public function get_transfers() {
 		$args = array(
 		    'author'    => $this->wpref,
-		    'post_type' => 'withdrawal_order',
+		    'post_type' => 'withdrawal_order_lw',
 		    'post_status' => 'any',
 		    'orderby'   => 'post_date',
 		    'order'     =>  'ASC'
@@ -535,7 +535,7 @@ class WDGOrganization {
 	public function get_pending_transfers() {
 		$args = array(
 			'author'    => $this->wpref,
-			'post_type' => 'withdrawal_order',
+			'post_type' => 'withdrawal_order_lw',
 			'post_status'   => 'pending'
 		);
 		$pending_transfers = get_posts($args);
@@ -815,7 +815,7 @@ class WDGOrganization {
 					'post_title'    => $amount_without_commission,
 					'post_content'  => print_r( $result_transfer, TRUE ),
 					'post_status'   => 'publish',
-					'post_type'		=> 'withdrawal_order'
+					'post_type'		=> 'withdrawal_order_lw'
 				);
 				wp_insert_post( $withdrawal_post );
 			}
