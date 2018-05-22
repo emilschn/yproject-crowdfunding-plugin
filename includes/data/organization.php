@@ -523,7 +523,7 @@ class WDGOrganization {
 	public function get_transfers() {
 		$args = array(
 		    'author'    => $this->wpref,
-		    'post_type' => 'withdrawal_order_lw',
+		    'post_type' => 'withdrawal_order',
 		    'post_status' => 'any',
 		    'orderby'   => 'post_date',
 		    'order'     =>  'ASC'
@@ -535,7 +535,7 @@ class WDGOrganization {
 	public function get_pending_transfers() {
 		$args = array(
 			'author'    => $this->wpref,
-			'post_type' => 'withdrawal_order_lw',
+			'post_type' => 'withdrawal_order',
 			'post_status'   => 'pending'
 		);
 		$pending_transfers = get_posts($args);
@@ -807,6 +807,10 @@ class WDGOrganization {
 		if ( !empty( $amount_without_commission ) ) {
 			$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount_without_commission + $amount_commission, 0, $amount_commission );
 			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
+			$post_type = 'withdrawal_order';
+			if ( $amount_commission == 0 ) {
+				$post_type .= '_lw';
+			}
 
 			if ( $buffer === TRUE ) {
 				// Enregistrement de l'objet Lemon Way
@@ -815,7 +819,7 @@ class WDGOrganization {
 					'post_title'    => $amount_without_commission,
 					'post_content'  => print_r( $result_transfer, TRUE ),
 					'post_status'   => 'publish',
-					'post_type'		=> 'withdrawal_order_lw'
+					'post_type'		=> $post_type
 				);
 				wp_insert_post( $withdrawal_post );
 			}
@@ -1143,7 +1147,7 @@ class WDGOrganization {
 	public function get_transferred_amount() {
 		$buffer = 0;
 		$args = array(
-			'author'		=> get_current_user_id(),
+			'author'		=> $this->wpref,
 			'post_type'		=> 'withdrawal_order_lw',
 			'post_status'	=> 'any',
 			'orderby'		=> 'post_date',
