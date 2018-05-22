@@ -1158,6 +1158,7 @@ class WDGOrganization {
 			$post_transfer = get_post( $post_transfer );
 			$buffer += $post_transfer->post_title;
 		}
+		return $buffer;
 	}
 	
 	private $royalties_per_year;
