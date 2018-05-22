@@ -255,6 +255,7 @@ class WDGUser {
 		return $buffer;
 	}
 	public function set_firstname($value) {
+		$value = mb_convert_case( $value , MB_CASE_TITLE );
 		$this->first_name = $value;
 	}
 
@@ -266,6 +267,7 @@ class WDGUser {
 		return $buffer;
 	}
 	public function set_lastname($value) {
+		$value = mb_convert_case( $value , MB_CASE_TITLE );
 		$this->last_name = $value;
 	}
 	
@@ -521,15 +523,13 @@ class WDGUser {
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		}
 		if ( !empty( $firstname ) ) {
-			$this->first_name = $firstname;
-			$firstname = mb_convert_case( $firstname , MB_CASE_TITLE );
 			$this->set_firstname($firstname);
+			$firstname = $this->get_firstname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
 		}
 		if ( !empty( $lastname ) ) {
-			$this->last_name = $lastname;
-			$lastname = mb_convert_case( $lastname , MB_CASE_TITLE );
 			$this->set_lastname($lastname);
+			$lastname = $this->get_lastname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
 		}
 		
@@ -601,15 +601,13 @@ class WDGUser {
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		}
 		if ( !empty( $firstname ) ) {
-			$this->first_name = $firstname;
-			$firstname = mb_convert_case( $firstname , MB_CASE_TITLE );
 			$this->set_firstname($firstname);
+			$firstname = $this->get_firstname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
 		}
 		if ( !empty( $lastname ) ) {
-			$this->last_name = $lastname;
-			$lastname = mb_convert_case( $lastname , MB_CASE_TITLE );
 			$this->set_lastname($lastname);
+			$lastname = $this->get_lastname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
 		}
 		
