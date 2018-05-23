@@ -470,6 +470,19 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function can_edit_organization( $organization_wpref ) {
+		$buffer = $this->is_admin();
+		if ( !$buffer ) {
+			$organization_list = $this->get_organizations_list();
+			foreach ( $organization_list as $organization_item ) {
+				if ( $organization_wpref == $organization_item->wpref ) {
+					$buffer = TRUE;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
 	public function get_organizations_list() {
 		if ( !isset( $this->organizations_list ) ) {
 			$this->organizations_list = WDGWPREST_Entity_User::get_organizations_by_role( $this->get_api_id(), WDGWPREST_Entity_Organization::$link_user_type_creator );
