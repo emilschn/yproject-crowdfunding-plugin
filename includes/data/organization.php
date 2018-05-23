@@ -1432,7 +1432,7 @@ class WDGOrganization {
 						exit();
 
 					} else {
-						wp_safe_redirect( home_url( '/mon-compte' ) );
+						wp_safe_redirect( home_url( '/mon-compte/' ) );
 						exit();
 					}
 				}

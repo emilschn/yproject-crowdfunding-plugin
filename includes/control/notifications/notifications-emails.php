@@ -566,7 +566,7 @@ class NotificationsEmails {
 		
 		$body_content = 'Bonjour '.$user_author->first_name.',<br />';
 		$body_content .= 'Les informations de votre campagne ont bien été enregistrées sur '.ATCF_CrowdFunding::get_platform_name().'. ';
-		$body_content .= 'Vous pouvez dès à présent les compléter en accédant à votre <a href="'. home_url('/tableau-de-bord').'?campaign_id='.$campaign_id.'">tableau de bord</a>.<br />';
+		$body_content .= 'Vous pouvez dès à présent les compléter en accédant à votre <a href="'. home_url('/tableau-de-bord/').'?campaign_id='.$campaign_id.'">tableau de bord</a>.<br />';
 		$body_content .= 'Toutes les informations communiquées à '.ATCF_CrowdFunding::get_platform_name().' sont gardées confidentielles.<br /><br />';
 		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre campagne.<br /><br />';
 		$body_content .= 'Bien à vous,<br />';
