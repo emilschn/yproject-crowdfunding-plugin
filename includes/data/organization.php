@@ -1102,6 +1102,43 @@ class WDGOrganization {
 		return ( !empty( $rib_lemonway_error ) );
 	}
 	
+
+	
+/*******************************************************************************
+ * Gestion investissements
+*******************************************************************************/
+	/**
+	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
+	 */
+	public function get_investments( $payment_status ) {
+		$buffer = array();
+		$purchases = edd_get_users_purchases( $this->get_wpref(), -1, false, $payment_status );
+		
+		if ( !empty($purchases) ) {
+			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
+				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
+				$download_id = '';
+				if ( !is_array( $downloads[0] ) ){
+					$download_id = $downloads[0];
+					if ( !isset($buffer[$download_id]) ) {
+						$buffer[$download_id] = array();
+					}
+					array_push( $buffer[$download_id], $purchase_post->ID );
+				}
+			}
+		}
+			
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
+	 */
+	public function get_validated_investments() {
+		$payment_status = array( "publish", "completed" );
+		return $this->get_investments( $payment_status );
+	}
+	
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/
@@ -1195,6 +1232,23 @@ class WDGOrganization {
 	public function has_royalties_for_year( $year ) {
 		$royalties_list = $this->get_royalties_for_year( $year );
 		return ( count( $royalties_list ) > 0 );
+	}
+	
+	/**
+	 * Retourne la liste des royalties par campagne
+	 * @param int $campaign_id
+	 * @return array
+	 */
+	public function get_royalties_by_campaign_id( $campaign_id ) {
+		$buffer = array();
+		$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_project == $campaign_api_id ) {
+				array_push( $buffer, $roi_item );
+			}
+		}
+		return $buffer;
 	}
 	
 	/**
