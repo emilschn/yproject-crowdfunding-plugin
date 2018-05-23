@@ -288,10 +288,12 @@ class WDGFormUsers {
 			
 			// Vérifications sur prénom et nom
 			$user_firstname = filter_input( INPUT_POST, 'signup_firstname' );
+			$user_firstname = mb_convert_case( $user_firstname , MB_CASE_TITLE );
 			if ( empty( $user_firstname ) ) {
 				$signup_errors->add( 'user_firstname', __( "Le pr&eacute;nom doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
 			}
 			$user_lastname = filter_input( INPUT_POST, 'signup_lastname' );
+			$user_lastname = mb_convert_case( $user_lastname , MB_CASE_TITLE );
 			if ( empty( $user_lastname ) ) {
 				$signup_errors->add( 'user_lastname', __( "Le nom de famille doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
 			}
