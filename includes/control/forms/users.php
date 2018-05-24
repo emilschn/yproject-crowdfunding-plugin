@@ -91,7 +91,7 @@ class WDGFormUsers {
 							'user_email'	=> $user_email,
 							'first_name'	=> $user_first_name,
 							'last_name'		=> $user_last_name,
-							'user_url'		=> $user_profile_url,
+							'user_url'		=> substr( $user_profile_url, 0, 99 ),
 							'user_pass'		=> wp_generate_password()
 						);
 
@@ -101,16 +101,16 @@ class WDGFormUsers {
 						if ( $user_id && is_integer( $user_id ) ) {
 							NotificationsSlack::send_new_user( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );
+						} else {
+							ypcf_debug_log( 'WDGFormUsers::login_facebook ' . print_r($user_id, true) );
 						}
 					}
 
 
 				} catch(Facebook\Exceptions\FacebookResponseException $e) {
-					/*echo 'Graph returned an error: ' . $e->getMessage();
-					exit;*/
+					ypcf_debug_log( 'Graph returned an error: ' . $e->getMessage() );
 				} catch(Facebook\Exceptions\FacebookSDKException $e) {
-					/*echo 'Facebook SDK returned an error: ' . $e->getMessage();
-					exit;*/
+					ypcf_debug_log( 'Facebook SDK returned an error: ' . $e->getMessage() );
 				}
 			}
 
