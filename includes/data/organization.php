@@ -1524,6 +1524,7 @@ class WDGOrganization {
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
+			$org_object->set_website(filter_input(INPUT_POST, 'org_website'));
 			$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
 			$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
 			$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
