@@ -47,25 +47,27 @@ class WDGWPREST_Entity_PollAnswer {
 	 * @param string $answers
 	 * @param string $context
 	 * @param int $context_amount
-	 * @param int $project_id
-	 * @param int $user_id
+	 * @param int $campaign_api_id
+	 * @param int $user_api_id
 	 * @param int $user_age
 	 * @param string $user_postal_code
 	 * @param string $user_gender
+	 * @param string $user_email
 	 * @return type
 	 */
-	public static function create( $poll_slug, $poll_version, $answers, $context, $context_amount, $project_id, $user_id, $user_age, $user_postal_code, $user_gender ) {
+	public static function create( $poll_slug, $poll_version, $answers, $context, $context_amount, $campaign_api_id, $user_api_id, $user_age, $user_postal_code, $user_gender, $user_email ) {
 		$parameters = array(
 			'poll_slug'			=> $poll_slug,
 			'poll_version'		=> $poll_version,
 			'answers'			=> $answers,
 			'context'			=> $context,
 			'context_amount'	=> $context_amount,
-			'project_id'		=> $project_id,
-			'user_id'			=> $user_id,
+			'project_id'		=> $campaign_api_id,
+			'user_id'			=> $user_api_id,
 			'user_age'			=> $user_age,
 			'user_postal_code'	=> $user_postal_code,
-			'user_gender'		=> $user_gender
+			'user_gender'		=> $user_gender,
+			'user_email'		=> $user_email
 		);
 		return WDGWPRESTLib::call_post_wdg( 'poll-answer', $parameters );
 	}
