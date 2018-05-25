@@ -1,9 +1,14 @@
 <?php
 class WDG_Cache_Plugin {
 	
+	// TODO : Déplacer dans une classe spécifique de gestion de configuration de cache	
+	public static $nb_query_campaign_funded = 40;
+	public static $stats_key = 'home-stats';
+	public static $stats_version = 1;
+
 	private $table_name;
 	private $wpdb;
-	
+
 	protected static $_current = null;
 	
 	/**
