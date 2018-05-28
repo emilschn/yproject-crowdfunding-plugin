@@ -6,6 +6,7 @@ class NotificationsSlack {
     private static $channel_notifications = "wdg-notifications";
 	
 	private static $icon_bell = ':bell:';
+	private static $icon_doc = ':notebook:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 	    $data = "payload=" . json_encode(array(
@@ -35,6 +36,12 @@ class NotificationsSlack {
 		$user_data = get_userdata( $wp_user_id );
 		$message = "Nouvel utilisateur : " . $user_data->user_login . ' (' . $wp_user_id . ') => ' . $user_data->user_email;
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_bell );
+	}
+	
+	public static function send_new_doc_status( $wp_user_id ) {
+		$user_data = get_userdata( $wp_user_id );
+		$message = "Nouvel utilisateur : " . $user_data->user_login . ' (' . $wp_user_id . ') => ' . $user_data->user_email;
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_doc );
 	}
     
 }
