@@ -38,9 +38,7 @@ class NotificationsSlack {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_bell );
 	}
 	
-	public static function send_new_doc_status( $wp_user_id ) {
-		$user_data = get_userdata( $wp_user_id );
-		$message = "Nouvel utilisateur : " . $user_data->user_login . ' (' . $wp_user_id . ') => ' . $user_data->user_email;
+	public static function send_new_doc_status( $message ) {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_doc );
 	}
     
