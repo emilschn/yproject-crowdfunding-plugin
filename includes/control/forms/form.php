@@ -61,6 +61,11 @@ class WDG_Form {
 		
 	}
 	
+	public function isPosted() {
+		$input_action = $this->getInputText( 'action' );
+		return ( !empty( $input_action ) && $input_action == $this->formID );
+	}
+	
 	/**
 	 * Vérifications standardes sur les champs
 	 */

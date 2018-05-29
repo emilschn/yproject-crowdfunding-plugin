@@ -807,6 +807,10 @@ class WDGOrganization {
 		if ( !empty( $amount_without_commission ) ) {
 			$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount_without_commission + $amount_commission, 0, $amount_commission );
 			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
+			$post_type = 'withdrawal_order';
+			if ( $amount_commission == 0 ) {
+				$post_type .= '_lw';
+			}
 
 			if ( $buffer === TRUE ) {
 				// Enregistrement de l'objet Lemon Way
@@ -815,7 +819,7 @@ class WDGOrganization {
 					'post_title'    => $amount_without_commission,
 					'post_content'  => print_r( $result_transfer, TRUE ),
 					'post_status'   => 'publish',
-					'post_type'		=> 'withdrawal_order'
+					'post_type'		=> $post_type
 				);
 				wp_insert_post( $withdrawal_post );
 			}
@@ -852,7 +856,14 @@ class WDGOrganization {
 		//Vérifie que le wallet n'est pas déjà enregistré
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
-			$WDGUser_creator = new WDGUser();
+			
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+			} else {
+				$WDGUser_creator = new WDGUser();
+			}
+			
 			return LemonwayLib::wallet_company_register(
 				$this->get_lemonway_id(),
 				$this->get_email(),
@@ -1098,6 +1109,43 @@ class WDGOrganization {
 		return ( !empty( $rib_lemonway_error ) );
 	}
 	
+
+	
+/*******************************************************************************
+ * Gestion investissements
+*******************************************************************************/
+	/**
+	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
+	 */
+	public function get_investments( $payment_status ) {
+		$buffer = array();
+		$purchases = edd_get_users_purchases( $this->get_wpref(), -1, false, $payment_status );
+		
+		if ( !empty($purchases) ) {
+			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
+				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
+				$download_id = '';
+				if ( !is_array( $downloads[0] ) ){
+					$download_id = $downloads[0];
+					if ( !isset($buffer[$download_id]) ) {
+						$buffer[$download_id] = array();
+					}
+					array_push( $buffer[$download_id], $purchase_post->ID );
+				}
+			}
+		}
+			
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
+	 */
+	public function get_validated_investments() {
+		$payment_status = array( "publish", "completed" );
+		return $this->get_investments( $payment_status );
+	}
+	
 /*******************************************************************************
  * Gestion royalties
 *******************************************************************************/
@@ -1143,7 +1191,7 @@ class WDGOrganization {
 	public function get_transferred_amount() {
 		$buffer = 0;
 		$args = array(
-			'author'		=> get_current_user_id(),
+			'author'		=> $this->wpref,
 			'post_type'		=> 'withdrawal_order_lw',
 			'post_status'	=> 'any',
 			'orderby'		=> 'post_date',
@@ -1154,6 +1202,7 @@ class WDGOrganization {
 			$post_transfer = get_post( $post_transfer );
 			$buffer += $post_transfer->post_title;
 		}
+		return $buffer;
 	}
 	
 	private $royalties_per_year;
@@ -1190,6 +1239,23 @@ class WDGOrganization {
 	public function has_royalties_for_year( $year ) {
 		$royalties_list = $this->get_royalties_for_year( $year );
 		return ( count( $royalties_list ) > 0 );
+	}
+	
+	/**
+	 * Retourne la liste des royalties par campagne
+	 * @param int $campaign_id
+	 * @return array
+	 */
+	public function get_royalties_by_campaign_id( $campaign_id ) {
+		$buffer = array();
+		$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_project == $campaign_api_id ) {
+				array_push( $buffer, $roi_item );
+			}
+		}
+		return $buffer;
 	}
 	
 	/**
@@ -1427,7 +1493,7 @@ class WDGOrganization {
 						exit();
 
 					} else {
-						wp_safe_redirect( home_url( '/mon-compte' ) );
+						wp_safe_redirect( home_url( '/mon-compte/' ) );
 						exit();
 					}
 				}
@@ -1465,6 +1531,7 @@ class WDGOrganization {
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
+			$org_object->set_website(filter_input(INPUT_POST, 'org_website'));
 			$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
 			$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
 			$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));

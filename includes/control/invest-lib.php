@@ -134,21 +134,12 @@ function ypcf_check_invest_redirections() {
 			&& intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value) {
 	
 	    //Suite des tests pour les projets 
-            //Pour l'investissement : bon pour souscription écrit
-            //Pour tous : informations validées par coche
 	    if (
 				(
-					(
-						($campaign->funding_type() != 'fundingdonation')
-						&& (
-							isset($_POST['confirm_power']) 
-							&& strtolower($_POST['confirm_power']) == 'bon pour souscription'
-							&& ($amount > WDGInvestmentContract::$signature_minimum_amount || (isset($_POST['confirm_signing']) && $_POST['confirm_signing']))
-						)
-					)
-					|| ($campaign->funding_type() == 'fundingdonation')
+					( ( $campaign->funding_type() != 'fundingdonation' ) && ( $amount > 1500 ) ) || ($campaign->funding_type() == 'fundingdonation')
 				)
-                && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' ) {
+                && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' 
+            ) {
 
 		    $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
                     

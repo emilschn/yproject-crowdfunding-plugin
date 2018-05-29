@@ -713,6 +713,11 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public static $key_archive_message = 'archive_message';
+	public function archive_message() {
+		return $this->__get( ATCF_Campaign::$key_archive_message );
+	}
+	
 	public function get_funded_certificate_url() {
 		$this->make_funded_certificate();
 		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/campaign-funded/';
@@ -836,7 +841,7 @@ class ATCF_Campaign {
     public function funding_duration_str() {
 		$buffer = $this->funding_duration() . __( " ans", 'yproject' );
 		if ( $this->funding_duration() == 0 ) {
-			$buffer = __( "une dur&eacute; ind&eacute;termin&eacute;e", 'yproject' );
+			$buffer = __( "une dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
 		}
 		return $buffer;
 	}
@@ -1887,7 +1892,7 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_vote() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = __('&Eacute;valuation termin&eacute;', 'yproject');
+				    $buffer = __('&Eacute;valuation termin&eacute;e', 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));
@@ -2103,6 +2108,16 @@ class ATCF_Campaign {
 		$meta_skip_vote = $this->__get( ATCF_Campaign::$key_skip_vote );
 		if ( !empty( $meta_skip_vote ) ) {
 			$buffer = ( $meta_skip_vote == '1' );
+		}
+		return $buffer;
+	}
+	
+	public static $key_skip_in_stats = '_campaign_skip_in_stats';
+	public function skip_in_stats() {
+		$buffer = false;
+		$meta_skip_in_stats = $this->__get( ATCF_Campaign::$key_skip_in_stats );
+		if ( !empty( $meta_skip_in_stats ) ) {
+			$buffer = ( $meta_skip_in_stats == '1' );
 		}
 		return $buffer;
 	}
@@ -2743,6 +2758,11 @@ class ATCF_Campaign {
 				$query_options[ 'meta_query' ],
 				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
 			);	
+		} else {
+			array_push(
+				$query_options[ 'meta_query' ],
+				array ( 'key' => ATCF_Campaign::$key_skip_in_stats, 'compare' => 'NOT EXISTS' )
+			);	
 		}
 		
 		if (!empty($client)) {
@@ -2959,7 +2979,8 @@ function atcf_get_locations() {
 		'973 Guyane',
 		'974 La Réunion',
 		'976 Mayotte',
-		'Italie'
+		'Italie',
+		'Belgique'
 	);
 	return $buffer;
 }
@@ -2983,7 +3004,7 @@ function atcf_get_regions() {
 		"Occitanie"						=> array( 9, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82 ),
 		"Pays de la Loire"				=> array( 44, 49, 53, 72, 85 ),
 		"Provence-Alpes-Côte d'Azur"	=> array( 4, 5, 6, 13, 83, 84 ),
-		"Etranger"						=> array( 'Ita' )
+		"Etranger"						=> array( 'Ita', 'Bel' )
 	);
 	return $buffer;
 }

@@ -536,6 +536,15 @@ class WDGAjaxActions {
 			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote );
 		}
 		$success[ 'new_skip_vote' ] = 1;
+		
+		// Ne pas compter dans les stats
+		$new_skip_in_stats = filter_input( INPUT_POST, 'new_skip_in_stats' );
+        if ( $new_skip_in_stats === true || $new_skip_in_stats === "true" || $new_skip_in_stats === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats );
+		}
+		$success[ 'new_skip_in_stats' ] = 1;
 
 		//Catégories du projet
 		$new_project_categories = array();
@@ -585,6 +594,11 @@ class WDGAjaxActions {
 		if ( $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max || $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_step ) {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
+		}
+		$new_archive_message = sanitize_text_field( filter_input( INPUT_POST, 'new_archive_message' ) );
+		if ( !empty( $new_archive_message ) ) {
+			$campaign->__set( ATCF_Campaign::$key_archive_message, $new_archive_message );
+			$success[ "new_archive_message" ] = 1;
 		}
 		
 		//Champs personnalisés

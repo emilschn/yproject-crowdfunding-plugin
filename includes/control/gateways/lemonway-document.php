@@ -159,4 +159,43 @@ class LemonwayDocument {
 		return $buffer;
 	}
 	
+	public static function get_document_type_str_by_type_id( $type_id ) {
+		$document_type_str = array(
+			0	=> "Pi&egrave;ce d'identit&eacute;",
+			1	=> "Justificatif de domicile",
+			2	=> "RIB",
+			3	=> "Passeport",
+			4	=> "Passeport",
+			5	=> "Permis de r&eacute;sidence",
+			7	=> "KBIS"
+		);
+		
+		$buffer = __( "Autre", 'yproject' );
+		if ( isset( $document_type_str[ $type_id ] ) ) {
+			$buffer = __( $document_type_str[ $type_id ], 'yproject' );
+		}
+		
+		return $buffer. ' (' .$type_id. ')';
+	}
+	
+	public static function get_document_status_str_by_status_id( $status_id ) {
+		$document_status_str = array(
+			0	=> "En attente de v&eacute;rification",
+			1	=> "En attente",
+			2	=> "Accept&eacute;",
+			3	=> "Refus&eacute;",
+			4	=> "Illisible",
+			5	=> "Expir&eacute;",
+			6	=> "Mauvais type",
+			7	=> "Mauvaise personne"
+		);
+		
+		$buffer = __( "Autre", 'yproject' );
+		if ( isset( $document_status_str[ $status_id ] ) ) {
+			$buffer = __( $document_status_str[ $status_id ], 'yproject' );
+		}
+		
+		return $buffer. ' (' .$status_id. ')';
+	}
+	
 }

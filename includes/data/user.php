@@ -251,16 +251,24 @@ class WDGUser {
 		$buffer = $this->first_name;
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->first_name;
-		}
+		} 
 		return $buffer;
 	}
-	
+	public function set_firstname($value) {
+		$value = mb_convert_case( $value , MB_CASE_TITLE );
+		$this->first_name = $value;
+	}
+
 	public function get_lastname() {
 		$buffer = $this->last_name;
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->last_name;
-		}
+		} 
 		return $buffer;
+	}
+	public function set_lastname($value) {
+		$value = mb_convert_case( $value , MB_CASE_TITLE );
+		$this->last_name = $value;
 	}
 	
 	public function get_display_name() {
@@ -479,6 +487,19 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function can_edit_organization( $organization_wpref ) {
+		$buffer = $this->is_admin();
+		if ( !$buffer ) {
+			$organization_list = $this->get_organizations_list();
+			foreach ( $organization_list as $organization_item ) {
+				if ( $organization_wpref == $organization_item->wpref ) {
+					$buffer = TRUE;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
 	public function get_organizations_list() {
 		if ( !isset( $this->organizations_list ) ) {
 			$this->organizations_list = WDGWPREST_Entity_User::get_organizations_by_role( $this->get_api_id(), WDGWPREST_Entity_Organization::$link_user_type_creator );
@@ -532,11 +553,13 @@ class WDGUser {
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		}
 		if ( !empty( $firstname ) ) {
-			$this->first_name = $firstname;
+			$this->set_firstname($firstname);
+			$firstname = $this->get_firstname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
 		}
 		if ( !empty( $lastname ) ) {
-			$this->last_name = $lastname;
+			$this->set_lastname($lastname);
+			$lastname = $this->get_lastname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
 		}
 		
@@ -608,11 +631,13 @@ class WDGUser {
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		}
 		if ( !empty( $firstname ) ) {
-			$this->first_name = $firstname;
+			$this->set_firstname($firstname);
+			$firstname = $this->get_firstname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'first_name' => $firstname ) ) ;
 		}
 		if ( !empty( $lastname ) ) {
-			$this->last_name = $lastname;
+			$this->set_lastname($lastname);
+			$lastname = $this->get_lastname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
 		}
 		
@@ -1590,7 +1615,7 @@ class WDGUser {
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
 					ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b' );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
-					if ( strpos( $buffer, '/connexion' ) !== FALSE || strpos( $buffer, '/inscription' ) !== FALSE ) {
+					if ( strpos( $buffer, '/connexion/' ) !== FALSE || strpos( $buffer, '/inscription/' ) !== FALSE ) {
 						$buffer = home_url();
 					}
 					
@@ -1602,7 +1627,7 @@ class WDGUser {
 
 						//Si la page précédente était déjà la page connexion ou enregistrement, 
 						// on tente de voir si la redirection était passée en paramètre
-						if ( strpos($referer_url, '/connexion') !== FALSE || strpos($referer_url, '/inscription') !== FALSE ) {
+						if ( strpos($referer_url, '/connexion/') !== FALSE || strpos($referer_url, '/inscription/') !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
 								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a' );

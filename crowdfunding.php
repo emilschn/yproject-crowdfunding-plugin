@@ -121,6 +121,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-declaration.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-bankinfo.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-poll-answer.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract-model.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-file.php' );
@@ -147,6 +148,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/gateways/lemonway-lib.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-lib-errors.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-document.php' );
+		require( $this->includes_dir . 'control/gateways/lemonway-notification.php' );
 		
 		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-submit.php' );
