@@ -69,6 +69,7 @@ class WDGWPREST_Entity_PollAnswer {
 			'user_gender'		=> $user_gender,
 			'user_email'		=> $user_email
 		);
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$campaign_api_id. '?with_investments=1&with_organization=1&with_poll_answers=1' );
 		return WDGWPRESTLib::call_post_wdg( 'poll-answer', $parameters );
 	}
 	
