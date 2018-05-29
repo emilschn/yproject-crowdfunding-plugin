@@ -39,14 +39,14 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		//**********************************************************************
 		// Champs garantie : $field_group_poll_warranty
 		$this->addField(
-			'radio',
-			'warranty-would-change-investment',
-			__( "Si en investissant j'&eacute;tais garanti de r&eacute;cup&eacute;rer a minima mon investissement :", 'yproject' ),
+			'checkboxes',
+			'',
+			__( "Si en investissant j'&eacute;tais garanti de r&eacute;cup&eacute;rer mon investissement&nbsp;:", 'yproject' ),
 			self::$field_group_poll_warranty,
 			FALSE,
 			FALSE,
 			[
-				'same-amount'		=> __( "J'aurais investi le m&ecirc;me montant", 'yproject' ),
+				'other-projects'	=> __( "J'investirais aussi sur d'autres projets", 'yproject' ),
 				'different-amount'	=> __( "J'aurais investi un montant diff&eacute;rent :", 'yproject' )
 			]
 		);
@@ -59,27 +59,13 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 			0
 		);
 		
-		$this->addField(
-			'radio',
-			'would-be-ready-to-pay-for-warranty',
-			__( "Je serais pr&ecirc;t(e) &agrave; payer pour b&eacute;n&eacute;ficier d'une garantie de mon investissement :", 'yproject' ),
-			self::$field_group_poll_warranty,
-			FALSE,
-			FALSE,
-			[
-				'yes'		=> __( "Oui", 'yproject' ),
-				'less-royalties'	=> __( "Non, je pr&eacute;f&egrave;rerais que cela impacte ma rentabilit&eacute; (recevoir moins de royalties)", 'yproject' ),
-				'no'		=> __( "Non", 'yproject' )
-			]
-		);
-		
 		
 		//**********************************************************************
 		// Champs garantie : $field_group_poll_source
 		$this->addField(
 			'checkboxes',
 			'',
-			__( "Ce qui m'a motiv&eacute;(e) &agrave; investir aujourd'hui : ", 'yproject' ),
+			__( "Ce qui m'a motiv&eacute;(e) &agrave; investir aujourd'hui&nbsp;: ", 'yproject' ),
 			self::$field_group_poll_source,
 			FALSE,
 			FALSE,
@@ -103,7 +89,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		$this->addField(
 			'radio',
 			'how-the-fundraising-was-known',
-			__( "J'ai connu cette lev&eacute;e de fonds via :", 'yproject' ),
+			__( "J'ai connu cette lev&eacute;e de fonds via&nbsp;:", 'yproject' ),
 			self::$field_group_poll_source,
 			FALSE,
 			FALSE,
@@ -126,7 +112,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		$this->addField(
 			'radio',
 			'where-user-come-from',
-			__( "Je suis arriv&eacute;(e) sur la page de cette lev&eacute;e de fonds via :", 'yproject' ),
+			__( "Je suis arriv&eacute;(e) sur la page de cette lev&eacute;e de fonds via&nbsp;:", 'yproject' ),
 			self::$field_group_poll_source,
 			FALSE,
 			FALSE,
