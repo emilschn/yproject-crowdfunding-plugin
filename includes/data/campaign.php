@@ -1892,7 +1892,7 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_vote() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = __('&Eacute;valuation termin&eacute;', 'yproject');
+				    $buffer = __('&Eacute;valuation termin&eacute;e', 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));

@@ -93,32 +93,52 @@ class LemonwayNotification {
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
-			$content_formatted = "Salut !<br>";
-			$content_formatted .= "Un document a chang&eacute; de statut chez Lemon Way !<br><br>";
+			$content_slack = "Nouveau statut de document : ";
+//			$content_formatted = "Salut !<br>";
+//			$content_formatted .= "Un document a chang&eacute; de statut chez Lemon Way !<br><br>";
 			
-			$content_formatted .= "Informations sur le changement de statut :<br>";
+//			$content_formatted .= "Informations sur le changement de statut :<br>";
 			
-			$content_formatted .= "Cela concerne le wallet " .$lemonway_posted_id_external. ", appartenant à ";
+			$content_slack .= "Wallet " .$lemonway_posted_id_external. " (https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal."), appartenant à ";
+//			$content_formatted .= "Cela concerne le wallet " .$lemonway_posted_id_external. ", appartenant à ";
 			if ( !empty( $WDGOrga_wallet ) ) {
-				$content_formatted .= $WDGOrga_wallet->get_name();
+				$content_slack .= $WDGOrga_wallet->get_name();
+//				$content_formatted .= $WDGOrga_wallet->get_name();
 			} else {
-				$content_formatted .= $WDGUser_wallet->get_display_name();
+				$content_slack .= $WDGUser_wallet->get_display_name();
+//				$content_formatted .= $WDGUser_wallet->get_display_name();
+				$user_email = $WDGUser_wallet->get_email();
+				$user_firstname = $WDGUser_wallet->get_firstname();
 			}
-			$content_formatted .= "<br>";
+			$content_slack .= "\n";
+//			$content_formatted .= "<br>";
 			
-			$content_formatted .= "Le document concern&eacute; est le suivant : ";
-			$content_formatted .= LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
-			$content_formatted .= "<br>";
+			$content_slack .= "Document : " . LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
+			$content_slack .= "\n";
+//			$content_formatted .= "Le document concern&eacute; est le suivant : ";
+//			$content_formatted .= LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
+//			$content_formatted .= "<br>";
 			
-			$content_formatted .= "Son nouveau statut est ";
-			$content_formatted .= LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
-			$content_formatted .= "<br>";
+			$content_slack .= "Nouveau statut : " . LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
+			$content_slack .= "\n";
+//			$content_formatted .= "Son nouveau statut est ";
+//			$content_formatted .= LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
+//			$content_formatted .= "<br>";
 			
-			$content_formatted .= "Lien vers le wallet concern&eacute; : ";
-			$content_formatted .= "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal;
-			$content_formatted .= "<br>";
+//			$content_formatted .= "Lien vers le wallet concern&eacute; : ";
+//			$content_formatted .= "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal;
+//			$content_formatted .= "<br>";
 			
-			NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Changement statut document', $content_formatted, true );
+			// Si le document n'est ni validé, ni en attente, on prévient l'équipe par Slack
+			if ( $lemonway_posted_document_status > 2 ) {
+//				NotificationsEmails::send_mail( 'support@wedogood.co', 'Notif interne - Changement statut document', $content_formatted, true );
+				NotificationsSlack::send_new_doc_status( $content_slack );
+//				$notification_sent = TRUE;
+			
+			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
+			} else if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == 2 && empty( $WDGOrga_wallet ) ) {
+				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
+			}
 		}
 		
 		

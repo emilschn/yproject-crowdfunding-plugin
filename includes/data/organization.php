@@ -856,7 +856,14 @@ class WDGOrganization {
 		//Vérifie que le wallet n'est pas déjà enregistré
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
-			$WDGUser_creator = new WDGUser();
+			
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+			} else {
+				$WDGUser_creator = new WDGUser();
+			}
+			
 			return LemonwayLib::wallet_company_register(
 				$this->get_lemonway_id(),
 				$this->get_email(),
