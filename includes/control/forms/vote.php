@@ -287,7 +287,8 @@ class WDG_Form_Vote extends WDG_Form {
 					'more_info_other'	=> $more_info_other,
 					'advice'			=> $advice,
 					'date'				=> date_format( new DateTime(), 'Y-m-d' )
-				)); 
+				));
+				
 				if ( !$vote_result ) {
 					$error = array(
 						'code'		=> 'vote-save',
@@ -295,8 +296,16 @@ class WDG_Form_Vote extends WDG_Form {
 						'element'	=> 'general'
 					);
 					array_push( $feedback_errors, $error );
+				
+				// Si pas d'erreur, on poste le formulaire de sondage
+				} else {
+					$core = ATCF_CrowdFunding::instance();
+					$core->include_form( 'invest-poll' );
+					$WDGPollForm = new WDG_Form_Invest_Poll( $campaign_id, $WDGUser_current->get_wpref(), 'vote' );
+					$WDGPollForm->postForm( $invest_sum );
 				}
 				
+				// Ajout du suivi du projet
 				if ( $rate_project > 1 ) {
 					$table_jcrois = $wpdb->prefix . "jycrois";
 					$users = $wpdb->get_results( "SELECT * FROM $table_jcrois WHERE campaign_id = ".$campaign_id." AND user_id=".$WDGUser_current->get_wpref() );
@@ -311,6 +320,7 @@ class WDG_Form_Vote extends WDG_Form {
 					}
 				}
 
+				// Sauvegarde du commentaire sur la campagne
 				if ( $publish_advice && !empty( $advice ) ) {
 					$current_user = wp_get_current_user();
 					$user_name = $current_user->display_name;

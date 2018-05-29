@@ -14,11 +14,13 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 	
 	private $campaign_id;
 	private $user_id;
+	private $context;
 	
-	public function __construct( $campaign_id, $user_id ) {
+	public function __construct( $campaign_id, $user_id, $context = 'investment' ) {
 		parent::__construct( WDG_Form_Invest_Poll::$name );
 		$this->campaign_id = $campaign_id;
 		$this->user_id = $user_id;
+		$this->context = $context;
 		$this->initFields();
 	}
 	
@@ -46,8 +48,8 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'other-projects'	=> __( "J'investirais aussi sur d'autres projets", 'yproject' ),
-				'different-amount'	=> __( "J'aurais investi un montant diff&eacute;rent :", 'yproject' )
+				'would-invest-other-projects-if-warranty'	=> __( "J'investirais aussi sur d'autres projets", 'yproject' ),
+				'would-invest-different-amount-if-warranty'	=> __( "J'aurais investi un montant diff&eacute;rent :", 'yproject' )
 			]
 		);
 		
@@ -62,10 +64,14 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		
 		//**********************************************************************
 		// Champs garantie : $field_group_poll_source
+		$label = __( "Ce qui m'a motiv&eacute;(e) &agrave; investir aujourd'hui&nbsp;: ", 'yproject' );
+		if ( $this->context == 'vote' ) {
+			$label = __( "Ce qui me donnerait envie d'investir sur ce projet&nbsp;: ", 'yproject' );
+		}
 		$this->addField(
 			'checkboxes',
 			'',
-			__( "Ce qui m'a motiv&eacute;(e) &agrave; investir aujourd'hui&nbsp;: ", 'yproject' ),
+			$label,
 			self::$field_group_poll_source,
 			FALSE,
 			FALSE,
@@ -137,10 +143,6 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 	}
 	
 	public function postForm( $context_investment_amount ) {
-		if ( !$this->isPosted() ) {
-			return FALSE;
-		}
-		
 		parent::postForm();
 		
 		$campaign = new ATCF_Campaign( $this->campaign_id );
@@ -176,12 +178,12 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 
 			// Enregistrement de la réponse sur la garantie
 			$poll_warranty_answers = array(
-				'warranty-would-change-investment'		=> $this->getInputText( 'warranty-would-change-investment' ),
-				'would-invest-amount-with-warranty'		=> $this->getInputText( 'would-invest-amount-with-warranty' ),
-				'would-be-ready-to-pay-for-warranty'	=> $this->getInputText( 'would-be-ready-to-pay-for-warranty' )
+				'would-invest-other-projects-if-warranty'	=> ( $this->getInputChecked( 'would-invest-other-projects-if-warranty' ) ? '1' : '0' ),
+				'would-invest-different-amount-if-warranty'	=> ( $this->getInputChecked( 'would-invest-different-amount-if-warranty' ) ? '1' : '0' ),
+				'would-invest-amount-with-warranty'			=> $this->getInputText( 'would-invest-amount-with-warranty' ),
 			);
 			$poll_warranty_answers_str = json_encode( $poll_warranty_answers );
-			WDGWPREST_Entity_PollAnswer::create( self::$poll_warranty_slug, self::$poll_warranty_version, $poll_warranty_answers_str, 'investment', $context_amount, $project_id, $user_id, $user_age, $user_postal_code, $user_gender, $user_email );
+			WDGWPREST_Entity_PollAnswer::create( self::$poll_warranty_slug, self::$poll_warranty_version, $poll_warranty_answers_str, $this->context, $context_amount, $project_id, $user_id, $user_age, $user_postal_code, $user_gender, $user_email );
 
 			// Enregistrement de la réponse sur la source
 			$poll_source_answers = array(
@@ -200,7 +202,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 			);
 			
 			$poll_source_answers_str = json_encode( $poll_source_answers );
-			WDGWPREST_Entity_PollAnswer::create( self::$poll_source_slug, self::$poll_source_version, $poll_source_answers_str, 'investment', $context_amount, $project_id, $user_id, $user_age, $user_postal_code, $user_gender, $user_email );
+			WDGWPREST_Entity_PollAnswer::create( self::$poll_source_slug, self::$poll_source_version, $poll_source_answers_str, $this->context, $context_amount, $project_id, $user_id, $user_age, $user_postal_code, $user_gender, $user_email );
 		}
 		
 		return !$this->hasErrors();
