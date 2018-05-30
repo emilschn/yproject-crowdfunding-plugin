@@ -346,9 +346,12 @@ class WDGUser {
 		
 		if ( !empty( $format ) ) {
 			// Le pays est saisi, il faut tenter de le convertir
-			global $country_list, $country_list_iso2_to_iso3;
+			global $country_list, $country_list_iso2_to_iso3, $country_translation;
 			// D'abord, on le met en majuscule
 			$upper_country = strtoupper( $buffer );
+			if ( isset( $country_translation[ $upper_country ] ) ) {
+				$upper_country = $country_translation[ $upper_country ];
+			}
 			// On le cherche en iso2
 			$iso2_key = array_search( $upper_country, $country_list );
 			if ( $format == 'iso3' ) {
