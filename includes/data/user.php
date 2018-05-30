@@ -236,6 +236,10 @@ class WDGUser {
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->user_email;
 		}
+		// Si le dernier caractère est un espace, on le supprime
+		if ( substr( $buffer, -1 ) == ' ' ) {
+			$buffer = substr( $buffer, 0, -1 );
+		}
 		return $buffer;
 	}
 	
@@ -334,6 +338,10 @@ class WDGUser {
 		$buffer = $this->country;
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_country');
+		}
+		// Si le dernier caractère est un espace, on le supprime
+		if ( substr( $buffer, -1 ) == ' ' ) {
+			$buffer = substr( $buffer, 0, -1 );
 		}
 		
 		if ( !empty( $format ) ) {
