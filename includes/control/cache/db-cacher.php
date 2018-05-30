@@ -11,6 +11,11 @@ class WDG_Cache_Plugin {
 	public static $slider_duration = 172800; // 48 heures de cache (48*60*60)
 	public static $slider_version = 1;
 
+	public static $projects_nb_to_show = 3;
+	public static $projects_key = 'home-projects-list';
+	public static $projects_duration = 172800; // 48 heures de cache (48*60*60)
+	public static $projects_version = 1;
+
 	private $table_name;
 	private $wpdb;
 
