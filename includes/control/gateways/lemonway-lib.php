@@ -9,6 +9,28 @@ $lemonway_lib = new LemonwayLib();
  * Classe de gestion de Lemonway
  */
 class LemonwayLib {
+	private $limit_kyc1_moneyin_operation_amount = 250;
+	private $limit_kyc1_moneyin_day_nb = 20;
+	private $limit_kyc1_moneyin_year_amount = 2500;
+	private $limit_kyc1_moneyout_day_nb = 20;
+	private $limit_kyc1_moneyout_year_amount = 2500;
+	private $limit_kyc1_p2p_in_day_nb = 20;
+	private $limit_kyc1_p2p_out_year_nb = 20;
+	private $limit_kyc1_p2p_in_year_amount = 2500;
+	private $limit_kyc1_p2p_out_year_amount = 2500;
+	
+	private $limit_kyc2_moneyin_day_nb = 1000;
+	private $limit_kyc2_moneyin_day_amount = 500000;
+	private $limit_kyc2_moneyin_month_amount = 1000000;
+	private $limit_kyc2_moneyout_day_nb = 20;
+	private $limit_kyc2_moneyout_day_amount = 1000000;
+	private $limit_kyc2_moneyout_month_amount = 1000000;
+	private $limit_kyc2_p2p_in_day_nb = 1000;
+	private $limit_kyc2_p2p_day_amount = 500000;
+	private $limit_kyc2_p2p_out_month_nb = 10000;
+	private $limit_kyc2_p2p_in_month_amount = 1000000;
+	private $limit_kyc2_p2p_out_month_amount = 1000000;
+	
 	public $soap_client, $params, $last_error;
     
 	/**
