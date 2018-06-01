@@ -97,6 +97,60 @@ class WDGUserInvestments {
 /*******************************************************************************
  * Vérifications de sécurité
 *******************************************************************************/
+	
+	public function get_minimum_investable_amount() {
+		return ypcf_get_min_value_to_invest();
+	}
+	
+	public function get_maximum_investable_amount() {
+		$buffer = min(
+			LemonwayLib::$limit_kyc2_moneyin_day_amount - $this->get_count_invested_during_interval( '1 day' ),
+			LemonwayLib::$limit_kyc2_moneyin_month_amount - $this->get_amount_invested_during_interval( '31 days' )
+		);
+		return $buffer;
+	}
+	
+	public function get_maximum_investable_reason_str() {
+		$buffer = '';
+		
+		if ( LemonwayLib::$limit_kyc2_moneyin_day_amount - $this->get_count_invested_during_interval( '1 day' ) < LemonwayLib::$limit_kyc2_moneyin_month_amount - $this->get_amount_invested_during_interval( '31 days' ) ) {
+			$max_for_day = LemonwayLib::$limit_kyc2_moneyin_day_amount - $this->get_count_invested_during_interval( '1 day' );
+			$buffer = sprintf( __( 'Vous ne pouvez pas investir plus de %1$s &euro; sur une journ&eacute;e. Vous ne pouvez donc plus investir plus que %2$s &euro; aujourd&apos;hui.', 'yproject' ), LemonwayLib::$limit_kyc2_moneyin_day_amount, $max_for_day );
+		} else {
+			$max_for_month = LemonwayLib::$limit_kyc2_moneyin_month_amount - $this->get_amount_invested_during_interval( '31 days' );
+			$buffer = sprintf( __( 'Vous ne pouvez pas investir plus de %1$s &euro; sur un mois. Vous ne pouvez donc plus investir plus que %2$s &euro; ce mois-ci.', 'yproject' ), LemonwayLib::$limit_kyc2_moneyin_month_amount, $max_for_month );
+		}
+		
+		return $buffer;
+	}
+	
+	public function get_maximum_investable_amount_without_alert() {
+		$buffer = LemonwayLib::$limit_kyc2_moneyin_month_amount;
+		if ( !$this->user->is_lemonway_registered() ) {
+			$buffer = min(
+				LemonwayLib::$limit_kyc1_moneyin_operation_amount,
+				LemonwayLib::$limit_kyc1_moneyin_year_amount - $this->get_count_invested_during_interval( '365 days' )
+			);
+		}
+		return $buffer;
+	}
+	
+	public function get_maximum_investable_amount_without_alert_reason_str() {
+		$buffer = '';
+		if ( !$this->user->is_lemonway_registered() ) {
+			if ( LemonwayLib::$limit_kyc1_moneyin_operation_amount <= LemonwayLib::$limit_kyc1_moneyin_year_amount - $this->get_count_invested_during_interval( '365 days' ) ) {
+				$buffer = sprintf( __( 'Vous ne pouvez pas investir plus de %1$s &euro; tant que vous n&apos;&ecirc;tes pas identifi&eacute;(e). Cependant, nous vous proposons de poursuivre votre investissement. Nous vous inviterons ensuite &agrave; renseigner vos documents (pi&egrave;ce d&apos;identit&eacute; et justificatif de domicile) et le reste de l&apos;investissement se fera automatiquement lors de la validation de vos documents par notre prestataire de paiement Lemon Way.', 'yproject' ), LemonwayLib::$limit_kyc1_moneyin_operation_amount );
+		
+			} else {
+				$max_for_year = LemonwayLib::$limit_kyc1_moneyin_year_amount - $this->get_count_invested_during_interval( '365 days' );
+				$buffer = sprintf( __( 'Vous ne pouvez pas investir plus de %1$s &euro; sur une ann&eacute;e tant que vous n&apos;&ecirc;tes pas identifi&eacute;(e). Il vous reste la possibilit&eacute; d&apos;investir %2$s &euro; cette ann&eacute;e. Cependant, nous vous proposons de poursuivre votre investissement. Nous vous inviterons ensuite &agrave; renseigner vos documents (pi&egrave;ce d&apos;identit&eacute; et justificatif de domicile) et le reste de l&apos;investissement se fera automatiquement lors de la validation de vos documents par notre prestataire de paiement Lemon Way.', 'yproject' ), LemonwayLib::$limit_kyc1_moneyin_year_amount, $max_for_year );
+				
+			}
+		}
+		return $buffer;
+	}
+	
+	
 	public function can_invest_amount( $amount ) {
 		$buffer = TRUE;
 		
