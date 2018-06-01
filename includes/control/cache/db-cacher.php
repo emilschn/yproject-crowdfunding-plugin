@@ -1,9 +1,25 @@
 <?php
 class WDG_Cache_Plugin {
 	
+	// TODO : Déplacer dans une classe spécifique de gestion de configuration de cache	
+	public static $nb_query_campaign_funded = 40;
+	public static $stats_key = 'home-stats';
+	public static $stats_duration = 172800; // 48 heures de cache (48*60*60)
+	public static $stats_version = 1;
+
+	public static $slider_key = 'project-slider';
+	public static $slider_duration = 172800; // 48 heures de cache (48*60*60)
+	public static $slider_version = 1;
+
+	private static $funded_campaign_top_list = array( 'naoden', 'listo', 'twiza' );
+	public static $projects_nb_to_show = 3;
+	public static $projects_key = 'home-projects-list';
+	public static $projects_duration = 172800; // 48 heures de cache (48*60*60)
+	public static $projects_version = 1;
+
 	private $table_name;
 	private $wpdb;
-	
+
 	protected static $_current = null;
 	
 	/**
@@ -96,8 +112,134 @@ class WDG_Cache_Plugin {
 			$this->wpdb->delete( $this->table_name, array( 'name' => $name ) );
 		}
 	}
-	
-	
+/***********************************************************************************
+ * TODO : Déplacer dans une classe spécifique de gestion de configuration de cache
+ **********************************************************************************/
+	// Calcul les stats et les met en cache 
+	public static function initialize_home_stats() {
+		$db_cacher = WDG_Cache_Plugin::current();
+
+		$count_amount = 0;
+		$people_list = array();
+		$count_projects = 0;
+		$count_roi = 0;
+
+		$project_list_funded = ATCF_Campaign::get_list_funded( WDG_Cache_Plugin::$nb_query_campaign_funded, '', true, false );
+		foreach ( $project_list_funded as $project_post ) {
+			$count_projects++;
+			$campaign = atcf_get_campaign( $project_post->ID );
+			$backers_id_list = $campaign->backers_id_list();
+			$people_list = array_merge( $people_list, $backers_id_list );
+			$count_amount += $campaign->current_amount( false );
+			$declaration_list = $campaign->get_roi_declarations();
+
+			foreach ( $declaration_list as $declaration ) {
+				$count_roi += $declaration[ 'total_roi_with_adjustment' ];
+			}
+		}
+
+		$people_list_unique = array_unique( $people_list );
+		$count_people = count( $people_list_unique );
+		$count_roi = floor( $count_roi );
+		$stats_list = array(
+			'count_amount'	=> $count_amount,
+			'count_people'	=> $count_people,
+			'nb_projects'	=> count($project_list_funded),
+			'count_roi'		=> $count_roi
+		);
+		$stats_content = json_encode($stats_list);
+
+	    $db_cacher->set_cache( WDG_Cache_Plugin::$stats_key, $stats_content, WDG_Cache_Plugin::$stats_duration, WDG_Cache_Plugin::$stats_version );
+	    return $stats_list;
+	}
+
+	// Recherche les 3 projects les plus récent et les met en cache 
+	public static function initialize_most_recent_projects() {
+		$db_cacher = WDG_Cache_Plugin::current();
+		$list_projects = ATCF_Campaign::get_list_most_recent( 3 );
+		$slider = array();
+
+		foreach ( $list_projects as $project_id ) {
+			$campaign = atcf_get_campaign( $project_id );
+			$img = $campaign->get_home_picture_src( TRUE, 'large' );
+			array_push( $slider, array(
+					'img'	=> $img,
+					'title'	=> $campaign->data->post_title,
+					'link'	=> get_permalink( $project_id )
+				)
+			);
+		}		
+		$slider_content = json_encode($slider);
+
+	    $db_cacher->set_cache( WDG_Cache_Plugin::$slider_key, $slider_content, WDG_Cache_Plugin::$slider_duration, WDG_Cache_Plugin::$slider_version );
+	    return $slider;
+	}
+
+	//Recherche projets en cours de financement à impact positif et les met en cache
+	public static function initialize_home_projects(){
+		$db_cacher = WDG_Cache_Plugin::current();
+		$projects_list = array();
+
+		$campaignlist_funding = ATCF_Campaign::get_list_funding( 10 );
+		$campaignlist_funding_sorted = WDG_Cache_Plugin::sort_project_list( $campaignlist_funding );
+		$count_campaignlist = count( $campaignlist_funding_sorted );
+		foreach ( $campaignlist_funding_sorted as $campaign ) { array_push( $projects_list, $campaign->ID ); }
+		
+		if ( $count_campaignlist < WDG_Cache_Plugin::$projects_nb_to_show ) {
+			$campaignlist_vote = ATCF_Campaign::get_list_vote( 10 );
+			$campaignlist_vote_sorted = WDG_Cache_Plugin::sort_project_list( $campaignlist_vote );
+			$count_campaignlist += count( $campaignlist_vote_sorted );
+			foreach ( $campaignlist_vote_sorted as $campaign ) { array_push( $projects_list, $campaign->ID ); }
+		}
+		
+		$i = $count_campaignlist - 1;
+		while ( $i > WDG_Cache_Plugin::$projects_nb_to_show - 1 ){
+			array_splice( $projects_list, $i, 1 );
+			$i--;
+		}
+		if ( $count_campaignlist < WDG_Cache_Plugin::$projects_nb_to_show ) {
+			for ( $i = 0; $i < WDG_Cache_Plugin::$projects_nb_to_show - $count_campaignlist; $i++ ) {
+				global $wpdb;
+				$result = $wpdb->get_results( 
+					"SELECT ID FROM ".$wpdb->posts." WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_name = '".WDG_Cache_Plugin::$funded_campaign_top_list[ $i ]."'", OBJECT
+                );
+				if ( count( $result ) > 0 ) {
+					array_push( $projects_list, $result[0]->ID );
+				} else {
+					array_push( $projects_list, 1 );
+				}
+			}
+		}
+		$projects_content = json_encode($projects_list);
+
+		$db_cacher->set_cache( WDG_Cache_Plugin::$projects_key, $projects_content, WDG_Cache_Plugin::$projects_duration, WDG_Cache_Plugin::$projects_version );
+		return $projects_list;
+	}
+
+	public static function sort_project_list( $campaign_list ) {
+		// On commence par mélanger toute la liste pour être sûr d'avoir de l'aléatoire
+		shuffle( $campaign_list );
+		
+		// On parcourt tous les projets
+		$count_campaigns = count( $campaign_list );
+		for ( $i = $count_campaigns - 1; $i >= 0; $i-- ) {
+			$campaign_post = $campaign_list[ $i ];
+			$campaign = new ATCF_Campaign( $campaign_post->ID );
+			$campaign_categories_str = $campaign->get_categories_str();
+			
+			// On supprime ceux qui ne sont pas des projets d'entreprise
+			if ( strpos( $campaign_categories_str, 'entreprises' ) === FALSE ) {
+				array_splice( $campaign_list, $i, 1 );
+			}
+			// On met au début ceux qui sont "positifs"
+			if ( strpos( $campaign_categories_str, 'environnemental' ) !== FALSE || strpos( $campaign_categories_str, 'social' ) !== FALSE ) {
+				$campaign_element = $campaign_list[ $i ];
+				array_splice( $campaign_list, $i, 1 );
+				array_unshift( $campaign_list, $campaign_element );
+			}
+		}
+		return $campaign_list;
+	}
 	
 /*******************************************************************************
  * CREATION BASE DE DONNES
