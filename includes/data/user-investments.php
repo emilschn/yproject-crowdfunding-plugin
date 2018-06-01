@@ -183,7 +183,30 @@ class WDGUserInvestments {
 	 * @return int
 	 */
 	public function get_count_invested_during_interval( $interval ) {
+		global $wpdb;
+
+		$query = "SELECT count( {$wpdb->prefix}mb.meta_value ) AS nb
+			FROM {$wpdb->prefix}postmeta {$wpdb->prefix}m
+			LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}ma
+				ON {$wpdb->prefix}ma.post_id = {$wpdb->prefix}m.post_id
+				AND {$wpdb->prefix}ma.meta_key = '_edd_payment_user_id'
+				AND {$wpdb->prefix}ma.meta_value = '%s'
+			LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}mb
+				ON {$wpdb->prefix}mb.post_id = {$wpdb->prefix}ma.post_id
+				AND {$wpdb->prefix}mb.meta_key = '_edd_payment_total'
+			INNER JOIN {$wpdb->prefix}posts {$wpdb->prefix}
+				ON {$wpdb->prefix}.id = {$wpdb->prefix}m.post_id
+				AND {$wpdb->prefix}.post_status = 'publish'
+				AND {$wpdb->prefix}.post_date > '" .date( 'Y-m-d', strtotime( '-' .$interval ) ). "'
+			WHERE {$wpdb->prefix}m.meta_key = '_edd_payment_mode'
+			AND {$wpdb->prefix}m.meta_value = '%s'";
+
+		$purchases = $wpdb->get_col( $wpdb->prepare( $query, $this->user->get_wpref(), 'live' ) );
+
 		$buffer = 0;
+		if ( $purchases ) {
+			$buffer = $purchases[ 0 ];
+		}
 		return $buffer;
 	}
 
