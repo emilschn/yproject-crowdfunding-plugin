@@ -515,6 +515,14 @@ class WDGAjaxActions {
 				) );
 				$campaign->data->post_name = $new_name;
 				$success[ 'new_project_url' ] = 1;
+				// Mise à jour de l'URL sur LW
+				$campaign_organization = $campaign->get_organization();
+				$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
+				LemonwayLib::wallet_update( 
+						$WDGOrganization->get_lemonway_id(),
+						'', '', '', '', '', '', '', '',
+						get_permalink( $campaign_id )
+				);
 			}
 		}
 		
