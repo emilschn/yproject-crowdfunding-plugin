@@ -1,4 +1,15 @@
-<?php 
+<?php
+global $country_translation;
+$country_translation = array(
+	'BELGIQUE'	=> "BELGIUM",
+	'NOUVELLE CALEDONIE'		=> "NEW CALEDONIA",
+	'NOUVELLE CAL&Eacute;DONIE'	=> "NEW CALEDONIA",
+	'ESPANA'		=> "SPAIN",
+	'ESPA&Ntilde;A'	=> "SPAIN",
+	'ESPAGNE'		=> "SPAIN",
+	'SUISSE'	=> "SWITZERLAND"
+);
+
 /* iso3166-1 alpha-2 */
 global $country_list;
 $country_list = array(

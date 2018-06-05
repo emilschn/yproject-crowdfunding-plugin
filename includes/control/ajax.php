@@ -599,6 +599,11 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_archive_message, $new_archive_message );
 			$success[ "new_archive_message" ] = 1;
 		}
+		$new_custom_footer_code = filter_input( INPUT_POST, 'new_custom_footer_code' );
+		if ( !empty( $new_custom_footer_code ) ) {
+			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
+			$success[ "new_custom_footer_code" ] = 1;
+		}
 		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
