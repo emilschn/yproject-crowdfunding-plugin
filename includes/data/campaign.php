@@ -718,6 +718,11 @@ class ATCF_Campaign {
 		return $this->__get( ATCF_Campaign::$key_archive_message );
 	}
 	
+	public static $key_custom_footer_code = 'custom_footer_code';
+	public function custom_footer_code() {
+		return $this->__get( ATCF_Campaign::$key_custom_footer_code );
+	}
+	
 	public function get_funded_certificate_url() {
 		$this->make_funded_certificate();
 		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/campaign-funded/';
