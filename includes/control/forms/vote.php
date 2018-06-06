@@ -203,11 +203,11 @@ class WDG_Form_Vote extends WDG_Form {
 		// On s'en fout du feedback, ça ne devrait pas arriver
 		if ( !is_user_logged_in() ) {
 		
-		// Vote terminé
-		} else if ( $campaign->end_vote_remaining() <= 0 ) {
+		// Evaluation terminée
+		} else if ( $campaign->time_remaining_str() == '-' ) {
 			$error = array(
 				'code'		=> 'vote-finished',
-				'text'		=> __( "Le vote est termin&eacute;.", 'yproject' ),
+				'text'		=> __( "L'&eacute;valuation est termin&eacute;e.", 'yproject' ),
 				'element'	=> 'general'
 			);
 			array_push( $feedback_errors, $error );

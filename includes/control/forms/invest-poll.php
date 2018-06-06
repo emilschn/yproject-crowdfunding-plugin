@@ -43,7 +43,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		$this->addField(
 			'radio',
 			'would-invest-more-amount',
-			__( "Si nous vous propositions une protection totale de votre investissement sur ce projet, seriez-vous int&eacute;ress&eacute;(e) pour augmenter votre ticket d'investissement&nbsp;?", 'yproject' ),
+			__( "Si nous vous proposions une protection totale de votre investissement sur ce projet, seriez-vous int&eacute;ress&eacute;(e) pour augmenter votre ticket d'investissement&nbsp;?", 'yproject' ),
 			self::$field_group_poll_warranty,
 			FALSE,
 			FALSE,
