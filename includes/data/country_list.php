@@ -1,12 +1,13 @@
 <?php
 global $country_translation;
 $country_translation = array(
-	'ESPANA'	=> "SPAIN",
+	'BELGIQUE'	=> "BELGIUM",
+	'NOUVELLE CALEDONIE'		=> "NEW CALEDONIA",
+	'NOUVELLE CAL&Eacute;DONIE'	=> "NEW CALEDONIA",
+	'ESPANA'		=> "SPAIN",
 	'ESPA&Ntilde;A'	=> "SPAIN",
-	'ESPAGNE'	=> "SPAIN",
-	'SUISSE'	=> "SWITZERLAND",
-	'NOUVELLE CALEDONIE'	=> "NEW CALEDONIA",
-	'NOUVELLE CAL&Eacute;DONIE'	=> "NEW CALEDONIA"
+	'ESPAGNE'		=> "SPAIN",
+	'SUISSE'	=> "SWITZERLAND"
 );
 
 /* iso3166-1 alpha-2 */

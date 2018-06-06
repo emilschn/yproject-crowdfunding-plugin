@@ -272,9 +272,10 @@ class LemonwayLib {
 	 * @param type $phone_number : Facultatif ; format MSISDN (code pays sans + ni 00)
 	 * @param type $birthdate : Format JJ/MM/AAAA
 	 * @param type $nationality : Pays au format ISO-3
+	 * @param type $company_website
 	 * @return type
 	 */
-	public static function wallet_update( $wallet_id, $client_mail = '', $client_title = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $nationality = '' ) {
+	public static function wallet_update( $wallet_id, $client_mail = '', $client_title = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $nationality = '', $company_website = '' ) {
 		if ( empty( $wallet_id ) ) {
 			return FALSE;
 		}
@@ -303,6 +304,9 @@ class LemonwayLib {
 		}
 		if ( !empty( $nationality ) ) {
 			$param_list['newNationality'] = $nationality;
+		}
+		if ( !empty( $company_website ) ) {
+			$param_list['newCompanyWebsite'] = $company_website;
 		}
 		
 		
