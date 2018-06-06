@@ -734,7 +734,15 @@ class WDGInvestment {
 	private function try_payment_card( $with_wallet = FALSE) {
 		$organization_campaign = $this->campaign->get_organization();
 		$WDGOrganization = new WDGOrganization( $organization_campaign->wpref, $organization_campaign );
+		$invest_type = $this->get_session_user_type();
+		
 		$WDGuser_current = WDGUser::current();
+		$wallet_id = $WDGuser_current->get_lemonway_id();
+		if ( $invest_type != 'user' ) {
+			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+			$wallet_id = $WDGOrganization_debit->get_lemonway_id();
+		}
+		
 		$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $this->campaign->ID;
 		$wk_token = LemonwayLib::make_token($current_token_id);
 		
@@ -742,14 +750,18 @@ class WDGInvestment {
 		
 		$amount = $this->get_session_amount();
 		if ( $with_wallet ) {
-			$amount -= $WDGuser_current->get_lemonway_wallet_amount();
+			if ( $invest_type == 'user' ) {
+				$amount -= $WDGuser_current->get_lemonway_wallet_amount();
+			} else {
+				$amount -= $WDGOrganization_debit->get_available_rois_amount();
+			}
 			$return_url .= '&meanofpayment=' .WDGInvestment::$meanofpayment_cardwallet;
 		}
 		
 		$error_url = $return_url . '&error=1';
 		$cancel_url = $return_url . '&cancel=1';
 		
-		$return = LemonwayLib::ask_payment_webkit( $WDGOrganization->get_lemonway_id(), $amount, 0, $wk_token, $return_url, $error_url, $cancel_url );
+		$return = LemonwayLib::ask_payment_webkit( $wallet_id, $amount, 0, $wk_token, $return_url, $error_url, $cancel_url );
 		if ( !empty($return->MONEYINWEB->TOKEN) ) {
 			$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
 			$url_css_encoded = urlencode( $url_css );
@@ -778,14 +790,19 @@ class WDGInvestment {
 			$return_error = filter_input( INPUT_GET, 'error' );
 			$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
 			$is_failed = $is_failed || ( $lw_transaction_result->STATUS != 3 && $lw_transaction_result->STATUS != 0 );
+			$amount_by_card = $lw_transaction_result->DEB;
 			
 			// Compléter par wallet
-			if ( $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet && !$is_failed ) {
-				$wallet_payment_key = $this->try_payment_wallet( TRUE );
+			if ( !$is_failed ) {
+				$wallet_payment_key = $this->try_payment_wallet( FALSE );
 				if ( !empty( $wallet_payment_key ) ) {
 					$payment_key .= '_' . $wallet_payment_key;
 				} else {
 					$payment_key .= '_wallet_FAILED';
+				}
+				
+				if ( $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet ) {
+					$payment_key .= '_cardwallet';
 				}
 			}
 			

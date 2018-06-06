@@ -992,7 +992,7 @@ class WDGOrganization {
 	 * @return bool
 	 */
 	public function can_pay_with_wallet( $amount, $campaign ) {
-		$lemonway_amount = $this->get_lemonway_balance();
+		$lemonway_amount = $this->get_available_rois_amount();
 		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
