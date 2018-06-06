@@ -150,7 +150,31 @@ class WDGUserInvestments {
 		return $buffer;
 	}
 	
+	/**
+	 * Détermine si l'utilisateur a encore le droit d'investir une fois 
+	 * @return boolean or string
+	 */
+	public function can_invest_nb() {
+		$buffer = TRUE;
+		
+		if ( $this->user->is_lemonway_registered() ) {
+			if ( $this->get_count_invested_during_interval( '1 day' ) >= LemonwayLib::$limit_kyc2_moneyin_day_nb ) {
+				$buffer = 'limit_kyc2_moneyin_day_nb';
+			}
+			
+		} else {
+			if ( $this->get_count_invested_during_interval( '1 day' ) >= LemonwayLib::$limit_kyc1_moneyin_day_nb ) {
+				$buffer = 'limit_kyc1_moneyin_day_nb';
+			}
+			
+		}
+		
+		return $buffer;
+	}
 	
+	/*
+	 * Cette fonction reprend l'ensemble des règles mais n'est pas utile en l'état
+	 */
 	public function can_invest_amount( $amount ) {
 		$buffer = TRUE;
 		

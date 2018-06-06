@@ -192,6 +192,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 				__( "Vous ne pouvez pas investir autant.", 'yproject' ),
 				'general'
 			);
+			
 		}
 		
 		if ( !$this->hasErrors() ) {
