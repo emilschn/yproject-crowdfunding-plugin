@@ -49,6 +49,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 			FALSE,
 			[
 				'yes'	=> __( "Oui", 'yproject' ),
+				'maybe'	=> __( "Peut-&ecirc;tre", 'yproject' ),
 				'no'	=> __( "Non", 'yproject' )
 			]
 		);
@@ -70,6 +71,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 			FALSE,
 			[
 				'yes'	=> __( "Oui", 'yproject' ),
+				'maybe'	=> __( "Peut-&ecirc;tre", 'yproject' ),
 				'no'	=> __( "Non", 'yproject' )
 			]
 		);
@@ -124,7 +126,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 				'known-by-project-manager'	=> __( "L'entrepreneur", 'yproject' ),
 				'known-by-wedogood'			=> __( "WE DO GOOD", 'yproject' ),
 				'known-by-other-investor'	=> __( "Un autre investisseur du projet", 'yproject' ),
-				'known-by-other-source'		=> __( "Autre (presse,...)", 'yproject' )
+				'known-by-other-source'		=> __( "Autre (presse...)", 'yproject' )
 			]
 		);
 		
