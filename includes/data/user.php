@@ -1379,7 +1379,8 @@ class WDGUser {
 				$saved_iban = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, TRUE );
 				$saved_bic = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, TRUE );
 				$saved_dom1 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, TRUE );
-				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1 );
+				$saved_dom2 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address2, TRUE );
+				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
 				if ($result_iban == FALSE) {
 					$buffer = LemonwayLib::get_last_error_message();
 				}
