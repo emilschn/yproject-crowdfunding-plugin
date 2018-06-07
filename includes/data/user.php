@@ -849,7 +849,7 @@ class WDGUser {
 	 * Gestion des pré-investissements
 	 */
 	private $pending_preinvestments;
-	private function get_pending_preinvestments() {
+	private function get_pending_preinvestments( $force_reload = FALSE) {
 		$db_cacher = WDG_Cache_Plugin::current();
 		$id_user = $this->wp_user->ID;
 		$pending_preinv_key = 'user_'.$id_user.'_pending_preinvestments';
@@ -858,7 +858,7 @@ class WDGUser {
 		$investment_id_list = array();
 
 		if ( !isset( $this->pending_preinvestments ) ) {
-			$preinv_cache = $db_cacher->get_cache( $pending_preinv_key, $pending_preinv_version );
+			$preinv_cache = ( $force_reload ) ? FALSE : $db_cacher->get_cache( $pending_preinv_key, $pending_preinv_version );
 			$this->pending_preinvestments = array();
 			if ( !$preinv_cache ) {
 				$pending_investments = $this->get_pending_investments();
