@@ -194,14 +194,20 @@ class WDG_Form_Vote extends WDG_Form {
 		
 		$feedback_success = array();
 		$feedback_errors = array();
-		$feedback_slide = 3;
+		$feedback_slide = 4;
 		
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$WDGUser_current = WDGUser::current();
 		
-		// On s'en fout du feedback, ça ne devrait pas arriver
+		// Utilisateur déconnecté
 		if ( !is_user_logged_in() ) {
+			$error = array(
+				'code'		=> 'user-logged-out',
+				'text'		=> __( "Vous n'&ecirc;tes pas identifi&eacute;.", 'yproject' ),
+				'element'	=> 'general'
+			);
+			array_push( $feedback_errors, $error );
 		
 		// Evaluation terminée
 		} else if ( $campaign->time_remaining_str() == '-' ) {
@@ -243,7 +249,7 @@ class WDG_Form_Vote extends WDG_Form {
 				$invest_sum = 0;
 			}
 			if ( !is_numeric( $invest_sum ) || $invest_sum < 0 ) {
-				$feedback_slide = 3;
+				$feedback_slide = 4;
 				$error = array(
 					'code'		=> 'invest-sum',
 					'text'		=> __( "Votre intention d'investissement doit &ecirc;tre un nombre.", 'yproject' ),
