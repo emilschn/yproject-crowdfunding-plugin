@@ -183,7 +183,7 @@ class WDGKYCFile {
 		if ( !empty( $type ) ) {
 			$query .= " AND type='" . $type . "'";
 		}
-		$query .= " ORDER BY date_uploaded, id DESC";
+		$query .= " ORDER BY date_uploaded DESC, id DESC";
 		
 		$kycfile_list = $wpdb->get_results( $query );
 		foreach ( $kycfile_list as $kycfile_item ) {
