@@ -828,6 +828,7 @@ class WDGUser {
 	public function get_pending_preinvestments() {
 		return $this->get_user_investments_object()->get_pending_preinvestments();
 	}
+		
 	public function get_first_pending_preinvestment() {
 		return $this->get_user_investments_object()->get_first_pending_preinvestment();
 	}
