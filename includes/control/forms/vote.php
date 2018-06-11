@@ -194,20 +194,26 @@ class WDG_Form_Vote extends WDG_Form {
 		
 		$feedback_success = array();
 		$feedback_errors = array();
-		$feedback_slide = 3;
+		$feedback_slide = 4;
 		
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$WDGUser_current = WDGUser::current();
 		
-		// On s'en fout du feedback, ça ne devrait pas arriver
+		// Utilisateur déconnecté
 		if ( !is_user_logged_in() ) {
+			$error = array(
+				'code'		=> 'user-logged-out',
+				'text'		=> __( "Vous n'&ecirc;tes pas identifi&eacute;.", 'yproject' ),
+				'element'	=> 'general'
+			);
+			array_push( $feedback_errors, $error );
 		
-		// Vote terminé
-		} else if ( $campaign->end_vote_remaining() <= 0 ) {
+		// Evaluation terminée
+		} else if ( $campaign->time_remaining_str() == '-' ) {
 			$error = array(
 				'code'		=> 'vote-finished',
-				'text'		=> __( "Le vote est termin&eacute;.", 'yproject' ),
+				'text'		=> __( "L'&eacute;valuation est termin&eacute;e.", 'yproject' ),
 				'element'	=> 'general'
 			);
 			array_push( $feedback_errors, $error );
@@ -243,7 +249,7 @@ class WDG_Form_Vote extends WDG_Form {
 				$invest_sum = 0;
 			}
 			if ( !is_numeric( $invest_sum ) || $invest_sum < 0 ) {
-				$feedback_slide = 3;
+				$feedback_slide = 4;
 				$error = array(
 					'code'		=> 'invest-sum',
 					'text'		=> __( "Votre intention d'investissement doit &ecirc;tre un nombre.", 'yproject' ),
@@ -287,7 +293,8 @@ class WDG_Form_Vote extends WDG_Form {
 					'more_info_other'	=> $more_info_other,
 					'advice'			=> $advice,
 					'date'				=> date_format( new DateTime(), 'Y-m-d' )
-				)); 
+				));
+				
 				if ( !$vote_result ) {
 					$error = array(
 						'code'		=> 'vote-save',
@@ -295,8 +302,16 @@ class WDG_Form_Vote extends WDG_Form {
 						'element'	=> 'general'
 					);
 					array_push( $feedback_errors, $error );
+				
+				// Si pas d'erreur, on poste le formulaire de sondage
+				} else {
+					$core = ATCF_CrowdFunding::instance();
+					$core->include_form( 'invest-poll' );
+					$WDGPollForm = new WDG_Form_Invest_Poll( $campaign_id, $WDGUser_current->get_wpref(), 'vote' );
+					$WDGPollForm->postForm( $invest_sum );
 				}
 				
+				// Ajout du suivi du projet
 				if ( $rate_project > 1 ) {
 					$table_jcrois = $wpdb->prefix . "jycrois";
 					$users = $wpdb->get_results( "SELECT * FROM $table_jcrois WHERE campaign_id = ".$campaign_id." AND user_id=".$WDGUser_current->get_wpref() );
@@ -311,6 +326,7 @@ class WDG_Form_Vote extends WDG_Form {
 					}
 				}
 
+				// Sauvegarde du commentaire sur la campagne
 				if ( $publish_advice && !empty( $advice ) ) {
 					$current_user = wp_get_current_user();
 					$user_name = $current_user->display_name;
