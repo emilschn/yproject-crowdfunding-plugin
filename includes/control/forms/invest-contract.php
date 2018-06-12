@@ -4,7 +4,6 @@ class WDG_Form_Invest_Contract extends WDG_Form {
 	public static $name = 'project-invest-contract';
 	
 	public static $field_group_hidden = 'invest-hidden';
-	public static $field_group_contract_validate = 'invest-contract-validate';
 	
 	private $campaign_id;
 	private $user_id;
@@ -18,8 +17,6 @@ class WDG_Form_Invest_Contract extends WDG_Form {
 	
 	protected function initFields() {
 		parent::initFields();
-		$campaign = new ATCF_Campaign( $this->campaign_id );
-		$WDGUser = new WDGUser( $this->user_id );
 		
 		//**********************************************************************
 		// Champs masqués : $field_group_hidden
@@ -35,7 +32,6 @@ class WDG_Form_Invest_Contract extends WDG_Form {
 	public function postForm() {
 		parent::postForm();
 		
-		$campaign = new ATCF_Campaign( $this->campaign_id );
 		$WDGUser = new WDGUser( $this->user_id );
 		$WDGUser_current = WDGUser::current();
 		
