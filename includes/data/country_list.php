@@ -7,7 +7,8 @@ $country_translation = array(
 	'ESPANA'		=> "SPAIN",
 	'ESPA&Ntilde;A'	=> "SPAIN",
 	'ESPAGNE'		=> "SPAIN",
-	'SUISSE'	=> "SWITZERLAND"
+	'SUISSE'	=> "SWITZERLAND",
+	'ALLEMAGNE'	=> "GERMANY"
 );
 
 /* iso3166-1 alpha-2 */
