@@ -894,6 +894,7 @@ class WDGOrganization {
 	public function can_register_lemonway() {
 		$buffer = ($this->get_name() != "")
 					&& ($this->get_description() != "")
+					&& ($this->get_website() != "")
 					&& ($this->get_idnumber() != "");
 		return $buffer;
 	}
