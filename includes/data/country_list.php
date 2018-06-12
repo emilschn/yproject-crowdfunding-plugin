@@ -13,6 +13,7 @@ $country_translation = array(
 /* iso3166-1 alpha-2 */
 global $country_list;
 $country_list = array(
+	"FR" => "FRANCE",
     "AF" => "AFGHANISTAN",
     "AX" => "ÅLAND ISLANDS",
     "AL" => "ALBANIA",
