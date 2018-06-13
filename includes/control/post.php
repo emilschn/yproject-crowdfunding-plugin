@@ -34,6 +34,7 @@ class WDGPostActions {
         self::add_action("roi_mark_transfer_received");
         self::add_action("generate_royalties_bill");
         self::add_action("refund_investors");
+        self::add_action( 'user_account_organization_details' );
     }
 
     /**
@@ -844,6 +845,18 @@ class WDGPostActions {
 			wp_redirect( home_url() );
 			exit();
 			
+		}
+	}
+	
+	public static function user_account_organization_details() {
+		$organization_id = filter_input( INPUT_POST, 'organization_id' );
+		if ( !empty( $organization_id ) ){
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'organization-details' );
+			$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
+			$WDGOrganizationDetailsForm->postForm();
+			wp_redirect( home_url( '/mon-compte/#orga-parameters-' . $organization_id ) );
+			exit();
 		}
 	}
 }

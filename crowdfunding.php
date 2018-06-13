@@ -170,7 +170,7 @@ final class ATCF_CrowdFunding {
 	}
 	
 	public function include_form( $form_name ) {
-		require( $this->includes_dir . 'control/forms/'.$form_name.'.php' );
+		require_once( $this->includes_dir . 'control/forms/'.$form_name.'.php' );
 	}
 
 	/**
