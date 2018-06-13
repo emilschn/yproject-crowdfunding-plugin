@@ -39,6 +39,7 @@ class WDGOrganization {
 	private $fiscal_year_end_month;
 	private $bank_owner;
 	private $bank_address;
+	private $bank_address2;
 	private $bank_iban;
 	private $bank_bic;
 	private $id_quickbooks;
@@ -149,6 +150,7 @@ class WDGOrganization {
 			
 			$this->bank_owner = $this->bopp_object->bank_owner;
 			$this->bank_address = $this->bopp_object->bank_address;
+			$this->bank_address2 = $this->bopp_object->bank_address2;
 			$this->bank_iban = $this->bopp_object->bank_iban;
 			$this->bank_bic = $this->bopp_object->bank_bic;
 			
@@ -197,6 +199,7 @@ class WDGOrganization {
                 
 		if ( $this->get_bank_owner() == '' ) { $this->set_bank_owner("---"); }
 		if ( $this->get_bank_address() == '' ) { $this->set_bank_address("---"); }
+		if ( $this->get_bank_address2() == '' ) { $this->set_bank_address2("---"); }
 		if ( $this->get_bank_iban() == '' ) { $this->set_bank_iban("---"); }
 		if ( $this->get_bank_bic() == '' ) { $this->set_bank_bic("---"); }
 		
@@ -475,6 +478,13 @@ class WDGOrganization {
 		$this->bank_address = $value;
 	}
 	
+	public function get_bank_address2() {
+		return $this->bank_address2;
+	}
+	public function set_bank_address2($value) {
+		$this->bank_address2 = $value;
+	}
+	
 	public function get_bank_iban() {
 		return $this->bank_iban;
 	}
@@ -654,16 +664,16 @@ class WDGOrganization {
 		if (isset($_POST['authentify_lw']) && $this->has_sent_all_documents()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
-					WDGKYCFile::$type_bank		=> '2',
-					WDGKYCFile::$type_kbis		=> '7',
-					WDGKYCFile::$type_status	=> '11',
-					WDGKYCFile::$type_id		=> '0',
-					WDGKYCFile::$type_home		=> '1',
-					WDGKYCFile::$type_capital_allocation		=> '20',
-					WDGKYCFile::$type_id_2		=> '16',
-					WDGKYCFile::$type_home_2	=> '17',
-					WDGKYCFile::$type_id_3		=> '18',
-					WDGKYCFile::$type_home_3	=> '19'
+					WDGKYCFile::$type_bank		=> LemonwayDocument::$document_type_bank,
+					WDGKYCFile::$type_kbis		=> LemonwayDocument::$document_type_kbis,
+					WDGKYCFile::$type_status	=> LemonwayDocument::$document_type_status,
+					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
+					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
+					WDGKYCFile::$type_capital_allocation		=> LemonwayDocument::$document_type_capital_allocation,
+					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_id2,
+					WDGKYCFile::$type_home_2	=> LemonwayDocument::$document_type_home2,
+					WDGKYCFile::$type_id_3		=> LemonwayDocument::$document_type_id3,
+					WDGKYCFile::$type_home_3	=> LemonwayDocument::$document_type_home3
 				);
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
@@ -738,6 +748,10 @@ class WDGOrganization {
 			$this->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
 			$save = TRUE;
 		}
+		if (filter_input(INPUT_POST, 'org_bankowneraddress2') != '') {
+			$this->set_bank_address2(filter_input(INPUT_POST, 'org_bankowneraddress2'));
+			$save = TRUE;
+		}
 		if (filter_input(INPUT_POST, 'org_bankowneriban') != '') {
 			$this->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
 			$save = TRUE;
@@ -785,6 +799,7 @@ class WDGOrganization {
 					$saved_iban = $this->get_bank_iban();
 					$saved_bic = $this->get_bank_bic();
 					$saved_dom1 = $this->get_bank_address();
+					$saved_dom2 = $this->get_bank_address2();
 					$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1 );
 					if ($result_iban == FALSE) {
 						$buffer = LemonwayLib::get_last_error_message();
@@ -1480,6 +1495,7 @@ class WDGOrganization {
 			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
 			$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
 			$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
+			$org_object->set_bank_address2(filter_input(INPUT_POST, 'org_bankowneraddress2'));
 			$org_object->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
 			$org_object->set_bank_bic(filter_input(INPUT_POST, 'org_bankownerbic'));
 			$wp_orga_user_id = $org_object->create();

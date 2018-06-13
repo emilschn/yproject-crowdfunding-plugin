@@ -36,6 +36,7 @@ class WDGPostActions {
         self::add_action("refund_investors");
         self::add_action( 'user_account_organization_details' );
         self::add_action( 'user_account_organization_identitydocs' );
+        self::add_action( 'user_account_organization_bank' );
     }
 
     /**
@@ -869,6 +870,18 @@ class WDGPostActions {
 			$WDGFormIdentityDocs = new WDG_Form_User_Identity_Docs( $organization_id, TRUE );
 			$WDGFormIdentityDocs->postForm();
 			wp_redirect( home_url( '/mon-compte/#orga-identitydocs-' . $organization_id ) );
+			exit();
+		}
+	}
+	
+	public static function user_account_organization_bank() {
+		$organization_id = filter_input( INPUT_POST, 'user_id' );
+		if ( !empty( $organization_id ) ){
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'user-bank' );
+			$WDGFormBank = new WDG_Form_User_Bank( $organization_id, TRUE );
+			$WDGFormBank->postForm();
+			wp_redirect( home_url( '/mon-compte/#orga-bank-' . $organization_id ) );
 			exit();
 		}
 	}
