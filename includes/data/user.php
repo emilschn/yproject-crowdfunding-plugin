@@ -1245,14 +1245,16 @@ class WDGUser {
 			if ( isset( $wallet_details_by_email->ID ) ) {
 				$db_lw_id = $wallet_details_by_email->ID;
 				
-			} else {
+			} elseif ( !empty( $this->wp_user->ID ) ) {
 				$db_lw_id = 'USERW'.$this->wp_user->ID;
 				if ( defined( YP_LW_USERID_PREFIX ) ) {
 					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 				}
 			}
 			
-			update_user_meta( $this->wp_user->ID, 'lemonway_id', $db_lw_id );
+			if ( !empty( $this->wp_user->ID ) ) {
+				update_user_meta( $this->wp_user->ID, 'lemonway_id', $db_lw_id );
+			}
 		}
 		return $db_lw_id;
 	}
