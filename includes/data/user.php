@@ -1609,25 +1609,25 @@ class WDGUser {
 	 * @return type
 	 */
 	public static function get_login_redirect_page( $anchor = '' ) {
-		ypcf_debug_log( 'WDGUser::get_login_redirect_page' );
+//		ypcf_debug_log( 'WDGUser::get_login_redirect_page' );
 		global $post;
 		$buffer = home_url();
 		
 		//Si on est sur la page de connexion ou d'inscription,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
 		if ( $post->post_name == 'connexion' || $post->post_name == 'inscription' ) {
-			ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1' );
+//			ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1' );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
-				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2' );
+//				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2' );
 				$buffer = home_url( $get_redirect_page );
 				
 			} else {
-				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1b' );
+//				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1b' );
 				ypcf_session_start();
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
-					ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b' );
+//					ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b' );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
 					if ( strpos( $buffer, '/connexion/' ) !== FALSE || strpos( $buffer, '/inscription/' ) !== FALSE ) {
 						$buffer = home_url();
@@ -1644,10 +1644,10 @@ class WDGUser {
 						if ( strpos($referer_url, '/connexion/') !== FALSE || strpos($referer_url, '/inscription/') !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
-								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a' );
+//								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a' );
 								$buffer = $posted_redirect_page;
 							} else {
-								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b' );
+//								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b' );
 								$buffer = home_url();
 							}
 
@@ -1656,11 +1656,11 @@ class WDGUser {
 							//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
 							$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
 							$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
-							ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4' );
+//							ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4' );
 							if ( !empty( $page_by_path->ID ) ) {
 								$campaign = new ATCF_Campaign( $page_by_path->ID );
 								if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
-									ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4a' );
+//									ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4a' );
 									$anchor = '#vote';
 								}
 							}
@@ -1668,24 +1668,24 @@ class WDGUser {
 						}
 						
 					} else {
-						ypcf_debug_log( 'WDGUser::get_login_redirect_page > A5 ' . $referer_url );
+//						ypcf_debug_log( 'WDGUser::get_login_redirect_page > A5 ' . $referer_url );
 					}
 				}
 			}
 			
 		//Sur les autres pages
 		} else {
-			ypcf_debug_log( 'WDGUser::get_login_redirect_page > B1' );
+//			ypcf_debug_log( 'WDGUser::get_login_redirect_page > B1' );
 			//On tente de voir si une redirection n'avait pas été demandée auparavant
 			$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 			if (!empty($posted_redirect_page)) {
-				ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2' );
+//				ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2' );
 				$buffer = $posted_redirect_page;
 			
 			//Sinon, on récupère simplement la page en cours
 			} else {
 				if ( isset( $post->ID ) ) {
-					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
+//					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
 					$buffer = get_permalink( $post->ID );
 					$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
 					if ( !empty( $input_get_campaign_id ) ) {
@@ -1695,7 +1695,7 @@ class WDGUser {
 			}
 		}
 		
-		ypcf_debug_log( 'WDGUser::get_login_redirect_page > result = ' .$buffer . $anchor );
+//		ypcf_debug_log( 'WDGUser::get_login_redirect_page > result = ' .$buffer . $anchor );
 		return $buffer . $anchor;
 	}
 }
