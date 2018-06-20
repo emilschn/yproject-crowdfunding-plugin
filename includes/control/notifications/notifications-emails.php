@@ -659,6 +659,19 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
 	
+	public static function turnover_declaration_not_null( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::turnover_declaration_not_null > ' . $declaration_id);
+		$declaration = new WDGROIDeclaration($declaration_id);
+		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+		
+		$admin_email = get_option('admin_email');
+		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA effectuée";
+		$body_content = "Hello !<br><br>";
+		$body_content .= "Le projet " .$campaign->data->post_title. " a fait sa déclaration de CA ! :)<br><br>";
+		
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+	
     public static function send_notification_roi_payment_success_user( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_success_user > ' . $declaration_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );

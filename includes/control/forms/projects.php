@@ -281,6 +281,7 @@ class WDGFormProjects {
 				NotificationsEmails::turnover_declaration_null( $declaration_id );
 				$declaration->status = WDGROIDeclaration::$status_transfer;
 			} else {
+				NotificationsEmails::turnover_declaration_not_null( $declaration_id );
 				$declaration->status = WDGROIDeclaration::$status_payment;
 			}
 			$declaration->employees_number = $employees_number;
