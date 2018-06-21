@@ -10,6 +10,8 @@ class WDG_File_Cacher {
 		"financement" => "financement",
 		"investissement" => "investissement"
 	);
+
+	protected static $_current = null;
 	
 	/**
 	 * Constructeur
@@ -21,18 +23,81 @@ class WDG_File_Cacher {
 	}
 	
 	/**
+	 * Récupération d'une instance statique
+	 * @return WDG_File_Cacher
+	 */
+	public static function current() {
+		if ( is_null( self::$_current ) ) {
+			self::$_current = new self();
+		}
+		return self::$_current;
+	}
+	
+	/**
 	 * Parcourt la liste des pages à mettre en cache, supprime l'existant et réenregistre
 	 */
 	public function rebuild_cache() {
 		if ( defined('WDG_DISABLE_CACHE') && WDG_DISABLE_CACHE === true ) {
-			return false;
+//			return false;
 		}
 		
+		// Mise en cache des pages statiques de base
 		foreach ( $this->page_list as $page_name => $page_path ) {
-			$this->delete( $page_name );
-			$file_path = $this->get_filepath( $page_name );
-			$page_content = $this->get_content( $page_path );
-			$this->save( $file_path, $page_content );
+			$this->build_static_page_cache( $page_name );
+		}
+		
+		// Mise en cache des pages des projets
+		// Principe :
+		// - on ne supprime les fichiers html que pour les fichiers qui datent de plus de 2h pour les campagnes en cours (le cache bdd n'est plus valable)
+		// - on met en cache 5 campagnes dont le cache a expiré (pour pouvoir finir la procédure)
+		$max_page_to_cache = 5;
+		$nb_page_cached = 0;
+		$list_campaign_recent = ATCF_Campaign::get_list_most_recent( 15 );
+		foreach ( $list_campaign_recent as $campaign_id ) {
+			$this->build_campaign_page_cache( $campaign_id, ( $nb_page_cached < $max_page_to_cache ) );
+			$nb_page_cached++;
+		}
+		
+	}
+	
+	/**
+	 * Recontruit le fichier html pour une page statique
+	 * @param string $page_name
+	 */
+	public function build_static_page_cache( $page_name ) {
+		$page_path = $this->page_list[ $page_name ];
+		$this->delete( $page_name );
+		$file_path = $this->get_filepath( $page_name );
+		$page_content = $this->get_content( $page_path );
+		$this->save( $file_path, $page_content );
+	}
+	
+	/**
+	 * Recontruit le fichier html pour une page de campaign
+	 * @param int $campaign_id
+	 */
+	public function build_campaign_page_cache( $campaign_id, $rebuild = TRUE ) {
+		$vote_cache_duration = 60 * 60 * 2;
+		$funding_cache_duration = 60 * 60 * 2;
+		$funded_cache_duration = 60 * 60 * 48;
+		
+		$db_cacher = WDG_Cache_Plugin::current();
+		$skip_cache_campaign = $db_cacher->get_cache( 'cache_campaign_' . $campaign_id, 1 );
+		if ( !$skip_cache_campaign ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$this->delete( $campaign->data->post_name );
+			if ( $rebuild ) {
+				$file_path = $this->get_filepath( $campaign->data->post_name );
+				$page_content = $this->get_content( $campaign->data->post_name );
+				$this->save( $file_path, $page_content );
+				$duration = $vote_cache_duration;
+				if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+					$duration = $funding_cache_duration;
+				} else if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+					$duration = $funded_cache_duration;
+				}
+				$db_cacher->set_cache( 'cache_campaign_' . $campaign_id, '1', $duration, 1 );
+			}
 		}
 	}
 	
@@ -52,7 +117,7 @@ class WDG_File_Cacher {
 	 */
 	private function get_content( $page_path ) {
 		ypcf_debug_log( 'WDG_File_Cacher::get_content > ' . $this->website . $page_path );
-		return file_get_contents( $this->website . $page_path );
+		return file_get_contents( $this->website . $page_path . '/' );
 	}
 	
 	/**
@@ -96,5 +161,4 @@ class WDG_File_Cacher {
 	}
 }
 
-global $WDG_File_Cacher;
-$WDG_File_Cacher = new WDG_File_Cacher();
+WDG_File_Cacher::current();

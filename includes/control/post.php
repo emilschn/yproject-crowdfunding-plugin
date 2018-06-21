@@ -340,6 +340,8 @@ class WDGPostActions {
 			'projectlist-projects-current',
 			'projectlist-projects-funded'
 		));
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->build_campaign_page_cache( $campaign->ID );
         wp_safe_redirect(wp_get_referer());
         die();
     }
