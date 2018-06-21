@@ -54,7 +54,7 @@ class WDG_File_Cacher {
 		$nb_page_cached = 0;
 		$list_campaign_recent = ATCF_Campaign::get_list_most_recent( 15 );
 		foreach ( $list_campaign_recent as $campaign_id ) {
-			$this->build_static_page_cache( $campaign_id, ( $nb_page_cached < $max_page_to_cache ) );
+			$this->build_campaign_page_cache( $campaign_id, ( $nb_page_cached < $max_page_to_cache ) );
 			$nb_page_cached++;
 		}
 		
