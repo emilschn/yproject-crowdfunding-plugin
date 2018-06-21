@@ -274,6 +274,7 @@ class WDG_Form_Vote extends WDG_Form {
 
 				// Ajout à la base de données
 				global $wpdb;
+				date_default_timezone_set("Europe/Paris");
 				$table_name = $wpdb->prefix . "ypcf_project_votes";
 				$vote_result = $wpdb->insert( $table_name, array ( 
 					'user_id'			=> $WDGUser_current->get_wpref(),
@@ -292,7 +293,7 @@ class WDG_Form_Vote extends WDG_Form {
 					'more_info_finance'	=> $more_info_finance,
 					'more_info_other'	=> $more_info_other,
 					'advice'			=> $advice,
-					'date'				=> date_format( new DateTime(), 'Y-m-d' )
+					'date'				=> date_format( new DateTime(), 'Y-m-d H:i:s' )
 				));
 				
 				if ( !$vote_result ) {
