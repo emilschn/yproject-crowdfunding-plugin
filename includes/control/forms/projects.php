@@ -97,6 +97,8 @@ class WDGFormProjects {
 				'home-projects',
 				'projectlist-projects-current'
 			));
+			$file_cacher = WDG_File_Cacher::current();
+			$file_cacher->build_campaign_page_cache( $campaign_id );
 			
 			$page_dashboard = get_page_by_path('tableau-de-bord');
 			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=approvepayment' );
