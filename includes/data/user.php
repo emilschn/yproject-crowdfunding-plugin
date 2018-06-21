@@ -1295,6 +1295,28 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function get_lemonway_iban() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( isset( $wallet_details->IBANS->IBAN ) ) {
+			$buffer = $wallet_details->IBANS->IBAN;
+		}
+		return $buffer;
+	}
+	
+	public static $iban_status_waiting = 4;
+	public static $iban_status_validated = 5;
+	public static $iban_status_disabled = 8;
+	public static $iban_status_rejected = 9;
+	public function get_lemonway_iban_status() {
+		$first_iban = $this->get_lemonway_iban();
+		if ( !empty( $first_iban ) ) {
+			return $first_iban->S;
+		} else {
+			return FALSE;
+		}
+	}
+	
 	/**
 	 * Détermine si l'utilisateur peut payer avec son porte-monnaie
 	 * @param int $amount
@@ -1371,8 +1393,7 @@ class WDGUser {
 	 */
 	public function has_registered_iban() {
 		$buffer = true;
-		$wallet_details = $this->get_wallet_details();
-		$first_iban = $wallet_details->IBANS->IBAN;
+		$first_iban = $this->get_lemonway_iban();
 		if (empty($first_iban)) {
 			$buffer = false;
 		}

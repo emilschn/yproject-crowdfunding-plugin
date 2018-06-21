@@ -132,12 +132,15 @@ class WDG_Form_User_Bank extends WDG_Form {
 			
 			if ( $this->is_orga && $WDGUser_current->can_edit_organization( $user_id ) ) {
 				$WDGOrganization = new WDGOrganization( $user_id );
-				$WDGOrganization->set_bank_owner( $bank_holdername );
-				$WDGOrganization->set_bank_address( $bank_address );
-				$WDGOrganization->set_bank_address2( $bank_address2 );
-				$WDGOrganization->set_bank_iban( $bank_iban );
-				$WDGOrganization->set_bank_bic( $bank_bic );
-				$WDGOrganization->save();
+				if ( !empty( $bank_holdername ) ) {
+					$WDGOrganization->set_bank_owner( $bank_holdername );
+					$WDGOrganization->set_bank_address( $bank_address );
+					$WDGOrganization->set_bank_address2( $bank_address2 );
+					$WDGOrganization->set_bank_iban( $bank_iban );
+					$WDGOrganization->set_bank_bic( $bank_bic );
+					$WDGOrganization->save();
+					LemonwayLib::wallet_register_iban( $WDGOrganization->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+				}
 
 				if ( isset( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' ] );
@@ -146,8 +149,11 @@ class WDG_Form_User_Bank extends WDG_Form {
 				}
 				
 			} else {
-				$WDGUser->save_iban( $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
-				$WDGUser->update_api();
+				if ( !empty( $bank_holdername ) ) {
+					$WDGUser->save_iban( $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+					$WDGUser->update_api();
+					LemonwayLib::wallet_register_iban( $WDGUser->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+				}
 
 				if ( isset( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'bank-file' ] );
