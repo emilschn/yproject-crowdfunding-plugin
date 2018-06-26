@@ -50,7 +50,7 @@ class WDG_File_Cacher {
 		// Principe :
 		// - on ne supprime les fichiers html que pour les fichiers qui datent de plus de 2h pour les campagnes en cours (le cache bdd n'est plus valable)
 		// - on met en cache 5 campagnes dont le cache a expiré (pour pouvoir finir la procédure)
-		$max_page_to_cache = 5;
+		$max_page_to_cache = 4;
 		$nb_page_cached = 0;
 		$list_campaign_recent = ATCF_Campaign::get_list_most_recent( 15 );
 		foreach ( $list_campaign_recent as $campaign_id ) {
@@ -85,8 +85,9 @@ class WDG_File_Cacher {
 		$skip_cache_campaign = $db_cacher->get_cache( 'cache_campaign_' . $campaign_id, 1 );
 		if ( !$skip_cache_campaign ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
+			$lang_list = $campaign->get_lang_list();
 			$this->delete( $campaign->data->post_name );
-			if ( $rebuild ) {
+			if ( $rebuild && empty( $lang_list ) ) {
 				$file_path = $this->get_filepath( $campaign->data->post_name );
 				$page_content = $this->get_content( $campaign->data->post_name );
 				$this->save( $file_path, $page_content );

@@ -72,9 +72,15 @@ class WDGWPREST_Entity_Declaration {
 	public static function update( WDGROIDeclaration $declaration ) {
 		$parameters = WDGWPREST_Entity_Declaration::set_post_parameters( $declaration );
 		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'declaration/' . $declaration->id, $parameters );
-		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
-		return $result_obj;
+		if ( !empty( $declaration->id ) ) {
+			$result_obj = WDGWPRESTLib::call_post_wdg( 'declaration/' . $declaration->id, $parameters );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$declaration->id );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$declaration->id_campaign. '/declarations' );
+			if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
+			return $result_obj;
+		} else {
+			return FALSE;
+		}
 	}
 	
 	/**
