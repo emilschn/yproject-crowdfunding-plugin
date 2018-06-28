@@ -201,6 +201,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			if ( $this->is_orga && $WDGUser_current->can_edit_organization( $user_id ) ) {
 				$send_notification_validation = FALSE;
 				$WDGOrganization = new WDGOrganization( $user_id );
+				if ( $WDGOrganization->can_register_lemonway() ) {
+					$WDGOrganization->register_lemonway();
+				}
+			
 				if ( isset( $_FILES[ 'identity' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity' ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'identity' ] );
 					$WDGFile = new WDGKYCFile( $file_id );
@@ -255,6 +259,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				}
 				
 			} else {
+				if ( $WDGUser->can_register_lemonway() ) {
+					$WDGUser->register_lemonway();
+				}
+				
 				$send_notification_validation = FALSE;
 				if ( isset( $_FILES[ 'identity' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity' ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'identity' ] );

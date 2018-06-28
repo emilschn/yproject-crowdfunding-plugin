@@ -241,6 +241,9 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$WDGOrganization->set_nationality( $nationality );
 			
 			$WDGOrganization->save();
+			if ( $WDGOrganization->can_register_lemonway() ) {
+				$WDGOrganization->register_lemonway();
+			}
 		}
 		
 		$buffer = array(

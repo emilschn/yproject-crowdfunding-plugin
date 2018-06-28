@@ -139,26 +139,38 @@ class WDG_Form_User_Bank extends WDG_Form {
 					$WDGOrganization->set_bank_iban( $bank_iban );
 					$WDGOrganization->set_bank_bic( $bank_bic );
 					$WDGOrganization->save();
-					LemonwayLib::wallet_register_iban( $WDGOrganization->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+					if ( $WDGOrganization->can_register_lemonway() ) {
+						$WDGOrganization->register_lemonway();
+						LemonwayLib::wallet_register_iban( $WDGOrganization->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+					}
 				}
 
 				if ( isset( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' ] );
 					$WDGFile = new WDGKYCFile( $file_id );
-					LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+					if ( $WDGOrganization->can_register_lemonway() ) {
+						$WDGOrganization->register_lemonway();
+						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+					}
 				}
 				
 			} else {
 				if ( !empty( $bank_holdername ) ) {
 					$WDGUser->save_iban( $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
 					$WDGUser->update_api();
-					LemonwayLib::wallet_register_iban( $WDGUser->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+					if ( $WDGUser->can_register_lemonway() ) {
+						$WDGUser->register_lemonway();
+						LemonwayLib::wallet_register_iban( $WDGUser->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+					}
 				}
 
 				if ( isset( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'bank-file' ] );
 					$WDGFile = new WDGKYCFile( $file_id );
-					LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+					if ( $WDGUser->can_register_lemonway() ) {
+						$WDGUser->register_lemonway();
+						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+					}
 				}
 			}
 			
