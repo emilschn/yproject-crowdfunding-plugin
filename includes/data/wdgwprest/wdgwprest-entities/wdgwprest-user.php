@@ -177,7 +177,10 @@ class WDGWPREST_Entity_User {
 	 * @return array
 	 */
 	public static function get_rois( $user_id ) {
-		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/rois' );
-		return $result_obj;
+		$buffer = array();
+		if ( !empty( $user_id ) ) {
+			$buffer = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/rois' );
+		}
+		return $buffer;
 	}
 }

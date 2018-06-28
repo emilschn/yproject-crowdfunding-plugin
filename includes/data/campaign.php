@@ -1859,6 +1859,13 @@ class ATCF_Campaign {
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );
 					}
 					$this->update_api();
+					do_action('wdg_delete_cache', array(
+						'home-projects',
+						'projectlist-projects-current',
+						'projectlist-projects-funded'
+					));
+					$file_cacher = WDG_File_Cacher::current();
+					$file_cacher->build_campaign_page_cache( $this->ID );
 				}
 			} else {
 				$diff = $expires - $now;

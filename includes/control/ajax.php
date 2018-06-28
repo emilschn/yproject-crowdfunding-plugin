@@ -1655,7 +1655,9 @@ class WDGAjaxActions {
 				$more_invest["invest_payment_state"] = $investment_state;
 				$more_invest["invest_state"] = $payment_state;
 				$more_invest["invest_amount"] = $item_invest['amount'];
-				$more_invest["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
+				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
+				$datetime->add( new DateInterval( 'PT1H' ) );
+				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
 				$more_invest["invest_sign"] = SignsquidContract::get_status_str_by_code( $item_invest[ 'signsquid_status' ] );
 				$more_invest["invest_id"] = $item_invest['ID'];
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
@@ -1667,7 +1669,9 @@ class WDGAjaxActions {
 				$array_contacts[$u_id]["invest_payment_state"] = $investment_state;
 				$array_contacts[$u_id]["invest_state"] = $payment_state;
 				$array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
-				$array_contacts[$u_id]["invest_date"] = date_i18n( 'Y-m-d', strtotime( get_post_field( 'post_date', $item_invest['ID'] ) ) );
+				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
+				$datetime->add( new DateInterval( 'PT1H' ) );
+				$array_contacts[$u_id]["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
 				$array_contacts[$u_id]["invest_sign"] = SignsquidContract::get_status_str_by_code( $item_invest[ 'signsquid_status' ] );
 				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
 				$array_contacts[$u_id]["invest_item"] = $item_invest;
