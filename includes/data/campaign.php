@@ -717,6 +717,16 @@ class ATCF_Campaign {
 	public function archive_message() {
 		return $this->__get( ATCF_Campaign::$key_archive_message );
 	}
+
+	public static $key_end_vote_pending_message = 'end_vote_pending_message';
+	public function end_vote_pending_message() {
+		return $this->__get( ATCF_Campaign::$key_end_vote_pending_message );
+	}
+	
+	public static $key_maximum_complete_message = 'maximum_complete_message';
+	public function maximum_complete_message() {
+		return $this->__get( ATCF_Campaign::$key_maximum_complete_message );
+	}
 	
 	public static $key_custom_footer_code = 'custom_footer_code';
 	public function custom_footer_code() {
