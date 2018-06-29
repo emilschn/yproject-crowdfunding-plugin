@@ -104,7 +104,7 @@ class UIHelpers {
 				break;
 				
 			    default :
-					return '<img src="'.$url.'" width="'.$width.'" />';
+					return '<img src="'.$url.'" width="'.$width.'" height="'.$width.'" />';
 				break;
 			}
 		}

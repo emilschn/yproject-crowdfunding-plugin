@@ -89,6 +89,7 @@ class WDG_Admin_General {
 		$edd_settings[ 'preinvest_warning' ] = filter_input( INPUT_POST, 'preinvest_warning' );
 		$edd_settings[ 'standard_contract' ] = filter_input( INPUT_POST, 'standard_contract' );
 		$edd_settings[ 'accounting_fiscal_info' ] = filter_input( INPUT_POST, 'accounting_fiscal_info' );
+		$edd_settings[ 'lemonway_generalities' ] = filter_input( INPUT_POST, 'lemonway_generalities' );
 		update_option( 'edd_settings', $edd_settings );
 	}
 	
@@ -270,6 +271,12 @@ class WDG_Admin_General {
 		<h3>Informations comptables et fiscales pour attestation</h3>
 		<label for="accounting_fiscal_info">
 			<?php wp_editor( $edd_settings[ 'accounting_fiscal_info' ], 'accounting_fiscal_info' ); ?>
+		</label>
+		<br><br>
+		
+		<h3>Informations sur Lemon Way (compte utilisateur, ...)</h3>
+		<label for="lemonway_generalities">
+			<?php wp_editor( $edd_settings[ 'lemonway_generalities' ], 'lemonway_generalities' ); ?>
 		</label>
 		<br><br>
 		

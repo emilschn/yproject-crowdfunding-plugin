@@ -246,6 +246,8 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							'home-projects',
 							'projectlist-projects-current'
 						));
+						$file_cacher = WDG_File_Cacher::current();
+						$file_cacher->build_campaign_page_cache( $download_id );
 					}
 				}
 			}

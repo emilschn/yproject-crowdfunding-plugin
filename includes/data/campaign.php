@@ -717,6 +717,16 @@ class ATCF_Campaign {
 	public function archive_message() {
 		return $this->__get( ATCF_Campaign::$key_archive_message );
 	}
+
+	public static $key_end_vote_pending_message = 'end_vote_pending_message';
+	public function end_vote_pending_message() {
+		return $this->__get( ATCF_Campaign::$key_end_vote_pending_message );
+	}
+	
+	public static $key_maximum_complete_message = 'maximum_complete_message';
+	public function maximum_complete_message() {
+		return $this->__get( ATCF_Campaign::$key_maximum_complete_message );
+	}
 	
 	public static $key_custom_footer_code = 'custom_footer_code';
 	public function custom_footer_code() {
@@ -1859,6 +1869,13 @@ class ATCF_Campaign {
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );
 					}
 					$this->update_api();
+					do_action('wdg_delete_cache', array(
+						'home-projects',
+						'projectlist-projects-current',
+						'projectlist-projects-funded'
+					));
+					$file_cacher = WDG_File_Cacher::current();
+					$file_cacher->build_campaign_page_cache( $this->ID );
 				}
 			} else {
 				$diff = $expires - $now;

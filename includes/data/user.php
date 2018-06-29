@@ -828,6 +828,7 @@ class WDGUser {
 	public function get_pending_preinvestments() {
 		return $this->get_user_investments_object()->get_pending_preinvestments();
 	}
+		
 	public function get_first_pending_preinvestment() {
 		return $this->get_user_investments_object()->get_first_pending_preinvestment();
 	}
@@ -1179,14 +1180,16 @@ class WDGUser {
 			if ( isset( $wallet_details_by_email->ID ) ) {
 				$db_lw_id = $wallet_details_by_email->ID;
 				
-			} else {
+			} elseif ( !empty( $this->wp_user->ID ) ) {
 				$db_lw_id = 'USERW'.$this->wp_user->ID;
 				if ( defined( YP_LW_USERID_PREFIX ) ) {
 					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 				}
 			}
 			
-			update_user_meta( $this->wp_user->ID, 'lemonway_id', $db_lw_id );
+			if ( !empty( $this->wp_user->ID ) ) {
+				update_user_meta( $this->wp_user->ID, 'lemonway_id', $db_lw_id );
+			}
 		}
 		return $db_lw_id;
 	}
@@ -1292,6 +1295,28 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function get_lemonway_iban() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( isset( $wallet_details->IBANS->IBAN ) ) {
+			$buffer = $wallet_details->IBANS->IBAN;
+		}
+		return $buffer;
+	}
+	
+	public static $iban_status_waiting = 4;
+	public static $iban_status_validated = 5;
+	public static $iban_status_disabled = 8;
+	public static $iban_status_rejected = 9;
+	public function get_lemonway_iban_status() {
+		$first_iban = $this->get_lemonway_iban();
+		if ( !empty( $first_iban ) ) {
+			return $first_iban->S;
+		} else {
+			return FALSE;
+		}
+	}
+	
 	/**
 	 * Détermine si l'utilisateur peut payer avec son porte-monnaie
 	 * @param int $amount
@@ -1332,7 +1357,8 @@ class WDGUser {
 				$saved_iban = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, TRUE );
 				$saved_bic = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, TRUE );
 				$saved_dom1 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, TRUE );
-				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1 );
+				$saved_dom2 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address2, TRUE );
+				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
 				if ($result_iban == FALSE) {
 					$buffer = LemonwayLib::get_last_error_message();
 				}
@@ -1367,8 +1393,7 @@ class WDGUser {
 	 */
 	public function has_registered_iban() {
 		$buffer = true;
-		$wallet_details = $this->get_wallet_details();
-		$first_iban = $wallet_details->IBANS->IBAN;
+		$first_iban = $this->get_lemonway_iban();
 		if (empty($first_iban)) {
 			$buffer = false;
 		}
@@ -1542,25 +1567,25 @@ class WDGUser {
 	 * @return type
 	 */
 	public static function get_login_redirect_page( $anchor = '' ) {
-		ypcf_debug_log( 'WDGUser::get_login_redirect_page' );
+//		ypcf_debug_log( 'WDGUser::get_login_redirect_page' );
 		global $post;
 		$buffer = home_url();
 		
 		//Si on est sur la page de connexion ou d'inscription,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
 		if ( $post->post_name == 'connexion' || $post->post_name == 'inscription' ) {
-			ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1' );
+//			ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1' );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
-				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2' );
+//				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2' );
 				$buffer = home_url( $get_redirect_page );
 				
 			} else {
-				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1b' );
+//				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1b' );
 				ypcf_session_start();
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
-					ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b' );
+//					ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b' );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
 					if ( strpos( $buffer, '/connexion/' ) !== FALSE || strpos( $buffer, '/inscription/' ) !== FALSE ) {
 						$buffer = home_url();
@@ -1577,10 +1602,10 @@ class WDGUser {
 						if ( strpos($referer_url, '/connexion/') !== FALSE || strpos($referer_url, '/inscription/') !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
-								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a' );
+//								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a' );
 								$buffer = $posted_redirect_page;
 							} else {
-								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b' );
+//								ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b' );
 								$buffer = home_url();
 							}
 
@@ -1589,11 +1614,11 @@ class WDGUser {
 							//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
 							$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
 							$page_by_path = get_page_by_path( $path, OBJECT, 'download' );
-							ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4' );
+//							ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4' );
 							if ( !empty( $page_by_path->ID ) ) {
 								$campaign = new ATCF_Campaign( $page_by_path->ID );
 								if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
-									ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4a' );
+//									ypcf_debug_log( 'WDGUser::get_login_redirect_page > A4a' );
 									$anchor = '#vote';
 								}
 							}
@@ -1601,24 +1626,24 @@ class WDGUser {
 						}
 						
 					} else {
-						ypcf_debug_log( 'WDGUser::get_login_redirect_page > A5 ' . $referer_url );
+//						ypcf_debug_log( 'WDGUser::get_login_redirect_page > A5 ' . $referer_url );
 					}
 				}
 			}
 			
 		//Sur les autres pages
 		} else {
-			ypcf_debug_log( 'WDGUser::get_login_redirect_page > B1' );
+//			ypcf_debug_log( 'WDGUser::get_login_redirect_page > B1' );
 			//On tente de voir si une redirection n'avait pas été demandée auparavant
 			$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 			if (!empty($posted_redirect_page)) {
-				ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2' );
+//				ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2' );
 				$buffer = $posted_redirect_page;
 			
 			//Sinon, on récupère simplement la page en cours
 			} else {
 				if ( isset( $post->ID ) ) {
-					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
+//					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
 					$buffer = get_permalink( $post->ID );
 					$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
 					if ( !empty( $input_get_campaign_id ) ) {
@@ -1628,7 +1653,7 @@ class WDGUser {
 			}
 		}
 		
-		ypcf_debug_log( 'WDGUser::get_login_redirect_page > result = ' .$buffer . $anchor );
+//		ypcf_debug_log( 'WDGUser::get_login_redirect_page > result = ' .$buffer . $anchor );
 		return $buffer . $anchor;
 	}
 }

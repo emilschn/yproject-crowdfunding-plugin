@@ -59,7 +59,7 @@ class WDGWPRESTLib {
 				
 				$result_save = serialize( $result );
 				if ( !empty( $result_save ) ) {
-					$db_cacher->set_cache( $cache_id, $result_save, 60*2, $cache_version );
+					$db_cacher->set_cache( $cache_id, $result_save, 60*4, $cache_version );
 				}
 			}
 			

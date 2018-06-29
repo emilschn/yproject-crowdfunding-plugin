@@ -60,19 +60,38 @@ class WDGUserInvestments {
 	/**
 	 * Gestion des pré-investissements
 	 */
-	public function get_pending_preinvestments() {
+	public function get_pending_preinvestments( $force_reload = FALSE) {
+		$db_cacher = WDG_Cache_Plugin::current();
+		$id_user = $this->user->get_wpref();
+		$pending_preinv_key = 'user_'.$id_user.'_pending_preinvestments';
+		$pending_preinv_duration = 600; //10 minutes
+		$pending_preinv_version = 1;
+		$investment_id_list = array();
+
 		if ( !isset( $this->pending_preinvestments ) ) {
+			$preinv_cache = ( $force_reload ) ? FALSE : $db_cacher->get_cache( $pending_preinv_key, $pending_preinv_version );
 			$this->pending_preinvestments = array();
-			$pending_investments = $this->get_pending_investments();
-			foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
-				$investment_campaign = new ATCF_Campaign( $campaign_id );
-				if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
-					foreach ( $campaign_investments as $investment_id ) {
-						$wdg_investment = new WDGInvestment( $investment_id );
-						if ( $wdg_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
-							array_push( $this->pending_preinvestments, $wdg_investment );
+			if ( !$preinv_cache ) {
+				$pending_investments = $this->get_pending_investments();
+				foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
+					$investment_campaign = new ATCF_Campaign( $campaign_id );
+					if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+						foreach ( $campaign_investments as $investment_id ) {
+							$wdg_investment = new WDGInvestment( $investment_id );
+							if ( $wdg_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+								array_push( $this->pending_preinvestments, $wdg_investment );
+								array_push( $investment_id_list, $investment_id );
+							}
 						}
 					}
+				}
+				$pending_preinv_content = json_encode( $investment_id_list );
+				$db_cacher->set_cache( $pending_preinv_key, $pending_preinv_content, $pending_preinv_duration, $pending_preinv_version );
+			} else {
+				$preinvestment_array = json_decode( $preinv_cache, true );
+				foreach ( $preinvestment_array as $investment_id ) {
+					$wdg_investment = new WDGInvestment( $investment_id );
+					array_push( $this->pending_preinvestments, $wdg_investment );
 				}
 			}
 		}
