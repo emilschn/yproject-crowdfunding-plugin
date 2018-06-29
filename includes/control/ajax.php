@@ -608,6 +608,16 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_archive_message, $new_archive_message );
 			$success[ "new_archive_message" ] = 1;
 		}
+		$new_end_vote_pending_message = sanitize_text_field( filter_input( INPUT_POST, 'new_end_vote_pending_message' ) );
+		if ( !empty( $new_end_vote_pending_message ) ) {
+			$campaign->__set( ATCF_Campaign::$key_end_vote_pending_message, $new_end_vote_pending_message );
+			$success[ "new_end_vote_pending_message" ] = 1;
+		}
+		$new_maximum_complete_message = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_complete_message' ) );
+		if ( !empty( $new_maximum_complete_message) ) {
+			$campaign->__set( ATCF_Campaign::$key_maximum_complete_message, $new_maximum_complete_message );
+			$success[ "new_maximum_complete_message" ] = 1;
+		}
 		$new_custom_footer_code = filter_input( INPUT_POST, 'new_custom_footer_code' );
 		if ( !empty( $new_custom_footer_code ) ) {
 			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
