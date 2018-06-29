@@ -512,7 +512,7 @@ class WDGInvestment {
 /******************************************************************************/
 // PAYMENT
 /******************************************************************************/
-	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE ) {
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_by_card = 0 ) {
 		if ( $this->exists_payment( $payment_key ) ) {
 			return 'publish';
 		}
@@ -573,6 +573,10 @@ class WDGInvestment {
 		);
 		$payment_id = edd_insert_payment( $payment_data );
 		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
+		if ( strpos( $mean_of_payment, 'wallet' ) !== FALSE ) {
+			update_post_meta( $payment_id, 'amount_with_wallet', $this->get_session_amount() - $amount_by_card );
+			update_post_meta( $payment_id, 'amount_with_card', $amount_by_card );
+		}
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
 		// FIN GESTION DU PAIEMENT COTE EDD
@@ -689,11 +693,11 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	private function try_payment_wallet( $entire_wallet = FALSE ) {
+	private function try_payment_wallet() {
 		$buffer = FALSE;
 		$WDGUser_current = WDGUser::current();
 		
-		$amount = ( $entire_wallet ) ? $WDGUser_current->get_lemonway_wallet_amount() : $this->get_session_amount();
+		$amount = $this->get_session_amount();
 
 		// Vérifications de sécurité
 		$can_use_wallet = FALSE;
@@ -796,19 +800,15 @@ class WDGInvestment {
 			
 			// Compléter par wallet
 			if ( !$is_failed ) {
-				$wallet_payment_key = $this->try_payment_wallet( FALSE );
+				$wallet_payment_key = $this->try_payment_wallet();
 				if ( !empty( $wallet_payment_key ) ) {
 					$payment_key .= '_' . $wallet_payment_key;
 				} else {
 					$payment_key .= '_wallet_FAILED';
 				}
-				
-				if ( $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet ) {
-					$payment_key .= '_cardwallet';
-				}
 			}
 			
-			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed );
+			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount_by_card );
 			
 			if ( $buffer == 'failed' ) {
 				$WDGUser_current = WDGUser::current();
@@ -840,21 +840,21 @@ class WDGInvestment {
 	public function refund() {
 		$payment_key = edd_get_payment_key( $this->get_id() );
 		if ($payment_key != 'check') {
+			$campaign = $this->get_saved_campaign();
+			$organization = $campaign->get_organization();
+			$organization_obj = new WDGOrganization( $organization->wpref, $organization );
+			$credit_wallet_id = '';
+			$user_id = $this->get_saved_user_id();
+			if ( WDGOrganization::is_user_organization( $user_id ) ) {
+				$credit_organization = new WDGOrganization( $user_id );
+				$credit_wallet_id = $credit_organization->get_lemonway_id();
+			} else {
+				$credit_user = new WDGUser( $user_id );
+				$credit_wallet_id = $credit_user->get_lemonway_id();
+			}
 
 			// Si c'est un virement
 			if ( strpos($payment_key, 'wire_') !== FALSE ) {
-				$campaign = $this->get_saved_campaign();
-				$organization = $campaign->get_organization();
-				$organization_obj = new WDGOrganization( $organization->wpref, $organization );
-				$credit_wallet_id = '';
-				$user_id = $this->get_saved_user_id();
-				if ( WDGOrganization::is_user_organization( $user_id ) ) {
-					$credit_organization = new WDGOrganization( $user_id );
-					$credit_wallet_id = $credit_organization->get_lemonway_id();
-				} else {
-					$credit_user = new WDGUser( $user_id );
-					$credit_wallet_id = $credit_user->get_lemonway_id();
-				}
 				$amount = $this->get_saved_amount();
 				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount );
 				if (LemonwayLib::get_last_error_code() == '') {
@@ -879,15 +879,22 @@ class WDGInvestment {
 				}
 
 				if ( !empty( $card_token ) ) {
+					// D'abord, on reverse sur le porte-monnaie utilisateur
+					$amount_with_card = get_post_meta( $this->get_id(), 'amount_with_card', TRUE );
+					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_card );
+					
+					// Ensuite on fait le remboursement
 					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
 					$lw_refund = LemonwayLib::ask_refund( $lw_transaction_result->ID );
 					if (LemonwayLib::get_last_error_code() == '') {
+						update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
 						update_post_meta( $this->get_id(), 'refund_id', $lw_refund->TRANS->HPAY->ID );
 					}
 				}
+				
 				if ( !empty( $wallet_token ) ) {
-					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $wallet_token, 'payment' );
-					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $lw_transaction_result->REC, $lw_transaction_result->SEN, $lw_transaction_result->DEB );
+					$amount_with_wallet = get_post_meta( $this->get_id(), 'amount_with_wallet', TRUE );
+					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_wallet );
 					if (LemonwayLib::get_last_error_code() == '') {
 						update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
 					}
