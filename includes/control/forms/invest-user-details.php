@@ -22,6 +22,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 	}
 	
 	protected function initFields() {
+		ypcf_session_start();
 		parent::initFields();
 		$campaign = new ATCF_Campaign( $this->campaign_id );
 		$campaign_organization = $campaign->get_organization();
@@ -184,12 +185,16 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$organization_list[ '' ] = '';
 		$organization_list[ 'new-orga' ] = __( "Une nouvelle organisation", 'yproject' );
 		$user_orga_list = $WDGUser->get_organizations_list();
+		array_unshift($user_orga_list, 'new-orga');
 		foreach ( $user_orga_list as $organization_item ) {
-			if ( $campaign_organization->wpref != $organization_item->wpref ) {
+			if ( $organization_item == 'new-orga' ){
+				$this->initFieldsHiddenOrga('new-orga');
+			} elseif( $campaign_organization->wpref != $organization_item->wpref ) {
 				$organization_list[ $organization_item->wpref ] = $organization_item->name;
-				$this->initFieldsHiddenOrga( $organization_item->wpref );
-			}
+				$this->initFieldsHiddenOrga( $organization_item->wpref ); 
+			} 
 		}
+
 		$this->addField(
 			'select',
 			'orga-id',
@@ -295,84 +300,134 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 	private function initFieldsHiddenOrga( $id_orga ) {
 		$WDGOrganization = new WDGOrganization( $id_orga );
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_name = ( $_SESSION[ 'org_name' ] == '' ) ? FALSE : $_SESSION[ 'org_name' ];
+		} else {
+			$org_name = $WDGOrganization->get_name();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_name_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_name()
+			$org_name
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_email = ( $_SESSION[ 'org_email' ] == '' ) ? FALSE : $_SESSION[ 'org_email' ];
+		} else {
+			$org_email = $WDGOrganization->get_email();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_email_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_email()
+			$org_email
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_legalform = ( $_SESSION[ 'org_legalform' ] == '' ) ? FALSE : $_SESSION[ 'org_legalform' ];
+		} else {
+			$org_legalform = $WDGOrganization->get_legalform();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_legalform_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_legalform()
+			$org_legalform
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_idnumber = ( $_SESSION[ 'org_idnumber' ] == '' ) ? FALSE : $_SESSION[ 'org_idnumber' ];
+		} else {
+			$org_idnumber = $WDGOrganization->get_idnumber();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_idnumber_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_idnumber()
+			$org_idnumber
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_rcs = ( $_SESSION[ 'org_rcs' ] == '' ) ? FALSE : $_SESSION[ 'org_rcs' ];
+		} else {
+			$org_rcs = $WDGOrganization->get_rcs();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_rcs_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_rcs()
+			$org_rcs
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_capital = ( $_SESSION[ 'org_capital' ] == '' ) ? FALSE : $_SESSION[ 'org_capital' ];
+		} else {
+			$org_capital = $WDGOrganization->get_capital();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_capital_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_capital()
+			$org_capital
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_address = ( $_SESSION[ 'org_address' ] == '' ) ? FALSE : $_SESSION[ 'org_address' ];
+		} else {
+			$org_address = $WDGOrganization->get_address();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_address_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_address()
+			$org_address
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_postal_code = ( $_SESSION[ 'org_postal_code' ] == '' ) ? FALSE : $_SESSION[ 'org_postal_code' ];
+		} else {
+			$org_postal_code = $WDGOrganization->get_postal_code();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_postal_code_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_postal_code()
+			$org_postal_code
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_city = ( $_SESSION[ 'org_city' ] == '' ) ? FALSE : $_SESSION[ 'org_city' ];
+		} else {
+			$org_city = $WDGOrganization->get_city();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_city_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_city()
+			$org_city
 		);
 		
+		if ( $id_orga == 'new-orga' ) {
+			$org_nationality = ( $_SESSION[ 'org_nationality' ] == '' ) ? FALSE : $_SESSION[ 'org_nationality' ];
+		} else {
+			$org_nationality = $WDGOrganization->get_nationality();
+		}
 		$this->addField(
 			'hidden',
 			'org_init_nationality_' .$id_orga,
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			$WDGOrganization->get_nationality()
+			$org_nationality
 		);
 		
 	}
@@ -527,6 +582,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$org_capable = $this->getInputChecked( 'org-capable' );
 			if ( !$org_capable ) {
 				$buffer = FALSE;
+				$this->update_session_organization();
 				$this->addPostError(
 					'orga-new-capable',
 					__( "Vous n'avez pas d&eacute;clar&eacute; &ecirc;tre en mesure de repr&eacute;senter l'organisation.", 'yproject' ),
@@ -551,6 +607,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		
 		$org_name = $this->getInputText( 'org_name' );
 		if ( empty( $org_name ) ) {
+			$this->update_session_organization();
 			$buffer = FALSE;
 			$this->addPostError(
 				'org-name-empty',
@@ -560,6 +617,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		}
 		$org_email = $this->getInputText( 'org_email' );
 		if ( !is_email( $org_email ) ) {
+			$this->update_session_organization();
 			$buffer = FALSE;
 			$this->addPostError(
 				'email',
@@ -568,6 +626,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			);
 		}
 		if ( ( $orga_id == 'new-orga' || ( $WDGOrganization != FALSE && $WDGOrganization->get_email() != $org_email ) ) && email_exists( $org_email ) ) {
+			$this->update_session_organization();
 			$buffer = FALSE;
 			$this->addPostError(
 				'email',
@@ -575,10 +634,11 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				'email'
 			);
 		}
-		
+
 		$org_capital = $this->getInputText( 'org_capital' );
 		$org_capital = filter_var( $org_capital, FILTER_VALIDATE_INT );
 		if ( $org_capital === FALSE ) {
+			$this->update_session_organization();
 			$this->addPostError(
 				'capital-not-integer',
 				__( "Le capital de l'organisation doit &ecirc;tre un nombre entier.", 'yproject' ),
@@ -589,13 +649,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$org_postal_code = $this->getInputText( 'org_postal_code' );
 		$org_postal_code = filter_var( $org_postal_code, FILTER_VALIDATE_INT );
 		if ( $org_postal_code === FALSE ) {
+			$this->update_session_organization();
 			$this->addPostError(
 				'postalcode-not-integer',
 				__( "Le code postal de l'organisation doit &ecirc;tre un nombre entier.", 'yproject' ),
 				'postal_code'
 			);
 		}
-		
+
 		return $buffer;
 	}
 	
@@ -644,6 +705,19 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				);
 			}
 		}
+	}	
+
+	private function update_session_organization() {
+		ypcf_session_start();
+		$_SESSION[ 'org_name' ] = $this->getInputText( 'org_name' );
+		$_SESSION[ 'org_email' ] = $this->getInputText( 'org_email' );
+		$_SESSION[ 'org_legalform' ] = $this->getInputText( 'org_legalform' );
+		$_SESSION[ 'org_idnumber' ] = $this->getInputText( 'org_idnumber' );
+		$_SESSION[ 'org_rcs' ] = $this->getInputText( 'org_rcs' );
+		$_SESSION[ 'org_capital' ] = $this->getInputText( 'org_capital' );
+		$_SESSION[ 'org_address' ] = $this->getInputText( 'org_address' );
+		$_SESSION[ 'org_postal_code' ] = $this->getInputText( 'org_postal_code' );
+		$_SESSION[ 'org_city' ] = $this->getInputText( 'org_city' );
+		$_SESSION[ 'org_nationality' ] = $this->getInputText( 'org_nationality' );
 	}
-	
 }
