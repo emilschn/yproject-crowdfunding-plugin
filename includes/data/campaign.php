@@ -2890,7 +2890,8 @@ class ATCF_Campaign {
 		$buffer = array();
 		foreach ( $results as $project_post ) {
 			$meta_is_hidden = get_post_meta( $project_post->ID, ATCF_Campaign::$key_campaign_is_hidden, TRUE );
-			if ( empty( $meta_is_hidden ) ) {
+			$meta_project_type = get_post_meta( $project_post->ID, 'campaign_funding_type', TRUE );
+			if ( empty( $meta_is_hidden ) && $meta_project_type == 'fundingproject' ) {
 				array_push( $buffer, $project_post );
 			}
 		}
