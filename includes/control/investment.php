@@ -532,6 +532,11 @@ class WDGInvestment {
 			}
 		}
 		
+		$remaining_amount_when_authenticated = 0;
+		if ( isset( $_SESSION[ 'remaining_amount_when_authenticated' ] ) ) {
+			$remaining_amount_when_authenticated = $_SESSION[ 'remaining_amount_when_authenticated' ];
+		}
+		
 		// GESTION DU PAIEMENT COTE EDD
 		WDGInvestment::unset_session();
 
@@ -577,6 +582,9 @@ class WDGInvestment {
 		if ( strpos( $mean_of_payment, 'wallet' ) !== FALSE ) {
 			update_post_meta( $payment_id, 'amount_with_wallet', $this->get_session_amount() - $amount_by_card );
 			update_post_meta( $payment_id, 'amount_with_card', $amount_by_card );
+		}
+		if ( $remaining_amount_when_authenticated > 0 ) {
+			update_post_meta( $payment_id, 'remaining_amount_when_authenticated', $remaining_amount_when_authenticated );
 		}
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
