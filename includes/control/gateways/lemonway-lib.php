@@ -717,7 +717,7 @@ class LemonwayLib {
 		return $result;
 	}
 	
-	public static function ask_payment_webkit($wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url, $use_registered_card = 0, $comment = '', $auto_commission = 0) {
+	public static function ask_payment_webkit($wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url, $register_card = 0, $comment = '', $auto_commission = 0) {
 		if (!isset($wallet_id)) return FALSE;
 		if (!isset($amount)) return FALSE;
 		if (!isset($amount_com)) return FALSE;
@@ -734,7 +734,7 @@ class LemonwayLib {
 			'amountTot' => $amount, 
 			'amountCom' => $amount_com,
 			'comment' => $comment,
-			'useRegisteredCard' => $use_registered_card,
+			'registerCard' => $register_card,
 		    
 			'wkToken' => $wk_token,
 		    

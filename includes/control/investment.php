@@ -347,7 +347,8 @@ class WDGInvestment {
 			'new_orga_just_created',
 			'error_invest',
 			'redirect_current_selected_reward',
-			'investment_token'
+			'investment_token',
+			'remaining_amount_when_authenticated'
 		);
 		foreach ( $session_vars_list as $session_var_key ) {
 			if ( isset( $_SESSION[ $session_var_key ] ) ) {
@@ -512,7 +513,7 @@ class WDGInvestment {
 /******************************************************************************/
 // PAYMENT
 /******************************************************************************/
-	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_by_card = 0 ) {
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_by_card = 0, $pending_amount_by_card = 0 ) {
 		if ( $this->exists_payment( $payment_key ) ) {
 			return 'publish';
 		}
@@ -561,7 +562,7 @@ class WDGInvestment {
 		$this->set_status( WDGInvestment::$status_validated );
 
 		$payment_data = array( 
-			'price'			=> $this->get_session_amount(), 
+			'price'			=> ( $pending_amount_by_card > 0 ) ? $pending_amount_by_card : $this->get_session_amount(), 
 			'date'			=> date('Y-m-d H:i:s'), 
 			'user_email'	=> $WDGUser_current->get_email(),
 			'purchase_key'	=> $payment_key,
@@ -605,7 +606,7 @@ class WDGInvestment {
 				wp_update_post($postdata);
 			}
 			
-		} else {
+		} else if ( $pending_amount_by_card == 0 ) {
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
 			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
 			
@@ -738,11 +739,10 @@ class WDGInvestment {
 	}
 	
 	private function try_payment_card( $with_wallet = FALSE) {
-		$organization_campaign = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $organization_campaign->wpref, $organization_campaign );
 		$invest_type = $this->get_session_user_type();
 		
 		$WDGuser_current = WDGUser::current();
+		$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
 		$wallet_id = $WDGuser_current->get_lemonway_id();
 		if ( $invest_type != 'user' ) {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
@@ -754,7 +754,13 @@ class WDGInvestment {
 		
 		$return_url = home_url( '/paiement-effectue/' ) . '?campaign_id='. $this->campaign->ID;
 		
+		$register_card = 0;
 		$amount = $this->get_session_amount();
+		if ( $amount > $WDGUserInvestments_current->get_maximum_investable_amount_without_alert() ) {
+			$_SESSION[ 'remaining_amount_when_authenticated' ] = $this->get_session_amount() - $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
+			$amount = $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
+			$register_card = 1;
+		}
 		if ( $with_wallet ) {
 			if ( $invest_type == 'user' ) {
 				$amount -= $WDGuser_current->get_lemonway_wallet_amount();
@@ -767,7 +773,7 @@ class WDGInvestment {
 		$error_url = $return_url . '&error=1';
 		$cancel_url = $return_url . '&cancel=1';
 		
-		$return = LemonwayLib::ask_payment_webkit( $wallet_id, $amount, 0, $wk_token, $return_url, $error_url, $cancel_url );
+		$return = LemonwayLib::ask_payment_webkit( $wallet_id, $amount, 0, $wk_token, $return_url, $error_url, $cancel_url, $register_card );
 		if ( !empty($return->MONEYINWEB->TOKEN) ) {
 			$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
 			$url_css_encoded = urlencode( $url_css );
@@ -807,7 +813,13 @@ class WDGInvestment {
 					$payment_key .= '_wallet_FAILED';
 				}
 			}
-			
+		
+			// Récupération du montant manquant avant la sauvegarde
+			$remaining_amount_when_authenticated = 0;
+			if ( isset( $_SESSION[ 'remaining_amount_when_authenticated' ] ) ) {
+				$remaining_amount_when_authenticated = $_SESSION[ 'remaining_amount_when_authenticated' ];
+			}
+			// Sauvegarde du paiement (la session est écrasée)
 			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount_by_card );
 			
 			if ( $buffer == 'failed' ) {
@@ -817,6 +829,12 @@ class WDGInvestment {
 				$investment_link = home_url( '/investir/' ) . '?campaign_id=' . $this->campaign->ID . '&invest_start=1&init_invest=' . $this->get_session_amount();
 				$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
 				NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
+			
+			} else if ( $remaining_amount_when_authenticated > 0 ) {
+				// Sauvegarde du paiement du montant manquant en attente
+				$random = rand(10000, 99999);
+				$payment_key = 'card_TEMP_' . $random;
+				$this->save_payment( $payment_key, 'card', $is_failed, $amount_by_card, $remaining_amount_when_authenticated );
 			}
 			
 		// Retour de paiement par virement
