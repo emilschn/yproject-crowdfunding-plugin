@@ -129,14 +129,11 @@ class LemonwayNotification {
 //			$content_formatted .= "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal;
 //			$content_formatted .= "<br>";
 			
-			// Si le document n'est ni validé, ni en attente, on prévient l'équipe par Slack
-			if ( $lemonway_posted_document_status > 2 ) {
-//				NotificationsEmails::send_mail( 'support@wedogood.co', 'Notif interne - Changement statut document', $content_formatted, true );
-				NotificationsSlack::send_new_doc_status( $content_slack );
-//				$notification_sent = TRUE;
+			// On prévient l'équipe par Slack
+			NotificationsSlack::send_new_doc_status( $content_slack );
 			
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
-			} else if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == 2 && empty( $WDGOrga_wallet ) ) {
+			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == 2 && empty( $WDGOrga_wallet ) ) {
 				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
 			}
 		}
