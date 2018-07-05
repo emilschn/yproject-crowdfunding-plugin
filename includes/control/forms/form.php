@@ -52,7 +52,7 @@ class WDG_Form {
 	protected function getParamByFileField( $wallet_id, $document_type, $date_upload ) {
 		$buffer = array(
 			'date_upload'					=> $date_upload,
-			'message_instead_of_field_id'	=> FALSE,
+			'message_instead_of_field'		=> FALSE,
 			'display_refused_alert'			=> FALSE
 		);
 		
@@ -61,9 +61,9 @@ class WDG_Form {
 		
 		$lw_document_id = new LemonwayDocument( $wallet_id, $document_type );
 		if ( $lw_document_id->get_status() == LemonwayDocument::$document_status_accepted ) {
-			$buffer[ 'message_instead_of_field_id' ] = $message_document_validated;
+			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
 		} else if ( $lw_document_id->get_status() == LemonwayDocument::$document_status_waiting ) {
-			$buffer[ 'message_instead_of_field_id' ] = $message_document_waiting;
+			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
 		} else if ( $lw_document_id->get_status() > 2 ) {
 			$buffer[ 'display_refused_alert' ] = TRUE;
 		}
