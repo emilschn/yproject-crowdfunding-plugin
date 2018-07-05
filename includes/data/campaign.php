@@ -1963,7 +1963,7 @@ class ATCF_Campaign {
 	}
 
 	public static $invest_amount_min_wire = 500;
-	public static $invest_time_min_wire = 7;
+	public static $invest_time_min_wire = 3;
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
 		// Si il reste assez de jours ou si la campagne est déjà validée
@@ -2890,7 +2890,8 @@ class ATCF_Campaign {
 		$buffer = array();
 		foreach ( $results as $project_post ) {
 			$meta_is_hidden = get_post_meta( $project_post->ID, ATCF_Campaign::$key_campaign_is_hidden, TRUE );
-			if ( empty( $meta_is_hidden ) ) {
+			$meta_project_type = get_post_meta( $project_post->ID, 'campaign_funding_type', TRUE );
+			if ( empty( $meta_is_hidden ) && $meta_project_type == 'fundingproject' ) {
 				array_push( $buffer, $project_post );
 			}
 		}

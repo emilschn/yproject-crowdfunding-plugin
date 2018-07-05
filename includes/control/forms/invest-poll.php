@@ -79,7 +79,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		$this->addField(
 			'text',
 			'would-invest-number-per-year-with-warranty',
-			__( "Combien par an&nbsp;?", 'yproject' ),
+			__( "Dans combien de projets investiriez-vous par an&nbsp;?", 'yproject' ),
 			self::$field_group_poll_warranty,
 			0
 		);

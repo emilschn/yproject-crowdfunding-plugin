@@ -79,28 +79,21 @@ class WDG_Cache_Plugin {
 			return false;
 		}
 		
-		//L'utilisateur a demandé une version spécifique & la version demandée n'est pas celle de la base de données
-		if ( $version != -1 && $this->get_version($name) != $version ) {
+		$cache_row = $this->wpdb->get_row( "SELECT * FROM $this->table_name WHERE `name` = '$name' ", ARRAY_A );
+		
+		// L'utilisateur a demandé une version spécifique & la version demandée n'est pas celle de la base de données
+		if ( $version != -1 && $cache_row[ 'version' ] != $version ) {
 			return false;
 		}
 		
-		$cache_row = $this->wpdb->get_row( "SELECT * FROM $this->table_name WHERE `name` = '$name' ", ARRAY_A );
-		if ( $cache_row['expiration_time'] != 0 && $cache_row['expiration_time'] < time() ) {
+		// Vérification si la valeur a expiré
+		if ( $cache_row[ 'expiration_time' ] != 0 && $cache_row[ 'expiration_time' ] < time() ) {
 			return false;
 		} else if ( empty( $cache_row ) ) {
 			return false;
 		} else {
-			return $cache_row['content'];
+			return $cache_row[ 'content' ];
 		}
-	}
-	
-	/**
-	 * Retourne la version associé à la clé $name
-	 * @param type $name Cle du contenu que l'on veut obtenir
-	 */
-	public function get_version( $name ) {
-		$cache_version = $this->wpdb->get_var("SELECT version FROM $this->table_name WHERE `name` = '$name' ");
-		return $cache_version;
 	}
 	
 	/**
