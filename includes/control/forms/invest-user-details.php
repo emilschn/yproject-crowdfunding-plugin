@@ -575,6 +575,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 	
 	private function postFormOrganizationCheck() {
 		$buffer = TRUE;
+		$needs_update_organization = FALSE;
 		
 		$WDGOrganization = FALSE;
 		$orga_id = $this->getInputText( 'orga-id' );
@@ -582,7 +583,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$org_capable = $this->getInputChecked( 'org-capable' );
 			if ( !$org_capable ) {
 				$buffer = FALSE;
-				$this->update_session_organization();
+				$needs_update_organization = TRUE;
 				$this->addPostError(
 					'orga-new-capable',
 					__( "Vous n'avez pas d&eacute;clar&eacute; &ecirc;tre en mesure de repr&eacute;senter l'organisation.", 'yproject' ),
@@ -607,7 +608,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		
 		$org_name = $this->getInputText( 'org_name' );
 		if ( empty( $org_name ) ) {
-			$this->update_session_organization();
+			$needs_update_organization = TRUE;
 			$buffer = FALSE;
 			$this->addPostError(
 				'org-name-empty',
@@ -617,7 +618,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		}
 		$org_email = $this->getInputText( 'org_email' );
 		if ( !is_email( $org_email ) ) {
-			$this->update_session_organization();
+			$needs_update_organization = TRUE;
 			$buffer = FALSE;
 			$this->addPostError(
 				'email',
@@ -626,7 +627,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			);
 		}
 		if ( ( $orga_id == 'new-orga' || ( $WDGOrganization != FALSE && $WDGOrganization->get_email() != $org_email ) ) && email_exists( $org_email ) ) {
-			$this->update_session_organization();
+			$needs_update_organization = TRUE;
 			$buffer = FALSE;
 			$this->addPostError(
 				'email',
@@ -635,10 +636,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			);
 		}
 
-		$org_capital = $this->getInputText( 'org_capital' );
+		$org_capital = $this->getInputTextMoney( 'org_capital' );
 		$org_capital = filter_var( $org_capital, FILTER_VALIDATE_INT );
 		if ( $org_capital === FALSE ) {
-			$this->update_session_organization();
+			$needs_update_organization = TRUE;
 			$this->addPostError(
 				'capital-not-integer',
 				__( "Le capital de l'organisation doit &ecirc;tre un nombre entier.", 'yproject' ),
@@ -649,12 +650,16 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$org_postal_code = $this->getInputText( 'org_postal_code' );
 		$org_postal_code = filter_var( $org_postal_code, FILTER_VALIDATE_INT );
 		if ( $org_postal_code === FALSE ) {
-			$this->update_session_organization();
+			$needs_update_organization = TRUE;
 			$this->addPostError(
 				'postalcode-not-integer',
 				__( "Le code postal de l'organisation doit &ecirc;tre un nombre entier.", 'yproject' ),
 				'postal_code'
 			);
+		}
+
+		if ( $needs_update_organization ) {
+			$this->update_session_organization();
 		}
 
 		return $buffer;
@@ -683,7 +688,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$WDGOrganization->set_idnumber( $org_idnumber );
 		$org_rcs = $this->getInputText( 'org_rcs' );
 		$WDGOrganization->set_rcs( $org_rcs );
-		$org_capital = $this->getInputText( 'org_capital' );
+		$org_capital = $this->getInputTextMoney( 'org_capital' );
 		$WDGOrganization->set_capital( $org_capital );
 		$org_address = $this->getInputText( 'org_address' );
 		$WDGOrganization->set_address( $org_address );
@@ -714,7 +719,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$_SESSION[ 'org_legalform' ] = $this->getInputText( 'org_legalform' );
 		$_SESSION[ 'org_idnumber' ] = $this->getInputText( 'org_idnumber' );
 		$_SESSION[ 'org_rcs' ] = $this->getInputText( 'org_rcs' );
-		$_SESSION[ 'org_capital' ] = $this->getInputText( 'org_capital' );
+		$_SESSION[ 'org_capital' ] = $this->getInputTextMoney( 'org_capital' );
 		$_SESSION[ 'org_address' ] = $this->getInputText( 'org_address' );
 		$_SESSION[ 'org_postal_code' ] = $this->getInputText( 'org_postal_code' );
 		$_SESSION[ 'org_city' ] = $this->getInputText( 'org_city' );
