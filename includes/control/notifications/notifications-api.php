@@ -139,6 +139,66 @@ class NotificationsAPI {
     //*******************************************************
     // FIN NOTIFICATIONS KYC - RIB VALIDE
     //*******************************************************
+	//
+    //*******************************************************
+    // NOTIFICATIONS KYC - EN COURS DE VALIDATION
+    //*******************************************************
+	public static function kyc_waiting( $recipient, $name ) {
+		$id_template = '322';
+		$options = array(
+			'PRENOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // FIN NOTIFICATIONS KYC - EN COURS DE VALIDATION
+    //*******************************************************
+	//
+    //*******************************************************
+    // NOTIFICATIONS KYC - REFUSES
+    //*******************************************************
+	public static function kyc_refused( $recipient, $name ) {
+		$id_template = '323';
+		$options = array(
+			'PRENOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // FIN NOTIFICATIONS KYC - REFUSES
+    //*******************************************************
+	//
+    //*******************************************************
+    // NOTIFICATIONS KYC - VALIDES
+    //*******************************************************
+	public static function kyc_authentified( $recipient, $name ) {
+		$id_template = '324';
+		$options = array(
+			'PRENOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // FIN NOTIFICATIONS KYC - VALIDES
+    //*******************************************************
 
 
 	//**************************************************************************

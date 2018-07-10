@@ -25,6 +25,12 @@ class LemonwayDocument {
 	public static $document_type_passport_not_euro = 4;
 	public static $document_type_residence_permit = 5;
 	public static $document_type_kbis = 7;
+	public static $document_type_status = 11;
+	public static $document_type_capital_allocation = 20;
+	public static $document_type_id2 = 16;
+	public static $document_type_home2 = 17;
+	public static $document_type_id3 = 18;
+	public static $document_type_home3 = 19;
 	
 	/**
 	 * Statuts de documents :

@@ -277,6 +277,9 @@ class WDG_Form_User_Details extends WDG_Form {
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
 						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description
 					);
+					if ( $WDGUser->can_register_lemonway() ) {
+						$WDGUser->register_lemonway();
+					}
 					
 					array_push( $feedback_success, __( "Vos informations ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s." ) );
 					

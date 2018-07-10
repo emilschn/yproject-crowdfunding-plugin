@@ -46,6 +46,7 @@ class WDGWPREST_Entity_Organization {
 			'country'					=> $organization->get_nationality(),
 			'bank_owner'				=> $organization->get_bank_owner(),
 			'bank_address'				=> $organization->get_bank_address(),
+			'bank_address2'				=> $organization->get_bank_address2(),
 			'bank_iban'					=> $organization->get_bank_iban(),
 			'bank_bic'					=> $organization->get_bank_bic(),
 			'id_quickbooks'				=> $organization->get_id_quickbooks(),

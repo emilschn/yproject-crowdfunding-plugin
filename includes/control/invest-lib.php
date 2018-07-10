@@ -27,130 +27,6 @@ function ypcf_check_user_is_complete($user_id) {
 }
 
 /**
- * Vérification si l'utilisateur a bien rempli les données nécessaires au type de financement qu'il tente
- */
-function ypcf_check_user_can_invest($redirect = false) {
-    $can_invest = TRUE;
-    
-    ypcf_session_start();
-    
-    $current_campaign = atcf_get_current_campaign();
-	if (!$current_campaign) {
-		$can_invest = FALSE;
-	}
-	$wdg_current_user = WDGUser::current();
-	$wdg_current_user->has_filled_invest_infos($current_campaign->funding_type());
-	global $user_can_invest_errors;
-    if (!empty($user_can_invest_errors)) {
-	    $can_invest = FALSE;
-    }
-    $_SESSION['error_invest'] = $user_can_invest_errors;
-
-    if ($redirect && !$can_invest) {
-		$_SESSION['redirect_current_campaign_id'] = $current_campaign->ID;
-		if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-		if (isset($_SESSION['new_orga_just_created']) && !empty($_SESSION['new_orga_just_created'])) {
-			$_SESSION['redirect_current_invest_type'] = $_SESSION['new_orga_just_created'];
-		} else {
-			if (isset($_POST['invest_type'])) $_SESSION['redirect_current_invest_type'] = $_POST['invest_type'];
-		}
-		if (isset($_POST['selected_reward'])) $_SESSION['redirect_current_selected_reward'] = $_POST['selected_reward'];
-		ypcf_debug_log('ypcf_check_user_can_invest > cant invest, redirect !');
-		$page_update = get_page_by_path('mon-compte');
-		wp_redirect(get_permalink($page_update->ID));
-		exit();
-    }
-    return $can_invest;
-}
-
-/**
- * Vérification si l'organisation peut investir
- */
-function ypcf_check_organization_can_invest($organization_user_id) {
-    $organization = new WDGOrganization($organization_user_id);
-    $can_invest = $organization->has_filled_invest_infos();
-
-    if (!$can_invest) {
-		$errors = (isset($_SESSION['error_invest'])) ? $_SESSION['error_invest'] : array();
-		array_push($errors, "Certaines des informations de l'organisation manquent ou sont inexactes.");
-		$_SESSION['error_invest'] = $errors;
-    }
-    
-    return $can_invest;
-}
-
-/**
- * Se charge de tester les redirections à effectuer
- */
-function ypcf_check_invest_redirections() {
-    ypcf_session_start();
-
-    //Si le projet n'est pas défini, on annule et retourne à l'accueil
-    $campaign = atcf_get_current_campaign();
-    if (!($campaign)) {
-		wp_redirect(site_url());
-		exit();
-    }
-    
-    //Si le projet n'est pas en collecte ou que le montant de la part est à 0 (donc non-défini), on retourne à la page projet
-    if ($campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte || $campaign->part_value() == 0) {
-		wp_redirect(get_permalink($campaign->ID));
-		exit();
-    }
-    
-    //En cas d'investissement, et pas de don
-    if ($campaign->funding_type() != "fundingdonation") {
-	    //Si l'utilisateur veut investir pour une nouvelle organisation, on l'envoie vers "Mon compte" pour qu'il ajoute l'organisation
-	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organization') {
-			$_SESSION['redirect_current_campaign_id'] = $campaign->ID;
-			if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-			$page_new_orga = get_page_by_path('creer-une-organisation');
-			wp_redirect(get_permalink($page_new_orga->ID));
-			exit();
-	    }
-
-	    //Si l'utilisateur veut investir pour une organisation existante
-	    if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != 'new_organization' && $_SESSION['redirect_current_invest_type'] != 'user') {
-			if (!ypcf_check_organization_can_invest($_SESSION['redirect_current_invest_type'])) {
-				$_SESSION['redirect_current_campaign_id'] = $campaign->ID;
-				if (isset($_POST['amount_part'])) $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-				$page_update = get_page_by_path('mon-compte');
-				wp_redirect(get_permalink($page_update->ID));
-				exit();
-			}
-	    }
-    }
-
-    //Si on a validé la confirmation
-    //Il faut choisir le moyen de paiement
-    $amount_part = FALSE;
-    $part_value = ypcf_get_part_value();
-    if (isset($_POST['amount_part'])) $amount_part = $_POST['amount_part'];
-    $amount = ($amount_part === FALSE) ? 0 : $amount_part * $part_value;
-    $max_part_value = ypcf_get_max_part_value();
-    
-    //Tests de la validité de l'investissement pour tous les types de financement : utilisateur loggé, projet défini, montant correct
-    if (is_user_logged_in() && isset($_POST['amount_part']) && is_numeric($_POST['amount_part']) && ctype_digit($_POST['amount_part']) 
-			&& intval($_POST['amount_part']) == $_POST['amount_part'] && $_POST['amount_part'] >= 1 && $_POST['amount_part'] <= $max_part_value) {
-	
-	    //Suite des tests pour les projets 
-	    if (
-				(
-					( ( $campaign->funding_type() != 'fundingdonation' ) && ( $amount > 1500 ) ) || ($campaign->funding_type() == 'fundingdonation')
-				)
-                && isset($_POST['information_confirmed']) && $_POST['information_confirmed'] == '1' 
-            ) {
-
-		    $_SESSION['redirect_current_amount_part'] = $_POST['amount_part'];
-                    
-		    $page_mean_payment = get_page_by_path('moyen-de-paiement');
-		    wp_redirect(get_permalink($page_mean_payment->ID) . '?campaign_id=' . $campaign->ID);
-		    exit();
-	    }
-    }
-}
-
-/**
  * Après le login, si on venait de l'investissement, il faut y retourner
  * @param type $redirect_to
  * @param type $request
@@ -747,38 +623,6 @@ function ypcf_get_min_value_to_invest() {
 }
 
 /**
- * retourne la somme investie par un utilisateur durant une même année
- */
-function ypcf_get_annual_amount_invested($wp_user_id) {
-    global $wpdb;
-    
-    $query = "SELECT {$wpdb->prefix}mb.meta_value AS payment_total
-	    FROM {$wpdb->prefix}postmeta {$wpdb->prefix}m
-	    LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}ma
-		    ON {$wpdb->prefix}ma.post_id = {$wpdb->prefix}m.post_id
-		    AND {$wpdb->prefix}ma.meta_key = '_edd_payment_user_id'
-		    AND {$wpdb->prefix}ma.meta_value = '%s'
-	    LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}mb
-		    ON {$wpdb->prefix}mb.post_id = {$wpdb->prefix}ma.post_id
-		    AND {$wpdb->prefix}mb.meta_key = '_edd_payment_total'
-	    INNER JOIN {$wpdb->prefix}posts {$wpdb->prefix}
-		    ON {$wpdb->prefix}.id = {$wpdb->prefix}m.post_id
-		    AND {$wpdb->prefix}.post_status = 'publish'
-		    AND {$wpdb->prefix}.post_date > '".date('Y-m-d', strtotime('-365 days'))."'
-	    WHERE {$wpdb->prefix}m.meta_key = '_edd_payment_mode'
-	    AND {$wpdb->prefix}m.meta_value = '%s'";
-
-    $purchases = $wpdb->get_col( $wpdb->prepare( $query, $wp_user_id, 'live' ) );
-    $purchases = array_filter( $purchases );
-
-    $buffer = 0;
-    if( $purchases ) {
-	$buffer = round( array_sum( $purchases ), 2 );
-    }
-    return $buffer;
-}
-
-/**
  * retourne la somme déjà atteinte
  * @return type
  */
@@ -788,20 +632,6 @@ function ypcf_get_current_amount() {
     if ( $current_campaign ) {
 		//Récupérer la valeur maximale possible : la valeur totale du projet moins le montant déjà atteint
 		$buffer = $current_campaign->current_amount(false);
-    }
-    return $buffer;
-}
-
-/**
- * retourne le nombre d'investisseurs
- * @return type
- */
-function ypcf_get_backers() {
-    $buffer = 0;
-	$current_campaign = atcf_get_current_campaign();
-    if ( $current_campaign ) {
-		//Récupérer la valeur maximale possible : la valeur totale du projet moins le montant déjà atteint
-		$buffer = $current_campaign->backers_count();
     }
     return $buffer;
 }

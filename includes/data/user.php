@@ -805,100 +805,35 @@ class WDGUser {
 /*******************************************************************************
  * Gestion investissements
 *******************************************************************************/
+	private $user_investments;
 	/**
-	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
+	 * @return WDGUserInvestments
 	 */
+	private function get_user_investments_object() {
+		if ( !isset( $this->user_investments ) ) {
+			$this->user_investments = new WDGUserInvestments( $this );
+		}
+		return $this->user_investments;
+	}
+	
 	public function get_investments( $payment_status ) {
-		$buffer = array();
-		$purchases = edd_get_users_purchases( $this->wp_user->ID, -1, false, $payment_status );
-		
-		if ( !empty($purchases) ) {
-			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
-				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
-				$download_id = '';
-				if ( !is_array( $downloads[0] ) ){
-					$download_id = $downloads[0];
-					if ( !isset($buffer[$download_id]) ) {
-						$buffer[$download_id] = array();
-					}
-					array_push( $buffer[$download_id], $purchase_post->ID );
-				}
-			}
-		}
-			
-		return $buffer;
+		return $this->get_user_investments_object()->get_investments( $payment_status );
 	}
-	
-	/**
-	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
-	 */
 	public function get_validated_investments() {
-		$payment_status = array( "publish", "completed" );
-		return $this->get_investments( $payment_status );
+		return $this->get_user_investments_object()->get_validated_investments();
 	}
-	
-	/**
-	 * Retourne les ID d'investissements en attente d'un utilisateur, triés par ID de projets
-	 */
 	public function get_pending_investments() {
-		$payment_status = array( "pending" );
-		return $this->get_investments( $payment_status );
+		return $this->get_user_investments_object()->get_pending_investments();
 	}
-	
-	/**
-	 * Gestion des pré-investissements
-	 */
-	private $pending_preinvestments;
-	private function get_pending_preinvestments( $force_reload = FALSE) {
-		$db_cacher = WDG_Cache_Plugin::current();
-		$id_user = $this->wp_user->ID;
-		$pending_preinv_key = 'user_'.$id_user.'_pending_preinvestments';
-		$pending_preinv_duration = 600; //10 minutes
-		$pending_preinv_version = 1;
-		$investment_id_list = array();
-
-		if ( !isset( $this->pending_preinvestments ) ) {
-			$preinv_cache = ( $force_reload ) ? FALSE : $db_cacher->get_cache( $pending_preinv_key, $pending_preinv_version );
-			$this->pending_preinvestments = array();
-			if ( !$preinv_cache ) {
-				$pending_investments = $this->get_pending_investments();
-				foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
-					$investment_campaign = new ATCF_Campaign( $campaign_id );
-					if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
-						foreach ( $campaign_investments as $investment_id ) {
-							$wdg_investment = new WDGInvestment( $investment_id );
-							if ( $wdg_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
-								array_push( $this->pending_preinvestments, $wdg_investment );
-								array_push( $investment_id_list, $investment_id );
-							}
-						}
-					}
-				}
-				$pending_preinv_content = json_encode( $investment_id_list );
-				$db_cacher->set_cache( $pending_preinv_key, $pending_preinv_content, $pending_preinv_duration, $pending_preinv_version );
-			} else {
-				$preinvestment_array = json_decode( $preinv_cache, true );
-				foreach ( $preinvestment_array as $investment_id ) {
-					$wdg_investment = new WDGInvestment( $investment_id );
-					array_push( $this->pending_preinvestments, $wdg_investment );
-				}
-			}
-		}
-		return $this->pending_preinvestments;
+	public function get_pending_preinvestments() {
+		return $this->get_user_investments_object()->get_pending_preinvestments();
 	}
-
+		
 	public function get_first_pending_preinvestment() {
-		$buffer = FALSE;
-		if ( $this->has_pending_preinvestments() ) {
-			$pending_preinvestments = $this->get_pending_preinvestments();
-			$buffer = $pending_preinvestments[0];
-		}
-		return $buffer;
+		return $this->get_user_investments_object()->get_first_pending_preinvestment();
 	}
-	
 	public function has_pending_preinvestments() {
-		$pending_preinvestments = $this->get_pending_preinvestments();
-		return ( !empty( $pending_preinvestments ) );
+		return $this->get_user_investments_object()->has_pending_preinvestments();
 	}
 	
 /*******************************************************************************
@@ -1360,6 +1295,28 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function get_lemonway_iban() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( isset( $wallet_details->IBANS->IBAN ) ) {
+			$buffer = $wallet_details->IBANS->IBAN;
+		}
+		return $buffer;
+	}
+	
+	public static $iban_status_waiting = 4;
+	public static $iban_status_validated = 5;
+	public static $iban_status_disabled = 8;
+	public static $iban_status_rejected = 9;
+	public function get_lemonway_iban_status() {
+		$first_iban = $this->get_lemonway_iban();
+		if ( !empty( $first_iban ) ) {
+			return $first_iban->S;
+		} else {
+			return FALSE;
+		}
+	}
+	
 	/**
 	 * Détermine si l'utilisateur peut payer avec son porte-monnaie
 	 * @param int $amount
@@ -1436,8 +1393,7 @@ class WDGUser {
 	 */
 	public function has_registered_iban() {
 		$buffer = true;
-		$wallet_details = $this->get_wallet_details();
-		$first_iban = $wallet_details->IBANS->IBAN;
+		$first_iban = $this->get_lemonway_iban();
 		if (empty($first_iban)) {
 			$buffer = false;
 		}
