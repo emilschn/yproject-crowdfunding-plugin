@@ -127,6 +127,7 @@ class WDGCampaignBill {
 	private function get_line_type_by_platform_commission() {
 		$buffer = FALSE;
 		switch ( $this->campaign->platform_commission() ) {
+			case '4.8':
 			case '9.6':
 				$buffer = 'crowdfunding';
 				break;
