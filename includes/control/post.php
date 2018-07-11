@@ -299,6 +299,13 @@ class WDGPostActions {
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
 							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_vote );
+		
+							// Mise à jour cache
+							do_action('wdg_delete_cache', array(
+								'cache_campaign_' . $campaign_id
+							));
+							$file_cacher = WDG_File_Cacher::current();
+							$file_cacher->build_campaign_page_cache( $campaign_id );
                         }
                     }
 
@@ -328,6 +335,13 @@ class WDGPostActions {
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
 							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
+		
+							// Mise à jour cache
+							do_action('wdg_delete_cache', array(
+								'cache_campaign_' . $campaign_id
+							));
+							$file_cacher = WDG_File_Cacher::current();
+							$file_cacher->build_campaign_page_cache( $campaign_id );
                         }
                     }
                 }

@@ -87,7 +87,7 @@ class WDG_File_Cacher {
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$lang_list = $campaign->get_lang_list();
 			$this->delete( $campaign->data->post_name );
-			if ( $rebuild && empty( $lang_list ) ) {
+			if ( $rebuild && empty( $lang_list ) && ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) ) {
 				$file_path = $this->get_filepath( $campaign->data->post_name );
 				$page_content = $this->get_content( $campaign->data->post_name );
 				$this->save( $file_path, $page_content );

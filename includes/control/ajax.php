@@ -634,6 +634,13 @@ class WDGAjaxActions {
 			}
 		}
 		$campaign->update_api();
+		
+		// Mise à jour du cache
+		do_action('wdg_delete_cache', array(
+			'cache_campaign_' . $this->campaign->ID
+		));
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->build_campaign_page_cache( $campaign->ID );
 
 		$return_values = array(
 			"response" => "edit_project",
@@ -1458,6 +1465,13 @@ class WDGAjaxActions {
 		$campaign->set_validation_next_status($new_validation_status);
 		$success['new_can_go_next_status']=1;
 		$campaign->update_api();
+		
+		// Mise à jour cache
+		do_action('wdg_delete_cache', array(
+			'cache_campaign_' . $campaign_id
+		));
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->build_campaign_page_cache( $campaign_id );
 
 		$return_values = array(
 			"response" => "edit_status",
