@@ -10,6 +10,7 @@ class WDGInvestment {
 	private $campaign;
 	private $session_amount;
 	private $session_user_type;
+	private $payment_key;
 	/**
 	 * @var LemonwayLibErrors
 	 */
@@ -66,6 +67,13 @@ class WDGInvestment {
 	
 	public function get_id() {
 		return $this->id;
+	}
+	
+	public function get_payment_key() {
+		if ( empty( $this->payment_key ) ) {
+			$this->payment_key = edd_get_payment_key( $this->get_id() );
+		}
+		return $this->payment_key;
 	}
 	
 	
@@ -614,9 +622,11 @@ class WDGInvestment {
 				wp_update_post($postdata);
 			}
 			
-		} else if ( $pending_amount_by_card == 0 ) {
-			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
-			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+		} else {
+			if ( $pending_amount_by_card == 0 ) {
+				// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
+				$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+			}
 			
 			// Si c'est un préinvestissement,
 			//	on passe le statut de préinvestissement
@@ -703,7 +713,7 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	private function try_payment_wallet() {
+	public function try_payment_wallet() {
 		$buffer = FALSE;
 		$WDGUser_current = WDGUser::current();
 		

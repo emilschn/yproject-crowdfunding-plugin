@@ -8,10 +8,48 @@ class WDGUserInvestments {
 	 * @var WDGUser
 	 */
 	private $user;
+	/**
+	 * @var WDGOrganization
+	 */
+	private $orga;
+	private $wp_ref;
+	
 	private $pending_preinvestments;
 	
-	public function __construct( $WDGUser ) {
-		$this->user = $WDGUser;
+	public function __construct( $WDGInvestorEntity ) {
+		$this->wp_ref = $WDGInvestorEntity->get_wpref();
+		if ( WDGOrganization::is_user_organization( $WDGInvestorEntity->get_wpref() ) ) {
+			$this->orga = $WDGInvestorEntity;
+		} else {
+			$this->user = $WDGInvestorEntity;
+		}
+	}
+	
+	private function is_lemonway_registered() {
+		if ( !empty( $this->user ) ) {
+			return $this->user->is_lemonway_registered();
+		}
+		if ( !empty( $this->orga ) ) {
+			return $this->orga->is_registered_lemonway_wallet();
+		}
+	}
+	
+	private function get_lemonway_id() {
+		if ( !empty( $this->user ) ) {
+			return $this->user->get_lemonway_id();
+		}
+		if ( !empty( $this->orga ) ) {
+			return $this->orga->get_lemonway_id();
+		}
+	}
+	
+	private function get_lemonway_cardid() {
+		if ( !empty( $this->user ) ) {
+			return $this->user->get_lemonway_cardid();
+		}
+		if ( !empty( $this->orga ) ) {
+			return $this->orga->get_lemonway_cardid();
+		}
 	}
 	
 /*******************************************************************************
@@ -22,7 +60,7 @@ class WDGUserInvestments {
 	 */
 	public function get_investments( $payment_status ) {
 		$buffer = array();
-		$purchases = edd_get_users_purchases( $this->user->get_wpref(), -1, false, $payment_status );
+		$purchases = edd_get_users_purchases( $this->wp_ref, -1, false, $payment_status );
 		
 		if ( !empty($purchases) ) {
 			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
@@ -62,7 +100,7 @@ class WDGUserInvestments {
 	 */
 	public function get_pending_preinvestments( $force_reload = FALSE) {
 		$db_cacher = WDG_Cache_Plugin::current();
-		$id_user = $this->user->get_wpref();
+		$id_user = $this->wp_ref;
 		$pending_preinv_key = 'user_'.$id_user.'_pending_preinvestments';
 		$pending_preinv_duration = 600; //10 minutes
 		$pending_preinv_version = 1;
@@ -145,7 +183,7 @@ class WDGUserInvestments {
 	
 	public function get_maximum_investable_amount_without_alert() {
 		$buffer = LemonwayLib::$limit_kyc2_moneyin_month_amount;
-		if ( !$this->user->is_lemonway_registered() ) {
+		if ( !$this->is_lemonway_registered() ) {
 			$buffer = min(
 				LemonwayLib::$limit_kyc1_moneyin_operation_amount,
 				LemonwayLib::$limit_kyc1_moneyin_year_amount - $this->get_count_invested_during_interval( '365 days' )
@@ -156,7 +194,7 @@ class WDGUserInvestments {
 	
 	public function get_maximum_investable_amount_without_alert_reason_str() {
 		$buffer = '';
-		if ( !$this->user->is_lemonway_registered() ) {
+		if ( !$this->is_lemonway_registered() ) {
 			if ( LemonwayLib::$limit_kyc1_moneyin_operation_amount <= LemonwayLib::$limit_kyc1_moneyin_year_amount - $this->get_count_invested_during_interval( '365 days' ) ) {
 				$buffer = sprintf( __( 'Vous ne pouvez pas investir plus de %1$s &euro; tant que vous n&apos;&ecirc;tes pas identifi&eacute;(e). Cependant, nous vous proposons de poursuivre votre investissement. Nous vous inviterons ensuite &agrave; renseigner vos documents (pi&egrave;ce d&apos;identit&eacute; et justificatif de domicile) et le reste de l&apos;investissement se fera automatiquement lors de la validation de vos documents par notre prestataire de paiement Lemon Way.', 'yproject' ), LemonwayLib::$limit_kyc1_moneyin_operation_amount );
 		
@@ -176,7 +214,7 @@ class WDGUserInvestments {
 	public function can_invest_nb() {
 		$buffer = TRUE;
 		
-		if ( $this->user->is_lemonway_registered() ) {
+		if ( $this->is_lemonway_registered() ) {
 			if ( $this->get_count_invested_during_interval( '1 day' ) >= LemonwayLib::$limit_kyc2_moneyin_day_nb ) {
 				$buffer = 'limit_kyc2_moneyin_day_nb';
 			}
@@ -197,7 +235,7 @@ class WDGUserInvestments {
 	public function can_invest_amount( $amount ) {
 		$buffer = TRUE;
 		
-		if ( $this->user->is_lemonway_registered() ) {
+		if ( $this->is_lemonway_registered() ) {
 			if ( $this->get_count_invested_during_interval( '1 day' ) >= LemonwayLib::$limit_kyc2_moneyin_day_nb ) {
 				$buffer = 'limit_kyc2_moneyin_day_nb';
 			} else if ( $this->get_amount_invested_during_interval( '1 day' ) + $amount > LemonwayLib::$limit_kyc2_moneyin_day_amount ) {
@@ -244,7 +282,7 @@ class WDGUserInvestments {
 			WHERE {$wpdb->prefix}m.meta_key = '_edd_payment_mode'
 			AND {$wpdb->prefix}m.meta_value = '%s'";
 
-		$purchases = $wpdb->get_col( $wpdb->prepare( $query, $this->user->get_wpref(), 'live' ) );
+		$purchases = $wpdb->get_col( $wpdb->prepare( $query, $this->wp_ref, 'live' ) );
 
 		$buffer = 0;
 		if ( $purchases ) {
@@ -277,7 +315,7 @@ class WDGUserInvestments {
 			WHERE {$wpdb->prefix}m.meta_key = '_edd_payment_mode'
 			AND {$wpdb->prefix}m.meta_value = '%s'";
 
-		$purchases = $wpdb->get_col( $wpdb->prepare( $query, $this->user->get_wpref(), 'live' ) );
+		$purchases = $wpdb->get_col( $wpdb->prepare( $query, $this->wp_ref, 'live' ) );
 		$purchases = array_filter( $purchases );
 
 		$buffer = 0;
@@ -285,6 +323,37 @@ class WDGUserInvestments {
 			$buffer = round( array_sum( $purchases ), 2 );
 		}
 		return $buffer;
+	}
+	
+/*******************************************************************************
+ * Gestion des paiements par carte en attente
+*******************************************************************************/
+	public function try_pending_card_investments() {
+		// Parcourir tous les investissements en attente pour cet utilisateur, déclencher le paiement et valider l'investissement
+		$pending_investments = $this->get_pending_investments();
+		foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
+			$investment_campaign = new ATCF_Campaign( $campaign_id );
+			if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+				foreach ( $campaign_investments as $investment_id ) {
+					$wdg_investment = new WDGInvestment( $investment_id );
+					$investment_key = $wdg_investment->get_payment_key();
+					if ( strpos( $investment_key, 'card_TEMP_' ) !== FALSE ) {
+						$lemonway_id = $this->get_lemonway_id();
+						$lemonway_cardid = $this->get_lemonway_cardid();
+						$result = LemonwayLib::ask_payment_registered_card( $lemonway_id, $lemonway_cardid, $wdg_investment->get_saved_amount() );
+						if ( $result->TRANS->HPAY->STATUS == '3' ) {
+							$purchase_key = $result->TRANS->HPAY->ID;
+							$purchase_key .= $wdg_investment->try_payment_wallet();
+							update_post_meta( $investment_id, '_edd_payment_purchase_key', $purchase_key );
+							ypcf_get_updated_payment_status( $investment_id, false, false, $wdg_investment );
+							
+						} else {
+							NotificationsEmails::new_purchase_pending_admin_error( ( $this->user ? $this->user : $this->orga ), $result, $investment_id, $wdg_investment->get_saved_amount() );
+						}
+					}
+				}
+			}
+		}
 	}
 	
 }

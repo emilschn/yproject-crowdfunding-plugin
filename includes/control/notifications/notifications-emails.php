@@ -359,6 +359,18 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
 	}
 	
+    public static function new_purchase_pending_admin_error( $user_data, $lw_msg, $invest_id, $amount ) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_pending_admin_error > ');
+		$admin_email = 'admin@wedogood.co';
+		$object = 'Erreur paiement par carte en attente';
+		$body_content = "Tentative d'investissement avec erreur :<br />";
+		$body_content .= "user_data : " .print_r( $user_data, true ). "<br />";
+		$body_content .= "ID Invest : " .$invest_id. "<br />";
+		$body_content .= "Montant : " .$amount. "<br />";
+		$body_content .= "Retour LW : " .print_r( $lw_msg, true ). "<br />";
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
+	}
+	
     public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
 		$admin_email = 'investir@wedogood.co';

@@ -860,6 +860,22 @@ class WDGOrganization {
 		return $this->wallet_details;
 	}
 	
+	public function get_lemonway_cardid() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
+			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
+					$buffer = $card_object->ID;
+				}
+			}
+			if ( empty( $buffer ) ) {
+				$buffer = $wallet_details->CARDS->CARD->ID;
+			}
+		}
+		return $buffer;
+	}
+	
 	/**
 	 * Enregistrement sur Lemonway
 	 */
