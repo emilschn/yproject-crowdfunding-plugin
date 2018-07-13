@@ -559,6 +559,7 @@ class WDGInvestment {
 			'address'		=> array()
 		);
 
+		$quantity = ( $amount_by_card == 0 ) ? $this->get_session_amount() : $amount_by_card;
 		$cart_details = array(
 			array(
 				'name'			=> $this->campaign->data->post_title,
@@ -568,7 +569,7 @@ class WDGInvestment {
 					'options'		=> array()
 				),
 				'price'			=> 1,
-				'quantity'		=> $this->get_session_amount()
+				'quantity'		=> $quantity
 			)
 		);
 
