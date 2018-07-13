@@ -860,6 +860,22 @@ class WDGOrganization {
 		return $this->wallet_details;
 	}
 	
+	public function get_lemonway_cardid() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
+			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
+					$buffer = $card_object->ID;
+				}
+			}
+			if ( empty( $buffer ) ) {
+				$buffer = $wallet_details->CARDS->CARD->ID;
+			}
+		}
+		return $buffer;
+	}
+	
 	/**
 	 * Enregistrement sur Lemonway
 	 */
@@ -1008,7 +1024,7 @@ class WDGOrganization {
 	 * @return bool
 	 */
 	public function can_pay_with_wallet( $amount, $campaign ) {
-		$lemonway_amount = $this->get_lemonway_balance();
+		$lemonway_amount = $this->get_available_rois_amount();
 		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	

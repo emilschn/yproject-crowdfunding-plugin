@@ -1182,7 +1182,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Définit l'identifiant de l'orga sur lemonway
+	 * Définit l'identifiant de l'utilisateur sur lemonway
 	 * @return string
 	 */
 	public function get_lemonway_id() {
@@ -1237,6 +1237,22 @@ class WDGUser {
 		// format : dd/MM/yyyy
 		$birthday_datetime = new DateTime( $this->get_birthday_date() );
 		return $birthday_datetime->format( 'd/m/Y' );
+	}
+	
+	public function get_lemonway_cardid() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
+			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
+					$buffer = $card_object->ID;
+				}
+			}
+			if ( empty( $buffer ) ) {
+				$buffer = $wallet_details->CARDS->CARD->ID;
+			}
+		}
+		return $buffer;
 	}
 	
 	/**

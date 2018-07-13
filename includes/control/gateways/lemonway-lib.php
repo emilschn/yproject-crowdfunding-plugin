@@ -9,27 +9,27 @@ $lemonway_lib = new LemonwayLib();
  * Classe de gestion de Lemonway
  */
 class LemonwayLib {
-	private $limit_kyc1_moneyin_operation_amount = 250;
-	private $limit_kyc1_moneyin_day_nb = 20;
-	private $limit_kyc1_moneyin_year_amount = 2500;
-	private $limit_kyc1_moneyout_day_nb = 20;
-	private $limit_kyc1_moneyout_year_amount = 2500;
-	private $limit_kyc1_p2p_in_day_nb = 20;
-	private $limit_kyc1_p2p_out_year_nb = 20;
-	private $limit_kyc1_p2p_in_year_amount = 2500;
-	private $limit_kyc1_p2p_out_year_amount = 2500;
+	public static $limit_kyc1_moneyin_operation_amount = 250;
+	public static $limit_kyc1_moneyin_day_nb = 20;
+	public static $limit_kyc1_moneyin_year_amount = 2500;
+	public static $limit_kyc1_moneyout_day_nb = 20;
+	public static $limit_kyc1_moneyout_year_amount = 2500;
+	public static $limit_kyc1_p2p_in_day_nb = 20;
+	public static $limit_kyc1_p2p_out_year_nb = 20;
+	public static $limit_kyc1_p2p_in_year_amount = 2500;
+	public static $limit_kyc1_p2p_out_year_amount = 2500;
 	
-	private $limit_kyc2_moneyin_day_nb = 1000;
-	private $limit_kyc2_moneyin_day_amount = 500000;
-	private $limit_kyc2_moneyin_month_amount = 1000000;
-	private $limit_kyc2_moneyout_day_nb = 20;
-	private $limit_kyc2_moneyout_day_amount = 1000000;
-	private $limit_kyc2_moneyout_month_amount = 1000000;
-	private $limit_kyc2_p2p_in_day_nb = 1000;
-	private $limit_kyc2_p2p_day_amount = 500000;
-	private $limit_kyc2_p2p_out_month_nb = 10000;
-	private $limit_kyc2_p2p_in_month_amount = 1000000;
-	private $limit_kyc2_p2p_out_month_amount = 1000000;
+	public static $limit_kyc2_moneyin_day_nb = 1000;
+	public static $limit_kyc2_moneyin_day_amount = 500000;
+	public static $limit_kyc2_moneyin_month_amount = 1000000;
+	public static $limit_kyc2_moneyout_day_nb = 20;
+	public static $limit_kyc2_moneyout_day_amount = 1000000;
+	public static $limit_kyc2_moneyout_month_amount = 1000000;
+	public static $limit_kyc2_p2p_in_day_nb = 1000;
+	public static $limit_kyc2_p2p_day_amount = 500000;
+	public static $limit_kyc2_p2p_out_month_nb = 10000;
+	public static $limit_kyc2_p2p_in_month_amount = 1000000;
+	public static $limit_kyc2_p2p_out_month_amount = 1000000;
 	
 	public $soap_client, $params, $last_error;
     
@@ -717,7 +717,7 @@ class LemonwayLib {
 		return $result;
 	}
 	
-	public static function ask_payment_webkit($wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url, $use_registered_card = 0, $comment = '', $auto_commission = 0) {
+	public static function ask_payment_webkit($wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url, $register_card = 0, $comment = '', $auto_commission = 0) {
 		if (!isset($wallet_id)) return FALSE;
 		if (!isset($amount)) return FALSE;
 		if (!isset($amount_com)) return FALSE;
@@ -734,7 +734,7 @@ class LemonwayLib {
 			'amountTot' => $amount, 
 			'amountCom' => $amount_com,
 			'comment' => $comment,
-			'useRegisteredCard' => $use_registered_card,
+			'registerCard' => $register_card,
 		    
 			'wkToken' => $wk_token,
 		    

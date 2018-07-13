@@ -22,6 +22,8 @@ class WDG_Form_Invest_Input extends WDG_Form {
 	protected function initFields() {
 		parent::initFields();
 		$campaign = new ATCF_Campaign( $this->campaign_id );
+		$WDGCurrent_User = WDGUser::current();
+		$WDGUserInvestments = new WDGUserInvestments( $WDGCurrent_User );
 		
 		// Champs masqués : $field_group_hidden
 		$this->addField(
@@ -34,10 +36,44 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		
 		$this->addField(
 			'hidden',
+			'input_invest_user_max_value',
+			'',
+			WDG_Form_Invest_Input::$field_group_hidden,
+			$WDGUserInvestments->get_maximum_investable_amount()
+		);
+		
+		$this->addField(
+			'hidden',
+			'input_invest_user_max_reason',
+			'',
+			WDG_Form_Invest_Input::$field_group_hidden,
+			$WDGUserInvestments->get_maximum_investable_reason_str()
+		);
+		
+		if ( !$WDGCurrent_User->is_lemonway_registered() ) {
+			$this->addField(
+				'hidden',
+				'input_invest_user_max_amount_without_alert',
+				'',
+				WDG_Form_Invest_Input::$field_group_hidden,
+				$WDGUserInvestments->get_maximum_investable_amount_without_alert()
+			);
+
+			$this->addField(
+				'hidden',
+				'input_invest_user_max_amount_without_alert_reason',
+				'',
+				WDG_Form_Invest_Input::$field_group_hidden,
+				$WDGUserInvestments->get_maximum_investable_amount_without_alert_reason_str()
+			);
+		}
+		
+		$this->addField(
+			'hidden',
 			'input_invest_min_value',
 			'',
 			WDG_Form_Invest_Input::$field_group_hidden,
-			ypcf_get_min_value_to_invest()
+			$WDGUserInvestments->get_minimum_investable_amount()
 		);
 		
 		$this->addField(
@@ -156,6 +192,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 				__( "Vous ne pouvez pas investir autant.", 'yproject' ),
 				'general'
 			);
+			
 		}
 		
 		if ( !$this->hasErrors() ) {

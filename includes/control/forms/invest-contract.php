@@ -7,6 +7,7 @@ class WDG_Form_Invest_Contract extends WDG_Form {
 	
 	private $campaign_id;
 	private $user_id;
+	private $meanofpayment;
 	
 	public function __construct( $campaign_id = FALSE, $user_id = FALSE ) {
 		parent::__construct( WDG_Form_Invest_Contract::$name );
@@ -27,6 +28,14 @@ class WDG_Form_Invest_Contract extends WDG_Form {
 			self::$field_group_hidden,
 			self::$name
 		);
+		
+		$this->addField(
+			'hidden',
+			'meanofpayment',
+			'',
+			self::$field_group_hidden,
+			''
+		);
 	}
 	
 	public function postForm() {
@@ -44,11 +53,16 @@ class WDG_Form_Invest_Contract extends WDG_Form {
 		}
 		
 		$this->initFields();
+		$this->meanofpayment = $this->getInputText( 'meanofpayment' );
 		
 		$current_investment = WDGInvestment::current();
 		$current_investment->update_session( FALSE, FALSE );
 		
 		return !$this->hasErrors();
+	}
+	
+	public function getMeanOfPayment() {
+		return $this->meanofpayment;
 	}
 	
 }
