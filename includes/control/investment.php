@@ -564,6 +564,7 @@ class WDGInvestment {
 			'address'		=> array()
 		);
 
+		$quantity = ( $amount_by_card == 0 ) ? $this->get_session_amount() : $amount_by_card;
 		$cart_details = array(
 			array(
 				'name'			=> $this->campaign->data->post_title,
@@ -573,7 +574,7 @@ class WDGInvestment {
 					'options'		=> array()
 				),
 				'price'			=> 1,
-				'quantity'		=> $this->get_session_amount()
+				'quantity'		=> $quantity
 			)
 		);
 
@@ -722,12 +723,21 @@ class WDGInvestment {
 	public function try_payment_wallet() {
 		$buffer = FALSE;
 		$WDGUser_current = WDGUser::current();
+		$invest_type = $this->get_session_user_type();
 		
-		$amount = $this->get_session_amount();
+		$WDGuser_current = WDGUser::current();
+		if ( $invest_type != 'user' ) {
+			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+			$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
+			$amount = min( $this->get_session_amount(), $WDGOrganizationInvestments_current->get_maximum_investable_amount() );
+		} else {
+			$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
+			$amount = min( $this->get_session_amount(), $WDGUserInvestments_current->get_maximum_investable_amount() );
+		}
+		
 
 		// Vérifications de sécurité
 		$can_use_wallet = FALSE;
-		$invest_type = $this->get_session_user_type();
 		if ( $invest_type == 'user' ) {
 			$can_use_wallet = $WDGUser_current->can_pay_with_wallet( $amount, $this->campaign );
 			
