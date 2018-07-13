@@ -768,10 +768,13 @@ class WDGInvestment {
 		
 		$WDGuser_current = WDGUser::current();
 		$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
-		$wallet_id = $WDGuser_current->get_lemonway_id();
 		if ( $invest_type != 'user' ) {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+			$WDGOrganization_debit->register_lemonway();
 			$wallet_id = $WDGOrganization_debit->get_lemonway_id();
+		} else {
+			$WDGuser_current->register_lemonway();
+			$wallet_id = $WDGuser_current->get_lemonway_id();
 		}
 		
 		$current_token_id = 'U'.$WDGuser_current->wp_user->ID .'C'. $this->campaign->ID;
@@ -807,6 +810,7 @@ class WDGInvestment {
 			
 		} else {
 			ypcf_debug_log( 'WDGInvestment::try_payment_card > error' );
+			array_push( $this->error, $return );
 			return FALSE;
 		}
 	}
