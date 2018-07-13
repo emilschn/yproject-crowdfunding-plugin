@@ -21,7 +21,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		parent::initFields();
 		
 		if ( $this->is_orga ) {
-			$WDGOrganisation = new WDGOrganization( $this->user_id );
+			$WDGOrganization = new WDGOrganization( $this->user_id );
 		} else {
 			$WDGUser = new WDGUser( $this->user_id );
 		}
@@ -51,7 +51,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 			'bank-holdername',
 			__( "Nom du propri&eacute;taire du compte *", 'yproject' ),
 			WDG_Form_User_Bank::$field_group_iban,
-			( $this->is_orga ) ? $WDGOrganisation->get_bank_owner() : $WDGUser->get_bank_holdername()
+			( $this->is_orga ) ? $WDGOrganization->get_bank_owner() : $WDGUser->get_bank_holdername()
 		);
 		
 		$this->addField(
@@ -59,7 +59,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 			'bank-address',
 			__( "Adresse du compte *", 'yproject' ),
 			WDG_Form_User_Bank::$field_group_iban,
-			( $this->is_orga ) ? $WDGOrganisation->get_bank_address() : $WDGUser->get_bank_address()
+			( $this->is_orga ) ? $WDGOrganization->get_bank_address() : $WDGUser->get_bank_address()
 		);
 		
 		$this->addField(
@@ -67,7 +67,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 			'bank-address2',
 			__( "Pays *", 'yproject' ),
 			WDG_Form_User_Bank::$field_group_iban,
-			( $this->is_orga ) ? $WDGOrganisation->get_bank_address2() : $WDGUser->get_bank_address2()
+			( $this->is_orga ) ? $WDGOrganization->get_bank_address2() : $WDGUser->get_bank_address2()
 		);
 		
 		$this->addField(
@@ -75,7 +75,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 			'bank-iban',
 			__( "IBAN *", 'yproject' ),
 			WDG_Form_User_Bank::$field_group_iban,
-			( $this->is_orga ) ? $WDGOrganisation->get_bank_iban() : $WDGUser->get_bank_iban()
+			( $this->is_orga ) ? $WDGOrganization->get_bank_iban() : $WDGUser->get_bank_iban()
 		);
 		
 		$this->addField(
@@ -83,13 +83,13 @@ class WDG_Form_User_Bank extends WDG_Form {
 			'bank-bic',
 			__( "BIC *", 'yproject' ),
 			WDG_Form_User_Bank::$field_group_iban,
-			( $this->is_orga ) ? $WDGOrganisation->get_bank_bic() : $WDGUser->get_bank_bic()
+			( $this->is_orga ) ? $WDGOrganization->get_bank_bic() : $WDGUser->get_bank_bic()
 		);
 
 		// $field_group_files : Les champs fichiers
 		if ( $this->is_orga ) {
-			$current_filelist_bank = WDGKYCFile::get_list_by_owner_id( $WDGOrganisation->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_bank );
-			$wallet_id = $WDGOrganisation->get_lemonway_id();
+			$current_filelist_bank = WDGKYCFile::get_list_by_owner_id( $WDGOrganization->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_bank );
+			$wallet_id = $WDGOrganization->get_lemonway_id();
 		} else {
 			$current_filelist_bank = WDGKYCFile::get_list_by_owner_id( $WDGUser->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
 			$wallet_id = $WDGUser->get_lemonway_id();
@@ -97,9 +97,11 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$current_file_bank = $current_filelist_bank[0];
 		$bank_file_path = ( empty( $current_file_bank ) ) ? '' : $current_file_bank->get_public_filepath();
 		$field_bank_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_bank, $current_file_bank->date_uploaded );
+		unset( $field_bank_params[ 'message_instead_of_field' ] );
+		$suffix = ( $this->is_orga ) ? '-orga-' . $WDGOrganization->get_wpref() : '';
 		$this->addField(
 			'file',
-			'bank-file',
+			'bank-file' .$suffix,
 			__( "RIB *", 'yproject' ),
 			WDG_Form_User_Bank::$field_group_file,
 			$bank_file_path,
@@ -135,6 +137,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 			
 			if ( $this->is_orga && $WDGUser_current->can_edit_organization( $user_id ) ) {
 				$WDGOrganization = new WDGOrganization( $user_id );
+				$bank_file_suffix = '-orga-' . $WDGOrganization->get_wpref();
 				if ( !empty( $bank_holdername ) ) {
 					$WDGOrganization->set_bank_owner( $bank_holdername );
 					$WDGOrganization->set_bank_address( $bank_address );
@@ -148,8 +151,8 @@ class WDG_Form_User_Bank extends WDG_Form {
 					}
 				}
 
-				if ( isset( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) ) {
-					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' ] );
+				if ( isset( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) ) {
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' .$bank_file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						$WDGOrganization->register_lemonway();

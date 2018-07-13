@@ -879,7 +879,7 @@ class WDGUser {
 			$rois = $this->get_rois();
 			foreach ( $rois as $roi_item ) {
 				$roi_date_transfer = new DateTime( $roi_item->date_transfer );
-				if ( $roi_date_transfer->format('Y') == $year ) {
+				if ( $roi_date_transfer->format('Y') == $year && $roi_item->status == WDGROI::$status_transferred ) {
 					array_push( $this->royalties_per_year[ $year ], $roi_item );
 				}
 			}
@@ -898,7 +898,7 @@ class WDGUser {
 		$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
-			if ( $roi_item->id_project == $campaign_api_id ) {
+			if ( $roi_item->id_project == $campaign_api_id && $roi_item->status == WDGROI::$status_transferred ) {
 				array_push( $buffer, $roi_item );
 			}
 		}

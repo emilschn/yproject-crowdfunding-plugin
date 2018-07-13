@@ -1182,7 +1182,9 @@ class WDGOrganization {
 		$rois = $this->get_rois();
 		if ( !empty( $rois ) ) {
 			foreach ( $rois as $roi_item ) {
-				$buffer += $roi_item->amount;
+				if ( $roi_item->status == WDGROI::$status_transferred ) {
+					$buffer += $roi_item->amount;
+				}
 			}
 		}
 		return $buffer;

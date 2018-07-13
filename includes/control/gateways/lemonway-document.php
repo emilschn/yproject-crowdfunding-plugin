@@ -117,6 +117,7 @@ class LemonwayDocument {
 					$this->error_str = $this->init_error_str();
 				}
 			}
+			
 			if ( empty( $this->status ) && $this->wallet_details->DOCS->DOC->TYPE == $this->document_type ) {
 				$this->status = $this->wallet_details->DOCS->DOC->S;
 				$this->error_str = $this->init_error_str();

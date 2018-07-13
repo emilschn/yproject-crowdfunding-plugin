@@ -649,7 +649,8 @@ class WDGInvestment {
 		if ( $buffer == 'publish' ) {
 			do_action('wdg_delete_cache', array(
 				'home-projects',
-				'projectlist-projects-current'
+				'projectlist-projects-current',
+				'cache_campaign_' . $this->campaign->ID
 			));
 			$file_cacher = WDG_File_Cacher::current();
 			$file_cacher->build_campaign_page_cache( $this->campaign->ID );
