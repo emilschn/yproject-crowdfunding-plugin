@@ -343,7 +343,7 @@ class WDGUserInvestments {
 						$result = LemonwayLib::ask_payment_registered_card( $lemonway_id, $lemonway_cardid, $wdg_investment->get_saved_amount() );
 						if ( $result->TRANS->HPAY->STATUS == '3' ) {
 							$purchase_key = $result->TRANS->HPAY->ID;
-							$purchase_key .= $wdg_investment->try_payment_wallet();
+							$purchase_key .= $wdg_investment->try_payment_wallet( $wdg_investment->get_saved_amount(), FALSE );
 							update_post_meta( $investment_id, '_edd_payment_purchase_key', $purchase_key );
 							ypcf_get_updated_payment_status( $investment_id, false, false, $wdg_investment );
 							

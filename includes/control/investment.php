@@ -717,37 +717,38 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	public function try_payment_wallet( $amount ) {
+	public function try_payment_wallet( $amount, $current = TRUE ) {
 		$buffer = FALSE;
-		$WDGUser_current = WDGUser::current();
-		$invest_type = $this->get_session_user_type();
-		
-		if ( $invest_type != 'user' ) {
-			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+		if ( $current ) {
+			$WDGUser_current = WDGUser::current();
+			$invest_type = $this->get_session_user_type();
+			$campaign = $this->campaign;
+		} else {
+			$WDGUser_current = new WDGUser( $this->get_saved_user_id() );
+			$invest_type = WDGOrganization::is_user_organization( $this->get_saved_user_id() ) ? $this->get_saved_user_id() : 'user';
+			$campaign = $this->get_saved_campaign();
 		}
 
 		// Vérifications de sécurité
 		$can_use_wallet = FALSE;
 		if ( $invest_type == 'user' ) {
-			$can_use_wallet = $WDGUser_current->can_pay_with_wallet( $amount, $this->campaign );
+			$can_use_wallet = $WDGUser_current->can_pay_with_wallet( $amount, $campaign );
 			
 		} else {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
-			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $amount, $this->campaign );
+			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $amount, $campaign );
 		}
 		
 		// Tentative d'exécution du transfert d'argent
 		$transfer_funds_result = FALSE;
 		if ( $can_use_wallet ) {
-			$campaign_organization = $this->campaign->get_organization();
+			$campaign_organization = $campaign->get_organization();
 			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 			
 			if ( $invest_type == 'user' ) { 
-				if ( $WDGUser_current->can_pay_with_wallet( $amount, $this->campaign ) ) {
-					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $amount );
-				}
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $amount );
 			
-			} else if ( $WDGOrganization_debit->can_pay_with_wallet( $amount, $this->campaign ) ) {
+			} else {
 				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGOrganization_debit->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $amount );
 			}
 		}
@@ -757,7 +758,7 @@ class WDGInvestment {
 			$buffer = 'wallet_'. $transfer_funds_result->ID;
 
 		} else {
-			NotificationsEmails::new_purchase_admin_error_wallet( $WDGUser_current, $this->campaign->data->post_title, $amount );
+			NotificationsEmails::new_purchase_admin_error_wallet( $WDGUser_current, $campaign->data->post_title, $amount );
 		}
 		
 		return $buffer;
