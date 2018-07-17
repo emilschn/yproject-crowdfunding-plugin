@@ -49,8 +49,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('search_user_by_email');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action('conclude_project');
-		WDGAjaxActions::add_action('edit_project');
-		WDGAjaxActions::add_action('update_user_editor');
+		WDGAjaxActions::add_action('try_lock_project_edition');
+		WDGAjaxActions::add_action('keep_lock_project_edition');
 	}
 	
 	/**
@@ -2122,64 +2122,59 @@ class WDGAjaxActions {
 	/**
 	 * Bloque les autres utilisateurs si édition en cours
 	 */
-	public static function edit_project() {
+	public static function try_lock_project_edition() {
 		$WDGuser_current = WDGUser::current();
 		$user_id = $WDGuser_current->wp_user->ID;
 		$current_datetime = new DateTime();
-		
+		$key_exists = TRUE;
 
 	    $campaign_id = filter_input( INPUT_POST, 'id_campaign' );
 	    $property = filter_input( INPUT_POST, 'property' );
+	    $meta_key = $property.'_add_value_reservation';
 
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
-		$meta_key = $property.'_add_value_reservation';
 
-		WDGAjaxActions::add_meta( $campaign_id, $meta_key, $meta_value, $property );
-
-		exit();	
-	}
-
-	public static function add_meta( $campaign_id, $meta_key, $meta_value, $property ) {
-
-		$key_exist = WDGAjaxActions::meta_key_exist( $campaign_id, $meta_key );
-		$activity = WDGAjaxActions::activity_check( $campaign_id, $meta_key );
+	    $reservation_key = get_post_meta( $campaign_id, $meta_key, TRUE );
+		if ( empty($reservation_key) ) {
+			$key_exists = FALSE;
+		} 		
 		
-		if ( $key_exist ) {
+		$return_values = array(
+					"response" => "",
+					"val" => $property
+		);
+		if ( $key_exists ) {
+			$activity = WDGAjaxActions::activity_check( $campaign_id, $meta_key );
 			if ( !$activity ) {
 				update_post_meta($campaign_id, $meta_key, $meta_value );
 
-				echo $property;
+				echo json_encode($return_values);
 				wp_die();
 			} else {
-				echo "error" ;
+				$WDGUser = new WDGUser( $reservation_key[ 'user' ] );
+				$name = $WDGUser->get_firstname();
+				
+				$return_values = array(
+					"response" => "error",
+					"val" => $name
+				);
+				echo json_encode($return_values);
 				wp_die();
 			}
 		} else {
 			update_post_meta($campaign_id, $meta_key, $meta_value );
 
-			echo $property;
+			echo json_encode($return_values);
 			wp_die();
 		}
+
+		exit();	
 	}
 
-	public static function meta_key_exist( $campaign_id, $meta_key ) {
-		$buffer = TRUE;
-	    $reservation_key = get_post_meta( $campaign_id, $meta_key, TRUE );
-
-		if ( empty($reservation_key) ) {
-			$buffer = FALSE;
-		} 
-		
-		return $buffer;
-	}
-
-	public static function activity_check() {
+	public static function activity_check( $campaign_id, $meta_key ) {
 		$buffer = FALSE;
 		$activity_max = 15;
 
-		$campaign_id = filter_input( INPUT_POST, 'id_campaign' );
-	    $property = filter_input( INPUT_POST, 'property' );
-	    $meta_key = $property.'_add_value_reservation';
 	    $WDGuser_current = WDGUser::current();
 	    $user_id = $WDGuser_current->wp_user->ID;
 
@@ -2203,20 +2198,29 @@ class WDGAjaxActions {
 		return $buffer;
 	}
 
-	public static function update_user_editor() {
+	public static function keep_lock_project_edition() {
 		$WDGuser_current = WDGUser::current();
 		$user_id = $WDGuser_current->wp_user->ID;
 		$current_datetime = new DateTime();
-		
 
 	    $campaign_id = filter_input( INPUT_POST, 'id_campaign' );
 	    $property = filter_input( INPUT_POST, 'property' );
 
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
 		$meta_key = $property.'_add_value_reservation';
-		
-		update_post_meta($campaign_id, $meta_key, $meta_value );
-		echo $campaign_id .' & ' . $property;
+		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
+
+		if ( !empty($meta_old_value) ) {
+		    if ( $meta_old_value[ 'user' ] != $user_id ) {
+		    	echo 'error';
+		    	wp_die();
+		    } else {
+				$campaign_id = filter_input( INPUT_POST, 'id_campaign' );
+				$property = filter_input( INPUT_POST, 'property' );
+				$meta_key = $property.'_add_value_reservation';
+				update_post_meta($campaign_id, $meta_key, $meta_value );
+		    }
+		 }
 
 		exit();
 	}
