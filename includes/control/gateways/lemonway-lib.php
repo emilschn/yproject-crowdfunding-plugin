@@ -84,6 +84,10 @@ class LemonwayLib {
 		}
 		$call_result = $soap_client->$method_name($params);
 		ypcf_debug_log('LemonwayLib::call RESULT : ' .print_r($call_result, true));
+		// Cas particulier : l'appel MoneyInWithCardId retourne MoneyInResult
+		if ( $method_name == 'MoneyInWithCardId' ) {
+			$method_name = 'MoneyIn';
+		}
 		$result_obj = $call_result->{$method_name . 'Result'};
 		//Annalyse du résultat
 		if (LemonwayLib::has_errors($result_obj)) {
