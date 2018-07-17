@@ -700,7 +700,7 @@ class WDGInvestment {
 		$payment_key = FALSE;
 		switch ( $meanofpayment ) {
 			case WDGInvestment::$meanofpayment_wallet:
-				$payment_key = $this->try_payment_wallet();
+				$payment_key = $this->try_payment_wallet( $this->get_session_amount() );
 				$buffer = $this->save_payment( $payment_key, $meanofpayment );
 				break;
 			case WDGInvestment::$meanofpayment_cardwallet:
@@ -714,29 +714,14 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	public function try_payment_wallet( $full_wallet = FALSE ) {
+	public function try_payment_wallet( $amount ) {
 		$buffer = FALSE;
 		$WDGUser_current = WDGUser::current();
 		$invest_type = $this->get_session_user_type();
 		
-		$WDGuser_current = WDGUser::current();
 		if ( $invest_type != 'user' ) {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
-			if ( $full_wallet ) {
-				$amount = $WDGOrganization_debit->get_available_rois_amount();
-			} else {
-				$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
-				$amount = min( $this->get_session_amount(), $WDGOrganizationInvestments_current->get_maximum_investable_amount_without_alert() );
-			}
-		} else {
-			if ( $full_wallet ) {
-				$amount = $WDGuser_current->get_lemonway_wallet_amount();
-			} else {
-				$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
-				$amount = min( $this->get_session_amount(), $WDGUserInvestments_current->get_maximum_investable_amount_without_alert() );
-			}
 		}
-		
 
 		// Vérifications de sécurité
 		$can_use_wallet = FALSE;
@@ -829,6 +814,11 @@ class WDGInvestment {
 		}
 	}
 	
+	/**
+	 * Retour de paiement par carte
+	 * @param string $mean_of_payment
+	 * @return mixed
+	 */
 	public function payment_return( $mean_of_payment ) {
 		$buffer = FALSE;
 		
@@ -849,7 +839,16 @@ class WDGInvestment {
 			
 			// Compléter par wallet
 			if ( !$is_failed ) {
-				$wallet_payment_key = $this->try_payment_wallet( TRUE );
+				$invest_type = $this->get_session_user_type();
+				if ( $invest_type != 'user' ) {
+					$WDGOrganization_debit = new WDGOrganization( $invest_type );
+					$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
+					$amount = min( $this->get_session_amount(), $WDGOrganizationInvestments_current->get_maximum_investable_amount_without_alert() + $WDGOrganization_debit->get_available_rois_amount() );
+				} else {
+					$WDGUser_current = WDGUser::current();
+					$amount = min( $this->get_session_amount(), $WDGUser_current->get_lemonway_wallet_amount() );
+				}
+				$wallet_payment_key = $this->try_payment_wallet( $amount );
 				if ( !empty( $wallet_payment_key ) ) {
 					$payment_key .= '_' . $wallet_payment_key;
 				} else {
