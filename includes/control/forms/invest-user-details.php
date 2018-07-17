@@ -535,7 +535,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			
 			// Choix du type d'investisseur
 			$user_type = $this->getInputText( 'user-type' );
-			$_SESSION[ 'user_type' ] = $this->getInputText( 'user-type' );
+			$_SESSION[ 'user_type' ] = $user_type;
 			if ( empty( $user_type ) ) {
 				$this->addPostError(
 					'user-type-select',
@@ -579,6 +579,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 					$this->postFormOrganizationCommon( $orga_id );
 				}
 			}
+			$_SESSION[ 'orga_id' ] = $orga_id;
 		}
 		
 		return $orga_id;
@@ -591,7 +592,6 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$WDGOrganization = FALSE;
 		$orga_id = $this->getInputText( 'orga-id' );
 		if ( $orga_id == 'new-orga' ) {
-			$_SESSION[ 'orga_id' ] = $this->getInputText( 'orga-id' );
 			$org_capable = $this->getInputChecked( 'org-capable' );
 			if ( !$org_capable ) {
 				$buffer = FALSE;
@@ -605,7 +605,6 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			
 		} else {
 			$WDGOrganization = new WDGOrganization( $orga_id );
-			$_SESSION[ 'orga_id' ] = $this->getInputText( 'orga-id' );
 		}
 		
 		$campaign = new ATCF_Campaign( $this->campaign_id );
