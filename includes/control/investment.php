@@ -543,9 +543,13 @@ class WDGInvestment {
 			}
 		}
 		
-		$remaining_amount_when_authenticated = 0;
-		if ( isset( $_SESSION[ 'remaining_amount_when_authenticated' ] ) ) {
-			$remaining_amount_when_authenticated = $_SESSION[ 'remaining_amount_when_authenticated' ];
+		$amount = 0;
+		if ( $pending_amount_by_card > 0 ) {
+			$amount = $pending_amount_by_card;
+		} else if ( $amount_by_card > 0 ) {
+			$amount = $amount_by_card;
+		} else {
+			$amount = $this->get_session_amount();
 		}
 		
 		// GESTION DU PAIEMENT COTE EDD
@@ -564,7 +568,6 @@ class WDGInvestment {
 			'address'		=> array()
 		);
 
-		$quantity = ( $amount_by_card == 0 ) ? $this->get_session_amount() : $amount_by_card;
 		$cart_details = array(
 			array(
 				'name'			=> $this->campaign->data->post_title,
@@ -574,14 +577,14 @@ class WDGInvestment {
 					'options'		=> array()
 				),
 				'price'			=> 1,
-				'quantity'		=> $quantity
+				'quantity'		=> $amount
 			)
 		);
 
 		$this->set_status( WDGInvestment::$status_validated );
 
 		$payment_data = array( 
-			'price'			=> ( $pending_amount_by_card > 0 ) ? $pending_amount_by_card : $this->get_session_amount(), 
+			'price'			=> $amount, 
 			'date'			=> date('Y-m-d H:i:s'), 
 			'user_email'	=> $WDGUser_current->get_email(),
 			'purchase_key'	=> $payment_key,
@@ -670,7 +673,7 @@ class WDGInvestment {
 			);
 		}
 		
-		if ( $buffer == 'publish' ) {
+		if ( $buffer == 'publish' && $pending_amount_by_card == 0 ) {
 			do_action('wdg_delete_cache', array(
 				'home-projects',
 				'projectlist-projects-current',
@@ -849,7 +852,7 @@ class WDGInvestment {
 				if ( $invest_type != 'user' ) {
 					$WDGOrganization_debit = new WDGOrganization( $invest_type );
 					$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
-					$amount = min( $this->get_session_amount(), $WDGOrganizationInvestments_current->get_maximum_investable_amount_without_alert() + $WDGOrganization_debit->get_available_rois_amount() );
+					$amount = min( $this->get_session_amount(), $amount_by_card + $WDGOrganization_debit->get_available_rois_amount() );
 				} else {
 					$WDGUser_current = WDGUser::current();
 					$amount = min( $this->get_session_amount(), $WDGUser_current->get_lemonway_wallet_amount() );
@@ -863,12 +866,9 @@ class WDGInvestment {
 			}
 		
 			// Récupération du montant manquant avant la sauvegarde
-			$remaining_amount_when_authenticated = 0;
-			if ( isset( $_SESSION[ 'remaining_amount_when_authenticated' ] ) ) {
-				$remaining_amount_when_authenticated = $_SESSION[ 'remaining_amount_when_authenticated' ];
-			}
+			$remaining_amount_when_authenticated = $this->get_session_amount() - $amount;
 			// Sauvegarde du paiement (la session est écrasée)
-			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount_by_card );
+			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount );
 			
 			if ( $buffer == 'failed' ) {
 				$WDGUser_current = WDGUser::current();
@@ -882,7 +882,7 @@ class WDGInvestment {
 				// Sauvegarde du paiement du montant manquant en attente
 				$random = rand(10000, 99999);
 				$payment_key = 'card_TEMP_' . $random;
-				$this->save_payment( $payment_key, 'card', $is_failed, $amount_by_card, $remaining_amount_when_authenticated );
+				$this->save_payment( $payment_key, 'card', $is_failed, $amount, $remaining_amount_when_authenticated );
 			}
 			
 		// Retour de paiement par virement
