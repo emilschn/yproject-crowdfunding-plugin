@@ -1963,7 +1963,7 @@ class ATCF_Campaign {
 	}
 
 	public static $invest_amount_min_wire = 500;
-	public static $invest_time_min_wire = 3;
+	public static $invest_time_min_wire = 7;
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
 		// Si il reste assez de jours ou si la campagne est déjà validée

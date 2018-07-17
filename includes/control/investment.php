@@ -794,11 +794,7 @@ class WDGInvestment {
 		
 		$register_card = 0;
 		$amount = $this->get_session_amount();
-		if ( $amount > $WDGUserInvestments_current->get_maximum_investable_amount_without_alert() ) {
-			$_SESSION[ 'remaining_amount_when_authenticated' ] = $this->get_session_amount() - $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
-			$amount = $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
-			$register_card = 1;
-		}
+		// Si on paie en s'aidant du wallet, on diminue d'autant le montant total
 		if ( $with_wallet ) {
 			if ( $invest_type == 'user' ) {
 				$amount -= $WDGuser_current->get_lemonway_wallet_amount();
@@ -806,6 +802,12 @@ class WDGInvestment {
 				$amount -= $WDGOrganization_debit->get_available_rois_amount();
 			}
 			$return_url .= '&meanofpayment=' .WDGInvestment::$meanofpayment_cardwallet;
+		}
+		// Si le montant dépasse toujours le montant maximal, le montant par carte reste le maximum autorisé
+		if ( $amount > $WDGUserInvestments_current->get_maximum_investable_amount_without_alert() ) {
+			$_SESSION[ 'remaining_amount_when_authenticated' ] = $this->get_session_amount() - $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
+			$amount = $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
+			$register_card = 1;
 		}
 		
 		$error_url = $return_url . '&error=1';
