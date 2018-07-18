@@ -127,13 +127,12 @@ class WDG_Cache_Plugin {
 			$declaration_list = $campaign->get_roi_declarations();
 
 			foreach ( $declaration_list as $declaration ) {
-				$count_roi += $declaration[ 'total_roi_with_adjustment' ];
+				$count_roi += count( $declaration[ 'roi_list' ] );
 			}
 		}
 
 		$people_list_unique = array_unique( $people_list );
 		$count_people = count( $people_list_unique );
-		$count_roi = floor( $count_roi );
 		$stats_list = array(
 			'count_amount'	=> $count_amount,
 			'count_people'	=> $count_people,
