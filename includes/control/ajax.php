@@ -2140,11 +2140,12 @@ class WDGAjaxActions {
 		} 		
 		
 		$return_values = array(
-					"response" => "",
-					"val" => $property
+					"response" => "done",
+					"values" => $property
 		);
 		if ( $key_exists ) {
-			$activity = WDGAjaxActions::activity_check( $campaign_id, $meta_key );
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$activity = $campaign->activity_check( $campaign_id, $meta_key );
 			if ( !$activity ) {
 				update_post_meta($campaign_id, $meta_key, $meta_value );
 
@@ -2152,11 +2153,11 @@ class WDGAjaxActions {
 				wp_die();
 			} else {
 				$WDGUser = new WDGUser( $reservation_key[ 'user' ] );
-				$name = $WDGUser->get_firstname();
+				$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 				
 				$return_values = array(
 					"response" => "error",
-					"val" => $name
+					"values" => $name
 				);
 				echo json_encode($return_values);
 				wp_die();
@@ -2171,33 +2172,6 @@ class WDGAjaxActions {
 		exit();	
 	}
 
-	public static function activity_check( $campaign_id, $meta_key ) {
-		$buffer = FALSE;
-		$activity_max = 15;
-
-	    $WDGuser_current = WDGUser::current();
-	    $user_id = $WDGuser_current->wp_user->ID;
-
-	    $meta_value = get_post_meta( $campaign_id, $meta_key, TRUE );
-
-	    if ( !empty($meta_value) ) {
-	    	if ( $meta_value[ 'user' ] != $user_id ) {
-	    		$meta_datetime = new DateTime( $meta_value[ 'date' ] );
-				$current_datetime = new DateTime();
-
-				$interval = $current_datetime->diff( $meta_datetime );
-				$interval = $interval->format('%I');
-
-				if ( $interval <= $activity_max ) {
-					$buffer = TRUE;
-				}
-	    	}
-	    	
-	    }
-
-		return $buffer;
-	}
-
 	public static function keep_lock_project_edition() {
 		$WDGuser_current = WDGUser::current();
 		$user_id = $WDGuser_current->wp_user->ID;
@@ -2210,15 +2184,22 @@ class WDGAjaxActions {
 		$meta_key = $property.'_add_value_reservation';
 		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
 
+		$return_values = array(
+			"response" => "done",
+			"values" => $property
+		);
+
 		if ( !empty($meta_old_value) ) {
 		    if ( $meta_old_value[ 'user' ] != $user_id ) {
-		    	echo 'error';
+		    	$return_values[ 'response' ] = "error";
+		    	echo json_encode($return_values);
 		    	wp_die();
 		    } else {
 				$campaign_id = filter_input( INPUT_POST, 'id_campaign' );
 				$property = filter_input( INPUT_POST, 'property' );
 				$meta_key = $property.'_add_value_reservation';
 				update_post_meta($campaign_id, $meta_key, $meta_value );
+				echo json_encode($return_values);
 		    }
 		 }
 
