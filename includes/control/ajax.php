@@ -2145,7 +2145,7 @@ class WDGAjaxActions {
 		);
 		if ( $key_exists ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$activity = $campaign->activity_check( $campaign_id, $meta_key );
+			$activity = $campaign->is_user_editing_meta( $user_id, $meta_key );
 			if ( !$activity ) {
 				update_post_meta($campaign_id, $meta_key, $meta_value );
 

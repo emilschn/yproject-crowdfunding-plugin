@@ -2898,14 +2898,11 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
-	public function activity_check( $campaign_id, $meta_key ) {
+	public function is_user_editing_meta( $user_id, $meta_key ) {
 		$buffer = FALSE;
 		$activity_max = 15;
 
-	    $WDGuser_current = WDGUser::current();
-	    $user_id = $WDGuser_current->wp_user->ID;
-
-	    $meta_value = get_post_meta( $campaign_id, $meta_key, TRUE );
+	    $meta_value = get_post_meta( $this->ID, $meta_key, TRUE );
 
 	    if ( !empty($meta_value) ) {
 	    	if ( $meta_value[ 'user' ] != $user_id ) {
@@ -2913,9 +2910,9 @@ class ATCF_Campaign {
 				$current_datetime = new DateTime();
 
 				$interval = $current_datetime->diff( $meta_datetime );
-				$interval = $interval->format('%I');
+				$interval_formatted = $interval->format('%I');
 
-				if ( $interval <= $activity_max ) {
+				if ( $interval_formatted <= $activity_max ) {
 					$buffer = TRUE;
 				}
 	    	}
