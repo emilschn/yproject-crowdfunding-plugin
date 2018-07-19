@@ -13,13 +13,14 @@ class NotificationsAPI {
 	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $news_name, $news_content ) {
 		ypcf_debug_log( 'NotificationsAPI::new_project_news > ' . $recipients );
 		$id_template = '156';
-		$project_link = str_replace( 'https://', '', $project_link );
+		$project_link_clean = str_replace( 'https://', '', $project_link );
+		$news_content_filtered = apply_filters( 'the_excerpt', $news_content );
 		$options = array(
 			'replyto'				=> $replyto_mail,
 			'NOM_PROJET'			=> $project_name,
-			'LIEN_PROJET'			=> $project_link,
+			'LIEN_PROJET'			=> $project_link_clean,
 			'OBJET_ACTU'			=> $news_name,
-			'CONTENU_ACTU'			=> $news_content
+			'CONTENU_ACTU'			=> $news_content_filtered
 		);
 		
 		// Le maximum de destinataire est de 99, il faut découper

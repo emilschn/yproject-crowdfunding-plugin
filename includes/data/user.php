@@ -1665,6 +1665,9 @@ class WDGUser {
 					if ( !empty( $input_get_campaign_id ) ) {
 						$buffer .= '?campaign_id=' . $input_get_campaign_id;
 					}
+					
+					ypcf_session_start();
+					$_SESSION[ 'login-fb-referer' ] = $buffer;
 				}
 			}
 		}
