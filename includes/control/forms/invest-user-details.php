@@ -37,6 +37,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			WDG_Form_Invest_User_Details::$field_group_hidden,
 			WDG_Form_Invest_User_Details::$name
 		);
+
+		$this->addField(
+			'hidden',
+			'user-type-select',
+			'',
+			WDG_Form_Invest_User_Details::$field_group_hidden,
+			$_SESSION[ 'user_type' ]
+		);
 		
 		//**********************************************************************
 		// Données de l'investisseur : $field_group_user_type
@@ -51,14 +59,6 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				'user'	=> __( "En mon nom (personne physique)", 'yproject' ),
 				'orga'	=> __( "En tant qu'organisation (personne morale)", 'yproject' )
 			]
-		);
-
-		$this->addField(
-			'hidden',
-			'user-type-select',
-			'',
-			WDG_Form_Invest_User_Details::$field_group_hidden,
-			$_SESSION[ 'user_type' ]
 		);
 		
 		//**********************************************************************
