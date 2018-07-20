@@ -448,6 +448,19 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function get_public_url() {
+		$buffer = $this->get_fake_url();
+		if ( empty( $buffer ) ) {
+			$buffer = get_permalink( $this->ID );
+		}
+		return $buffer;
+	}
+	
+	public static $key_fake_url = 'fake_url';
+	public function get_fake_url() {
+		return $this->__get( ATCF_Campaign::$key_fake_url );
+	}
+	
 	//Rédaction projet
 	public function subtitle() {
 		return $this->__get_translated_property( 'campaign_subtitle' );

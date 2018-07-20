@@ -622,6 +622,11 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
 			$success[ "new_custom_footer_code" ] = 1;
 		}
+		$new_fake_url = filter_input( INPUT_POST, 'new_fake_url' );
+		if ( !empty( $new_fake_url ) ) {
+			$campaign->__set( ATCF_Campaign::$key_fake_url, $new_fake_url );
+			$success[ "new_fake_url" ] = 1;
+		}
 		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
