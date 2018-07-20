@@ -49,6 +49,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('search_user_by_email');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action('conclude_project');
+		WDGAjaxActions::add_action('try_lock_project_edition');
+		WDGAjaxActions::add_action('keep_lock_project_edition');
 	}
 	
 	/**
@@ -2129,6 +2131,93 @@ class WDGAjaxActions {
 		}
 		
 		exit( '1' );
+	}
+
+	/**
+	 * Bloque les autres utilisateurs si édition en cours
+	 */
+	public static function try_lock_project_edition() {
+		$WDGuser_current = WDGUser::current();
+		$user_id = $WDGuser_current->wp_user->ID;
+		$current_datetime = new DateTime();
+		$key_exists = TRUE;
+
+	    $campaign_id = filter_input( INPUT_POST, 'id_campaign' );
+	    $property = filter_input( INPUT_POST, 'property' );
+	    $meta_key = $property.'_add_value_reservation';
+
+	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
+
+	    $reservation_key = get_post_meta( $campaign_id, $meta_key, TRUE );
+		if ( empty($reservation_key) ) {
+			$key_exists = FALSE;
+		} 		
+		
+		$return_values = array(
+					"response" => "done",
+					"values" => $property
+		);
+		if ( $key_exists ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$activity = $campaign->is_user_editing_meta( $user_id, $meta_key );
+			if ( !$activity ) {
+				update_post_meta($campaign_id, $meta_key, $meta_value );
+
+				echo json_encode($return_values);
+				wp_die();
+			} else {
+				$WDGUser = new WDGUser( $reservation_key[ 'user' ] );
+				$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
+				
+				$return_values = array(
+					"response" => "error",
+					"values" => $name
+				);
+				echo json_encode($return_values);
+				wp_die();
+			}
+		} else {
+			update_post_meta($campaign_id, $meta_key, $meta_value );
+
+			echo json_encode($return_values);
+			wp_die();
+		}
+
+		exit();	
+	}
+
+	public static function keep_lock_project_edition() {
+		$WDGuser_current = WDGUser::current();
+		$user_id = $WDGuser_current->wp_user->ID;
+		$current_datetime = new DateTime();
+
+	    $campaign_id = filter_input( INPUT_POST, 'id_campaign' );
+	    $property = filter_input( INPUT_POST, 'property' );
+
+	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
+		$meta_key = $property.'_add_value_reservation';
+		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
+
+		$return_values = array(
+			"response" => "done",
+			"values" => $property
+		);
+
+		if ( !empty($meta_old_value) ) {
+		    if ( $meta_old_value[ 'user' ] != $user_id ) {
+		    	$return_values[ 'response' ] = "error";
+		    	echo json_encode($return_values);
+		    	wp_die();
+		    } else {
+				$campaign_id = filter_input( INPUT_POST, 'id_campaign' );
+				$property = filter_input( INPUT_POST, 'property' );
+				$meta_key = $property.'_add_value_reservation';
+				update_post_meta($campaign_id, $meta_key, $meta_value );
+				echo json_encode($return_values);
+		    }
+		 }
+
+		exit();
 	}
 }
 

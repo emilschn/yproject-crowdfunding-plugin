@@ -2897,6 +2897,30 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+
+	public function is_user_editing_meta( $user_id, $meta_key ) {
+		$buffer = FALSE;
+		$activity_max = 15;
+
+	    $meta_value = get_post_meta( $this->ID, $meta_key, TRUE );
+
+	    if ( !empty($meta_value) ) {
+	    	if ( $meta_value[ 'user' ] != $user_id ) {
+	    		$meta_datetime = new DateTime( $meta_value[ 'date' ] );
+				$current_datetime = new DateTime();
+
+				$interval = $current_datetime->diff( $meta_datetime );
+				$interval_formatted = $interval->format('%I');
+
+				if ( $interval_formatted <= $activity_max ) {
+					$buffer = TRUE;
+				}
+	    	}
+	    	
+	    }
+
+		return $buffer;
+	}
 }
 
 function atcf_get_locations() {
