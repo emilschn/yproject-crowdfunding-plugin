@@ -637,10 +637,10 @@ class WDGAjaxActions {
 		
 		// Mise à jour du cache
 		do_action('wdg_delete_cache', array(
-			'cache_campaign_' . $this->campaign->ID
+			'cache_campaign_' . $campaign_id
 		));
 		$file_cacher = WDG_File_Cacher::current();
-		$file_cacher->build_campaign_page_cache( $campaign->ID );
+		$file_cacher->build_campaign_page_cache( $campaign_id );
 
 		$return_values = array(
 			"response" => "edit_project",
