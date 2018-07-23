@@ -8,12 +8,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class LemonwayNotification {
 	/**
 	 * NotifCategory : Type de notification :
+	- 8 : Changement de statut d'un wallet
 	- 9 : Changement de statut d'un document
 	- 10 : MoneyIn par virement
 	- 11 : MoneyIn par SDD
 	- 12 : MoneyIn par chéque
 	 * Ex : 10
 	 */
+	private static $category_wallet_new_status = 8;
 	private static $category_document_new_status = 9;
 	private static $category_moneyin_wire = 10;
 	
@@ -27,6 +29,10 @@ class LemonwayNotification {
 		$this->notification_category = $notification_category;
 		
 		switch ( $this->notification_category ) {
+			case LemonwayNotification::$category_wallet_new_status:
+				$this->process_wallet_new_status();
+				break;
+			
 			case LemonwayNotification::$category_document_new_status:
 				$this->process_document_new_status();
 				break;
@@ -51,6 +57,59 @@ class LemonwayNotification {
 	
 	/**
 	 * Changement de statut d'un wallet
+	 */
+	private function process_wallet_new_status() {
+		/**
+		 * NotifDate : Date et heure de la creation de la notification. Heure de Paris. Format ISO8601
+		 * Ex : 2015-11-01T16:44:55.883
+		 */
+		$lemonway_posted_date = filter_input( INPUT_POST, 'NotifDate' );
+		/**
+		 * IntId : Identifiant interne du wallet
+		 * Ex : 32
+		 */
+		$lemonway_posted_id_internal = filter_input( INPUT_POST, 'IntId' );
+		/**
+		 * ExtId : Identifiant externe du wallet
+		 * Ex : USERW3987
+		 */
+		$lemonway_posted_id_external = filter_input( INPUT_POST, 'ExtId' );
+		/**
+		 * Status : Type du document
+		 * Ex : 2
+		 */
+		$lemonway_posted_wallet_status = filter_input( INPUT_POST, 'Status' );
+		
+		// Trouver l'utilisateur à partir de son identifiant externe
+		$WDGOrga_wallet = FALSE;
+		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
+		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
+			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+		}
+		if ( $WDGUser_wallet !== FALSE ) {
+			
+			if ( !empty( $WDGOrga_wallet ) ) {
+				$user_name = $WDGOrga_wallet->get_name();
+				$user_fullname = $WDGOrga_wallet->get_name();
+				$user_email = $WDGOrga_wallet->get_email();
+			} else {
+				$user_name = $WDGUser_wallet->get_firstname();
+				$user_fullname = $WDGUser_wallet->get_firstname(). ' ' .$WDGUser_wallet->get_lastname();
+				$user_email = $WDGUser_wallet->get_email();
+			}
+			
+			if ( $lemonway_posted_wallet_status == 6 ) {
+				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, 'Validé' );
+				NotificationsAPI::kyc_authentified( $user_email, $user_name );
+			} else {
+				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, $lemonway_posted_wallet_status );
+			}
+			
+		}
+	}
+	
+	/**
+	 * Changement de statut d'un document
 	 */
 	private function process_document_new_status() {
 		/**
@@ -94,47 +153,38 @@ class LemonwayNotification {
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
 			$content_slack = "Nouveau statut de document : ";
-//			$content_formatted = "Salut !<br>";
-//			$content_formatted .= "Un document a chang&eacute; de statut chez Lemon Way !<br><br>";
-			
-//			$content_formatted .= "Informations sur le changement de statut :<br>";
 			
 			$content_slack .= "Wallet " .$lemonway_posted_id_external. " (https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal."), appartenant à ";
-//			$content_formatted .= "Cela concerne le wallet " .$lemonway_posted_id_external. ", appartenant à ";
 			if ( !empty( $WDGOrga_wallet ) ) {
 				$content_slack .= $WDGOrga_wallet->get_name();
-//				$content_formatted .= $WDGOrga_wallet->get_name();
 			} else {
 				$content_slack .= $WDGUser_wallet->get_display_name();
-//				$content_formatted .= $WDGUser_wallet->get_display_name();
 				$user_email = $WDGUser_wallet->get_email();
 				$user_firstname = $WDGUser_wallet->get_firstname();
 			}
 			$content_slack .= "\n";
-//			$content_formatted .= "<br>";
 			
 			$content_slack .= "Document : " . LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
 			$content_slack .= "\n";
-//			$content_formatted .= "Le document concern&eacute; est le suivant : ";
-//			$content_formatted .= LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
-//			$content_formatted .= "<br>";
 			
 			$content_slack .= "Nouveau statut : " . LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
 			$content_slack .= "\n";
-//			$content_formatted .= "Son nouveau statut est ";
-//			$content_formatted .= LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
-//			$content_formatted .= "<br>";
 			
-//			$content_formatted .= "Lien vers le wallet concern&eacute; : ";
-//			$content_formatted .= "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal;
-//			$content_formatted .= "<br>";
-			
+			// Si le document n'est ni validé, ni en attente
+			if ( $lemonway_posted_document_status > 2 ) {
+				// Si c'est une personne physique, on prévient
+				if ( empty( $WDGOrga_wallet ) ) {
+					NotificationsAPI::kyc_refused( $user_email, $user_firstname );
+				}
+			}
+		
 			// On prévient l'équipe par Slack
 			NotificationsSlack::send_new_doc_status( $content_slack );
 			
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
 			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == 2 && empty( $WDGOrga_wallet ) ) {
 				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
+				$notification_sent = TRUE;
 			}
 		}
 		

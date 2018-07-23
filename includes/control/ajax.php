@@ -622,6 +622,11 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
 			$success[ "new_custom_footer_code" ] = 1;
 		}
+		$new_fake_url = filter_input( INPUT_POST, 'new_fake_url' );
+		if ( !empty( $new_fake_url ) ) {
+			$campaign->__set( ATCF_Campaign::$key_fake_url, $new_fake_url );
+			$success[ "new_fake_url" ] = 1;
+		}
 		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
@@ -634,6 +639,13 @@ class WDGAjaxActions {
 			}
 		}
 		$campaign->update_api();
+		
+		// Mise à jour du cache
+		do_action('wdg_delete_cache', array(
+			'cache_campaign_' . $campaign_id
+		));
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->build_campaign_page_cache( $campaign_id );
 
 		$return_values = array(
 			"response" => "edit_project",
@@ -1458,6 +1470,13 @@ class WDGAjaxActions {
 		$campaign->set_validation_next_status($new_validation_status);
 		$success['new_can_go_next_status']=1;
 		$campaign->update_api();
+		
+		// Mise à jour cache
+		do_action('wdg_delete_cache', array(
+			'cache_campaign_' . $campaign_id
+		));
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->build_campaign_page_cache( $campaign_id );
 
 		$return_values = array(
 			"response" => "edit_status",

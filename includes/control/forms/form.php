@@ -27,10 +27,10 @@ class WDG_Form {
 	 * @param string $label
 	 * @param string $group
 	 * @param string $value
-	 * @param string $decription
+	 * @param string $description
 	 * @param array $options
 	 */
-	protected function addField( $type, $name, $label, $group = '0', $value = FALSE, $decription = FALSE, $options = FALSE ) {
+	protected function addField( $type, $name, $label, $group = '0', $value = FALSE, $description = FALSE, $options = FALSE ) {
 		
 		if ( !isset( $this->fields[ $group ] ) ) {
 			$this->fields[ $group ] = array();
@@ -41,12 +41,34 @@ class WDG_Form {
 			'name'			=> $name,
 			'label'			=> $label,
 			'value'			=> $value,
-			'description'	=> $decription,
+			'description'	=> $description,
 			'options'		=> $options
 		);
 		
 		array_push( $this->fields[ $group ], $field );
 		
+	}
+	
+	protected function getParamByFileField( $wallet_id, $document_type, $date_upload ) {
+		$buffer = array(
+			'date_upload'					=> $date_upload,
+			'message_instead_of_field'		=> FALSE,
+			'display_refused_alert'			=> FALSE
+		);
+		
+		$message_document_validated = __( "Document valid&eacute; par notre prestataire", 'yproject' );
+		$message_document_waiting = __( "Document en cours de validation par notre prestataire", 'yproject' );
+		
+		$lw_document_id = new LemonwayDocument( $wallet_id, $document_type );
+		if ( $lw_document_id->get_status() == LemonwayDocument::$document_status_accepted ) {
+			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
+		} else if ( $lw_document_id->get_status() == LemonwayDocument::$document_status_waiting ) {
+			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
+		} else if ( $lw_document_id->get_status() > 2 ) {
+			$buffer[ 'display_refused_alert' ] = TRUE;
+		}
+		
+		return $buffer;
 	}
 	
 	public function getFields( $group = '0' ) {

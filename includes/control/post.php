@@ -34,6 +34,9 @@ class WDGPostActions {
         self::add_action("roi_mark_transfer_received");
         self::add_action("generate_royalties_bill");
         self::add_action("refund_investors");
+        self::add_action( 'user_account_organization_details' );
+        self::add_action( 'user_account_organization_identitydocs' );
+        self::add_action( 'user_account_organization_bank' );
     }
 
     /**
@@ -296,6 +299,13 @@ class WDGPostActions {
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
 							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_vote );
+		
+							// Mise à jour cache
+							do_action('wdg_delete_cache', array(
+								'cache_campaign_' . $campaign_id
+							));
+							$file_cacher = WDG_File_Cacher::current();
+							$file_cacher->build_campaign_page_cache( $campaign_id );
                         }
                     }
 
@@ -325,6 +335,13 @@ class WDGPostActions {
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
 							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
+		
+							// Mise à jour cache
+							do_action('wdg_delete_cache', array(
+								'cache_campaign_' . $campaign_id
+							));
+							$file_cacher = WDG_File_Cacher::current();
+							$file_cacher->build_campaign_page_cache( $campaign_id );
                         }
                     }
                 }
@@ -846,6 +863,42 @@ class WDGPostActions {
 			wp_redirect( home_url() );
 			exit();
 			
+		}
+	}
+	
+	public static function user_account_organization_details() {
+		$organization_id = filter_input( INPUT_POST, 'organization_id' );
+		if ( !empty( $organization_id ) ){
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'organization-details' );
+			$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
+			$WDGOrganizationDetailsForm->postForm();
+			wp_redirect( home_url( '/mon-compte/#orga-parameters-' . $organization_id ) );
+			exit();
+		}
+	}
+	
+	public static function user_account_organization_identitydocs() {
+		$organization_id = filter_input( INPUT_POST, 'user_id' );
+		if ( !empty( $organization_id ) ){
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'user-identitydocs' );
+			$WDGFormIdentityDocs = new WDG_Form_User_Identity_Docs( $organization_id, TRUE );
+			$WDGFormIdentityDocs->postForm();
+			wp_redirect( home_url( '/mon-compte/#orga-identitydocs-' . $organization_id ) );
+			exit();
+		}
+	}
+	
+	public static function user_account_organization_bank() {
+		$organization_id = filter_input( INPUT_POST, 'user_id' );
+		if ( !empty( $organization_id ) ){
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'user-bank' );
+			$WDGFormBank = new WDG_Form_User_Bank( $organization_id, TRUE );
+			$WDGFormBank->postForm();
+			wp_redirect( home_url( '/mon-compte/#orga-bank-' . $organization_id ) );
+			exit();
 		}
 	}
 }
