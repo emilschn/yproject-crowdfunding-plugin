@@ -37,6 +37,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			WDG_Form_Invest_User_Details::$field_group_hidden,
 			WDG_Form_Invest_User_Details::$name
 		);
+
+		$this->addField(
+			'hidden',
+			'user-type-select',
+			'',
+			WDG_Form_Invest_User_Details::$field_group_hidden,
+			$_SESSION[ 'user_type' ]
+		);
 		
 		//**********************************************************************
 		// Données de l'investisseur : $field_group_user_type
@@ -200,7 +208,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'orga-id',
 			__( "Au nom de", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
-			FALSE,
+			$_SESSION[ 'orga_id' ],
 			FALSE,
 			$organization_list
 		);
@@ -527,6 +535,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			
 			// Choix du type d'investisseur
 			$user_type = $this->getInputText( 'user-type' );
+			$_SESSION[ 'user_type' ] = $user_type;
 			if ( empty( $user_type ) ) {
 				$this->addPostError(
 					'user-type-select',
@@ -538,6 +547,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			// Si l'investissement est au nom d'une organisation, il faut vérifier tous les paramètres de l'organisation
 			if ( $user_type == 'orga' ) {
 				$user_type = $this->postFormOrganization();
+			} else {
+				$_SESSION[ 'orga_id' ] = FALSE;
 			}
 		}
 		
@@ -568,6 +579,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 					$this->postFormOrganizationCommon( $orga_id );
 				}
 			}
+			$_SESSION[ 'orga_id' ] = $orga_id;
 		}
 		
 		return $orga_id;
