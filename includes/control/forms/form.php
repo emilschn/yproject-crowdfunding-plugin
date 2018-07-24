@@ -172,7 +172,30 @@ class WDG_Form {
 	public function getInputText( $name ) {
 		$buffer = '';
 		$input_result = filter_input( INPUT_POST, $name );
+
 		if ( !empty( $input_result ) ) {
+			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );		
+		}
+		return $buffer;
+	}
+
+	/**
+	 * Récupération de la valeur d'une somme d'argent
+	 * @param string $name
+	 * @return string
+	 */
+	public function getInputTextMoney( $name ) {
+		$buffer = '';
+		$input_result = filter_input( INPUT_POST, $name );
+
+		//Supprime les espaces et arrondit la valeur du capital à l'unité
+		if ( !empty( $input_result ) ) {
+			if ( preg_match('#\s#', $input_result) ) {
+				$input_result = str_replace( ' ', '', $input_result );
+			}
+			$input_result = round($input_result );
+			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
+		} else {
 			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
 		}
 		return $buffer;
