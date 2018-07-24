@@ -688,7 +688,7 @@ class WDGInvestment {
 		    'download'   => $this->campaign->ID
 		));
 		foreach ( $paymentlist as $payment ) {
-			if (edd_get_payment_key( $payment->ID ) == $payment_key) {
+			if ( strpos( edd_get_payment_key( $payment->ID ), $payment_key ) !== FALSE ) {
 				$buffer = TRUE;
 				array_push( $this->error, __( "Le paiement a d&eacute;j&agrave; &eacute;t&eacute; pris en compte. Merci de nous contacter.", 'yproject' ) );
 				break;
@@ -832,50 +832,52 @@ class WDGInvestment {
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_card || $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet ) {
 			
 			$payment_key = $_REQUEST["response_wkToken"];
-			$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key );
-			$return_cancel = filter_input( INPUT_GET, 'cancel' );
-			$return_error = filter_input( INPUT_GET, 'error' );
-			$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
-			$is_failed = $is_failed || ( $lw_transaction_result->STATUS != 3 && $lw_transaction_result->STATUS != 0 );
-			$amount_by_card = $lw_transaction_result->DEB;
-			
-			// Compléter par wallet
-			if ( !$is_failed ) {
-				$invest_type = $this->get_session_user_type();
-				if ( $invest_type != 'user' ) {
-					$WDGOrganization_debit = new WDGOrganization( $invest_type );
-					$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
-					$amount = min( $this->get_session_amount(), $amount_by_card + $WDGOrganization_debit->get_available_rois_amount() );
-				} else {
+			if ( !$this->exists_payment( $payment_key ) ) {
+				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key );
+				$return_cancel = filter_input( INPUT_GET, 'cancel' );
+				$return_error = filter_input( INPUT_GET, 'error' );
+				$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
+				$is_failed = $is_failed || ( $lw_transaction_result->STATUS != 3 && $lw_transaction_result->STATUS != 0 );
+				$amount_by_card = $lw_transaction_result->DEB;
+
+				// Compléter par wallet
+				if ( !$is_failed ) {
+					$invest_type = $this->get_session_user_type();
+					if ( $invest_type != 'user' ) {
+						$WDGOrganization_debit = new WDGOrganization( $invest_type );
+						$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
+						$amount = min( $this->get_session_amount(), $amount_by_card + $WDGOrganization_debit->get_available_rois_amount() );
+					} else {
+						$WDGUser_current = WDGUser::current();
+						$amount = min( $this->get_session_amount(), $WDGUser_current->get_lemonway_wallet_amount() );
+					}
+					$wallet_payment_key = $this->try_payment_wallet( $amount );
+					if ( !empty( $wallet_payment_key ) ) {
+						$payment_key .= '_' . $wallet_payment_key;
+					} else {
+						$payment_key .= '_wallet_FAILED';
+					}
+				}
+
+				// Récupération du montant manquant avant la sauvegarde
+				$remaining_amount_when_authenticated = $this->get_session_amount() - $amount;
+				// Sauvegarde du paiement (la session est écrasée)
+				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount );
+
+				if ( $buffer == 'failed' ) {
 					$WDGUser_current = WDGUser::current();
-					$amount = min( $this->get_session_amount(), $WDGUser_current->get_lemonway_wallet_amount() );
+					$this->error_item = new LemonwayLibErrors( $lw_transaction_result->INT_MSG );
+					NotificationsEmails::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
+					$investment_link = home_url( '/investir/' ) . '?campaign_id=' . $this->campaign->ID . '&invest_start=1&init_invest=' . $this->get_session_amount();
+					$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
+					NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
+
+				} else if ( $remaining_amount_when_authenticated > 0 ) {
+					// Sauvegarde du paiement du montant manquant en attente
+					$random = rand(10000, 99999);
+					$payment_key = 'card_TEMP_' . $random;
+					$this->save_payment( $payment_key, 'card', $is_failed, $amount, $remaining_amount_when_authenticated );
 				}
-				$wallet_payment_key = $this->try_payment_wallet( $amount );
-				if ( !empty( $wallet_payment_key ) ) {
-					$payment_key .= '_' . $wallet_payment_key;
-				} else {
-					$payment_key .= '_wallet_FAILED';
-				}
-			}
-		
-			// Récupération du montant manquant avant la sauvegarde
-			$remaining_amount_when_authenticated = $this->get_session_amount() - $amount;
-			// Sauvegarde du paiement (la session est écrasée)
-			$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount );
-			
-			if ( $buffer == 'failed' ) {
-				$WDGUser_current = WDGUser::current();
-				$this->error_item = new LemonwayLibErrors( $lw_transaction_result->INT_MSG );
-				NotificationsEmails::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
-				$investment_link = home_url( '/investir/' ) . '?campaign_id=' . $this->campaign->ID . '&invest_start=1&init_invest=' . $this->get_session_amount();
-				$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
-				NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
-			
-			} else if ( $remaining_amount_when_authenticated > 0 ) {
-				// Sauvegarde du paiement du montant manquant en attente
-				$random = rand(10000, 99999);
-				$payment_key = 'card_TEMP_' . $random;
-				$this->save_payment( $payment_key, 'card', $is_failed, $amount, $remaining_amount_when_authenticated );
 			}
 			
 		// Retour de paiement par virement
