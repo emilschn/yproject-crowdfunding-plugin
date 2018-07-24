@@ -673,8 +673,6 @@ class WDGInvestment {
 				'projectlist-projects-current',
 				'cache_campaign_' . $this->campaign->ID
 			));
-			$file_cacher = WDG_File_Cacher::current();
-			$file_cacher->build_campaign_page_cache( $this->campaign->ID );
 		}
 		
 		return $buffer;
