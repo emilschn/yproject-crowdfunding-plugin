@@ -2916,8 +2916,32 @@ class ATCF_Campaign {
 					$buffer = TRUE;
 				}
 	    	}
-	    	
 	    }
+
+		return $buffer;
+	}
+
+	public function is_different_content( $current_content, $property ) {
+		$buffer = FALSE;
+		$meta_key = "campaign_".$property;
+
+		switch ( $property ) {
+			case "description" :
+				$description_value = $this->description();
+				$content = md5($description_value);
+				break;
+			case "societal_challenge":
+			case "added_value":
+			case "economic_model":
+			case "implementation":
+				$meta_value = get_post_meta( $this->ID, $meta_key, TRUE );
+				$content = md5($meta_value);
+				break;
+		} 
+
+		if ( $content != $current_content ) {
+		 	$buffer = TRUE;
+		}
 
 		return $buffer;
 	}
