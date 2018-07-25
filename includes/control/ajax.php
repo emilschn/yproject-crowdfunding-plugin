@@ -51,6 +51,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('conclude_project');
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
+		WDGAjaxActions::add_action('delete_lock_project_edition');
 	}
 	
 	/**
@@ -2129,6 +2130,8 @@ class WDGAjaxActions {
 		$key_exists = TRUE;
 
 	    $campaign_id = filter_input( INPUT_POST, 'id_campaign' );
+	    $content = filter_input( INPUT_POST, 'value' );
+	    $md5_content = md5( $content );
 	    $property = filter_input( INPUT_POST, 'property' );
 	    $meta_key = $property.'_add_value_reservation';
 
@@ -2143,8 +2146,9 @@ class WDGAjaxActions {
 					"response" => "done",
 					"values" => $property
 		);
+
+		$campaign = new ATCF_Campaign( $campaign_id );
 		if ( $key_exists ) {
-			$campaign = new ATCF_Campaign( $campaign_id );
 			$activity = $campaign->is_user_editing_meta( $user_id, $meta_key );
 			if ( !$activity ) {
 				update_post_meta($campaign_id, $meta_key, $meta_value );
@@ -2154,7 +2158,7 @@ class WDGAjaxActions {
 			} else {
 				$WDGUser = new WDGUser( $reservation_key[ 'user' ] );
 				$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
-				
+					
 				$return_values = array(
 					"response" => "error",
 					"values" => $name
@@ -2163,10 +2167,19 @@ class WDGAjaxActions {
 				wp_die();
 			}
 		} else {
-			update_post_meta($campaign_id, $meta_key, $meta_value );
+			$different_content = $campaign->is_different_content( $md5_content, $property );
+			if ( !$different_content ) {
+				update_post_meta($campaign_id, $meta_key, $meta_value );
 
-			echo json_encode($return_values);
-			wp_die();
+				echo json_encode($return_values);
+				wp_die();
+			} else {
+				$return_values = array(
+					"response" => "different_content"
+				);
+				echo json_encode($return_values);
+				wp_die();
+			}
 		}
 
 		exit();	
@@ -2183,10 +2196,13 @@ class WDGAjaxActions {
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
 		$meta_key = $property.'_add_value_reservation';
 		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
+		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
+		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 
 		$return_values = array(
 			"response" => "done",
-			"values" => $property
+			"values" => $property,
+			"user" => $name
 		);
 
 		if ( !empty($meta_old_value) ) {
@@ -2195,13 +2211,23 @@ class WDGAjaxActions {
 		    	echo json_encode($return_values);
 		    	wp_die();
 		    } else {
-				$campaign_id = filter_input( INPUT_POST, 'id_campaign' );
-				$property = filter_input( INPUT_POST, 'property' );
-				$meta_key = $property.'_add_value_reservation';
 				update_post_meta($campaign_id, $meta_key, $meta_value );
 				echo json_encode($return_values);
+				wp_die();
 		    }
 		 }
+
+		exit();
+	}
+
+	public static function delete_lock_project_edition() {
+		$campaign_id = filter_input( INPUT_POST, 'id_campaign' );
+	    $property = filter_input( INPUT_POST, 'property' );
+	    $meta_key = $property.'_add_value_reservation';
+
+		delete_post_meta( $campaign_id, $meta_key );
+		echo $property ;
+		wp_die();
 
 		exit();
 	}
