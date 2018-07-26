@@ -2131,9 +2131,9 @@ class WDGAjaxActions {
 
 	    $campaign_id = filter_input( INPUT_POST, 'id_campaign' );
 	    $content = filter_input( INPUT_POST, 'value' );
-	    $md5_content = md5( $content );
 	    $property = filter_input( INPUT_POST, 'property' );
-	    $meta_key = $property.'_add_value_reservation';
+	    $lang = filter_input( INPUT_POST, 'lang' );
+	    $meta_key = $property.'_add_value_reservation_'.$lang;
 
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
 
@@ -2167,7 +2167,7 @@ class WDGAjaxActions {
 				wp_die();
 			}
 		} else {
-			$different_content = $campaign->is_different_content( $md5_content, $property );
+			$different_content = $campaign->is_different_content( $content, $property, $lang );
 			if ( !$different_content ) {
 				update_post_meta($campaign_id, $meta_key, $meta_value );
 
@@ -2192,9 +2192,10 @@ class WDGAjaxActions {
 
 	    $campaign_id = filter_input( INPUT_POST, 'id_campaign' );
 	    $property = filter_input( INPUT_POST, 'property' );
+	    $lang = filter_input( INPUT_POST, 'lang' );
 
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
-		$meta_key = $property.'_add_value_reservation';
+		$meta_key = $property.'_add_value_reservation_'.$lang;
 		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
 		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
 		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
@@ -2223,7 +2224,8 @@ class WDGAjaxActions {
 	public static function delete_lock_project_edition() {
 		$campaign_id = filter_input( INPUT_POST, 'id_campaign' );
 	    $property = filter_input( INPUT_POST, 'property' );
-	    $meta_key = $property.'_add_value_reservation';
+	    $lang = filter_input( INPUT_POST, 'lang' );
+	    $meta_key = $property.'_add_value_reservation_'.$lang;
 
 		delete_post_meta( $campaign_id, $meta_key );
 		echo $property ;
