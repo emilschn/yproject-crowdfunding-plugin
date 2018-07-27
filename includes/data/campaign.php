@@ -2921,28 +2921,31 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
-	public function is_different_content( $current_content, $property ) {
-		$buffer = FALSE;
-		$meta_key = "campaign_".$property;
+	public function is_different_content( $current_content, $property, $lang ) {
+		$buffer = FALSE; 
+		$this->set_current_lang( $lang );
 
 		switch ( $property ) {
 			case "description" :
-				$description_value = $this->description();
-				$content = md5($description_value);
+				$content = md5( $this->description() );
 				break;
 			case "societal_challenge":
+				$content = md5( $this->societal_challenge() );
+				break;
 			case "added_value":
+				$content = md5( $this->added_value() );
+				break;
 			case "economic_model":
+				$content = md5( $this->economic_model() );
+				break;
 			case "implementation":
-				$meta_value = get_post_meta( $this->ID, $meta_key, TRUE );
-				$content = md5($meta_value);
+				$content = md5( $this->implementation() );
 				break;
 		} 
 
 		if ( $content != $current_content ) {
 		 	$buffer = TRUE;
 		}
-
 		return $buffer;
 	}
 }
