@@ -2910,6 +2910,57 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+
+	public function is_user_editing_meta( $user_id, $meta_key ) {
+		$buffer = FALSE;
+		$activity_max = 15;
+
+	    $meta_value = get_post_meta( $this->ID, $meta_key, TRUE );
+
+	    if ( !empty($meta_value) ) {
+	    	if ( $meta_value[ 'user' ] != $user_id ) {
+	    		$meta_datetime = new DateTime( $meta_value[ 'date' ] );
+				$current_datetime = new DateTime();
+
+				$interval = $current_datetime->diff( $meta_datetime );
+				$interval_formatted = $interval->format('%I');
+
+				if ( $interval_formatted <= $activity_max ) {
+					$buffer = TRUE;
+				}
+	    	}
+	    }
+
+		return $buffer;
+	}
+
+	public function is_different_content( $current_content, $property, $lang ) {
+		$buffer = FALSE; 
+		$this->set_current_lang( $lang );
+
+		switch ( $property ) {
+			case "description" :
+				$content = md5( $this->description() );
+				break;
+			case "societal_challenge":
+				$content = md5( $this->societal_challenge() );
+				break;
+			case "added_value":
+				$content = md5( $this->added_value() );
+				break;
+			case "economic_model":
+				$content = md5( $this->economic_model() );
+				break;
+			case "implementation":
+				$content = md5( $this->implementation() );
+				break;
+		} 
+
+		if ( $content != $current_content ) {
+		 	$buffer = TRUE;
+		}
+		return $buffer;
+	}
 }
 
 function atcf_get_locations() {
