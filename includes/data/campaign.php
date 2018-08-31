@@ -710,6 +710,15 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	public function maximum_profit_str() {
+		$buffer = $this->maximum_profit();
+		if ( $buffer == 'infinite' ) {
+			$buffer = __( "illimit&eacute;", 'yproject' );
+		} else {
+			$buffer = 'x' . $buffer;
+		}
+		return $buffer;
+	}
 	
 	public function minimum_profit() {
 		return $this->get_api_data( 'minimum_profit' );
