@@ -700,22 +700,39 @@ class ATCF_Campaign {
 	);
 	public static $key_maximum_profit = 'maximum_profit';
 	public function maximum_profit() {
-		$buffer = $this->get_api_data( 'maximum_profit' );
+		$buffer = $this->get_api_data( ATCF_Campaign::$key_maximum_profit );
 		if ( empty( $buffer ) ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_maximum_profit );
 		}
 		
-		if ( empty($buffer) ) {
+		if ( empty( $buffer ) ) {
 			$buffer = 2;
 		}
 		return $buffer;
 	}
+	
+	public static $key_maximum_profit_precision = 'maximum_profit_precision';
+	public function maximum_profit_precision() {
+		$buffer = $this->get_api_data( ATCF_Campaign::$key_maximum_profit_precision );
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_maximum_profit_precision );
+		}
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
+		return $buffer;
+	}
+	
 	public function maximum_profit_str() {
 		$buffer = $this->maximum_profit();
 		if ( $buffer == 'infinite' ) {
-			$buffer = __( "illimit&eacute;", 'yproject' );
+			$buffer = __( "Infini", 'yproject' );
 		} else {
 			$buffer = 'x' . $buffer;
+			$maximum_profit_precision = $this->maximum_profit_precision();
+			if ( $maximum_profit_precision > 0 ) {
+				$buffer .= ',' . $maximum_profit_precision;
+			}
 		}
 		return $buffer;
 	}
