@@ -1261,6 +1261,21 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function has_category_slug( $type, $slug ) {
+		$buffer = FALSE;
+		$categories_by_type = $this->get_categories_by_type( $type );
+		foreach ( $categories_by_type as $campaign_category ) {
+			if ( $campaign_category->slug == $slug ) {
+				$buffer = TRUE;
+			}
+		}
+		return $buffer;
+	}
+	
+	public function is_positive_savings() {
+		return $this->has_category_slug( 'types', 'epargne-positive' );
+	}
+	
 /*******************************************************************************
  * GESTION STATUTS
  ******************************************************************************/
