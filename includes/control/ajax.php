@@ -955,10 +955,19 @@ class WDGAjaxActions {
 		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
 		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ){
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
-			$campaign->set_api_data( 'maximum_profit', $new_maximum_profit );
+			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
 			$success[ 'new_maximum_profit' ] = 1;
 		} else {
 			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
+		}
+		
+		$new_maximum_profit_precision = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit_precision' ) );
+		if ( is_numeric( $new_maximum_profit_precision ) ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+			$success[ 'new_maximum_profit_precision' ] = 1;
+		} else {
+			$errors[ 'new_maximum_profit_precision' ] = "La précision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
 		}
 
 		//Update roi_percent_estimated
