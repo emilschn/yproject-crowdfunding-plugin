@@ -534,12 +534,14 @@ class WDGInvestment {
 		$save_user_id = $WDGUser_current->get_wpref();
 		$save_display_name = $WDGUser_current->wp_user->display_name;
 		$invest_type = $this->get_session_user_type();
+		$lemonway_id = $WDGUser_current->get_lemonway_id();
 		if ( $invest_type != 'user' ) {
 			$WDGOrganization = new WDGOrganization( $invest_type );
 			if ( $WDGOrganization ) {
 				$current_user_organization = $WDGOrganization->get_creator();
 				$save_user_id = $current_user_organization->ID;
 				$save_display_name = $WDGOrganization->get_name();
+				$lemonway_id = $WDGOrganization->get_lemonway_id();
 			}
 		}
 		
@@ -657,7 +659,7 @@ class WDGInvestment {
 		// Notifications
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
 			NotificationsEmails::new_purchase_pending_wire_admin( $payment_id );
-			NotificationsEmails::new_purchase_pending_wire_user( $payment_id );
+			NotificationsEmails::new_purchase_pending_wire_user( $payment_id, $lemonway_id );
 		}
 		
 		//Si un utilisateur investit, il croit au projet

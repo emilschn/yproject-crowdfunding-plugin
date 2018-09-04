@@ -257,10 +257,7 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_maximum_profit( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = $shortcode_campaign_obj->maximum_profit();
-		if ( $buffer == 'infinite' ) {
-			$buffer = __( "Infini", 'yproject' );
-		}
+		$buffer = $shortcode_campaign_obj->maximum_profit_str();
 		return $buffer;
 	}
 	
