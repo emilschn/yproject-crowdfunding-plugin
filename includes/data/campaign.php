@@ -1674,6 +1674,13 @@ class ATCF_Campaign {
         return $res;
     }
 	
+	public function get_begin_vote_str() {
+		$vote_results = WDGCampaignVotes::get_results( $this->ID );
+		$list_date = $vote_results[ 'list_date' ];
+		$beginvotedate = date_create( $list_date[0] );
+		return date_format( $beginvotedate, 'Y-m-d H:i:s' );
+	}
+	
 	public function get_end_vote_str() {
 		$buffer = $this->get_api_data( 'vote_end_datetime' );
 		if ( empty( $buffer ) || $buffer == '0000-00-00 00:00:00' ) {
