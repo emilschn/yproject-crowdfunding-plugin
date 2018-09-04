@@ -625,6 +625,11 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
 			$success[ "new_custom_footer_code" ] = 1;
 		}
+		$new_fake_url = filter_input( INPUT_POST, 'new_fake_url' );
+		if ( !empty( $new_fake_url ) ) {
+			$campaign->__set( ATCF_Campaign::$key_fake_url, $new_fake_url );
+			$success[ "new_fake_url" ] = 1;
+		}
 		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
@@ -640,10 +645,10 @@ class WDGAjaxActions {
 		
 		// Mise à jour du cache
 		do_action('wdg_delete_cache', array(
-			'cache_campaign_' . $this->campaign->ID
+			'cache_campaign_' . $campaign_id
 		));
 		$file_cacher = WDG_File_Cacher::current();
-		$file_cacher->build_campaign_page_cache( $campaign->ID );
+		$file_cacher->build_campaign_page_cache( $campaign_id );
 
 		$return_values = array(
 			"response" => "edit_project",
@@ -953,10 +958,19 @@ class WDGAjaxActions {
 		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
 		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ){
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
-			$campaign->set_api_data( 'maximum_profit', $new_maximum_profit );
+			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
 			$success[ 'new_maximum_profit' ] = 1;
 		} else {
 			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
+		}
+		
+		$new_maximum_profit_precision = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit_precision' ) );
+		if ( is_numeric( $new_maximum_profit_precision ) ){
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+			$success[ 'new_maximum_profit_precision' ] = 1;
+		} else {
+			$errors[ 'new_maximum_profit_precision' ] = "La précision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
 		}
 
 		//Update roi_percent_estimated

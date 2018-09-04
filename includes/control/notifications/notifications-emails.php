@@ -159,7 +159,7 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
 	
-	public static function new_purchase_pending_wire_user( $payment_id ) {
+	public static function new_purchase_pending_wire_user( $payment_id, $lemonway_id ) {
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
 		
@@ -181,7 +181,7 @@ class NotificationsEmails {
 		$body_content .= "	<li><strong>IBAN :</strong> FR76 3000 4025 1100 0111 8625 268</li>";
 		$body_content .= "	<li><strong>BIC :</strong> BNPAFRPPIFE</li>";
 		$body_content .= "	<li>";
-		$body_content .= "		<strong>" .__("Code &agrave; indiquer (pour identifier votre paiement) :", 'yproject'). "</strong> wedogood-" .$WDGUser_current->get_lemonway_id(). "<br />";
+		$body_content .= "		<strong>" .__("Code &agrave; indiquer (pour identifier votre paiement) :", 'yproject'). "</strong> wedogood-" .$lemonway_id. "<br />";
 		$body_content .= "		<ul>";
 		$body_content .= "			<li>" .__("Indiquez imp&eacute;rativement ce code comme 'libell&eacute; b&eacute;n&eacute;ficiaire' ou 'code destinataire' au moment du virement !", 'yproject'). "</li>";
 		$body_content .= "		</ul>";
