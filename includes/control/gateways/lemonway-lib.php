@@ -82,7 +82,13 @@ class LemonwayLib {
 		if ( !isset( $params[ 'buffer' ] ) ) {
 			$params = json_decode( json_encode( $params ), FALSE );
 		}
-		$call_result = $soap_client->$method_name($params);
+		try {
+			$call_result = $soap_client->$method_name($params);
+		} catch (SoapFault $E) {
+			LemonwayLib::set_error('SOAPCLIENTINIT', $E->faultstring);
+			ypcf_debug_log('LemonwayLib::call ERROR : ' . $E->faultstring);
+			return FALSE;
+		}
 		ypcf_debug_log('LemonwayLib::call RESULT : ' .print_r($call_result, true));
 		$result_obj = $call_result->{$method_name . 'Result'};
 		//Annalyse du résultat
