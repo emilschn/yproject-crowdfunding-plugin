@@ -2507,8 +2507,10 @@ class ATCF_Campaign {
 	public function refund() {
 		$payments_data = $this->payments_data();
 		foreach ( $payments_data as $payment_data ) {
-			$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
-			$WDGInvestment->refund();
+			if ( $payment_data[ 'status' ] == 'publish' ) {
+				$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
+				$WDGInvestment->refund();
+			}
 		}
 	}
 	
