@@ -2043,9 +2043,19 @@ class ATCF_Campaign {
 		return ($this->can_use_wire_remaining_time() && $this->can_use_wire_amount($amount_part) && $this->can_use_wire_remaining_amount());
 	}
 	
+	public function can_use_check( $amount_part ) {
+		return ( $this->can_use_check_option() && $this->can_use_check_amount( $amount_part ) );
+	}
+	
+	public static $key_can_use_check = 'can_use_check';
+	public function can_use_check_option() {
+		$buffer = $this->__get( self::$key_can_use_check );
+		return ( $buffer != '0' );
+	}
+	
 	public static $invest_amount_min_check = 500;
-	public function can_use_check($amount_part) {
-		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_check);
+	public function can_use_check_amount( $amount_part ) {
+		return ( $this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_check );
 	}
 
 	/**
@@ -2504,8 +2514,10 @@ class ATCF_Campaign {
 	public function refund() {
 		$payments_data = $this->payments_data();
 		foreach ( $payments_data as $payment_data ) {
-			$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
-			$WDGInvestment->refund();
+			if ( $payment_data[ 'status' ] == 'publish' ) {
+				$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
+				$WDGInvestment->refund();
+			}
 		}
 	}
 	
@@ -2955,6 +2967,57 @@ class ATCF_Campaign {
 			if ( empty( $meta_is_hidden ) && $meta_project_type == 'fundingproject' ) {
 				array_push( $buffer, $project_post );
 			}
+		}
+		return $buffer;
+	}
+
+	public function is_user_editing_meta( $user_id, $meta_key ) {
+		$buffer = FALSE;
+		$activity_max = 15;
+
+	    $meta_value = get_post_meta( $this->ID, $meta_key, TRUE );
+
+	    if ( !empty($meta_value) ) {
+	    	if ( $meta_value[ 'user' ] != $user_id ) {
+	    		$meta_datetime = new DateTime( $meta_value[ 'date' ] );
+				$current_datetime = new DateTime();
+
+				$interval = $current_datetime->diff( $meta_datetime );
+				$interval_formatted = $interval->format('%I');
+
+				if ( $interval_formatted <= $activity_max ) {
+					$buffer = TRUE;
+				}
+	    	}
+	    }
+
+		return $buffer;
+	}
+
+	public function is_different_content( $current_content, $property, $lang ) {
+		$buffer = FALSE; 
+		$this->set_current_lang( $lang );
+
+		switch ( $property ) {
+			case "description" :
+				$content = md5( $this->description() );
+				break;
+			case "societal_challenge":
+				$content = md5( $this->societal_challenge() );
+				break;
+			case "added_value":
+				$content = md5( $this->added_value() );
+				break;
+			case "economic_model":
+				$content = md5( $this->economic_model() );
+				break;
+			case "implementation":
+				$content = md5( $this->implementation() );
+				break;
+		} 
+
+		if ( $content != $current_content ) {
+		 	$buffer = TRUE;
 		}
 		return $buffer;
 	}
