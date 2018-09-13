@@ -158,11 +158,13 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		);
 
 		$this->addField(
-			'text',
+			'select',
 			'country',
 			__( "Pays *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
-			$WDGUser->get_country()
+			$WDGUser->get_country( 'iso2' ),
+			FALSE,
+			$country_list
 		);
 
 		$this->addField(
