@@ -358,7 +358,10 @@ class WDGUser {
 				// On le transforme en iso3
 				if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
 					$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
+				} else if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
+					$buffer = $country_list_iso2_to_iso3[ $buffer ];
 				}
+				
 			} else if ( $format == 'iso2' ) {
 				if ( !empty( $iso2_key ) ) {
 					$buffer = $iso2_key;
