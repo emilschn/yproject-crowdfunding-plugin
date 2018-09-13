@@ -276,7 +276,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$WDGFile = new WDGKYCFile( $file_id );
 					LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_home3, $WDGFile->get_byte_array() );
 				}
-				if ( $send_notification_validation ) {
+				if ( $send_notification_validation && $WDGOrganization->is_registered_lemonway_wallet() ) {
 					NotificationsAPI::kyc_waiting( $WDGOrganization->get_email(), $WDGOrganization->get_name() );
 				}
 				
@@ -303,7 +303,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_home, $WDGFile->get_byte_array() );
 					$send_notification_validation = TRUE;
 				}
-				if ( $send_notification_validation ) {
+				if ( $send_notification_validation && $WDGUser->is_lemonway_registered() ) {
 					NotificationsAPI::kyc_waiting( $WDGUser->get_email(), $WDGUser->get_firstname() );
 				}
 			}

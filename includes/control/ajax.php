@@ -626,6 +626,14 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
 			$success[ "new_custom_footer_code" ] = 1;
 		}
+		$new_is_check_payment_available = filter_input( INPUT_POST, 'new_is_check_payment_available');
+        if ( $new_is_check_payment_available === true || $new_is_check_payment_available === "true" || $new_is_check_payment_available === 1 ) {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check );
+		} else {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check, '0' );
+		}
+		$success[ 'new_is_check_payment_available' ] = 1;
+		
 		$new_fake_url = filter_input( INPUT_POST, 'new_fake_url' );
 		if ( !empty( $new_fake_url ) ) {
 			$campaign->__set( ATCF_Campaign::$key_fake_url, $new_fake_url );

@@ -360,7 +360,9 @@ class WDGUser {
 					$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
 				}
 			} else if ( $format == 'iso2' ) {
-				$buffer = $iso2_key;
+				if ( !empty( $iso2_key ) ) {
+					$buffer = $iso2_key;
+				}
 			}
 		}
 		

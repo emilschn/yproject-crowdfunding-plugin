@@ -147,13 +147,15 @@ class WDG_Form_User_Details extends WDG_Form {
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_city()
 			);
-			
+
 			$this->addField(
-				'text',
+				'select',
 				'country',
-				__( "Pays", 'yproject' ),
+				__( "Pays *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
-				$WDGUser->get_country()
+				$WDGUser->get_country( 'iso2' ),
+				FALSE,
+				$country_list
 			);
 			
 		}
@@ -277,8 +279,14 @@ class WDG_Form_User_Details extends WDG_Form {
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
 						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description
 					);
+					
+					$was_registered = $WDGUser->is_lemonway_registered();
 					if ( $WDGUser->can_register_lemonway() ) {
 						$WDGUser->register_lemonway();
+						// Si il n'était authentifié sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
+						if ( !$was_registered && $WDGUser->is_lemonway_registered() ) {
+							$WDGUser->send_kyc();
+						}
 					}
 					
 					array_push( $feedback_success, __( "Vos informations ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s." ) );
