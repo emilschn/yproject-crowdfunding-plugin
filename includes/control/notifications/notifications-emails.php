@@ -214,9 +214,10 @@ class NotificationsEmails {
 		$body_content .= "Vous avez demand&eacute; un investissement de ".$payment_amount." &euro; par chèque pour le projet " .$campaign->data->post_title. ".<br /><br />";
 		
 		$body_content .= "Afin de valider votre investissement, nous vous rappelons que vous devez envoyer votre chèque (à l'ordre de ".$organization_obj->get_name().") par courrier à l'adresse suivante :<br />";
-		$body_content .= "WE DO GOOD<br />";
-		$body_content .= "8 rue Kervégan<br />";
-		$body_content .= "44000 Nantes<br /><br />";
+		$body_content .= "WE DO GOOD<br>";
+		$body_content .= "chez Novapuls<br>";
+		$body_content .= "13 Square la Pérouse<br>";
+		$body_content .= "44000 Nantes<br><br>";
 
 		if ( !$with_picture ) {
 			$body_content .= "Si vous souhaitez que votre investissement soit pris en compte plus rapidement, envoyez-nous d'abord une photo du chèque à investir@wedogood.co<br /><br />";
