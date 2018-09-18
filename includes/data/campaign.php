@@ -1677,8 +1677,17 @@ class ATCF_Campaign {
 	public function get_begin_vote_str() {
 		$vote_results = WDGCampaignVotes::get_results( $this->ID );
 		$list_date = $vote_results[ 'list_date' ];
-		$beginvotedate = date_create( $list_date[0] );
-		return date_format( $beginvotedate, 'Y-m-d H:i:s' );
+		// Si il y a eu un vote, on prend la date du premier vote
+		if ( !empty( $list_date[0] ) ) {
+			$beginvotedate = date_create( $list_date[0] );
+			return date_format( $beginvotedate, 'Y-m-d H:i:s' );
+			
+		// Sinon on chope la date du jour
+		} else {
+			$beginvotedate = new DateTime( $this->get_end_vote_str() );
+			$beginvotedate->modify('-1 day');
+			return date_format( $beginvotedate, 'Y-m-d H:i:s' );
+		}
 	}
 	
 	public function get_end_vote_str() {
