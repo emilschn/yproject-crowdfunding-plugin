@@ -46,15 +46,18 @@ class WDGCampaignVotes {
 			'count_more_info_finance' => 0,
 			'count_more_info_other' => 0,
 			'string_more_info_other' => '',
+			'list_more_info_other' => array(),
 			'objective' => $campaign->minimum_goal(),
 			'list_advice' => array(),
 			'list_date' => array(),
+			'list_sum_by_date' => array(),
 			'list_cumul' => array(),
 			'list_cumul_pos' => array(),
 			'list_cumul_neg' => array(),
 			'list_evo_pos' => array(),
 			'list_evo_neg' => array(),
-
+			'list_preinvestments' => array(),
+			'list_investments' => array()
 		);
 
 		if ($buffer['count_voters'] > 0) {
@@ -62,9 +65,17 @@ class WDGCampaignVotes {
 			foreach ( $payments_data as $item_invest ) {
 				$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
 				$contract_status = $payment_investment->get_contract_status();
+				
+				$investment_item = array();
+				$investment_item[ 'date' ] = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_investment->get_id() ) ) );
+				$investment_item[ 'sum' ] = $payment_investment->get_saved_amount();
+					
 				if ( $contract_status == WDGInvestment::$contract_status_investment_validated || $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
-					$buffer['count_preinvestments']++;
-					$buffer['amount_preinvestments'] += $payment_investment->get_saved_amount();
+					$buffer[ 'count_preinvestments' ]++;
+					$buffer[ 'amount_preinvestments' ] += $payment_investment->get_saved_amount();
+					array_push( $buffer[ 'list_preinvestments' ], $investment_item );
+				} else {
+					array_push( $buffer[ 'list_investments' ], $investment_item );
 				}
 			}
 			
@@ -125,21 +136,32 @@ class WDGCampaignVotes {
 			$buffer['count_more_info_team'] = $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND more_info_team = 1" );
 			$buffer['count_more_info_finance'] = $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND more_info_finance = 1" );
 			$buffer['count_more_info_other'] = $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id." AND more_info_other <> ''" );
-			$buffer['more_info_other'] = $wpdb->get_results( "SELECT more_info_other FROM ".$table_name." WHERE post_id = ".$campaign_id." AND more_info_other <> ''" );
+			$buffer['more_info_other'] = $wpdb->get_results( "SELECT user_id, more_info_other FROM ".$table_name." WHERE post_id = ".$campaign_id." AND more_info_other <> ''" );
 			foreach ($buffer['more_info_other'] as $more_info_other_item) { 
 				if ($buffer['string_more_info_other'] != '') $buffer['string_more_info_other'] .= ', <br/>';
 				$buffer['string_more_info_other'] .= html_entity_decode($more_info_other_item->more_info_other, ENT_QUOTES | ENT_HTML401);
+				$more_info_other_item = array(
+					'user_id' => $more_info_other_item->user_id,
+					'text' => $more_info_other_item->more_info_other
+				);
+				array_push( $buffer[ 'list_more_info_other' ], $more_info_other_item );
 			}
 
 			$buffer['list_advice'] = $wpdb->get_results( "SELECT user_id, advice FROM ".$table_name." WHERE post_id = ".$campaign_id." AND advice <> ''" );
 
-			$dates_votes = $wpdb->get_results( "SELECT validate_project, date FROM ".$table_name." WHERE post_id = ".$campaign_id." ORDER BY `date` ASC" );
+			$dates_votes = $wpdb->get_results( "SELECT validate_project, date, invest_sum FROM ".$table_name." WHERE post_id = ".$campaign_id." ORDER BY `date` ASC" );
 
 			//Parcours des votes par date :
 			foreach ( $dates_votes as $vote ) {
 			    if (end($buffer['list_date']) != $vote->date){
 					//Si on est sur un nouveau jour
 					$buffer['list_date'][]= $vote->date;
+					
+					$buffer[ 'list_sum_by_date' ][] = array(
+						'date' => $vote->date,
+						'sum' => $vote->invest_sum
+					);
+					
 					$buffer['list_evo_pos'][]=0;
 					$buffer['list_evo_neg'][]=0;
 
