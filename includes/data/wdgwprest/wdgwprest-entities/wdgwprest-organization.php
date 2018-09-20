@@ -77,6 +77,7 @@ class WDGWPREST_Entity_Organization {
 	public static function update( WDGOrganization $organization ) {
 		$parameters = WDGWPREST_Entity_Organization::set_post_parameters( $organization );
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' . $organization->get_api_id(), $parameters );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$organization->get_api_id() );
 		
 		$organization_projects = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization->get_api_id(). '/projects' );
 		if ( $organization_projects ) {
