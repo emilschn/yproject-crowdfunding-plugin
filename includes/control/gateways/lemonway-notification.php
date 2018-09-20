@@ -92,10 +92,19 @@ class LemonwayNotification {
 				$user_name = $WDGOrga_wallet->get_name();
 				$user_fullname = $WDGOrga_wallet->get_name();
 				$user_email = $WDGOrga_wallet->get_email();
+				if ( $lemonway_posted_wallet_status == 6 ) {
+					$WDGUserInvestments = new WDGUserInvestments( $WDGOrga_wallet );
+					$WDGUserInvestments->try_pending_card_investments();
+				}
+				
 			} else {
 				$user_name = $WDGUser_wallet->get_firstname();
 				$user_fullname = $WDGUser_wallet->get_firstname(). ' ' .$WDGUser_wallet->get_lastname();
 				$user_email = $WDGUser_wallet->get_email();
+				if ( $lemonway_posted_wallet_status == 6 ) {
+					$WDGUserInvestments = new WDGUserInvestments( $WDGUser_wallet );
+					$WDGUserInvestments->try_pending_card_investments();
+				}
 			}
 			
 			if ( $lemonway_posted_wallet_status == 6 ) {

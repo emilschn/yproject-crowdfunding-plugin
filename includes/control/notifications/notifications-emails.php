@@ -87,10 +87,15 @@ class NotificationsEmails {
      * @param type $payment_id
      * @return type
      */
-    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE, $remaining_amount_when_authenticated = 0 ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
 		
 		$particular_content = "";
+		if ( $remaining_amount_when_authenticated > 0 ) {
+			$particular_content .= __( "Lorsque vos justificatifs d'identit&eacute; seront valid&eacute;s, un nouveau paiement par carte sera d&eacute;clench&eacute; automatiquement pour un montant de", 'yproject' );
+			$particular_content .= " " .$remaining_amount_when_authenticated. " &euro;.<br><br>"; 
+		}
+		
 		if ( $is_card_contribution ) {
 			$particular_content .= NotificationsEmails::new_purchase_lemonway_conditions();
 		}
@@ -353,6 +358,18 @@ class NotificationsEmails {
 		$body_content .= "Montant total : " .$amount. "<br />";
 		$body_content .= "dont montant wallet : " .$amount_wallet. "<br />";
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
+	}
+	
+    public static function new_purchase_pending_admin_error( $user_data, $lw_msg, $invest_id, $amount ) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_pending_admin_error > ');
+		$admin_email = 'admin@wedogood.co';
+		$object = 'Erreur paiement par carte en attente';
+		$body_content = "Tentative d'investissement avec erreur :<br />";
+		$body_content .= "user_data : " .print_r( $user_data, true ). "<br />";
+		$body_content .= "ID Invest : " .$invest_id. "<br />";
+		$body_content .= "Montant : " .$amount. "<br />";
+		$body_content .= "Retour LW : " .print_r( $lw_msg, true ). "<br />";
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
 	}
 	
     public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {

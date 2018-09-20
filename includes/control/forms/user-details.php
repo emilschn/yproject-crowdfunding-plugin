@@ -147,13 +147,15 @@ class WDG_Form_User_Details extends WDG_Form {
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_city()
 			);
-			
+
 			$this->addField(
-				'text',
+				'select',
 				'country',
-				__( "Pays", 'yproject' ),
+				__( "Pays *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
-				$WDGUser->get_country()
+				$WDGUser->get_country( 'iso2' ),
+				FALSE,
+				$country_list
 			);
 			
 		}
