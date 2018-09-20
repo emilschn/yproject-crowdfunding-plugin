@@ -8,6 +8,7 @@ class NotificationsSlack {
 	private static $icon_bell = ':bell:';
 	private static $icon_doc = ':notebook:';
 	private static $icon_wallet = ':moneybag:';
+	private static $icon_money = ':euro:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 	    $data = "payload=" . json_encode(array(
@@ -47,5 +48,11 @@ class NotificationsSlack {
 		$message = 'Changement de statut pour porte-monnaie : ' . $wallet_id . ' ('.$wallet_name.' - ' .$wallet_url. ') => ' .$status;
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_wallet );
 	}
+	
+	public static function send_new_investment( $project_name, $amount, $investor_email ) {
+		$message = 'Nouvel investissement sur le projet ' . $project_name . ' : '.$amount.' € par ' .$investor_email;
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money );
+	}
+	
     
 }

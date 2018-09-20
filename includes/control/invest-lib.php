@@ -169,7 +169,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							if ($contract_id != '') {
 								$contract_infos = signsquid_get_contract_infos( $contract_id );
 								NotificationsEmails::new_purchase_user_success( $payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-								NotificationsEmails::new_purchase_admin_success( $payment_id );
+								NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 								if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 									global $contract_filename;
 									$new_contract_pdf_filename = basename( $contract_filename );
@@ -181,12 +181,13 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 								$contract_errors = 'contract_failed';
 								NotificationsEmails::new_purchase_user_error_contract( $payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 								NotificationsEmails::new_purchase_admin_error_contract( $payment_id );
+								NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 							}
 						} else {
 							$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
 							$remaining_amount_when_authenticated = get_post_meta( $payment_id, 'remaining_amount_when_authenticated', TRUE );
 							NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $remaining_amount_when_authenticated );
-							NotificationsEmails::new_purchase_admin_success_nocontract( $payment_id, $new_contract_pdf_file );
+							NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 							if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 								$new_contract_pdf_filename = basename( $new_contract_pdf_file );
 								$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
@@ -195,7 +196,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						}
 					} else {
 						NotificationsEmails::new_purchase_user( $payment_id, '', array(), ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						NotificationsEmails::new_purchase_admin_success( $payment_id );
+						NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 					}
 					NotificationsEmails::new_purchase_team_members( $payment_id );
 

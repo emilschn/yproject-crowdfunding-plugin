@@ -306,7 +306,7 @@ class NotificationsEmails {
      */
     public static function new_purchase_admin_success($payment_id, $complement_object = '', $complement_content = '', $attachments = array()) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_success > ' . $payment_id);
-		$admin_email = get_option('admin_email');
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Nouvel achat' . $complement_object;
 
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
