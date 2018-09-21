@@ -106,6 +106,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/organization.php' );
 		require( $this->includes_dir . 'data/user.php' );
 		require( $this->includes_dir . 'data/user-investments.php' );
+		require( $this->includes_dir . 'data/investment-contract.php' );
 		require( $this->includes_dir . 'data/staticpage.php' );
 		require( $this->includes_dir . 'data/country_list.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-lib.php' );
@@ -113,6 +114,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-project.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment-contract.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-declaration.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-bankinfo.php' );

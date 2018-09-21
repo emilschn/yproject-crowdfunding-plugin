@@ -2146,8 +2146,14 @@ class WDGAjaxActions {
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded
 					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive
 					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+				
 				// Transfert des données d'investissement sur l'API
-				WDGInvestment::save_campaign_to_api( $campaign );
+				if ( !$campaign->has_investments_in_api() ) {
+					WDGInvestment::save_campaign_to_api( $campaign );
+				}
+				
+				// Transformer les investissements en contrats d'investissement sur l'API
+				WDGInvestmentContract::create_list( $campaign_id );
 
 				// TODO : rassembler les contrats dans un zip
 			}

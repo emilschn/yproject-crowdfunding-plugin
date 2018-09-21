@@ -1067,25 +1067,28 @@ class ATCF_Campaign {
 			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
 			foreach ( $declaration_list as $declaration_item ) {
 				$buffer_declaration_object = array();
-				$buffer_declaration_object["id"] = $declaration_item->id;
-				$buffer_declaration_object["item"] = $declaration_item;
-				$buffer_declaration_object["project"] = $this->ID;
-				$buffer_declaration_object["date_due"] = $declaration_item->date_due;
-				$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
-				$buffer_declaration_object["total_turnover"] = $declaration_item->get_turnover_total();
-				$buffer_declaration_object["total_roi"] = $declaration_item->amount;
-				$buffer_declaration_object["total_roi_with_adjustment"] = $declaration_item->get_amount_with_adjustment();
-				$buffer_declaration_object["status"] = $declaration_item->status;
-				$buffer_declaration_object["roi_list"] = array();
+				$buffer_declaration_object['id'] = $declaration_item->id;
+				$buffer_declaration_object['item'] = $declaration_item;
+				$buffer_declaration_object['project'] = $this->ID;
+				$buffer_declaration_object['date_due'] = $declaration_item->date_due;
+				$buffer_declaration_object['date_transfer'] = $declaration_item->date_transfer;
+				$buffer_declaration_object['total_turnover'] = $declaration_item->get_turnover_total();
+				$buffer_declaration_object['total_roi'] = $declaration_item->amount;
+				$buffer_declaration_object['total_roi_with_adjustment'] = $declaration_item->get_amount_with_adjustment();
+				$buffer_declaration_object['status'] = $declaration_item->status;
+				$buffer_declaration_object['roi_list'] = array();
+				$buffer_declaration_object['roi_list_by_investment_id'] = array();
 				if ( $declaration_item->status == WDGROIDeclaration::$status_finished ) {
 					$roi_list = $declaration_item->get_rois();
 					foreach ( $roi_list as $roi_item ) {
 						$roi_object = array();
-						$roi_user = new WP_User( $roi_item->id_user );
-						$roi_object["id"] = $roi_item->id;
-						$roi_object["user_email"] = $roi_user->user_email;
-						$roi_object["amount"] = $roi_item->amount;
+						$roi_object['id'] = $roi_item->id;
+						$roi_object['amount'] = $roi_item->amount;
+						$roi_object['recipient_type'] = $roi_item->recipient_type;
+						$roi_object['recipient_api_id'] = $roi_item->id_user;
+						$roi_object['id_investment'] = $roi_item->id_investment;
 						array_push( $buffer_declaration_object["roi_list"], $roi_object );
+						$buffer_declaration_object['roi_list_by_investment_id'][ $roi_item->id_investment ] = $roi_object;
 					}
 				}
 				array_push( $this->roi_declarations, $buffer_declaration_object );
@@ -2264,6 +2267,19 @@ class ATCF_Campaign {
 		return false;
 	}
 	
+	public function has_investment_contracts_in_api() {
+		return ( !empty( $this->api_data->investment_contracts ) );
+	}
+
+
+	/**
+	 * Détermine si les investissements ont déjà été transférés sur l'API
+	 * @return boolean
+	 */
+	public function has_investments_in_api() {
+		return ( !empty( $this->api_data->investments ) );
+	}
+	
 	/**
 	 * Return payments data. 
 	 * This function is very slow, it is advisable to use it as few as possible
@@ -2275,7 +2291,7 @@ class ATCF_Campaign {
 		
 			$this->payments_data = array();
 		
-			if ( !empty( $this->api_data->investments ) ) {
+			if ( $this->has_investments_in_api() ) {
 				foreach ( $this->api_data->investments as $investment_item ) {
 					
 					if ( $investment_item->status != 'failed' ) {
