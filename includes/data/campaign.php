@@ -2536,27 +2536,67 @@ class ATCF_Campaign {
 	 */
 	public function roi_payments_data( $declaration, $transfer_remaining_amount = false ) {
 		$buffer = array();
-		$investments_list = $this->payments_data(TRUE);
+		
 		//Calculs des montants à reverser
 		$total_amount = $this->current_amount(FALSE);
 		$roi_amount = $declaration->get_amount_with_adjustment();
 		if ( $transfer_remaining_amount ) {
 			$roi_amount += $declaration->get_previous_remaining_amount();
 		}
-		foreach ($investments_list as $investment_item) {
-			//Calcul de la part de l'investisseur dans le total
-			$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
-			//Calcul du montant à récupérer en roi
-			$investor_proportion_amount = floor($roi_amount * $investor_proportion * 100) / 100; //10.50
-			//Calcul de la commission sur le roi de l'utilisateur
-			$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
-			//Et arrondi
-			$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
-			$investment_item['roi_fees'] = $fees;
-			//Reste à verser pour l'investisseur
-			$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
-			$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
-			array_push($buffer, $investment_item);
+		
+		// Récupération de la liste des investissements concernés
+		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
+		if ( !empty( $investment_contracts ) ) {
+			$investments_list = array();
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+					$investor_id = 0;
+					if ( $investment_contract->investor_type == 'user' ) {
+						$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+						$investor_id = $WDGUser->get_wpref();
+					} else {
+						$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+						$investor_id = $WDGOrganization->get_wpref();
+					}
+					$investment_item = array(
+						'amount'		=> $investment_contract->subscription_amount,
+						'user'			=> $investor_id
+					);
+					
+					// Calcul du montant à récupérer en roi
+					$investor_proportion_amount = floor( $roi_amount * $investment_contract->turnover_percent * 100 ) / 100; //10.50
+					// Calcul de la commission sur le roi de l'utilisateur
+					$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+					// Et arrondi
+					$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+					$investment_item['roi_fees'] = $fees;
+					// Reste à verser pour l'investisseur
+					$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
+					$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+				
+					array_push( $buffer, $investment_item );
+				}
+			}
+			
+		} else {
+			$investments_list = $this->payments_data(TRUE);
+		
+			// Parcours
+			foreach ($investments_list as $investment_item) {
+				// Calcul de la part de l'investisseur dans le total
+				$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
+				// Calcul du montant à récupérer en roi
+				$investor_proportion_amount = floor( $roi_amount * $investor_proportion * 100 ) / 100; //10.50
+				// Calcul de la commission sur le roi de l'utilisateur
+				$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+				// Et arrondi
+				$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+				$investment_item['roi_fees'] = $fees;
+				// Reste à verser pour l'investisseur
+				$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
+				$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+				array_push($buffer, $investment_item);
+			}
 		}
 	    
 		return $buffer;
