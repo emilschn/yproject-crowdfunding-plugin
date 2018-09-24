@@ -328,6 +328,7 @@ class LemonwayNotification {
 					NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 					NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				}
+				NotificationsEmails::new_purchase_team_members( $investment_id );
 			} else {
 				NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Virement reçu - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
 			}
