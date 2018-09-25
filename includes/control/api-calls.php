@@ -325,7 +325,7 @@ class WDGAPICalls {
 			add_post_meta( $newcampaign_id, 'equitearly_charges', $equitearly_charges );
 
 			//Mail pour l'équipe
-			NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
+			NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
 			NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
 		}
 		
