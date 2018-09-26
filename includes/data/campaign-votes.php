@@ -51,6 +51,7 @@ class WDGCampaignVotes {
 			'list_advice' => array(),
 			'list_date' => array(),
 			'list_sum_by_date' => array(),
+			'list_votes' => array(),
 			'list_cumul' => array(),
 			'list_cumul_pos' => array(),
 			'list_cumul_neg' => array(),
@@ -172,6 +173,7 @@ class WDGCampaignVotes {
 						$buffer['list_cumul'][]=end($buffer['list_cumul']);
 					}
 			    }
+				array_push( $buffer[ 'list_votes' ], $vote );
 
 			    if ($vote->validate_project==1){
 					$buffer['list_cumul'][count($buffer['list_cumul'])-1]++;
