@@ -68,7 +68,7 @@ class WDGCampaignVotes {
 				$contract_status = $payment_investment->get_contract_status();
 				
 				$investment_item = array();
-				$investment_item[ 'date' ] = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_investment->get_id() ) ) );
+				$investment_item[ 'date' ] = get_post_field( 'post_date', $payment_investment->get_id() );
 				$investment_item[ 'sum' ] = $payment_investment->get_saved_amount();
 					
 				if ( $contract_status == WDGInvestment::$contract_status_investment_validated || $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
