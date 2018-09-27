@@ -900,6 +900,9 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
+	/**
+	 * Pourcentage de royalties si la campagne atteint le maximum indiqué
+	 */
     public static $key_roi_percent_estimated = 'campaign_roi_percent_estimated';
 	public function roi_percent_estimated() {
 		$buffer = $this->get_api_data( 'roi_percent_estimated' );
@@ -911,6 +914,9 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	/**
+	 * Pourcentage de royalties engagé, en fonction du montant atteint
+	 */
 	public static $key_roi_percent = 'campaign_roi_percent';
 	public function roi_percent() {
 		$buffer = $this->__get( ATCF_Campaign::$key_roi_percent );
@@ -918,6 +924,25 @@ class ATCF_Campaign {
 			$buffer = 0;
 		}
 	    return $buffer;
+	}
+	/**
+	 * Pourcentage de royalties restant (sur la liste des contrats en cours)
+	 */
+	public function roi_percent_remaining() {
+		$buffer = 0;
+		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
+		if ( !empty( $investment_contracts ) ) {
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+					$buffer += $investment_contract->turnover_percent;
+				}
+			}
+			
+		} else {
+			$buffer = $this->roi_percent();
+
+		}
+		return $buffer;
 	}
 
     public static $key_contract_start_date = 'campaign_contract_start_date';
@@ -2580,7 +2605,7 @@ class ATCF_Campaign {
 					);
 					
 					// Calcul du montant à récupérer en roi
-					$investor_proportion_amount = floor( $roi_amount * $investment_contract->turnover_percent * 100 ) / 100; //10.50
+					$investor_proportion_amount = floor( $declaration->get_turnover_total() * $investment_contract->turnover_percent ) / 100; //10.50
 					// Calcul de la commission sur le roi de l'utilisateur
 					$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
 					// Et arrondi

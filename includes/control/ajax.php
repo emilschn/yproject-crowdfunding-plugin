@@ -107,10 +107,12 @@ class WDGAjaxActions {
 		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
 			$declaration = new WDGROIDeclaration($declaration_id);
 		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+		    $total_amount = 0;
 		    $total_roi = 0;
 		    $total_fees = 0;
 		    $investments_list = $campaign->roi_payments_data( $declaration );
 		    foreach ($investments_list as $investment_item) {
+			    $total_amount += $investment_item['amount'];
 			    $total_fees += $investment_item['roi_fees'];
 			    $total_roi += $investment_item['roi_amount']; 
 			    $user_data = get_userdata($investment_item['user']);
@@ -129,7 +131,7 @@ class WDGAjaxActions {
 			?>
 		    <tr>
 				<td><strong>Total</strong></td>
-				<td><?php echo $campaign->current_amount(FALSE); ?> &euro;</td>
+				<td><?php echo $total_amount; ?> &euro;</td>
 				<td><?php echo $total_roi; ?> &euro;</td>
 				<td><?php echo $total_fees; ?> &euro;</td>
 			</tr>

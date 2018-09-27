@@ -617,8 +617,8 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * CrÃ©e le fichier pdf d'attestation
-	 * @param boolean $force Si $force est Ã  true, on crÃ©e mÃªme si le fichier existe dÃ©jÃ 
+	 * Crée le fichier pdf d'attestation
+	 * @param boolean $force Si $force est à true, on crée même si le fichier existe déjà
 	 */
 	public function make_payment_certificate( $force = false ) {
 		$filename = $this->get_payment_certificate_filename();
@@ -635,7 +635,7 @@ class WDGROIDeclaration {
 		if ( !empty( $current_organization ) ) {
 			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		}
-		$project_roi_percent = $campaign->roi_percent();
+		$project_roi_percent = $campaign->roi_percent_remaining();
 		$project_amount_collected = $campaign->current_amount( false );
 		$date_first_payment = new DateTime( $campaign->first_payment_date() );
 		$project_roi_start_date = $date_first_payment->format( "d/m/Y" );
