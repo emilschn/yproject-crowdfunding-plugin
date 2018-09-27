@@ -740,7 +740,7 @@ function atcf_shortcode_submit_process() {
 	    
 	    $copy_recipient = '';
 	    if (!WP_IS_DEV_SITE) $copy_recipient = 'communication@wedogood.co';
-	    NotificationsEmails::new_project_posted($campaign, $copy_recipient);
+		NotificationsSlack::send_new_project( $campaign, 'HUM' );
 
 	    $url = isset ( $edd_options[ 'submit_page' ] ) ? get_permalink( $edd_options[ 'submit_page' ] ) : get_permalink();
 

@@ -198,7 +198,7 @@ class WDGPostActions {
 				$newcampaign->update_api();
 			
 				//Mail pour l'équipe
-				NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
+				NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
 				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
 
 
@@ -298,7 +298,7 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
-							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_vote );
+							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 		
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
@@ -334,7 +334,7 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
-							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
+							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
 		
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
