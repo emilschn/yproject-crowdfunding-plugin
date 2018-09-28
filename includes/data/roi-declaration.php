@@ -558,10 +558,6 @@ class WDGROIDeclaration {
 	}
 	
 	private function update_investment_contract_amount_received( $investment_contracts, $investment_id, $roi_amount ) {
-		ypcf_debug_log( 'update_investment_contract_amount_received' );
-		ypcf_debug_log( '>>> ' .print_r($investment_contracts, true) );
-		ypcf_debug_log( '>>> ' .$investment_id );
-		ypcf_debug_log( '>>> ' .$roi_amount );
 		if ( !empty( $investment_contracts ) ) {
 			foreach ( $investment_contracts as $investment_contract ) {
 				if ( $investment_contract->subscription_id == $investment_id ) {

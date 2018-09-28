@@ -139,7 +139,7 @@ class WDGInvestmentContract {
 			$investment_contract->amount_received = 0;
 			foreach ( $declarations as $declaration ) {
 				if ( !empty( $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ] ) ) {
-					$investment_contract->amount_received += $declaration[ 'roi_list_by_investment_id' ][ 'amount' ];
+					$investment_contract->amount_received += $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ][ 'amount' ];
 				}
 			}
 			
