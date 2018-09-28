@@ -2600,6 +2600,7 @@ class ATCF_Campaign {
 						$investor_id = $WDGOrganization->get_wpref();
 					}
 					$investment_item = array(
+						'ID'			=> $investment_contract->subscription_id,
 						'amount'		=> $investment_contract->subscription_amount,
 						'user'			=> $investor_id
 					);

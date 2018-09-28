@@ -22,6 +22,9 @@ class WDGInvestmentContract {
 	public $minimum_to_receive;
 	public $maximum_to_receive;
 	
+	public static $investor_type_user = 'user';
+	public static $investor_type_orga = 'organization';
+	
 	public static $status_active = 'active';
 	public static $status_canceled = 'canceled';
 	public static $status_finished = 'finished';
@@ -38,13 +41,15 @@ class WDGInvestmentContract {
 		
 		if ( !empty( $api_data ) ) {
 			$this->api_data = $api_data;
+		
+			// Initialisation des données à partir de celles de l'API
+			if ( empty( $this->api_id ) ) {
+				$this->api_id = $this->api_data->id;
+			}
+			
 		} else {
 			// Récupération dans l'API
-		}
-		
-		// Initialisation des données à partir de celles de l'API
-		if ( empty( $this->api_id ) ) {
-			$this->api_id = $this->api_data->id;
+			$this->api_data = WDGWPREST_Entity_InvestmentContract::get( $this->api_id );
 		}
 		
 		if ( !empty( $this->api_data ) ) {

@@ -57,4 +57,17 @@ class WDGWPREST_Entity_InvestmentContract {
 		
 		return $buffer;
 	}
+	
+	/**
+	 * Edite un contrat d'investissement
+	 * @param int $investment_contract_id
+	 * @param float $amount_received
+	 * @return object
+	 */
+	public static function edit( $investment_contract_id, $amount_received ) {
+		$parameters = array(
+			'amount_received'	=> $amount_received
+		);
+		return WDGWPRESTLib::call_post_wdg( 'investment-contract/' .$investment_contract_id, $parameters );
+	}
 }

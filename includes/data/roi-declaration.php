@@ -397,6 +397,7 @@ class WDGROIDeclaration {
 		$date_now = new DateTime();
 		$date_now_formatted = $date_now->format( 'Y-m-d' );
 		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		$investment_contracts = WDGInvestmentContract::get_list( $campaign->ID );
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
 			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
@@ -438,6 +439,7 @@ class WDGROIDeclaration {
 						$recipient_type = 'orga';
 						if ( $investment_item['roi_amount'] > 0 ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
+							$this->update_investment_contract_amount_received( $investment_contracts, $investment_item['ID'], $investment_item['roi_amount'] );
 							/*$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGOrga->get_email() );
 							if ( $credit_bank_info != FALSE ) {
 								$send_notifications = FALSE;
@@ -457,6 +459,7 @@ class WDGROIDeclaration {
 						$recipient_api_id = $WDGUser->get_api_id();
 						if ( $investment_item['roi_amount'] > 0 ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
+							$this->update_investment_contract_amount_received( $investment_contracts, $investment_item['ID'], $investment_item['roi_amount'] );
 							/*$credit_bank_info = WDGWPREST_Entity_BankInfo::get( $WDGUser->get_email() );
 							if ( $credit_bank_info != FALSE ) {
 								$send_notifications = FALSE;
@@ -552,6 +555,22 @@ class WDGROIDeclaration {
 			$this->update();
 		}
 		return $buffer;
+	}
+	
+	private function update_investment_contract_amount_received( $investment_contracts, $investment_id, $roi_amount ) {
+		ypcf_debug_log( 'update_investment_contract_amount_received' );
+		ypcf_debug_log( '>>> ' .print_r($investment_contracts, true) );
+		ypcf_debug_log( '>>> ' .$investment_id );
+		ypcf_debug_log( '>>> ' .$roi_amount );
+		if ( !empty( $investment_contracts ) ) {
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->subscription_id == $investment_id ) {
+					$amount_received = $investment_contract->amount_received + $roi_amount;
+					WDGWPREST_Entity_InvestmentContract::edit( $investment_contract->id, $amount_received );
+					break;
+				}
+			}
+		}
 	}
 	
 	/**
