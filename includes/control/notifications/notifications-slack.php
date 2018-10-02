@@ -70,7 +70,7 @@ class NotificationsSlack {
 		$user_author = get_user_by('id', $post_campaign->post_author);
 		$user_phone = get_user_meta( $post_campaign->post_author, 'user_mobile_phone', TRUE );
 		
-		$message = "Nouveau projet ! @channel\n";
+		$message = "Nouveau projet ! <!channel>\n";
 		$message .= "Nom : " .$project_title. "\n";
 		$message .= "URL : " .get_permalink($campaign_id). "\n";
 		$message .= "Porté par : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")\n";
@@ -88,7 +88,7 @@ class NotificationsSlack {
 			$status_str = "collecte";
 		}
 		
-		$message = "Un projet change d'étape ! @channel\n";
+		$message = "Un projet change d'étape ! <!channel>\n";
 		$message .= "Nom : " .$campaign->data->post_title. "\n";
 		$message .= "Nouvelle étape : " .$status_str;
 		
@@ -98,7 +98,7 @@ class NotificationsSlack {
 	public static function send_new_project_mandate( $orga_id ) {
 		$WDGOrganization = new WDGOrganization( $orga_id );
 		
-		$message = $WDGOrganization->get_name(). " a signé l'autorisation de prélèvement @channel";
+		$message = $WDGOrganization->get_name(). " a signé l'autorisation de prélèvement <!channel>";
 		
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_sign );
 	}
