@@ -104,31 +104,35 @@ class NotificationsSlack {
 	}
 	
 	public static function send_update_summary_current_projects( $params ) {
-		$message = "Résumé des projets en cours\n";
+		$message = "Résumé des projets en cours";
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
 		
 		if ( !empty( $params[ 'vote' ] ) ) {
-			$message = "Projets en vote :\n";
-			foreach ( $params[ 'vote' ] as $project_info ) {
-				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_votes' ]. " votes et " .$project_info[ 'value_intent' ]. " € d'intentions d'investissement (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). " .$project_info[ 'nb_preinvestment' ]. " pré-investissements, pour un total de " .$project_info[ 'value_preinvestment' ]. " €." ."\n";
-			}
+			$message = "Projets en vote :";
 			NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
+			foreach ( $params[ 'vote' ] as $project_info ) {
+				$message = "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_votes' ]. " votes et " .$project_info[ 'value_intent' ]. " € d'intentions d'investissement (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). " .$project_info[ 'nb_preinvestment' ]. " pré-investissements, pour un total de " .$project_info[ 'value_preinvestment' ]. " €.";
+				NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
+			}
+			
 		}
 		
 		if ( !empty( $params[ 'funding' ] ) ) {
-			$message = "Projets en levée de fonds :\n";
-			foreach ( $params[ 'funding' ] as $project_info ) {
-				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. "." ."\n";
-			}
+			$message = "Projets en levée de fonds :";
 			NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
+			foreach ( $params[ 'funding' ] as $project_info ) {
+				$message = "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. ".";
+				NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
+			}
 		}
 		
 		if ( !empty( $params[ 'hidden' ] ) ) {
-			$message = "Projets en levée de fonds privée :\n";
-			foreach ( $params[ 'hidden' ] as $project_info ) {
-				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. "." ."\n";
-			}
+			$message = "Projets en levée de fonds privée :";
 			NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
+			foreach ( $params[ 'hidden' ] as $project_info ) {
+				$message = "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. ".";
+				NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
+			}
 		}
 		
 	}
