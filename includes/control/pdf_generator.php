@@ -801,6 +801,8 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE) 
 	
     $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organization);
     $filename = ( empty( $filepath ) ) ? dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf' : $filepath;
+	global $new_pdf_file_name;
+	$new_pdf_file_name = basename( $filename );
     
     ypcf_debug_log('getNewPdfToSign > write in ' . $filename);
     if (generatePDF($html_content, $filename)) return $filename;

@@ -55,11 +55,11 @@ class NotificationsSlack {
 	}
 	
 	public static function send_new_investment( $project_name, $amount, $investor_email ) {
-		global $contract_filename;
+		global $new_pdf_file_name;
 		$message = 'Nouvel investissement sur le projet ' . $project_name . ' : '.$amount.' € par ' .$investor_email;
-		if ( !empty( $contract_filename ) ) {
+		if ( !empty( $new_pdf_file_name ) ) {
 			$message .= "\n";
-			$message .= "Lien vers le contrat : " .$contract_filename;
+			$message .= "Lien vers le contrat : " .home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' .$new_pdf_file_name );
 		}
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money );
 	}
