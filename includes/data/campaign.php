@@ -1054,7 +1054,7 @@ class ATCF_Campaign {
 	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
 	
-	public function generate_missing_declarations( $month_count = 3 ) {
+	public function generate_missing_declarations( $month_count = 3, $declarations_limit = FALSE ) {
 		// Calcul du nombre de déclarations que devra faire le projet
 		$nb_in_a_year = 12 / $month_count;
 		$funding_duration = $this->funding_duration();
@@ -1063,7 +1063,10 @@ class ATCF_Campaign {
 		}
 		$nb_declarations = $funding_duration * $nb_in_a_year;
 		
-		if ( isset( $nb_declarations ) && $nb_declarations > 0 ) {
+		// Permet de rajouter des déclarations si nécessaires
+		$count_added_declaration = 0;
+		
+		if ( ( isset( $nb_declarations ) && $nb_declarations > 0 ) || !empty( $declarations_limit ) ) {
 			// Récupération des déclarations existantes
 			$existing_roi_declarations = $this->get_roi_declarations();
 			// On part de la date de début de versement
@@ -1078,8 +1081,21 @@ class ATCF_Campaign {
 				}
 				if ( $add_date ) {
 					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
+					$count_added_declaration++;
+				}
+				if ( !empty( $declarations_limit ) && $count_added_declaration >= $declarations_limit ) {
+					break;
 				}
 				$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
+			}
+			
+			// Si il faut ajouter des déclarations
+			if ( !empty( $declarations_limit ) ) {
+				while ( $count_added_declaration < $declarations_limit ) {
+					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
+					$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
+					$count_added_declaration++;
+				}
 			}
 		}
 	}

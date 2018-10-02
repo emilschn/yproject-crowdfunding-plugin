@@ -791,7 +791,11 @@ class WDGPostActions {
 			if ( empty( $month_count ) ) {
 				$month_count = 3;
 			}
-			$campaign->generate_missing_declarations( $month_count );
+			$declarations_count = filter_input( INPUT_POST, 'declarations_count' );
+			if ( empty( $declarations_count ) || !is_numeric( $declarations_count ) ) {
+				$declarations_count = FALSE;
+			}
+			$campaign->generate_missing_declarations( $month_count, $declarations_count );
 			$result = 'success';
 		
 			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#royalties' );
