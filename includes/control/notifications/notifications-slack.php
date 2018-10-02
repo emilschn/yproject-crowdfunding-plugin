@@ -105,32 +105,32 @@ class NotificationsSlack {
 	
 	public static function send_update_summary_current_projects( $params ) {
 		$message = "Résumé des projets en cours\n";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
 		
 		if ( !empty( $params[ 'vote' ] ) ) {
-			$message .= "\n";
-			$message .= "Projets en vote :\n";
+			$message = "Projets en vote :\n";
 			foreach ( $params[ 'vote' ] as $project_info ) {
 				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_votes' ]. " votes et " .$project_info[ 'value_intent' ]. " € d'intentions d'investissement (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). " .$project_info[ 'nb_preinvestment' ]. " pré-investissements, pour un total de " .$project_info[ 'value_preinvestment' ]. " €." ."\n";
 			}
+			NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
 		}
 		
 		if ( !empty( $params[ 'funding' ] ) ) {
-			$message .= "\n";
-			$message .= "Projets en levée de fonds :\n";
+			$message = "Projets en levée de fonds :\n";
 			foreach ( $params[ 'funding' ] as $project_info ) {
 				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. "." ."\n";
 			}
+			NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
 		}
 		
 		if ( !empty( $params[ 'hidden' ] ) ) {
-			$message .= "\n";
-			$message .= "Projets en levée de fonds privée :\n";
+			$message = "Projets en levée de fonds privée :\n";
 			foreach ( $params[ 'hidden' ] as $project_info ) {
 				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. "." ."\n";
 			}
+			NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
 		}
 		
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
 	}
     
 }
