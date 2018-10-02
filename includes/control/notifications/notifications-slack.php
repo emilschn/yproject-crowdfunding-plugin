@@ -13,6 +13,7 @@ class NotificationsSlack {
 	private static $icon_fireworks = ':fireworks:';
 	private static $icon_rocket = ':rocket:';
 	private static $icon_sign = ':black_nib:';
+	private static $icon_robot = ':robot_face:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 	    $data = "payload=" . json_encode(array(
@@ -102,5 +103,34 @@ class NotificationsSlack {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_sign );
 	}
 	
+	public static function send_update_summary_current_projects( $params ) {
+		$message = "Résumé des projets en cours\n";
+		
+		if ( !empty( $params[ 'vote' ] ) ) {
+			$message .= "\n";
+			$message .= "Projets en vote :\n";
+			foreach ( $params[ 'vote' ] as $project_info ) {
+				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_votes' ]. " votes et " .$project_info[ 'value_intent' ]. " € d'intentions d'investissement (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). " .$project_info[ 'nb_preinvestment' ]. " pré-investissements, pour un total de " .$project_info[ 'value_preinvestment' ]. " €." ."\n";
+			}
+		}
+		
+		if ( !empty( $params[ 'funding' ] ) ) {
+			$message .= "\n";
+			$message .= "Projets en levée de fonds :\n";
+			foreach ( $params[ 'funding' ] as $project_info ) {
+				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. "." ."\n";
+			}
+		}
+		
+		if ( !empty( $params[ 'hidden' ] ) ) {
+			$message .= "\n";
+			$message .= "Projets en levée de fonds privée :\n";
+			foreach ( $params[ 'hidden' ] as $project_info ) {
+				$message .= "- " .$project_info[ 'name' ]. " : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). Nombre d'investissements non-validés : " .$project_info[ 'nb_not_validated' ]. "." ."\n";
+			}
+		}
+		
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot );
+	}
     
 }

@@ -2961,7 +2961,19 @@ class ATCF_Campaign {
 		return get_posts( $query_options );
 	}
 	
-	
+	public static function get_list_current_hidden( $type ) {
+		$query_options = array(
+			'numberposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array ( 'key' => 'campaign_vote', 'value' => $type ),
+				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') ),
+				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'EXISTS' )
+			)
+		);
+		return get_posts( $query_options );
+	}
 	
 	
 	
