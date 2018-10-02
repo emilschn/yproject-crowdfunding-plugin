@@ -536,8 +536,12 @@ class ATCF_Campaign {
  ******************************************************************************/
     // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
+    public static $key_backoffice_contract_agreement = 'campaign_backoffice_contract_agreement';
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
+    }
+    public function backoffice_contract_agreement() {
+        return $this->__get( ATCF_Campaign::$key_backoffice_contract_agreement );
     }
 	public function generate_contract_pdf_blank_organization() {
 		$filename = 'blank-contract-organization-'.$this->ID.'.pdf';
@@ -547,6 +551,15 @@ class ATCF_Campaign {
 		}
 		if ( getNewPdfToSign( $this->ID, FALSE, 'orga', $filepath ) != FALSE ) {
 			$this->__set( ATCF_Campaign::$key_backoffice_contract_orga, $filename );
+		}
+		
+		$filename_agreement = 'blank-contract-agreement-'.$this->ID.'.pdf';
+		$filepath_agreement = __DIR__ . '/../contracts/' . $filename_agreement;
+		if ( file_exists( $filepath_agreement ) ) {
+			unlink( $filepath_agreement );
+		}
+		if ( getNewPdfToSign( $this->ID, FALSE, 'orga', $filepath_agreement, TRUE ) != FALSE ) {
+			$this->__set( ATCF_Campaign::$key_backoffice_contract_agreement, $filename_agreement );
 		}
 	}
 	
