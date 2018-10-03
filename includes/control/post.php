@@ -200,6 +200,14 @@ class WDGPostActions {
 				//Mail pour l'équipe
 				NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
 				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
+				
+				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
+				$test_campaign = new ATCF_Campaign( $newcampaign_id );
+				$test_organization = $test_campaign->get_organization();
+				if ( empty( $test_organization ) ) {
+					$error_content = 'Aucune organisation liée au projet';
+					NotificationsEmails::new_project_posted_error_admin( $project_name, $error_content );
+				}
 
 
 				//Redirect then
