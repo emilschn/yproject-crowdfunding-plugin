@@ -280,7 +280,7 @@ class WDGFormProjects {
 			$declaration->set_turnover($saved_declaration);
 			$declaration->percent_commission = $campaign->get_costs_to_organization();
 			$declaration->amount = round( ($total_turnover * $campaign->roi_percent_remaining() / 100) * 100 ) / 100;
-			if ($declaration->amount == 0) {
+			if ( $declaration->get_amount_with_adjustment() == 0 ) {
 				NotificationsEmails::turnover_declaration_null( $declaration_id );
 				$declaration->status = WDGROIDeclaration::$status_transfer;
 			} else {
