@@ -5,6 +5,7 @@ class WDG_PDF_Generator {
 /* Shortcodes spécifiques aux contrats */
 /******************************************************************************/
 	public static function add_shortcodes() {
+		add_shortcode( 'wdg_campaign_agreement_bundle', 'WDG_PDF_Generator::shortcode_agreement_bundle' );
 		add_shortcode( 'wdg_campaign_contract_investor_info', 'WDG_PDF_Generator::shortcode_contract_investor_info' );
 		add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
 		add_shortcode( 'wdg_campaign_contract_organization_legalform', 'WDG_PDF_Generator::shortcode_contract_organization_legalform' );
@@ -64,6 +65,15 @@ class WDG_PDF_Generator {
 			$buffer .= 'immatriculée sous le numéro SIREN ' .$shortcode_investor_orga_obj->get_idnumber(). ' au RCS de ' .$shortcode_investor_orga_obj->get_rcs(). '<br>';
 		}
 		
+		return $buffer;
+	}
+	/**
+	 * Shortcode affichant la formule commerciale dans l'accord cadre
+	 */
+	public static function shortcode_agreement_bundle( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = nl2br( $shortcode_campaign_obj->agreement_bundle() );
 		return $buffer;
 	}
 	/**
@@ -454,7 +464,6 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 	add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
 	add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
 	$edd_settings = get_option( 'edd_settings' );
-	$wdg_standard_contract_agreement = get_option( 'wdg_standard_contract_agreement' );
 	
 	$blank_space_small = '________________';
 	$blank_space = '________________________________________________';
@@ -476,6 +485,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 	$buffer = '';
 	
 	if ( $with_agreement ) {
+		$wdg_standard_contract_agreement = get_option( 'wdg_standard_contract_agreement' );
 		$buffer .= '<page backbottom="15mm">';
 		$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $wdg_standard_contract_agreement );
 		$buffer .= '</page>';

@@ -568,6 +568,11 @@ class ATCF_Campaign {
         return $this->__get( ATCF_Campaign::$key_backoffice_contract_modifications );
 	}
 	
+    public static $key_agreement_bundle = 'campaign_agreement_bundle';
+	public function agreement_bundle() {
+        return $this->__get( ATCF_Campaign::$key_agreement_bundle );
+	}
+	
 	// Contrat : descriptions des revenus, des dépenses
     public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
 	public function contract_earnings_description() {
