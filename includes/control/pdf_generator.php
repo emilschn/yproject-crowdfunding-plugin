@@ -573,6 +573,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 			$buffer .= "<i>au capital de</i> " . $blank_space_small . " &euro;<br />";
 			$buffer .= "dont le siège social est <i>(adresse)</i>" . $blank_space . " <i>(ville et CP)</i>" . $blank_space . "<br />";
 			$buffer .= "immatriculée sous le numéro " . $blank_space_small . " au RCS de " . $blank_space . "<br />";
+			$buffer .= "Adresse e-mail de contact (différente du représentant) : " . $blank_space . "<br />";
 		}
     }
     
