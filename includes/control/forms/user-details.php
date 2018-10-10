@@ -190,6 +190,15 @@ class WDG_Form_User_Details extends WDG_Form {
 				$WDGUser->get_description()
 			);
 		
+			$this->addField(
+				'textarea',
+				'contact_if_deceased',
+				__( "Personne &agrave; contacter en cas de d&eacute;c&egrave;s", 'yproject' ),
+				WDG_Form_User_Details::$field_group_extended,
+				$WDGUser->get_contact_if_deceased(),
+				__( "Si nous sommes inform&eacute;s de votre d&eacute;c&egrave;s (justifi&eacute; par un avis de d&eacute;c&egrave;s), nous contacterons cette personne pour lui donner l'acc&egrave;s &agrave; votre compte WE DO GOOD. Laissez ce champs vide si vous souhaitez que personne ne soit contact&eacute;. Indiquez pr&eacute;nom, nom, adresse email et num&eacute;ro de t&eacute;l&eacute;phone.", 'yproject' )
+			);
+		
 		}
 		
 	}
@@ -261,8 +270,10 @@ class WDG_Form_User_Details extends WDG_Form {
 			}
 			
 			$description = '';
+			$contact_if_deceased = '';
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
 				$description = $this->getInputText( 'description' );
+				$contact_if_deceased = $this->getInputText( 'contact_if_deceased' );
 			}
 			
 			
@@ -277,7 +288,8 @@ class WDG_Form_User_Details extends WDG_Form {
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description
+						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, 
+						$description, $contact_if_deceased
 					);
 					
 					$was_registered = $WDGUser->is_lemonway_registered();
