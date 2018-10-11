@@ -333,7 +333,7 @@ class WDGUserInvestments {
 		$pending_investments = $this->get_pending_investments();
 		foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
 			$investment_campaign = new ATCF_Campaign( $campaign_id );
-			if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+			if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				foreach ( $campaign_investments as $investment_id ) {
 					$wdg_investment = new WDGInvestment( $investment_id );
 					$investment_key = $wdg_investment->get_payment_key();
