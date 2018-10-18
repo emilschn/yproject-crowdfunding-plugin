@@ -2681,21 +2681,11 @@ class ATCF_Campaign {
 	public function manage_jycrois($user_id = FALSE) {
 		global $wpdb;
 		$table_jcrois = $wpdb->prefix . "jycrois";
-		
 
-		// Construction des urls utilisés dans les liens du fil d'actualité
-		// url d'une campagne précisée par son nom 
-		$campaign_url = get_permalink($_POST['id_campaign']);
-		$post_campaign = get_post($_POST['id_campaign']);
-		$post_title = $post_campaign->post_title;
-		$url_campaign = '<a href="'.$campaign_url.'">'.$post_title.'</a>';
-
-		//url d'un utilisateur précis
-		$user_item = ($user_id === FALSE) ? wp_get_current_user() : get_userdata($user_id);
-		$user_id = $user_item->ID;
-		$user_display_name = $user_item->display_name;
-		$url_profile = $user_display_name;
-		$user_avatar = UIHelpers::get_user_avatar($user_id);
+		if ( empty( $user_id ) ) {
+			$user_item = wp_get_current_user();
+			$user_id = $user_item->ID;
+		}
 
 		//J'y crois
 		if(isset($_POST['jy_crois']) && $_POST['jy_crois'] == 1){

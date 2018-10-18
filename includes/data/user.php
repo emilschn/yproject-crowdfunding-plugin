@@ -523,7 +523,7 @@ class WDGUser {
 	public function get_amount_voted_on_campaign( $campaign_id ) {
 		global $wpdb;
 		$buffer = 0;
-		$table_name = $wpdb->prefix . "ypcf_project_votes";
+		$table_name = $wpdb->prefix . 'ypcf_project_votes';
 		$hasvoted_results = $wpdb->get_results( 'SELECT id, invest_sum FROM '.$table_name.' WHERE post_id = '.$campaign_id.' AND user_id = '.$this->get_wpref() );
 		if ( !empty( $hasvoted_results[0]->id ) ) {
 			$buffer = $hasvoted_results[0]->invest_sum;
@@ -545,6 +545,21 @@ class WDGUser {
 			$this->has_invested_by_campaign[ $campaign_id ] = ( count( $payments ) > 0 );
 		}
 		return $this->has_invested_by_campaign[ $campaign_id ];
+	}
+	
+	public function get_campaigns_followed() {
+		$buffer = array();
+		
+		global $wpdb;
+		$table = $wpdb->prefix . 'jycrois';
+		$campaigns_followed = $wpdb->get_results( 'SELECT campaign_id FROM ' .$table. ' WHERE user_id=' .$this->get_wpref() );
+		
+		foreach ( $campaigns_followed as $campaign_item ) {
+			$campaign = new ATCF_Campaign( $campaign_item->campaign_id );
+			$buffer[ $campaign_item->campaign_id ] = $campaign->get_name();
+		}
+		
+		return $buffer;
 	}
 	
 /*******************************************************************************
