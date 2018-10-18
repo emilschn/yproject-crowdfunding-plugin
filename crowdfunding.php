@@ -135,6 +135,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/api-calls.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
 		require( $this->includes_dir . 'control/investment.php' );
+		require( $this->includes_dir . 'control/sendinblue/mailin.php' );
 		require( $this->includes_dir . 'control/signsquid/common.php' );
 		require( $this->includes_dir . 'control/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'control/pdf_generator.php' );

@@ -81,6 +81,43 @@ class WDG_Form_User_Details extends WDG_Form {
 			$WDGUser->get_lastname()
 		);
 		
+		// $field_group_basics : Si on met le formulaire basique, on propose de valider l'inscription à la NL
+		if ( $this->user_details_type == WDG_Form_User_Details::$type_basics ) {
+			
+			$is_subscribed_to_newsletter = FALSE;
+			$user_email = $WDGUser->get_email();
+			if ( !empty( $user_email ) ) {
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+				$return = $mailin->get_user( array(
+					"email"		=> $user_email
+				) );
+				if ( isset( $return[ 'code' ] ) && $return[ 'code' ] != 'failure' ) {
+					if ( isset( $return[ 'data' ] ) && isset( $return[ 'data' ][ 'listid' ] ) ) {
+						$lists_is_in = array();
+						foreach( $return[ 'data' ][ 'listid' ] as $list_id ) {
+							$lists_is_in[ $list_id ] = TRUE;
+						}
+						if ( !empty( $lists_is_in[ 5 ] ) && !empty( $lists_is_in[ 6 ] ) ) {
+							$is_subscribed_to_newsletter = TRUE;
+						}
+					}
+				}
+			}
+			
+			$this->addField(
+				'checkboxes',
+				'',
+				'',
+				WDG_Form_User_Details::$field_group_basics,
+				[ $is_subscribed_to_newsletter ],
+				FALSE,
+				[
+					'subscribe_newsletter' => __( "Je souhaite recevoir la newsletter WE DO GOOD" )
+				]
+			);
+			
+		}
+		
 		// $field_group_complete : Si on met le formulaire complet, on rajoute nationalité, ville et date de naissance, adresse, genre
 		if ( $this->user_details_type == WDG_Form_User_Details::$type_complete || $this->user_details_type == WDG_Form_User_Details::$type_extended ) {
 		
@@ -305,8 +342,27 @@ class WDG_Form_User_Details extends WDG_Form {
 					
 				} else {
 					$WDGUser->save_basics( $email, $firstname, $lastname );
+					
 					if ( $user_details_type == WDG_Form_User_Details::$type_vote ) {
 						$WDGUser->save_meta( 'user_mobile_phone', $phone_number );
+					}
+					
+					if ( $user_details_type == WDG_Form_User_Details::$type_basics ) {
+						$subscribe_newsletter = $this->getInputChecked( 'subscribe_newsletter' );
+						if ( empty( $subscribe_newsletter ) ) {
+							try {
+								$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+								$return = $mailin->create_update_user( array(
+									"email"		=> $email,
+									"listid_unlink"	=> array( 5, 6 )
+								) );
+							} catch ( Exception $e ) {
+								ypcf_debug_log( "postForm > erreur de désinscription à la NL -- " . print_r( $e, TRUE ) );
+							}
+							
+						} else {
+							WDGPostActions::subscribe_newsletter_sendinblue( $email );
+						}
 					}
 				}
 			}

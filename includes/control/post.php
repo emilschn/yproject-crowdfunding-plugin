@@ -60,7 +60,6 @@ class WDGPostActions {
 			}
 
 			try {
-				require_once( 'sendinblue/mailin.php' );
 				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
 				$return = $mailin->create_update_user( array(
 					"email"		=> $email,
