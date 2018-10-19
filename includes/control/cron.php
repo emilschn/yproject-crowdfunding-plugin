@@ -200,8 +200,8 @@ class WDGCronActions {
 		$buffer_partners .= '<description><![CDATA['.html_entity_decode($campaign->summary()).']]></description>' . "\n"; //TNP
 		$description_complete = html_entity_decode( $campaign->description() );
 		$buffer_partners .= '<description_complete><![CDATA['.apply_filters( 'the_content', $description_complete ).']]></description_complete>' . "\n"; //Info durable
-		$buffer_partners .= '<url>'.get_permalink($campaign->ID).'</url>' . "\n"; //TNP
-		$buffer_partners .= '<url_photo>'.$campaign->get_home_picture_src().'</url_photo>' . "\n"; //TNP
+		$buffer_partners .= '<url><![CDATA['.get_permalink($campaign->ID).']]></url>' . "\n"; //TNP
+		$buffer_partners .= '<url_photo><![CDATA['.$campaign->get_home_picture_src().']]></url_photo>' . "\n"; //TNP
 		$buffer_partners .= '<date_debut_collecte>'.$campaign->begin_collecte_date('Y-m-d').'</date_debut_collecte>' . "\n"; //TNP :: YYYY-MM-DD 
 		$buffer_partners .= '<date_fin_collecte>'.$campaign->end_date('Y-m-d').'</date_fin_collecte>' . "\n"; //TNP :: YYYY-MM-DD 
 		$buffer_partners .= '<nb_jours_restants>'.$campaign->days_remaining().'</nb_jours_restants>' . "\n";
