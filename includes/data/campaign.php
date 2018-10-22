@@ -2623,6 +2623,21 @@ class ATCF_Campaign {
 		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
 		if ( !empty( $investment_contracts ) ) {
 			$investments_list = array();
+			
+			// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
+			$adjustement_turned_into_turnover = 0;
+			if ( $declaration->get_adjustment_value() > 0 ) {
+				// Pour transformer l'ajustement en CA, il faut avoir le nombre de contrats actifs pris en compte et en additionner le pourcentage de CA
+				$total_turnover_percent = 0;
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+						$total_turnover_percent += $investment_contract->turnover_percent;
+					}
+				}
+				$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
+			}
+			
+			// Détermination des montants par contrat
 			foreach ( $investment_contracts as $investment_contract ) {
 				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
 					$investor_id = 0;
@@ -2639,8 +2654,10 @@ class ATCF_Campaign {
 						'user'			=> $investor_id
 					);
 					
-					// Calcul du montant à récupérer en roi
-					$investor_proportion_amount = floor( $roi_amount * $investment_contract->turnover_percent ) / 100; //10.50
+					// Calcul du montant à récupérer en roi à partir du pourcentage du CA
+					$investor_proportion_amount = floor( $declaration->get_turnover_total() * $investment_contract->turnover_percent ) / 100; //10.50
+					// Ajout du montant de royalties lié à l'ajustement
+					$investor_proportion_amount += round( $adjustement_turned_into_turnover * $investment_contract->turnover_percent ) / 100; //10.50
 					// Calcul de la commission sur le roi de l'utilisateur
 					$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
 					// Et arrondi
