@@ -328,12 +328,12 @@ class WDGUserInvestments {
 /*******************************************************************************
  * Gestion des paiements par carte en attente
 *******************************************************************************/
-	public function try_pending_card_investments() {
+	public function try_pending_card_investments( $force = FALSE ) {
 		// Parcourir tous les investissements en attente pour cet utilisateur, déclencher le paiement et valider l'investissement
 		$pending_investments = $this->get_pending_investments();
 		foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
 			$investment_campaign = new ATCF_Campaign( $campaign_id );
-			if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+			if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $force ) {
 				foreach ( $campaign_investments as $investment_id ) {
 					$wdg_investment = new WDGInvestment( $investment_id );
 					$investment_key = $wdg_investment->get_payment_key();
