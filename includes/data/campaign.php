@@ -1023,6 +1023,25 @@ class ATCF_Campaign {
 		}
 	    return json_decode($buffer, TRUE);
 	}
+	
+	public function yield_for_investors() {
+		$estimated_turnover_list = $this->estimated_turnover();
+		$estimated_turnover_total = 0;
+		if ( !empty( $estimated_turnover_list ) ){
+			foreach ( $estimated_turnover_list as $key => $turnover ) {
+				$estimated_turnover_total += $turnover;
+			}
+		}
+		
+		$roi_percent_estimated = $this->roi_percent_estimated();
+		$roi_amount_estimated = $estimated_turnover_total * $roi_percent_estimated / 100;
+				
+		$goal = $this->goal( false );
+		$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		
+		return $buffer;
+	}
+	
 	public static $key_turnover_per_declaration = 'turnover_per_declaration';
 	public function get_turnover_per_declaration() {
 		$buffer = $this->get_api_data( 'turnover_per_declaration' );
@@ -1032,7 +1051,6 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) { $buffer = 3; }
 		return $buffer;
 	}
-	
 	
 	
 	public function payment_list() {

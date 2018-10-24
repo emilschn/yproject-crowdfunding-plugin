@@ -222,6 +222,10 @@ class WDGCronActions {
 		//Données complémentaires pour mon petit voisinage
 		$buffer_partners .= '<latitude>'.$organization_obj->get_latitude().'</latitude>' . "\n";
 		$buffer_partners .= '<longitude>'.$organization_obj->get_longitude().'</longitude>' . "\n";
+		
+		//Données complémentaires pour Eazinvest
+		$buffer_partners .= '<periodicite><![CDATA[trimestriel]]></periodicite>' . "\n";
+		$buffer_partners .= '<rendement_pourcent>'.$campaign->yield_for_investors().'</rendement_pourcent>' . "\n";
 
 
 		$buffer_partners .= '</projet>' . "\n";
