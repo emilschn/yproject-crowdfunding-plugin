@@ -19,6 +19,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
+		WDGAjaxActions::add_action('get_searchable_projects_list');
 		
 		WDGAjaxActions::add_action('display_roi_user_list');
 		WDGAjaxActions::add_action('show_project_money_flow');
@@ -97,6 +98,51 @@ class WDGAjaxActions {
 		
 		exit();
 	}
+	
+	/**
+	 * Retourne la liste des projets qui peuvent être recherchés
+	 */
+	public static function get_searchable_projects_list() {
+		ypcf_debug_log( 'get_searchable_projects_list' );
+		$WDG_cache_plugin = new WDG_Cache_Plugin();
+		
+		$projects_searchable = array();
+		$cache_projects_searchable = $WDG_cache_plugin->get_cache( 'ATCF_Campaign::list_projects_searchable_1', 3 );
+		if ( $cache_projects_searchable !== FALSE ) {
+			$projects_searchable = json_decode( $cache_projects_searchable );
+			$index = 2;
+			$cache_projects_searchable = $WDG_cache_plugin->get_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, 3 );
+			while ( $cache_projects_searchable != FALSE ) {
+				$temp_projects_searchable = json_decode( $cache_projects_searchable );
+				$projects_searchable = array_merge( $projects_searchable, $temp_projects_searchable );
+				$index++;
+				$cache_projects_searchable = $WDG_cache_plugin->get_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, 3 );
+			}
+			$buffer = json_encode( $projects_searchable );
+			
+		} else {
+			$projects_searchable = ATCF_Campaign::list_projects_searchable();
+			$count_projects_searchable = count( $projects_searchable );
+			$index = 1;
+			$list_to_cache = array();
+			for ( $i = 0; $i < $count_projects_searchable; $i++ ) {
+				array_push( $list_to_cache, $projects_searchable[ $i ] );
+				if ( $i % 10 == 0 ) {
+					$projects_searchable_encoded = json_encode( $list_to_cache );
+					$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h
+					$index++;
+					$list_to_cache = array();
+				}
+			}
+			// Sauvegarde des restants
+			$projects_searchable_encoded = json_encode( $list_to_cache );
+			$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h
+			$buffer = json_encode( $projects_searchable );
+		}
+		
+		echo $buffer;
+		exit();
+	}
     
 	/**
 	 * Affiche la liste des utilisateurs d'un projet qui doivent récupérer de l'argent de leur investissement
@@ -108,10 +154,12 @@ class WDGAjaxActions {
 		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
 			$declaration = new WDGROIDeclaration($declaration_id);
 		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+		    $total_amount = 0;
 		    $total_roi = 0;
 		    $total_fees = 0;
 		    $investments_list = $campaign->roi_payments_data( $declaration );
 		    foreach ($investments_list as $investment_item) {
+			    $total_amount += $investment_item['amount'];
 			    $total_fees += $investment_item['roi_fees'];
 			    $total_roi += $investment_item['roi_amount']; 
 			    $user_data = get_userdata($investment_item['user']);
@@ -130,7 +178,7 @@ class WDGAjaxActions {
 			?>
 		    <tr>
 				<td><strong>Total</strong></td>
-				<td><?php echo $campaign->current_amount(FALSE); ?> &euro;</td>
+				<td><?php echo $total_amount; ?> &euro;</td>
 				<td><?php echo $total_roi; ?> &euro;</td>
 				<td><?php echo $total_fees; ?> &euro;</td>
 			</tr>
@@ -246,30 +294,29 @@ class WDGAjaxActions {
 	 * Enregistre les informations liées à l'utilisateur
 	 */
 	public static function save_user_infos() {
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$campaign = new ATCF_Campaign($campaign_id);
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$campaign = new ATCF_Campaign( $campaign_id );
 		$current_user = WDGUser::current();
-		$email = filter_input(INPUT_POST, 'email');
-		$gender = filter_input(INPUT_POST, 'gender');
-		$firstname = filter_input(INPUT_POST, 'firstname');
-		$lastname = filter_input(INPUT_POST, 'lastname');
-		$birthday_day = filter_input(INPUT_POST, 'birthday_day');
-		$birthday_month = filter_input(INPUT_POST, 'birthday_month');
-		$birthday_year = filter_input(INPUT_POST, 'birthday_year');
-		$birthplace = filter_input(INPUT_POST, 'birthplace');
-		$nationality = filter_input(INPUT_POST, 'nationality');
-		$address = filter_input(INPUT_POST, 'address');
-		$postal_code = filter_input(INPUT_POST, 'postal_code');
-		$city = filter_input(INPUT_POST, 'city');
-		$country = filter_input(INPUT_POST, 'country');
-		$telephone = filter_input(INPUT_POST, 'telephone');
-		$current_user->save_data($email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+		$email = filter_input( INPUT_POST, 'email' );
+		$gender = filter_input( INPUT_POST, 'gender' );
+		$firstname = filter_input( INPUT_POST, 'firstname' );
+		$lastname = filter_input( INPUT_POST, 'lastname' );
+		$birthday_day = filter_input( INPUT_POST, 'birthday_day' );
+		$birthday_month = filter_input( INPUT_POST, 'birthday_month' );
+		$birthday_year = filter_input( INPUT_POST, 'birthday_year' );
+		$birthplace = filter_input( INPUT_POST, 'birthplace' );
+		$nationality = filter_input( INPUT_POST, 'nationality' );
+		$address = filter_input( INPUT_POST, 'address' );
+		$postal_code = filter_input( INPUT_POST, 'postal_code' );
+		$city = filter_input( INPUT_POST, 'city' );
+		$country = filter_input( INPUT_POST, 'country' );
+		$telephone = filter_input( INPUT_POST, 'telephone' );
+		$current_user->save_data( $email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone );
 
 		$is_project_holder = false;
-		if (filter_input(INPUT_POST, 'is_project_holder')=="1"){$is_project_holder = true;}
+		if ( filter_input( INPUT_POST, 'is_project_holder' )== '1' ) { $is_project_holder = true; }
 
-		if ($current_user->has_filled_invest_infos($campaign->funding_type()) &&
-			filter_input(INPUT_POST, 'invest_type')!='') {
+		if ( $current_user->has_filled_invest_infos( $campaign->funding_type() ) && filter_input( INPUT_POST, 'invest_type' ) != '' ) {
 			WDGAjaxActions::check_invest_input();
 		} else {
 			global $user_can_invest_errors;
@@ -2158,8 +2205,14 @@ class WDGAjaxActions {
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded
 					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive
 					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+				
 				// Transfert des données d'investissement sur l'API
-				WDGInvestment::save_campaign_to_api( $campaign );
+				if ( !$campaign->has_investments_in_api() ) {
+					WDGInvestment::save_campaign_to_api( $campaign );
+				}
+				
+				// Transformer les investissements en contrats d'investissement sur l'API
+				WDGInvestmentContract::create_list( $campaign_id );
 
 				// TODO : rassembler les contrats dans un zip
 			}

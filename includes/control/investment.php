@@ -818,8 +818,8 @@ class WDGInvestment {
 			exit();
 			
 		} else {
-			ypcf_debug_log( 'WDGInvestment::try_payment_card > error' );
-			array_push( $this->error, $return );
+			ypcf_debug_log( 'WDGInvestment::try_payment_card > error - ' .LemonwayLib::get_last_error_code(). ' - ' .LemonwayLib::get_last_error_message() );
+			array_push( $this->error, LemonwayLib::get_last_error_code(). ' - ' .LemonwayLib::get_last_error_message() );
 			return FALSE;
 		}
 	}

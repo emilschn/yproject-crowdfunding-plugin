@@ -259,11 +259,24 @@ class LemonwayNotification {
 		
 		// - Trouver l'utilisateur à partir de son identifiant externe
 		$WDGUser_invest_author = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
+		$WDGOrga_invest_author = false;
+		if ( WDGOrganization::is_user_organization( $WDGUser_invest_author->get_wpref() ) ) {
+			$WDGOrga_invest_author = new WDGOrganization( $WDGUser_invest_author->get_wpref() );
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_invest_author = $linked_users_creator[ 0 ];
+			}
+		}
 		if ( $WDGUser_invest_author !== FALSE ) {
 			// - Parcourir ses paiements et trouver un investissement en attente correspondant au montant et de type virement
 			$investment_id = FALSE;
 			$investment_campaign_id = FALSE;
-			$investments_by_campaign = $WDGUser_invest_author->get_pending_investments();
+			if ( !empty( $WDGOrga_invest_author ) ) {
+				$investments_by_campaign = $WDGOrga_invest_author->get_pending_investments();
+			} else {
+				$investments_by_campaign = $WDGUser_invest_author->get_pending_investments();
+			}
+			
 			$trace = '';
 			foreach ( $investments_by_campaign as $campaign_id => $campaign_investments ) {
 				$trace .= 'A';
@@ -294,12 +307,12 @@ class LemonwayNotification {
 				$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_author = $WDGUser_invest_author;
 				ypcf_debug_log( 'PROCESS -> $WDGUser_invest_author->wp_user->ID = ' . $WDGUser_invest_author->wp_user->ID );
-
-				if ( WDGOrganization::is_user_organization($WDGUser_invest_author->wp_user->ID) ) {
-					$invest_author = new WDGOrganization( $WDGUser_invest_author->wp_user->ID );
-				}
 				ypcf_debug_log( 'PROCESS -> $invest_author = ' . $invest_author->wp_user->ID );
-				LemonwayLib::ask_transfer_funds( $invest_author->get_lemonway_id(), $organization_obj->get_lemonway_id(), $lemonway_posted_amount );
+				$lemonway_id = $WDGUser_invest_author->get_lemonway_id();
+				if ( !empty( $WDGOrga_invest_author ) ) {
+					$lemonway_id = $WDGOrga_invest_author->get_lemonway_id();
+				}
+				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_lemonway_id(), $lemonway_posted_amount );
 				
 				$postdata = array(
 					'ID'			=> $investment_id,
@@ -315,18 +328,20 @@ class LemonwayNotification {
 					if ($contract_id != '') {
 						$contract_infos = signsquid_get_contract_infos( $contract_id );
 						NotificationsEmails::new_purchase_user_success( $investment_id, $contract_infos->{'signatories'}[0]->{'code'}, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						NotificationsEmails::new_purchase_admin_success( $investment_id );
+						NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 					} else {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
 						NotificationsEmails::new_purchase_user_error_contract( $investment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 						NotificationsEmails::new_purchase_admin_error_contract( $investment_id );
+						NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 					}
 				} else {
 					$new_contract_pdf_file = getNewPdfToSign( $investment_campaign_id, $investment_id, $WDGUser_invest_author->wp_user->ID );
 					NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-					NotificationsEmails::new_purchase_admin_success_nocontract( $investment_id, $new_contract_pdf_file );
+					NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				}
+				NotificationsEmails::new_purchase_team_members( $investment_id );
 			} else {
 				NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Virement reçu - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
 			}

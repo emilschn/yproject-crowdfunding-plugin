@@ -536,8 +536,12 @@ class ATCF_Campaign {
  ******************************************************************************/
     // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
+    public static $key_backoffice_contract_agreement = 'campaign_backoffice_contract_agreement';
     public function backoffice_contract_orga() {
         return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
+    }
+    public function backoffice_contract_agreement() {
+        return $this->__get( ATCF_Campaign::$key_backoffice_contract_agreement );
     }
 	public function generate_contract_pdf_blank_organization() {
 		$filename = 'blank-contract-organization-'.$this->ID.'.pdf';
@@ -548,11 +552,25 @@ class ATCF_Campaign {
 		if ( getNewPdfToSign( $this->ID, FALSE, 'orga', $filepath ) != FALSE ) {
 			$this->__set( ATCF_Campaign::$key_backoffice_contract_orga, $filename );
 		}
+		
+		$filename_agreement = 'blank-contract-agreement-'.$this->ID.'.pdf';
+		$filepath_agreement = __DIR__ . '/../contracts/' . $filename_agreement;
+		if ( file_exists( $filepath_agreement ) ) {
+			unlink( $filepath_agreement );
+		}
+		if ( getNewPdfToSign( $this->ID, FALSE, 'orga', $filepath_agreement, TRUE ) != FALSE ) {
+			$this->__set( ATCF_Campaign::$key_backoffice_contract_agreement, $filename_agreement );
+		}
 	}
 	
     public static $key_backoffice_contract_modifications = 'campaign_contract_modifications';
 	public function contract_modifications() {
         return $this->__get( ATCF_Campaign::$key_backoffice_contract_modifications );
+	}
+	
+    public static $key_agreement_bundle = 'campaign_agreement_bundle';
+	public function agreement_bundle() {
+        return $this->__get( ATCF_Campaign::$key_agreement_bundle );
 	}
 	
 	// Contrat : descriptions des revenus, des dépenses
@@ -900,6 +918,9 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
+	/**
+	 * Pourcentage de royalties si la campagne atteint le maximum indiqué
+	 */
     public static $key_roi_percent_estimated = 'campaign_roi_percent_estimated';
 	public function roi_percent_estimated() {
 		$buffer = $this->get_api_data( 'roi_percent_estimated' );
@@ -911,6 +932,9 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+	/**
+	 * Pourcentage de royalties engagé, en fonction du montant atteint
+	 */
 	public static $key_roi_percent = 'campaign_roi_percent';
 	public function roi_percent() {
 		$buffer = $this->__get( ATCF_Campaign::$key_roi_percent );
@@ -918,6 +942,25 @@ class ATCF_Campaign {
 			$buffer = 0;
 		}
 	    return $buffer;
+	}
+	/**
+	 * Pourcentage de royalties restant (sur la liste des contrats en cours)
+	 */
+	public function roi_percent_remaining() {
+		$buffer = 0;
+		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
+		if ( !empty( $investment_contracts ) ) {
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+					$buffer += $investment_contract->turnover_percent;
+				}
+			}
+			
+		} else {
+			$buffer = $this->roi_percent();
+
+		}
+		return $buffer;
 	}
 
     public static $key_contract_start_date = 'campaign_contract_start_date';
@@ -980,6 +1023,25 @@ class ATCF_Campaign {
 		}
 	    return json_decode($buffer, TRUE);
 	}
+	
+	public function yield_for_investors() {
+		$estimated_turnover_list = $this->estimated_turnover();
+		$estimated_turnover_total = 0;
+		if ( !empty( $estimated_turnover_list ) ){
+			foreach ( $estimated_turnover_list as $key => $turnover ) {
+				$estimated_turnover_total += $turnover;
+			}
+		}
+		
+		$roi_percent_estimated = $this->roi_percent_estimated();
+		$roi_amount_estimated = $estimated_turnover_total * $roi_percent_estimated / 100;
+				
+		$goal = $this->goal( false );
+		$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		
+		return $buffer;
+	}
+	
 	public static $key_turnover_per_declaration = 'turnover_per_declaration';
 	public function get_turnover_per_declaration() {
 		$buffer = $this->get_api_data( 'turnover_per_declaration' );
@@ -989,7 +1051,6 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) { $buffer = 3; }
 		return $buffer;
 	}
-	
 	
 	
 	public function payment_list() {
@@ -1029,7 +1090,7 @@ class ATCF_Campaign {
 	    update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
 	
-	public function generate_missing_declarations( $month_count = 3 ) {
+	public function generate_missing_declarations( $month_count = 3, $declarations_limit = FALSE ) {
 		// Calcul du nombre de déclarations que devra faire le projet
 		$nb_in_a_year = 12 / $month_count;
 		$funding_duration = $this->funding_duration();
@@ -1038,7 +1099,10 @@ class ATCF_Campaign {
 		}
 		$nb_declarations = $funding_duration * $nb_in_a_year;
 		
-		if ( isset( $nb_declarations ) && $nb_declarations > 0 ) {
+		// Permet de rajouter des déclarations si nécessaires
+		$count_added_declaration = 0;
+		
+		if ( ( isset( $nb_declarations ) && $nb_declarations > 0 ) || !empty( $declarations_limit ) ) {
 			// Récupération des déclarations existantes
 			$existing_roi_declarations = $this->get_roi_declarations();
 			// On part de la date de début de versement
@@ -1053,8 +1117,21 @@ class ATCF_Campaign {
 				}
 				if ( $add_date ) {
 					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
+					$count_added_declaration++;
+				}
+				if ( !empty( $declarations_limit ) && $count_added_declaration >= $declarations_limit ) {
+					break;
 				}
 				$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
+			}
+			
+			// Si il faut ajouter des déclarations
+			if ( !empty( $declarations_limit ) ) {
+				while ( $count_added_declaration < $declarations_limit ) {
+					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
+					$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
+					$count_added_declaration++;
+				}
 			}
 		}
 	}
@@ -1067,25 +1144,28 @@ class ATCF_Campaign {
 			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->ID );
 			foreach ( $declaration_list as $declaration_item ) {
 				$buffer_declaration_object = array();
-				$buffer_declaration_object["id"] = $declaration_item->id;
-				$buffer_declaration_object["item"] = $declaration_item;
-				$buffer_declaration_object["project"] = $this->ID;
-				$buffer_declaration_object["date_due"] = $declaration_item->date_due;
-				$buffer_declaration_object["date_transfer"] = $declaration_item->date_transfer;
-				$buffer_declaration_object["total_turnover"] = $declaration_item->get_turnover_total();
-				$buffer_declaration_object["total_roi"] = $declaration_item->amount;
-				$buffer_declaration_object["total_roi_with_adjustment"] = $declaration_item->get_amount_with_adjustment();
-				$buffer_declaration_object["status"] = $declaration_item->status;
-				$buffer_declaration_object["roi_list"] = array();
+				$buffer_declaration_object['id'] = $declaration_item->id;
+				$buffer_declaration_object['item'] = $declaration_item;
+				$buffer_declaration_object['project'] = $this->ID;
+				$buffer_declaration_object['date_due'] = $declaration_item->date_due;
+				$buffer_declaration_object['date_transfer'] = $declaration_item->date_transfer;
+				$buffer_declaration_object['total_turnover'] = $declaration_item->get_turnover_total();
+				$buffer_declaration_object['total_roi'] = $declaration_item->amount;
+				$buffer_declaration_object['total_roi_with_adjustment'] = $declaration_item->get_amount_with_adjustment();
+				$buffer_declaration_object['status'] = $declaration_item->status;
+				$buffer_declaration_object['roi_list'] = array();
+				$buffer_declaration_object['roi_list_by_investment_id'] = array();
 				if ( $declaration_item->status == WDGROIDeclaration::$status_finished ) {
 					$roi_list = $declaration_item->get_rois();
 					foreach ( $roi_list as $roi_item ) {
 						$roi_object = array();
-						$roi_user = new WP_User( $roi_item->id_user );
-						$roi_object["id"] = $roi_item->id;
-						$roi_object["user_email"] = $roi_user->user_email;
-						$roi_object["amount"] = $roi_item->amount;
+						$roi_object['id'] = $roi_item->id;
+						$roi_object['amount'] = $roi_item->amount;
+						$roi_object['recipient_type'] = $roi_item->recipient_type;
+						$roi_object['recipient_api_id'] = $roi_item->id_user;
+						$roi_object['id_investment'] = $roi_item->id_investment;
 						array_push( $buffer_declaration_object["roi_list"], $roi_object );
+						$buffer_declaration_object['roi_list_by_investment_id'][ $roi_item->id_investment ] = $roi_object;
 					}
 				}
 				array_push( $this->roi_declarations, $buffer_declaration_object );
@@ -2280,6 +2360,19 @@ class ATCF_Campaign {
 		return false;
 	}
 	
+	public function has_investment_contracts_in_api() {
+		return ( !empty( $this->api_data->investment_contracts ) );
+	}
+
+
+	/**
+	 * Détermine si les investissements ont déjà été transférés sur l'API
+	 * @return boolean
+	 */
+	public function has_investments_in_api() {
+		return ( !empty( $this->api_data->investments ) );
+	}
+	
 	/**
 	 * Return payments data. 
 	 * This function is very slow, it is advisable to use it as few as possible
@@ -2291,7 +2384,7 @@ class ATCF_Campaign {
 		
 			$this->payments_data = array();
 		
-			if ( !empty( $this->api_data->investments ) ) {
+			if ( $this->has_investments_in_api() ) {
 				foreach ( $this->api_data->investments as $investment_item ) {
 					
 					if ( $investment_item->status != 'failed' ) {
@@ -2536,27 +2629,85 @@ class ATCF_Campaign {
 	 */
 	public function roi_payments_data( $declaration, $transfer_remaining_amount = false ) {
 		$buffer = array();
-		$investments_list = $this->payments_data(TRUE);
+		
 		//Calculs des montants à reverser
 		$total_amount = $this->current_amount(FALSE);
 		$roi_amount = $declaration->get_amount_with_adjustment();
 		if ( $transfer_remaining_amount ) {
 			$roi_amount += $declaration->get_previous_remaining_amount();
 		}
-		foreach ($investments_list as $investment_item) {
-			//Calcul de la part de l'investisseur dans le total
-			$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
-			//Calcul du montant à récupérer en roi
-			$investor_proportion_amount = floor($roi_amount * $investor_proportion * 100) / 100; //10.50
-			//Calcul de la commission sur le roi de l'utilisateur
-			$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
-			//Et arrondi
-			$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
-			$investment_item['roi_fees'] = $fees;
-			//Reste à verser pour l'investisseur
-			$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
-			$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
-			array_push($buffer, $investment_item);
+		
+		// Récupération de la liste des investissements concernés
+		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
+		if ( !empty( $investment_contracts ) ) {
+			$investments_list = array();
+			
+			// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
+			$adjustement_turned_into_turnover = 0;
+			if ( $declaration->get_adjustment_value() > 0 ) {
+				// Pour transformer l'ajustement en CA, il faut avoir le nombre de contrats actifs pris en compte et en additionner le pourcentage de CA
+				$total_turnover_percent = 0;
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+						$total_turnover_percent += $investment_contract->turnover_percent;
+					}
+				}
+				$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
+			}
+			
+			// Détermination des montants par contrat
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+					$investor_id = 0;
+					if ( $investment_contract->investor_type == 'user' ) {
+						$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+						$investor_id = $WDGUser->get_wpref();
+					} else {
+						$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+						$investor_id = $WDGOrganization->get_wpref();
+					}
+					$investment_item = array(
+						'ID'			=> $investment_contract->subscription_id,
+						'amount'		=> $investment_contract->subscription_amount,
+						'user'			=> $investor_id
+					);
+					
+					// Calcul du montant à récupérer en roi à partir du pourcentage du CA
+					$investor_proportion_amount = floor( $declaration->get_turnover_total() * $investment_contract->turnover_percent ) / 100; //10.50
+					// Ajout du montant de royalties lié à l'ajustement
+					$investor_proportion_amount += round( $adjustement_turned_into_turnover * $investment_contract->turnover_percent ) / 100; //10.50
+					// Calcul de la commission sur le roi de l'utilisateur
+					$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+					// Et arrondi
+					$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+					$investment_item['roi_fees'] = $fees;
+					// Reste à verser pour l'investisseur
+					$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
+					$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+				
+					array_push( $buffer, $investment_item );
+				}
+			}
+			
+		} else {
+			$investments_list = $this->payments_data(TRUE);
+		
+			// Parcours
+			foreach ($investments_list as $investment_item) {
+				// Calcul de la part de l'investisseur dans le total
+				$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
+				// Calcul du montant à récupérer en roi
+				$investor_proportion_amount = floor( $roi_amount * $investor_proportion * 100 ) / 100; //10.50
+				// Calcul de la commission sur le roi de l'utilisateur
+				$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+				// Et arrondi
+				$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+				$investment_item['roi_fees'] = $fees;
+				// Reste à verser pour l'investisseur
+				$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
+				$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+				array_push($buffer, $investment_item);
+			}
 		}
 	    
 		return $buffer;
@@ -2565,21 +2716,11 @@ class ATCF_Campaign {
 	public function manage_jycrois($user_id = FALSE) {
 		global $wpdb;
 		$table_jcrois = $wpdb->prefix . "jycrois";
-		
 
-		// Construction des urls utilisés dans les liens du fil d'actualité
-		// url d'une campagne précisée par son nom 
-		$campaign_url = get_permalink($_POST['id_campaign']);
-		$post_campaign = get_post($_POST['id_campaign']);
-		$post_title = $post_campaign->post_title;
-		$url_campaign = '<a href="'.$campaign_url.'">'.$post_title.'</a>';
-
-		//url d'un utilisateur précis
-		$user_item = ($user_id === FALSE) ? wp_get_current_user() : get_userdata($user_id);
-		$user_id = $user_item->ID;
-		$user_display_name = $user_item->display_name;
-		$url_profile = $user_display_name;
-		$user_avatar = UIHelpers::get_user_avatar($user_id);
+		if ( empty( $user_id ) ) {
+			$user_item = wp_get_current_user();
+			$user_id = $user_item->ID;
+		}
 
 		//J'y crois
 		if(isset($_POST['jy_crois']) && $_POST['jy_crois'] == 1){
@@ -2879,7 +3020,19 @@ class ATCF_Campaign {
 		return get_posts( $query_options );
 	}
 	
-	
+	public static function get_list_current_hidden( $type ) {
+		$query_options = array(
+			'numberposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_query' => array (
+				array ( 'key' => 'campaign_vote', 'value' => $type ),
+				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') ),
+				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'EXISTS' )
+			)
+		);
+		return get_posts( $query_options );
+	}
 	
 	
 	

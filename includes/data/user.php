@@ -34,6 +34,7 @@ class WDGUser {
 	private $email;
 	private $phone_number;
 	private $description;
+	private $contact_if_deceased;
 	private $bank_iban;
 	private $bank_bic;
 	private $bank_holdername;
@@ -92,6 +93,7 @@ class WDGUser {
 					$this->email = $this->api_data->email;
 					$this->phone_number = $this->api_data->phone_number;
 					$this->description = $this->api_data->description;
+					$this->contact_if_deceased = $this->api_data->contact_if_deceased;
 					$this->bank_iban = $this->api_data->bank_iban;
 					$this->bank_bic = $this->api_data->bank_bic;
 					$this->bank_holdername = $this->api_data->bank_holdername;
@@ -358,7 +360,10 @@ class WDGUser {
 				// On le transforme en iso3
 				if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
 					$buffer = $country_list_iso2_to_iso3[ $iso2_key ];
+				} else if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
+					$buffer = $country_list_iso2_to_iso3[ $buffer ];
 				}
+				
 			} else if ( $format == 'iso2' ) {
 				if ( !empty( $iso2_key ) ) {
 					$buffer = $iso2_key;
@@ -437,6 +442,11 @@ class WDGUser {
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('description');
 		}
+		return $buffer;
+	}
+	
+	public function get_contact_if_deceased() {
+		$buffer = $this->contact_if_deceased;
 		return $buffer;
 	}
 	
@@ -530,7 +540,7 @@ class WDGUser {
 	public function get_amount_voted_on_campaign( $campaign_id ) {
 		global $wpdb;
 		$buffer = 0;
-		$table_name = $wpdb->prefix . "ypcf_project_votes";
+		$table_name = $wpdb->prefix . 'ypcf_project_votes';
 		$hasvoted_results = $wpdb->get_results( 'SELECT id, invest_sum FROM '.$table_name.' WHERE post_id = '.$campaign_id.' AND user_id = '.$this->get_wpref() );
 		if ( !empty( $hasvoted_results[0]->id ) ) {
 			$buffer = $hasvoted_results[0]->invest_sum;
@@ -554,13 +564,28 @@ class WDGUser {
 		return $this->has_invested_by_campaign[ $campaign_id ];
 	}
 	
+	public function get_campaigns_followed() {
+		$buffer = array();
+		
+		global $wpdb;
+		$table = $wpdb->prefix . 'jycrois';
+		$campaigns_followed = $wpdb->get_results( 'SELECT campaign_id FROM ' .$table. ' WHERE user_id=' .$this->get_wpref() );
+		
+		foreach ( $campaigns_followed as $campaign_item ) {
+			$campaign = new ATCF_Campaign( $campaign_item->campaign_id );
+			$buffer[ $campaign_item->campaign_id ] = $campaign->get_name();
+		}
+		
+		return $buffer;
+	}
+	
 /*******************************************************************************
  * Fonctions de sauvegarde
 *******************************************************************************/
 	/**
 	 * Enregistre les données nécessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description = '', $contact_if_deceased = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
@@ -627,6 +652,9 @@ class WDGUser {
 		if ( !empty( $description ) ) {
 			$this->description = $description;
 			$this->save_meta( 'description', $description );
+		}
+		if ( !empty( $contact_if_deceased ) ) {
+			$this->contact_if_deceased = $contact_if_deceased;
 		}
 		
 		$this->update_api();

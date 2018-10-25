@@ -75,9 +75,24 @@ class WDGFormProjects {
 			$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
 			$campaign = new ATCF_Campaign( $campaign_id );
 			
-			$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
-			NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-			NotificationsEmails::new_purchase_admin_success_nocontract( $approve_payment_id, $new_contract_pdf_file );
+			if ( $amount > 1500 ) {
+				$contract_id = ypcf_create_contract( $approve_payment_id, $campaign_id, $user_info['id'] );
+				if ($contract_id != '') {
+					$contract_infos = signsquid_get_contract_infos( $contract_id );
+					NotificationsEmails::new_purchase_user_success( $approve_payment_id, $contract_infos->{'signatories'}[0]->{'code'}, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+				} else {
+					global $contract_errors;
+					$contract_errors = 'contract_failed';
+					NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+					NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
+					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+				}
+			} else {
+				$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
+				NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+			}
 			
 			do_action('wdg_delete_cache', array(
 				'home-projects',
@@ -264,8 +279,8 @@ class WDGFormProjects {
 		if ( !$has_error ) {
 			$declaration->set_turnover($saved_declaration);
 			$declaration->percent_commission = $campaign->get_costs_to_organization();
-			$declaration->amount = round( ($total_turnover * $campaign->roi_percent() / 100) * 100 ) / 100;
-			if ($declaration->amount == 0) {
+			$declaration->amount = round( ($total_turnover * $campaign->roi_percent_remaining() / 100) * 100 ) / 100;
+			if ( $declaration->get_amount_with_adjustment() == 0 ) {
 				NotificationsEmails::turnover_declaration_null( $declaration_id );
 				$declaration->status = WDGROIDeclaration::$status_transfer;
 			} else {

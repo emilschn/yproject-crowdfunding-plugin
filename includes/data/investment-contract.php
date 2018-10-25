@@ -1,238 +1,199 @@
 <?php
+/**
+ * Gestion des contrats d'investissement
+ */
 class WDGInvestmentContract {
+	private $api_id;
+	private $api_data;
+	public $investor_id;
+	public $investor_type;
+	public $project_id;
+	public $organization_id;
+	public $subscription_id;
+	public $subscription_date;
+	public $subscription_amount;
+	public $status;
+	public $start_date;
+	public $end_date;
+	public $frequency;
+	public $turnover_type;
+	public $turnover_percent;
+	public $amount_received;
+	public $minimum_to_receive;
+	public $maximum_to_receive;
 	
-	/**
-	 * Gestion contrats
-	 */
-	private $payment_id;
-	private $payment_amount;
-	private $signsquid_contract_id;
-	private $yousign_contract_id;
+	public static $investor_type_user = 'user';
+	public static $investor_type_orga = 'organization';
 	
-	public static $signature_minimum_amount = 1500;
+	public static $status_active = 'active';
+	public static $status_canceled = 'canceled';
+	public static $status_finished = 'finished';
 	
-	public function __construct( $payment_id ) {
-		$this->payment_id = $payment_id;
-		$this->payment_amount = edd_get_payment_amount( $this->payment_id );
-		$this->signsquid_contract_id = get_post_meta( $payment_id, 'signsquid_contract_id', true );
-		$this->yousign_contract_id = get_post_meta( $payment_id, 'yousign_contract_id', true );
-	}
+	public static $frequency_default = 3;
 	
-	/**
-	 * Retourne vrai si un contrat a déjà été créé chez un prestataire
-	 * @return boolean
-	 */
-	public function exists() {
-		return ( $this->is_signsquid_contract() || $this->is_yousign_contract() );
-	}
+	public static $turnover_type_overall = 'overall';
+	public static $turnover_type_limited = 'limited';
 	
-	public static $status_code_agreed = 'AGREED';
-	/**
-	 * Retourne une chaine qui indique le code de statut du contrat
-	 * @return string or boolean
-	 */
-	public function get_status_code() {
-		$buffer = FALSE;
-		if ( $this->is_signsquid_contract() ) {
-			$buffer = WDGInvestmentContract::$status_code_agreed;
-			
-		} elseif ( $this->is_yousign_contract() ) {
-			if ( $this->get_yousign_contract_status() ) {
-				$buffer = WDGInvestmentContract::$status_code_agreed;
-				
+	public function __construct( $api_id = FALSE, $api_data = FALSE ) {
+		if ( !empty( $api_id ) ) {
+			$this->api_id = $api_id;
+		}
+		
+		if ( !empty( $api_data ) ) {
+			$this->api_data = $api_data;
+		
+			// Initialisation des données à partir de celles de l'API
+			if ( empty( $this->api_id ) ) {
+				$this->api_id = $this->api_data->id;
 			}
-		}
-		
-		return $buffer;
-	}
-	
-	/**
-	 * Retourne le statut du contrat (signé ou non) en texte lisible
-	 */
-	public function get_status_str() {
-		$buffer = __( "Investissement valid&eacute;", 'yproject' );
-		if ( $this->is_signsquid_contract() ) {
-			$buffer = __( "Contrat sign&eacute;", 'yproject' );
 			
-		} elseif ( $this->is_yousign_contract() ) {
-			if ( $this->get_yousign_contract_status() ) {
-				$buffer = __( "Contrat sign&eacute;", 'yproject' );
-				
-			} else {
-				$buffer = __( "En attente de signature", 'yproject' );
-				
+		} else {
+			// Récupération dans l'API
+			$this->api_data = WDGWPREST_Entity_InvestmentContract::get( $this->api_id );
+		}
+		
+		if ( !empty( $this->api_data ) ) {
+			$this->investor_id = $this->api_data->investor_id;
+			$this->investor_type = $this->api_data->investor_type;
+			$this->project_id = $this->api_data->project_id;
+			$this->organization_id = $this->api_data->organization_id;
+			$this->subscription_id = $this->api_data->subscription_id;
+			$this->subscription_date = $this->api_data->subscription_date;
+			$this->subscription_amount = $this->api_data->subscription_amount;
+			$this->status = $this->api_data->status;
+			$this->start_date = $this->api_data->start_date;
+			$this->end_date = $this->api_data->end_date;
+			$this->frequency = $this->api_data->frequency;
+			$this->turnover_type = $this->api_data->turnover_type;
+			$this->turnover_percent = $this->api_data->turnover_percent;
+			$this->minimum_to_receive = $this->api_data->minimum_to_receive;
+			$this->maximum_to_receive = $this->api_data->maximum_to_receive;
+			$this->amount_received = $this->api_data->amount_received;
+		}
+	}
+	
+	public function create() {
+		WDGWPREST_Entity_InvestmentContract::create( $this );
+	}
+	
+	/**
+	 * Génère une liste de contrats d'investissement liés à une campagne
+	 * @param int $campaign_id
+	 */
+	public static function create_list( $campaign_id ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$investments = $campaign->payments_data();
+		$declarations = $campaign->get_roi_declarations();
+		
+		$investment_contracts = self::get_list( $campaign_id );
+		
+		
+		// Parcours de tous les investissements
+		foreach ( $investments as $investment ) {
+			// Si on est déjà passé dans la procédure, on ne le refait pas
+			$create_this_item = true;
+			if ( !empty( $investment_contracts ) ) {
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->subscription_id == $investment[ 'ID' ] ) {
+						$create_this_item = false;
+					}
+				}
 			}
-		}
-		
-		return $buffer;
-	}
-	
-	/**
-	 * Retourne l'identifiant du contrat sur Signsquid
-	 */
-	public function get_signsquid_contract_id() {
-		return $this->signsquid_contract_id;
-	}
-	
-	public function is_signsquid_contract() {
-		return ( !empty( $this->signsquid_contract_id ) );
-	}
-	
-	/**
-	 * Retourne l'identifiant du contrat sur Yousign
-	 */
-	public function get_yousign_contract_id() {
-		return $this->yousign_contract_id;
-	}
-	
-	public function is_yousign_contract() {
-		return ( !empty( $this->yousign_contract_id ) );
-	}
-	
-	public function get_yousign_contract_status() {
-		$buffer = FALSE;
-		
-		$client = WDGInvestmentContract::yousign_instance();
-		$result = $client->getCosignInfoFromIdDemand( $this->get_yousign_contract_id() );
-		$yousign_contract_status = $result[ 'status' ];
-		switch ( $yousign_contract_status ) {
-			// when the process is still waiting for one signature
-			case 'COSIGNATURE_EVENT_REQUEST_PENDING':
-				break;
-			// when all signers have signed
-			case 'COSIGNATURE_EVENT_OK':
-				$buffer = TRUE;
-				break;
-			// when someone is signing a document
-			case 'COSIGNATURE_EVENT_PROCESSING':
-				break;
-			// if the process has been cancelled
-			case 'COSIGNATURE_EVENT_CANCELLED':
-				break;
-			// if the signature process is finished and contains at least one error
-			case 'COSIGNATURE_EVENT_PARTIAL_ERROR': 
-				break;
-		}
-		
-		return $buffer;
-	}
-	
-	public function get_yousign_url() {
-		$buffer = FALSE;
-		
-		$client = WDGInvestmentContract::yousign_instance();
-		$result = $client->getCosignInfoFromIdDemand( $this->get_yousign_contract_id() );
-		ypcf_debug_log( 'WDGInvestmentContract::get_yousign_url > getCosignInfoFromIdDemand : ' . print_r( $result, TRUE ) );
-		if ( !empty( $result ) ) {
-			$yousign_contract_token = $result[ 'cosignerInfos' ][ 'token' ];
-		}
-		ypcf_debug_log( 'WDGInvestmentContract::get_yousign_url > $yousign_contract_token : ' . $yousign_contract_token );
-		if ( !empty( $yousign_contract_token ) ) {
-			$buffer = $client->getIframeUrl( $yousign_contract_token );
-		}
-		ypcf_debug_log( 'WDGInvestmentContract::get_yousign_url > $buffer : ' . $buffer );
-		
-		return $buffer;
-	}
-	
-	
-/******************************************************************************/
-/* FONCTIONS STATIQUES */
-/******************************************************************************/
-	/**
-	 * Création de contrat
-	 * @param int $payment_id
-	 * @param string $file_path
-	 * @param WDGUser $user_investor
-	 */
-	public static function create( $payment_id, $file_path, $user_investor ) {
-		// Liste des fichiers à signer
-		$list_files = array (
-			array (
-				'name'		=> basename( $file_path ),
-				'content'	=> base64_encode( file_get_contents( $file_path ) ),
-				'idFile'	=> $file_path
-			)
-		);
-		
-		// Création de la liste des signataires
-		$list_person = array (
-			array (
-				'firstName'				=> $user_investor->get_firstname(),
-				'lastName'				=> $user_investor->get_lastname(),
-				'mail'					=> $user_investor->get_email(),
-				'phone'					=> $user_investor->get_phone_number( TRUE ),
-				'proofLevel'			=> 'LOW',
-				'authenticationMode'	=> 'sms'
-			)
-		);
-		
-		
-		// Placement des signatures sur le document
-		$signature_options = array (
-			// Placement des signatures pour le document
-			$list_files[0]['idFile'] => array (
-				array (
-					'visibleSignaturePage'		=> '1',
-					'isVisibleSignature'		=> false,
-					'mail'						=> $list_person[0]['mail']
-				)
-			)
-		);
-		
-		// Message vide car on est en mode Iframe
-		$message = '';
-		
-		// Autres options
-		$options = array (
-			'mode'		=> 'IFRAME',
-			'archive'	=> false
-		);
-		
-		// Appel du client et récupération du résultat
-		$buffer = FALSE;
-		
-		try {
-			$client = WDGInvestmentContract::yousign_instance();
-			ypcf_debug_log( 'WDGInvestmentContract::create_contract > initCoSign > $list_files : ' . print_r( $list_files, TRUE ) );
-			ypcf_debug_log( 'WDGInvestmentContract::create_contract > initCoSign > $list_person : ' . print_r( $list_person, TRUE ) );
-			ypcf_debug_log( 'WDGInvestmentContract::create_contract > initCoSign > $signature_options : ' . print_r( $signature_options, TRUE ) );
-			$result = $client->initCoSign( $list_files, $list_person, $signature_options, $message, $options );
+			
+			if ( $create_this_item ) {
+				$investment_contract = new WDGInvestmentContract();
 
-			if ( empty( $result ) ) {
-				$yousign_errors = $client->getErrors();
-				ypcf_debug_log( 'WDGInvestmentContract::create_contract > ERROR > ' . print_r( $yousign_errors, TRUE ) );
+				// Initialisation de l'investisseur
+				if ( WDGOrganization::is_user_organization( $investment[ 'user' ] ) ) {
+					$WDGOrganization = new WDGOrganization( $investment[ 'user' ] );
+					$investment_contract->investor_id = $WDGOrganization->get_api_id();
+					$investment_contract->investor_type = 'organization';
+				} else {
+					$WDGUser = new WDGUser( $investment[ 'user' ] );
+					$investment_contract->investor_id = $WDGUser->get_api_id();
+					$investment_contract->investor_type = 'user';
+				}
+
+				// Initialisation de la campagne et de l'organisation
+				$investment_contract->project_id = $campaign->get_api_id();
+				$campaign_organization = $campaign->get_organization();
+				$investment_contract->organization_id = $campaign_organization->id;
+
+				// Initialisation de l'investissement
+				$investment_contract->subscription_id = $investment[ 'ID' ];
+				$investment_contract->subscription_date = $investment[ 'date' ];
+				$investment_contract->subscription_amount = $investment[ 'amount' ];
+
+				// Initialisation du statut
+				$investment_contract->status = WDGInvestmentContract::$status_active;
+
+				// Initialisation des dates de début et de fin
+				$investment_contract->start_date = $campaign->contract_start_date();
+				// La date de fin correspond à date de début + durée du contrat - 1 jour
+				$contract_end_date = new DateTime( $campaign->contract_start_date() );
+				$contract_end_date->modify( '+' .$campaign->funding_duration(). ' years' );
+				$contract_end_date->modify( '-1 day' );
+				$investment_contract->end_date = $contract_end_date->format( 'Y-m-d' );
+
+				// Initialisation des données relatives au contrat : fréquence, type et pourcent de CA, retour minimum et maximum
+				$investment_contract->frequency = WDGInvestmentContract::$frequency_default;
+				$investment_contract->turnover_type = WDGInvestmentContract::$turnover_type_overall;
+
+				$investor_proportion = $investment[ 'amount' ] / $campaign->current_amount( false );
+				$investment_contract->turnover_percent = $investor_proportion * $campaign->roi_percent();
+
+				$investment_contract->minimum_to_receive = $campaign->minimum_profit() * $investment[ 'amount' ];
+				if ( $campaign->maximum_profit() == 'infinite' ) {
+					$investment_contract->maximum_to_receive = 0;
+				} else {
+					$investment_contract->maximum_to_receive = floatval( $campaign->maximum_profit() .'.'. $campaign->maximum_profit_precision() ) * $investment[ 'amount' ];
+				}
+
+				// Initialisation des montants perçus à partir des versements qui ont déjà eu lieu
+				$investment_contract->amount_received = 0;
+				foreach ( $declarations as $declaration ) {
+					if ( !empty( $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ] ) ) {
+						$investment_contract->amount_received += $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ][ 'amount' ];
+					}
+				}
+
+				$investment_contract->create();
 				
-			} else {
-				ypcf_debug_log( 'WDGInvestmentContract::create_contract > SUCCESS > ' . print_r( $result, TRUE ) );
-				update_post_meta( $payment_id, 'yousign_contract_id', $result[ 'idDemand' ] );
-				
-				// Récupération du lien d'accès à la signature, en fonction du token de retour
-				$buffer = $client->getIframeUrl( $result[ 'tokens' ][ 'token' ] );
 			}
-			
-		} catch ( Exception $e ) {
-			ypcf_debug_log( 'WDGInvestmentContract::create_contract > ERROR[TRY] > ' . print_r( $e, TRUE ) );
 		}
-		
+	}
+	
+	/**
+	 * Retourne la liste des contrats d'investissement d'un projet
+	 * @param int $campaign_id
+	 * @return array
+	 */
+	public static function get_list( $campaign_id ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$campaign_api_id = $campaign->get_api_id();
+		$buffer = WDGWPREST_Entity_Project::get_investment_contracts( $campaign_api_id );
 		return $buffer;
 	}
 	
-	
-/******************************************************************************/
-/* GESTION API */
-/******************************************************************************/
-	/* YOUSIGN */
-	private static $yousign_instance;
-	
-	public static function yousign_instance() {
-		if ( ! isset ( self::$yousign_instance ) ) {
-			ypcf_debug_log( 'WDGInvestmentContract::yousign_instance' );
-			$config_file_path = __DIR__. '/../../../../../ysApiParameters.ini';
-			self::$yousign_instance = new \YousignAPI\YsApi( $config_file_path );
+	/**
+	 * Retourne la liste des contrats d'investissement d'un projet selon un statut
+	 * @param int $campaign_id
+	 * @param string $status
+	 * @return array
+	 */
+	public static function get_list_by_status( $campaign_id, $status = '' ) {
+		$investment_contracts = self::get_list( $campaign_id );
+		if ( !empty( $status ) ) {
+			$buffer = array();
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->status == $status ) {
+					array_push( $buffer, $investment_contract );
+				}
+				return $buffer;
+			}
+			
+		} else {
+			return $investment_contracts;
 		}
-
-		return self::$yousign_instance;
 	}
-	
 }

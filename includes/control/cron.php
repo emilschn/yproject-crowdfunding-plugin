@@ -194,14 +194,14 @@ class WDGCronActions {
 		$buffer_partners .= '<type_porteur_projet>ENT</type_porteur_projet>' . "\n"; //TNP :: Statut du PP (ENT, ASS, PAR, COL)
 		$buffer_partners .= '<qualif_ESS>non</qualif_ESS>' . "\n"; //TNP :: Qualification ESS du porteur projet
 		$buffer_partners .= '<code_postal>' .$organization_obj->get_postal_code( true ). '</code_postal>' . "\n";
-		$buffer_partners .= '<ville>' .$organization_obj->get_city(). '</ville>' . "\n";
+		$buffer_partners .= '<ville><![CDATA[' .$organization_obj->get_city(). ']]></ville>' . "\n";
 
 		$buffer_partners .= '<titre><![CDATA['.$campaign->data->post_title.']]></titre>' . "\n"; //TNP
 		$buffer_partners .= '<description><![CDATA['.html_entity_decode($campaign->summary()).']]></description>' . "\n"; //TNP
 		$description_complete = html_entity_decode( $campaign->description() );
 		$buffer_partners .= '<description_complete><![CDATA['.apply_filters( 'the_content', $description_complete ).']]></description_complete>' . "\n"; //Info durable
-		$buffer_partners .= '<url>'.get_permalink($campaign->ID).'</url>' . "\n"; //TNP
-		$buffer_partners .= '<url_photo>'.$campaign->get_home_picture_src().'</url_photo>' . "\n"; //TNP
+		$buffer_partners .= '<url><![CDATA['.get_permalink($campaign->ID).']]></url>' . "\n"; //TNP
+		$buffer_partners .= '<url_photo><![CDATA['.$campaign->get_home_picture_src().']]></url_photo>' . "\n"; //TNP
 		$buffer_partners .= '<date_debut_collecte>'.$campaign->begin_collecte_date('Y-m-d').'</date_debut_collecte>' . "\n"; //TNP :: YYYY-MM-DD 
 		$buffer_partners .= '<date_fin_collecte>'.$campaign->end_date('Y-m-d').'</date_fin_collecte>' . "\n"; //TNP :: YYYY-MM-DD 
 		$buffer_partners .= '<nb_jours_restants>'.$campaign->days_remaining().'</nb_jours_restants>' . "\n";
@@ -222,6 +222,10 @@ class WDGCronActions {
 		//Données complémentaires pour mon petit voisinage
 		$buffer_partners .= '<latitude>'.$organization_obj->get_latitude().'</latitude>' . "\n";
 		$buffer_partners .= '<longitude>'.$organization_obj->get_longitude().'</longitude>' . "\n";
+		
+		//Données complémentaires pour Eazinvest
+		$buffer_partners .= '<periodicite><![CDATA[trimestriel]]></periodicite>' . "\n";
+		$buffer_partners .= '<rendement_pourcent>'.$campaign->yield_for_investors().'</rendement_pourcent>' . "\n";
 
 
 		$buffer_partners .= '</projet>' . "\n";

@@ -91,6 +91,7 @@ class WDG_Admin_General {
 		$edd_settings[ 'accounting_fiscal_info' ] = filter_input( INPUT_POST, 'accounting_fiscal_info' );
 		$edd_settings[ 'lemonway_generalities' ] = filter_input( INPUT_POST, 'lemonway_generalities' );
 		update_option( 'edd_settings', $edd_settings );
+		update_option( 'wdg_standard_contract_agreement', filter_input( INPUT_POST, 'standard_contract_agreement' ) );
 	}
 	
 	public static function save_royalties() {
@@ -243,6 +244,7 @@ class WDG_Admin_General {
 	
 	public static function display_investment() {
 		$edd_settings = get_option( 'edd_settings' );
+		$wdg_standard_contract_agreement = get_option( 'wdg_standard_contract_agreement' );
 		?>
 		<h3>Avertissements sur l&apos;investissement</h3>
 		<label for="investment_generalities">
@@ -259,6 +261,12 @@ class WDG_Admin_General {
 		<h3>Modalités d'investissement</h3>
 		<label for="investment_terms">
 			<?php wp_editor( $edd_settings[ 'investment_terms' ], 'investment_terms' ); ?>
+		</label>
+		<br><br>
+		
+		<h3>Accord cadre</h3>
+		<label for="standard_contract_agreement">
+			<?php wp_editor( $wdg_standard_contract_agreement, 'standard_contract_agreement' ); ?>
 		</label>
 		<br><br>
 		

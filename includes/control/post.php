@@ -60,8 +60,6 @@ class WDGPostActions {
 			}
 
 			try {
-				$core = ATCF_CrowdFunding::instance();
-				$core->include_file( 'external/sendinblue/mailin.php' );
 				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
 				$return = $mailin->create_update_user( array(
 					"email"		=> $email,
@@ -199,8 +197,16 @@ class WDGPostActions {
 				$newcampaign->update_api();
 			
 				//Mail pour l'équipe
-				NotificationsEmails::new_project_posted($newcampaign_id, $orga_name, '');
+				NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
 				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
+				
+				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
+				$test_campaign = new ATCF_Campaign( $newcampaign_id );
+				$test_organization = $test_campaign->get_organization();
+				if ( empty( $test_organization ) ) {
+					$error_content = 'Aucune organisation liée au projet';
+					NotificationsEmails::new_project_posted_error_admin( $project_name, $error_content );
+				}
 
 
 				//Redirect then
@@ -299,7 +305,7 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
-							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_vote );
+							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 		
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
@@ -335,7 +341,7 @@ class WDGPostActions {
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
-							NotificationsEmails::campaign_change_status_admin( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
+							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
 		
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
@@ -600,6 +606,11 @@ class WDGPostActions {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 		
+		$new_project_agreement_bundle = filter_input( INPUT_POST, 'new_project_agreement_bundle' );
+		if ( !empty( $new_project_agreement_bundle ) ) {
+			$campaign->__set( ATCF_Campaign::$key_agreement_bundle, $new_project_agreement_bundle );
+		}
+		
 		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
 		if ( !empty( $new_project_contract_earnings_description ) ) {
 			$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
@@ -792,7 +803,11 @@ class WDGPostActions {
 			if ( empty( $month_count ) ) {
 				$month_count = 3;
 			}
-			$campaign->generate_missing_declarations( $month_count );
+			$declarations_count = filter_input( INPUT_POST, 'declarations_count' );
+			if ( empty( $declarations_count ) || !is_numeric( $declarations_count ) ) {
+				$declarations_count = FALSE;
+			}
+			$campaign->generate_missing_declarations( $month_count, $declarations_count );
 			$result = 'success';
 		
 			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#royalties' );

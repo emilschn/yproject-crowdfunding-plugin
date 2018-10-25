@@ -93,10 +93,10 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'external/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'external/FacebookApp/autoload.php' );
 		require( $this->includes_dir . 'external/nusoap/nusoap.php' );
+		require( $this->includes_dir . 'external/sendinblue/mailin.php' );
 		
 		require( $this->includes_dir . 'control/cache/db-cacher.php' );
 		require( $this->includes_dir . 'control/cache/file-cacher.php' );
-		require( $this->includes_dir . 'control/signsquid/common.php' );
 		
 		require( $this->includes_dir . 'data/language_list.php' );
 		require( $this->includes_dir . 'data/campaign.php' );
@@ -119,6 +119,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-project.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment-contract.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-declaration.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-bankinfo.php' );
@@ -137,6 +138,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/api-calls.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
 		require( $this->includes_dir . 'control/investment.php' );
+		require( $this->includes_dir . 'control/signsquid/common.php' );
 		require( $this->includes_dir . 'control/pdf_generator.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-api.php' );

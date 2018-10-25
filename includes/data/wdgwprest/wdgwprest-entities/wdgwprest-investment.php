@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * Gestion des investissement côté WDGWPREST
+ * Gestion des investissements côté WDGWPREST
  */
 class WDGWPREST_Entity_Investment {
 	

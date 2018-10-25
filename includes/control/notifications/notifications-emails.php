@@ -287,7 +287,7 @@ class NotificationsEmails {
      */
     public static function new_purchase_admin_success($payment_id, $complement_object = '', $complement_content = '', $attachments = array()) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_success > ' . $payment_id);
-		$admin_email = get_option('admin_email');
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Nouvel achat' . $complement_object;
 
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
@@ -479,34 +479,15 @@ class NotificationsEmails {
     //*******************************************************
     // NOUVEAU PROJET
     //*******************************************************
-    /**
-     * Mail à l'admin et aux adresses en copie lors de la création d'un projet
-     * @param int $campaign_id
-     * @param string $copy_recipient
-     * @return bool
-     */
-    public static function new_project_posted($campaign_id, $orga_name, $copy_recipient) {
-		$admin_email = get_option('admin_email');
-		$to = $admin_email . ',' . $copy_recipient;
-
-		$post_campaign = get_post($campaign_id);
-		$campaign = atcf_get_campaign($post_campaign);
-		$project_title = $post_campaign->post_title;
-		$object = '[Nouveau Projet] '. $project_title;
-		$body_content = "Un nouveau projet vient d'être publié.<br />";
-		$body_content .= "Il est accessible depuis le back-office :<br />";
-		$body_content .= '<a href="'. get_permalink($campaign_id) .'" target="_blank">'. $project_title .'</a><br /><br />';
-		$user_author = get_user_by('id', $post_campaign->post_author);
-		$body_content .= "Quelques informations supplémentaires :<br />";
-		$body_content .= "- Porteur de projet : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")<br />";
-		$body_content .= "- Mail : ".$user_author->user_email."<br />";
-		$user_phone = get_user_meta( $post_campaign->post_author, 'user_mobile_phone', TRUE );
-		$body_content .= "- Téléphone : ".$user_phone."<br /><br />";
-		$body_content .= "- Organisation : ".$orga_name."<br />";
-		$body_content .= "- Description : ".$campaign->backoffice_summary()."<br />";
-
-		return NotificationsEmails::send_mail($to, $object, $body_content);
-    }
+	public static function new_project_posted_error_admin( $project_name, $error_content ) {
+		$to = 'admin@wedogood.co';
+		$object = 'Erreur lors de la création du projet ' . $project_name;
+		$body_content = 'Bonjour,<br>';
+		$body_content .= 'Il y a eu une erreur lors de la création du projet ' .$project_name. ' :<br>';
+		$body_content .= $error_content;
+		return NotificationsEmails::send_mail( $to, $object, $body_content );
+		
+	}
 	
 	public static function new_project_posted_owner($campaign_id) {
 		$post_campaign = get_post($campaign_id);

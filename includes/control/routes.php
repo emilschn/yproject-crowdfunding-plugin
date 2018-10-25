@@ -71,6 +71,19 @@ class WDGRoutes {
 	}
 	
 	/**
+	 * Redirige au début de l'investissement si il n'y a pas d'informations de session
+	 */
+	public static function redirect_invest_if_investment_session_not_initialized() {
+		$current_investment = WDGInvestment::current();
+		$session_amount = $current_investment->get_session_amount();
+		$session_user_type = $current_investment->get_session_user_type();
+		if ( empty( $session_amount ) || empty( $session_user_type ) ) {
+			$current_campaign = atcf_get_current_campaign();
+			return home_url( '/investir/' ). '?campaign_id=' .$current_campaign->ID. '&invest_start=1';
+		}
+	}
+	
+	/**
 	 * Redirige si il n'est plus possible d'investir sur le projet
 	 */
 	public static function redirect_invest_if_investment_not_initialized() {

@@ -5,6 +5,7 @@ class WDG_PDF_Generator {
 /* Shortcodes spécifiques aux contrats */
 /******************************************************************************/
 	public static function add_shortcodes() {
+		add_shortcode( 'wdg_campaign_agreement_bundle', 'WDG_PDF_Generator::shortcode_agreement_bundle' );
 		add_shortcode( 'wdg_campaign_contract_investor_info', 'WDG_PDF_Generator::shortcode_contract_investor_info' );
 		add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
 		add_shortcode( 'wdg_campaign_contract_organization_legalform', 'WDG_PDF_Generator::shortcode_contract_organization_legalform' );
@@ -64,6 +65,15 @@ class WDG_PDF_Generator {
 			$buffer .= 'immatriculée sous le numéro SIREN ' .$shortcode_investor_orga_obj->get_idnumber(). ' au RCS de ' .$shortcode_investor_orga_obj->get_rcs(). '<br>';
 		}
 		
+		return $buffer;
+	}
+	/**
+	 * Shortcode affichant la formule commerciale dans l'accord cadre
+	 */
+	public static function shortcode_agreement_bundle( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = nl2br( $shortcode_campaign_obj->agreement_bundle() );
 		return $buffer;
 	}
 	/**
@@ -425,7 +435,7 @@ function generatePDF($html_content, $filename) {
  * Fill the pdf default content with infos
  * @return string
  */
-function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $organization = false, $preview = false) {
+function fillPDFHTMLDefaultContent( $user_obj, $campaign_obj, $payment_data, $organization = false, $preview = false, $with_agreement = false ) {
 	if ( !empty( $payment_data ) ) {
 		ypcf_debug_log('fillPDFHTMLDefaultContent > ' . $payment_data["amount"]);
 	}
@@ -433,14 +443,14 @@ function fillPDFHTMLDefaultContent($user_obj, $campaign_obj, $payment_data, $org
 	
 	//Si on doit faire une version anglaise
 	if (get_locale() == 'en_US') {
-		$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $preview, 'en_US');
+		$buffer .= doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_data, $organization, $preview, 'en_US', $with_agreement );
 	}
-	$buffer .= doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $preview);
+	$buffer .= doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_data, $organization, $preview, '', $with_agreement );
 	
 	return $buffer;
 }
 
-function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_data, $organization, $preview, $lang = '') {
+function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_data, $organization, $preview, $lang = '', $with_agreement = false ) {
 	if (empty($lang)) {
 		setlocale( LC_CTYPE, 'fr_FR' );
 	}
@@ -453,6 +463,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
 	add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
 	add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
+	$edd_settings = get_option( 'edd_settings' );
 	
 	$blank_space_small = '________________';
 	$blank_space = '________________________________________________';
@@ -470,8 +481,17 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 		}
 		$user_name = mb_strtoupper( html_entity_decode( $user_title . ' ' . $WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname() ) );
 	}
+	
+	$buffer = '';
+	
+	if ( $with_agreement ) {
+		$wdg_standard_contract_agreement = get_option( 'wdg_standard_contract_agreement' );
+		$buffer .= '<page backbottom="15mm">';
+		$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $wdg_standard_contract_agreement );
+		$buffer .= '</page>';
+	}
 		
-    $buffer = '<page backbottom="15mm">';
+    $buffer .= '<page backbottom="15mm">';
     $buffer .= '<div style="border: 1px solid black; width:100%; padding:5px 0px 5px 0px; text-align:center;"><h1>'.$campaign_obj->contract_title().' '.$organization_obj->get_name().'</h1></div>';
 	
 	if ( empty( $payment_data ) ) {
@@ -553,6 +573,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			$buffer .= "<i>au capital de</i> " . $blank_space_small . " &euro;<br />";
 			$buffer .= "dont le siège social est <i>(adresse)</i>" . $blank_space . " <i>(ville et CP)</i>" . $blank_space . "<br />";
 			$buffer .= "immatriculée sous le numéro " . $blank_space_small . " au RCS de " . $blank_space . "<br />";
+			$buffer .= "Adresse e-mail de contact (différente du représentant) : " . $blank_space . "<br />";
 		}
     }
     
@@ -593,7 +614,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	$shortcode_organization_obj = $organization_obj;
 	$campaign_orga_linked_users = $shortcode_organization_obj->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 	$shortcode_organization_creator = $campaign_orga_linked_users[0];
-	$edd_settings = get_option( 'edd_settings' );
+	
 	// Si le projet surcharge le contrat standard
 	$project_override_contract = $campaign_obj->override_contract();
 	if ( !empty( $project_override_contract ) ) {
@@ -758,7 +779,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
  * Returns the pdf created with a project_id and a user_id
  * @param type $project_id
  */
-function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE) {
+function getNewPdfToSign( $project_id, $payment_id, $user_id, $filepath = FALSE, $with_agreement = FALSE ) {
     ypcf_debug_log('getNewPdfToSign > ' . $payment_id);
     $post_camp = get_post($project_id);
     $campaign = atcf_get_campaign( $post_camp );
@@ -799,8 +820,10 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE) 
 		}
 	}
 	
-    $html_content = fillPDFHTMLDefaultContent($current_user, $campaign, $invest_data, $organization);
+    $html_content = fillPDFHTMLDefaultContent( $current_user, $campaign, $invest_data, $organization, FALSE, $with_agreement );
     $filename = ( empty( $filepath ) ) ? dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf' : $filepath;
+	global $new_pdf_file_name;
+	$new_pdf_file_name = basename( $filename );
     
     ypcf_debug_log('getNewPdfToSign > write in ' . $filename);
     if (generatePDF($html_content, $filename)) return $filename;
