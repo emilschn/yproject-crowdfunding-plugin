@@ -266,7 +266,11 @@ class WDGFormProjects {
 			$nb_turnover = $campaign->get_turnover_per_declaration();
 			for ($i = 0; $i < $nb_turnover; $i++) {
 				$turnover_declaration = filter_input( INPUT_POST, 'turnover-' . $i );
+				$turnover_declaration = str_replace( ' ', '', $turnover_declaration );
 				$turnover_declaration = str_replace( ',', '.', $turnover_declaration );
+				if ( empty( $turnover_declaration ) ) {
+					$turnover_declaration = 0;
+				}
 				if ( is_numeric( $turnover_declaration ) ) {
 					$total_turnover += $turnover_declaration;
 					array_push($saved_declaration, $turnover_declaration);
