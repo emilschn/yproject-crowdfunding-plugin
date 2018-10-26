@@ -1707,9 +1707,12 @@ class WDGAjaxActions {
             $campaign_id_param = '?campaign_id=' . $campaign->ID;
             $payment_state = edd_get_payment_status( $post_invest, true );
             if ($payment_state == "En attente" && $current_wdg_user->is_admin() && empty( $contract_status ) ) {
-                $payment_state .= '<br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
-                $payment_state .= '<br /><br /><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
-            
+				$payment_state .= '<br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
+				$payment_state .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
+				if ( $payment_type == 'Carte' ) {
+					$payment_state .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&try_pending_card='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
+				}
+				
 			} else if ( $payment_state == 'Terminé' ) {
 				$more_invest["invest_contracts"] = array();
 				$contract_model_index = 1;
