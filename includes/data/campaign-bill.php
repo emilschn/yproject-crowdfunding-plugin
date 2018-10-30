@@ -202,7 +202,7 @@ Les chèques vous seront directement adressés.";
 	public function get_royalties_line_description() {
 		$declaration_cost_to_organization = $this->campaign->get_costs_to_organization();
 		$this->roideclaration->get_month_list_str();
-		$declaration_amount = UIHelpers::format_number( $this->roideclaration->get_amount_with_commission() );
+		$declaration_amount = UIHelpers::format_number( $this->roideclaration->get_amount_with_adjustment() );
 		$declaration_date_object = new DateTime( $this->roideclaration->date_due );
 		$declaration_month_num = $declaration_date_object->format( 'n' );
 		$declaration_year = $declaration_date_object->format( 'Y' );
