@@ -147,7 +147,12 @@ class WDGWPREST_Entity_Investment {
 			$parameters[ 'legal_entity_rcs' ] = $WDGOrganization->get_rcs();
 			$parameters[ 'legal_entity_capital' ] = $WDGOrganization->get_capital();
 			$parameters[ 'legal_entity_address' ] = $WDGOrganization->get_address();
-			$parameters[ 'legal_entity_postalcode' ] = $WDGOrganization->get_postal_code();
+			$orga_postalcode = $WDGOrganization->get_postal_code();
+			$orga_postalcode = str_replace( ' ', '', $orga_postalcode );
+			if ( strlen( $orga_postalcode ) == 4 ) {
+				$orga_postalcode = '0' . $orga_postalcode;
+			}
+			$parameters[ 'legal_entity_postalcode' ] = $orga_postalcode;
 			$parameters[ 'legal_entity_city' ] = $WDGOrganization->get_city();
 			$parameters[ 'legal_entity_nationality' ] = $WDGOrganization->get_nationality();
 		}
