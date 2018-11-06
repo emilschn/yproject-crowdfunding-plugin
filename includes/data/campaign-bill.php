@@ -31,7 +31,7 @@ class WDGCampaignBill {
 		),
 		'lovemoney' => array(
 			'quickbooks_id' => 5,
-			'label' => 'WE LOVE (Love-Money)'
+			'label' => 'LOVE-MONEY (Campagne privée)'
 		),
 		'selfservice' => array(
 			'quickbooks_id' => 6,
@@ -128,6 +128,8 @@ class WDGCampaignBill {
 		$buffer = FALSE;
 		switch ( $this->campaign->platform_commission() ) {
 			case '4.8':
+				$buffer = 'lovemoney';
+				break;
 			case '9.6':
 				$buffer = 'crowdfunding';
 				break;
@@ -151,8 +153,15 @@ class WDGCampaignBill {
 		$amount_collected_check = UIHelpers::format_number( $this->campaign->current_amount_with_check() );
 		$platform_commission = UIHelpers::format_number( $this->campaign->platform_commission( FALSE ) );
 		$platform_commission_amount = UIHelpers::format_number( $this->campaign->platform_commission_amount() );
-		$buffer = "Campagne de crowdfunding.
+		
+		if ( $this->campaign->platform_commission() == '4.8' ) {
+			$buffer = "Campagne privée.
 Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
+		} else {
+			$buffer = "Campagne de crowdfunding.
+Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
+		}
+		
 		return $buffer;
 	}
 	
