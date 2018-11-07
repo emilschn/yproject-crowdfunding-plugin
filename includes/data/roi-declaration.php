@@ -274,19 +274,27 @@ class WDGROIDeclaration {
 	public function get_commission_to_pay() {
 		$buffer = 0;
 		
-		//Si le porteur de projet a dÃ©jÃ  payÃ©, on considÃ¨re qu'on a dÃ©jÃ  enregistrÃ© la commission
+		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		
+		//Si le porteur de projet a déjà payé, on considère qu'on a déjà enregistré la commission
 		if ( $this->status == WDGROIDeclaration::$status_transfer || $this->status == WDGROIDeclaration::$status_finished ) {
 			$cost = $this->percent_commission;
 			
-		//Sinon, on la calcule avec les frais enregistrÃ©s en rapport avec la campagne
+		//Sinon, on la calcule avec les frais enregistrés en rapport avec la campagne
 		} else {
-			$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
 			$cost = $campaign->get_costs_to_organization();
 		}
 		
 		if ( $cost > 0 ) {
 			$buffer = (round(($this->get_amount_with_adjustment() * $cost / 100) * 100) / 100);
 		}
+		
+		// Si il y a un coût minimal par déclaration
+		$minimum_costs = $campaign->get_minimum_costs_to_organization();
+		if ( $minimum_costs > 0 ) {
+			$buffer = max( $buffer, $minimum_costs );
+		}
+		
 		return $buffer;
 	}
 	

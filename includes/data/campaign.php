@@ -974,7 +974,15 @@ class ATCF_Campaign {
 	    return $this->__get(ATCF_Campaign::$key_first_payment_date);
 	}
 	
-	// Frais appliqués au porteur de projet
+	// Frais minimums appliqués au porteur de projet
+	public function get_minimum_costs_to_organization() {
+		$buffer = $this->get_api_data( 'minimum_costs_to_organization' );
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
+		return $buffer;
+	}
+	// Frais (%) appliqués au porteur de projet
 	public static $key_costs_to_organization = 'costs_to_organization';
 	public function get_costs_to_organization() {
 		$buffer = $this->get_api_data( 'costs_to_organization' );

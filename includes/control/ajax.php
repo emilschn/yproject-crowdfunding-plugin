@@ -56,7 +56,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Gère de manière automatisée les classes de formulaires (standardisées)
+	 * GÃ¨re de maniÃ¨re automatisÃ©e les classes de formulaires (standardisÃ©es)
 	 * @param string $class_name
 	 */
 	public static function add_action_by_class( $class_name ) {
@@ -67,7 +67,7 @@ class WDGAjaxActions {
 	}
     
 	/**
-	 * Ajoute une action WordPress à exécuter en Ajax
+	 * Ajoute une action WordPress Ã  exÃ©cuter en Ajax
 	 * @param string $action_name
 	 */
 	public static function add_action($action_name) {
@@ -99,7 +99,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Retourne la liste des projets qui peuvent être recherchés
+	 * Retourne la liste des projets qui peuvent Ãªtre recherchÃ©s
 	 */
 	public static function get_searchable_projects_list() {
 		ypcf_debug_log( 'get_searchable_projects_list' );
@@ -144,12 +144,12 @@ class WDGAjaxActions {
 	}
     
 	/**
-	 * Affiche la liste des utilisateurs d'un projet qui doivent récupérer de l'argent de leur investissement
+	 * Affiche la liste des utilisateurs d'un projet qui doivent rÃ©cupÃ©rer de l'argent de leur investissement
 	 */
 	public static function display_roi_user_list() {
 		$wdgcurrent_user = WDGUser::current();
 		if ($wdgcurrent_user->is_admin()) {
-		    //Récupération des éléments à traiter
+		    //RÃ©cupÃ©ration des Ã©lÃ©ments Ã  traiter
 		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
 			$declaration = new WDGROIDeclaration($declaration_id);
 		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
@@ -187,11 +187,11 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Affiche le tableau de flux monétaires d'un projet
+	 * Affiche le tableau de flux monÃ©taires d'un projet
 	 */
 	public static function show_project_money_flow() {
 		if (current_user_can('manage_options')) {
-			//Récupération des éléments à traiter
+			//RÃ©cupÃ©ration des Ã©lÃ©ments Ã  traiter
 			$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 			$campaign_post = get_post($campaign_id);
 			$campaign = atcf_get_campaign($campaign_post);
@@ -200,7 +200,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Vérifie le passage à l'étape suivante pour les utilisateurs lors de l'investissement
+	 * VÃ©rifie le passage Ã  l'Ã©tape suivante pour les utilisateurs lors de l'investissement
 	 */
 	public static function check_invest_input() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
@@ -208,7 +208,7 @@ class WDGAjaxActions {
 		$invest_type = filter_input(INPUT_POST, 'invest_type');
 		$WDGuser_current = WDGUser::current();
 		
-		//Dans tous les cas, vérifie que l'utilisateur a rempli ses infos pour investir
+		//Dans tous les cas, vÃ©rifie que l'utilisateur a rempli ses infos pour investir
 		if (!$WDGuser_current->has_filled_invest_infos( $campaign->funding_type() )) {
 			global $user_can_invest_errors;
 			$return_values = array(
@@ -232,7 +232,7 @@ class WDGAjaxActions {
 			exit();
 		}
 		
-		//Vérifie si on crée une organisation
+		//VÃ©rifie si on crÃ©e une organisation
 		if ($invest_type == "new_organization") {
 			$return_values = array(
 				"response" => "new_organization",
@@ -241,9 +241,9 @@ class WDGAjaxActions {
 			echo json_encode($return_values);
 			exit();
 			
-		//Vérifie si on veut investir en tant qu'organisation (différent de user)
+		//VÃ©rifie si on veut investir en tant qu'organisation (diffÃ©rent de user)
 		} else if ($invest_type != "user") {
-			//Vérifie si les informations de l'organisation sont bien remplies
+			//VÃ©rifie si les informations de l'organisation sont bien remplies
 			global $organization_can_invest_errors;
 			$organization = new WDGOrganization($invest_type);
 			if (!$organization->has_filled_invest_infos()) {
@@ -271,10 +271,10 @@ class WDGAjaxActions {
 		}
 		
 		/*
-		//Vérifie, selon le prestataire de paiement, que les kyc sont remplis 
-		//Si Lemonway, il faut les KYC pour les paiements supérieurs à 250€, et pour un montant annuel supérieur à 2500€
+		//VÃ©rifie, selon le prestataire de paiement, que les kyc sont remplis 
+		//Si Lemonway, il faut les KYC pour les paiements supÃ©rieurs Ã  250â‚¬, et pour un montant annuel supÃ©rieur Ã  2500â‚¬
 		if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway && $invest_value > YP_LW_STRONGAUTH_MIN) {
-			//Vérifie si les documents LW sont déjà envoyés
+			//VÃ©rifie si les documents LW sont dÃ©jÃ  envoyÃ©s
 			//Si c'est au nom de la personne
 			if ($invest_type == "user" && $WDGuser_current->get_lemonway_status() == LemonwayLib::$status_ready) {
 				$return_values = array(
@@ -290,7 +290,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Enregistre les informations liées à l'utilisateur
+	 * Enregistre les informations liÃ©es Ã  l'utilisateur
 	 */
 	public static function save_user_infos() {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
@@ -411,7 +411,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Enregistre les documents KYC liés à l'utilisateur
+	 * Enregistre les documents KYC liÃ©s Ã  l'utilisateur
 	 */
 	public static function save_user_docs() {
 		ypcf_session_start();
@@ -493,7 +493,7 @@ class WDGAjaxActions {
 	
 
 	/**
-	 * Enregistre la petite image et/ou url de la vidéo
+	 * Enregistre la petite image et/ou url de la vidÃ©o
 	 */
 	public static function save_image_url_video() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
@@ -512,7 +512,7 @@ class WDGAjaxActions {
 	}
 		
 	/**
-	 * Enregistre les informations générales du projet
+	 * Enregistre les informations gÃ©nÃ©rales du projet
 	 */
 	public static function save_project_infos(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
@@ -537,14 +537,14 @@ class WDGAjaxActions {
 			$errors["new_project_name"].="Le nom du projet ne peut pas &ecirc;tre vide";
 		}
 
-		//Résumé backoffice du projet
+		//RÃ©sumÃ© backoffice du projet
 		$backoffice_summary = (filter_input(INPUT_POST,'new_backoffice_summary'));
 		if (!empty($backoffice_summary)) {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_summary, $backoffice_summary );
 			$campaign->set_api_data( 'description', $backoffice_summary );
 			$success["new_backoffice_summary"]=1;
 		} else {
-			$errors['new_backoffice_summary'].="Décrivez votre projet";
+			$errors['new_backoffice_summary'].="DÃ©crivez votre projet";
 		}
 	
 		// URL du projet
@@ -555,7 +555,7 @@ class WDGAjaxActions {
 				'post_type' => array( 'post', 'page', 'download' )
 			) );
 			if ( $posts ) {
-				$errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
+				$errors[ 'new_project_url' ] .= "L'URL est dÃ©jÃ  utilisÃ©e.";
 
 			} else {
 				$campaign->set_api_data( 'url', $new_name );
@@ -565,7 +565,7 @@ class WDGAjaxActions {
 				) );
 				$campaign->data->post_name = $new_name;
 				$success[ 'new_project_url' ] = 1;
-				// Mise à jour de l'URL sur LW
+				// Mise Ã  jour de l'URL sur LW
 				$campaign_organization = $campaign->get_organization();
 				$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
 				LemonwayLib::wallet_update( 
@@ -603,7 +603,7 @@ class WDGAjaxActions {
 		}
 		$success[ 'new_skip_in_stats' ] = 1;
 
-		//Catégories du projet
+		//CatÃ©gories du projet
 		$new_project_categories = array();
 		if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
 		$new_project_activities = array();
@@ -686,7 +686,7 @@ class WDGAjaxActions {
 			$success[ "new_fake_url" ] = 1;
 		}
 		
-		//Champs personnalisés
+		//Champs personnalisÃ©s
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
 		$nb_custom_fields = $WDGAuthor->wp_user->get('wdg-contract-nb-custom-fields');
 		if ( $nb_custom_fields > 0 ) {
@@ -698,7 +698,7 @@ class WDGAjaxActions {
 		}
 		$campaign->update_api();
 		
-		// Mise à jour du cache
+		// Mise Ã  jour du cache
 		do_action('wdg_delete_cache', array(
 			'cache_campaign_' . $campaign_id
 		));
@@ -716,7 +716,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Enregistre les informations liées à l'utilisateur
+	 * Enregistre les informations liÃ©es Ã  l'utilisateur
 	 */
 	public static function save_user_infos_dashboard() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
@@ -734,7 +734,7 @@ class WDGAjaxActions {
 		if(!empty($firstname)){
 			$success['new_firstname']=1;
 		} else {
-			$errors['new_firstname']= __("Vous devez renseigner votre prénom",'yproject');
+			$errors['new_firstname']= __("Vous devez renseigner votre prÃ©nom",'yproject');
 		}
 
 		$lastname = sanitize_text_field(filter_input(INPUT_POST, 'new_lastname'));
@@ -802,7 +802,7 @@ class WDGAjaxActions {
 		if(!empty($mobile_phone)){
 			$success['new_mobile_phone']=1;
 		} else {
-			$errors['new_mobile_phone']= __("Vous devez renseigner un numéro de téléphone",'yproject');
+			$errors['new_mobile_phone']= __("Vous devez renseigner un numÃ©ro de tÃ©lÃ©phone",'yproject');
 		}
 
 		$mail = sanitize_text_field(filter_input(INPUT_POST, 'new_mail'));
@@ -830,7 +830,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Informations d'ajustement de déclaration de ROI
+	 * Informations d'ajustement de dÃ©claration de ROI
 	 */
 	public static function save_declaration_adjustment() {
 		$declaration_id = filter_input( INPUT_POST, 'declaration_id' );
@@ -887,7 +887,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Déclenchement de paiement via prélèvement automatique
+	 * DÃ©clenchement de paiement via prÃ©lÃ¨vement automatique
 	 */
 	public static function pay_with_mandate() {
         $current_wdg_user = WDGUser::current();
@@ -1025,7 +1025,7 @@ class WDGAjaxActions {
 			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
 			$success[ 'new_maximum_profit_precision' ] = 1;
 		} else {
-			$errors[ 'new_maximum_profit_precision' ] = "La précision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
+			$errors[ 'new_maximum_profit_precision' ] = "La prÃ©cision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
 		}
 
 		//Update roi_percent_estimated
@@ -1035,7 +1035,7 @@ class WDGAjaxActions {
 			$campaign->set_api_data( 'roi_percent_estimated', $new_roi_percent_estimated );
 			$success['new_roi_percent_estimated'] = 1;
 		} else {
-			$errors['new_roi_percent_estimated'] = "Le pourcentage de CA reversé doit être positif";
+			$errors['new_roi_percent_estimated'] = "Le pourcentage de CA reversÃ© doit Ãªtre positif";
 		}
 		
 		$new_roi_percent = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent' ) ) );
@@ -1044,7 +1044,7 @@ class WDGAjaxActions {
 			$campaign->set_api_data( 'roi_percent', $new_roi_percent );
 			$success[ 'new_roi_percent' ] = 1;
 		} else {
-			$errors[ 'new_roi_percent' ] ="Le pourcentage de CA reversé doit être positif";
+			$errors[ 'new_roi_percent' ] ="Le pourcentage de CA reversÃ© doit Ãªtre positif";
 		}
 
 		//Update contract_start_date
@@ -1070,9 +1070,18 @@ class WDGAjaxActions {
 			$errors['new_turnover_per_declaration'] = "Nombre non valide";
 		}
 		
+		$new_minimum_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_costs_to_organization') ) ), 2 );
+		if ( $new_minimum_costs_to_organization >= 0 ) {
+			$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );
+			$success['new_minimum_costs_to_organization'] = 1;
+		} else {
+			$errors['new_minimum_costs_to_organization'] = "Nombre non valide";
+		}
+		
 		$new_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_organization') ) ), 2 );
 		if ( $new_costs_to_organization >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
+			$campaign->set_api_data( 'costs_to_organization', $new_costs_to_organization );
 			$success['new_costs_to_organization'] = 1;
 		} else {
 			$errors['new_costs_to_organization'] = "Nombre non valide";
@@ -1081,6 +1090,7 @@ class WDGAjaxActions {
 		$new_costs_to_investors = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_investors') ) ), 2 );
 		if ( $new_costs_to_investors >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
+			$campaign->set_api_data( 'costs_to_investors', $new_costs_to_investors );
 			$success['new_costs_to_investors'] = 1;
 		} else {
 			$errors['new_costs_to_investors'] = "Nombre non valide";
@@ -1091,7 +1101,7 @@ class WDGAjaxActions {
 		$old_first_payment_date = $campaign->first_payment_date();
 		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
 		if ( empty( $old_first_payment_date ) && empty( $new_first_payment_date ) && !empty( $new_contract_start_date ) ) {
-			// Si non défini, on chope le 10 du trimestre suivant le début de contrat pour automatiser un peu !
+			// Si non dÃ©fini, on chope le 10 du trimestre suivant le dÃ©but de contrat pour automatiser un peu !
 			$contract_start_date_time = new DateTime( $new_contract_start_date );
 			$contract_start_date_time->add( new DateInterval( 'P9D' ) );
 			$contract_start_date_time->add( new DateInterval( 'P3M' ) );
@@ -1136,7 +1146,7 @@ class WDGAjaxActions {
 					$sanitized_list[$i+1] = strval(intval($current_val));
 					$success['new_estimated_turnover_'.$i] = 1;
 				} else {
-					$errors['new_estimated_turnover_'.$i] = "La valeur doit être positive";
+					$errors['new_estimated_turnover_'.$i] = "La valeur doit Ãªtre positive";
 					$sanitized_list[$i+1] = strval(abs(intval($current_val)));
 				}
 			} else {
@@ -1162,21 +1172,21 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Enregistre les informations de l'organisation liée à un projet
+	 * Enregistre les informations de l'organisation liÃ©e Ã  un projet
 	 */
 	public static function save_project_organization(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$success = array();
 
-		//Récupération de l'ancienne organisation
+		//RÃ©cupÃ©ration de l'ancienne organisation
 		$campaign = new ATCF_Campaign($campaign_id);
 		$current_organization = $campaign->get_organization();
 
 		$delete = FALSE;
 		$update = FALSE;
 
-		//On met à jour : si une nouvelle organisation est renseignée et différente de celle d'avant
-		//On supprime : si la nouvelle organisation renseignée est différente de celle d'avant
+		//On met Ã  jour : si une nouvelle organisation est renseignÃ©e et diffÃ©rente de celle d'avant
+		//On supprime : si la nouvelle organisation renseignÃ©e est diffÃ©rente de celle d'avant
 		$project_organization = filter_input(INPUT_POST, 'new_project_organization');
 		if (!empty($project_organization)) {
 			$organization_selected = new WDGOrganization($project_organization);
@@ -1189,7 +1199,7 @@ class WDGAjaxActions {
 				$success['new_project_organization']=1;
 			}
 
-		//On supprime : si rien n'est sélectionné + il y avait quelque chose avant
+		//On supprime : si rien n'est sÃ©lectionnÃ© + il y avait quelque chose avant
 		} else {
 			if ($current_organization !== FALSE) {
 				$delete = TRUE;
@@ -1300,7 +1310,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Enregistre les informations du formulaire de création d'une organisation
+	 * Enregistre les informations du formulaire de crÃ©ation d'une organisation
 	 * et lie cette organisation au projet
 	 */
 	public static function save_new_organization(){
@@ -1308,7 +1318,7 @@ class WDGAjaxActions {
 
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
-		//validation des données, enregistrement de l'organisation et récupération de l'objet de la nouvelle orga
+		//validation des donnÃ©es, enregistrement de l'organisation et rÃ©cupÃ©ration de l'objet de la nouvelle orga
 		$return = WDGOrganization::submit_new( FALSE );
 		$org_object = FALSE;
 		if ( !empty( $return['org_object'] ) ) {
@@ -1319,22 +1329,22 @@ class WDGAjaxActions {
 		if ( !empty( $org_object ) && $org_object != null && !empty( $org_api_id ) ) {
 			/////////// Liaison de l'organisation au projet ////////////////
 
-			//Récupération de l'ancienne organisation
+			//RÃ©cupÃ©ration de l'ancienne organisation
 			$campaign = new ATCF_Campaign($campaign_id);
 			$current_organization = $campaign->get_organization();
 			$delete = ( empty($current_organization) ) ? FALSE : TRUE;
 
-			//on a déjà une organisation, donc on supprime la liaison
+			//on a dÃ©jÃ  une organisation, donc on supprime la liaison
 			if ( $delete ) {
 				$campaign->unlink_organization( $current_organization->id );
 			}
-			//on lie l'organisation que l'on vient de créer à partir de la ligthbox dans le TB partie Organisation
+			//on lie l'organisation que l'on vient de crÃ©er Ã  partir de la ligthbox dans le TB partie Organisation
 			$campaign->link_organization( $org_api_id );
 
 			////////////////////////////////////////////////////////////////
 		}
 
-		if ( $return === FALSE ) {//user non connecté
+		if ( $return === FALSE ) {//user non connectÃ©
 			$buffer = "FALSE";
 		} else if ( !empty( $org_object ) && $org_object != null ){
 			$return_values = array(
@@ -1375,24 +1385,24 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Enregistre les informations du formulaire d'édition d'une organisation
+	 * Enregistre les informations du formulaire d'Ã©dition d'une organisation
 	 */
 	public static function save_edit_organization(){
 		global $errors_edit;
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 
-		//Récupération de l'organisation
+		//RÃ©cupÃ©ration de l'organisation
 		$campaign = new ATCF_Campaign($campaign_id);
 		$current_organization = $campaign->get_organization();
 
-		// enregistrement des données dans l'organisation
+		// enregistrement des donnÃ©es dans l'organisation
 		$org_object = new WDGOrganization( $current_organization->wpref, $current_organization );
 
-		//enregistrement des données avec la fonction edit et récupération des 
-		//infos sur les fichiers uploadés
+		//enregistrement des donnÃ©es avec la fonction edit et rÃ©cupÃ©ration des 
+		//infos sur les fichiers uploadÃ©s
 		$files_info = WDGOrganization::edit($org_object);
 
-		if($files_info === FALSE) {//user non connecté
+		if($files_info === FALSE) {//user non connectÃ©
 			$buffer = "FALSE";
 		} else if($files_info['files_info'] != null) {
 			$return_values = array(
@@ -1494,7 +1504,7 @@ class WDGAjaxActions {
 				$errors['new_begin_collecte_date']="La date est invalide";
 			}
 		} else {
-			$errors['new_begin_collecte_date']="Il faut une date de début de collecte !";
+			$errors['new_begin_collecte_date']="Il faut une date de dÃ©but de collecte !";
 		}
 
 		$end_collecte_date = filter_input(INPUT_POST, 'new_end_collecte_date');
@@ -1521,7 +1531,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Enregistre les informations d'étape du projet
+	 * Enregistre les informations d'Ã©tape du projet
 	 */
 	public static function save_project_status(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
@@ -1538,7 +1548,7 @@ class WDGAjaxActions {
 		$success['new_can_go_next_status']=1;
 		$campaign->update_api();
 		
-		// Mise à jour cache
+		// Mise Ã  jour cache
 		do_action('wdg_delete_cache', array(
 			'cache_campaign_' . $campaign_id
 		));
@@ -1555,7 +1565,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Enregistre l'obligation de signer une autorisation de prélévement
+	 * Enregistre l'obligation de signer une autorisation de prÃ©lÃ©vement
 	 */
 	public static function save_project_force_mandate() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
@@ -1582,7 +1592,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Enregistre les informations concernant la déclaration de royalties
+	 * Enregistre les informations concernant la dÃ©claration de royalties
 	 */
 	public static function save_project_declaration_info() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
@@ -1605,7 +1615,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Crée la table des contacts
+	 * CrÃ©e la table des contacts
 	 */
 	public static function create_contacts_table(){
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
@@ -1616,13 +1626,13 @@ class WDGAjaxActions {
 		$table_vote = $wpdb->prefix . "ypcf_project_votes";
 		$table_jcrois = $wpdb->prefix . "jycrois";
 
-		//Données suiveurs
+		//DonnÃ©es suiveurs
 		$list_user_follow = $wpdb->get_col( "SELECT DISTINCT user_id FROM ".$table_jcrois." WHERE subscribe_news = 1 AND campaign_id = ".$campaign_id. " GROUP BY user_id");
 		
-		//Données d'investissement
+		//DonnÃ©es d'investissement
 		$investments_list = (json_decode(filter_input(INPUT_POST, 'data'),true));
 
-		//Données de vote
+		//DonnÃ©es de vote
 		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, rate_project, advice FROM ".$table_vote." WHERE post_id = ".$campaign_id );
 
 
@@ -1648,7 +1658,7 @@ class WDGAjaxActions {
 			$array_contacts[$u_id]["vote_rate"] = $item_vote->rate_project;
         }
 		
-		// Contrats complémentaires éventuels
+		// Contrats complÃ©mentaires Ã©ventuels
 		$contracts_to_add = array();
 		$contract_models = WDGWPREST_Entity_Project::get_contract_models( $campaign->get_api_id() );
 		foreach ( $contract_models as $contract_model ) {
@@ -1686,21 +1696,21 @@ class WDGAjaxActions {
 				
             }
 
-            $investment_state = 'Validé';
+            $investment_state = 'ValidÃ©';
             if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing ) {
-                $investment_state = 'Annulé';
+                $investment_state = 'AnnulÃ©';
 
                 $refund_card_id = get_post_meta($item_invest['ID'], 'refund_id', TRUE);
 				$refund_wire_id = get_post_meta($item_invest['ID'], 'refund_wire_id', TRUE);
 				$refund_wallet_id = get_post_meta($item_invest['ID'], 'refund_wallet_id', TRUE);
                 if ( !empty( $refund_card_id ) || !empty( $refund_wire_id ) || !empty( $refund_wallet_id ) ) {
-					$investment_state = 'Remboursé';
+					$investment_state = 'RemboursÃ©';
 
                 }
             }
 			$contract_status = $payment_investment->get_contract_status();
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
-				$investment_state = 'Pré-investissement non-validé';
+				$investment_state = 'PrÃ©-investissement non-validÃ©';
 			}
 
             $page_dashboard = get_page_by_path('tableau-de-bord');
@@ -1713,7 +1723,7 @@ class WDGAjaxActions {
 					$payment_state .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&try_pending_card='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
 				}
 				
-			} else if ( $payment_state == 'Terminé' ) {
+			} else if ( $payment_state == 'TerminÃ©' ) {
 				$more_invest["invest_contracts"] = array();
 				$contract_model_index = 1;
 				foreach ( $contracts_to_add as $contract_model ) {
@@ -1726,7 +1736,7 @@ class WDGAjaxActions {
 							
 							$wdg_contract_status = 'En attente';
 							if ( $wdg_contract->status == 'validated' ) {
-								$wdg_contract_status = 'Contrat signé';
+								$wdg_contract_status = 'Contrat signÃ©';
 							} else {
 								$signsquid_contract = new SignsquidContract( FALSE, $wdg_contract->partner_id );
 								$signsquid_status = $signsquid_contract->get_status_code();
@@ -1746,7 +1756,7 @@ class WDGAjaxActions {
 				}
 			}
 			
-			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
+			//Si il y a dÃ©jÃ  une ligne pour l'investissement, on rajoute une ligne
 			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
 				$more_invest = array();
 				$more_invest["invest_payment_type"] = $payment_type;
@@ -1779,7 +1789,7 @@ class WDGAjaxActions {
         //Extraction infos utilisateur
 		$count_distinct_investors = 0;
         foreach ( $array_contacts as $user_id => $user_item ){
-            //Données si l'investisseur est une organisation
+            //DonnÃ©es si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"] = $user_id;
 			if ( WDGOrganization::is_user_organization( $user_id ) ) {
 				$WDGOrganization = new WDGOrganization( $user_id );
@@ -1793,7 +1803,7 @@ class WDGAjaxActions {
 				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
                 $array_contacts[$user_id]["user_email"]= $orga->get_email();
 
-				//Infos supplémentaires pour les votants
+				//Infos supplÃ©mentaires pour les votants
 				if($array_contacts[$user_id]["vote"] == 1 || $array_contacts[$user_id]["invest"] == 1){
 					$array_contacts[$user_id]["user_last_name"]=$orga_creator->last_name;
 					$array_contacts[$user_id]["user_first_name"]=$orga_creator->first_name;
@@ -1801,7 +1811,7 @@ class WDGAjaxActions {
 					$array_contacts[$user_id]["user_postal_code"]= $orga->get_postal_code();
 					$array_contacts[$user_id]["user_nationality"] = ucfirst(strtolower($orga->get_nationality()));
 
-					//Infos supplémentaires pour les investisseurs
+					//Infos supplÃ©mentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
 						$count_distinct_investors++;
 						$array_contacts[$user_id]["user_address"] = $orga->get_address();
@@ -1811,9 +1821,9 @@ class WDGAjaxActions {
 					}
 				}
 
-            //Données si l'investisseur est un utilisateur normal
+            //DonnÃ©es si l'investisseur est un utilisateur normal
             } else {
-				//Infos supplémentaires pour les investisseurs
+				//Infos supplÃ©mentaires pour les investisseurs
 				if($array_contacts[$user_id]["invest"] == 1){
 					$count_distinct_investors++;
 					if ( !empty( $user_item[ 'invest_item' ][ 'item' ] ) ) {
@@ -1846,7 +1856,7 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_mobile_phone"] = $WDGUser->get_phone_number();
 					}
 					
-				//Infos supplémentaires pour les votants
+				//Infos supplÃ©mentaires pour les votants
 				} else {
 					$WDGUser = new WDGUser( $user_id );
 					$array_contacts[$user_id]["user_link"] = $WDGUser->get_email();
@@ -1860,7 +1870,7 @@ class WDGAjaxActions {
             }
         }
 
-        /*********Intitulés et paramètres des colonnes***********/
+        /*********IntitulÃ©s et paramÃ¨tres des colonnes***********/
         $status = $campaign->campaign_status();
         $display_invest_infos = false;
         if ( $status == ATCF_Campaign::$campaign_status_collecte
@@ -1879,31 +1889,31 @@ class WDGAjaxActions {
         }
 
         $imggood = '<img src="'.get_stylesheet_directory_uri().'/images/good.png" alt="suit" title="Suit le projet" width="30px" class="infobutton" style="margin-left:0px;"/>';
-		$imggoodvote = '<img src="'.get_stylesheet_directory_uri().'/images/goodvote.png" alt="vote" title="A évalué" width="30px" class="infobutton" style="margin-left:0px;"/>';
+		$imggoodvote = '<img src="'.get_stylesheet_directory_uri().'/images/goodvote.png" alt="vote" title="A Ã©valuÃ©" width="30px" class="infobutton" style="margin-left:0px;"/>';
 		$imggoodmains = '<img src="'.get_stylesheet_directory_uri().'/images/goodmains.png" alt="investi" title="A investi" width="30px" class="infobutton" style="margin-left:0px;"/>';
 
         $array_columns = array(
         	new ContactColumn('checkbox','',true,"none"),
             new ContactColumn('user_link', 'Utilisateur', true),
 			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check","N'afficher que les contacts suivant le projet"),
-			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant évalué"),
+			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant Ã©valuÃ©"),
             new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,"check","N'afficher que les contacts ayant investi"),
 			new ContactColumn('user_id','',false),
 
 			new ContactColumn('user_last_name', 'Nom', true),
-            new ContactColumn('user_first_name', 'Prénom', true),
+            new ContactColumn('user_first_name', 'PrÃ©nom', true),
             new ContactColumn('user_birthday', 'Date de naissance', false, "date"),
             new ContactColumn('user_birthplace', 'Ville de naissance', false),
-            new ContactColumn('user_nationality', 'Nationalité', false),
+            new ContactColumn('user_nationality', 'NationalitÃ©', false),
             new ContactColumn('user_address', 'Adresse', false),
             new ContactColumn('user_city', 'Ville', true),
             new ContactColumn('user_postal_code', 'Code postal', false),
             new ContactColumn('user_country', 'Pays', false),
             new ContactColumn('user_email', 'Mail', true),
-            new ContactColumn('user_mobile_phone', 'Téléphone', false),
+            new ContactColumn('user_mobile_phone', 'TÃ©lÃ©phone', false),
 
-            new ContactColumn('vote_date',"Date d'éval.",$display_vote_infos, "date"),
-            new ContactColumn('vote_rate',"Note d'éval.",true),
+            new ContactColumn('vote_date',"Date d'Ã©val.",$display_vote_infos, "date"),
+            new ContactColumn('vote_rate',"Note d'Ã©val.",true),
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
 			new ContactColumn('vote_advice','Conseil',$display_vote_infos),
 
@@ -1965,7 +1975,7 @@ class WDGAjaxActions {
 					<?php endforeach; ?>
 				</tr>
 				
-				<?php //Gestion de plusieurs investissements par la même personne
+				<?php //Gestion de plusieurs investissements par la mÃªme personne
 				foreach ($has_more as $has_more_item): ?>
 				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $data_contact["invest_id"]; ?>">
 					<?php foreach($array_columns as $column): ?>
@@ -2036,7 +2046,7 @@ class WDGAjaxActions {
 
         <?php
 
-        //Colonnes à afficher par défaut
+        //Colonnes Ã  afficher par dÃ©faut
         $array_hidden = array();
         $i = 0;
         foreach($array_columns as $column) {
@@ -2046,7 +2056,7 @@ class WDGAjaxActions {
             $i++;
         }
 
-        //Identifiants de colonnes par lesquels seront triés les contacts par défaut
+        //Identifiants de colonnes par lesquels seront triÃ©s les contacts par dÃ©faut
         $default_sort=false;
         $i = 0;
         foreach($array_columns as $column) {
@@ -2072,7 +2082,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Crée l'aperçu du mail à confirmer avant de l'envoyer (Tableau de bord)
+	 * CrÃ©e l'aperÃ§u du mail Ã  confirmer avant de l'envoyer (Tableau de bord)
 	 */
 	public static function preview_mail_message(){
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
@@ -2080,7 +2090,7 @@ class WDGAjaxActions {
 
 		$title = sanitize_text_field(filter_input(INPUT_POST, 'mail_title'));
 		if (empty($title)){
-			$errors[]= "L'objet du mail ne peut être vide";
+			$errors[]= "L'objet du mail ne peut Ãªtre vide";
 		}
 		$content = filter_input(INPUT_POST, 'mail_content');
 		$content = WDGFormProjects::build_mail_text($content,$title,$campaign_id);
@@ -2164,7 +2174,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Lance les transferts d'argent vers les différents investisseurs
+	 * Lance les transferts d'argent vers les diffÃ©rents investisseurs
 	 */
 	public static function proceed_roi_transfers() {
 		$buffer = FALSE;
@@ -2185,7 +2195,7 @@ class WDGAjaxActions {
 	}
 	
 	/**
-	 * Lance la finalisation du projet (transfert des données d'investissement sur l'API, ...)
+	 * Lance la finalisation du projet (transfert des donnÃ©es d'investissement sur l'API, ...)
 	 */
 	public static function conclude_project() {
 		$WDGUser_current = WDGUser::current();
@@ -2197,7 +2207,7 @@ class WDGAjaxActions {
 					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive
 					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
 				
-				// Transfert des données d'investissement sur l'API
+				// Transfert des donnÃ©es d'investissement sur l'API
 				if ( !$campaign->has_investments_in_api() ) {
 					WDGInvestment::save_campaign_to_api( $campaign );
 				}
@@ -2213,7 +2223,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Bloque les autres utilisateurs si édition en cours
+	 * Bloque les autres utilisateurs si Ã©dition en cours
 	 */
 	public static function try_lock_project_edition() {
 		$WDGuser_current = WDGUser::current();
@@ -2328,7 +2338,7 @@ class WDGAjaxActions {
 }
 
 /**
- * Class ContactColumn utilisé pour les colonnes du tableau de contacts
+ * Class ContactColumn utilisÃ© pour les colonnes du tableau de contacts
  */
 class ContactColumn {
     public $columnData;
