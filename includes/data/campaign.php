@@ -2138,7 +2138,7 @@ class ATCF_Campaign {
 	}
 	
 	public function can_use_check( $amount_part ) {
-		return ( $this->can_use_check_option() && $this->can_use_check_amount( $amount_part ) );
+		return ( $this->can_use_check_option() && $this->can_use_check_amount( $amount_part ) && !$this->is_positive_savings() );
 	}
 	
 	public static $key_can_use_check = 'can_use_check';
