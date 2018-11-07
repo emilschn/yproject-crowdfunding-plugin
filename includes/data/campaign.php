@@ -1574,8 +1574,8 @@ class ATCF_Campaign {
 		}
 	    return $buffer;
 	}
-	public function platform_commission_amount() {
-		$buffer = round( $this->current_amount( FALSE ) * $this->platform_commission( FALSE ) / 100, 2 );
+	public function platform_commission_amount( $with_tax = TRUE ) {
+		$buffer = round( $this->current_amount( FALSE ) * $this->platform_commission( $with_tax ) / 100, 2 );
 		return $buffer;
 	}
 
