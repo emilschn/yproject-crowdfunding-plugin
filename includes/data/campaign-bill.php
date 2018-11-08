@@ -22,8 +22,8 @@ class WDGCampaignBill {
 	
 	public static $item_types = array(
 		'crowdfunding' => array(
-			'quickbooks_id' => 7,
-			'label' => 'WE ADVISE (Crowdfunding)'
+			'quickbooks_id' => 18,
+			'label' => 'CROWDFUNDING (Campagne publique)'
 		),
 		'wefund' => array(
 			'quickbooks_id' => 12,
