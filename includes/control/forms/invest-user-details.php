@@ -235,6 +235,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		
 		$this->addField(
 			'text',
+			'org_website',
+			__( "Site internet *", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_orga_info,
+			FALSE
+		);
+		
+		$this->addField(
+			'text',
 			'org_legalform',
 			__( "Forme juridique *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_info
@@ -334,6 +342,19 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
 			$org_email
+		);
+		
+		if ( $id_orga == 'new-orga' ) {
+			$org_website = ( $_SESSION[ 'org_website' ] == '' ) ? FALSE : $_SESSION[ 'org_website' ];
+		} else {
+			$org_website = $WDGOrganization->get_website();
+		}
+		$this->addField(
+			'hidden',
+			'org_init_website_' .$id_orga,
+			'',
+			WDG_Form_Invest_User_Details::$field_group_orga_select,
+			$org_website
 		);
 		
 		if ( $id_orga == 'new-orga' ) {
@@ -630,6 +651,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				'org_name'
 			);
 		}
+		
 		$org_email = $this->getInputText( 'org_email' );
 		if ( !is_email( $org_email ) ) {
 			$needs_update_organization = TRUE;
@@ -640,6 +662,18 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				'email'
 			);
 		}
+		
+		$org_website = $this->getInputText( 'org_website' );
+		if ( empty( $org_website ) ) {
+			$needs_update_organization = TRUE;
+			$buffer = FALSE;
+			$this->addPostError(
+				'website-empty',
+				__( "Le site web de l'organisation n'est pas d&eacute;fini.", 'yproject' ),
+				'org_website'
+			);
+		}
+		
 		if ( ( $orga_id == 'new-orga' || ( $WDGOrganization != FALSE && $WDGOrganization->get_email() != $org_email ) ) && email_exists( $org_email ) ) {
 			$needs_update_organization = TRUE;
 			$buffer = FALSE;
@@ -696,6 +730,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$WDGOrganization->set_name( $org_name );
 		$org_email = $this->getInputText( 'org_email' );
 		$WDGOrganization->set_email( $org_email );
+		$org_website = $this->getInputText( 'org_website' );
+		$WDGOrganization->set_website( $org_website );
 		$org_legalform = $this->getInputText( 'org_legalform' );
 		$WDGOrganization->set_legalform( $org_legalform );
 		$org_idnumber = $this->getInputText( 'org_idnumber' );
@@ -730,6 +766,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		ypcf_session_start();
 		$_SESSION[ 'org_name' ] = $this->getInputText( 'org_name' );
 		$_SESSION[ 'org_email' ] = $this->getInputText( 'org_email' );
+		$_SESSION[ 'org_website' ] = $this->getInputText( 'org_website' );
 		$_SESSION[ 'org_legalform' ] = $this->getInputText( 'org_legalform' );
 		$_SESSION[ 'org_idnumber' ] = $this->getInputText( 'org_idnumber' );
 		$_SESSION[ 'org_rcs' ] = $this->getInputText( 'org_rcs' );
