@@ -717,7 +717,7 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	public function try_payment_wallet( $amount, $current = TRUE ) {
+	public function try_payment_wallet( $amount, $current = TRUE, $amount_by_card = FALSE ) {
 		$buffer = FALSE;
 		if ( $current ) {
 			$WDGUser_current = WDGUser::current();
@@ -736,7 +736,7 @@ class WDGInvestment {
 			
 		} else {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
-			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $amount, $campaign );
+			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $amount, $campaign, $amount_by_card );
 		}
 		
 		// Tentative d'exécution du transfert d'argent
@@ -847,13 +847,12 @@ class WDGInvestment {
 					$invest_type = $this->get_session_user_type();
 					if ( $invest_type != 'user' ) {
 						$WDGOrganization_debit = new WDGOrganization( $invest_type );
-						$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
 						$amount = min( $this->get_session_amount(), $amount_by_card + $WDGOrganization_debit->get_available_rois_amount() );
 					} else {
 						$WDGUser_current = WDGUser::current();
 						$amount = min( $this->get_session_amount(), $WDGUser_current->get_lemonway_wallet_amount() );
 					}
-					$wallet_payment_key = $this->try_payment_wallet( $amount );
+					$wallet_payment_key = $this->try_payment_wallet( $amount, TRUE, $amount_by_card );
 					if ( !empty( $wallet_payment_key ) ) {
 						$payment_key .= '_' . $wallet_payment_key;
 					} else {

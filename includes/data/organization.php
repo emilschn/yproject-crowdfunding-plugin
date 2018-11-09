@@ -1023,8 +1023,11 @@ class WDGOrganization {
 	 * @param ATCF_Campaign $campaign
 	 * @return bool
 	 */
-	public function can_pay_with_wallet( $amount, $campaign ) {
+	public function can_pay_with_wallet( $amount, $campaign, $amount_by_card = FALSE ) {
 		$lemonway_amount = $this->get_available_rois_amount();
+		if ( !empty( $amount_by_card ) ) {
+			$lemonway_amount += $amount_by_card;
+		}
 		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
