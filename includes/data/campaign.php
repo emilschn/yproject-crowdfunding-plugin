@@ -1712,6 +1712,21 @@ class ATCF_Campaign {
 		}
 		return mysql2date( $format, $end_datetime_str, false );
 	}
+	
+	private static $retraction_days_number = 14;
+	private $has_retraction_passed;
+	public function has_retraction_passed() {
+		if ( !isset( $this->has_retraction_passed ) ) {
+			$this->has_retraction_passed = FALSE;
+			$current_date = new DateTime();
+			$end_date = new DateTime( $this->end_date() );
+			if ( $current_date > $end_date ) {
+				$interval = $current_date->diff( $end_date );
+				$this->has_retraction_passed = ( $interval > self::$retraction_days_number );
+			}
+		}
+		return $this->has_retraction_passed;
+	}
         
         /**
 	 * Campaign Begin Collecte Date
