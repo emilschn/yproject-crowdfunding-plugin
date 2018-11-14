@@ -166,7 +166,8 @@ class WDGAjaxActions {
 					$buffer[ $campaign_id ][ 'name' ] = $campaign->data->post_title;
 					$buffer[ $campaign_id ][ 'status' ] = $campaign->campaign_status();
 					$buffer[ $campaign_id ][ 'amount' ] = $campaign->current_amount( false );
-					$buffer[ $campaign_id ][ 'start_date' ] = $campaign->contract_start_date();
+					$contract_start_date = new DateTime( $campaign->contract_start_date() );
+					$buffer[ $campaign_id ][ 'start_date' ] = $contract_start_date->format( 'd/m/Y' );
 					$buffer[ $campaign_id ][ 'funding_duration' ] = $campaign->funding_duration();
 					$buffer[ $campaign_id ][ 'roi_percent' ] = $campaign->roi_percent();
 					$buffer[ $campaign_id ][ 'items' ] = array();
