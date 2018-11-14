@@ -178,7 +178,7 @@ class WDGAjaxActions {
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
-				$roi_list = $WDGUser->get_user_royalties_by_investment_id( $purchase_post->ID );
+				$roi_list = $WDGUser->get_royalties_by_investment_id( $purchase_post->ID );
 				foreach ( $roi_list as $roi_item ) {
 					$roi_amount += $roi_item->amount;
 				}
