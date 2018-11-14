@@ -175,7 +175,7 @@ class WDGUser {
 			if ( empty( $this->api_id ) ) {
 				$user_create_result = WDGWPREST_Entity_User::create( $this );
 				$this->api_id = $user_create_result->id;
-				ypcf_debug_log('WDGUser::get_api_id > ' . $this->api_id);
+//				ypcf_debug_log('WDGUser::get_api_id > ' . $this->api_id);
 				update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $this->api_id );
 			}
 		}
@@ -874,7 +874,6 @@ class WDGUser {
 		if ( !isset( $this->rois ) ) {
 			$this->rois = WDGWPREST_Entity_User::get_rois( $this->get_api_id() );
 		}
-		ypcf_debug_log( $this->rois );
 		return $this->rois;
 	}
 	
@@ -931,6 +930,20 @@ class WDGUser {
 				array_push( $buffer, $roi_item );
 			}
 		}
+		return $buffer;
+	}
+	
+	public static function get_user_royalties_by_investment_id( $user_id, $investment_id ) {
+		$buffer = array();
+		
+		$api_id = get_user_meta( $user_id, WDGUser::$key_api_id, TRUE );
+		$rois = WDGWPREST_Entity_User::get_rois( $api_id );
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
+				array_push( $buffer, $roi_item );
+			}
+		}
+		
 		return $buffer;
 	}
 	
