@@ -874,6 +874,7 @@ class WDGUser {
 		if ( !isset( $this->rois ) ) {
 			$this->rois = WDGWPREST_Entity_User::get_rois( $this->get_api_id() );
 		}
+		ypcf_debug_log( $this->rois );
 		return $this->rois;
 	}
 	

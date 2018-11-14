@@ -188,7 +188,7 @@ class WDGAjaxActions {
 				$investment_item[ 'amount' ] = $payment_amount;
 				$investment_item[ 'status' ] = $purchase_post->post_status;
 				$investment_item[ 'roi_percent' ] = $roi_percent_display;
-				$investment_item[ 'roi_list' ] = json_encode( $WDGUser->get_rois() );
+				$investment_item[ 'roi_list' ] = $WDGUser->get_rois();
 				$investment_item[ 'roi_amount' ] = $roi_amount;
 				$investment_item[ 'roi_return' ] = round( $roi_amount / $payment_amount * 100 );
 				
