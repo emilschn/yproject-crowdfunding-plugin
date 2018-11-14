@@ -919,7 +919,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne la liste des royalties par campagne
+	 * Retourne la liste des royalties par id d'investissement
 	 * @return array
 	 */
 	public function get_royalties_by_investment_id( $investment_id ) {
