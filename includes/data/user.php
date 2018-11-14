@@ -919,6 +919,21 @@ class WDGUser {
 	}
 	
 	/**
+	 * Retourne la liste des royalties par campagne
+	 * @return array
+	 */
+	public function get_royalties_by_investment_id( $investment_id ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
+				array_push( $buffer, $roi_item );
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne TRUE si l'utilisateur a reçu des royalties pour l'année en paramètre
 	 * @param int $year
 	 * @return boolean
