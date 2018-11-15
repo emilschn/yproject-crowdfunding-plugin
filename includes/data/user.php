@@ -1167,6 +1167,7 @@ class WDGUser {
 		//Vérifie que le wallet n'est pas déjà enregistré
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			ypcf_debug_log_backtrace();
 			return LemonwayLib::wallet_register(
 				$this->get_lemonway_id(),
 				$this->get_email(),
@@ -1511,8 +1512,9 @@ class WDGUser {
 		if ($this->can_register_lemonway()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
-					WDGKYCFile::$type_id		=> '0', 
-					WDGKYCFile::$type_home		=> '1'
+					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id, 
+					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
+					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_passport_euro
 				);
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );

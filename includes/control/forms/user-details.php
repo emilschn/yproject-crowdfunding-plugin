@@ -330,7 +330,7 @@ class WDG_Form_User_Details extends WDG_Form {
 					);
 					
 					$was_registered = $WDGUser->is_lemonway_registered();
-					if ( $WDGUser->can_register_lemonway() ) {
+					if ( !$was_registered && $WDGUser->can_register_lemonway() ) {
 						$WDGUser->register_lemonway();
 						// Si il n'était authentifié sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
 						if ( !$was_registered && $WDGUser->is_lemonway_registered() ) {
