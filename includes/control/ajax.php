@@ -21,6 +21,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		WDGAjaxActions::add_action('get_searchable_projects_list');
 		
+		WDGAjaxActions::add_action('display_user_investments');
 		WDGAjaxActions::add_action('display_roi_user_list');
 		WDGAjaxActions::add_action('show_project_money_flow');
 		WDGAjaxActions::add_action('check_invest_input');
@@ -81,9 +82,9 @@ class WDGAjaxActions {
 	public static function get_connect_to_facebook_url() {
 		ypcf_session_start();
 		$posted_redirect = filter_input( INPUT_POST, 'redirect' );
-		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > $posted_redirect : ' . $posted_redirect );
+//		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > $posted_redirect : ' . $posted_redirect );
 		$_SESSION[ 'login-fb-referer' ] = ( !empty( $posted_redirect ) ) ? $posted_redirect : wp_get_referer();
-		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
+//		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
 		
 		$fb = new Facebook\Facebook([
 			'app_id' => YP_FB_APP_ID,
@@ -142,9 +143,64 @@ class WDGAjaxActions {
 		echo $buffer;
 		exit();
 	}
+	
+	/**
+	 * Affiche la liste des investissements d'un utilisateur
+	 */
+	public static function display_user_investments() {
+		$buffer = array();
+		
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$WDGUser = new WDGUser( $user_id );
+		
+		$payment_status = array( 'publish', 'completed', 'pending' );
+		$purchases = edd_get_users_purchases( $user_id, -1, false, $payment_status );
+		foreach ( $purchases as $purchase_post ){
+			$downloads = edd_get_payment_meta_downloads( $purchase_post->ID );
+			if ( !is_array( $downloads[ 0 ] ) ){
+				$campaign_id = $downloads[0];
+				$campaign = atcf_get_campaign( $campaign_id );
+				
+				if ( !isset( $buffer[ $campaign_id ] ) ) {
+					$buffer[ $campaign_id ] = array();
+					$buffer[ $campaign_id ][ 'name' ] = $campaign->data->post_title;
+					$buffer[ $campaign_id ][ 'status' ] = $campaign->campaign_status();
+					$buffer[ $campaign_id ][ 'amount' ] = $campaign->current_amount( false );
+					$contract_start_date = new DateTime( $campaign->contract_start_date() );
+					$buffer[ $campaign_id ][ 'start_date' ] = $contract_start_date->format( 'd/m/Y' );
+					$buffer[ $campaign_id ][ 'funding_duration' ] = $campaign->funding_duration();
+					$buffer[ $campaign_id ][ 'roi_percent' ] = $campaign->roi_percent();
+					$buffer[ $campaign_id ][ 'items' ] = array();
+				}
+				
+				$payment_amount = edd_get_payment_amount( $purchase_post->ID );
+				$investor_proportion = $payment_amount / $buffer[ $campaign_id ][ 'amount' ];
+				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
+				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
+				$roi_amount = 0;
+				$roi_list = $WDGUser->get_royalties_by_investment_id( $purchase_post->ID );
+				foreach ( $roi_list as $roi_item ) {
+					$roi_amount += $roi_item->amount;
+				}
+				
+				$investment_item = array();
+				$investment_item[ 'date' ] = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_post->ID ) ) );
+				$investment_item[ 'amount' ] = $payment_amount;
+				$investment_item[ 'status' ] = $purchase_post->post_status;
+				$investment_item[ 'roi_percent' ] = $roi_percent_display;
+				$investment_item[ 'roi_amount' ] = $roi_amount;
+				$investment_item[ 'roi_return' ] = round( $roi_amount / $payment_amount * 100 );
+				
+				array_push( $buffer[ $campaign_id ][ 'items' ], $investment_item );
+			}
+		}
+		
+		echo json_encode( $buffer );
+		exit();
+	}
     
 	/**
-	 * Affiche la liste des utilisateurs d'un projet qui doivent rÃ©cupÃ©rer de l'argent de leur investissement
+	 * Affiche la liste des utilisateurs d'un projet qui doivent récupérer de l'argent de leur investissement
 	 */
 	public static function display_roi_user_list() {
 		$wdgcurrent_user = WDGUser::current();
@@ -910,7 +966,7 @@ class WDGAjaxActions {
 		if ( empty( $organization_id ) ) {
 			$errors['organization_id'] = __("Probl&egrave;me interne",'yproject');
 		}
-		ypcf_debug_log( 'pay_with_mandate : ' .$amount_for_organization. ' + ' .$amount_for_commission. ' for ' .$organization_id );
+//		ypcf_debug_log( 'pay_with_mandate : ' .$amount_for_organization. ' + ' .$amount_for_commission. ' for ' .$organization_id );
 		
 		if ( empty( $errors ) ) {
 			$organization_obj = new WDGOrganization( $organization_id );

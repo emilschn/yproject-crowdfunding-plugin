@@ -183,7 +183,9 @@ class LemonwayNotification {
 			if ( $lemonway_posted_document_status > 2 ) {
 				// Si c'est une personne physique, on prévient
 				if ( empty( $WDGOrga_wallet ) ) {
-					NotificationsAPI::kyc_refused( $user_email, $user_firstname );
+					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
+						NotificationsAPI::kyc_refused( $user_email, $user_firstname );
+					}
 				}
 			}
 		

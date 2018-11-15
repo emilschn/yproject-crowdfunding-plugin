@@ -25,15 +25,22 @@ class WDGFormProjects {
 		}
 
 		$current_user = wp_get_current_user();
+		
+		$post_title = filter_input( INPUT_POST, 'posttitle' );
+		$post_content = filter_input( INPUT_POST, 'postcontent' );
+		$page_projects = get_page_by_path( 'les-projets' );
+		$post_name = $campaign->data->post_name . '-' . sanitize_title( $post_title );
+		$post_title = $campaign->get_name() . ' - ' . $post_title;
 
 		$blog = array(
-			'post_title'    => $_POST['posttitle'],
-			'post_content'  => $_POST['postcontent'],
+			'post_title'    => $post_title,
+			'post_content'  => $post_content,
+			'post_name'		=> $post_name,
 			'post_status'   => 'publish',
 			'post_author'   => $current_user->ID,
-			'post_category' => array( $campaign->get_news_category_id() )
+			'post_category' => array( $campaign->get_news_category_id() ),
+			'post_parent'	=> $page_projects->ID
 		);
-
 		$post_id = wp_insert_post($blog, true);
 		do_action('wdg_delete_cache', array( 'project-header-menu-'.$post_campaign->ID ));
                 
