@@ -124,13 +124,6 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			FALSE,
 			$country_list
 		);
-
-		$this->addField(
-			'text',
-			'phone_number',
-			__( "Num&eacute;ro de t&eacute;l&eacute;phone", 'yproject' ),
-			self::$field_group_user_info
-		);
 		
 	}
 	

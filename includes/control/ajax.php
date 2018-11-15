@@ -2164,6 +2164,11 @@ class WDGAjaxActions {
 	 * Recherche un utilisateur par son e-mail
 	 */
 	public static function search_user_by_email() {
+		// Bug structurel à corriger : obligé d'appeler cette fonction en premier
+		// Cela permet d'initialiser WDGUser::$_current
+		// qui, sinon, bloque la recherche des infos utilisateurs sur l'API
+		WDGUser::current();
+		
 		$email = filter_input(INPUT_POST, 'email');
 		$user_by_email = get_user_by( 'email', $email );
 		
