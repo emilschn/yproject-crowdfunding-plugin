@@ -76,7 +76,7 @@ class WDGCronActions {
 		$buffer_rss .= '<rss version="2.0">' . "\n";
 		$buffer_rss .= '<channel>' . "\n";
 		$buffer_rss .= '<title><![CDATA[Les projets de '.ATCF_CrowdFunding::get_platform_name().']]></title>' . "\n";
-		$buffer_rss .= '<description><![CDATA[Tous les projets en cours de collecte sur '.ATCF_CrowdFunding::get_platform_name().']]></description>' . "\n";
+		$buffer_rss .= '<description><![CDATA[Tous les projets en investissement sur '.ATCF_CrowdFunding::get_platform_name().']]></description>' . "\n";
 		$buffer_rss .= '<lastBuildDate>'.$date->format(DateTime::RFC822).'</lastBuildDate>' . "\n";
 		$buffer_rss .= '<link>' .home_url(). '</link>' . "\n";
 		
