@@ -516,10 +516,10 @@ class NotificationsEmails {
 		$object = 'Votre dossier a bien été enregistré sur '.ATCF_CrowdFunding::get_platform_name();
 		
 		$body_content = 'Bonjour '.$user_author->first_name.',<br />';
-		$body_content .= 'Les informations de votre campagne ont bien été enregistrées sur '.ATCF_CrowdFunding::get_platform_name().'. ';
+		$body_content .= 'Les informations de votre levée de fonds ont bien été enregistrées sur '.ATCF_CrowdFunding::get_platform_name().'. ';
 		$body_content .= 'Vous pouvez dès à présent les compléter en accédant à votre <a href="'. home_url('/tableau-de-bord/').'?campaign_id='.$campaign_id.'">tableau de bord</a>.<br />';
 		$body_content .= 'Toutes les informations communiquées à '.ATCF_CrowdFunding::get_platform_name().' sont gardées confidentielles.<br /><br />';
-		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre campagne.<br /><br />';
+		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre levée de fonds.<br /><br />';
 		$body_content .= 'Bien à vous,<br />';
 		$body_content .= "L'équipe de ".ATCF_CrowdFunding::get_platform_name();
 
@@ -815,7 +815,7 @@ class NotificationsEmails {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$status_str = "d'&eacute;valuation";
 		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
-			$status_str = "de collecte";
+			$status_str = "d'investissement";
 		}
 		
 		$object = "Changement d'étape projet";

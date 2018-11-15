@@ -288,8 +288,8 @@ class ATCF_Campaigns {
 		if ( ! is_object( $post ) )
 			return;
 
-		add_meta_box( 'atcf_campaign_status', 'Statut de la campagne', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_date_vote', 'Dates de la campagne', '_atcf_metabox_campaign_dates', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_status', 'Statut de la levée de fonds', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_date_vote', 'Dates de la levée de fonds', '_atcf_metabox_campaign_dates', 'download', 'side', 'high' );
 		
 		add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
 	}
@@ -730,7 +730,7 @@ function _atcf_metabox_campaign_status() {
 	global $post;
 	$campaign = atcf_get_campaign( $post );
 ?>  
-	<p>Choisir le statut de la campagne</p>
+	<p>Choisir le statut de la levée de fonds</p>
 	<?php $status_list = ATCF_Campaign::get_campaign_status_list(); ?>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	    <option></option>
@@ -786,7 +786,7 @@ function _atcf_metabox_campaign_dates() {
             $ss = mysql2date( 's', $begin_date, false );
         ?>
         <p>
-		<strong><?php _e( 'Date de début de collecte:', 'atcf' ); ?></strong><br />
+		<strong><?php _e( "Date de début d'investissement :", 'atcf' ); ?></strong><br />
 
 		<input type="text" id="begin-jj" name="begin-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<select id="begin-mm" name="begin-mm">
@@ -814,7 +814,7 @@ function _atcf_metabox_campaign_dates() {
             $ss = mysql2date( 's', $end_date, false );
         ?>
         <p>
-		<strong><?php _e( 'Date de fin de collecte:', 'atcf' ); ?></strong><br />
+		<strong><?php _e( "Date de fin d'investissement :", 'atcf' ); ?></strong><br />
 
 		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<select id="end-mm" name="end-mm">

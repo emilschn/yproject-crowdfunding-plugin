@@ -169,7 +169,7 @@ class ATCF_Campaign {
             ATCF_Campaign::$campaign_status_validated	=> 'Pr&eacute;paration',
 			ATCF_Campaign::$campaign_status_preview		=> 'Avant-premi&egrave;re',
 			ATCF_Campaign::$campaign_status_vote		=> '&Eacute;valuation',
-			ATCF_Campaign::$campaign_status_collecte	=> 'Lev&eacute;e de fonds',
+			ATCF_Campaign::$campaign_status_collecte	=> 'Investissement',
 			ATCF_Campaign::$campaign_status_funded		=> 'Versement des royalties',
 			ATCF_Campaign::$campaign_status_closed		=> 'Projet termin&eacute;',
 			ATCF_Campaign::$campaign_status_archive		=> 'Projet &eacute;chou&eacute;'
@@ -2106,7 +2106,7 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_date() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = __('Collecte termin&eacute;e', 'yproject');
+				    $buffer = __("Investissement termin&eacute;", 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));

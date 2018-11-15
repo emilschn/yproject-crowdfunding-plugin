@@ -85,7 +85,7 @@ class NotificationsSlack {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$status_str = "évaluation";
 		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
-			$status_str = "collecte";
+			$status_str = "investissement";
 		}
 		
 		$message = "Un projet change d'étape ! <!channel>\n";
