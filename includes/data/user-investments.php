@@ -98,7 +98,7 @@ class WDGUserInvestments {
 	/**
 	 * Gestion des pré-investissements
 	 */
-	public function get_pending_preinvestments( $force_reload = FALSE) {
+	public function get_pending_preinvestments( $force_reload = FALSE ) {
 		$db_cacher = WDG_Cache_Plugin::current();
 		$id_user = $this->wp_ref;
 		$pending_preinv_key = 'user_'.$id_user.'_pending_preinvestments';
