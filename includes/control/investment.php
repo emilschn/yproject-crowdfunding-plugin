@@ -941,8 +941,13 @@ class WDGInvestment {
 				}
 
 				if ( !empty( $card_token ) ) {
-					// D'abord, on reverse sur le porte-monnaie utilisateur
+					// amount_with_card n'est défini que si on a utilisé la carte + le wallet pour payer.
 					$amount_with_card = get_post_meta( $this->get_id(), 'amount_with_card', TRUE );
+					// Sinon on prend le montant total
+					if ( empty( $amount_with_card ) ) {
+						$amount_with_card = $this->get_saved_amount();
+					}
+					// D'abord, on reverse sur le porte-monnaie utilisateur
 					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_card );
 					
 					// Ensuite on fait le remboursement
@@ -955,10 +960,13 @@ class WDGInvestment {
 				}
 				
 				if ( !empty( $wallet_token ) ) {
+					// amount_with_wallet n'est défini que si on a utilisé la carte + le wallet pour payer. 
 					$amount_with_wallet = get_post_meta( $this->get_id(), 'amount_with_wallet', TRUE );
-					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_wallet );
-					if (LemonwayLib::get_last_error_code() == '') {
-						update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
+					if ( !empty( $amount_with_wallet ) ) {
+						$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_wallet );
+						if (LemonwayLib::get_last_error_code() == '') {
+							update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
+						}
 					}
 
 				}
