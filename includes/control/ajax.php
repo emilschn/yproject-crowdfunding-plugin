@@ -188,8 +188,8 @@ class WDGAjaxActions {
 				$investment_item[ 'amount' ] = $payment_amount;
 				$investment_item[ 'status' ] = $purchase_post->post_status;
 				$investment_item[ 'roi_percent' ] = $roi_percent_display;
-				$investment_item[ 'roi_amount' ] = $roi_amount;
-				$investment_item[ 'roi_return' ] = round( $roi_amount / $payment_amount * 100 );
+				$investment_item[ 'roi_amount' ] = round( $roi_amount, 2 );
+				$investment_item[ 'roi_return' ] = round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 );
 				
 				array_push( $buffer[ $campaign_id ][ 'items' ], $investment_item );
 			}
