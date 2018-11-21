@@ -587,31 +587,26 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_comment($comment_id, $comment_object) {
-	ypcf_debug_log('NotificationsEmails::new_comment > ' . $comment_id);
-	$object = 'Nouveau commentaire !';
-	
-	get_comment($comment_id);
-	$post_parent = get_post($comment_object->comment_parent);
-	$post_categories = get_the_category($post_parent->ID);
-	if (count($post_categories) == 0 || $post_categories[0]->slug == 'wedogood' || $post_categories[0]->slug == 'revue-de-presse') {
-	    return FALSE;
-	}
-	$post_first_category = $post_categories[0];
-	$post_first_category_name = $post_first_category->name;
-	$name_exploded = explode('cat', $post_first_category_name);
-	if (count($name_exploded) < 2) { return FALSE; }
-	$post_campaign = get_post($name_exploded[1]);
-	$campaign = new ATCF_Campaign( $post_campaign );
-	
-	$body_content = "Vous avez reçu un nouveau commentaire sur votre projet ".$post_campaign->post_title." :<br />";
-	$body_content .= $comment_object->comment_content . "<br /><br />";
-	$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink($post_parent->ID).'">'.$post_parent->post_title.'</a>.';
-	
-	$user = get_userdata($post_campaign->post_author);
-	$emails = $user->user_email;
-	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+		ypcf_debug_log('NotificationsEmails::new_comment > ' . $comment_id);
+		$object = 'Nouveau commentaire !';
+
+		get_comment( $comment_id );
+		$post_categories = get_the_category( $comment_object->comment_post_ID );
+		if ( count($post_categories) > 0 && ( $post_categories[0]->slug == 'wedogood' || $post_categories[0]->slug == 'revue-de-presse' ) ) {
+			return FALSE;
+		}
 		
-	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
+		$campaign = new ATCF_Campaign( $comment_object->comment_post_ID );
+
+		$body_content = "Vous avez reçu un nouveau commentaire sur votre projet ".$campaign->data->post_title." :<br />";
+		$body_content .= $comment_object->comment_content . "<br /><br />";
+		$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink( $comment_object->comment_post_ID ).'">'.$campaign->data->post_title.'</a>.';
+
+		$user = get_userdata( $campaign->data->post_author );
+		$emails = $user->user_email;
+		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+
+		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
