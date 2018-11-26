@@ -1149,36 +1149,25 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion investissements
 *******************************************************************************/
+	private $user_investments;
 	/**
-	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
+	 * @return WDGUserInvestments
 	 */
-	public function get_investments( $payment_status ) {
-		$buffer = array();
-		$purchases = edd_get_users_purchases( $this->get_wpref(), -1, false, $payment_status );
-		
-		if ( !empty($purchases) ) {
-			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
-				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
-				$download_id = '';
-				if ( !is_array( $downloads[0] ) ){
-					$download_id = $downloads[0];
-					if ( !isset($buffer[$download_id]) ) {
-						$buffer[$download_id] = array();
-					}
-					array_push( $buffer[$download_id], $purchase_post->ID );
-				}
-			}
+	private function get_user_investments_object() {
+		if ( !isset( $this->user_investments ) ) {
+			$this->user_investments = new WDGUserInvestments( $this );
 		}
-			
-		return $buffer;
+		return $this->user_investments;
 	}
 	
-	/**
-	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
-	 */
+	public function get_investments( $payment_status ) {
+		return $this->get_user_investments_object()->get_investments( $payment_status );
+	}
 	public function get_validated_investments() {
-		$payment_status = array( "publish", "completed" );
-		return $this->get_investments( $payment_status );
+		return $this->get_user_investments_object()->get_validated_investments();
+	}
+	public function get_pending_investments() {
+		return $this->get_user_investments_object()->get_pending_investments();
 	}
 	
 /*******************************************************************************
