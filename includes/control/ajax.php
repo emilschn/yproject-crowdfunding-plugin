@@ -2033,7 +2033,7 @@ class WDGAjaxActions {
 				
 				<?php //Gestion de plusieurs investissements par la mÃªme personne
 				foreach ($has_more as $has_more_item): ?>
-				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $data_contact["invest_id"]; ?>">
+				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $has_more_item["invest_id"]; ?>">
 					<?php foreach($array_columns as $column): ?>
                 	<td>
 					<?php if ( $column->columnData == "follow" && $data_contact[$column->columnData]==1 ): ?>
