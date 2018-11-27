@@ -1555,6 +1555,10 @@ class WDGOrganization {
 		}
 		
 		if (count($errors_data) == 0) {
+			$new_org_name = filter_input( INPUT_POST, 'org_name' );
+			if ( !empty( $new_org_name ) ) {
+				$org_object->set_name( $new_org_name );
+			}
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
