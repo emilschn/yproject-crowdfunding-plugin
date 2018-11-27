@@ -338,6 +338,10 @@ class WDGPostActions {
                             $CollectEndDate = (new DateTime())->add($diffCollectDay);
                             $CollectEndDate->setTime($collecte_fin_heure,$collecte_fin_minute);
                             $campaign->set_end_date($CollectEndDate);
+							// Si on n'est pas passé par la phase d'évaluation, on met à jour la date de fin d'évaluation pour ne pas faire bugger les stats
+							if ( $status == ATCF_Campaign::$campaign_status_validated && $campaign->skip_vote() ) {
+								$campaign->set_end_vote_date( new DateTime() );
+							}
                             $campaign->set_begin_collecte_date(new DateTime());
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
