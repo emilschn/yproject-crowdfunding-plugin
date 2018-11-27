@@ -82,7 +82,7 @@ class WDGWPREST_Entity_Organization {
 		$organization_projects = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization->get_api_id(). '/projects' );
 		if ( $organization_projects ) {
 			foreach ( $organization_projects as $projects ) {
-				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$projects->id. '?with_investments=1&with_organization=1' );
+				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$projects->id. '?with_investments=1&with_organization=1&with_poll_answers=1' );
 			}
 		}
 		
