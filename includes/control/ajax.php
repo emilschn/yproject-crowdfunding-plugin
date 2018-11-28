@@ -151,7 +151,12 @@ class WDGAjaxActions {
 		$buffer = array();
 		
 		$user_id = filter_input( INPUT_POST, 'user_id' );
-		$WDGUser = new WDGUser( $user_id );
+		$user_type = filter_input( INPUT_POST, 'user_type' );
+		if ( $user_type == 'user' ) {
+			$WDGUserEntity = new WDGUser( $user_id );
+		} else {
+			$WDGUserEntity = new WDGOrganization( $user_id );
+		}
 		
 		$payment_status = array( 'publish', 'completed', 'pending' );
 		$purchases = edd_get_users_purchases( $user_id, -1, false, $payment_status );
@@ -178,7 +183,7 @@ class WDGAjaxActions {
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
-				$roi_list = $WDGUser->get_royalties_by_investment_id( $purchase_post->ID );
+				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $purchase_post->ID );
 				foreach ( $roi_list as $roi_item ) {
 					$roi_amount += $roi_item->amount;
 				}
