@@ -2170,7 +2170,11 @@ class ATCF_Campaign {
 			return $formatted ? 0 . '%' : 0;
 
 		$percent = ( $current / $goal ) * 100;
-		$percent = round( $percent );
+		if ( $percent < 90 ) {
+			$percent = round( $percent );
+		} else {
+			$percent = floor( $percent );
+		}
 
 		if ( $formatted )
 			return $percent . '%';
@@ -2185,7 +2189,11 @@ class ATCF_Campaign {
 			return $formatted ? 0 . '%' : 0;
 
 		$percent = ( $current / $goal ) * 100;
-		$percent = round( $percent );
+		if ( $percent < 90 ) {
+			$percent = round( $percent );
+		} else {
+			$percent = floor( $percent );
+		}
 
 		if ( $formatted )
 			return $percent . '%';
