@@ -825,14 +825,25 @@ class ATCF_Campaign {
 		
 		$project_investors_list = array();
 		$investments_list = $this->payments_data( TRUE );
+		
 		foreach ( $investments_list as $investment_item ) {
-			if ( !empty( $investment_item['item'] ) ) {
-				array_push( $project_investors_list, array( "firstname" => $investment_item['item']->firstname, "lastname" => $investment_item['item']->lastname, "amount" => $investment_item['amount'] ) );
-				
+			if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
+				$orga = new WDGOrganization( $investment_item[ 'user' ] );
+				$firstname = $orga->get_name();
+				$lastname = '';
 			} else {
-				$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
-				array_push( $project_investors_list, array( "firstname" => $WDGUserPayment->get_firstname(), "lastname" => $WDGUserPayment->get_lastname(), "amount" => $investment_item['amount'] ) );
+				if ( !empty( $investment_item['item'] ) ) {
+					$firstname = $investment_item['item']->firstname;
+					$lastname = $investment_item['item']->lastname;
+
+				} else {
+					$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
+					$firstname = $WDGUserPayment->get_firstname();
+					$lastname = $WDGUserPayment->get_lastname();
+				}
 			}
+			
+			array_push( $project_investors_list, array( "firstname" => $firstname, "lastname" => $lastname, "amount" => $investment_item['amount'] ) );
 		}
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
