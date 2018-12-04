@@ -340,7 +340,6 @@ class NotificationsEmails {
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
 		$body_content .= "Projet : " .$project_title. "<br />";
-		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Montant total : " .$amount. "<br />";
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
 	}
@@ -353,7 +352,6 @@ class NotificationsEmails {
 		$body_content .= "Il y a un souci pour un transfert de wallet en complément d'un paiement par carte :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
-		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Montant total : " .$amount. "<br />";
 		$body_content .= "dont montant wallet : " .$amount_wallet. "<br />";
