@@ -129,17 +129,31 @@ class WDGFormProjects {
 			);
 			wp_update_post($postdata);
 			
-			global $edd_logs;
-			if ( !empty( $edd_logs ) ) {
-				$logdata = array(
-					'post_status' => 'failed',
-					'post_parent' => $cancel_payment_id,
-				);
-				$edd_logs->update_log( $logdata );
+			
+			$logs_args = array(
+				'post_type'		=> 'edd_log',
+				'meta_query'	=> array(
+					array(
+						'key'		=> '_edd_log_payment_id',
+						'value'		=> $cancel_payment_id,
+						'compare'	=> '='
+					)
+				)
+			);
+			
+			$logs = new WP_Query( $logs_args );
+			if ( !empty( $logs->posts ) ) {
+				foreach ( $logs->posts as $log ) {
+					$postdata = array(
+						'ID'			=> $log->ID,
+						'post_status'	=> 'failed'
+					);
+					wp_update_post( $postdata );
+				}
 			}
 			
 			$page_dashboard = get_page_by_path('tableau-de-bord');
-			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment' );
+			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
 			exit();
 		}
 	}
