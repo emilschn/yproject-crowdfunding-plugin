@@ -81,6 +81,16 @@ class WDG_Form_User_Details extends WDG_Form {
 			$WDGUser->get_lastname()
 		);
 		
+		if ( $this->user_details_type == WDG_Form_User_Details::$type_complete || $this->user_details_type == WDG_Form_User_Details::$type_extended ) {
+			$this->addField(
+				'text',
+				'use_lastname',
+				__( "Nom d'usage", 'yproject' ),
+				WDG_Form_User_Details::$field_group_basics,
+				$WDGUser->get_use_lastname()
+			);
+		}
+		
 		// $field_group_basics : Si on met le formulaire basique, on propose de valider l'inscription à la NL
 		if ( $this->user_details_type == WDG_Form_User_Details::$type_basics ) {
 			
@@ -124,7 +134,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'gender',
-				__( "Vous &ecirc;tes", 'yproject' ),
+				__( "Vous &ecirc;tes *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_gender(),
 				FALSE,
@@ -137,7 +147,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'date',
 				'birthday',
-				__( "Date de naissance", 'yproject' ),
+				__( "Date de naissance *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_lemonway_birthdate()
 			);
@@ -145,16 +155,27 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'birthplace',
-				__( "Ville de naissance", 'yproject' ),
+				__( "Ville de naissance *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace()
+			);
+			
+			global $french_departments;
+			$this->addField(
+				'select',
+				'birthplace_department',
+				__( "D&eacute;partement de naissance", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_birthplace_department(),
+				FALSE,
+				$french_departments
 			);
 			
 			global $country_list;
 			$this->addField(
 				'select',
 				'nationality',
-				__( "Nationalit&eacute;", 'yproject' ),
+				__( "Nationalit&eacute; *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_nationality(),
 				FALSE,
@@ -163,8 +184,27 @@ class WDG_Form_User_Details extends WDG_Form {
 			
 			$this->addField(
 				'text',
+				'address_number',
+				__( "Num&eacute;ro", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_address_number()
+			);
+			
+			global $address_number_complements;
+			$this->addField(
+				'select',
+				'address_number_complement',
+				__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_address_number_complement(),
+				FALSE,
+				$address_number_complements
+			);
+			
+			$this->addField(
+				'text',
 				'address',
-				__( "Adresse", 'yproject' ),
+				__( "Adresse *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_address()
 			);
@@ -172,7 +212,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'postal_code',
-				__( "Code postal", 'yproject' ),
+				__( "Code postal *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_postal_code()
 			);
@@ -180,7 +220,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'city',
-				__( "Ville", 'yproject' ),
+				__( "Ville *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_city()
 			);
@@ -191,6 +231,16 @@ class WDG_Form_User_Details extends WDG_Form {
 				__( "Pays *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_country( 'iso2' ),
+				FALSE,
+				$country_list
+			);
+			
+			$this->addField(
+				'select',
+				'tax_country',
+				__( "R&eacute;sidence fiscale *", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_tax_country( 'iso2' ),
 				FALSE,
 				$country_list
 			);
@@ -291,15 +341,20 @@ class WDG_Form_User_Details extends WDG_Form {
 			
 			$user_details_type = $this->getInputText( 'user_details_type' );
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_complete ) {
+				$use_lastname = $this->getInputText( 'use_lastname' );
 				$gender = $this->getInputText( 'gender' );
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
+				$birthplace_department = $this->getInputText( 'birthplace_department' );
 				$nationality = $this->getInputText( 'nationality' );
+				$address_number = $this->getInputText( 'address_number' );
+				$address_number_complement = $this->getInputText( 'address_number_complement' );
 				$address = $this->getInputText( 'address' );
 				$postal_code = $this->getInputText( 'postal_code' );
 				$city = $this->getInputText( 'city' );
 				$country = $this->getInputText( 'country' );
+				$tax_country = $this->getInputText( 'tax_country' );
 			}
 			
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_vote ) {
@@ -323,9 +378,10 @@ class WDG_Form_User_Details extends WDG_Form {
 					}
 					
 					$WDGUser->save_data(
-						$email, $gender, $firstname, $lastname,
+						$email, $gender, $firstname, $lastname, $use_lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, 
+						$birthplace, $birthplace_department, $nationality,
+						$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, 
 						$description, $contact_if_deceased
 					);
 					

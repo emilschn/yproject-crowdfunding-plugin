@@ -2535,6 +2535,12 @@ class ATCF_Campaign {
 		if ( empty( $email ) || empty( $value ) ) {
 			return;
 		}
+		
+		$use_lastname = '';
+		$birthplace_department = '';
+		$address_number = '';
+		$address_number_complement = '';
+		$tax_country = '';
 	    
 		//Vérification si un utilisateur existe avec l'email en paramètre
 		$user_payment = get_user_by('email', $email);
@@ -2545,7 +2551,12 @@ class ATCF_Campaign {
 				$new_gender = $wdg_user->get_gender();
 				$new_firstname = $wdg_user->get_firstname();
 				$new_lastname = $wdg_user->get_lastname();
-				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+				$wdg_user->save_data(
+					$email, $new_gender, $new_firstname, $new_lastname, $use_lastname,
+					$birthday_day, $birthday_month, $birthday_year,
+					$birthplace, $birthplace_department, $nationality,
+					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country
+				);
 			}
 				
 		//Sinon, on vérifie si il y a un login et pwd transmis, pour créer le nouvel utilisateur
@@ -2553,7 +2564,14 @@ class ATCF_Campaign {
 			if (!empty($new_username) && !empty($new_password)) {
 				$user_id = wp_create_user($new_username, $new_password, $email);
 				$wdg_user = new WDGUser( $user_id );
-				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+				$use_lastname = '';
+				$birthplace_department = '';
+				$wdg_user->save_data(
+					$email, $new_gender, $new_firstname, $new_lastname,  $use_lastname, 
+					$birthday_day, $birthday_month, $birthday_year, 
+					$birthplace, $birthplace_department, $nationality,
+					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country
+				);
 			}
 		}
 		$saved_user_id = $user_id;

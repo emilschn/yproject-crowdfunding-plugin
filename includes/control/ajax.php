@@ -25,8 +25,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('display_roi_user_list');
 		WDGAjaxActions::add_action('show_project_money_flow');
 		WDGAjaxActions::add_action('check_invest_input');
-		WDGAjaxActions::add_action('save_user_infos');
-		WDGAjaxActions::add_action('save_orga_infos');
 		WDGAjaxActions::add_action('save_user_docs');
 		WDGAjaxActions::add_action('save_image_head');
 		WDGAjaxActions::add_action('save_image_url_video');
@@ -330,145 +328,6 @@ class WDGAjaxActions {
 				exit();
 			}
 		}
-		
-		/*
-		//Vérifie, selon le prestataire de paiement, que les kyc sont remplis 
-		//Si Lemonway, il faut les KYC pour les paiements supérieurs Ã  250â‚¬, et pour un montant annuel supérieur Ã  2500â‚¬
-		if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway && $invest_value > YP_LW_STRONGAUTH_MIN) {
-			//Vérifie si les documents LW sont déjà envoyés
-			//Si c'est au nom de la personne
-			if ($invest_type == "user" && $WDGuser_current->get_lemonway_status() == LemonwayLib::$status_ready) {
-				$return_values = array(
-					"response" => "kyc",
-					"errors" => array()
-				);
-				echo json_encode($return_values);
-				exit();
-			}
-		}
-		 * 
-		 */
-	}
-	
-	/**
-	 * Enregistre les informations liées Ã  l'utilisateur
-	 */
-	public static function save_user_infos() {
-		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
-		$campaign = new ATCF_Campaign( $campaign_id );
-		$current_user = WDGUser::current();
-		$email = filter_input( INPUT_POST, 'email' );
-		$gender = filter_input( INPUT_POST, 'gender' );
-		$firstname = filter_input( INPUT_POST, 'firstname' );
-		$lastname = filter_input( INPUT_POST, 'lastname' );
-		$birthday_day = filter_input( INPUT_POST, 'birthday_day' );
-		$birthday_month = filter_input( INPUT_POST, 'birthday_month' );
-		$birthday_year = filter_input( INPUT_POST, 'birthday_year' );
-		$birthplace = filter_input( INPUT_POST, 'birthplace' );
-		$nationality = filter_input( INPUT_POST, 'nationality' );
-		$address = filter_input( INPUT_POST, 'address' );
-		$postal_code = filter_input( INPUT_POST, 'postal_code' );
-		$city = filter_input( INPUT_POST, 'city' );
-		$country = filter_input( INPUT_POST, 'country' );
-		$telephone = filter_input( INPUT_POST, 'telephone' );
-		$current_user->save_data( $email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone );
-
-		$is_project_holder = false;
-		if ( filter_input( INPUT_POST, 'is_project_holder' )== '1' ) { $is_project_holder = true; }
-
-		if ( $current_user->has_filled_invest_infos( $campaign->funding_type() ) && filter_input( INPUT_POST, 'invest_type' ) != '' ) {
-			WDGAjaxActions::check_invest_input();
-		} else {
-			global $user_can_invest_errors;
-			$return_values = array(
-				"response" => "edit_user",
-				"errors" => $user_can_invest_errors
-			);
-			echo json_encode($return_values);
-		}
-		exit();
-	}
-	
-	public static function save_orga_infos() {
-		$invest_type = filter_input(INPUT_POST, 'invest_type');
-		if ($invest_type == "new_organization") {
-			$current_user = WDGUser::current();
-
-			global $errors_create_orga;
-			$errors_create_orga = array();
-
-			$new_orga_id = FALSE;
-			$orga_capable = filter_input( INPUT_POST, 'org_capable' );
-			if ($orga_capable == '1') {
-				$new_orga = new WDGOrganization();
-				$new_orga->set_name( filter_input( INPUT_POST, 'org_name' ) );
-				$new_orga->set_email( filter_input( INPUT_POST, 'org_email' ) );
-				$new_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
-				$new_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
-				$new_orga->set_type('society');
-				$new_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
-				$new_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
-				$new_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
-				$new_orga->set_capital( filter_input( INPUT_POST, 'org_capital' ) );
-				$new_orga->set_ape( filter_input( INPUT_POST, 'org_ape' ) );
-				$new_orga->set_address( filter_input( INPUT_POST, 'org_address' ) );
-				$new_orga->set_postal_code( filter_input( INPUT_POST, 'org_postal_code' ) );
-				$new_orga->set_city( filter_input( INPUT_POST, 'org_city' ) );
-				$new_orga->set_nationality( filter_input( INPUT_POST, 'org_nationality' ) );
-				$new_orga_id = $new_orga->create();
-			} else {
-				array_push($errors_create_orga, __("Merci de confirmer que vous pouvez repr&eacute;senter cette organisation.", 'yproject'));
-			}
-
-			if ($new_orga_id != FALSE) {
-				$new_orga->set_creator($current_user->wp_user->ID);
-				ypcf_session_start();
-				$_SESSION['new_orga_just_created'] = $new_orga_id;
-
-			} else {
-				global $errors_submit_new;
-				if ( !empty( $errors_submit_new ) ) { 
-					$error_messages = $errors_submit_new->get_error_messages();
-					foreach ($error_messages as $error_message) {
-						array_push($errors_create_orga, $error_message);
-					}
-				}
-				$return_values = array(
-					"response" => "new_organization",
-					"errors" => $errors_create_orga
-				);
-				echo json_encode($return_values);
-			}
-			
-		} else {
-			$edit_orga = new WDGOrganization($invest_type);
-			$edit_orga->set_representative_function( filter_input( INPUT_POST, 'org_representative_function' ) );
-			$edit_orga->set_description( filter_input( INPUT_POST, 'org_description' ) );
-			$edit_orga->set_website( filter_input( INPUT_POST, 'org_website' ) );
-			$edit_orga->set_legalform( filter_input( INPUT_POST, 'org_legalform' ) );
-			$edit_orga->set_idnumber( filter_input( INPUT_POST, 'org_idnumber' ) );
-			$edit_orga->set_rcs( filter_input( INPUT_POST, 'org_rcs' ) );
-			$edit_orga->set_capital( filter_input( INPUT_POST, 'org_capital' ) );
-			$edit_orga->set_ape( filter_input( INPUT_POST, 'org_ape' ) );
-			$edit_orga->set_address( filter_input( INPUT_POST, 'org_address' ) );
-			$edit_orga->set_postal_code( filter_input( INPUT_POST, 'org_postal_code' ) );
-			$edit_orga->set_city( filter_input( INPUT_POST, 'org_city' ) );
-			$edit_orga->set_nationality( filter_input( INPUT_POST, 'org_nationality' ) );
-			$edit_orga->save();
-			
-			if (!$edit_orga->has_filled_invest_infos()) {
-				global $organization_can_invest_errors;
-				$return_values = array(
-					"response" => "edit_organization",
-					"errors" => $organization_can_invest_errors
-				);
-				echo json_encode($return_values);
-				
-			} else {
-				WDGAjaxActions::check_invest_input();
-			}
-		}
-		exit();
 	}
 	
 	/**
@@ -873,11 +732,16 @@ class WDGAjaxActions {
 			$errors['new_mail']= __("Adresse mail non valide",'yproject');
 		}
 		
+		$use_lastname = '';
+		$birthplace_department = '';
+		$address_number = '';
+		$address_number_complement = '';
+		$tax_country = '';
 		$current_user->save_data( 
-			$mail, $gender, $firstname, $lastname, 
+			$mail, $gender, $firstname, $lastname, $use_lastname,
 			$new_birthday_date->format('d'), $new_birthday_date->format('n'), $new_birthday_date->format('Y'), 
-			$birthplace, $nationality, 
-			$address, $postal_code, $city, $country, $mobile_phone
+			$birthplace, $birthplace_department, $nationality,
+			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country
 		);
 
 		$return_values = array(
