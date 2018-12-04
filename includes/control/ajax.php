@@ -1776,7 +1776,7 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 						$array_contacts[$user_id]["user_birthday"] = $WDGUser->get_birthday_date();
 						$array_contacts[$user_id]["user_birthplace"] = $WDGUser->get_birthplace();
-						$array_contacts[$user_id]["user_address"] = $WDGUser->get_address_number() . ' ' . $WDGUser->get_address_number_complement() . ' ' . $WDGUser->get_address();
+						$array_contacts[$user_id]["user_address"] = $WDGUser->get_full_address_str();
 						$array_contacts[$user_id]["user_country"] = $WDGUser->get_country();
 						$array_contacts[$user_id]["user_mobile_phone"] = $WDGUser->get_phone_number();
 					}

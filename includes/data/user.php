@@ -344,6 +344,23 @@ class WDGUser {
 		}
 		return $buffer;
 	}
+	public function get_full_address_str() {
+		$buffer = '';
+		
+		$address_number = $this->get_address_number();
+		if ( !empty( $address_number ) && $address_number != 0 ) {
+			$buffer = $address_number . ' ';
+		}
+		
+		$address_number_complement = $this->get_address_number_complement();
+		if ( !empty( $address_number_complement ) ) {
+			$buffer .= $address_number_complement . ' ';
+		}
+		
+		$buffer .= $this->get_address();
+				
+		return $buffer;
+	}
 	
 	public function get_postal_code( $complete_french = false ) {
 		$buffer = $this->postalcode;
