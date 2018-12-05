@@ -2555,7 +2555,7 @@ class ATCF_Campaign {
 					$email, $new_gender, $new_firstname, $new_lastname, $use_lastname,
 					$birthday_day, $birthday_month, $birthday_year,
 					$birthplace, $birthplace_department, $nationality,
-					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country
+					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, ''
 				);
 			}
 				
@@ -2570,7 +2570,7 @@ class ATCF_Campaign {
 					$email, $new_gender, $new_firstname, $new_lastname,  $use_lastname, 
 					$birthday_day, $birthday_month, $birthday_year, 
 					$birthplace, $birthplace_department, $nationality,
-					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country
+					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, ''
 				);
 			}
 		}
