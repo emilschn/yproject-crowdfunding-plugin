@@ -9,15 +9,15 @@ $lemonway_lib = new LemonwayLib();
  * Classe de gestion de Lemonway
  */
 class LemonwayLib {
-	public static $limit_kyc1_moneyin_operation_amount = 250;
-	public static $limit_kyc1_moneyin_day_nb = 20;
-	public static $limit_kyc1_moneyin_year_amount = 2500;
-	public static $limit_kyc1_moneyout_day_nb = 20;
-	public static $limit_kyc1_moneyout_year_amount = 2500;
-	public static $limit_kyc1_p2p_in_day_nb = 20;
-	public static $limit_kyc1_p2p_out_year_nb = 20;
-	public static $limit_kyc1_p2p_in_year_amount = 2500;
-	public static $limit_kyc1_p2p_out_year_amount = 2500;
+	public static $limit_kyc1_moneyin_operation_amount = 0;
+	public static $limit_kyc1_moneyin_day_nb = 0;
+	public static $limit_kyc1_moneyin_year_amount = 0;
+	public static $limit_kyc1_moneyout_day_nb = 0;
+	public static $limit_kyc1_moneyout_year_amount = 0;
+	public static $limit_kyc1_p2p_in_day_nb = 0;
+	public static $limit_kyc1_p2p_out_year_nb = 0;
+	public static $limit_kyc1_p2p_in_year_amount = 0;
+	public static $limit_kyc1_p2p_out_year_amount = 0;
 	
 	public static $limit_kyc2_moneyin_day_nb = 1000;
 	public static $limit_kyc2_moneyin_day_amount = 500000;

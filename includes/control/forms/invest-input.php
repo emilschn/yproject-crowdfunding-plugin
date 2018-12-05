@@ -50,24 +50,6 @@ class WDG_Form_Invest_Input extends WDG_Form {
 			$WDGUserInvestments->get_maximum_investable_reason_str()
 		);
 		
-		if ( !$WDGCurrent_User->is_lemonway_registered() ) {
-			$this->addField(
-				'hidden',
-				'input_invest_user_max_amount_without_alert',
-				'',
-				WDG_Form_Invest_Input::$field_group_hidden,
-				$WDGUserInvestments->get_maximum_investable_amount_without_alert()
-			);
-
-			$this->addField(
-				'hidden',
-				'input_invest_user_max_amount_without_alert_reason',
-				'',
-				WDG_Form_Invest_Input::$field_group_hidden,
-				$WDGUserInvestments->get_maximum_investable_amount_without_alert_reason_str()
-			);
-		}
-		
 		$this->addField(
 			'hidden',
 			'input_invest_min_value',
