@@ -1544,7 +1544,10 @@ class WDGAjaxActions {
 	 */
 	public static function create_contacts_table(){
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
+		
 		$campaign = new ATCF_Campaign($campaign_id);
+		$campaign_poll_answers = $campaign->get_api_data( 'poll_answers' );
+		
         $current_wdg_user = WDGUser::current();
         global $country_list;
 		global $wpdb;
@@ -1792,6 +1795,43 @@ class WDGAjaxActions {
 					$array_contacts[$user_id]["user_postal_code"] = $WDGUser->get_postal_code();
 					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 				}
+				
+				foreach ( $campaign_poll_answers as $answer ) {
+					if ( $answer->poll_slug == 'source' && $answer->user_email == $array_contacts[ $user_id ][ 'user_email' ] ) {
+						$answers_decoded = json_decode( $answer->answers );
+						
+						$array_contacts[ $user_id ][ 'source-how-known' ] = '';
+						if ( !empty( $answers_decoded->{ 'how-the-fundraising-was-known' } ) ) {
+							$source_how_known_texts = array(
+								'known-by-project-manager'	=> __( "L'entrepreneur", 'yproject' ),
+								'known-by-wedogood'			=> __( "WE DO GOOD", 'yproject' ),
+								'known-by-other-investor'	=> __( "Un autre investisseur du projet", 'yproject' ),
+								'known-by-other-source'		=> __( "Autre (presse...)", 'yproject' )
+							);
+							$array_contacts[ $user_id ][ 'source-how-known' ] = $source_how_known_texts[ $answers_decoded->{ 'how-the-fundraising-was-known' } ];
+						}
+						if ( !empty( $answers_decoded->{ 'other-source-to-know-the-fundraising' } ) ) {
+							$array_contacts[ $user_id ][ 'source-how-known' ] .= ' (' . $answers_decoded->{ 'other-source-to-know-the-fundraising' } . ')';
+						}
+						
+						$array_contacts[ $user_id ][ 'source-where-from' ] = '';
+						if ( !empty( $answers_decoded->{ 'where-user-come-from' } ) ) {
+							$source_come_from_texts = array(
+								'mail-from-project-manager'			=> __( "Un mail du porteur de projet", 'yproject' ),
+								'social-network-private-message'	=> __( "Un message priv&eacute; sur Facebook, LinkedIn, Twitter...", 'yproject' ),
+								'social-network-publication'		=> __( "Une publication sur les r&eacute;seaux sociaux", 'yproject' ),
+								'wedogood-site-or-newsletter'		=> __( "La newsletter ou le site de WE DO GOOD", 'yproject' ),
+								'press-article'						=> __( "Un article de presse", 'yproject' ),
+								'other-source'						=> __( "Autre(s) :", 'yproject' )
+							);
+							$array_contacts[ $user_id ][ 'source-where-from' ] = $source_come_from_texts[ $answers_decoded->{ 'where-user-come-from' } ];
+						}
+						if ( !empty( $answers_decoded->{ 'other-source-where-the-user-come-from' } ) ) {
+							$array_contacts[ $user_id ][ 'source-where-from' ] .= ' (' . $answers_decoded->{ 'other-source-where-the-user-come-from' } . ')';
+						}
+					}
+				}
+				
             }
         }
 
@@ -1841,6 +1881,8 @@ class WDGAjaxActions {
             new ContactColumn('vote_rate',"Note d'éval.",true),
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
 			new ContactColumn('vote_advice','Conseil',$display_vote_infos),
+			new ContactColumn( 'source-how-known', 'Src. (connu)', ( $display_vote_infos || $display_invest_infos ) ),
+			new ContactColumn( 'source-where-from', 'Src. (arrivée)', ( $display_vote_infos || $display_invest_infos ) ),
 
 			new ContactColumn('invest_amount', 'Montant investi', ( $display_vote_infos || $display_invest_infos ), "range" ),
             new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
