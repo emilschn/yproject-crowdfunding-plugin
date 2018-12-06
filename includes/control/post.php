@@ -24,6 +24,7 @@ class WDGPostActions {
         self::add_action("edit_contract_model");
         self::add_action("send_contract_model");
         self::add_action("generate_campaign_bill");
+        self::add_action("generate_campaign_contracts_archive");
         self::add_action("generate_contract_files");
         self::add_action("upload_contract_files");
         self::add_action("send_project_contract_modification_notification");
@@ -337,6 +338,10 @@ class WDGPostActions {
                             $CollectEndDate = (new DateTime())->add($diffCollectDay);
                             $CollectEndDate->setTime($collecte_fin_heure,$collecte_fin_minute);
                             $campaign->set_end_date($CollectEndDate);
+							// Si on n'est pas passé par la phase d'évaluation, on met à jour la date de fin d'évaluation pour ne pas faire bugger les stats
+							if ( $status == ATCF_Campaign::$campaign_status_validated && $campaign->skip_vote() ) {
+								$campaign->set_end_vote_date( new DateTime() );
+							}
                             $campaign->set_begin_collecte_date(new DateTime());
 
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
@@ -567,6 +572,33 @@ class WDGPostActions {
 				$campaign_bill->generate();
 			}
 		}
+		
+		$url_return = wp_get_referer() . "#documents";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function generate_campaign_contracts_archive() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+		}
+		
+		$zip = new ZipArchive;
+		$zip_path = dirname( __FILE__ ). '/../../files/contracts/' .$campaign_id. '-' .$campaign->data->post_name. '.zip';
+		if ( $zip->open( $zip_path, ZipArchive::CREATE ) === TRUE ) {
+			
+			$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_*.pdf';
+			$files = glob( $exp );
+			foreach ( $files as $file ) {
+				$file_path_exploded = explode( '/', $file );
+				$contract_filename = $file_path_exploded[ count( $file_path_exploded ) - 1 ];
+				$zip->addFile( $file, $contract_filename );
+			}
+			$zip->close();
+		}
+		
 		
 		$url_return = wp_get_referer() . "#documents";
 		wp_redirect( $url_return );

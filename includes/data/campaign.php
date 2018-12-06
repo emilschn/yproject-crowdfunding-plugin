@@ -169,7 +169,7 @@ class ATCF_Campaign {
             ATCF_Campaign::$campaign_status_validated	=> 'Pr&eacute;paration',
 			ATCF_Campaign::$campaign_status_preview		=> 'Avant-premi&egrave;re',
 			ATCF_Campaign::$campaign_status_vote		=> '&Eacute;valuation',
-			ATCF_Campaign::$campaign_status_collecte	=> 'Lev&eacute;e de fonds',
+			ATCF_Campaign::$campaign_status_collecte	=> 'Investissement',
 			ATCF_Campaign::$campaign_status_funded		=> 'Versement des royalties',
 			ATCF_Campaign::$campaign_status_closed		=> 'Projet termin&eacute;',
 			ATCF_Campaign::$campaign_status_archive		=> 'Projet &eacute;chou&eacute;'
@@ -806,10 +806,7 @@ class ATCF_Campaign {
 		if ( !$force && file_exists( $filepath ) ) {
 			return;
 		}
-		$platform_commission = $this->platform_commission();
-		if ( empty( $platform_commission ) ) {
-			return;
-		}
+		
 		$data_contract_start_date = $this->contract_start_date();
 		if ( !empty( $data_contract_start_date ) ) {
 			$start_datetime = new DateTime( $data_contract_start_date );
@@ -828,14 +825,25 @@ class ATCF_Campaign {
 		
 		$project_investors_list = array();
 		$investments_list = $this->payments_data( TRUE );
+		
 		foreach ( $investments_list as $investment_item ) {
-			if ( !empty( $investment_item['item'] ) ) {
-				array_push( $project_investors_list, array( "firstname" => $investment_item['item']->firstname, "lastname" => $investment_item['item']->lastname, "amount" => $investment_item['amount'] ) );
-				
+			if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
+				$orga = new WDGOrganization( $investment_item[ 'user' ] );
+				$firstname = $orga->get_name();
+				$lastname = '';
 			} else {
-				$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
-				array_push( $project_investors_list, array( "firstname" => $WDGUserPayment->get_firstname(), "lastname" => $WDGUserPayment->get_lastname(), "amount" => $investment_item['amount'] ) );
+				if ( !empty( $investment_item['item'] ) ) {
+					$firstname = $investment_item['item']->firstname;
+					$lastname = $investment_item['item']->lastname;
+
+				} else {
+					$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
+					$firstname = $WDGUserPayment->get_firstname();
+					$lastname = $WDGUserPayment->get_lastname();
+				}
 			}
+			
+			array_push( $project_investors_list, array( "firstname" => $firstname, "lastname" => $lastname, "amount" => $investment_item['amount'] ) );
 		}
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
@@ -977,7 +985,15 @@ class ATCF_Campaign {
 	    return $this->__get(ATCF_Campaign::$key_first_payment_date);
 	}
 	
-	// Frais appliqués au porteur de projet
+	// Frais minimums appliqués au porteur de projet
+	public function get_minimum_costs_to_organization() {
+		$buffer = $this->get_api_data( 'minimum_costs_to_organization' );
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
+		return $buffer;
+	}
+	// Frais (%) appliqués au porteur de projet
 	public static $key_costs_to_organization = 'costs_to_organization';
 	public function get_costs_to_organization() {
 		$buffer = $this->get_api_data( 'costs_to_organization' );
@@ -1577,8 +1593,8 @@ class ATCF_Campaign {
 		}
 	    return $buffer;
 	}
-	public function platform_commission_amount() {
-		$buffer = round( $this->current_amount( FALSE ) * $this->platform_commission( FALSE ) / 100, 2 );
+	public function platform_commission_amount( $with_tax = TRUE ) {
+		$buffer = round( $this->current_amount( FALSE ) * $this->platform_commission( $with_tax ) / 100, 2 );
 		return $buffer;
 	}
 
@@ -2086,7 +2102,7 @@ class ATCF_Campaign {
 			    $expires = strtotime( $this->end_date() );
 			    //Si on a dépassé la date de fin, on retourne "-"
 			    if ( $now >= $expires ) {
-				    $buffer = __('Collecte termin&eacute;e', 'yproject');
+				    $buffer = __("Investissement termin&eacute;", 'yproject');
 			    } else {
 				    $diff = $expires - $now;
 				    $nb_days = floor($diff / (60 * 60 * 24));
@@ -2133,7 +2149,7 @@ class ATCF_Campaign {
 	}
 	
 	public function can_use_check( $amount_part ) {
-		return ( $this->can_use_check_option() && $this->can_use_check_amount( $amount_part ) );
+		return ( $this->can_use_check_option() && $this->can_use_check_amount( $amount_part ) && !$this->is_positive_savings() );
 	}
 	
 	public static $key_can_use_check = 'can_use_check';
@@ -2165,7 +2181,11 @@ class ATCF_Campaign {
 			return $formatted ? 0 . '%' : 0;
 
 		$percent = ( $current / $goal ) * 100;
-		$percent = round( $percent );
+		if ( $percent < 90 ) {
+			$percent = round( $percent );
+		} else {
+			$percent = floor( $percent );
+		}
 
 		if ( $formatted )
 			return $percent . '%';
@@ -2180,7 +2200,11 @@ class ATCF_Campaign {
 			return $formatted ? 0 . '%' : 0;
 
 		$percent = ( $current / $goal ) * 100;
-		$percent = round( $percent );
+		if ( $percent < 90 ) {
+			$percent = round( $percent );
+		} else {
+			$percent = floor( $percent );
+		}
 
 		if ( $formatted )
 			return $percent . '%';
@@ -2510,6 +2534,12 @@ class ATCF_Campaign {
 		if ( empty( $email ) || empty( $value ) ) {
 			return;
 		}
+		
+		$use_lastname = '';
+		$birthplace_department = '';
+		$address_number = '';
+		$address_number_complement = '';
+		$tax_country = '';
 	    
 		//Vérification si un utilisateur existe avec l'email en paramètre
 		$user_payment = get_user_by('email', $email);
@@ -2520,7 +2550,12 @@ class ATCF_Campaign {
 				$new_gender = $wdg_user->get_gender();
 				$new_firstname = $wdg_user->get_firstname();
 				$new_lastname = $wdg_user->get_lastname();
-				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+				$wdg_user->save_data(
+					$email, $new_gender, $new_firstname, $new_lastname, $use_lastname,
+					$birthday_day, $birthday_month, $birthday_year,
+					$birthplace, $birthplace_department, $nationality,
+					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, ''
+				);
 			}
 				
 		//Sinon, on vérifie si il y a un login et pwd transmis, pour créer le nouvel utilisateur
@@ -2528,7 +2563,14 @@ class ATCF_Campaign {
 			if (!empty($new_username) && !empty($new_password)) {
 				$user_id = wp_create_user($new_username, $new_password, $email);
 				$wdg_user = new WDGUser( $user_id );
-				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $telephone);
+				$use_lastname = '';
+				$birthplace_department = '';
+				$wdg_user->save_data(
+					$email, $new_gender, $new_firstname, $new_lastname,  $use_lastname, 
+					$birthday_day, $birthday_month, $birthday_year, 
+					$birthplace, $birthplace_department, $nationality,
+					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, ''
+				);
 			}
 		}
 		$saved_user_id = $user_id;

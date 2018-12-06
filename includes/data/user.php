@@ -23,14 +23,19 @@ class WDGUser {
 	private $gender;
 	private $first_name;
 	private $last_name;
+	private $use_last_name;
 	private $login;
 	private $birthday_date;
 	private $birthday_city;
+	private $birthday_department;
 	private $nationality;
+	private $address_number;
+	private $address_number_complement;
 	private $address;
 	private $postalcode;
 	private $city;
 	private $country;
+	private $tax_country;
 	private $email;
 	private $phone_number;
 	private $description;
@@ -83,13 +88,18 @@ class WDGUser {
 					$this->gender = $this->api_data->gender;
 					$this->first_name = $this->api_data->name;
 					$this->last_name = $this->api_data->surname;
+					$this->use_last_name = $this->api_data->surname_use;
 					$this->birthday_date = $this->api_data->birthday_date;
 					$this->birthday_city = $this->api_data->birthday_city;
+					$this->birthday_department = $this->api_data->birthday_department;
 					$this->nationality = $this->api_data->nationality;
+					$this->address_number = $this->api_data->address_number;
+					$this->address_number_complement = $this->api_data->address_number_comp;
 					$this->address = $this->api_data->address;
 					$this->postalcode = $this->api_data->postalcode;
 					$this->city = $this->api_data->city;
 					$this->country = $this->api_data->country;
+					$this->tax_country = $this->api_data->tax_country;
 					$this->email = $this->api_data->email;
 					$this->phone_number = $this->api_data->phone_number;
 					$this->description = $this->api_data->description;
@@ -175,7 +185,7 @@ class WDGUser {
 			if ( empty( $this->api_id ) ) {
 				$user_create_result = WDGWPREST_Entity_User::create( $this );
 				$this->api_id = $user_create_result->id;
-				ypcf_debug_log('WDGUser::get_api_id > ' . $this->api_id);
+//				ypcf_debug_log('WDGUser::get_api_id > ' . $this->api_id);
 				update_user_meta( $this->get_wpref(), WDGUser::$key_api_id, $this->api_id );
 			}
 		}
@@ -277,6 +287,19 @@ class WDGUser {
 		$this->last_name = $value;
 	}
 	
+
+	public function get_use_lastname() {
+		$buffer = $this->use_last_name;
+		if ( empty( $buffer ) || $buffer == '---' ) {
+			$buffer = $this->wp_user->use_last_name;
+		} 
+		return $buffer;
+	}
+	public function set_use_lastname($value) {
+		$value = mb_convert_case( $value , MB_CASE_TITLE );
+		$this->use_last_name = $value;
+	}
+	
 	public function get_display_name() {
 		$buffer = $this->wp_user->display_name;
 		$user_firstname = $this->get_firstname();
@@ -308,11 +331,34 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function get_address_number() {
+		return $this->address_number;
+	}
+	public function get_address_number_complement() {
+		return $this->address_number_complement;
+	}
 	public function get_address() {
 		$buffer = $this->address;
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_address');
 		}
+		return $buffer;
+	}
+	public function get_full_address_str() {
+		$buffer = '';
+		
+		$address_number = $this->get_address_number();
+		if ( !empty( $address_number ) && $address_number != 0 ) {
+			$buffer = $address_number . ' ';
+		}
+		
+		$address_number_complement = $this->get_address_number_complement();
+		if ( !empty( $address_number_complement ) ) {
+			$buffer .= $address_number_complement . ' ';
+		}
+		
+		$buffer .= $this->get_address();
+				
 		return $buffer;
 	}
 	
@@ -371,6 +417,19 @@ class WDGUser {
 			}
 		}
 		
+		return $buffer;
+	}
+	
+	public function get_tax_country( $format = '' ) {
+		$buffer = $this->tax_country;
+		
+		if ( !empty( $format ) && $format == 'iso3' ) {
+			// Le pays d'imposition est enregistré au format iso2, il faut juste le convertir
+			global $country_list_iso2_to_iso3;
+			if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
+				$buffer = $country_list_iso2_to_iso3[ $buffer ];
+			}
+		}
 		return $buffer;
 	}
 	
@@ -456,6 +515,10 @@ class WDGUser {
 			$buffer = $this->wp_user->get('user_birthplace');
 		}
 		return $buffer;
+	}
+		
+	public function get_birthplace_department() {
+		return $this->birthday_department;
 	}
 	
 /*******************************************************************************
@@ -585,7 +648,7 @@ class WDGUser {
 	/**
 	 * Enregistre les données nécessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description = '', $contact_if_deceased = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_department, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $description = '', $contact_if_deceased = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
@@ -599,6 +662,9 @@ class WDGUser {
 			$this->set_lastname($lastname);
 			$lastname = $this->get_lastname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+		}
+		if ( !empty( $use_lastname ) ) {
+			$this->use_last_name = $use_lastname;
 		}
 		
 		if ( !empty( $birthday_day ) && $birthday_day != '00' && $birthday_day > 0 ) {
@@ -625,9 +691,18 @@ class WDGUser {
 			$this->birthday_city = $birthplace;
 			$this->save_meta( 'user_birthplace', $birthplace );
 		}
+		if ( !empty( $birthplace_department ) ) {
+			$this->birthday_department = $birthplace_department;
+		}
 		if ( !empty( $nationality ) ) {
 			$this->nationality = $nationality;
 			$this->save_meta( 'user_nationality', $nationality );
+		}
+		if ( !empty( $address_number  ) ) {
+			$this->address_number = $address_number;
+		}
+		if ( !empty( $address_number_complement ) ) {
+			$this->address_number_complement = $address_number_complement;
 		}
 		if ( !empty( $address ) ) {
 			$this->address = $address;
@@ -644,6 +719,9 @@ class WDGUser {
 		if ( !empty( $country ) ) {
 			$this->country = $country;
 			$this->save_meta( 'user_country', $country );
+		}
+		if ( !empty( $tax_country ) ) {
+			$this->tax_country = $tax_country;
 		}
 		if ( !empty( $phone_number ) ) {
 			$this->phone_number = $phone_number;
@@ -873,7 +951,7 @@ class WDGUser {
 		return $this->get_user_investments_object()->get_pending_investments();
 	}
 	public function get_pending_preinvestments() {
-		return $this->get_user_investments_object()->get_pending_preinvestments();
+		return $this->get_user_investments_object()->get_pending_preinvestments( $force_reload = FALSE );
 	}
 		
 	public function get_first_pending_preinvestment() {
@@ -929,6 +1007,21 @@ class WDGUser {
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
 			if ( $roi_item->id_project == $campaign_api_id && $roi_item->status == WDGROI::$status_transferred ) {
+				array_push( $buffer, $roi_item );
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne la liste des royalties par id d'investissement
+	 * @return array
+	 */
+	public function get_royalties_by_investment_id( $investment_id ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
 				array_push( $buffer, $roi_item );
 			}
 		}
@@ -1169,6 +1262,7 @@ class WDGUser {
 		//Vérifie que le wallet n'est pas déjà enregistré
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			ypcf_debug_log_backtrace();
 			return LemonwayLib::wallet_register(
 				$this->get_lemonway_id(),
 				$this->get_email(),
@@ -1513,8 +1607,9 @@ class WDGUser {
 		if ($this->can_register_lemonway()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
-					WDGKYCFile::$type_id		=> '0', 
-					WDGKYCFile::$type_home		=> '1'
+					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id, 
+					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
+					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_passport_euro
 				);
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );

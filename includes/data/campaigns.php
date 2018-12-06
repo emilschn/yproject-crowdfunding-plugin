@@ -43,8 +43,8 @@ class ATCF_Campaigns {
 	 */
 	function setup() {
 		define( 'EDD_SLUG', 'campaigns' );
-//		add_action( 'init', array( $this, 'campaigns_rewrite_news_links' ) );
-//		add_filter( 'pre_post_link', array( $this, 'campaigns_news_links' ), 1, 3 );
+		add_action( 'init', array( $this, 'campaigns_rewrite_news_links' ) );
+		add_filter( 'pre_post_link', array( $this, 'campaigns_news_links' ), 1, 3 );
 		
 		add_filter( 'post_type_link', array( $this, 'campaigns_type_links' ), 1, 3 );
 		add_action( 'pre_get_posts', array( $this, 'campaigns_type_get_posts' ) );
@@ -84,27 +84,17 @@ class ATCF_Campaigns {
 		do_action( 'atcf_campaigns_actions_admin' );
 	}
 	
-	/*function campaigns_rewrite_news_links() {
+	function campaigns_rewrite_news_links() {
 		flush_rewrite_rules();
-		add_rewrite_rule( '(.+?)/actualites/(.+?)', 'index.php?pagename=$matches[2]', 'top' );
+		add_rewrite_rule( '^les-projets/([^/]+)/?', 'index.php?name=$matches[1]', 'top' );
 	}
 	
 	function campaigns_news_links( $permalink, $post, $leavename ) {
 		if ( $post->post_type === 'post' ) {
-			$post_categories = get_the_category( $post );
-			$post_category = $post_categories[ 0 ];
-			$post_category_name = $post_category->name;
-			$name_exploded = explode( 'cat', $post_category_name );
-			if ( count( $name_exploded ) > 1 ) {
-				$campaign_id = $name_exploded[1];
-				if ( !empty( $campaign_id ) ) {
-					$campaign_post = get_post( $campaign_id );
-					return $campaign_post->post_name. '/actualites/' .$post->post_name. '/';
-				}
-			}
+			return '/les-projets/' .$post->post_name. '/';
 		}
 		return $permalink;
-	}*/
+	}
 
 	/**
 	* Réécritures des liens des campagnes
@@ -298,8 +288,8 @@ class ATCF_Campaigns {
 		if ( ! is_object( $post ) )
 			return;
 
-		add_meta_box( 'atcf_campaign_status', 'Statut de la campagne', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
-		add_meta_box( 'atcf_campaign_date_vote', 'Dates de la campagne', '_atcf_metabox_campaign_dates', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_status', 'Statut de la levée de fonds', '_atcf_metabox_campaign_status', 'download', 'side', 'high' );
+		add_meta_box( 'atcf_campaign_date_vote', 'Dates de la levée de fonds', '_atcf_metabox_campaign_dates', 'download', 'side', 'high' );
 		
 		add_action( 'edd_meta_box_fields', '_atcf_metabox_campaign_info', 5 );
 	}
@@ -740,7 +730,7 @@ function _atcf_metabox_campaign_status() {
 	global $post;
 	$campaign = atcf_get_campaign( $post );
 ?>  
-	<p>Choisir le statut de la campagne</p>
+	<p>Choisir le statut de la levée de fonds</p>
 	<?php $status_list = ATCF_Campaign::get_campaign_status_list(); ?>
 	<select id="campaign_vote" name="campaign_vote" class="regular-text" style="width:200px;">
 	    <option></option>
@@ -796,7 +786,7 @@ function _atcf_metabox_campaign_dates() {
             $ss = mysql2date( 's', $begin_date, false );
         ?>
         <p>
-		<strong><?php _e( 'Date de début de collecte:', 'atcf' ); ?></strong><br />
+		<strong><?php _e( "Date de début d'investissement :", 'atcf' ); ?></strong><br />
 
 		<input type="text" id="begin-jj" name="begin-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<select id="begin-mm" name="begin-mm">
@@ -824,7 +814,7 @@ function _atcf_metabox_campaign_dates() {
             $ss = mysql2date( 's', $end_date, false );
         ?>
         <p>
-		<strong><?php _e( 'Date de fin de collecte:', 'atcf' ); ?></strong><br />
+		<strong><?php _e( "Date de fin d'investissement :", 'atcf' ); ?></strong><br />
 
 		<input type="text" id="end-jj" name="end-jj" value="<?php echo esc_attr( $jj ); ?>" size="2" maxlength="2" autocomplete="off" />
 		<select id="end-mm" name="end-mm">

@@ -25,15 +25,22 @@ class WDGFormProjects {
 		}
 
 		$current_user = wp_get_current_user();
+		
+		$post_title = filter_input( INPUT_POST, 'posttitle' );
+		$post_content = filter_input( INPUT_POST, 'postcontent' );
+		$page_projects = get_page_by_path( 'les-projets' );
+		$post_name = $campaign->data->post_name . '-' . sanitize_title( $post_title );
+		$post_title = $campaign->get_name() . ' - ' . $post_title;
 
 		$blog = array(
-			'post_title'    => $_POST['posttitle'],
-			'post_content'  => $_POST['postcontent'],
+			'post_title'    => $post_title,
+			'post_content'  => $post_content,
+			'post_name'		=> $post_name,
 			'post_status'   => 'publish',
 			'post_author'   => $current_user->ID,
-			'post_category' => array( $campaign->get_news_category_id() )
+			'post_category' => array( $campaign->get_news_category_id() ),
+			'post_parent'	=> $page_projects->ID
 		);
-
 		$post_id = wp_insert_post($blog, true);
 		do_action('wdg_delete_cache', array( 'project-header-menu-'.$post_campaign->ID ));
                 
@@ -122,9 +129,47 @@ class WDGFormProjects {
 			);
 			wp_update_post($postdata);
 			
+			
+			$logs_args = array(
+				'post_type'		=> 'edd_log',
+				'meta_query'	=> array(
+					array(
+						'key'		=> '_edd_log_payment_id',
+						'value'		=> $cancel_payment_id,
+						'compare'	=> '='
+					)
+				)
+			);
+			
+			$logs = new WP_Query( $logs_args );
+			if ( !empty( $logs->posts ) ) {
+				foreach ( $logs->posts as $log ) {
+					$postdata = array(
+						'ID'			=> $log->ID,
+						'post_status'	=> 'failed'
+					);
+					wp_update_post( $postdata );
+				}
+			}
+			
 			$page_dashboard = get_page_by_path('tableau-de-bord');
-			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment' );
+			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
 			exit();
+		}
+	}
+	
+	/**
+	 * Force la validation a posteriori des paiements par carte en attente
+	 */
+	public static function form_try_pending_card() {
+		$WDGUser_current = WDGUser::current();
+		$try_pending_card_payment_id = filter_input( INPUT_GET, 'try_pending_card' );
+		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
+		if ( !empty( $try_pending_card_payment_id ) && !empty( $campaign_id ) && $WDGUser_current->is_admin() ) {
+			$payment_investment = new WDGInvestment( $try_pending_card_payment_id );
+			$user = $payment_investment->get_saved_user_id();
+			$user_investment = new WDGUserInvestments( $user );
+			$user_investment->try_pending_card_investments( TRUE );
 		}
 	}
 
@@ -266,7 +311,11 @@ class WDGFormProjects {
 			$nb_turnover = $campaign->get_turnover_per_declaration();
 			for ($i = 0; $i < $nb_turnover; $i++) {
 				$turnover_declaration = filter_input( INPUT_POST, 'turnover-' . $i );
+				$turnover_declaration = str_replace( ' ', '', $turnover_declaration );
 				$turnover_declaration = str_replace( ',', '.', $turnover_declaration );
+				if ( empty( $turnover_declaration ) ) {
+					$turnover_declaration = 0;
+				}
 				if ( is_numeric( $turnover_declaration ) ) {
 					$total_turnover += $turnover_declaration;
 					array_push($saved_declaration, $turnover_declaration);

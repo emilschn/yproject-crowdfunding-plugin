@@ -1023,8 +1023,11 @@ class WDGOrganization {
 	 * @param ATCF_Campaign $campaign
 	 * @return bool
 	 */
-	public function can_pay_with_wallet( $amount, $campaign ) {
+	public function can_pay_with_wallet( $amount, $campaign, $amount_by_card = FALSE ) {
 		$lemonway_amount = $this->get_available_rois_amount();
+		if ( !empty( $amount_by_card ) ) {
+			$lemonway_amount += $amount_by_card;
+		}
 		return ($lemonway_amount > 0 && $lemonway_amount >= $amount && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
@@ -1146,36 +1149,25 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion investissements
 *******************************************************************************/
+	private $user_investments;
 	/**
-	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
+	 * @return WDGUserInvestments
 	 */
-	public function get_investments( $payment_status ) {
-		$buffer = array();
-		$purchases = edd_get_users_purchases( $this->get_wpref(), -1, false, $payment_status );
-		
-		if ( !empty($purchases) ) {
-			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
-				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
-				$download_id = '';
-				if ( !is_array( $downloads[0] ) ){
-					$download_id = $downloads[0];
-					if ( !isset($buffer[$download_id]) ) {
-						$buffer[$download_id] = array();
-					}
-					array_push( $buffer[$download_id], $purchase_post->ID );
-				}
-			}
+	private function get_user_investments_object() {
+		if ( !isset( $this->user_investments ) ) {
+			$this->user_investments = new WDGUserInvestments( $this );
 		}
-			
-		return $buffer;
+		return $this->user_investments;
 	}
 	
-	/**
-	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
-	 */
+	public function get_investments( $payment_status ) {
+		return $this->get_user_investments_object()->get_investments( $payment_status );
+	}
 	public function get_validated_investments() {
-		$payment_status = array( "publish", "completed" );
-		return $this->get_investments( $payment_status );
+		return $this->get_user_investments_object()->get_validated_investments();
+	}
+	public function get_pending_investments() {
+		return $this->get_user_investments_object()->get_pending_investments();
 	}
 	
 /*******************************************************************************
@@ -1286,6 +1278,21 @@ class WDGOrganization {
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
 			if ( $roi_item->id_project == $campaign_api_id ) {
+				array_push( $buffer, $roi_item );
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne la liste des royalties par id d'investissement
+	 * @return array
+	 */
+	public function get_royalties_by_investment_id( $investment_id ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
 				array_push( $buffer, $roi_item );
 			}
 		}
@@ -1563,6 +1570,10 @@ class WDGOrganization {
 		}
 		
 		if (count($errors_data) == 0) {
+			$new_org_name = filter_input( INPUT_POST, 'org_name' );
+			if ( !empty( $new_org_name ) ) {
+				$org_object->set_name( $new_org_name );
+			}
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));

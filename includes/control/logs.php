@@ -99,3 +99,26 @@ function ypcf_debug_log( $debug_str, $only_loggedin = FALSE ) {
 		}
     }
 }
+
+function ypcf_debug_log_backtrace() {
+	$debug_str = '';
+	
+	$trace = debug_backtrace();
+	if ( isset( $trace[ 1 ] ) ) {
+		$direct_caller = $trace[1];
+		$debug_str .= "Called by {$direct_caller[ 'function' ]}";
+		if ( isset( $direct_caller[ 'class' ] ) ) {
+			$debug_str .= " in {$direct_caller[ 'class' ]}";
+		}
+	}
+	
+	if ( isset( $trace[ 2 ] ) ) {
+		$direct_caller = $trace[ 2 ];
+		$debug_str .= " - Parent function : Called by {$direct_caller[ 'function' ]}";
+		if ( isset( $direct_caller[ 'class' ] ) ) {
+			$debug_str .= " in {$direct_caller[ 'class' ]}";
+		}
+	}
+	
+	ypcf_debug_log( $debug_str );
+}

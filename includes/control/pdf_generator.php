@@ -55,7 +55,7 @@ class WDG_PDF_Generator {
 		$buffer = '<strong>'.$user_name.'</strong><br />';
 		$buffer .= 'né' .$suffix_born. ' le ' .$shortcode_investor_user_obj->get_birthday_day(). ' ' .$birthday_month. ' ' .$shortcode_investor_user_obj->get_birthday_year(). ' &agrave; ' .$shortcode_investor_user_obj->get_birthplace(). '<br>';
 		$buffer .= 'de nationalité ' .$nationality. '<br>';
-		$buffer .= 'demeurant ' .$shortcode_investor_user_obj->get_address(). ' ' .$shortcode_investor_user_obj->get_postal_code( true ). ' ' .$shortcode_investor_user_obj->get_city(). '<br>';
+		$buffer .= 'demeurant ' .$shortcode_investor_user_obj->get_full_address_str(). ' ' .$shortcode_investor_user_obj->get_postal_code( true ). ' ' .$shortcode_investor_user_obj->get_city(). '<br>';
 		$buffer .= 'Adresse e-mail : ' .$shortcode_investor_user_obj->get_email(). '<br><br>';
 		
 		if ( !empty( $shortcode_investor_orga_obj ) ) {
@@ -539,7 +539,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 			$birthday_month = mb_strtoupper($months[$WDGUser->get_birthday_month() - 1]);
 			$buffer .= 'born on '.$birthday_month.' '.$WDGUser->get_birthday_day().' '.$WDGUser->get_birthday_year().' in '.$WDGUser->get_birthplace().'<br />';
 			$buffer .= 'from '.$nationality.'<br />';
-			$buffer .= 'living in '.$WDGUser->get_city().' ('.$WDGUser->get_postal_code( true ).') - ' . $WDGUser->get_address().'<br />';;
+			$buffer .= 'living in '.$WDGUser->get_city().' ('.$WDGUser->get_postal_code( true ).') - ' . $WDGUser->get_full_address_str(). '<br />';;
 			$buffer .= 'E-mail address: '.$WDGUser->get_email();
 
 		} else {
@@ -547,7 +547,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 			$suffix_born = ( $WDGUser->get_gender() == "female" ) ? 'e' : '';
 			$buffer .= 'né'.$suffix_born.' le '.$WDGUser->get_birthday_day().' '.$birthday_month.' '.$WDGUser->get_birthday_year().' &agrave; '.$WDGUser->get_birthplace().'<br />';
 			$buffer .= 'de nationalité '.$nationality.'<br />';
-			$buffer .= 'demeurant ' . $WDGUser->get_address().' '.$WDGUser->get_postal_code( true ).' '.$WDGUser->get_city().'<br />';;
+			$buffer .= 'demeurant ' . $WDGUser->get_full_address_str().' '.$WDGUser->get_postal_code( true ).' '.$WDGUser->get_city().'<br />';;
 			$buffer .= 'Adresse e-mail : '.$WDGUser->get_email();
 		}
 	}

@@ -445,20 +445,30 @@ class WDGInvestment {
 		
 		// On enregistre les informations
 		$wdg_current_user = new WDGUser( $wp_user_id );
+		$use_lastname = '';
+		$birthplace_department = '';
+		$address_number = '';
+		$address_number_complement = '';
+		$tax_country = '';
 		$wdg_current_user->save_data(
 			$this->token_info->email,
 			$this->token_info->gender,
 			$this->token_info->firstname,
 			$this->token_info->lastname,
+			$use_lastname,
 			$this->token_info->birthday_day,
 			$this->token_info->birthday_month,
 			$this->token_info->birthday_year,
 			$this->token_info->birthday_city,
+			$birthplace_department,
 			$this->token_info->nationality,
+			$address_number,
+			$address_number_complement,
 			$this->token_info->address,
 			$this->token_info->postalcode,
 			$this->token_info->city,
 			$this->token_info->country,
+			$tax_country,
 			''
 		);
 		// On vérifie les informations de l'utilisateur
@@ -723,7 +733,7 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	public function try_payment_wallet( $amount, $current = TRUE ) {
+	public function try_payment_wallet( $amount, $current = TRUE, $amount_by_card = FALSE ) {
 		$buffer = FALSE;
 		if ( $current ) {
 			$WDGUser_current = WDGUser::current();
@@ -742,7 +752,7 @@ class WDGInvestment {
 			
 		} else {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
-			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $amount, $campaign );
+			$can_use_wallet = $WDGOrganization_debit->can_pay_with_wallet( $amount, $campaign, $amount_by_card );
 		}
 		
 		// Tentative d'exécution du transfert d'argent
@@ -853,13 +863,12 @@ class WDGInvestment {
 					$invest_type = $this->get_session_user_type();
 					if ( $invest_type != 'user' ) {
 						$WDGOrganization_debit = new WDGOrganization( $invest_type );
-						$WDGOrganizationInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
 						$amount = min( $this->get_session_amount(), $amount_by_card + $WDGOrganization_debit->get_available_rois_amount() );
 					} else {
 						$WDGUser_current = WDGUser::current();
 						$amount = min( $this->get_session_amount(), $WDGUser_current->get_lemonway_wallet_amount() );
 					}
-					$wallet_payment_key = $this->try_payment_wallet( $amount );
+					$wallet_payment_key = $this->try_payment_wallet( $amount, TRUE, $amount_by_card );
 					if ( !empty( $wallet_payment_key ) ) {
 						$payment_key .= '_' . $wallet_payment_key;
 					} else {
@@ -974,8 +983,13 @@ class WDGInvestment {
 				}
 
 				if ( !empty( $card_token ) ) {
-					// D'abord, on reverse sur le porte-monnaie utilisateur
+					// amount_with_card n'est défini que si on a utilisé la carte + le wallet pour payer.
 					$amount_with_card = get_post_meta( $this->get_id(), 'amount_with_card', TRUE );
+					// Sinon on prend le montant total
+					if ( empty( $amount_with_card ) ) {
+						$amount_with_card = $this->get_saved_amount();
+					}
+					// D'abord, on reverse sur le porte-monnaie utilisateur
 					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_card );
 					
 					// Ensuite on fait le remboursement
@@ -988,10 +1002,13 @@ class WDGInvestment {
 				}
 				
 				if ( !empty( $wallet_token ) ) {
+					// amount_with_wallet n'est défini que si on a utilisé la carte + le wallet pour payer. 
 					$amount_with_wallet = get_post_meta( $this->get_id(), 'amount_with_wallet', TRUE );
-					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_wallet );
-					if (LemonwayLib::get_last_error_code() == '') {
-						update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
+					if ( !empty( $amount_with_wallet ) ) {
+						$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_wallet );
+						if (LemonwayLib::get_last_error_code() == '') {
+							update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
+						}
 					}
 
 				}

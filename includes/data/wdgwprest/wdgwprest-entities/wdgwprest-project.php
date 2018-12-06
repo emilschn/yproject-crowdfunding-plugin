@@ -85,6 +85,7 @@ class WDGWPREST_Entity_Project {
 			'funding_start_datetime'	=> $campaign->begin_collecte_date(),
 			'funding_end_datetime'		=> $campaign->end_date(),
 			'investments_count'			=> $campaign->backers_count(),
+			'minimum_costs_to_organization'	=> $campaign->get_minimum_costs_to_organization(),
 			'costs_to_organization'		=> $campaign->get_costs_to_organization(),
 			'costs_to_investors'		=> $campaign->get_costs_to_investors(),
 			'turnover_per_declaration'	=> $campaign->get_turnover_per_declaration(),

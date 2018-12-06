@@ -63,6 +63,27 @@ class NotificationsEmails {
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment );
     }
     
+	private static $alert_lemonway_card = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », le nom de notre prestataire de paiement, dans le détail des opérations.<br>";
+    /**
+     * Mail pour l'investisseur lors d'un achat avec création de contrat réussie
+     * @param int $payment_id
+     * @return bool
+     */
+    public static function new_purchase_user_success( $payment_id, $code, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
+
+		$particular_content = "";
+		if ( $is_card_contribution ) {
+			$particular_content .= self::$alert_lemonway_card;
+		}
+
+		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
+		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
+		$particular_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong>";
+		$attachments = FALSE;
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
+    }
+    
     /**
      * Mail pour l'investisseur lors d'un achat sans nécessité de signer le contrat
      * @param type $payment_id
@@ -78,21 +99,12 @@ class NotificationsEmails {
 		}
 		
 		if ( $is_card_contribution ) {
-			$particular_content .= NotificationsEmails::new_purchase_lemonway_conditions();
+			$particular_content .= self::$alert_lemonway_card;
 		}
-		
-		$particular_content .= "Vous trouverez votre contrat d'investissement ci-joint.";
 		
 		$attachments = array($new_contract_pdf_file);
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
     }
-	
-	private static function new_purchase_lemonway_conditions() {
-		$buffer = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », dans le détail des opérations Carte Bancaire.<br />";
-		$buffer .= "L'acceptation des CGU de Lemon Way, entraine l'ouverture d'un compte de paiement dédié à l'utilisation du site.";
-		$buffer .= "Vous pouvez clôturer ce compte à tout moment en suivant la procédure décrite dans les CGU de Lemon Way.<br />";
-		return $buffer;
-	}
     
     /**
      * Mail pour l'investisseur lors d'un achat
@@ -112,35 +124,63 @@ class NotificationsEmails {
 		$user_data = get_user_by('email', $email);
 		$payment_key = edd_get_payment_key( $payment_id );
 
-		$object = "Merci pour votre investissement";
+		$object = "Confirmation d'investissement";
 		$body_content = '';
 		$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
 		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br><br>";
-		$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. ";
-		if ( $payment_key == 'check' ) {
-			$body_content .= "N'oubliez pas que l'investissement ne sera définitivement validé ";
+		
+		if ( $campaign->is_positive_savings() ) {
+			$body_content .= "Nous vous remercions pour votre investissement ! ";
+			$body_content .= "Vous faites maintenant partie de la communaut&eacute; des activateurs de l'&Eacute;pargne positive, un nouveau mod&egrave;le de placement qui r&eacute;concilie votre portefeuille avec le bien commun, la finance telle qu'elle devrait &ecirc;tre.<br><br>";
+			$body_content .= "Avec vous, nous changeons le monde pas &agrave; pas, un smartphone apr&egrave;s l'autre.<br><br>";
+		
 		} else {
-			$body_content .= "Votre compte a été débité mais n'oubliez pas que l'investissement ne sera définitivement validé ";
+			$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. ";
 		}
-		$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>"
-                . "Retrouvez le projet à l'adresse suivante : "
-                .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a><br>'
-                ."<br><br>";
+		
+		if ( $payment_key == 'check' ) {
+			$body_content .= "N'oubliez pas que ";
+		} else {
+			$body_content .= "Votre compte a été débité mais n'oubliez pas que ";
+		}
+		$body_content .= "l'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>";
+        
 		if ( !empty( $particular_content ) ) {
 			$body_content .= $particular_content . "<br><br>";
 		}
 		
 		if ( !empty( $preinvestment ) ) {
 			$body_content .= "Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
-							. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
-							. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
-							. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
+						. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
+						. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
+						. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
 		}
 
 		$body_content .= "<strong>Détails concernant votre investissement</strong><br>";
-		$body_content .= "Projet : " . $post_campaign->post_title . "<br>";
-		$body_content .= "Montant : ".$payment_amount."&euro;<br>";
+		if ( $campaign->is_positive_savings() ) {
+			$body_content .= "Page de pr&eacute;sentation : <a href=\"".$campaign->get_fake_url()."\">".$campaign->get_fake_url()."</a><br>";
+			
+		} else {
+			$body_content .= "Projet : " . $post_campaign->post_title . "<br>";
+			$body_content .= "Page de pr&eacute;sentation : <a href=\"".get_permalink($campaign->ID)."\">".get_permalink($campaign->ID)."</a><br>";
+		}
+		$body_content .= "Montant : ".$payment_amount." &euro;<br>";
 		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br><br>";
+		
+		if ( empty( $attachments ) ) {
+			$body_content .= "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
+		}
+		
+		if ( $campaign->is_positive_savings() ) {
+			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">projets en cours de lev&eacute;e de fonds !</a><br><br>";
+		} else {
+			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">autres projets en cours de lev&eacute;e de fonds</a>, ainsi que notre nouveau produit d'<a href=\"".home_url( '/epargne-positive/' )."\">&Eacute;pargne positive</a> !<br><br>";
+		}
+		
+		$body_content .= "&Agrave; bient&ocirc;t sur WEDOGOOD.co<br>";
+		$body_content .= "L'&Eacute;quipe WE DO GOOD<br><br>";
+		
+		$body_content .= "<a href=\"".home_url( '/epargne-positive/' )."\"><img src=\"".home_url( '/wp-content/themes/yproject/images/emails/mail-positive-saivings.png' )."\"></a>";
 
 		return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
@@ -321,7 +361,6 @@ class NotificationsEmails {
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
 		$body_content .= "Projet : " .$project_title. "<br />";
-		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Montant total : " .$amount. "<br />";
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
 	}
@@ -334,7 +373,6 @@ class NotificationsEmails {
 		$body_content .= "Il y a un souci pour un transfert de wallet en complément d'un paiement par carte :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
-		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Montant total : " .$amount. "<br />";
 		$body_content .= "dont montant wallet : " .$amount_wallet. "<br />";
@@ -497,10 +535,10 @@ class NotificationsEmails {
 		$object = 'Votre dossier a bien été enregistré sur '.ATCF_CrowdFunding::get_platform_name();
 		
 		$body_content = 'Bonjour '.$user_author->first_name.',<br />';
-		$body_content .= 'Les informations de votre campagne ont bien été enregistrées sur '.ATCF_CrowdFunding::get_platform_name().'. ';
+		$body_content .= 'Les informations de votre levée de fonds ont bien été enregistrées sur '.ATCF_CrowdFunding::get_platform_name().'. ';
 		$body_content .= 'Vous pouvez dès à présent les compléter en accédant à votre <a href="'. home_url('/tableau-de-bord/').'?campaign_id='.$campaign_id.'">tableau de bord</a>.<br />';
 		$body_content .= 'Toutes les informations communiquées à '.ATCF_CrowdFunding::get_platform_name().' sont gardées confidentielles.<br /><br />';
-		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre campagne.<br /><br />';
+		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre levée de fonds.<br /><br />';
 		$body_content .= 'Bien à vous,<br />';
 		$body_content .= "L'équipe de ".ATCF_CrowdFunding::get_platform_name();
 
@@ -568,31 +606,26 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_comment($comment_id, $comment_object) {
-	ypcf_debug_log('NotificationsEmails::new_comment > ' . $comment_id);
-	$object = 'Nouveau commentaire !';
-	
-	get_comment($comment_id);
-	$post_parent = get_post($comment_object->comment_parent);
-	$post_categories = get_the_category($post_parent->ID);
-	if (count($post_categories) == 0 || $post_categories[0]->slug == 'wedogood' || $post_categories[0]->slug == 'revue-de-presse') {
-	    return FALSE;
-	}
-	$post_first_category = $post_categories[0];
-	$post_first_category_name = $post_first_category->name;
-	$name_exploded = explode('cat', $post_first_category_name);
-	if (count($name_exploded) < 2) { return FALSE; }
-	$post_campaign = get_post($name_exploded[1]);
-	$campaign = new ATCF_Campaign( $post_campaign );
-	
-	$body_content = "Vous avez reçu un nouveau commentaire sur votre projet ".$post_campaign->post_title." :<br />";
-	$body_content .= $comment_object->comment_content . "<br /><br />";
-	$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink($post_parent->ID).'">'.$post_parent->post_title.'</a>.';
-	
-	$user = get_userdata($post_campaign->post_author);
-	$emails = $user->user_email;
-	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+		ypcf_debug_log('NotificationsEmails::new_comment > ' . $comment_id);
+		$object = 'Nouveau commentaire !';
+
+		get_comment( $comment_id );
+		$post_categories = get_the_category( $comment_object->comment_post_ID );
+		if ( count($post_categories) > 0 && ( $post_categories[0]->slug == 'wedogood' || $post_categories[0]->slug == 'revue-de-presse' ) ) {
+			return FALSE;
+		}
 		
-	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
+		$campaign = new ATCF_Campaign( $comment_object->comment_post_ID );
+
+		$body_content = "Vous avez reçu un nouveau commentaire sur votre projet ".$campaign->data->post_title." :<br />";
+		$body_content .= $comment_object->comment_content . "<br /><br />";
+		$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink( $comment_object->comment_post_ID ).'">'.$campaign->data->post_title.'</a>.';
+
+		$user = get_userdata( $campaign->data->post_author );
+		$emails = $user->user_email;
+		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+
+		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
@@ -796,7 +829,7 @@ class NotificationsEmails {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$status_str = "d'&eacute;valuation";
 		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
-			$status_str = "de collecte";
+			$status_str = "d'investissement";
 		}
 		
 		$object = "Changement d'étape projet";

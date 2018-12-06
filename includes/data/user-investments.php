@@ -98,7 +98,7 @@ class WDGUserInvestments {
 	/**
 	 * Gestion des pré-investissements
 	 */
-	public function get_pending_preinvestments( $force_reload = FALSE) {
+	public function get_pending_preinvestments( $force_reload = FALSE ) {
 		$db_cacher = WDG_Cache_Plugin::current();
 		$id_user = $this->wp_ref;
 		$pending_preinv_key = 'user_'.$id_user.'_pending_preinvestments';
@@ -196,7 +196,7 @@ class WDGUserInvestments {
 		$buffer = '';
 		if ( !$this->is_lemonway_registered() ) {
 			if ( LemonwayLib::$limit_kyc1_moneyin_operation_amount <= LemonwayLib::$limit_kyc1_moneyin_year_amount - $this->get_count_invested_during_interval( '365 days' ) ) {
-				$buffer = sprintf( __( 'Vous ne pouvez pas investir plus de %1$s &euro; tant que vous n&apos;&ecirc;tes pas authentifi&eacute;(e). Cependant, nous vous proposons de poursuivre votre investissement. Nous vous inviterons ensuite &agrave; renseigner vos documents (pi&egrave;ce d&apos;identit&eacute; et justificatif de domicile) et le reste de l&apos;investissement se fera automatiquement lors de la validation de vos documents par notre prestataire de paiement Lemon Way.', 'yproject' ), LemonwayLib::$limit_kyc1_moneyin_operation_amount );
+				$buffer = sprintf( __( 'Vous ne pouvez pas investir plus de %1$s &euro; tant que votre compte n&apos;est pas authentifi&eacute;. Cependant, nous vous proposons de poursuivre votre investissement sans en modifier le montant : vous pourrez alors proc&eacute;der &agrave; un paiement imm&eacute;diat de %2$s &euro;, puis renseigner les documents permettant votre authentification (pi&egrave;ce d&apos;identit&eacute; et justificatif de domicile). Le reste de l&apos;investissement se fera automatiquement de manière s&eacute;curis&eacute;e lors de la validation de vos documents par notre prestataire de paiement Lemon Way.', 'yproject' ), LemonwayLib::$limit_kyc1_moneyin_operation_amount, LemonwayLib::$limit_kyc1_moneyin_operation_amount );
 		
 			} else {
 				$max_for_year = LemonwayLib::$limit_kyc1_moneyin_year_amount - $this->get_count_invested_during_interval( '365 days' );

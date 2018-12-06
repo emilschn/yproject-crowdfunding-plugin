@@ -103,6 +103,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_lastname()
 		);
+		
+		$this->addField(
+			'text',
+			'use_lastname',
+			__( "Nom d'usage", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_info,
+			$WDGUser->get_use_lastname()
+		);
 
 		$lemonway_birthdate = $WDGUser->get_lemonway_birthdate();
 		if ( $lemonway_birthdate == '0/0/0' ) {
@@ -121,7 +129,18 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'birthplace',
 			__( "Ville de naissance *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
-			$WDGUser->wp_user->get( 'user_birthplace' )
+			$WDGUser->get_birthplace()
+		);
+		
+		global $french_departments;
+		$this->addField(
+			'select',
+			'birthplace_department',
+			__( "D&eacute;partement de naissance", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_info,
+			$WDGUser->get_birthplace_department(),
+			FALSE,
+			$french_departments
 		);
 
 		global $country_list;
@@ -133,6 +152,25 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$WDGUser->get_nationality(),
 			FALSE,
 			$country_list
+		);
+			
+		$this->addField(
+			'text',
+			'address_number',
+			__( "Num&eacute;ro", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_info,
+			$WDGUser->get_address_number()
+		);
+
+		global $address_number_complements;
+		$this->addField(
+			'select',
+			'address_number_complement',
+			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_info,
+			$WDGUser->get_address_number_complement(),
+			FALSE,
+			$address_number_complements
 		);
 
 		$this->addField(
@@ -165,6 +203,16 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			__( "Pays *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_country( 'iso2' ),
+			FALSE,
+			$country_list
+		);
+			
+		$this->addField(
+			'select',
+			'tax_country',
+			__( "R&eacute;sidence fiscale *", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_info,
+			$WDGUser->get_tax_country( 'iso2' ),
 			FALSE,
 			$country_list
 		);
@@ -244,6 +292,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			WDG_Form_Invest_User_Details::$field_group_orga_info,
 			FALSE,
 			__( "Cette adresse doit &ecirc;tre diff&eacute;rente de celle de votre compte.", 'yproject' )
+		);
+		
+		$this->addField(
+			'text',
+			'org_website',
+			__( "Site internet *", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_orga_info,
+			FALSE
 		);
 		
 		$this->addField(
@@ -347,6 +403,19 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
 			$org_email
+		);
+		
+		if ( $id_orga == 'new-orga' ) {
+			$org_website = ( $_SESSION[ 'org_website' ] == '' ) ? FALSE : $_SESSION[ 'org_website' ];
+		} else {
+			$org_website = $WDGOrganization->get_website();
+		}
+		$this->addField(
+			'hidden',
+			'org_init_website_' .$id_orga,
+			'',
+			WDG_Form_Invest_User_Details::$field_group_orga_select,
+			$org_website
 		);
 		
 		if ( $id_orga == 'new-orga' ) {
@@ -508,21 +577,27 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			
 			if ( !$this->hasErrors() ) {
 			
+				$use_lastname = $this->getInputText( 'use_lastname' );
 				$gender = $this->getInputText( 'gender' );
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
+				$birthplace_department = $this->getInputText( 'birthplace_department' );
 				$nationality = $this->getInputText( 'nationality' );
+				$address_number = $this->getInputText( 'address_number' );
+				$address_number_complement = $this->getInputText( 'address_number_complement' );
 				$address = $this->getInputText( 'address' );
 				$postal_code = $this->getInputText( 'postal_code' );
 				$city = $this->getInputText( 'city' );
 				$country = $this->getInputText( 'country' );
+				$tax_country = $this->getInputText( 'tax_country' );
 				$phone_number = $this->getInputText( 'phone_number' );
 			
 				$WDGUser->save_data(
-					$email, $gender, $firstname, $lastname,
+					$email, $gender, $firstname, $lastname, $use_lastname,
 					$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-					$birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number
+					$birthplace, $birthplace_department, $nationality,
+					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number
 				);
 			
 				if ( !empty( $this->invest_amount ) && $this->invest_amount > WDGInvestmentContract::$signature_minimum_amount && empty( $phone_number ) ) {
@@ -651,6 +726,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				'org_name'
 			);
 		}
+		
 		$org_email = $this->getInputText( 'org_email' );
 		if ( !is_email( $org_email ) ) {
 			$needs_update_organization = TRUE;
@@ -661,6 +737,18 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				'email'
 			);
 		}
+		
+		$org_website = $this->getInputText( 'org_website' );
+		if ( empty( $org_website ) ) {
+			$needs_update_organization = TRUE;
+			$buffer = FALSE;
+			$this->addPostError(
+				'website-empty',
+				__( "Le site web de l'organisation n'est pas d&eacute;fini.", 'yproject' ),
+				'org_website'
+			);
+		}
+		
 		if ( ( $orga_id == 'new-orga' || ( $WDGOrganization != FALSE && $WDGOrganization->get_email() != $org_email ) ) && email_exists( $org_email ) ) {
 			$needs_update_organization = TRUE;
 			$buffer = FALSE;
@@ -717,6 +805,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$WDGOrganization->set_name( $org_name );
 		$org_email = $this->getInputText( 'org_email' );
 		$WDGOrganization->set_email( $org_email );
+		$org_website = $this->getInputText( 'org_website' );
+		$WDGOrganization->set_website( $org_website );
 		$org_legalform = $this->getInputText( 'org_legalform' );
 		$WDGOrganization->set_legalform( $org_legalform );
 		$org_idnumber = $this->getInputText( 'org_idnumber' );
@@ -751,6 +841,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		ypcf_session_start();
 		$_SESSION[ 'org_name' ] = $this->getInputText( 'org_name' );
 		$_SESSION[ 'org_email' ] = $this->getInputText( 'org_email' );
+		$_SESSION[ 'org_website' ] = $this->getInputText( 'org_website' );
 		$_SESSION[ 'org_legalform' ] = $this->getInputText( 'org_legalform' );
 		$_SESSION[ 'org_idnumber' ] = $this->getInputText( 'org_idnumber' );
 		$_SESSION[ 'org_rcs' ] = $this->getInputText( 'org_rcs' );
