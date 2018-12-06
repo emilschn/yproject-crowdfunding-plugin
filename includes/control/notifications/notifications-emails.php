@@ -167,7 +167,7 @@ class NotificationsEmails {
 		$body_content .= "Montant : ".$payment_amount." &euro;<br>";
 		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br><br>";
 		
-		if ( empty( $attachments ) ) {
+		if ( !empty( $attachments ) ) {
 			$body_content .= "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
 		}
 		
