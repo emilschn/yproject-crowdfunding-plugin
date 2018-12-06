@@ -21,6 +21,7 @@ class WDGInvestment {
 	public static $status_started = 'started';
 	public static $status_waiting_check = 'waiting-check';
 	public static $status_waiting_wire = 'waiting-wire';
+	public static $status_waiting_payment = 'waiting-payment';
 	public static $status_error = 'error';
 	public static $status_canceled = 'canceled';
 	public static $status_validated = 'validated';
@@ -30,6 +31,7 @@ class WDGInvestment {
 	public static $contract_status_investment_refused = 'investment_refused';
 	public static $contract_status_investment_validated = 'investment_validated';
 	
+	public static $meanofpayment_unset = 'unset';
 	public static $meanofpayment_wallet = 'wallet';
 	public static $meanofpayment_cardwallet = 'cardwallet';
 	public static $meanofpayment_card = 'card';
@@ -531,7 +533,7 @@ class WDGInvestment {
 /******************************************************************************/
 // PAYMENT
 /******************************************************************************/
-	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_by_card = 0, $pending_amount_by_card = 0 ) {
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_by_card = 0 ) {
 		if ( $this->exists_payment( $payment_key ) ) {
 			return 'publish';
 		}
@@ -553,9 +555,7 @@ class WDGInvestment {
 		}
 		
 		$amount = 0;
-		if ( $pending_amount_by_card > 0 ) {
-			$amount = $pending_amount_by_card;
-		} else if ( $amount_by_card > 0 ) {
+		if ( $amount_by_card > 0 ) {
 			$amount = $amount_by_card;
 		} else {
 			$amount = $this->get_session_amount();
@@ -607,9 +607,6 @@ class WDGInvestment {
 			update_post_meta( $payment_id, 'amount_with_wallet', $this->get_session_amount() - $amount_by_card );
 			update_post_meta( $payment_id, 'amount_with_card', $amount_by_card );
 		}
-		if ( $remaining_amount_when_authenticated > 0 ) {
-			update_post_meta( $payment_id, 'remaining_amount_when_authenticated', $remaining_amount_when_authenticated );
-		}
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
 		// FIN GESTION DU PAIEMENT COTE EDD
@@ -639,10 +636,8 @@ class WDGInvestment {
 			}
 			
 		} else {
-			if ( $pending_amount_by_card == 0 ) {
-				// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
-				$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
-			}
+			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
+			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
 			
 			// Si c'est un préinvestissement,
 			//	on passe le statut de préinvestissement
@@ -679,7 +674,7 @@ class WDGInvestment {
 			);
 		}
 		
-		if ( $buffer == 'publish' && $pending_amount_by_card == 0 ) {
+		if ( $buffer == 'publish' ) {
 			do_action('wdg_delete_cache', array(
 				'home-projects',
 				'projectlist-projects-current',
@@ -870,8 +865,6 @@ class WDGInvestment {
 					}
 				}
 
-				// Récupération du montant manquant avant la sauvegarde
-				$remaining_amount_when_authenticated = $this->get_session_amount() - $amount;
 				// Sauvegarde du paiement (la session est écrasée)
 				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount );
 
@@ -883,11 +876,6 @@ class WDGInvestment {
 					$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
 					NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
 
-				} else if ( $remaining_amount_when_authenticated > 0 ) {
-					// Sauvegarde du paiement du montant manquant en attente
-					$random = rand(10000, 99999);
-					$payment_key = 'card_TEMP_' . $random;
-					$this->save_payment( $payment_key, 'card', $is_failed, $amount, $remaining_amount_when_authenticated );
 				}
 			}
 			
@@ -897,6 +885,17 @@ class WDGInvestment {
 			$payment_key = 'wire_TEMP_' . $random;
 			$this->set_status( WDGInvestment::$status_waiting_wire );
 			$this->post_token_notification();
+			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
+			WDGInvestment::unset_session();
+			
+		} elseif ( $mean_of_payment == WDGInvestment::$meanofpayment_unset ) {
+			$random = rand(10000, 99999);
+			$payment_key = 'unset_' . $random;
+			while ( $this->exists_payment( $payment_key ) ) {
+				$random = rand(10000, 99999);
+				$payment_key = 'unset_' . $random;
+			}
+			$this->set_status( WDGInvestment::$status_waiting_payment );
 			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
 			WDGInvestment::unset_session();
 		}
