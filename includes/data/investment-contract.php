@@ -22,6 +22,8 @@ class WDGInvestmentContract {
 	public $minimum_to_receive;
 	public $maximum_to_receive;
 	
+	public static $signature_minimum_amount = 1500;
+	
 	public static $investor_type_user = 'user';
 	public static $investor_type_orga = 'organization';
 	
