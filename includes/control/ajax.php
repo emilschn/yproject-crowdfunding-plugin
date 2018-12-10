@@ -741,7 +741,7 @@ class WDGAjaxActions {
 			$mail, $gender, $firstname, $lastname, $use_lastname,
 			$new_birthday_date->format('d'), $new_birthday_date->format('n'), $new_birthday_date->format('Y'), 
 			$birthplace, $birthplace_department, $nationality,
-			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country
+			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $mobile_phone
 		);
 
 		$return_values = array(
