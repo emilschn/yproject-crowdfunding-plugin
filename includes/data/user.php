@@ -400,8 +400,10 @@ class WDGUser {
 			if ( isset( $country_translation[ htmlentities( $upper_country ) ] ) ) {
 				$upper_country = $country_translation[ htmlentities( $upper_country ) ];
 			}
+			
 			// On le cherche en iso2
 			$iso2_key = array_search( $upper_country, $country_list );
+			
 			if ( $format == 'iso3' ) {
 				// On le transforme en iso3
 				if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
@@ -409,10 +411,17 @@ class WDGUser {
 				} else if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
 					$buffer = $country_list_iso2_to_iso3[ $buffer ];
 				}
-				
+
 			} else if ( $format == 'iso2' ) {
 				if ( !empty( $iso2_key ) ) {
 					$buffer = $iso2_key;
+				}
+				
+			} else if ( $format == 'full' ) {
+				if ( !empty( $iso2_key ) ) {
+					$buffer = ucfirst( strtolower( $country_list[ $iso2_key ] ) );
+				} else {
+					$buffer = ucfirst( strtolower( $upper_country ) );
 				}
 			}
 		}
