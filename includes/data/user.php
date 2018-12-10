@@ -420,6 +420,8 @@ class WDGUser {
 			} else if ( $format == 'full' ) {
 				if ( !empty( $iso2_key ) ) {
 					$buffer = ucfirst( strtolower( $country_list[ $iso2_key ] ) );
+				} else if ( !empty( $country_list[ $upper_country ] ) ) {
+					$buffer = ucfirst( strtolower( $country_list[ $upper_country ] ) );
 				} else {
 					$buffer = ucfirst( strtolower( $upper_country ) );
 				}
