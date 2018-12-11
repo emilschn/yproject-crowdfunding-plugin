@@ -765,17 +765,6 @@ class NotificationsEmails {
 	/**
 	 * @param WDGOrganization $orga
 	 */
-	public static function document_uploaded_admin($orga, $nb_document) {
-		ypcf_debug_log('NotificationsEmails::document_uploaded_admin > ' . $orga->get_wpref());
-		
-		$admin_email = get_option('admin_email');
-		$object = "Documents ajoutés à une organisation";
-		$body_content = "Hello !<br />";
-		$body_content .= "L'organisation ".$orga->get_name()." a uploadé ".$nb_document." fichier(s).<br /><br />";
-
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
-	}
-	
     public static function send_notification_kyc_accepted_user($user) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
 		
