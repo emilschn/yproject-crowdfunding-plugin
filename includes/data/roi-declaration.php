@@ -495,7 +495,7 @@ class WDGROIDeclaration {
 								if ( empty( $declaration_message ) ) {
 									$declaration_message = "Aucun message";
 								}
-								NotificationsAPI::roi_transfer_with_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
+								WDGQueue::add_notification_royalties( $investment_item['user'], $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 							}
 						}
 
@@ -516,7 +516,7 @@ class WDGROIDeclaration {
 								if ( empty( $declaration_message ) ) {
 									$declaration_message = "Aucun message";
 								}
-								NotificationsAPI::roi_transfer_without_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
+								WDGQueue::add_notification_no_royalties( $investment_item['user'], $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 							}
 						} else {
 							WDGROI::insert($investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, WDGROI::$status_error);
