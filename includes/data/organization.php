@@ -292,7 +292,7 @@ class WDGOrganization {
 			// Cross-platform
 			// Si n'existe pas dans la BDD, 
 			// -> on vérifie d'abord, via l'e-mail, si il existe sur LW
-			$wallet_details_by_email = $this->get_wallet_details( true, true );
+			$wallet_details_by_email = $this->get_wallet_details( '', true, true );
 			if ( isset( $wallet_details_by_email->ID ) ) {
 				$db_lw_id = $wallet_details_by_email->ID;
 				
@@ -306,6 +306,25 @@ class WDGOrganization {
 			update_user_meta( $this->wpref, 'lemonway_id', $db_lw_id );
 		}
 		return $db_lw_id;
+	}
+	
+	public function get_campaign_lemonway_id() {
+		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_campaign_id', true );
+		if ( empty( $db_lw_id ) ) {
+			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'CAMPAIGN';
+			if ( defined( YP_LW_USERID_PREFIX ) ) {
+				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
+			}
+			
+			update_user_meta( $this->wpref, 'lemonway_campaign_id', $db_lw_id );
+		}
+		return $db_lw_id;
+	}
+	
+	private function get_campaign_lemonway_email() {
+		$current_email = $this->get_email();
+		$buffer = str_replace( '@', '+campaign@', $current_email );
+		return $buffer;
 	}
 	
 	
@@ -810,17 +829,18 @@ class WDGOrganization {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
-					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission );
+					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
 				}
 			}
 		}
 	}
 	
-	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0 ) {
+	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0, $wallet_type = '' ) {
 		$buffer = FALSE;
 		
 		if ( !empty( $amount_without_commission ) ) {
-			$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount_without_commission + $amount_commission, 0, $amount_commission );
+			$lemonway_id = ( $wallet_type == 'campaign ') ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();
+			$result_transfer = LemonwayLib::ask_transfer_to_iban( $lemonway_id, $amount_without_commission + $amount_commission, 0, $amount_commission );
 			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
 			$post_type = 'withdrawal_order';
 			if ( $amount_commission == 0 ) {
@@ -846,12 +866,13 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
-	private function get_wallet_details( $reload = false, $by_email = false ) {
+	private function get_wallet_details( $type = '', $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
 			if ( $by_email ) {
 				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
 			} else {
-				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
+				$lemonway_id = ( $type == 'campaign' ) ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();
+				$this->wallet_details = LemonwayLib::wallet_get_details( $lemonway_id );
 			}
 			if ( false ) {
 				$this->update_lemonway();
@@ -928,6 +949,41 @@ class WDGOrganization {
 					&& ($this->get_website() != "")
 					&& ($this->get_idnumber() != "");
 		return $buffer;
+	}
+	
+	public function check_register_campaign_lemonway_wallet() {
+		if ( !$this->can_register_lemonway() ) {
+			return FALSE;
+		}
+		
+		//Vérifie que le wallet n'est pas déjà enregistré
+		$wallet_details = $this->get_wallet_details( 'campaign' );
+		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+			} else {
+				$WDGUser_creator = new WDGUser();
+			}
+			
+			return LemonwayLib::wallet_company_register(
+				$this->get_campaign_lemonway_id(),
+				$this->get_campaign_lemonway_email(),
+				html_entity_decode( $WDGUser_creator->wp_user->user_firstname ),
+				html_entity_decode( $WDGUser_creator->wp_user->user_lastname ),
+				html_entity_decode( $this->get_name() ),
+				html_entity_decode( $this->get_description() ),
+				$this->get_website(),
+				$WDGUser_creator->get_country( 'iso3' ),
+				$WDGUser_creator->get_lemonway_birthdate(),
+				$WDGUser_creator->get_lemonway_phone_number(),
+				$this->get_idnumber(),
+				LemonwayLib::$wallet_type_beneficiary,
+				'1'
+			);
+		}
+		return TRUE;
 	}
 	
 	/**
@@ -1046,8 +1102,8 @@ class WDGOrganization {
 	/**
 	 * Donne l'argent disponible sur le compte utilisateur
 	 */
-	public function get_lemonway_balance() {
-		$wallet_details = $this->get_wallet_details();
+	public function get_lemonway_balance( $type = '' ) {
+		$wallet_details = $this->get_wallet_details( $type );
 		$buffer = 0;
 		if (isset($wallet_details->BAL)) {
 			$buffer = $wallet_details->BAL;

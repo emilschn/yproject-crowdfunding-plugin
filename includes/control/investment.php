@@ -751,10 +751,10 @@ class WDGInvestment {
 			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 			
 			if ( $invest_type == 'user' ) { 
-				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $amount );
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_campaign_lemonway_id(), $amount );
 			
 			} else {
-				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGOrganization_debit->get_lemonway_id(), $WDGOrganization_campaign->get_lemonway_id(), $amount );
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGOrganization_debit->get_lemonway_id(), $WDGOrganization_campaign->get_campaign_lemonway_id(), $amount );
 			}
 		}
 		
@@ -927,7 +927,7 @@ class WDGInvestment {
 			// Si c'est un virement
 			if ( strpos($payment_key, 'wire_') !== FALSE ) {
 				$amount = $this->get_saved_amount();
-				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount );
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_campaign_lemonway_id(), $credit_wallet_id, $amount );
 				if (LemonwayLib::get_last_error_code() == '') {
 					update_post_meta( $this->get_id(), 'refund_wire_id', $transfer_funds_result->ID );
 				}
@@ -957,7 +957,7 @@ class WDGInvestment {
 						$amount_with_card = $this->get_saved_amount();
 					}
 					// D'abord, on reverse sur le porte-monnaie utilisateur
-					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_card );
+					$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_campaign_lemonway_id(), $credit_wallet_id, $amount_with_card );
 					
 					// Ensuite on fait le remboursement
 					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $card_token );
@@ -972,7 +972,7 @@ class WDGInvestment {
 					// amount_with_wallet n'est défini que si on a utilisé la carte + le wallet pour payer. 
 					$amount_with_wallet = get_post_meta( $this->get_id(), 'amount_with_wallet', TRUE );
 					if ( !empty( $amount_with_wallet ) ) {
-						$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $credit_wallet_id, $amount_with_wallet );
+						$transfer_funds_result = LemonwayLib::ask_transfer_funds( $organization_obj->get_campaign_lemonway_id(), $credit_wallet_id, $amount_with_wallet );
 						if (LemonwayLib::get_last_error_code() == '') {
 							update_post_meta( $this->get_id(), 'refund_wallet_id', $transfer_funds_result->ID );
 						}

@@ -247,7 +247,7 @@ class LemonwayLib {
 	 * @param type $payer_or_beneficiary
 	 * @return type
 	 */
-	public static function wallet_company_register( $new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '', $payer_or_beneficiary = '' ) {
+	public static function wallet_company_register( $new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '', $payer_or_beneficiary = '', $is_tech_wallet = '' ) {
 		$param_list = array(
 			'wallet'						=> $new_wallet_id,
 			'clientMail'					=> $client_mail,
@@ -262,7 +262,8 @@ class LemonwayLib {
 			'companyIdentificationNumber'	=> $company_idnumber,
 			'isCompany'						=> '1',
 			'isDebtor'						=> '1',
-			'payerOrBeneficiary'			=> $payer_or_beneficiary
+			'payerOrBeneficiary'			=> $payer_or_beneficiary,
+			'isTechWallet'					=> ( !empty( $is_tech_wallet ) ) ? '1' : '0'
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
