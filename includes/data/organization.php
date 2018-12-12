@@ -636,7 +636,7 @@ class WDGOrganization {
 			}
 		}
 		if ($notify > 0) {
-			NotificationsEmails::document_uploaded_admin($this, $notify);
+			NotificationsSlack::document_uploaded_admin($this, $notify);
 		}
 		return $files_info;
 	}

@@ -382,6 +382,24 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
+    //*******************************************************
+    // NOTIFICATIONS VERSEMENT AVEC ROYALTIES PLUSIEURS PROJETS
+    //*******************************************************
+	public static function roi_transfer_with_royalties_multiproject( $recipient, $name, $project_names ) {
+		$id_template = '139';
+		$options = array(
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJETS'		=> $project_names,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
 	//**************************************************************************
 	// FIN - Versements
 	//**************************************************************************

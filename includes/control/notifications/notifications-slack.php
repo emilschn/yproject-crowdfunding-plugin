@@ -14,6 +14,7 @@ class NotificationsSlack {
 	private static $icon_rocket = ':rocket:';
 	private static $icon_sign = ':black_nib:';
 	private static $icon_robot = ':robot_face:';
+	private static $icon_card_file_box = ':card_file_box:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 	    $data = "payload=" . json_encode(array(
@@ -135,6 +136,15 @@ class NotificationsSlack {
 			}
 		}
 		
+	}
+	
+	/**
+	 * @param WDGOrganization $orga
+	 * @param int $nb_document
+	 */
+	public static function send_document_uploaded_admin( $orga, $nb_document ) {
+		$message = "L'organisation " .$orga->get_name(). " a uploadé des documents d'authentification. Nombre de fichiers : ".$nb_document.".";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box );
 	}
     
 }

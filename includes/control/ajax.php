@@ -741,7 +741,7 @@ class WDGAjaxActions {
 			$mail, $gender, $firstname, $lastname, $use_lastname,
 			$new_birthday_date->format('d'), $new_birthday_date->format('n'), $new_birthday_date->format('Y'), 
 			$birthplace, $birthplace_department, $nationality,
-			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country
+			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $mobile_phone
 		);
 
 		$return_values = array(
@@ -1780,7 +1780,7 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_birthday"] = $WDGUser->get_birthday_date();
 						$array_contacts[$user_id]["user_birthplace"] = $WDGUser->get_birthplace();
 						$array_contacts[$user_id]["user_address"] = $WDGUser->get_full_address_str();
-						$array_contacts[$user_id]["user_country"] = $WDGUser->get_country();
+						$array_contacts[$user_id]["user_country"] = $WDGUser->get_country( 'full' );
 						$array_contacts[$user_id]["user_mobile_phone"] = $WDGUser->get_phone_number();
 					}
 					
