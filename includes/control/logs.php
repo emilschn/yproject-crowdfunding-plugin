@@ -66,7 +66,7 @@ function atcf_log_type_preapproval( $types ) {
 add_filter( 'edd_log_types', 'atcf_log_type_preapproval' );
 
 
-function ypcf_debug_log( $debug_str, $only_loggedin = FALSE ) {
+function ypcf_debug_log( $debug_str, $only_loggedin = TRUE ) {
     global $disable_logs;
     if ( $disable_logs !== TRUE ) {
 		$filename = dirname ( __FILE__ ) . '/../logs/the_logs_'.date( 'm.d.Y' ).'.txt';

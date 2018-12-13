@@ -167,7 +167,7 @@ class NotificationsEmails {
 		$body_content .= "Montant : ".$payment_amount." &euro;<br>";
 		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br><br>";
 		
-		if ( empty( $attachments ) ) {
+		if ( !empty( $attachments ) ) {
 			$body_content .= "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
 		}
 		
@@ -765,17 +765,6 @@ class NotificationsEmails {
 	/**
 	 * @param WDGOrganization $orga
 	 */
-	public static function document_uploaded_admin($orga, $nb_document) {
-		ypcf_debug_log('NotificationsEmails::document_uploaded_admin > ' . $orga->get_wpref());
-		
-		$admin_email = get_option('admin_email');
-		$object = "Documents ajoutés à une organisation";
-		$body_content = "Hello !<br />";
-		$body_content .= "L'organisation ".$orga->get_name()." a uploadé ".$nb_document." fichier(s).<br /><br />";
-
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
-	}
-	
     public static function send_notification_kyc_accepted_user($user) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
 		

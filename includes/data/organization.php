@@ -636,7 +636,7 @@ class WDGOrganization {
 			}
 		}
 		if ($notify > 0) {
-			NotificationsEmails::document_uploaded_admin($this, $notify);
+			NotificationsSlack::document_uploaded_admin($this, $notify);
 		}
 		return $files_info;
 	}
@@ -846,7 +846,7 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
-	private function get_wallet_details( $reload = false, $by_email = false ) {
+	public function get_wallet_details( $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
 			if ( $by_email ) {
 				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );

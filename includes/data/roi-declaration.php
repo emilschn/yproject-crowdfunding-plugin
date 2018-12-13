@@ -495,6 +495,7 @@ class WDGROIDeclaration {
 								if ( empty( $declaration_message ) ) {
 									$declaration_message = "Aucun message";
 								}
+//								WDGQueue::add_notification_royalties( $investment_item['user'], $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 								NotificationsAPI::roi_transfer_with_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 							}
 						}
@@ -516,6 +517,7 @@ class WDGROIDeclaration {
 								if ( empty( $declaration_message ) ) {
 									$declaration_message = "Aucun message";
 								}
+//								WDGQueue::add_notification_no_royalties( $investment_item['user'], $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 								NotificationsAPI::roi_transfer_without_royalties( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $adjustment_message, $declaration_message, $replyto_mail );
 							}
 						} else {
