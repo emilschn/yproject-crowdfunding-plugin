@@ -26,6 +26,7 @@ class WDGInvestment {
 	public static $status_validated = 'validated';
 	
 	public static $contract_status_meta = 'contract_status';
+	public static $contract_status_not_validated = 'investment_not_validated';
 	public static $contract_status_preinvestment_validated = 'preinvestment_validated';
 	public static $contract_status_investment_refused = 'investment_refused';
 	public static $contract_status_investment_validated = 'investment_validated';

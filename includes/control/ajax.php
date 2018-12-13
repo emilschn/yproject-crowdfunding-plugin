@@ -1624,34 +1624,52 @@ class WDGAjaxActions {
 				
             }
 
-            $investment_state = 'Valid&eacute;';
-            if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_preparing ) {
-                $investment_state = 'Annul&eacute;';
-
-                $refund_card_id = get_post_meta($item_invest['ID'], 'refund_id', TRUE);
-				$refund_wire_id = get_post_meta($item_invest['ID'], 'refund_wire_id', TRUE);
-				$refund_wallet_id = get_post_meta($item_invest['ID'], 'refund_wallet_id', TRUE);
-                if ( !empty( $refund_card_id ) || !empty( $refund_wire_id ) || !empty( $refund_wallet_id ) ) {
-					$investment_state = 'Rembours&eacute;';
-
-                }
-            }
-			$contract_status = $payment_investment->get_contract_status();
-			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
-				$investment_state = 'Pr&eacute;-investissement non-valid&eacute;';
-			}
-
             $page_dashboard = get_page_by_path('tableau-de-bord');
             $campaign_id_param = '?campaign_id=' . $campaign->ID;
-            $payment_state = edd_get_payment_status( $post_invest, true );
-            if ($payment_state == "En attente" && $current_wdg_user->is_admin() && empty( $contract_status ) ) {
-				$payment_state .= '<br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
-				$payment_state .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
-				if ( $payment_type == 'Carte' ) {
-					$payment_state .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&try_pending_card='.$item_invest['ID'].'" style="font-size: 10pt;">[Retenter]</a>';
-				}
+			$contract_status = $payment_investment->get_contract_status();
+			
+			// Etat du paiement
+			$post_invest_status = $post_invest->post_status;
+			$payment_status_span_class = 'confirm';
+			$payment_status = __( "Valid&eacute;", 'yproject' );
+			if ( $post_invest_status == 'pending' ) {
+				if ( strpos($payment_key, 'wire_') ) {
+					$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
+					$payment_status_span_class = 'error';
+				} else if ($payment_key == 'check') {
+					$payment_status = __( "En attente de validation par WE DO GOOD", 'yproject' );
+					$payment_status_span_class = 'error';
+					if ( $current_wdg_user->is_admin() && empty( $contract_status ) ) {
+						$payment_status .= '<br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
+						$payment_status .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
+					}
 				
-			} else if ( $payment_state == 'Terminé' ) {
+				} else if ( $contract_status == WDGInvestment::$contract_status_not_validated ) {
+					$payment_status = __( "Pas effectu&eacute;", 'yproject' );
+					$payment_status_span_class = 'error';
+					if ( $current_wdg_user->is_admin() && empty( $contract_status ) ) {
+						$payment_status .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&try_pending_card='.$item_invest['ID'].'" style="font-size: 10pt;">[Retenter]</a>';
+					}
+				}
+			}
+			$payment_status = '<span class="payment-status-' .$payment_status_span_class. '">' .$payment_status. '</span>';
+			
+			// Etat de la signature
+			$invest_sign_state = __( "Valid&eacute;", 'yproject' );
+			$invest_sign_state_span_class = 'confirm';
+			$invest_signsquid_contract = new SignsquidContract( $item_invest[ 'ID' ] );
+			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
+				$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
+				$invest_sign_state_span_class = 'error';
+			} else if ( $invest_signsquid_contract->get_status_code() != "Small" && $invest_signsquid_contract->get_status_code() != "Agreed" ) {
+				$invest_sign_state = __( "En attente de signature électronique", 'yproject' );
+				$invest_sign_state_span_class = 'error';
+			}
+			$invest_sign_state = '<span class="payment-status-' .$invest_sign_state_span_class. '">' .$invest_sign_state. '</span>';
+			
+
+			// Contrats complémentaires
+            if ( $post_invest_status == 'publish' ) {
 				$more_invest["invest_contracts"] = array();
 				$contract_model_index = 1;
 				foreach ( $contracts_to_add as $contract_model ) {
@@ -1684,17 +1702,18 @@ class WDGAjaxActions {
 				}
 			}
 			
+			
+			$invest_amount = '<span class="payment-status-' .( $post_invest_status == 'publish' ? 'success' : 'error' ). '">' .$item_invest['amount']. '</span>';
 			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
 			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
 				$more_invest = array();
 				$more_invest["invest_payment_type"] = $payment_type;
-				$more_invest["invest_payment_state"] = $investment_state;
-				$more_invest["invest_state"] = $payment_state;
-				$more_invest["invest_amount"] = $item_invest['amount'];
+				$more_invest["invest_payment_status"] = $payment_status;
+				$more_invest["invest_amount"] = $invest_amount;
 				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
 				$datetime->add( new DateInterval( 'PT1H' ) );
 				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
-				$more_invest["invest_sign"] = SignsquidContract::get_status_str_by_code( $item_invest[ 'signsquid_status' ] );
+				$more_invest["invest_sign"] = $invest_sign_state;
 				$more_invest["invest_id"] = $item_invest['ID'];
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 				
@@ -1702,13 +1721,12 @@ class WDGAjaxActions {
 				$array_contacts[$u_id]["invest"] = 1;
 				$array_contacts[$u_id]["more_invest"] = array();
 				$array_contacts[$u_id]["invest_payment_type"] = $payment_type;
-				$array_contacts[$u_id]["invest_payment_state"] = $investment_state;
-				$array_contacts[$u_id]["invest_state"] = $payment_state;
-				$array_contacts[$u_id]["invest_amount"] = $item_invest['amount'];
+				$array_contacts[$u_id]["invest_payment_status"] = $payment_status;
+				$array_contacts[$u_id]["invest_amount"] = $invest_amount;
 				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
 				$datetime->add( new DateInterval( 'PT1H' ) );
 				$array_contacts[$u_id]["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
-				$array_contacts[$u_id]["invest_sign"] = SignsquidContract::get_status_str_by_code( $item_invest[ 'signsquid_status' ] );
+				$array_contacts[$u_id]["invest_sign"] = $invest_sign_state;
 				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
 				$array_contacts[$u_id]["invest_item"] = $item_invest;
 			}
@@ -1727,6 +1745,44 @@ class WDGAjaxActions {
 
             if(WDGOrganization::is_user_organization($user_id)){
                 $orga = new WDGOrganization($user_id);
+				$orga_wallet_details = $orga->get_wallet_details();
+				$span_class = 'error';
+				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
+					switch ( $WDGUser_wallet_details->STATUS ) {
+						case '2':
+							$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+							break;
+						case '3':
+							$orga_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+							break;
+						case '6':
+							$orga_authentication = __( "Valid&eacute;e", 'yproject' );
+							$span_class = 'confirm';
+							break;
+						case '8':
+							$orga_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+							break;
+						case '10':
+						case '12':
+							$orga_authentication = __( "Bloqu&eacute;e", 'yproject' );
+							break;
+						
+						case '14':
+						case '15':
+						case '16':
+							$orga_authentication = __( "Erreur", 'yproject' );
+							break;
+
+						case '5':
+						case '7':
+						case '13':
+						default:
+							$orga_authentication = __( "En attente de documents", 'yproject' );
+							break;
+					}
+				}
+				$orga_authentication = '<span class="payment-status-' .$span_class. '">' .$orga_authentication. '</span>';
                 $orga_creator = $orga->get_creator();
 				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
                 $array_contacts[$user_id]["user_email"]= $orga->get_email();
@@ -1738,6 +1794,7 @@ class WDGAjaxActions {
 					$array_contacts[$user_id]["user_city"]= $orga->get_city();
 					$array_contacts[$user_id]["user_postal_code"]= $orga->get_postal_code();
 					$array_contacts[$user_id]["user_nationality"] = ucfirst(strtolower($orga->get_nationality()));
+					$array_contacts[$user_id]["user_authentication"] = $orga_authentication;
 
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
@@ -1751,6 +1808,47 @@ class WDGAjaxActions {
 
             //Données si l'investisseur est un utilisateur normal
             } else {
+				// Etat de l'authentification
+				$WDGUser = new WDGUser( $user_id );
+				$WDGUser_wallet_details = $WDGUser->get_wallet_details();
+				$span_class = 'error';
+				$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
+					switch ( $WDGUser_wallet_details->STATUS ) {
+						case '2':
+							$user_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+							break;
+						case '3':
+							$user_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+							break;
+						case '6':
+							$user_authentication = __( "Valid&eacute;e", 'yproject' );
+							$span_class = 'confirm';
+							break;
+						case '8':
+							$user_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+							break;
+						case '10':
+						case '12':
+							$user_authentication = __( "Bloqu&eacute;e", 'yproject' );
+							break;
+						
+						case '14':
+						case '15':
+						case '16':
+							$user_authentication = __( "Erreur", 'yproject' );
+							break;
+
+						case '5':
+						case '7':
+						case '13':
+						default:
+							$user_authentication = __( "En attente de documents", 'yproject' );
+							break;
+					}
+				}
+				$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
+				
 				//Infos supplémentaires pour les investisseurs
 				if($array_contacts[$user_id]["invest"] == 1){
 					$count_distinct_investors++;
@@ -1767,9 +1865,9 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_address"] = $user_item[ 'invest_item' ][ 'item' ][ 'address' ];
 						$array_contacts[$user_id]["user_country"] = $user_item[ 'invest_item' ][ 'item' ][ 'country' ];
 						$array_contacts[$user_id]["user_mobile_phone"] = $user_item[ 'invest_item' ][ 'item' ][ 'phone_number' ];
+						$array_contacts[$user_id]["user_authentication"] = $user_authentication;
 						
 					} else {
-						$WDGUser = new WDGUser( $user_id );
 						$array_contacts[$user_id]["user_link"] = $WDGUser->get_email();
 						$array_contacts[$user_id]["user_email"] = $WDGUser->get_email();
 						$array_contacts[$user_id]["user_last_name"] = $WDGUser->get_lastname();
@@ -1782,11 +1880,11 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_address"] = $WDGUser->get_full_address_str();
 						$array_contacts[$user_id]["user_country"] = $WDGUser->get_country( 'full' );
 						$array_contacts[$user_id]["user_mobile_phone"] = $WDGUser->get_phone_number();
+						$array_contacts[$user_id]["user_authentication"] = $user_authentication;
 					}
 					
-				//Infos supplémentaires pour les votants
+				//Infos supplémentaires pour les évaluateurs
 				} else {
-					$WDGUser = new WDGUser( $user_id );
 					$array_contacts[$user_id]["user_link"] = $WDGUser->get_email();
 					$array_contacts[$user_id]["user_email"] = $WDGUser->get_email();
 					$array_contacts[$user_id]["user_last_name"] = $WDGUser->get_lastname();
@@ -1886,10 +1984,10 @@ class WDGAjaxActions {
 
 			new ContactColumn('invest_amount', 'Montant investi', ( $display_vote_infos || $display_invest_infos ), "range" ),
             new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
-            new ContactColumn('invest_payment_type', 'Type de paiement', ( $display_vote_infos || $display_invest_infos )),
-            new ContactColumn('invest_payment_state', 'Etat', ( $display_vote_infos || $display_invest_infos )),
-            new ContactColumn('invest_sign', 'Signature', false),
-            new ContactColumn('invest_state', 'Investissement', $display_invest_infos),
+            new ContactColumn('invest_payment_type', 'Moyen de paiement', ( $display_vote_infos || $display_invest_infos ) ),
+            new ContactColumn('user_authentication', 'Authentification', ( $display_vote_infos || $display_invest_infos ) ),
+            new ContactColumn('invest_payment_status', 'Paiement', ( $display_vote_infos || $display_invest_infos ) ),
+            new ContactColumn('invest_sign', 'Signature', ( $display_vote_infos || $display_invest_infos ) )
         );
 		
 		if ( $contracts_to_add ) {
@@ -1960,8 +2058,7 @@ class WDGAjaxActions {
 						<?php echo $imggoodmains; ?>
 						
 					<?php elseif ( $column->columnData == "invest_payment_type"
-										|| $column->columnData == "invest_payment_state"
-										|| $column->columnData == "invest_state"
+										|| $column->columnData == "invest_payment_status"
 										|| $column->columnData == "invest_amount"
 										|| $column->columnData == "invest_date"
 										|| $column->columnData == "invest_sign" ): ?>
