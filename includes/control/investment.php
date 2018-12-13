@@ -1020,6 +1020,30 @@ class WDGInvestment {
 		}
 	}
 	
+	public function cancel() {
+		$payment_id = $this->get_id();
+		if ( !empty( $payment_id ) ) {
+			$postdata = array(
+				'ID'			=> $payment_id,
+				'post_status'	=> 'failed'
+			);
+			wp_update_post($postdata);
+
+			$log_post_items = get_posts(array(
+				'post_type'		=> 'edd_log',
+				'meta_key'		=> '_edd_log_payment_id',
+				'meta_value'	=> $payment_id
+			));
+			foreach ( $log_post_items as $log_post_item ) {
+				$postdata = array(
+					'ID'			=> $log_post_item->ID,
+					'post_status'	=> 'failed'
+				);
+				wp_update_post($postdata);
+			}
+		}
+	}
+	
 	/**
 	 * A ne faire qu'une fois par campagne : enregistre les investissements
 	 * @param ATCF_Campaign $campaign
