@@ -27,6 +27,7 @@ class WDGInvestment {
 	public static $status_validated = 'validated';
 	
 	public static $contract_status_meta = 'contract_status';
+	public static $contract_status_not_validated = 'investment_not_validated';
 	public static $contract_status_preinvestment_validated = 'preinvestment_validated';
 	public static $contract_status_investment_refused = 'investment_refused';
 	public static $contract_status_investment_validated = 'investment_validated';
@@ -896,6 +897,7 @@ class WDGInvestment {
 				$payment_key = 'unset_' . $random;
 			}
 			$this->set_status( WDGInvestment::$status_waiting_payment );
+			$this->set_contract_status( WDGInvestment::$contract_status_not_validated );
 			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
 			WDGInvestment::unset_session();
 		}

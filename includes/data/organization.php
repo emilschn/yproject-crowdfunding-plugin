@@ -866,7 +866,7 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
-	private function get_wallet_details( $type = '', $reload = false, $by_email = false ) {
+	public function get_wallet_details( $type = '', $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
 			if ( $by_email ) {
 				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
