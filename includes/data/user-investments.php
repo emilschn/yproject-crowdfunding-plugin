@@ -15,6 +15,7 @@ class WDGUserInvestments {
 	private $wp_ref;
 	
 	private $pending_preinvestments;
+	private $pending_not_validated_investments;
 	
 	public function __construct( $WDGInvestorEntity ) {
 		$this->wp_ref = $WDGInvestorEntity->get_wpref();
@@ -63,8 +64,8 @@ class WDGUserInvestments {
 		$purchases = edd_get_users_purchases( $this->wp_ref, -1, false, $payment_status );
 		
 		if ( !empty($purchases) ) {
-			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
-				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
+			foreach ( $purchases as $purchase_post ) {
+				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID );
 				$download_id = '';
 				if ( !is_array( $downloads[0] ) ){
 					$download_id = $downloads[0];
@@ -72,6 +73,13 @@ class WDGUserInvestments {
 						$buffer[$download_id] = array();
 					}
 					array_push( $buffer[$download_id], $purchase_post->ID );
+					
+				} else {
+					$download_id = $downloads[0][ 'id' ];
+					if ( !isset( $buffer[ $download_id ] ) ) {
+						$buffer[ $download_id ] = array();
+					}
+					array_push( $buffer[ $download_id ], $purchase_post->ID );
 				}
 			}
 		}
@@ -93,6 +101,56 @@ class WDGUserInvestments {
 	public function get_pending_investments() {
 		$payment_status = array( 'pending' );
 		return $this->get_investments( $payment_status );
+	}
+	
+	public function get_first_pending_investment() {
+		$buffer = FALSE;
+		if ( $this->has_pending_investments() ) {
+			$pending_preinvestments = $this->get_pending_investments();
+			$buffer = $pending_preinvestments[0];
+		}
+		return $buffer;
+	}
+	
+	public function has_pending_investments() {
+		$pending_preinvestments = $this->get_pending_investments();
+		return ( !empty( $pending_preinvestments ) );
+	}
+	
+	/**
+	 * Gestion des investissements démarrés mais pas validés
+	 */
+	public function get_pending_not_validated_investments() {
+		if ( !isset( $this->pending_not_validated_investments ) ) {
+			$this->pending_not_validated_investments = array();
+			$pending_investments = $this->get_pending_investments();
+			foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
+				$investment_campaign = new ATCF_Campaign( $campaign_id );
+				if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+					foreach ( $campaign_investments as $investment_id ) {
+						$wdg_investment = new WDGInvestment( $investment_id );
+						if ( $wdg_investment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
+							array_push( $this->pending_not_validated_investments, $wdg_investment );
+						}
+					}
+				}
+			}
+		}
+		return $this->pending_not_validated_investments;
+	}
+	
+	public function get_first_pending_not_validated_investment() {
+		$buffer = FALSE;
+		if ( $this->has_pending_not_validated_investments() ) {
+			$pending_preinvestments = $this->get_pending_not_validated_investments();
+			$buffer = $pending_preinvestments[0];
+		}
+		return $buffer;
+	}
+	
+	public function has_pending_not_validated_investments() {
+		$pending_preinvestments = $this->get_pending_not_validated_investments();
+		return ( !empty( $pending_preinvestments ) );
 	}
 	
 	/**

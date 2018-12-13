@@ -102,6 +102,14 @@ class WDGInvestment {
 		return TRUE;
 	}
 	
+	public function init_session_with_saved_values() {
+		$amount = $this->get_saved_amount();
+		$user_id = $this->get_saved_user_id();
+		$user_type = ( WDGOrganization::is_user_organization( $user_id ) ) ? $user_id : 'user';
+		$this->update_session( $amount, $user_type );
+		$_SESSION[ 'investment_saved_id' ] = $this->get_id();
+	}
+	
 	/**
 	 * Met à jour les valeurs de session qui concernent l'investissement en cours
 	 * @param int $amount
@@ -155,6 +163,10 @@ class WDGInvestment {
 			$download_id = '';
 			if ( !is_array( $downloads[0] ) ){
 				$download_id = $downloads[0];
+			} else {
+				$download_id = $downloads[0]['id'];
+			}
+			if ( !empty( $download_id ) ) {
 				$buffer = new ATCF_Campaign( $download_id );
 			}
 		}
@@ -637,6 +649,27 @@ class WDGInvestment {
 			}
 			
 		} else {
+			if ( !empty( $_SESSION[ 'investment_saved_id' ] ) ) {
+				$postdata = array(
+					'ID'			=> $_SESSION[ 'investment_saved_id' ],
+					'post_status'	=> 'failed'
+				);
+				wp_update_post($postdata);
+
+				$log_post_items = get_posts(array(
+					'post_type'		=> 'edd_log',
+					'meta_key'		=> '_edd_log_payment_id',
+					'meta_value'	=> $_SESSION[ 'investment_saved_id' ]
+				));
+				foreach ( $log_post_items as $log_post_item ) {
+					$postdata = array(
+						'ID'			=> $log_post_item->ID,
+						'post_status'	=> 'failed'
+					);
+					wp_update_post($postdata);
+				}
+			}
+
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
 			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
 			
