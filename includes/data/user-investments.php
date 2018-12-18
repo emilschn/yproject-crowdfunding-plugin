@@ -63,7 +63,7 @@ class WDGUserInvestments {
 		$purchases = edd_get_users_purchases( $this->wp_ref, -1, false, $payment_status );
 		
 		if ( !empty($purchases) ) {
-			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
+			foreach ( $purchases as $purchase_post ) {
 				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
 				$download_id = '';
 				if ( !is_array( $downloads[0] ) ){
