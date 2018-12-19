@@ -93,6 +93,7 @@ class LemonwayNotification {
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
 			
+			$pending_not_validated_investment_campaign_name = FALSE;
 			$WDGUserInvestments = FALSE;
 			
 			if ( !empty( $WDGOrga_wallet ) ) {
@@ -115,12 +116,20 @@ class LemonwayNotification {
 			if ( !empty( $WDGUserInvestments ) ) {
 				$WDGUserInvestments->try_pending_card_investments();
 				$WDGUserInvestments->try_transfer_waiting_roi_to_wallet();
+				if ( $WDGUserInvestments->has_pending_not_validated_investments() ) {
+					$pending_not_validated_investment = $WDGUserInvestments->get_first_pending_not_validated_investment();
+					$pending_not_validated_investment_campaign_name = $pending_not_validated_investment->get_saved_campaign()->data->post_title;
+				}
 			}
 			
 			
 			if ( $lemonway_posted_wallet_status == 6 ) {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, 'Validé' );
 				NotificationsAPI::kyc_authentified( $user_email, $user_name );
+				if ( !empty( $pending_not_validated_investment_campaign_name ) ) {
+					NotificationsEmails::investment_to_validate( $user_email, $user_name, $pending_not_validated_investment_campaign_name );
+				}
+				
 			} else {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, $lemonway_posted_wallet_status );
 			}
