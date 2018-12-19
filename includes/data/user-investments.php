@@ -414,4 +414,26 @@ class WDGUserInvestments {
 		}
 	}
 	
+/*******************************************************************************
+ * Gestion des transferts de royalties en attente
+*******************************************************************************/
+	public function try_transfer_waiting_roi_to_wallet() {
+		$investor_rois = array();
+		if ( !empty( $this->user ) ) {
+			$investor_rois = $this->user->get_rois();
+		}
+		if ( !empty( $this->orga ) ) {
+			$investor_rois = $this->orga->get_rois();
+		}
+		
+		if ( !empty( $investor_rois ) ) {
+			foreach ( $investor_rois as $roi ) {
+				if ( $roi->status == WDGROI::$status_waiting_authentication ) {
+					$WDGROI = new WDGROI( $roi->id );
+					$WDGROI->retry();
+				}
+			}
+		}
+	}
+	
 }

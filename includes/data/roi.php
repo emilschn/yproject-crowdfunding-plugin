@@ -128,7 +128,7 @@ class WDGROI {
 	 */
 	public function retry() {
 		//Si il y avait une erreur sur le transfert
-		if ( $this->status == WDGROI::$status_error && $this->id_transfer == 0 ) {
+		if ( ( $this->status == WDGROI::$status_error || $this->status == WDGROI::$status_waiting_authentication ) && $this->id_transfer == 0 ) {
 			
 			$api_org_object = WDGWPREST_Entity_Organization::get( $this->id_orga );
 			$organization_obj = new WDGOrganization( $api_org_object->wpref );
