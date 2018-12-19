@@ -5,6 +5,7 @@
 class WDGROI {
 	public static $table_name = 'ypcf_roi';
 	
+	public static $status_waiting_authentication = "waiting_authentication";
 	public static $status_transferred = "transferred";
 	public static $status_canceled = "canceled";
 	public static $status_error = "error";
