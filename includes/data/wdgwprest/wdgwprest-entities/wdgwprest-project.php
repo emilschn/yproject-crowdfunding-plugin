@@ -170,9 +170,11 @@ class WDGWPREST_Entity_Project {
 	public static function get_users_by_role( $project_id, $role_slug ) {
 		$buffer = array();
 		$user_list = WDGWPREST_Entity_Project::get_users( $project_id );
-		foreach ( $user_list as $user ) {
-			if ( $user->type == $role_slug ) {
-				array_push( $buffer, $user );
+		if ( !empty( $user_list ) ) {
+			foreach ( $user_list as $user ) {
+				if ( $user->type == $role_slug ) {
+					array_push( $buffer, $user );
+				}
 			}
 		}
 		return $buffer;

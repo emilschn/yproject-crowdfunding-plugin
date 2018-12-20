@@ -343,6 +343,7 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS VERSEMENT AVEC ROYALTIES
     //*******************************************************
+	/*
 	public static function roi_transfer_with_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message, $replyto_mail ) {
 		$id_template = '140';
 		$options = array(
@@ -360,10 +361,13 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
+	 * 
+	 */
 			
     //*******************************************************
     // NOTIFICATIONS VERSEMENT SANS ROYALTIES
     //*******************************************************
+	/*
 	public static function roi_transfer_without_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message, $replyto_mail ) {
 		$id_template = '167';
 		$options = array(
@@ -381,15 +385,37 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
+	 * 
+	 */
 	
     //*******************************************************
     // NOTIFICATIONS VERSEMENT AVEC ROYALTIES PLUSIEURS PROJETS
     //*******************************************************
-	public static function roi_transfer_with_royalties_multiproject( $recipient, $name, $project_names ) {
+	public static function roi_transfer_daily_resume( $recipient, $name, $royalties_message ) {
 		$id_template = '139';
 		$options = array(
 			'NOM_UTILISATEUR'	=> $name,
-			'NOM_PROJETS'		=> $project_names,
+			'RESUME_ROYALTIES'	=> $royalties_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // MESSAGE D'ENTREPRENEUR SUITE VERSEMENT ROYALTIES
+    //*******************************************************
+	public static function roi_transfer_message( $recipient, $name, $project_name, $declaration_message, $replyto_mail ) {
+		$id_template = '522';
+		$options = array(
+			'replyto'			=> $replyto_mail,
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name,
+			'CONTENU_MESSAGE'	=> $declaration_message,
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',

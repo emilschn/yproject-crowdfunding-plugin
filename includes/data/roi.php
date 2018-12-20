@@ -5,6 +5,7 @@
 class WDGROI {
 	public static $table_name = 'ypcf_roi';
 	
+	public static $status_waiting_authentication = "waiting_authentication";
 	public static $status_transferred = "transferred";
 	public static $status_canceled = "canceled";
 	public static $status_error = "error";
@@ -127,7 +128,7 @@ class WDGROI {
 	 */
 	public function retry() {
 		//Si il y avait une erreur sur le transfert
-		if ( $this->status == WDGROI::$status_error && $this->id_transfer == 0 ) {
+		if ( ( $this->status == WDGROI::$status_error || $this->status == WDGROI::$status_waiting_authentication ) && $this->id_transfer == 0 ) {
 			
 			$api_org_object = WDGWPREST_Entity_Organization::get( $this->id_orga );
 			$organization_obj = new WDGOrganization( $api_org_object->wpref );

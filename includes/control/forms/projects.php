@@ -371,18 +371,16 @@ class WDGFormProjects {
 		$current_organization = $campaign->get_organization();
 		$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
 		
-		if (isset($_POST['payment_card'])) {
+		if ( isset( $_POST[ 'payment_card' ] ) ) {
 			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url
-			$page_wallet = get_page_by_path('tableau-de-bord');	// Tableau de bord
-			$campaign_id_param = '?campaign_id=' . $campaign->ID;
-			$return_url = get_permalink($page_wallet->ID) . $campaign_id_param;
-			$wk_token = LemonwayLib::make_token('', $roi_id);
+			$return_url = home_url( '/tableau-de-bord/?campaign_id=' . $campaign->ID );
+			$wk_token = LemonwayLib::make_token( '', $roi_id );
 			$roi_declaration->payment_token = $wk_token;
 			$roi_declaration->save();
 			$organization->register_lemonway();
-			$return = LemonwayLib::ask_payment_webkit($organization->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
-			if ( !empty($return->MONEYINWEB->TOKEN) ) {
-				wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
+			$return = LemonwayLib::ask_payment_webkit( $organization->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url );
+			if ( !empty( $return->MONEYINWEB->TOKEN ) ) {
+				wp_redirect( YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN );
 				exit();
 			} else {
 				return "error_lw_payment";
@@ -449,6 +447,12 @@ class WDGFormProjects {
 						$declaration->save();
 						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
 						NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
+						
+						$campaign = atcf_get_current_campaign();
+						$current_organization = $campaign->get_organization();
+						$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
+						$organization->check_register_royalties_lemonway_wallet();
+						LemonwayLib::ask_transfer_funds( $organization->get_lemonway_id(), $organization->get_royalties_lemonway_id(), $declaration->get_amount_with_commission() );
 						$buffer = TRUE;
 
 				} else {

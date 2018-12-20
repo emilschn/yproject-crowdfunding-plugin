@@ -9,11 +9,13 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 	
 	private $user_id;
 	private $is_orga;
+	private $invest_campaign_id;
 	
-	public function __construct( $user_id = FALSE, $is_orga = FALSE ) {
+	public function __construct( $user_id = FALSE, $is_orga = FALSE, $invest_campaign_id = FALSE ) {
 		parent::__construct( self::$name );
 		$this->user_id = $user_id;
 		$this->is_orga = $is_orga;
+		$this->invest_campaign_id = $invest_campaign_id;
 		$this->initFields();
 	}
 	
@@ -330,6 +332,12 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				}
 			}
 			
+		}
+		
+		// Si il n'y a pas d'erreur et qu'on est dans le contexte d'investissement
+		if ( empty( $feedback_errors ) && !empty( $this->invest_campaign_id ) ) {
+			$WDGInvestment_current = WDGInvestment::current();
+			$WDGInvestment_current->payment_return( WDGInvestment::$meanofpayment_unset );
 		}
 		
 		$buffer = array(

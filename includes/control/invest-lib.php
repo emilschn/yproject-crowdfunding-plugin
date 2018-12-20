@@ -106,7 +106,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				$contribution_id = $split_contribution_id[0];
 			}
 			
-			if (isset($contribution_id) && $contribution_id != '' && $contribution_id != 'check') {
+			if ( isset( $contribution_id ) && $contribution_id != '' && $contribution_id != 'check' && strpos( $contribution_id, 'unset_' ) === FALSE ) {
 				$update_post = FALSE;
 				$is_card_contribution = TRUE;
 
@@ -114,38 +114,33 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				if (strpos($contribution_id, 'wire_') !== FALSE) {
 					$is_card_contribution = FALSE;
 					$contribution_id = substr($contribution_id, 5);
-					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-						//TODO
-					}
 
 				//Paiement par wallet uniquement
-				} else if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
+				} elseif (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
 					$buffer = 'publish';
 					$update_post = TRUE;
 
 				//On teste une contribution classique
 				} else {
 
-					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-						if ($lemonway_transaction === FALSE) {
-							$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
+					if ($lemonway_transaction === FALSE) {
+						$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
+					}
+					if ($lw_transaction_result) {
+						switch ($lw_transaction_result->STATUS) {
+							case 3:
+								$buffer = 'publish';
+								break;
+							case 4:
+								$buffer = 'failed';
+								$wdginvestment->set_status( WDGInvestment::$status_error );
+								break;
+							case 0:
+							default:
+								$buffer = 'pending';
+								break;
 						}
-						if ($lw_transaction_result) {
-							switch ($lw_transaction_result->STATUS) {
-								case 3:
-									$buffer = 'publish';
-									break;
-								case 4:
-									$buffer = 'failed';
-									$wdginvestment->set_status( WDGInvestment::$status_error );
-									break;
-								case 0:
-								default:
-									$buffer = 'pending';
-									break;
-							}
-							$update_post = TRUE;
-						}
+						$update_post = TRUE;
 					}
 				}
 

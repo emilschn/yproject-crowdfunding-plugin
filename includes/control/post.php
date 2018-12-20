@@ -301,11 +301,10 @@ class WDGPostActions {
                             //Fixe date fin de vote
                             $diffVoteDay = new DateInterval('P'.$vote_time.'D');
                             $VoteEndDate = (new DateTime())->add($diffVoteDay);
-                            //$VoteEndDate->setTime(23,59);
                             $campaign->set_end_vote_date($VoteEndDate);
-
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
+							$organization_obj->check_register_campaign_lemonway_wallet();
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 		
 							// Mise à jour cache
@@ -343,9 +342,13 @@ class WDGPostActions {
 								$campaign->set_end_vote_date( new DateTime() );
 							}
                             $campaign->set_begin_collecte_date(new DateTime());
-
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
+							
+							$campaign_organization = $campaign->get_organization();
+							$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+							$organization_obj->check_register_campaign_lemonway_wallet();
+							
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
 		
 							// Mise à jour cache
