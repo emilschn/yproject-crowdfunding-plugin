@@ -612,12 +612,12 @@ class WDGROIDeclaration {
 					if ( WDGOrganization::is_user_organization( $WDGUser->get_wpref() ) ) {
 						$WDGOrga = new WDGOrganization( $WDGUser->get_wpref() );
 						$WDGOrga->register_lemonway();
-						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
+						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
 
 					//Versement vers utilisateur personne physique
 					} else {
 						$WDGUser->register_lemonway();
-						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+						$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
 					}
 
 					if ( $transfer != FALSE ) {

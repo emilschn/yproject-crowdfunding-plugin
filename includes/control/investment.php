@@ -783,6 +783,7 @@ class WDGInvestment {
 		if ( $can_use_wallet ) {
 			$campaign_organization = $campaign->get_organization();
 			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+			$WDGOrganization_campaign->check_register_campaign_lemonway_wallet();
 			
 			if ( $invest_type == 'user' ) { 
 				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_campaign_lemonway_id(), $amount );

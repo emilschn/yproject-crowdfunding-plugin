@@ -334,7 +334,8 @@ class LemonwayNotification {
 				if ( !empty( $WDGOrga_invest_author ) ) {
 					$lemonway_id = $WDGOrga_invest_author->get_lemonway_id();
 				}
-				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_lemonway_id(), $lemonway_posted_amount );
+				$organization_obj->check_register_campaign_lemonway_wallet();
+				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_campaign_lemonway_id(), $lemonway_posted_amount );
 				
 				$postdata = array(
 					'ID'			=> $investment_id,
