@@ -620,6 +620,7 @@ class WDGInvestment {
 			'status'		=> 'pending'
 		);
 		$payment_id = edd_insert_payment( $payment_data );
+		$this->id = $payment_id;
 		$_SESSION[ 'investment_id' ] = $payment_id;
 		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
 		if ( strpos( $mean_of_payment, 'wallet' ) !== FALSE ) {
@@ -683,7 +684,6 @@ class WDGInvestment {
 			//	on passe le statut de préinvestissement
 			//  et on repasse l'investissement comme en attente
 			if ( $this->campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
-				$this->id = $payment_id;
 				$this->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
 				$postdata = array(
 					'ID'			=> $payment_id,
@@ -938,8 +938,8 @@ class WDGInvestment {
 				$payment_key = 'unset_' . $random;
 			}
 			$this->set_status( WDGInvestment::$status_waiting_payment );
-			$this->set_contract_status( WDGInvestment::$contract_status_not_validated );
 			$buffer = $this->save_payment( $payment_key, $mean_of_payment );
+			$this->set_contract_status( WDGInvestment::$contract_status_not_validated );
 			WDGInvestment::unset_session();
 		}
 
