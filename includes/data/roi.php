@@ -138,12 +138,12 @@ class WDGROI {
 			if (WDGOrganization::is_user_organization( $WDGUser->get_wpref() )) {
 				$WDGOrga = new WDGOrganization( $WDGUser->get_wpref() );
 				$WDGOrga->register_lemonway();
-				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGOrga->get_lemonway_id(), $this->amount );
+				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $this->amount );
 
 			// Versement projet vers utilisateur personne physique
 			} else {
 				$WDGUser->register_lemonway();
-				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), $WDGUser->get_lemonway_id(), $this->amount );
+				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $this->amount );
 			}
 			
 			if ($transfer != FALSE) {
@@ -172,11 +172,11 @@ class WDGROI {
 				$WDGUser = WDGUser::get_by_api_id( $this->id_user );
 				if ( WDGOrganization::is_user_organization( $WDGUser->get_wpref() ) ) {
 					$WDGOrga = new WDGOrganization( $WDGUser->get_wpref() );
-					$transfer = LemonwayLib::ask_transfer_funds( $WDGOrga->get_lemonway_id(), $organization_obj->get_lemonway_id(), $this->amount );
+					$transfer = LemonwayLib::ask_transfer_funds( $WDGOrga->get_lemonway_id(), $organization_obj->get_royalties_lemonway_id(), $this->amount );
 
 				//Versement utilisateur personne physique vers projet
 				} else {
-					$transfer = LemonwayLib::ask_transfer_funds( $WDGUser->get_lemonway_id(), $organization_obj->get_lemonway_id(), $this->amount );
+					$transfer = LemonwayLib::ask_transfer_funds( $WDGUser->get_lemonway_id(), $organization_obj->get_royalties_lemonway_id(), $this->amount );
 				}
 			}
 
