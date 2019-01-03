@@ -89,7 +89,7 @@ class WDGQueue {
 		self::create_or_replace_action( $action, $entity_id, $priority, $date_priority, $params );
 	}
 	
-	public static function roi_transfer_message( $user_id, $queued_action_params ) {
+	public static function execute_roi_transfer_message( $user_id, $queued_action_params ) {
 		$date_now = new DateTime();
 		
 		// On récupère la liste des investissements triés par projet de l'utilisateur pour les séparer entre :
@@ -118,7 +118,7 @@ class WDGQueue {
 			$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
 			foreach ( $campaign_roi_list as $campaign_roi ) {
 				$date_transfer = new DateTime( $campaign_roi->date_transfer );
-				if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) ) {
+				if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
 					$amount_royalties += $campaign_roi->amount;
 					$has_declared = TRUE;
 				}
