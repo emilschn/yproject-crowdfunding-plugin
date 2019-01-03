@@ -43,14 +43,17 @@ class WDGQueue {
 	 * @param int $number
 	 */
 	public static function execute_next( $number = 5 ) {
+		$buffer = 0;
 		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( $number, TRUE );
 		if ( !empty( $queued_action_list ) ) {
 			foreach ( $queued_action_list as $queued_action ) {
 				$action_name = 'execute_' . $queued_action->action;
 				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params ) );
 				WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
+				$buffer++;
 			}
 		}
+		return $buffer;
 	}
 	
 	
