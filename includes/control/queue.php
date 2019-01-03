@@ -112,48 +112,51 @@ class WDGQueue {
 		
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$amount_royalties = 0;
-			$has_declared = FALSE;
 			
-			$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
-			foreach ( $campaign_roi_list as $campaign_roi ) {
-				$date_transfer = new DateTime( $campaign_roi->date_transfer );
-				if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
-					$amount_royalties += $campaign_roi->amount;
-					$has_declared = TRUE;
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+				$amount_royalties = 0;
+				$has_declared = FALSE;
+
+				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
+				foreach ( $campaign_roi_list as $campaign_roi ) {
+					$date_transfer = new DateTime( $campaign_roi->date_transfer );
+					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
+						$amount_royalties += $campaign_roi->amount;
+						$has_declared = TRUE;
+					}
 				}
-			}
-			
-			if ( $has_declared ) {
-				if ( $amount_royalties > 0 ) {
-					array_push( $message_categories[ 'with_royalties' ], array(
-						'campaign_name'		=> $campaign->get_name(),
-						'amount_royalties'	=> $amount_royalties
-					) );
+
+				if ( $has_declared ) {
+					if ( $amount_royalties > 0 ) {
+						array_push( $message_categories[ 'with_royalties' ], array(
+							'campaign_name'		=> $campaign->get_name(),
+							'amount_royalties'	=> $amount_royalties
+						) );
+					} else {
+						array_push( $message_categories[ 'without_royalties' ], $campaign->get_name() );
+					}
+
 				} else {
-					array_push( $message_categories[ 'without_royalties' ], $campaign->get_name() );
-				}
-				
-			} else {
-				$campaign_first_declaration = new DateTime( $campaign->first_payment_date() );
-				if ( $date_now < $campaign_first_declaration && ( $date_now->format( 'Y' ) != $campaign_first_declaration->format( 'Y' ) || $date_now->format( 'm' ) != $campaign_first_declaration->format( 'm' ) ) ) {
-					array_push( $message_categories[ 'not_started' ], array(
-						'campaign_name'	=> $campaign->get_name(),
-						'date_start'	=> $campaign_first_declaration->format( 'd/m/Y' )
-					) );
-					
-				} else {
-					$campaign_declarations = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
-					foreach ( $campaign_declarations as $campaign_declaration ) {
-						if ( $campaign_declaration->status != WDGROIDeclaration::$status_finished ) {
-							$date_due = new DateTime( $campaign_declaration->date_due );
-							if ( $date_now->format( 'Y' ) == $date_due->format( 'Y' ) && $date_now->format( 'm' ) == $date_due->format( 'm' ) ) {
-								array_push( $message_categories[ 'not_transfered' ], $campaign->get_name() );
+					$campaign_first_declaration = new DateTime( $campaign->first_payment_date() );
+					if ( $date_now < $campaign_first_declaration && ( $date_now->format( 'Y' ) != $campaign_first_declaration->format( 'Y' ) || $date_now->format( 'm' ) != $campaign_first_declaration->format( 'm' ) ) ) {
+						array_push( $message_categories[ 'not_started' ], array(
+							'campaign_name'	=> $campaign->get_name(),
+							'date_start'	=> $campaign_first_declaration->format( 'd/m/Y' )
+						) );
+
+					} else {
+						$campaign_declarations = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+						foreach ( $campaign_declarations as $campaign_declaration ) {
+							if ( $campaign_declaration->status != WDGROIDeclaration::$status_finished ) {
+								$date_due = new DateTime( $campaign_declaration->date_due );
+								if ( $date_now->format( 'Y' ) == $date_due->format( 'Y' ) && $date_now->format( 'm' ) == $date_due->format( 'm' ) ) {
+									array_push( $message_categories[ 'not_transfered' ], $campaign->get_name() );
+								}
 							}
 						}
 					}
+
 				}
-				
 			}
 			
 		}
