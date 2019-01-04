@@ -112,6 +112,13 @@ class WDGQueue {
 		
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
+			$campaign_organization = $campaign->get_organization();
+			if ( !empty( $campaign_organization ) ) {
+				$campaign_organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+				$campaign_name = $campaign_organization_obj->get_name() . ' (Levée de fonds "' .$campaign->get_name(). '")';
+			} else {
+				$campaign_name = $campaign->get_name();
+			}
 			
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
 				$amount_royalties = 0;
