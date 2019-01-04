@@ -69,7 +69,7 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 	<?php // Tableau investissements ?>
 	<div style="margin-top: 40px;">
 		<p>
-			<span style="font-weight: bold; font-size: 16pt;">RAPPEL DES INVESTISSEMENTS R&Eacute;ALIS&Eacute;S</span>
+			<span style="font-weight: bold; font-size: 16pt;">RAPPEL DES INVESTISSEMENTS CONCERN&Eacute;S</span>
 		</p>
 	</div>
 	
