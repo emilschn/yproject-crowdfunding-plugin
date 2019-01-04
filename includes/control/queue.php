@@ -43,14 +43,17 @@ class WDGQueue {
 	 * @param int $number
 	 */
 	public static function execute_next( $number = 5 ) {
+		$buffer = 0;
 		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( $number, TRUE );
 		if ( !empty( $queued_action_list ) ) {
 			foreach ( $queued_action_list as $queued_action ) {
 				$action_name = 'execute_' . $queued_action->action;
 				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params ) );
 				WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
+				$buffer++;
 			}
 		}
+		return $buffer;
 	}
 	
 	
@@ -86,7 +89,7 @@ class WDGQueue {
 		self::create_or_replace_action( $action, $entity_id, $priority, $date_priority, $params );
 	}
 	
-	public static function roi_transfer_message( $user_id, $queued_action_params ) {
+	public static function execute_roi_transfer_message( $user_id, $queued_action_params ) {
 		$date_now = new DateTime();
 		
 		// On récupère la liste des investissements triés par projet de l'utilisateur pour les séparer entre :
@@ -109,48 +112,58 @@ class WDGQueue {
 		
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$amount_royalties = 0;
-			$has_declared = FALSE;
-			
-			$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
-			foreach ( $campaign_roi_list as $campaign_roi ) {
-				$date_transfer = new DateTime( $campaign_roi->date_transfer );
-				if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) ) {
-					$amount_royalties += $campaign_roi->amount;
-					$has_declared = TRUE;
-				}
+			$campaign_organization = $campaign->get_organization();
+			if ( !empty( $campaign_organization ) ) {
+				$campaign_organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+				$campaign_name = $campaign_organization_obj->get_name() . ' (Levée de fonds "' .$campaign->get_name(). '")';
+			} else {
+				$campaign_name = $campaign->get_name();
 			}
 			
-			if ( $has_declared ) {
-				if ( $amount_royalties > 0 ) {
-					array_push( $message_categories[ 'with_royalties' ], array(
-						'campaign_name'		=> $campaign->get_name(),
-						'amount_royalties'	=> $amount_royalties
-					) );
-				} else {
-					array_push( $message_categories[ 'without_royalties' ], $campaign->get_name() );
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+				$amount_royalties = 0;
+				$has_declared = FALSE;
+
+				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
+				foreach ( $campaign_roi_list as $campaign_roi ) {
+					$date_transfer = new DateTime( $campaign_roi->date_transfer );
+					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
+						$amount_royalties += $campaign_roi->amount;
+						$has_declared = TRUE;
+					}
 				}
-				
-			} else {
-				$campaign_first_declaration = new DateTime( $campaign->first_payment_date() );
-				if ( $date_now < $campaign_first_declaration && ( $date_now->format( 'Y' ) != $campaign_first_declaration->format( 'Y' ) || $date_now->format( 'm' ) != $campaign_first_declaration->format( 'm' ) ) ) {
-					array_push( $message_categories[ 'not_started' ], array(
-						'campaign_name'	=> $campaign->get_name(),
-						'date_start'	=> $campaign_first_declaration->format( 'd/m/Y' )
-					) );
-					
+
+				if ( $has_declared ) {
+					if ( $amount_royalties > 0 ) {
+						array_push( $message_categories[ 'with_royalties' ], array(
+							'campaign_name'		=> $campaign->get_name(),
+							'amount_royalties'	=> $amount_royalties
+						) );
+					} else {
+						array_push( $message_categories[ 'without_royalties' ], $campaign->get_name() );
+					}
+
 				} else {
-					$campaign_declarations = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
-					foreach ( $campaign_declarations as $campaign_declaration ) {
-						if ( $campaign_declaration->status != WDGROIDeclaration::$status_finished ) {
-							$date_due = new DateTime( $campaign_declaration->date_due );
-							if ( $date_now->format( 'Y' ) == $date_due->format( 'Y' ) && $date_now->format( 'm' ) == $date_due->format( 'm' ) ) {
-								array_push( $message_categories[ 'not_transfered' ], $campaign->get_name() );
+					$campaign_first_declaration = new DateTime( $campaign->first_payment_date() );
+					if ( $date_now < $campaign_first_declaration && ( $date_now->format( 'Y' ) != $campaign_first_declaration->format( 'Y' ) || $date_now->format( 'm' ) != $campaign_first_declaration->format( 'm' ) ) ) {
+						array_push( $message_categories[ 'not_started' ], array(
+							'campaign_name'	=> $campaign->get_name(),
+							'date_start'	=> $campaign_first_declaration->format( 'd/m/Y' )
+						) );
+
+					} else {
+						$campaign_declarations = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+						foreach ( $campaign_declarations as $campaign_declaration ) {
+							if ( $campaign_declaration->status != WDGROIDeclaration::$status_finished ) {
+								$date_due = new DateTime( $campaign_declaration->date_due );
+								if ( $date_now->format( 'Y' ) == $date_due->format( 'Y' ) && $date_now->format( 'm' ) == $date_due->format( 'm' ) ) {
+									array_push( $message_categories[ 'not_transfered' ], $campaign->get_name() );
+								}
 							}
 						}
 					}
+
 				}
-				
 			}
 			
 		}

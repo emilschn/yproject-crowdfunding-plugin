@@ -299,10 +299,11 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
-	public static function declaration_done_with_turnover( $recipient, $name, $last_three_months, $turnover_amount ) {
+	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount ) {
 		$id_template = '127';
 		$options = array(
 			'NOM'					=> $name,
+			'NOM_PROJET'			=> $project_name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months,
 			'MONTANT_ROYALTIES'		=> $turnover_amount
 		);
@@ -315,10 +316,11 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
-	public static function declaration_done_without_turnover( $recipient, $name, $last_three_months ) {
+	public static function declaration_done_without_turnover( $recipient, $name, $project_name, $last_three_months ) {
 		$id_template = '150';
 		$options = array(
 			'NOM'					=> $name,
+			'NOM_PROJET'			=> $project_name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months
 		);
 		$parameters = array(

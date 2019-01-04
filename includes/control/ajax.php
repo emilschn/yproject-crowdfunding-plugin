@@ -168,12 +168,12 @@ class WDGAjaxActions {
 				if ( !isset( $buffer[ $campaign_id ] ) ) {
 					$buffer[ $campaign_id ] = array();
 					$buffer[ $campaign_id ][ 'name' ] = $campaign->data->post_title;
-					$buffer[ $campaign_id ][ 'status' ] = $campaign->campaign_status();
-					$buffer[ $campaign_id ][ 'amount' ] = $campaign->current_amount( false );
+					$buffer[ $campaign_id ][ 'status' ] = utf8_encode( $campaign->campaign_status() );
+					$buffer[ $campaign_id ][ 'amount' ] = utf8_encode( $campaign->current_amount( false ) );
 					$contract_start_date = new DateTime( $campaign->contract_start_date() );
-					$buffer[ $campaign_id ][ 'start_date' ] = $contract_start_date->format( 'd/m/Y' );
-					$buffer[ $campaign_id ][ 'funding_duration' ] = $campaign->funding_duration();
-					$buffer[ $campaign_id ][ 'roi_percent' ] = $campaign->roi_percent();
+					$buffer[ $campaign_id ][ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
+					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
 					$buffer[ $campaign_id ][ 'items' ] = array();
 				}
 				
@@ -189,11 +189,11 @@ class WDGAjaxActions {
 				
 				$investment_item = array();
 				$investment_item[ 'date' ] = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_post->ID ) ) );
-				$investment_item[ 'amount' ] = $payment_amount;
-				$investment_item[ 'status' ] = $purchase_post->post_status;
-				$investment_item[ 'roi_percent' ] = $roi_percent_display;
-				$investment_item[ 'roi_amount' ] = round( $roi_amount, 2 );
-				$investment_item[ 'roi_return' ] = round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 );
+				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
+				$investment_item[ 'status' ] = utf8_encode( $purchase_post->post_status );
+				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
+				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
+				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
 				
 				array_push( $buffer[ $campaign_id ][ 'items' ], $investment_item );
 			}

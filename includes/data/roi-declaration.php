@@ -525,12 +525,11 @@ class WDGROIDeclaration {
 								if ( $this->get_adjustment_validated() && !empty( $adjustment_message_param ) ) {
 									$adjustment_message = $adjustment_message_param;
 								}
-								$declaration_message = $this->get_message();
-								if ( empty( $declaration_message ) ) {
-									$declaration_message = "Aucun message";
-								}
 								WDGQueue::add_notification_royalties( $investment_item['user'] );
-								NotificationsAPI::roi_transfer_message( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $declaration_message, $replyto_mail );
+								$declaration_message = $this->get_message();
+								if ( !empty( $declaration_message ) ) {
+									NotificationsAPI::roi_transfer_message( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $declaration_message, $replyto_mail );
+								}
 							}
 						} else {
 							WDGROI::insert( $investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, $status );
@@ -565,9 +564,9 @@ class WDGROIDeclaration {
 				}
 				$wdguser_author = new WDGUser( $campaign->data->post_author );
 				if ( $this->get_amount_with_adjustment() > 0 ) {
-					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str(), $this->get_amount_with_adjustment() );
+					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment() );
 				} else {
-					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str() );
+					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
 				}
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->date_transfer = $date_now_formatted;
