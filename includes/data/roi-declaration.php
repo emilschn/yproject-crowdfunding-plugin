@@ -552,9 +552,9 @@ class WDGROIDeclaration {
 				}
 				$wdguser_author = new WDGUser( $campaign->data->post_author );
 				if ( $this->get_amount_with_adjustment() > 0 ) {
-					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str(), $this->get_amount_with_adjustment() );
+					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment() );
 				} else {
-					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $this->get_month_list_str() );
+					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
 				}
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->date_transfer = $date_now_formatted;
