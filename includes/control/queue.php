@@ -134,20 +134,16 @@ class WDGQueue {
 				}
 
 				if ( $has_declared ) {
-					if ( $amount_royalties > 0 ) {
-						array_push( $message_categories[ 'with_royalties' ], array(
-							'campaign_name'		=> $campaign->get_name(),
-							'amount_royalties'	=> $amount_royalties
-						) );
-					} else {
-						array_push( $message_categories[ 'without_royalties' ], $campaign->get_name() );
-					}
+					array_push( $message_categories[ 'with_royalties' ], array(
+						'campaign_name'		=> $campaign_name,
+						'amount_royalties'	=> $amount_royalties
+					) );
 
 				} else {
 					$campaign_first_declaration = new DateTime( $campaign->first_payment_date() );
 					if ( $date_now < $campaign_first_declaration && ( $date_now->format( 'Y' ) != $campaign_first_declaration->format( 'Y' ) || $date_now->format( 'm' ) != $campaign_first_declaration->format( 'm' ) ) ) {
 						array_push( $message_categories[ 'not_started' ], array(
-							'campaign_name'	=> $campaign->get_name(),
+							'campaign_name'	=> $campaign_name,
 							'date_start'	=> $campaign_first_declaration->format( 'd/m/Y' )
 						) );
 
@@ -157,7 +153,7 @@ class WDGQueue {
 							if ( $campaign_declaration->status != WDGROIDeclaration::$status_finished ) {
 								$date_due = new DateTime( $campaign_declaration->date_due );
 								if ( $date_now->format( 'Y' ) == $date_due->format( 'Y' ) && $date_now->format( 'm' ) == $date_due->format( 'm' ) ) {
-									array_push( $message_categories[ 'not_transfered' ], $campaign->get_name() );
+									array_push( $message_categories[ 'not_transfered' ], $campaign_name );
 								}
 							}
 						}
@@ -189,7 +185,6 @@ class WDGQueue {
 		Ces entreprises ne vous ont pas versé de royalties :
 		- DKodes
 		- Wattsplan
-		 */
 		if ( !empty( $message_categories[ 'without_royalties' ] ) ) {
 			$message .= "<b>Ces entreprises ne vous ont pas versé de royalties :</b><br>";
 			foreach ( $message_categories[ 'without_royalties' ] as $campaign_name ) {
@@ -197,6 +192,7 @@ class WDGQueue {
 			}
 			$message .= "<br>";
 		}
+		 */
 		
 		/**
 		 * 
