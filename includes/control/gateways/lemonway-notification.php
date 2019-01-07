@@ -18,6 +18,7 @@ class LemonwayNotification {
 	private static $category_wallet_new_status = 8;
 	private static $category_document_new_status = 9;
 	private static $category_moneyin_wire = 10;
+	private static $category_moneyin_mandate = 11;
 	
 	private $notification_category;
 	
@@ -39,6 +40,10 @@ class LemonwayNotification {
 			
 			case LemonwayNotification::$category_moneyin_wire:
 				$this->process_moneyin_wire();
+				break;
+			
+			case LemonwayNotification::$category_moneyin_mandate:
+				$this->process_moneyin_mandate();
 				break;
 		}
 	}
@@ -88,13 +93,15 @@ class LemonwayNotification {
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
 			
+			$pending_not_validated_investment_campaign_name = FALSE;
+			$WDGUserInvestments = FALSE;
+			
 			if ( !empty( $WDGOrga_wallet ) ) {
 				$user_name = $WDGOrga_wallet->get_name();
 				$user_fullname = $WDGOrga_wallet->get_name();
 				$user_email = $WDGOrga_wallet->get_email();
 				if ( $lemonway_posted_wallet_status == 6 ) {
 					$WDGUserInvestments = new WDGUserInvestments( $WDGOrga_wallet );
-					$WDGUserInvestments->try_pending_card_investments();
 				}
 				
 			} else {
@@ -103,13 +110,26 @@ class LemonwayNotification {
 				$user_email = $WDGUser_wallet->get_email();
 				if ( $lemonway_posted_wallet_status == 6 ) {
 					$WDGUserInvestments = new WDGUserInvestments( $WDGUser_wallet );
-					$WDGUserInvestments->try_pending_card_investments();
 				}
 			}
+			
+			if ( !empty( $WDGUserInvestments ) ) {
+				$WDGUserInvestments->try_pending_card_investments();
+				$WDGUserInvestments->try_transfer_waiting_roi_to_wallet();
+				if ( $WDGUserInvestments->has_pending_not_validated_investments() ) {
+					$pending_not_validated_investment = $WDGUserInvestments->get_first_pending_not_validated_investment();
+					$pending_not_validated_investment_campaign_name = $pending_not_validated_investment->get_saved_campaign()->data->post_title;
+				}
+			}
+			
 			
 			if ( $lemonway_posted_wallet_status == 6 ) {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, 'Validé' );
 				NotificationsAPI::kyc_authentified( $user_email, $user_name );
+				if ( !empty( $pending_not_validated_investment_campaign_name ) ) {
+					NotificationsEmails::investment_to_validate( $user_email, $user_name, $pending_not_validated_investment_campaign_name );
+				}
+				
 			} else {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, $lemonway_posted_wallet_status );
 			}
@@ -314,7 +334,8 @@ class LemonwayNotification {
 				if ( !empty( $WDGOrga_invest_author ) ) {
 					$lemonway_id = $WDGOrga_invest_author->get_lemonway_id();
 				}
-				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_lemonway_id(), $lemonway_posted_amount );
+				$organization_obj->check_register_campaign_lemonway_wallet();
+				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_campaign_lemonway_id(), $lemonway_posted_amount );
 				
 				$postdata = array(
 					'ID'			=> $investment_id,
@@ -349,6 +370,56 @@ class LemonwayNotification {
 			}
 		} else {
 			NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Virement reçu - erreur', '$WDGUser_invest_author === FALSE', true );
+		}
+	}
+	
+	private function process_moneyin_mandate() {
+		/**
+		 * NotifDate : Date et heure de la creation de la notification. Heure de Paris. Format ISO8601
+		 * Ex : 2015-11-01T16:44:55.883
+		 */
+		$lemonway_posted_date = filter_input( INPUT_POST, 'NotifDate' );
+		/**
+		 * IntId : Identifiant interne du wallet
+		 * Ex : 32
+		 */
+		$lemonway_posted_id_internal = filter_input( INPUT_POST, 'IntId' );
+		/**
+		 * ExtId : Identifiant externe du wallet
+		 * Ex : USERW3987
+		 */
+		$lemonway_posted_id_external = filter_input( INPUT_POST, 'ExtId' );
+		/**
+		 * IdTransaction : Identifiant de la transaction
+		 * Ex : 204
+		 */
+		$lemonway_posted_id_transaction = filter_input( INPUT_POST, 'IdTransaction' );
+		/**
+		 * Amount : Montant à créditer au wallet (total moins la commission)
+		 * Ex : 10.00
+		 */
+		$lemonway_posted_amount = filter_input( INPUT_POST, 'Amount' );
+		/**
+		 * Status : Statut de la transaction
+		 * Ex : 0
+		 */
+		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
+
+	
+		$content = 'Un virement a été reçu avec les infos suivantes :<br />';
+		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br />';
+		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br />';
+		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br />';
+		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br />';
+		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br />';
+		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br />';
+		NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Prélèvement reçu', $content, true );
+		
+		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
+		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
+			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+			$WDGOrga_wallet->check_register_royalties_lemonway_wallet();
+			LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $lemonway_posted_amount );
 		}
 	}
 	

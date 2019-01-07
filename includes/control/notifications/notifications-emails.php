@@ -14,38 +14,38 @@ class NotificationsEmails {
      * @return bool
      */
     public static function send_mail($to, $object, $content, $decorate = false, $attachments = array(), $from_data = array(), $bcc = array()) {
-	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
-	if ( empty( $from_data ) ) {
-		$from_name = get_bloginfo('name');
-		$from_email = get_option('admin_email');
-	} else {
-		$from_name = $from_data['name'];
-		$from_email = $from_data['email'];
-	}
-	$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
-	$headers .= "Reply-To: ". $from_email . "\r\n";
-	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
-	if ( !empty($bcc) ) {
-		$bcc_list = '';
-		foreach ($bcc as $bcc_mail) {
-			if ( !empty($bcc_mail) ) {
-				$bcc_list .= $bcc_mail . ',';
-			}
+		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
+		if ( empty( $from_data ) ) {
+			$from_name = get_bloginfo('name');
+			$from_email = get_option('admin_email');
+		} else {
+			$from_name = $from_data['name'];
+			$from_email = $from_data['email'];
 		}
-		$bcc_list = substr( $bcc_list, 0, -1 );
-		$headers .= "Bcc: ".$bcc_list.";\r\n";
-		ypcf_debug_log('NotificationsEmails::send_mail > Bcc list : ' . $bcc_list);
-	}
-	
-	ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
-	if ($decorate) {
-		global $edd_options;
-		$content = wpautop( $edd_options['header_global_mail'] ) .'<br /><br />'. $content .'<br /><br />'. wpautop( $edd_options['footer_global_mail'] );
-	}
+		$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
+		$headers .= "Reply-To: ". $from_email . "\r\n";
+		$headers .= "Content-Type: text/html; charset=utf-8\r\n";
+		if ( !empty($bcc) ) {
+			$bcc_list = '';
+			foreach ($bcc as $bcc_mail) {
+				if ( !empty($bcc_mail) ) {
+					$bcc_list .= $bcc_mail . ',';
+				}
+			}
+			$bcc_list = substr( $bcc_list, 0, -1 );
+			$headers .= "Bcc: ".$bcc_list.";\r\n";
+			ypcf_debug_log('NotificationsEmails::send_mail > Bcc list : ' . $bcc_list);
+		}
 
-	$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
-	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
-	return $buffer;
+		ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
+		if ($decorate) {
+			global $edd_options;
+			$content = wpautop( $edd_options['header_global_mail'] ) .'<br /><br />'. $content .'<br /><br />'. wpautop( $edd_options['footer_global_mail'] );
+		}
+
+		$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
+		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
+		return $buffer;
     }
     
     
@@ -468,6 +468,24 @@ class NotificationsEmails {
 		}
 		
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
+	
+	public static function investment_to_validate( $user_email, $user_name, $campaign_name ) {
+		$object = "Vous pouvez reprendre votre investissement sur le projet . " . $campaign_name;
+		
+		$body_content = "Bonjour " .$user_name. ",<br><br>";
+		$body_content .= "Suite à votre authentification par notre partenaire Lemon Way, vous pouvez à présent reprendre votre investissement sur le projet " .$campaign_name. ".<br><br>";
+		
+		$body_content .= 'Pour continuer votre investissement, vous pouvez dès à présent vous <a href="' .home_url( '/mon-compte/' ). '">identifier sur WE DO GOOD</a> avec votre e-mail et votre mot de passe.<br>';
+		$body_content .= "Une fois identifié, une fenêtre s'affichera automatiquement pour vous permettre de valider votre contrat d'investissement et procéder au paiement.<br><br>";
+		
+		$body_content .= 'Pour vous identifier sur WE DO GOOD, cliquez <a href="' .home_url( '/mon-compte/' ). '">ici</a>.<br><br>';
+		
+		$body_content .= "Pour toute question, nous sommes disponibles sur le chat en ligne ou à l'adresse investir@wedogood.co.<br><br>";
+		
+		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
+		
+		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
 	}
 	
 	public static function preinvestment_auto_validated( $user_email, $campaign ) {
