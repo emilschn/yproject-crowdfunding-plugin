@@ -26,6 +26,7 @@ class WDGPostActions {
         self::add_action("generate_campaign_bill");
         self::add_action("generate_campaign_contracts_archive");
         self::add_action("generate_contract_files");
+        self::add_action( 'generate_yearly_fiscal_documents' );
         self::add_action("upload_contract_files");
         self::add_action("send_project_contract_modification_notification");
         self::add_action("cancel_token_investment");
@@ -613,6 +614,23 @@ class WDGPostActions {
 		$campaign = new ATCF_Campaign($campaign_id);
 		$campaign->generate_contract_pdf_blank_organization();
 		$url_return = wp_get_referer() . "#contracts";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function generate_yearly_fiscal_documents() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		
+		if ( !empty( $campaign_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_control( 'fiscal/documents' );
+			WDG_FiscalDocuments::generate( $campaign_id );
+			$url_return = wp_get_referer() . "#documents";
+			
+		} else {
+			$url_return = wp_get_referer() . "#error";
+		}
+		
 		wp_redirect( $url_return );
 		die();
 	}

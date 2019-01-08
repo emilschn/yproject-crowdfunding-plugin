@@ -174,6 +174,10 @@ final class ATCF_CrowdFunding {
 		do_action( 'atcf_include_admin_files' );
 	}
 	
+	public function include_control( $control_name ) {
+		require_once( $this->includes_dir . 'control/'.$control_name.'.php' );
+	}
+	
 	public function include_form( $form_name ) {
 		require_once( $this->includes_dir . 'control/forms/'.$form_name.'.php' );
 	}
