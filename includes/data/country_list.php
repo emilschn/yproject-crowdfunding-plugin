@@ -637,7 +637,14 @@ $address_number_complements = array(
 	'bis'		=> "bis",
 	'ter'		=> "ter",
 	'quater'	=> "quater",
-	'quinquies' => "quinquies",
-	'sexies'	=> "sexies",
-	'septies'	=> "septies"
+	'quinquies' => "quinquies"
+);
+
+global $address_number_complements_tax_format;
+$address_number_complements_tax_format = array(
+	''			=> "",
+	'bis'		=> "B",
+	'ter'		=> "T",
+	'quater'	=> "Q",
+	'quinquies' => "C"
 );
