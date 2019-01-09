@@ -452,7 +452,7 @@ class WDGFormProjects {
 						$current_organization = $campaign->get_organization();
 						$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
 						$organization->check_register_royalties_lemonway_wallet();
-						LemonwayLib::ask_transfer_funds( $organization->get_lemonway_id(), $organization->get_royalties_lemonway_id(), $declaration->get_amount_with_commission() );
+						LemonwayLib::ask_transfer_funds( $organization->get_lemonway_id(), $organization->get_royalties_lemonway_id(), $declaration->get_amount_with_adjustment() );
 						$buffer = TRUE;
 
 				} else {
