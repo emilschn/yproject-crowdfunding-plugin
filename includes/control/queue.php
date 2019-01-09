@@ -17,7 +17,7 @@ class WDGQueue {
 	 * @param string $date_priority
 	 * @param array $params_input
 	 */
-	private static function create_or_replace_action( $action, $entity_id, $priority, $date_priority, $params_input ) {
+	private static function create_or_replace_action( $action, $entity_id, $priority, $params_input = array(), $date_priority = '' ) {
 		$already_existing_action_id = FALSE;
 		
 		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( FALSE, FALSE, $entity_id, $action );
@@ -48,7 +48,7 @@ class WDGQueue {
 		if ( !empty( $queued_action_list ) ) {
 			foreach ( $queued_action_list as $queued_action ) {
 				$action_name = 'execute_' . $queued_action->action;
-				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params ) );
+				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params, $queued_action->id ) );
 				WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
 				$buffer++;
 			}
@@ -61,6 +61,11 @@ class WDGQueue {
 	
 /******************************************************************************/
 /* Différentes actions : ajout et exécution */
+/******************************************************************************/
+
+	
+/******************************************************************************/
+/* NOTIFS ROYALTIES */
 /******************************************************************************/
 	public static function add_notification_royalties( $user_id ) {
 		$action = 'roi_transfer_message';
@@ -86,10 +91,10 @@ class WDGQueue {
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
 		
-		self::create_or_replace_action( $action, $entity_id, $priority, $date_priority, $params );
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
 	}
 	
-	public static function execute_roi_transfer_message( $user_id, $queued_action_params ) {
+	public static function execute_roi_transfer_message( $user_id, $queued_action_params, $queued_action_id ) {
 		$date_now = new DateTime();
 		
 		// On récupère la liste des investissements triés par projet de l'utilisateur pour les séparer entre :
@@ -225,5 +230,44 @@ class WDGQueue {
 			NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
 		}
 	}
+/******************************************************************************/
+/* FIN NOTIFS ROYALTIES */
+/******************************************************************************/
+
+	
+/******************************************************************************/
+/* VALIDATION PREINVESTISSEMENTS */
+/******************************************************************************/
+	public static function add_preinvestments_validation( $campaign_id ) {
+		$action = 'preinvestments_validation';
+		$entity_id = $campaign_id;
+		$priority = 'high';
+		
+		self::create_or_replace_action( $action, $entity_id, $priority );
+	}
+	
+	public static function execute_preinvestments_validation( $campaign_id, $queued_action_params, $queued_action_id ) {
+		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		
+		// Envoi des notifications de validation ou mise en attente des pré-investissements
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$contract_has_been_modified = ( $campaign->contract_modifications() != '' );
+		$pending_preinvestments = $campaign->pending_preinvestments();
+		foreach ( $pending_preinvestments as $preinvestment ) {
+			$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
+			if ( $contract_has_been_modified ) {
+				NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
+
+			} else {
+				NotificationsEmails::preinvestment_auto_validated( $user_info['email'], $campaign );
+				$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
+			}
+		}
+	}
+	
+/******************************************************************************/
+/* FIN VALIDATION PREINVESTISSEMENTS */
+/******************************************************************************/
 	
 }

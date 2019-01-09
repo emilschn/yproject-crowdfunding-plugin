@@ -351,6 +351,7 @@ class WDGPostActions {
 							$organization_obj->check_register_campaign_lemonway_wallet();
 							
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
+							WDGQueue::add_preinvestments_validation( $campaign_id );
 		
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
