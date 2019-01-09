@@ -10,6 +10,11 @@ class WDG_FiscalDocuments {
 	private static $wedogood_town_office = 'Nantes';
 	private static $wedogood_siret = '79751910500051';
 	private static $wedogood_previous_siret = '79751910500051';
+	private static $wedogood_legal_category = '5710';
+	
+	private static $wedogood_person_incharge_name = 'Schneider Emilien';
+	private static $wedogood_person_incharge_phone = '0972651589';
+	private static $wedogood_person_incharge_email = 'admin@wedogood.co';
 	
 	
 	/**************************************************************************/
@@ -113,11 +118,15 @@ class WDG_FiscalDocuments {
 				// Si la somme des royalties a dépassé l'investissement initial
 				if ( $amount_to_declare > 0 ) {
 					$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare );
-					$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year, $investment_amount, $amount_to_declare );
+					$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year );
+					$amount_tax = 0; // TODO
+					$ifu_txt .= self::add_ifu_amount_1( $fiscal_year, $amount_to_declare, $amount_tax );
 					$entity_index++;
 				}
 			}
 		}
+		
+		$ifu_txt .= self::add_ifu_amount_total( $fiscal_year, $entity_index );
 		
 		self::save_resume_file( $campaign_id, $fiscal_year, $resume_txt );
 		self::save_ifu_file( $campaign_id, $fiscal_year, $ifu_txt );
@@ -188,7 +197,7 @@ class WDG_FiscalDocuments {
 			$buffer .= ' ';
 		}
 		// D007 - 4 caractères : catégorie juridique du déclarant. Cf https://www.insee.fr/fr/information/2028129
-		$buffer .= '5785';
+		$buffer .= self::$wedogood_legal_category;
 		//**********************************************************************
 		
 		
@@ -243,26 +252,32 @@ class WDG_FiscalDocuments {
 		return $buffer;
 	}
 	
-	private static function add_ifu_entity( $investment_entity_id, $fiscal_year, $investment_amount, $amount_to_declare ) {
+	private static function add_ifu_entity_intro( $fiscal_year ) {
+		$buffer = "";
+		// R101/R201 - 4 caractères : année de référence
+		$buffer .= $fiscal_year;
+		// R102/R202 - 14 caractères : SIRET déclarant au 31/12
+		$buffer .= self::$wedogood_siret;
+		// R103/R203 - 1 caractère : 1 si initiale ; 2 si rectificative
+		$buffer .= '1';
+		// R104/R204 - 9 caractères : code établissement
+		// TODO
+		// R105/R205 - 5 caractères : code guichet
+		// TODO
+		// R106/R206 - 14 caractères : numéro de compte ou numéro de contrat
+		// TODO
+		// R107/R207 - 2 caractères : clé
+		// TODO
+		return $buffer;
+	}
+	
+	private static function add_ifu_entity( $investment_entity_id, $fiscal_year ) {
 		$buffer = "";
 		
 		
 		//**********************************************************************
 		// ZONE INDICATIF
-		// R101 - 4 caractères : année de référence
-		$buffer .= $fiscal_year;
-		// R102 - 14 caractères : SIRET déclarant au 31/12
-		$buffer .= self::$wedogood_siret;
-		// R103 - 1 caractère : 1 si initiale ; 2 si rectificative
-		$buffer .= '1';
-		// R104 - 9 caractères : code établissement
-		// TODO
-		// R105 - 5 caractères : code guichet
-		// TODO
-		// R106 - 14 caractères : numéro de compte ou numéro de contrat
-		// TODO
-		// R107 - 2 caractères : clé
-		// TODO
+		$buffer .= self::add_ifu_entity_intro( $fiscal_year );
 		// R108 - 2 caractères : code article
 		$buffer .= 'R1';
 		// R109 - 1 caractère : nature du compte ou du contrat (1 compte bancaire, 2 contrat d'assurance, 3 autre)
@@ -428,6 +443,286 @@ class WDG_FiscalDocuments {
 		// 
 		// R141 - 4 caractères : espaces
 		$buffer .= '    ';
+		//**********************************************************************
+		
+		return $buffer;
+	}
+	
+	private static function add_ifu_amount_1( $fiscal_year, $amount_to_declare_received, $amount_to_declare_tax ) {
+		$buffer = "";
+		
+		
+		//**********************************************************************
+		// ZONE INDICATIF
+		$buffer .= self::add_ifu_entity_intro( $fiscal_year );
+		// R108 - 2 caractères : code article
+		$buffer .= 'R2';
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// CREDIT D'IMPOT
+		// R209 - 10 caractères : crédit d’impôt non restituable
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R210 - 10 caractères : crédit d’impôt restituable
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R211 - 10 caractères : crédit d’impôt prélèvement restituable
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// PRODUITS DISTRIBUES ET REVENUS ASSIMILES
+		// R213 - 10 caractères : espaces (zone réservée)
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= ' ';
+		}
+		// R214 - 10 caractères : Avances, prêts ou acomptes
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R218 - 10 caractères : Distributions non éligibles à l'abattement de 40%
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R219 - 10 caractères : Dont valeurs étrangères (pour mémoire)
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R220 - 10 caractères : Jetons de présence
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R221 - 10 caractères : espaces (zone réservée)
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= ' ';
+		}
+		// R222 - 10 caractères : revenus distribués éligibles à l'abattement de 40%
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R223 - 10 caractères : revenus exonérés
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R224 - 20 caractères : espaces (zone réservée)
+		for ( $i = 0; $i < 20; $i++ ) {
+			$buffer .= ' ';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// REVENUS SOUMIS A PRELEVEMENT LIBERATOIRE OU A RETENUE A LA SOURCE
+		// R226 - 10 caractères : base du prélèvement ou de la retenue à la source
+		//$amount_to_declare_received
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R227 - 10 caractères : montant du prélèvement ou de la retenue à la source
+		//$amount_to_declare_tax
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R230 - 10 caractères : montant du prélèvement ou de la retenue à la source
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// CESSION DE VALEURS MOBILIERES
+		// R231 - 10 caractères : montant total des cessions
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// REVENUS SOUMIS A L’IR ET POUR LESQUELS LES PRÉLÈVEMENTS SOCIAUX ONT DEJÀ ÉTÉ ACQUITTÉS
+		// R232 - 10 caractères : Produits soumis à une imposition à taux forfaitaire (sans CSG déductible)
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R233 - 10 caractères : Répartitions de FCPR et distributions de SCR (sans CSG déductible)
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R234 - 10 caractères : Produits imposables au barème progressif (avec CSG déductible)
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// PRODUITS DE PLACEMENT A REVENU FIXE
+		// R237 - 10 caractères : Produits ou gains
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R238 - 10 caractères : Pertes
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// PRODUITS DES MINIBONS ET DES PRÊTS DANS LE CADRE DU FINANCEMENT PARTICIPATIF
+		// R239 - 10 caractères : Produits
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R240 - 10 caractères : Pertes
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// PRODUITS DES CONTRATS D'ASSURANCE-VIE ET PLACEMENTS ASSIMILÉS
+		// Produits des contrats de moins de huit ans
+		// R245 - 10 caractères : Produits des versements effectués avant le 27/09/17 soumis au barème progressif de l'impôt sur le revenu
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R246 - 10 caractères : Produits des versements effectués avant le 27/09/17 soumis à un prélèvement forfaitaire libératoire
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R247 - 10 caractères : Montant du prélèvement forfaitaire libératoire appliqué aux produits des versements effectués avant le 27/09/17
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R248 - 10 caractères : Produits des versements effectués à compter du 27/09/17
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// Produits des contrats de plus de huit ans
+		// R252 - 10 caractères : Produits des versements effectués avant le 27/09/17 bénéficiant de l’abattement et soumis au barème progressif de l’impôt sur le revenu
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R253 - 10 caractères : Produits des versements effectués avant le 27/09/17 bénéficiant de l’abattement et soumis au prélèvement forfaitaire libératoire
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R254 - 10 caractères : Produits des versements effectués à compter du 27/09/17 bénéficiant de l'abattement
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// SOCIÉTÉS DE CAPITAL RISQUE
+		// R249 - 10 caractères : Gains et distributions taxables
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R250 - 10 caractères : Gains et distributions exonérées
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// FRAIS
+		// R251 - 10 caractères : Montant des frais
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		
+		//**********************************************************************
+		// PARTS OU ACTIONS DE «CARRIED INTEREST» : OBLIGATION DÉCLARATIVE SPÉCIFIQUE PRÉVUE PAR L'ARTICLE 242 TER C DU CGI
+		// R261 - 10 caractères : Gains et distributions imposables selon les règles des plus-values de cession de valeurs mobilières des particuliers
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R262 - 10 caractères : Gains et distributions imposables selon les règles des traitements et salaires
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R271 - 19 caractères : espaces (zone réservée)
+		for ( $i = 0; $i < 19; $i++ ) {
+			$buffer .= ' ';
+		}
+		//**********************************************************************
+		
+		return $buffer;
+	}
+	
+	public static function add_ifu_amount_total( $fiscal_year, $entity_index ) {
+		$buffer = "";
+		
+		//**********************************************************************
+		// ZONE INDICATIF
+		// T001 - 4 caractères : année de référence
+		$buffer .= $fiscal_year;
+		// T002 - 14 caractères : SIRET déclarant au 31/12
+		$buffer .= self::$wedogood_siret;
+		// T003 - 1 caractère : 1 si initiale ; 2 si rectificative
+		$buffer .= '1';
+		// T004 - 30 caractère : que des 9
+		for ( $i = 0; $i < 30; $i++ ) {
+			$buffer .= '9';
+		}
+		// T005 - 30 caractère : que des 9
+		$buffer .= 'T0';
+		//**********************************************************************
+		
+		//**********************************************************************
+		// NOMBRE D'ENREGISTREMENTS
+		// T006 - 8 caractères : Nombre d'enregistrements R1
+		for ( $i = strlen( $entity_index ); $i < 8; $i++ ) {
+			$buffer .= '0';
+		}
+		$buffer .= $entity_index;
+		// T007 - 8 caractères : Nombre d'enregistrements R2
+		for ( $i = 0; $i < 8; $i++ ) {
+			$buffer .= '0';
+		}
+		// T008 - 8 caractères : Nombre d'enregistrements R3
+		for ( $i = 0; $i < 8; $i++ ) {
+			$buffer .= '0';
+		}
+		// T009 - 8 caractères : Nombre d'enregistrements R4
+		for ( $i = 0; $i < 8; $i++ ) {
+			$buffer .= '0';
+		}
+		//**********************************************************************
+		
+		//**********************************************************************
+		// DESIGNATION DU RESPONSABLE
+		// T010 - 50 caractères : Nombre d'enregistrements R1
+		$buffer .= self::$wedogood_person_incharge_name;
+		for ( $i = strlen( self::$wedogood_person_incharge_name ); $i < 50; $i++ ) {
+			$buffer .= ' ';
+		}
+		// T011 - 10 caractères : Numéro de téléphone
+		$buffer .= self::$wedogood_person_incharge_phone;
+		// T012 - 60 caractères : Adresse courriel
+		$buffer .= self::$wedogood_person_incharge_email;
+		for ( $i = strlen( self::$wedogood_person_incharge_email ); $i < 60; $i++ ) {
+			$buffer .= ' ';
+		}
+		// T013 - 227 caractères : espaces (zone réservée)
+		for ( $i = 0; $i < 227; $i++ ) {
+			$buffer .= ' ';
+		}
 		//**********************************************************************
 		
 		return $buffer;
