@@ -16,6 +16,8 @@ class WDG_FiscalDocuments {
 	private static $wedogood_person_incharge_phone = '0972651589';
 	private static $wedogood_person_incharge_email = 'admin@wedogood.co';
 	
+	private static $tax_coef = 0.3;
+	
 	
 	/**************************************************************************/
 	/* ERREURS */
@@ -119,8 +121,9 @@ class WDG_FiscalDocuments {
 				if ( $amount_to_declare > 0 ) {
 					$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare );
 					$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year );
-					$amount_tax = 0; // TODO
-					$ifu_txt .= self::add_ifu_amount_1( $fiscal_year, $amount_to_declare, $amount_tax );
+					$amount_to_declare_round = round( $amount_to_declare );
+					$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
+					$ifu_txt .= self::add_ifu_amount_1( $fiscal_year, $amount_to_declare_round, $amount_tax_round );
 					$entity_index++;
 				}
 			}
@@ -521,15 +524,15 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// REVENUS SOUMIS A PRELEVEMENT LIBERATOIRE OU A RETENUE A LA SOURCE
 		// R226 - 10 caractères : base du prélèvement ou de la retenue à la source
-		//$amount_to_declare_received
-		for ( $i = 0; $i < 10; $i++ ) {
+		for ( $i = strlen( $amount_to_declare_received ); $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
+		$buffer .= $amount_to_declare_received;
 		// R227 - 10 caractères : montant du prélèvement ou de la retenue à la source
-		//$amount_to_declare_tax
-		for ( $i = 0; $i < 10; $i++ ) {
+		for ( $i = strlen( $amount_to_declare_tax ); $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
+		$buffer .= $amount_to_declare_tax;
 		// R230 - 10 caractères : montant du prélèvement ou de la retenue à la source
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
