@@ -503,12 +503,11 @@ class WDGROIDeclaration {
 								if ( $this->get_adjustment_validated() && !empty( $adjustment_message_param ) ) {
 									$adjustment_message = $adjustment_message_param;
 								}
-								$declaration_message = $this->get_message();
-								if ( empty( $declaration_message ) ) {
-									$declaration_message = "Aucun message";
-								}
 								WDGQueue::add_notification_royalties( $investment_item['user'] );
-								NotificationsAPI::roi_transfer_message( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $declaration_message, $replyto_mail );
+								$declaration_message = $this->get_message();
+								if ( !empty( $declaration_message ) ) {
+									NotificationsAPI::roi_transfer_message( $WDGUser->get_email(), $WDGUser->get_firstname(), $campaign->data->post_title, $declaration_message, $replyto_mail );
+								}
 							}
 						}
 
