@@ -800,15 +800,26 @@ class WDG_FiscalDocuments {
 	}
 	
 	public static function clean_town_name( $town_name ) {
-		// Caractères spéciaux
-		$search = array( '&#039;', '-', '&EACUTE;' );
-		$replace = array( ' ', ' ', 'E' );
-		$buffer = str_replace( $search, $replace, $town_name );
+		$buffer = $town_name;
 		
 		// Formatages spécifiques
-		$search = array( 'SAINT-' );
-		$replace = array( 'ST ' );
-		$buffer = str_replace( $search, $replace, $town_name );
+		$search_replace = array(
+			'SAINT-' => 'ST ',
+			'SAINTE-' => 'STE ',
+			'SAINT ' => 'ST ',
+			'SAINTE ' => 'STE '
+		);
+		$buffer = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $buffer );
+		
+		// Caractères spéciaux
+		$search_replace = array(
+			'&#039;' => ' ',
+			'-' => ' ',
+			'&EACUTE;' => 'E',
+			'&EGRAVE;' => 'E',
+			'&ATILDE;' => 'A'
+		);
+		$buffer = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $buffer );
 		
 		return $buffer;
 	}
