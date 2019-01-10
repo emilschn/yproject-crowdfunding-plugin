@@ -326,7 +326,7 @@ class WDG_FiscalDocuments {
 			$investment_entity_address_number = ''; // TODO
 			$investment_entity_address_number_complement = ''; // TODO
 			$investment_entity_address_post_code = $WDGOrganization->get_postal_code( TRUE );
-			$investment_entity_address_town = strtoupper( $WDGOrganization->get_city() );
+			$investment_entity_address_town = self::clean_town_name( strtoupper( $WDGOrganization->get_city() ) );
 			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
 			if ( !empty( $entity_geo_info ) ) {
 				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
@@ -352,10 +352,10 @@ class WDG_FiscalDocuments {
 			$user_birthday_month = $WDGUser->get_birthday_month();
 			$user_birthday_day = $WDGUser->get_birthday_day();
 			$user_birthday_department_code = $WDGUser->get_birthplace_department();
-			$user_birthday_town_label = strtoupper( $WDGUser->get_birthplace() );
+			$user_birthday_town_label = self::clean_town_name( strtoupper( $WDGUser->get_birthplace() ) );
 			$birhplace_geo_info = self::get_official_info_by_postal_code_and_town( $user_birthday_department_code, $user_birthday_town_label );
 			if ( !empty( $birhplace_geo_info ) ) {
-				$user_birthday_town_code = $birhplace_geo_info[ 'town_insee_code' ];
+				$user_birthday_town_code = substr( $birhplace_geo_info[ 'town_insee_code' ], 2, 3);
 			} else {
 				self::add_error( 'Problème récupération de données pour localisation naissance - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
 			}
@@ -365,7 +365,7 @@ class WDG_FiscalDocuments {
 			global $address_number_complements_tax_format;
 			$investment_entity_address_number_complement = $address_number_complements_tax_format[ $WDGUser->get_address_number_complement() ];
 			$investment_entity_address_post_code = $WDGUser->get_postal_code( TRUE );
-			$investment_entity_address_town = strtoupper( $WDGUser->get_city() );
+			$investment_entity_address_town = self::clean_town_name( strtoupper( $WDGUser->get_city() ) );
 			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
 			if ( !empty( $entity_geo_info ) ) {
 				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
@@ -795,6 +795,20 @@ class WDG_FiscalDocuments {
 				}
 			}
 		}
+		
+		return $buffer;
+	}
+	
+	public static function clean_town_name( $town_name ) {
+		// Caractères spéciaux
+		$search = array( '&#039;', '-', '&EACUTE;' );
+		$replace = array( ' ', ' ', 'E' );
+		$buffer = str_replace( $search, $replace, $town_name );
+		
+		// Formatages spécifiques
+		$search = array( 'SAINT-' );
+		$replace = array( 'ST ' );
+		$buffer = str_replace( $search, $replace, $town_name );
 		
 		return $buffer;
 	}

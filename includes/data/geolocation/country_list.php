@@ -628,7 +628,8 @@ $french_departments = array(
 	'972' => "Martinique",
 	'973' => "Guyane",
 	'974' => "La R&eacute;union",
-	'976' => "Mayotte"
+	'976' => "Mayotte",
+	'98' => "Nouvelle Cal&eacute;donie"
 );
 
 global $address_number_complements;
