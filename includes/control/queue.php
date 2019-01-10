@@ -48,7 +48,7 @@ class WDGQueue {
 		if ( !empty( $queued_action_list ) ) {
 			foreach ( $queued_action_list as $queued_action ) {
 				$action_name = 'execute_' . $queued_action->action;
-				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params, $queued_action->id ) );
+				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params ), $queued_action->id );
 				WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
 				$buffer++;
 			}
@@ -254,14 +254,16 @@ class WDGQueue {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$contract_has_been_modified = ( $campaign->contract_modifications() != '' );
 		$pending_preinvestments = $campaign->pending_preinvestments();
-		foreach ( $pending_preinvestments as $preinvestment ) {
-			$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
-			if ( $contract_has_been_modified ) {
-				NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
+		if ( !empty( $pending_preinvestments ) ) {
+			foreach ( $pending_preinvestments as $preinvestment ) {
+				$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
+				if ( $contract_has_been_modified ) {
+					NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
 
-			} else {
-				NotificationsEmails::preinvestment_auto_validated( $user_info['email'], $campaign );
-				$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
+				} else {
+					NotificationsEmails::preinvestment_auto_validated( $user_info['email'], $campaign );
+					$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
+				}
 			}
 		}
 	}
