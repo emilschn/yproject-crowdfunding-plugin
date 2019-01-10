@@ -38,10 +38,13 @@ class WDG_FiscalDocuments {
 	private static function save_errors_file( $campaign_id, $fiscal_year ) {
 		$file_path = dirname( __FILE__ ) . '/../../../files/fiscal-documents/errors_' .$campaign_id. '_' .$fiscal_year. '.txt';
 		$errors_file_content = '';
-		foreach ( self::$errors as $error ) {
-			$errors_file_content .= "- " .$error. "\n";
+		if ( !empty( self::$errors ) ) {
+			foreach ( self::$errors as $error ) {
+				$errors_file_content .= "- " .$error. "\n";
+			}
+			
+			self::save_file( $file_path, $errors_file_content );
 		}
-		self::save_file( $file_path, $errors_file_content );
 	}
 	/**************************************************************************/
 	
@@ -68,6 +71,9 @@ class WDG_FiscalDocuments {
 	}
 	/**************************************************************************/
 	
+	
+	private static $csv_handle;
+
 	/**
 	 * Génère les fichiers de l'année précédente
 	 * @param int $campaign_id
@@ -83,6 +89,10 @@ class WDG_FiscalDocuments {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$resume_txt .= "Information fiscales\n";
 		$resume_txt .= $campaign->get_name(). "\n";
+		
+		// Ouverture fichier de geoloc
+		$geoloca_file_path = dirname( __FILE__ ) . '/../../data/geolocation/laposte_hexasmal.csv';
+		self::$csv_handle = fopen( $geoloca_file_path, 'r' );
 		
 		// Récupération de l'année en cours pour trouver l'année dernière
 		if ( empty( $fiscal_year ) ) {
@@ -119,11 +129,11 @@ class WDG_FiscalDocuments {
 				$amount_to_declare = min( $investment_user_rois_amount_year, $investment_user_rois_amount_total - $investment_amount );
 				// Si la somme des royalties a dépassé l'investissement initial
 				if ( $amount_to_declare > 0 ) {
-					$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare );
 					$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year );
 					$amount_to_declare_round = round( $amount_to_declare );
 					$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
 					$ifu_txt .= self::add_ifu_amount_1( $fiscal_year, $amount_to_declare_round, $amount_tax_round );
+					$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
 					$entity_index++;
 				}
 			}
@@ -134,6 +144,8 @@ class WDG_FiscalDocuments {
 		self::save_resume_file( $campaign_id, $fiscal_year, $resume_txt );
 		self::save_ifu_file( $campaign_id, $fiscal_year, $ifu_txt );
 		self::save_errors_file( $campaign_id, $fiscal_year );
+		
+		fclose( self::$csv_handle );
 	}
 	
 	/**
@@ -143,7 +155,7 @@ class WDG_FiscalDocuments {
 	 * @param number $amount_to_declare
 	 * @return string
 	 */
-	private static function add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare ) {
+	private static function add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare, $amount_tax ) {
 		$buffer = "";
 		
 		$investor_name = "";
@@ -164,7 +176,8 @@ class WDG_FiscalDocuments {
 		
 		$buffer = "- " .$investor_name. " (" .$investor_type. "). " .$investor_fiscal_residence. "\n";
 		$buffer .= ">> Investissement : " .$investment_amount. " €\n";
-		$buffer .= ">> Somme à déclarer : " .$amount_to_declare. " €\n\n";
+		$buffer .= ">> Somme à déclarer : " .$amount_to_declare. " €\n";
+		$buffer .= ">> Montant des impots : " .$amount_tax. " €\n\n";
 		
 		return $buffer;
 	}
@@ -313,12 +326,17 @@ class WDG_FiscalDocuments {
 			$user_birthday_town_label = '';
 			$investment_entity_address = $WDGOrganization->get_address();
 			$investment_entity_address_complement = '';
-			$investment_entity_address_number = '';
-			$investment_entity_address_number_complement = '';
-			$investment_entity_address_town = $WDGOrganization->get_city();
-			$investment_entity_address_town_code = ''; // TODO
+			$investment_entity_address_number = ''; // TODO
+			$investment_entity_address_number_complement = ''; // TODO
 			$investment_entity_address_post_code = $WDGOrganization->get_postal_code( TRUE );
-			$investment_entity_address_town_office = ''; // TODO
+			$investment_entity_address_town = strtoupper( $WDGOrganization->get_city() );
+			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
+			if ( !empty( $entity_geo_info ) ) {
+				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
+				$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
+			} else {
+				self::add_error( 'Problème récupération de données pour localisation adresse - ID ORGA ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
+			}
 			
 			
 		// Personne physique
@@ -337,17 +355,27 @@ class WDG_FiscalDocuments {
 			$user_birthday_month = $WDGUser->get_birthday_month();
 			$user_birthday_day = $WDGUser->get_birthday_day();
 			$user_birthday_department_code = $WDGUser->get_birthplace_department();
-			$user_birthday_town_code = ''; // TODO
-			$user_birthday_town_label = $WDGUser->get_birthplace();
+			$user_birthday_town_label = strtoupper( $WDGUser->get_birthplace() );
+			$birhplace_geo_info = self::get_official_info_by_postal_code_and_town( $user_birthday_department_code, $user_birthday_town_label );
+			if ( !empty( $birhplace_geo_info ) ) {
+				$user_birthday_town_code = $birhplace_geo_info[ 'town_insee_code' ];
+			} else {
+				self::add_error( 'Problème récupération de données pour localisation naissance - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
+			}
 			$investment_entity_address = $WDGUser->get_address();
 			$investment_entity_address_complement = '';
 			$investment_entity_address_number = $WDGUser->get_address_number();
 			global $address_number_complements_tax_format;
 			$investment_entity_address_number_complement = $address_number_complements_tax_format[ $WDGUser->get_address_number_complement() ];
-			$investment_entity_address_town = $WDGUser->get_city();
-			$investment_entity_address_town_code = ''; // TODO
 			$investment_entity_address_post_code = $WDGUser->get_postal_code( TRUE );
-			$investment_entity_address_town_office = ''; // TODO
+			$investment_entity_address_town = strtoupper( $WDGUser->get_city() );
+			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
+			if ( !empty( $entity_geo_info ) ) {
+				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
+				$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
+			} else {
+				self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
+			}
 		}
 		
 		// R112 - 14 caractères : SIRET bénéficiaire
@@ -393,7 +421,7 @@ class WDG_FiscalDocuments {
 		// R123 - 3 caractères : code commune
 		$buffer .= $user_birthday_town_code;
 		// R124 - 26 caractères : libellé commune
-		$buffer .= strtoupper( $user_birthday_town_label );
+		$buffer .= $user_birthday_town_label;
 		for ( $i = strlen( $user_birthday_town_label ); $i < 26; $i++ ) {
 			$buffer .= ' ';
 		}
@@ -441,9 +469,9 @@ class WDG_FiscalDocuments {
 		// R138 - 1 caractère : espace
 		$buffer .= ' ';
 		// R139 - 4 caractères : code catégorie juridique
-		// 
+		// TODO
 		// R140 - 4 caractères : période de référence MMJJ
-		// 
+		// TODO
 		// R141 - 4 caractères : espaces
 		$buffer .= '    ';
 		//**********************************************************************
@@ -668,7 +696,7 @@ class WDG_FiscalDocuments {
 		return $buffer;
 	}
 	
-	public static function add_ifu_amount_total( $fiscal_year, $entity_index ) {
+	private static function add_ifu_amount_total( $fiscal_year, $entity_index ) {
 		$buffer = "";
 		
 		//**********************************************************************
@@ -730,4 +758,27 @@ class WDG_FiscalDocuments {
 		
 		return $buffer;
 	}
+	
+	/**************************************************************************/
+	/* RECUPERATION DES DONNES GEOLOCALISEES */
+	public static function get_official_info_by_postal_code_and_town( $postal_code, $town ) {
+		$buffer = array();
+		
+		// Format du fichier : Code_commune_INSEE;Nom_commune;Code_postal;Libelle_acheminement;Ligne_5;coordonnees_gps
+		
+		if ( self::$csv_handle !== FALSE ) {
+			while ( ( $data = fgetcsv( $handle, 1000, ";" ) ) !== FALSE ) {
+				if ( strpos( $data[ 2 ], $postal_code ) !== -1 && $town == $data[ 1 ] ) {
+					$buffer[ 'town_insee_code' ] = $data[ 0 ];
+					$buffer[ 'town_label' ] = $data[ 1 ];
+					$buffer[ 'postal_code' ] = $data[ 2 ];
+					$buffer[ 'town_office' ] = $data[ 3 ];
+					$buffer[ 'town_coordinates' ] = $data[ 5 ];
+				}
+			}
+		}
+		
+		return $buffer;
+	}
+	/**************************************************************************/
 }

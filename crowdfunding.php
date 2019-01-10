@@ -108,7 +108,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/user-investments.php' );
 		require( $this->includes_dir . 'data/investment-contract.php' );
 		require( $this->includes_dir . 'data/staticpage.php' );
-		require( $this->includes_dir . 'data/country_list.php' );
+		require( $this->includes_dir . 'data/geolocation/country_list.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-lib.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-organization.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
