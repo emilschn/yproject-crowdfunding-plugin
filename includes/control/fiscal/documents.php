@@ -72,7 +72,7 @@ class WDG_FiscalDocuments {
 	/**************************************************************************/
 	
 	
-	private static $csv_handle;
+	private static $geolocation_data_by_town;
 
 	/**
 	 * Génère les fichiers de l'année précédente
@@ -91,8 +91,7 @@ class WDG_FiscalDocuments {
 		$resume_txt .= $campaign->get_name(). "\n";
 		
 		// Ouverture fichier de geoloc
-		$geoloca_file_path = dirname( __FILE__ ) . '/../../data/geolocation/laposte_hexasmal.csv';
-		self::$csv_handle = fopen( $geoloca_file_path, 'r' );
+		self::parse_geolocation_data();
 		
 		// Récupération de l'année en cours pour trouver l'année dernière
 		if ( empty( $fiscal_year ) ) {
@@ -144,8 +143,6 @@ class WDG_FiscalDocuments {
 		self::save_resume_file( $campaign_id, $fiscal_year, $resume_txt );
 		self::save_ifu_file( $campaign_id, $fiscal_year, $ifu_txt );
 		self::save_errors_file( $campaign_id, $fiscal_year );
-		
-		fclose( self::$csv_handle );
 	}
 	
 	/**
@@ -761,19 +758,40 @@ class WDG_FiscalDocuments {
 	
 	/**************************************************************************/
 	/* RECUPERATION DES DONNES GEOLOCALISEES */
-	public static function get_official_info_by_postal_code_and_town( $postal_code, $town ) {
-		$buffer = array();
+	public static function parse_geolocation_data() {
+		// On les range par nom de ville, en mettant une liste pour les homonymes
+		self::$geolocation_data_by_town = array();
 		
 		// Format du fichier : Code_commune_INSEE;Nom_commune;Code_postal;Libelle_acheminement;Ligne_5;coordonnees_gps
+		$geoloca_file_path = dirname( __FILE__ ) . '/../../data/geolocation/laposte_hexasmal.csv';
+		$csv_handle = fopen( $geoloca_file_path, 'r' );
 		
-		if ( self::$csv_handle !== FALSE ) {
-			while ( ( $data = fgetcsv( $handle, 1000, ";" ) ) !== FALSE ) {
-				if ( strpos( $data[ 2 ], $postal_code ) !== -1 && $town == $data[ 1 ] ) {
-					$buffer[ 'town_insee_code' ] = $data[ 0 ];
-					$buffer[ 'town_label' ] = $data[ 1 ];
-					$buffer[ 'postal_code' ] = $data[ 2 ];
-					$buffer[ 'town_office' ] = $data[ 3 ];
-					$buffer[ 'town_coordinates' ] = $data[ 5 ];
+		if ( $csv_handle !== FALSE ) {
+			while ( ( $data = fgetcsv( $csv_handle, 1000, ";" ) ) !== FALSE ) {
+				$item = array();
+				$item[ 'town_insee_code' ] = $data[ 0 ];
+				$item[ 'town_label' ] = $data[ 1 ];
+				$item[ 'postal_code' ] = $data[ 2 ];
+				$item[ 'town_office' ] = $data[ 3 ];
+				$item[ 'town_coordinates' ] = $data[ 5 ];
+				
+				if ( !isset( self::$geolocation_data_by_town[ $item[ 'town_label' ] ] ) ) {
+					self::$geolocation_data_by_town[ $item[ 'town_label' ] ] = array();
+				}
+				array_push( self::$geolocation_data_by_town[ $item[ 'town_label' ] ], $item );
+			}
+			fclose( $csv_handle );
+		}
+	}
+	
+	public static function get_official_info_by_postal_code_and_town( $postal_code, $town ) {
+		$buffer = FALSE;
+		
+		if ( isset( self::$geolocation_data_by_town[ $town ] ) ) {
+			foreach ( self::$geolocation_data_by_town[ $town ] as $town_item ) {
+				if ( strpos( $town_item[ 'postal_code' ], $postal_code ) !== FALSE ) {
+					$buffer = $town_item;
+					break;
 				}
 			}
 		}
