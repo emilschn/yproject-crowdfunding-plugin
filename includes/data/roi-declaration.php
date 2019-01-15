@@ -11,6 +11,7 @@ class WDGROIDeclaration {
 	public static $status_waiting_transfer = 'waiting_transfer';
 	public static $status_transfer = 'transfer';
 	public static $status_finished = 'finished';
+	public static $status_failed = 'failed';
 	
 	public static $mean_payment_card = 'card';
 	public static $mean_payment_wire = 'wire';

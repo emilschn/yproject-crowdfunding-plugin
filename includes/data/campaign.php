@@ -1265,7 +1265,7 @@ class ATCF_Campaign {
 			foreach ( $declaration_list as $declaration_item ) {
 				$date_due = new DateTime( $declaration_item[ 'date_due' ] );
 				$date_interval = $date_now->diff( $date_due );
-				if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_finished && ( $date_due < $date_now || $date_interval->format( '%a' ) < 10 ) ) {
+				if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_finished && $declaration_item[ 'status' ] != WDGROIDeclaration::$status_failed && ( $date_due < $date_now || $date_interval->format( '%a' ) < 10 ) ) {
 					array_push( $this->current_roi_declarations, $declaration_item[ 'item' ] );
 				}
 			}
