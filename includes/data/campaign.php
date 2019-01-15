@@ -2032,6 +2032,7 @@ class ATCF_Campaign {
 					if ( $this->is_funded() ) {
 						$this->set_status( ATCF_Campaign::$campaign_status_funded );
 					} else {
+						$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );
 					}
 					$this->update_api();
