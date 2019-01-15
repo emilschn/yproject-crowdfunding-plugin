@@ -122,7 +122,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				[ $is_subscribed_to_newsletter ],
 				FALSE,
 				[
-					'subscribe_newsletter' => __( "Je souhaite recevoir la newsletter WE DO GOOD" )
+					'subscribe_newsletter' => __( "Je souhaite recevoir la newsletter WE DO GOOD mensuelle" )
 				]
 			);
 			
