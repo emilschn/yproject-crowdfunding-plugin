@@ -135,10 +135,11 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 		</div>
 
 	</div>
+</page>
 
 
-	<?php // PAGE 2 ?>
-
+<?php // PAGE 2 ?>
+<page>
 	<div>
 		<img src="<?php echo __DIR__; ?>/../img/wdg-logo-red.png" />
 	</div>
@@ -153,6 +154,8 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 	</div>
 </page>
 
+
+<?php // PAGE 3 ?>
 <page>
 	<div style="margin-top: 30px;">
 		<table style="border: 1px solid gray;">
