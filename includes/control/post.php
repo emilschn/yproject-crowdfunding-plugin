@@ -195,6 +195,8 @@ class WDGPostActions {
 				$newcampaign->set_api_data( 'description', $project_desc );
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
+				$campaign_ref = new ATCF_Campaign( 27459 ); // Arbitrairement, on utilise une campagne existante pour reprendre certains paramètres
+				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $campaign_ref->mandate_conditions() );
 				$newcampaign->link_organization( $orga_api_id );
 				$newcampaign->update_api();
 			
