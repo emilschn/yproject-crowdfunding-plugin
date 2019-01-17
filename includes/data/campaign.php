@@ -2687,7 +2687,7 @@ class ATCF_Campaign {
 			
 			// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
 			$adjustement_turned_into_turnover = 0;
-			if ( $declaration->get_adjustment_value() > 0 ) {
+			if ( $declaration->get_adjustment_value() != 0 ) {
 				// Pour transformer l'ajustement en CA, il faut avoir le nombre de contrats actifs pris en compte et en additionner le pourcentage de CA
 				$total_turnover_percent = 0;
 				foreach ( $investment_contracts as $investment_contract ) {
