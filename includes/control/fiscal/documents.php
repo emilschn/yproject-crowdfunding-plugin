@@ -789,7 +789,7 @@ class WDG_FiscalDocuments {
 		
 		if ( isset( self::$geolocation_data_by_town[ $town ] ) ) {
 			foreach ( self::$geolocation_data_by_town[ $town ] as $town_item ) {
-				if ( strpos( $town_item[ 'postal_code' ], $postal_code ) !== FALSE ) {
+				if ( strpos( strval( $town_item[ 'postal_code' ] ), strval( $postal_code ) ) !== FALSE ) {
 					$buffer = $town_item;
 					break;
 				}
