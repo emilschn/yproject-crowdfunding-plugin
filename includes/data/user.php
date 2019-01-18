@@ -28,6 +28,7 @@ class WDGUser {
 	private $birthday_date;
 	private $birthday_city;
 	private $birthday_department;
+	private $birthday_country;
 	private $nationality;
 	private $address_number;
 	private $address_number_complement;
@@ -92,6 +93,7 @@ class WDGUser {
 					$this->birthday_date = $this->api_data->birthday_date;
 					$this->birthday_city = $this->api_data->birthday_city;
 					$this->birthday_department = $this->api_data->birthday_department;
+					$this->birthday_country = $this->api_data->birthday_country;
 					$this->nationality = $this->api_data->nationality;
 					$this->address_number = $this->api_data->address_number;
 					$this->address_number_complement = $this->api_data->address_number_comp;
@@ -514,6 +516,10 @@ class WDGUser {
 	public function get_birthplace_department() {
 		return $this->birthday_department;
 	}
+		
+	public function get_birthplace_country() {
+		return $this->birthday_country;
+	}
 	
 /*******************************************************************************
  * Fonctions nécessitant des requetes
@@ -642,7 +648,7 @@ class WDGUser {
 	/**
 	 * Enregistre les données nécessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_department, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $description = '', $contact_if_deceased = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $description = '', $contact_if_deceased = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
@@ -687,6 +693,9 @@ class WDGUser {
 		}
 		if ( !empty( $birthplace_department ) ) {
 			$this->birthday_department = $birthplace_department;
+		}
+		if ( !empty( $birthplace_country ) ) {
+			$this->birthday_country = $birthplace_country;
 		}
 		if ( !empty( $nationality ) ) {
 			$this->nationality = $nationality;

@@ -2539,6 +2539,7 @@ class ATCF_Campaign {
 		
 		$use_lastname = '';
 		$birthplace_department = '';
+		$birthplace_country = '';
 		$address_number = '';
 		$address_number_complement = '';
 		$tax_country = '';
@@ -2555,7 +2556,7 @@ class ATCF_Campaign {
 				$wdg_user->save_data(
 					$email, $new_gender, $new_firstname, $new_lastname, $use_lastname,
 					$birthday_day, $birthday_month, $birthday_year,
-					$birthplace, $birthplace_department, $nationality,
+					$birthplace, $birthplace_department, $birthplace_country, $nationality,
 					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, ''
 				);
 			}
@@ -2570,7 +2571,7 @@ class ATCF_Campaign {
 				$wdg_user->save_data(
 					$email, $new_gender, $new_firstname, $new_lastname,  $use_lastname, 
 					$birthday_day, $birthday_month, $birthday_year, 
-					$birthplace, $birthplace_department, $nationality,
+					$birthplace, $birthplace_department, $birthplace_country, $nationality,
 					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, ''
 				);
 			}

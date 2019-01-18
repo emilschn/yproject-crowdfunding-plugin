@@ -528,6 +528,7 @@ $country_list_iso2_to_iso3 = array(
 global $french_departments;
 $french_departments = array(
 	'' => "",
+	'200' => "Etranger",
 	'01' => "Ain",
 	'02' => "Aisne",
 	'03' => "Allier",

@@ -174,6 +174,16 @@ class WDG_Form_User_Details extends WDG_Form {
 			global $country_list;
 			$this->addField(
 				'select',
+				'birthplace_country',
+				__( "Pays de naissance", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_birthplace_country(),
+				FALSE,
+				$country_list
+			);
+			
+			$this->addField(
+				'select',
 				'nationality',
 				__( "Nationalit&eacute; *", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
@@ -347,6 +357,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
 				$birthplace_department = $this->getInputText( 'birthplace_department' );
+				$birthplace_country = $this->getInputText( 'birthplace_country' );
 				$nationality = $this->getInputText( 'nationality' );
 				$address_number = $this->getInputText( 'address_number' );
 				$address_number_complement = $this->getInputText( 'address_number_complement' );
@@ -380,7 +391,7 @@ class WDG_Form_User_Details extends WDG_Form {
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname, $use_lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $birthplace_department, $nationality,
+						$birthplace, $birthplace_department, $birthplace_country, $nationality,
 						$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, 
 						$description, $contact_if_deceased
 					);

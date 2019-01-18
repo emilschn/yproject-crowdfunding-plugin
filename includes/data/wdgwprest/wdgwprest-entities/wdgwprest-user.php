@@ -61,6 +61,7 @@ class WDGWPREST_Entity_User {
 			'birthday_date'		=> $user->get_birthday_date(),
 			'birthday_city'		=> $user->get_birthplace(),
 			'birthday_department'	=> $user->get_birthplace_department(),
+			'birthday_country'	=> $user->get_birthplace_country(),
 			'nationality'		=> $user->get_nationality(),
 			'address_number'		=> $user->get_address_number(),
 			'address_number_comp'	=> $user->get_address_number_complement(),

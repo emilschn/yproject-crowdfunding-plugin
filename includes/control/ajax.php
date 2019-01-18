@@ -734,13 +734,14 @@ class WDGAjaxActions {
 		
 		$use_lastname = '';
 		$birthplace_department = '';
+		$birthplace_country = '';
 		$address_number = '';
 		$address_number_complement = '';
 		$tax_country = '';
 		$current_user->save_data( 
 			$mail, $gender, $firstname, $lastname, $use_lastname,
 			$new_birthday_date->format('d'), $new_birthday_date->format('n'), $new_birthday_date->format('Y'), 
-			$birthplace, $birthplace_department, $nationality,
+			$birthplace, $birthplace_department, $birthplace_country, $nationality,
 			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $mobile_phone
 		);
 

@@ -459,6 +459,7 @@ class WDGInvestment {
 		$wdg_current_user = new WDGUser( $wp_user_id );
 		$use_lastname = '';
 		$birthplace_department = '';
+		$birthplace_country = '';
 		$address_number = '';
 		$address_number_complement = '';
 		$tax_country = '';
@@ -473,6 +474,7 @@ class WDGInvestment {
 			$this->token_info->birthday_year,
 			$this->token_info->birthday_city,
 			$birthplace_department,
+			$birthplace_country,
 			$this->token_info->nationality,
 			$address_number,
 			$address_number_complement,
