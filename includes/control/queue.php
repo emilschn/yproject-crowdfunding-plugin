@@ -180,7 +180,7 @@ class WDGQueue {
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
 			$message .= "<b>Ces entreprises vous ont versé des royalties :</b><br>";
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
-				$message .= "- " .$campaign_params['campaign_name']. " (" .YPUIHelpers::display_number( $campaign_params['amount_royalties'] ). " €)<br>";
+				$message .= "- " .$campaign_params['campaign_name']. " : " .YPUIHelpers::display_number( $campaign_params['amount_royalties'] ). " €<br>";
 			}
 			$message .= "<br>";
 		}
