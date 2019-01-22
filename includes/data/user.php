@@ -986,6 +986,32 @@ class WDGUser {
 		return $this->rois;
 	}
 	
+	public function get_rois_amount() {
+		$buffer = 0;
+		$rois = $this->get_rois();
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				if ( $roi_item->status == WDGROI::$status_transferred ) {
+					$buffer += $roi_item->amount;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	public function get_pending_rois_amount() {
+		$buffer = 0;
+		$rois = $this->get_rois();
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				if ( $roi_item->status == WDGROI::$status_waiting_authentication ) {
+					$buffer += $roi_item->amount;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
 	private $royalties_per_year;
 	/**
 	 * Retourne la liste des royalties d'une année
