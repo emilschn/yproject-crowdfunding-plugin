@@ -397,10 +397,10 @@ class WDGFormUsers {
 		}
 		$WDGUser_current = WDGUser::current();
 		if ($WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin()) {
-			return FALSE;
+			return __( "Ce transfert n'est pas autoris&eacute;.", 'yproject' );
 		}
 		
-		$buffer = FALSE;
+		$buffer = __( "Votre compte bancaire n'est pas encore valid&eacute;.", 'yproject' );
 		if ( !empty( $orga_id ) ) {
 			$WDGOrganization = new WDGOrganization( $orga_id );
 			if ( $WDGOrganization->has_saved_iban() && $WDGOrganization->get_rois_amount() > 0 ) {

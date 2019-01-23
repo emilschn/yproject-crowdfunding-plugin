@@ -855,7 +855,7 @@ class WDGOrganization {
 	}
 	
 	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0, $wallet_type = '' ) {
-		$buffer = FALSE;
+		$buffer = __( "Erreur de montant.", 'yproject' );;
 		
 		if ( !empty( $amount_without_commission ) ) {
 			$lemonway_id = ( $wallet_type == 'campaign ') ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();
