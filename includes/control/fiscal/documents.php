@@ -355,17 +355,29 @@ class WDG_FiscalDocuments {
 			$user_birthday_year = $WDGUser->get_birthday_year();
 			$user_birthday_month = $WDGUser->get_birthday_month();
 			$user_birthday_day = $WDGUser->get_birthday_day();
-			$user_birthday_department_code = $WDGUser->get_birthplace_department();
+			$user_birthday_country = $WDGUser->get_birthplace_country();
 			$user_birthday_town_label = self::clean_town_name( strtoupper( $WDGUser->get_birthplace() ) );
-			// Pour Paris, Marseille et Lyon, récupérer l'arrondissement de naissance
-			if ( $user_birthday_town_label == 'PARIS' || $user_birthday_town_label == 'MARSEILLE' || $user_birthday_town_label == 'LYON' ) {
-				$user_birthday_town_label .= ' ' . $WDGUser->get_birthplace_district( TRUE );
-			}
-			$birhplace_geo_info = self::get_official_info_by_postal_code_and_town( $user_birthday_department_code, $user_birthday_town_label );
-			if ( !empty( $birhplace_geo_info ) ) {
-				$user_birthday_town_code = substr( $birhplace_geo_info[ 'town_insee_code' ], 2, 3);
+			if ( $user_birthday_country == 'FR' ) {
+				$user_birthday_department_code = $WDGUser->get_birthplace_department();
+				// Pour Paris, Marseille et Lyon, récupérer l'arrondissement de naissance
+				if ( $user_birthday_town_label == 'PARIS' || $user_birthday_town_label == 'MARSEILLE' || $user_birthday_town_label == 'LYON' ) {
+					$user_birthday_town_label .= ' ' . $WDGUser->get_birthplace_district( TRUE );
+				}
+				$birhplace_geo_info = self::get_official_info_by_postal_code_and_town( $user_birthday_department_code, $user_birthday_town_label );
+				if ( !empty( $birhplace_geo_info ) ) {
+					$user_birthday_town_code = substr( $birhplace_geo_info[ 'town_insee_code' ], 2, 3);
+				} else {
+					self::add_error( 'Problème récupération de données pour localisation naissance - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
+				}
 			} else {
-				self::add_error( 'Problème récupération de données pour localisation naissance - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
+				global $country_list_insee;
+				if ( isset( $country_list_insee[ $user_birthday_country ] ) ) {
+					$insee_code = $country_list_insee[ $user_birthday_country ];
+					$user_birthday_department_code = substr( $insee_code, 0, 2 );
+					$user_birthday_town_code = substr( $insee_code, 2, 3 );
+				} else {
+					self::add_error( 'Problème récupération de données pour localisation naissance étranger - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_country );
+				}
 			}
 			$investment_entity_address = $WDGUser->get_address();
 			$investment_entity_address_complement = '';
@@ -477,8 +489,10 @@ class WDG_FiscalDocuments {
 		$buffer .= $investment_entity_address_town_office;
 		// R138 - 1 caractère : espace
 		$buffer .= ' ';
-		// R139 - 4 caractères : code catégorie juridique
-		// TODO
+		// R139 - 4 caractères : code catégorie juridique - laisser vide
+		for ( $i = strlen( $investment_entity_address_number ); $i < 4; $i++ ) {
+			$buffer .= '0';
+		}
 		// R140 - 4 caractères : période de référence MMJJ
 		// TODO
 		// R141 - 4 caractères : espaces

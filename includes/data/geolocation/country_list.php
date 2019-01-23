@@ -524,6 +524,14 @@ $country_list_iso2_to_iso3 = array(
 
 );
 
+/* insee */
+global $country_list_insee;
+$country_list_insee = array(
+	"FR" => "00000",
+	"PT" => "99139",
+	"TN" => "99351"
+);
+
 
 global $french_departments;
 $french_departments = array(
