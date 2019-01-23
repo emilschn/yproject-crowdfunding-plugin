@@ -59,7 +59,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'idnumber',
-			__( "Num&eacute;ro SIREN *", 'yproject' ),
+			__( "Num&eacute;ro SIRET *", 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_idnumber()
 		);

@@ -159,6 +159,21 @@ class WDG_Form_User_Details extends WDG_Form {
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace()
 			);
+
+			$district_list = array();
+			$district_list[ 0 ] = '-';
+			for ( $i = 1; $i <= 20; $i++ ) {
+				$district_list[ $i ] = $i;
+			}
+			$this->addField(
+				'select',
+				'birthplace_district',
+				__( "Arrondissement dans la ville de naissance", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_birthplace_district(),
+				__( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ),
+				$district_list
+			);
 			
 			global $french_departments;
 			$this->addField(
@@ -356,6 +371,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
+				$birthplace_district = $this->getInputText( 'birthplace_district' );
 				$birthplace_department = $this->getInputText( 'birthplace_department' );
 				$birthplace_country = $this->getInputText( 'birthplace_country' );
 				$nationality = $this->getInputText( 'nationality' );
@@ -391,7 +407,7 @@ class WDG_Form_User_Details extends WDG_Form {
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname, $use_lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $birthplace_department, $birthplace_country, $nationality,
+						$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 						$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, 
 						$description, $contact_if_deceased
 					);

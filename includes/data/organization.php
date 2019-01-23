@@ -174,7 +174,7 @@ class WDGOrganization {
 		if ($this->get_type() == "") { array_push( $errors_create_orga, __("Merci de remplir le type de l'organisation", 'yproject') ); }
 		if ($this->get_description() == "") { array_push( $errors_create_orga, __("Merci de remplir le descriptif de l'activit&eacute;", 'yproject') ); }
 		if ($this->get_legalform() == "") { array_push( $errors_create_orga, __("Merci de remplir la forme juridique de l'organisation", 'yproject') ); }
-		if ($this->get_idnumber() == "") { array_push( $errors_create_orga, __("Merci de remplir le num&eacute;ro SIREN de l'organisation", 'yproject') ); }
+		if ($this->get_idnumber() == "") { array_push( $errors_create_orga, __("Merci de remplir le num&eacute;ro SIRET de l'organisation", 'yproject') ); }
 		if ($this->get_rcs() == "") { array_push( $errors_create_orga, __("Merci de remplir le RCS de l'organisation", 'yproject') ); }
 		if ($this->get_capital() == "") { $this->set_capital(0); }
 		if ($this->get_ape() == "") { array_push( $errors_create_orga, __("Merci de remplir le code APE de l'organisation", 'yproject') ); }
@@ -557,7 +557,7 @@ class WDGOrganization {
 		//Infos nécessaires pour tout type de financement
 		if ($this->get_type() != 'society') { array_push($organization_can_invest_errors, __("Ce type d'organisation ne peut pas investir.", 'yproject')); }
 		if ($this->get_legalform() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la forme juridique de l'organisation", 'yproject')); }
-		if ($this->get_idnumber() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le num&eacute;ro SIREN de l'organisation", 'yproject')); }
+		if ($this->get_idnumber() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le num&eacute;ro SIRET de l'organisation", 'yproject')); }
 		if ($this->get_rcs() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le RCS de l'organisation", 'yproject')); }
 		if ($this->get_capital() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le capital de l'organisation", 'yproject')); }
 		if ($this->get_address() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser l'adresse de l'organisation", 'yproject')); }
@@ -1619,7 +1619,7 @@ class WDGOrganization {
 				'ville' => 'org_city',
 				'pays' => 'org_nationality',
 				'forme juridique' =>'org_legalform',
-				'num&eacute;ro SIREN' =>'org_idnumber',
+				'num&eacute;ro SIRET' =>'org_idnumber',
 				'APE' =>'org_ape',
 				'RCS' => 'org_rcs'
 			);
@@ -1779,7 +1779,7 @@ class WDGOrganization {
 				'ville' => 'org_city',
 				'pays' => 'org_nationality',
 				'forme juridique' =>'org_legalform',
-				'num&eacute;ro SIREN' =>'org_idnumber',
+				'num&eacute;ro SIRET' =>'org_idnumber',
 				'APE' =>'org_ape',
 				'RCS' => 'org_rcs'
 			);

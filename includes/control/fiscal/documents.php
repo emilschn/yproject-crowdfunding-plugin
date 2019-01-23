@@ -306,7 +306,7 @@ class WDG_FiscalDocuments {
 		// Personne morale
 		if ( WDGOrganization::is_user_organization( $investment_entity_id ) ) {
 			$WDGOrganization = new WDGOrganization( $investment_entity_id );
-			$orga_name = $WDGOrganization->get_name();
+			$orga_name = self::clean_name( $WDGOrganization->get_name() );
 			$orga_idnumber = $WDGOrganization->get_idnumber();
 			if ( strlen( $orga_idnumber ) != 14 ) {
 				self::add_error( "Le SIRET de " .$orga_name. " (ID WP " .$investment_entity_id. ") ne fait pas la bonne taille." );
@@ -326,7 +326,11 @@ class WDG_FiscalDocuments {
 			$investment_entity_address_number = ''; // TODO
 			$investment_entity_address_number_complement = ''; // TODO
 			$investment_entity_address_post_code = $WDGOrganization->get_postal_code( TRUE );
-			$investment_entity_address_town = self::clean_town_name( strtoupper( $WDGOrganization->get_city() ) );
+			$investment_entity_address_town = self::clean_town_name( $WDGOrganization->get_city() );
+			// Si Paris, Marseille ou Lyon, trouver l'arrondissement de la ville
+			if ( $investment_entity_address_town == 'PARIS' || $investment_entity_address_town == 'MARSEILLE' || $investment_entity_address_town == 'LYON' ) {
+				$investment_entity_address_town .= ' ' . substr( $investment_entity_address_post_code, 3, 2);
+			}
 			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
 			if ( !empty( $entity_geo_info ) ) {
 				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
@@ -344,15 +348,19 @@ class WDG_FiscalDocuments {
 			for ( $i = 0; $i < 14; $i++ ) {
 				$orga_idnumber .= '0';
 			}
-			$user_lastname = $WDGUser->get_lastname();
-			$user_firstname = $WDGUser->get_firstname();
-			$user_use_lastname = $WDGUser->get_use_lastname();
+			$user_lastname = self::clean_name( $WDGUser->get_lastname() );
+			$user_firstname = self::clean_name( $WDGUser->get_firstname() );
+			$user_use_lastname = self::clean_name( $WDGUser->get_use_lastname() );
 			$user_gender = ( $WDGUser->get_gender() == 'male' ) ? '1' : '2';
 			$user_birthday_year = $WDGUser->get_birthday_year();
 			$user_birthday_month = $WDGUser->get_birthday_month();
 			$user_birthday_day = $WDGUser->get_birthday_day();
 			$user_birthday_department_code = $WDGUser->get_birthplace_department();
 			$user_birthday_town_label = self::clean_town_name( strtoupper( $WDGUser->get_birthplace() ) );
+			// Pour Paris, Marseille et Lyon, récupérer l'arrondissement de naissance
+			if ( $user_birthday_town_label == 'PARIS' || $user_birthday_town_label == 'MARSEILLE' || $user_birthday_town_label == 'LYON' ) {
+				$user_birthday_town_label .= ' ' . $WDGUser->get_birthplace_district( TRUE );
+			}
 			$birhplace_geo_info = self::get_official_info_by_postal_code_and_town( $user_birthday_department_code, $user_birthday_town_label );
 			if ( !empty( $birhplace_geo_info ) ) {
 				$user_birthday_town_code = substr( $birhplace_geo_info[ 'town_insee_code' ], 2, 3);
@@ -366,6 +374,10 @@ class WDG_FiscalDocuments {
 			$investment_entity_address_number_complement = $address_number_complements_tax_format[ $WDGUser->get_address_number_complement() ];
 			$investment_entity_address_post_code = $WDGUser->get_postal_code( TRUE );
 			$investment_entity_address_town = self::clean_town_name( strtoupper( $WDGUser->get_city() ) );
+			// Si Paris, Marseille ou Lyon, trouver l'arrondissement de la ville
+			if ( $investment_entity_address_town == 'PARIS' || $investment_entity_address_town == 'MARSEILLE' || $investment_entity_address_town == 'LYON' ) {
+				$investment_entity_address_town .= ' ' . substr( $investment_entity_address_post_code, 3, 2);
+			}
 			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
 			if ( !empty( $entity_geo_info ) ) {
 				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
@@ -800,7 +812,7 @@ class WDG_FiscalDocuments {
 	}
 	
 	public static function clean_town_name( $town_name ) {
-		$buffer = $town_name;
+		$buffer = self::clean_name( $town_name );
 		
 		// Formatages spécifiques
 		$search_replace = array(
@@ -811,13 +823,23 @@ class WDG_FiscalDocuments {
 		);
 		$buffer = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $buffer );
 		
+		return $buffer;
+	}
+	
+	public static function clean_name( $name ) {
+		$buffer = strtoupper( $name );
+		
 		// Caractères spéciaux
 		$search_replace = array(
 			'&#039;' => ' ',
 			'-' => ' ',
 			'&EACUTE;' => 'E',
 			'&EGRAVE;' => 'E',
-			'&ATILDE;' => 'A'
+			'&ECIRC;' => 'E',
+			'&ATILDE;' => 'A',
+			'&AGRAVE;' => 'A',
+			'&OCIRC;' => 'O',
+			'&CCEDIL;' => 'C'
 		);
 		$buffer = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $buffer );
 		

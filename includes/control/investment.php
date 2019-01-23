@@ -458,6 +458,7 @@ class WDGInvestment {
 		// On enregistre les informations
 		$wdg_current_user = new WDGUser( $wp_user_id );
 		$use_lastname = '';
+		$birthplace_district = '';
 		$birthplace_department = '';
 		$birthplace_country = '';
 		$address_number = '';
@@ -473,6 +474,7 @@ class WDGInvestment {
 			$this->token_info->birthday_month,
 			$this->token_info->birthday_year,
 			$this->token_info->birthday_city,
+			$birthplace_district,
 			$birthplace_department,
 			$birthplace_country,
 			$this->token_info->nationality,
