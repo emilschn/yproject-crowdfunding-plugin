@@ -323,8 +323,9 @@ class WDG_FiscalDocuments {
 			$user_birthday_town_label = '';
 			$investment_entity_address = $WDGOrganization->get_address();
 			$investment_entity_address_complement = '';
-			$investment_entity_address_number = ''; // TODO
-			$investment_entity_address_number_complement = ''; // TODO
+			$investment_entity_address_number = $WDGOrganization->get_address_number();
+			global $address_number_complements_tax_format;
+			$investment_entity_address_number_complement = $address_number_complements_tax_format[ $WDGOrganization->get_address_number_comp() ];
 			$investment_entity_address_post_code = $WDGOrganization->get_postal_code( TRUE );
 			$investment_entity_address_town = self::clean_town_name( $WDGOrganization->get_city() );
 			// Si Paris, Marseille ou Lyon, trouver l'arrondissement de la ville

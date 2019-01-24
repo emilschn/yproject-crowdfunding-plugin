@@ -646,7 +646,7 @@ class WDGROIDeclaration {
 		}
 		$project_roi_nb_years = $campaign->funding_duration_str();
 		$organization_name = $organization_obj->get_name();
-		$organization_address = $organization_obj->get_address();
+		$organization_address = $organization_obj->get_full_address_str();
 		$organization_postalcode = $organization_obj->get_postal_code();
 		$organization_city = $organization_obj->get_city();
 		$declaration_date = $this->get_formatted_date();

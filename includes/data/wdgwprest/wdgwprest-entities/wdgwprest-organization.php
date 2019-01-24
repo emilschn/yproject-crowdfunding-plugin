@@ -40,6 +40,8 @@ class WDGWPREST_Entity_Organization {
 			'vat'						=> $organization->get_vat(),
 			'fiscal_year_end_month'		=> $organization->get_fiscal_year_end_month(),
 			'capital'					=> $organization->get_capital(),
+			'address_number'			=> $organization->get_address_number(),
+			'address_number_comp'		=> $organization->get_address_number_comp(),
 			'address'					=> $organization->get_address(),
 			'postalcode'				=> $organization->get_postal_code(),
 			'city'						=> $organization->get_city(),

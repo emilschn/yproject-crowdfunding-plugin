@@ -851,7 +851,7 @@ class ATCF_Campaign {
 			$WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(),
 			$WDGUser->get_email(),
 			$WDGOrganization->get_name(),
-			$WDGOrganization->get_address(),
+			$WDGOrganization->get_full_address_str(),
 			$WDGOrganization->get_postal_code(),
 			$WDGOrganization->get_city(),
 			$this->end_date( 'd/m/Y' ),

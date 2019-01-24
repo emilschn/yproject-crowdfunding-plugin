@@ -344,6 +344,25 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		
 		$this->addField(
 			'text',
+			'org_address_number',
+			__( "Num&eacute;ro *", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_orga_info
+		);
+
+		global $address_number_complements;
+		$this->addField(
+			'select',
+			'org_address_number_comp',
+			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_orga_info,
+			'',
+			FALSE,
+			$address_number_complements
+		);
+			
+		
+		$this->addField(
+			'text',
 			'org_address',
 			__( "Adresse *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_info
@@ -483,6 +502,32 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		);
 		
 		if ( $id_orga == 'new-orga' ) {
+			$org_address_number = ( $_SESSION[ 'org_address_number' ] == '' ) ? FALSE : $_SESSION[ 'org_address_number' ];
+		} else {
+			$org_address_number = $WDGOrganization->get_address_number();
+		}
+		$this->addField(
+			'hidden',
+			'org_init_address_number_' .$id_orga,
+			'',
+			WDG_Form_Invest_User_Details::$field_group_orga_select,
+			$org_address_number
+		);
+		
+		if ( $id_orga == 'new-orga' ) {
+			$org_address_number_comp = ( $_SESSION[ 'org_address_number_comp' ] == '' ) ? FALSE : $_SESSION[ 'org_address_number_comp' ];
+		} else {
+			$org_address_number_comp = $WDGOrganization->get_address_number_comp();
+		}
+		$this->addField(
+			'hidden',
+			'org_init_address_number_comp_' .$id_orga,
+			'',
+			WDG_Form_Invest_User_Details::$field_group_orga_select,
+			$org_address_number_comp
+		);
+		
+		if ( $id_orga == 'new-orga' ) {
 			$org_address = ( $_SESSION[ 'org_address' ] == '' ) ? FALSE : $_SESSION[ 'org_address' ];
 		} else {
 			$org_address = $WDGOrganization->get_address();
@@ -612,7 +657,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$birthplace_country = $this->getInputText( 'birthplace_country' );
 				$nationality = $this->getInputText( 'nationality' );
 				$address_number = $this->getInputText( 'address_number' );
-				$address_number_complement = $this->getInputText( 'address_number_complement' );
+				$address_number_comp = $this->getInputText( 'address_number_comp' );
 				$address = $this->getInputText( 'address' );
 				$postal_code = $this->getInputText( 'postal_code' );
 				$city = $this->getInputText( 'city' );
@@ -624,7 +669,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 					$email, $gender, $firstname, $lastname, $use_lastname,
 					$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
 					$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
-					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number
+					$address_number, $address_number_comp, $address, $postal_code, $city, $country, $tax_country, $phone_number
 				);
 				
 			}
@@ -834,6 +879,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$WDGOrganization->set_rcs( $org_rcs );
 		$org_capital = $this->getInputTextMoney( 'org_capital' );
 		$WDGOrganization->set_capital( $org_capital );
+		$org_address_number = $this->getInputText( 'org_address_number' );
+		$WDGOrganization->set_address_number( $org_address_number );
+		$org_address_number_comp = $this->getInputText( 'org_address_number_comp' );
+		$WDGOrganization->set_address_number_comp( $org_address_number_comp );
 		$org_address = $this->getInputText( 'org_address' );
 		$WDGOrganization->set_address( $org_address );
 		$org_postal_code = $this->getInputText( 'org_postal_code' );
@@ -865,6 +914,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$_SESSION[ 'org_idnumber' ] = $this->getInputText( 'org_idnumber' );
 		$_SESSION[ 'org_rcs' ] = $this->getInputText( 'org_rcs' );
 		$_SESSION[ 'org_capital' ] = $this->getInputTextMoney( 'org_capital' );
+		$_SESSION[ 'org_address_number' ] = $this->getInputText( 'org_address_number' );
+		$_SESSION[ 'org_address_number_comp' ] = $this->getInputText( 'org_address_number_comp' );
 		$_SESSION[ 'org_address' ] = $this->getInputText( 'org_address' );
 		$_SESSION[ 'org_postal_code' ] = $this->getInputText( 'org_postal_code' );
 		$_SESSION[ 'org_city' ] = $this->getInputText( 'org_city' );

@@ -23,6 +23,8 @@ class WDGOrganization {
 	private $description;
 	private $website;
 	private $strong_authentication;
+	private $address_number;
+	private $address_number_comp;
 	private $address;
 	private $postal_code;
 	private $city;
@@ -130,6 +132,8 @@ class WDGOrganization {
 			}
 			$this->website = $this->bopp_object->website_url;
 			$this->strong_authentication = $this->bopp_object->strong_authentication;
+			$this->address_number = $this->bopp_object->address_number;
+			$this->address_number_comp = $this->bopp_object->address_number_comp;
 			$this->address = $this->bopp_object->address;
 			$this->postal_code = $this->bopp_object->postalcode;
 			$this->city = $this->bopp_object->city;
@@ -394,11 +398,47 @@ class WDGOrganization {
 		$this->strong_authentication = $value;
 	}
 	
+	public function get_address_number() {
+		return $this->address_number;
+	}
+	public function set_address_number($value) {
+		if ( !empty( $value ) ) {
+			$this->address_number = $value;
+		}
+	}
+	
+	public function get_address_number_comp() {
+		return $this->address_number_comp;
+	}
+	public function set_address_number_comp($value) {
+		if ( !empty( $value ) ) {
+			$this->address_number_comp = $value;
+		}
+	}
+	
 	public function get_address() {
 		return $this->address;
 	}
 	public function set_address($value) {
 		$this->address = $value;
+	}
+	
+	public function get_full_address_str() {
+		$buffer = '';
+		
+		$address_number = $this->get_address_number();
+		if ( !empty( $address_number ) && $address_number != 0 ) {
+			$buffer = $address_number . ' ';
+		}
+		
+		$address_number_complement = $this->get_address_number_comp();
+		if ( !empty( $address_number_complement ) ) {
+			$buffer .= $address_number_complement . ' ';
+		}
+		
+		$buffer .= $this->get_address();
+				
+		return $buffer;
 	}
 	
 	public function get_postal_code( $complete_french = false ) {
@@ -1213,7 +1253,7 @@ class WDGOrganization {
 	 * Ajoute un mandat de prélévement lié au wallet de l'organisation
 	 */
 	public function add_lemonway_mandate() {
-		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 0, $this->get_address(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
+		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 0, $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
 	}
 	
 	/**
@@ -1502,7 +1542,7 @@ class WDGOrganization {
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
-				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
+				$invest_item['organization_address'] = $wdg_organization->get_full_address_str(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
 				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
 				$invest_item['organization_vat'] = $wdg_organization->get_vat();
 			}
@@ -1522,7 +1562,7 @@ class WDGOrganization {
 			$this->get_vat(),
 			'',
 			$this->get_email(),
-			$this->get_address(),
+			$this->get_full_address_str(),
 			$this->get_postal_code(),
 			$this->get_city(),
 			'01/01/'.($year + 1),
@@ -1641,6 +1681,8 @@ class WDGOrganization {
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
+			$org_object->set_address_number(filter_input(INPUT_POST, 'org_address_number'));
+			$org_object->set_address_number_comp(filter_input(INPUT_POST, 'org_address_number_comp'));
 			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 			$org_object->set_postal_code($org_postal_code);
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
@@ -1720,6 +1762,8 @@ class WDGOrganization {
 			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
 			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
+			$org_object->set_address_number(filter_input(INPUT_POST, 'org_address_number'));
+			$org_object->set_address_number_comp(filter_input(INPUT_POST, 'org_address_number_comp'));
 			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 			$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));

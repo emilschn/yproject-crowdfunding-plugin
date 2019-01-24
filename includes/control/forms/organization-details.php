@@ -147,6 +147,25 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		//$field_group_address
 		$this->addField(
 			'text',
+			'address_number',
+			__( "Num&eacute;ro", 'yproject' ),
+			self::$field_group_address,
+			$WDGOrganization->get_address_number()
+		);
+
+		global $address_number_complements;
+		$this->addField(
+			'select',
+			'address_number_comp',
+			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			self::$field_group_address,
+			$WDGOrganization->get_address_number_comp(),
+			FALSE,
+			$address_number_complements
+		);
+			
+		$this->addField(
+			'text',
 			'address',
 			__( "Adresse", 'yproject' ),
 			self::$field_group_address,
@@ -231,6 +250,11 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$WDGOrganization->set_vat( $vat );
 			$fiscal_year_end_month = $this->getInputText( 'fiscal_year_end_month' );
 			$WDGOrganization->set_fiscal_year_end_month( $fiscal_year_end_month );
+			
+			$address_number = $this->getInputText( 'address_number' );
+			$WDGOrganization->set_address_number( $address_number );
+			$address_number_comp = $this->getInputText( 'address_number_comp' );
+			$WDGOrganization->set_address_number_comp( $address_number_comp );
 			$address = $this->getInputText( 'address' );
 			$WDGOrganization->set_address( $address );
 			$postal_code = $this->getInputText( 'postal_code' );
