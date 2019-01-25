@@ -714,7 +714,7 @@ class WDGOrganization {
 			}
 		}
 		if ($notify > 0) {
-			NotificationsSlack::document_uploaded_admin($this, $notify);
+			NotificationsSlack::send_document_uploaded_admin($this, $notify);
 		}
 		return $files_info;
 	}
