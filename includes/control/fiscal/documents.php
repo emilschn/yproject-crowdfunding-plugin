@@ -367,6 +367,11 @@ class WDG_FiscalDocuments {
 		// Personne physique
 		} else {
 			$WDGUser = new WDGUser( $investment_entity_id );
+			// Si la résidence fiscale n'est pas en France, pas la peine de déclarer dans l'IFU
+			if ( $WDGUser->get_tax_country() != 'FR' ) {
+				return "";
+			}
+			
 			$orga_name = '';
 			$orga_idnumber = '';
 			for ( $i = 0; $i < 14; $i++ ) {
@@ -410,16 +415,21 @@ class WDG_FiscalDocuments {
 			$investment_entity_address_number_complement = $address_number_complements_tax_format[ $WDGUser->get_address_number_complement() ];
 			$investment_entity_address_post_code = $WDGUser->get_postal_code( TRUE );
 			$investment_entity_address_town = self::clean_town_name( strtoupper( $WDGUser->get_city() ) );
-			// Si Paris, Marseille ou Lyon, trouver l'arrondissement de la ville
-			if ( $investment_entity_address_town == 'PARIS' || $investment_entity_address_town == 'MARSEILLE' || $investment_entity_address_town == 'LYON' ) {
-				$investment_entity_address_town .= ' ' . substr( $investment_entity_address_post_code, 3, 2);
-			}
-			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
-			if ( !empty( $entity_geo_info ) ) {
-				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
-				$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
+			
+			if ( $investment_entity_address_town == 'FR' ) {
+				// Si Paris, Marseille ou Lyon, trouver l'arrondissement de la ville
+				if ( $investment_entity_address_town == 'PARIS' || $investment_entity_address_town == 'MARSEILLE' || $investment_entity_address_town == 'LYON' ) {
+					$investment_entity_address_town .= ' ' . substr( $investment_entity_address_post_code, 3, 2);
+				}
+				$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
+				if ( !empty( $entity_geo_info ) ) {
+					$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
+					$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
+				} else {
+					self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
+				}
 			} else {
-				self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
+				
 			}
 			$investment_entity_period = '1231';
 		}
@@ -872,11 +882,13 @@ class WDG_FiscalDocuments {
 		$search_replace = array(
 			'&#039;' => ' ',
 			'-' => ' ',
+			'&ATILDE;' => 'A',
+			'&AGRAVE;' => 'A',
 			'&EACUTE;' => 'E',
 			'&EGRAVE;' => 'E',
 			'&ECIRC;' => 'E',
-			'&ATILDE;' => 'A',
-			'&AGRAVE;' => 'A',
+			'&EUML;' => 'E',
+			'&ICIRC;' => 'I',
 			'&OCIRC;' => 'O',
 			'&CCEDIL;' => 'C'
 		);
