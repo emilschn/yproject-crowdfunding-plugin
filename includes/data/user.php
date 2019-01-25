@@ -1563,7 +1563,7 @@ class WDGUser {
 			//Vérification que des IBANS existent
 			$wallet_details = $this->get_wallet_details();
 			$first_iban = $wallet_details->IBANS->IBAN;
-			$save_transfer = FALSE;
+			$save_transfer = TRUE;
 			//Sinon on l'enregistre auprès de Lemonway
 			if (empty($first_iban)) {
 				$saved_holdername = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, TRUE );
@@ -1574,8 +1574,7 @@ class WDGUser {
 				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
 				if ($result_iban == FALSE) {
 					$buffer = LemonwayLib::get_last_error_message();
-				} else {
-					$save_transfer = TRUE;
+					$save_transfer = FALSE;
 				}
 			}
 			
