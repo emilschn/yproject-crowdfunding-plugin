@@ -102,18 +102,33 @@ class WDG_FiscalDocuments {
 		$ifu_txt .= self::add_ifu_declaring_info( $fiscal_year );
 		
 		// On récupère la liste des investissements de la campagne
-		$entity_index = 1;
+		// Premier parcours pour regrouper par utilisateur
 		$investments = $campaign->payments_data();
+		$investments_items_by_user = array();
 		foreach ( $investments as $investment_item ) {
 			if ( $investment_item[ 'status' ] == 'publish' ) {
-				$investment_amount = $investment_item[ 'amount' ];
 				$investment_entity_id = $investment_item[ 'user' ];
-				$investment_entity = WDGOrganization::is_user_organization( $investment_entity_id ) ? new WDGOrganization( $investment_entity_id ) : new WDGUser( $investment_entity_id );
-				
+				if ( !isset( $investments_items_by_user[ $investment_entity_id ] ) ) {
+					$investments_items_by_user[ $investment_entity_id ] = array();
+				}
+				array_push( $investments_items_by_user[ $investment_entity_id ], $investment_item );
+			}
+		}
+		
+		// Ensuite on parcourt par utilisateur pour regrouper les montants
+		$entity_index = 1;
+		foreach ( $investments_items_by_user as $investment_user_id => $investments_for_user ) {
+			$investment_amount = 0;
+			$investment_entity_id = $investment_user_id;
+			$investment_entity = WDGOrganization::is_user_organization( $investment_entity_id ) ? new WDGOrganization( $investment_entity_id ) : new WDGUser( $investment_entity_id );
+			$investment_user_rois_amount_total = 0;
+			$investment_user_rois_amount_year = 0;
+			
+			foreach ( $investments_for_user as $investment_item ) {
+				$investment_amount += $investment_item[ 'amount' ];
+
 				// On récupère la liste des royalties reçues par investissement jusqu'à l'année précédente
 				$investment_user_rois = $investment_entity->get_royalties_by_investment_id( $investment_item[ 'ID' ] );
-				$investment_user_rois_amount_total = 0;
-				$investment_user_rois_amount_year = 0;
 				foreach ( $investment_user_rois as $roi_item ) {
 					$date_transfer = new DateTime( $roi_item->date_transfer );
 					if ( $date_transfer->format( 'Y' ) <= $fiscal_year ) {
@@ -123,18 +138,18 @@ class WDG_FiscalDocuments {
 						}
 					}
 				}
-				
-				// Calcul de la somme à déclarer : on ne doit prendre que l'année en cours
-				$amount_to_declare = min( $investment_user_rois_amount_year, $investment_user_rois_amount_total - $investment_amount );
-				// Si la somme des royalties a dépassé l'investissement initial
-				if ( $amount_to_declare > 0 ) {
-					$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year );
-					$amount_to_declare_round = round( $amount_to_declare );
-					$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
-					$ifu_txt .= self::add_ifu_amount_1( $fiscal_year, $amount_to_declare_round, $amount_tax_round );
-					$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
-					$entity_index++;
-				}
+			}
+
+			// Calcul de la somme à déclarer : on ne doit prendre que l'année en cours
+			$amount_to_declare = min( $investment_user_rois_amount_year, $investment_user_rois_amount_total - $investment_amount );
+			// Si la somme des royalties a dépassé l'investissement initial
+			if ( $amount_to_declare > 0 ) {
+				$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year );
+				$amount_to_declare_round = round( $amount_to_declare );
+				$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
+				$ifu_txt .= self::add_ifu_amount_1( $fiscal_year, $amount_to_declare_round, $amount_tax_round );
+				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
+				$entity_index++;
 			}
 		}
 		
@@ -274,13 +289,21 @@ class WDG_FiscalDocuments {
 		// R103/R203 - 1 caractère : 1 si initiale ; 2 si rectificative
 		$buffer .= '1';
 		// R104/R204 - 9 caractères : code établissement
-		// TODO
+		for ( $i = 0; $i < 9; $i++ ) {
+			$buffer .= ' ';
+		}
 		// R105/R205 - 5 caractères : code guichet
-		// TODO
+		for ( $i = 0; $i < 5; $i++ ) {
+			$buffer .= ' ';
+		}
 		// R106/R206 - 14 caractères : numéro de compte ou numéro de contrat
-		// TODO
+		for ( $i = 0; $i < 14; $i++ ) {
+			$buffer .= ' ';
+		}
 		// R107/R207 - 2 caractères : clé
-		// TODO
+		for ( $i = 0; $i < 2; $i++ ) {
+			$buffer .= ' ';
+		}
 		return $buffer;
 	}
 	
@@ -339,7 +362,7 @@ class WDG_FiscalDocuments {
 			} else {
 				self::add_error( 'Problème récupération de données pour localisation adresse - ID ORGA ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
 			}
-			
+			$investment_entity_period = '1231';
 			
 		// Personne physique
 		} else {
@@ -398,6 +421,7 @@ class WDG_FiscalDocuments {
 			} else {
 				self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_town_label );
 			}
+			$investment_entity_period = '1231';
 		}
 		
 		// R112 - 14 caractères : SIRET bénéficiaire
@@ -495,7 +519,7 @@ class WDG_FiscalDocuments {
 			$buffer .= '0';
 		}
 		// R140 - 4 caractères : période de référence MMJJ
-		// TODO
+		$buffer .= $investment_entity_period;
 		// R141 - 4 caractères : espaces
 		$buffer .= '    ';
 		//**********************************************************************
