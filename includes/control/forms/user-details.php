@@ -414,9 +414,11 @@ class WDG_Form_User_Details extends WDG_Form {
 					
 					$was_registered = $WDGUser->is_lemonway_registered();
 					if ( !$was_registered && $WDGUser->can_register_lemonway() ) {
+						ypcf_debug_log( 'WDG_Form_User_Details::postForm > $WDGUser->register_lemonway();' );
 						$WDGUser->register_lemonway();
 						// Si il n'était authentifié sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
 						if ( !$was_registered && $WDGUser->is_lemonway_registered() ) {
+							ypcf_debug_log( 'WDG_Form_User_Details::postForm > $WDGUser->send_kyc();' );
 							$WDGUser->send_kyc();
 						}
 					}

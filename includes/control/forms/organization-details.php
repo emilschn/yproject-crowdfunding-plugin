@@ -267,9 +267,11 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$WDGOrganization->save();
 			$was_registered = $WDGOrganization->is_registered_lemonway_wallet();
 			if ( $WDGOrganization->can_register_lemonway() ) {
+				ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->register_lemonway();' );
 				$WDGOrganization->register_lemonway();
 				// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
 				if ( !$was_registered && $WDGOrganization->is_registered_lemonway_wallet() ) {
+					ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->send_kyc();' );
 					$WDGOrganization->send_kyc();
 				}
 			}
