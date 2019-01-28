@@ -398,7 +398,7 @@ class WDG_FiscalDocuments {
 					self::add_error( 'Problème récupération de données pour localisation naissance étranger - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $user_birthday_department_code . ' ' . $user_birthday_country );
 				}
 			}
-			$investment_entity_address = $WDGUser->get_address();
+			$investment_entity_address = self::clean_name( $WDGUser->get_address() );
 			$investment_entity_address_complement = '';
 			$investment_entity_address_number = $WDGUser->get_address_number();
 			global $address_number_complements_tax_format;
@@ -821,6 +821,7 @@ class WDG_FiscalDocuments {
 		
 		// Formatages spécifiques
 		$search_replace = array(
+			'-' => ' ',
 			'SAINT-' => 'ST ',
 			'SAINTE-' => 'STE ',
 			'SAINT ' => 'ST ',
@@ -837,7 +838,7 @@ class WDG_FiscalDocuments {
 		// Caractères spéciaux
 		$search_replace = array(
 			'&#039;' => ' ',
-			'-' => ' ',
+			'&DEG;' => ' ',
 			'&ATILDE;' => 'A',
 			'&AGRAVE;' => 'A',
 			'&EACUTE;' => 'E',
