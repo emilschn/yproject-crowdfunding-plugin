@@ -147,7 +147,7 @@ class WDG_FiscalDocuments {
 				$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year );
 				$amount_to_declare_round = round( $amount_to_declare );
 				$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
-				$ifu_txt .= self::add_ifu_amount_1( $fiscal_year, $amount_to_declare_round, $amount_tax_round );
+				$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_round );
 				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
 				$entity_index++;
 			}
@@ -220,10 +220,7 @@ class WDG_FiscalDocuments {
 		$buffer .= 'D0';
 		// D006 - 50 caractères : raison sociale
 		$company_name = self::$wedogood_name;
-		$buffer .= $company_name;
-		for ( $i = strlen( $company_name ); $i < 50; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( $company_name, 50 );
 		// D007 - 4 caractères : catégorie juridique du déclarant. Cf https://www.insee.fr/fr/information/2028129
 		$buffer .= self::$wedogood_legal_category;
 		//**********************************************************************
@@ -236,16 +233,13 @@ class WDG_FiscalDocuments {
 			$buffer .= ' ';
 		}
 		// D010 - 4 caractères : numéro dans la voie (préfixé par 0 si nécessaire)
-		for ( $i = strlen( self::$wedogood_street_number ); $i < 4; $i++ ) {
-			$buffer .= '0';
-		}
-		$buffer .= self::$wedogood_street_number;
+		$buffer .= str_pad( self::$wedogood_street_number, 4, '0', STR_PAD_LEFT );
 		// D011 - 1 caractère : B T Q C
 		$buffer .= ' ';
 		// D012 - 1 caractère : séparateur
 		$buffer .= ' ';
 		// D013 - 26 caractères : nature et nom de la voie
-		$buffer .= strtoupper( self::$wedogood_street );
+		$buffer .= str_pad( strtoupper( self::$wedogood_street ), 26 );
 		// D014 - 5 caractères : code INSEE des communes. 
 		// Cf https://www.insee.fr/fr/recherche/recherche-geographique?debut=0
 		// OU https://www.insee.fr/fr/information/2666684 pour le fichier complet
@@ -253,19 +247,13 @@ class WDG_FiscalDocuments {
 		// D015 - 1 caractère : séparateur
 		$buffer .= ' ';
 		// D016 - 26 caractères : libellé commune
-		$buffer .= strtoupper( self::$wedogood_town_label );
-		for ( $i = strlen( self::$wedogood_town_label ); $i < 26; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( self::$wedogood_town_label ), 26 );
 		// D017 - 5 caractères : code postal
 		$buffer .= self::$wedogood_post_code;
 		// D018 - 1 caractère : séparateur
 		$buffer .= ' ';
 		// D019 - 26 caractères : bureau distributeur
-		$buffer .= strtoupper( self::$wedogood_town_office );
-		for ( $i = strlen( self::$wedogood_town_office ); $i < 26; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( self::$wedogood_town_office ), 26 );
 		// D020 - 8 caractères : date d'émission de la déclaration AAAAMMJJ
 		$current_date = new DateTime();
 		$buffer .= $current_date->format( 'Ymd' );
@@ -280,7 +268,7 @@ class WDG_FiscalDocuments {
 		return $buffer;
 	}
 	
-	private static function add_ifu_entity_intro( $fiscal_year ) {
+	private static function add_ifu_entity_intro( $investment_entity_id, $fiscal_year ) {
 		$buffer = "";
 		// R101/R201 - 4 caractères : année de référence
 		$buffer .= $fiscal_year;
@@ -288,22 +276,24 @@ class WDG_FiscalDocuments {
 		$buffer .= self::$wedogood_siret;
 		// R103/R203 - 1 caractère : 1 si initiale ; 2 si rectificative
 		$buffer .= '1';
+		
+		$wallet_id = '';
+		if ( WDGOrganization::is_user_organization( $investment_entity_id ) ) {
+			$WDGOrganization = new WDGOrganization( $investment_entity_id );
+			$wallet_id = $WDGOrganization->get_lemonway_id();
+			
+		} else {
+			$WDGUser = new WDGUser( $investment_entity_id );
+			$wallet_id = $WDGUser->get_lemonway_id();
+		}
+		// Ces champs sont utilisés pour les versements sur comptes bancaires habituels 
 		// R104/R204 - 9 caractères : code établissement
-		for ( $i = 0; $i < 9; $i++ ) {
-			$buffer .= ' ';
-		}
 		// R105/R205 - 5 caractères : code guichet
-		for ( $i = 0; $i < 5; $i++ ) {
-			$buffer .= ' ';
-		}
 		// R106/R206 - 14 caractères : numéro de compte ou numéro de contrat
-		for ( $i = 0; $i < 14; $i++ ) {
-			$buffer .= ' ';
-		}
 		// R107/R207 - 2 caractères : clé
-		for ( $i = 0; $i < 2; $i++ ) {
-			$buffer .= ' ';
-		}
+		// Mais nous pouvons les utiliser pour transmettre les identifiants de wallet sur LW
+		// Cela se transforme en une zone de 30 caractères
+		$buffer .= str_pad( $wallet_id, 30 );
 		return $buffer;
 	}
 	
@@ -313,7 +303,7 @@ class WDG_FiscalDocuments {
 		
 		//**********************************************************************
 		// ZONE INDICATIF
-		$buffer .= self::add_ifu_entity_intro( $fiscal_year );
+		$buffer .= self::add_ifu_entity_intro( $investment_entity_id, $fiscal_year );
 		// R108 - 2 caractères : code article
 		$buffer .= 'R1';
 		// R109 - 1 caractère : nature du compte ou du contrat (1 compte bancaire, 2 contrat d'assurance, 3 autre)
@@ -437,25 +427,13 @@ class WDG_FiscalDocuments {
 		// R112 - 14 caractères : SIRET bénéficiaire
 		$buffer .= $orga_idnumber;
 		// R113 - 50 caractères : raison sociale
-		$buffer .= strtoupper( $orga_name );
-		for ( $i = strlen( $orga_name ); $i < 50; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( $orga_name ), 50 );
 		// R114 - 30 caractères : nom de famille
-		$buffer .= strtoupper( $user_lastname );
-		for ( $i = strlen( $user_lastname ); $i < 30; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( $user_lastname ), 30 );
 		// R115 - 20 caractères : prénoms
-		$buffer .= strtoupper( $user_firstname );
-		for ( $i = strlen( $user_firstname ); $i < 20; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( $user_firstname ), 20 );
 		// R116 - 30 caractères : nom d'usage
-		$buffer .= strtoupper( $user_use_lastname );
-		for ( $i = strlen( $user_use_lastname ); $i < 30; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( $user_use_lastname ), 30 );
 		// R117 - 20 caractères : espaces (zone réservée)
 		for ( $i = 0; $i < 20; $i++ ) {
 			$buffer .= ' ';
@@ -477,10 +455,7 @@ class WDG_FiscalDocuments {
 		// R123 - 3 caractères : code commune
 		$buffer .= $user_birthday_town_code;
 		// R124 - 26 caractères : libellé commune
-		$buffer .= $user_birthday_town_label;
-		for ( $i = strlen( $user_birthday_town_label ); $i < 26; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( $user_birthday_town_label ), 26 );
 		// R125 - 1 caractère : espace (zone réservée)
 		$buffer .= ' ';
 		// R126 - 30 caractères : profession (laisser vide)
@@ -492,58 +467,51 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// ADRESSE DU BENEFICIAIRE
 		// R127 - 32 caractères : complément d'adresse
-		$buffer .= strtoupper( $investment_entity_address_complement );
-		for ( $i = strlen( $investment_entity_address_complement ); $i < 32; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( $investment_entity_address_complement ), 32 );
 		// R128 - 4 caractères : numéro dans la voie
-		for ( $i = strlen( $investment_entity_address_number ); $i < 4; $i++ ) {
-			$buffer .= '0';
-		}
-		$buffer .= $investment_entity_address_number;
+		$buffer .= str_pad( $investment_entity_address_number, 4, '0', STR_PAD_LEFT );
 		// R129 - 1 caractère : B T Q C
 		$buffer .= $investment_entity_address_number_complement;
 		// R130 - 1 caractère : espace
 		$buffer .= ' ';
 		// R131 - 26 caractères : nature et nom de la voie
-		$buffer .= strtoupper( $investment_entity_address );
-		for ( $i = strlen( $investment_entity_address ); $i < 26; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= str_pad( strtoupper( $investment_entity_address ), 26 );
 		// R132 - 5 caractères : code insee commune
 		$buffer .= $investment_entity_address_town_code;
 		// R133 - 1 caractère : espace
 		$buffer .= ' ';
 		// R134 - 26 caractères : libellé commune
-		$buffer .= $investment_entity_address_town;
+		$buffer .= str_pad( strtoupper( $investment_entity_address_town ), 26 );
 		// R135 - 5 caractères : code postal
 		$buffer .= $investment_entity_address_post_code;
 		// R136 - 1 caractère : espace
 		$buffer .= ' ';
 		// R137 - 26 caractères : bureau distributeur
-		$buffer .= $investment_entity_address_town_office;
+		$buffer .= str_pad( strtoupper( $investment_entity_address_town_office ), 26 );
 		// R138 - 1 caractère : espace
 		$buffer .= ' ';
 		// R139 - 4 caractères : code catégorie juridique - laisser vide
-		for ( $i = strlen( $investment_entity_address_number ); $i < 4; $i++ ) {
+		for ( $i = 0; $i < 4; $i++ ) {
 			$buffer .= '0';
 		}
 		// R140 - 4 caractères : période de référence MMJJ
 		$buffer .= $investment_entity_period;
 		// R141 - 4 caractères : espaces
-		$buffer .= '    ';
+		for ( $i = 0; $i < 4; $i++ ) {
+			$buffer .= ' ';
+		}
 		//**********************************************************************
 		
 		return $buffer;
 	}
 	
-	private static function add_ifu_amount_1( $fiscal_year, $amount_to_declare_received, $amount_to_declare_tax ) {
+	private static function add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_received, $amount_to_declare_tax ) {
 		$buffer = "";
 		
 		
 		//**********************************************************************
 		// ZONE INDICATIF
-		$buffer .= self::add_ifu_entity_intro( $fiscal_year );
+		$buffer .= self::add_ifu_entity_intro( $investment_entity_id, $fiscal_year );
 		// R108 - 2 caractères : code article
 		$buffer .= 'R2';
 		//**********************************************************************
@@ -610,15 +578,9 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// REVENUS SOUMIS A PRELEVEMENT LIBERATOIRE OU A RETENUE A LA SOURCE
 		// R226 - 10 caractères : base du prélèvement ou de la retenue à la source
-		for ( $i = strlen( $amount_to_declare_received ); $i < 10; $i++ ) {
-			$buffer .= '0';
-		}
-		$buffer .= $amount_to_declare_received;
+		$buffer .= str_pad( $amount_to_declare_received, 10, '0', STR_PAD_LEFT );
 		// R227 - 10 caractères : montant du prélèvement ou de la retenue à la source
-		for ( $i = strlen( $amount_to_declare_tax ); $i < 10; $i++ ) {
-			$buffer .= '0';
-		}
-		$buffer .= $amount_to_declare_tax;
+		$buffer .= str_pad( $amount_to_declare_tax, 10, '0', STR_PAD_LEFT );
 		// R230 - 10 caractères : montant du prélèvement ou de la retenue à la source
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
