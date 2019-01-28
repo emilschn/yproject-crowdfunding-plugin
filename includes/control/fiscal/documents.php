@@ -220,7 +220,7 @@ class WDG_FiscalDocuments {
 		$buffer .= 'D0';
 		// D006 - 50 caractères : raison sociale
 		$company_name = self::$wedogood_name;
-		$buffer .= str_pad( $company_name, 50 );
+		$buffer .= self::clean_size( $company_name, 50, 0, 'raison sociale wdg' );
 		// D007 - 4 caractères : catégorie juridique du déclarant. Cf https://www.insee.fr/fr/information/2028129
 		$buffer .= self::$wedogood_legal_category;
 		//**********************************************************************
@@ -239,7 +239,7 @@ class WDG_FiscalDocuments {
 		// D012 - 1 caractère : séparateur
 		$buffer .= ' ';
 		// D013 - 26 caractères : nature et nom de la voie
-		$buffer .= str_pad( strtoupper( self::$wedogood_street ), 26 );
+		$buffer .= self::clean_size( self::$wedogood_street, 26, 0, 'adresse wdg' );
 		// D014 - 5 caractères : code INSEE des communes. 
 		// Cf https://www.insee.fr/fr/recherche/recherche-geographique?debut=0
 		// OU https://www.insee.fr/fr/information/2666684 pour le fichier complet
@@ -247,13 +247,13 @@ class WDG_FiscalDocuments {
 		// D015 - 1 caractère : séparateur
 		$buffer .= ' ';
 		// D016 - 26 caractères : libellé commune
-		$buffer .= str_pad( strtoupper( self::$wedogood_town_label ), 26 );
+		$buffer .= self::clean_size( self::$wedogood_town_label, 26, 0, 'commune wdg' );
 		// D017 - 5 caractères : code postal
 		$buffer .= self::$wedogood_post_code;
 		// D018 - 1 caractère : séparateur
 		$buffer .= ' ';
 		// D019 - 26 caractères : bureau distributeur
-		$buffer .= str_pad( strtoupper( self::$wedogood_town_office ), 26 );
+		$buffer .= self::clean_size( self::$wedogood_town_office, 26, 0, 'bureau distrib wdg' );
 		// D020 - 8 caractères : date d'émission de la déclaration AAAAMMJJ
 		$current_date = new DateTime();
 		$buffer .= $current_date->format( 'Ymd' );
@@ -293,7 +293,7 @@ class WDG_FiscalDocuments {
 		// R107/R207 - 2 caractères : clé
 		// Mais nous pouvons les utiliser pour transmettre les identifiants de wallet sur LW
 		// Cela se transforme en une zone de 30 caractères
-		$buffer .= str_pad( $wallet_id, 30 );
+		$buffer .= self::clean_size( $wallet_id, 30, $investment_entity_id, 'ID WALLET' );
 		return $buffer;
 	}
 	
@@ -427,13 +427,13 @@ class WDG_FiscalDocuments {
 		// R112 - 14 caractères : SIRET bénéficiaire
 		$buffer .= $orga_idnumber;
 		// R113 - 50 caractères : raison sociale
-		$buffer .= str_pad( strtoupper( $orga_name ), 50 );
+		$buffer .= self::clean_size( $orga_name, 50, $investment_entity_id, 'raison sociale' );
 		// R114 - 30 caractères : nom de famille
-		$buffer .= str_pad( strtoupper( $user_lastname ), 30 );
+		$buffer .= self::clean_size( $user_lastname, 30, $investment_entity_id, 'nom de famille' );
 		// R115 - 20 caractères : prénoms
-		$buffer .= str_pad( strtoupper( $user_firstname ), 20 );
+		$buffer .= self::clean_size( $user_firstname, 20, $investment_entity_id, 'prénoms' );
 		// R116 - 30 caractères : nom d'usage
-		$buffer .= str_pad( strtoupper( $user_use_lastname ), 30 );
+		$buffer .= self::clean_size( $user_use_lastname, 30, $investment_entity_id, 'nom usage' );
 		// R117 - 20 caractères : espaces (zone réservée)
 		for ( $i = 0; $i < 20; $i++ ) {
 			$buffer .= ' ';
@@ -455,7 +455,7 @@ class WDG_FiscalDocuments {
 		// R123 - 3 caractères : code commune
 		$buffer .= $user_birthday_town_code;
 		// R124 - 26 caractères : libellé commune
-		$buffer .= str_pad( strtoupper( $user_birthday_town_label ), 26 );
+		$buffer .= self::clean_size( $user_birthday_town_label, 26, $investment_entity_id, 'ville naissance' );
 		// R125 - 1 caractère : espace (zone réservée)
 		$buffer .= ' ';
 		// R126 - 30 caractères : profession (laisser vide)
@@ -467,7 +467,7 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// ADRESSE DU BENEFICIAIRE
 		// R127 - 32 caractères : complément d'adresse
-		$buffer .= str_pad( strtoupper( $investment_entity_address_complement ), 32 );
+		$buffer .= self::clean_size( $investment_entity_address_complement, 32, $investment_entity_id, 'comp adresse' );
 		// R128 - 4 caractères : numéro dans la voie
 		$buffer .= str_pad( $investment_entity_address_number, 4, '0', STR_PAD_LEFT );
 		// R129 - 1 caractère : B T Q C
@@ -475,19 +475,19 @@ class WDG_FiscalDocuments {
 		// R130 - 1 caractère : espace
 		$buffer .= ' ';
 		// R131 - 26 caractères : nature et nom de la voie
-		$buffer .= str_pad( strtoupper( $investment_entity_address ), 26 );
+		$buffer .= self::clean_size( $investment_entity_address, 26, $investment_entity_id, 'adresse' );
 		// R132 - 5 caractères : code insee commune
 		$buffer .= $investment_entity_address_town_code;
 		// R133 - 1 caractère : espace
 		$buffer .= ' ';
 		// R134 - 26 caractères : libellé commune
-		$buffer .= str_pad( strtoupper( $investment_entity_address_town ), 26 );
+		$buffer .= self::clean_size( $investment_entity_address_town, 26, $investment_entity_id, 'libellé commune' );
 		// R135 - 5 caractères : code postal
 		$buffer .= $investment_entity_address_post_code;
 		// R136 - 1 caractère : espace
 		$buffer .= ' ';
 		// R137 - 26 caractères : bureau distributeur
-		$buffer .= str_pad( strtoupper( $investment_entity_address_town_office ), 26 );
+		$buffer .= self::clean_size( $investment_entity_address_town_office, 26, $investment_entity_id, 'bureau distributeur' );
 		// R138 - 1 caractère : espace
 		$buffer .= ' ';
 		// R139 - 4 caractères : code catégorie juridique - laisser vide
@@ -758,18 +758,12 @@ class WDG_FiscalDocuments {
 		
 		//**********************************************************************
 		// DESIGNATION DU RESPONSABLE
-		// T010 - 50 caractères : Nombre d'enregistrements R1
-		$buffer .= self::$wedogood_person_incharge_name;
-		for ( $i = strlen( self::$wedogood_person_incharge_name ); $i < 50; $i++ ) {
-			$buffer .= ' ';
-		}
+		// T010 - 50 caractères : Identité personne en charge
+		$buffer .= self::clean_size( self::$wedogood_person_incharge_name, 50, 0, 'personne en charge' );
 		// T011 - 10 caractères : Numéro de téléphone
 		$buffer .= self::$wedogood_person_incharge_phone;
 		// T012 - 60 caractères : Adresse courriel
-		$buffer .= self::$wedogood_person_incharge_email;
-		for ( $i = strlen( self::$wedogood_person_incharge_email ); $i < 60; $i++ ) {
-			$buffer .= ' ';
-		}
+		$buffer .= self::clean_size( self::$wedogood_person_incharge_email, 60, 0, 'courriel personne en charge' );
 		// T013 - 227 caractères : espaces (zone réservée)
 		for ( $i = 0; $i < 227; $i++ ) {
 			$buffer .= ' ';
@@ -855,6 +849,27 @@ class WDG_FiscalDocuments {
 			'&CCEDIL;' => 'C'
 		);
 		$buffer = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $buffer );
+		
+		return $buffer;
+	}
+	
+	/**
+	 * Arrange les champs à la bonne taille, et inscrit une erreur si dépassement
+	 * @param string $input
+	 * @param int $size
+	 * @param int $error_entity_id
+	 * @param string $error_field
+	 * @return string
+	 */
+	public static function clean_size( $input, $size, $error_entity_id, $error_field ) {
+		if ( strlen( $input ) > $size ) {
+			// Suppression des caractères qui dépassent
+			$buffer = chunk_split( $input, $size );
+			self::add_error( 'Problème taille pour le champs '. $error_field .' - ID USER ' . $error_entity_id . ' >> ' . $input );
+			
+		} else {
+			$buffer = str_pad( $input, $size );
+		}
 		
 		return $buffer;
 	}
