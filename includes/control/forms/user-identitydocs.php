@@ -106,7 +106,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'status' .$suffix,
-				__( "Statuts de la soci&eacute;t&eacute;, certifi&eacute;s conformes à l'original par le g&eacute;rant *", 'yproject' ),
+				__( "Statuts de la soci&eacute;t&eacute;, certifi&eacute;s conformes à l'original par le g&eacute;rant (faisant figurer id&eacute;alement la r&eacute;partition du capital de l'entreprise) *", 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$status_file_path,
 				'',
