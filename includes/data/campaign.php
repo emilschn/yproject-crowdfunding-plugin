@@ -741,6 +741,18 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function maximum_profit_complete() {
+		$maximum_profit = $this->maximum_profit();
+		$maximum_profit_precision = $this->maximum_profit_precision();
+		if ( $maximum_profit_precision > 0 ) {
+			$buffer = $maximum_profit .'.'. $maximum_profit_precision;
+		} else {
+			$buffer = $maximum_profit;
+		}
+		
+		return $buffer;
+	}
+	
 	public function maximum_profit_str() {
 		$buffer = $this->maximum_profit();
 		if ( $buffer == 'infinite' ) {
