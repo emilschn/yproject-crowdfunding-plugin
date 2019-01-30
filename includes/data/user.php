@@ -464,6 +464,9 @@ class WDGUser {
 		if ( !empty( $birthday_day ) && !empty( $birthday_month ) && !empty( $birthday_year ) ) {
 			$birthday_day = ( $birthday_day < 10 && strlen( $birthday_day ) < 2 ) ? '0' . $birthday_day : $birthday_day;
 			$birthday_month = ( $birthday_month < 10 && strlen( $birthday_month ) < 2 ) ? '0' . $birthday_month : $birthday_month;
+			if ( (int)$birthday_year < 100 ) {
+				$birthday_year = '19' . (int)$birthday_year;
+			}
 			$buffer = $birthday_year. '-' .$birthday_month. '-' .$birthday_day;
 		}
 		return $buffer;
