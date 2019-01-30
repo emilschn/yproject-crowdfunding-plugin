@@ -1669,6 +1669,9 @@ class WDGAjaxActions {
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
 				$invest_sign_state_span_class = 'error';
+			} else if ( $post_invest_status == 'pending' ) {
+				$invest_sign_state = __( "En attente de r&eacute;ception du paiement", 'yproject' );
+				$invest_sign_state_span_class = 'error';
 			} else if ( $invest_signsquid_contract->get_status_code() != "Small" && $invest_signsquid_contract->get_status_code() != "Agreed" ) {
 				$invest_sign_state = __( "En attente de signature électronique", 'yproject' );
 				$invest_sign_state_span_class = 'error';
