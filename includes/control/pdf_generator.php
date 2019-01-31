@@ -21,6 +21,8 @@ class WDG_PDF_Generator {
 		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_function', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_function' );
 		add_shortcode( 'wdg_campaign_contract_start_date', 'WDG_PDF_Generator::shortcode_contract_start_date' );
 		add_shortcode( 'wdg_campaign_contract_organization_description', 'WDG_PDF_Generator::shortcode_contract_organization_description' );
+		add_shortcode( 'wdg_campaign_contract_declaration_periodicity', 'WDG_PDF_Generator::shortcode_contract_declaration_periodicity' );
+		add_shortcode( 'wdg_campaign_contract_declaration_period', 'WDG_PDF_Generator::shortcode_contract_declaration_period' );
 		add_shortcode( 'wdg_campaign_contract_minimum_goal', 'WDG_PDF_Generator::shortcode_contract_minimum_goal' );
 		add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
 		add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
@@ -200,6 +202,26 @@ class WDG_PDF_Generator {
 			$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 			$buffer = $wdg_organization->get_description();
 		}
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant la périodicité des déclarations
+	 */
+	public static function shortcode_contract_declaration_periodicity( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = ATCF_Campaign::$declaration_periodicity_list[ $shortcode_campaign_obj->get_declaration_periodicity() ];
+		return $buffer;
+	}
+	
+	/**
+	 * Shortcode affichant la période des déclarations
+	 */
+	public static function shortcode_contract_declaration_period( $atts, $content = '' ) {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = ATCF_Campaign::$declaration_period_list[ $shortcode_campaign_obj->get_declaration_periodicity() ];
 		return $buffer;
 	}
 	

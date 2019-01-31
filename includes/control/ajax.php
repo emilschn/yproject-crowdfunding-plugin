@@ -997,6 +997,14 @@ class WDGAjaxActions {
 			$errors['new_turnover_per_declaration'] = "Nombre non valide";
 		}
 		
+		$new_declaration_periodicity = sanitize_text_field( filter_input( INPUT_POST, 'new_declaration_periodicity') );
+		if ( !empty( $new_declaration_periodicity ) ) {
+			$campaign->set_api_data( ATCF_Campaign::$key_declaration_periodicity, $new_declaration_periodicity );
+			$success['new_declaration_periodicity'] = 1;
+		} else {
+			$errors['new_declaration_periodicity'] = "S&eacute;lection non valide";
+		}
+		
 		$new_minimum_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_costs_to_organization') ) ), 2 );
 		if ( $new_minimum_costs_to_organization >= 0 ) {
 			$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );

@@ -1080,6 +1080,25 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public static $key_declaration_periodicity = 'declaration_periodicity';
+	public static $declaration_periodicity_list = array( 
+		'month'		=> 'mensuelle', 
+		'quarter'	=> 'trimestrielle', 
+		'semester'	=> 'semestrielle', 
+		'year'		=> 'annuelle'
+	);
+	public static $declaration_period_list = array( 
+		'month'		=> 'mois', 
+		'quarter'	=> 'trimestre', 
+		'semester'	=> 'semestre', 
+		'year'		=> 'an'
+	);
+	public function get_declaration_periodicity() {
+		$buffer = $this->get_api_data( self::$key_declaration_periodicity );
+		if ( empty( $buffer ) ) { $buffer = 'quarter'; }
+		return $buffer;
+	}
+	
 	
 	public function payment_list() {
 	    $buffer = $this->__get('campaign_payment_list');
