@@ -601,9 +601,9 @@ class WDGAjaxActions {
 		$success[ 'new_is_check_payment_available' ] = 1;
 		$new_has_overridden_wire_constraints = filter_input( INPUT_POST, 'new_has_overridden_wire_constraints');
         if ( $new_has_overridden_wire_constraints === true || $new_has_overridden_wire_constraints === "true" || $new_has_overridden_wire_constraints === 1 ) {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints );
-		} else {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints );
 		}
 		$success[ 'new_has_overridden_wire_constraints' ] = 1;
 		
