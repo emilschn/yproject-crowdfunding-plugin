@@ -662,6 +662,12 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
+	public function get_campaigns() {
+		$buffer = array();
+		$result = WDGWPREST_Entity_Organization::get_projects( $this->api_id );
+		return $result;
+	}
+	
 	/**
 	 * Gère les documents à enregistrer en local
 	 */
@@ -739,7 +745,7 @@ class WDGOrganization {
 	 * Upload des KYC vers Lemonway si possible
 	 */
 	public function send_kyc() {
-		if (isset($_POST['authentify_lw']) && $this->has_sent_all_documents()) {
+		if ( $this->has_sent_all_documents() ) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
 					WDGKYCFile::$type_bank		=> LemonwayDocument::$document_type_bank,
@@ -969,7 +975,7 @@ class WDGOrganization {
 	/**
 	 * Enregistrement sur Lemonway
 	 */
-	public function register_lemonway() {
+	public function register_lemonway( $is_managing_project = FALSE ) {
 		if ( !$this->can_register_lemonway() ) {
 			return FALSE;
 		}
@@ -985,6 +991,13 @@ class WDGOrganization {
 				$WDGUser_creator = new WDGUser();
 			}
 			
+			// Si on n'a pas défini la valeur par défaut, on fait le test si il y a des campagnes liées
+			if ( !$is_managing_project ) {
+				$campaign_list = $this->get_campaigns();
+				$is_managing_project = !empty( $campaign_list );
+			}
+			$wallet_type = ( $is_managing_project ) ? LemonwayLib::$wallet_type_beneficiary : LemonwayLib::$wallet_type_payer;
+			
 			return LemonwayLib::wallet_company_register(
 				$this->get_lemonway_id(),
 				$this->get_email(),
@@ -997,7 +1010,7 @@ class WDGOrganization {
 				$WDGUser_creator->get_lemonway_birthdate(),
 				$WDGUser_creator->get_lemonway_phone_number(),
 				$this->get_idnumber(),
-				LemonwayLib::$wallet_type_beneficiary
+				$wallet_type
 			);
 		}
 		return TRUE;

@@ -125,4 +125,14 @@ class WDGWPREST_Entity_Organization {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/rois' );
 		return $result_obj;
 	}
+	
+	/**
+	 * Retourne la liste des projets liés à l'organisation
+	 * @param int $organization_id
+	 * @return array
+	 */
+	public static function get_projects( $organization_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/projects' );
+		return $result_obj;
+	}
 }

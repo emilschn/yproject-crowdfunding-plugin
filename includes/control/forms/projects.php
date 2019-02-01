@@ -377,7 +377,7 @@ class WDGFormProjects {
 			$wk_token = LemonwayLib::make_token( '', $roi_id );
 			$roi_declaration->payment_token = $wk_token;
 			$roi_declaration->save();
-			$organization->register_lemonway();
+			$organization->register_lemonway( TRUE );
 			$return = LemonwayLib::ask_payment_webkit( $organization->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url );
 			if ( !empty( $return->MONEYINWEB->TOKEN ) ) {
 				wp_redirect( YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN );
