@@ -599,6 +599,13 @@ class WDGAjaxActions {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check, '0' );
 		}
 		$success[ 'new_is_check_payment_available' ] = 1;
+		$new_has_overridden_wire_constraints = filter_input( INPUT_POST, 'new_has_overridden_wire_constraints');
+        if ( $new_has_overridden_wire_constraints === true || $new_has_overridden_wire_constraints === "true" || $new_has_overridden_wire_constraints === 1 ) {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints );
+		} else {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints, '1' );
+		}
+		$success[ 'new_has_overridden_wire_constraints' ] = 1;
 		
 		$new_fake_url = filter_input( INPUT_POST, 'new_fake_url' );
 		if ( !empty( $new_fake_url ) ) {

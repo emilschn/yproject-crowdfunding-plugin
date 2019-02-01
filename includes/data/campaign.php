@@ -2165,7 +2165,7 @@ class ATCF_Campaign {
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
 		// Si il reste assez de jours ou si la campagne est déjà validée
-		return ( $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->is_funded() );
+		return ( $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->is_funded() || $this->has_overridden_wire_constraints() );
 	}
 	public function can_use_wire_amount($amount_part) {
 		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
@@ -2179,6 +2179,12 @@ class ATCF_Campaign {
 	public function can_use_wire($amount_part) {
 		return ($this->can_use_wire_remaining_time() && $this->can_use_wire_amount($amount_part) && $this->can_use_wire_remaining_amount());
 	}
+	public static $key_has_overridden_wire_constraints = 'has_overridden_wire_constraints';
+	public function has_overridden_wire_constraints() {
+		$buffer = $this->__get( self::$key_has_overridden_wire_constraints );
+		return ( $buffer == '1' );
+	}
+	
 	
 	public function can_use_check( $amount_part ) {
 		return ( $this->can_use_check_option() && $this->can_use_check_amount( $amount_part ) && !$this->is_positive_savings() );
@@ -2187,7 +2193,7 @@ class ATCF_Campaign {
 	public static $key_can_use_check = 'can_use_check';
 	public function can_use_check_option() {
 		$buffer = $this->__get( self::$key_can_use_check );
-		return ( $buffer != '0' );
+		return ( $buffer !== '0' );
 	}
 	
 	public static $invest_amount_min_check = 500;
