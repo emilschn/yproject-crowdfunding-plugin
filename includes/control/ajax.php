@@ -164,6 +164,10 @@ class WDGAjaxActions {
 				$campaign_id = $downloads[0];
 				$campaign = atcf_get_campaign( $campaign_id );
 				
+				// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
+				$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$user_id. '_*.pdf';
+				$files = glob( $exp );
+				
 				if ( !isset( $buffer[ $campaign_id ] ) ) {
 					$buffer[ $campaign_id ] = array();
 					$buffer[ $campaign_id ][ 'name' ] = $campaign->data->post_title;
@@ -193,6 +197,21 @@ class WDGAjaxActions {
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
 				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
+				
+				// Contrat
+				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
+				if ( count( $files ) ) {
+					$filelist_extract = explode( '/', $files[ $contract_index ] );
+					$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
+					$contract_index++;
+					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
+					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
+					$investment_item[ 'contract_file_name' ] = $download_filename;
+					
+				} else {
+					$investment_item[ 'contract_file_path' ] = '';
+					$investment_item[ 'contract_file_name' ] = '';
+				}
 				
 				array_push( $buffer[ $campaign_id ][ 'items' ], $investment_item );
 			}
