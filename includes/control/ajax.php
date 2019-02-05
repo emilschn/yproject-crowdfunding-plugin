@@ -1621,7 +1621,10 @@ class WDGAjaxActions {
         //Extraction infos d'investissements
         foreach ( $investments_list['payments_data'] as $item_invest ) {
 			$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
+			$contract_status = $payment_investment->get_contract_status();
             $post_invest = get_post($item_invest['ID']);
+			$post_invest_status = $post_invest->post_status;
+			
 			if ( !empty( $item_invest[ 'payment_key' ] ) ) {
 				$payment_key = $item_invest[ 'payment_key' ];
 			} else {
@@ -1633,8 +1636,8 @@ class WDGAjaxActions {
             $payment_type = 'Carte';
             if (strpos($payment_key, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
-            } else if ($payment_key == 'check') {
 				
+            } else if ($payment_key == 'check') {
 				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
 				if ( !empty( $check_file_url ) ) {
 					$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
@@ -1645,14 +1648,15 @@ class WDGAjaxActions {
 					$payment_type = 'Ch&egrave;que';
 				}
 				
-            }
+			// Si c'est juste une intention avec dépot de fichiers
+            } else if ( $post_invest_status == 'pending' && $contract_status == WDGInvestment::$contract_status_not_validated ) {
+				$payment_type = 'Non d&eacute;fini';
+			}
 
             $page_dashboard = get_page_by_path('tableau-de-bord');
             $campaign_id_param = '?campaign_id=' . $campaign->ID;
-			$contract_status = $payment_investment->get_contract_status();
 			
 			// Etat du paiement
-			$post_invest_status = $post_invest->post_status;
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			if ( $post_invest_status == 'pending' ) {
