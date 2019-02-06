@@ -1098,6 +1098,23 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) { $buffer = 'quarter'; }
 		return $buffer;
 	}
+	public function get_declararations_count_per_year() {
+		$buffer = 4;
+		$declaration_periodicity = $this->get_declaration_periodicity();
+		switch ( $declaration_periodicity ) {
+			case 'month':
+				$buffer = 12;
+				break;
+			case 'semester':
+				$buffer = 2;
+				break;
+			case 'year':
+				$buffer = 1;
+				break;
+		}
+		
+		return $buffer;
+	}
 	
 	
 	public function payment_list() {

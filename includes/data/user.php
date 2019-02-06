@@ -1075,12 +1075,14 @@ class WDGUser {
 	 * Retourne la liste des royalties par id d'investissement
 	 * @return array
 	 */
-	public function get_royalties_by_investment_id( $investment_id ) {
+	public function get_royalties_by_investment_id( $investment_id, $status = 'transferred' ) {
 		$buffer = array();
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
-			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
-				array_push( $buffer, $roi_item );
+			if ( $roi_item->id_investment == $investment_id ) {
+				if ( !empty( $status ) && $roi_item->status == $status ) {
+					array_push( $buffer, $roi_item );
+				}
 			}
 		}
 		return $buffer;

@@ -163,6 +163,7 @@ class WDGAjaxActions {
 			if ( !is_array( $downloads[ 0 ] ) ){
 				$campaign_id = $downloads[0];
 				$campaign = atcf_get_campaign( $campaign_id );
+				$campaign_amount = $campaign->current_amount( false );
 				
 				// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 				$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$user_id. '_*.pdf';
@@ -185,7 +186,7 @@ class WDGAjaxActions {
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
-				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $purchase_post->ID );
+				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $purchase_post->ID, FALSE );
 				foreach ( $roi_list as $roi_item ) {
 					$roi_amount += $roi_item->amount;
 				}
@@ -198,7 +199,7 @@ class WDGAjaxActions {
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
 				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
 				
-				// Contrat
+				// Fichier de contrat
 				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
 				if ( count( $files ) ) {
 					$filelist_extract = explode( '/', $files[ $contract_index ] );
@@ -213,6 +214,96 @@ class WDGAjaxActions {
 					$investment_item[ 'contract_file_name' ] = '';
 				}
 				
+				
+				//*****
+				// Echéancier de royalties
+				
+				// Création du tableau des prévisionnels par année
+				$investment_item[ 'rois_by_year' ] = array();
+				$estimated_turnover_list = $campaign->estimated_turnover();
+				if ( !empty( $estimated_turnover_list ) ){
+					foreach ( $estimated_turnover_list as $key => $turnover ) {
+						$year_item = array(
+							'estimated_rois'	=> YPUIHelpers::display_number( round( $turnover * $investor_proportion ), TRUE ) . ' &euro;',
+							'amount_rois'		=> 0,
+							'roi_items'	=> array()
+						);
+						array_push( $investment_item[ 'rois_by_year' ], $year_item );
+					}
+				}
+				
+				// Initialisation des décomptes d'année
+				$campaign_declararations_count_per_year = $campaign->get_declararations_count_per_year();
+				$current_year_index = 0;
+				$current_year_amount = 0;
+				$current_year_rois_count = 0;
+				
+				// - Déclarations à venir
+				$future_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+				if ( !empty( $future_roi_list ) ) {
+					foreach ( $future_roi_list as $roi_declaration ) {
+						// On a dépassé les années prévues par le prévisionnel, on en rajoute une au tableau
+						if ( !isset( $investment_item[ 'rois_by_year' ][ $current_year_index ] ) ) {
+							$year_item = array(
+								'estimated_rois'	=> '-',
+								'amount_rois'		=> '0 &euro;',
+								'roi_items'			=> array()
+							);
+							array_push( $investment_item[ 'rois_by_year' ], $year_item );
+						}
+
+						// Initialisation de la ligne avec les infos de la déclaration
+						$today_datetime = new DateTime();
+						$decla_datetime = new DateTime( $roi_declaration->date_due );
+						$roi_item = array(
+							'date'		=> date_i18n( 'F Y', strtotime( $roi_declaration->date_due ) ),
+							'amount'	=> '0 &euro;',
+							'status'	=> $roi_declaration->status,
+							'status_str'	=> ''
+						);
+						switch ( $roi_declaration->status ) {
+							case WDGROIDeclaration::$status_declaration:
+								if ( $decla_datetime < $today_datetime ) {
+									$roi_item[ 'status' ] = 'late';
+									$roi_item[ 'status_str' ] = __( "En retard", 'yproject' );
+								}
+								break;
+							case WDGROIDeclaration::$status_finished:
+								// Rien
+								break;
+							case WDGROIDeclaration::$status_failed:
+								$roi_item[ 'status_str' ] = __( "En d&eacute;faut", 'yproject' );
+								break;
+							default:
+								$roi_item[ 'status' ] = 'upcoming';
+								$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
+								break;
+						}
+						// Si il y a eu un versement de royalties, on récupère les infos du versement
+						if ( !empty( $roi_list ) ) {
+							foreach ( $roi_list as $roi ) {
+								$roi_datetime = new DateTime( $roi->date_transfer );
+								if ( $decla_datetime->format( 'm' ) == $roi_datetime->format( 'm' ) && $decla_datetime->format( 'Y' ) == $roi_datetime->format( 'Y' ) ) {
+									$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+								}
+							}
+						}
+						array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
+
+						// Changement d'année
+						$current_year_rois_count++;
+						if ( $current_year_rois_count == $campaign_declararations_count_per_year ) {
+							$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $current_year_amount, TRUE ) . ' &euro;';
+							$current_year_rois_count = 0;
+							$current_year_amount = 0;
+							$current_year_index++;
+						}
+					}
+				}
+				//*****
+				
+				
+				// Ajout au tableau de retour
 				array_push( $buffer[ $campaign_id ][ 'items' ], $investment_item );
 			}
 		}
