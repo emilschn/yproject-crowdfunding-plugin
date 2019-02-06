@@ -861,7 +861,7 @@ class WDGPostActions {
 			$campaign = new ATCF_Campaign($campaign_id);
 			$month_count = filter_input( INPUT_POST, 'month_count' );
 			if ( empty( $month_count ) ) {
-				$month_count = 3;
+				$month_count = 12 / $campaign->get_declararations_count_per_year();
 			}
 			$declarations_count = filter_input( INPUT_POST, 'declarations_count' );
 			if ( empty( $declarations_count ) || !is_numeric( $declarations_count ) ) {
