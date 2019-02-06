@@ -266,6 +266,9 @@ class WDGAjaxActions {
 								if ( $decla_datetime < $today_datetime ) {
 									$roi_item[ 'status' ] = 'late';
 									$roi_item[ 'status_str' ] = __( "En retard", 'yproject' );
+								} else {
+									$roi_item[ 'status' ] = 'upcoming';
+									$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
 								}
 								break;
 							case WDGROIDeclaration::$status_finished:
