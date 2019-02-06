@@ -224,7 +224,7 @@ class WDGAjaxActions {
 				if ( !empty( $estimated_turnover_list ) ){
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$year_item = array(
-							'estimated_rois'	=> YPUIHelpers::display_number( round( $turnover * $investor_proportion ), TRUE ) . ' &euro;',
+							'estimated_rois'	=> YPUIHelpers::display_number( round( $turnover * $roi_percent_full / 100 ), TRUE ) . ' &euro;',
 							'amount_rois'		=> 0,
 							'roi_items'	=> array()
 						);
@@ -284,6 +284,7 @@ class WDGAjaxActions {
 							foreach ( $roi_list as $roi ) {
 								$roi_datetime = new DateTime( $roi->date_transfer );
 								if ( $decla_datetime->format( 'm' ) == $roi_datetime->format( 'm' ) && $decla_datetime->format( 'Y' ) == $roi_datetime->format( 'Y' ) ) {
+									$current_year_amount += $roi->amount;
 									$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
 								}
 							}
