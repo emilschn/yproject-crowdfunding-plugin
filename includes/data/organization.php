@@ -1481,7 +1481,7 @@ class WDGOrganization {
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
 			if ( $roi_item->id_investment == $investment_id ) {
-				if ( !empty( $status ) && $roi_item->status == $status ) {
+				if ( empty( $status ) || $roi_item->status == $status ) {
 					array_push( $buffer, $roi_item );
 				}
 			}
