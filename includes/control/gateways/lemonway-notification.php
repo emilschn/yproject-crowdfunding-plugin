@@ -316,8 +316,8 @@ class LemonwayNotification {
 					}
 				}
 			}
-			ypcf_debug_log( 'PROCESS -> $trace = ' . $trace );
-			ypcf_debug_log( 'PROCESS -> $investment_id = ' . $investment_id .  ' ; $investment_campaign_id = ' . $investment_campaign_id );
+			ypcf_debug_log( 'PROCESS -> $trace = ' . $trace, FALSE );
+			ypcf_debug_log( 'PROCESS -> $investment_id = ' . $investment_id .  ' ; $investment_campaign_id = ' . $investment_campaign_id, FALSE );
 			
 			if ( $investment_id != FALSE && $investment_campaign_id != FALSE ) {
 				// - Faire le transfert vers le porte-monnaie du porteur de projet
@@ -325,11 +325,11 @@ class LemonwayNotification {
 				$campaign = new ATCF_Campaign( $post_campaign );
 
 				$campaign_organization = $campaign->get_organization();
-				ypcf_debug_log( 'PROCESS -> $campaign_organization->wpref = ' . $campaign_organization->wpref );
+				ypcf_debug_log( 'PROCESS -> $campaign_organization->wpref = ' . $campaign_organization->wpref, FALSE );
 				$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_author = $WDGUser_invest_author;
-				ypcf_debug_log( 'PROCESS -> $WDGUser_invest_author->wp_user->ID = ' . $WDGUser_invest_author->wp_user->ID );
-				ypcf_debug_log( 'PROCESS -> $invest_author = ' . $invest_author->wp_user->ID );
+				ypcf_debug_log( 'PROCESS -> $WDGUser_invest_author->wp_user->ID = ' . $WDGUser_invest_author->wp_user->ID, FALSE );
+				ypcf_debug_log( 'PROCESS -> $invest_author = ' . $invest_author->wp_user->ID, FALSE );
 				$lemonway_id = $WDGUser_invest_author->get_lemonway_id();
 				if ( !empty( $WDGOrga_invest_author ) ) {
 					$lemonway_id = $WDGOrga_invest_author->get_lemonway_id();
