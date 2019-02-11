@@ -932,9 +932,9 @@ class WDGOrganization {
  * Gestion Lemonway
 *******************************************************************************/
 	public function get_wallet_details( $type = '', $reload = false, $by_email = false ) {
-		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
+		if ( !isset($this->{ 'wallet_details_' . $type }) || empty($this->{ 'wallet_details_' . $type }) || $reload == true ) {
 			if ( $by_email ) {
-				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
+				$this->{ 'wallet_details_' . $type } = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
 			} else {
 				switch ( $type ) {
 					case 'campaign':
@@ -947,13 +947,13 @@ class WDGOrganization {
 						$lemonway_id = $this->get_lemonway_id();
 						break;
 				}
-				$this->wallet_details = LemonwayLib::wallet_get_details( $lemonway_id );
+				$this->{ 'wallet_details_' . $type } = LemonwayLib::wallet_get_details( $lemonway_id );
 			}
 			if ( false ) {
 				$this->update_lemonway();
 			}
 		}
-		return $this->wallet_details;
+		return $this->{ 'wallet_details_' . $type };
 	}
 	
 	public function get_lemonway_cardid() {
