@@ -867,7 +867,7 @@ class WDGOrganization {
 		// Vérifications sur le droit de poster le formulaire
 		$form_posted = filter_input( INPUT_POST, 'submit_transfer_wallet_lemonway' );
 		$WDGUser_current = WDGUser::current();
-		$lemonway_balance = $this->get_lemonway_balance();
+		$lemonway_balance = $this->get_lemonway_balance( 'campaign' );
 		if ( $WDGUser_current->is_admin() && $form_posted == "1" && $lemonway_balance > 0 ) {
 			
 			$buffer = FALSE;
@@ -894,6 +894,7 @@ class WDGOrganization {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
+					LemonwayLib::ask_transfer_funds( $this->get_campaign_lemonway_id(), $this->get_lemonway_id(), ( $transfer_amount + $transfer_commission ) );
 					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
 				}
 			}
