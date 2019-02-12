@@ -724,6 +724,12 @@ class WDGAjaxActions {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
+		$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
+        if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone );
+		}
 		$new_hide_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_hide_investors' ) );
         if ( $new_hide_investors === true || $new_hide_investors === "true" || $new_hide_investors === 1 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors, '1' );

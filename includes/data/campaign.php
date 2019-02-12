@@ -789,6 +789,13 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public static $key_show_comments_for_everyone = 'show_comments_for_everyone';
+	public function get_show_comments_for_everyone() {
+		$metadata_value = $this->__get( ATCF_Campaign::$key_show_comments_for_everyone );
+		$buffer = ( $metadata_value == '1' );
+		return $buffer;
+	}
+	
 	public static $key_archive_message = 'archive_message';
 	public function archive_message() {
 		return $this->__get( ATCF_Campaign::$key_archive_message );
