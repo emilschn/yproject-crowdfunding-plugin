@@ -164,7 +164,12 @@ class WDGAjaxActions {
 			if ( !is_array( $downloads[ 0 ] ) ){
 				$campaign_id = $downloads[0];
 				$campaign = atcf_get_campaign( $campaign_id );
-				$campaign_amount = $campaign->current_amount( false );
+				
+				$first_investment_contract = FALSE;
+				$investment_contract_list = WDGWPREST_Entity_InvestmentContract::get_list_by_subscription_id( $purchase_post->ID );
+				if ( !empty( $investment_contract_list ) ) {
+					$first_investment_contract = $investment_contract_list[ 0 ];
+				}
 				
 				// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 				$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$user_id. '_*.pdf';
@@ -196,6 +201,9 @@ class WDGAjaxActions {
 				$investment_item[ 'date' ] = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_post->ID ) ) );
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
 				$investment_item[ 'status' ] = utf8_encode( $purchase_post->post_status );
+				if ( $first_investment_contract->status == 'canceled' ) {
+					$investment_item[ 'status' ] = 'canceled';
+				}
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
 				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
@@ -310,25 +318,28 @@ class WDGAjaxActions {
 								$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
 								break;
 						}
-						// Si il y a eu un versement de royalties, on récupère les infos du versement
-						if ( !empty( $roi_list ) ) {
-							foreach ( $roi_list as $roi ) {
-								if ( $roi->id_declaration == $roi_declaration->id ) {
-									$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
-									$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
-									$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+						
+						if ( $roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract ) || $first_investment_contract->status != 'canceled' ) {
+							// Si il y a eu un versement de royalties, on récupère les infos du versement
+							if ( $roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
+								foreach ( $roi_list as $roi ) {
+									if ( $roi->id_declaration == $roi_declaration->id ) {
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
+										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+									}
 								}
 							}
+							
+							array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
+						
+							// A optimiser : ne pas trier à chaque fois qu'on ajoute, mais plutôt à la fin...
+							usort( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
+								$item1_date = new DateTime( $item1[ 'date_db' ] );
+								$item2_date = new DateTime( $item2[ 'date_db' ] );
+								return ( $item1_date > $item2_date );
+							} );
 						}
-						
-						array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
-						
-						// A optimiser : ne pas trier à chaque fois qu'on ajoute, mais plutôt à la fin...
-						usort( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
-							$item1_date = new DateTime( $item1[ 'date_db' ] );
-							$item2_date = new DateTime( $item2[ 'date_db' ] );
-							return ( $item1_date > $item2_date );
-						} );
 					}
 				}
 				//*****
