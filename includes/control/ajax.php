@@ -156,6 +156,7 @@ class WDGAjaxActions {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 		}
 		
+		$today_datetime = new DateTime();
 		$payment_status = array( 'publish', 'completed', 'pending' );
 		$purchases = edd_get_users_purchases( $user_id, -1, false, $payment_status );
 		foreach ( $purchases as $purchase_post ){
@@ -220,45 +221,72 @@ class WDGAjaxActions {
 				
 				// Création du tableau des prévisionnels par année
 				$investment_item[ 'rois_by_year' ] = array();
+				$year_end_dates = array();
 				$estimated_turnover_list = $campaign->estimated_turnover();
 				if ( !empty( $estimated_turnover_list ) ){
+					
+					// On démarre de la date de démarrage du contrat
+					$contract_start_date = new DateTime( $campaign->contract_start_date() );
+					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
+					
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$year_item = array(
 							'estimated_rois'	=> YPUIHelpers::display_number( round( $turnover * $roi_percent_full / 100 ), TRUE ) . ' &euro;',
-							'amount_rois'		=> 0,
-							'roi_items'	=> array()
+							'amount_rois_nb'	=> 0,
+							'amount_rois'		=> '0 &euro;',
+							'roi_items'			=> array()
 						);
 						array_push( $investment_item[ 'rois_by_year' ], $year_item );
+						
+					
+						// Pour trouver toutes les échéances qui ont lieu sur une année, on avance au 21, et d'une année
+						$contract_start_date->add( new DateInterval( 'P1Y' ) );
+						$temp_date = new DateTime();
+						$temp_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), $contract_start_date->format( 'd' ) );
+						array_push( $year_end_dates, $temp_date );
 					}
+					
 				}
 				
-				// Initialisation des décomptes d'année
-				$campaign_declararations_count_per_year = $campaign->get_declararations_count_per_year();
-				$current_year_index = 0;
-				$current_year_amount = 0;
-				$current_year_rois_count = 0;
 				
 				// - Déclarations à venir
 				$future_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 				if ( !empty( $future_roi_list ) ) {
 					foreach ( $future_roi_list as $roi_declaration ) {
+						
+						// On détermine sur quelle année ça se situe
+						$current_year_index = 0;
+						$decla_datetime = new DateTime( $roi_declaration->date_due );
+						
+						foreach ( $year_end_dates as $year_end_date ) {
+							if ( $decla_datetime < $year_end_date ) {
+								break;
+							}
+							
+							$current_year_index++;
+						}
 						// On a dépassé les années prévues par le prévisionnel, on en rajoute une au tableau
 						if ( !isset( $investment_item[ 'rois_by_year' ][ $current_year_index ] ) ) {
 							$year_item = array(
 								'estimated_rois'	=> '-',
+								'amount_rois_nb'	=> 0,
 								'amount_rois'		=> '0 &euro;',
 								'roi_items'			=> array()
 							);
 							array_push( $investment_item[ 'rois_by_year' ], $year_item );
+						
+							$contract_start_date->add( new DateInterval( 'P1Y' ) );
+							$temp_date = new DateTime();
+							$temp_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), $contract_start_date->format( 'd' ) );
+							array_push( $year_end_dates, $temp_date );
 						}
 
 						// Initialisation de la ligne avec les infos de la déclaration
-						$today_datetime = new DateTime();
-						$decla_datetime = new DateTime( $roi_declaration->date_due );
 						$roi_item = array(
-							'date'		=> date_i18n( 'F Y', strtotime( $roi_declaration->date_due ) ),
-							'amount'	=> '0 &euro;',
-							'status'	=> $roi_declaration->status,
+							'date_db'		=> $roi_declaration->date_due,
+							'date'			=> date_i18n( 'F Y', strtotime( $roi_declaration->date_due ) ),
+							'amount'		=> '0 &euro;',
+							'status'		=> $roi_declaration->status,
 							'status_str'	=> ''
 						);
 						switch ( $roi_declaration->status ) {
@@ -285,23 +313,22 @@ class WDGAjaxActions {
 						// Si il y a eu un versement de royalties, on récupère les infos du versement
 						if ( !empty( $roi_list ) ) {
 							foreach ( $roi_list as $roi ) {
-								$roi_datetime = new DateTime( $roi->date_transfer );
-								if ( $decla_datetime->format( 'm' ) == $roi_datetime->format( 'm' ) && $decla_datetime->format( 'Y' ) == $roi_datetime->format( 'Y' ) ) {
-									$current_year_amount += $roi->amount;
+								if ( $roi->id_declaration == $roi_declaration->id ) {
+									$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
+									$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 									$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
 								}
 							}
 						}
+						
 						array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
-
-						// Changement d'année
-						$current_year_rois_count++;
-						if ( $current_year_rois_count == $campaign_declararations_count_per_year ) {
-							$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $current_year_amount, TRUE ) . ' &euro;';
-							$current_year_rois_count = 0;
-							$current_year_amount = 0;
-							$current_year_index++;
-						}
+						
+						// A optimiser : ne pas trier à chaque fois qu'on ajoute, mais plutôt à la fin...
+						usort( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
+							$item1_date = new DateTime( $item1[ 'date_db' ] );
+							$item2_date = new DateTime( $item2[ 'date_db' ] );
+							return ( $item1_date > $item2_date );
+						} );
 					}
 				}
 				//*****
