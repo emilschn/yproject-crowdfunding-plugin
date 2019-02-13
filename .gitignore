@@ -7,6 +7,7 @@ files/certificate-roi-yearly-user/*
 files/fiscal-documents/*
 files/investment-check/*
 !files/investment-check/index.php
+files/tax-exemption/*
 includes/accounts/*
 includes/contracts/*
 !includes/contracts/index.php
