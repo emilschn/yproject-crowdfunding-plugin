@@ -218,15 +218,16 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		} else {
 			// Informations de base
 			$email = $this->getInputText( 'email' );
-			if ( !is_email( $email ) ) {
+			if ( !is_email( $email ) || email_exists( $email ) ) {
 				$error = array(
 					'code'		=> 'email',
 					'text'		=> __( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
 					'element'	=> 'email'
 				);
 				array_push( $feedback_errors, $error );
+			} else {
+				$WDGOrganization->set_email( $email );
 			}
-			$WDGOrganization->set_email( $email );
 			
 			$name = $this->getInputText( 'name' );
 			$WDGOrganization->set_name( $name );

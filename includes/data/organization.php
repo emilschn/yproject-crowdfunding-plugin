@@ -1767,7 +1767,13 @@ class WDGOrganization {
 			if ( !empty( $new_org_name ) ) {
 				$org_object->set_name( $new_org_name );
 			}
-			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
+			
+			$new_org_email = filter_input( INPUT_POST, 'org_email' );
+			if ( email_exists( $new_org_email ) || empty( $new_org_email ) ) {
+				$errors_edit->add( 'email-already', __( "L'e-mail est d&eacute;j&agrave; utilis&eacute.", 'yproject' ) );
+			} else {
+				$org_object->set_email( $new_org_email );
+			}
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 			$org_object->set_website(filter_input(INPUT_POST, 'org_website'));
