@@ -546,6 +546,7 @@ class WDGROIDeclaration {
 			foreach ( $investment_contracts as $investment_contract ) {
 				if ( $investment_contract->subscription_id == $investment_id ) {
 					$amount_received = $investment_contract->amount_received + $roi_amount;
+					$investment_contract->check_amount_received( $amount_received );
 					WDGWPREST_Entity_InvestmentContract::edit( $investment_contract->id, $amount_received );
 					break;
 				}

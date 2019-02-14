@@ -76,6 +76,15 @@ class WDGInvestmentContract {
 		WDGWPREST_Entity_InvestmentContract::create( $this );
 	}
 	
+	public function check_amount_received( $amount_received ) {
+		if ( $amount_received > $this->subscription_amount ) {
+			NotificationsEmails::roi_received_exceed_investment( $this->investor_id, $this->investor_type, $this->project_id );
+		}
+		if ( $this->maximum_to_receive > 0 && $amount_received > $this->maximum_to_receive ) {
+			NotificationsEmails::roi_received_exceed_maximum( $this->investor_id, $this->investor_type, $this->project_id );
+		}
+	}
+	
 	/**
 	 * Génère une liste de contrats d'investissement liés à une campagne
 	 * @param int $campaign_id
