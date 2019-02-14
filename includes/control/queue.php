@@ -275,5 +275,89 @@ class WDGQueue {
 /******************************************************************************/
 /* FIN VALIDATION PREINVESTISSEMENTS */
 /******************************************************************************/
+
+	
+/******************************************************************************/
+/* NOTIFICATIONS ADMIN LORSQUE ERREURS DOCUMENTS LEMON WAY */
+/******************************************************************************/
+	public static function add_document_refused_admin_notification( $user_id, $lemonway_posted_document_type, $lemonway_posted_document_status) {
+		$action = 'document_refused_notification';
+		$entity_id = $user_id;
+		$priority = 'date';
+		$date_next_dispatch = new DateTime();
+		// On programme la vérification 3 jours plus tard
+		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array(
+			'document_type'		=> $lemonway_posted_document_type,
+			'document_status'	=> $lemonway_posted_document_status
+		);
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_document_refused_notification( $user_id, $queued_action_params, $queued_action_id ) {
+		$lemonway_document = FALSE;
+		$user_name = FALSE;
+		$user_email = FALSE;
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$WDGOrga_wallet = new WDGOrganization( $user_id );
+			$user_name = $WDGOrga_wallet->get_name();
+			$user_email = $WDGOrga_wallet->get_email();
+			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGOrga_wallet->get_lemonway_id(), $queued_action_params[ 'document_type' ] );
+		} else {
+			$WDGUser_wallet = new WDGUser( $user_id );
+			$user_name = $WDGUser_wallet->get_firstname(). ' ' .$WDGUser_wallet->get_lastname();
+			$user_email = $WDGUser_wallet->get_email();
+			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGUser_wallet->get_lemonway_id(), $queued_action_params[ 'document_type' ] );
+		}
+		
+		// Vérifie si le statut du document n'a pas changé
+		if ( $lemonway_document->get_status() == $queued_action_params[ 'document_status' ] ) {
+			
+			//On vérifie si il y'a une action en cours :
+			$pending_actions = array();
+			// - investissement en attente
+			if ( !empty( $WDGOrga_wallet ) ) {
+				$pending_investments = $WDGOrga_wallet->get_pending_investments();
+			} else {
+				$pending_investments = $WDGUser_wallet->get_pending_investments();
+			}
+			if ( !empty( $pending_investments ) ) {
+				foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
+					$campaign = new ATCF_Campaign( $campaign_id );
+					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+						foreach ( $campaign_investments as $campaign_investment_id ) {
+							$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+							array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
+						}
+					}
+				}
+			}
+			// - évaluation avec intention d'investissement
+			if ( !empty( $WDGUser_wallet ) ) {
+				$votes_with_amount = $WDGUser_wallet->get_votes_with_amount();
+				foreach ( $votes_with_amount as $vote ) {
+					$campaign = new ATCF_Campaign( $vote->post_id );
+					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+						array_push( $pending_actions, 'Evaluation avec intention pour ' .$campaign->get_name(). ' (' .$vote->invest_sum. ' €)' );
+					}
+				}
+			}
+			
+			if ( !empty( $pending_actions ) ) {
+				NotificationsEmails::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions );
+			}
+		}
+		
+		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		
+	}
+
+	
+/******************************************************************************/
+/* FIN NOTIFICATIONS ADMIN LORSQUE ERREURS DOCUMENTS LEMON WAY */
+/******************************************************************************/
 	
 }

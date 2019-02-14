@@ -814,47 +814,23 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS KYC
     //*******************************************************
-	/**
-	 * @param WDGOrganization $orga
-	 */
-    public static function send_notification_kyc_accepted_user($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
-		
-		$object = "Vos documents ont été identifiés";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Suite à l'envoi de vos documents, votre identification auprès de notre partenaire de paiement Lemonway a été acceptée.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    public static function send_notification_kyc_accepted_admin($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
+    public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_kyc_refused_admin > ' . $user_email);
 		
 		$admin_email = get_option('admin_email');
-		$object = "Nouveaux documents identifiés";
-		$body_content = "Hello !<br />";
-		$body_content .= "Lemonway a validé l'identification de l'utilisateur ".$user->first_name." ".$user->last_name." (".$user->user_login.").<br /><br />";
-
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
-    }
-	
-    public static function send_notification_kyc_rejected_user($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_rejected_user > ' . $user->ID);
+		$object = "Investisseur à relancer !";
 		
-		$object = "Vos documents ont été refusés";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Suite à l'envoi de vos documents, notre partenaire de paiement Lemonway a refusé votre identification. Merci de nous contacter pour plus d'informations.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    public static function send_notification_kyc_rejected_admin($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
+		$body_content = "Hello !<br>";
+		$body_content .= "Lemon Way a refusé des documents depuis quelques jours, et l'utilisateur a quelques actions en attente.<br>";
+		$body_content .= "Il s'agit de " .$user_name. ".<br>";
+		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
 		
-		$admin_email = get_option('admin_email');
-		$object = "Nouveaux documents refusés";
-		$body_content = "Hello !<br />";
-		$body_content .= "Lemonway a refusé l'identification de l'utilisateur ".$user->first_name." ".$user->last_name." (".$user->user_login.").<br /><br />";
+		$body_content .= "Voici ses actions sur le site :<br>";
+		foreach ( $pending_actions as $pending_action ) {
+			$body_content .= "- " .$pending_action. "<br>";
+		}
 
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
     }
     //*******************************************************
     // FIN NOTIFICATIONS KYC

@@ -205,6 +205,10 @@ class LemonwayNotification {
 				if ( empty( $WDGOrga_wallet ) ) {
 					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
 						NotificationsAPI::kyc_refused( $user_email, $user_firstname );
+						// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
+						if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
+							WDGQueue::add_document_refused_admin_notification( $WDGUser_wallet->get_wpref(), $lemonway_posted_document_type, $lemonway_posted_document_status );
+						}
 					}
 				}
 			}

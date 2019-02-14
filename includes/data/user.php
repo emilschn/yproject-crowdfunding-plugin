@@ -608,6 +608,13 @@ class WDGUser {
 		return $this->organizations_list;
 	}
 	
+	public function get_votes_with_amount() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . "ypcf_project_votes";
+		$buffer = $wpdb->get_results( 'SELECT id, post_id, invest_sum FROM '.$table_name.' WHERE user_id = '.$this->get_wpref(). ' AND invest_sum > 0' );
+		return $buffer;
+	}
+	
 	public function has_voted_on_campaign( $campaign_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . "ypcf_project_votes";
