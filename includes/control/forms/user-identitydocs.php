@@ -195,7 +195,9 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				__( "Deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id2_file_path,
-				__( "Facultatif, selon le document que vous avez envoy&eacute; dans le premier champ.", 'yproject' ),
+				__( "Ce champ est facultatif, vous pouvez fournir :", 'yproject' ). '<br>'
+					. '- ' . __( "le verso de votre carte d'identit&eacute;, si vous n'avez transmis que le recto en premier document", 'yproject' ). '<br>'
+					. '- ' . __( "un seconde pi&egrave;ce d'identit&eacute; si vous n'avez pas de justificatif de domicile &agrave; votre nom (passeport, permis de conduire) ou que votre compte bancaire est tenu par une banque en ligne (ex : Compte Nickel)", 'yproject' ),
 				$field_status_id2
 			);
 		}
