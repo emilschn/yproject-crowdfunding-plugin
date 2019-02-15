@@ -150,12 +150,15 @@ class WDG_FiscalDocuments {
 			$amount_to_declare = min( $investment_user_rois_amount_year, $investment_user_rois_amount_total - $investment_amount );
 			// Si la somme des royalties a dépassé l'investissement initial
 			if ( $amount_to_declare > 0 ) {
-				$ifu_txt .= self::add_ifu_entity( $investment_entity_id, $fiscal_year );
-				$amount_to_declare_round = round( $amount_to_declare );
-				$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
-				$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_round );
-				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
-				$entity_index++;
+				$ifu_entity_txt = self::add_ifu_entity( $investment_entity_id, $fiscal_year );
+				if ( !empty( $ifu_entity_txt ) ) {
+					$ifu_txt .= $ifu_entity_txt;
+					$amount_to_declare_round = round( $amount_to_declare );
+					$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
+					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_round );
+					$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
+					$entity_index++;
+				}
 			}
 		}
 		
@@ -733,7 +736,7 @@ class WDG_FiscalDocuments {
 		for ( $i = 0; $i < 30; $i++ ) {
 			$buffer .= '9';
 		}
-		// T005 - 30 caractère : que des 9
+		// T005 - 2 caractère : code article
 		$buffer .= 'T0';
 		//**********************************************************************
 		
@@ -842,13 +845,29 @@ class WDG_FiscalDocuments {
 			'&#039;' => ' ',
 			'&DEG;' => ' ',
 			'&ATILDE;' => 'A',
+			'à' => 'A',
+			'À' => 'A',
 			'&AGRAVE;' => 'A',
+			'é' => 'E',
+			'É' => 'E',
 			'&EACUTE;' => 'E',
+			'è' => 'E',
+			'È' => 'E',
 			'&EGRAVE;' => 'E',
+			'ê' => 'E',
+			'Ê' => 'E',
 			'&ECIRC;' => 'E',
+			'ë' => 'E',
+			'Ë' => 'E',
 			'&EUML;' => 'E',
+			'î' => 'I',
+			'Î' => 'I',
 			'&ICIRC;' => 'I',
+			'ô' => 'O',
+			'Ô' => 'O',
 			'&OCIRC;' => 'O',
+			'ç' => 'C',
+			'Ç' => 'C',
 			'&CCEDIL;' => 'C'
 		);
 		$buffer = str_replace( array_keys( $search_replace ), array_values( $search_replace ), $buffer );
