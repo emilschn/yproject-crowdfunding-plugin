@@ -340,7 +340,7 @@ class WDG_FiscalDocuments {
 			$user_birthday_department_code = '00';
 			$user_birthday_town_code = '000';
 			$user_birthday_town_label = '';
-			$investment_entity_address = $WDGOrganization->get_address();
+			$investment_entity_address = self::clean_name( $WDGOrganization->get_address() );
 			$investment_entity_address_complement = '';
 			$investment_entity_address_number = $WDGOrganization->get_address_number();
 			global $address_number_complements_tax_format;
@@ -477,7 +477,7 @@ class WDG_FiscalDocuments {
 		// R128 - 4 caractères : numéro dans la voie
 		$buffer .= str_pad( $investment_entity_address_number, 4, '0', STR_PAD_LEFT );
 		// R129 - 1 caractère : B T Q C
-		$buffer .= $investment_entity_address_number_complement;
+		$buffer .= self::clean_size( $investment_entity_address_number_complement, 1, $investment_entity_id, 'bis' );
 		// R130 - 1 caractère : espace
 		$buffer .= ' ';
 		// R131 - 26 caractères : nature et nom de la voie
