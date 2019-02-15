@@ -412,20 +412,16 @@ class WDG_FiscalDocuments {
 			$investment_entity_address_post_code = $WDGUser->get_postal_code( TRUE );
 			$investment_entity_address_town = self::clean_town_name( strtoupper( $WDGUser->get_city() ) );
 			
-			if ( $investment_entity_address_town == 'FR' ) {
-				// Si Paris, Marseille ou Lyon, trouver l'arrondissement de la ville
-				if ( $investment_entity_address_town == 'PARIS' || $investment_entity_address_town == 'MARSEILLE' || $investment_entity_address_town == 'LYON' ) {
-					$investment_entity_address_town .= ' ' . substr( $investment_entity_address_post_code, 3, 2);
-				}
-				$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
-				if ( !empty( $entity_geo_info ) ) {
-					$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
-					$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
-				} else {
-					self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
-				}
+			// Si Paris, Marseille ou Lyon, trouver l'arrondissement de la ville
+			if ( $investment_entity_address_town == 'PARIS' || $investment_entity_address_town == 'MARSEILLE' || $investment_entity_address_town == 'LYON' ) {
+				$investment_entity_address_town .= ' ' . substr( $investment_entity_address_post_code, 3, 2);
+			}
+			$entity_geo_info = self::get_official_info_by_postal_code_and_town( $investment_entity_address_post_code, $investment_entity_address_town );
+			if ( !empty( $entity_geo_info ) ) {
+				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
+				$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
 			} else {
-				
+				self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
 			}
 			$investment_entity_period = '1231';
 		}
