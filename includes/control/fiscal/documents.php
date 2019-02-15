@@ -18,6 +18,8 @@ class WDG_FiscalDocuments {
 	
 	private static $tax_coef = 0.3;
 	
+	private static $declaration_type = 1;
+	
 	
 	/**************************************************************************/
 	/* ERREURS */
@@ -78,8 +80,12 @@ class WDG_FiscalDocuments {
 	 * Génère les fichiers de l'année précédente
 	 * @param int $campaign_id
 	 */
-	public static function generate( $campaign_id, $fiscal_year = 0 ) {
-		// On stocke d'un côté un résumé textuel lisible. CSV ?
+	public static function generate( $campaign_id, $fiscal_year = 0, $init = 1 ) {
+		// Récupération du type de déclarations (initiale ou rectificative)
+		if ( $init == 2 ) {
+			self::$declaration_type = 2;
+		}
+		// On stocke d'un côté un résumé textuel lisible. TODO CSV ?
 		$resume_txt = '';
 		// On stocke d'un autre côté le fichier txt de déclaration des IFUs
 		// Documentation de référence (2018) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_2018.pdf
@@ -211,7 +217,7 @@ class WDG_FiscalDocuments {
 		// D002 - 14 caractères : SIRET au 31/12
 		$buffer .= self::$wedogood_siret;
 		// D003 - 1 caractère : 1 si initiale ; 2 si rectificative
-		$buffer .= '1';
+		$buffer .= self::$declaration_type;
 		// D004 - 30 caractères : uniquement des 0
 		for ( $i = 0; $i < 30; $i++ ) {
 			$buffer .= '0';
@@ -275,7 +281,7 @@ class WDG_FiscalDocuments {
 		// R102/R202 - 14 caractères : SIRET déclarant au 31/12
 		$buffer .= self::$wedogood_siret;
 		// R103/R203 - 1 caractère : 1 si initiale ; 2 si rectificative
-		$buffer .= '1';
+		$buffer .= self::$declaration_type;
 		
 		$wallet_id = '';
 		if ( WDGOrganization::is_user_organization( $investment_entity_id ) ) {
@@ -726,7 +732,7 @@ class WDG_FiscalDocuments {
 		// T002 - 14 caractères : SIRET déclarant au 31/12
 		$buffer .= self::$wedogood_siret;
 		// T003 - 1 caractère : 1 si initiale ; 2 si rectificative
-		$buffer .= '1';
+		$buffer .= self::$declaration_type;
 		// T004 - 30 caractère : que des 9
 		for ( $i = 0; $i < 30; $i++ ) {
 			$buffer .= '9';

@@ -622,12 +622,17 @@ class WDGPostActions {
 	}
 	
 	public static function generate_yearly_fiscal_documents() {
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		
 		if ( !empty( $campaign_id ) ) {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_control( 'fiscal/documents' );
-			WDG_FiscalDocuments::generate( $campaign_id );
+			$fiscal_year = filter_input( INPUT_POST, 'fiscal_year' );
+			$init = filter_input( INPUT_POST, 'init' );
+			if ( empty( $init ) ) {
+				$init = 1;
+			}
+			WDG_FiscalDocuments::generate( $campaign_id, $fiscal_year, $init );
 			$url_return = wp_get_referer() . "#documents";
 			
 		} else {
