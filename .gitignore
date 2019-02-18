@@ -8,6 +8,7 @@ files/fiscal-documents/*
 files/investment-check/*
 !files/investment-check/index.php
 files/tax-exemption/*
+files/tax-documents/*
 includes/accounts/*
 includes/contracts/*
 !includes/contracts/index.php

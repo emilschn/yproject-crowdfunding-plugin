@@ -1221,6 +1221,15 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function has_tax_document_for_year( $year ) {
+		$buffer = FALSE;
+		$tax_exemption_filename = get_user_meta( $this->get_wpref(), 'tax_document_' .$year, TRUE );
+		if ( !empty( $tax_exemption_filename ) ) {
+			$buffer = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-documents/' .$year. '/' .$tax_exemption_filename );
+		}
+		return $buffer;
+	}
+	
 /*******************************************************************************
  * Gestion RIB
 *******************************************************************************/
