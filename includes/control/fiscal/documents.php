@@ -122,7 +122,7 @@ class WDG_FiscalDocuments {
 		}
 		
 		// Ensuite on parcourt par utilisateur pour regrouper les montants
-		$entity_index = 1;
+		$entity_index = 0;
 		foreach ( $investments_items_by_user as $investment_user_id => $investments_for_user ) {
 			$investment_amount = 0;
 			$investment_entity_id = $investment_user_id;
@@ -151,12 +151,12 @@ class WDG_FiscalDocuments {
 			// Si la somme des royalties a dépassé l'investissement initial
 			if ( $amount_to_declare > 0 ) {
 				$ifu_entity_txt = self::add_ifu_entity( $investment_entity_id, $fiscal_year );
+				$amount_to_declare_round = round( $amount_to_declare );
+				$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
+				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
 				if ( !empty( $ifu_entity_txt ) ) {
 					$ifu_txt .= $ifu_entity_txt;
-					$amount_to_declare_round = round( $amount_to_declare );
-					$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
 					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_round );
-					$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
 					$entity_index++;
 				}
 			}
