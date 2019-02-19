@@ -350,9 +350,47 @@ class WDGQueue {
 			}
 		}
 		
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+	}
+
+	
+/******************************************************************************/
+/* FIN NOTIFICATIONS ADMIN LORSQUE ERREURS DOCUMENTS LEMON WAY */
+/******************************************************************************/
+
+	
+/******************************************************************************/
+/* NOTIFICATIONS CONSEILS PRIORITAIRES CAMPAGNE */
+/******************************************************************************/
+	public static function add_campaign_advice_notification( $campaign_id ) {
+		$action = 'campaign_advice_notification';
+		$entity_id = $campaign_id;
+		$priority = 'date';
+		$date_next_dispatch = new DateTime();
+		// On programme le prochain envoi 1 jour plus tard
+		$date_next_dispatch->add( new DateInterval( 'P1D' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_campaign_advice_notification( $campaign_id, $queued_action_params, $queued_action_id ) {
 		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
 		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
-		
+
+		if ( !empty( $campaign_id ) ) {
+			
+			$campaign = new ATCF_Campaign( $campaign_id );
+			// Pour l'instant, on gère que les campagnes en collecte
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+				// Envoi des notifications
+				WDGCampaignInvestments::advice_notification( $campaign );
+				// On continue d'envoyer des notifications
+				self::add_campaign_advice_notification( $campaign_id );
+			}
+			
+		}
 	}
 
 	
