@@ -589,6 +589,7 @@ class WDGAjaxActions {
 	public static function save_project_infos(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
+		$current_wdg_user = WDGUser::current();
 		$errors = array();
 		$success = array();
 
@@ -675,30 +676,32 @@ class WDGAjaxActions {
 		}
 		$success[ 'new_skip_in_stats' ] = 1;
 
-		//Catégories du projet
-		$new_project_categories = array();
-		if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
-		$new_project_activities = array();
-		if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
-		$new_project_types = array();
-		if ( isset( $_POST["new_project_types"] ) ) $new_project_types = $_POST["new_project_types"];
-		$new_project_partners = array();
-		if ( isset( $_POST["new_project_partners"] ) ) $new_project_partners = $_POST["new_project_partners"];
-		$new_project_tousnosprojets = array();
-		if ( isset( $_POST["new_project_tousnosprojets"] ) ) $new_project_tousnosprojets = $_POST["new_project_tousnosprojets"];
-		$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types, $new_project_partners, $new_project_tousnosprojets );
-		$cat_ids = array_map( 'intval', $cat_ids );
-		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
-		$campaign->set_api_data( 'type', $campaign->get_categories_by_type( 'types', TRUE ) );
-		$campaign->set_api_data( 'category', $campaign->get_categories_by_type( 'activities', TRUE ) );
-		$campaign->set_api_data( 'impacts', $campaign->get_categories_by_type( 'categories', TRUE ) );
-		$campaign->set_api_data( 'partners', $campaign->get_categories_by_type( 'partners', TRUE ) );
-		$campaign->set_api_data( 'tousnosprojets', $campaign->get_categories_by_type( 'tousnosprojets', TRUE ) );
-		$success["new_project_categories"] = 1;
-		$success["new_project_activities"] = 1;
-		$success["new_project_types"] = 1;
-		$success["new_project_partners"] = 1;
-		$success["new_project_tousnosprojets"] = 1;
+		if ( $current_wdg_user->is_admin() ) {
+			//Catégories du projet
+			$new_project_categories = array();
+			if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
+			$new_project_activities = array();
+			if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
+			$new_project_types = array();
+			if ( isset( $_POST["new_project_types"] ) ) $new_project_types = $_POST["new_project_types"];
+			$new_project_partners = array();
+			if ( isset( $_POST["new_project_partners"] ) ) $new_project_partners = $_POST["new_project_partners"];
+			$new_project_tousnosprojets = array();
+			if ( isset( $_POST["new_project_tousnosprojets"] ) ) $new_project_tousnosprojets = $_POST["new_project_tousnosprojets"];
+			$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types, $new_project_partners, $new_project_tousnosprojets );
+			$cat_ids = array_map( 'intval', $cat_ids );
+			wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
+			$campaign->set_api_data( 'type', $campaign->get_categories_by_type( 'types', TRUE ) );
+			$campaign->set_api_data( 'category', $campaign->get_categories_by_type( 'activities', TRUE ) );
+			$campaign->set_api_data( 'impacts', $campaign->get_categories_by_type( 'categories', TRUE ) );
+			$campaign->set_api_data( 'partners', $campaign->get_categories_by_type( 'partners', TRUE ) );
+			$campaign->set_api_data( 'tousnosprojets', $campaign->get_categories_by_type( 'tousnosprojets', TRUE ) );
+			$success["new_project_categories"] = 1;
+			$success["new_project_activities"] = 1;
+			$success["new_project_types"] = 1;
+			$success["new_project_partners"] = 1;
+			$success["new_project_tousnosprojets"] = 1;
+		}
 
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));

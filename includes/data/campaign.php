@@ -1447,6 +1447,33 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function get_subcategories_hashtags() {
+		$buffer = '';
+		
+		$categories_env_list = $this->get_categories_by_type( 'environnemental' );
+		if ( $categories_env_list ) {
+			foreach ( $categories_env_list as $category ) {
+				$buffer .= '<span class="hashtag-environment">#' . strtolower( $category->name ) . '</span> ';
+			}
+		}
+		
+		$categories_soc_list = $this->get_categories_by_type( 'social' );
+		if ( $categories_soc_list ) {
+			foreach ( $categories_soc_list as $category ) {
+				$buffer .= '<span class="hashtag-social">#' . strtolower( $category->name ) . '</span> ';
+			}
+		}
+		
+		$categories_eco_list = $this->get_categories_by_type( 'economique' );
+		if ( $categories_eco_list ) {
+			foreach ( $categories_eco_list as $category ) {
+				$buffer .= '<span class="hashtag-economy">#' . strtolower( $category->name ) . '</span> ';
+			}
+		}
+		
+		return $buffer;
+	}
+	
 	public function is_positive_savings() {
 		return $this->has_category_slug( 'types', 'epargne-positive' );
 	}
