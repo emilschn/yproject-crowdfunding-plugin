@@ -119,9 +119,11 @@ class WDGCampaignInvestments {
 		global $wpdb;
 		$table_vote = $wpdb->prefix . "ypcf_project_votes";
 		$payments_data = $campaign->payments_data();
-		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum FROM ".$table_vote." WHERE post_id = ".$campaign_id );
+		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum FROM ".$table_vote." WHERE post_id = ".$campaign->ID );
 		foreach ( $list_user_voters as $item_vote ) {
 			$contact_list[ $item_vote->user_id ] = array(
+				'entity_id'		=> $item_vote->user_id,
+				'entity_str'	=> $entity_str,
 				'vote_sum'		=> $item_vote->invest_sum,
 				'invest_sum'	=> 0,
 				'skip_contact'	=> FALSE
@@ -164,6 +166,7 @@ class WDGCampaignInvestments {
 			if ( $item_invest[ 'status' ] == 'publish' ) {
 				if ( !isset( $contact_list[ $item_invest[ 'user' ] ] ) ) {
 					$contact_list[ $item_invest[ 'user' ] ] = array(
+						'entity_id'		=> $item_invest[ 'user' ],
 						'entity_str'	=> $entity_str,
 						'vote_sum'		=> 0,
 						'invest_sum'	=> $item_invest[ 'amount' ],
@@ -178,6 +181,7 @@ class WDGCampaignInvestments {
 		}
 
 		// Tri de la liste de contacts par différence plus forte entre intention et investissement
+		// Attention : perte du système clé => valeur pour un tableau ordonné classique
 		usort( $contact_list, function ( $item1, $item2 ) {
 			$item1_diff = $item1[ 'vote_sum' ] - $item1[ 'invest_sum' ];
 			$item2_diff = $item2[ 'vote_sum' ] - $item2[ 'invest_sum' ];
@@ -206,12 +210,13 @@ class WDGCampaignInvestments {
 
 		// Priorité numéro 3 : faire venir les évaluateurs avec une grosse intention d'investissement mais ayant investi moins
 		if ( !empty( $contact_list ) ) {
-			$buffer_email_content .= "<b>Priorité 3 : évaluations avec de bonnes intentions et de moins bons investissements</b><br>";
-			foreach ( $contact_list as $contact_id => $contact_info ) {
+			$prio3_content = "";
+			foreach ( $contact_list as $contact_info ) {
 				if ( $contact_info[ 'vote_sum' ] > $contact_info[ 'invest_sum' ] && !$contact_info[ 'skip_contact' ] ) {
 					$entity_str = $contact_info[ 'entity_str' ];
 					$entity_is_registered = FALSE;
 					if ( empty( $entity_str ) ) {
+						$contact_id = $contact_info[ 'entity_id' ];
 						if ( WDGOrganization::is_user_organization( $contact_id ) ) {
 							$WDGOrganization = new WDGOrganization( $contact_id );
 							$entity_str = $WDGOrganization->get_name(). ' (' .$WDGOrganization->get_email(). ')';
@@ -223,10 +228,15 @@ class WDGCampaignInvestments {
 						}
 					}
 					$registration_str = ( $entity_is_registered ) ? "Déjà authentifié" : "Pas encore authentifié";
-					$buffer_email_content .= "- " .$entity_str. " --> Intention de " .$contact_info[ 'vote_sum' ]." € et investissement de " .$contact_info[ 'invest_sum' ]." € (" .$registration_str. ")<br>";
+					$prio3_content .= "- " .$entity_str. " --> Intention de " .$contact_info[ 'vote_sum' ]." € et investissement de " .$contact_info[ 'invest_sum' ]." € (" .$registration_str. ")<br>";
 				}
 			}
-			$buffer_email_content .= "<br><br>";
+			
+			if ( !empty( $prio3_content ) ) {
+				$buffer_email_content .= "<b>Priorité 3 : évaluations avec de bonnes intentions et de moins bons investissements</b><br>";
+				$buffer_email_content .= $prio3_content;
+				$buffer_email_content .= "<br><br>";
+			}
 		}
 
 		
