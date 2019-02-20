@@ -10,7 +10,7 @@ class NotificationsAPI {
     //*******************************************************
     // ENVOI ACTUALITE DE PROJET
     //*******************************************************
-	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $news_name, $news_content ) {
+	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $project_id, $news_name, $news_content ) {
 		ypcf_debug_log( 'NotificationsAPI::new_project_news > ' . $recipients );
 		$id_template = '156';
 		$project_link_clean = str_replace( 'https://', '', $project_link );
@@ -36,10 +36,11 @@ class NotificationsAPI {
 				$index++;
 				if ( $index == 90 ) {
 					$parameters = array(
-						'tool'		=> 'sendinblue',
-						'template'	=> $id_template,
-						'recipient'	=> $recipients,
-						'options'	=> json_encode( $options )
+						'tool'			=> 'sendinblue',
+						'template'		=> $id_template,
+						'recipient'		=> $recipients,
+						'id_project'	=> $project_id,
+						'options'		=> json_encode( $options )
 					);
 					$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 					$recipients = '';
@@ -53,10 +54,11 @@ class NotificationsAPI {
 		
 		// On envoie de toute façon au restant des investisseurs à la fin
 		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $recipients,
-			'options'	=> json_encode( $options )
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipients,
+			'id_project'	=> $project_id,
+			'options'		=> json_encode( $options )
 		);
 		$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		
@@ -69,7 +71,7 @@ class NotificationsAPI {
     //*******************************************************
     // ENVOI ACTUALITE DE PROJET
     //*******************************************************
-	public static function project_mail( $recipient, $replyto_mail, $user_name, $project_name, $project_link, $news_name, $news_content ) {
+	public static function project_mail( $recipient, $replyto_mail, $user_name, $project_name, $project_link, $project_id, $news_name, $news_content ) {
 		ypcf_debug_log( 'NotificationsAPI::project_mail > ' . $recipient );
 		$id_template = '184';
 		$project_link = str_replace( 'https://', '', $project_link );
@@ -82,10 +84,11 @@ class NotificationsAPI {
 			'CONTENU_ACTU'			=> $news_content
 		);
 		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $recipient,
-			'options'	=> json_encode( $options )
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_id,
+			'options'		=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
@@ -140,7 +143,7 @@ class NotificationsAPI {
     //*******************************************************
     // FIN NOTIFICATIONS KYC - RIB VALIDE
     //*******************************************************
-	//
+	
     //*******************************************************
     // NOTIFICATIONS KYC - EN COURS DE VALIDATION
     //*******************************************************
@@ -160,7 +163,7 @@ class NotificationsAPI {
     //*******************************************************
     // FIN NOTIFICATIONS KYC - EN COURS DE VALIDATION
     //*******************************************************
-	//
+	
     //*******************************************************
     // NOTIFICATIONS KYC - REFUSES
     //*******************************************************
@@ -180,7 +183,7 @@ class NotificationsAPI {
     //*******************************************************
     // FIN NOTIFICATIONS KYC - REFUSES
     //*******************************************************
-	//
+	
     //*******************************************************
     // NOTIFICATIONS KYC - VALIDES
     //*******************************************************
@@ -208,7 +211,7 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************
-	public static function investment_error( $recipient, $name, $amount, $project_name, $lemonway_reason, $investment_link ) {
+	public static function investment_error( $recipient, $name, $amount, $project_name, $project_id, $lemonway_reason, $investment_link ) {
 		$id_template = '175';
 		$options = array(
 			'NOM'					=> $name,
@@ -218,10 +221,11 @@ class NotificationsAPI {
 			'LIEN_INVESTISSEMENT'	=> $investment_link,
 		);
 		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $recipient,
-			'options'	=> json_encode( $options )
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_id,
+			'options'		=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
@@ -334,62 +338,11 @@ class NotificationsAPI {
     //*******************************************************
     // FIN - NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
-	//**************************************************************************
-	// FIN - Déclarations
-	//**************************************************************************
 	
 	
 	//**************************************************************************
 	// Versements
 	//**************************************************************************
-    //*******************************************************
-    // NOTIFICATIONS VERSEMENT AVEC ROYALTIES
-    //*******************************************************
-	/*
-	public static function roi_transfer_with_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message, $replyto_mail ) {
-		$id_template = '140';
-		$options = array(
-			'replyto'							=> $replyto_mail,
-			'NOM_UTILISATEUR'					=> $name,
-			'NOM_PROJET'						=> $project_name,
-			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
-			'MESSAGE_VERSEMENT_ENTREPRENEUR'	=> $declaration_message,
-		);
-		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $recipient,
-			'options'	=> json_encode( $options )
-		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-	}
-	 * 
-	 */
-			
-    //*******************************************************
-    // NOTIFICATIONS VERSEMENT SANS ROYALTIES
-    //*******************************************************
-	/*
-	public static function roi_transfer_without_royalties( $recipient, $name, $project_name, $adjustment_message, $declaration_message, $replyto_mail ) {
-		$id_template = '167';
-		$options = array(
-			'replyto'							=> $replyto_mail,
-			'NOM_UTILISATEUR'					=> $name,
-			'NOM_PROJET'						=> $project_name,
-			'MESSAGE_VERSEMENT_AJUSTEMENT'		=> $adjustment_message,
-			'MESSAGE_VERSEMENT_ENTREPRENEUR'	=> $declaration_message,
-		);
-		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $recipient,
-			'options'	=> json_encode( $options )
-		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-	}
-	 * 
-	 */
-	
     //*******************************************************
     // NOTIFICATIONS VERSEMENT AVEC ROYALTIES PLUSIEURS PROJETS
     //*******************************************************
@@ -427,9 +380,5 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
-	
-	//**************************************************************************
-	// FIN - Versements
-	//**************************************************************************
 	
 }

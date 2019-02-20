@@ -58,7 +58,7 @@ class WDGFormProjects {
 				array_push( $recipients, get_userdata( $item->user_id )->user_email );
 			}
 			$recipients_string = implode( ',', $recipients );
-			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $_POST[ 'posttitle' ], $_POST[ 'postcontent' ] );
+			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign_id, $_POST[ 'posttitle' ], $_POST[ 'postcontent' ] );
 		}
 	}
 	
