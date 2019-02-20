@@ -86,6 +86,7 @@ class WDGPostActions {
         global $wpdb;
         $campaign_id = sanitize_text_field( filter_input( INPUT_POST, 'campaign_id' ) );
 		$post_campaign = get_post( $campaign_id );
+		$campaign = new ATCF_Campaign( $campaign_id );
 		$author_user = get_user_by( 'ID', $post_campaign->post_author );
         $mail_title = sanitize_text_field( filter_input( INPUT_POST, 'mail_title' ) );
         $mail_content = nl2br( filter_input( INPUT_POST, 'mail_content' ) );
@@ -111,7 +112,7 @@ class WDGPostActions {
 
 				$this_mail_content = WDGFormProjects::build_mail_text( $mail_content, $mail_title, $campaign_id, $user_data );
 
-				NotificationsAPI::project_mail( $to, $author_user->user_email, $user->first_name, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign_id, $mail_title, $this_mail_content['body'] );
+				NotificationsAPI::project_mail( $to, $author_user->user_email, $user->first_name, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
 			}
         }
 

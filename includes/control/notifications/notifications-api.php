@@ -3,6 +3,28 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class NotificationsAPI {
+	
+	public static $description_str_by_template_id = array(
+		'156' => "Actualité",
+		'184' => "Mail via liste contact",
+		'181' => "Inscription",
+		'311' => "KYC - RIB validé",
+		'322' => "KYC - Doc en cours de validation",
+		'323' => "KYC - Doc refusé",
+		'324' => "KYC - Wallet validé",
+		'175' => "Erreur d'investissement",
+		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
+		'115' => "Déclarations - Rappel J-9 (sans prélèvement)",
+		'119' => "Déclarations - Rappel J-2 (avec prélèvement)",
+		'116' => "Déclarations - Rappel J-2 (sans prélèvement)",
+		'121' => "Déclarations - Rappel J (avec prélèvement)",
+		'120' => "Déclarations - Rappel J (sans prélèvement)",
+		'127' => "Déclaration faite avec CA",
+		'150' => "Déclaration faite sans CA",
+		'139' => "Versement de royalties - résumé quotidien",
+		'522' => "Versement de royalties - transfert avec message"
+	);
+	
 
 	//**************************************************************************
 	// Campagne
@@ -10,7 +32,7 @@ class NotificationsAPI {
     //*******************************************************
     // ENVOI ACTUALITE DE PROJET
     //*******************************************************
-	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $project_id, $news_name, $news_content ) {
+	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $project_api_id, $news_name, $news_content ) {
 		ypcf_debug_log( 'NotificationsAPI::new_project_news > ' . $recipients );
 		$id_template = '156';
 		$project_link_clean = str_replace( 'https://', '', $project_link );
@@ -39,7 +61,7 @@ class NotificationsAPI {
 						'tool'			=> 'sendinblue',
 						'template'		=> $id_template,
 						'recipient'		=> $recipients,
-						'id_project'	=> $project_id,
+						'id_project'	=> $project_api_id,
 						'options'		=> json_encode( $options )
 					);
 					$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
@@ -57,7 +79,7 @@ class NotificationsAPI {
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
 			'recipient'		=> $recipients,
-			'id_project'	=> $project_id,
+			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
 		$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
@@ -71,7 +93,7 @@ class NotificationsAPI {
     //*******************************************************
     // ENVOI ACTUALITE DE PROJET
     //*******************************************************
-	public static function project_mail( $recipient, $replyto_mail, $user_name, $project_name, $project_link, $project_id, $news_name, $news_content ) {
+	public static function project_mail( $recipient, $replyto_mail, $user_name, $project_name, $project_link, $project_api_id, $news_name, $news_content ) {
 		ypcf_debug_log( 'NotificationsAPI::project_mail > ' . $recipient );
 		$id_template = '184';
 		$project_link = str_replace( 'https://', '', $project_link );
@@ -87,7 +109,7 @@ class NotificationsAPI {
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
 			'recipient'		=> $recipient,
-			'id_project'	=> $project_id,
+			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
@@ -211,7 +233,7 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************
-	public static function investment_error( $recipient, $name, $amount, $project_name, $project_id, $lemonway_reason, $investment_link ) {
+	public static function investment_error( $recipient, $name, $amount, $project_name, $project_api_id, $lemonway_reason, $investment_link ) {
 		$id_template = '175';
 		$options = array(
 			'NOM'					=> $name,
@@ -224,7 +246,7 @@ class NotificationsAPI {
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
 			'recipient'		=> $recipient,
-			'id_project'	=> $project_id,
+			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
