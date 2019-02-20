@@ -315,4 +315,9 @@ class WDGWPREST_Entity_Project {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/investment-contracts' );
 		return $result_obj;
 	}
+	
+	public static function get_emails( $project_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/emails' );
+		return $result_obj;
+	}
 }
