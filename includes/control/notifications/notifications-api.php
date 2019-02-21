@@ -22,7 +22,8 @@ class NotificationsAPI {
 		'127' => "Déclaration faite avec CA",
 		'150' => "Déclaration faite sans CA",
 		'139' => "Versement de royalties - résumé quotidien",
-		'522' => "Versement de royalties - transfert avec message"
+		'522' => "Versement de royalties - transfert avec message",
+		'603' => "Investissement - Demande d'authentification"
 	);
 	
 
@@ -251,9 +252,25 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
+	
     //*******************************************************
-    // FIN NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+    // NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION
     //*******************************************************
+	public static function investment_authentication_needed( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '603';
+		$options = array(
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
 
 
 	//**************************************************************************
