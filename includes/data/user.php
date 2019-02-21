@@ -1674,17 +1674,21 @@ class WDGUser {
 	 * Détermine si l'organisation a envoyé tous ses documents en local sur WDG
 	 */
 	public function has_sent_all_documents() {
-		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		$is_id_doc_sent = FALSE;
+		$nb_docs_sent = 0;
+		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_home, WDGKYCFile::$type_id_2 );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
 			$current_document = $document_filelist[0];
-			if ( !isset($current_document) ) {
-				$buffer = FALSE;
-				break;
+			if ( isset($current_document) ) {
+				$nb_docs_sent++;
+				if ( $document_type == WDGKYCFile::$type_id ) {
+					$is_id_doc_sent = true;
+				}
 			}
 		}
-		return $buffer;
+		
+		return ( $nb_docs_sent > 1 && $is_id_doc_sent );
 	}
 	
 	/**
