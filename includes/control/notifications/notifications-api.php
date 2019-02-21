@@ -12,6 +12,7 @@ class NotificationsAPI {
 		'322' => "KYC - Doc en cours de validation",
 		'323' => "KYC - Doc refusé",
 		'324' => "KYC - Wallet validé",
+		'605' => "KYC - Wallet validé et investissement en attente",
 		'175' => "Erreur d'investissement",
 		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
 		'115' => "Déclarations - Rappel J-9 (sans prélèvement)",
@@ -139,9 +140,6 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
-    //*******************************************************
-    // FIN NOTIFICATIONS KYC - RIB VALIDE
-    //*******************************************************
 
 
 	//**************************************************************************
@@ -163,9 +161,6 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
-    //*******************************************************
-    // FIN NOTIFICATIONS KYC - RIB VALIDE
-    //*******************************************************
 	
     //*******************************************************
     // NOTIFICATIONS KYC - EN COURS DE VALIDATION
@@ -183,9 +178,6 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
-    //*******************************************************
-    // FIN NOTIFICATIONS KYC - EN COURS DE VALIDATION
-    //*******************************************************
 	
     //*******************************************************
     // NOTIFICATIONS KYC - REFUSES
@@ -203,9 +195,6 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
-    //*******************************************************
-    // FIN NOTIFICATIONS KYC - REFUSES
-    //*******************************************************
 	
     //*******************************************************
     // NOTIFICATIONS KYC - VALIDES
@@ -223,9 +212,25 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
+	
     //*******************************************************
-    // FIN NOTIFICATIONS KYC - VALIDES
+    // NOTIFICATIONS KYC - VALIDES ET INVESTISSEMENT EN ATTENTE
     //*******************************************************
+	public static function kyc_authentified_and_pending_investment( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '605';
+		$options = array(
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
 
 
 	//**************************************************************************
