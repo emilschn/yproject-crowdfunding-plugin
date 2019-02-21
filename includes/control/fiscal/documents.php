@@ -748,9 +748,10 @@ class WDG_FiscalDocuments {
 		}
 		$buffer .= $entity_index;
 		// T007 - 8 caractères : Nombre d'enregistrements R2
-		for ( $i = 0; $i < 8; $i++ ) {
+		for ( $i = strlen( $entity_index ); $i < 8; $i++ ) {
 			$buffer .= '0';
 		}
+		$buffer .= $entity_index;
 		// T008 - 8 caractères : Nombre d'enregistrements R3
 		for ( $i = 0; $i < 8; $i++ ) {
 			$buffer .= '0';
