@@ -25,7 +25,8 @@ class NotificationsAPI {
 		'150' => "Déclaration faite sans CA",
 		'139' => "Versement de royalties - résumé quotidien",
 		'522' => "Versement de royalties - transfert avec message",
-		'603' => "Investissement - Demande d'authentification"
+		'603' => "Investissement - Demande d'authentification",
+		'604' => "Investissement - Demande d'authentification - Rappel"
 	);
 	
 
@@ -283,6 +284,25 @@ class NotificationsAPI {
     //*******************************************************
 	public static function investment_authentication_needed( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '603';
+		$options = array(
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION - RAPPEL
+    //*******************************************************
+	public static function investment_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '604';
 		$options = array(
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
