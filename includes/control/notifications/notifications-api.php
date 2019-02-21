@@ -6,7 +6,7 @@ class NotificationsAPI {
 	
 	public static $description_str_by_template_id = array(
 		'156' => "Actualité",
-		'184' => "Mail via liste contact",
+		'184' => "Mail via liste de contacts",
 		'181' => "Inscription",
 		'311' => "KYC - RIB validé",
 		'322' => "KYC - Doc en cours de validation",
