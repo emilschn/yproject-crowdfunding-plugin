@@ -329,6 +329,7 @@ class WDGROIDeclaration {
 		
 		$this->file_list = json_encode( $file_list );
 		
+		NotificationsEmails::turnover_declaration_adjustment_file_sent( $this->id );
 		$this->update();
 		$this->save();
 	}
