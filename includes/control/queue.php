@@ -300,20 +300,22 @@ class WDGQueue {
 		$lemonway_document = FALSE;
 		$user_name = FALSE;
 		$user_email = FALSE;
+		$queued_action_param = $queued_action_params[ 0 ];
+		
 		if ( WDGOrganization::is_user_organization( $user_id ) ) {
 			$WDGOrga_wallet = new WDGOrganization( $user_id );
 			$user_name = $WDGOrga_wallet->get_name();
 			$user_email = $WDGOrga_wallet->get_email();
-			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGOrga_wallet->get_lemonway_id(), $queued_action_params[ 'document_type' ] );
+			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGOrga_wallet->get_lemonway_id(), $queued_action_param[ 'document_type' ] );
 		} else {
 			$WDGUser_wallet = new WDGUser( $user_id );
 			$user_name = $WDGUser_wallet->get_firstname(). ' ' .$WDGUser_wallet->get_lastname();
 			$user_email = $WDGUser_wallet->get_email();
-			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGUser_wallet->get_lemonway_id(), $queued_action_params[ 'document_type' ] );
+			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGUser_wallet->get_lemonway_id(), $queued_action_param[ 'document_type' ] );
 		}
 		
 		// Vérifie si le statut du document n'a pas changé
-		if ( $lemonway_document->get_status() == $queued_action_params[ 'document_status' ] ) {
+		if ( $lemonway_document->get_status() == $queued_action_param[ 'document_status' ] ) {
 			
 			//On vérifie si il y'a une action en cours :
 			$pending_actions = array();
