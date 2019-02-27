@@ -868,14 +868,16 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$org_name = $this->getInputText( 'org_name' );
 		$WDGOrganization->set_name( $org_name );
 		$org_email = $this->getInputText( 'org_email' );
-		if ( !is_email( $org_email ) || email_exists( $org_email ) ) {
-			$this->addPostError(
-				'org-invest-error',
-				__( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
-				'general'
-			);
-		} else {
-			$WDGOrganization->set_email( $org_email );
+		if ( $org_email != $WDGOrganization->get_email() ) {
+			if ( !is_email( $org_email ) || email_exists( $org_email ) ) {
+				$this->addPostError(
+					'org-invest-error',
+					__( "Cette adresse e-mail d'organisation n'est pas valide.", 'yproject' ),
+					'general'
+				);
+			} else {
+				$WDGOrganization->set_email( $org_email );
+			}
 		}
 		$org_website = $this->getInputText( 'org_website' );
 		$WDGOrganization->set_website( $org_website );
