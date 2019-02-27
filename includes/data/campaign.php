@@ -1903,6 +1903,20 @@ class ATCF_Campaign {
 	    return $buffer;
 	}
 	
+	public function get_followers() {
+		global $wpdb;
+		$table_jycrois = $wpdb->prefix . "jycrois";
+		$list_user_follow = $wpdb->get_col( "SELECT DISTINCT user_id FROM ".$table_jycrois." WHERE subscribe_news = 1 AND campaign_id = ".$this->ID. " GROUP BY user_id" );
+		return $list_user_follow;
+	}
+	
+	public function get_voters() {
+		global $wpdb;
+		$table_vote = $wpdb->prefix . "ypcf_project_votes";
+		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, rate_project, advice FROM ".$table_vote." WHERE post_id = ".$this->ID );
+		return $list_user_voters;
+	}
+	
 	public function nb_voters() {
 	    global $wpdb;
 	    $table_name = $wpdb->prefix . "ypcf_project_votes";

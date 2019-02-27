@@ -28,7 +28,8 @@ class WDGPostActions {
         self::add_action("generate_contract_files");
         self::add_action( 'generate_yearly_fiscal_documents' );
         self::add_action("upload_contract_files");
-        self::add_action("send_project_contract_modification_notification");
+        self::add_action( 'send_project_contract_modification_notification' );
+        self::add_action( 'send_project_preinvestment_notifications' );
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
         self::add_action("post_confirm_check");
@@ -743,6 +744,83 @@ class WDGPostActions {
 		}
 		
 		$url_return = wp_get_referer() . "#contracts";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function send_project_preinvestment_notifications() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$input_testimony = filter_input( INPUT_POST, 'testimony' );
+		$input_image_url = filter_input( INPUT_POST, 'image_url' );
+		$input_image_description = filter_input( INPUT_POST, 'image_description' );
+		
+		if ( !empty( $campaign_id ) && !empty( $input_testimony ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			
+			$user_list_by_id = array();
+			
+			// Récupération des followers
+			$followers_list_by_id = array();
+			$list_user_followers = $campaign->get_followers();
+			foreach ( $list_user_followers as $db_item_follower_user_id ) {
+				$followers_list_by_id[ $db_item_follower_user_id ] = 1;
+			}
+			
+			// Récupération des investisseurs
+			$investors_list_by_id = array();
+			$list_user_investors = $campaign->payments_data();
+			foreach ( $list_user_investors as $item_investment ) {
+				$investors_list_by_id[ $item_investment[ 'user' ] ] = 1;
+			}
+			
+			// On parcourt la liste des évaluateurs
+			$list_user_voters = $campaign->get_voters();
+			foreach ( $list_user_voters as $db_item_vote ) {
+				if (
+					// On ne prend que des notes d'au moins 3
+					$db_item_vote->rate_project >= 3
+					// On ne prend que ceux qui suivent toujours le projet
+					&& isset( $followers_list_by_id[ $db_item_vote->user_id ] )
+					// On ne prend que ceux qui n'ont pas investi
+					&& !isset( $investors_list_by_id[ $db_item_vote->user_id ] ) ) {
+					
+					if ( !isset( $user_list_by_id[ $db_item_vote->user_id ] ) ) {
+						$user_list_by_id[ $db_item_vote->user_id ] = array();
+					}
+					$user_list_by_id[ $db_item_vote->user_id ][ 'vote_amount' ] = $db_item_vote->invest_sum;
+				}
+			}
+
+			foreach ( $user_list_by_id as $user_id => $vote_data ) {
+				if ( WDGOrganization::is_user_organization( $user_id ) ) {
+					$WDGOrganization = new WDGOrganization( $user_id );
+					$recipient_email = $WDGOrganization->get_email();
+					$recipient_name = $WDGOrganization->get_name();
+				} else {
+					$WDGUser = new WDGUser( $user_id );
+					$recipient_email = $WDGUser->get_email();
+					$recipient_name = $WDGUser->get_firstname();
+				}
+				
+				$intention_amount = $vote_data[ 'vote_amount' ];
+				$project_name = $campaign->get_name();
+				$project_url = get_permalink( $campaign->ID );
+				$project_api_id = $campaign->get_api_id();
+				
+				// Gestion des sauts de ligne
+				$input_testimony = nl2br( $input_testimony );
+				
+				// Pour les restants, on envoie un template différent selon si ils ont mis une intention ou non.
+				if ( $intention_amount > 0 ) {
+					NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
+				} else {
+					NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+				}
+			}
+		}
+		
+		$url_return = wp_get_referer() . "#contacts";
 		wp_redirect( $url_return );
 		die();
 	}
