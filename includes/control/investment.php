@@ -553,7 +553,7 @@ class WDGInvestment {
 /******************************************************************************/
 // PAYMENT
 /******************************************************************************/
-	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_by_card = 0 ) {
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_param = 0, $amount_by_card = 0 ) {
 		if ( $this->exists_payment( $payment_key ) ) {
 			return 'publish';
 		}
@@ -575,8 +575,8 @@ class WDGInvestment {
 		}
 		
 		$amount = 0;
-		if ( $amount_by_card > 0 ) {
-			$amount = $amount_by_card;
+		if ( $amount_param > 0 ) {
+			$amount = $amount_param;
 		} else {
 			$amount = $this->get_session_amount();
 		}
@@ -908,7 +908,7 @@ class WDGInvestment {
 				}
 
 				// Sauvegarde du paiement (la session est écrasée)
-				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount );
+				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount, $amount_by_card );
 
 				if ( $buffer == 'failed' ) {
 					$WDGUser_current = WDGUser::current();
