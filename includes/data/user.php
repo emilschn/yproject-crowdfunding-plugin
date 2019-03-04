@@ -990,8 +990,8 @@ class WDGUser {
 		return $this->get_user_investments_object()->has_pending_not_validated_investments();
 	}
 	
-	public function get_pending_preinvestments() {
-		return $this->get_user_investments_object()->get_pending_preinvestments( $force_reload = FALSE );
+	public function get_pending_preinvestments( $force_reload = FALSE ) {
+		return $this->get_user_investments_object()->get_pending_preinvestments( $force_reload );
 	}
 	public function get_first_pending_preinvestment() {
 		return $this->get_user_investments_object()->get_first_pending_preinvestment();
