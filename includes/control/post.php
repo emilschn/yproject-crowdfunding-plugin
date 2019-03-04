@@ -730,7 +730,7 @@ class WDGPostActions {
 			foreach ( $pending_preinvestments as $preinvestment ) {
 				// On n'agit que sur les préinvestissements qui peuvent être validés (pas en attente de paiement, et pas en virement)
 				$payment_key = $preinvestment->get_payment_key();
-				if ( $preinvestment->get_contract_status() != WDGInvestment::$contract_status_not_validated && strpos( $payment_key, 'wire_' ) !== FALSE ) {
+				if ( $preinvestment->get_contract_status() != WDGInvestment::$contract_status_not_validated && strpos( $payment_key, 'wire_' ) === FALSE ) {
 					$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
 					if ( $contract_has_been_modified ) {
 						NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
