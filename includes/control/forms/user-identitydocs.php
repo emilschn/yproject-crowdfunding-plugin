@@ -64,7 +64,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$id_label,
 			WDG_Form_User_Identity_Docs::$field_group_files,
 			$id_file_path,
-			__( "Pour une personne fran&ccedil;aise : carte d'identit&eacute; recto-verso ou passeport fran&ccedil;ais. Sinon : le titre de s&eacute;jour et le passeport d'origine.", 'yproject' ),
+			__( "Pour une personne fran&ccedil;aise : carte d'identit&eacute; recto-verso avec bande MRZ lisible en intégralité ou passeport fran&ccedil;ais. Sinon : le titre de s&eacute;jour et le passeport d'origine.", 'yproject' ),
 			$field_id_params
 		);
 		
