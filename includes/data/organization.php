@@ -879,12 +879,7 @@ class WDGOrganization {
 				$first_iban = $wallet_details->IBANS->IBAN;
 				//Sinon on l'enregistre auprès de Lemonway
 				if (empty($first_iban)) {
-					$saved_holdername = $this->get_bank_owner();
-					$saved_iban = $this->get_bank_iban();
-					$saved_bic = $this->get_bank_bic();
-					$saved_dom1 = $this->get_bank_address();
-					$saved_dom2 = $this->get_bank_address2();
-					$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1 );
+					$result_iban = $this->register_lemonway_iban();
 					if ($result_iban == FALSE) {
 						$buffer = LemonwayLib::get_last_error_message();
 					}
@@ -1227,6 +1222,16 @@ class WDGOrganization {
 			$buffer = $wallet_details->BAL;
 		}
 		return $buffer;
+	}
+	
+	public function register_lemonway_iban() {
+		$saved_holdername = $this->get_bank_owner();
+		$saved_iban = $this->get_bank_iban();
+		$saved_bic = $this->get_bank_bic();
+		$saved_dom1 = $this->get_bank_address();
+		$saved_dom2 = $this->get_bank_address2();
+		$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
+		return $result_iban;
 	}
 	
 	/**

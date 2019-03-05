@@ -392,6 +392,7 @@ class WDGPostActions {
 		
 		// Récupération de l'organisation
 		$organization_obj = new WDGOrganization( $organization_id );
+		$organization_obj->register_lemonway_iban();
 		$token = $organization_obj->get_sign_mandate_token( $phone_number, $url_return, $url_return );
 		
 		if ( $token != FALSE ) {
