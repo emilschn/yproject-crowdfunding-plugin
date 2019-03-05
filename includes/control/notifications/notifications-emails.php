@@ -470,24 +470,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
 	
-	public static function investment_to_validate( $user_email, $user_name, $campaign_name ) {
-		$object = "Vous pouvez reprendre votre investissement sur le projet . " . $campaign_name;
-		
-		$body_content = "Bonjour " .$user_name. ",<br><br>";
-		$body_content .= "Suite à votre authentification par notre partenaire Lemon Way, vous pouvez à présent reprendre votre investissement sur le projet " .$campaign_name. ".<br><br>";
-		
-		$body_content .= 'Pour continuer votre investissement, vous pouvez dès à présent vous <a href="' .home_url( '/mon-compte/' ). '">identifier sur WE DO GOOD</a> avec votre e-mail et votre mot de passe.<br>';
-		$body_content .= "Une fois identifié, une fenêtre s'affichera automatiquement pour vous permettre de valider votre contrat d'investissement et procéder au paiement.<br><br>";
-		
-		$body_content .= 'Pour vous identifier sur WE DO GOOD, cliquez <a href="' .home_url( '/mon-compte/' ). '">ici</a>.<br><br>';
-		
-		$body_content .= "Pour toute question, nous sommes disponibles sur le chat en ligne ou à l'adresse investir@wedogood.co.<br><br>";
-		
-		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
-		
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
-	}
-	
 	public static function preinvestment_auto_validated( $user_email, $campaign ) {
 		$object = "Votre pré-investissement est validé";
 		
