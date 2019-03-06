@@ -23,7 +23,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		parent::initFields();
 		
 		// $field_group_hidden
-		if ( !$this->is_orga ) {
+		if ( !$this->is_orga || !empty( $this->invest_campaign_id ) ) {
 			$this->addField(
 				'hidden',
 				'action',
