@@ -1349,6 +1349,9 @@ class WDGOrganization {
 		return $this->get_user_investments_object()->get_pending_investments();
 	}
 	
+	public function get_pending_not_validated_investments() {
+		return $this->get_user_investments_object()->get_pending_not_validated_investments();
+	}
 	public function get_first_pending_not_validated_investment() {
 		return $this->get_user_investments_object()->get_first_pending_not_validated_investment();
 	}

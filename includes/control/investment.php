@@ -636,47 +636,28 @@ class WDGInvestment {
 		if ( $is_failed ) {
 			// Paiement
 			$buffer = 'failed';
-			$postdata = array(
-				'ID'			=> $payment_id,
-				'post_status'	=> $buffer
-			);
-			wp_update_post($postdata);
-			
-			// Log du paiement
-			$log_post_items = get_posts(array(
-				'post_type'		=> 'edd_log',
-				'meta_key'		=> '_edd_log_payment_id',
-				'meta_value'	=> $payment_id
-			));
-			foreach ( $log_post_items as $log_post_item ) {
-				$postdata = array(
-					'ID'		=> $log_post_item->ID,
-					'post_status' => $buffer
-				);
-				wp_update_post($postdata);
-			}
+			$this->cancel();
 			
 		} else {
+			// Annulation de l'investissement qui était la référence au démarrage du processus, si il y en avait un
 			if ( !empty( $_SESSION[ 'investment_saved_id' ] ) ) {
-				$postdata = array(
-					'ID'			=> $_SESSION[ 'investment_saved_id' ],
-					'post_status'	=> 'failed'
-				);
-				wp_update_post($postdata);
-
-				$log_post_items = get_posts(array(
-					'post_type'		=> 'edd_log',
-					'meta_key'		=> '_edd_log_payment_id',
-					'meta_value'	=> $_SESSION[ 'investment_saved_id' ]
-				));
-				foreach ( $log_post_items as $log_post_item ) {
-					$postdata = array(
-						'ID'			=> $log_post_item->ID,
-						'post_status'	=> 'failed'
-					);
-					wp_update_post($postdata);
+				$WDGInvestment_Canceled = new WDGInvestment( $_SESSION[ 'investment_saved_id' ] );
+				$WDGInvestment_Canceled->cancel();
+			}
+			
+			// Annulation des investissements non-démarrés du même investisseur
+			$pending_not_validated_investments = array();
+			if ( $invest_type != 'user' ) {
+				$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
+			} else {
+				$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
+			}
+			if ( !empty( $pending_not_validated_investments ) ) {
+				foreach ( $pending_not_validated_investments as $pending_not_validated_investment_item ) {
+					$pending_not_validated_investment_item->cancel();
 				}
 			}
+			
 
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
 			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
