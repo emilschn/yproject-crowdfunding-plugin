@@ -155,21 +155,57 @@ class WDGAjaxActions {
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 		}
+		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $WDGUserEntity->get_api_id() );
 		
 		$today_datetime = new DateTime();
 		$payment_status = array( 'publish', 'completed', 'pending' );
 		$purchases = edd_get_users_purchases( $user_id, -1, false, $payment_status );
-		foreach ( $purchases as $purchase_post ){
-			$downloads = edd_get_payment_meta_downloads( $purchase_post->ID );
-			if ( !is_array( $downloads[ 0 ] ) ){
-				$campaign_id = $downloads[0];
-				$campaign = atcf_get_campaign( $campaign_id );
-				
-				$first_investment_contract = FALSE;
-				$investment_contract_list = WDGWPREST_Entity_InvestmentContract::get_list_by_subscription_id( $purchase_post->ID );
-				if ( !empty( $investment_contract_list ) ) {
-					$first_investment_contract = $investment_contract_list[ 0 ];
+		
+		// Ajout des contrats qui n'ont pas été liés à un investissement (post-campagne)
+		if ( !empty( $investment_contracts ) ) {
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->subscription_id == 0 ) {
+					$investment = array(
+						'investment_contract'	=> $investment_contract
+					);
+					array_push( $purchases, $investment );
 				}
+			}
+		}
+		
+		foreach ( $purchases as $purchase_post ){
+			$first_investment_contract = FALSE;
+			if ( isset( $purchase_post[ 'investment_contract' ] ) ) {
+				$first_investment_contract = $purchase_post[ 'investment_contract' ];
+				$purchase_status = 'publish';
+				$campaign = new ATCF_Campaign( FALSE, $first_investment_contract->project_id );
+				$campaign_id = $campaign->ID;
+				$payment_amount = $first_investment_contract->subscription_amount;
+				$purchase_date = date_i18n( get_option('date_format'), strtotime( $first_investment_contract->subscription_date ) );
+				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $first_investment_contract->id, FALSE );
+				
+			} else {
+				$purchase_id = $purchase_post->ID;
+				$purchase_status = $purchase_post->post_status;
+				$downloads = edd_get_payment_meta_downloads( $purchase_id );
+				if ( !is_array( $downloads[ 0 ] ) ){
+					$campaign_id = $downloads[0];
+					$campaign = atcf_get_campaign( $campaign_id );
+				}
+				$payment_amount = edd_get_payment_amount( $purchase_id );
+				$purchase_date = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_id ) ) );
+				
+				if ( !empty( $investment_contracts ) ) {
+					foreach ( $investment_contracts as $investment_contract ) {
+						if ( $investment_contract->subscription_id == $purchase_id ) {
+							$first_investment_contract = $investment_contract;
+						}
+					}
+				}
+				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $purchase_id, FALSE );
+			}
+				
+			if ( !empty( $campaign ) ) {
 				
 				// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 				$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$user_id. '_*.pdf';
@@ -187,20 +223,18 @@ class WDGAjaxActions {
 					$buffer[ $campaign_id ][ 'items' ] = array();
 				}
 				
-				$payment_amount = edd_get_payment_amount( $purchase_post->ID );
 				$investor_proportion = $payment_amount / $buffer[ $campaign_id ][ 'amount' ];
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
-				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $purchase_post->ID, FALSE );
 				foreach ( $roi_list as $roi_item ) {
 					$roi_amount += $roi_item->amount;
 				}
 				
 				$investment_item = array();
-				$investment_item[ 'date' ] = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_post->ID ) ) );
+				$investment_item[ 'date' ] = $purchase_date;
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
-				$investment_item[ 'status' ] = utf8_encode( $purchase_post->post_status );
+				$investment_item[ 'status' ] = utf8_encode( $purchase_status );
 				if ( $first_investment_contract->status == 'canceled' ) {
 					$investment_item[ 'status' ] = 'canceled';
 				}
@@ -257,10 +291,10 @@ class WDGAjaxActions {
 				}
 				
 				
-				// - Déclarations à venir
-				$future_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
-				if ( !empty( $future_roi_list ) ) {
-					foreach ( $future_roi_list as $roi_declaration ) {
+				// - Déclarations de royalties liées à la campagne
+				$campaign_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+				if ( !empty( $campaign_roi_list ) ) {
+					foreach ( $campaign_roi_list as $roi_declaration ) {
 						
 						// On détermine sur quelle année ça se situe
 						$current_year_index = 0;

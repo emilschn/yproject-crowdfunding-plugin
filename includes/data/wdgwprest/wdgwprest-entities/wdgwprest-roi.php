@@ -24,6 +24,7 @@ class WDGWPREST_Entity_ROI {
 	public static function set_post_parameters( WDGROI $roi ) {
 		$parameters = array(
 			'id_investment'			=> $roi->id_investment,
+			'id_investment_contract'	=> $roi->id_investment_contract,
 			'id_project'			=> $roi->id_campaign,
 			'id_orga'				=> $roi->id_orga,
 			'id_user'				=> $roi->id_user,

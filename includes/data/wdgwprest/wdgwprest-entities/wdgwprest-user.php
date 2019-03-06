@@ -181,6 +181,15 @@ class WDGWPREST_Entity_User {
 	}
 	
 	/**
+	 * Retourne les contrats d'investissements liés à un utilisateur
+	 * @return array
+	 */
+	public static function get_investment_contracts( $user_api_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_api_id. '/investment-contracts' );
+		return $result_obj;
+	}
+	
+	/**
 	 * Retourne les ROIs liés à un utilisateur
 	 * @return array
 	 */
