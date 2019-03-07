@@ -758,17 +758,17 @@ class WDGPostActions {
 		
 		if ( !empty( $campaign_id ) && !empty( $input_testimony ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
+			$project_name = $campaign->get_name();
+			$project_url = get_permalink( $campaign->ID );
+			$project_api_id = $campaign->get_api_id();
+			// Gestion des sauts de ligne
+			$input_testimony = nl2br( $input_testimony );
 			
+			// Si on teste, on biaise les données et on arrête de suite
 			if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
 				$recipient_email = 'communication@wedogood.co';
 				$recipient_name = 'Anna';
 				$intention_amount = 100;
-				$project_name = $campaign->get_name();
-				$project_url = get_permalink( $campaign->ID );
-				$project_api_id = $campaign->get_api_id();
-				// Gestion des sauts de ligne
-				$input_testimony = nl2br( $input_testimony );
-				
 				NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
 				NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
 				$url_return = wp_get_referer() . "#contacts";
