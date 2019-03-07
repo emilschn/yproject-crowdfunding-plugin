@@ -175,14 +175,14 @@ class WDGAjaxActions {
 		
 		foreach ( $purchases as $purchase_post ){
 			$first_investment_contract = FALSE;
-			if ( isset( $purchase_post[ 'investment_contract' ] ) ) {
+			if ( is_array( $purchase_post ) && isset( $purchase_post[ 'investment_contract' ] ) ) {
 				$first_investment_contract = $purchase_post[ 'investment_contract' ];
 				$purchase_status = 'publish';
 				$campaign = new ATCF_Campaign( FALSE, $first_investment_contract->project_id );
 				$campaign_id = $campaign->ID;
 				$payment_amount = $first_investment_contract->subscription_amount;
 				$purchase_date = date_i18n( get_option('date_format'), strtotime( $first_investment_contract->subscription_date ) );
-				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $first_investment_contract->id, FALSE );
+				$roi_list = $WDGUserEntity->get_royalties_by_investment_contract_id( $first_investment_contract->id, FALSE );
 				
 			} else {
 				$purchase_id = $purchase_post->ID;
@@ -235,7 +235,7 @@ class WDGAjaxActions {
 				$investment_item[ 'date' ] = $purchase_date;
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
 				$investment_item[ 'status' ] = utf8_encode( $purchase_status );
-				if ( $first_investment_contract->status == 'canceled' ) {
+				if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
 					$investment_item[ 'status' ] = 'canceled';
 				}
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
