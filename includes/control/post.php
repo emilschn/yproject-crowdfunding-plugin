@@ -29,7 +29,7 @@ class WDGPostActions {
         self::add_action( 'generate_yearly_fiscal_documents' );
         self::add_action("upload_contract_files");
         self::add_action( 'send_project_contract_modification_notification' );
-        self::add_action( 'send_project_preinvestment_notifications' );
+        self::add_action( 'send_project_vote_notifications' );
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
         self::add_action("post_confirm_check");
@@ -749,8 +749,9 @@ class WDGPostActions {
 		die();
 	}
 	
-	public static function send_project_preinvestment_notifications() {
+	public static function send_project_vote_notifications() {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$mail_type = filter_input( INPUT_POST, 'mail_type' );
 		$input_testimony = filter_input( INPUT_POST, 'testimony' );
 		$input_image_url = filter_input( INPUT_POST, 'image_url' );
 		$input_image_description = filter_input( INPUT_POST, 'image_description' );
@@ -769,8 +770,14 @@ class WDGPostActions {
 				$recipient_email = 'communication@wedogood.co';
 				$recipient_name = 'Anna';
 				$intention_amount = 100;
-				NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-				NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+				if ( $mail_type == 'preinvestment' ) {
+					NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+				} else {
+					NotificationsAPI::confirm_prelaunch_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_prelaunch_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_prelaunch_invest_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+				}
 				$url_return = wp_get_referer() . "#contacts";
 				wp_redirect( $url_return );
 				die();
@@ -795,18 +802,30 @@ class WDGPostActions {
 			// On parcourt la liste des évaluateurs
 			$list_user_voters = $campaign->get_voters();
 			foreach ( $list_user_voters as $db_item_vote ) {
-				if (
-					// On ne prend que des notes d'au moins 3
-					$db_item_vote->rate_project >= 3
-					// On ne prend que ceux qui suivent toujours le projet
-					&& isset( $followers_list_by_id[ $db_item_vote->user_id ] )
-					// On ne prend que ceux qui n'ont pas investi
-					&& !isset( $investors_list_by_id[ $db_item_vote->user_id ] ) ) {
+						// On ne prend que des notes d'au moins 3
+				if (	$db_item_vote->rate_project >= 3
+						// On ne prend que ceux qui suivent toujours le projet
+						&& isset( $followers_list_by_id[ $db_item_vote->user_id ] )
+						// On ne prend que ceux qui n'ont pas investi
+						&& !isset( $investors_list_by_id[ $db_item_vote->user_id ] ) ) {
 					
 					if ( !isset( $user_list_by_id[ $db_item_vote->user_id ] ) ) {
 						$user_list_by_id[ $db_item_vote->user_id ] = array();
 					}
 					$user_list_by_id[ $db_item_vote->user_id ][ 'vote_amount' ] = $db_item_vote->invest_sum;
+				}
+			}
+			
+			// Si le mail est celui de pré-lancement
+			if ( $mail_type == 'prelaunch' ) {
+				// On reprend les followers qui n'ont pas évalué et qui n'ont pas fait d'action d'investissement
+				foreach ( $list_user_followers as $db_item_follower_user_id ) {
+					if (	!isset( $user_list_by_id[ $db_item_follower_user_id ] )
+							&& !isset( $investors_list_by_id[ $db_item_follower_user_id ] ) ) {
+						
+						$user_list_by_id[ $db_item_follower_user_id ] = array();
+						$user_list_by_id[ $db_item_follower_user_id ][ 'vote_amount' ] = 'follow';
+					}
 				}
 			}
 
@@ -824,11 +843,23 @@ class WDGPostActions {
 				$intention_amount = $vote_data[ 'vote_amount' ];
 				
 				// Pour les restants, on envoie un template différent selon si ils ont mis une intention ou non.
-				if ( $intention_amount > 0 ) {
-					NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-					
-				} else {
-					NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+				if ( $mail_type == 'preinvestment' ) {
+					if ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+
+					} else {
+						NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					}
+				} elseif ( $mail_type == 'prelaunch' ) {
+					if ( $intention_amount == 'follow' ) {
+						NotificationsAPI::confirm_prelaunch_invest_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+						
+					} elseif ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_prelaunch_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+
+					} else {
+						NotificationsAPI::confirm_prelaunch_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					}
 				}
 			}
 		}
