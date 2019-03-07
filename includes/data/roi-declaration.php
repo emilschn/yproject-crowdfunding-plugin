@@ -487,7 +487,11 @@ class WDGROIDeclaration {
 					if ( $investment_item['roi_amount'] == 0 ) {
 						$status = WDGROI::$status_transferred;
 					}
-					WDGROI::insert( $investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, $status );
+					$id_investment_contract = FALSE;
+					if ( !empty( $investment_item[ 'contract_id' ] ) ) {
+						$id_investment_contract = $investment_item[ 'contract_id' ];
+					}
+					WDGROI::insert( $investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], 0, $status, $id_investment_contract );
 
 					if ( $send_notifications ) {
 						WDGQueue::add_notification_royalties( $investment_item['user'] );
@@ -1063,32 +1067,5 @@ class WDGROIDeclaration {
 		}
 		
 		return $buffer;
-	}
-	
-	/**
-	 * TransfÃ¨re les donnÃ©es de la dÃ©claration vers l'API
-	 */
-	public static function transfer_to_api() {
-		global $wpdb;
-		$campaign_wpref_to_api = array();
-		
-		$query = "SELECT id, on_api FROM " .$wpdb->prefix.WDGROIDeclaration::$table_name;
-		$declaration_list = $wpdb->get_results( $query );
-		foreach ( $declaration_list as $declaration_item ) {
-			if ( !$declaration_item->on_api ) {
-				$declaration = new WDGROIDeclaration( $declaration_item->id, TRUE );
-				if ( empty( $campaign_wpref_to_api[ $declaration->id_campaign ] ) ) {
-					$campaign = new ATCF_Campaign( $declaration->id_campaign );
-					$campaign_wpref_to_api[ $declaration->id_campaign ] = $campaign->get_api_id();
-				}
-				$temp_campaign_id = $declaration->id_campaign;
-				$declaration->id_campaign = $campaign_wpref_to_api[ $declaration->id_campaign ];
-				$created_declaration = WDGWPREST_Entity_Declaration::create( $declaration );
-				WDGROI::transfer_to_api( $declaration_item->id, $created_declaration->id );
-				$declaration->on_api = true;
-				$declaration->id_campaign = $temp_campaign_id;
-				$declaration->save( TRUE );
-			}
-		}
 	}
 }

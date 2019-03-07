@@ -1506,6 +1506,23 @@ class WDGOrganization {
 	}
 	
 	/**
+	 * Retourne la liste des royalties par id de contrat d'investissement
+	 * @return array
+	 */
+	public function get_royalties_by_investment_contract_id( $investment_contract_id, $status = 'transferred' ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment_contract == $investment_contract_id ) {
+				if ( empty( $status ) || $roi_item->status == $status ) {
+					array_push( $buffer, $roi_item );
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne le nom du fichier de certificat
 	 * @return string
 	 */

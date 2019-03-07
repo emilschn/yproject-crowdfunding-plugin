@@ -118,7 +118,16 @@ class WDGWPREST_Entity_Organization {
 	}
 	
 	/**
-	 * Retourne les ROIs liés à un utilisateur
+	 * Retourne les contrats d'investissements liés à une organisation
+	 * @return array
+	 */
+	public static function get_investment_contracts( $organization_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/investment-contracts' );
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne les ROIs liés à une organisation
 	 * @return array
 	 */
 	public static function get_rois( $organization_id ) {
@@ -127,7 +136,7 @@ class WDGWPREST_Entity_Organization {
 	}
 	
 	/**
-	 * Retourne la liste des projets liés à l'organisation
+	 * Retourne la liste des projets liés à une organisation
 	 * @param int $organization_id
 	 * @return array
 	 */

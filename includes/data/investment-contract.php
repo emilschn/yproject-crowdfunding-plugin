@@ -72,6 +72,10 @@ class WDGInvestmentContract {
 		}
 	}
 	
+	public function get_api_id() {
+		return $this->api_id;
+	}
+	
 	public function create() {
 		WDGWPREST_Entity_InvestmentContract::create( $this );
 	}

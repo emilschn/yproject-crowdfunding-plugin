@@ -2830,6 +2830,7 @@ class ATCF_Campaign {
 						$investor_id = $WDGOrganization->get_wpref();
 					}
 					$investment_item = array(
+						'contract_id'	=> $investment_contract->get_api_id(),
 						'ID'			=> $investment_contract->subscription_id,
 						'amount'		=> $investment_contract->subscription_amount,
 						'user'			=> $investor_id
