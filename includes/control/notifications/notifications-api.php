@@ -18,6 +18,7 @@ class NotificationsAPI {
 		'577' => "Relance - Pré-lancement - Evaluation sans intention",
 		'578' => "Relance - Pré-lancement - Suivi",
 		'632' => "Evaluation avec intention - Demande d'authentification",
+		'628' => "Evaluation avec intention - Demande de pré-investissement",
 		'603' => "Investissement - Demande d'authentification",
 		'604' => "Investissement - Demande d'authentification - Rappel",
 		'605' => "KYC - Wallet validé et investissement en attente",
@@ -392,6 +393,25 @@ class NotificationsAPI {
     //*******************************************************
 	public static function vote_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '632';
+		$options = array(
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS EVALUATION - AVEC INTENTION - AUTHENTIFIE
+    //*******************************************************
+	public static function vote_authenticated_reminder( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '628';
 		$options = array(
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name
