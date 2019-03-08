@@ -410,11 +410,12 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS EVALUATION - AVEC INTENTION - AUTHENTIFIE
     //*******************************************************
-	public static function vote_authenticated_reminder( $recipient, $name, $project_name, $project_api_id ) {
+	public static function vote_authenticated_reminder( $recipient, $name, $project_name, $project_api_id, $intention_amount ) {
 		$id_template = '628';
 		$options = array(
 			'NOM_UTILISATEUR'			=> $name,
-			'NOM_PROJET'				=> $project_name
+			'NOM_PROJET'				=> $project_name,
+			'INTENTION_INVESTISSEMENT'	=> $intention_amount
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',

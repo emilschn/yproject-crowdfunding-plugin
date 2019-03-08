@@ -315,7 +315,7 @@ class WDG_Form_Vote extends WDG_Form {
 						if ( !$WDGUser_current->is_lemonway_registered() ) {
 							WDGQueue::add_vote_authentication_needed_reminder( $WDGUser_current->get_wpref(), $WDGUser_current->get_email(), $campaign->get_name(), $campaign->get_api_id() );
 						} else {
-							WDGQueue::add_vote_authenticated_reminder( $WDGUser_current->get_wpref(), $WDGUser_current->get_email(), $campaign->get_name(), $campaign->ID, $campaign->get_api_id() );
+							WDGQueue::add_vote_authenticated_reminder( $WDGUser_current->get_wpref(), $WDGUser_current->get_email(), $campaign->get_name(), $campaign->ID, $campaign->get_api_id(), $invest_sum );
 						}
 					}
 				}

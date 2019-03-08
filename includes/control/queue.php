@@ -432,7 +432,7 @@ class WDGQueue {
 /******************************************************************************/
 /* NOTIFICATION RAPPEL QUAND EVALUATION AVEC INTENTION EN ATTENTE ET AUTHENTIFIE */
 /******************************************************************************/
-	public static function add_vote_authenticated_reminder( $user_id, $user_email, $campaign_name, $campaign_id, $campaign_api_id ) {
+	public static function add_vote_authenticated_reminder( $user_id, $user_email, $campaign_name, $campaign_id, $campaign_api_id, $vote_amount ) {
 		$action = 'vote_authenticated_reminder';
 		$entity_id = $user_id;
 		$priority = 'date';
@@ -444,7 +444,8 @@ class WDGQueue {
 			'user_email'		=> $user_email,
 			'campaign_name'		=> $campaign_name,
 			'campaign_id'		=> $campaign_id,
-			'campaign_api_id'	=> $campaign_api_id
+			'campaign_api_id'	=> $campaign_api_id,
+			'vote_amount'		=> $vote_amount
 		);
 		
 		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
@@ -461,7 +462,7 @@ class WDGQueue {
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_firstname();
 				if ( !$WDGEntity->has_invested_on_campaign( $queued_action_params[ 'campaign_id' ] ) ) {
-					NotificationsAPI::vote_authenticated_reminder( $user_email, $user_name, $queued_action_params[ 'campaign_name' ], $queued_action_params[ 'campaign_api_id' ] );
+					NotificationsAPI::vote_authenticated_reminder( $user_email, $user_name, $queued_action_params[ 'campaign_name' ], $queued_action_params[ 'campaign_api_id' ], $queued_action_params[ 'vote_amount' ] );
 				}
 			}
 			
