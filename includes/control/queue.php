@@ -385,6 +385,51 @@ class WDGQueue {
 
 	
 /******************************************************************************/
+/* NOTIFICATION RAPPEL QUAND EVALUATION AVEC INTENTION EN ATTENTE ET NON AUTHENTIFIE */
+/******************************************************************************/
+	public static function add_vote_authentication_needed_reminder( $user_id, $user_email, $campaign_name, $campaign_api_id ) {
+		$action = 'vote_authentication_needed_reminder';
+		$entity_id = $user_id;
+		$priority = 'date';
+		$date_next_dispatch = new DateTime();
+		// On programme le prochain envoi 3 jours plus tard
+		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array(
+			'user_email'		=> $user_email,
+			'campaign_name'		=> $campaign_name,
+			'campaign_api_id'	=> $campaign_api_id
+		);
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function vote_authentication_needed_reminder( $user_id, $queued_action_params, $queued_action_id ) {
+		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+
+		if ( !empty( $user_id ) ) {
+			
+			if ( WDGOrganization::is_user_organization( $user_id ) ) {
+				$WDGEntity = new WDGOrganization( $user_id );
+				$user_email = $WDGEntity->get_email();
+				$user_name = $WDGEntity->get_name();
+			} else {
+				$WDGEntity = new WDGUser( $user_id );
+				$user_email = $WDGEntity->get_email();
+				$user_name = $WDGEntity->get_firstname();
+			}
+			
+			// On vérifie que les documents n'ont toujours pas été envoyés
+			if ( !$WDGEntity->has_sent_all_documents() ) {
+				NotificationsAPI::vote_authentication_needed_reminder( $user_email, $user_name, $queued_action_params[ 'campaign_name' ], $queued_action_params[ 'campaign_api_id' ] );
+			}
+			
+		}
+	}
+
+	
+/******************************************************************************/
 /* NOTIFICATION RAPPEL QUAND INVESTISSEMENT EN ATTENTE ET AUTHENTIFIE */
 /******************************************************************************/
 	public static function add_investment_authentified_reminder( $user_id, $user_email, $user_name, $campaign_name, $campaign_api_id ) {

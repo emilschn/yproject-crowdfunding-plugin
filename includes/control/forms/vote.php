@@ -310,6 +310,10 @@ class WDG_Form_Vote extends WDG_Form {
 					$core->include_form( 'invest-poll' );
 					$WDGPollForm = new WDG_Form_Invest_Poll( $campaign_id, $WDGUser_current->get_wpref(), 'vote' );
 					$WDGPollForm->postForm( $invest_sum );
+					
+					if ( $invest_sum > 0 && !$WDGUser_current->is_lemonway_registered() ) {
+						WDGQueue::add_vote_authentication_needed_reminder( $WDGUser_current->get_wpref(), $WDGUser_current->get_email(), $campaign->get_name(), $campaign->get_api_id() );
+					}
 				}
 				
 				// Ajout du suivi du projet
