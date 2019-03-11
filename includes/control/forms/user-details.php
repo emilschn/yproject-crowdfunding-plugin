@@ -305,10 +305,10 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'textarea',
 				'contact_if_deceased',
-				__( "Personne &agrave; contacter en cas de d&eacute;c&egrave;s", 'yproject' ),
+				__( "Personne de confiance", 'yproject' ),
 				WDG_Form_User_Details::$field_group_extended,
 				$WDGUser->get_contact_if_deceased(),
-				__( "Si nous sommes inform&eacute;s de votre d&eacute;c&egrave;s (justifi&eacute; par un avis de d&eacute;c&egrave;s), nous contacterons cette personne pour lui donner l'acc&egrave;s &agrave; votre compte WE DO GOOD. Laissez ce champs vide si vous souhaitez que personne ne soit contact&eacute;. Indiquez pr&eacute;nom, nom, adresse email et num&eacute;ro de t&eacute;l&eacute;phone.", 'yproject' )
+				__( "Identifiez ici les coordonn&eacute;es (nom, mail, t&eacute;l&eacute;phone) de votre personne de confiance &agrave; contacter en cas de souci majeur, notamment en cas de d&eacute;c&egrave;s. Pensez &agrave; l'informer au pr&eacute;alable de vos investissements sur WE DO GOOD pour qu'elle soit au courant. En remplissant ce champ, vous nous autorisez &agrave; lui donner l'acc&egrave;s &agrave; votre compte personnel sur justificatif de votre impossibilit&eacute; à acc&eacute;der &agrave; votre compte.", 'yproject' )
 			);
 		
 		}
