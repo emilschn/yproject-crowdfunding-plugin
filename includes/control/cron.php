@@ -151,7 +151,7 @@ class WDGCronActions {
 		$current_date = $date->format('Y-m-d');
 		
 		$buffer_xml = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
-		$buffer_xml .= '<last_updated=" '.$date->format('Y-m-d H:i:s').' "/>' . "\n";
+		$buffer_xml .= '<last_updated date="'.$date->format('Y-m-d H:i:s').'" />' . "\n";
 		$campaign = atcf_get_campaign( $campaign_id );
 		$result = WDGCronActions::make_single_project_rss( $campaign, $current_date, TRUE );
 		$buffer_xml .= $result[ 'partners' ];
@@ -261,7 +261,7 @@ class WDGCronActions {
 					$payment_key = $investment_item[ 'payment_key' ];
 					$contract_status = $WDGInvestment->get_contract_status();
 					// On ne compte pas les virements en attente, ni les paiements non effectués
-					$can_count_investment = ( strpos( $payment_key, 'TEMP' ) != FALSE && $contract_status != WDGInvestment::$contract_status_not_validated );
+					$can_count_investment = ( strpos( $payment_key, 'TEMP' ) == FALSE && $contract_status != WDGInvestment::$contract_status_not_validated );
 				}
 				
 				
