@@ -299,16 +299,16 @@ class WDGQueue {
 			$WDGOrga_wallet = new WDGOrganization( $user_id );
 			$user_name = $WDGOrga_wallet->get_name();
 			$user_email = $WDGOrga_wallet->get_email();
-			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGOrga_wallet->get_lemonway_id(), $queued_action_param[ 'document_type' ] );
+			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGOrga_wallet->get_lemonway_id(), $queued_action_param->document_type );
 		} else {
 			$WDGUser_wallet = new WDGUser( $user_id );
 			$user_name = $WDGUser_wallet->get_firstname(). ' ' .$WDGUser_wallet->get_lastname();
 			$user_email = $WDGUser_wallet->get_email();
-			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGUser_wallet->get_lemonway_id(), $queued_action_param[ 'document_type' ] );
+			$lemonway_document = LemonwayDocument::get_by_id_and_type( $WDGUser_wallet->get_lemonway_id(), $queued_action_param->document_type );
 		}
 		
 		// Vérifie si le statut du document n'a pas changé
-		if ( $lemonway_document->get_status() == $queued_action_param[ 'document_status' ] ) {
+		if ( $lemonway_document->get_status() == $queued_action_param->document_status ) {
 			
 			//On vérifie si il y'a une action en cours :
 			$pending_actions = array();
@@ -423,7 +423,7 @@ class WDGQueue {
 			// On vérifie que les documents n'ont toujours pas été envoyés
 			if ( !$WDGEntity->has_sent_all_documents() ) {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
-				NotificationsAPI::vote_authentication_needed_reminder( $user_email, $user_name, $queued_action_param[ 'campaign_name' ], $queued_action_param[ 'campaign_api_id' ] );
+				NotificationsAPI::vote_authentication_needed_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_api_id );
 			}
 			
 		}
@@ -464,8 +464,8 @@ class WDGQueue {
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_firstname();
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
-				if ( !$WDGEntity->has_invested_on_campaign( $queued_action_param[ 'campaign_id' ] ) ) {
-					NotificationsAPI::vote_authenticated_reminder( $user_email, $user_name, $queued_action_param[ 'campaign_name' ], $queued_action_param[ 'campaign_url' ], $queued_action_param[ 'campaign_api_id' ], $queued_action_param[ 'vote_amount' ] );
+				if ( !$WDGEntity->has_invested_on_campaign( $queued_action_param->campaign_id ) ) {
+					NotificationsAPI::vote_authenticated_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_url, $queued_action_param->campaign_api_id, $queued_action_param->vote_amount );
 				}
 			}
 			
@@ -563,7 +563,7 @@ class WDGQueue {
 			// On vérifie que les documents n'ont toujours pas été envoyés
 			if ( !$WDGEntity->has_sent_all_documents() ) {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
-				NotificationsAPI::investment_authentication_needed_reminder( $user_email, $user_name, $queued_action_param[ 'campaign_name' ], $queued_action_param[ 'campaign_api_id' ] );
+				NotificationsAPI::investment_authentication_needed_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_api_id );
 			}
 			
 		}
