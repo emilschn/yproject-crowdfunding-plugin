@@ -151,10 +151,12 @@ class WDGCronActions {
 		$current_date = $date->format('Y-m-d');
 		
 		$buffer_xml = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
-		$buffer_xml .= '<last_updated date="'.$date->format('Y-m-d H:i:s').'" />' . "\n";
+		$buffer_xml .= '<partenaire>';
+		$buffer_xml .= '<mise_a_jour date="'.$date->format('Y-m-d H:i:s').'" />' . "\n";
 		$campaign = atcf_get_campaign( $campaign_id );
 		$result = WDGCronActions::make_single_project_rss( $campaign, $current_date, TRUE );
 		$buffer_xml .= $result[ 'partners' ];
+		$buffer_xml .= '</partenaire>';
 		
 		
 		$filename = dirname ( __FILE__ ) . '/../../../../../current-project-' .$campaign->get_url(). '.xml';
