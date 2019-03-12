@@ -146,7 +146,25 @@ class WDGCronActions {
 		fclose($file_handle_rss);
 	}
 	
-	public static function make_single_project_rss( $campaign, $current_date ) {
+	public static function make_campaign_xml( $campaign_id ) {
+		$date = new DateTime();
+		$current_date = $date->format('Y-m-d');
+		
+		$buffer_xml = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
+		$buffer_xml .= '<last_updated=" '.$date->format('Y-m-d H:i:s').' "/>' . "\n";
+		$campaign = atcf_get_campaign( $campaign_id );
+		$result = WDGCronActions::make_single_project_rss( $campaign, $current_date, TRUE );
+		$buffer_xml .= $result[ 'partners' ];
+		
+		
+		$filename = dirname ( __FILE__ ) . '/../../../../../current-project-' .$campaign->get_url(). '.xml';
+		$file_handle = fopen( $filename, 'w' );
+		fwrite( $file_handle, $buffer_xml );
+		fclose( $file_handle );
+		
+	}
+	
+	public static function make_single_project_rss( $campaign, $current_date, $add_list_investments = FALSE ) {
 		$buffer_rss = '';
 		$buffer_partners = '';
 		
@@ -227,6 +245,42 @@ class WDGCronActions {
 		$buffer_partners .= '<periodicite><![CDATA[trimestriel]]></periodicite>' . "\n";
 		$buffer_partners .= '<rendement_pourcent>'.$campaign->yield_for_investors().'</rendement_pourcent>' . "\n";
 
+		if ( $add_list_investments ) {
+			$buffer_partners .= '<investissements>' . "\n";
+			$list_investments = $campaign->payments_data( TRUE );
+			$campaign_status = $campaign->campaign_status();
+			foreach ( $list_investments as $investment_item ) {
+				$can_count_investment = FALSE;
+				// En phase d'investissement, on ne compte que les investissements validés
+				if ( $campaign_status == ATCF_Campaign::$campaign_status_collecte ) {
+					$can_count_investment = ( $investment_item[ 'status' ] == 'publish' );
+					
+				// En phase d'évaluation
+				} else if ( $campaign_status == ATCF_Campaign::$campaign_status_vote ) {
+					$WDGInvestment = new WDGInvestment( $investment_item[ 'ID' ] );
+					$payment_key = $investment_item[ 'payment_key' ];
+					$contract_status = $WDGInvestment->get_contract_status();
+					// On ne compte pas les virements en attente, ni les paiements non effectués
+					$can_count_investment = ( strpos( $payment_key, 'TEMP' ) != FALSE && $contract_status != WDGInvestment::$contract_status_not_validated );
+				}
+				
+				
+				if ( $can_count_investment ) {
+					if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
+						$WDGOrganization = new WDGOrganization( $investment_item[ 'user' ] );
+						$id_investor_xml = $investment_item[ 'user' ] . '-' . $WDGOrganization->get_api_id();
+						$initials = substr( $WDGOrganization->get_name(), 0, 1 );
+
+					} else {
+						$WDGUser = new WDGUser( $investment_item[ 'user' ] );
+						$id_investor_xml = $investment_item[ 'user' ] . '-' . $WDGUser->get_api_id();
+						$initials = substr( $WDGUser->get_firstname(), 0, 1 ) . substr( $WDGUser->get_lastname(), 0, 1 );
+					}
+					$buffer_partners .= '<investissement dateheure="' .$investment_item[ 'date' ]. '" idinvestisseur="' .$id_investor_xml. '" initiales="' .$initials. '" montant="' .$investment_item[ 'amount' ]. '" />' . "\n";
+				}
+			}
+			$buffer_partners .= '</investissements>' . "\n";
+		}
 
 		$buffer_partners .= '</projet>' . "\n";
 		//*****************
