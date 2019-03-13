@@ -243,7 +243,6 @@ class WDGCampaignInvestments {
 
 		// Priorité numéro 3 : faire venir les évaluateurs avec une grosse intention d'investissement mais ayant investi moins
 		if ( !empty( $contact_list ) ) {
-			$prio3_content = "";
 			foreach ( $contact_list as $contact_info ) {
 				if ( $contact_info[ 'vote_sum' ] > $contact_info[ 'invest_sum' ] && !$contact_info[ 'skip_contact' ] ) {
 					$entity_str = $contact_info[ 'entity_str' ];
@@ -261,13 +260,8 @@ class WDGCampaignInvestments {
 						}
 					}
 					$registration_str = ( $entity_is_registered ) ? "Déjà authentifié" : "Pas encore authentifié";
-					$prio3_content .= $entity_str. " - Intention de " .$contact_info[ 'vote_sum' ]." € et investissement de " .$contact_info[ 'invest_sum' ]." € (" .$registration_str. ")<br>";
+					array_push( $list_priorities, "faire investir autant que l'intention : " . $entity_str. " - Intention de " .$contact_info[ 'vote_sum' ]." € et investissement de " .$contact_info[ 'invest_sum' ]." € (" .$registration_str. ")" );
 				}
-			}
-			
-			if ( !empty( $prio3_content ) ) {
-//				$buffer_email_content .= "<b>Priorité 3 : évaluations avec de bonnes intentions et de moins bons investissements</b><br>";
-				array_push( $list_priorities, "faire investir autant que l'intention : " . $prio3_content );
 			}
 		}
 		
