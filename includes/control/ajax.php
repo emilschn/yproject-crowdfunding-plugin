@@ -191,6 +191,9 @@ class WDGAjaxActions {
 				if ( !is_array( $downloads[ 0 ] ) ){
 					$campaign_id = $downloads[0];
 					$campaign = atcf_get_campaign( $campaign_id );
+					if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte && $purchase_status == 'pending' ) {
+						continue;
+					}
 				}
 				$payment_amount = edd_get_payment_amount( $purchase_id );
 				$purchase_date = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_id ) ) );
