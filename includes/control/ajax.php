@@ -241,6 +241,13 @@ class WDGAjaxActions {
 				if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
 					$investment_item[ 'status' ] = 'canceled';
 				}
+				$investment_item[ 'conclude-investment-url' ] = '';
+				if ( $purchase_status == 'pending' ) {
+					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
+					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
+						$investment_item[ 'conclude-investment-url' ] = home_url( '/investir/?init_with_id=' .$purchase_post->ID. '&campaign_id=' .$campaign_id );
+					}
+				}
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
 				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
