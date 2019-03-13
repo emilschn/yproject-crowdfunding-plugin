@@ -150,10 +150,13 @@ class WDGAjaxActions {
 		
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$user_type = filter_input( INPUT_POST, 'user_type' );
+		$is_authentified = FALSE;
 		if ( $user_type == 'user' ) {
 			$WDGUserEntity = new WDGUser( $user_id );
+			$is_authentified = $WDGUserEntity->is_lemonway_registered();
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
+			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
 		}
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $WDGUserEntity->get_api_id() );
 		
@@ -242,7 +245,7 @@ class WDGAjaxActions {
 					$investment_item[ 'status' ] = 'canceled';
 				}
 				$investment_item[ 'conclude-investment-url' ] = '';
-				if ( $purchase_status == 'pending' ) {
+				if ( $purchase_status == 'pending' && $is_authentified ) {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
 					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
 						$investment_item[ 'conclude-investment-url' ] = home_url( '/investir/?init_with_id=' .$purchase_post->ID. '&campaign_id=' .$campaign_id );
