@@ -107,10 +107,36 @@ class WDGCampaignInvestments {
 	public static function advice_notification( $campaign ) {
 			
 		// Décorations du mail
-		$buffer_email_object = "TEST - Résumé des conseils pour la levée de fonds de " . $campaign->get_name();
-		$buffer_email_content = "-- version beta --<br><br>";
+		$buffer_email_object = "BETA - Conseils quotidiens pour la levée de fonds de " . $campaign->get_name();
+		
+		// Formules d'introduction
+		$list_introductions_1 = array(
+			"Bonjour bonjour !",
+			"Bonjour l'&eacute;quipe !",
+			"Hello l'&eacute;quipe de " .$campaign->get_name(). " !",
+			"Salut !",
+			"Hello l'&eacute;quipe !"
+		);
+		$list_introductions_2 = array(
+			"Comment se passe la journée ?",
+			"Tout va bien aujourd'hui ?",
+			"J'esp&egrave;re que tout se passe bien !",
+			"Comment allez-vous aujourd'hui ?",
+			"En forme pour cette journ&eacute;e ?"
+		);
+		$list_introductions_3 = array(
+			"Voici vos actions prioritaires du jour !",
+			"Ci-dessous vos actions prioritaires du jour !",
+			"Vous trouverez ci-dessous vos top priorit&eacute;s pour la journ&eacute;e !",
+			"Voici les actions quotidiennes prioritaires !",
+			"Ci-dessous les actions du jour &agrave; effectuer en priorit&eacute; !"
+		);
+		$buffer_email_content = array_rand( $list_introductions_1 ) . "<br><br>";
+		$buffer_email_content .= array_rand( $list_introductions_2 ) . "<br>";
+		$buffer_email_content .= array_rand( $list_introductions_3 ) . "<br><br>";
 
 		// Données utiles tout le long
+		$list_priorities = array();
 		$contact_list = array();
 		$preinvestments_to_validate = array();
 		$investments_to_complete = array();
@@ -121,6 +147,15 @@ class WDGCampaignInvestments {
 		$payments_data = $campaign->payments_data();
 		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum FROM ".$table_vote." WHERE post_id = ".$campaign->ID );
 		foreach ( $list_user_voters as $item_vote ) {
+			$entity_str = '';
+			if ( WDGOrganization::is_user_organization( $item_vote->user_id ) ) {
+				$WDGOrganization = new WDGOrganization( $item_vote->user_id );
+				$entity_str = $WDGOrganization->get_name(). ' (' .$WDGOrganization->get_email(). ')';
+			} else {
+				$WDGUser = new WDGUser( $item_vote->user_id );
+				$entity_str = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname(). ' (' .$WDGUser->get_email(). ')';
+			}
+			
 			$contact_list[ $item_vote->user_id ] = array(
 				'entity_id'		=> $item_vote->user_id,
 				'entity_str'	=> $entity_str,
@@ -191,20 +226,18 @@ class WDGCampaignInvestments {
 
 		// Priorité numéro 1 : valider les pré-investissements qui peuvent l'être
 		if ( !empty( $preinvestments_to_validate ) ) {
-			$buffer_email_content .= "<b>Priorité 1 : valider les pré-investissements suivants</b><br>";
+//			$buffer_email_content .= "<b>Priorité 1 : valider les pré-investissements suivants</b><br>";
 			foreach ( $preinvestments_to_validate as $preinvestment_str ) {
-				$buffer_email_content .= "- " .$preinvestment_str. "<br>";
+				array_push( $list_priorities, "faire valider le pr&eacute;investissement suivant : " . $preinvestment_str );
 			}
-			$buffer_email_content .= "<br><br>";
 		}
 
 		// Priorité numéro 2 : faire venir les investissements en attente dont les documents sont validés
 		if ( !empty( $investments_to_complete ) ) {
-			$buffer_email_content .= "<b>Priorité 2 : ces investissements sont en attente d'authentification, et les investisseurs sont authentifiés</b><br>";
+//			$buffer_email_content .= "<b>Priorité 2 : ces investissements sont en attente d'authentification, et les investisseurs sont authentifiés</b><br>";
 			foreach ( $investments_to_complete as $investment_str ) {
-				$buffer_email_content .= "- " .$investment_str. "<br>";
+				array_push( $list_priorities, "faire finaliser l'investissement suivant (l'investisseur est authentifi&eacute;) : " . $investment_str );
 			}
-			$buffer_email_content .= "<br><br>";
 		}
 
 
@@ -228,22 +261,42 @@ class WDGCampaignInvestments {
 						}
 					}
 					$registration_str = ( $entity_is_registered ) ? "Déjà authentifié" : "Pas encore authentifié";
-					$prio3_content .= "- " .$entity_str. " --> Intention de " .$contact_info[ 'vote_sum' ]." € et investissement de " .$contact_info[ 'invest_sum' ]." € (" .$registration_str. ")<br>";
+					$prio3_content .= $entity_str. " - Intention de " .$contact_info[ 'vote_sum' ]." € et investissement de " .$contact_info[ 'invest_sum' ]." € (" .$registration_str. ")<br>";
 				}
 			}
 			
 			if ( !empty( $prio3_content ) ) {
-				$buffer_email_content .= "<b>Priorité 3 : évaluations avec de bonnes intentions et de moins bons investissements</b><br>";
+//				$buffer_email_content .= "<b>Priorité 3 : évaluations avec de bonnes intentions et de moins bons investissements</b><br>";
 				$buffer_email_content .= $prio3_content;
-				$buffer_email_content .= "<br><br>";
+				array_push( $list_priorities, "faire investir autant que l'intention : " . $prio3_content );
+			}
+		}
+		
+		$send_mail = FALSE;
+		$date = new DateTime();
+		$day = $date->format( 'd' );
+		$day_modulo = $day % 3;
+		for ( $i = $day_modulo; $i <= 15; $i += 3 ) {
+			if ( isset( $list_priorities[ $i ] ) ) {
+				$send_mail = TRUE;
+				$buffer_email_content .= "- " .$list_priorities[ $i ]. "<br>";
 			}
 		}
 
-		
-		$buffer_email_content .= "A bientôt !";
+
+		if ( $send_mail ) {
+			$list_outro = array(
+				"Bonne journ&eacute;e !",
+				"A bient&ocirc;t !",
+				"Belle journ&eacute;e !",
+				"Je vous souhaite une bonne journ&eacute;e !",
+				"Bon courage !"
+			);
+			$buffer_email_content .= "<br><br><br>" . array_rand( $list_outro );
 
 
-		NotificationsEmails::send_mail( 'admin@wedogood.co', $buffer_email_object, $buffer_email_content );
+			NotificationsEmails::send_mail( 'admin@wedogood.co', $buffer_email_object, $buffer_email_content );
+		}
 		
 	}
 }
