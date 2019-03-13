@@ -131,9 +131,9 @@ class WDGCampaignInvestments {
 			"Voici les actions quotidiennes prioritaires !",
 			"Ci-dessous les actions du jour &agrave; effectuer en priorit&eacute; !"
 		);
-		$buffer_email_content = array_rand( $list_introductions_1 ) . "<br><br>";
-		$buffer_email_content .= array_rand( $list_introductions_2 ) . "<br>";
-		$buffer_email_content .= array_rand( $list_introductions_3 ) . "<br><br>";
+		$buffer_email_content = $list_introductions_1[ mt_rand( 0, count( $list_introductions_1 ) - 1 ) ] . "<br><br>";
+		$buffer_email_content .= $list_introductions_2[ mt_rand( 0, count( $list_introductions_2 ) - 1 ) ] . "<br>";
+		$buffer_email_content .= $list_introductions_3[ mt_rand( 0, count( $list_introductions_3 ) - 1 ) ] . "<br><br>";
 
 		// Données utiles tout le long
 		$list_priorities = array();
@@ -267,14 +267,13 @@ class WDGCampaignInvestments {
 			
 			if ( !empty( $prio3_content ) ) {
 //				$buffer_email_content .= "<b>Priorité 3 : évaluations avec de bonnes intentions et de moins bons investissements</b><br>";
-				$buffer_email_content .= $prio3_content;
 				array_push( $list_priorities, "faire investir autant que l'intention : " . $prio3_content );
 			}
 		}
 		
 		$send_mail = FALSE;
 		$date = new DateTime();
-		$day = $date->format( 'd' );
+		$day = $date->format( 'j' );
 		$day_modulo = $day % 3;
 		for ( $i = $day_modulo; $i <= 15; $i += 3 ) {
 			if ( isset( $list_priorities[ $i ] ) ) {
@@ -292,7 +291,7 @@ class WDGCampaignInvestments {
 				"Je vous souhaite une bonne journ&eacute;e !",
 				"Bon courage !"
 			);
-			$buffer_email_content .= "<br><br><br>" . array_rand( $list_outro );
+			$buffer_email_content .= "<br><br><br>" . $list_outro[ mt_rand( 0, count( $list_outro ) - 1 ) ];
 
 
 			NotificationsEmails::send_mail( 'admin@wedogood.co', $buffer_email_object, $buffer_email_content );
