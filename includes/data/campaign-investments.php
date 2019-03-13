@@ -203,6 +203,7 @@ class WDGCampaignInvestments {
 					$contact_list[ $item_invest[ 'user' ] ] = array(
 						'entity_id'		=> $item_invest[ 'user' ],
 						'entity_str'	=> $entity_str,
+						'entity_is_registered'	=> $entity_is_registered,
 						'vote_sum'		=> 0,
 						'invest_sum'	=> $item_invest[ 'amount' ],
 						'skip_contact'	=> FALSE
@@ -246,7 +247,7 @@ class WDGCampaignInvestments {
 			foreach ( $contact_list as $contact_info ) {
 				if ( $contact_info[ 'vote_sum' ] > $contact_info[ 'invest_sum' ] && !$contact_info[ 'skip_contact' ] ) {
 					$entity_str = $contact_info[ 'entity_str' ];
-					$entity_is_registered = FALSE;
+					$entity_is_registered = $contact_info[ 'entity_is_registered' ];
 					if ( empty( $entity_str ) ) {
 						$contact_id = $contact_info[ 'entity_id' ];
 						if ( WDGOrganization::is_user_organization( $contact_id ) ) {
