@@ -151,14 +151,17 @@ class WDGCampaignInvestments {
 			if ( WDGOrganization::is_user_organization( $item_vote->user_id ) ) {
 				$WDGOrganization = new WDGOrganization( $item_vote->user_id );
 				$entity_str = $WDGOrganization->get_name(). ' (' .$WDGOrganization->get_email(). ')';
+				$entity_is_registered = $WDGOrganization->is_registered_lemonway_wallet();
 			} else {
 				$WDGUser = new WDGUser( $item_vote->user_id );
 				$entity_str = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname(). ' (' .$WDGUser->get_email(). ')';
+				$entity_is_registered = $WDGUser->is_lemonway_registered();
 			}
 			
 			$contact_list[ $item_vote->user_id ] = array(
 				'entity_id'		=> $item_vote->user_id,
 				'entity_str'	=> $entity_str,
+				'entity_is_registered'	=> $entity_is_registered,
 				'vote_sum'		=> $item_vote->invest_sum,
 				'invest_sum'	=> 0,
 				'skip_contact'	=> FALSE
