@@ -186,6 +186,7 @@ class WDGAjaxActions {
 				$payment_amount = $first_investment_contract->subscription_amount;
 				$purchase_date = date_i18n( get_option('date_format'), strtotime( $first_investment_contract->subscription_date ) );
 				$roi_list = $WDGUserEntity->get_royalties_by_investment_contract_id( $first_investment_contract->id, FALSE );
+				$purchase_id = $first_investment_contract->subscription_id;
 				
 			} else {
 				$purchase_id = $purchase_post->ID;
@@ -257,12 +258,19 @@ class WDGAjaxActions {
 				
 				// Fichier de contrat
 				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
-				if ( count( $files ) ) {
+				$test_file_name = dirname( __FILE__ ). '/../../files/contracts/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
+				if ( file_exists( $test_file_name ) ) {
+					$contract_index++;
+					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
+					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
+					$investment_item[ 'contract_file_name' ] = $download_filename;
+					
+				} elseif ( count( $files ) ) {
 					$filelist_extract = explode( '/', $files[ $contract_index ] );
 					$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
 					$contract_index++;
-					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
 					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
+					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
 					$investment_item[ 'contract_file_name' ] = $download_filename;
 					
 				} else {
