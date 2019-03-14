@@ -1,5 +1,6 @@
 files/campaign-funded/*
 !files/campaign-funded/index.php
+files/contracts/*
 files/certificate-roi-payment/*
 !files/certificate-roi-payment/index.php
 files/certificate-roi-yearly-user/*
