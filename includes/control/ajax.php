@@ -258,10 +258,10 @@ class WDGAjaxActions {
 				
 				// Fichier de contrat
 				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
-				$test_file_name = dirname( __FILE__ ). '/../../files/contracts/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
+				$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
 				if ( file_exists( $test_file_name ) ) {
 					$contract_index++;
-					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
+					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
 					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
 					$investment_item[ 'contract_file_name' ] = $download_filename;
 					
