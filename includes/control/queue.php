@@ -308,7 +308,7 @@ class WDGQueue {
 		}
 		
 		// Vérifie si le statut du document n'a pas changé
-		if ( $lemonway_document->get_status() == $queued_action_param->document_status ) {
+		if ( $lemonway_document != FALSE && $lemonway_document->get_status() == $queued_action_param->document_status ) {
 			
 			//On vérifie si il y'a une action en cours :
 			$pending_actions = array();
