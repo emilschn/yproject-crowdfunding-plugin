@@ -12,6 +12,7 @@ class NotificationsAPI {
 		'322' => "KYC - Doc en cours de validation",
 		'323' => "KYC - Doc refusé",
 		'324' => "KYC - Wallet validé",
+		'641' => "Conseils quotidiens",
 		'573' => "Relance - Evaluation - Avec intention",
 		'575' => "Relance - Evaluation - Sans intention",
 		'576' => "Relance - Pré-lancement - Evaluation avec intention",
@@ -140,6 +141,31 @@ class NotificationsAPI {
 		$id_template = '181';
 		$options = array(
 			'PRENOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+
+	//**************************************************************************
+	// Entrepreneurs
+	//**************************************************************************
+    //*******************************************************
+    // Conseils quotidiens
+    //*******************************************************
+	public static function campaign_advice( $recipient, $campaign_name, $user_name, $greetings, $last_24h, $top_actions ) {
+		$id_template = '641';
+		$options = array(
+			'NOM_PROJET'				=> $campaign_name,
+			'NOM_UTILISATEUR'			=> $user_name,
+			'SALUTATIONS'				=> $greetings,
+			'RESUME_24H'				=> $last_24h,
+			'ACTIONS_PRIORITAIRES'		=> $top_actions,
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
