@@ -176,7 +176,7 @@ class WDGCampaignInvestments {
 			// Pré-investissements à valider
 			if ( $item_invest[ 'status' ] == 'pending' && $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$count_preinvestments_to_validate++;
-				$count_preinvestments_to_validate_amount += $item_invest[ 'amout' ];
+				$count_preinvestments_to_validate_amount += $item_invest[ 'amount' ];
 				array_push( $preinvestments_to_validate, $entity_str );
 				if ( isset( $contact_list[ $item_invest[ 'user' ] ] ) ) {
 					$contact_list[ $item_invest[ 'user' ] ][ 'skip_contact' ] = TRUE;
@@ -186,7 +186,7 @@ class WDGCampaignInvestments {
 			// Investissements dont l'investisseur s'est authentifié
 			if ( $item_invest[ 'status' ] == 'pending' && $contract_status == WDGInvestment::$contract_status_not_validated && $entity_is_registered ) {
 				$count_investments_to_validate++;
-				$count_investments_to_validate_amount += $item_invest[ 'amout' ];
+				$count_investments_to_validate_amount += $item_invest[ 'amount' ];
 				array_push( $investments_to_complete, $entity_str );
 				if ( isset( $contact_list[ $item_invest[ 'user' ] ] ) ) {
 					$contact_list[ $item_invest[ 'user' ] ][ 'skip_contact' ] = TRUE;
