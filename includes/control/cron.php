@@ -5,10 +5,10 @@
 class WDGCronActions {
 	
 	public static function send_notifications() {
-		
-		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 10 jours
 		$current_date = new DateTime();
 		$current_date->setTime( 0, 0, 1 );
+		
+		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 10 jours
 		$date_in_10_days = new DateTime();
 		$date_in_10_days->add( new DateInterval('P9D') );
 		$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
@@ -63,6 +63,63 @@ class WDGCronActions {
 					}
 				}
 
+			}
+		}
+		
+		// Si on est le 15, il faut envoyer les avertissements de prélèvement
+		if ( $current_date->format( 'd' ) == 15 ) {
+			$date_in_5_days = new DateTime();
+			$date_in_5_days->add( new DateInterval('P5D') );
+			$date_5_days_ago = new DateTime();
+			$date_5_days_ago->sub( new DateInterval('P5D') );
+			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $date_5_days_ago->format( 'Y-m-d' ), $current_date->format( 'Y-m-d' ) );
+			if ( $declaration_list ) {
+				foreach ( $declaration_list as $declaration_data ) {
+					// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
+					if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
+						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+							
+							$organization = $campaign->get_organization();
+							$wdgorganization = new WDGOrganization( $organization->id, $organization );
+							$wdguser_author = new WDGUser( $campaign->data->post_author );
+							$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
+						
+							$quarter_str_list = array( "premier", "deuxième", "troisième", "quatrième" );
+							$quarter_percent_list = array( 10, 20, 30, 40 );
+							$nb_quarter = 0;
+							$nb_year = 0;
+							$percent_estimation = 10;
+							
+							$existing_roi_declarations = $campaign->get_roi_declarations();
+							foreach ( $existing_roi_declarations as $declaration_object ) {
+								$date_declaration = new DateTime( $declaration_object[ 'date_due' ] );
+								
+								if ( $date_declaration->format( 'm' ) == $current_date->format( 'm' ) && $date_declaration->format( 'Y' ) == $current_date->format( 'Y' ) ) {
+									break;
+									
+								} else {
+									$nb_quarter++;
+									if ( $nb_quarter >= $campaign->get_declararations_count_per_year() ) {
+										$nb_quarter = 0;
+										$nb_year++;
+									}
+								}
+							}
+							
+							$estimated_turnover = $campaign->estimated_turnover();
+							$amount_estimation_year = $estimated_turnover[ $nb_year ];
+							$percent_royalties = $quarter_percent_list[ $nb_quarter ];
+							$amount_estimation_quarter = $amount_estimation_year * $percent_royalties / 100;
+							$amount_royalties = round( $amount_estimation_quarter * $campaign->roi_percent() / 100, 2 );
+							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
+							$amount_total = $amount_royalties + $amount_fees;
+							$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
+							
+							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author->get_firstname(), $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date );
+						}
+					}
+				}
 			}
 		}
 		

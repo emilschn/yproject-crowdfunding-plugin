@@ -31,6 +31,7 @@ class NotificationsAPI {
 		'116' => "Déclarations - Rappel J-2 (sans prélèvement)",
 		'121' => "Déclarations - Rappel J (avec prélèvement)",
 		'120' => "Déclarations - Rappel J (sans prélèvement)",
+		'595' => "Déclarations - Avertissement prélèvement",
 		'127' => "Déclaration faite avec CA",
 		'150' => "Déclaration faite sans CA",
 		'139' => "Versement de royalties - résumé quotidien",
@@ -581,6 +582,29 @@ class NotificationsAPI {
 			
 		}
 		return FALSE;
+	}
+	
+	public static function declaration_to_do_warning( $recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date ) {
+		$id_template = '595';
+		$options = array(
+			'NOM_UTILISATEUR'					=> $user_name,
+			'NB_TRIMESTRE'						=> $nb_quarter,
+			'POURCENT_PREVISIONNEL'				=> $percent_estimation,
+			'MONTANT_PREVISIONNEL_ANNEE'		=> $amount_estimation_year,
+			'MONTANT_PREVISIONNEL_TRIMESTRE'	=> $amount_estimation_quarter,
+			'POURCENT_ROYALTIES'				=> $percent_royalties,
+			'MONTANT_ROYALTIES'					=> $amount_royalties,
+			'MONTANT_COMMISSION'				=> $amount_fees,
+			'MONTANT_TOTAL'						=> $amount_total,
+			'DATE_PRELEVEMENT'					=> $mandate_wire_date
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
     //*******************************************************
     // FIN - NOTIFICATIONS DECLARATIONS ROI A FAIRE
