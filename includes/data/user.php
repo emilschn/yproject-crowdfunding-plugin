@@ -1914,10 +1914,16 @@ class WDGUser {
 					$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
 					if ( !empty( $input_get_campaign_id ) ) {
 						$buffer .= '?campaign_id=' . $input_get_campaign_id;
+						
+					} elseif (ATCF_Campaign::is_campaign( $post->ID ) ) {
+						$campaign = new ATCF_Campaign( $post->ID );
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
+							$anchor = '#vote';
+						}
 					}
 					
 					ypcf_session_start();
-					$_SESSION[ 'login-fb-referer' ] = $buffer;
+					$_SESSION[ 'login-fb-referer' ] = $buffer . $anchor;
 				}
 			}
 		}

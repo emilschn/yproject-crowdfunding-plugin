@@ -291,6 +291,10 @@ class ATCF_Campaign {
 		}
 	}
 	
+	public static function is_campaign( $post_id ) {
+		return ( get_post_meta( $post_id, 'campaign_funding_type', TRUE ) != '' );
+	}
+	
 /*******************************************************************************
  * METAS
  ******************************************************************************/
