@@ -2000,8 +2000,8 @@ class WDGAjaxActions {
 				$orga_wallet_details = $orga->get_wallet_details();
 				$span_class = 'error';
 				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
-					switch ( $WDGUser_wallet_details->STATUS ) {
+				if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
+					switch ( $orga_wallet_details->STATUS ) {
 						case '2':
 							$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
 							break;
