@@ -211,7 +211,7 @@ class WDGCampaignInvestments {
 				}
 				
 				$yesterday_date = new DateTime();
-				$yesterday_date->sub( new DateInterval( 'P1D' ) );
+				$yesterday_date->sub( new DateInterval( 'P3D' ) );
 				$yesterday_date->setTime( 0, 0, 1 );
 				$item_invest_date = new DateTime( $item_invest[ 'date' ] );
 				if ( $item_invest_date > $yesterday_date ) {
@@ -271,9 +271,19 @@ class WDGCampaignInvestments {
 		}
 		
 		// Résumé
-		$last_24h = "- " .$count_new_investments. " nouveaux investissements validés, pour un montant de " .$count_new_investments_amount. " €<br>";
-		$last_24h .= "- " .$count_preinvestments_to_validate. " pré-investissements en attente de validation, pour un montant de " .$count_preinvestments_to_validate_amount. " €<br>";
-		$last_24h .= "- " .$count_investments_to_validate. " investissements en attente de validation, pour un montant de " .$count_investments_to_validate_amount. " €<br>";
+		if ( $count_preinvestments_to_validate > 1 ) {
+			$last_24h = "- " .$count_new_investments. " nouveaux investissements validés, pour un montant de " .$count_new_investments_amount. " €<br>";
+		} else {
+			$last_24h = "- " .$count_new_investments. " nouvel investissement validé, pour un montant de " .$count_new_investments_amount. " €<br>";
+		}
+		if ( $count_preinvestments_to_validate > 0 ) {
+			$last_24h .= "- " .$count_preinvestments_to_validate. " pré-investissements en attente de validation, pour un montant de " .$count_preinvestments_to_validate_amount. " €<br>";
+		}
+		if ( $count_preinvestments_to_validate > 1 ) {
+			$last_24h .= "- " .$count_investments_to_validate. " investissements en attente de validation, pour un montant de " .$count_investments_to_validate_amount. " €<br>";
+		} else {
+			$last_24h .= "- " .$count_investments_to_validate. " investissement en attente de validation, pour un montant de " .$count_investments_to_validate_amount. " €<br>";
+		}
 		$last_24h .= "- Total des investissements validés et comptabilisés : " .$campaign->current_amount(). " (" .$campaign->percent_minimum_completed(). ")<br>";
 		
 		
@@ -291,8 +301,7 @@ class WDGCampaignInvestments {
 		$top_actions = '';
 		$date = new DateTime();
 		$day = $date->format( 'j' );
-		$day_modulo = $day % 3;
-		for ( $i = $day_modulo; $i <= 15; $i += 3 ) {
+		for ( $i = 0; $i <= 15; $i++ ) {
 			if ( isset( $list_priorities[ $i ] ) ) {
 				$send_mail = TRUE;
 				$top_actions .= "- " .$list_priorities[ $i ]. "<br>";

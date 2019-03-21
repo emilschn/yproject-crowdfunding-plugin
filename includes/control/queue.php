@@ -358,7 +358,7 @@ class WDGQueue {
 		$priority = 'date';
 		$date_next_dispatch = new DateTime();
 		// On programme le prochain envoi 1 jour plus tard
-		$date_next_dispatch->add( new DateInterval( 'P1D' ) );
+		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
 		
