@@ -2569,8 +2569,8 @@ class ATCF_Campaign {
 
 						$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 
-						$signsquid_contract = new SignsquidContract($payment->ID);
-						$signsquid_status = $signsquid_contract->get_status_code();
+						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
+						$signature_status = $WDGInvestmentSignature->get_status();
 
 						$mangopay_contribution = FALSE;
 						$lemonway_contribution = FALSE;
@@ -2607,7 +2607,7 @@ class ATCF_Campaign {
 								'mangopay_contribution' => $mangopay_contribution,
 								'lemonway_contribution' => $lemonway_contribution,
 								'payment_key' => $lemonway_id,
-								'signsquid_status'	=> $signsquid_status
+								'signsquid_status'	=> $signature_status
 							);
 						}
 					}

@@ -69,7 +69,7 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_success( $payment_id, $code, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success( $payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
 
 		$particular_content = "";
@@ -79,7 +79,6 @@ class NotificationsEmails {
 
 		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
 		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
-		$particular_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong>";
 		$attachments = FALSE;
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
     }
