@@ -159,9 +159,10 @@ class NotificationsAPI {
     //*******************************************************
     // Conseils quotidiens
     //*******************************************************
-	public static function campaign_advice( $recipient, $campaign_name, $user_name, $greetings, $last_24h, $top_actions ) {
+	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $user_name, $greetings, $last_24h, $top_actions ) {
 		$id_template = '641';
 		$options = array(
+			'replyto'					=> $replyto_mail,
 			'NOM_PROJET'				=> $campaign_name,
 			'NOM_UTILISATEUR'			=> $user_name,
 			'SALUTATIONS'				=> $greetings,
