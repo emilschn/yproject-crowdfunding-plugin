@@ -82,6 +82,7 @@ class WDGCampaignInvestments {
 			$buffer['min_invest']= $buffer['amounts_array'][0];
 			$buffer['max_invest']= end($buffer['amounts_array']);
 		}
+		$buffer['investors_string'] = htmlentities( $buffer['investors_string'] );
 
 		return $buffer;
 	}
