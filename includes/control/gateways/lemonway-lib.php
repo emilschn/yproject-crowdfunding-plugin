@@ -496,6 +496,23 @@ class LemonwayLib {
 		return $result;
 	}
 	
+	public static function wallet_unregister_iban( $wallet_id, $iban_id ) {
+		if ( empty( $wallet_id ) ) return FALSE;
+		if ( empty( $iban_id ) ) return FALSE;
+		
+		//wallet ; ibanId
+		$param_list = array(
+			'wallet'	=> $wallet_id,
+			'ibanId'	=> $iban_id
+		);
+		
+		$result = LemonwayLib::call( 'UnregisterIBAN', $param_list );
+		if ($result !== FALSE) {
+			//Retourne : ID ; S (status)
+		}
+		return $result;
+	}
+	
 	/**
 	 * Enregistre un mandat de prélévement automatique lié à un wallet
 	 * @param int $wallet_id

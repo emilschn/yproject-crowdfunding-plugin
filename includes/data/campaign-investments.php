@@ -82,6 +82,7 @@ class WDGCampaignInvestments {
 			$buffer['min_invest']= $buffer['amounts_array'][0];
 			$buffer['max_invest']= end($buffer['amounts_array']);
 		}
+		$buffer['investors_string'] = htmlentities( $buffer['investors_string'] );
 
 		return $buffer;
 	}
@@ -211,7 +212,7 @@ class WDGCampaignInvestments {
 				}
 				
 				$yesterday_date = new DateTime();
-				$yesterday_date->sub( new DateInterval( 'P1D' ) );
+				$yesterday_date->sub( new DateInterval( 'P3D' ) );
 				$yesterday_date->setTime( 0, 0, 1 );
 				$item_invest_date = new DateTime( $item_invest[ 'date' ] );
 				if ( $item_invest_date > $yesterday_date ) {
@@ -271,9 +272,19 @@ class WDGCampaignInvestments {
 		}
 		
 		// Résumé
-		$last_24h = "- " .$count_new_investments. " nouveaux investissements validés, pour un montant de " .$count_new_investments_amount. " €<br>";
-		$last_24h .= "- " .$count_preinvestments_to_validate. " pré-investissements en attente de validation, pour un montant de " .$count_preinvestments_to_validate_amount. " €<br>";
-		$last_24h .= "- " .$count_investments_to_validate. " investissements en attente de validation, pour un montant de " .$count_investments_to_validate_amount. " €<br>";
+		if ( $count_new_investments > 1 ) {
+			$last_24h = "- " .$count_new_investments. " nouveaux investissements validés, pour un montant de " .$count_new_investments_amount. " €<br>";
+		} else {
+			$last_24h = "- " .$count_new_investments. " nouvel investissement validé, pour un montant de " .$count_new_investments_amount. " €<br>";
+		}
+		if ( $count_preinvestments_to_validate > 0 ) {
+			$last_24h .= "- " .$count_preinvestments_to_validate. " pré-investissements en attente de validation, pour un montant de " .$count_preinvestments_to_validate_amount. " €<br>";
+		}
+		if ( $count_investments_to_validate > 1 ) {
+			$last_24h .= "- " .$count_investments_to_validate. " investissements en attente de validation, pour un montant de " .$count_investments_to_validate_amount. " €<br>";
+		} else {
+			$last_24h .= "- " .$count_investments_to_validate. " investissement en attente de validation, pour un montant de " .$count_investments_to_validate_amount. " €<br>";
+		}
 		$last_24h .= "- Total des investissements validés et comptabilisés : " .$campaign->current_amount(). " (" .$campaign->percent_minimum_completed(). ")<br>";
 		
 		
@@ -291,8 +302,7 @@ class WDGCampaignInvestments {
 		$top_actions = '';
 		$date = new DateTime();
 		$day = $date->format( 'j' );
-		$day_modulo = $day % 3;
-		for ( $i = $day_modulo; $i <= 15; $i += 3 ) {
+		for ( $i = 0; $i <= 15; $i++ ) {
 			if ( isset( $list_priorities[ $i ] ) ) {
 				$send_mail = TRUE;
 				$top_actions .= "- " .$list_priorities[ $i ]. "<br>";
@@ -301,16 +311,17 @@ class WDGCampaignInvestments {
 
 
 		if ( $send_mail ) {
-			NotificationsAPI::campaign_advice( 'communication@wedogood.co', $campaign->get_name(), 'WE DO GOOD', $greetings, $last_24h, $top_actions );
+			$replyto_mail = 'support@wedogood.co';
+			NotificationsAPI::campaign_advice( 'communication@wedogood.co', $replyto_mail, $campaign->get_name(), 'WE DO GOOD', $greetings, $last_24h, $top_actions );
 			
 			$WDGUserAuthor = new WDGUser( $campaign->data->post_author );
-			NotificationsAPI::campaign_advice( $WDGUserAuthor->get_email(), $campaign->get_name(), $WDGUserAuthor->get_firstname(), $greetings, $last_24h, $top_actions );
+			NotificationsAPI::campaign_advice( $WDGUserAuthor->get_email(), $replyto_mail, $campaign->get_name(), $WDGUserAuthor->get_firstname(), $greetings, $last_24h, $top_actions );
 		
 			$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 			if ( count( $team_member_list ) > 0 ) {
                 foreach ( $team_member_list as $team_member ) {
                     $WDGUserTeam = new WDGUser( $team_member->wpref );
-					NotificationsAPI::campaign_advice( $WDGUserTeam->get_email(), $campaign->get_name(), $WDGUserTeam->get_firstname(), $greetings, $last_24h, $top_actions );
+					NotificationsAPI::campaign_advice( $WDGUserTeam->get_email(), $replyto_mail, $campaign->get_name(), $WDGUserTeam->get_firstname(), $greetings, $last_24h, $top_actions );
 				}
 			}
 		}
