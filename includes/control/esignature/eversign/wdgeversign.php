@@ -109,7 +109,7 @@ class WDGEversign {
 		return self::call_get( 'document', 'document_hash=' .$document_id );
 	}
 	
-	public static function create_document( $title, $message, $wdg_signature_id, $file_name, $file_url, $signer_id, $signer_name, $signer_email, $signature_page ) {
+	public static function create_document( $title, $message, $wdg_signature_id, $file_name, $file_url, $signer_id, $signer_name, $signer_email ) {
 		// General
 		$sandbox = WDG_EVERSIGN_SANDBOX;
 		$reminders = 1;

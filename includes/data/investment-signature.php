@@ -125,6 +125,7 @@ class WDGInvestmentSignature {
  * CREATIONS
  ******************************************************************************/
 	public function create_eversign() {
+		$this->include_eversign();
 		$WDGInvestment = new WDGInvestment( $this->subscription_id );
 		$campaign = $WDGInvestment->get_saved_campaign();
 		$investor_id = $WDGInvestment->get_saved_user_id();
