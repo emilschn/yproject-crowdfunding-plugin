@@ -141,6 +141,7 @@ class NotificationsAPI {
 	public static function user_registration( $recipient, $name ) {
 		$id_template = '181';
 		$options = array(
+			'skip_admin'			=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -162,6 +163,7 @@ class NotificationsAPI {
 	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $user_name, $greetings, $last_24h, $top_actions ) {
 		$id_template = '641';
 		$options = array(
+			'personal'					=> 1,
 			'replyto'					=> $replyto_mail,
 			'NOM_PROJET'				=> $campaign_name,
 			'NOM_UTILISATEUR'			=> $user_name,
@@ -188,6 +190,7 @@ class NotificationsAPI {
 	public static function rib_authentified( $recipient, $name ) {
 		$id_template = '311';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -205,6 +208,7 @@ class NotificationsAPI {
 	public static function kyc_waiting( $recipient, $name ) {
 		$id_template = '322';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -222,6 +226,7 @@ class NotificationsAPI {
 	public static function kyc_refused( $recipient, $name ) {
 		$id_template = '323';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -239,6 +244,7 @@ class NotificationsAPI {
 	public static function kyc_authentified( $recipient, $name ) {
 		$id_template = '324';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -256,6 +262,7 @@ class NotificationsAPI {
 	public static function kyc_authentified_and_pending_investment( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '605';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -275,6 +282,7 @@ class NotificationsAPI {
 	public static function kyc_authentified_and_pending_investment_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '606';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -300,6 +308,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $project_name,
@@ -326,6 +335,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
@@ -351,6 +361,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $project_name,
@@ -374,6 +385,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
@@ -396,6 +408,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
@@ -422,6 +435,7 @@ class NotificationsAPI {
 	public static function vote_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '632';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name
 		);
@@ -441,6 +455,7 @@ class NotificationsAPI {
 	public static function vote_authenticated_reminder( $recipient, $name, $project_name, $project_url, $project_api_id, $intention_amount ) {
 		$id_template = '628';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
@@ -467,6 +482,7 @@ class NotificationsAPI {
 	public static function investment_error( $recipient, $name, $amount, $project_name, $project_api_id, $lemonway_reason, $investment_link ) {
 		$id_template = '175';
 		$options = array(
+			'personal'				=> 1,
 			'NOM'					=> $name,
 			'MONTANT'				=> $amount,
 			'NOM_PROJET'			=> $project_name,
@@ -489,6 +505,7 @@ class NotificationsAPI {
 	public static function investment_authentication_needed( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '603';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -508,6 +525,7 @@ class NotificationsAPI {
 	public static function investment_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '604';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -588,6 +606,7 @@ class NotificationsAPI {
 	public static function declaration_to_do_warning( $recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date ) {
 		$id_template = '595';
 		$options = array(
+			'personal'							=> 1,
 			'NOM_UTILISATEUR'					=> $user_name,
 			'NB_TRIMESTRE'						=> $nb_quarter,
 			'POURCENT_PREVISIONNEL'				=> $percent_estimation,
@@ -617,6 +636,7 @@ class NotificationsAPI {
 	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount ) {
 		$id_template = '127';
 		$options = array(
+			'personal'				=> 1,
 			'NOM'					=> $name,
 			'NOM_PROJET'			=> $project_name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months,
@@ -634,6 +654,7 @@ class NotificationsAPI {
 	public static function declaration_done_without_turnover( $recipient, $name, $project_name, $last_three_months ) {
 		$id_template = '150';
 		$options = array(
+			'personal'				=> 1,
 			'NOM'					=> $name,
 			'NOM_PROJET'			=> $project_name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months
@@ -660,6 +681,7 @@ class NotificationsAPI {
 	public static function roi_transfer_daily_resume( $recipient, $name, $royalties_message ) {
 		$id_template = '139';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'RESUME_ROYALTIES'	=> $royalties_message,
 		);
@@ -678,6 +700,7 @@ class NotificationsAPI {
 	public static function roi_transfer_message( $recipient, $name, $project_name, $declaration_message, $replyto_mail ) {
 		$id_template = '522';
 		$options = array(
+			'personal'			=> 1,
 			'replyto'			=> $replyto_mail,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name,
