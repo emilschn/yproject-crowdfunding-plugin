@@ -74,8 +74,21 @@ class WDGInvestmentContract {
 		}
 	}
 	
+	public function get_api_id() {
+		return $this->api_id;
+	}
+	
 	public function create() {
 		WDGWPREST_Entity_InvestmentContract::create( $this );
+	}
+	
+	public function check_amount_received( $amount_received ) {
+		if ( $amount_received > $this->subscription_amount ) {
+			NotificationsEmails::roi_received_exceed_investment( $this->investor_id, $this->investor_type, $this->project_id );
+		}
+		if ( $this->maximum_to_receive > 0 && $amount_received > $this->maximum_to_receive ) {
+			NotificationsEmails::roi_received_exceed_maximum( $this->investor_id, $this->investor_type, $this->project_id );
+		}
 	}
 	
 	/**
@@ -196,6 +209,37 @@ class WDGInvestmentContract {
 			
 		} else {
 			return $investment_contracts;
+		}
+	}
+	
+	/**
+	 * Déplace les contrats qui sont dans includes/pdf_files vers files/contracts
+	 * @param int $campaign_id
+	 */
+	public static function move_campaign_contracts_to_final_directory( $campaign_id ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		
+		// On commence par créer le dossier final
+		$final_path = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign->ID. '-' .$campaign->get_url(). '/';
+		if ( !is_dir( $final_path ) ) {
+			mkdir( $final_path, 0755, TRUE );
+		}
+		
+		// Ensuite on parcourt les investissements
+		$list_investments = $campaign->payments_data( TRUE );
+		foreach ( $list_investments as $investment_item ) {
+			if ( $investment_item[ 'status' ] == 'publish' ) {
+				$investment_item_id = $investment_item[ 'ID' ];
+
+				// On recherche le fichier pdf qui correspond au pattern
+				$investment_item_user_id = $investment_item[ 'user' ];
+				$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$investment_item_user_id. '*.pdf';
+				$files = glob( $exp );
+				foreach ( $files as $file ) {
+					// On le déplace dans le dossier final
+					copy( $file, $final_path. $investment_item_id . '.pdf' );
+				}
+			}
 		}
 	}
 }

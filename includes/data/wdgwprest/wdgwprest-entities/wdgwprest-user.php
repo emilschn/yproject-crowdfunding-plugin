@@ -60,7 +60,9 @@ class WDGWPREST_Entity_User {
 			'username'			=> $user->get_login(),
 			'birthday_date'		=> $user->get_birthday_date(),
 			'birthday_city'		=> $user->get_birthplace(),
+			'birthday_district'	=> $user->get_birthplace_district(),
 			'birthday_department'	=> $user->get_birthplace_department(),
+			'birthday_country'	=> $user->get_birthplace_country(),
 			'nationality'		=> $user->get_nationality(),
 			'address_number'		=> $user->get_address_number(),
 			'address_number_comp'	=> $user->get_address_number_complement(),
@@ -176,6 +178,15 @@ class WDGWPREST_Entity_User {
 			}
 		}
 		return $buffer;
+	}
+	
+	/**
+	 * Retourne les contrats d'investissements liés à un utilisateur
+	 * @return array
+	 */
+	public static function get_investment_contracts( $user_api_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_api_id. '/investment-contracts' );
+		return $result_obj;
 	}
 	
 	/**

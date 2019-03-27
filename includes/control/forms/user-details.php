@@ -122,7 +122,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				[ $is_subscribed_to_newsletter ],
 				FALSE,
 				[
-					'subscribe_newsletter' => __( "Je souhaite recevoir la newsletter WE DO GOOD" )
+					'subscribe_newsletter' => __( "Je souhaite recevoir la newsletter WE DO GOOD mensuelle" )
 				]
 			);
 			
@@ -159,6 +159,21 @@ class WDG_Form_User_Details extends WDG_Form {
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace()
 			);
+
+			$district_list = array();
+			$district_list[ 0 ] = '-';
+			for ( $i = 1; $i <= 20; $i++ ) {
+				$district_list[ $i ] = $i;
+			}
+			$this->addField(
+				'select',
+				'birthplace_district',
+				__( "Arrondissement dans la ville de naissance", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_birthplace_district(),
+				__( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ),
+				$district_list
+			);
 			
 			global $french_departments;
 			$this->addField(
@@ -172,6 +187,16 @@ class WDG_Form_User_Details extends WDG_Form {
 			);
 			
 			global $country_list;
+			$this->addField(
+				'select',
+				'birthplace_country',
+				__( "Pays de naissance", 'yproject' ),
+				WDG_Form_User_Details::$field_group_complete,
+				$WDGUser->get_birthplace_country(),
+				FALSE,
+				$country_list
+			);
+			
 			$this->addField(
 				'select',
 				'nationality',
@@ -280,10 +305,10 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'textarea',
 				'contact_if_deceased',
-				__( "Personne &agrave; contacter en cas de d&eacute;c&egrave;s", 'yproject' ),
+				__( "Personne de confiance", 'yproject' ),
 				WDG_Form_User_Details::$field_group_extended,
 				$WDGUser->get_contact_if_deceased(),
-				__( "Si nous sommes inform&eacute;s de votre d&eacute;c&egrave;s (justifi&eacute; par un avis de d&eacute;c&egrave;s), nous contacterons cette personne pour lui donner l'acc&egrave;s &agrave; votre compte WE DO GOOD. Laissez ce champs vide si vous souhaitez que personne ne soit contact&eacute;. Indiquez pr&eacute;nom, nom, adresse email et num&eacute;ro de t&eacute;l&eacute;phone.", 'yproject' )
+				__( "Identifiez ici les coordonn&eacute;es (nom, mail, t&eacute;l&eacute;phone) de votre personne de confiance &agrave; contacter en cas de souci majeur, notamment en cas de d&eacute;c&egrave;s. Pensez &agrave; l'informer au pr&eacute;alable de vos investissements sur WE DO GOOD pour qu'elle soit au courant. En remplissant ce champ, vous nous autorisez &agrave; lui donner l'acc&egrave;s &agrave; votre compte personnel sur justificatif de votre impossibilit&eacute; à acc&eacute;der &agrave; votre compte.", 'yproject' )
 			);
 		
 		}
@@ -346,7 +371,9 @@ class WDG_Form_User_Details extends WDG_Form {
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
+				$birthplace_district = $this->getInputText( 'birthplace_district' );
 				$birthplace_department = $this->getInputText( 'birthplace_department' );
+				$birthplace_country = $this->getInputText( 'birthplace_country' );
 				$nationality = $this->getInputText( 'nationality' );
 				$address_number = $this->getInputText( 'address_number' );
 				$address_number_complement = $this->getInputText( 'address_number_complement' );
@@ -380,16 +407,18 @@ class WDG_Form_User_Details extends WDG_Form {
 					$WDGUser->save_data(
 						$email, $gender, $firstname, $lastname, $use_lastname,
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-						$birthplace, $birthplace_department, $nationality,
+						$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 						$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, 
 						$description, $contact_if_deceased
 					);
 					
 					$was_registered = $WDGUser->is_lemonway_registered();
 					if ( !$was_registered && $WDGUser->can_register_lemonway() ) {
+						ypcf_debug_log( 'WDG_Form_User_Details::postForm > $WDGUser->register_lemonway();' );
 						$WDGUser->register_lemonway();
 						// Si il n'était authentifié sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
 						if ( !$was_registered && $WDGUser->is_lemonway_registered() ) {
+							ypcf_debug_log( 'WDG_Form_User_Details::postForm > $WDGUser->send_kyc();' );
 							$WDGUser->send_kyc();
 						}
 					}

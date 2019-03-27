@@ -1,11 +1,15 @@
 files/campaign-funded/*
 !files/campaign-funded/index.php
+files/contracts/*
 files/certificate-roi-payment/*
 !files/certificate-roi-payment/index.php
 files/certificate-roi-yearly-user/*
 !files/certificate-roi-yearly-user/index.php
+files/fiscal-documents/*
 files/investment-check/*
 !files/investment-check/index.php
+files/tax-exemption/*
+files/tax-documents/*
 includes/accounts/*
 includes/contracts/*
 !includes/contracts/index.php

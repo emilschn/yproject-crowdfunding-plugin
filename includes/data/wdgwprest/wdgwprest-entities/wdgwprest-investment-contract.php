@@ -13,7 +13,7 @@ class WDGWPREST_Entity_InvestmentContract {
 	 * @return object
 	 */
 	public static function get( $id ) {
-		return WDGWPRESTLib::call_get_external( 'investment-contract/' . $id );
+		return WDGWPRESTLib::call_get_wdg( 'investment-contract/' . $id );
 	}
 	
 	/**
@@ -69,5 +69,9 @@ class WDGWPREST_Entity_InvestmentContract {
 			'amount_received'	=> $amount_received
 		);
 		return WDGWPRESTLib::call_post_wdg( 'investment-contract/' .$investment_contract_id, $parameters );
+	}
+	
+	public static function get_list_by_subscription_id( $id_investment ) {
+		return WDGWPRESTLib::call_get_wdg( 'investment-contracts/?id_subscription=' . $id_investment );
 	}
 }

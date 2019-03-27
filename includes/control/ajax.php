@@ -151,19 +151,73 @@ class WDGAjaxActions {
 		
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$user_type = filter_input( INPUT_POST, 'user_type' );
+		$is_authentified = FALSE;
 		if ( $user_type == 'user' ) {
 			$WDGUserEntity = new WDGUser( $user_id );
+			$is_authentified = $WDGUserEntity->is_lemonway_registered();
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
+			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
 		}
+		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $WDGUserEntity->get_api_id() );
 		
+		$today_datetime = new DateTime();
 		$payment_status = array( 'publish', 'completed', 'pending' );
 		$purchases = edd_get_users_purchases( $user_id, -1, false, $payment_status );
+		
+		// Ajout des contrats qui n'ont pas été liés à un investissement (post-campagne)
+		if ( !empty( $investment_contracts ) ) {
+			foreach ( $investment_contracts as $investment_contract ) {
+				if ( $investment_contract->subscription_id == 0 ) {
+					$investment = array(
+						'investment_contract'	=> $investment_contract
+					);
+					array_push( $purchases, $investment );
+				}
+			}
+		}
+		
 		foreach ( $purchases as $purchase_post ){
-			$downloads = edd_get_payment_meta_downloads( $purchase_post->ID );
-			if ( !is_array( $downloads[ 0 ] ) ){
-				$campaign_id = $downloads[0];
-				$campaign = atcf_get_campaign( $campaign_id );
+			$first_investment_contract = FALSE;
+			if ( is_array( $purchase_post ) && isset( $purchase_post[ 'investment_contract' ] ) ) {
+				$first_investment_contract = $purchase_post[ 'investment_contract' ];
+				$purchase_status = 'publish';
+				$campaign = new ATCF_Campaign( FALSE, $first_investment_contract->project_id );
+				$campaign_id = $campaign->ID;
+				$payment_amount = $first_investment_contract->subscription_amount;
+				$purchase_date = date_i18n( get_option('date_format'), strtotime( $first_investment_contract->subscription_date ) );
+				$roi_list = $WDGUserEntity->get_royalties_by_investment_contract_id( $first_investment_contract->id, FALSE );
+				$purchase_id = $first_investment_contract->subscription_id;
+				
+			} else {
+				$purchase_id = $purchase_post->ID;
+				$purchase_status = $purchase_post->post_status;
+				$downloads = edd_get_payment_meta_downloads( $purchase_id );
+				if ( !is_array( $downloads[ 0 ] ) ){
+					$campaign_id = $downloads[0];
+					$campaign = atcf_get_campaign( $campaign_id );
+					if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte && $purchase_status == 'pending' ) {
+						continue;
+					}
+				}
+				$payment_amount = edd_get_payment_amount( $purchase_id );
+				$purchase_date = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_id ) ) );
+				
+				if ( !empty( $investment_contracts ) ) {
+					foreach ( $investment_contracts as $investment_contract ) {
+						if ( $investment_contract->subscription_id == $purchase_id ) {
+							$first_investment_contract = $investment_contract;
+						}
+					}
+				}
+				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $purchase_id, FALSE );
+			}
+				
+			if ( !empty( $campaign ) ) {
+				
+				// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
+				$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$user_id. '_*.pdf';
+				$files = glob( $exp );
 				
 				if ( !isset( $buffer[ $campaign_id ] ) ) {
 					$buffer[ $campaign_id ] = array();
@@ -177,24 +231,177 @@ class WDGAjaxActions {
 					$buffer[ $campaign_id ][ 'items' ] = array();
 				}
 				
-				$payment_amount = edd_get_payment_amount( $purchase_post->ID );
 				$investor_proportion = $payment_amount / $buffer[ $campaign_id ][ 'amount' ];
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
-				$roi_list = $WDGUserEntity->get_royalties_by_investment_id( $purchase_post->ID );
 				foreach ( $roi_list as $roi_item ) {
 					$roi_amount += $roi_item->amount;
 				}
 				
 				$investment_item = array();
-				$investment_item[ 'date' ] = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_post->ID ) ) );
+				$investment_item[ 'date' ] = $purchase_date;
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
-				$investment_item[ 'status' ] = utf8_encode( $purchase_post->post_status );
+				$investment_item[ 'status' ] = utf8_encode( $purchase_status );
+				if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
+					$investment_item[ 'status' ] = 'canceled';
+				}
+				$investment_item[ 'conclude-investment-url' ] = '';
+				if ( $purchase_status == 'pending' && $is_authentified ) {
+					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
+					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
+						$investment_item[ 'conclude-investment-url' ] = home_url( '/investir/?init_with_id=' .$purchase_post->ID. '&campaign_id=' .$campaign_id );
+					}
+				}
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
 				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
 				
+				// Fichier de contrat
+				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
+				$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
+				if ( file_exists( $test_file_name ) ) {
+					$contract_index++;
+					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
+					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
+					$investment_item[ 'contract_file_name' ] = $download_filename;
+					
+				} elseif ( count( $files ) ) {
+					$filelist_extract = explode( '/', $files[ $contract_index ] );
+					$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
+					$contract_index++;
+					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
+					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
+					$investment_item[ 'contract_file_name' ] = $download_filename;
+					
+				} else {
+					$investment_item[ 'contract_file_path' ] = '';
+					$investment_item[ 'contract_file_name' ] = '';
+				}
+				
+				
+				//*****
+				// Echéancier de royalties
+				
+				// Création du tableau des prévisionnels par année
+				$investment_item[ 'rois_by_year' ] = array();
+				$year_end_dates = array();
+				$estimated_turnover_list = $campaign->estimated_turnover();
+				if ( !empty( $estimated_turnover_list ) ){
+					
+					// On démarre de la date de démarrage du contrat
+					$contract_start_date = new DateTime( $campaign->contract_start_date() );
+					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
+					
+					foreach ( $estimated_turnover_list as $key => $turnover ) {
+						$year_item = array(
+							'estimated_rois'	=> YPUIHelpers::display_number( round( $turnover * $roi_percent_full / 100 ), TRUE ) . ' &euro;',
+							'amount_rois_nb'	=> 0,
+							'amount_rois'		=> '0 &euro;',
+							'roi_items'			=> array()
+						);
+						array_push( $investment_item[ 'rois_by_year' ], $year_item );
+						
+					
+						// Pour trouver toutes les échéances qui ont lieu sur une année, on avance au 21, et d'une année
+						$contract_start_date->add( new DateInterval( 'P1Y' ) );
+						$temp_date = new DateTime();
+						$temp_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), $contract_start_date->format( 'd' ) );
+						array_push( $year_end_dates, $temp_date );
+					}
+					
+				}
+				
+				
+				// - Déclarations de royalties liées à la campagne
+				$campaign_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+				if ( !empty( $campaign_roi_list ) ) {
+					foreach ( $campaign_roi_list as $roi_declaration ) {
+						
+						// On détermine sur quelle année ça se situe
+						$current_year_index = 0;
+						$decla_datetime = new DateTime( $roi_declaration->date_due );
+						
+						foreach ( $year_end_dates as $year_end_date ) {
+							if ( $decla_datetime < $year_end_date ) {
+								break;
+							}
+							
+							$current_year_index++;
+						}
+						// On a dépassé les années prévues par le prévisionnel, on en rajoute une au tableau
+						if ( !isset( $investment_item[ 'rois_by_year' ][ $current_year_index ] ) ) {
+							$year_item = array(
+								'estimated_rois'	=> '-',
+								'amount_rois_nb'	=> 0,
+								'amount_rois'		=> '0 &euro;',
+								'roi_items'			=> array()
+							);
+							array_push( $investment_item[ 'rois_by_year' ], $year_item );
+						
+							$contract_start_date->add( new DateInterval( 'P1Y' ) );
+							$temp_date = new DateTime();
+							$temp_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), $contract_start_date->format( 'd' ) );
+							array_push( $year_end_dates, $temp_date );
+						}
+
+						// Initialisation de la ligne avec les infos de la déclaration
+						$roi_item = array(
+							'date_db'		=> $roi_declaration->date_due,
+							'date'			=> date_i18n( 'F Y', strtotime( $roi_declaration->date_due ) ),
+							'amount'		=> '0 &euro;',
+							'status'		=> $roi_declaration->status,
+							'status_str'	=> ''
+						);
+						switch ( $roi_declaration->status ) {
+							case WDGROIDeclaration::$status_declaration:
+								if ( $decla_datetime < $today_datetime ) {
+									$roi_item[ 'status' ] = 'late';
+									$roi_item[ 'status_str' ] = __( "En retard", 'yproject' );
+								} else {
+									$roi_item[ 'status' ] = 'upcoming';
+									$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
+								}
+								break;
+							case WDGROIDeclaration::$status_finished:
+								// Rien
+								break;
+							case WDGROIDeclaration::$status_failed:
+								$roi_item[ 'status_str' ] = __( "En d&eacute;faut", 'yproject' );
+								break;
+							default:
+								$roi_item[ 'status' ] = 'upcoming';
+								$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
+								break;
+						}
+						
+						if ( $roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract ) || $first_investment_contract->status != 'canceled' ) {
+							// Si il y a eu un versement de royalties, on récupère les infos du versement
+							if ( $roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
+								foreach ( $roi_list as $roi ) {
+									if ( $roi->id_declaration == $roi_declaration->id ) {
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
+										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+									}
+								}
+							}
+							
+							array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
+						
+							// A optimiser : ne pas trier à chaque fois qu'on ajoute, mais plutôt à la fin...
+							usort( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
+								$item1_date = new DateTime( $item1[ 'date_db' ] );
+								$item2_date = new DateTime( $item2[ 'date_db' ] );
+								return ( $item1_date > $item2_date );
+							} );
+						}
+					}
+				}
+				//*****
+				
+				
+				// Ajout au tableau de retour
 				array_push( $buffer[ $campaign_id ][ 'items' ], $investment_item );
 			}
 		}
@@ -438,6 +645,7 @@ class WDGAjaxActions {
 	public static function save_project_infos(){
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
+		$current_wdg_user = WDGUser::current();
 		$errors = array();
 		$success = array();
 
@@ -524,30 +732,32 @@ class WDGAjaxActions {
 		}
 		$success[ 'new_skip_in_stats' ] = 1;
 
-		//Catégories du projet
-		$new_project_categories = array();
-		if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
-		$new_project_activities = array();
-		if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
-		$new_project_types = array();
-		if ( isset( $_POST["new_project_types"] ) ) $new_project_types = $_POST["new_project_types"];
-		$new_project_partners = array();
-		if ( isset( $_POST["new_project_partners"] ) ) $new_project_partners = $_POST["new_project_partners"];
-		$new_project_tousnosprojets = array();
-		if ( isset( $_POST["new_project_tousnosprojets"] ) ) $new_project_tousnosprojets = $_POST["new_project_tousnosprojets"];
-		$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types, $new_project_partners, $new_project_tousnosprojets );
-		$cat_ids = array_map( 'intval', $cat_ids );
-		wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
-		$campaign->set_api_data( 'type', $campaign->get_categories_by_type( 'types', TRUE ) );
-		$campaign->set_api_data( 'category', $campaign->get_categories_by_type( 'activities', TRUE ) );
-		$campaign->set_api_data( 'impacts', $campaign->get_categories_by_type( 'categories', TRUE ) );
-		$campaign->set_api_data( 'partners', $campaign->get_categories_by_type( 'partners', TRUE ) );
-		$campaign->set_api_data( 'tousnosprojets', $campaign->get_categories_by_type( 'tousnosprojets', TRUE ) );
-		$success["new_project_categories"] = 1;
-		$success["new_project_activities"] = 1;
-		$success["new_project_types"] = 1;
-		$success["new_project_partners"] = 1;
-		$success["new_project_tousnosprojets"] = 1;
+		if ( $current_wdg_user->is_admin() ) {
+			//Catégories du projet
+			$new_project_categories = array();
+			if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
+			$new_project_activities = array();
+			if ( isset( $_POST["new_project_activities"] ) ) $new_project_activities = $_POST["new_project_activities"];
+			$new_project_types = array();
+			if ( isset( $_POST["new_project_types"] ) ) $new_project_types = $_POST["new_project_types"];
+			$new_project_partners = array();
+			if ( isset( $_POST["new_project_partners"] ) ) $new_project_partners = $_POST["new_project_partners"];
+			$new_project_tousnosprojets = array();
+			if ( isset( $_POST["new_project_tousnosprojets"] ) ) $new_project_tousnosprojets = $_POST["new_project_tousnosprojets"];
+			$cat_ids = array_merge( $new_project_categories, $new_project_activities, $new_project_types, $new_project_partners, $new_project_tousnosprojets );
+			$cat_ids = array_map( 'intval', $cat_ids );
+			wp_set_object_terms($campaign_id, $cat_ids, 'download_category');
+			$campaign->set_api_data( 'type', $campaign->get_categories_by_type( 'types', TRUE ) );
+			$campaign->set_api_data( 'category', $campaign->get_categories_by_type( 'activities', TRUE ) );
+			$campaign->set_api_data( 'impacts', $campaign->get_categories_by_type( 'categories', TRUE ) );
+			$campaign->set_api_data( 'partners', $campaign->get_categories_by_type( 'partners', TRUE ) );
+			$campaign->set_api_data( 'tousnosprojets', $campaign->get_categories_by_type( 'tousnosprojets', TRUE ) );
+			$success["new_project_categories"] = 1;
+			$success["new_project_activities"] = 1;
+			$success["new_project_types"] = 1;
+			$success["new_project_partners"] = 1;
+			$success["new_project_tousnosprojets"] = 1;
+		}
 
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));
@@ -572,6 +782,18 @@ class WDGAjaxActions {
 		if ( $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max || $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_step ) {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
+		}
+		$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
+        if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone );
+		}
+		$new_hide_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_hide_investors' ) );
+        if ( $new_hide_investors === true || $new_hide_investors === "true" || $new_hide_investors === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors );
 		}
 		$new_archive_message = sanitize_text_field( filter_input( INPUT_POST, 'new_archive_message' ) );
 		if ( !empty( $new_archive_message ) ) {
@@ -600,6 +822,13 @@ class WDGAjaxActions {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check, '0' );
 		}
 		$success[ 'new_is_check_payment_available' ] = 1;
+		$new_has_overridden_wire_constraints = filter_input( INPUT_POST, 'new_has_overridden_wire_constraints');
+        if ( $new_has_overridden_wire_constraints === true || $new_has_overridden_wire_constraints === "true" || $new_has_overridden_wire_constraints === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints );
+		}
+		$success[ 'new_has_overridden_wire_constraints' ] = 1;
 		
 		$new_fake_url = filter_input( INPUT_POST, 'new_fake_url' );
 		if ( !empty( $new_fake_url ) ) {
@@ -734,14 +963,16 @@ class WDGAjaxActions {
 		}
 		
 		$use_lastname = '';
+		$birthplace_district = '';
 		$birthplace_department = '';
+		$birthplace_country = '';
 		$address_number = '';
 		$address_number_complement = '';
 		$tax_country = '';
 		$current_user->save_data( 
 			$mail, $gender, $firstname, $lastname, $use_lastname,
 			$new_birthday_date->format('d'), $new_birthday_date->format('n'), $new_birthday_date->format('Y'), 
-			$birthplace, $birthplace_department, $nationality,
+			$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $mobile_phone
 		);
 
@@ -996,6 +1227,14 @@ class WDGAjaxActions {
 			$errors['new_turnover_per_declaration'] = "Nombre non valide";
 		}
 		
+		$new_declaration_periodicity = sanitize_text_field( filter_input( INPUT_POST, 'new_declaration_periodicity') );
+		if ( !empty( $new_declaration_periodicity ) ) {
+			$campaign->set_api_data( ATCF_Campaign::$key_declaration_periodicity, $new_declaration_periodicity );
+			$success['new_declaration_periodicity'] = 1;
+		} else {
+			$errors['new_declaration_periodicity'] = "S&eacute;lection non valide";
+		}
+		
 		$new_minimum_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_costs_to_organization') ) ), 2 );
 		if ( $new_minimum_costs_to_organization >= 0 ) {
 			$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );
@@ -1188,25 +1427,27 @@ class WDGAjaxActions {
 				"errors" => array(),
 				"success" => $success,
 				"organization" => array(
-					"name" => $organization_selected->get_name(),
-					"email" => $organization_selected->get_email(),
+					"name"			=> $organization_selected->get_name(),
+					"email"			=> $organization_selected->get_email(),
 					"representative_function" => $organization_selected->get_representative_function(),
-					"description" => $organization_selected->get_description(),
-					"legalForm" => $organization_selected->get_legalform(),
-					"idNumber" => $organization_selected->get_idnumber(),
-					"rcs" => $organization_selected->get_rcs(),
-					"capital" => $organization_selected->get_capital(),
-					"ape" => $organization_selected->get_ape(),
-					"vat" => $organization_selected->get_vat(),
+					"description"	=> $organization_selected->get_description(),
+					"legalForm"		=> $organization_selected->get_legalform(),
+					"idNumber"		=> $organization_selected->get_idnumber(),
+					"rcs"			=> $organization_selected->get_rcs(),
+					"capital"		=> $organization_selected->get_capital(),
+					"ape"			=> $organization_selected->get_ape(),
+					"vat"			=> $organization_selected->get_vat(),
 					"fiscal_year_end_month" => $organization_selected->get_fiscal_year_end_month(),
-					"address" => $organization_selected->get_address(),
-					"postal_code" =>$organization_selected->get_postal_code(),
-					"city" => $organization_selected->get_city(),
-					"nationality" => $organization_selected->get_nationality(),
-					"bankownername" => $organization_selected->get_bank_owner(),
-					"bankowneraddress" => $organization_selected->get_bank_address(),
-					"bankowneriban" => $organization_selected->get_bank_iban(),
-					"bankownerbic" => $organization_selected->get_bank_bic(),
+					"address_number"		=> $organization_selected->get_address_number(),
+					"address_number_comp"	=> $organization_selected->get_address_number_comp(),
+					"address"				=> $organization_selected->get_address(),
+					"postal_code"			=> $organization_selected->get_postal_code(),
+					"city"					=> $organization_selected->get_city(),
+					"nationality"			=> $organization_selected->get_nationality(),
+					"bankownername"			=> $organization_selected->get_bank_owner(),
+					"bankowneraddress"		=> $organization_selected->get_bank_address(),
+					"bankowneriban"			=> $organization_selected->get_bank_iban(),
+					"bankownerbic"			=> $organization_selected->get_bank_bic(),
 					"doc_bank" => array(
 						"path" => $bank_path,
 						"date_uploaded" => $bank_date_uploaded,
@@ -1276,26 +1517,28 @@ class WDGAjaxActions {
 			$return_values = array(
 				"response" => "save_new_organization",
 				"organization" => array(
-					"wpref" => $org_object->get_wpref(),
-					"name" => $org_object->get_name(),
-					"email" => $org_object->get_email(),
-					"representative_function" => $org_object->get_representative_function(),
-					"description" => $org_object->get_description(),
-					"legalForm" => $org_object->get_legalform(),
-					"idNumber" => $org_object->get_idnumber(),
-					"rcs" => $org_object->get_rcs(),
-					"capital" => $org_object->get_capital(),
-					"ape" => $org_object->get_ape(),
-					"vat" => $org_object->get_vat(),
-					"fiscal_year_end_month" => $org_object->get_fiscal_year_end_month(),
-					"address" => $org_object->get_address(),
-					"postal_code" =>$org_object->get_postal_code(),
-					"city" => $org_object->get_city(),
-					"nationality" => $org_object->get_nationality(),
-					"bankownername" => $org_object->get_bank_owner(),
-					"bankowneraddress" => $org_object->get_bank_address(),
-					"bankowneriban" => $org_object->get_bank_iban(),
-					"bankownerbic" => $org_object->get_bank_bic(),
+					"wpref"			=> $org_object->get_wpref(),
+					"name"			=> $org_object->get_name(),
+					"email"			=> $org_object->get_email(),
+					"representative_function"	=> $org_object->get_representative_function(),
+					"description"	=> $org_object->get_description(),
+					"legalForm"		=> $org_object->get_legalform(),
+					"idNumber"		=> $org_object->get_idnumber(),
+					"rcs"			=> $org_object->get_rcs(),
+					"capital"		=> $org_object->get_capital(),
+					"ape"			=> $org_object->get_ape(),
+					"vat"			=> $org_object->get_vat(),
+					"fiscal_year_end_month"		=> $org_object->get_fiscal_year_end_month(),
+					"address_number"		=> $org_object->get_address_number(),
+					"address_number_comp"	=> $org_object->get_address_number_comp(),
+					"address"				=> $org_object->get_address(),
+					"postal_code"			=> $org_object->get_postal_code(),
+					"city"					=> $org_object->get_city(),
+					"nationality"			=> $org_object->get_nationality(),
+					"bankownername"		=> $org_object->get_bank_owner(),
+					"bankowneraddress"	=> $org_object->get_bank_address(),
+					"bankowneriban"		=> $org_object->get_bank_iban(),
+					"bankownerbic"		=> $org_object->get_bank_bic(),
 					),
 				"campaign_id" => $campaign_id,
 			);
@@ -1334,27 +1577,29 @@ class WDGAjaxActions {
 			$return_values = array(
 				"response" => "edit_organization",
 				"organization" => array(
-					"wpref" => $org_object->get_wpref(),
-					"name" => $org_object->get_name(),
-					"email" => $org_object->get_email(),
-					"representative_function" => $org_object->get_representative_function(),
-					"description" => $org_object->get_description(),
-					"legalForm" => $org_object->get_legalform(),
-					"idNumber" => $org_object->get_idnumber(),
-					"rcs" => $org_object->get_rcs(),
-					"capital" => $org_object->get_capital(),
-					"ape" => $org_object->get_ape(),
-					"vat" => $org_object->get_vat(),
-					"fiscal_year_end_month" => $org_object->get_fiscal_year_end_month(),
-					"address" => $org_object->get_address(),
-					"postal_code" =>$org_object->get_postal_code(),
-					"city" => $org_object->get_city(),
-					"nationality" => $org_object->get_nationality(),
-					"bankownername" => $org_object->get_bank_owner(),
-					"bankowneraddress" => $org_object->get_bank_address(),
-					"bankowneriban" => $org_object->get_bank_iban(),
-					"bankownerbic" => $org_object->get_bank_bic(),
-					"id_quickbooks" => $org_object->get_id_quickbooks(),
+					"wpref"		=> $org_object->get_wpref(),
+					"name"		=> $org_object->get_name(),
+					"email"		=> $org_object->get_email(),
+					"representative_function"	=> $org_object->get_representative_function(),
+					"description"	=> $org_object->get_description(),
+					"legalForm"		=> $org_object->get_legalform(),
+					"idNumber"		=> $org_object->get_idnumber(),
+					"rcs"			=> $org_object->get_rcs(),
+					"capital"		=> $org_object->get_capital(),
+					"ape"			=> $org_object->get_ape(),
+					"vat"			=> $org_object->get_vat(),
+					"fiscal_year_end_month"		=> $org_object->get_fiscal_year_end_month(),
+					"address_number"		=> $org_object->get_address_number(),
+					"address_number_comp"	=> $org_object->get_address_number_comp(),
+					"address"				=> $org_object->get_address(),
+					"postal_code"			=> $org_object->get_postal_code(),
+					"city"					=> $org_object->get_city(),
+					"nationality"			=> $org_object->get_nationality(),
+					"bankownername"			=> $org_object->get_bank_owner(),
+					"bankowneraddress"	=> $org_object->get_bank_address(),
+					"bankowneriban"		=> $org_object->get_bank_iban(),
+					"bankownerbic"		=> $org_object->get_bank_bic(),
+					"id_quickbooks"		=> $org_object->get_id_quickbooks(),
 				),
 				"files_info" => array(
 					"org_doc_bank" => $files_info['files_info']["org_doc_bank"],
@@ -1599,7 +1844,10 @@ class WDGAjaxActions {
         //Extraction infos d'investissements
         foreach ( $investments_list['payments_data'] as $item_invest ) {
 			$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
+			$contract_status = $payment_investment->get_contract_status();
             $post_invest = get_post($item_invest['ID']);
+			$post_invest_status = $post_invest->post_status;
+			
 			if ( !empty( $item_invest[ 'payment_key' ] ) ) {
 				$payment_key = $item_invest[ 'payment_key' ];
 			} else {
@@ -1611,8 +1859,8 @@ class WDGAjaxActions {
             $payment_type = 'Carte';
             if (strpos($payment_key, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
-            } else if ($payment_key == 'check') {
 				
+            } else if ($payment_key == 'check') {
 				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
 				if ( !empty( $check_file_url ) ) {
 					$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
@@ -1623,14 +1871,15 @@ class WDGAjaxActions {
 					$payment_type = 'Ch&egrave;que';
 				}
 				
-            }
+			// Si c'est juste une intention avec dépot de fichiers
+            } else if ( $post_invest_status == 'pending' && $contract_status == WDGInvestment::$contract_status_not_validated ) {
+				$payment_type = 'Non d&eacute;fini';
+			}
 
             $page_dashboard = get_page_by_path('tableau-de-bord');
             $campaign_id_param = '?campaign_id=' . $campaign->ID;
-			$contract_status = $payment_investment->get_contract_status();
 			
 			// Etat du paiement
-			$post_invest_status = $post_invest->post_status;
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			if ( $post_invest_status == 'pending' ) {
@@ -1658,13 +1907,18 @@ class WDGAjaxActions {
 			// Etat de la signature
 			$invest_sign_state = __( "Valid&eacute;", 'yproject' );
 			$invest_sign_state_span_class = 'confirm';
-			$invest_signsquid_contract = new SignsquidContract( $item_invest[ 'ID' ] );
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
 				$invest_sign_state_span_class = 'error';
-			} else if ( $invest_signsquid_contract->get_status_code() != "Small" && $invest_signsquid_contract->get_status_code() != "Agreed" ) {
-				$invest_sign_state = __( "En attente de signature électronique", 'yproject' );
+			} else if ( $post_invest_status == 'pending' ) {
+				$invest_sign_state = __( "En attente de r&eacute;ception du paiement", 'yproject' );
 				$invest_sign_state_span_class = 'error';
+			} else {
+				$WDGInvestmentSignature = new WDGInvestmentSignature( $item_invest[ 'ID' ] );
+				if ( $WDGInvestmentSignature->is_waiting_signature() ) {
+					$invest_sign_state = __( "En attente de signature électronique", 'yproject' );
+					$invest_sign_state_span_class = 'error';
+				}
 			}
 			$invest_sign_state = '<span class="payment-status-' .$invest_sign_state_span_class. '">' .$invest_sign_state. '</span>';
 			
@@ -1685,6 +1939,7 @@ class WDGAjaxActions {
 							if ( $wdg_contract->status == 'validated' ) {
 								$wdg_contract_status = 'Contrat signé';
 							} else {
+								/*
 								$signsquid_contract = new SignsquidContract( FALSE, $wdg_contract->partner_id );
 								$signsquid_status = $signsquid_contract->get_status_code();
 								if ( $signsquid_status == 'Agreed' ) {
@@ -1694,6 +1949,9 @@ class WDGAjaxActions {
 								if ( $signsquid_status == 'WaitingForSignatoryAction' && $current_wdg_user->is_admin() ) {
 									$wdg_contract_status .= ' - code (admin) : ' . $signsquid_contract->get_signing_code();
 								}
+								 * 
+								 */
+								$wdg_contract_status = 'Signsquid désactivé';
 							}
 						}
 					}
@@ -1749,8 +2007,8 @@ class WDGAjaxActions {
 				$orga_wallet_details = $orga->get_wallet_details();
 				$span_class = 'error';
 				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
-					switch ( $WDGUser_wallet_details->STATUS ) {
+				if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
+					switch ( $orga_wallet_details->STATUS ) {
 						case '2':
 							$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
 							break;
@@ -1800,7 +2058,7 @@ class WDGAjaxActions {
 					//Infos supplémentaires pour les investisseurs
 					if($array_contacts[$user_id]["invest"] == 1){
 						$count_distinct_investors++;
-						$array_contacts[$user_id]["user_address"] = $orga->get_address();
+						$array_contacts[$user_id]["user_address"] = $orga->get_full_address_str();
 						$array_contacts[$user_id]["user_country"] = ucfirst(strtolower($orga->get_nationality()));
 						$array_contacts[$user_id]["user_mobile_phone"] = $orga_creator->get('user_mobile_phone');
 						$array_contacts[$user_id]["user_orga_id"] = $orga->get_rcs() .' ('.$orga->get_idnumber().')';

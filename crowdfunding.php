@@ -112,8 +112,10 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/organization.php' );
 		require( $this->includes_dir . 'data/user.php' );
 		require( $this->includes_dir . 'data/user-investments.php' );
+		require( $this->includes_dir . 'data/investment-contract.php' );
+		require( $this->includes_dir . 'data/investment-signature.php' );
 		require( $this->includes_dir . 'data/staticpage.php' );
-		require( $this->includes_dir . 'data/country_list.php' );
+		require( $this->includes_dir . 'data/geolocation/country_list.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-lib.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-organization.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
@@ -140,7 +142,8 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/api-calls.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
 		require( $this->includes_dir . 'control/investment.php' );
-		require( $this->includes_dir . 'control/signsquid/common.php' );
+		require( $this->includes_dir . 'control/sendinblue/mailin.php' );
+		require( $this->includes_dir . 'control/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'control/pdf_generator.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-api.php' );
@@ -177,6 +180,10 @@ final class ATCF_CrowdFunding {
 	
 	public function include_file( $file_path ) {
 		require( $this->includes_dir . $file_path );
+	}
+	
+	public function include_control( $control_name ) {
+		require_once( $this->includes_dir . 'control/'.$control_name.'.php' );
 	}
 	
 	public function include_form( $form_name ) {

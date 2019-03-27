@@ -125,9 +125,11 @@ class LemonwayNotification {
 			
 			if ( $lemonway_posted_wallet_status == 6 ) {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, 'Validé' );
-				NotificationsAPI::kyc_authentified( $user_email, $user_name );
 				if ( !empty( $pending_not_validated_investment_campaign_name ) ) {
-					NotificationsEmails::investment_to_validate( $user_email, $user_name, $pending_not_validated_investment_campaign_name );
+					NotificationsAPI::kyc_authentified_and_pending_investment( $user_email, $user_name, $pending_not_validated_investment_campaign_name, $pending_not_validated_investment->get_saved_campaign()->get_api_id() );
+					WDGQueue::add_investment_authentified_reminder( $WDGUser_wallet->get_wpref(), $user_email, $user_name, $pending_not_validated_investment_campaign_name, $pending_not_validated_investment->get_saved_campaign()->get_api_id() );
+				} else {
+					NotificationsAPI::kyc_authentified( $user_email, $user_name );
 				}
 				
 			} else {
@@ -205,6 +207,10 @@ class LemonwayNotification {
 				if ( empty( $WDGOrga_wallet ) ) {
 					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
 						NotificationsAPI::kyc_refused( $user_email, $user_firstname );
+						// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
+						if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
+							WDGQueue::add_document_refused_admin_notification( $WDGUser_wallet->get_wpref(), $lemonway_posted_document_type, $lemonway_posted_document_status );
+						}
 					}
 				}
 			}
@@ -316,8 +322,8 @@ class LemonwayNotification {
 					}
 				}
 			}
-			ypcf_debug_log( 'PROCESS -> $trace = ' . $trace );
-			ypcf_debug_log( 'PROCESS -> $investment_id = ' . $investment_id .  ' ; $investment_campaign_id = ' . $investment_campaign_id );
+			ypcf_debug_log( 'PROCESS -> $trace = ' . $trace, FALSE );
+			ypcf_debug_log( 'PROCESS -> $investment_id = ' . $investment_id .  ' ; $investment_campaign_id = ' . $investment_campaign_id, FALSE );
 			
 			if ( $investment_id != FALSE && $investment_campaign_id != FALSE ) {
 				// - Faire le transfert vers le porte-monnaie du porteur de projet
@@ -325,11 +331,11 @@ class LemonwayNotification {
 				$campaign = new ATCF_Campaign( $post_campaign );
 
 				$campaign_organization = $campaign->get_organization();
-				ypcf_debug_log( 'PROCESS -> $campaign_organization->wpref = ' . $campaign_organization->wpref );
+				ypcf_debug_log( 'PROCESS -> $campaign_organization->wpref = ' . $campaign_organization->wpref, FALSE );
 				$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_author = $WDGUser_invest_author;
-				ypcf_debug_log( 'PROCESS -> $WDGUser_invest_author->wp_user->ID = ' . $WDGUser_invest_author->wp_user->ID );
-				ypcf_debug_log( 'PROCESS -> $invest_author = ' . $invest_author->wp_user->ID );
+				ypcf_debug_log( 'PROCESS -> $WDGUser_invest_author->wp_user->ID = ' . $WDGUser_invest_author->wp_user->ID, FALSE );
+				ypcf_debug_log( 'PROCESS -> $invest_author = ' . $invest_author->wp_user->ID, FALSE );
 				$lemonway_id = $WDGUser_invest_author->get_lemonway_id();
 				if ( !empty( $WDGOrga_invest_author ) ) {
 					$lemonway_id = $WDGOrga_invest_author->get_lemonway_id();
@@ -346,24 +352,25 @@ class LemonwayNotification {
 				
 				// - Créer le contrat pdf
 				// - Envoyer validation d'investissement par mail
-				if ( $lemonway_posted_amount > 1500 ) {
-					$contract_id = ypcf_create_contract( $investment_id, $investment_campaign_id, $WDGUser_invest_author->wp_user->ID );
-					if ($contract_id != '') {
-						$contract_infos = signsquid_get_contract_infos( $contract_id );
-						NotificationsEmails::new_purchase_user_success( $investment_id, $contract_infos->{'signatories'}[0]->{'code'}, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
+				if ( $lemonway_posted_amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
+					$WDGInvestmentSignature = new WDGInvestmentSignature( $investment_id );
+					$contract_id = $WDGInvestmentSignature->create_eversign();
+					if ( !empty( $contract_id ) ) {
+						NotificationsEmails::new_purchase_user_success( $investment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+						
 					} else {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
 						NotificationsEmails::new_purchase_user_error_contract( $investment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 						NotificationsEmails::new_purchase_admin_error_contract( $investment_id );
-						NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 					}
+					
 				} else {
 					$new_contract_pdf_file = getNewPdfToSign( $investment_campaign_id, $investment_id, $WDGUser_invest_author->wp_user->ID );
 					NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-					NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				}
+				
+				NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				NotificationsEmails::new_purchase_team_members( $investment_id );
 			} else {
 				NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Virement reçu - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );

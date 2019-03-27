@@ -64,6 +64,7 @@ class WDGWPREST_Entity_Project {
 			'roi_percent'			=> $campaign->roi_percent(),
 			'estimated_budget_file'	=> $file_name_bp,
 			'funding_duration'		=> $campaign->funding_duration(),
+			'declaration_periodicity'	=> $campaign->get_declaration_periodicity(),
 			'goal_minimum'			=> $campaign->minimum_goal(),
 			'goal_maximum'			=> $campaign->goal( FALSE ),
 			'yield_for_investors'	=> '1', //TODO
@@ -312,6 +313,11 @@ class WDGWPREST_Entity_Project {
 	
 	public static function get_investment_contracts( $project_id ) {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/investment-contracts' );
+		return $result_obj;
+	}
+	
+	public static function get_emails( $project_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/emails' );
 		return $result_obj;
 	}
 }

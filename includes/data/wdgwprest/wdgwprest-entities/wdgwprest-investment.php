@@ -102,7 +102,9 @@ class WDGWPREST_Entity_Investment {
 		}
 		$payment_provider = $campaign->get_payment_provider();
 		
-		$signsquid_contract = new SignsquidContract( $edd_payment_item->ID );
+		$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
+		$signature_status = $WDGInvestmentSignature->get_status();
+		$signature_id = $WDGInvestmentSignature->get_external_id();
 		
 		$parameters = array(
 			'wpref'				=> $edd_payment_item->ID,
@@ -138,15 +140,15 @@ class WDGWPREST_Entity_Investment {
 			'status'					=> $payment_status,
 			'payment_key'				=> $payment_key,
 			'payment_status'			=> $payment_status,
-			'signature_key'				=> $signsquid_contract->get_contract_id(),
-			'signature_status'			=> $signsquid_contract->get_status_code()
+			'signature_key'				=> $signature_id,
+			'signature_status'			=> $signature_status
 		);
 		if ( $WDGOrganization != FALSE ) {
 			$parameters[ 'legal_entity_form' ] = $WDGOrganization->get_legalform();
 			$parameters[ 'legal_entity_id' ] = $WDGOrganization->get_idnumber();
 			$parameters[ 'legal_entity_rcs' ] = $WDGOrganization->get_rcs();
 			$parameters[ 'legal_entity_capital' ] = $WDGOrganization->get_capital();
-			$parameters[ 'legal_entity_address' ] = $WDGOrganization->get_address();
+			$parameters[ 'legal_entity_address' ] = $WDGOrganization->get_full_address_str();
 			$orga_postalcode = $WDGOrganization->get_postal_code();
 			$orga_postalcode = str_replace( ' ', '', $orga_postalcode );
 			if ( strlen( $orga_postalcode ) == 4 ) {

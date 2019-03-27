@@ -23,7 +23,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		parent::initFields();
 		
 		// $field_group_hidden
-		if ( !$this->is_orga ) {
+		if ( !$this->is_orga || !empty( $this->invest_campaign_id ) ) {
 			$this->addField(
 				'hidden',
 				'action',
@@ -64,7 +64,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$id_label,
 			WDG_Form_User_Identity_Docs::$field_group_files,
 			$id_file_path,
-			__( "Pour une personne fran&ccedil;aise : carte d'identit&eacute; recto-verso ou passeport fran&ccedil;ais. Sinon : le titre de s&eacute;jour et le passeport d'origine.", 'yproject' ),
+			__( "Pour une personne fran&ccedil;aise : carte d'identit&eacute; recto-verso avec bande MRZ lisible en intégralité ou passeport fran&ccedil;ais. Sinon : le titre de s&eacute;jour et le passeport d'origine.", 'yproject' ),
 			$field_id_params
 		);
 		
@@ -106,7 +106,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'status' .$suffix,
-				__( "Statuts de la soci&eacute;t&eacute;, certifi&eacute;s conformes à l'original par le g&eacute;rant *", 'yproject' ),
+				__( "Statuts de la soci&eacute;t&eacute;, certifi&eacute;s conformes à l'original par le g&eacute;rant (faisant figurer id&eacute;alement la r&eacute;partition du capital de l'entreprise) *", 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$status_file_path,
 				'',
@@ -195,7 +195,9 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				__( "Deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id2_file_path,
-				__( "Facultatif, selon le document que vous avez envoy&eacute; dans le premier champ.", 'yproject' ),
+				__( "Ce champ est facultatif, vous pouvez fournir :", 'yproject' ). '<br>'
+					. '- ' . __( "le verso de votre carte d'identit&eacute;, si vous n'avez transmis que le recto en premier document", 'yproject' ). '<br>'
+					. '- ' . __( "un seconde pi&egrave;ce d'identit&eacute; si vous n'avez pas de justificatif de domicile &agrave; votre nom (passeport, permis de conduire) ou que votre compte bancaire est tenu par une banque en ligne (ex : Compte Nickel)", 'yproject' ),
 				$field_status_id2
 			);
 		}

@@ -7,6 +7,9 @@ class WDGInvestment {
 	private $token;
 	private $token_info;
 	private $error;
+	/**
+	 * @var ATCF_Campaign 
+	 */
 	private $campaign;
 	private $session_amount;
 	private $session_user_type;
@@ -461,7 +464,9 @@ class WDGInvestment {
 		// On enregistre les informations
 		$wdg_current_user = new WDGUser( $wp_user_id );
 		$use_lastname = '';
+		$birthplace_district = '';
 		$birthplace_department = '';
+		$birthplace_country = '';
 		$address_number = '';
 		$address_number_complement = '';
 		$tax_country = '';
@@ -475,7 +480,9 @@ class WDGInvestment {
 			$this->token_info->birthday_month,
 			$this->token_info->birthday_year,
 			$this->token_info->birthday_city,
+			$birthplace_district,
 			$birthplace_department,
+			$birthplace_country,
 			$this->token_info->nationality,
 			$address_number,
 			$address_number_complement,
@@ -549,7 +556,7 @@ class WDGInvestment {
 /******************************************************************************/
 // PAYMENT
 /******************************************************************************/
-	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_by_card = 0 ) {
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_param = 0, $amount_by_card = 0 ) {
 		if ( $this->exists_payment( $payment_key ) ) {
 			return 'publish';
 		}
@@ -571,8 +578,8 @@ class WDGInvestment {
 		}
 		
 		$amount = 0;
-		if ( $amount_by_card > 0 ) {
-			$amount = $amount_by_card;
+		if ( $amount_param > 0 ) {
+			$amount = $amount_param;
 		} else {
 			$amount = $this->get_session_amount();
 		}
@@ -635,47 +642,28 @@ class WDGInvestment {
 		if ( $is_failed ) {
 			// Paiement
 			$buffer = 'failed';
-			$postdata = array(
-				'ID'			=> $payment_id,
-				'post_status'	=> $buffer
-			);
-			wp_update_post($postdata);
-			
-			// Log du paiement
-			$log_post_items = get_posts(array(
-				'post_type'		=> 'edd_log',
-				'meta_key'		=> '_edd_log_payment_id',
-				'meta_value'	=> $payment_id
-			));
-			foreach ( $log_post_items as $log_post_item ) {
-				$postdata = array(
-					'ID'		=> $log_post_item->ID,
-					'post_status' => $buffer
-				);
-				wp_update_post($postdata);
-			}
+			$this->cancel();
 			
 		} else {
+			// Annulation de l'investissement qui était la référence au démarrage du processus, si il y en avait un
 			if ( !empty( $_SESSION[ 'investment_saved_id' ] ) ) {
-				$postdata = array(
-					'ID'			=> $_SESSION[ 'investment_saved_id' ],
-					'post_status'	=> 'failed'
-				);
-				wp_update_post($postdata);
-
-				$log_post_items = get_posts(array(
-					'post_type'		=> 'edd_log',
-					'meta_key'		=> '_edd_log_payment_id',
-					'meta_value'	=> $_SESSION[ 'investment_saved_id' ]
-				));
-				foreach ( $log_post_items as $log_post_item ) {
-					$postdata = array(
-						'ID'			=> $log_post_item->ID,
-						'post_status'	=> 'failed'
-					);
-					wp_update_post($postdata);
+				$WDGInvestment_Canceled = new WDGInvestment( $_SESSION[ 'investment_saved_id' ] );
+				$WDGInvestment_Canceled->cancel();
+			}
+			
+			// Annulation des investissements non-démarrés du même investisseur
+			$pending_not_validated_investments = array();
+			if ( $invest_type != 'user' ) {
+				$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
+			} else {
+				$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
+			}
+			if ( !empty( $pending_not_validated_investments ) ) {
+				foreach ( $pending_not_validated_investments as $pending_not_validated_investment_item ) {
+					$pending_not_validated_investment_item->cancel();
 				}
 			}
+			
 
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
 			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
@@ -907,7 +895,7 @@ class WDGInvestment {
 				}
 
 				// Sauvegarde du paiement (la session est écrasée)
-				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount );
+				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount, $amount_by_card );
 
 				if ( $buffer == 'failed' ) {
 					$WDGUser_current = WDGUser::current();
@@ -915,7 +903,7 @@ class WDGInvestment {
 					NotificationsEmails::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
 					$investment_link = home_url( '/investir/' ) . '?campaign_id=' . $this->campaign->ID . '&invest_start=1&init_invest=' . $this->get_session_amount();
 					$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
-					NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
+					NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->campaign->get_api_id(), $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
 
 				}
 			}

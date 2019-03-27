@@ -131,6 +131,21 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_birthplace()
 		);
+
+		$district_list = array();
+		$district_list[ 0 ] = '-';
+		for ( $i = 1; $i <= 20; $i++ ) {
+			$district_list[ $i ] = $i;
+		}
+		$this->addField(
+			'select',
+			'birthplace_district',
+			__( "Arrondissement dans la ville de naissance", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_info,
+			$WDGUser->get_birthplace_district(),
+			__( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ),
+			$district_list
+		);
 		
 		global $french_departments;
 		$this->addField(
@@ -144,6 +159,16 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		);
 
 		global $country_list;
+		$this->addField(
+			'select',
+			'birthplace_country',
+			__( "Pays de naissance", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_user_info,
+			$WDGUser->get_birthplace_country(),
+			FALSE,
+			$country_list
+		);
+		
 		$this->addField(
 			'select',
 			'nationality',
@@ -312,7 +337,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'org_idnumber',
-			__( "Num&eacute;ro SIREN *", 'yproject' ),
+			__( "Num&eacute;ro SIRET *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
@@ -329,6 +354,25 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			__( "Capital social (en euros) *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
+		
+		$this->addField(
+			'text',
+			'org_address_number',
+			__( "Num&eacute;ro *", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_orga_info
+		);
+
+		global $address_number_complements;
+		$this->addField(
+			'select',
+			'org_address_number_comp',
+			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			WDG_Form_Invest_User_Details::$field_group_orga_info,
+			'',
+			FALSE,
+			$address_number_complements
+		);
+			
 		
 		$this->addField(
 			'text',
@@ -471,6 +515,32 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		);
 		
 		if ( $id_orga == 'new-orga' ) {
+			$org_address_number = ( $_SESSION[ 'org_address_number' ] == '' ) ? FALSE : $_SESSION[ 'org_address_number' ];
+		} else {
+			$org_address_number = $WDGOrganization->get_address_number();
+		}
+		$this->addField(
+			'hidden',
+			'org_init_address_number_' .$id_orga,
+			'',
+			WDG_Form_Invest_User_Details::$field_group_orga_select,
+			$org_address_number
+		);
+		
+		if ( $id_orga == 'new-orga' ) {
+			$org_address_number_comp = ( $_SESSION[ 'org_address_number_comp' ] == '' ) ? FALSE : $_SESSION[ 'org_address_number_comp' ];
+		} else {
+			$org_address_number_comp = $WDGOrganization->get_address_number_comp();
+		}
+		$this->addField(
+			'hidden',
+			'org_init_address_number_comp_' .$id_orga,
+			'',
+			WDG_Form_Invest_User_Details::$field_group_orga_select,
+			$org_address_number_comp
+		);
+		
+		if ( $id_orga == 'new-orga' ) {
 			$org_address = ( $_SESSION[ 'org_address' ] == '' ) ? FALSE : $_SESSION[ 'org_address' ];
 		} else {
 			$org_address = $WDGOrganization->get_address();
@@ -564,6 +634,12 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 					__( "Votre pr&eacute;nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
 					'firstname'
 				);
+			} elseif ( strlen( $firstname ) < 3 ) {
+				$this->addPostError(
+					'firstname',
+					__( "Votre pr&eacute;nom doit faire plus de 2 caract&egrave;res.", 'yproject' ),
+					'firstname'
+				);
 			}
 			
 			$lastname = $this->getInputText( 'lastname' );
@@ -571,6 +647,13 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$this->addPostError(
 					'lastname',
 					__( "Votre nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
+					'lastname'
+				);
+				
+			} elseif ( strlen( $lastname ) < 3 ) {
+				$this->addPostError(
+					'lastname',
+					__( "Votre nom doit faire plus de 2 caract&egrave;res.", 'yproject' ),
 					'lastname'
 				);
 			}
@@ -582,10 +665,12 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
+				$birthplace_district = $this->getInputText( 'birthplace_district' );
 				$birthplace_department = $this->getInputText( 'birthplace_department' );
+				$birthplace_country = $this->getInputText( 'birthplace_country' );
 				$nationality = $this->getInputText( 'nationality' );
 				$address_number = $this->getInputText( 'address_number' );
-				$address_number_complement = $this->getInputText( 'address_number_complement' );
+				$address_number_comp = $this->getInputText( 'address_number_comp' );
 				$address = $this->getInputText( 'address' );
 				$postal_code = $this->getInputText( 'postal_code' );
 				$city = $this->getInputText( 'city' );
@@ -596,8 +681,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$WDGUser->save_data(
 					$email, $gender, $firstname, $lastname, $use_lastname,
 					$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
-					$birthplace, $birthplace_department, $nationality,
-					$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number
+					$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
+					$address_number, $address_number_comp, $address, $postal_code, $city, $country, $tax_country, $phone_number
 				);
 			
 				if ( !empty( $this->invest_amount ) && $this->invest_amount > WDGInvestmentContract::$signature_minimum_amount && empty( $phone_number ) ) {
@@ -804,7 +889,17 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$org_name = $this->getInputText( 'org_name' );
 		$WDGOrganization->set_name( $org_name );
 		$org_email = $this->getInputText( 'org_email' );
-		$WDGOrganization->set_email( $org_email );
+		if ( $org_email != $WDGOrganization->get_email() ) {
+			if ( !is_email( $org_email ) || email_exists( $org_email ) ) {
+				$this->addPostError(
+					'org-invest-error',
+					__( "Cette adresse e-mail d'organisation n'est pas valide.", 'yproject' ),
+					'general'
+				);
+			} else {
+				$WDGOrganization->set_email( $org_email );
+			}
+		}
 		$org_website = $this->getInputText( 'org_website' );
 		$WDGOrganization->set_website( $org_website );
 		$org_legalform = $this->getInputText( 'org_legalform' );
@@ -815,6 +910,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$WDGOrganization->set_rcs( $org_rcs );
 		$org_capital = $this->getInputTextMoney( 'org_capital' );
 		$WDGOrganization->set_capital( $org_capital );
+		$org_address_number = $this->getInputText( 'org_address_number' );
+		$WDGOrganization->set_address_number( $org_address_number );
+		$org_address_number_comp = $this->getInputText( 'org_address_number_comp' );
+		$WDGOrganization->set_address_number_comp( $org_address_number_comp );
 		$org_address = $this->getInputText( 'org_address' );
 		$WDGOrganization->set_address( $org_address );
 		$org_postal_code = $this->getInputText( 'org_postal_code' );
@@ -846,6 +945,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$_SESSION[ 'org_idnumber' ] = $this->getInputText( 'org_idnumber' );
 		$_SESSION[ 'org_rcs' ] = $this->getInputText( 'org_rcs' );
 		$_SESSION[ 'org_capital' ] = $this->getInputTextMoney( 'org_capital' );
+		$_SESSION[ 'org_address_number' ] = $this->getInputText( 'org_address_number' );
+		$_SESSION[ 'org_address_number_comp' ] = $this->getInputText( 'org_address_number_comp' );
 		$_SESSION[ 'org_address' ] = $this->getInputText( 'org_address' );
 		$_SESSION[ 'org_postal_code' ] = $this->getInputText( 'org_postal_code' );
 		$_SESSION[ 'org_city' ] = $this->getInputText( 'org_city' );

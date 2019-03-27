@@ -69,7 +69,7 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_success( $payment_id, $code, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success( $payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
 
 		$particular_content = "";
@@ -79,7 +79,6 @@ class NotificationsEmails {
 
 		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
 		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
-		$particular_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong>";
 		$attachments = FALSE;
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
     }
@@ -470,24 +469,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
 	
-	public static function investment_to_validate( $user_email, $user_name, $campaign_name ) {
-		$object = "Vous pouvez reprendre votre investissement sur le projet . " . $campaign_name;
-		
-		$body_content = "Bonjour " .$user_name. ",<br><br>";
-		$body_content .= "Suite à votre authentification par notre partenaire Lemon Way, vous pouvez à présent reprendre votre investissement sur le projet " .$campaign_name. ".<br><br>";
-		
-		$body_content .= 'Pour continuer votre investissement, vous pouvez dès à présent vous <a href="' .home_url( '/mon-compte/' ). '">identifier sur WE DO GOOD</a> avec votre e-mail et votre mot de passe.<br>';
-		$body_content .= "Une fois identifié, une fenêtre s'affichera automatiquement pour vous permettre de valider votre contrat d'investissement et procéder au paiement.<br><br>";
-		
-		$body_content .= 'Pour vous identifier sur WE DO GOOD, cliquez <a href="' .home_url( '/mon-compte/' ). '">ici</a>.<br><br>';
-		
-		$body_content .= "Pour toute question, nous sommes disponibles sur le chat en ligne ou à l'adresse investir@wedogood.co.<br><br>";
-		
-		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
-		
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
-	}
-	
 	public static function preinvestment_auto_validated( $user_email, $campaign ) {
 		$object = "Votre pré-investissement est validé";
 		
@@ -677,6 +658,19 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS PAIEMENTS ROI
     //*******************************************************
+	public static function turnover_declaration_adjustment_file_sent( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::turnover_declaration_adjustment_file_sent > ' . $declaration_id);
+		$declaration = new WDGROIDeclaration($declaration_id);
+		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+		
+		$admin_email = get_option('admin_email');
+		$object = "Projet " . $campaign->data->post_title . " - Envoi de fichier d'ajustement";
+		$body_content = "Hello !<br /><br />";
+		$body_content .= "Le projet " .$campaign->data->post_title. " a envoyé un document d'ajustement pour une déclaration de royalties à venir.<br>";
+		
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+	
 	public static function turnover_declaration_null( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::turnover_declaration_null > ' . $declaration_id);
 		$declaration = new WDGROIDeclaration($declaration_id);
@@ -754,6 +748,40 @@ class NotificationsEmails {
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
+	
+    public static function roi_received_exceed_investment( $investor_id, $investor_type, $project_id ) {
+		ypcf_debug_log( 'NotificationsEmails::roi_received_exceed_investment > ' .$investor_id. ' | ' .$investor_type. ' | ' .$project_id );
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		
+		$object = "Royalties percues supérieures à l'investissement initial";
+		$body_content = "Coucou !<br><br>";
+		$body_content .= "Un investisseur a reçu plus de royalties que son investissement de départ.<br>";
+		$body_content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$body_content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
+		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
+		
+		$admin_email = get_option( 'admin_email' );
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
+	
+    public static function roi_received_exceed_maximum( $investor_id, $investor_type, $project_id ) {
+		ypcf_debug_log( 'NotificationsEmails::roi_received_exceed_maximum > ' .$investor_id. ' | ' .$investor_type. ' | ' .$project_id );
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		
+		$object = "URGENT - Royalties percues supérieures au maximum pouvant être reçu";
+		$body_content = "Coucou !<br><br>";
+		$body_content .= "Un investisseur a reçu plus de royalties que son investissement de départ ne le permettait (maximum dépassé).<br>";
+		$body_content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$body_content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
+		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
+		
+		$admin_email = get_option( 'admin_email' );
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
     //*******************************************************
     // FIN NOTIFICATIONS PAIEMENTS ROI
     //*******************************************************
@@ -780,47 +808,23 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS KYC
     //*******************************************************
-	/**
-	 * @param WDGOrganization $orga
-	 */
-    public static function send_notification_kyc_accepted_user($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
-		
-		$object = "Vos documents ont été identifiés";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Suite à l'envoi de vos documents, votre identification auprès de notre partenaire de paiement Lemonway a été acceptée.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    public static function send_notification_kyc_accepted_admin($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
+    public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_kyc_refused_admin > ' . $user_email);
 		
 		$admin_email = get_option('admin_email');
-		$object = "Nouveaux documents identifiés";
-		$body_content = "Hello !<br />";
-		$body_content .= "Lemonway a validé l'identification de l'utilisateur ".$user->first_name." ".$user->last_name." (".$user->user_login.").<br /><br />";
-
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
-    }
-	
-    public static function send_notification_kyc_rejected_user($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_rejected_user > ' . $user->ID);
+		$object = "Investisseur à relancer !";
 		
-		$object = "Vos documents ont été refusés";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Suite à l'envoi de vos documents, notre partenaire de paiement Lemonway a refusé votre identification. Merci de nous contacter pour plus d'informations.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    public static function send_notification_kyc_rejected_admin($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
+		$body_content = "Hello !<br>";
+		$body_content .= "Lemon Way a refusé des documents depuis quelques jours, et l'utilisateur a quelques actions en attente.<br>";
+		$body_content .= "Il s'agit de " .$user_name. ".<br>";
+		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
 		
-		$admin_email = get_option('admin_email');
-		$object = "Nouveaux documents refusés";
-		$body_content = "Hello !<br />";
-		$body_content .= "Lemonway a refusé l'identification de l'utilisateur ".$user->first_name." ".$user->last_name." (".$user->user_login.").<br /><br />";
+		$body_content .= "Voici ses actions sur le site :<br>";
+		foreach ( $pending_actions as $pending_action ) {
+			$body_content .= "- " .$pending_action. "<br>";
+		}
 
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
     }
     //*******************************************************
     // FIN NOTIFICATIONS KYC

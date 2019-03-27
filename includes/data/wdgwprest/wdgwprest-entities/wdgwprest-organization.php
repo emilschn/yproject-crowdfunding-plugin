@@ -40,6 +40,8 @@ class WDGWPREST_Entity_Organization {
 			'vat'						=> $organization->get_vat(),
 			'fiscal_year_end_month'		=> $organization->get_fiscal_year_end_month(),
 			'capital'					=> $organization->get_capital(),
+			'address_number'			=> $organization->get_address_number(),
+			'address_number_comp'		=> $organization->get_address_number_comp(),
 			'address'					=> $organization->get_address(),
 			'postalcode'				=> $organization->get_postal_code(),
 			'city'						=> $organization->get_city(),
@@ -116,11 +118,30 @@ class WDGWPREST_Entity_Organization {
 	}
 	
 	/**
-	 * Retourne les ROIs liés à un utilisateur
+	 * Retourne les contrats d'investissements liés à une organisation
+	 * @return array
+	 */
+	public static function get_investment_contracts( $organization_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/investment-contracts' );
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne les ROIs liés à une organisation
 	 * @return array
 	 */
 	public static function get_rois( $organization_id ) {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/rois' );
+		return $result_obj;
+	}
+	
+	/**
+	 * Retourne la liste des projets liés à une organisation
+	 * @param int $organization_id
+	 * @return array
+	 */
+	public static function get_projects( $organization_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/projects' );
 		return $result_obj;
 	}
 }

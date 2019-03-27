@@ -148,6 +148,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 					$WDGOrganization->save();
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						$WDGOrganization->register_lemonway();
+						// TODO : faire un unregister
 						LemonwayLib::wallet_register_iban( $WDGOrganization->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
 						$test_kyc = TRUE;
 					}
@@ -174,6 +175,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 					$WDGUser->update_api();
 					if ( $WDGUser->can_register_lemonway() ) {
 						$WDGUser->register_lemonway();
+						LemonwayLib::wallet_unregister_iban( $WDGUser->get_lemonway_id(), $WDGUser->get_lemonway_iban()->ID );
 						LemonwayLib::wallet_register_iban( $WDGUser->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
 						$test_kyc = TRUE;
 					}

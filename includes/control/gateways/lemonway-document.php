@@ -84,7 +84,7 @@ class LemonwayDocument {
 		if ( !isset( LemonwayDocument::$documents_list ) ) {
 			LemonwayDocument::$documents_list = array();
 		}
-		if ( !empty( $wallet_id ) && !empty( $document_type ) ) {
+		if ( !empty( $wallet_id ) && isset( $document_type ) ) {
 			if ( !empty( LemonwayDocument::$documents_list[ $wallet_id ][ $document_type ] ) ) {
 				$buffer = LemonwayDocument::$documents_list[ $wallet_id ][ $document_type ];
 			} else {
