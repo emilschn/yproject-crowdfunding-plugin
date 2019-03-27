@@ -104,7 +104,6 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/campaign-votes.php' );
 		require( $this->includes_dir . 'data/campaign-investments.php' );
 		require( $this->includes_dir . 'data/campaign-bill.php' );
-		require( $this->includes_dir . 'data/investment-contract.php' );
 		require( $this->includes_dir . 'data/roi.php' );
 		require( $this->includes_dir . 'data/roi-declaration.php' );
 		require( $this->includes_dir . 'data/kyc-file.php' );
