@@ -153,7 +153,7 @@ class WDGInvestmentSignature {
 		$signer_name = $user_name;
 		$signer_email = $user_email;
 		
-		$result = WDGEversign::create_document( $title, $message, $wdg_signature_id, $file_name, $file_url, $signer_id, $signer_name, $signer_email );
+		$result = WDGEversign::create_document( $title, $message, $wdg_signature_id, $file_name, $file_url, $signer_id, $signer_name, $signer_email, $campaign->ID );
 		
 		update_post_meta( $this->subscription_id, self::$meta_eversign, $result->document_hash );
 		
