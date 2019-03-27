@@ -40,7 +40,7 @@ class WDGEversign {
 				)
 			);
 		}
-		ypcf_debug_log( 'WDGEversign > call_get [' .$route. '] > ' .print_r( $result, TRUE ), FALSE );
+		ypcf_debug_log( 'WDGEversign > call_get [' .$route_to_get. '] > ' .print_r( $result, TRUE ), FALSE );
 
 		$buffer = FALSE;
 		if ( !is_wp_error($result) && isset( $result["response"] ) && isset( $result["response"]["code"] ) && $result["response"]["code"] == "200" ) {
@@ -77,7 +77,7 @@ class WDGEversign {
 				'body'		=> $body
 			) 
 		);
-		ypcf_debug_log( 'WDGEversign > call_post [' .$route. '][ ' .print_r( $parameters, TRUE ). ' ] > ' .print_r( $result, TRUE ), FALSE );
+		ypcf_debug_log( 'WDGEversign > call_post [' .$route_to_post. '][ ' .print_r( $parameters, TRUE ). ' ] > ' .print_r( $result, TRUE ), FALSE );
 		
 		self::unset_cache( $route );
 		
@@ -109,13 +109,13 @@ class WDGEversign {
 		return self::call_get( 'document', 'document_hash=' .$document_id );
 	}
 	
-	public static function create_document( $title, $message, $wdg_signature_id, $file_name, $file_url, $signer_id, $signer_name, $signer_email ) {
+	public static function create_document( $title, $message, $wdg_signature_id, $file_name, $file_url, $signer_id, $signer_name, $signer_email, $campaign_id ) {
 		// General
 		$sandbox = WDG_EVERSIGN_SANDBOX;
 		$reminders = 1;
 		$require_all_signers = 1;
-		$redirect_url_accept = home_url( '/signature-ok/' );
-		$redirect_url_decline = home_url( '/signature-not-ok/' );
+		$redirect_url_accept = home_url( '/paiement-partager/?campaign_id=' .$campaign_id. '&return_eversign=1' );
+		$redirect_url_decline = home_url( '/paiement-partager/?campaign_id=' .$campaign_id. '&return_eversign=2' );
 		$client_id = $wdg_signature_id;
 		
 		// Signers
