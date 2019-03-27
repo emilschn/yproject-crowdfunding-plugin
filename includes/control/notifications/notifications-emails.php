@@ -77,7 +77,7 @@ class NotificationsEmails {
 			$particular_content .= self::$alert_lemonway_card;
 		}
 
-		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
+		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Eversign ";
 		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
 		$attachments = FALSE;
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
@@ -551,38 +551,17 @@ class NotificationsEmails {
     // CODE SIGNATURE
     //*******************************************************
     /**
-     * Mail à investisseur pour renvoyer le code de signature
-     * @param int $payment_id
-     * @param WP_User $user
-     * @param string $code
-     * @return bool
-     */
-    public static function send_code_user($payment_id, $user, $code) {
-		ypcf_debug_log('NotificationsEmails::send_code_user > ' . $payment_id . ' | ' . $user->ID . ' | ' . $code);
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-
-		$object = "Code d'investissement";
-		$body_content = "Cher ".$user->first_name." ".$user->user_lastname.",<br /><br />";
-		$body_content .= "Afin de confirmer votre investissement sur le projet " . $post_campaign->post_title . ", ";
-		$body_content .= "voici le code qui vous permettra de signer le contrat chez notre partenaire Signsquid :<br />";
-		$body_content .= $code . "<br /><br />";
-		$body_content .= "Si vous n'avez fait aucune action pour recevoir ce code, ne tenez pas compte de ce message.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    /**
      * Mail à investisseur pour envoyer code nouvelle signature
      * @param string $user_name
      * @param string $user_email
      * @param string $code
      * @return bool
-     */
     public static function send_new_contract_code_user( $user_name, $user_email, $contract_title, $code ) {
 		ypcf_debug_log('NotificationsEmails::send_new_contract_code_user > ' . $user_name . ' | ' . $user_email . ' | ' . $contract_title . ' | ' . $code);
 
 		$object = "Votre code de signature";
 		$body_content = "Bonjour ".$user_name.",<br><br>";
-		$body_content .= "Afin de signer le contrat " .$contract_title. " chez notre partenaire Signsquid, ";
+		$body_content .= "Afin de signer le contrat " .$contract_title. " chez notre partenaire Eversign, ";
 		$body_content .= "voici le code qu'il vous faudra entrer pour le valider :<br>";
 		$body_content .= $code . "<br><br>";
 		$body_content .= "Nous vous remercions par avance,<br>";
@@ -591,6 +570,7 @@ class NotificationsEmails {
 
 		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
     }
+     */
     //*******************************************************
     // FIN CODE SIGNATURE
     //*******************************************************
