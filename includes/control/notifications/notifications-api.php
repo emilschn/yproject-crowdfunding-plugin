@@ -18,6 +18,11 @@ class NotificationsAPI {
 		'576' => "Relance - Pré-lancement - Evaluation avec intention",
 		'577' => "Relance - Pré-lancement - Evaluation sans intention",
 		'578' => "Relance - Pré-lancement - Suivi",
+		'579' => "Relance - Investissement 30 % - Avec intention",
+		'580' => "Relance - Investissement 30 % - Sans intention",
+		'621' => "Relance - Investissement 100 % - Avec investissement",
+		'622' => "Relance - Investissement 100 % - Avec intention",
+		'623' => "Relance - Investissement 100 % - Sans intention",
 		'632' => "Evaluation avec intention - Demande d'authentification",
 		'628' => "Evaluation avec intention - Demande de pré-investissement",
 		'603' => "Investissement - Demande d'authentification",
@@ -405,6 +410,127 @@ class NotificationsAPI {
 	
 	public static function confirm_prelaunch_invest_follow( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
 		$id_template = '578';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // RELANCE - INVESTISSEMENT - 30%
+    //*******************************************************
+	public static function confirm_investment_invest30_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '579';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest30_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '580';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // RELANCE - INVESTISSEMENT - 100%
+    //*******************************************************
+	public static function confirm_investment_invest100_invested( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '621';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest100_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '622';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest100_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '623';
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
