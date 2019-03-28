@@ -956,11 +956,6 @@ class WDGInvestment {
 		return ( $this->get_saved_amount() > WDGInvestmentContract::$signature_minimum_amount ||  $this->get_session_amount() > WDGInvestmentContract::$signature_minimum_amount );
 	}
 	
-	public function get_signature_url() {
-		$contract = new WDGInvestmentContract( $this->get_id() );
-		return $contract->get_yousign_url();
-	}
-	
 /******************************************************************************/
 // REFUND
 /******************************************************************************/
