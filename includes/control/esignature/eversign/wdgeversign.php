@@ -114,6 +114,8 @@ class WDGEversign {
 		$sandbox = WDG_EVERSIGN_SANDBOX;
 		$reminders = 1;
 		$require_all_signers = 1;
+		$custom_requester_name = 'WE DO GOOD';
+		$custom_requester_email = 'bonjour@wedogood.co';
 		$redirect_url_accept = home_url( '/paiement-partager/?campaign_id=' .$campaign_id. '&return_eversign=1' );
 		$redirect_url_decline = home_url( '/paiement-partager/?campaign_id=' .$campaign_id. '&return_eversign=2' );
 		$client_id = $wdg_signature_id;
@@ -127,6 +129,8 @@ class WDGEversign {
 			'message'				=> $message,
 			'reminders'				=> $reminders,
 			'require_all_signers'	=> $require_all_signers,
+			'custom_requester_name'	=> $custom_requester_name,
+			'custom_requester_email'	=> $custom_requester_email,
 			'redirect'				=> $redirect_url_accept,
 			'redirect_decline'		=> $redirect_url_decline,
 			'client'				=> $client_id,
