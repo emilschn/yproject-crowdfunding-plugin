@@ -131,11 +131,11 @@ class WDGInvestmentSignature {
 		$investor_id = $WDGInvestment->get_saved_user_id();
 		if ( WDGOrganization::is_user_organization( $investor_id ) ) {
 			$WDGEntity = new WDGOrganization( $investor_id );
-			$user_name = $WDGEntity->get_name();
+			$user_name = html_entity_decode( $WDGEntity->get_name(), ENT_QUOTES | ENT_HTML401 );
 			$user_email = $WDGEntity->get_email();
 		} else {
 			$WDGEntity = new WDGUser( $investor_id );
-			$user_name = $WDGEntity->get_firstname(). ' ' .$WDGEntity->get_lastname();
+			$user_name = html_entity_decode( $WDGEntity->get_firstname(). ' ' .$WDGEntity->get_lastname(), ENT_QUOTES | ENT_HTML401 );
 			$user_email = $WDGEntity->get_email();
 		}
 		$date_payment = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $this->subscription_id ) ) );
