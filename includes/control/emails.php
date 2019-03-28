@@ -6,6 +6,7 @@ class WDGEmails {
 		$project_name = $campaign->get_name();
 		$project_url = get_permalink( $campaign->ID );
 		$project_api_id = $campaign->get_api_id();
+		$project_percent = $campaign->percent_minimum_completed( FALSE );
 		// Gestion des sauts de ligne
 		$input_testimony = nl2br( $input_testimony_in );
 
@@ -25,8 +26,9 @@ class WDGEmails {
 					NotificationsAPI::confirm_prelaunch_invest_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
 					break;
 				case 'investment-30':
-					NotificationsAPI::confirm_investment_invest30_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-					NotificationsAPI::confirm_investment_invest30_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_investment_invest30_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_investment_invest30_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_investment_invest30_follow( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
 					break;
 				case 'investment-100':
 					NotificationsAPI::confirm_investment_invest100_invested( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
@@ -34,9 +36,7 @@ class WDGEmails {
 					NotificationsAPI::confirm_investment_invest100_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
 					break;
 			}
-			$url_return = wp_get_referer() . "#contacts";
-			wp_redirect( $url_return );
-			die();
+			return;
 		}
 
 		$user_list_by_id = array();
@@ -72,8 +72,8 @@ class WDGEmails {
 			}
 		}
 
-		// Si le mail est celui de pré-lancement
-		if ( $mail_type == 'prelaunch' ) {
+		// Si le mail est celui de pré-lancement, ou d'investissement à 30%
+		if ( $mail_type == 'prelaunch' || $mail_type == 'investment-30' ) {
 			// On reprend les followers qui n'ont pas évalué et qui n'ont pas fait d'action d'investissement
 			foreach ( $list_user_followers as $db_item_follower_user_id ) {
 				if (	!isset( $user_list_by_id[ $db_item_follower_user_id ] )
@@ -118,6 +118,19 @@ class WDGEmails {
 
 					} else {
 						NotificationsAPI::confirm_prelaunch_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					}
+					break;
+					
+				case 'investment-30':
+					if ( $intention_amount == 'follow' ) {
+						NotificationsAPI::confirm_investment_invest30_follow( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
+					} elseif ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_investment_invest30_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
+					} else {
+						NotificationsAPI::confirm_investment_invest30_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
 					}
 					break;
 			}

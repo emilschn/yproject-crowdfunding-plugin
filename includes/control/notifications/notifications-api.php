@@ -20,6 +20,7 @@ class NotificationsAPI {
 		'578' => "Relance - Pré-lancement - Suivi",
 		'579' => "Relance - Investissement 30 % - Avec intention",
 		'580' => "Relance - Investissement 30 % - Sans intention",
+		'650' => "Relance - Investissement 30 % - Suit le projet",
 		'621' => "Relance - Investissement 100 % - Avec investissement",
 		'622' => "Relance - Investissement 100 % - Avec intention",
 		'623' => "Relance - Investissement 100 % - Sans intention",
@@ -434,15 +435,17 @@ class NotificationsAPI {
     //*******************************************************
     // RELANCE - INVESTISSEMENT - 30%
     //*******************************************************
-	public static function confirm_investment_invest30_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+	public static function confirm_investment_invest30_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
 		$id_template = '579';
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
 			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
+			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
+			'POURCENT'					=> $project_percent,
 			'TEMOIGNAGES'				=> $testimony,
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description
@@ -457,7 +460,7 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
-	public static function confirm_investment_invest30_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+	public static function confirm_investment_invest30_no_intention( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
 		$id_template = '580';
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -466,6 +469,31 @@ class NotificationsAPI {
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
+			'POURCENT'					=> $project_percent,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest30_follow( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '650';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'POURCENT'					=> $project_percent,
 			'TEMOIGNAGES'				=> $testimony,
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description
