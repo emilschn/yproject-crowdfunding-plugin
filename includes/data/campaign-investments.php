@@ -217,7 +217,7 @@ class WDGCampaignInvestments {
 				$item_invest_date = new DateTime( $item_invest[ 'date' ] );
 				if ( $item_invest_date > $yesterday_date ) {
 					$count_new_investments++;
-					$count_new_investments_amount = $item_invest[ 'amount' ];
+					$count_new_investments_amount += $item_invest[ 'amount' ];
 					array_push( $list_new_investments, $entity_str. ' - ' .$item_invest[ 'amount' ]. ' €' );
 				}
 			}
@@ -300,9 +300,7 @@ class WDGCampaignInvestments {
 		
 		// Les autres priorités du jour
 		$top_actions = '';
-		$date = new DateTime();
-		$day = $date->format( 'j' );
-		for ( $i = 0; $i <= 15; $i++ ) {
+		for ( $i = 0; $i <= 10; $i++ ) {
 			if ( isset( $list_priorities[ $i ] ) ) {
 				$send_mail = TRUE;
 				$top_actions .= "- " .$list_priorities[ $i ]. "<br>";
