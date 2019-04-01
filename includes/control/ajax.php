@@ -1906,16 +1906,18 @@ class WDGAjaxActions {
 			// Etat de la signature
 			$invest_sign_state = __( "Valid&eacute;", 'yproject' );
 			$invest_sign_state_span_class = 'confirm';
-			$invest_signsquid_contract = new SignsquidContract( $item_invest[ 'ID' ] );
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
 				$invest_sign_state_span_class = 'error';
 			} else if ( $post_invest_status == 'pending' ) {
 				$invest_sign_state = __( "En attente de r&eacute;ception du paiement", 'yproject' );
 				$invest_sign_state_span_class = 'error';
-			} else if ( $invest_signsquid_contract->get_status_code() != "Small" && $invest_signsquid_contract->get_status_code() != "Agreed" ) {
-				$invest_sign_state = __( "En attente de signature électronique", 'yproject' );
-				$invest_sign_state_span_class = 'error';
+			} else {
+				$WDGInvestmentSignature = new WDGInvestmentSignature( $item_invest[ 'ID' ] );
+				if ( $WDGInvestmentSignature->is_waiting_signature() ) {
+					$invest_sign_state = __( "En attente de signature électronique", 'yproject' );
+					$invest_sign_state_span_class = 'error';
+				}
 			}
 			$invest_sign_state = '<span class="payment-status-' .$invest_sign_state_span_class. '">' .$invest_sign_state. '</span>';
 			
@@ -1936,6 +1938,7 @@ class WDGAjaxActions {
 							if ( $wdg_contract->status == 'validated' ) {
 								$wdg_contract_status = 'Contrat signé';
 							} else {
+								/*
 								$signsquid_contract = new SignsquidContract( FALSE, $wdg_contract->partner_id );
 								$signsquid_status = $signsquid_contract->get_status_code();
 								if ( $signsquid_status == 'Agreed' ) {
@@ -1945,6 +1948,9 @@ class WDGAjaxActions {
 								if ( $signsquid_status == 'WaitingForSignatoryAction' && $current_wdg_user->is_admin() ) {
 									$wdg_contract_status .= ' - code (admin) : ' . $signsquid_contract->get_signing_code();
 								}
+								 * 
+								 */
+								$wdg_contract_status = 'Signsquid désactivé';
 							}
 						}
 					}

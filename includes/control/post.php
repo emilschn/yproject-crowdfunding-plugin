@@ -526,8 +526,9 @@ class WDGPostActions {
 						update_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, $file_create_item->id );
 					}
 					
+					// TODO : remplacer par Eversign ?
 					// Si le contrat n'existe pas sur Signsquid, créer un contrat electronique sur Signsquid dans meta amendment_signsquid_ID
-					$meta_payment_amendment_signsquid = get_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, TRUE );
+					/*$meta_payment_amendment_signsquid = get_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_signsquid ) ) {
 						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_signsquid : ' . $meta_payment_amendment_signsquid );
 						ypcf_debug_log( 'send_contract_model > $payment_item[user] : ' . $payment_item['user'] );
@@ -548,6 +549,7 @@ class WDGPostActions {
 						signsquid_add_file( $meta_payment_amendment_signsquid, $filepath );
 						signsquid_send_invite( $meta_payment_amendment_signsquid );
 						update_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, $meta_payment_amendment_signsquid );
+						
 						$new_contract_infos = signsquid_get_contract_infos( $meta_payment_amendment_signsquid );
 						if ( isset( $new_contract_infos ) && isset( $new_contract_infos->{'signatories'}[0]->{'code'} ) ) {
 							NotificationsEmails::send_new_contract_code_user( $user_name, $user_email, $contract_name, $new_contract_infos->{'signatories'}[0]->{'code'} );
@@ -560,7 +562,7 @@ class WDGPostActions {
 						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_contract : ' . $meta_payment_amendment_contract );
 						$api_contract_item = WDGWPREST_Entity_Contract::create( $contract_model_id, 'investment', $payment_id, 'Signsquid', $meta_payment_amendment_signsquid );
 						update_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, $api_contract_item->id );
-					}
+					}*/
 				}
 			}
 			

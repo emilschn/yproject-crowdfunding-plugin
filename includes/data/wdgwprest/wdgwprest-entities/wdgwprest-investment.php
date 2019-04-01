@@ -102,7 +102,9 @@ class WDGWPREST_Entity_Investment {
 		}
 		$payment_provider = $campaign->get_payment_provider();
 		
-		$signsquid_contract = new SignsquidContract( $edd_payment_item->ID );
+		$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
+		$signature_status = $WDGInvestmentSignature->get_status();
+		$signature_id = $WDGInvestmentSignature->get_external_id();
 		
 		$parameters = array(
 			'wpref'				=> $edd_payment_item->ID,
@@ -138,8 +140,8 @@ class WDGWPREST_Entity_Investment {
 			'status'					=> $payment_status,
 			'payment_key'				=> $payment_key,
 			'payment_status'			=> $payment_status,
-			'signature_key'				=> $signsquid_contract->get_contract_id(),
-			'signature_status'			=> $signsquid_contract->get_status_code()
+			'signature_key'				=> $signature_id,
+			'signature_status'			=> $signature_status
 		);
 		if ( $WDGOrganization != FALSE ) {
 			$parameters[ 'legal_entity_form' ] = $WDGOrganization->get_legalform();
