@@ -548,11 +548,12 @@ class WDGROIDeclaration {
 	
 	private function update_investment_contract_amount_received( $investment_contracts, $investment_id, $roi_amount ) {
 		if ( !empty( $investment_contracts ) ) {
-			foreach ( $investment_contracts as $investment_contract ) {
-				if ( $investment_contract->subscription_id == $investment_id ) {
-					$amount_received = $investment_contract->amount_received + $roi_amount;
+			foreach ( $investment_contracts as $investment_contract_item ) {
+				if ( $investment_contract_item->subscription_id == $investment_id ) {
+					$amount_received = $investment_contract_item->amount_received + $roi_amount;
+					$investment_contract = new WDGInvestmentContract( $investment_contract_item->id, $investment_contract_item );
 					$investment_contract->check_amount_received( $amount_received );
-					WDGWPREST_Entity_InvestmentContract::edit( $investment_contract->id, $amount_received );
+					WDGWPREST_Entity_InvestmentContract::edit( $investment_contract_item->id, $amount_received );
 					break;
 				}
 			}
