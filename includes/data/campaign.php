@@ -2807,8 +2807,6 @@ class ATCF_Campaign {
 		// Récupération de la liste des investissements concernés
 		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
 		if ( !empty( $investment_contracts ) ) {
-			$investments_list = array();
-			
 			// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
 			$adjustement_turned_into_turnover = 0;
 			if ( $declaration->get_adjustment_value() != 0 ) {
@@ -2834,7 +2832,7 @@ class ATCF_Campaign {
 						$investor_id = $WDGOrganization->get_wpref();
 					}
 					$investment_item = array(
-						'contract_id'	=> $investment_contract->get_api_id(),
+						'contract_id'	=> $investment_contract->id,
 						'ID'			=> $investment_contract->subscription_id,
 						'amount'		=> $investment_contract->subscription_amount,
 						'user'			=> $investor_id
