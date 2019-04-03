@@ -102,6 +102,10 @@ class WDGEmails {
 		}
 
 		foreach ( $user_list_by_id as $user_id => $vote_data ) {
+			if ( empty( $user_id ) ) {
+				continue;
+			}
+			
 			if ( WDGOrganization::is_user_organization( $user_id ) ) {
 				$WDGOrganization = new WDGOrganization( $user_id );
 				$recipient_email = $WDGOrganization->get_email();
@@ -170,7 +174,6 @@ class WDGEmails {
 					break;
 			}
 		}
-		exit();
 	}
 	
 }
