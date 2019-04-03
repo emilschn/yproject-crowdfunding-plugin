@@ -49,11 +49,11 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'know-project-manager'			=> __( "Je connais le(s) porteur(s) de projet" ),
-				'interrested-by-domain'			=> __( "Le projet fait partie d'un secteur qui m'int&eacute;resse" ),
-				'diversify-savings'				=> __( "Je cherche &agrave; diversifier les placements de mon &eacute;pargne" ),
-				'looking-for-positive-impact'	=> __( "Je cherche &agrave; investir dans un projet &agrave; impact positif" ),
-				'other-motivations'				=> __( "Autre(s) :" ),
+				'know-project-manager'			=> __( "Je connais le(s) porteur(s) de projet", 'yproject' ),
+				'interrested-by-domain'			=> __( "Le projet fait partie d'un secteur qui m'int&eacute;resse", 'yproject' ),
+				'diversify-savings'				=> __( "Je cherche &agrave; diversifier les placements de mon &eacute;pargne", 'yproject' ),
+				'looking-for-positive-impact'	=> __( "Je cherche &agrave; investir dans un projet &agrave; impact positif", 'yproject' ),
+				'other-motivations'				=> __( "Autre(s) :", 'yproject' ),
 			]
 		);
 		
