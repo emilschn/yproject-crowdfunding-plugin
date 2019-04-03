@@ -7,6 +7,15 @@ class WDG_Form_User_Notifications extends WDG_Form {
 	public static $field_group_newsletters = 'user-notifications-newsletters';
 	public static $field_group_projects = 'user-notifications-projects';
 	
+	private static $sendinblue_nl_list = array( 
+		5	=> "Newsletter WE DO GOOD",
+		6	=> "Actualit&eacute;s des projets",
+		283 => "Projets &agrave; impact &eacute;conomique",
+		281 => "Projets &agrave; impact social",
+		280 => "Projets &agrave; impact environnemental",
+		279 => "Projets autour de chez moi"
+	);
+	
 	private $user_id;
 	
 	public function __construct( $user_id = FALSE ) {
@@ -38,8 +47,7 @@ class WDG_Form_User_Notifications extends WDG_Form {
 		);
 		
 		// $field_group_notifications : Les champs informations
-		$is_subscribed_to_newsletter_wdg = FALSE;
-		$is_subscribed_to_newsletter_projects = FALSE;
+		$is_subscribed_to_newsletter = array();
 		$user_email = $WDGUser->get_email();
 		if ( !empty( $user_email ) ) {
 			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
@@ -52,30 +60,31 @@ class WDG_Form_User_Notifications extends WDG_Form {
 					foreach( $return[ 'data' ][ 'listid' ] as $list_id ) {
 						$lists_is_in[ $list_id ] = TRUE;
 					}
-					if ( !empty( $lists_is_in[ 5 ] ) ) {
-						$is_subscribed_to_newsletter_wdg = TRUE;
-					}
-					if ( !empty( $lists_is_in[ 6 ] ) ) {
-						$is_subscribed_to_newsletter_projects = TRUE;
+					
+					foreach ( self::$sendinblue_nl_list as $sib_id => $sib_label ) {
+						if ( !empty( $lists_is_in[ $sib_id ] ) ) {
+							array_push( $is_subscribed_to_newsletter, TRUE );
+						} else {
+							array_push( $is_subscribed_to_newsletter, FALSE );
+						}
 					}
 				}
 			}
 		}
 
+		$checkboxes_ids_labels = array();
+		foreach ( self::$sendinblue_nl_list as $sib_id => $sib_label ) {
+			$checkboxes_ids_labels[ 'subscribe_newsletter_' .$sib_id ] = $sib_label;
+		}
+		
 		$this->addField(
 			'checkboxes',
 			'',
 			'',
 			WDG_Form_User_Notifications::$field_group_newsletters,
-			[
-				$is_subscribed_to_newsletter_wdg,
-				$is_subscribed_to_newsletter_projects
-			],
+			$is_subscribed_to_newsletter,
 			FALSE,
-			[
-				'subscribe_newsletter_wdg' => __( "Newsletter WE DO GOOD" ),
-				'subscribe_newsletter_projects' => __( "Actualit&eacute;s des projets" )
-			]
+			$checkboxes_ids_labels
 		);
 		
 		// $field_group_projects : les projets suivis
@@ -121,17 +130,13 @@ class WDG_Form_User_Notifications extends WDG_Form {
 			// (Des)Inscription des NL WDG
 			$listid_link = array();
 			$listid_unlink = array();
-			$subscribe_newsletter_wdg = $this->getInputChecked( 'subscribe_newsletter_wdg' );
-			if ( empty( $subscribe_newsletter_wdg ) ) {
-				array_push( $listid_unlink, 5 );
-			} else {
-				array_push( $listid_link, 5 );
-			}
-			$subscribe_newsletter_projects = $this->getInputChecked( 'subscribe_newsletter_projects' );
-			if ( empty( $subscribe_newsletter_projects ) ) {
-				array_push( $listid_unlink, 6 );
-			} else {
-				array_push( $listid_link, 6 );
+			foreach ( self::$sendinblue_nl_list as $sib_id => $sib_label ) {
+				$subscribe_newsletter = $this->getInputChecked( 'subscribe_newsletter_' .$sib_id );
+				if ( empty( $subscribe_newsletter ) ) {
+					array_push( $listid_unlink, $sib_id );
+				} else {
+					array_push( $listid_link, $sib_id );
+				}
 			}
 			
 			try {
