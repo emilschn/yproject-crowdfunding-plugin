@@ -382,6 +382,15 @@ class WDGQueue {
 			
 		}
 	}
+	
+	public static function has_planned_campaign_advice_notification( $campaign_id ) {
+		$buffer = FALSE;
+		$queued_actions = WDGWPREST_Entity_QueuedAction::get_list( FALSE, FALSE, $campaign_id, 'campaign_advice_notification' );
+		if ( !empty( $queued_actions ) && !empty( $queued_actions[0]->id ) ) {
+			$buffer = $queued_actions[0]->id;
+		}
+		return $buffer;
+	}
 
 	
 /******************************************************************************/

@@ -800,6 +800,10 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function has_planned_advice_notification() {
+		return WDGQueue::has_planned_campaign_advice_notification( $this->ID );
+	}
+	
 	public static $key_archive_message = 'archive_message';
 	public function archive_message() {
 		return $this->__get( ATCF_Campaign::$key_archive_message );
