@@ -784,13 +784,13 @@ class WDGAjaxActions {
 		}
 		
 		$new_enable_advice_notifications = sanitize_text_field( filter_input( INPUT_POST, 'new_enable_advice_notifications' ) );
+		$queued_action_id = $campaign->has_planned_advice_notification();
         if ( $new_enable_advice_notifications === true || $new_enable_advice_notifications === "true" || $new_enable_advice_notifications === 1 ) {
-			if ( !$campaign->has_planned_advice_notification() ) {
+			if ( $queued_action_id == FALSE ) {
 				WDGQueue::add_campaign_advice_notification( $campaign->ID );
 			}
 		} else {
-			$queued_action_id = $campaign->has_planned_advice_notification();
-			if ( !empty( $queued_action_id ) ) {
+			if ( $queued_action_id != FALSE ) {
 				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, WDGQueue::$status_complete );
 			}
 		}
