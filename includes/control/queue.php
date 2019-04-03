@@ -3,8 +3,8 @@
  * Classe de gestion des queues d'actions
  */
 class WDGQueue {
-	private static $status_init = 'init';
-	private static $status_complete = 'complete';
+	public static $status_init = 'init';
+	public static $status_complete = 'complete';
 	
 /******************************************************************************/
 /* Fonctions globales nécessaires à la gestion des queues */
