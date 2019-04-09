@@ -283,7 +283,7 @@ class LemonwayNotification {
 		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br />';
 		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br />';
 		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br />';
-		NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Virement reçu', $content, true );
+		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu', $content, true );
 		
 		// - Trouver l'utilisateur à partir de son identifiant externe
 		$WDGUser_invest_author = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
@@ -373,10 +373,10 @@ class LemonwayNotification {
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				NotificationsEmails::new_purchase_team_members( $investment_id );
 			} else {
-				NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Virement reçu - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
+				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
 			}
 		} else {
-			NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Virement reçu - erreur', '$WDGUser_invest_author === FALSE', true );
+			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$WDGUser_invest_author === FALSE', true );
 		}
 	}
 	
@@ -420,7 +420,7 @@ class LemonwayNotification {
 		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br />';
 		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br />';
 		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br />';
-		NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Prélèvement reçu', $content, true );
+		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Prélèvement reçu', $content, true );
 		
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
