@@ -51,7 +51,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'radio',
 			'user-type',
-			__( "Je souhaite investir", 'yproject' ),
+			__( "Je souhaite investir *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_type,
 			FALSE,
 			FALSE,
@@ -149,7 +149,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'birthplace_department',
-			__( "D&eacute;partement de naissance", 'yproject' ),
+			__( "D&eacute;partement de naissance *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_birthplace_department(),
 			FALSE,
@@ -160,7 +160,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'birthplace_country',
-			__( "Pays de naissance", 'yproject' ),
+			__( "Pays de naissance *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_birthplace_country(),
 			FALSE,
