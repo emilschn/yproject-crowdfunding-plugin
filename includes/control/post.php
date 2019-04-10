@@ -23,6 +23,7 @@ class WDGPostActions {
         self::add_action("add_contract_model");
         self::add_action("edit_contract_model");
         self::add_action("send_contract_model");
+        self::add_action("generate_campaign_funded_certificate");
         self::add_action("generate_campaign_bill");
         self::add_action("generate_campaign_contracts_archive");
         self::add_action("generate_contract_files");
@@ -570,6 +571,19 @@ class WDGPostActions {
 		}
 		
 		$url_return = wp_get_referer() . "#contracts";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function generate_campaign_funded_certificate() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$campaign->make_funded_certificate( TRUE );
+		}
+		
+		$url_return = wp_get_referer() . "#documents";
 		wp_redirect( $url_return );
 		die();
 	}

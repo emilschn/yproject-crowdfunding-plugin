@@ -841,6 +841,9 @@ class ATCF_Campaign {
 			return;
 		}
 		
+		if ( $this->platform_commission() == '' ) {
+			return;
+		}
 		$data_contract_start_date = $this->contract_start_date();
 		if ( !empty( $data_contract_start_date ) ) {
 			$start_datetime = new DateTime( $data_contract_start_date );
