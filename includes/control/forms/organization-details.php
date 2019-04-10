@@ -99,7 +99,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'rcs',
-			__( "RCS", 'yproject' ),
+			__( "RCS (Ville)", 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_rcs()
 		);
