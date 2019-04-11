@@ -168,16 +168,17 @@ class NotificationsAPI {
     //*******************************************************
     // Conseils quotidiens
     //*******************************************************
-	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $user_name, $greetings, $last_24h, $top_actions ) {
+	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $campaign_dashboard_url, $user_name, $greetings, $last_24h, $top_actions ) {
 		$id_template = '641';
 		$options = array(
 			'personal'					=> 1,
 			'replyto'					=> $replyto_mail,
 			'NOM_PROJET'				=> $campaign_name,
+			'URL_TB'					=> $campaign_dashboard_url,
 			'NOM_UTILISATEUR'			=> $user_name,
 			'SALUTATIONS'				=> $greetings,
 			'RESUME_24H'				=> $last_24h,
-			'ACTIONS_PRIORITAIRES'		=> $top_actions,
+			'ACTIONS_PRIORITAIRES'		=> $top_actions
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
