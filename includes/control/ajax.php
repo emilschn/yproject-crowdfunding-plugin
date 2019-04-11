@@ -235,7 +235,9 @@ class WDGAjaxActions {
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
 				foreach ( $roi_list as $roi_item ) {
-					$roi_amount += $roi_item->amount;
+					if ( $roi_item->status != WDGROI::$status_canceled ) {
+						$roi_amount += $roi_item->amount;
+					}
 				}
 				
 				$investment_item = array();
@@ -378,7 +380,7 @@ class WDGAjaxActions {
 							// Si il y a eu un versement de royalties, on récupère les infos du versement
 							if ( $roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
 								foreach ( $roi_list as $roi ) {
-									if ( $roi->id_declaration == $roi_declaration->id ) {
+									if ( $roi->id_declaration == $roi_declaration->id && $roi->status != WDGROI::$status_canceled ) {
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
