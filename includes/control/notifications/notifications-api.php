@@ -170,11 +170,12 @@ class NotificationsAPI {
     //*******************************************************
 	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $campaign_dashboard_url, $user_name, $greetings, $last_24h, $top_actions ) {
 		$id_template = '641';
+		$campaign_dashboard_url_clean = str_replace( 'https://', '', $campaign_dashboard_url );
 		$options = array(
 			'personal'					=> 1,
 			'replyto'					=> $replyto_mail,
 			'NOM_PROJET'				=> $campaign_name,
-			'URL_TB'					=> $campaign_dashboard_url,
+			'URL_TB'					=> $campaign_dashboard_url_clean,
 			'NOM_UTILISATEUR'			=> $user_name,
 			'SALUTATIONS'				=> $greetings,
 			'RESUME_24H'				=> $last_24h,
