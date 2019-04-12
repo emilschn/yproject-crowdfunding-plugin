@@ -804,6 +804,19 @@ class ATCF_Campaign {
 		return WDGQueue::has_planned_campaign_advice_notification( $this->ID );
 	}
 	
+	public static $key_can_invest_until_contract_start_date = 'can_invest_until_contract_start_date';
+	public function can_invest_until_contract_start_date() {
+		$metadata_value = $this->__get( ATCF_Campaign::$key_can_invest_until_contract_start_date );
+		$buffer = ( $metadata_value == '1' );
+		return $buffer;
+	}
+	
+	public function get_end_date_when_can_invest_until_contract_start_date() {
+		$datetime_first_payment = new DateTime( $this->first_payment_date() );
+		$datetime_first_payment->setDate( $datetime_first_payment->format( 'Y' ), $datetime_first_payment->format( 'm' ), 1 );
+		return $datetime_first_payment;
+	}
+	
 	public static $key_archive_message = 'archive_message';
 	public function archive_message() {
 		return $this->__get( ATCF_Campaign::$key_archive_message );
@@ -2121,7 +2134,18 @@ class ATCF_Campaign {
 	}
 	
 	public function is_remaining_time() {
-		return ( $this->time_remaining_str() != '-' );
+		$buffer = TRUE;
+		if ( $this->time_remaining_str() == '-' ) {
+			$can_invest_after = $this->can_invest_until_contract_start_date();
+			if ( !$can_invest_after ) {
+				$buffer = FALSE;
+			} else {
+				$datetime_end = $this->get_end_date_when_can_invest_until_contract_start_date();
+				$datetime_today = new DateTime();
+				$buffer = ( $datetime_today < $datetime_end );
+			}
+		}
+		return $buffer;
 	}
 	
 	/**
@@ -2153,7 +2177,9 @@ class ATCF_Campaign {
 				$buffer = '-';
 				if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 					if ( $this->is_funded() ) {
-						$this->set_status( ATCF_Campaign::$campaign_status_funded );
+						if ( !$this->can_invest_until_contract_start_date() ) {
+							$this->set_status( ATCF_Campaign::$campaign_status_funded );
+						}
 					} else {
 						$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );

@@ -852,6 +852,12 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_archive_message, $new_archive_message );
 			$success[ "new_archive_message" ] = 1;
 		}
+		$new_can_invest_until_contract_start_date = sanitize_text_field( filter_input( INPUT_POST, 'new_can_invest_until_contract_start_date' ) );
+        if ( $new_can_invest_until_contract_start_date === true || $new_can_invest_until_contract_start_date === "true" || $new_can_invest_until_contract_start_date === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date );
+		}
 		$new_end_vote_pending_message = sanitize_text_field( filter_input( INPUT_POST, 'new_end_vote_pending_message' ) );
 		if ( !empty( $new_end_vote_pending_message ) ) {
 			$campaign->__set( ATCF_Campaign::$key_end_vote_pending_message, $new_end_vote_pending_message );
