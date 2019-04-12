@@ -274,11 +274,11 @@ class WDGAjaxActions {
 						if ( $today_datetime > $date_first_payement ) {
 							$investment_item[ 'status_str' ] = __( "Versements en cours", 'yproject' );
 						}
-					}
 					
-					if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
-						$investment_item[ 'status' ] = 'canceled';
-						$investment_item[ 'status_str' ] = __( "Versements termin&eacute;s", 'yproject' );
+						if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
+							$investment_item[ 'status' ] = 'canceled';
+							$investment_item[ 'status_str' ] = __( "Versements termin&eacute;s", 'yproject' );
+						}
 					}
 				}
 				
