@@ -178,6 +178,7 @@ class WDGAjaxActions {
 		
 		foreach ( $purchases as $purchase_post ){
 			$first_investment_contract = FALSE;
+			$payment_key = FALSE;
 			if ( is_array( $purchase_post ) && isset( $purchase_post[ 'investment_contract' ] ) ) {
 				$first_investment_contract = $purchase_post[ 'investment_contract' ];
 				$purchase_status = 'publish';
@@ -244,9 +245,45 @@ class WDGAjaxActions {
 				$investment_item[ 'date' ] = $purchase_date;
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
 				$investment_item[ 'status' ] = utf8_encode( $purchase_status );
-				if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
-					$investment_item[ 'status' ] = 'canceled';
+				$investment_item[ 'status_str' ] = '-';
+				
+				if ( $purchase_status == 'pending' ) {
+					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
+					$payment_key = $WDGInvestment->get_payment_key();
+					if ( strpos( $payment_key, 'wire_' ) !== FALSE || $payment_key == 'check' ) {
+						$investment_item[ 'status_str' ] = __( "En attente de paiement", 'yproject' );
+					} elseif ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+						$investment_item[ 'status_str' ] = __( "A valider", 'yproject' );
+					}
+					
+				} elseif ( $purchase_status == 'publish' ) {
+					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+						$investment_item[ 'status_str' ] = __( "Valid&eacute;", 'yproject' );
+						
+					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive ) {
+						$investment_item[ 'status_str' ] = __( "Annul&eacute;", 'yproject' );
+						$date_end = new DateTime( $campaign->end_date() );
+						$date_end->add( new DateInterval( 'P15D' ) );
+						if ( $today_datetime < $date_end ) {
+							$investment_item[ 'status_str' ] = __( "En suspend", 'yproject' );
+						}
+						
+					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+						$investment_item[ 'status_str' ] = __( "Versements &agrave; venir", 'yproject' );
+						$date_first_payement = new DateTime( $campaign->first_payment_date() );
+						if ( $today_datetime > $date_first_payement ) {
+							$investment_item[ 'status_str' ] = __( "Versements en cours", 'yproject' );
+						}
+					}
+					
+					if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
+						$investment_item[ 'status' ] = 'canceled';
+						$investment_item[ 'status_str' ] = __( "Versements termin&eacute;s", 'yproject' );
+					}
 				}
+				
+				
+				
 				$investment_item[ 'conclude-investment-url' ] = '';
 				if ( $purchase_status == 'pending' && $is_authentified ) {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
