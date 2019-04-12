@@ -1480,7 +1480,7 @@ class ATCF_Campaign {
 				if ( $buffer != '' ) {
 					$buffer .= ', ';
 				}
-				$buffer .= '<span class="hashtag-environment">' . strtolower( $category->name ) . '</span>';
+				$buffer .= '<span class="hashtag-environment">' . __( htmlentities( strtolower( $category->name ) ), 'yproject' ) . '</span>';
 			}
 		}
 		
@@ -1490,7 +1490,7 @@ class ATCF_Campaign {
 				if ( $buffer != '' ) {
 					$buffer .= ', ';
 				}
-				$buffer .= '<span class="hashtag-social">' . strtolower( $category->name ) . '</span>';
+				$buffer .= '<span class="hashtag-social">' . __( htmlentities( strtolower( $category->name ) ), 'yproject' ) . '</span>';
 			}
 		}
 		
@@ -1500,7 +1500,7 @@ class ATCF_Campaign {
 				if ( $buffer != '' ) {
 					$buffer .= ', ';
 				}
-				$buffer .= '<span class="hashtag-economy">' . strtolower( $category->name ) . '</span>';
+				$buffer .= '<span class="hashtag-economy">' . __( htmlentities( strtolower( $category->name ) ), 'yproject' ) . '</span>';
 			}
 		}
 		
