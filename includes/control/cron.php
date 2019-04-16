@@ -92,19 +92,22 @@ class WDGCronActions {
 					// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
 					if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
 						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
-						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+						$organization = $campaign->get_organization();
+						$wdgorganization = new WDGOrganization( $organization->id, $organization );
+						
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded && $wdgorganization->has_signed_mandate() ) {
 							
-							$organization = $campaign->get_organization();
-							$wdgorganization = new WDGOrganization( $organization->id, $organization );
 							$wdguser_author = new WDGUser( $campaign->data->post_author );
 							$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
 						
 							$quarter_str_list = array( "premier", "deuxième", "troisième", "quatrième" );
 							$quarter_percent_list = array( 10, 20, 30, 40 );
 							$nb_quarter = 0;
-							$nb_year = 0;
-							$percent_estimation = 10;
+							$estimated_turnover = $campaign->estimated_turnover();
+							$nb_year = array_key_first( $estimated_turnover );
 							
+							// Parcours des déclarations de royalties pour savoir à quelle année et quel trimestre on est dans les échéances
+							// TODO : les trier dans l'ordre par sécurité
 							$existing_roi_declarations = $campaign->get_roi_declarations();
 							foreach ( $existing_roi_declarations as $declaration_object ) {
 								$date_declaration = new DateTime( $declaration_object[ 'date_due' ] );
@@ -121,10 +124,21 @@ class WDGCronActions {
 								}
 							}
 							
-							$estimated_turnover = $campaign->estimated_turnover();
+							// Test pour corriger les décalages dans le CA prévisionnel
+							// Pour éviter d'avoir zero, il faut soit le premier de la liste, soit le dernier
+							if ( !isset( $estimated_turnover[ $nb_year ] ) ) {
+								if ( $nb_year < 1 ) {
+									$nb_year = array_key_first( $estimated_turnover );
+								} else {
+									$nb_year = array_key_last( $estimated_turnover );
+								}
+							}
+							
+							// Calculs des éléments à afficher
 							$amount_estimation_year = $estimated_turnover[ $nb_year ];
-							$percent_royalties = $quarter_percent_list[ $nb_quarter ];
-							$amount_estimation_quarter = $amount_estimation_year * $percent_royalties / 100;
+							$percent_estimation = $quarter_percent_list[ $nb_quarter ];
+							$amount_estimation_quarter = $amount_estimation_year * $percent_estimation / 100;
+							$percent_royalties = $campaign->roi_percent();
 							$amount_royalties = round( $amount_estimation_quarter * $campaign->roi_percent() / 100, 2 );
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
 							$amount_total = $amount_royalties + $amount_fees;
