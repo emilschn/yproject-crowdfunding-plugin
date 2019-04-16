@@ -812,8 +812,9 @@ class ATCF_Campaign {
 	}
 	
 	public function get_end_date_when_can_invest_until_contract_start_date() {
-		$datetime_first_payment = new DateTime( $this->first_payment_date() );
-		$datetime_first_payment->setDate( $datetime_first_payment->format( 'Y' ), $datetime_first_payment->format( 'm' ), 1 );
+		// 15 jours avant la date de début de contrat
+		$datetime_first_payment = new DateTime( $this->contract_start_date() );
+		$datetime_first_payment->sub( new DateInterval( 'P15D' ) );
 		return $datetime_first_payment;
 	}
 	
