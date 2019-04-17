@@ -219,6 +219,10 @@ class WDG_Cache_Plugin {
 			$campaign = new ATCF_Campaign( $campaign_post->ID );
 			$campaign_categories_str = $campaign->get_categories_str();
 			
+			// On supprime ceux dont la date de fin est passée
+			if ( !$campaign->time_remaining_str() == '-' ) {
+				array_splice( $campaign_list, $i, 1 );
+			}
 			// On supprime ceux qui ne sont pas des projets d'entreprise
 			if ( strpos( $campaign_categories_str, 'entreprises' ) === FALSE ) {
 				array_splice( $campaign_list, $i, 1 );

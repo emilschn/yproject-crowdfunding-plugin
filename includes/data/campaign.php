@@ -3137,7 +3137,7 @@ class ATCF_Campaign {
 	
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
 	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
-	public static function get_list_funding( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client ); }
+	public static function get_list_funding( $nb = 0, $client = '', $random = FALSE, $is_time_remaining = TRUE ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client, $is_time_remaining ); }
 	public static function get_list_funded( $nb = 0, $client = '', $include_current = false, $skip_hidden = true ) {
 		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client, $skip_hidden );
 		if ( $include_current ) {
@@ -3154,14 +3154,15 @@ class ATCF_Campaign {
 	public static function get_list_archive($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_archive, $client ); }
 	
 	
-	public static function get_list_current( $nb, $type, $order, $client ) {
+	public static function get_list_current( $nb, $type, $order, $client, $is_time_remaining = true ) {
+		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
 			'numberposts' => $nb,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
 				array ( 'key' => 'campaign_vote', 'value' => $type ),
-				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') ),
+				array ( 'key' => 'campaign_end_date', 'compare' => $compare_end_date, 'value' => date('Y-m-d H:i:s') ),
 				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
 			)
 		);
