@@ -49,11 +49,12 @@ class WDG_Form {
 		
 	}
 	
-	protected function getParamByFileField( $wallet_id, $document_type, $date_upload ) {
+	protected function getParamByFileField( $wallet_id, $document_type, $date_upload, $secondary = FALSE ) {
 		$buffer = array(
 			'date_upload'					=> $date_upload,
 			'message_instead_of_field'		=> FALSE,
-			'display_refused_alert'			=> FALSE
+			'display_refused_alert'			=> FALSE,
+			'secondary'						=> $secondary
 		);
 		
 		$message_document_validated = __( "Document valid&eacute; par notre prestataire", 'yproject' );

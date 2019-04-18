@@ -12,25 +12,30 @@ class LemonwayDocument {
 		0: Carte d'identité de la Communauté Euro 
 		1: Justificatif de domicile (fournisseurs d'énergie, tel fixe, feuille d'imposition) 
 		2: Scan ou copie d'un RIB 
-		3: Passeport de la communauté européenne
-		4: Passeport en dehors de la communauté européenne 
-		5: Carte de séjour
+		3: Deuxième pièce d'identité personne physique (Sur LW : Passeport de la communauté européenne)
+		4: Verso carte d'identité (Sur LW : peut aussi être passeport en dehors de la communauté européenne)
+		5: Carte de séjour, pas utilisé
 		7 : Kbis
-		11 à 20 : documents divers
+		11 : Anciennement statuts entreprise (Permis de conduire sur LW)
+		12 : Inversion avec 11 = Verso de la deuxième pièce d'identité (Statuts entreprise sur LW)
+		13 : Selfie ?
+		14 à 20 : documents divers
 	 */
 	public static $document_type_id = 0;
 	public static $document_type_home = 1;
 	public static $document_type_bank = 2;
-	public static $document_type_passport_euro = 3;
-	public static $document_type_passport_not_euro = 4;
+	public static $document_type_idbis = 3;
+	public static $document_type_id_back = 4;
 	public static $document_type_residence_permit = 5;
 	public static $document_type_kbis = 7;
 	public static $document_type_status = 11;
-	public static $document_type_capital_allocation = 20;
+	public static $document_type_idbis_back = 12;
+	public static $document_type_selfie = 13;
 	public static $document_type_id2 = 16;
 	public static $document_type_home2 = 17;
 	public static $document_type_id3 = 18;
 	public static $document_type_home3 = 19;
+	public static $document_type_capital_allocation = 20;
 	
 	/**
 	 * Statuts de documents :
