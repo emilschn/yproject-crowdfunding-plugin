@@ -59,7 +59,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'idnumber',
-			__( "Num&eacute;ro SIREN *", 'yproject' ),
+			__( "Num&eacute;ro SIRET *", 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_idnumber()
 		);
@@ -99,7 +99,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'rcs',
-			__( "RCS", 'yproject' ),
+			__( "RCS (Ville)", 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_rcs()
 		);
@@ -145,6 +145,25 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		);
 		
 		//$field_group_address
+		$this->addField(
+			'text',
+			'address_number',
+			__( "Num&eacute;ro", 'yproject' ),
+			self::$field_group_address,
+			$WDGOrganization->get_address_number()
+		);
+
+		global $address_number_complements;
+		$this->addField(
+			'select',
+			'address_number_comp',
+			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			self::$field_group_address,
+			$WDGOrganization->get_address_number_comp(),
+			FALSE,
+			$address_number_complements
+		);
+			
 		$this->addField(
 			'text',
 			'address',
@@ -199,15 +218,18 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		} else {
 			// Informations de base
 			$email = $this->getInputText( 'email' );
-			if ( !is_email( $email ) ) {
-				$error = array(
-					'code'		=> 'email',
-					'text'		=> __( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
-					'element'	=> 'email'
-				);
-				array_push( $feedback_errors, $error );
+			if ( $email != $WDGOrganization->get_email() ) {
+				if ( !is_email( $email ) || email_exists( $email ) ) {
+					$error = array(
+						'code'		=> 'email',
+						'text'		=> __( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
+						'element'	=> 'email'
+					);
+					array_push( $feedback_errors, $error );
+				} else {
+					$WDGOrganization->set_email( $email );
+				}
 			}
-			$WDGOrganization->set_email( $email );
 			
 			$name = $this->getInputText( 'name' );
 			$WDGOrganization->set_name( $name );
@@ -231,6 +253,11 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$WDGOrganization->set_vat( $vat );
 			$fiscal_year_end_month = $this->getInputText( 'fiscal_year_end_month' );
 			$WDGOrganization->set_fiscal_year_end_month( $fiscal_year_end_month );
+			
+			$address_number = $this->getInputText( 'address_number' );
+			$WDGOrganization->set_address_number( $address_number );
+			$address_number_comp = $this->getInputText( 'address_number_comp' );
+			$WDGOrganization->set_address_number_comp( $address_number_comp );
 			$address = $this->getInputText( 'address' );
 			$WDGOrganization->set_address( $address );
 			$postal_code = $this->getInputText( 'postal_code' );
@@ -241,11 +268,13 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$WDGOrganization->set_nationality( $nationality );
 			
 			$WDGOrganization->save();
-			$was_registered = $WDGOrganization->is_registered_lemonway_wallet();
+			$was_registered = $WDGOrganization->has_lemonway_wallet();
 			if ( $WDGOrganization->can_register_lemonway() ) {
+				ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->register_lemonway();' );
 				$WDGOrganization->register_lemonway();
 				// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
-				if ( !$was_registered && $WDGOrganization->is_registered_lemonway_wallet() ) {
+				if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {
+					ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->send_kyc();' );
 					$WDGOrganization->send_kyc();
 				}
 			}

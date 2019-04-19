@@ -23,6 +23,8 @@ class WDGOrganization {
 	private $description;
 	private $website;
 	private $strong_authentication;
+	private $address_number;
+	private $address_number_comp;
 	private $address;
 	private $postal_code;
 	private $city;
@@ -130,6 +132,8 @@ class WDGOrganization {
 			}
 			$this->website = $this->bopp_object->website_url;
 			$this->strong_authentication = $this->bopp_object->strong_authentication;
+			$this->address_number = $this->bopp_object->address_number;
+			$this->address_number_comp = $this->bopp_object->address_number_comp;
 			$this->address = $this->bopp_object->address;
 			$this->postal_code = $this->bopp_object->postalcode;
 			$this->city = $this->bopp_object->city;
@@ -174,7 +178,7 @@ class WDGOrganization {
 		if ($this->get_type() == "") { array_push( $errors_create_orga, __("Merci de remplir le type de l'organisation", 'yproject') ); }
 		if ($this->get_description() == "") { array_push( $errors_create_orga, __("Merci de remplir le descriptif de l'activit&eacute;", 'yproject') ); }
 		if ($this->get_legalform() == "") { array_push( $errors_create_orga, __("Merci de remplir la forme juridique de l'organisation", 'yproject') ); }
-		if ($this->get_idnumber() == "") { array_push( $errors_create_orga, __("Merci de remplir le num&eacute;ro SIREN de l'organisation", 'yproject') ); }
+		if ($this->get_idnumber() == "") { array_push( $errors_create_orga, __("Merci de remplir le num&eacute;ro SIRET de l'organisation", 'yproject') ); }
 		if ($this->get_rcs() == "") { array_push( $errors_create_orga, __("Merci de remplir le RCS de l'organisation", 'yproject') ); }
 		if ($this->get_capital() == "") { $this->set_capital(0); }
 		if ($this->get_ape() == "") { array_push( $errors_create_orga, __("Merci de remplir le code APE de l'organisation", 'yproject') ); }
@@ -292,7 +296,7 @@ class WDGOrganization {
 			// Cross-platform
 			// Si n'existe pas dans la BDD, 
 			// -> on vérifie d'abord, via l'e-mail, si il existe sur LW
-			$wallet_details_by_email = $this->get_wallet_details( true, true );
+			$wallet_details_by_email = $this->get_wallet_details( '', true, true );
 			if ( isset( $wallet_details_by_email->ID ) ) {
 				$db_lw_id = $wallet_details_by_email->ID;
 				
@@ -306,6 +310,44 @@ class WDGOrganization {
 			update_user_meta( $this->wpref, 'lemonway_id', $db_lw_id );
 		}
 		return $db_lw_id;
+	}
+	
+	public function get_campaign_lemonway_id() {
+		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_campaign_id', true );
+		if ( empty( $db_lw_id ) ) {
+			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'CAMPAIGN';
+			if ( defined( YP_LW_USERID_PREFIX ) ) {
+				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
+			}
+			
+			update_user_meta( $this->wpref, 'lemonway_campaign_id', $db_lw_id );
+		}
+		return $db_lw_id;
+	}
+	
+	private function get_campaign_lemonway_email() {
+		$current_email = $this->get_email();
+		$buffer = str_replace( '@', '+campaign@', $current_email );
+		return $buffer;
+	}
+	
+	public function get_royalties_lemonway_id() {
+		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_royalties_id', true );
+		if ( empty( $db_lw_id ) ) {
+			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'ROYALTIES';
+			if ( defined( YP_LW_USERID_PREFIX ) ) {
+				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
+			}
+			
+			update_user_meta( $this->wpref, 'lemonway_royalties_id', $db_lw_id );
+		}
+		return $db_lw_id;
+	}
+	
+	private function get_royalties_lemonway_email() {
+		$current_email = $this->get_email();
+		$buffer = str_replace( '@', '+royalties@', $current_email );
+		return $buffer;
 	}
 	
 	
@@ -356,11 +398,47 @@ class WDGOrganization {
 		$this->strong_authentication = $value;
 	}
 	
+	public function get_address_number() {
+		return $this->address_number;
+	}
+	public function set_address_number($value) {
+		if ( !empty( $value ) ) {
+			$this->address_number = $value;
+		}
+	}
+	
+	public function get_address_number_comp() {
+		return $this->address_number_comp;
+	}
+	public function set_address_number_comp($value) {
+		if ( !empty( $value ) ) {
+			$this->address_number_comp = $value;
+		}
+	}
+	
 	public function get_address() {
 		return $this->address;
 	}
 	public function set_address($value) {
 		$this->address = $value;
+	}
+	
+	public function get_full_address_str() {
+		$buffer = '';
+		
+		$address_number = $this->get_address_number();
+		if ( !empty( $address_number ) && $address_number != 0 ) {
+			$buffer = $address_number . ' ';
+		}
+		
+		$address_number_complement = $this->get_address_number_comp();
+		if ( !empty( $address_number_complement ) ) {
+			$buffer .= $address_number_complement . ' ';
+		}
+		
+		$buffer .= $this->get_address();
+				
+		return $buffer;
 	}
 	
 	public function get_postal_code( $complete_french = false ) {
@@ -519,7 +597,7 @@ class WDGOrganization {
 		//Infos nécessaires pour tout type de financement
 		if ($this->get_type() != 'society') { array_push($organization_can_invest_errors, __("Ce type d'organisation ne peut pas investir.", 'yproject')); }
 		if ($this->get_legalform() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la forme juridique de l'organisation", 'yproject')); }
-		if ($this->get_idnumber() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le num&eacute;ro SIREN de l'organisation", 'yproject')); }
+		if ($this->get_idnumber() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le num&eacute;ro SIRET de l'organisation", 'yproject')); }
 		if ($this->get_rcs() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le RCS de l'organisation", 'yproject')); }
 		if ($this->get_capital() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le capital de l'organisation", 'yproject')); }
 		if ($this->get_address() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser l'adresse de l'organisation", 'yproject')); }
@@ -584,6 +662,12 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
+	public function get_campaigns() {
+		$buffer = array();
+		$result = WDGWPREST_Entity_Organization::get_projects( $this->api_id );
+		return $result;
+	}
+	
 	/**
 	 * Gère les documents à enregistrer en local
 	 */
@@ -636,7 +720,7 @@ class WDGOrganization {
 			}
 		}
 		if ($notify > 0) {
-			NotificationsEmails::document_uploaded_admin($this, $notify);
+			NotificationsSlack::send_document_uploaded_admin($this, $notify);
 		}
 		return $files_info;
 	}
@@ -661,7 +745,7 @@ class WDGOrganization {
 	 * Upload des KYC vers Lemonway si possible
 	 */
 	public function send_kyc() {
-		if (isset($_POST['authentify_lw']) && $this->has_sent_all_documents()) {
+		if ( $this->has_sent_all_documents() ) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
 					WDGKYCFile::$type_bank		=> LemonwayDocument::$document_type_bank,
@@ -783,7 +867,7 @@ class WDGOrganization {
 		// Vérifications sur le droit de poster le formulaire
 		$form_posted = filter_input( INPUT_POST, 'submit_transfer_wallet_lemonway' );
 		$WDGUser_current = WDGUser::current();
-		$lemonway_balance = $this->get_lemonway_balance();
+		$lemonway_balance = $this->get_lemonway_balance( 'campaign' );
 		if ( $WDGUser_current->is_admin() && $form_posted == "1" && $lemonway_balance > 0 ) {
 			
 			$buffer = FALSE;
@@ -795,12 +879,7 @@ class WDGOrganization {
 				$first_iban = $wallet_details->IBANS->IBAN;
 				//Sinon on l'enregistre auprès de Lemonway
 				if (empty($first_iban)) {
-					$saved_holdername = $this->get_bank_owner();
-					$saved_iban = $this->get_bank_iban();
-					$saved_bic = $this->get_bank_bic();
-					$saved_dom1 = $this->get_bank_address();
-					$saved_dom2 = $this->get_bank_address2();
-					$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1 );
+					$result_iban = $this->register_lemonway_iban();
 					if ($result_iban == FALSE) {
 						$buffer = LemonwayLib::get_last_error_message();
 					}
@@ -810,17 +889,19 @@ class WDGOrganization {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
-					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission );
+					LemonwayLib::ask_transfer_funds( $this->get_campaign_lemonway_id(), $this->get_lemonway_id(), ( $transfer_amount + $transfer_commission ) );
+					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
 				}
 			}
 		}
 	}
 	
-	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0 ) {
-		$buffer = FALSE;
+	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0, $wallet_type = '' ) {
+		$buffer = __( "Erreur de montant.", 'yproject' );;
 		
 		if ( !empty( $amount_without_commission ) ) {
-			$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount_without_commission + $amount_commission, 0, $amount_commission );
+			$lemonway_id = ( $wallet_type == 'campaign ') ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();
+			$result_transfer = LemonwayLib::ask_transfer_to_iban( $lemonway_id, $amount_without_commission + $amount_commission, 0, $amount_commission );
 			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
 			$post_type = 'withdrawal_order';
 			if ( $amount_commission == 0 ) {
@@ -846,18 +927,38 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
-	private function get_wallet_details( $reload = false, $by_email = false ) {
-		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
+	public function get_wallet_details( $type = '', $reload = false, $by_email = false ) {
+		if ( !isset($this->{ 'wallet_details_' . $type }) || empty($this->{ 'wallet_details_' . $type }) || $reload == true ) {
 			if ( $by_email ) {
-				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
+				$this->{ 'wallet_details_' . $type } = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
 			} else {
-				$this->wallet_details = LemonwayLib::wallet_get_details( $this->get_lemonway_id() );
+				switch ( $type ) {
+					case 'campaign':
+						$lemonway_id = $this->get_campaign_lemonway_id();
+						break;
+					case 'royalties':
+						$lemonway_id = $this->get_royalties_lemonway_id();
+						break;
+					default:
+						$lemonway_id = $this->get_lemonway_id();
+						break;
+				}
+				$this->{ 'wallet_details_' . $type } = LemonwayLib::wallet_get_details( $lemonway_id );
 			}
 			if ( false ) {
 				$this->update_lemonway();
 			}
 		}
-		return $this->wallet_details;
+		return $this->{ 'wallet_details_' . $type };
+	}
+	
+	public function has_lemonway_wallet( $reload = false ) {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details( $reload );
+		if ( isset( $wallet_details->NAME ) && !empty( $wallet_details->NAME ) ) {
+			$buffer = TRUE;
+		}
+		return $buffer;
 	}
 	
 	public function get_lemonway_cardid() {
@@ -879,7 +980,7 @@ class WDGOrganization {
 	/**
 	 * Enregistrement sur Lemonway
 	 */
-	public function register_lemonway() {
+	public function register_lemonway( $is_managing_project = FALSE ) {
 		if ( !$this->can_register_lemonway() ) {
 			return FALSE;
 		}
@@ -895,6 +996,13 @@ class WDGOrganization {
 				$WDGUser_creator = new WDGUser();
 			}
 			
+			// Si on n'a pas défini la valeur par défaut, on fait le test si il y a des campagnes liées
+			if ( !$is_managing_project ) {
+				$campaign_list = $this->get_campaigns();
+				$is_managing_project = !empty( $campaign_list );
+			}
+			$wallet_type = ( $is_managing_project ) ? LemonwayLib::$wallet_type_beneficiary : LemonwayLib::$wallet_type_payer;
+			
 			return LemonwayLib::wallet_company_register(
 				$this->get_lemonway_id(),
 				$this->get_email(),
@@ -907,7 +1015,7 @@ class WDGOrganization {
 				$WDGUser_creator->get_lemonway_birthdate(),
 				$WDGUser_creator->get_lemonway_phone_number(),
 				$this->get_idnumber(),
-				LemonwayLib::$wallet_type_beneficiary
+				$wallet_type
 			);
 		}
 		return TRUE;
@@ -928,6 +1036,76 @@ class WDGOrganization {
 					&& ($this->get_website() != "")
 					&& ($this->get_idnumber() != "");
 		return $buffer;
+	}
+	
+	public function check_register_campaign_lemonway_wallet() {
+		if ( !$this->can_register_lemonway() ) {
+			return FALSE;
+		}
+		
+		//Vérifie que le wallet n'est pas déjà enregistré
+		$wallet_details = $this->get_wallet_details( 'campaign' );
+		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+			} else {
+				$WDGUser_creator = new WDGUser();
+			}
+			
+			return LemonwayLib::wallet_company_register(
+				$this->get_campaign_lemonway_id(),
+				$this->get_campaign_lemonway_email(),
+				html_entity_decode( $WDGUser_creator->wp_user->user_firstname ),
+				html_entity_decode( $WDGUser_creator->wp_user->user_lastname ),
+				html_entity_decode( $this->get_name() ),
+				html_entity_decode( $this->get_description() ),
+				$this->get_website(),
+				$WDGUser_creator->get_country( 'iso3' ),
+				$WDGUser_creator->get_lemonway_birthdate(),
+				$WDGUser_creator->get_lemonway_phone_number(),
+				$this->get_idnumber(),
+				LemonwayLib::$wallet_type_beneficiary,
+				'1'
+			);
+		}
+		return TRUE;
+	}
+	
+	public function check_register_royalties_lemonway_wallet() {
+		if ( !$this->can_register_lemonway() ) {
+			return FALSE;
+		}
+		
+		//Vérifie que le wallet n'est pas déjà enregistré
+		$wallet_details = $this->get_wallet_details( 'royalties' );
+		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+			} else {
+				$WDGUser_creator = new WDGUser();
+			}
+			
+			return LemonwayLib::wallet_company_register(
+				$this->get_royalties_lemonway_id(),
+				$this->get_royalties_lemonway_email(),
+				html_entity_decode( $WDGUser_creator->wp_user->user_firstname ),
+				html_entity_decode( $WDGUser_creator->wp_user->user_lastname ),
+				html_entity_decode( $this->get_name() ),
+				html_entity_decode( $this->get_description() ),
+				$this->get_website(),
+				$WDGUser_creator->get_country( 'iso3' ),
+				$WDGUser_creator->get_lemonway_birthdate(),
+				$WDGUser_creator->get_lemonway_phone_number(),
+				$this->get_idnumber(),
+				LemonwayLib::$wallet_type_beneficiary,
+				'1'
+			);
+		}
+		return TRUE;
 	}
 	
 	/**
@@ -1046,13 +1224,23 @@ class WDGOrganization {
 	/**
 	 * Donne l'argent disponible sur le compte utilisateur
 	 */
-	public function get_lemonway_balance() {
-		$wallet_details = $this->get_wallet_details();
+	public function get_lemonway_balance( $type = '' ) {
+		$wallet_details = $this->get_wallet_details( $type );
 		$buffer = 0;
 		if (isset($wallet_details->BAL)) {
 			$buffer = $wallet_details->BAL;
 		}
 		return $buffer;
+	}
+	
+	public function register_lemonway_iban() {
+		$saved_holdername = $this->get_bank_owner();
+		$saved_iban = $this->get_bank_iban();
+		$saved_bic = $this->get_bank_bic();
+		$saved_dom1 = $this->get_bank_address();
+		$saved_dom2 = $this->get_bank_address2();
+		$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
+		return $result_iban;
 	}
 	
 	/**
@@ -1093,7 +1281,7 @@ class WDGOrganization {
 	 * Ajoute un mandat de prélévement lié au wallet de l'organisation
 	 */
 	public function add_lemonway_mandate() {
-		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 0, $this->get_address(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
+		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 0, $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
 	}
 	
 	/**
@@ -1149,36 +1337,35 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion investissements
 *******************************************************************************/
+	private $user_investments;
 	/**
-	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
+	 * @return WDGUserInvestments
 	 */
-	public function get_investments( $payment_status ) {
-		$buffer = array();
-		$purchases = edd_get_users_purchases( $this->get_wpref(), -1, false, $payment_status );
-		
-		if ( !empty($purchases) ) {
-			foreach ( $purchases as $purchase_post ) { /*setup_postdata( $post );*/
-				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID ); 
-				$download_id = '';
-				if ( !is_array( $downloads[0] ) ){
-					$download_id = $downloads[0];
-					if ( !isset($buffer[$download_id]) ) {
-						$buffer[$download_id] = array();
-					}
-					array_push( $buffer[$download_id], $purchase_post->ID );
-				}
-			}
+	private function get_user_investments_object() {
+		if ( !isset( $this->user_investments ) ) {
+			$this->user_investments = new WDGUserInvestments( $this );
 		}
-			
-		return $buffer;
+		return $this->user_investments;
 	}
 	
-	/**
-	 * Retourne les ID d'investissements valides d'un utilisateur, triés par ID de projets
-	 */
+	public function get_investments( $payment_status ) {
+		return $this->get_user_investments_object()->get_investments( $payment_status );
+	}
 	public function get_validated_investments() {
-		$payment_status = array( "publish", "completed" );
-		return $this->get_investments( $payment_status );
+		return $this->get_user_investments_object()->get_validated_investments();
+	}
+	public function get_pending_investments() {
+		return $this->get_user_investments_object()->get_pending_investments();
+	}
+	
+	public function get_pending_not_validated_investments() {
+		return $this->get_user_investments_object()->get_pending_not_validated_investments();
+	}
+	public function get_first_pending_not_validated_investment() {
+		return $this->get_user_investments_object()->get_first_pending_not_validated_investment();
+	}
+	public function has_pending_not_validated_investments() {
+		return $this->get_user_investments_object()->has_pending_not_validated_investments();
 	}
 	
 /*******************************************************************************
@@ -1209,16 +1396,31 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
+	public function get_pending_rois_amount() {
+		$buffer = 0;
+		$rois = $this->get_rois();
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				if ( $roi_item->status == WDGROI::$status_waiting_authentication ) {
+					$buffer += $roi_item->amount;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
 	/**
 	 * 
 	 */
 	public function get_available_rois_amount() {
 		$buffer = 0;
-		$rois_amount = $this->get_rois_amount();
-		if ( $rois_amount > 0 ) {
-			$buffer = $this->get_rois_amount() - $this->get_transferred_amount();
+		if ( $this->get_lemonway_balance() > 0 ) {
+			$rois_amount = $this->get_rois_amount();
+			if ( $rois_amount > 0 ) {
+				$buffer = $this->get_rois_amount() - $this->get_transferred_amount();
+			}
+			$buffer = max( $buffer, 0 );
 		}
-		$buffer = max( $buffer, 0 );
 		return $buffer;
 	}
 	
@@ -1296,6 +1498,40 @@ class WDGOrganization {
 	}
 	
 	/**
+	 * Retourne la liste des royalties par id d'investissement
+	 * @return array
+	 */
+	public function get_royalties_by_investment_id( $investment_id, $status = 'transferred' ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment == $investment_id ) {
+				if ( empty( $status ) || $roi_item->status == $status ) {
+					array_push( $buffer, $roi_item );
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne la liste des royalties par id de contrat d'investissement
+	 * @return array
+	 */
+	public function get_royalties_by_investment_contract_id( $investment_contract_id, $status = 'transferred' ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment_contract == $investment_contract_id ) {
+				if ( empty( $status ) || $roi_item->status == $status ) {
+					array_push( $buffer, $roi_item );
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne le nom du fichier de certificat
 	 * @return string
 	 */
@@ -1363,7 +1599,7 @@ class WDGOrganization {
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
-				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
+				$invest_item['organization_address'] = $wdg_organization->get_full_address_str(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
 				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
 				$invest_item['organization_vat'] = $wdg_organization->get_vat();
 			}
@@ -1383,7 +1619,7 @@ class WDGOrganization {
 			$this->get_vat(),
 			'',
 			$this->get_email(),
-			$this->get_address(),
+			$this->get_full_address_str(),
 			$this->get_postal_code(),
 			$this->get_city(),
 			'01/01/'.($year + 1),
@@ -1399,6 +1635,15 @@ class WDGOrganization {
 		$html2pdf->WriteHTML( urldecode( $html_content ) );
 		$html2pdf->Output( $filepath, 'F' );
 		
+		return $buffer;
+	}
+	
+	public function has_tax_document_for_year( $year ) {
+		$buffer = FALSE;
+		$tax_exemption_filename = get_user_meta( $this->get_wpref(), 'tax_document_' .$year, TRUE );
+		if ( !empty( $tax_exemption_filename ) ) {
+			$buffer = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-documents/' .$year. '/' .$tax_exemption_filename );
+		}
 		return $buffer;
 	}
     
@@ -1480,7 +1725,7 @@ class WDGOrganization {
 				'ville' => 'org_city',
 				'pays' => 'org_nationality',
 				'forme juridique' =>'org_legalform',
-				'num&eacute;ro SIREN' =>'org_idnumber',
+				'num&eacute;ro SIRET' =>'org_idnumber',
 				'APE' =>'org_ape',
 				'RCS' => 'org_rcs'
 			);
@@ -1502,6 +1747,8 @@ class WDGOrganization {
 			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
+			$org_object->set_address_number(filter_input(INPUT_POST, 'org_address_number'));
+			$org_object->set_address_number_comp(filter_input(INPUT_POST, 'org_address_number_comp'));
 			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 			$org_object->set_postal_code($org_postal_code);
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
@@ -1566,7 +1813,17 @@ class WDGOrganization {
 		}
 		
 		if (count($errors_data) == 0) {
-			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
+			$new_org_name = filter_input( INPUT_POST, 'org_name' );
+			if ( !empty( $new_org_name ) ) {
+				$org_object->set_name( $new_org_name );
+			}
+			
+			$new_org_email = filter_input( INPUT_POST, 'org_email' );
+			if ( email_exists( $new_org_email ) || empty( $new_org_email ) ) {
+				$errors_edit->add( 'email-already', __( "L'e-mail est d&eacute;j&agrave; utilis&eacute.", 'yproject' ) );
+			} else {
+				$org_object->set_email( $new_org_email );
+			}
 			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
 			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
 			$org_object->set_website(filter_input(INPUT_POST, 'org_website'));
@@ -1577,6 +1834,8 @@ class WDGOrganization {
 			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
 			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
+			$org_object->set_address_number(filter_input(INPUT_POST, 'org_address_number'));
+			$org_object->set_address_number_comp(filter_input(INPUT_POST, 'org_address_number_comp'));
 			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
 			$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
 			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
@@ -1636,7 +1895,7 @@ class WDGOrganization {
 				'ville' => 'org_city',
 				'pays' => 'org_nationality',
 				'forme juridique' =>'org_legalform',
-				'num&eacute;ro SIREN' =>'org_idnumber',
+				'num&eacute;ro SIRET' =>'org_idnumber',
 				'APE' =>'org_ape',
 				'RCS' => 'org_rcs'
 			);

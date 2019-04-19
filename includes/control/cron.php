@@ -5,64 +5,149 @@
 class WDGCronActions {
 	
 	public static function send_notifications() {
-		
-		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 10 jours
 		$current_date = new DateTime();
 		$current_date->setTime( 0, 0, 1 );
-		$date_in_10_days = new DateTime();
-		$date_in_10_days->add( new DateInterval('P9D') );
-		$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
-		if ( $declaration_list ) {
-			foreach ( $declaration_list as $declaration_data ) {
-				// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
-				if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
-					$date_due = new DateTime( $declaration_data->date_due );
-					$date_due->setTime( 10, 30, 0 );
-					if ( $date_due > $current_date ) {
-						$nb_days_diff = $date_due->diff( $current_date )->days;
+		
+		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 19 jours (pour ceux dont la déclaration est au 20)
+		if ( $current_date->format( 'd' ) == 1 || $current_date->format( 'd' ) == 8 || $current_date->format( 'd' ) == 10 ) {
+			$date_in_10_days = new DateTime();
+			$date_in_10_days->add( new DateInterval('P19D') );
+			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
+			if ( $declaration_list ) {
+				foreach ( $declaration_list as $declaration_data ) {
+					// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
+					if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
+						$date_due = new DateTime( $declaration_data->date_due );
+						$date_due->setTime( 10, 30, 0 );
+						if ( $date_due > $current_date ) {
+							$current_date_day = $current_date->format( 'd' );
+							switch ( $current_date_day ) {
+								case 1:
+									$nb_days_diff = 9;
+									break;
+								case 8:
+									$nb_days_diff = 2;
+									break;
+								case 10:
+									$nb_days_diff = 0;
+									break;
+							}
+							
+							$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
+							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+
+								$organization = $campaign->get_organization();
+								$wdgorganization = new WDGOrganization( $organization->id, $organization );
+								$wdguser_author = new WDGUser( $campaign->data->post_author );
+
+								// Données qui seront transmises à SiB
+								$date_due_previous_day = new DateTime( $declaration_data->date_due );
+								$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
+								$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+								$nb_fields = $campaign->get_turnover_per_declaration();
+								$date_last_months =  new DateTime( $declaration_data->date_due );
+								$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
+								$last_months_str = '';
+								for ( $i = 0; $i < $nb_fields; $i++ ) {
+									$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
+									if ( $i < $nb_fields - 2 ) {
+										$last_months_str .= ', ';
+									}
+									if ( $i == $nb_fields - 2 ) {
+										$last_months_str .= ' et ';
+									}
+									$date_last_months->add( new DateInterval( 'P1M' ) );
+								}
+								$year = $date_due->format( 'Y' );
+								if ( $date_due->format( 'n' ) < 4 ) {
+									$year--;
+								}
+								$last_months_str .= ' ' . $year;
+								$options = array(
+									'NOM'					=> $wdguser_author->get_firstname(),
+									'TROIS_DERNIERS_MOIS'	=> $last_months_str,
+									'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
+									'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
+								);
+
+								NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+
+							}
+						}
+					}
+
+				}
+			}
+		}
+		
+		// Si on est le 15, il faut envoyer les avertissements de prélèvement
+		if ( $current_date->format( 'd' ) == 15 ) {
+			$date_in_5_days = new DateTime();
+			$date_in_5_days->add( new DateInterval('P5D') );
+			$date_5_days_ago = new DateTime();
+			$date_5_days_ago->sub( new DateInterval('P5D') );
+			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $date_5_days_ago->format( 'Y-m-d' ), $date_in_5_days->format( 'Y-m-d' ) );
+			if ( $declaration_list ) {
+				foreach ( $declaration_list as $declaration_data ) {
+					// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
+					if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
 						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
-						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+						$organization = $campaign->get_organization();
+						$wdgorganization = new WDGOrganization( $organization->id, $organization );
+						
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded && $wdgorganization->has_signed_mandate() ) {
 							
-							$organization = $campaign->get_organization();
-							$wdgorganization = new WDGOrganization( $organization->id, $organization );
 							$wdguser_author = new WDGUser( $campaign->data->post_author );
-
-							// Données qui seront transmises à SiB
-							$date_due_previous_day = new DateTime( $declaration_data->date_due );
-							$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
-							$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
-							$nb_fields = $campaign->get_turnover_per_declaration();
-							$date_last_months =  new DateTime( $declaration_data->date_due );
-							$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
-							$last_months_str = '';
-							for ( $i = 0; $i < $nb_fields; $i++ ) {
-								$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
-								if ( $i < $nb_fields - 2 ) {
-									$last_months_str .= ', ';
-								}
-								if ( $i == $nb_fields - 2 ) {
-									$last_months_str .= ' et ';
-								}
-								$date_last_months->add( new DateInterval( 'P1M' ) );
-							}
-							$year = $date_due->format( 'Y' );
-							if ( $date_due->format( 'n' ) < 4 ) {
-								$year--;
-							}
-							$last_months_str .= ' ' . $year;
-							$options = array(
-								'NOM'					=> $wdguser_author->get_firstname(),
-								'TROIS_DERNIERS_MOIS'	=> $last_months_str,
-								'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
-								'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
-							);
-
-							NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+							$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
+						
+							$quarter_str_list = array( "premier", "deuxième", "troisième", "quatrième" );
+							$quarter_percent_list = array( 10, 20, 30, 40 );
+							$nb_quarter = 0;
+							$estimated_turnover = $campaign->estimated_turnover();
+							$nb_year = array_key_first( $estimated_turnover );
 							
+							// Parcours des déclarations de royalties pour savoir à quelle année et quel trimestre on est dans les échéances
+							// TODO : les trier dans l'ordre par sécurité
+							$existing_roi_declarations = $campaign->get_roi_declarations();
+							foreach ( $existing_roi_declarations as $declaration_object ) {
+								$date_declaration = new DateTime( $declaration_object[ 'date_due' ] );
+								
+								if ( $date_declaration->format( 'm' ) == $current_date->format( 'm' ) && $date_declaration->format( 'Y' ) == $current_date->format( 'Y' ) ) {
+									break;
+									
+								} else {
+									$nb_quarter++;
+									if ( $nb_quarter >= $campaign->get_declararations_count_per_year() ) {
+										$nb_quarter = 0;
+										$nb_year++;
+									}
+								}
+							}
+							
+							// Test pour corriger les décalages dans le CA prévisionnel
+							// Pour éviter d'avoir zero, il faut soit le premier de la liste, soit le dernier
+							if ( !isset( $estimated_turnover[ $nb_year ] ) ) {
+								if ( $nb_year < 1 ) {
+									$nb_year = array_key_first( $estimated_turnover );
+								} else {
+									$nb_year = array_key_last( $estimated_turnover );
+								}
+							}
+							
+							// Calculs des éléments à afficher
+							$amount_estimation_year = $estimated_turnover[ $nb_year ];
+							$percent_estimation = $quarter_percent_list[ $nb_quarter ];
+							$amount_estimation_quarter = $amount_estimation_year * $percent_estimation / 100;
+							$percent_royalties = $campaign->roi_percent();
+							$amount_royalties = round( $amount_estimation_quarter * $campaign->roi_percent() / 100, 2 );
+							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
+							$amount_total = $amount_royalties + $amount_fees;
+							$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
+							
+							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author->get_firstname(), $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date );
 						}
 					}
 				}
-
 			}
 		}
 		
@@ -146,7 +231,27 @@ class WDGCronActions {
 		fclose($file_handle_rss);
 	}
 	
-	public static function make_single_project_rss( $campaign, $current_date ) {
+	public static function make_campaign_xml( $campaign_id ) {
+		$date = new DateTime();
+		$current_date = $date->format('Y-m-d');
+		
+		$buffer_xml = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
+		$buffer_xml .= '<partenaire>';
+		$buffer_xml .= '<mise_a_jour date="'.$date->format('Y-m-d H:i:s').'" />' . "\n";
+		$campaign = atcf_get_campaign( $campaign_id );
+		$result = WDGCronActions::make_single_project_rss( $campaign, $current_date, TRUE );
+		$buffer_xml .= $result[ 'partners' ];
+		$buffer_xml .= '</partenaire>';
+		
+		
+		$filename = dirname ( __FILE__ ) . '/../../../../../current-project-' .$campaign->get_url(). '.xml';
+		$file_handle = fopen( $filename, 'w' );
+		fwrite( $file_handle, $buffer_xml );
+		fclose( $file_handle );
+		
+	}
+	
+	public static function make_single_project_rss( $campaign, $current_date, $add_list_investments = FALSE ) {
 		$buffer_rss = '';
 		$buffer_partners = '';
 		
@@ -227,6 +332,42 @@ class WDGCronActions {
 		$buffer_partners .= '<periodicite><![CDATA[trimestriel]]></periodicite>' . "\n";
 		$buffer_partners .= '<rendement_pourcent>'.$campaign->yield_for_investors().'</rendement_pourcent>' . "\n";
 
+		if ( $add_list_investments ) {
+			$buffer_partners .= '<investissements>' . "\n";
+			$list_investments = $campaign->payments_data( TRUE );
+			$campaign_status = $campaign->campaign_status();
+			foreach ( $list_investments as $investment_item ) {
+				$can_count_investment = FALSE;
+				// En phase d'investissement, on ne compte que les investissements validés
+				if ( $campaign_status == ATCF_Campaign::$campaign_status_collecte ) {
+					$can_count_investment = ( $investment_item[ 'status' ] == 'publish' );
+					
+				// En phase d'évaluation
+				} else if ( $campaign_status == ATCF_Campaign::$campaign_status_vote ) {
+					$WDGInvestment = new WDGInvestment( $investment_item[ 'ID' ] );
+					$payment_key = $investment_item[ 'payment_key' ];
+					$contract_status = $WDGInvestment->get_contract_status();
+					// On ne compte pas les virements en attente, ni les paiements non effectués
+					$can_count_investment = ( strpos( $payment_key, 'TEMP' ) == FALSE && $contract_status != WDGInvestment::$contract_status_not_validated );
+				}
+				
+				
+				if ( $can_count_investment ) {
+					if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
+						$WDGOrganization = new WDGOrganization( $investment_item[ 'user' ] );
+						$id_investor_xml = $investment_item[ 'user' ] . '-' . $WDGOrganization->get_api_id();
+						$initials = substr( $WDGOrganization->get_name(), 0, 1 );
+
+					} else {
+						$WDGUser = new WDGUser( $investment_item[ 'user' ] );
+						$id_investor_xml = $investment_item[ 'user' ] . '-' . $WDGUser->get_api_id();
+						$initials = substr( $WDGUser->get_firstname(), 0, 1 ) . substr( $WDGUser->get_lastname(), 0, 1 );
+					}
+					$buffer_partners .= '<investissement dateheure="' .$investment_item[ 'date' ]. '" idinvestisseur="' .$id_investor_xml. '" initiales="' .$initials. '" montant="' .$investment_item[ 'amount' ]. '" />' . "\n";
+				}
+			}
+			$buffer_partners .= '</investissements>' . "\n";
+		}
 
 		$buffer_partners .= '</projet>' . "\n";
 		//*****************

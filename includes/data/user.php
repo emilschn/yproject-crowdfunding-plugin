@@ -9,7 +9,7 @@ class WDGUser {
 	public static $edd_general_terms_excerpt = 'terms_general_excerpt';
 	
 /*******************************************************************************
- * Variables statiques : clés des métas utilisées
+ * Variables statiques : clÃ©s des mÃ©tas utilisÃ©es
 *******************************************************************************/
 	public static $key_api_id = 'id_api';
 	
@@ -23,14 +23,21 @@ class WDGUser {
 	private $gender;
 	private $first_name;
 	private $last_name;
+	private $use_last_name;
 	private $login;
 	private $birthday_date;
 	private $birthday_city;
+	private $birthday_district;
+	private $birthday_department;
+	private $birthday_country;
 	private $nationality;
+	private $address_number;
+	private $address_number_complement;
 	private $address;
 	private $postalcode;
 	private $city;
 	private $country;
+	private $tax_country;
 	private $email;
 	private $phone_number;
 	private $description;
@@ -47,7 +54,7 @@ class WDGUser {
 	
 	
 /*******************************************************************************
- * Créations
+ * CrÃ©ations
 *******************************************************************************/
 	/**
 	 * Constructeur
@@ -61,16 +68,16 @@ class WDGUser {
 			$this->wp_user = new WP_User($user_id);
 		}
 		
-		// Nécessaire pour éviter boucle infinie
-		// Dans cette fonction, il a des appels à l'API où on vérifie l'utilisateur en cours
-		// Il ne faut pas faire ces appels à l'API tant que l'inialisation n'est pas terminée
+		// NÃ©cessaire pour Ã©viter boucle infinie
+		// Dans cette fonction, il a des appels Ã  l'API oÃ¹ on vÃ©rifie l'utilisateur en cours
+		// Il ne faut pas faire ces appels Ã  l'API tant que l'inialisation n'est pas terminÃ©e
 		if ( !is_null( self::$_current ) ) {
 			$this->construct_with_api_data();
 		}
 	}
 	
 	/**
-	 * Initialisation des données avec les données de l'API
+	 * Initialisation des donnÃ©es avec les donnÃ©es de l'API
 	 */
 	public function construct_with_api_data() {
 		$api_id = $this->get_api_id();
@@ -83,13 +90,20 @@ class WDGUser {
 					$this->gender = $this->api_data->gender;
 					$this->first_name = $this->api_data->name;
 					$this->last_name = $this->api_data->surname;
+					$this->use_last_name = $this->api_data->surname_use;
 					$this->birthday_date = $this->api_data->birthday_date;
 					$this->birthday_city = $this->api_data->birthday_city;
+					$this->birthday_district = $this->api_data->birthday_district;
+					$this->birthday_department = $this->api_data->birthday_department;
+					$this->birthday_country = $this->api_data->birthday_country;
 					$this->nationality = $this->api_data->nationality;
+					$this->address_number = $this->api_data->address_number;
+					$this->address_number_complement = $this->api_data->address_number_comp;
 					$this->address = $this->api_data->address;
 					$this->postalcode = $this->api_data->postalcode;
 					$this->city = $this->api_data->city;
 					$this->country = $this->api_data->country;
+					$this->tax_country = $this->api_data->tax_country;
 					$this->email = $this->api_data->email;
 					$this->phone_number = $this->api_data->phone_number;
 					$this->description = $this->api_data->description;
@@ -107,7 +121,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Récupération de l'utilisateur en cours
+	 * RÃ©cupÃ©ration de l'utilisateur en cours
 	 * @return WDGUser
 	 */
 	public static function current() {
@@ -119,7 +133,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne un utilisateurs en découpant l'id de l'API
+	 * Retourne un utilisateurs en dÃ©coupant l'id de l'API
 	 * @param int $api_id
 	 */
 	public static function get_by_api_id( $api_id ) {
@@ -132,7 +146,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne un utilisateurs en découpant l'id transmis par LW
+	 * Retourne un utilisateurs en dÃ©coupant l'id transmis par LW
 	 * @param int $lemonway_id
 	 */
 	public static function get_by_lemonway_id( $lemonway_id ) {
@@ -183,7 +197,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne l'identifiant Facebook éventuellement lié au compte
+	 * Retourne l'identifiant Facebook Ã©ventuellement liÃ© au compte
 	 * @return int
 	 */
 	public function get_facebook_id() {
@@ -191,7 +205,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne true si l'utilisateur est identifié grâce à Facebook
+	 * Retourne true si l'utilisateur est identifiÃ© grÃ¢ce Ã  Facebook
 	 * @return boolean
 	 */
 	public function is_logged_in_with_facebook() {
@@ -205,7 +219,7 @@ class WDGUser {
 	}
 	
 /*******************************************************************************
- * Accès aux données standards
+ * AccÃ¨s aux donnÃ©es standards
 *******************************************************************************/
 	public function get_metadata( $key ) {
 		if ( !empty( $key ) ) {
@@ -238,7 +252,7 @@ class WDGUser {
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->user_email;
 		}
-		// Si le dernier caractère est un espace, on le supprime
+		// Si le dernier caractÃ¨re est un espace, on le supprime
 		if ( substr( $buffer, -1 ) == ' ' ) {
 			$buffer = substr( $buffer, 0, -1 );
 		}
@@ -277,6 +291,19 @@ class WDGUser {
 		$this->last_name = $value;
 	}
 	
+
+	public function get_use_lastname() {
+		$buffer = $this->use_last_name;
+		if ( empty( $buffer ) || $buffer == '---' ) {
+			$buffer = $this->wp_user->use_last_name;
+		} 
+		return $buffer;
+	}
+	public function set_use_lastname($value) {
+		$value = mb_convert_case( $value , MB_CASE_TITLE );
+		$this->use_last_name = $value;
+	}
+	
 	public function get_display_name() {
 		$buffer = $this->wp_user->display_name;
 		$user_firstname = $this->get_firstname();
@@ -288,7 +315,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * La nationalité est enregistrée en ISO2
+	 * La nationalitÃ© est enregistrÃ©e en ISO2
 	 * @param string $format
 	 * @return string
 	 */
@@ -299,7 +326,7 @@ class WDGUser {
 		}
 		
 		if ( !empty( $format ) && $format == 'iso3' ) {
-			// La nationalité est enregistrée au format iso2, il faut juste la convertir
+			// La nationalitÃ© est enregistrÃ©e au format iso2, il faut juste la convertir
 			global $country_list_iso2_to_iso3;
 			if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
 				$buffer = $country_list_iso2_to_iso3[ $buffer ];
@@ -308,11 +335,34 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function get_address_number() {
+		return $this->address_number;
+	}
+	public function get_address_number_complement() {
+		return $this->address_number_complement;
+	}
 	public function get_address() {
 		$buffer = $this->address;
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_address');
 		}
+		return $buffer;
+	}
+	public function get_full_address_str() {
+		$buffer = '';
+		
+		$address_number = $this->get_address_number();
+		if ( !empty( $address_number ) && $address_number != 0 ) {
+			$buffer = $address_number . ' ';
+		}
+		
+		$address_number_complement = $this->get_address_number_complement();
+		if ( !empty( $address_number_complement ) ) {
+			$buffer .= $address_number_complement . ' ';
+		}
+		
+		$buffer .= $this->get_address();
+				
 		return $buffer;
 	}
 	
@@ -341,7 +391,7 @@ class WDGUser {
 		if ( empty( $buffer ) || $buffer == '---' ) {
 			$buffer = $this->wp_user->get('user_country');
 		}
-		// Si le dernier caractère est un espace, on le supprime
+		// Si le dernier caractÃ¨re est un espace, on le supprime
 		if ( substr( $buffer, -1 ) == ' ' ) {
 			$buffer = substr( $buffer, 0, -1 );
 		}
@@ -354,8 +404,10 @@ class WDGUser {
 			if ( isset( $country_translation[ htmlentities( $upper_country ) ] ) ) {
 				$upper_country = $country_translation[ htmlentities( $upper_country ) ];
 			}
+			
 			// On le cherche en iso2
 			$iso2_key = array_search( $upper_country, $country_list );
+			
 			if ( $format == 'iso3' ) {
 				// On le transforme en iso3
 				if ( !empty( $iso2_key ) && !empty( $country_list_iso2_to_iso3[ $iso2_key ] ) ) {
@@ -363,14 +415,36 @@ class WDGUser {
 				} else if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
 					$buffer = $country_list_iso2_to_iso3[ $buffer ];
 				}
-				
+
 			} else if ( $format == 'iso2' ) {
 				if ( !empty( $iso2_key ) ) {
 					$buffer = $iso2_key;
 				}
+				
+			} else if ( $format == 'full' ) {
+				if ( !empty( $iso2_key ) ) {
+					$buffer = ucfirst( strtolower( $country_list[ $iso2_key ] ) );
+				} else if ( !empty( $country_list[ $upper_country ] ) ) {
+					$buffer = ucfirst( strtolower( $country_list[ $upper_country ] ) );
+				} else {
+					$buffer = ucfirst( strtolower( $upper_country ) );
+				}
 			}
 		}
 		
+		return $buffer;
+	}
+	
+	public function get_tax_country( $format = '' ) {
+		$buffer = $this->tax_country;
+		
+		if ( !empty( $format ) && $format == 'iso3' ) {
+			// Le pays d'imposition est enregistrÃ© au format iso2, il faut juste le convertir
+			global $country_list_iso2_to_iso3;
+			if ( !empty( $country_list_iso2_to_iso3[ $buffer ] ) ) {
+				$buffer = $country_list_iso2_to_iso3[ $buffer ];
+			}
+		}
 		return $buffer;
 	}
 	
@@ -390,6 +464,9 @@ class WDGUser {
 		if ( !empty( $birthday_day ) && !empty( $birthday_month ) && !empty( $birthday_year ) ) {
 			$birthday_day = ( $birthday_day < 10 && strlen( $birthday_day ) < 2 ) ? '0' . $birthday_day : $birthday_day;
 			$birthday_month = ( $birthday_month < 10 && strlen( $birthday_month ) < 2 ) ? '0' . $birthday_month : $birthday_month;
+			if ( (int)$birthday_year < 100 ) {
+				$birthday_year = '19' . (int)$birthday_year;
+			}
 			$buffer = $birthday_year. '-' .$birthday_month. '-' .$birthday_day;
 		}
 		return $buffer;
@@ -441,8 +518,26 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function get_birthplace_district( $formatted = FALSE ) {
+		$buffer = $this->birthday_district;
+		if ( $formatted ) {
+			if ( $buffer < 10 ) {
+				$buffer = '0' . $buffer;	
+		}
+		}
+		return $buffer;
+	}
+		
+	public function get_birthplace_department() {
+		return $this->birthday_department;
+	}
+		
+	public function get_birthplace_country() {
+		return $this->birthday_country;
+	}
+	
 /*******************************************************************************
- * Fonctions nécessitant des requetes
+ * Fonctions nÃ©cessitant des requetes
 *******************************************************************************/
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
@@ -453,7 +548,7 @@ class WDGUser {
 		
 		if ( empty($buffer) ) {
 			$buffer = array();
-			//Récupération des projets dont l'utilisateur est porteur
+			//RÃ©cupÃ©ration des projets dont l'utilisateur est porteur
 			$campaign_status = array('publish');
 			$args = array(
 				'post_type' => 'download',
@@ -473,7 +568,7 @@ class WDGUser {
 			}
 			wp_reset_query();
 
-			//Récupération des projets dont l'utilisateur appartient à l'équipe
+			//RÃ©cupÃ©ration des projets dont l'utilisateur appartient Ã  l'Ã©quipe
 			$project_list = WDGWPREST_Entity_User::get_projects_by_role( $this->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 			if ( !empty( $project_list ) ) {
 				foreach ( $project_list as $project ) {
@@ -511,6 +606,13 @@ class WDGUser {
 			$this->organizations_list = WDGWPREST_Entity_User::get_organizations_by_role( $this->get_api_id(), WDGWPREST_Entity_Organization::$link_user_type_creator );
 		}
 		return $this->organizations_list;
+	}
+	
+	public function get_votes_with_amount() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . "ypcf_project_votes";
+		$buffer = $wpdb->get_results( 'SELECT id, post_id, invest_sum FROM '.$table_name.' WHERE user_id = '.$this->get_wpref(). ' AND invest_sum > 0' );
+		return $buffer;
 	}
 	
 	public function has_voted_on_campaign( $campaign_id ) {
@@ -566,9 +668,9 @@ class WDGUser {
  * Fonctions de sauvegarde
 *******************************************************************************/
 	/**
-	 * Enregistre les données nécessaires pour l'investissement
+	 * Enregistre les donnÃ©es nÃ©cessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $nationality, $address, $postal_code, $city, $country, $phone_number, $description = '', $contact_if_deceased = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $description = '', $contact_if_deceased = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
@@ -582,6 +684,9 @@ class WDGUser {
 			$this->set_lastname($lastname);
 			$lastname = $this->get_lastname();
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'last_name' => $lastname ) ) ;
+		}
+		if ( !empty( $use_lastname ) ) {
+			$this->use_last_name = $use_lastname;
 		}
 		
 		if ( !empty( $birthday_day ) && $birthday_day != '00' && $birthday_day > 0 ) {
@@ -608,9 +713,24 @@ class WDGUser {
 			$this->birthday_city = $birthplace;
 			$this->save_meta( 'user_birthplace', $birthplace );
 		}
+		if ( !empty( $birthplace_district ) ) {
+			$this->birthday_district = $birthplace_district;
+		}
+		if ( !empty( $birthplace_department ) ) {
+			$this->birthday_department = $birthplace_department;
+		}
+		if ( !empty( $birthplace_country ) ) {
+			$this->birthday_country = $birthplace_country;
+		}
 		if ( !empty( $nationality ) ) {
 			$this->nationality = $nationality;
 			$this->save_meta( 'user_nationality', $nationality );
+		}
+		if ( !empty( $address_number  ) ) {
+			$this->address_number = $address_number;
+		}
+		if ( !empty( $address_number_complement ) ) {
+			$this->address_number_complement = $address_number_complement;
 		}
 		if ( !empty( $address ) ) {
 			$this->address = $address;
@@ -628,6 +748,9 @@ class WDGUser {
 			$this->country = $country;
 			$this->save_meta( 'user_country', $country );
 		}
+		if ( !empty( $tax_country ) ) {
+			$this->tax_country = $tax_country;
+		}
 		if ( !empty( $phone_number ) ) {
 			$this->phone_number = $phone_number;
 			$this->save_meta( 'user_mobile_phone', $phone_number );
@@ -644,7 +767,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Enregistre les données de base d'un utilisateur
+	 * Enregistre les donnÃ©es de base d'un utilisateur
 	 * @param string $email
 	 * @param string $firstname
 	 * @param string $lastname
@@ -669,7 +792,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Enregistre une meta particulière
+	 * Enregistre une meta particuliÃ¨re
 	 * @param string $meta_name
 	 * @param string $meta_value
 	 */
@@ -678,14 +801,14 @@ class WDGUser {
 	}
 	
 	/**
-	 * Envoie les données sur l'API
+	 * Envoie les donnÃ©es sur l'API
 	 */
 	public function update_api() {
 		WDGWPREST_Entity_User::update( $this );
 	}
 	
 	/**
-	 * Déplace les données des utilisateurs sur l'API
+	 * DÃ©place les donnÃ©es des utilisateurs sur l'API
 	 */
 	public static function move_users_to_api() {
 		$wpusers = get_users();
@@ -701,7 +824,7 @@ class WDGUser {
  * Fonctions meta
 *******************************************************************************/
 	/**
-	 * Détermine si l'utilisateur est admin
+	 * DÃ©termine si l'utilisateur est admin
 	 * @return boolean
 	 */
 	public function is_admin() {
@@ -709,7 +832,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si l'utilisateur a un accès direct à l'API
+	 * DÃ©termine si l'utilisateur a un accÃ¨s direct Ã  l'API
 	 */
 	public function has_access_to_api() {
 		$api_login = $this->get_api_login();
@@ -718,7 +841,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine l'age de l'utilisateur
+	 * DÃ©termine l'age de l'utilisateur
 	 * @return int
 	 */
 	public function get_age( $ref_date = FALSE ) {
@@ -753,7 +876,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si l'utilisateur est majeur
+	 * DÃ©termine si l'utilisateur est majeur
 	 * @return boolean
 	 */
 	public function is_major() {
@@ -762,7 +885,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si l'utilisateur a rempli ses informations nécessaires pour investir
+	 * DÃ©termine si l'utilisateur a rempli ses informations nÃ©cessaires pour investir
 	 * @param string $campaign_funding_type
 	 * @return boolean
 	 */
@@ -770,7 +893,7 @@ class WDGUser {
 		global $user_can_invest_errors;
 		$user_can_invest_errors = array();
 		
-		//Infos nécessaires pour tout type de financement
+		//Infos nÃ©cessaires pour tout type de financement
 		if ( $this->get_firstname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
 		if ( $this->get_lastname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre nom.', 'yproject')); }
 		if ( $this->get_email() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
@@ -779,7 +902,7 @@ class WDGUser {
 		if ( $this->get_birthday_month() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
 		if ( $this->get_birthday_year() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
 		
-		//Infos nécessaires pour l'investissement
+		//Infos nÃ©cessaires pour l'investissement
 		if ( $campaign_funding_type != 'fundingdonation' ) {
 			if ( !$this->is_major() ) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
 			if ( $this->get_address() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
@@ -794,14 +917,14 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne true si on doit afficher une lightbox de mise à jour des informations de l'utilisateur
+	 * Retourne true si on doit afficher une lightbox de mise Ã  jour des informations de l'utilisateur
 	 * @return boolean
 	 */
 	public function get_show_details_confirmation() {
 		$buffer = false;
 		
 		$last_details_confirmation = $this->wp_user->get( 'last_details_confirmation' );
-		// Si ça n'a jamais été fait, on demande validation e-mail, prénom et nom
+		// Si Ã§a n'a jamais Ã©tÃ© fait, on demande validation e-mail, prÃ©nom et nom
 		if ( empty( $last_details_confirmation ) ) {
 			$buffer = WDG_Form_User_Details::$type_basics;
 			
@@ -814,11 +937,11 @@ class WDGUser {
 			$firstname = $this->get_firstname();
 			$lastname = $this->get_lastname();
 			
-			// Si ça fait plus de 7 jours et qu'il n'y a pas d'adresse e-mail, de prénom ou de nom
+			// Si Ã§a fait plus de 7 jours et qu'il n'y a pas d'adresse e-mail, de prÃ©nom ou de nom
 			if ( $date_diff->days > 7 && ( empty( $email ) || empty( $firstname ) || empty( $lastname ) ) ) {
 				$buffer = WDG_Form_User_Details::$type_basics;
 				
-			// Si ça fait plus de 180 jours (6 mois), on demande une vérification complète des informations
+			// Si Ã§a fait plus de 180 jours (6 mois), on demande une vÃ©rification complÃ¨te des informations
 			} else if ( $date_diff->days > 180 ) {
 				$buffer = WDG_Form_User_Details::$type_complete;
 			}
@@ -852,13 +975,24 @@ class WDGUser {
 	public function get_validated_investments() {
 		return $this->get_user_investments_object()->get_validated_investments();
 	}
+	
 	public function get_pending_investments() {
 		return $this->get_user_investments_object()->get_pending_investments();
 	}
-	public function get_pending_preinvestments() {
-		return $this->get_user_investments_object()->get_pending_preinvestments();
+	
+	public function get_pending_not_validated_investments() {
+		return $this->get_user_investments_object()->get_pending_not_validated_investments();
 	}
-		
+	public function get_first_pending_not_validated_investment() {
+		return $this->get_user_investments_object()->get_first_pending_not_validated_investment();
+	}
+	public function has_pending_not_validated_investments() {
+		return $this->get_user_investments_object()->has_pending_not_validated_investments();
+	}
+	
+	public function get_pending_preinvestments( $force_reload = FALSE ) {
+		return $this->get_user_investments_object()->get_pending_preinvestments( $force_reload );
+	}
 	public function get_first_pending_preinvestment() {
 		return $this->get_user_investments_object()->get_first_pending_preinvestment();
 	}
@@ -877,9 +1011,35 @@ class WDGUser {
 		return $this->rois;
 	}
 	
+	public function get_rois_amount() {
+		$buffer = 0;
+		$rois = $this->get_rois();
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				if ( $roi_item->status == WDGROI::$status_transferred ) {
+					$buffer += $roi_item->amount;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	public function get_pending_rois_amount() {
+		$buffer = 0;
+		$rois = $this->get_rois();
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				if ( $roi_item->status == WDGROI::$status_waiting_authentication ) {
+					$buffer += $roi_item->amount;
+				}
+			}
+		}
+		return $buffer;
+	}
+	
 	private $royalties_per_year;
 	/**
-	 * Retourne la liste des royalties d'une année
+	 * Retourne la liste des royalties d'une annÃ©e
 	 * @param int $year
 	 * @return array
 	 */
@@ -922,19 +1082,38 @@ class WDGUser {
 	 * Retourne la liste des royalties par id d'investissement
 	 * @return array
 	 */
-	public function get_royalties_by_investment_id( $investment_id ) {
+	public function get_royalties_by_investment_id( $investment_id, $status = 'transferred' ) {
 		$buffer = array();
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
-			if ( $roi_item->id_investment == $investment_id && $roi_item->status == WDGROI::$status_transferred ) {
-				array_push( $buffer, $roi_item );
+			if ( $roi_item->id_investment == $investment_id ) {
+				if ( empty( $status ) || $roi_item->status == $status ) {
+					array_push( $buffer, $roi_item );
+				}
 			}
 		}
 		return $buffer;
 	}
 	
 	/**
-	 * Retourne TRUE si l'utilisateur a reçu des royalties pour l'année en paramètre
+	 * Retourne la liste des royalties par id de contrat d'investissement
+	 * @return array
+	 */
+	public function get_royalties_by_investment_contract_id( $investment_contract_id, $status = 'transferred' ) {
+		$buffer = array();
+		$rois = $this->get_rois();
+		foreach ( $rois as $roi_item ) {
+			if ( $roi_item->id_investment_contract == $investment_contract_id ) {
+				if ( empty( $status ) || $roi_item->status == $status ) {
+					array_push( $buffer, $roi_item );
+				}
+			}
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne TRUE si l'utilisateur a reÃ§u des royalties pour l'annÃ©e en paramÃ¨tre
 	 * @param int $year
 	 * @return boolean
 	 */
@@ -953,8 +1132,8 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne le lien vers l'attestation de royalties d'une année
-	 * - Si le fichier n'existe pas, crée le fichier auparavant
+	 * Retourne le lien vers l'attestation de royalties d'une annÃ©e
+	 * - Si le fichier n'existe pas, crÃ©e le fichier auparavant
 	 * @param int $year
 	 * @return string
 	 */
@@ -1050,6 +1229,24 @@ class WDGUser {
 		return $buffer;
 	}
 	
+	public function has_tax_exemption_for_year( $year ) {
+		$buffer = FALSE;
+		$tax_exemption_filename = get_user_meta( $this->get_wpref(), 'tax_exemption_' .$year, TRUE );
+		if ( !empty( $tax_exemption_filename ) ) {
+			$buffer = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-exemption/' .$year. '/' .$tax_exemption_filename );
+		}
+		return $buffer;
+	}
+	
+	public function has_tax_document_for_year( $year ) {
+		$buffer = FALSE;
+		$tax_exemption_filename = get_user_meta( $this->get_wpref(), 'tax_document_' .$year, TRUE );
+		if ( !empty( $tax_exemption_filename ) ) {
+			$buffer = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-documents/' .$year. '/' .$tax_exemption_filename );
+		}
+		return $buffer;
+	}
+	
 /*******************************************************************************
  * Gestion RIB
 *******************************************************************************/
@@ -1109,7 +1306,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Est-ce que le RIB est enregistré ?
+	 * Est-ce que le RIB est enregistrÃ© ?
 	 */
 	public function has_saved_iban() {
 		$saved_holdername = $this->get_bank_holdername();
@@ -1139,12 +1336,12 @@ class WDGUser {
  * Gestion Lemonway
 *******************************************************************************/
 	/**
-	 * Récupère les infos sur LW, via l'ID ou via l'e-mail
+	 * RÃ©cupÃ¨re les infos sur LW, via l'ID ou via l'e-mail
 	 * @param boolean $reload
 	 * @param boolean $by_email
 	 * @return object
 	 */
-	private function get_wallet_details( $reload = false, $by_email = false ) {
+	public function get_wallet_details( $reload = false, $by_email = false ) {
 		if ( !isset($this->wallet_details) || empty($this->wallet_details) || $reload == true ) {
 			if ( $by_email ) {
 				$this->wallet_details = LemonwayLib::wallet_get_details( FALSE, $this->get_email() );
@@ -1160,11 +1357,20 @@ class WDGUser {
 		return $this->wallet_details;
 	}
 	
+	public function has_lemonway_wallet( $reload = false ) {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details( $reload );
+		if ( isset( $wallet_details->NAME ) && !empty( $wallet_details->NAME ) ) {
+			$buffer = TRUE;
+		}
+		return $buffer;
+	}
+	
 	/**
 	 * Enregistrement sur Lemonway
 	 */
 	public function register_lemonway() {
-		//Vérifie que le wallet n'est pas déjà enregistré
+		//VÃ©rifie que le wallet n'est pas dÃ©jÃ  enregistrÃ©
 		$wallet_details = $this->get_wallet_details();
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
 			ypcf_debug_log_backtrace();
@@ -1185,7 +1391,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si les informations nécessaires sont remplies : mail, prénom, nom, pays, date de naissance, nationality
+	 * DÃ©termine si les informations nÃ©cessaires sont remplies : mail, prÃ©nom, nom, pays, date de naissance, nationality
 	 */
 	public function can_register_lemonway() {
 		$buffer = ( $this->get_email() != "" ) && ( $this->get_firstname() != "" ) && ( $this->get_lastname() != "" )
@@ -1194,7 +1400,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Met à jour les données sur LW si nécessaire
+	 * Met Ã  jour les donnÃ©es sur LW si nÃ©cessaire
 	 */
 	private function update_lemonway() {
 		LemonwayLib::wallet_update(
@@ -1211,17 +1417,17 @@ class WDGUser {
 	}
 	
 	/**
-	 * Définit l'identifiant de l'utilisateur sur lemonway
+	 * DÃ©finit l'identifiant de l'utilisateur sur lemonway
 	 * @return string
 	 */
 	public function get_lemonway_id() {
-		// Récupération dans la BDD
+		// RÃ©cupÃ©ration dans la BDD
 		$db_lw_id = $this->wp_user->get( 'lemonway_id' );
 		if ( empty( $db_lw_id ) ) {
 			
 			// Cross-platform
 			// Si n'existe pas dans la BDD, 
-			// -> on vérifie d'abord, via l'e-mail, si il existe sur LW
+			// -> on vÃ©rifie d'abord, via l'e-mail, si il existe sur LW
 			$wallet_details_by_email = $this->get_wallet_details( true, true );
 			if ( isset( $wallet_details_by_email->ID ) ) {
 				$db_lw_id = $wallet_details_by_email->ID;
@@ -1241,7 +1447,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Récupère le genre de l'utilisateur, formatté pour lemonway
+	 * RÃ©cupÃ¨re le genre de l'utilisateur, formattÃ© pour lemonway
 	 * @return string
 	 */
 	public function get_lemonway_title() {
@@ -1336,7 +1542,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si l'utilisateur est authentifié auprès de LW
+	 * DÃ©termine si l'utilisateur est authentifiÃ© auprÃ¨s de LW
 	 * @param bool $force_reload
 	 * @return bool
 	 */
@@ -1361,7 +1567,19 @@ class WDGUser {
 		$buffer = FALSE;
 		$wallet_details = $this->get_wallet_details();
 		if ( isset( $wallet_details->IBANS->IBAN ) ) {
-			$buffer = $wallet_details->IBANS->IBAN;
+			if ( is_array( $wallet_details->IBANS->IBAN ) ) {
+				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
+				// Si le premier IBAN est désactivé, on va chercher dans la suite
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected ) ) {
+					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
+						if ( $iban_item->S == self::$iban_status_validated ) {
+							$buffer = $iban_item;
+						}
+					}
+				}
+			} else {
+				$buffer = $wallet_details->IBANS->IBAN;
+			}
 		}
 		return $buffer;
 	}
@@ -1380,7 +1598,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si l'utilisateur peut payer avec son porte-monnaie
+	 * DÃ©termine si l'utilisateur peut payer avec son porte-monnaie
 	 * @param int $amount
 	 * @param ATCF_Campaign $campaign
 	 * @return bool
@@ -1391,29 +1609,30 @@ class WDGUser {
 	}
 	
 	/**
-	 * Détermine si l'utilisateur peut payer avec sa carte et son porte-monnaie
+	 * DÃ©termine si l'utilisateur peut payer avec sa carte et son porte-monnaie
 	 * @param int $amount
 	 * @param ATCF_Campaign $campaign
 	 * @return bool
 	 */
 	public function can_pay_with_card_and_wallet( $amount, $campaign ) {
 		$lemonway_amount = $this->get_lemonway_wallet_amount();
-		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5€ à payer par carte
+		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5â‚¬ Ã  payer par carte
 		return ($lemonway_amount > 0 && $amount - $lemonway_amount > 5 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
 	/**
-	 * Transfère l'argent du porte-monnaie utilisateur vers son compte bancaire
+	 * TransfÃ¨re l'argent du porte-monnaie utilisateur vers son compte bancaire
 	 */
 	public function transfer_wallet_to_bankaccount( $amount = FALSE ) {
-		$buffer = FALSE;
+		$buffer = __( "Votre compte bancaire n'est pas encore valid&eacute;.", 'yproject' );
 		
-		//Il faut qu'un iban ait déjà été enregistré
+		//Il faut qu'un iban ait dÃ©jÃ  Ã©tÃ© enregistrÃ©
 		if ($this->has_saved_iban()) {
-			//Vérification que des IBANS existent
+			//VÃ©rification que des IBANS existent
 			$wallet_details = $this->get_wallet_details();
 			$first_iban = $wallet_details->IBANS->IBAN;
-			//Sinon on l'enregistre auprès de Lemonway
+			$save_transfer = TRUE;
+			//Sinon on l'enregistre auprÃ¨s de Lemonway
 			if (empty($first_iban)) {
 				$saved_holdername = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, TRUE );
 				$saved_iban = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, TRUE );
@@ -1423,17 +1642,18 @@ class WDGUser {
 				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
 				if ($result_iban == FALSE) {
 					$buffer = LemonwayLib::get_last_error_message();
+					$save_transfer = FALSE;
 				}
 			}
 			
-			if ($buffer == FALSE) {
-				//Exécution du transfert vers le compte du montant du solde
+			if ( $save_transfer ) {
+				//ExÃ©cution du transfert vers le compte du montant du solde
 				if ( empty( $amount ) ) {
 					$amount = $wallet_details->BAL;
 				}
 				$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount );
-				$buffer = ($result_transfer->TRANS->HPAY->ID) ? "success" : $result_transfer->TRANS->HPAY->MSG;
-				if ($buffer == "success") {
+				$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
+				if ( $buffer === TRUE ) {
 					NotificationsEmails::wallet_transfer_to_account( $this->wp_user->ID, $amount );
 					$withdrawal_post = array(
 						'post_author'   => $this->wp_user->ID,
@@ -1451,7 +1671,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne true si l'iban est enregistré sur Lemon Way
+	 * Retourne true si l'iban est enregistrÃ© sur Lemon Way
 	 */
 	public function has_registered_iban() {
 		$buffer = true;
@@ -1463,7 +1683,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Retourne true si le RIB est validé sur Lemon Way
+	 * Retourne true si le RIB est validÃ© sur Lemon Way
 	 */
 	public function is_document_lemonway_registered( $document_type ) {
 		$lemonway_document = LemonwayDocument::get_by_id_and_type( $this->get_lemonway_id(), $document_type, $this->get_wallet_details() );
@@ -1489,20 +1709,24 @@ class WDGUser {
  * Gestion Lemonway - KYC
 *******************************************************************************/
 	/**
-	 * Détermine si l'organisation a envoyé tous ses documents en local sur WDG
+	 * DÃ©termine si l'organisation a envoyÃ© tous ses documents en local sur WDG
 	 */
 	public function has_sent_all_documents() {
-		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		$is_id_doc_sent = FALSE;
+		$nb_docs_sent = 0;
+		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_home, WDGKYCFile::$type_id_2 );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
 			$current_document = $document_filelist[0];
-			if ( !isset($current_document) ) {
-				$buffer = FALSE;
-				break;
+			if ( isset($current_document) ) {
+				$nb_docs_sent++;
+				if ( $document_type == WDGKYCFile::$type_id ) {
+					$is_id_doc_sent = true;
+				}
 			}
 		}
-		return $buffer;
+		
+		return ( $nb_docs_sent > 1 && $is_id_doc_sent );
 	}
 	
 	/**
@@ -1529,7 +1753,7 @@ class WDGUser {
  * Fonctions statiques
 *******************************************************************************/
 	/**
-	 * Vérifie si l'utilisateur a bien validé les cgu
+	 * VÃ©rifie si l'utilisateur a bien validÃ© les cgu
 	 * @global type $edd_options
 	 * @global type $current_user
 	 * @param type $user_id
@@ -1546,14 +1770,14 @@ class WDGUser {
 	}
 	
 	/**
-	 * Vérifie si le formulaire est complet et valide les cgu
+	 * VÃ©rifie si le formulaire est complet et valide les cgu
 	 * @global type $edd_options
 	 * @global type $current_user
 	 * @param type $user_id
 	 * @return boolean
 	 */
 	public static function check_validate_general_terms($user_id = FALSE) {
-		//Vérification des champs de formulaire
+		//VÃ©rification des champs de formulaire
 		if (WDGUser::has_validated_general_terms($user_id)) return FALSE;
 		if (!isset($_POST['action']) || $_POST['action'] != 'validate-terms') return FALSE;
 		if (!isset($_POST['validate-terms-check']) || !$_POST['validate-terms-check']) return FALSE;
@@ -1567,7 +1791,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Vérifie si il est nécessaie d'afficher la lightbox de cgu
+	 * VÃ©rifie si il est nÃ©cessaie d'afficher la lightbox de cgu
 	 * @global type $post
 	 * @param type $user_id
 	 * @return type
@@ -1575,12 +1799,12 @@ class WDGUser {
 	public static function must_show_general_terms_block($user_id = FALSE) {
 		global $post, $edd_options;
 		if (isset($edd_options[WDGUser::$edd_general_terms_version]) && !empty($edd_options[WDGUser::$edd_general_terms_version])) $isset_general_terms = TRUE;
-		//On affiche la lightbox de cgu si : l'utilisateur est connecté, il n'est pas sur la page cgu, il ne les a pas encore validées
+		//On affiche la lightbox de cgu si : l'utilisateur est connectÃ©, il n'est pas sur la page cgu, il ne les a pas encore validÃ©es
 		return (is_user_logged_in() && $post->post_name != 'cgu' && !WDGUser::has_validated_general_terms($user_id) && $isset_general_terms);
 	}
 	
 	/**
-	 * Récupération de la liste des id des projets auxquels un utilisateur est lié
+	 * RÃ©cupÃ©ration de la liste des id des projets auxquels un utilisateur est liÃ©
 	 * @param type $user_id
 	 * @param type $complete
 	 * @return array
@@ -1588,7 +1812,7 @@ class WDGUser {
 	public static function get_projects_by_id($user_id, $complete = FALSE) {
 		$buffer = array();
 		
-		//Récupération des projets dont l'utilisateur est porteur
+		//RÃ©cupÃ©ration des projets dont l'utilisateur est porteur
 		$campaign_status = array('publish');
 		if ($complete === TRUE) {
 			array_push($campaign_status, 'private');
@@ -1612,7 +1836,7 @@ class WDGUser {
 		}
 		wp_reset_query();
 		
-		//Récupération des projets dont l'utilisateur appartient à l'équipe
+		//RÃ©cupÃ©ration des projets dont l'utilisateur appartient Ã  l'Ã©quipe
 		$wdg_user = new WDGUser( $user_id );
 		$project_list = WDGWPREST_Entity_User::get_projects_by_role( $wdg_user->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 		if (!empty($project_list)) {
@@ -1625,7 +1849,7 @@ class WDGUser {
 	}
 	
 	/**
-	 * Définit la page vers laquelle il faudrait rediriger l'utilisateur lors de sa connexion
+	 * DÃ©finit la page vers laquelle il faudrait rediriger l'utilisateur lors de sa connexion
 	 * @global type $post
 	 * @return type
 	 */
@@ -1635,10 +1859,10 @@ class WDGUser {
 		$buffer = home_url();
 		
 		//Si on est sur la page de connexion ou d'inscription,
-		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
+		// il faut retrouver la page prÃ©cÃ©dente et vÃ©rifier qu'elle est de WDG
 		if ( $post->post_name == 'connexion' || $post->post_name == 'inscription' ) {
 //			ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1' );
-			//On vérifie d'abord si cela a été passé en paramètre d'URL
+			//On vÃ©rifie d'abord si cela a Ã©tÃ© passÃ© en paramÃ¨tre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
 //				ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2' );
@@ -1655,13 +1879,13 @@ class WDGUser {
 					}
 					
 				} else {
-					//Récupération de la page précédente
+					//RÃ©cupÃ©ration de la page prÃ©cÃ©dente
 					$referer_url = wp_get_referer();
-					//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
+					//On vÃ©rifie que l'url appartient bien au site en cours (home_url dans referer)
 					if (strpos($referer_url, $buffer) !== FALSE) {
 
-						//Si la page précédente était déjà la page connexion ou enregistrement, 
-						// on tente de voir si la redirection était passée en paramètre
+						//Si la page prÃ©cÃ©dente Ã©tait dÃ©jÃ  la page connexion ou enregistrement, 
+						// on tente de voir si la redirection Ã©tait passÃ©e en paramÃ¨tre
 						if ( strpos($referer_url, '/connexion/') !== FALSE || strpos($referer_url, '/inscription/') !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
@@ -1672,7 +1896,7 @@ class WDGUser {
 								$buffer = home_url();
 							}
 
-						//Sinon on peut effectivement rediriger vers la page précédente
+						//Sinon on peut effectivement rediriger vers la page prÃ©cÃ©dente
 						} else {
 							//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
 							$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
@@ -1697,13 +1921,13 @@ class WDGUser {
 		//Sur les autres pages
 		} else {
 //			ypcf_debug_log( 'WDGUser::get_login_redirect_page > B1' );
-			//On tente de voir si une redirection n'avait pas été demandée auparavant
+			//On tente de voir si une redirection n'avait pas Ã©tÃ© demandÃ©e auparavant
 			$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 			if (!empty($posted_redirect_page)) {
 //				ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2' );
 				$buffer = $posted_redirect_page;
 			
-			//Sinon, on récupère simplement la page en cours
+			//Sinon, on rÃ©cupÃ¨re simplement la page en cours
 			} else {
 				if ( isset( $post->ID ) ) {
 //					ypcf_debug_log( 'WDGUser::get_login_redirect_page > B3' );
@@ -1711,10 +1935,16 @@ class WDGUser {
 					$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
 					if ( !empty( $input_get_campaign_id ) ) {
 						$buffer .= '?campaign_id=' . $input_get_campaign_id;
+						
+					} elseif (ATCF_Campaign::is_campaign( $post->ID ) ) {
+						$campaign = new ATCF_Campaign( $post->ID );
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->is_remaining_time() ) {
+							$anchor = '#vote';
+						}
 					}
 					
 					ypcf_session_start();
-					$_SESSION[ 'login-fb-referer' ] = $buffer;
+					$_SESSION[ 'login-fb-referer' ] = $buffer . $anchor;
 				}
 			}
 		}

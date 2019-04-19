@@ -106,7 +106,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				$contribution_id = $split_contribution_id[0];
 			}
 			
-			if (isset($contribution_id) && $contribution_id != '' && $contribution_id != 'check') {
+			if ( isset( $contribution_id ) && $contribution_id != '' && $contribution_id != 'check' && strpos( $contribution_id, 'unset_' ) === FALSE ) {
 				$update_post = FALSE;
 				$is_card_contribution = TRUE;
 
@@ -114,38 +114,33 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				if (strpos($contribution_id, 'wire_') !== FALSE) {
 					$is_card_contribution = FALSE;
 					$contribution_id = substr($contribution_id, 5);
-					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-						//TODO
-					}
 
 				//Paiement par wallet uniquement
-				} else if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
+				} elseif (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
 					$buffer = 'publish';
 					$update_post = TRUE;
 
 				//On teste une contribution classique
 				} else {
 
-					if ($campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-						if ($lemonway_transaction === FALSE) {
-							$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
+					if ($lemonway_transaction === FALSE) {
+						$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
+					}
+					if ($lw_transaction_result) {
+						switch ($lw_transaction_result->STATUS) {
+							case 3:
+								$buffer = 'publish';
+								break;
+							case 4:
+								$buffer = 'failed';
+								$wdginvestment->set_status( WDGInvestment::$status_error );
+								break;
+							case 0:
+							default:
+								$buffer = 'pending';
+								break;
 						}
-						if ($lw_transaction_result) {
-							switch ($lw_transaction_result->STATUS) {
-								case 3:
-									$buffer = 'publish';
-									break;
-								case 4:
-									$buffer = 'failed';
-									$wdginvestment->set_status( WDGInvestment::$status_error );
-									break;
-								case 0:
-								default:
-									$buffer = 'pending';
-									break;
-							}
-							$update_post = TRUE;
-						}
+						$update_post = TRUE;
 					}
 				}
 
@@ -162,42 +157,38 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 
 					$amount = edd_get_payment_amount($payment_id);
 					$current_user = get_user_by('id', $payment_post->post_author);
-					if ($campaign->funding_type() != 'fundingdonation') {
-						if ($amount > 1500) {
-							//Création du contrat à signer
-							$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
-							if ($contract_id != '') {
-								$contract_infos = signsquid_get_contract_infos( $contract_id );
-								NotificationsEmails::new_purchase_user_success( $payment_id, $contract_infos->{'signatories'}[0]->{'code'}, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-								NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
-								if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
-									global $contract_filename;
-									$new_contract_pdf_filename = basename( $contract_filename );
-									$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
-									$wdginvestment->update_contract_url( $new_contract_pdf_url );
-								}
-							} else {
-								global $contract_errors;
-								$contract_errors = 'contract_failed';
-								NotificationsEmails::new_purchase_user_error_contract( $payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-								NotificationsEmails::new_purchase_admin_error_contract( $payment_id );
-								NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
-							}
-						} else {
-							$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-							$remaining_amount_when_authenticated = get_post_meta( $payment_id, 'remaining_amount_when_authenticated', TRUE );
-							NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $remaining_amount_when_authenticated );
-							NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
+					if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
+						//Création du contrat à signer
+						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment_id );
+						$contract_id = $WDGInvestmentSignature->create_eversign();
+						if ( !empty( $contract_id ) ) {
+							NotificationsEmails::new_purchase_user_success( $payment_id, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 							if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
-								$new_contract_pdf_filename = basename( $new_contract_pdf_file );
+								global $contract_filename;
+								$new_contract_pdf_filename = basename( $contract_filename );
 								$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
 								$wdginvestment->update_contract_url( $new_contract_pdf_url );
 							}
+							
+						} else {
+							global $contract_errors;
+							$contract_errors = 'contract_failed';
+							NotificationsEmails::new_purchase_user_error_contract( $payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+							NotificationsEmails::new_purchase_admin_error_contract( $payment_id );
 						}
+						
 					} else {
-						NotificationsEmails::new_purchase_user( $payment_id, '', array(), ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
+						$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
+						$remaining_amount_when_authenticated = get_post_meta( $payment_id, 'remaining_amount_when_authenticated', TRUE );
+						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $remaining_amount_when_authenticated );
+						if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
+							$new_contract_pdf_filename = basename( $new_contract_pdf_file );
+							$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
+							$wdginvestment->update_contract_url( $new_contract_pdf_url );
+						}
 					}
+					
+					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 					NotificationsEmails::new_purchase_team_members( $payment_id );
 
 				//Le paiement vient d'échouer
@@ -217,22 +208,8 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 
 				//Le paiement est validé, mais aucun contrat n'existe
 				} else if ($buffer == 'publish') {
-					$amount = edd_get_payment_amount($payment_id);
-					if ($amount > 1500) {
-						$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', TRUE);
-						if (!isset($contract_id) || empty($contract_id)) {
-							$current_user = get_user_by('id', $payment_post->post_author);
-							$downloads = edd_get_payment_meta_downloads($payment_id); 
-							$download_id = '';
-							if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
-							else $download_id = $downloads[0];
-							$post_campaign = get_post($download_id);
-							$campaign = atcf_get_campaign($post_campaign);
-							if ($campaign->funding_type() != 'fundingdonation') {
-								$contract_id = ypcf_create_contract($payment_id, $download_id, $current_user->ID);
-							}
-						}
-					}
+					$WDGInvestmentSignature = new WDGInvestmentSignature( $payment_id );
+					$contract_id = $WDGInvestmentSignature->check_signature_creation();
 				}
 
 				if ($update_post) {
@@ -268,50 +245,6 @@ function ypcf_get_updated_transfer_status($transfer_post) {
 }
 
 /**
- * Renvoie l'identifiant de contrat à partir d'un investissement donné
- * @param type $payment_id
- */
-function ypcf_get_signsquidcontractid_from_invest($payment_id) {
-    $contract_id = '';
-    if (isset($payment_id) && $payment_id != '') {
-	$contract_id = get_post_meta($payment_id, 'signsquid_contract_id', true);
-    }
-    return $contract_id;
-}
-
-/**
- * Analyse les infos de contrat retournées par signsquid
- * @param type $contract_infos
- */
-function ypcf_get_signsquidstatus_from_infos($contract_infos, $amount) {
-    if ($amount <= 1500) {
-	    $buffer = 'Investissement valid&eacute;';
-    } else {
-	    $buffer = '- Pas de contrat -';
-	    if ($contract_infos != '' && is_object($contract_infos)) {
-		switch($contract_infos->{'status'}) {
-		    case 'NotPublished':
-			$buffer = 'Contrat non-cr&eacute;&eacute;';
-			break;
-		    case 'WaitingForSignatoryAction':
-			$buffer = 'En attente de signature';
-			break;
-		    case 'Refused':
-			$buffer = 'Contrat refus&eacute;';
-			break;
-		    case 'Agreed':
-			$buffer = 'Contrat sign&eacute;';
-			break;
-		    case 'NewVersionAvailable':
-			$buffer = 'Contrat mis &agrave; jour';
-			break;
-		}
-	    }
-    }
-    return $buffer;
-}
-
-/**
  * retourne la valeur d'une part
  * @return type
  */
@@ -344,53 +277,6 @@ function ypcf_get_max_value_to_invest() {
 		$buffer = $current_campaign->goal(false) - $current_campaign->current_amount(false, true);
     }
     return $buffer;
-}
-
-/**
- * Création du contrat à signer
- * @param type $payment_id
- * @param type $campaign_id
- * @param type $user_id
- */
-function ypcf_create_contract($payment_id, $campaign_id, $user_id) {
-    $post = get_post($campaign_id);
-    $campaign = atcf_get_campaign( $post );
-    $user = get_userdata($user_id);
-    $contract_id = 0;
-    
-    ypcf_debug_log('ypcf_create_contract --- START');
-    if (isset($post, $campaign, $user)) {
-	//Nom du contrat = "NOM_PROJET - Investissement de INV€ de NOM_UTILISATEUR (MAIL_UTILISATEUR) - Le DATE"
-	$project_name = get_the_title( $campaign->ID );
-	$amount = edd_get_payment_amount($payment_id);
-	$user_name = $user->user_firstname . ' ' . $user->user_lastname . ' (' . $user->user_email . ')';
-	$date_payment = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $payment_id ) ) );
-	$contract_name = $project_name .' - Investissement de ' .$amount. '€ de ' . $user_name . ' - Le ' . $date_payment;
-	
-	ypcf_debug_log('ypcf_create_contract --- CALL signsquid_create_contract');
-	$contract_id = signsquid_create_contract($contract_name);
-	if ($contract_id != '') {
-	    global $contract_errors;
-	    update_post_meta($payment_id, 'signsquid_contract_id', $contract_id);
-	    $mobile_phone = '';
-	    if (ypcf_check_user_phone_format($user->get('user_mobile_phone'))) $mobile_phone = ypcf_format_french_phonenumber($user->get('user_mobile_phone'));
-	    if (!signsquid_add_signatory($contract_id, $user->user_firstname . ' ' . $user->user_lastname, $user->user_email, $mobile_phone)) $contract_errors = 'contract_addsignatories_failed';
-	    global $contract_filename;
-		$contract_filename = getNewPdfToSign($campaign_id, $payment_id, $user_id);
-	    if (!signsquid_add_file($contract_id, $contract_filename)) $contract_errors = 'contract_addfile_failed';
-	    if (!signsquid_send_invite($contract_id)) $contract_errors = 'contract_sendinvite_failed';
-	} else {
-	    global $contract_errors;
-	    $contract_errors = 'contract_creation_failed';
-	}
-    } else {
-	global $contract_errors;
-	$contract_errors = 'contract_creation_failed';
-    }
-    ypcf_debug_log('ypcf_create_contract --- $contract_errors : ' . $contract_errors);
-    ypcf_debug_log('ypcf_create_contract --- END');
-    
-    return $contract_id;
 }
 
 /**

@@ -107,8 +107,9 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/user.php' );
 		require( $this->includes_dir . 'data/user-investments.php' );
 		require( $this->includes_dir . 'data/investment-contract.php' );
+		require( $this->includes_dir . 'data/investment-signature.php' );
 		require( $this->includes_dir . 'data/staticpage.php' );
-		require( $this->includes_dir . 'data/country_list.php' );
+		require( $this->includes_dir . 'data/geolocation/country_list.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-lib.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-organization.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-user.php' );
@@ -122,6 +123,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract-model.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-file.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-queued-action.php' );
 		
 		require( $this->includes_dir . 'control/social/FacebookApp/autoload.php' );
 
@@ -129,14 +131,15 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/post.php' );
 		require( $this->includes_dir . 'control/cron.php' );
 		require( $this->includes_dir . 'control/settings.php' );
+		require( $this->includes_dir . 'control/emails.php' );
 		require( $this->includes_dir . 'control/logs.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
+		require( $this->includes_dir . 'control/queue.php' );
 		require( $this->includes_dir . 'control/routes.php' );
 		require( $this->includes_dir . 'control/api-calls.php' );
 		require( $this->includes_dir . 'control/invest-lib.php' );
 		require( $this->includes_dir . 'control/investment.php' );
 		require( $this->includes_dir . 'control/sendinblue/mailin.php' );
-		require( $this->includes_dir . 'control/signsquid/common.php' );
 		require( $this->includes_dir . 'control/html2pdf/html2pdf.class.php' );
 		require( $this->includes_dir . 'control/pdf_generator.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
@@ -170,6 +173,10 @@ final class ATCF_CrowdFunding {
 			return ;
 
 		do_action( 'atcf_include_admin_files' );
+	}
+	
+	public function include_control( $control_name ) {
+		require_once( $this->includes_dir . 'control/'.$control_name.'.php' );
 	}
 	
 	public function include_form( $form_name ) {

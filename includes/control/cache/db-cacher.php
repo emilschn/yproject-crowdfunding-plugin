@@ -11,7 +11,7 @@ class WDG_Cache_Plugin {
 	public static $slider_duration = 172800; // 48 heures de cache (48*60*60)
 	public static $slider_version = 1;
 
-	private static $funded_campaign_top_list = array( 'naoden', 'listo', 'twiza' );
+	private static $funded_campaign_top_list = array( 'cuir-marin-de-france', 'listo', 'twiza' );
 	public static $projects_nb_to_show = 3;
 	public static $projects_key = 'home-projects-list';
 	public static $projects_duration = 172800; // 48 heures de cache (48*60*60)
@@ -219,6 +219,10 @@ class WDG_Cache_Plugin {
 			$campaign = new ATCF_Campaign( $campaign_post->ID );
 			$campaign_categories_str = $campaign->get_categories_str();
 			
+			// On supprime ceux dont la date de fin est passée
+			if ( !$campaign->time_remaining_str() == '-' ) {
+				array_splice( $campaign_list, $i, 1 );
+			}
 			// On supprime ceux qui ne sont pas des projets d'entreprise
 			if ( strpos( $campaign_categories_str, 'entreprises' ) === FALSE ) {
 				array_splice( $campaign_list, $i, 1 );

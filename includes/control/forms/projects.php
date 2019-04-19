@@ -58,7 +58,7 @@ class WDGFormProjects {
 				array_push( $recipients, get_userdata( $item->user_id )->user_email );
 			}
 			$recipients_string = implode( ',', $recipients );
-			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $_POST[ 'posttitle' ], $_POST[ 'postcontent' ] );
+			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $_POST[ 'posttitle' ], $_POST[ 'postcontent' ] );
 		}
 	}
 	
@@ -82,24 +82,25 @@ class WDGFormProjects {
 			$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
 			$amount = edd_get_payment_amount( $approve_payment_id );
 			$campaign = new ATCF_Campaign( $campaign_id );
-			if ( $amount > 1500 ) {
-				$contract_id = ypcf_create_contract( $approve_payment_id, $campaign_id, $user_info['id'] );
-				if ($contract_id != '') {
-					$contract_infos = signsquid_get_contract_infos( $contract_id );
-					NotificationsEmails::new_purchase_user_success( $approve_payment_id, $contract_infos->{'signatories'}[0]->{'code'}, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+			if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
+				$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
+				$contract_id = $WDGInvestmentSignature->create_eversign();
+				if ( !empty( $contract_id ) ) {
+					NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+					
 				} else {
 					global $contract_errors;
 					$contract_errors = 'contract_failed';
 					NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 					NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
-					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
 				}
+				
 			} else {
 				$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
 				NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
 			}
+			
+			NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
 			
 			do_action('wdg_delete_cache', array(
 				'home-projects',
@@ -129,17 +130,31 @@ class WDGFormProjects {
 			);
 			wp_update_post($postdata);
 			
-			global $edd_logs;
-			if ( !empty( $edd_logs ) ) {
-				$logdata = array(
-					'post_status' => 'failed',
-					'post_parent' => $cancel_payment_id,
-				);
-				$edd_logs->update_log( $logdata );
+			
+			$logs_args = array(
+				'post_type'		=> 'edd_log',
+				'meta_query'	=> array(
+					array(
+						'key'		=> '_edd_log_payment_id',
+						'value'		=> $cancel_payment_id,
+						'compare'	=> '='
+					)
+				)
+			);
+			
+			$logs = new WP_Query( $logs_args );
+			if ( !empty( $logs->posts ) ) {
+				foreach ( $logs->posts as $log ) {
+					$postdata = array(
+						'ID'			=> $log->ID,
+						'post_status'	=> 'failed'
+					);
+					wp_update_post( $postdata );
+				}
 			}
 			
 			$page_dashboard = get_page_by_path('tableau-de-bord');
-			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment' );
+			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
 			exit();
 		}
 	}
@@ -357,18 +372,16 @@ class WDGFormProjects {
 		$current_organization = $campaign->get_organization();
 		$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
 		
-		if (isset($_POST['payment_card'])) {
+		if ( isset( $_POST[ 'payment_card' ] ) ) {
 			//$wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url
-			$page_wallet = get_page_by_path('tableau-de-bord');	// Tableau de bord
-			$campaign_id_param = '?campaign_id=' . $campaign->ID;
-			$return_url = get_permalink($page_wallet->ID) . $campaign_id_param;
-			$wk_token = LemonwayLib::make_token('', $roi_id);
+			$return_url = home_url( '/tableau-de-bord/?campaign_id=' . $campaign->ID );
+			$wk_token = LemonwayLib::make_token( '', $roi_id );
 			$roi_declaration->payment_token = $wk_token;
 			$roi_declaration->save();
-			$organization->register_lemonway();
-			$return = LemonwayLib::ask_payment_webkit($organization->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url);
-			if ( !empty($return->MONEYINWEB->TOKEN) ) {
-				wp_redirect(YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN);
+			$organization->register_lemonway( TRUE );
+			$return = LemonwayLib::ask_payment_webkit( $organization->get_lemonway_id(), $roi_declaration->get_amount_with_commission(), $roi_declaration->get_commission_to_pay(), $wk_token, $return_url, $return_url, $return_url );
+			if ( !empty( $return->MONEYINWEB->TOKEN ) ) {
+				wp_redirect( YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN );
 				exit();
 			} else {
 				return "error_lw_payment";
@@ -435,6 +448,12 @@ class WDGFormProjects {
 						$declaration->save();
 						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
 						NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
+						
+						$campaign = atcf_get_current_campaign();
+						$current_organization = $campaign->get_organization();
+						$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
+						$organization->check_register_royalties_lemonway_wallet();
+						LemonwayLib::ask_transfer_funds( $organization->get_lemonway_id(), $organization->get_royalties_lemonway_id(), $declaration->get_amount_with_adjustment() );
 						$buffer = TRUE;
 
 				} else {

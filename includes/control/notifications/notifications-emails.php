@@ -14,38 +14,38 @@ class NotificationsEmails {
      * @return bool
      */
     public static function send_mail($to, $object, $content, $decorate = false, $attachments = array(), $from_data = array(), $bcc = array()) {
-	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
-	if ( empty( $from_data ) ) {
-		$from_name = get_bloginfo('name');
-		$from_email = get_option('admin_email');
-	} else {
-		$from_name = $from_data['name'];
-		$from_email = $from_data['email'];
-	}
-	$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
-	$headers .= "Reply-To: ". $from_email . "\r\n";
-	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
-	if ( !empty($bcc) ) {
-		$bcc_list = '';
-		foreach ($bcc as $bcc_mail) {
-			if ( !empty($bcc_mail) ) {
-				$bcc_list .= $bcc_mail . ',';
-			}
+		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
+		if ( empty( $from_data ) ) {
+			$from_name = get_bloginfo('name');
+			$from_email = get_option('admin_email');
+		} else {
+			$from_name = $from_data['name'];
+			$from_email = $from_data['email'];
 		}
-		$bcc_list = substr( $bcc_list, 0, -1 );
-		$headers .= "Bcc: ".$bcc_list.";\r\n";
-		ypcf_debug_log('NotificationsEmails::send_mail > Bcc list : ' . $bcc_list);
-	}
-	
-	ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
-	if ($decorate) {
-		global $edd_options;
-		$content = wpautop( $edd_options['header_global_mail'] ) .'<br /><br />'. $content .'<br /><br />'. wpautop( $edd_options['footer_global_mail'] );
-	}
+		$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
+		$headers .= "Reply-To: ". $from_email . "\r\n";
+		$headers .= "Content-Type: text/html; charset=utf-8\r\n";
+		if ( !empty($bcc) ) {
+			$bcc_list = '';
+			foreach ($bcc as $bcc_mail) {
+				if ( !empty($bcc_mail) ) {
+					$bcc_list .= $bcc_mail . ',';
+				}
+			}
+			$bcc_list = substr( $bcc_list, 0, -1 );
+			$headers .= "Bcc: ".$bcc_list.";\r\n";
+			ypcf_debug_log('NotificationsEmails::send_mail > Bcc list : ' . $bcc_list);
+		}
 
-	$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
-	ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
-	return $buffer;
+		ypcf_debug_log('NotificationsEmails::send_mail > ' . $content);
+		if ($decorate) {
+			global $edd_options;
+			$content = wpautop( $edd_options['header_global_mail'] ) .'<br /><br />'. $content .'<br /><br />'. wpautop( $edd_options['footer_global_mail'] );
+		}
+
+		$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
+		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
+		return $buffer;
     }
     
     
@@ -63,23 +63,24 @@ class NotificationsEmails {
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment );
     }
     
+	private static $alert_lemonway_card = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », le nom de notre prestataire de paiement, dans le détail des opérations.<br>";
     /**
      * Mail pour l'investisseur lors d'un achat avec création de contrat réussie
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_success( $payment_id, $code, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success( $payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
 
 		$particular_content = "";
 		if ( $is_card_contribution ) {
-			$particular_content .= NotificationsEmails::new_purchase_lemonway_conditions();
+			$particular_content .= self::$alert_lemonway_card;
 		}
 
-		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Signsquid ";
+		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Eversign ";
 		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
-		$particular_content .= "Votre code personnel pour signer le contrat : <strong>" . $code . "</strong>";
-		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment );
+		$attachments = FALSE;
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
     }
     
     /**
@@ -97,21 +98,12 @@ class NotificationsEmails {
 		}
 		
 		if ( $is_card_contribution ) {
-			$particular_content .= NotificationsEmails::new_purchase_lemonway_conditions();
+			$particular_content .= self::$alert_lemonway_card;
 		}
-		
-		$particular_content .= "Vous trouverez votre contrat d'investissement ci-joint.";
 		
 		$attachments = array($new_contract_pdf_file);
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
     }
-	
-	private static function new_purchase_lemonway_conditions() {
-		$buffer = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », dans le détail des opérations Carte Bancaire.<br />";
-		$buffer .= "L'acceptation des CGU de Lemon Way, entraine l'ouverture d'un compte de paiement dédié à l'utilisation du site.";
-		$buffer .= "Vous pouvez clôturer ce compte à tout moment en suivant la procédure décrite dans les CGU de Lemon Way.<br />";
-		return $buffer;
-	}
     
     /**
      * Mail pour l'investisseur lors d'un achat
@@ -131,35 +123,63 @@ class NotificationsEmails {
 		$user_data = get_user_by('email', $email);
 		$payment_key = edd_get_payment_key( $payment_id );
 
-		$object = "Merci pour votre investissement";
+		$object = "Confirmation d'investissement";
 		$body_content = '';
 		$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
 		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br><br>";
-		$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. ";
-		if ( $payment_key == 'check' ) {
-			$body_content .= "N'oubliez pas que l'investissement ne sera définitivement validé ";
+		
+		if ( $campaign->is_positive_savings() ) {
+			$body_content .= "Nous vous remercions pour votre investissement ! ";
+			$body_content .= "Vous faites maintenant partie de la communaut&eacute; des activateurs de l'&Eacute;pargne positive, un nouveau mod&egrave;le de placement qui r&eacute;concilie votre portefeuille avec le bien commun, la finance telle qu'elle devrait &ecirc;tre.<br><br>";
+			$body_content .= "Avec vous, nous changeons le monde pas &agrave; pas, un smartphone apr&egrave;s l'autre.<br><br>";
+		
 		} else {
-			$body_content .= "Votre compte a été débité mais n'oubliez pas que l'investissement ne sera définitivement validé ";
+			$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. ";
 		}
-		$body_content .= "que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>"
-                . "Retrouvez le projet à l'adresse suivante : "
-                .'<a href="'.get_permalink($campaign->ID).'">'.get_permalink($campaign->ID).'</a><br>'
-                ."<br><br>";
+		
+		if ( $payment_key == 'check' ) {
+			$body_content .= "N'oubliez pas que ";
+		} else {
+			$body_content .= "Votre compte a été débité mais n'oubliez pas que ";
+		}
+		$body_content .= "l'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>";
+        
 		if ( !empty( $particular_content ) ) {
 			$body_content .= $particular_content . "<br><br>";
 		}
 		
 		if ( !empty( $preinvestment ) ) {
 			$body_content .= "Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
-							. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
-							. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
-							. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
+						. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
+						. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
+						. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
 		}
 
 		$body_content .= "<strong>Détails concernant votre investissement</strong><br>";
-		$body_content .= "Projet : " . $post_campaign->post_title . "<br>";
-		$body_content .= "Montant : ".$payment_amount."&euro;<br>";
+		if ( $campaign->is_positive_savings() ) {
+			$body_content .= "Page de pr&eacute;sentation : <a href=\"".$campaign->get_fake_url()."\">".$campaign->get_fake_url()."</a><br>";
+			
+		} else {
+			$body_content .= "Projet : " . $post_campaign->post_title . "<br>";
+			$body_content .= "Page de pr&eacute;sentation : <a href=\"".get_permalink($campaign->ID)."\">".get_permalink($campaign->ID)."</a><br>";
+		}
+		$body_content .= "Montant : ".$payment_amount." &euro;<br>";
 		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br><br>";
+		
+		if ( !empty( $attachments ) ) {
+			$body_content .= "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
+		}
+		
+		if ( $campaign->is_positive_savings() ) {
+			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">projets en cours de lev&eacute;e de fonds !</a><br><br>";
+		} else {
+			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">autres projets en cours de lev&eacute;e de fonds</a>, ainsi que notre nouveau produit d'<a href=\"".home_url( '/epargne-positive/' )."\">&Eacute;pargne positive</a> !<br><br>";
+		}
+		
+		$body_content .= "&Agrave; bient&ocirc;t sur WEDOGOOD.co<br>";
+		$body_content .= "L'&Eacute;quipe WE DO GOOD<br><br>";
+		
+		$body_content .= "<a href=\"".home_url( '/epargne-positive/' )."\"><img src=\"".home_url( '/wp-content/themes/yproject/images/emails/mail-positive-saivings.png' )."\"></a>";
 
 		return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
@@ -340,7 +360,6 @@ class NotificationsEmails {
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
 		$body_content .= "Projet : " .$project_title. "<br />";
-		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Montant total : " .$amount. "<br />";
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
 	}
@@ -353,7 +372,6 @@ class NotificationsEmails {
 		$body_content .= "Il y a un souci pour un transfert de wallet en complément d'un paiement par carte :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
 		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
-		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Projet : " .$project_title. "<br />";
 		$body_content .= "Montant total : " .$amount. "<br />";
 		$body_content .= "dont montant wallet : " .$amount_wallet. "<br />";
@@ -533,38 +551,17 @@ class NotificationsEmails {
     // CODE SIGNATURE
     //*******************************************************
     /**
-     * Mail à investisseur pour renvoyer le code de signature
-     * @param int $payment_id
-     * @param WP_User $user
-     * @param string $code
-     * @return bool
-     */
-    public static function send_code_user($payment_id, $user, $code) {
-		ypcf_debug_log('NotificationsEmails::send_code_user > ' . $payment_id . ' | ' . $user->ID . ' | ' . $code);
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-
-		$object = "Code d'investissement";
-		$body_content = "Cher ".$user->first_name." ".$user->user_lastname.",<br /><br />";
-		$body_content .= "Afin de confirmer votre investissement sur le projet " . $post_campaign->post_title . ", ";
-		$body_content .= "voici le code qui vous permettra de signer le contrat chez notre partenaire Signsquid :<br />";
-		$body_content .= $code . "<br /><br />";
-		$body_content .= "Si vous n'avez fait aucune action pour recevoir ce code, ne tenez pas compte de ce message.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    /**
      * Mail à investisseur pour envoyer code nouvelle signature
      * @param string $user_name
      * @param string $user_email
      * @param string $code
      * @return bool
-     */
     public static function send_new_contract_code_user( $user_name, $user_email, $contract_title, $code ) {
 		ypcf_debug_log('NotificationsEmails::send_new_contract_code_user > ' . $user_name . ' | ' . $user_email . ' | ' . $contract_title . ' | ' . $code);
 
 		$object = "Votre code de signature";
 		$body_content = "Bonjour ".$user_name.",<br><br>";
-		$body_content .= "Afin de signer le contrat " .$contract_title. " chez notre partenaire Signsquid, ";
+		$body_content .= "Afin de signer le contrat " .$contract_title. " chez notre partenaire Eversign, ";
 		$body_content .= "voici le code qu'il vous faudra entrer pour le valider :<br>";
 		$body_content .= $code . "<br><br>";
 		$body_content .= "Nous vous remercions par avance,<br>";
@@ -573,6 +570,7 @@ class NotificationsEmails {
 
 		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
     }
+     */
     //*******************************************************
     // FIN CODE SIGNATURE
     //*******************************************************
@@ -587,31 +585,26 @@ class NotificationsEmails {
      * @return bool
      */
     public static function new_comment($comment_id, $comment_object) {
-	ypcf_debug_log('NotificationsEmails::new_comment > ' . $comment_id);
-	$object = 'Nouveau commentaire !';
-	
-	get_comment($comment_id);
-	$post_parent = get_post($comment_object->comment_parent);
-	$post_categories = get_the_category($post_parent->ID);
-	if (count($post_categories) == 0 || $post_categories[0]->slug == 'wedogood' || $post_categories[0]->slug == 'revue-de-presse') {
-	    return FALSE;
-	}
-	$post_first_category = $post_categories[0];
-	$post_first_category_name = $post_first_category->name;
-	$name_exploded = explode('cat', $post_first_category_name);
-	if (count($name_exploded) < 2) { return FALSE; }
-	$post_campaign = get_post($name_exploded[1]);
-	$campaign = new ATCF_Campaign( $post_campaign );
-	
-	$body_content = "Vous avez reçu un nouveau commentaire sur votre projet ".$post_campaign->post_title." :<br />";
-	$body_content .= $comment_object->comment_content . "<br /><br />";
-	$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink($post_parent->ID).'">'.$post_parent->post_title.'</a>.';
-	
-	$user = get_userdata($post_campaign->post_author);
-	$emails = $user->user_email;
-	$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+		ypcf_debug_log('NotificationsEmails::new_comment > ' . $comment_id);
+		$object = 'Nouveau commentaire !';
+
+		get_comment( $comment_id );
+		$post_categories = get_the_category( $comment_object->comment_post_ID );
+		if ( count($post_categories) > 0 && ( $post_categories[0]->slug == 'wedogood' || $post_categories[0]->slug == 'revue-de-presse' ) ) {
+			return FALSE;
+		}
 		
-	return NotificationsEmails::send_mail($emails, $object, $body_content, true);
+		$campaign = new ATCF_Campaign( $comment_object->comment_post_ID );
+
+		$body_content = "Vous avez reçu un nouveau commentaire sur votre projet ".$campaign->data->post_title." :<br />";
+		$body_content .= $comment_object->comment_content . "<br /><br />";
+		$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink( $comment_object->comment_post_ID ).'">'.$campaign->data->post_title.'</a>.';
+
+		$user = get_userdata( $campaign->data->post_author );
+		$emails = $user->user_email;
+		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+
+		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     //*******************************************************
     // FIN NOUVEAU COMMENTAIRE
@@ -645,12 +638,25 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS PAIEMENTS ROI
     //*******************************************************
+	public static function turnover_declaration_adjustment_file_sent( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::turnover_declaration_adjustment_file_sent > ' . $declaration_id);
+		$declaration = new WDGROIDeclaration($declaration_id);
+		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+		
+		$admin_email = 'administratif@wedogood.co';
+		$object = "Projet " . $campaign->data->post_title . " - Envoi de fichier d'ajustement";
+		$body_content = "Hello !<br /><br />";
+		$body_content .= "Le projet " .$campaign->data->post_title. " a envoyé un document d'ajustement pour une déclaration de royalties à venir.<br>";
+		
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+	
 	public static function turnover_declaration_null( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::turnover_declaration_null > ' . $declaration_id);
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA à zero";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le projet " .$campaign->data->post_title. " a fait sa déclaration de CA, mais a déclaré 0. :'(<br /><br />";
@@ -663,7 +669,7 @@ class NotificationsEmails {
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA effectuée";
 		$body_content = "Hello !<br><br>";
 		$body_content .= "Le projet " .$campaign->data->post_title. " a fait sa déclaration de CA ! :)<br><br>";
@@ -689,7 +695,7 @@ class NotificationsEmails {
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI effectué";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € a été effectué.<br /><br />";
@@ -702,7 +708,7 @@ class NotificationsEmails {
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Paiement par virement déclaré";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € est en attente de virement.<br /><br />";
@@ -715,12 +721,46 @@ class NotificationsEmails {
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Problème de paiement de ROI";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->get_amount_with_commission()." €).<br /><br />";
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+	
+    public static function roi_received_exceed_investment( $investor_id, $investor_type, $project_id ) {
+		ypcf_debug_log( 'NotificationsEmails::roi_received_exceed_investment > ' .$investor_id. ' | ' .$investor_type. ' | ' .$project_id );
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		
+		$object = "Royalties percues supérieures à l'investissement initial";
+		$body_content = "Coucou !<br><br>";
+		$body_content .= "Un investisseur a reçu plus de royalties que son investissement de départ.<br>";
+		$body_content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$body_content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
+		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
+		
+		$admin_email = 'administratif@wedogood.co';
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
+	
+    public static function roi_received_exceed_maximum( $investor_id, $investor_type, $project_id ) {
+		ypcf_debug_log( 'NotificationsEmails::roi_received_exceed_maximum > ' .$investor_id. ' | ' .$investor_type. ' | ' .$project_id );
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		
+		$object = "URGENT - Royalties percues supérieures au maximum pouvant être reçu";
+		$body_content = "Coucou !<br><br>";
+		$body_content .= "Un investisseur a reçu plus de royalties que son investissement de départ ne le permettait (maximum dépassé).<br>";
+		$body_content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$body_content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
+		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
+		
+		$admin_email = 'administratif@wedogood.co';
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
     //*******************************************************
     // FIN NOTIFICATIONS PAIEMENTS ROI
@@ -748,58 +788,23 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS KYC
     //*******************************************************
-	/**
-	 * @param WDGOrganization $orga
-	 */
-	public static function document_uploaded_admin($orga, $nb_document) {
-		ypcf_debug_log('NotificationsEmails::document_uploaded_admin > ' . $orga->get_wpref());
+    public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_kyc_refused_admin > ' . $user_email);
 		
 		$admin_email = get_option('admin_email');
-		$object = "Documents ajoutés à une organisation";
-		$body_content = "Hello !<br />";
-		$body_content .= "L'organisation ".$orga->get_name()." a uploadé ".$nb_document." fichier(s).<br /><br />";
-
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
-	}
-	
-    public static function send_notification_kyc_accepted_user($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
+		$object = "Investisseur à relancer !";
 		
-		$object = "Vos documents ont été identifiés";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Suite à l'envoi de vos documents, votre identification auprès de notre partenaire de paiement Lemonway a été acceptée.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    public static function send_notification_kyc_accepted_admin($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
+		$body_content = "Hello !<br>";
+		$body_content .= "Lemon Way a refusé des documents depuis quelques jours, et l'utilisateur a quelques actions en attente.<br>";
+		$body_content .= "Il s'agit de " .$user_name. ".<br>";
+		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
 		
-		$admin_email = get_option('admin_email');
-		$object = "Nouveaux documents identifiés";
-		$body_content = "Hello !<br />";
-		$body_content .= "Lemonway a validé l'identification de l'utilisateur ".$user->first_name." ".$user->last_name." (".$user->user_login.").<br /><br />";
+		$body_content .= "Voici ses actions sur le site :<br>";
+		foreach ( $pending_actions as $pending_action ) {
+			$body_content .= "- " .$pending_action. "<br>";
+		}
 
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
-    }
-	
-    public static function send_notification_kyc_rejected_user($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_rejected_user > ' . $user->ID);
-		
-		$object = "Vos documents ont été refusés";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Suite à l'envoi de vos documents, notre partenaire de paiement Lemonway a refusé votre identification. Merci de nous contacter pour plus d'informations.<br /><br />";
-
-		return NotificationsEmails::send_mail($user->user_email, $object, $body_content, true);
-    }
-    public static function send_notification_kyc_rejected_admin($user) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_accepted_user > ' . $user->ID);
-		
-		$admin_email = get_option('admin_email');
-		$object = "Nouveaux documents refusés";
-		$body_content = "Hello !<br />";
-		$body_content .= "Lemonway a refusé l'identification de l'utilisateur ".$user->first_name." ".$user->last_name." (".$user->user_login.").<br /><br />";
-
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
     }
     //*******************************************************
     // FIN NOTIFICATIONS KYC

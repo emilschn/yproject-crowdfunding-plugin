@@ -9,15 +9,15 @@ $lemonway_lib = new LemonwayLib();
  * Classe de gestion de Lemonway
  */
 class LemonwayLib {
-	public static $limit_kyc1_moneyin_operation_amount = 250;
-	public static $limit_kyc1_moneyin_day_nb = 20;
-	public static $limit_kyc1_moneyin_year_amount = 2500;
-	public static $limit_kyc1_moneyout_day_nb = 20;
-	public static $limit_kyc1_moneyout_year_amount = 2500;
-	public static $limit_kyc1_p2p_in_day_nb = 20;
-	public static $limit_kyc1_p2p_out_year_nb = 20;
-	public static $limit_kyc1_p2p_in_year_amount = 2500;
-	public static $limit_kyc1_p2p_out_year_amount = 2500;
+	public static $limit_kyc1_moneyin_operation_amount = 0;
+	public static $limit_kyc1_moneyin_day_nb = 0;
+	public static $limit_kyc1_moneyin_year_amount = 0;
+	public static $limit_kyc1_moneyout_day_nb = 0;
+	public static $limit_kyc1_moneyout_year_amount = 0;
+	public static $limit_kyc1_p2p_in_day_nb = 0;
+	public static $limit_kyc1_p2p_out_year_nb = 0;
+	public static $limit_kyc1_p2p_in_year_amount = 0;
+	public static $limit_kyc1_p2p_out_year_amount = 0;
 	
 	public static $limit_kyc2_moneyin_day_nb = 1000;
 	public static $limit_kyc2_moneyin_day_amount = 500000;
@@ -247,7 +247,7 @@ class LemonwayLib {
 	 * @param type $payer_or_beneficiary
 	 * @return type
 	 */
-	public static function wallet_company_register( $new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '', $payer_or_beneficiary = '' ) {
+	public static function wallet_company_register( $new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '', $payer_or_beneficiary = '', $is_tech_wallet = '' ) {
 		$param_list = array(
 			'wallet'						=> $new_wallet_id,
 			'clientMail'					=> $client_mail,
@@ -262,7 +262,8 @@ class LemonwayLib {
 			'companyIdentificationNumber'	=> $company_idnumber,
 			'isCompany'						=> '1',
 			'isDebtor'						=> '1',
-			'payerOrBeneficiary'			=> $payer_or_beneficiary
+			'payerOrBeneficiary'			=> $payer_or_beneficiary,
+			'isTechWallet'					=> ( !empty( $is_tech_wallet ) ) ? '1' : '0'
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
 		if ($result !== FALSE) {
@@ -489,6 +490,23 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('RegisterIBAN', $param_list);
+		if ($result !== FALSE) {
+			//Retourne : ID ; S (status)
+		}
+		return $result;
+	}
+	
+	public static function wallet_unregister_iban( $wallet_id, $iban_id ) {
+		if ( empty( $wallet_id ) ) return FALSE;
+		if ( empty( $iban_id ) ) return FALSE;
+		
+		//wallet ; ibanId
+		$param_list = array(
+			'wallet'	=> $wallet_id,
+			'ibanId'	=> $iban_id
+		);
+		
+		$result = LemonwayLib::call( 'UnregisterIBAN', $param_list );
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}

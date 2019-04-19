@@ -56,14 +56,21 @@ class WDGWPREST_Entity_User {
 			'gender'			=> $user->get_gender(),
 			'name'				=> $user->get_firstname(),
 			'surname'			=> $user->get_lastname(),
+			'surname_use'		=> $user->get_use_lastname(),
 			'username'			=> $user->get_login(),
 			'birthday_date'		=> $user->get_birthday_date(),
 			'birthday_city'		=> $user->get_birthplace(),
+			'birthday_district'	=> $user->get_birthplace_district(),
+			'birthday_department'	=> $user->get_birthplace_department(),
+			'birthday_country'	=> $user->get_birthplace_country(),
 			'nationality'		=> $user->get_nationality(),
+			'address_number'		=> $user->get_address_number(),
+			'address_number_comp'	=> $user->get_address_number_complement(),
 			'address'			=> $user->get_address(),
 			'postalcode'		=> $user->get_postal_code(),
 			'city'				=> $user->get_city(),
 			'country'			=> $user->get_country(),
+			'tax_country'		=> $user->get_tax_country(),
 			'email'				=> $user->get_email(),
 			'phone_number'		=> $user->get_phone_number(),
 			'description'		=> $user->get_description(),
@@ -171,6 +178,15 @@ class WDGWPREST_Entity_User {
 			}
 		}
 		return $buffer;
+	}
+	
+	/**
+	 * Retourne les contrats d'investissements liés à un utilisateur
+	 * @return array
+	 */
+	public static function get_investment_contracts( $user_api_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_api_id. '/investment-contracts' );
+		return $result_obj;
 	}
 	
 	/**
