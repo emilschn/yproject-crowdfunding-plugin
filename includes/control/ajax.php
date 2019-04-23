@@ -8,7 +8,8 @@ class WDGAjaxActions {
 	
 	private static $class_to_filename = array(
 		'WDG_Form_Vote'			=> 'vote.php',
-		'WDG_Form_User_Details' => 'user-details.php'
+		'WDG_Form_User_Details' => 'user-details.php',
+		'WDG_Form_Dashboard_Add_Check' => 'dashboard-add-check.php'
 	);
     
 	/**
@@ -17,6 +18,7 @@ class WDGAjaxActions {
 	public static function init_actions() {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Vote' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
+		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
 		
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		WDGAjaxActions::add_action('get_searchable_projects_list');
@@ -2530,7 +2532,7 @@ class WDGAjaxActions {
 				$user_type = 'user';
 				$user = new WDGUser( $user_by_email->ID );
 				$user_data = array(
-					'user' => array(
+					'user'		=> array(
 						'login'				=> $user->get_login(),
 						'firstname'			=> $user->get_firstname(),
 						'lastname'			=> $user->get_lastname(),
@@ -2545,8 +2547,30 @@ class WDGAjaxActions {
 						'city'				=> $user->get_city(),
 						'country'			=> $user->get_country()
 					),
-					'orga' => FALSE
+					'orga'		=> FALSE,
+					'orga_list'	=> array()
 				);
+				$user_organizations_list = $user->get_organizations_list();
+				foreach( $user_organizations_list as $organization_item ) {
+					$WDGOrganization = new WDGOrganization( $organization_item->wpref );
+					$single_orga_data = array(
+						'wpref'		=> $WDGOrganization->get_wpref(),
+						'name'		=> $WDGOrganization->get_name(),
+						'email'		=> $WDGOrganization->get_email(),
+						'website'	=> $WDGOrganization->get_website(),
+						'legalform'	=> $WDGOrganization->get_legalform(),
+						'idnumber'	=> $WDGOrganization->get_idnumber(),
+						'rcs'		=> $WDGOrganization->get_rcs(),
+						'capital'	=> $WDGOrganization->get_capital(),
+						'address_number'		=> $WDGOrganization->get_address_number(),
+						'address_number_comp'	=> $WDGOrganization->get_address_number_comp(),
+						'address'				=> $WDGOrganization->get_address(),
+						'postal_code'			=> $WDGOrganization->get_postal_code(),
+						'city'					=> $WDGOrganization->get_city(),
+						'nationality'			=> $WDGOrganization->get_nationality()
+					);
+					array_push( $user_data[ 'orga_list' ], $single_orga_data );
+				}
 			}
 		}
 		
