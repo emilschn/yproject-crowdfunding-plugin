@@ -796,12 +796,13 @@ class WDGInvestment {
 		$invest_type = $this->get_session_user_type();
 		
 		$WDGuser_current = WDGUser::current();
-		$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
 		if ( $invest_type != 'user' ) {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+			$WDGUserInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
 			$WDGOrganization_debit->register_lemonway();
 			$wallet_id = $WDGOrganization_debit->get_lemonway_id();
 		} else {
+			$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
 			$WDGuser_current->register_lemonway();
 			$wallet_id = $WDGuser_current->get_lemonway_id();
 		}
