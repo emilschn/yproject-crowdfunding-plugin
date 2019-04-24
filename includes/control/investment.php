@@ -869,7 +869,7 @@ class WDGInvestment {
 				$return_error = filter_input( INPUT_GET, 'error' );
 				$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
 				$is_failed = $is_failed || ( $lw_transaction_result->STATUS != 3 && $lw_transaction_result->STATUS != 0 );
-				$amount_by_card = $lw_transaction_result->DEB;
+				$amount_by_card = $lw_transaction_result->CRED;
 
 				// Compléter par wallet
 				if ( !$is_failed ) {
