@@ -579,7 +579,7 @@ class WDGROIDeclaration {
 					$transfer = FALSE;
 					//Gestion versement vers organisation
 					if ( $ROI->recipient_type == 'orga' ) {
-						$WDGOrga = new WDGOrganization( $ROI->id_user );
+						$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
 						$WDGOrga->register_lemonway();
 						if ( $WDGOrga->is_registered_lemonway_wallet() ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
