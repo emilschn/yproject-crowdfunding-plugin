@@ -458,6 +458,16 @@ class WDGAjaxActions {
 		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
 			$declaration = new WDGROIDeclaration($declaration_id);
 		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+			
+			// Si il n'y a pas assez sur le wallet, on bloque
+			$roi_amount = $declaration->get_amount_with_adjustment();
+			$organization = $campaign->get_organization();
+			$WDGOrganization = new WDGOrganization( $organization->wpref );
+			if ( $WDGOrganization->get_lemonway_balance( 'royalties' ) < $roi_amount ) {
+				echo '0';
+				exit();
+			}
+			
 		    $total_amount = 0;
 		    $total_roi = 0;
 		    $total_fees = 0;
