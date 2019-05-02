@@ -663,6 +663,7 @@ class NotificationsAPI {
     //*******************************************************
 	public static function vote_authenticated_reminder( $recipient, $name, $project_name, $project_url, $project_api_id, $intention_amount ) {
 		$id_template = '628';
+		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
 			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,

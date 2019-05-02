@@ -576,10 +576,10 @@ class WDGROIDeclaration {
 				$ROI = new WDGROI( $roi_item->id );
 
 				if ( $ROI->id_user > 0 ) {
-					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+					$transfer = FALSE;
 					//Gestion versement vers organisation
-					if ( WDGOrganization::is_user_organization( $WDGUser->get_wpref() ) ) {
-						$WDGOrga = new WDGOrganization( $WDGUser->get_wpref() );
+					if ( $ROI->recipient_type == 'orga' ) {
+						$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
 						$WDGOrga->register_lemonway();
 						if ( $WDGOrga->is_registered_lemonway_wallet() ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
@@ -590,6 +590,7 @@ class WDGROIDeclaration {
 
 					//Versement vers utilisateur personne physique
 					} else {
+						$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
 						$WDGUser->register_lemonway();
 						if ( $WDGUser->is_lemonway_registered() ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
@@ -601,9 +602,9 @@ class WDGROIDeclaration {
 
 					if ( $transfer != FALSE ) {
 						$ROI->status = $status;
+						$ROI->id_transfer = $transfer->ID;
+						$ROI->update();
 					}
-					$ROI->id_transfer = $transfer->ID;
-					$ROI->update();
 				}
 			}
 		}

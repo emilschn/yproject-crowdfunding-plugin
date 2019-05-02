@@ -167,6 +167,7 @@ class WDGFormUsers {
 			WDGFormUsers::redirect_after_login_failed( 'empty_fields' );
 		}
 
+		$username = rtrim( $username );
 		if ( !empty( $username ) ) {
 			// Récupération éventuelle d'un utilisateur en fonction de l'e-mail
 			$username = str_replace( '&', '&amp;', stripslashes( $username ) );
@@ -273,7 +274,7 @@ class WDGFormUsers {
 		
 		
 		// Vérifications de l'e-mail
-		$user_email = filter_input(INPUT_POST, 'signup_email');
+		$user_email = rtrim( filter_input( INPUT_POST, 'signup_email' ) );
 		$user_name = $user_email;
 		if ( empty( $user_email ) ) {
 			$signup_errors->add( 'user_email', __( "L'adresse e-mail doit &ecirc;tre d&eacute;finie.", 'yproject' ) );

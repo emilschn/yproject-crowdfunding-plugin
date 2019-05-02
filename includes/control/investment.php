@@ -796,12 +796,13 @@ class WDGInvestment {
 		$invest_type = $this->get_session_user_type();
 		
 		$WDGuser_current = WDGUser::current();
-		$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
 		if ( $invest_type != 'user' ) {
 			$WDGOrganization_debit = new WDGOrganization( $invest_type );
+			$WDGUserInvestments_current = new WDGUserInvestments( $WDGOrganization_debit );
 			$WDGOrganization_debit->register_lemonway();
 			$wallet_id = $WDGOrganization_debit->get_lemonway_id();
 		} else {
+			$WDGUserInvestments_current = new WDGUserInvestments( $WDGuser_current );
 			$WDGuser_current->register_lemonway();
 			$wallet_id = $WDGuser_current->get_lemonway_id();
 		}
@@ -868,7 +869,7 @@ class WDGInvestment {
 				$return_error = filter_input( INPUT_GET, 'error' );
 				$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
 				$is_failed = $is_failed || ( $lw_transaction_result->STATUS != 3 && $lw_transaction_result->STATUS != 0 );
-				$amount_by_card = $lw_transaction_result->DEB;
+				$amount_by_card = $lw_transaction_result->CRED;
 
 				// Compléter par wallet
 				if ( !$is_failed ) {
