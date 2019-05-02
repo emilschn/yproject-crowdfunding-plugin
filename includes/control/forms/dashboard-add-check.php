@@ -93,6 +93,43 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			self::$field_group_user_info
 		);
 
+		$district_list = array();
+		$district_list[ 0 ] = '-';
+		for ( $i = 1; $i <= 20; $i++ ) {
+			$district_list[ $i ] = $i;
+		}
+		$this->addField(
+			'select',
+			'birthplace_district',
+			__( "Arrondissement dans la ville de naissance", 'yproject' ),
+			self::$field_group_user_info,
+			'',
+			__( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ),
+			$district_list
+		);
+		
+		global $french_departments;
+		$this->addField(
+			'select',
+			'birthplace_department',
+			__( "D&eacute;partement de naissance *", 'yproject' ),
+			self::$field_group_user_info,
+			'',
+			__( "Uniquement si la naissance a eu lieu en France", 'yproject' ),
+			$french_departments
+		);
+
+		global $country_list;
+		$this->addField(
+			'select',
+			'birthplace_country',
+			__( "Pays de naissance *", 'yproject' ),
+			self::$field_group_user_info,
+			'',
+			FALSE,
+			$country_list
+		);
+
 		global $country_list;
 		$this->addField(
 			'select',
@@ -102,6 +139,24 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			'',
 			FALSE,
 			$country_list
+		);
+			
+		$this->addField(
+			'text',
+			'address_number',
+			__( "Num&eacute;ro", 'yproject' ),
+			self::$field_group_user_info
+		);
+
+		global $address_number_complements;
+		$this->addField(
+			'select',
+			'address_number_complement',
+			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			self::$field_group_user_info,
+			'',
+			FALSE,
+			$address_number_complements
 		);
 
 		$this->addField(
@@ -280,35 +335,86 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 		
 		$this->addField(
 			'file',
-			'contract-check',
+			'picture-contract',
 			__( "Photos du contrat *", 'yproject' ),
 			self::$field_group_invest_files
 		);
 		
 	}
 	
-	public function postForm() {
+	public function postFormAjax() {
 		parent::postForm();
+		
+		$feedback_success = array();
+		$feedback_errors = array();
 		
 		$campaign = new ATCF_Campaign( $this->campaign_id );
 		$WDGUser = new WDGUser( $this->user_id );
 		
 		// On s'en fout du feedback, ça ne devrait pas arriver
 		if ( !$campaign->current_user_can_edit() ) {
+			$error = array(
+				'cant-edit',
+				__( "Impossible", 'yproject' ),
+				'cant-edit'
+			);
+			array_push( $feedback_errors, $error );
 			
 		// Analyse du formulaire
 		} else {
 			// Informations de base
 			$email = $this->getInputText( 'user-email' );
 			if ( !is_email( $email ) ) {
-				$this->addPostError(
+				$error = array(
 					'email',
 					__( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
 					'email'
 				);
+				array_push( $feedback_errors, $error );
 			}
+			
+			$invest_amount = $this->getInputTextMoney( 'invest-amount' );
+			$max_part_value = ypcf_get_max_part_value();
+			if ( $invest_amount < 10 || !is_numeric( $invest_amount ) || intval( $invest_amount ) != $invest_amount || $invest_amount > $max_part_value ) {
+				$error = array(
+					'invest-amount',
+					__( "Le montant n'est pas valide", 'yproject' ),
+					'invest-amount'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			
+			$user_type = $this->getInputText( 'user_type' );
+			
+			$gender = $this->getInputText( 'gender' );
+			$firstname = $this->getInputText( 'firstname' );
+			$lastname = $this->getInputText( 'lastname' );
+			$birthday = $this->getInputText( 'birthday' );
+			$birthplace = $this->getInputText( 'birthplace' );
+			$nationality = $this->getInputText( 'nationality' );
+			$address_number = $this->getInputText( 'address_number' );
+			$address_number_complement = $this->getInputText( 'address_number_complement' );
+			$address = $this->getInputText( 'address' );
+			$address = $this->getInputText( 'address' );
+			$postal_code = $this->getInputText( 'postal_code' );
+			$city = $this->getInputText( 'city' );
+			$country = $this->getInputText( 'country' );
+			
+			if ( $user_type == 'orga' ) {
+				
+			}
+			
+			
+//			$file_check_picture = $this->getI( 'picture-check' );
+//			$file_check_picture = $this->getI( 'picture-contract' );
 		}
 		
-		return !$this->hasErrors();
+		
+		$buffer = array(
+			'success'	=> $feedback_success,
+			'errors'	=> $feedback_errors
+		);
+		echo json_encode( $buffer );
+		exit();
 	}
 }
