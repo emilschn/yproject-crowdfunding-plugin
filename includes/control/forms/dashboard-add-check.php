@@ -11,12 +11,10 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 	public static $field_group_invest_files = 'dashboard-add-check-invest-files';
 	
 	private $campaign_id;
-	private $user_id;
 	
-	public function __construct( $campaign_id = FALSE, $user_id = FALSE ) {
+	public function __construct( $campaign_id = FALSE ) {
 		parent::__construct( self::$name );
 		$this->campaign_id = $campaign_id;
-		$this->user_id = $user_id;
 		$this->initFields();
 	}
 	
@@ -32,6 +30,14 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			'',
 			self::$field_group_hidden,
 			self::$name
+		);
+		
+		$this->addField(
+			'hidden',
+			'campaign-id',
+			'',
+			self::$field_group_hidden,
+			$this->campaign_id
 		);
 		
 		//**********************************************************************
@@ -348,8 +354,10 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 		$feedback_success = array();
 		$feedback_errors = array();
 		
+		if ( empty( $this->campaign_id ) ) {
+			$this->campaign_id = $this->getInputText( 'campaign-id' );
+		}
 		$campaign = new ATCF_Campaign( $this->campaign_id );
-		$WDGUser = new WDGUser( $this->user_id );
 		
 		// On s'en fout du feedback, ça ne devrait pas arriver
 		if ( !$campaign->current_user_can_edit() ) {
@@ -374,39 +382,257 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			}
 			
 			$invest_amount = $this->getInputTextMoney( 'invest-amount' );
-			$max_part_value = ypcf_get_max_part_value();
-			if ( $invest_amount < 10 || !is_numeric( $invest_amount ) || intval( $invest_amount ) != $invest_amount || $invest_amount > $max_part_value ) {
+			if ( $invest_amount < 10 ) {
 				$error = array(
 					'invest-amount',
-					__( "Le montant n'est pas valide", 'yproject' ),
+					__( "Le montant n'est pas suffisant", 'yproject' ),
+					'invest-amount'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			if ( !is_numeric( $invest_amount ) ) {
+				$error = array(
+					'invest-amount',
+					__( "Le montant doit &ecirc;tre au format num&eacute;rique", 'yproject' ),
+					'invest-amount'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			if ( intval( $invest_amount ) != $invest_amount ) {
+				$error = array(
+					'invest-amount',
+					__( "Le montant doit &ecirc;tre un nombre entier", 'yproject' ),
+					'invest-amount'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			$max_part_value = $campaign->goal( false ) - $campaign->current_amount( false, true );
+			if ( $invest_amount > $max_part_value ) {
+				$error = array(
+					'invest-amount',
+					__( "Le montant est sup&eacute;rieur &agrave; ce qu'il reste jusqu'&agrave; l'objectif maximal", 'yproject' ) . ' - ' .$max_part_value . ' €',
 					'invest-amount'
 				);
 				array_push( $feedback_errors, $error );
 			}
 			
-			$user_type = $this->getInputText( 'user_type' );
-			
 			$gender = $this->getInputText( 'gender' );
+			if ( empty( $gender ) ) {
+				$error = array(
+					'gender',
+					__( "Le sexe de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'gender'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$firstname = $this->getInputText( 'firstname' );
+			if ( empty( $firstname ) ) {
+				$error = array(
+					'firstname',
+					__( "Le prenom de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'firstname'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$lastname = $this->getInputText( 'lastname' );
+			if ( empty( $lastname ) ) {
+				$error = array(
+					'lastname',
+					__( "Le nom de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'lastname'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$birthday = $this->getInputText( 'birthday' );
+			if ( empty( $birthday ) ) {
+				$error = array(
+					'birthday',
+					__( "La date de naissance de l'investisseur ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+					'birthday'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$birthplace = $this->getInputText( 'birthplace' );
+			if ( empty( $birthplace ) ) {
+				$error = array(
+					'birthday',
+					__( "Le lieu de naissance de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'birthday'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$nationality = $this->getInputText( 'nationality' );
+			if ( empty( $nationality ) ) {
+				$error = array(
+					'nationality',
+					__( "La nationalite de l'investisseur ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+					'nationality'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$address_number = $this->getInputText( 'address_number' );
 			$address_number_complement = $this->getInputText( 'address_number_complement' );
 			$address = $this->getInputText( 'address' );
-			$address = $this->getInputText( 'address' );
+			if ( empty( $address ) ) {
+				$error = array(
+					'address',
+					__( "L'adresse de l'investisseur ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+					'address'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$postal_code = $this->getInputText( 'postal_code' );
+			if ( empty( $postal_code ) ) {
+				$error = array(
+					'postal_code',
+					__( "Le code postal de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'postal_code'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$city = $this->getInputText( 'city' );
+			if ( empty( $city ) ) {
+				$error = array(
+					'city',
+					__( "La ville de l'investisseur ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+					'city'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			$country = $this->getInputText( 'country' );
-			
-			if ( $user_type == 'orga' ) {
-				
+			if ( empty( $country ) ) {
+				$error = array(
+					'country',
+					__( "Le pays de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'country'
+				);
+				array_push( $feedback_errors, $error );
 			}
 			
+			$user_type = $this->getInputText( 'user_type' );
+			if ( $user_type == 'orga' ) {
+				$orga_id = $this->getInputText( 'orga-id' );
+				$orga_name = $this->getInputText( 'org_name' );
+				if ( empty( $orga_name ) ) {
+					$error = array(
+						'orga_name',
+						__( "Le nom de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						'orga_name'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_email = $this->getInputText( 'org_email' );
+				if ( empty( $orga_email ) ) {
+					$error = array(
+						'orga_email',
+						__( "Le mail de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						'orga_email'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_website = $this->getInputText( 'org_website' );
+				if ( empty( $orga_website ) ) {
+					$error = array(
+						'orga_website',
+						__( "Le site de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						'orga_website'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_legalform = $this->getInputText( 'org_legalform' );
+				if ( empty( $orga_legalform ) ) {
+					$error = array(
+						'orga_legalform',
+						__( "La forme juridique de l'organisation ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+						'orga_legalform'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_idnumber = $this->getInputText( 'org_idnumber' );
+				if ( empty( $orga_idnumber ) ) {
+					$error = array(
+						'orga_idnumber',
+						__( "Le SIRET de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						'orga_idnumber'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_rcs = $this->getInputText( 'org_rcs' );
+				if ( empty( $orga_rcs ) ) {
+					$error = array(
+						'orga_rcs',
+						__( "Le RCS de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						'orga_rcs'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_capital = $this->getInputText( 'org_capital' );
+				if ( empty( $orga_capital ) ) {
+					$error = array(
+						'orga_capital',
+						__( "Le capital de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						'orga_capital'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_address_number = $this->getInputText( 'org_address_number' );
+				$orga_address_number_comp = $this->getInputText( 'org_address_number_comp' );
+				$orga_address = $this->getInputText( 'org_address' );
+				if ( empty( $orga_address ) ) {
+					$error = array(
+						'orga_address',
+						__( "L'adresse de l'organisation ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+						'orga_address'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_postal_code = $this->getInputText( 'org_postal_code' );
+				if ( empty( $orga_postal_code ) ) {
+					$error = array(
+						'orga_postal_code',
+						__( "Le code postal de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						'orga_postal_code'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_city = $this->getInputText( 'org_city' );
+				if ( empty( $orga_city ) ) {
+					$error = array(
+						'orga_city',
+						__( "La ville de l'organisation ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+						'orga_city'
+					);
+					array_push( $feedback_errors, $error );
+				}
+				$orga_nationality = $this->getInputText( 'org_nationality' );
+				if ( empty( $orga_nationality ) ) {
+					$error = array(
+						'orga_nationality',
+						__( "La nationalit&eacute; de l'organisation ne peut pas &ecirc;tre ind&eacute;finie", 'yproject' ),
+						'orga_nationality'
+					);
+					array_push( $feedback_errors, $error );
+				}
+			}
 			
-//			$file_check_picture = $this->getI( 'picture-check' );
-//			$file_check_picture = $this->getI( 'picture-contract' );
+			$file_picture_check = $this->getInputFile( 'picture-check' );
+			if ( empty( $file_picture_check ) ) {
+				$error = array(
+					'picture-check',
+					__( "La photo du cheque n'a pas &eacute;t&eacute; envoy&eacute;e", 'yproject' ),
+					'picture-check'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			$file_picture_contract = $this->getInputFile( 'picture-contract' );
+			if ( empty( $file_picture_contract ) ) {
+				$error = array(
+					'picture-contract',
+					__( "Les fichiers du contrat n'ont pas &eacute;t&eacute; envoy&eacute;s", 'yproject' ),
+					'picture-contract'
+				);
+				array_push( $feedback_errors, $error );
+			}
 		}
 		
 		
