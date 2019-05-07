@@ -2690,6 +2690,10 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function investment_drafts() {
+		return $this->api_data->investment_drafts;
+	}
+	
 	/**
 	 * Ajoute un investissement dans la liste des investissements
 	 * @param string $type

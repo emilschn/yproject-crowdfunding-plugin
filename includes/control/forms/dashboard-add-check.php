@@ -351,7 +351,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 	public function postFormAjax() {
 		parent::postForm();
 		
-		$feedback_success = array();
+		$data_to_save = array();
 		$feedback_errors = array();
 		
 		if ( empty( $this->campaign_id ) ) {
@@ -372,6 +372,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 		} else {
 			// Informations de base
 			$email = $this->getInputText( 'user-email' );
+			$data_to_save[ 'email' ] = $email;
 			if ( !is_email( $email ) ) {
 				$error = array(
 					'email',
@@ -382,6 +383,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			}
 			
 			$invest_amount = $this->getInputTextMoney( 'invest-amount' );
+			$data_to_save[ 'invest_amount' ] = $invest_amount;
 			if ( $invest_amount < 10 ) {
 				$error = array(
 					'invest-amount',
@@ -417,6 +419,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			}
 			
 			$gender = $this->getInputText( 'gender' );
+			$data_to_save[ 'gender' ] = $gender;
 			if ( empty( $gender ) ) {
 				$error = array(
 					'gender',
@@ -426,6 +429,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$firstname = $this->getInputText( 'firstname' );
+			$data_to_save[ 'firstname' ] = $firstname;
 			if ( empty( $firstname ) ) {
 				$error = array(
 					'firstname',
@@ -435,6 +439,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$lastname = $this->getInputText( 'lastname' );
+			$data_to_save[ 'lastname' ] = $lastname;
 			if ( empty( $lastname ) ) {
 				$error = array(
 					'lastname',
@@ -444,6 +449,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$birthday = $this->getInputText( 'birthday' );
+			$data_to_save[ 'birthday' ] = $birthday;
 			if ( empty( $birthday ) ) {
 				$error = array(
 					'birthday',
@@ -453,15 +459,39 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$birthplace = $this->getInputText( 'birthplace' );
+			$data_to_save[ 'birthplace' ] = $birthplace;
 			if ( empty( $birthplace ) ) {
 				$error = array(
-					'birthday',
-					__( "Le lieu de naissance de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
-					'birthday'
+					'birthplace',
+					__( "La ville de naissance de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'birthplace'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			$birthplace_district = $this->getInputText( 'birthplace_district' );
+			$data_to_save[ 'birthplace_district' ] = $birthplace_district;
+			$birthplace_department = $this->getInputText( 'birthplace_department' );
+			$data_to_save[ 'birthplace_department' ] = $birthplace_department;
+			if ( empty( $birthplace_department ) ) {
+				$error = array(
+					'birthplace_department',
+					__( "Le d&eacute;partement de naissance de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'birthplace_department'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			$birthplace_country = $this->getInputText( 'birthplace_country' );
+			$data_to_save[ 'birthplace_country' ] = $birthplace_country;
+			if ( empty( $birthplace_country ) ) {
+				$error = array(
+					'birthplace_country',
+					__( "Le pays de naissance de l'investisseur ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+					'birthplace_country'
 				);
 				array_push( $feedback_errors, $error );
 			}
 			$nationality = $this->getInputText( 'nationality' );
+			$data_to_save[ 'nationality' ] = $nationality;
 			if ( empty( $nationality ) ) {
 				$error = array(
 					'nationality',
@@ -471,8 +501,11 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$address_number = $this->getInputText( 'address_number' );
+			$data_to_save[ 'address_number' ] = $address_number;
 			$address_number_complement = $this->getInputText( 'address_number_complement' );
+			$data_to_save[ 'address_number_complement' ] = $address_number_complement;
 			$address = $this->getInputText( 'address' );
+			$data_to_save[ 'address' ] = $address;
 			if ( empty( $address ) ) {
 				$error = array(
 					'address',
@@ -482,6 +515,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$postal_code = $this->getInputText( 'postal_code' );
+			$data_to_save[ 'postal_code' ] = $postal_code;
 			if ( empty( $postal_code ) ) {
 				$error = array(
 					'postal_code',
@@ -491,6 +525,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$city = $this->getInputText( 'city' );
+			$data_to_save[ 'city' ] = $city;
 			if ( empty( $city ) ) {
 				$error = array(
 					'city',
@@ -500,6 +535,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			$country = $this->getInputText( 'country' );
+			$data_to_save[ 'country' ] = $country;
 			if ( empty( $country ) ) {
 				$error = array(
 					'country',
@@ -510,9 +546,12 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			}
 			
 			$user_type = $this->getInputText( 'user_type' );
+			$data_to_save[ 'user_type' ] = $user_type;
 			if ( $user_type == 'orga' ) {
 				$orga_id = $this->getInputText( 'orga-id' );
+				$data_to_save[ 'orga_id' ] = $orga_id;
 				$orga_name = $this->getInputText( 'org_name' );
+				$data_to_save[ 'orga_name' ] = $orga_name;
 				if ( empty( $orga_name ) ) {
 					$error = array(
 						'orga_name',
@@ -522,6 +561,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_email = $this->getInputText( 'org_email' );
+				$data_to_save[ 'orga_email' ] = $orga_email;
 				if ( empty( $orga_email ) ) {
 					$error = array(
 						'orga_email',
@@ -531,6 +571,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_website = $this->getInputText( 'org_website' );
+				$data_to_save[ 'orga_website' ] = $orga_website;
 				if ( empty( $orga_website ) ) {
 					$error = array(
 						'orga_website',
@@ -540,6 +581,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_legalform = $this->getInputText( 'org_legalform' );
+				$data_to_save[ 'orga_legalform' ] = $orga_legalform;
 				if ( empty( $orga_legalform ) ) {
 					$error = array(
 						'orga_legalform',
@@ -549,6 +591,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_idnumber = $this->getInputText( 'org_idnumber' );
+				$data_to_save[ 'orga_idnumber' ] = $orga_idnumber;
 				if ( empty( $orga_idnumber ) ) {
 					$error = array(
 						'orga_idnumber',
@@ -558,6 +601,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_rcs = $this->getInputText( 'org_rcs' );
+				$data_to_save[ 'orga_rcs' ] = $orga_rcs;
 				if ( empty( $orga_rcs ) ) {
 					$error = array(
 						'orga_rcs',
@@ -567,6 +611,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_capital = $this->getInputText( 'org_capital' );
+				$data_to_save[ 'orga_capital' ] = $orga_capital;
 				if ( empty( $orga_capital ) ) {
 					$error = array(
 						'orga_capital',
@@ -576,8 +621,11 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_address_number = $this->getInputText( 'org_address_number' );
+				$data_to_save[ 'orga_address_number' ] = $orga_address_number;
 				$orga_address_number_comp = $this->getInputText( 'org_address_number_comp' );
+				$data_to_save[ 'orga_address_number_comp' ] = $orga_address_number_comp;
 				$orga_address = $this->getInputText( 'org_address' );
+				$data_to_save[ 'orga_address' ] = $orga_address;
 				if ( empty( $orga_address ) ) {
 					$error = array(
 						'orga_address',
@@ -587,6 +635,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_postal_code = $this->getInputText( 'org_postal_code' );
+				$data_to_save[ 'orga_postal_code' ] = $orga_postal_code;
 				if ( empty( $orga_postal_code ) ) {
 					$error = array(
 						'orga_postal_code',
@@ -596,6 +645,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_city = $this->getInputText( 'org_city' );
+				$data_to_save[ 'orga_city' ] = $orga_city;
 				if ( empty( $orga_city ) ) {
 					$error = array(
 						'orga_city',
@@ -605,6 +655,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 				$orga_nationality = $this->getInputText( 'org_nationality' );
+				$data_to_save[ 'orga_nationality' ] = $orga_nationality;
 				if ( empty( $orga_nationality ) ) {
 					$error = array(
 						'orga_nationality',
@@ -635,7 +686,29 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			}
 		}
 		
-		
+		$feedback_success = '0';
+		if ( empty( $feedback_errors ) ) {
+			$feedback_success = '1';
+			$investment_draft_item = WDGWPREST_Entity_InvestmentDraft::create( 'draft', $campaign->get_api_id(), $data_to_save );
+			
+			// photo du chèque
+			$file_name = $file_picture_check[ 'name' ];
+			$file_name_exploded = explode( '.', $file_name );
+			$ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
+			$byte_array = file_get_contents( $file_picture_check[ 'tmp_name' ] );
+			$file_picture_check = WDGWPREST_Entity_File::create( $investment_draft_item->id, 'investment-draft', 'picture-check', $ext, base64_encode( $byte_array ) );
+			
+			// photo du contrat
+			$file_name = $file_picture_contract[ 'name' ];
+			$file_name_exploded = explode( '.', $file_name );
+			$ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
+			$byte_array = file_get_contents( $file_picture_contract[ 'tmp_name' ] );
+			$file_picture_contract = WDGWPREST_Entity_File::create( $investment_draft_item->id, 'investment-draft', 'picture-contract', $ext, base64_encode( $byte_array ) );
+			
+			$dashboard_url = home_url( '/tableau-de-bord/?campaign_id=' . $campaign->ID );
+			NotificationsEmails::investment_draft_created_admin( $campaign->get_name(), $dashboard_url );
+		}
+			
 		$buffer = array(
 			'success'	=> $feedback_success,
 			'errors'	=> $feedback_errors
