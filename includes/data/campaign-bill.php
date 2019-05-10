@@ -178,7 +178,7 @@ Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." 
 		$amount_collected_formatted = UIHelpers::format_number( $amount_collected );
 		$platform_commission_amount = $this->campaign->platform_commission_amount( FALSE );
 		$platform_commission_amount_with_tax_formatted = UIHelpers::format_number( $platform_commission_amount * 1.2 );
-		$transfered_amount_formatted = UIHelpers::format_number( $amount_collected - ( $platform_commission_amount * 1.2 ) );
+		$transfered_amount_formatted = UIHelpers::format_number( max( 0, $amount_collected - ( $platform_commission_amount * 1.2 ) ) );
 		$buffer = "Le règlement est effectué par prélèvement sur les fonds collectés par carte bleue et virement sur internet lors du versement sur votre compte :
 Montant collecté sur la plateforme : ".$amount_collected_formatted." €
 Montant de la commission TTC : ".$platform_commission_amount_with_tax_formatted." €
