@@ -74,16 +74,18 @@ class WDGInvestmentSignature {
 	private function init_status_eversign() {
 		$this->status = self::$status_waiting_for_creation;
 		$this->include_eversign();
-		$document_info = WDGEversign::get_document( $this->external_id );
 		
-		if ( !empty( $document_info ) ) {
-			$this->status = self::$status_waiting;
-		
-			if ( $document_info->is_completed ) {
-				$this->status = self::$status_signed;
-				
-			} else if ( $document_info->is_cancelled || $document_info->is_deleted || $document_info->is_expired ) {
-				$this->status = self::$status_refused;
+		if ( !empty( $this->external_id ) ) {
+			$document_info = WDGEversign::get_document( $this->external_id );
+			if ( !empty( $document_info ) ) {
+				$this->status = self::$status_waiting;
+
+				if ( $document_info->is_completed ) {
+					$this->status = self::$status_signed;
+
+				} else if ( $document_info->is_cancelled || $document_info->is_deleted || $document_info->is_expired ) {
+					$this->status = self::$status_refused;
+				}
 			}
 		}
 	}
@@ -133,6 +135,9 @@ class WDGInvestmentSignature {
 			$WDGEntity = new WDGOrganization( $investor_id );
 			$user_name = html_entity_decode( $WDGEntity->get_name(), ENT_QUOTES | ENT_HTML401 );
 			$user_email = $WDGEntity->get_email();
+			// Retrouver l'id de l'utilisateur personne physique
+			$linked_user = $WDGEntity->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			$investor_id = $linked_user[ 0 ]->get_wpref();
 		} else {
 			$WDGEntity = new WDGUser( $investor_id );
 			$user_name = html_entity_decode( $WDGEntity->get_firstname(). ' ' .$WDGEntity->get_lastname(), ENT_QUOTES | ENT_HTML401 );

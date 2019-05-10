@@ -29,6 +29,10 @@ class WDGCampaignBill {
 			'quickbooks_id' => 12,
 			'label' => 'WE FUND (Financement)'
 		),
+		'private' => array(
+			'quickbooks_id' => 21,
+			'label' => 'RESEAU PRIVE (Levée de fonds privée)'
+		),
 		'lovemoney' => array(
 			'quickbooks_id' => 5,
 			'label' => 'LOVE-MONEY (Levée de fonds privée)'
@@ -127,8 +131,11 @@ class WDGCampaignBill {
 	private function get_line_type_by_platform_commission() {
 		$buffer = FALSE;
 		switch ( $this->campaign->platform_commission() ) {
-			case '4.8':
+			case '2.4':
 				$buffer = 'lovemoney';
+				break;
+			case '4.8':
+				$buffer = 'private';
 				break;
 			case '9.6':
 				$buffer = 'crowdfunding';
@@ -154,7 +161,7 @@ class WDGCampaignBill {
 		$platform_commission = UIHelpers::format_number( $this->campaign->platform_commission( FALSE ) );
 		$platform_commission_amount = UIHelpers::format_number( $this->campaign->platform_commission_amount( FALSE ) );
 		
-		if ( $this->campaign->platform_commission() == '4.8' ) {
+		if ( $this->campaign->platform_commission() == '2.4' || $this->campaign->platform_commission() == '4.8' ) {
 			$buffer = "Levée de fonds privée.
 Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
 		} else {
@@ -171,7 +178,7 @@ Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." 
 		$amount_collected_formatted = UIHelpers::format_number( $amount_collected );
 		$platform_commission_amount = $this->campaign->platform_commission_amount( FALSE );
 		$platform_commission_amount_with_tax_formatted = UIHelpers::format_number( $platform_commission_amount * 1.2 );
-		$transfered_amount_formatted = UIHelpers::format_number( $amount_collected - ( $platform_commission_amount * 1.2 ) );
+		$transfered_amount_formatted = UIHelpers::format_number( max( 0, $amount_collected - ( $platform_commission_amount * 1.2 ) ) );
 		$buffer = "Le règlement est effectué par prélèvement sur les fonds collectés par carte bleue et virement sur internet lors du versement sur votre compte :
 Montant collecté sur la plateforme : ".$amount_collected_formatted." €
 Montant de la commission TTC : ".$platform_commission_amount_with_tax_formatted." €

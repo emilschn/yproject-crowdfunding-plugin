@@ -27,6 +27,10 @@ class WDGFormProjects {
 		$current_user = wp_get_current_user();
 		
 		$post_title = filter_input( INPUT_POST, 'posttitle' );
+		if ( empty( $post_title ) ) {
+			$date = new DateTime();
+			$post_title = 'Actualité du ' . $date->format( 'd/m/Y' );
+		}
 		$post_content = filter_input( INPUT_POST, 'postcontent' );
 		$page_projects = get_page_by_path( 'les-projets' );
 		$post_name = $campaign->data->post_name . '-' . sanitize_title( $post_title );
