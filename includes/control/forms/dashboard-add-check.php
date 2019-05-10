@@ -214,7 +214,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 		// Sélection de l'organisation : $field_group_orga_select
 		$this->addField(
 			'select',
-			'orga-id',
+			'orga_id',
 			__( "Au nom de", 'yproject' ),
 			self::$field_group_orga_select,
 			$_SESSION[ 'orga_id' ],
@@ -548,7 +548,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			$user_type = $this->getInputText( 'user_type' );
 			$data_to_save[ 'user_type' ] = $user_type;
 			if ( $user_type == 'orga' ) {
-				$orga_id = $this->getInputText( 'orga-id' );
+				$orga_id = $this->getInputText( 'orga_id' );
 				$data_to_save[ 'orga_id' ] = $orga_id;
 				$orga_name = $this->getInputText( 'org_name' );
 				$data_to_save[ 'orga_name' ] = $orga_name;
