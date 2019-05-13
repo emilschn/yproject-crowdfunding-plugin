@@ -40,8 +40,8 @@ class WDGEmails {
 					NotificationsAPI::confirm_investment_invest100_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					break;
 				case 'investment-2days':
-					NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $nb_remaining_days, $date_hour_end, $project_api_id );
-					NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $nb_remaining_days, $date_hour_end, $project_api_id );
+					NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					break;
 			}
 			return;
@@ -179,9 +179,9 @@ class WDGEmails {
 					
 				case 'investment-2days':
 					if ( $intention_amount > 0 ) {
-						NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $nb_remaining_days, $date_hour_end, $project_api_id );
+						NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					} else {
-						NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $nb_remaining_days, $date_hour_end, $project_api_id );
+						NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					}
 					break;
 			}

@@ -666,7 +666,7 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
-	public static function confirm_investment_invest2days_no_intention( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+	public static function confirm_investment_invest2days_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
 		$id_template = '582';
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -675,7 +675,6 @@ class NotificationsAPI {
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
-			'POURCENT'					=> $project_percent,
 			'TEMOIGNAGES'				=> $testimony,
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description,
