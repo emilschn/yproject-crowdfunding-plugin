@@ -26,6 +26,8 @@ class NotificationsAPI {
 		'622' => "Relance - Investissement 100 % - Avec intention",
 		'623' => "Relance - Investissement 100 % - Sans intention",
 		'651' => "Relance - Investissement 100 % - Suit le projet",
+		'581' => "Relance - Investissement J-2 - Avec intention",
+		'582' => "Relance - Investissement J-2 - Sans intention",
 		'632' => "Evaluation avec intention - Demande d'authentification",
 		'628' => "Evaluation avec intention - Demande de pré-investissement",
 		'603' => "Investissement - Demande d'authentification",
@@ -612,6 +614,60 @@ class NotificationsAPI {
 	
 	public static function confirm_investment_invest100_follow( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
 		$id_template = '651';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // RELANCE - INVESTISSEMENT - J-2
+    //*******************************************************
+	public static function confirm_investment_invest2days_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '581';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest2days_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '582';
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(

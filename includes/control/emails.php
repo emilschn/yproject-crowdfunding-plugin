@@ -39,6 +39,10 @@ class WDGEmails {
 					NotificationsAPI::confirm_investment_invest100_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					NotificationsAPI::confirm_investment_invest100_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					break;
+				case 'investment-2days':
+					NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					break;
 			}
 			return;
 		}
@@ -77,7 +81,7 @@ class WDGEmails {
 			}
 		}
 
-		// Si le mail est celui de pré-lancement, ou d'investissement à 30%
+		// Si le mail est celui de pré-lancement, ou d'investissement à 30% et 100%
 		if ( $mail_type == 'prelaunch' || $mail_type == 'investment-30' || $mail_type == 'investment-100' ) {
 			// On reprend les followers qui n'ont pas évalué et qui n'ont pas fait d'action d'investissement
 			foreach ( $list_user_followers as $db_item_follower_user_id ) {
@@ -170,6 +174,14 @@ class WDGEmails {
 					} elseif ( $intention_amount == 0 ) {
 						NotificationsAPI::confirm_investment_invest100_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					
+					}
+					break;
+					
+				case 'investment-2days':
+					if ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					} else {
+						NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					}
 					break;
 			}
