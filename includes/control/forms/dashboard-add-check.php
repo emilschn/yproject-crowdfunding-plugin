@@ -342,7 +342,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 		$this->addField(
 			'file',
 			'picture-contract',
-			__( "Photos du contrat *", 'yproject' ),
+			__( "Photos du contrat (toutes les pages paraph&eacute;es et la derni&egrave;re sign&eacute;e) *", 'yproject' ),
 			self::$field_group_invest_files
 		);
 		
