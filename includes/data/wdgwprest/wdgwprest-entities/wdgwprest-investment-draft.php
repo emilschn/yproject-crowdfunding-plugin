@@ -43,4 +43,14 @@ class WDGWPREST_Entity_InvestmentDraft {
 		
 		return $buffer;
 	}
+	
+	public static function edit( $investment_draft_id, $status ) {
+		if ( !empty( $investment_draft_id ) ) {
+			$parameters = array(
+				'status'	=> $status
+			);
+			return WDGWPRESTLib::call_post_wdg( 'investment-draft/' .$investment_draft_id, $parameters );
+		}
+	}
+	
 }

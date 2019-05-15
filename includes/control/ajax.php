@@ -50,6 +50,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('preview_mail_message');
 		WDGAjaxActions::add_action('search_user_by_email');
 		WDGAjaxActions::add_action('apply_draft_data');
+		WDGAjaxActions::add_action('create_investment_from_draft');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action('conclude_project');
 		WDGAjaxActions::add_action('try_lock_project_edition');
@@ -2791,6 +2792,98 @@ class WDGAjaxActions {
 		}
 		
 		_e( "Sauvegard&eacute;" );
+		exit();
+	}
+	
+	public static function create_investment_from_draft() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$draft_id = filter_input( INPUT_POST, 'draft_id' );
+		
+		// Création éventuelle des investisseurs / organisations
+		$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $draft_id );
+		$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
+		
+		$user_existing_by_email = get_user_by( 'email', $investments_drafts_item_data->email );
+		$id_linked_user = FALSE;
+		if ( !empty( $user_existing_by_email ) ) {
+			$id_linked_user = $user_existing_by_email->ID;
+		}
+		$id_linked_organization = FALSE;
+		if ( $investments_drafts_item_data->user_type == 'orga' && $investments_drafts_item_data->orga_id != 'new-orga' ) {
+			$id_linked_organization = $investments_drafts_item_data->orga_id;
+		}
+		
+		// Création compte investisseur si non-existant
+		if ( empty( $id_linked_user ) ) {
+			$new_password = wp_generate_password( 8, FALSE );
+			$new_display_name = $investments_drafts_item_data->firstname. ' ' .substr( $investments_drafts_item_data->lastname, 0, 1 ). '.';
+			$id_linked_user = wp_insert_user( array(
+				'user_login'	=> $investments_drafts_item_data->email,
+				'user_pass'		=> $new_password,
+				'user_email'	=> $investments_drafts_item_data->email,
+				'first_name'	=> $investments_drafts_item_data->firstname,
+				'last_name'		=> $investments_drafts_item_data->lastname,
+				'display_name'	=> $new_display_name,
+				'user_nicename' => sanitize_title( $new_display_name )
+			) );
+			$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
+			$birthday_date_day = $birthday_date->format( 'd' );
+			$birthday_date_month = $birthday_date->format( 'm' );
+			$birthday_date_year = $birthday_date->format( 'Y' );
+			$WDGUser_new = new WDGUser( $id_linked_user );
+			$WDGUser_new->save_data(
+				FALSE, $investments_drafts_item_data->gender, $investments_drafts_item_data->firstname, $investments_drafts_item_data->lastname, FALSE,
+				$birthday_date_day, $birthday_date_month, $birthday_date_year,
+				$investments_drafts_item_data->birthplace, $investments_drafts_item_data->birthplace_district, $investments_drafts_item_data->birthplace_department, $investments_drafts_item_data->birthplace_country, $investments_drafts_item_data->nationality,
+				$investments_drafts_item_data->address_number, $investments_drafts_item_data->address_number_complement, $investments_drafts_item_data->address, $investments_drafts_item_data->postal_code, $investments_drafts_item_data->city, $investments_drafts_item_data->country,
+				FALSE, FALSE, FALSE, FALSE
+			);
+			
+			// Notification de création de compte
+			NotificationsEmails::investment_draft_validated_new_user( $investments_drafts_item_data->email, $investments_drafts_item_data->firstname, $new_password, $campaign->get_name() );
+		}
+		
+		// Création compte organisation si non-existant
+		if ( $investments_drafts_item_data->user_type == 'orga' && empty( $id_linked_organization ) ) {
+			$WDGOrganization = WDGOrganization::createSimpleOrganization( $id_linked_user, $investments_drafts_item_data->orga_name, $investments_drafts_item_data->orga_email );
+			$WDGOrganization->set_name( $investments_drafts_item_data->orga_name );
+			$WDGOrganization->set_email( $investments_drafts_item_data->orga_email );
+			$WDGOrganization->set_website( $investments_drafts_item_data->orga_website );
+			$WDGOrganization->set_legalform( $investments_drafts_item_data->orga_legalform );
+			$WDGOrganization->set_idnumber( $investments_drafts_item_data->orga_idnumber );
+			$WDGOrganization->set_rcs( $investments_drafts_item_data->orga_rcs );
+			$WDGOrganization->set_capital( $investments_drafts_item_data->orga_capital );
+			$WDGOrganization->set_address_number( $investments_drafts_item_data->orga_address_number );
+			$WDGOrganization->set_address_number_comp( $investments_drafts_item_data->orga_address_number_comp );
+			$WDGOrganization->set_address( $investments_drafts_item_data->orga_address );
+			$WDGOrganization->set_postal_code( $investments_drafts_item_data->orga_postal_code );
+			$WDGOrganization->set_city( $investments_drafts_item_data->orga_city );
+			$WDGOrganization->set_nationality( $investments_drafts_item_data->orga_nationality );
+			$WDGOrganization->save();
+			$id_linked_organization = $WDGOrganization->get_wpref();
+		}
+		
+		// Enregistrement investissement
+		$investment_id = $campaign->add_investment(
+			'check', $investments_drafts_item_data->email, $investments_drafts_item_data->invest_amount, 'publish',
+			'', '', 
+			'', '', '', 
+			'', '', '', '', '', 
+			'', '', '', '', '', 
+			$investments_drafts_item_data->orga_email
+		);
+		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
+			
+		// Notifications de validation d'investissement
+		NotificationsEmails::new_purchase_user_success_check( $investment_id );
+		NotificationsEmails::new_purchase_team_members( $investment_id );
+		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
+		
+		// Valider le draft
+		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
+		
+		echo 'ok';
 		exit();
 	}
 	
