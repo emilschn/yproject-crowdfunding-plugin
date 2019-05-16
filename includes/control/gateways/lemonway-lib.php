@@ -164,16 +164,17 @@ class LemonwayLib {
 	}
 	
 	public static function check_phone_number( $phone_number ) {
+		// Si ça commence par un "+" on peut estimer que la personne a déjà fait attention, donc on ne formattera pas au style français
+		$skip_french_format = false;
+		if ( substr( $phone_number, 0, 1 ) == '+' ) {
+			$skip_french_format = true;
+		}
 		$buffer = str_replace( array(' ', '.', '-', '+'), '', $phone_number);
-		if ( !empty( $buffer ) ) {
+		if ( !empty( $buffer ) && !$skip_french_format ) {
 			$buffer = substr( $buffer, -9 );
 			$buffer = '33' . $buffer;
 		}
 		return $buffer;
-	}
-	
-	public static function get_country_code( $country ) {
-		
 	}
 	
 	public static function make_token($invest_id = '', $roi_id = '') {
