@@ -106,7 +106,7 @@ class WDG_Form_Vote extends WDG_Form {
 			FALSE,
 			[
 				__( "Je n'y crois pas", 'yproject' ),
-				__( "Je ne suis pas convaincu", 'yproject' ),
+				__( "Je ne suis pas convaincu(e)", 'yproject' ),
 				__( "Je ne sais pas", 'yproject' ),
 				__( "Je pense qu'il a du potentiel", 'yproject' ),
 				__( "J'y crois !", 'yproject' )
@@ -126,7 +126,7 @@ class WDG_Form_Vote extends WDG_Form {
 				__( "Tr&egrave;s faible", 'yproject' ),
 				__( "Faible", 'yproject' ),
 				__( "Mod&eacute;r&eacute;", 'yproject' ),
-				__( "Elev&eacute;", 'yproject' ),
+				__( "&Eacute;lev&eacute;", 'yproject' ),
 				__( "Tr&egrave;s &eacute;lev&eacute;", 'yproject' )
 			]
 		);
@@ -222,7 +222,7 @@ class WDG_Form_Vote extends WDG_Form {
 		} else if ( $WDGUser_current->has_voted_on_campaign( $campaign_id ) ) {
 			$error = array(
 				'code'		=> 'already-voted',
-				'text'		=> __( "Vous avez d&eacute;j&agrave; vot&eacute;.", 'yproject' ),
+				'text'		=> __( "Vous avez d&eacute;j&agrave; &eacute;valu&eacute;.", 'yproject' ),
 				'element'	=> 'general'
 			);
 			array_push( $feedback_errors, $error );
@@ -236,7 +236,7 @@ class WDG_Form_Vote extends WDG_Form {
 				$feedback_slide = 1;
 				$error = array(
 					'code'		=> 'rate-project',
-					'text'		=> __( "Vous n'avez pas exprim&eacute; votre vote.", 'yproject' ),
+					'text'		=> __( "Vous n'avez pas exprim&eacute; votre note.", 'yproject' ),
 					'element'	=> 'rate-project'
 				);
 				array_push( $feedback_errors, $error );

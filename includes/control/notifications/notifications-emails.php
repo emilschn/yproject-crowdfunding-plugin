@@ -486,7 +486,7 @@ class NotificationsEmails {
 		
 		$body_content = "Bonjour,<br><br>";
 		$body_content .= "Suite à la phase d'&eacute;valuation, des modifications ont été apportées sur les conditions d'investissement pour le projet ".$campaign->data->post_title.".";
-		$body_content .= "Le pré-investissemnt que vous avez effectué doit donc être à nouveau validé.<br>";
+		$body_content .= "Le pré-investissement que vous avez effectué doit donc être à nouveau validé.<br>";
 		$body_content .= "Merci de vous rendre sur la plateforme pour vous identifier et suivre le processus de validation qui sera affiché.<br><br>";
 		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
@@ -643,7 +643,7 @@ class NotificationsEmails {
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Envoi de fichier d'ajustement";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le projet " .$campaign->data->post_title. " a envoyé un document d'ajustement pour une déclaration de royalties à venir.<br>";
@@ -656,7 +656,7 @@ class NotificationsEmails {
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA à zero";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le projet " .$campaign->data->post_title. " a fait sa déclaration de CA, mais a déclaré 0. :'(<br /><br />";
@@ -669,7 +669,7 @@ class NotificationsEmails {
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA effectuée";
 		$body_content = "Hello !<br><br>";
 		$body_content .= "Le projet " .$campaign->data->post_title. " a fait sa déclaration de CA ! :)<br><br>";
@@ -695,7 +695,7 @@ class NotificationsEmails {
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI effectué";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € a été effectué.<br /><br />";
@@ -708,7 +708,7 @@ class NotificationsEmails {
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Paiement par virement déclaré";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € est en attente de virement.<br /><br />";
@@ -721,7 +721,7 @@ class NotificationsEmails {
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Projet " . $campaign->data->post_title . " - Problème de paiement de ROI";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->get_amount_with_commission()." €).<br /><br />";
@@ -742,7 +742,7 @@ class NotificationsEmails {
 		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
 		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
 		
-		$admin_email = get_option( 'admin_email' );
+		$admin_email = 'administratif@wedogood.co';
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
 	
@@ -759,7 +759,7 @@ class NotificationsEmails {
 		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
 		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
 		
-		$admin_email = get_option( 'admin_email' );
+		$admin_email = 'administratif@wedogood.co';
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
     //*******************************************************

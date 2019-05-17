@@ -261,7 +261,13 @@ class WDG_PDF_Generator {
 		$buffer_in_words = $nbwd_class->toWords( $roi_percent_estimated, 'fr' );
 		if ( !is_int( $roi_percent_estimated ) ) {
 			$number_exploded = explode( '.', $roi_percent_estimated );
-			$buffer_in_words .= " VIRGULE " . $nbwd_class->toWords( $number_exploded[ 1 ], 'fr' );
+			$buffer_in_words .= " VIRGULE ";
+			$index_of_zero = 0;
+			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) == '0' ) {
+				$buffer_in_words .= "ZERO ";
+				$index_of_zero++;
+			}
+			$buffer_in_words .= $nbwd_class->toWords( $number_exploded[ 1 ], 'fr' );
 		}
 	
 		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' POURCENTS)';

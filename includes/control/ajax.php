@@ -179,6 +179,7 @@ class WDGAjaxActions {
 		
 		foreach ( $purchases as $purchase_post ){
 			$first_investment_contract = FALSE;
+			$payment_key = FALSE;
 			if ( is_array( $purchase_post ) && isset( $purchase_post[ 'investment_contract' ] ) ) {
 				$first_investment_contract = $purchase_post[ 'investment_contract' ];
 				$purchase_status = 'publish';
@@ -236,16 +237,54 @@ class WDGAjaxActions {
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
 				foreach ( $roi_list as $roi_item ) {
-					$roi_amount += $roi_item->amount;
+					if ( $roi_item->status != WDGROI::$status_canceled ) {
+						$roi_amount += $roi_item->amount;
+					}
 				}
 				
 				$investment_item = array();
 				$investment_item[ 'date' ] = $purchase_date;
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
 				$investment_item[ 'status' ] = utf8_encode( $purchase_status );
-				if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
-					$investment_item[ 'status' ] = 'canceled';
+				$investment_item[ 'status_str' ] = '-';
+				
+				if ( $purchase_status == 'pending' ) {
+					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
+					$payment_key = $WDGInvestment->get_payment_key();
+					if ( strpos( $payment_key, 'wire_' ) !== FALSE || $payment_key == 'check' ) {
+						$investment_item[ 'status_str' ] = __( "En attente de paiement", 'yproject' );
+					} elseif ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+						$investment_item[ 'status_str' ] = __( "A valider", 'yproject' );
+					}
+					
+				} elseif ( $purchase_status == 'publish' ) {
+					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+						$investment_item[ 'status_str' ] = __( "Valid&eacute;", 'yproject' );
+						
+					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive ) {
+						$investment_item[ 'status_str' ] = __( "Annul&eacute;", 'yproject' );
+						$date_end = new DateTime( $campaign->end_date() );
+						$date_end->add( new DateInterval( 'P15D' ) );
+						if ( $today_datetime < $date_end ) {
+							$investment_item[ 'status_str' ] = __( "En suspend", 'yproject' );
+						}
+						
+					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+						$investment_item[ 'status_str' ] = __( "Versements &agrave; venir", 'yproject' );
+						$date_first_payement = new DateTime( $campaign->first_payment_date() );
+						if ( $today_datetime > $date_first_payement ) {
+							$investment_item[ 'status_str' ] = __( "Versements en cours", 'yproject' );
+						}
+					
+						if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
+							$investment_item[ 'status' ] = 'canceled';
+							$investment_item[ 'status_str' ] = __( "Versements termin&eacute;s", 'yproject' );
+						}
+					}
 				}
+				
+				
+				
 				$investment_item[ 'conclude-investment-url' ] = '';
 				if ( $purchase_status == 'pending' && $is_authentified ) {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
@@ -379,7 +418,7 @@ class WDGAjaxActions {
 							// Si il y a eu un versement de royalties, on récupère les infos du versement
 							if ( $roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
 								foreach ( $roi_list as $roi ) {
-									if ( $roi->id_declaration == $roi_declaration->id ) {
+									if ( $roi->id_declaration == $roi_declaration->id && $roi->status != WDGROI::$status_canceled ) {
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
@@ -420,6 +459,16 @@ class WDGAjaxActions {
 		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
 			$declaration = new WDGROIDeclaration($declaration_id);
 		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+			
+			// Si il n'y a pas assez sur le wallet, on bloque
+			$roi_amount = $declaration->get_amount_with_adjustment();
+			$organization = $campaign->get_organization();
+			$WDGOrganization = new WDGOrganization( $organization->wpref );
+			if ( $WDGOrganization->get_lemonway_balance( 'royalties' ) < $roi_amount ) {
+				echo '0';
+				exit();
+			}
+			
 		    $total_amount = 0;
 		    $total_roi = 0;
 		    $total_fees = 0;
@@ -783,12 +832,26 @@ class WDGAjaxActions {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
+		
+		$new_enable_advice_notifications = sanitize_text_field( filter_input( INPUT_POST, 'new_enable_advice_notifications' ) );
+		$queued_action_id = $campaign->has_planned_advice_notification();
+        if ( $new_enable_advice_notifications === true || $new_enable_advice_notifications === "true" || $new_enable_advice_notifications === 1 ) {
+			if ( $queued_action_id == FALSE ) {
+				WDGQueue::add_campaign_advice_notification( $campaign->ID );
+			}
+		} else {
+			if ( $queued_action_id != FALSE ) {
+				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, WDGQueue::$status_complete );
+			}
+		}
+		
 		$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
         if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone, '1' );
 		} else {
 			delete_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone );
 		}
+		
 		$new_hide_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_hide_investors' ) );
         if ( $new_hide_investors === true || $new_hide_investors === "true" || $new_hide_investors === 1 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors, '1' );
@@ -799,6 +862,12 @@ class WDGAjaxActions {
 		if ( !empty( $new_archive_message ) ) {
 			$campaign->__set( ATCF_Campaign::$key_archive_message, $new_archive_message );
 			$success[ "new_archive_message" ] = 1;
+		}
+		$new_can_invest_until_contract_start_date = sanitize_text_field( filter_input( INPUT_POST, 'new_can_invest_until_contract_start_date' ) );
+        if ( $new_can_invest_until_contract_start_date === true || $new_can_invest_until_contract_start_date === "true" || $new_can_invest_until_contract_start_date === 1 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date, '1' );
+		} else {
+			delete_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date );
 		}
 		$new_end_vote_pending_message = sanitize_text_field( filter_input( INPUT_POST, 'new_end_vote_pending_message' ) );
 		if ( !empty( $new_end_vote_pending_message ) ) {

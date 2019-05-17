@@ -68,22 +68,22 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$field_id_params
 		);
 		
-		$current_filelist_home = WDGKYCFile::get_list_by_owner_id( $this->user_id, ( $this->is_orga ) ? WDGKYCFile::$owner_organization : WDGKYCFile::$owner_user, WDGKYCFile::$type_home );
-		$current_file_home = $current_filelist_home[0];
-		$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
-		$home_label = ( $this->is_orga ) ? __( "Justificatif de domicile du g&eacute;rant ou du pr&eacute;sident *", 'yproject' ) : __( "Justificatif de domicile *", 'yproject' );
-		$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
-		$this->addField(
-			'file',
-			'home' .$suffix,
-			$home_label,
-			WDG_Form_User_Identity_Docs::$field_group_files,
-			$home_file_path,
-			__( "Datant de moins de 3 mois, provenant d'un fournisseur d'&eacute;nergie (&eacute;lectricit&eacute;, gaz, eau) ou d'un bailleur, ou un relev&eacute; d'imp&ocirc;t datant de moins de 3 mois.", 'yproject' ),
-			$field_home_params
-		);
-		
 		if ( $this->is_orga ) {
+		
+			$current_filelist_home = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_home );
+			$current_file_home = $current_filelist_home[0];
+			$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
+			$home_label = __( "Justificatif de domicile du g&eacute;rant ou du pr&eacute;sident *", 'yproject' );
+			$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
+			$this->addField(
+				'file',
+				'home' .$suffix,
+				$home_label,
+				WDG_Form_User_Identity_Docs::$field_group_files,
+				$home_file_path,
+				__( "Datant de moins de 3 mois, provenant d'un fournisseur d'&eacute;nergie (&eacute;lectricit&eacute;, gaz, eau) ou d'un bailleur, ou un relev&eacute; d'imp&ocirc;t datant de moins de 3 mois.", 'yproject' ),
+				$field_home_params
+			);
 		
 			$current_filelist_kbis = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_kbis );
 			$current_file_kbis = $current_filelist_kbis[0];
@@ -185,20 +185,67 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			
 		} else {
 		
+			$current_filelist_id_back = WDGKYCFile::get_list_by_owner_id( $this->user_id, ( $this->is_orga ) ? WDGKYCFile::$owner_organization : WDGKYCFile::$owner_user, WDGKYCFile::$type_id_back );
+			$current_file_id_back = $current_filelist_id_back[0];
+			$id_back_file_path = ( empty( $current_file_id_back ) ) ? '' : $current_file_id_back->get_public_filepath();
+			$id_back_label = __( "Verso du justificatif d'identit&eacute;", 'yproject' );
+			$field_id_back_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id_back, $current_file_id_back->date_uploaded, TRUE );
+			$this->addField(
+				'file',
+				'identity_back' .$suffix,
+				$id_back_label,
+				WDG_Form_User_Identity_Docs::$field_group_files,
+				$id_back_file_path,
+				__( "Ce fichier n'est utile que si le verso ne figure pas dans le fichier pr&eacute;c&eacute;dent.", 'yproject' ),
+				$field_id_back_params
+			);
+		
 			$current_filelist_id2 = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_user, WDGKYCFile::$type_id_2 );
 			$current_file_id2 = $current_filelist_id2[0];
 			$id2_file_path = ( empty( $current_file_id2 ) ) ? '' : $current_file_id2->get_public_filepath();
+			$id2_label = __( "Deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
 			$field_status_id2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id2, $current_file_id2->date_uploaded );
 			$this->addField(
 				'file',
 				'identity2',
-				__( "Deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' ),
+				$id2_label,
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id2_file_path,
-				__( "Ce champ est facultatif, vous pouvez fournir :", 'yproject' ). '<br>'
-					. '- ' . __( "le verso de votre carte d'identit&eacute;, si vous n'avez transmis que le recto en premier document", 'yproject' ). '<br>'
-					. '- ' . __( "un seconde pi&egrave;ce d'identit&eacute; si vous n'avez pas de justificatif de domicile &agrave; votre nom (passeport, permis de conduire) ou que votre compte bancaire est tenu par une banque en ligne (ex : Compte Nickel)", 'yproject' ),
+				__( "Ce fichier est obligatoire si votre compte bancaire est domicili&eacute; chez une banque en ligne (ex : Compte Nickel, Boursorama, ...).", 'yproject' ). '<br>'
+					. __( "Sinon, ce fichier peut &ecirc;tre remplac&eacute; par un justificatif de domicile.", 'yproject' ). '<br>'
+					. __( "Il est possible de fournir un passeport ou un permis de conduire.", 'yproject' ),
 				$field_status_id2
+			);
+		
+			$current_filelist_id2_back = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_user, WDGKYCFile::$type_id_2_back );
+			$current_file_id2_back = $current_filelist_id2_back[0];
+			$id2_back_file_path = ( empty( $current_file_id2_back ) ) ? '' : $current_file_id2_back->get_public_filepath();
+			$id2_back_label = __( "Verso du deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+			$field_status_id2_back = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis_back, $current_file_id2_back->date_uploaded, TRUE );
+			$this->addField(
+				'file',
+				'identity2_back',
+				$id2_back_label,
+				WDG_Form_User_Identity_Docs::$field_group_files,
+				$id2_back_file_path,
+				__( "Ce fichier n'est utile que si le verso ne figure pas dans le fichier pr&eacute;c&eacute;dent.", 'yproject' ),
+				$field_status_id2_back
+			);
+		
+			$current_filelist_home = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_user, WDGKYCFile::$type_home );
+			$current_file_home = $current_filelist_home[0];
+			$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
+			$home_label = __( "Justificatif de domicile", 'yproject' );
+			$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
+			$this->addField(
+				'file',
+				'home' .$suffix,
+				$home_label,
+				WDG_Form_User_Identity_Docs::$field_group_files,
+				$home_file_path,
+				__( "Ce champ est facultatif. Il est utile si vous n'avez pas de deuxi&egrave;me pi&egrave;ce d'identit&eacute;.", 'yproject' ). '<br>'
+					. __( "Il doit dater de moins de 3 mois, et provenir d'un fournisseur d'&eacute;nergie (&eacute;lectricit&eacute;, gaz, eau) ou d'un bailleur, ou &ecirc;tre un relev&eacute; d'imp&ocirc;t.", 'yproject' ),
+				$field_home_params
 			);
 		}
 		
@@ -240,7 +287,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					}
 				}
 				if ( isset( $_FILES[ 'home' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_home, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'home' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_home, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'home' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_home, $WDGFile->get_byte_array() );
@@ -248,7 +295,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					}
 				}
 				if ( isset( $_FILES[ 'status' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'status' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_status, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'status' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_status, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'status' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_status, $WDGFile->get_byte_array() );
@@ -256,7 +303,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					}
 				}
 				if ( isset( $_FILES[ 'kbis' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'kbis' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_kbis, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'kbis' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_kbis, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'kbis' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_kbis, $WDGFile->get_byte_array() );
@@ -264,33 +311,33 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					}
 				}
 				if ( isset( $_FILES[ 'capital_allocation' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'capital_allocation' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_id_2, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'capital_allocation' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id_2, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'capital_allocation' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_capital_allocation, $WDGFile->get_byte_array() );
 				}
 				if ( isset( $_FILES[ 'identity2' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity2' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_id_2, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'identity2' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id_2, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'identity2' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_id2, $WDGFile->get_byte_array() );
 					}
 				}
 				if ( isset( $_FILES[ 'home2' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home2' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_home_2, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'home2' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_home_2, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'home2' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_home2, $WDGFile->get_byte_array() );
 					}
 				}
 				if ( isset( $_FILES[ 'identity3' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity3' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_id_3, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'identity3' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id_3, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'identity3' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_id3, $WDGFile->get_byte_array() );
 					}
 				}
 				if ( isset( $_FILES[ 'home3' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home3' .$file_suffix ][ 'tmp_name' ] ) ) {
-					WDGKYCFile::add_file( WDGKYCFile::$type_home_3, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'home3' .$file_suffix ] );
+					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_home_3, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'home3' .$file_suffix ] );
 					$WDGFile = new WDGKYCFile( $file_id );
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_home3, $WDGFile->get_byte_array() );
@@ -314,16 +361,31 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 						$send_notification_validation = TRUE;
 					}
 				}
-				if ( isset( $_FILES[ 'identity2' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity2' ][ 'tmp_name' ] ) ) {
-					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id_2, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'identity2' ] );
-					$WDGFile = new WDGKYCFile( $file_id );
+				if ( isset( $_FILES[ 'identity_back' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity_back' ][ 'tmp_name' ] ) ) {
+					$file_id_back = WDGKYCFile::add_file( WDGKYCFile::$type_id_back, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'identity_back' ] );
+					$WDGFile = new WDGKYCFile( $file_id_back );
 					if ( $WDGUser->can_register_lemonway() ) {
-						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_passport_euro, $WDGFile->get_byte_array() );
+						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_id_back, $WDGFile->get_byte_array() );
+						$send_notification_validation = TRUE;
+					}
+				}
+				if ( isset( $_FILES[ 'identity2' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity2' ][ 'tmp_name' ] ) ) {
+					$file_id2 = WDGKYCFile::add_file( WDGKYCFile::$type_id_2, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'identity2' ] );
+					$WDGFile = new WDGKYCFile( $file_id2 );
+					if ( $WDGUser->can_register_lemonway() ) {
+						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_idbis, $WDGFile->get_byte_array() );
+					}
+				}
+				if ( isset( $_FILES[ 'identity2_back' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity2_back' ][ 'tmp_name' ] ) ) {
+					$file_id2_back = WDGKYCFile::add_file( WDGKYCFile::$type_id_2_back, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'identity2_back' ] );
+					$WDGFile = new WDGKYCFile( $file_id2_back );
+					if ( $WDGUser->can_register_lemonway() ) {
+						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_idbis_back, $WDGFile->get_byte_array() );
 					}
 				}
 				if ( isset( $_FILES[ 'home' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home' ][ 'tmp_name' ] ) ) {
-					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_home, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'home' ] );
-					$WDGFile = new WDGKYCFile( $file_id );
+					$file_home = WDGKYCFile::add_file( WDGKYCFile::$type_home, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'home' ] );
+					$WDGFile = new WDGKYCFile( $file_home );
 					if ( $WDGUser->can_register_lemonway() ) {
 						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_home, $WDGFile->get_byte_array() );
 						$send_notification_validation = TRUE;

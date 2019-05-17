@@ -800,6 +800,24 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function has_planned_advice_notification() {
+		return WDGQueue::has_planned_campaign_advice_notification( $this->ID );
+	}
+	
+	public static $key_can_invest_until_contract_start_date = 'can_invest_until_contract_start_date';
+	public function can_invest_until_contract_start_date() {
+		$metadata_value = $this->__get( ATCF_Campaign::$key_can_invest_until_contract_start_date );
+		$buffer = ( $metadata_value == '1' );
+		return $buffer;
+	}
+	
+	public function get_end_date_when_can_invest_until_contract_start_date() {
+		// 15 jours avant la date de début de contrat
+		$datetime_first_payment = new DateTime( $this->contract_start_date() );
+		$datetime_first_payment->sub( new DateInterval( 'P15D' ) );
+		return $datetime_first_payment;
+	}
+	
 	public static $key_archive_message = 'archive_message';
 	public function archive_message() {
 		return $this->__get( ATCF_Campaign::$key_archive_message );
@@ -837,6 +855,9 @@ class ATCF_Campaign {
 			return;
 		}
 		
+		if ( $this->platform_commission() == '' ) {
+			return;
+		}
 		$data_contract_start_date = $this->contract_start_date();
 		if ( !empty( $data_contract_start_date ) ) {
 			$start_datetime = new DateTime( $data_contract_start_date );
@@ -857,23 +878,25 @@ class ATCF_Campaign {
 		$investments_list = $this->payments_data( TRUE );
 		
 		foreach ( $investments_list as $investment_item ) {
-			if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
-				$orga = new WDGOrganization( $investment_item[ 'user' ] );
-				$firstname = $orga->get_name();
-				$lastname = '';
-			} else {
-				if ( !empty( $investment_item['item'] ) ) {
-					$firstname = $investment_item['item']->firstname;
-					$lastname = $investment_item['item']->lastname;
-
+			if ( $investment_item[ 'status' ] == 'publish' ) {
+				if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
+					$orga = new WDGOrganization( $investment_item[ 'user' ] );
+					$firstname = $orga->get_name();
+					$lastname = '';
 				} else {
-					$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
-					$firstname = $WDGUserPayment->get_firstname();
-					$lastname = $WDGUserPayment->get_lastname();
+					if ( !empty( $investment_item['item'] ) ) {
+						$firstname = $investment_item['item']->firstname;
+						$lastname = $investment_item['item']->lastname;
+
+					} else {
+						$WDGUserPayment = new WDGUser( $investment_item[ 'user' ] );
+						$firstname = $WDGUserPayment->get_firstname();
+						$lastname = $WDGUserPayment->get_lastname();
+					}
 				}
+
+				array_push( $project_investors_list, array( "firstname" => $firstname, "lastname" => $lastname, "amount" => $investment_item['amount'] ) );
 			}
-			
-			array_push( $project_investors_list, array( "firstname" => $firstname, "lastname" => $lastname, "amount" => $investment_item['amount'] ) );
 		}
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
@@ -1331,7 +1354,7 @@ class ATCF_Campaign {
 			foreach ( $declaration_list as $declaration_item ) {
 				$date_due = new DateTime( $declaration_item[ 'date_due' ] );
 				$date_interval = $date_now->diff( $date_due );
-				if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_finished && $declaration_item[ 'status' ] != WDGROIDeclaration::$status_failed && ( $date_due < $date_now || $date_interval->format( '%a' ) < 10 ) ) {
+				if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_finished && $declaration_item[ 'status' ] != WDGROIDeclaration::$status_failed && ( $date_due < $date_now || $date_interval->format( '%a' ) < $date_due->format( 'd' ) + 1 ) ) {
 					array_push( $this->current_roi_declarations, $declaration_item[ 'item' ] );
 				}
 			}
@@ -1460,7 +1483,7 @@ class ATCF_Campaign {
 				if ( $buffer != '' ) {
 					$buffer .= ', ';
 				}
-				$buffer .= '<span class="hashtag-environment">' . strtolower( $category->name ) . '</span>';
+				$buffer .= '<span class="hashtag-environment">' . __( htmlentities( strtolower( $category->name ) ), 'yproject' ) . '</span>';
 			}
 		}
 		
@@ -1470,7 +1493,7 @@ class ATCF_Campaign {
 				if ( $buffer != '' ) {
 					$buffer .= ', ';
 				}
-				$buffer .= '<span class="hashtag-social">' . strtolower( $category->name ) . '</span>';
+				$buffer .= '<span class="hashtag-social">' . __( htmlentities( strtolower( $category->name ) ), 'yproject' ) . '</span>';
 			}
 		}
 		
@@ -1480,7 +1503,7 @@ class ATCF_Campaign {
 				if ( $buffer != '' ) {
 					$buffer .= ', ';
 				}
-				$buffer .= '<span class="hashtag-economy">' . strtolower( $category->name ) . '</span>';
+				$buffer .= '<span class="hashtag-economy">' . __( htmlentities( strtolower( $category->name ) ), 'yproject' ) . '</span>';
 			}
 		}
 		
@@ -1825,6 +1848,21 @@ class ATCF_Campaign {
 		}
 		return mysql2date( $format, $end_datetime_str, false );
 	}
+	
+	private static $retraction_days_number = 14;
+	private $has_retraction_passed;
+	public function has_retraction_passed() {
+		if ( !isset( $this->has_retraction_passed ) ) {
+			$this->has_retraction_passed = FALSE;
+			$current_date = new DateTime();
+			$end_date = new DateTime( $this->end_date() );
+			if ( $current_date > $end_date ) {
+				$interval = $current_date->diff( $end_date );
+				$this->has_retraction_passed = ( $interval > self::$retraction_days_number );
+			}
+		}
+		return $this->has_retraction_passed;
+	}
         
         /**
 	 * Campaign Begin Collecte Date
@@ -2114,7 +2152,18 @@ class ATCF_Campaign {
 	}
 	
 	public function is_remaining_time() {
-		return ( $this->time_remaining_str() != '-' );
+		$buffer = TRUE;
+		if ( $this->time_remaining_str() == '-' ) {
+			$can_invest_after = $this->can_invest_until_contract_start_date();
+			if ( !$can_invest_after ) {
+				$buffer = FALSE;
+			} else {
+				$datetime_end = $this->get_end_date_when_can_invest_until_contract_start_date();
+				$datetime_today = new DateTime();
+				$buffer = ( $datetime_today < $datetime_end );
+			}
+		}
+		return $buffer;
 	}
 	
 	/**
@@ -2145,20 +2194,27 @@ class ATCF_Campaign {
 			if ( $now > $expires ) {
 				$buffer = '-';
 				if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+					$update = false;
 					if ( $this->is_funded() ) {
-						$this->set_status( ATCF_Campaign::$campaign_status_funded );
+						if ( !$this->can_invest_until_contract_start_date() ) {
+							$this->set_status( ATCF_Campaign::$campaign_status_funded );
+							$update = true;
+						}
 					} else {
 						$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
 						$this->set_status( ATCF_Campaign::$campaign_status_archive );
+						$update = true;
 					}
-					$this->update_api();
-					do_action('wdg_delete_cache', array(
-						'home-projects',
-						'projectlist-projects-current',
-						'projectlist-projects-funded'
-					));
-					$file_cacher = WDG_File_Cacher::current();
-					$file_cacher->build_campaign_page_cache( $this->ID );
+					if ( $update ) {
+						$this->update_api();
+						do_action('wdg_delete_cache', array(
+							'home-projects',
+							'projectlist-projects-current',
+							'projectlist-projects-funded'
+						));
+						$file_cacher = WDG_File_Cacher::current();
+						$file_cacher->build_campaign_page_cache( $this->ID );
+					}
 				}
 			} else {
 				$diff = $expires - $now;
@@ -2638,6 +2694,10 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function investment_drafts() {
+		return $this->api_data->investment_drafts;
+	}
+	
 	/**
 	 * Ajoute un investissement dans la liste des investissements
 	 * @param string $type
@@ -2807,8 +2867,6 @@ class ATCF_Campaign {
 		// Récupération de la liste des investissements concernés
 		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
 		if ( !empty( $investment_contracts ) ) {
-			$investments_list = array();
-			
 			// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
 			$adjustement_turned_into_turnover = 0;
 			if ( $declaration->get_adjustment_value() != 0 ) {
@@ -2822,6 +2880,8 @@ class ATCF_Campaign {
 				$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
 			}
 			
+			$turnover_to_apply = $adjustement_turned_into_turnover + $declaration->get_turnover_total();
+			
 			// Détermination des montants par contrat
 			foreach ( $investment_contracts as $investment_contract ) {
 				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
@@ -2834,16 +2894,14 @@ class ATCF_Campaign {
 						$investor_id = $WDGOrganization->get_wpref();
 					}
 					$investment_item = array(
-						'contract_id'	=> $investment_contract->get_api_id(),
+						'contract_id'	=> $investment_contract->id,
 						'ID'			=> $investment_contract->subscription_id,
 						'amount'		=> $investment_contract->subscription_amount,
 						'user'			=> $investor_id
 					);
 					
 					// Calcul du montant à récupérer en roi à partir du pourcentage du CA
-					$investor_proportion_amount = floor( $declaration->get_turnover_total() * $investment_contract->turnover_percent ) / 100; //10.50
-					// Ajout du montant de royalties lié à l'ajustement
-					$investor_proportion_amount += round( $adjustement_turned_into_turnover * $investment_contract->turnover_percent ) / 100; //10.50
+					$investor_proportion_amount = floor( $turnover_to_apply * $investment_contract->turnover_percent ) / 100; //10.50
 					// Calcul de la commission sur le roi de l'utilisateur
 					$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
 					// Et arrondi
@@ -3103,12 +3161,19 @@ class ATCF_Campaign {
 	
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
 	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
-	public static function get_list_funding( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client ); }
+	public static function get_list_funding( $nb = 0, $client = '', $random = FALSE, $is_time_remaining = TRUE ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client, $is_time_remaining ); }
 	public static function get_list_funded( $nb = 0, $client = '', $include_current = false, $skip_hidden = true ) {
 		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client, $skip_hidden );
 		if ( $include_current ) {
 			$list_current = ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client );
 			foreach ( $list_current as $campaign_post ) {
+				$campaign = atcf_get_campaign( $campaign_post->ID );
+				if ( $campaign->is_funded() ) {
+					array_push( $buffer, $campaign_post );
+				}
+			}
+			$list_current_notime = ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client, FALSE );
+			foreach ( $list_current_notime as $campaign_post ) {
 				$campaign = atcf_get_campaign( $campaign_post->ID );
 				if ( $campaign->is_funded() ) {
 					array_push( $buffer, $campaign_post );
@@ -3120,14 +3185,15 @@ class ATCF_Campaign {
 	public static function get_list_archive($nb = 0, $client = '') { return ATCF_Campaign::get_list_finished( $nb, ATCF_Campaign::$campaign_status_archive, $client ); }
 	
 	
-	public static function get_list_current( $nb, $type, $order, $client ) {
+	public static function get_list_current( $nb, $type, $order, $client, $is_time_remaining = true ) {
+		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
 			'numberposts' => $nb,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
 				array ( 'key' => 'campaign_vote', 'value' => $type ),
-				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') ),
+				array ( 'key' => 'campaign_end_date', 'compare' => $compare_end_date, 'value' => date('Y-m-d H:i:s') ),
 				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'NOT EXISTS' )
 			)
 		);

@@ -17,7 +17,17 @@ class NotificationsAPI {
 		'575' => "Relance - Evaluation - Sans intention",
 		'576' => "Relance - Pré-lancement - Evaluation avec intention",
 		'577' => "Relance - Pré-lancement - Evaluation sans intention",
-		'578' => "Relance - Pré-lancement - Suivi",
+		'578' => "Relance - Pré-lancement - Suit le projet",
+		'579' => "Relance - Investissement 30 % - Avec intention",
+		'580' => "Relance - Investissement 30 % - Sans intention",
+		'650' => "Relance - Investissement 30 % - Suit le projet",
+		'621' => "Relance - Investissement 100 % - Avec investissement",
+		'652' => "Relance - Investissement 100 % - Avec investissement en attente",
+		'622' => "Relance - Investissement 100 % - Avec intention",
+		'623' => "Relance - Investissement 100 % - Sans intention",
+		'651' => "Relance - Investissement 100 % - Suit le projet",
+		'581' => "Relance - Investissement J-2 - Avec intention",
+		'582' => "Relance - Investissement J-2 - Sans intention",
 		'632' => "Evaluation avec intention - Demande d'authentification",
 		'628' => "Evaluation avec intention - Demande de pré-investissement",
 		'603' => "Investissement - Demande d'authentification",
@@ -141,6 +151,7 @@ class NotificationsAPI {
 	public static function user_registration( $recipient, $name ) {
 		$id_template = '181';
 		$options = array(
+			'skip_admin'			=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -159,15 +170,18 @@ class NotificationsAPI {
     //*******************************************************
     // Conseils quotidiens
     //*******************************************************
-	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $user_name, $greetings, $last_24h, $top_actions ) {
+	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $campaign_dashboard_url, $user_name, $greetings, $last_24h, $top_actions ) {
 		$id_template = '641';
+		$campaign_dashboard_url_clean = str_replace( 'https://', '', $campaign_dashboard_url );
 		$options = array(
+			'personal'					=> 1,
 			'replyto'					=> $replyto_mail,
 			'NOM_PROJET'				=> $campaign_name,
+			'URL_TB'					=> $campaign_dashboard_url_clean,
 			'NOM_UTILISATEUR'			=> $user_name,
 			'SALUTATIONS'				=> $greetings,
 			'RESUME_24H'				=> $last_24h,
-			'ACTIONS_PRIORITAIRES'		=> $top_actions,
+			'ACTIONS_PRIORITAIRES'		=> $top_actions
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -188,6 +202,7 @@ class NotificationsAPI {
 	public static function rib_authentified( $recipient, $name ) {
 		$id_template = '311';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -205,6 +220,7 @@ class NotificationsAPI {
 	public static function kyc_waiting( $recipient, $name ) {
 		$id_template = '322';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -222,6 +238,7 @@ class NotificationsAPI {
 	public static function kyc_refused( $recipient, $name ) {
 		$id_template = '323';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -239,6 +256,7 @@ class NotificationsAPI {
 	public static function kyc_authentified( $recipient, $name ) {
 		$id_template = '324';
 		$options = array(
+			'personal'				=> 1,
 			'PRENOM'				=> $name
 		);
 		$parameters = array(
@@ -256,6 +274,7 @@ class NotificationsAPI {
 	public static function kyc_authentified_and_pending_investment( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '605';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -275,6 +294,7 @@ class NotificationsAPI {
 	public static function kyc_authentified_and_pending_investment_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '606';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -300,6 +320,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $project_name,
@@ -326,6 +347,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
@@ -351,6 +373,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $project_name,
@@ -374,6 +397,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
@@ -396,12 +420,266 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // RELANCE - INVESTISSEMENT - 30%
+    //*******************************************************
+	public static function confirm_investment_invest30_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '579';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'POURCENT'					=> $project_percent,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest30_no_intention( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '580';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'POURCENT'					=> $project_percent,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest30_follow( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '650';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'POURCENT'					=> $project_percent,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // RELANCE - INVESTISSEMENT - 100%
+    //*******************************************************
+	public static function confirm_investment_invest100_invested( $recipient, $name, $project_name, $project_url, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '621';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest100_investment_pending( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+		$id_template = '652';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest100_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '622';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest100_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '623';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest100_follow( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '651';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // RELANCE - INVESTISSEMENT - J-2
+    //*******************************************************
+	public static function confirm_investment_invest2days_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '581';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function confirm_investment_invest2days_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+		$id_template = '582';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$options = array(
+			'personal'					=> 1,
+			'NOM_UTILISATEUR'			=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'URL_PROJET'				=> $project_url,
+			'TEMOIGNAGES'				=> $testimony,
+			'IMAGE'						=> $image_element,
+			'DESCRIPTION_PROJET'		=> $image_description,
+			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'DATE_HEURE_FIN'			=> $date_hour_end
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -422,6 +700,7 @@ class NotificationsAPI {
 	public static function vote_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '632';
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name
 		);
@@ -440,7 +719,9 @@ class NotificationsAPI {
     //*******************************************************
 	public static function vote_authenticated_reminder( $recipient, $name, $project_name, $project_url, $project_api_id, $intention_amount ) {
 		$id_template = '628';
+		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
+			'personal'					=> 1,
 			'NOM_UTILISATEUR'			=> $name,
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
@@ -467,6 +748,7 @@ class NotificationsAPI {
 	public static function investment_error( $recipient, $name, $amount, $project_name, $project_api_id, $lemonway_reason, $investment_link ) {
 		$id_template = '175';
 		$options = array(
+			'personal'				=> 1,
 			'NOM'					=> $name,
 			'MONTANT'				=> $amount,
 			'NOM_PROJET'			=> $project_name,
@@ -489,6 +771,7 @@ class NotificationsAPI {
 	public static function investment_authentication_needed( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '603';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -508,6 +791,7 @@ class NotificationsAPI {
 	public static function investment_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '604';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name
 		);
@@ -588,6 +872,7 @@ class NotificationsAPI {
 	public static function declaration_to_do_warning( $recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date ) {
 		$id_template = '595';
 		$options = array(
+			'personal'							=> 1,
 			'NOM_UTILISATEUR'					=> $user_name,
 			'NB_TRIMESTRE'						=> $nb_quarter,
 			'POURCENT_PREVISIONNEL'				=> $percent_estimation,
@@ -617,6 +902,7 @@ class NotificationsAPI {
 	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount ) {
 		$id_template = '127';
 		$options = array(
+			'personal'				=> 1,
 			'NOM'					=> $name,
 			'NOM_PROJET'			=> $project_name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months,
@@ -634,6 +920,7 @@ class NotificationsAPI {
 	public static function declaration_done_without_turnover( $recipient, $name, $project_name, $last_three_months ) {
 		$id_template = '150';
 		$options = array(
+			'personal'				=> 1,
 			'NOM'					=> $name,
 			'NOM_PROJET'			=> $project_name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months
@@ -660,6 +947,7 @@ class NotificationsAPI {
 	public static function roi_transfer_daily_resume( $recipient, $name, $royalties_message ) {
 		$id_template = '139';
 		$options = array(
+			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'RESUME_ROYALTIES'	=> $royalties_message,
 		);
@@ -678,6 +966,7 @@ class NotificationsAPI {
 	public static function roi_transfer_message( $recipient, $name, $project_name, $declaration_message, $replyto_mail ) {
 		$id_template = '522';
 		$options = array(
+			'personal'			=> 1,
 			'replyto'			=> $replyto_mail,
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name,

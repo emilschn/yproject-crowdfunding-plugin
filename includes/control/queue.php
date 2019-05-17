@@ -3,8 +3,8 @@
  * Classe de gestion des queues d'actions
  */
 class WDGQueue {
-	private static $status_init = 'init';
-	private static $status_complete = 'complete';
+	public static $status_init = 'init';
+	public static $status_complete = 'complete';
 	
 /******************************************************************************/
 /* Fonctions globales nécessaires à la gestion des queues */
@@ -373,7 +373,7 @@ class WDGQueue {
 			
 			$campaign = new ATCF_Campaign( $campaign_id );
 			// Pour l'instant, on gère que les campagnes en collecte
-			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 				// Envoi des notifications
 				WDGCampaignInvestments::advice_notification( $campaign );
 				// On continue d'envoyer des notifications
@@ -381,6 +381,15 @@ class WDGQueue {
 			}
 			
 		}
+	}
+	
+	public static function has_planned_campaign_advice_notification( $campaign_id ) {
+		$buffer = FALSE;
+		$queued_actions = WDGWPREST_Entity_QueuedAction::get_list( FALSE, FALSE, $campaign_id, 'campaign_advice_notification' );
+		if ( !empty( $queued_actions ) && !empty( $queued_actions[0]->id ) ) {
+			$buffer = $queued_actions[0]->id;
+		}
+		return $buffer;
 	}
 
 	

@@ -23,13 +23,14 @@ class WDGPostActions {
         self::add_action("add_contract_model");
         self::add_action("edit_contract_model");
         self::add_action("send_contract_model");
+        self::add_action("generate_campaign_funded_certificate");
         self::add_action("generate_campaign_bill");
         self::add_action("generate_campaign_contracts_archive");
         self::add_action("generate_contract_files");
         self::add_action( 'generate_yearly_fiscal_documents' );
         self::add_action("upload_contract_files");
         self::add_action( 'send_project_contract_modification_notification' );
-        self::add_action( 'send_project_vote_notifications' );
+        self::add_action( 'send_project_notifications' );
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
         self::add_action("post_confirm_check");
@@ -406,11 +407,14 @@ class WDGPostActions {
 	}
 	
 	public static function organization_remove_mandate() {
-        $organization_id = sanitize_text_field( filter_input( INPUT_POST, 'organization_id' ) );
-        $mandate_id = sanitize_text_field( filter_input( INPUT_POST, 'mandate_id' ) );
-		$WDGOrganization = new WDGOrganization( $organization_id );
-		$WDGOrganization->remove_lemonway_mandate( $mandate_id );
-		$WDGOrganization->add_lemonway_mandate();
+		$WDGUser_current = WDGUser::current();
+		if ( $WDGUser_current->is_admin() ) {
+			$organization_id = sanitize_text_field( filter_input( INPUT_POST, 'organization_id' ) );
+			$mandate_id = sanitize_text_field( filter_input( INPUT_POST, 'mandate_id' ) );
+			$WDGOrganization = new WDGOrganization( $organization_id );
+			$WDGOrganization->remove_lemonway_mandate( $mandate_id );
+			$WDGOrganization->add_lemonway_mandate();
+		}
 		
 		wp_redirect( wp_get_referer() );
 		die();
@@ -570,6 +574,19 @@ class WDGPostActions {
 		}
 		
 		$url_return = wp_get_referer() . "#contracts";
+		wp_redirect( $url_return );
+		die();
+	}
+	
+	public static function generate_campaign_funded_certificate() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$campaign->make_funded_certificate( TRUE );
+		}
+		
+		$url_return = wp_get_referer() . "#documents";
 		wp_redirect( $url_return );
 		die();
 	}
@@ -751,7 +768,7 @@ class WDGPostActions {
 		die();
 	}
 	
-	public static function send_project_vote_notifications() {
+	public static function send_project_notifications() {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$mail_type = filter_input( INPUT_POST, 'mail_type' );
 		$input_testimony = filter_input( INPUT_POST, 'testimony' );
@@ -760,110 +777,9 @@ class WDGPostActions {
 		$input_send_option = filter_input( INPUT_POST, 'send_option' );
 		
 		if ( !empty( $campaign_id ) && !empty( $input_testimony ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
-			$campaign = new ATCF_Campaign( $campaign_id );
-			$project_name = $campaign->get_name();
-			$project_url = get_permalink( $campaign->ID );
-			$project_api_id = $campaign->get_api_id();
-			// Gestion des sauts de ligne
-			$input_testimony = nl2br( $input_testimony );
-			
-			// Si on teste, on biaise les données et on arrête de suite
-			if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
-				$recipient_email = 'communication@wedogood.co';
-				$recipient_name = 'Anna';
-				$intention_amount = 100;
-				if ( $mail_type == 'preinvestment' ) {
-					NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-					NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-				} else {
-					NotificationsAPI::confirm_prelaunch_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-					NotificationsAPI::confirm_prelaunch_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-					NotificationsAPI::confirm_prelaunch_invest_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-				}
-				$url_return = wp_get_referer() . "#contacts";
-				wp_redirect( $url_return );
-				die();
-			}
-			
-			$user_list_by_id = array();
-			
-			// Récupération des followers
-			$followers_list_by_id = array();
-			$list_user_followers = $campaign->get_followers();
-			foreach ( $list_user_followers as $db_item_follower_user_id ) {
-				$followers_list_by_id[ $db_item_follower_user_id ] = 1;
-			}
-			
-			// Récupération des investisseurs
-			$investors_list_by_id = array();
-			$list_user_investors = $campaign->payments_data();
-			foreach ( $list_user_investors as $item_investment ) {
-				$investors_list_by_id[ $item_investment[ 'user' ] ] = 1;
-			}
-			
-			// On parcourt la liste des évaluateurs
-			$list_user_voters = $campaign->get_voters();
-			foreach ( $list_user_voters as $db_item_vote ) {
-						// On ne prend que des notes d'au moins 3
-				if (	$db_item_vote->rate_project >= 3
-						// On ne prend que ceux qui suivent toujours le projet
-						&& isset( $followers_list_by_id[ $db_item_vote->user_id ] )
-						// On ne prend que ceux qui n'ont pas investi
-						&& !isset( $investors_list_by_id[ $db_item_vote->user_id ] ) ) {
-					
-					if ( !isset( $user_list_by_id[ $db_item_vote->user_id ] ) ) {
-						$user_list_by_id[ $db_item_vote->user_id ] = array();
-					}
-					$user_list_by_id[ $db_item_vote->user_id ][ 'vote_amount' ] = $db_item_vote->invest_sum;
-				}
-			}
-			
-			// Si le mail est celui de pré-lancement
-			if ( $mail_type == 'prelaunch' ) {
-				// On reprend les followers qui n'ont pas évalué et qui n'ont pas fait d'action d'investissement
-				foreach ( $list_user_followers as $db_item_follower_user_id ) {
-					if (	!isset( $user_list_by_id[ $db_item_follower_user_id ] )
-							&& !isset( $investors_list_by_id[ $db_item_follower_user_id ] ) ) {
-						
-						$user_list_by_id[ $db_item_follower_user_id ] = array();
-						$user_list_by_id[ $db_item_follower_user_id ][ 'vote_amount' ] = 'follow';
-					}
-				}
-			}
-
-			foreach ( $user_list_by_id as $user_id => $vote_data ) {
-				if ( WDGOrganization::is_user_organization( $user_id ) ) {
-					$WDGOrganization = new WDGOrganization( $user_id );
-					$recipient_email = $WDGOrganization->get_email();
-					$recipient_name = $WDGOrganization->get_name();
-				} else {
-					$WDGUser = new WDGUser( $user_id );
-					$recipient_email = $WDGUser->get_email();
-					$recipient_name = $WDGUser->get_firstname();
-				}
-				
-				$intention_amount = $vote_data[ 'vote_amount' ];
-				
-				// Pour les restants, on envoie un template différent selon si ils ont mis une intention ou non.
-				if ( $mail_type == 'preinvestment' ) {
-					if ( $intention_amount > 0 ) {
-						NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-
-					} else {
-						NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-					}
-				} elseif ( $mail_type == 'prelaunch' ) {
-					if ( $intention_amount == 'follow' ) {
-						NotificationsAPI::confirm_prelaunch_invest_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-						
-					} elseif ( $intention_amount > 0 ) {
-						NotificationsAPI::confirm_prelaunch_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-
-					} else {
-						NotificationsAPI::confirm_prelaunch_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
-					}
-				}
-			}
+			WDGEmails::auto_notifications(
+				$campaign_id, $mail_type, $input_testimony, $input_image_url, $input_image_description, $input_send_option
+			);
 		}
 		
 		$url_return = wp_get_referer() . "#contacts";

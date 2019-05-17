@@ -1,153 +1,191 @@
 <?php
-/**
- * Emails
- *
- * Handle a bit of extra email info.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- */
+class WDGEmails {
+	
+	public static function auto_notifications( $campaign_id, $mail_type, $input_testimony_in, $input_image_url, $input_image_description, $input_send_option ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$project_name = $campaign->get_name();
+		$project_url = get_permalink( $campaign->ID );
+		$project_api_id = $campaign->get_api_id();
+		$project_percent = $campaign->percent_minimum_completed( FALSE );
+		$project_nb_remaining_days = $campaign->days_remaining();
+		$project_date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
+		// Gestion des sauts de ligne
+		$input_testimony = nl2br( $input_testimony_in );
 
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+		// Si on teste, on biaise les données et on arrête de suite
+		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
+			$recipient_email = 'communication@wedogood.co';
+			$recipient_name = 'Anna';
+			$intention_amount = 100;
+			switch ( $mail_type ) {
+				case 'preinvestment':
+					NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					break;
+				case 'prelaunch':
+					NotificationsAPI::confirm_prelaunch_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_prelaunch_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_prelaunch_invest_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					break;
+				case 'investment-30':
+					NotificationsAPI::confirm_investment_invest30_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_investment_invest30_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_investment_invest30_follow( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					break;
+				case 'investment-100':
+					NotificationsAPI::confirm_investment_invest100_invested( $recipient_email, $recipient_name, $project_name, $project_url, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					NotificationsAPI::confirm_investment_invest100_investment_pending( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					NotificationsAPI::confirm_investment_invest100_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					NotificationsAPI::confirm_investment_invest100_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					NotificationsAPI::confirm_investment_invest100_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					break;
+				case 'investment-2days':
+					NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					break;
+			}
+			return;
+		}
 
-/**
- * Trigger Purchase Receipt
- *
- * Causes the purchase receipt to be emailed when initially pledged.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @param int $payment_id The ID of the payment
- * @param string $new_status The status we are changing to
- * @param string $old_status The old status we are changing from
- * @return void
- */
-function atcf_trigger_pending_purchase_receipt( $payment_id, $new_status, $old_status ) {
-	// Make sure we don't send a purchase receipt while editing a payment
-	if ( isset( $_POST[ 'edd-action' ] ) && $_POST[ 'edd-action' ] == 'edit_payment' )
-		return;
+		$user_list_by_id = array();
 
-	// Check if the payment was already set to complete
-	if ( $old_status == 'publish' || $old_status == 'complete' )
-		return; // Make sure that payments are only completed once
+		// Récupération des followers
+		$followers_list_by_id = array();
+		$list_user_followers = $campaign->get_followers();
+		foreach ( $list_user_followers as $db_item_follower_user_id ) {
+			$followers_list_by_id[ $db_item_follower_user_id ] = 1;
+		}
 
-	// Make sure the receipt is only sent when new status is preapproval
-	if ( $new_status != 'preapproval' )
-		return;
+		// Récupération des investisseurs
+		$investors_list_by_id = array();
+		$list_user_investors = $campaign->payments_data();
+		foreach ( $list_user_investors as $item_investment ) {
+			$investment_status = $item_investment[ 'status' ];
+			$investors_list_by_id[ $item_investment[ 'user' ] ] = $investment_status;
+		}
 
-	// Send email with secure download link
-	atcf_email_pending_purchase_receipt( $payment_id );
-}
-add_action( 'edd_update_payment_status', 'edd_trigger_purchase_receipt', 10, 3 );
+		// On parcourt la liste des évaluateurs
+		$list_user_voters = $campaign->get_voters();
+		foreach ( $list_user_voters as $db_item_vote ) {
+					// On ne prend que des notes d'au moins 3
+			if (	$db_item_vote->rate_project >= 3
+					// On ne prend que ceux qui suivent toujours le projet
+					&& isset( $followers_list_by_id[ $db_item_vote->user_id ] )
+					// On ne prend que ceux qui n'ont pas investi
+					&& !isset( $investors_list_by_id[ $db_item_vote->user_id ] ) ) {
 
-/**
- * Build the purchase email.
- *
- * Figure out who to send to, who it's from, etc.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @param int $payment_id The ID of the payment
- * @param boolean $admin_notice Alert admins, or not
- * @return void
- */
-function atcf_email_pending_purchase_receipt( $payment_id, $admin_notice = true ) {
-	global $edd_options;
+				if ( !isset( $user_list_by_id[ $db_item_vote->user_id ] ) ) {
+					$user_list_by_id[ $db_item_vote->user_id ] = array();
+				}
+				$user_list_by_id[ $db_item_vote->user_id ][ 'vote_amount' ] = $db_item_vote->invest_sum;
+			}
+		}
 
-	$payment_data = edd_get_payment_meta( $payment_id );
-	$user_info    = maybe_unserialize( $payment_data['user_info'] );
+		// Si le mail est celui de pré-lancement, ou d'investissement à 30% et 100%
+		if ( $mail_type == 'prelaunch' || $mail_type == 'investment-30' || $mail_type == 'investment-100' ) {
+			// On reprend les followers qui n'ont pas évalué et qui n'ont pas fait d'action d'investissement
+			foreach ( $list_user_followers as $db_item_follower_user_id ) {
+				if (	!isset( $user_list_by_id[ $db_item_follower_user_id ] )
+						&& !isset( $investors_list_by_id[ $db_item_follower_user_id ] ) ) {
 
-	if ( isset( $user_info['id'] ) && $user_info['id'] > 0 ) {
-		$user_data = get_userdata($user_info['id']);
-		$name = $user_data->display_name;
-	} elseif ( isset( $user_info['first_name'] ) && isset( $user_info['last_name'] ) ) {
-		$name = $user_info['first_name'] . ' ' . $user_info['last_name'];
-	} else {
-		$name = $user_info['email'];
-	}
+					$user_list_by_id[ $db_item_follower_user_id ] = array();
+					$user_list_by_id[ $db_item_follower_user_id ][ 'vote_amount' ] = 'follow';
+				}
+			}
+		}
+		// Si le mail est celui de validation de la levée de fonds (investissement 100 %)
+		if ( $mail_type == 'investment-100' ) {
+			// On reprend les investisseurs qui ne sont pas encore dans la liste
+			foreach ( $investors_list_by_id as $db_item_investor_user_id => $db_item_investment_status ) {
+				if ( !isset( $user_list_by_id[ $db_item_investor_user_id ] ) ) {
 
-	$message  = edd_get_email_body_header();
-	$message .= atcf_get_email_body_content( $payment_id, $payment_data );
-	$message .= edd_get_email_body_footer();
+					$user_list_by_id[ $db_item_investor_user_id ] = array();
+					$user_list_by_id[ $db_item_investor_user_id ][ 'vote_amount' ] = $db_item_investment_status;
+				}
+			}
+		}
 
-	$from_name  = isset( $edd_options['from_name'] ) ? $edd_options['from_name'] : get_bloginfo('name');
-	$from_email = isset( $edd_options['from_email'] ) ? $edd_options['from_email'] : get_option('admin_email');
-
-	$subject = apply_filters( 'atcf_pending_purchase_subject', __( 'Your pledge has been received', 'atcf' ), $payment_id );
-	$subject = edd_email_template_tags( $subject, $payment_data, $payment_id );
-
-	$headers  = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
-	$headers .= "Reply-To: ". $from_email . "\r\n";
-	$headers .= "MIME-Version: 1.0\r\n";
-	$headers .= "Content-Type: text/html; charset=utf-8\r\n";
-
-	// Allow add-ons to add file attachments
-	$attachments = apply_filters( 'atcf_pending_receipt_attachments', array(), $payment_id, $payment_data );
-
-	wp_mail( $payment_data['email'], $subject, $message, $headers, $attachments );
-
-	if ( $admin_notice ) {
-		do_action( 'edd_admin_pending_purchase_notice', $payment_id, $payment_data );
-	}
-}
-
-/**
- * Get the actual pending email body content. Default text, can be filtered, and will
- * use all template tags that EDD supports.
- *
- * @since Appthemer CrowdFunding 0.1-alpha
- *
- * @param int $payment_id The ID of the payment
- * @param array $payment_data The relevant payment data
- * @return string $email_body The actual email body
- */
-function atcf_get_email_body_content( $payment_id = 0, $payment_data = array() ) {
-	global $edd_options;
-
-	$downloads = edd_get_payment_meta_downloads( $payment_id );
-	$campaign  = '';
-
-	if ( $downloads ) {
-		foreach ( $downloads as $download ) {
-			$id       = isset( $payment_data[ 'cart_details' ] ) ? $download[ 'id' ] : $download;
-			$campaign = get_the_title( $id );
+		foreach ( $user_list_by_id as $user_id => $vote_data ) {
+			if ( empty( $user_id ) ) {
+				continue;
+			}
 			
-			continue;
+			if ( WDGOrganization::is_user_organization( $user_id ) ) {
+				$WDGOrganization = new WDGOrganization( $user_id );
+				$recipient_email = $WDGOrganization->get_email();
+				$recipient_name = $WDGOrganization->get_name();
+			} else {
+				$WDGUser = new WDGUser( $user_id );
+				$recipient_email = $WDGUser->get_email();
+				$recipient_name = $WDGUser->get_firstname();
+			}
+
+			$intention_amount = $vote_data[ 'vote_amount' ];
+
+			// Pour les restants, on envoie un template différent selon si ils ont mis une intention ou non.
+			switch ( $mail_type ) {
+				case 'preinvestment':
+					if ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_vote_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+
+					} else {
+						NotificationsAPI::confirm_vote_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					}
+					break;
+					
+				case 'prelaunch':
+					if ( $intention_amount == 'follow' ) {
+						NotificationsAPI::confirm_prelaunch_invest_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+
+					} elseif ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_prelaunch_invest_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+
+					} else {
+						NotificationsAPI::confirm_prelaunch_invest_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					}
+					break;
+					
+				case 'investment-30':
+					if ( $intention_amount == 'follow' ) {
+						NotificationsAPI::confirm_investment_invest30_follow( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
+					} elseif ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_investment_invest30_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
+					} else {
+						NotificationsAPI::confirm_investment_invest30_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $project_percent, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
+					}
+					break;
+					
+				case 'investment-100':
+					if ( $intention_amount == 'follow' ) {
+						NotificationsAPI::confirm_investment_invest100_follow( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					
+					} elseif ( $intention_amount == 'publish' ) {
+						NotificationsAPI::confirm_investment_invest100_invested( $recipient_email, $recipient_name, $project_name, $project_url, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+
+					} elseif ( $intention_amount == 'pending' ) {
+						NotificationsAPI::confirm_investment_invest100_investment_pending( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_api_id );
+					
+					} elseif ( is_numeric( $intention_amount ) && $intention_amount > 0 ) {
+						NotificationsAPI::confirm_investment_invest100_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					
+					} elseif ( $intention_amount == 0 ) {
+						NotificationsAPI::confirm_investment_invest100_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					
+					}
+					break;
+					
+				case 'investment-2days':
+					if ( $intention_amount > 0 ) {
+						NotificationsAPI::confirm_investment_invest2days_intention( $recipient_email, $recipient_name, $intention_amount, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					} else {
+						NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
+					}
+					break;
+			}
 		}
 	}
-
-	$default_email_body = __( 'Dear {name}', 'atcf' ) . "\n\n";
-	$default_email_body .= sprintf( __( 'Thank you for your pledging to support %1$s. This email is just to let you know your pledge was processed without a hitch! You will only be charged your pledge amount if the %2$s receives 100% funding.', 'atcf' ), $campaign, strtolower( edd_get_label_singular() ) ) . "\n\n";
-	$default_email_body .= "{sitename}";
-
-	$email = $default_email_body;
-
-	$email_body = edd_email_template_tags( $email, $payment_data, $payment_id );
-
-	return apply_filters( 'atcf_pending_purchase_receipt', $email_body, $payment_id, $payment_data );
+	
 }
-
-function yp_custom_notification( $notify_message, $comment_id ) {
-	try {
-		$comment_obj = get_comment( $comment_id );
-		$is_campaign = ( get_post_meta( $comment_obj->comment_post_ID, 'campaign_goal', TRUE ) != '' );
-
-		if ( ( $comment_obj->comment_type != 'trackback' ) && ( $comment_obj->comment_type != 'pingback' ) && $is_campaign ) {
-			$comment_post = get_post( $comment_obj->comment_post_ID );
-			$user = get_userdata( $comment_post->post_author );
-			$first_name = $user->first_name;
-			$last_name = $user->last_name;
-			$notify_message = "Bonjour ".$first_name." ".$last_name.",</br>";
-			$notify_message .= 'Vous avez reçu un nouveau commentaire sur la page de votre projet "'.$comment_post->post_title.'".</br>';
-			$notify_message .= 'Vous pouvez le lire en vous rendant la section "Commentaires" de votre page projet : <a href="'.get_permalink($comment_obj->comment_post_ID).'">'.get_permalink($comment_obj->comment_post_ID)."</a>. </br>";
-			$notify_message .= "Bonne journée de la part de toute l'équipe de ".ATCF_CrowdFunding::get_platform_name()." !";
-			return $notify_message;
-		} else {
-			return $notify_message;
-		}
-	} catch ( Exception $e ) {
-		//
-	}
-}
-
-add_filter('comment_notification_text', 'yp_custom_notification', 10, 2);

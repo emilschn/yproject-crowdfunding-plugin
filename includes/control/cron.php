@@ -8,61 +8,75 @@ class WDGCronActions {
 		$current_date = new DateTime();
 		$current_date->setTime( 0, 0, 1 );
 		
-		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 10 jours
-		$date_in_10_days = new DateTime();
-		$date_in_10_days->add( new DateInterval('P9D') );
-		$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
-		if ( $declaration_list ) {
-			foreach ( $declaration_list as $declaration_data ) {
-				// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
-				if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
-					$date_due = new DateTime( $declaration_data->date_due );
-					$date_due->setTime( 10, 30, 0 );
-					if ( $date_due > $current_date ) {
-						$nb_days_diff = $date_due->diff( $current_date )->days;
-						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
-						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
-							
-							$organization = $campaign->get_organization();
-							$wdgorganization = new WDGOrganization( $organization->id, $organization );
-							$wdguser_author = new WDGUser( $campaign->data->post_author );
-
-							// Données qui seront transmises à SiB
-							$date_due_previous_day = new DateTime( $declaration_data->date_due );
-							$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
-							$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
-							$nb_fields = $campaign->get_turnover_per_declaration();
-							$date_last_months =  new DateTime( $declaration_data->date_due );
-							$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
-							$last_months_str = '';
-							for ( $i = 0; $i < $nb_fields; $i++ ) {
-								$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
-								if ( $i < $nb_fields - 2 ) {
-									$last_months_str .= ', ';
-								}
-								if ( $i == $nb_fields - 2 ) {
-									$last_months_str .= ' et ';
-								}
-								$date_last_months->add( new DateInterval( 'P1M' ) );
+		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 19 jours (pour ceux dont la déclaration est au 20)
+		if ( $current_date->format( 'd' ) == 1 || $current_date->format( 'd' ) == 8 || $current_date->format( 'd' ) == 10 ) {
+			$date_in_10_days = new DateTime();
+			$date_in_10_days->add( new DateInterval('P19D') );
+			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
+			if ( $declaration_list ) {
+				foreach ( $declaration_list as $declaration_data ) {
+					// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
+					if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
+						$date_due = new DateTime( $declaration_data->date_due );
+						$date_due->setTime( 10, 30, 0 );
+						if ( $date_due > $current_date ) {
+							$current_date_day = $current_date->format( 'd' );
+							switch ( $current_date_day ) {
+								case 1:
+									$nb_days_diff = 9;
+									break;
+								case 8:
+									$nb_days_diff = 2;
+									break;
+								case 10:
+									$nb_days_diff = 0;
+									break;
 							}
-							$year = $date_due->format( 'Y' );
-							if ( $date_due->format( 'n' ) < 4 ) {
-								$year--;
-							}
-							$last_months_str .= ' ' . $year;
-							$options = array(
-								'NOM'					=> $wdguser_author->get_firstname(),
-								'TROIS_DERNIERS_MOIS'	=> $last_months_str,
-								'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
-								'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
-							);
-
-							NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
 							
+							$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
+							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+
+								$organization = $campaign->get_organization();
+								$wdgorganization = new WDGOrganization( $organization->id, $organization );
+								$wdguser_author = new WDGUser( $campaign->data->post_author );
+
+								// Données qui seront transmises à SiB
+								$date_due_previous_day = new DateTime( $declaration_data->date_due );
+								$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
+								$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+								$nb_fields = $campaign->get_turnover_per_declaration();
+								$date_last_months =  new DateTime( $declaration_data->date_due );
+								$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
+								$last_months_str = '';
+								for ( $i = 0; $i < $nb_fields; $i++ ) {
+									$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
+									if ( $i < $nb_fields - 2 ) {
+										$last_months_str .= ', ';
+									}
+									if ( $i == $nb_fields - 2 ) {
+										$last_months_str .= ' et ';
+									}
+									$date_last_months->add( new DateInterval( 'P1M' ) );
+								}
+								$year = $date_due->format( 'Y' );
+								if ( $date_due->format( 'n' ) < 4 ) {
+									$year--;
+								}
+								$last_months_str .= ' ' . $year;
+								$options = array(
+									'NOM'					=> $wdguser_author->get_firstname(),
+									'TROIS_DERNIERS_MOIS'	=> $last_months_str,
+									'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
+									'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
+								);
+
+								NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+
+							}
 						}
 					}
-				}
 
+				}
 			}
 		}
 		
@@ -72,25 +86,28 @@ class WDGCronActions {
 			$date_in_5_days->add( new DateInterval('P5D') );
 			$date_5_days_ago = new DateTime();
 			$date_5_days_ago->sub( new DateInterval('P5D') );
-			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $date_5_days_ago->format( 'Y-m-d' ), $current_date->format( 'Y-m-d' ) );
+			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $date_5_days_ago->format( 'Y-m-d' ), $date_in_5_days->format( 'Y-m-d' ) );
 			if ( $declaration_list ) {
 				foreach ( $declaration_list as $declaration_data ) {
 					// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
 					if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
 						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
-						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
+						$organization = $campaign->get_organization();
+						$wdgorganization = new WDGOrganization( $organization->id, $organization );
+						
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded && $wdgorganization->has_signed_mandate() ) {
 							
-							$organization = $campaign->get_organization();
-							$wdgorganization = new WDGOrganization( $organization->id, $organization );
 							$wdguser_author = new WDGUser( $campaign->data->post_author );
 							$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
 						
 							$quarter_str_list = array( "premier", "deuxième", "troisième", "quatrième" );
 							$quarter_percent_list = array( 10, 20, 30, 40 );
 							$nb_quarter = 0;
-							$nb_year = 0;
-							$percent_estimation = 10;
+							$estimated_turnover = $campaign->estimated_turnover();
+							$nb_year = array_key_first( $estimated_turnover );
 							
+							// Parcours des déclarations de royalties pour savoir à quelle année et quel trimestre on est dans les échéances
+							// TODO : les trier dans l'ordre par sécurité
 							$existing_roi_declarations = $campaign->get_roi_declarations();
 							foreach ( $existing_roi_declarations as $declaration_object ) {
 								$date_declaration = new DateTime( $declaration_object[ 'date_due' ] );
@@ -107,10 +124,21 @@ class WDGCronActions {
 								}
 							}
 							
-							$estimated_turnover = $campaign->estimated_turnover();
+							// Test pour corriger les décalages dans le CA prévisionnel
+							// Pour éviter d'avoir zero, il faut soit le premier de la liste, soit le dernier
+							if ( !isset( $estimated_turnover[ $nb_year ] ) ) {
+								if ( $nb_year < 1 ) {
+									$nb_year = array_key_first( $estimated_turnover );
+								} else {
+									$nb_year = array_key_last( $estimated_turnover );
+								}
+							}
+							
+							// Calculs des éléments à afficher
 							$amount_estimation_year = $estimated_turnover[ $nb_year ];
-							$percent_royalties = $quarter_percent_list[ $nb_quarter ];
-							$amount_estimation_quarter = $amount_estimation_year * $percent_royalties / 100;
+							$percent_estimation = $quarter_percent_list[ $nb_quarter ];
+							$amount_estimation_quarter = $amount_estimation_year * $percent_estimation / 100;
+							$percent_royalties = $campaign->roi_percent();
 							$amount_royalties = round( $amount_estimation_quarter * $campaign->roi_percent() / 100, 2 );
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
 							$amount_total = $amount_royalties + $amount_fees;
@@ -156,7 +184,7 @@ class WDGCronActions {
 			wp_reset_query();
 			
 			// Récupération des projets finis depuis moins d'un mois
-			ATCF_Campaign::list_projects_funded( 50 );
+			ATCF_Campaign::list_projects_funded( 80 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );
@@ -171,7 +199,7 @@ class WDGCronActions {
 			wp_reset_query();
 			
 		} else {
-			ATCF_Campaign::list_projects_funded( 50 );
+			ATCF_Campaign::list_projects_funded( 80 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );

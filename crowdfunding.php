@@ -134,6 +134,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/post.php' );
 		require( $this->includes_dir . 'control/cron.php' );
 		require( $this->includes_dir . 'control/settings.php' );
+		require( $this->includes_dir . 'control/emails.php' );
 		require( $this->includes_dir . 'control/logs.php' );
 		require( $this->includes_dir . 'control/permalinks.php' );
 		require( $this->includes_dir . 'control/queue.php' );

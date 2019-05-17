@@ -1374,6 +1374,15 @@ class WDGUser {
 		return $this->wallet_details;
 	}
 	
+	public function has_lemonway_wallet( $reload = false ) {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details( $reload );
+		if ( isset( $wallet_details->NAME ) && !empty( $wallet_details->NAME ) ) {
+			$buffer = TRUE;
+		}
+		return $buffer;
+	}
+	
 	/**
 	 * Enregistrement sur Lemonway
 	 */

@@ -952,6 +952,15 @@ class WDGOrganization {
 		return $this->{ 'wallet_details_' . $type };
 	}
 	
+	public function has_lemonway_wallet( $reload = false ) {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details( $reload );
+		if ( isset( $wallet_details->NAME ) && !empty( $wallet_details->NAME ) ) {
+			$buffer = TRUE;
+		}
+		return $buffer;
+	}
+	
 	public function get_lemonway_cardid() {
 		$buffer = FALSE;
 		$wallet_details = $this->get_wallet_details();
