@@ -3165,8 +3165,15 @@ class ATCF_Campaign {
 	public static function get_list_funded( $nb = 0, $client = '', $include_current = false, $skip_hidden = true ) {
 		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client, $skip_hidden );
 		if ( $include_current ) {
-			$list_current = ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client, FALSE );
+			$list_current = ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client );
 			foreach ( $list_current as $campaign_post ) {
+				$campaign = atcf_get_campaign( $campaign_post->ID );
+				if ( $campaign->is_funded() ) {
+					array_push( $buffer, $campaign_post );
+				}
+			}
+			$list_current_notime = ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, 'asc', $client, FALSE );
+			foreach ( $list_current_notime as $campaign_post ) {
 				$campaign = atcf_get_campaign( $campaign_post->ID );
 				if ( $campaign->is_funded() ) {
 					array_push( $buffer, $campaign_post );
