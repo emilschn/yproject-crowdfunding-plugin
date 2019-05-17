@@ -408,6 +408,34 @@ class LemonwayLib {
 		return $result->WALLET;
 	}
 	
+	/**
+	 * 
+	 * @param int $wallet_id
+	 * @param int $date_start Secondes UTC
+	 * @param int $date_end Secondes UTC
+	 * @return type
+	 */
+	public static function wallet_get_transactions_between( $wallet_id, $date_start = FALSE, $date_end = FALSE ) {
+		if ( empty( $wallet_id ) ) {
+			return array();
+		}
+		
+		$param_list = array(
+			'wallet'	=> $wallet_id
+		);
+		if ( !empty( $date_start ) ) {
+			$param_list[ 'startDate' ] = $date_start;
+			
+			if ( !empty( $date_end ) ) {
+				$param_list[ 'endDate' ] = $date_end;
+			}
+		}
+		
+		$result = LemonwayLib::call( 'GetWalletTransHistory', $param_list );
+		
+		return $result;
+	}
+	
 	public static $status_blocked = 'blocked';
 	public static $status_ready = 'ready';
 	public static $status_waiting = 'waiting';
