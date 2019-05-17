@@ -8,7 +8,8 @@ class WDGAjaxActions {
 	
 	private static $class_to_filename = array(
 		'WDG_Form_Vote'			=> 'vote.php',
-		'WDG_Form_User_Details' => 'user-details.php'
+		'WDG_Form_User_Details' => 'user-details.php',
+		'WDG_Form_Dashboard_Add_Check' => 'dashboard-add-check.php'
 	);
     
 	/**
@@ -17,6 +18,7 @@ class WDGAjaxActions {
 	public static function init_actions() {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Vote' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
+		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
 		
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		WDGAjaxActions::add_action('get_searchable_projects_list');
@@ -48,6 +50,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('preview_mail_message');
 		WDGAjaxActions::add_action('search_user_by_email');
 		WDGAjaxActions::add_action('get_current_investment_signature_status');
+		WDGAjaxActions::add_action('apply_draft_data');
+		WDGAjaxActions::add_action('create_investment_from_draft');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action('conclude_project');
 		WDGAjaxActions::add_action('try_lock_project_edition');
@@ -2500,6 +2504,11 @@ class WDGAjaxActions {
 	 * Recherche un utilisateur par son e-mail
 	 */
 	public static function search_user_by_email() {
+		// Bug structurel à corriger : obligé d'appeler cette fonction en premier
+		// Cela permet d'initialiser WDGUser::$_current
+		// qui, sinon, bloque la recherche des infos utilisateurs sur l'API
+		WDGUser::current();
+		
 		$email = filter_input(INPUT_POST, 'email');
 		$user_by_email = get_user_by( 'email', $email );
 		
@@ -2513,7 +2522,6 @@ class WDGAjaxActions {
 				$linked_user = $linked_users[ 0 ];
 				$user_data = array(
 					'user' => array(
-						'login'				=> $linked_user->get_login(),
 						'firstname'			=> $linked_user->get_firstname(),
 						'lastname'			=> $linked_user->get_lastname(),
 						'gender'			=> $linked_user->get_gender(),
@@ -2521,11 +2529,16 @@ class WDGAjaxActions {
 						'birthday_month'	=> $linked_user->get_birthday_month(),
 						'birthday_year'		=> $linked_user->get_birthday_year(),
 						'birthplace'		=> $linked_user->get_birthplace(),
-						'nationality'		=> $linked_user->get_nationality(),
-						'address'			=> $linked_user->get_address(),
-						'postal_code'		=> $linked_user->get_postal_code(),
-						'city'				=> $linked_user->get_city(),
-						'country'			=> $linked_user->get_country()
+						'birthplace_department'		=> $linked_user->get_birthplace_department(),
+						'birthplace_district'		=> $linked_user->get_birthplace_district(),
+						'birthplace_country'		=> $linked_user->get_birthplace_country(),
+						'nationality'				=> $linked_user->get_nationality(),
+						'address_number'			=> $linked_user->get_address_number(),
+						'address_number_complement'	=> $linked_user->get_address_number_complement(),
+						'address'					=> $linked_user->get_address(),
+						'postal_code'				=> $linked_user->get_postal_code(),
+						'city'						=> $linked_user->get_city(),
+						'country'					=> $linked_user->get_country()
 					),
 					'orga' => array(
 						'email'				=> $organization->get_email(),
@@ -2536,8 +2549,7 @@ class WDGAjaxActions {
 				$user_type = 'user';
 				$user = new WDGUser( $user_by_email->ID );
 				$user_data = array(
-					'user' => array(
-						'login'				=> $user->get_login(),
+					'user'		=> array(
 						'firstname'			=> $user->get_firstname(),
 						'lastname'			=> $user->get_lastname(),
 						'gender'			=> $user->get_gender(),
@@ -2545,14 +2557,41 @@ class WDGAjaxActions {
 						'birthday_month'	=> $user->get_birthday_month(),
 						'birthday_year'		=> $user->get_birthday_year(),
 						'birthplace'		=> $user->get_birthplace(),
-						'nationality'		=> $user->get_nationality(),
-						'address'			=> $user->get_address(),
-						'postal_code'		=> $user->get_postal_code(),
-						'city'				=> $user->get_city(),
-						'country'			=> $user->get_country()
+						'birthplace_department'		=> $user->get_birthplace_department(),
+						'birthplace_district'		=> $user->get_birthplace_district(),
+						'birthplace_country'		=> $user->get_birthplace_country(),
+						'nationality'				=> $user->get_nationality(),
+						'address_number'			=> $user->get_address_number(),
+						'address_number_complement'	=> $user->get_address_number_complement(),
+						'address'					=> $user->get_address(),
+						'postal_code'				=> $user->get_postal_code(),
+						'city'						=> $user->get_city(),
+						'country'					=> $user->get_country()
 					),
-					'orga' => FALSE
+					'orga'		=> FALSE,
+					'orga_list'	=> array()
 				);
+				$user_organizations_list = $user->get_organizations_list();
+				foreach( $user_organizations_list as $organization_item ) {
+					$WDGOrganization = new WDGOrganization( $organization_item->wpref );
+					$single_orga_data = array(
+						'wpref'		=> $WDGOrganization->get_wpref(),
+						'name'		=> $WDGOrganization->get_name(),
+						'email'		=> $WDGOrganization->get_email(),
+						'website'	=> $WDGOrganization->get_website(),
+						'legalform'	=> $WDGOrganization->get_legalform(),
+						'idnumber'	=> $WDGOrganization->get_idnumber(),
+						'rcs'		=> $WDGOrganization->get_rcs(),
+						'capital'	=> $WDGOrganization->get_capital(),
+						'address_number'		=> $WDGOrganization->get_address_number(),
+						'address_number_comp'	=> $WDGOrganization->get_address_number_comp(),
+						'address'				=> $WDGOrganization->get_address(),
+						'postal_code'			=> $WDGOrganization->get_postal_code(),
+						'city'					=> $WDGOrganization->get_city(),
+						'nationality'			=> $WDGOrganization->get_nationality()
+					);
+					array_push( $user_data[ 'orga_list' ], $single_orga_data );
+				}
 			}
 		}
 		
@@ -2576,6 +2615,290 @@ class WDGAjaxActions {
 		}
 	}
 		
+	public static function apply_draft_data() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$orga_id = filter_input( INPUT_POST, 'orga_id' );
+		$draft_id = filter_input( INPUT_POST, 'draft_id' );
+		$data_type = filter_input( INPUT_POST, 'data_type' );
+		$data_value = filter_input( INPUT_POST, 'data_value' );
+		
+		$gender = FALSE;
+		$firstname = FALSE;
+		$lastname = FALSE;
+		$birthday_date_day = FALSE;
+		$birthday_date_month = FALSE;
+		$birthday_date_year = FALSE;
+		$birthplace = FALSE;
+		$birthplace_district = FALSE;
+		$birthplace_department = FALSE;
+		$birthplace_country = FALSE;
+		$nationality = FALSE;
+		$address_number = FALSE;
+		$address_number_complement = FALSE;
+		$address = FALSE;
+		$postal_code = FALSE;
+		$city = FALSE;
+		$country = FALSE;
+		$has_modified_organization = false;
+		if ( !empty( $orga_id ) ) {
+			$WDGOrganization = new WDGOrganization( $orga_id );
+		}
+		
+		if ( $data_type == 'all' ) {
+			$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $draft_id );
+			$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
+			$gender = $investments_drafts_item_data->gender;
+			$firstname = $investments_drafts_item_data->firstname;
+			$lastname = $investments_drafts_item_data->lastname;
+			$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
+			$birthday_date_day = $birthday_date->format( 'd' );
+			$birthday_date_month = $birthday_date->format( 'm' );
+			$birthday_date_year = $birthday_date->format( 'Y' );
+			$birthplace = $investments_drafts_item_data->birthplace;
+			$birthplace_district = $investments_drafts_item_data->birthplace_district;
+			$birthplace_department = $investments_drafts_item_data->birthplace_department;
+			$birthplace_country = $investments_drafts_item_data->birthplace_country;
+			$nationality = $investments_drafts_item_data->nationality;
+			$address_number = $investments_drafts_item_data->address_number;
+			$address_number_complement = $investments_drafts_item_data->address_number_complement;
+			$address = $investments_drafts_item_data->address;
+			$postal_code = $investments_drafts_item_data->postal_code;
+			$city = $investments_drafts_item_data->city;
+			$country = $investments_drafts_item_data->country;
+			
+			if ( !empty( $orga_id ) ) {
+				$has_modified_organization = true;
+				$WDGOrganization->set_name( $investments_drafts_item_data->orga_name );
+				$WDGOrganization->set_email( $investments_drafts_item_data->orga_email );
+				$WDGOrganization->set_website( $investments_drafts_item_data->orga_website );
+				$WDGOrganization->set_legalform( $investments_drafts_item_data->orga_legalform );
+				$WDGOrganization->set_idnumber( $investments_drafts_item_data->orga_idnumber );
+				$WDGOrganization->set_rcs( $investments_drafts_item_data->orga_rcs );
+				$WDGOrganization->set_capital( $investments_drafts_item_data->orga_capital );
+				$WDGOrganization->set_address_number( $investments_drafts_item_data->orga_address_number );
+				$WDGOrganization->set_address_number_comp( $investments_drafts_item_data->orga_address_number_comp );
+				$WDGOrganization->set_address( $investments_drafts_item_data->orga_address );
+				$WDGOrganization->set_postal_code( $investments_drafts_item_data->orga_postal_code );
+				$WDGOrganization->set_city( $investments_drafts_item_data->orga_city );
+				$WDGOrganization->set_nationality( $investments_drafts_item_data->orga_nationality );
+			}
+			
+		} else {
+			$data_value_decoded = html_entity_decode( $data_value );
+			switch ( $data_type ) {
+				case 'gender':
+					$gender = $data_value_decoded;
+					break;
+				case 'firstname':
+					$firstname = $data_value_decoded;
+					break;
+				case 'lastname':
+					$lastname = $data_value_decoded;
+					break;
+				case 'birthday':
+					$birthday_date = new DateTime( $data_value_decoded );
+					$birthday_date_day = $birthday_date->format( 'd' );
+					$birthday_date_month = $birthday_date->format( 'm' );
+					$birthday_date_year = $birthday_date->format( 'Y' );
+					break;
+				case 'birthplace':
+					$birthplace = $data_value_decoded;
+					break;
+				case 'birthplace_district':
+					$birthplace_district = $data_value_decoded;
+					break;
+				case 'birthplace_department':
+					$birthplace_department = $data_value_decoded;
+					break;
+				case 'birthplace_country':
+					$birthplace_country = $data_value_decoded;
+					break;
+				case 'nationality':
+					$nationality = $data_value_decoded;
+					break;
+				case 'address_number':
+					$address_number = $data_value_decoded;
+					break;
+				case 'address_number_complement':
+					$address_number_complement = $data_value_decoded;
+					break;
+				case 'address':
+					$address = $data_value_decoded;
+					break;
+				case 'postal_code':
+					$postal_code = $data_value_decoded;
+					break;
+				case 'city':
+					$city = $data_value_decoded;
+					break;
+				case 'country':
+					$country = $data_value_decoded;
+					break;
+				
+				case 'orga_name':
+					$has_modified_organization = true;
+					$WDGOrganization->set_name( $data_value_decoded );
+					break;
+				case 'orga_email':
+					$has_modified_organization = true;
+					$WDGOrganization->set_email( $data_value_decoded );
+					break;
+				case 'orga_website':
+					$has_modified_organization = true;
+					$WDGOrganization->set_website( $data_value_decoded );
+					break;
+				case 'orga_legalform':
+					$has_modified_organization = true;
+					$WDGOrganization->set_legalform( $data_value_decoded );
+					break;
+				case 'orga_idnumber':
+					$has_modified_organization = true;
+					$WDGOrganization->set_idnumber( $data_value_decoded );
+					break;
+				case 'orga_rcs':
+					$has_modified_organization = true;
+					$WDGOrganization->set_rcs( $data_value_decoded );
+					break;
+				case 'orga_capital':
+					$has_modified_organization = true;
+					$WDGOrganization->set_capital( $data_value_decoded );
+					break;
+				case 'orga_address_number':
+					$has_modified_organization = true;
+					$WDGOrganization->set_address_number( $data_value_decoded );
+					break;
+				case 'orga_address_number_comp':
+					$has_modified_organization = true;
+					$WDGOrganization->set_address_number_comp( $data_value_decoded );
+					break;
+				case 'orga_address':
+					$has_modified_organization = true;
+					$WDGOrganization->set_address( $data_value_decoded );
+					break;
+				case 'orga_postal_code':
+					$has_modified_organization = true;
+					$WDGOrganization->set_postal_code( $data_value_decoded );
+					break;
+				case 'orga_city':
+					$has_modified_organization = true;
+					$WDGOrganization->set_city( $data_value_decoded );
+					break;
+				case 'orga_nationality':
+					$has_modified_organization = true;
+					$WDGOrganization->set_nationality( $data_value_decoded );
+					break;
+			}
+		}
+		
+		$WDGUser = new WDGUser( $user_id );
+		$WDGUser->save_data(
+			FALSE, $gender, $firstname, $lastname, FALSE,
+			$birthday_date_day, $birthday_date_month, $birthday_date_year,
+			$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
+			$address_number, $address_number_complement, $address, $postal_code, $city, $country,
+			FALSE, FALSE, FALSE, FALSE
+		);
+		
+		if ( $has_modified_organization ) {
+			$WDGOrganization->save();
+		}
+		
+		_e( "Sauvegard&eacute;" );
+		exit();
+	}
+	
+	public static function create_investment_from_draft() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$draft_id = filter_input( INPUT_POST, 'draft_id' );
+		
+		// Création éventuelle des investisseurs / organisations
+		$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $draft_id );
+		$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
+		
+		$user_existing_by_email = get_user_by( 'email', $investments_drafts_item_data->email );
+		$id_linked_user = FALSE;
+		if ( !empty( $user_existing_by_email ) ) {
+			$id_linked_user = $user_existing_by_email->ID;
+		}
+		$id_linked_organization = FALSE;
+		if ( $investments_drafts_item_data->user_type == 'orga' && $investments_drafts_item_data->orga_id != 'new-orga' ) {
+			$id_linked_organization = $investments_drafts_item_data->orga_id;
+		}
+		
+		// Création compte investisseur si non-existant
+		if ( empty( $id_linked_user ) ) {
+			$new_password = wp_generate_password( 8, FALSE );
+			$new_display_name = $investments_drafts_item_data->firstname. ' ' .substr( $investments_drafts_item_data->lastname, 0, 1 ). '.';
+			$id_linked_user = wp_insert_user( array(
+				'user_login'	=> $investments_drafts_item_data->email,
+				'user_pass'		=> $new_password,
+				'user_email'	=> $investments_drafts_item_data->email,
+				'first_name'	=> $investments_drafts_item_data->firstname,
+				'last_name'		=> $investments_drafts_item_data->lastname,
+				'display_name'	=> $new_display_name,
+				'user_nicename' => sanitize_title( $new_display_name )
+			) );
+			$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
+			$birthday_date_day = $birthday_date->format( 'd' );
+			$birthday_date_month = $birthday_date->format( 'm' );
+			$birthday_date_year = $birthday_date->format( 'Y' );
+			$WDGUser_new = new WDGUser( $id_linked_user );
+			$WDGUser_new->save_data(
+				FALSE, $investments_drafts_item_data->gender, $investments_drafts_item_data->firstname, $investments_drafts_item_data->lastname, FALSE,
+				$birthday_date_day, $birthday_date_month, $birthday_date_year,
+				$investments_drafts_item_data->birthplace, $investments_drafts_item_data->birthplace_district, $investments_drafts_item_data->birthplace_department, $investments_drafts_item_data->birthplace_country, $investments_drafts_item_data->nationality,
+				$investments_drafts_item_data->address_number, $investments_drafts_item_data->address_number_complement, $investments_drafts_item_data->address, $investments_drafts_item_data->postal_code, $investments_drafts_item_data->city, $investments_drafts_item_data->country,
+				FALSE, FALSE, FALSE, FALSE
+			);
+			
+			// Notification de création de compte
+			NotificationsEmails::investment_draft_validated_new_user( $investments_drafts_item_data->email, $investments_drafts_item_data->firstname, $new_password, $campaign->get_name() );
+		}
+		
+		// Création compte organisation si non-existant
+		if ( $investments_drafts_item_data->user_type == 'orga' && empty( $id_linked_organization ) ) {
+			$WDGOrganization = WDGOrganization::createSimpleOrganization( $id_linked_user, $investments_drafts_item_data->orga_name, $investments_drafts_item_data->orga_email );
+			$WDGOrganization->set_name( $investments_drafts_item_data->orga_name );
+			$WDGOrganization->set_email( $investments_drafts_item_data->orga_email );
+			$WDGOrganization->set_website( $investments_drafts_item_data->orga_website );
+			$WDGOrganization->set_legalform( $investments_drafts_item_data->orga_legalform );
+			$WDGOrganization->set_idnumber( $investments_drafts_item_data->orga_idnumber );
+			$WDGOrganization->set_rcs( $investments_drafts_item_data->orga_rcs );
+			$WDGOrganization->set_capital( $investments_drafts_item_data->orga_capital );
+			$WDGOrganization->set_address_number( $investments_drafts_item_data->orga_address_number );
+			$WDGOrganization->set_address_number_comp( $investments_drafts_item_data->orga_address_number_comp );
+			$WDGOrganization->set_address( $investments_drafts_item_data->orga_address );
+			$WDGOrganization->set_postal_code( $investments_drafts_item_data->orga_postal_code );
+			$WDGOrganization->set_city( $investments_drafts_item_data->orga_city );
+			$WDGOrganization->set_nationality( $investments_drafts_item_data->orga_nationality );
+			$WDGOrganization->save();
+			$id_linked_organization = $WDGOrganization->get_wpref();
+		}
+		
+		// Enregistrement investissement
+		$investment_id = $campaign->add_investment(
+			'check', $investments_drafts_item_data->email, $investments_drafts_item_data->invest_amount, 'publish',
+			'', '', 
+			'', '', '', 
+			'', '', '', '', '', 
+			'', '', '', '', '', 
+			$investments_drafts_item_data->orga_email
+		);
+		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
+			
+		// Notifications de validation d'investissement
+		NotificationsEmails::new_purchase_user_success_check( $investment_id );
+		NotificationsEmails::new_purchase_team_members( $investment_id );
+		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
+		
+		// Valider le draft
+		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
+		
+		echo 'ok';
+		exit();
+	}
+	
 	/**
 	 * Lance les transferts d'argent vers les différents investisseurs
 	 */
