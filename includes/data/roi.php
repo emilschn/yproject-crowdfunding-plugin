@@ -135,15 +135,15 @@ class WDGROI {
 			$api_org_object = WDGWPREST_Entity_Organization::get( $this->id_orga );
 			$organization_obj = new WDGOrganization( $api_org_object->wpref );
 			
-			$WDGUser = WDGUser::get_by_api_id( $this->id_user );
 			// Versement projet vers organisation
-			if (WDGOrganization::is_user_organization( $WDGUser->get_wpref() )) {
-				$WDGOrga = new WDGOrganization( $WDGUser->get_wpref() );
+			if ( $this->recipient_type == 'orga' ) {
+				$WDGOrga = WDGOrganization::get_by_api_id( $this->id_user );
 				$WDGOrga->register_lemonway();
 				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $this->amount );
 
 			// Versement projet vers utilisateur personne physique
 			} else {
+				$WDGUser = WDGUser::get_by_api_id( $this->id_user );
 				$WDGUser->register_lemonway();
 				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $this->amount );
 			}
