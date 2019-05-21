@@ -757,6 +757,9 @@ class NotificationsAPI {
 			'TEXTE_AVANT'			=> $text_before,
 			'TEXTE_APRES'			=> $text_after,
 		);
+		if ( !empty( $attachment_url ) ) {
+			$options[ 'url_attachment' ] = $attachment_url;
+		}
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
@@ -764,9 +767,6 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		if ( !empty( $attachment_url ) ) {
-			$parameters[ 'url_attachment' ] = $attachment_url;
-		}
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
@@ -782,6 +782,9 @@ class NotificationsAPI {
 			'TEXTE_AVANT'			=> $text_before,
 			'TEXTE_APRES'			=> $text_after,
 		);
+		if ( !empty( $attachment_url ) ) {
+			$options[ 'url_attachment' ] = $attachment_url;
+		}
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
@@ -789,9 +792,6 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		if ( !empty( $attachment_url ) ) {
-			$parameters[ 'url_attachment' ] = $attachment_url;
-		}
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
