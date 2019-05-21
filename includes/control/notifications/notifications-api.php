@@ -35,6 +35,8 @@ class NotificationsAPI {
 		'605' => "KYC - Wallet validé et investissement en attente",
 		'606' => "KYC - Wallet validé et investissement en attente - Rappel",
 		'175' => "Erreur d'investissement",
+		'687' => "Investissement sur projet validé",
+		'688' => "Investissement sur épargne positive validé",
 		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
 		'115' => "Déclarations - Rappel J-9 (sans prélèvement)",
 		'119' => "Déclarations - Rappel J-2 (avec prélèvement)",
@@ -742,6 +744,57 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Investissement
 	//**************************************************************************
+	public static function investment_success_project( $recipient, $name, $amount, $project_name, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
+		$id_template = '687';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'				=> 1,
+			'NOM_UTILISATEUR'		=> $name,
+			'MONTANT'				=> $amount,
+			'NOM_PROJET'			=> $project_name,
+			'URL_PROJET'			=> $project_url,
+			'DATE'					=> $date,
+			'TEXTE_AVANT'			=> $text_before,
+			'TEXTE_APRES'			=> $text_after,
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		if ( !empty( $attachment_url ) ) {
+			$parameters[ 'url_attachment' ] = $attachment_url;
+		}
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function investment_success_positive_savings( $recipient, $name, $amount, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
+		$id_template = '688';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'				=> 1,
+			'NOM_UTILISATEUR'		=> $name,
+			'MONTANT'				=> $amount,
+			'URL_PROJET'			=> $project_url,
+			'DATE'					=> $date,
+			'TEXTE_AVANT'			=> $text_before,
+			'TEXTE_APRES'			=> $text_after,
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		if ( !empty( $attachment_url ) ) {
+			$parameters[ 'url_attachment' ] = $attachment_url;
+		}
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
     //*******************************************************
     // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************

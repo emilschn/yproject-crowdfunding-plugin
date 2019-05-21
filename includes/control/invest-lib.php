@@ -179,8 +179,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						
 					} else {
 						$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-						$remaining_amount_when_authenticated = get_post_meta( $payment_id, 'remaining_amount_when_authenticated', TRUE );
-						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $remaining_amount_when_authenticated );
+						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 						if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 							$new_contract_pdf_filename = basename( $new_contract_pdf_file );
 							$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;

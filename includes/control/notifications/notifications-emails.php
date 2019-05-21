@@ -88,15 +88,10 @@ class NotificationsEmails {
      * @param type $payment_id
      * @return type
      */
-    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE, $remaining_amount_when_authenticated = 0 ) {
+    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
 		
 		$particular_content = "";
-		if ( $remaining_amount_when_authenticated > 0 ) {
-			$particular_content .= __( "Lorsque vos justificatifs d'identit&eacute; seront valid&eacute;s, un nouveau paiement par carte sera d&eacute;clench&eacute; automatiquement pour un montant de", 'yproject' );
-			$particular_content .= " " .$remaining_amount_when_authenticated. " &euro;.<br><br>"; 
-		}
-		
 		if ( $is_card_contribution ) {
 			$particular_content .= self::$alert_lemonway_card;
 		}
@@ -123,65 +118,39 @@ class NotificationsEmails {
 		$user_data = get_user_by('email', $email);
 		$payment_key = edd_get_payment_key( $payment_id );
 
-		$object = "Confirmation d'investissement";
-		$body_content = '';
-		$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
-		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br><br>";
+		$attachment_url = '';
+		$text_before = '';
+		$text_after = '';
 		
-		if ( $campaign->is_positive_savings() ) {
-			$body_content .= "Nous vous remercions pour votre investissement ! ";
-			$body_content .= "Vous faites maintenant partie de la communaut&eacute; des activateurs de l'&Eacute;pargne positive, un nouveau mod&egrave;le de placement qui r&eacute;concilie votre portefeuille avec le bien commun, la finance telle qu'elle devrait &ecirc;tre.<br><br>";
-			$body_content .= "Avec vous, nous changeons le monde pas &agrave; pas, un smartphone apr&egrave;s l'autre.<br><br>";
-		
-		} else {
-			$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. ";
+		if ( $payment_key != 'check' ) {
+			$text_before .= 'Votre compte a été débité.<br>';
 		}
+		$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
 		
-		if ( $payment_key == 'check' ) {
-			$body_content .= "N'oubliez pas que ";
-		} else {
-			$body_content .= "Votre compte a été débité mais n'oubliez pas que ";
-		}
-		$body_content .= "l'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>";
-        
 		if ( !empty( $particular_content ) ) {
-			$body_content .= $particular_content . "<br><br>";
+			$text_before .= "<br>" .$particular_content. "<br>";
 		}
 		
 		if ( !empty( $preinvestment ) ) {
-			$body_content .= "Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
+			$text_before .= "<br>Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
 						. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
 						. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
-						. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
+						. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br>";
 		}
-
-		$body_content .= "<strong>Détails concernant votre investissement</strong><br>";
-		if ( $campaign->is_positive_savings() ) {
-			$body_content .= "Page de pr&eacute;sentation : <a href=\"".$campaign->get_fake_url()."\">".$campaign->get_fake_url()."</a><br>";
-			
-		} else {
-			$body_content .= "Projet : " . $post_campaign->post_title . "<br>";
-			$body_content .= "Page de pr&eacute;sentation : <a href=\"".get_permalink($campaign->ID)."\">".get_permalink($campaign->ID)."</a><br>";
-		}
-		$body_content .= "Montant : ".$payment_amount." &euro;<br>";
-		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br><br>";
 		
 		if ( !empty( $attachments ) ) {
-			$body_content .= "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
+			$attachment_url_filename = basename( $attachments[ 0 ] );
+			$attachment_url = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $attachment_url_filename );
+			$text_after = "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
 		}
 		
 		if ( $campaign->is_positive_savings() ) {
-			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">projets en cours de lev&eacute;e de fonds !</a><br><br>";
+			NotificationsAPI::investment_success_positive_savings( $email, $user_data->first_name, $payment_amount, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachments, $campaign->get_api_id() );
+			
 		} else {
-			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">autres projets en cours de lev&eacute;e de fonds</a>, ainsi que notre nouveau produit d'<a href=\"".home_url( '/epargne-positive/' )."\">&Eacute;pargne positive</a> !<br><br>";
+			NotificationsAPI::investment_success_project( $email, $user_data->first_name, $payment_amount, $post_campaign->post_title, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachments, $campaign->get_api_id() );
 		}
 		
-		$body_content .= "&Agrave; bient&ocirc;t sur WEDOGOOD.co<br>";
-		$body_content .= "L'&Eacute;quipe WE DO GOOD<br><br>";
-		
-		$body_content .= "<a href=\"".home_url( '/epargne-positive/' )."\"><img src=\"".home_url( '/wp-content/themes/yproject/images/emails/mail-positive-saivings.png' )."\"></a>";
-
-		return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
 	
 	public static function new_purchase_pending_wire_user( $payment_id, $lemonway_id ) {
