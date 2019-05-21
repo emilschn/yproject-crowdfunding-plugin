@@ -148,7 +148,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'address_number',
-			__( "Num&eacute;ro", 'yproject' ),
+			__( "Num&eacute;ro de rue", 'yproject' ),
 			self::$field_group_address,
 			$WDGOrganization->get_address_number()
 		);
