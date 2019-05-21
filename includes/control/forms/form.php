@@ -241,4 +241,19 @@ class WDG_Form {
 		return $buffer;
 	}
 	
+	/**
+	 * Récupération d'un fichier
+	 * @param string $name
+	 * @return boolean or uploaded_data
+	 */
+	public function getInputFile( $name ) {
+		$buffer = false;
+		
+		if ( isset( $_FILES[ $name ][ 'tmp_name' ] ) && !empty( $_FILES[ $name ][ 'tmp_name' ] ) ) {
+			$buffer = $_FILES[ $name ];
+		}
+		
+		return $buffer;
+	}
+	
 }

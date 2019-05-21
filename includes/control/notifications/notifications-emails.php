@@ -99,6 +99,10 @@ class NotificationsEmails {
 		$attachments = array($new_contract_pdf_file);
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
     }
+	
+	public static function new_purchase_user_success_check( $payment_id ) {
+		return NotificationsEmails::new_purchase_user( $payment_id, '' );
+	}
     
     /**
      * Mail pour l'investisseur lors d'un achat
@@ -474,6 +478,35 @@ class NotificationsEmails {
 		$body_content .= "Si vous aviez payé par chèque, celui-ci ne sera pas encaissé.<br><br>";
 		
 		$body_content .= "A bientôt sur WE DO GOOD !<br>";
+		
+		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
+	}
+	
+	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {
+		$user_email = "investir@wedogood.co";
+		
+		$object = "Ajout de chèque dans TB par le PP pour le projet " . $campaign_name;
+		
+		$body_content = "Salut,<br><br>";
+		$body_content .= "L'équipe du projet " .$campaign_name. " vient d'ajouter un chèque qu'il faudrait valider.<br>";
+		$body_content .= "URL du TB : <a href=\"" .$dashboard_url. "\" target=\"_blank\">" .$dashboard_url. "</a><br><br>";
+		$body_content .= "Bon courage !";
+		
+		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
+	}
+	
+	public static function investment_draft_validated_new_user( $user_email, $user_firstname, $user_password, $campaign_name ) {
+		$object = "Création d'un compte sur WE DO GOOD";
+		
+		$body_content = "Bonjour " .$user_firstname. ",<br><br>";
+		$body_content .= "Suite à votre investissement par chèque sur le projet ".$campaign_name.", un compte a été créé pour vous sur WE DO GOOD.<br><br>";
+		$body_content .= "Vous pouvez y accéder avec les informations suivantes :.<br>";
+		$body_content .= "- votre e-mail : " .$user_email. "<br>";
+		$body_content .= "- votre mot de passe généré automatiquement : " .$user_password. "<br><br>";
+		$body_content .= "Nous vous invitons fortement à vous connecter au plus vite sur <a href=\"".home_url( '/mon-compte/' )."\">votre compte</a> pour y modifier votre mot de passe.<br>";
+		$body_content .= "Vous pourrez aussi en profiter pour vous authentifier auprès de notre prestataire de paiement, ce qui vous permettra de récupérer les royalties versées par le projet à l'avenir.<br>";
+		
+		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
 		
 		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
 	}
