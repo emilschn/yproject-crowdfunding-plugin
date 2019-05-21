@@ -248,7 +248,8 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			'org_website',
 			__( "Site internet *", 'yproject' ),
 			self::$field_group_orga_info,
-			FALSE
+			FALSE,
+			__( "Si la structure n'a pas de site internet, indiquez l'url de sa page societe.com.", 'yproject' )
 		);
 		
 		$this->addField(
