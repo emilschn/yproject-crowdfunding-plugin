@@ -73,4 +73,11 @@ class WDGWPREST_Entity_PollAnswer {
 		return WDGWPRESTLib::call_post_wdg( 'poll-answer', $parameters );
 	}
 	
+	public static function edit( $poll_answer_id, $user_id ) {
+		$parameters = array(
+			'user_id'	=> $user_id
+		);
+		return WDGWPRESTLib::call_post_wdg( 'poll-answer/' .$poll_answer_id, $parameters );
+	}
+	
 }
