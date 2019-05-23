@@ -269,7 +269,9 @@ class WDGOrganization {
 		$buffer = FALSE;
 		if ( !empty( $api_id ) ) {
 			$api_data = WDGWPREST_Entity_Organization::get( $api_id );
-			$buffer = new WDGOrganization( $api_data->wpref );
+			if ( !empty( $api_data->wpref ) ) {
+				$buffer = new WDGOrganization( $api_data->wpref );
+			}
 		}
 		return $buffer;
 	}

@@ -140,7 +140,9 @@ class WDGUser {
 		$buffer = FALSE;
 		if ( !empty( $api_id ) ) {
 			$api_data = WDGWPREST_Entity_User::get( $api_id );
-			$buffer = new WDGUser( $api_data->wpref );
+			if ( !empty( $api_data->wpref ) ) {
+				$buffer = new WDGUser( $api_data->wpref );
+			}
 		}
 		return $buffer;
 	}
