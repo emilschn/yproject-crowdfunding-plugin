@@ -137,6 +137,7 @@ class WDGCampaignBill {
 			case '4.8':
 				$buffer = 'private';
 				break;
+			case '7.2':
 			case '9.6':
 				$buffer = 'crowdfunding';
 				break;
