@@ -188,17 +188,20 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$WDGOrganization->get_city()
 		);
 		
+		global $country_list;
 		$this->addField(
-			'text',
+			'select',
 			'nationality',
 			__( "Pays", 'yproject' ),
 			self::$field_group_address,
-			$WDGOrganization->get_nationality()
+			$WDGOrganization->get_nationality(),
+			FALSE,
+			$country_list
 		);
 		
 	}
 	
-	public function postForm() {
+	public function postForm( $skip_wallet = FALSE ) {
 		parent::postForm();
 		
 		$feedback_success = array();
@@ -232,50 +235,130 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			}
 			
 			$name = $this->getInputText( 'name' );
-			$WDGOrganization->set_name( $name );
+			if ( !empty( $name ) ) {
+				$WDGOrganization->set_name( $name );
+			} else {
+				$error = array(
+					'code'		=> 'name',
+					'text'		=> __( "Le nom de l'organisation ne peut pas &ecirc;tre vide.", 'yproject' ),
+					'element'	=> 'name'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			
 			$idnumber = $this->getInputText( 'idnumber' );
-			$WDGOrganization->set_idnumber( $idnumber );
+			if ( !empty( $idnumber ) ) {
+				$WDGOrganization->set_idnumber( $idnumber );
+			}
+			
 			$description = $this->getInputText( 'description' );
-			$WDGOrganization->set_description( $description );
+			if ( !empty( $description ) ) {
+				$WDGOrganization->set_description( $description );
+			}
+			
 			$website = $this->getInputText( 'website' );
-			$WDGOrganization->set_website( $website );
+			if ( !empty( $website ) ) {
+				$WDGOrganization->set_website( $website );
+			}
+			
 			$representative_function = $this->getInputText( 'representative_function' );
-			$WDGOrganization->set_representative_function( $representative_function );
+			if ( !empty( $representative_function ) ) {
+				$WDGOrganization->set_representative_function( $representative_function );
+			}
+			
 			$legalform = $this->getInputText( 'legalform' );
-			$WDGOrganization->set_legalform( $legalform );
+			if ( !empty( $legalform ) ) {
+				$WDGOrganization->set_legalform( $legalform );
+			}
+			
 			$rcs = $this->getInputText( 'rcs' );
-			$WDGOrganization->set_rcs( $rcs );
+			if ( !empty( $rcs ) ) {
+				$WDGOrganization->set_rcs( $rcs );
+			}
+			
 			$capital = $this->getInputText( 'capital' );
-			$WDGOrganization->set_capital( $capital );
+			if ( !empty( $capital ) && ( $capital === '0' || is_numeric( $capital ) ) ) {
+				$WDGOrganization->set_capital( $capital );
+			} else {
+				$error = array(
+					'code'		=> 'capital',
+					'text'		=> __( "Le capital de l'organisation doit &ecirc;tre un nombre.", 'yproject' ),
+					'element'	=> 'capital'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			
 			$ape = $this->getInputText( 'ape' );
-			$WDGOrganization->set_ape( $ape );
+			if ( !empty( $ape ) ) {
+				$WDGOrganization->set_ape( $ape );
+			}
+			
 			$vat = $this->getInputText( 'vat' );
-			$WDGOrganization->set_vat( $vat );
+			if ( !empty( $vat ) ) {
+				$WDGOrganization->set_vat( $vat );
+			}
+			
 			$fiscal_year_end_month = $this->getInputText( 'fiscal_year_end_month' );
-			$WDGOrganization->set_fiscal_year_end_month( $fiscal_year_end_month );
+			if ( !empty( $fiscal_year_end_month ) ) {
+				$WDGOrganization->set_fiscal_year_end_month( $fiscal_year_end_month );
+			}
 			
 			$address_number = $this->getInputText( 'address_number' );
-			$WDGOrganization->set_address_number( $address_number );
+			if ( !empty( $address_number ) && is_numeric( $address_number ) ) {
+				$WDGOrganization->set_address_number( $address_number );
+			} else {
+				$error = array(
+					'code'		=> 'address_number',
+					'text'		=> __( "Le num&eacute;ro de rue de l'organisation doit &ecirc;tre un nombre.", 'yproject' ),
+					'element'	=> 'address_number'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			
 			$address_number_comp = $this->getInputText( 'address_number_comp' );
-			$WDGOrganization->set_address_number_comp( $address_number_comp );
+			if ( !empty( $address_number_comp ) ) {
+				$WDGOrganization->set_address_number_comp( $address_number_comp );
+			}
+			
 			$address = $this->getInputText( 'address' );
-			$WDGOrganization->set_address( $address );
+			if ( !empty( $address ) ) {
+				$WDGOrganization->set_address( $address );
+			}
+			
 			$postal_code = $this->getInputText( 'postal_code' );
-			$WDGOrganization->set_postal_code( $postal_code );
+			if ( !empty( $postal_code ) && is_numeric( $postal_code ) ) {
+				$WDGOrganization->set_postal_code( $postal_code );
+			} else {
+				$error = array(
+					'code'		=> 'postal_code',
+					'text'		=> __( "Le code postal de l'organisation doit &ecirc;tre un nombre.", 'yproject' ),
+					'element'	=> 'postal_code'
+				);
+				array_push( $feedback_errors, $error );
+			}
+			
 			$city = $this->getInputText( 'city' );
-			$WDGOrganization->set_city( $city );
+			if ( !empty( $city ) ) {
+				$WDGOrganization->set_city( $city );
+			}
+			
 			$nationality = $this->getInputText( 'nationality' );
-			$WDGOrganization->set_nationality( $nationality );
+			if ( !empty( $nationality ) ) {
+				$WDGOrganization->set_nationality( $nationality );
+			}
 			
 			$WDGOrganization->save();
-			$was_registered = $WDGOrganization->has_lemonway_wallet();
-			if ( $WDGOrganization->can_register_lemonway() ) {
-				ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->register_lemonway();' );
-				$WDGOrganization->register_lemonway();
-				// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
-				if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {
-					ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->send_kyc();' );
-					$WDGOrganization->send_kyc();
+			
+			if ( !$skip_wallet ) {
+				$was_registered = $WDGOrganization->has_lemonway_wallet();
+				if ( $WDGOrganization->can_register_lemonway() ) {
+					ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->register_lemonway();' );
+					$WDGOrganization->register_lemonway();
+					// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
+					if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {
+						ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->send_kyc();' );
+						$WDGOrganization->send_kyc();
+					}
 				}
 			}
 		}

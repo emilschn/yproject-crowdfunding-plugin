@@ -1629,70 +1629,74 @@ class WDGAjaxActions {
 	 * Enregistre les informations du formulaire d'édition d'une organisation
 	 */
 	public static function save_edit_organization(){
-		global $errors_edit;
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$organization_id = filter_input( INPUT_POST, 'organization_id' );
+		if ( empty( $organization_id ) ) {
+			return FALSE;
+		}
 
 		//Récupération de l'organisation
-		$campaign = new ATCF_Campaign($campaign_id);
-		$current_organization = $campaign->get_organization();
-
-		// enregistrement des données dans l'organisation
-		$org_object = new WDGOrganization( $current_organization->wpref, $current_organization );
-
-		//enregistrement des données avec la fonction edit et récupération des 
-		//infos sur les fichiers uploadés
-		$files_info = WDGOrganization::edit($org_object);
-
-		if($files_info === FALSE) {//user non connecté
-			$buffer = "FALSE";
-		} else if($files_info['files_info'] != null) {
-			$return_values = array(
-				"response" => "edit_organization",
-				"organization" => array(
-					"wpref"		=> $org_object->get_wpref(),
-					"name"		=> $org_object->get_name(),
-					"email"		=> $org_object->get_email(),
-					"representative_function"	=> $org_object->get_representative_function(),
-					"description"	=> $org_object->get_description(),
-					"legalForm"		=> $org_object->get_legalform(),
-					"idNumber"		=> $org_object->get_idnumber(),
-					"rcs"			=> $org_object->get_rcs(),
-					"capital"		=> $org_object->get_capital(),
-					"ape"			=> $org_object->get_ape(),
-					"vat"			=> $org_object->get_vat(),
-					"fiscal_year_end_month"		=> $org_object->get_fiscal_year_end_month(),
-					"address_number"		=> $org_object->get_address_number(),
-					"address_number_comp"	=> $org_object->get_address_number_comp(),
-					"address"				=> $org_object->get_address(),
-					"postal_code"			=> $org_object->get_postal_code(),
-					"city"					=> $org_object->get_city(),
-					"nationality"			=> $org_object->get_nationality(),
-					"bankownername"			=> $org_object->get_bank_owner(),
-					"bankowneraddress"	=> $org_object->get_bank_address(),
-					"bankowneriban"		=> $org_object->get_bank_iban(),
-					"bankownerbic"		=> $org_object->get_bank_bic(),
-					"id_quickbooks"		=> $org_object->get_id_quickbooks(),
-				),
-				"files_info" => array(
-					"org_doc_bank" => $files_info['files_info']["org_doc_bank"],
-					"org_doc_kbis" => $files_info['files_info']["org_doc_kbis"],
-					"org_doc_status" => $files_info['files_info']["org_doc_status"],
-					"org_doc_id" => $files_info['files_info']["org_doc_id"],
-					"org_doc_home" => $files_info['files_info']["org_doc_home"],
-					"org_doc_capital_allocation" => $files_info['files_info']["org_doc_capital_allocation"],
-					"org_doc_id_2" => $files_info['files_info']["org_doc_id_2"],
-					"org_doc_home_2" => $files_info['files_info']["org_doc_home_2"],
-					"org_doc_id_3" => $files_info['files_info']["org_doc_id_3"],
-					"org_doc_home_3" => $files_info['files_info']["org_doc_home_3"]
-				),
-			);
-			$buffer = json_encode($return_values);
-		} else{
-			$return_values = array(
-				"errors" => $files_info['errors_edit'],
-			);
-			$buffer = json_encode($return_values);
+		$WDGUser_current = WDGUser::current();
+		if ( empty( $WDGUser_current ) && !$WDGUser_current->can_edit_organization( $organization_id ) ) {
+			return FALSE;
 		}
+		
+		$core = ATCF_CrowdFunding::instance();
+		$core->include_form( 'organization-details' );
+		$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
+		$return_post_form = $WDGOrganizationDetailsForm->postForm( TRUE );
+		$errors_edit = array();
+		foreach ( $return_post_form[ 'errors' ] as $error_item) {
+			$errors_edit[ $error_item[ 'code' ] ] = $error_item[ 'text' ];
+		}
+		
+		$WDGOrganization = new WDGOrganization( $organization_id );
+		$WDGOrganization->set_id_quickbooks( filter_input( INPUT_POST, 'org_id_quickbooks' ) );
+		$WDGOrganization->submit_bank_info();
+		$files_info = $WDGOrganization->submit_documents();
+
+
+		$return_values = array(
+			'response'		=> 'edit_organization',
+			'organization'	=> array(
+				'wpref'			=> $WDGOrganization->get_wpref(),
+				'name'			=> $WDGOrganization->get_name(),
+				'email'			=> $WDGOrganization->get_email(),
+				'representative_function'	=> $WDGOrganization->get_representative_function(),
+				'description'	=> $WDGOrganization->get_description(),
+				'legalForm'		=> $WDGOrganization->get_legalform(),
+				'idNumber'		=> $WDGOrganization->get_idnumber(),
+				'rcs'			=> $WDGOrganization->get_rcs(),
+				'capital'		=> $WDGOrganization->get_capital(),
+				'ape'			=> $WDGOrganization->get_ape(),
+				'vat'			=> $WDGOrganization->get_vat(),
+				'fiscal_year_end_month'		=> $WDGOrganization->get_fiscal_year_end_month(),
+				'address_number'		=> $WDGOrganization->get_address_number(),
+				'address_number_comp'	=> $WDGOrganization->get_address_number_comp(),
+				'address'				=> $WDGOrganization->get_address(),
+				'postal_code'			=> $WDGOrganization->get_postal_code(),
+				'city'					=> $WDGOrganization->get_city(),
+				'nationality'			=> $WDGOrganization->get_nationality(),
+				'bankownername'			=> $WDGOrganization->get_bank_owner(),
+				'bankowneraddress'		=> $WDGOrganization->get_bank_address(),
+				'bankowneriban'			=> $WDGOrganization->get_bank_iban(),
+				'bankownerbic'			=> $WDGOrganization->get_bank_bic(),
+				'id_quickbooks'			=> $WDGOrganization->get_id_quickbooks()
+			),
+			'files_info'	=> array(
+				'org_doc_bank'		=> $files_info[ 'org_doc_bank' ],
+				'org_doc_kbis'		=> $files_info[ 'org_doc_kbis' ],
+				'org_doc_status'	=> $files_info[ 'org_doc_status' ],
+				'org_doc_id'		=> $files_info[ 'org_doc_id' ],
+				'org_doc_home'		=> $files_info[ 'org_doc_home' ],
+				'org_doc_capital_allocation'	=> $files_info[ 'org_doc_capital_allocation' ],
+				'org_doc_id_2'		=> $files_info[ 'org_doc_id_2' ],
+				'org_doc_home_2'	=> $files_info[ 'org_doc_home_2' ],
+				'org_doc_id_3'		=> $files_info[ 'org_doc_id_3' ],
+				'org_doc_home_3'	=> $files_info[ 'org_doc_home_3' ]
+			),
+			'errors'		=> $errors_edit
+		);
+		$buffer = json_encode( $return_values );
 		echo $buffer;
 		exit();
 	}
