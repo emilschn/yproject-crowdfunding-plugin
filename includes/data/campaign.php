@@ -848,7 +848,7 @@ class ATCF_Campaign {
 		$buffer = 'funded-certificate-' .$this->ID. '-' .$this->get_api_id(). '.pdf';
 		return $buffer;
 	}
-	public function make_funded_certificate( $force = FALSE ) {
+	public function make_funded_certificate( $force = FALSE, $str_date_end = FALSE ) {
 		$filename = $this->get_funded_certificate_filename();
 		$filepath = __DIR__ . '/../../files/campaign-funded/' . $filename;
 		if ( !$force && file_exists( $filepath ) ) {
@@ -876,9 +876,17 @@ class ATCF_Campaign {
 		
 		$project_investors_list = array();
 		$investments_list = $this->payments_data( TRUE );
+		$date_end = FALSE;
+		if ( !empty( $str_date_end ) ) {
+			$date_end = new DateTime( $str_date_end );
+			$date_end->setTime( 23, 59, 59 );
+		}
+		
+		$amount = 0;
 		
 		foreach ( $investments_list as $investment_item ) {
-			if ( $investment_item[ 'status' ] == 'publish' ) {
+			$date_investment = new DateTime( $investment_item[ 'date' ] );
+			if ( $investment_item[ 'status' ] == 'publish' && ( empty( $date_end ) || $date_end >= $date_investment ) ) {
 				if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
 					$orga = new WDGOrganization( $investment_item[ 'user' ] );
 					$firstname = $orga->get_name();
@@ -895,9 +903,13 @@ class ATCF_Campaign {
 					}
 				}
 
+				$amount += $investment_item['amount'];
 				array_push( $project_investors_list, array( "firstname" => $firstname, "lastname" => $lastname, "amount" => $investment_item['amount'] ) );
 			}
 		}
+		
+		$platform_commission = $this->platform_commission();
+		$platform_commission_amount = round( $amount * $platform_commission / 100, 2 );
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get(
@@ -909,10 +921,10 @@ class ATCF_Campaign {
 			$WDGOrganization->get_city(),
 			$this->end_date( 'd/m/Y' ),
 			$this->backers_count(),
-			UIHelpers::format_number( $this->current_amount( FALSE ) ),
-			UIHelpers::format_number( $this->platform_commission() ),
-			UIHelpers::format_number( $this->platform_commission_amount() ),
-			UIHelpers::format_number( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
+			UIHelpers::format_number( $amount ),
+			UIHelpers::format_number( $platform_commission ),
+			UIHelpers::format_number( $platform_commission_amount ),
+			UIHelpers::format_number( $amount - $platform_commission_amount ),
 			$start_datetime->format( 'd/m/Y' ),
 			$this->funding_duration(),
 			UIHelpers::format_number( $this->roi_percent(), 10 ),

@@ -581,9 +581,10 @@ class WDGPostActions {
 	public static function generate_campaign_funded_certificate() {
 		$WDGUser_current = WDGUser::current();
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$date_end = filter_input( INPUT_POST, 'date_end' );
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$campaign->make_funded_certificate( TRUE );
+			$campaign->make_funded_certificate( TRUE, $date_end );
 		}
 		
 		$url_return = wp_get_referer() . "#documents";
