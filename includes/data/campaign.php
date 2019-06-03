@@ -97,7 +97,7 @@ function atcf_create_campaign($author_ID, $title){
     add_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category );
 
     // Extra Campaign Information
-    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_preparing );
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_validated );
     add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0);
 
     add_post_meta( $newcampaign_id, 'campaign_part_value', 1 );
