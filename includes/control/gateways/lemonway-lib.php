@@ -508,14 +508,17 @@ class LemonwayLib {
 		if (!isset($iban)) return FALSE;
 		if (!isset($dom1)) return FALSE;
 		
+		$clean_iban = str_replace( ' ', '', $iban );
+		$clean_bic = str_replace( ' ', '', $bic );
+		
 		//wallet ; holder; bic ; iban ; dom1 ; dom2
 		$param_list = array(
-			'wallet' => $wallet_id,
-			'holder' => $holder_name,
-			'iban' => $iban,
-			'bic' => $bic,
-			'dom1' => $dom1,
-			'dom2' => $dom2
+			'wallet'	=> $wallet_id,
+			'holder'	=> $holder_name,
+			'iban'		=> $clean_iban,
+			'bic'		=> $clean_bic,
+			'dom1'		=> $dom1,
+			'dom2'		=> $dom2
 		);
 		
 		$result = LemonwayLib::call('RegisterIBAN', $param_list);
