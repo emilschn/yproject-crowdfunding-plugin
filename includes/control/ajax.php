@@ -1047,11 +1047,15 @@ class WDGAjaxActions {
 			$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 			$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $mobile_phone
 		);
+		if ( !$current_user->is_major() ) {
+			$errors[ 'new_birthday' ] = __( "Le porteur de projet doit &ecirc;tre majeur.", 'yproject' );
+			unset( $success[ 'new_birthday' ] );
+		}
 
 		$return_values = array(
-			"response" => "edit_project",
-			"errors" => $errors,
-			"success" => $success
+			"response"	=> 'edit_project',
+			"errors"	=> $errors,
+			"success"	=> $success
 		);
 		echo json_encode($return_values);
 
