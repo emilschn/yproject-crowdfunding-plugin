@@ -46,7 +46,8 @@ class WDGWPREST_Entity_Declaration {
 			'message'				=> $declaration->message,
 			'adjustment'			=> $declaration->adjustment,
 			'employees_number'		=> $declaration->employees_number,
-			'other_fundings'		=> $declaration->other_fundings
+			'other_fundings'		=> $declaration->other_fundings,
+			'declared_by'			=> $declaration->declared_by
 		);
 		return $parameters;
 	}

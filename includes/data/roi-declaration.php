@@ -38,6 +38,7 @@ class WDGROIDeclaration {
 	
 	public $employees_number;
 	public $other_fundings;
+	public $declared_by;
 	
 	public $on_api;
 	
@@ -65,6 +66,7 @@ class WDGROIDeclaration {
 				$this->transfered_previous_remaining_amount = $collection_item->transfered_previous_remaining_amount;
 				$this->employees_number = $collection_item->employees_number;
 				$this->other_fundings = $collection_item->other_fundings;
+				$this->declared_by = $collection_item->declared_by;
 				if ( isset( $collection_item->on_api ) ) {
 					$this->on_api = $collection_item->on_api;
 				}
@@ -105,6 +107,7 @@ class WDGROIDeclaration {
 
 					$this->employees_number = $declaration_api_item->employees_number;
 					$this->other_fundings = $declaration_api_item->other_fundings;
+					$this->declared_by = $declaration_api_item->declared_by;
 
 					$this->on_api = TRUE;
 
@@ -158,6 +161,7 @@ class WDGROIDeclaration {
 						$this->on_api = ( $declaration_item->on_api == 1 );
 						$this->employees_number = 0;
 						$this->other_fundings = '';
+						$this->declared_by = '';
 
 						// Les déclarations sans statut doivent passer en statut "Déclaration"
 						if ( empty( $this->status ) || $this->status == null ) {
@@ -183,6 +187,7 @@ class WDGROIDeclaration {
 	 */
 	public function update() {
 		WDGWPREST_Entity_Declaration::update( $this );
+		self::$collection_by_id[ $this->id ] = $this;
 	}
 	
 	/**
@@ -252,12 +257,16 @@ class WDGROIDeclaration {
 		return $this->status;
 	}
 	
+	public function get_amount_royalties() {
+		return $this->amount;
+	}
+	
 	/**
 	 * Retourne le montant additionnÃ© l'ajustement
 	 * @return number
 	 */
 	public function get_amount_with_adjustment() {
-		return ( $this->amount + $this->get_adjustment_value() );
+		return ( $this->get_amount_royalties() + $this->get_adjustment_value() );
 	}
 	
 	/**
@@ -297,6 +306,14 @@ class WDGROIDeclaration {
 		}
 		
 		return $buffer;
+	}
+	
+	public function get_commission_to_pay_without_tax() {
+		return $this->get_commission_to_pay() / 1.2;
+	}
+	
+	public function get_commission_tax() {
+		return $this->get_commission_to_pay_without_tax() * 0.2;
 	}
 	
 	/**
@@ -385,6 +402,52 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
+	private $estimated_turnover;
+	public function get_estimated_turnover() {
+		if ( !isset( $this->estimated_turnover ) ) {
+			$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+			$declaration_date_due = new DateTime( $this->date_due );
+			$quarter_percent_list = array( 10, 20, 30, 40 );
+			$nb_quarter = 0;
+			$estimated_turnover = $campaign->estimated_turnover();
+			$nb_year = array_key_first( $estimated_turnover );
+
+			// Parcours des déclarations de royalties pour savoir à quelle année et quel trimestre on est dans les échéances
+			// TODO : les trier dans l'ordre par sécurité
+			$existing_roi_declarations = $campaign->get_roi_declarations();
+			foreach ( $existing_roi_declarations as $declaration_object ) {
+				$date_declaration = new DateTime( $declaration_object[ 'date_due' ] );
+
+				if ( $date_declaration->format( 'm' ) == $declaration_date_due->format( 'm' ) && $date_declaration->format( 'Y' ) == $declaration_date_due->format( 'Y' ) ) {
+					break;
+
+				} else {
+					$nb_quarter++;
+					if ( $nb_quarter >= $campaign->get_declararations_count_per_year() ) {
+						$nb_quarter = 0;
+						$nb_year++;
+					}
+				}
+			}
+
+			// Test pour corriger les décalages dans le CA prévisionnel
+			// Pour éviter d'avoir zero, il faut soit le premier de la liste, soit le dernier
+			if ( !isset( $estimated_turnover[ $nb_year ] ) ) {
+				if ( $nb_year < 1 ) {
+					$nb_year = array_key_first( $estimated_turnover );
+				} else {
+					$nb_year = array_key_last( $estimated_turnover );
+				}
+			}
+
+			// Calculs des éléments à afficher
+			$amount_estimation_year = $estimated_turnover[ $nb_year ];
+			$percent_estimation = $quarter_percent_list[ $nb_quarter ];
+			$this->estimated_turnover = $amount_estimation_year * $percent_estimation / 100;
+		}
+		return $this->estimated_turnover;
+	}
+	
 	public function get_message() {
 		return nl2br( $this->message, ENT_HTML5 );
 	}
@@ -398,6 +461,21 @@ class WDGROIDeclaration {
 	public function set_other_fundings( $other_fundings ) {
 		$this->other_fundings = htmlentities( $other_fundings );
 	}
+	
+	public function get_declared_by() {
+		return json_decode( $this->declared_by );
+	}
+	public function set_declared_by( $declared_by_apiid, $declared_by_name, $declared_by_email, $declared_by_status ) {
+		$declared_by_data = array(
+			'apiid'		=> $declared_by_apiid,
+			'name'		=> $declared_by_name,
+			'email'		=> $declared_by_email,
+			'status'	=> $declared_by_status
+		);
+		$this->declared_by = json_encode( $declared_by_data );
+	}
+	
+	
 	
 	/**
 	 * S'occuper des versements vers les utilisateurs

@@ -169,6 +169,9 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$other_fundings = $this->getInputText( 'other_fundings' );
 			$roideclaration->set_other_fundings( $other_fundings );
 			
+			$WDGUser_current = WDGUser::current();
+			$roideclaration->set_declared_by( $WDGUser_current->get_api_id(), $WDGUser_current->get_firstname(). ' ' .$WDGUser_current->get_lastname(), $WDGUser_current->get_email(), ( $WDGUser_current->is_admin() ? 'admin' : 'team' ) );
+			
 			$declaration_message = $this->getInputText( 'message' );
 			$roideclaration->set_message( $declaration_message );
 			
