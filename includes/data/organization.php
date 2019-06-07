@@ -92,6 +92,7 @@ class WDGOrganization {
 			return false;
 		}
         $org_object->set_creator( $user_id );
+		
         return $org_object;
     }
 

@@ -105,6 +105,7 @@ class WDGWPREST_Entity_Organization {
 			'type' => $role_slug
 		);
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' .$organization_id. '/users', $request_params );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user_id. '?with_links=1' );
 		return $result_obj;
 	}
 	
