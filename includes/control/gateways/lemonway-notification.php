@@ -413,7 +413,7 @@ class LemonwayNotification {
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
 	
-		$content = 'Un virement a été reçu avec les infos suivantes :<br />';
+		$content = 'Un prélèvement a été reçu avec les infos suivantes :<br />';
 		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br />';
 		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br />';
 		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br />';

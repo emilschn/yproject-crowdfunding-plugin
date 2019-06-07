@@ -702,6 +702,13 @@ class LemonwayLib {
 					$result = LemonwayLib::call('GetPaymentDetails', $param_list);
 					break;
 
+				case 'transactionId':
+					$param_list = array( 
+						'transactionId' => $transaction_id
+					);
+					$result = LemonwayLib::call('GetMoneyInTransDetails', $param_list);
+					break;
+				
 				case 'moneyin':
 				default:
 					$param_list = array( 
