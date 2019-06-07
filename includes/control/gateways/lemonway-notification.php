@@ -426,7 +426,9 @@ class LemonwayNotification {
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
 			$WDGOrga_wallet->check_register_royalties_lemonway_wallet();
-			LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $lemonway_posted_amount );
+			$transaction_details = LemonwayLib::get_transaction_by_id( $lemonway_posted_id_transaction, 'transactionId' );
+			$transfer_amount = $transaction_details->CRED - $transaction_details->COM;
+			LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $transfer_amount );
 		}
 	}
 	
