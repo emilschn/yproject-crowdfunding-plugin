@@ -124,6 +124,12 @@ class WDGInvestment {
 		$current_datetime = new DateTime();
 		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d H:i:s' );
 		
+		if ( !isset( $_SESSION[ 'invest_update_date' ] ) ) {
+			ypcf_debug_log( 'WDGInvestment::update_session >> UPDATE invest_update_date NOT SET' );
+		} else {
+			ypcf_debug_log( 'WDGInvestment::update_session >> UPDATE invest_update_date = ' . $_SESSION[ 'invest_update_date' ] );
+		}
+		
 		if ( !empty( $amount ) ) {
 			$_SESSION[ 'invest_amount' ] = $amount;
 			$_SESSION[ 'redirect_current_amount_part' ] = $amount;
