@@ -57,6 +57,10 @@ class LemonwayLib {
 	 * @return boolean
 	 */
 	public static function call($method_name, $params, $params_override = array()) {
+		if ( defined( 'YP_LW_SKIP' ) ) {
+			return FALSE;
+		}
+		
 		global $lemonway_lib;
 		ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $params : ' .print_r($params, true));
 		

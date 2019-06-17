@@ -2165,14 +2165,40 @@ class ATCF_Campaign {
 	
 	public function is_remaining_time() {
 		$buffer = TRUE;
+		
 		if ( $this->time_remaining_str() == '-' ) {
+			$update = false;
+					
 			$can_invest_after = $this->can_invest_until_contract_start_date();
-			if ( !$can_invest_after ) {
-				$buffer = FALSE;
-			} else {
+			if ( $can_invest_after ) {
 				$datetime_end = $this->get_end_date_when_can_invest_until_contract_start_date();
 				$datetime_today = new DateTime();
 				$buffer = ( $datetime_today < $datetime_end );
+				
+			} else {
+				$buffer = FALSE;
+			}
+				
+			if ( !$buffer && $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+				if ( $this->is_funded() ) {
+					$this->set_status( ATCF_Campaign::$campaign_status_funded );
+					$update = true;
+				} else {
+					$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
+					$this->set_status( ATCF_Campaign::$campaign_status_archive );
+					$update = true;
+				}
+			
+				if ( $update ) {
+					$this->update_api();
+					do_action('wdg_delete_cache', array(
+						'home-projects',
+						'projectlist-projects-current',
+						'projectlist-projects-funded'
+					));
+					$file_cacher = WDG_File_Cacher::current();
+					$file_cacher->build_campaign_page_cache( $this->ID );
+				}
 			}
 		}
 		return $buffer;
@@ -2205,29 +2231,6 @@ class ATCF_Campaign {
 			//Si on a dépassé la date de fin, on retourne "-"
 			if ( $now > $expires ) {
 				$buffer = '-';
-				if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
-					$update = false;
-					if ( $this->is_funded() ) {
-						if ( !$this->can_invest_until_contract_start_date() ) {
-							$this->set_status( ATCF_Campaign::$campaign_status_funded );
-							$update = true;
-						}
-					} else {
-						$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
-						$this->set_status( ATCF_Campaign::$campaign_status_archive );
-						$update = true;
-					}
-					if ( $update ) {
-						$this->update_api();
-						do_action('wdg_delete_cache', array(
-							'home-projects',
-							'projectlist-projects-current',
-							'projectlist-projects-funded'
-						));
-						$file_cacher = WDG_File_Cacher::current();
-						$file_cacher->build_campaign_page_cache( $this->ID );
-					}
-				}
 			} else {
 				$diff = $expires - $now;
 				$nb_days = floor($diff / (60 * 60 * 24));
