@@ -146,5 +146,10 @@ class NotificationsSlack {
 		$message = "L'organisation " .$orga->get_name(). " a uploadé des documents d'authentification. Nombre de fichiers : ".$nb_document.".";
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box );
 	}
+	
+	public static function send_declaration_filled( $project_name, $turnover_amount, $royalties_amount, $commission_amount ) {
+		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box );
+	}
     
 }

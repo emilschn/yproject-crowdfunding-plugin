@@ -150,18 +150,20 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		}
 		
 		if ( !$this->hasErrors() ) {
+			$declaration_message = $this->getInputText( 'message' );
+			
 			$roideclaration->set_turnover( $saved_declaration );
 			$roideclaration->percent_commission = $campaign->get_costs_to_organization();
 			$roideclaration->amount = round( ( $total_turnover * $campaign->roi_percent_remaining() / 100 ) * 100 ) / 100;
 			if ( $roideclaration->get_amount_with_adjustment() == 0 ) {
-				NotificationsEmails::turnover_declaration_null( $this->declaration_id );
+				NotificationsEmails::turnover_declaration_null( $this->declaration_id, $declaration_message );
 				if ( $roideclaration->get_amount_with_commission() == 0 ) {
 					$roideclaration->status = WDGROIDeclaration::$status_transfer;
 				} else {
 					$roideclaration->status = WDGROIDeclaration::$status_payment;
 				}
 			} else {
-				NotificationsEmails::turnover_declaration_not_null( $this->declaration_id );
+				NotificationsEmails::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
 				$roideclaration->status = WDGROIDeclaration::$status_payment;
 			}
 			$roideclaration->employees_number = $employees_number;
@@ -172,10 +174,11 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$WDGUser_current = WDGUser::current();
 			$roideclaration->set_declared_by( $WDGUser_current->get_api_id(), $WDGUser_current->get_firstname(). ' ' .$WDGUser_current->get_lastname(), $WDGUser_current->get_email(), ( $WDGUser_current->is_admin() ? 'admin' : 'team' ) );
 			
-			$declaration_message = $this->getInputText( 'message' );
 			$roideclaration->set_message( $declaration_message );
 			
 			$roideclaration->save();
+			
+			NotificationsSlack::send_declaration_filled( $campaign->get_name(), $roideclaration->get_turnover_total(), $roideclaration->get_amount_with_adjustment(), $roideclaration->get_commission_to_pay() );
 		}
 		
 		return !$this->hasErrors();
