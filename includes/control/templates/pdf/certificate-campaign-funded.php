@@ -10,6 +10,7 @@ class WDG_Template_PDF_Campaign_Funded {
 		$organization_address,
 		$organization_postalcode,
 		$organization_city,
+		$free_field,
 		$date_campaign_end,
 		$number_investors,
 		$amount_funded,
@@ -60,6 +61,9 @@ class WDG_Template_PDF_Campaign_Funded {
 		<div style="margin-top: 40px;">
 			<p>
 				<span style="font-weight: bold; font-size: 18pt;">ATTESTATION DE LEV&Eacute;E DE FONDS</span><br>
+				<?php if ( !empty( $free_field ) ): ?>
+				<span><?php echo $free_field; ?></span><br><br>
+				<?php endif; ?>
 				<span>Date : <?php echo $date_campaign_end; ?></span>
 			</p>
 		</div>

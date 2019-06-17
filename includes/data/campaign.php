@@ -848,7 +848,7 @@ class ATCF_Campaign {
 		$buffer = 'funded-certificate-' .$this->ID. '-' .$this->get_api_id(). '.pdf';
 		return $buffer;
 	}
-	public function make_funded_certificate( $force = FALSE, $str_date_end = FALSE ) {
+	public function make_funded_certificate( $force = FALSE, $str_date_end = FALSE, $free_field = '' ) {
 		$filename = $this->get_funded_certificate_filename();
 		$filepath = __DIR__ . '/../../files/campaign-funded/' . $filename;
 		if ( !$force && file_exists( $filepath ) ) {
@@ -908,6 +908,7 @@ class ATCF_Campaign {
 			}
 		}
 		
+		$today_date = new DateTime();
 		$platform_commission = $this->platform_commission();
 		$platform_commission_amount = round( $amount * $platform_commission / 100, 2 );
 		
@@ -919,7 +920,8 @@ class ATCF_Campaign {
 			$WDGOrganization->get_full_address_str(),
 			$WDGOrganization->get_postal_code(),
 			$WDGOrganization->get_city(),
-			$this->end_date( 'd/m/Y' ),
+			$free_field,
+			$today_date->format( 'd/m/Y' ),
 			$this->backers_count(),
 			UIHelpers::format_number( $amount ),
 			UIHelpers::format_number( $platform_commission ),
