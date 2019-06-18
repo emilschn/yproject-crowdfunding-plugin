@@ -972,6 +972,10 @@ class ATCF_Campaign {
 		'8'				=> "8 ans",
 		'9'				=> "9 ans",
 		'10'			=> "10 ans",
+		'15'			=> "15 ans",
+		'20'			=> "20 ans",
+		'25'			=> "25 ans",
+		'30'			=> "30 ans",
 		'0'				=> "Dur&eacute;e ind&eacute;termin&eacute;e"
 	);
     public static $key_funding_duration = 'campaign_funding_duration';
