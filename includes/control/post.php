@@ -34,7 +34,8 @@ class WDGPostActions {
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
         self::add_action("post_confirm_check");
-        self::add_action("declaration_auto_generate");
+        self::add_action( 'declaration_auto_generate' );
+        self::add_action( 'add_declaration_document' );
         self::add_action("roi_mark_transfer_received");
         self::add_action("generate_royalties_bill");
         self::add_action("refund_investors");
@@ -48,8 +49,8 @@ class WDGPostActions {
      * @param string $action_name
      */
     public static function add_action($action_name) {
-        add_action('admin_post_' . $action_name, array(WDGPostActions::$class_name, $action_name));
-        add_action('admin_post_nopriv_' . $action_name, array(WDGPostActions::$class_name, $action_name));
+        add_action( 'admin_post_' .$action_name, array( self::$class_name, $action_name ) );
+        add_action( 'admin_post_nopriv_' .$action_name, array( self::$class_name, $action_name ) );
     }
 
 	/**
@@ -927,6 +928,19 @@ class WDGPostActions {
 			
 		}
 		
+	}
+	
+	public static function add_declaration_document() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		
+		$core = ATCF_CrowdFunding::instance();
+		$core->include_form( 'declaration-document' );
+		$form_document = new WDG_Form_Declaration_Document( $campaign_id );
+		$form_return = $form_document->postForm();
+		
+		$success = ( $form_return != FALSE ) ? '1' : '100';
+		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_declaration_document_success=' .$success. '#royalties' );
+		exit();
 	}
 	
 	public static function roi_mark_transfer_received() {

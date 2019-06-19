@@ -15,6 +15,8 @@ class NotificationsSlack {
 	private static $icon_sign = ':black_nib:';
 	private static $icon_robot = ':robot_face:';
 	private static $icon_card_file_box = ':card_file_box:';
+	private static $icon_mag = ':mag:';
+	private static $icon_currency_exchange = ':currency_exchange:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 	    $data = "payload=" . json_encode(array(
@@ -147,9 +149,14 @@ class NotificationsSlack {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box );
 	}
 	
+	public static function send_declaration_document_uploaded( $project_name, $document_name ) {
+		$message = "Le projet " .$project_name. " a uploadé un document justificatif appelé  ".$document_name.".";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_mag );
+	}
+	
 	public static function send_declaration_filled( $project_name, $turnover_amount, $royalties_amount, $commission_amount ) {
 		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box );
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange );
 	}
     
 }
