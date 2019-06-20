@@ -320,4 +320,9 @@ class WDGWPREST_Entity_Project {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/emails' );
 		return $result_obj;
 	}
+	
+	public static function get_files_unused( $project_id, $file_type ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/files?file_type=' .$file_type. '&exclude_linked_to_adjustment=1' );
+		return $result_obj;
+	}
 }
