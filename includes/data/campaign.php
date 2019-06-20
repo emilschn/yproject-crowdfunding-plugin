@@ -3544,7 +3544,8 @@ function atcf_get_locations() {
 		'974 La Réunion',
 		'976 Mayotte',
 		'Italie',
-		'Belgique'
+		'Belgique',
+		'Espagne'
 	);
 	return $buffer;
 }
@@ -3568,7 +3569,7 @@ function atcf_get_regions() {
 		"Occitanie"						=> array( 9, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82 ),
 		"Pays de la Loire"				=> array( 44, 49, 53, 72, 85 ),
 		"Provence-Alpes-Côte d'Azur"	=> array( 4, 5, 6, 13, 83, 84 ),
-		"Etranger"						=> array( 'Ita', 'Bel' )
+		"Etranger"						=> array( 'Ita', 'Bel', 'Esp' )
 	);
 	return $buffer;
 }
