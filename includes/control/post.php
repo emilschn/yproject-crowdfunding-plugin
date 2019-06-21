@@ -36,6 +36,7 @@ class WDGPostActions {
         self::add_action("post_confirm_check");
         self::add_action( 'declaration_auto_generate' );
         self::add_action( 'add_declaration_document' );
+        self::add_action( 'edit_adjustment' );
         self::add_action("roi_mark_transfer_received");
         self::add_action("generate_royalties_bill");
         self::add_action("refund_investors");
@@ -940,6 +941,20 @@ class WDGPostActions {
 		
 		$success = ( $form_return != FALSE ) ? '1' : '100';
 		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_declaration_document_success=' .$success. '#royalties' );
+		exit();
+	}
+	
+	public static function edit_adjustment() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$adjustment_id = filter_input( INPUT_POST, 'adjustment_id' );
+		
+		$core = ATCF_CrowdFunding::instance();
+		$core->include_form( 'adjustment' );
+		$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment_id );
+		$form_return = $form_adjustment->postForm();
+		
+		$success = ( $form_return != FALSE ) ? '1' : '100';
+		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
 		exit();
 	}
 	
