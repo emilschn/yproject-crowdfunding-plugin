@@ -19,7 +19,6 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 	}
 	
 	protected function initFields() {
-		ypcf_session_start();
 		parent::initFields();
 		
 		//**********************************************************************
@@ -217,7 +216,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			'orga_id',
 			__( "Au nom de", 'yproject' ),
 			self::$field_group_orga_select,
-			$_SESSION[ 'orga_id' ],
+			'',
 			FALSE,
 			[
 				''			=> "",
