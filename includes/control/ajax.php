@@ -1242,6 +1242,15 @@ class WDGAjaxActions {
 			$errors['new_platform_commission'] = "Le pourcentage doit &ecirc;tre positif";
 		}
 		
+		$new_platform_commission_above_100000 = sanitize_text_field( filter_input( INPUT_POST, 'new_platform_commission_above_100000' ) );
+		$new_platform_commission_above_100000 = str_replace( ',', '.', $new_platform_commission_above_100000 );
+		if ( $new_platform_commission_above_100000 >= 0 ) {
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission_above_100000, $new_platform_commission_above_100000 );
+			$success['new_platform_commission_above_100000'] = 1;
+		} else {
+			$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
+		}
+		
 		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
 		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
 		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ){
