@@ -22,6 +22,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 	protected function initFields() {
 		parent::initFields();
 		
+		$campaign = new ATCF_Campaign( $this->campaign_id );
 		$adjustment = FALSE;
 		if ( !empty( $this->adjustment_id ) ) {
 			$adjustment = new WDGAdjustement( $this->adjustment_id );
@@ -91,20 +92,31 @@ class WDG_Form_Adjustement extends WDG_Form {
 			( !empty( $adjustment ) ) ? $adjustment->amount : ''
 		);
 		
+		$files = WDGWPREST_Entity_Project::get_files( $campaign->get_api_id(), 'project_document' );
+		$documents_by_id = array();
+		foreach ( $files as $file_item ) {
+			$file_item_metadata = json_decode( $file_item->metadata );
+			$documents_by_id[ $file_item->id ] = $file_item_metadata->name;
+		}
 		$this->addField(
 			'select-multiple',
 			'documents',
 			__( "Documents justificatifs li&eacute;s", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->documents : ''
+			( !empty( $adjustment ) ) ? $adjustment->documents : '',
+			FALSE,
+			$documents_by_id
 		);
 		
+		unset( $declaration_list_by_id[ '' ] );
 		$this->addField(
 			'select-multiple',
 			'declarations_checked',
 			__( "Versements &agrave; marquer comme v&eacute;rifi&eacute;s", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->declarations_checked : ''
+			( !empty( $adjustment ) ) ? $adjustment->declarations_checked : '',
+			FALSE,
+			$declaration_list_by_id
 		);
 		
 		$this->addField(
