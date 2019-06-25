@@ -1267,6 +1267,22 @@ class ATCF_Campaign {
 		}
 	}
 	
+	private $adjustments;
+	public function get_adjustments() {
+		if ( !isset( $this->adjustments ) ) {
+			$this->adjustments = array();
+			
+			$adjustment_list = WDGWPREST_Entity_Adjustment::get_list_by_project_id( $this->get_api_id() );
+			if ( !empty( $adjustment_list ) ) {
+				foreach ( $adjustment_list as $adjustment_item ) {
+					$WDGAdjustment = new WDGAdjustment( $adjustment_item->id, $adjustment_item );
+					array_push( $this->adjustments, $WDGAdjustment );
+				}
+			}
+		}
+		return $this->adjustments;
+	}
+	
 	private $roi_declarations;
 	public function get_roi_declarations() {
 		if ( !isset( $this->roi_declarations ) ) {

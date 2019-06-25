@@ -11,6 +11,9 @@ class WDGAdjustment {
 	public static $type_previous_adjustment_correction = 'previous_adjustment_correction';
 	public static $type_royalties_remainders = 'royalties_remainders';
 	
+	public static $status_upcoming = 'upcoming';
+	public static $status_done = 'done';
+	
 	public static $types_str_by_id = array(
 		'turnover_difference'				=> "Diff&eacute;rence de CA",
 		'turnover_difference_remainders'	=> "Restes de pr&eacute;c&eacute;dent ajustement",
@@ -32,6 +35,12 @@ class WDGAdjustment {
 	public $documents;
 	public $declarations_checked;
 	
+	/**
+	 * @var WDGROIDeclaration 
+	 */
+	public $declaration;
+	public $status;
+	
 	
 	public function __construct( $adjustment_id = FALSE, $data = FALSE ) {
 		if ( !empty( $adjustment_id ) ) {
@@ -51,7 +60,7 @@ class WDGAdjustment {
 
 			} else {
 				// Récupération en priorité depuis l'API
-				$adjustment_api_item = WDGWPREST_Entity_Declaration::get( $adjustment_id );
+				$adjustment_api_item = WDGWPREST_Entity_Adjustment::get( $adjustment_id );
 				if ( $adjustment_api_item != FALSE ) {
 					$this->id = $adjustment_id;
 					$this->id_api_campaign = $adjustment_api_item->id_project;
@@ -68,6 +77,21 @@ class WDGAdjustment {
 
 			}
 		}
+	}
+	
+	public function get_declaration() {
+		if ( !isset( $this->declaration ) ) {
+			$this->declaration = new WDGROIDeclaration( $this->id_declaration );
+		}
+		return $this->declaration;
+	}
+	
+	public function get_status() {
+		if ( !isset( $this->status ) ) {
+			$declaration = $this->get_declaration();
+			$this->status = ( $declaration->status == WDGROIDeclaration::$status_finished ) ? WDGAdjustment::$status_done :  WDGAdjustment::$status_upcoming;
+		}
+		return $this->status;
 	}
 	
 	/**
