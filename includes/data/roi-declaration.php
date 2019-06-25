@@ -34,6 +34,7 @@ class WDGROIDeclaration {
 	public $turnover;
 	public $message;
 	public $adjustment;
+	public $adjustments;
 	public $transfered_previous_remaining_amount;
 	
 	public $employees_number;
@@ -67,9 +68,7 @@ class WDGROIDeclaration {
 				$this->employees_number = $collection_item->employees_number;
 				$this->other_fundings = $collection_item->other_fundings;
 				$this->declared_by = $collection_item->declared_by;
-				if ( isset( $collection_item->on_api ) ) {
-					$this->on_api = $collection_item->on_api;
-				}
+				$this->on_api = TRUE;
 
 			} else {
 				// Récupération en priorité depuis l'API
@@ -122,59 +121,6 @@ class WDGROIDeclaration {
 						$this->save();
 					}
 
-				// Sinon récupération sur la bdd locale (deprecated)
-				} else {
-
-					global $wpdb;
-					$table_name = $wpdb->prefix . WDGROIDeclaration::$table_name;
-					$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$declaration_id;
-					$declaration_item = $wpdb->get_row( $query );
-					if ( $declaration_item ) {
-						$this->id = $declaration_item->id;
-						$this->id_campaign = $declaration_item->id_campaign;
-						$this->date_due = $declaration_item->date_due;
-						$this->date_paid = $declaration_item->date_paid;
-						$this->date_transfer = $declaration_item->date_transfer;
-						$this->amount = $declaration_item->amount;
-						$this->remaining_amount = $declaration_item->remaining_amount;
-						if ( !is_numeric( $this->remaining_amount ) ) {
-							$this->remaining_amount = 0;
-						}
-						$this->percent_commission = $declaration_item->percent_commission;
-						if ( !is_numeric( $this->percent_commission ) ) {
-							$this->percent_commission = 0;
-						}
-						$this->status = $declaration_item->status;
-						$this->mean_payment = $declaration_item->mean_payment;
-						$this->payment_token = $declaration_item->payment_token;
-						$this->file_list = $declaration_item->file_list;
-						$this->turnover = $declaration_item->turnover;
-						$this->message = $declaration_item->message;
-						$this->adjustment = $declaration_item->adjustment;
-						if ( is_null( $this->adjustment ) ) {
-							$this->adjustment = '';
-						}
-						$this->transfered_previous_remaining_amount = $declaration_item->transfered_previous_remaining_amount;
-						if ( !is_numeric( $this->transfered_previous_remaining_amount ) ) {
-							$this->transfered_previous_remaining_amount = 0;
-						}
-						$this->on_api = ( $declaration_item->on_api == 1 );
-						$this->employees_number = 0;
-						$this->other_fundings = '';
-						$this->declared_by = '';
-
-						// Les déclarations sans statut doivent passer en statut "Déclaration"
-						if ( empty( $this->status ) || $this->status == null ) {
-							$this->status = WDGROIDeclaration::$status_declaration;
-						}
-
-						// Les déclarations à zero pour les projets en mode "paiement" doivent être marquées comme terminées
-						if ( $this->status == WDGROIDeclaration::$status_payment && !empty( $this->turnover ) && $this->get_amount_with_adjustment() == 0 ) {
-							$this->status = WDGROIDeclaration::$status_transfer;
-							$this->save();
-						}
-					}
-
 				}
 				self::$collection_by_id[ $declaration_id ] = $this;
 
@@ -199,36 +145,6 @@ class WDGROIDeclaration {
 		if ( $this->on_api && !$local ) {
 			$this->update();
 			
-		} else {
-			global $wpdb;
-			$table_name = $wpdb->prefix . WDGROIDeclaration::$table_name;
-			$result = $wpdb->update( 
-				$table_name, 
-				array( 
-					'id_campaign' => $this->id_campaign,
-					'date_due' => $this->date_due,
-					'date_paid' => $this->date_paid,
-					'date_transfer' => $this->date_transfer,
-					'amount' => $this->amount,
-					'remaining_amount' => $this->remaining_amount,
-					'percent_commission' => $this->percent_commission,
-					'status' => $this->status,
-					'mean_payment' => $this->mean_payment,
-					'payment_token' => $this->payment_token,
-					'file_list' => $this->file_list,
-					'turnover' => $this->turnover,
-					'message' => $this->message,
-					'adjustment' => $this->adjustment,
-					'transfered_previous_remaining_amount' => $this->transfered_previous_remaining_amount,
-					'on_api' => ( $this->on_api ? 1 : 0 )
-				),
-				array(
-					'id' => $this->id
-				)
-			);
-			if ($result !== FALSE) {
-				return $this->id;
-			}
 		}
 	}
 	
@@ -941,6 +857,7 @@ class WDGROIDeclaration {
 				$buffer = $temp_value;
 			}
 		}
+		$buffer += $this->get_adjustments_amount();
 		return $buffer;
 	}
 	
@@ -971,6 +888,23 @@ class WDGROIDeclaration {
 			$temp = json_decode( $this->adjustment );
 			$var_type = 'msg_to_' .$type;
 			$buffer = $temp->$var_type;
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le montant des ajustements liés à une déclaration
+	 * @return float
+	 */
+	public function get_adjustments_amount() {
+		$buffer = 0;
+		if ( !isset( $this->adjustments ) ) {
+			$this->adjustments = WDGWPREST_Entity_Adjustment::get_list_by_declaration_id( $this->id );
+		}
+		if ( !empty( $this->adjustments ) ) {
+			foreach ( $this->adjustments as $adjustment_item ) {
+				$buffer += $adjustment_item->amount;
+			}
 		}
 		return $buffer;
 	}
@@ -1059,38 +993,6 @@ class WDGROIDeclaration {
 /*******************************************************************************
  * REQUETES STATIQUES
  ******************************************************************************/
-	/**
-	 * Mise Ã  jour base de donnÃ©es
-	 */
-	public static function upgrade_db() {
-		global $wpdb;
-		$charset_collate = $wpdb->get_charset_collate();
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		
-		$table_name = $wpdb->prefix . WDGROIDeclaration::$table_name;
-		$sql = "CREATE TABLE " .$table_name. " (
-			id mediumint(9) NOT NULL AUTO_INCREMENT,
-			id_campaign mediumint(9) NOT NULL,
-			date_due date DEFAULT '0000-00-00',
-			date_paid date DEFAULT '0000-00-00',
-			date_transfer date DEFAULT '0000-00-00',
-			amount float,
-			remaining_amount float,
-			percent_commission float,
-			status tinytext,
-			mean_payment tinytext,
-			payment_token tinytext,
-			file_list text,
-			turnover text,
-			message text,
-			adjustment text,
-			transfered_previous_remaining_amount float,
-			on_api tinyint DEFAULT 0,
-			UNIQUE KEY id (id)
-		) $charset_collate;";
-		$result = dbDelta( $sql );
-	}
-	
 	/**
 	 * Ajout d'une nouvelle dÃ©claration
 	 */
