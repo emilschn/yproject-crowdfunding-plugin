@@ -76,9 +76,16 @@ class WDGAdjustment {
 	public function create() {
 		$datetime_current = new DateTime();
 		$this->date_created = $datetime_current->format( 'Y-m-d H:i:s' );
-		WDGWPREST_Entity_Adjustment::create( $this );
+		$new_api_item = WDGWPREST_Entity_Adjustment::create( $this );
+		$this->id = $new_api_item->id;
 		
 		// Récupérer ID pour lier documents et declarations_checked
+		foreach ( $this->documents as $document_id ) {
+			WDGWPREST_Entity_Adjustment::link_file( $this->id, $document_id );
+		}
+		foreach ( $this->declarations_checked as $declaration_id ) {
+			WDGWPREST_Entity_Adjustment::link_declaration( $this->id, $declaration_id );
+		}
 	}
 	
 	/**
@@ -88,6 +95,33 @@ class WDGAdjustment {
 		WDGWPREST_Entity_Adjustment::update( $this );
 		self::$collection_by_id[ $this->id ] = $this;
 		
-		// Récupérer ID pour lier documents et declarations_checked
+		$existing_document_list = WDGWPREST_Entity_Adjustment::get_linked_files( $this->id );
+		// Ajout des nouveaux documents
+		foreach ( $this->documents as $document_id ) {
+			if ( !in_array( $document_id, $existing_document_list) ) {
+				WDGWPREST_Entity_Adjustment::link_file( $this->id, $document_id );
+			}
+		}
+		// Retrait des anciens documents
+		foreach ( $existing_document_list as $document_id ) {
+			if ( !in_array( $document_id, $this->documents) ) {
+				WDGWPREST_Entity_Adjustment::unlink_file( $this->id, $document_id );
+			}
+		}
+		
+		$existing_declaration_list = WDGWPREST_Entity_Adjustment::get_linked_declarations( $this->id );
+		// Ajout des nouvelles déclarations
+		foreach ( $this->declarations_checked as $declaration_id ) {
+			if ( !in_array( $declaration_id, $existing_declaration_list) ) {
+				WDGWPREST_Entity_Adjustment::link_declaration( $this->id, $declaration_id );
+			}
+		}
+		// Retrait des nouvelles déclarations
+		foreach ( $existing_declaration_list as $declaration_id ) {
+			if ( !in_array( $declaration_id, $this->declarations_checked) ) {
+				WDGWPREST_Entity_Adjustment::unlink_declaration( $this->id, $declaration_id );
+			}
+		}
+		
 	}
 }

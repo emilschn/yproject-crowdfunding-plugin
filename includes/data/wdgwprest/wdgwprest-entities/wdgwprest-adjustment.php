@@ -65,4 +65,43 @@ class WDGWPREST_Entity_Adjustment {
 			return FALSE;
 		}
 	}
+	
+	public static function get_linked_declarations( $adjustment_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'adjustment/' .$adjustment_id. '/declarations' );
+		return $result_obj;
+	}
+	
+	public static function link_declaration( $adjustment_id, $declaration_id, $type = '' ) {
+		$request_params = array(
+			'id_declaration'	=> $declaration_id,
+			'type'				=> $type
+		);
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'adjustment/' .$adjustment_id. '/declarations', $request_params );
+		return $result_obj;
+	}
+	
+	public static function unlink_declaration( $adjustment_id, $declaration_id, $type = '' ) {
+		$result_obj = WDGWPRESTLib::call_delete_wdg( 'adjustment/' .$adjustment_id. '/declaration/' .$declaration_id. '/type/' .$type );
+		return $result_obj;
+	}
+	
+	
+	public static function get_linked_files( $adjustment_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'adjustment/' .$adjustment_id. '/files' );
+		return $result_obj;
+	}
+	
+	public static function link_file( $adjustment_id, $file_id, $type = '' ) {
+		$request_params = array(
+			'id_file'	=> $file_id,
+			'type'		=> $type
+		);
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'adjustment/' .$adjustment_id. '/files', $request_params );
+		return $result_obj;
+	}
+	
+	public static function unlink_file( $adjustment_id, $file_id, $type = '' ) {
+		$result_obj = WDGWPRESTLib::call_delete_wdg( 'adjustment/' .$adjustment_id. '/file/' .$file_id. '/type/' .$type );
+		return $result_obj;
+	}
 }

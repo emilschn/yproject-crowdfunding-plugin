@@ -50,7 +50,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->campaign_id );
 		$declaration_list_by_id = array( ''	=> '' );
 		foreach ( $declaration_list as $WDGROIDeclaration ) {
-			$declaration_list_by_id[ $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
+			$declaration_list_by_id[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
 		}
 		$this->addField(
 			'select',
@@ -96,7 +96,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 		$documents_by_id = array();
 		foreach ( $files as $file_item ) {
 			$file_item_metadata = json_decode( $file_item->metadata );
-			$documents_by_id[ $file_item->id ] = $file_item_metadata->name;
+			$documents_by_id[ 'file-' . $file_item->id ] = $file_item_metadata->name;
 		}
 		$this->addField(
 			'select-multiple',
@@ -208,15 +208,27 @@ class WDG_Form_Adjustement extends WDG_Form {
 			);
 		}
 		
-		// TODO : vérifier le type de documents et declarations_checked
-		
 		
 		if ( !$this->hasErrors() ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$message_organization = $this->getInputText( 'message_organization' );
 			$message_investors = $this->getInputText( 'message_investors' );
+			
 			$documents = array();
+			$files = WDGWPREST_Entity_Project::get_files( $campaign->get_api_id(), 'project_document' );
+			foreach ( $files as $file_item ) {
+				if ( $this->getInputChecked( 'file-' . $file_item->id ) ) {
+					array_push( $documents, $file_item->id );
+				}
+			}
+			
 			$declarations_checked = array();
+			$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->campaign_id );
+			foreach ( $declaration_list as $WDGROIDeclaration ) {
+				if ( $this->getInputChecked( 'declaration-' . $WDGROIDeclaration->id ) ) {
+					array_push( $declarations_checked, $WDGROIDeclaration->id );
+				}
+			}
 		
 			$adjustment = FALSE;
 			if ( !empty( $this->adjustment_id ) ) {
@@ -226,7 +238,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			}
 			
 			$adjustment->id_api_campaign = $campaign->get_api_id();
-			$adjustment->id_declaration = $declaration;
+			$adjustment->id_declaration = substr( $declaration, strlen( 'declaration-' ) );
 			$adjustment->type = $type;
 			$adjustment->turnover_difference = $turnover_difference;
 			$adjustment->amount = $amount;
