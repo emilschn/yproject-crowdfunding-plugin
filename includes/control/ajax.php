@@ -2015,6 +2015,7 @@ class WDGAjaxActions {
 				}
 			}
 			$invest_sign_state = '<span class="payment-status-' .$invest_sign_state_span_class. '">' .$invest_sign_state. '</span>';
+			$invest_sign_state .= $action;
 			
 
 			// Contrats complémentaires
