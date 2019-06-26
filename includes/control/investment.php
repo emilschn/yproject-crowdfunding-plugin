@@ -238,6 +238,15 @@ class WDGInvestment {
 	}
 	
 	/**
+	 * Retourne le statut du post de paiement
+	 * @return string
+	 */
+	public function get_saved_status() {
+		$post_invest = get_post( $this->get_id() );
+		return $post_invest->post_status;
+	}
+	
+	/**
 	 * Retourne le token d'investissement
 	 * @return string
 	 */

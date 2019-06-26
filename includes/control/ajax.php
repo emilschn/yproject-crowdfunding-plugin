@@ -1935,8 +1935,7 @@ class WDGAjaxActions {
         foreach ( $investments_list['payments_data'] as $item_invest ) {
 			$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
 			$contract_status = $payment_investment->get_contract_status();
-            $post_invest = get_post($item_invest['ID']);
-			$post_invest_status = $post_invest->post_status;
+			$post_invest_status = $payment_investment->get_saved_status();
 			
 			if ( !empty( $item_invest[ 'payment_key' ] ) ) {
 				$payment_key = $item_invest[ 'payment_key' ];
@@ -2008,6 +2007,9 @@ class WDGAjaxActions {
 			} else if ( $post_invest_status == 'pending' ) {
 				$invest_sign_state = __( "En attente de r&eacute;ception du paiement", 'yproject' );
 				$invest_sign_state_span_class = 'error';
+				if ( $current_wdg_user->is_admin() ) {
+					$action = '<br><a href="' .home_url( '/tableau-de-bord/' ). $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
+				}
 			} else {
 				$WDGInvestmentSignature = new WDGInvestmentSignature( $item_invest[ 'ID' ] );
 				if ( $WDGInvestmentSignature->is_waiting_signature() ) {

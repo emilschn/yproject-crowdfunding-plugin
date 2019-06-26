@@ -139,7 +139,11 @@ class WDGFormProjects {
 			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_refused );
 			}
-			$WDGInvestment->refund();
+			
+			if ( $WDGInvestment->get_saved_status() != 'pending' || $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+				$WDGInvestment->refund();
+			}
+			
 			$WDGInvestment->cancel();
 			
 			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
