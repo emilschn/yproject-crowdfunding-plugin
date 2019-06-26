@@ -460,6 +460,7 @@ class WDGAjaxActions {
 		if ($wdgcurrent_user->is_admin()) {
 		    //Récupération des éléments Ã  traiter
 		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
+		    $is_refund = filter_input( INPUT_POST, 'is_refund' );
 			$declaration = new WDGROIDeclaration($declaration_id);
 		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
 			
@@ -475,7 +476,7 @@ class WDGAjaxActions {
 		    $total_amount = 0;
 		    $total_roi = 0;
 		    $total_fees = 0;
-		    $investments_list = $campaign->roi_payments_data( $declaration );
+		    $investments_list = $campaign->roi_payments_data( $declaration, FALSE, $is_refund );
 		    foreach ($investments_list as $investment_item) {
 			    $total_amount += $investment_item['amount'];
 			    $total_fees += $investment_item['roi_fees'];
@@ -2918,13 +2919,14 @@ class WDGAjaxActions {
 		$WDGUser_current = WDGUser::current();
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$declaration_id = filter_input(INPUT_POST, 'roi_id');
+		$is_refund = filter_input(INPUT_POST, 'isrefund');
 		if ( !empty( $campaign_id ) && !empty( $declaration_id ) && $WDGUser_current->is_admin() ) {
 			$input_send_notifications = filter_input( INPUT_POST, 'send_notifications' );
 			$send_notifications = ( $input_send_notifications != 'false' && ( $input_send_notifications === 1 || $input_send_notifications === TRUE || $input_send_notifications === 'true' ) );
 			$input_transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
 			$transfer_remaining_amount = ( $input_transfer_remaining_amount != 'false' && ( $input_transfer_remaining_amount === 1 || $input_transfer_remaining_amount === TRUE || $input_transfer_remaining_amount === 'true' ) );
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$buffer = $roi_declaration->make_transfer( $send_notifications, $transfer_remaining_amount );
+			$buffer = $roi_declaration->make_transfer( $send_notifications, $transfer_remaining_amount, $is_refund );
 		}
 		
 		echo json_encode( $buffer );

@@ -2925,68 +2925,107 @@ class ATCF_Campaign {
 	 * Retourne la liste des paiement, augmentée par les informations utiles pour un ROI particulier
 	 * @param WDGROIDeclaration $declaration
 	 */
-	public function roi_payments_data( $declaration, $transfer_remaining_amount = false ) {
+	public function roi_payments_data( $declaration, $transfer_remaining_amount = false, $is_refund = false ) {
 		$buffer = array();
-		
-		//Calculs des montants à reverser
-		$total_amount = $this->current_amount(FALSE);
-		$roi_amount = $declaration->get_amount_with_adjustment();
-		if ( $transfer_remaining_amount ) {
-			$roi_amount += $declaration->get_previous_remaining_amount();
-		}
 		
 		// Récupération de la liste des investissements concernés
 		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
 		if ( !empty( $investment_contracts ) ) {
-			// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
-			$adjustement_turned_into_turnover = 0;
-			if ( $declaration->get_adjustment_value() != 0 ) {
-				// Pour transformer l'ajustement en CA, il faut avoir le nombre de contrats actifs pris en compte et en additionner le pourcentage de CA
-				$total_turnover_percent = 0;
+			
+			// Si c'est un remboursement, on fait juste une soustraction
+			if ( $is_refund ) {
 				foreach ( $investment_contracts as $investment_contract ) {
 					if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
-						$total_turnover_percent += $investment_contract->turnover_percent;
+						$investor_id = 0;
+						if ( $investment_contract->investor_type == 'user' ) {
+							$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGUser->get_wpref();
+						} else {
+							$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGOrganization->get_wpref();
+						}
+						$investment_item = array(
+							'contract_id'	=> $investment_contract->id,
+							'ID'			=> $investment_contract->subscription_id,
+							'amount'		=> $investment_contract->subscription_amount,
+							'user'			=> $investor_id
+						);
+
+						// Calcul du montant à récupérer
+						$investor_amount = $investment_contract->subscription_amount - $investment_contract->amount_received;
+						// Calcul de la commission sur le roi de l'utilisateur
+						$fees_total = $investor_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+						// Et arrondi
+						$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+						$investment_item['roi_fees'] = $fees;
+						// Reste à verser pour l'investisseur
+						$investor_proportion_amount_remaining = $investor_amount - $fees;
+						$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+
+						array_push( $buffer, $investment_item );
 					}
 				}
-				$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
-			}
-			
-			$turnover_to_apply = $adjustement_turned_into_turnover + $declaration->get_turnover_total();
-			
-			// Détermination des montants par contrat
-			foreach ( $investment_contracts as $investment_contract ) {
-				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
-					$investor_id = 0;
-					if ( $investment_contract->investor_type == 'user' ) {
-						$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
-						$investor_id = $WDGUser->get_wpref();
-					} else {
-						$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
-						$investor_id = $WDGOrganization->get_wpref();
-					}
-					$investment_item = array(
-						'contract_id'	=> $investment_contract->id,
-						'ID'			=> $investment_contract->subscription_id,
-						'amount'		=> $investment_contract->subscription_amount,
-						'user'			=> $investor_id
-					);
-					
-					// Calcul du montant à récupérer en roi à partir du pourcentage du CA
-					$investor_proportion_amount = floor( $turnover_to_apply * $investment_contract->turnover_percent ) / 100; //10.50
-					// Calcul de la commission sur le roi de l'utilisateur
-					$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
-					// Et arrondi
-					$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
-					$investment_item['roi_fees'] = $fees;
-					// Reste à verser pour l'investisseur
-					$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
-					$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
 				
-					array_push( $buffer, $investment_item );
+				
+			} else {
+				// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
+				$adjustement_turned_into_turnover = 0;
+				if ( $declaration->get_adjustment_value() != 0 ) {
+					// Pour transformer l'ajustement en CA, il faut avoir le nombre de contrats actifs pris en compte et en additionner le pourcentage de CA
+					$total_turnover_percent = 0;
+					foreach ( $investment_contracts as $investment_contract ) {
+						if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+							$total_turnover_percent += $investment_contract->turnover_percent;
+						}
+					}
+					$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
 				}
+
+				$turnover_to_apply = $adjustement_turned_into_turnover + $declaration->get_turnover_total();
+
+				// Détermination des montants par contrat
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+						$investor_id = 0;
+						if ( $investment_contract->investor_type == 'user' ) {
+							$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGUser->get_wpref();
+						} else {
+							$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGOrganization->get_wpref();
+						}
+						$investment_item = array(
+							'contract_id'	=> $investment_contract->id,
+							'ID'			=> $investment_contract->subscription_id,
+							'amount'		=> $investment_contract->subscription_amount,
+							'user'			=> $investor_id
+						);
+
+						// Calcul du montant à récupérer en roi à partir du pourcentage du CA
+						$investor_proportion_amount = floor( $turnover_to_apply * $investment_contract->turnover_percent ) / 100; //10.50
+						// Calcul de la commission sur le roi de l'utilisateur
+						$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+						// Et arrondi
+						$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+						$investment_item['roi_fees'] = $fees;
+						// Reste à verser pour l'investisseur
+						$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
+						$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+
+						array_push( $buffer, $investment_item );
+					}
+				}
+				
 			}
 			
 		} else {
+			//Calculs des montants à reverser
+			$total_amount = $this->current_amount(FALSE);
+			$roi_amount = $declaration->get_amount_with_adjustment();
+			if ( $transfer_remaining_amount ) {
+				$roi_amount += $declaration->get_previous_remaining_amount();
+			}
+		
 			$investments_list = $this->payments_data(TRUE);
 		
 			// Parcours

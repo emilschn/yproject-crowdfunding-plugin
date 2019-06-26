@@ -396,7 +396,7 @@ class WDGROIDeclaration {
 	/**
 	 * S'occuper des versements vers les utilisateurs
 	 */
-	public function make_transfer( $send_notifications = true, $transfer_remaining_amount = false ) {
+	public function make_transfer( $send_notifications = true, $transfer_remaining_amount = false, $is_refund = false ) {
 		$buffer = false;
 		$date_now = new DateTime();
 		$date_now_formatted = $date_now->format( 'Y-m-d' );
@@ -406,7 +406,7 @@ class WDGROIDeclaration {
 		if ( !empty( $current_organization ) ) {
 			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 			$organization_obj->register_lemonway();
-			$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount );
+			$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount, $is_refund );
 			$total_fees = 0;
 			
 			// Initialisation du montant restant pour que ce soit toujours la variable de classe qui soit mise à jour
