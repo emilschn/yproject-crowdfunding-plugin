@@ -150,7 +150,7 @@ class NotificationsSlack {
 	}
 	
 	public static function send_declaration_document_uploaded( $project_name, $document_name ) {
-		$message = "Le projet " .$project_name. " a uploadé un document justificatif appelé  ".$document_name.".";
+		$message = "Le projet " .$project_name. " a uploadé un document justificatif appelé : ".$document_name;
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_mag );
 	}
 	
