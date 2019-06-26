@@ -1994,11 +1994,16 @@ class WDGAjaxActions {
 			$payment_status = '<span class="payment-status-' .$payment_status_span_class. '">' .$payment_status. '</span>';
 			
 			// Etat de la signature
+			$action = '';
 			$invest_sign_state = __( "Valid&eacute;", 'yproject' );
 			$invest_sign_state_span_class = 'confirm';
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
 				$invest_sign_state_span_class = 'error';
+				if ( $current_wdg_user->is_admin() ) {
+					$action = '<br><a href="' .home_url( '/tableau-de-bord/' ). $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
+					$action .= '<br><br><a href="' .home_url( '/tableau-de-bord/' ). $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
+				}
 			} else if ( $post_invest_status == 'pending' ) {
 				$invest_sign_state = __( "En attente de r&eacute;ception du paiement", 'yproject' );
 				$invest_sign_state_span_class = 'error';

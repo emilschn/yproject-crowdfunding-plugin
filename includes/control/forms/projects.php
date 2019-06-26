@@ -74,37 +74,46 @@ class WDGFormProjects {
 		$approve_payment_id = filter_input(INPUT_GET, 'approve_payment');
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		if ( !empty( $approve_payment_id ) && !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
-			$postdata = array(
-				'ID'			=> $approve_payment_id,
-				'post_status'	=> 'publish',
-				'edit_date'		=> current_time( 'mysql' )
-			);
-			wp_update_post($postdata);
-				
-			// - Créer le contrat pdf
-			// - Envoyer validation d'investissement par mail
-			$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
-			$amount = edd_get_payment_amount( $approve_payment_id );
-			$campaign = new ATCF_Campaign( $campaign_id );
-			if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
-				$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
-				$contract_id = $WDGInvestmentSignature->create_eversign();
-				if ( !empty( $contract_id ) ) {
-					NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-					
-				} else {
-					global $contract_errors;
-					$contract_errors = 'contract_failed';
-					NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-					NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
-				}
+			
+			$WDGInvestment = new WDGInvestment( $approve_payment_id );
+			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
+				ypcf_get_updated_payment_status( $WDGInvestment->get_id() );
 				
 			} else {
-				$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
-				NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+				$postdata = array(
+					'ID'			=> $approve_payment_id,
+					'post_status'	=> 'publish',
+					'edit_date'		=> current_time( 'mysql' )
+				);
+				wp_update_post($postdata);
+
+				// - Créer le contrat pdf
+				// - Envoyer validation d'investissement par mail
+				$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
+				$amount = edd_get_payment_amount( $approve_payment_id );
+				$campaign = new ATCF_Campaign( $campaign_id );
+				if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
+					$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
+					$contract_id = $WDGInvestmentSignature->create_eversign();
+					if ( !empty( $contract_id ) ) {
+						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+
+					} else {
+						global $contract_errors;
+						$contract_errors = 'contract_failed';
+						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+						NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
+					}
+
+				} else {
+					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
+					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+				}
+
+				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+				
 			}
-			
-			NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
 			
 			do_action('wdg_delete_cache', array(
 				'home-projects',
@@ -113,8 +122,7 @@ class WDGFormProjects {
 			$file_cacher = WDG_File_Cacher::current();
 			$file_cacher->build_campaign_page_cache( $campaign_id );
 			
-			$page_dashboard = get_page_by_path('tableau-de-bord');
-			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=approvepayment' );
+			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' . $campaign_id . '&success_msg=approvepayment' );
 			exit();
 		}
 	}
@@ -127,38 +135,14 @@ class WDGFormProjects {
 		$cancel_payment_id = filter_input(INPUT_GET, 'cancel_payment');
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		if ( !empty( $cancel_payment_id ) && !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
-			$postdata = array(
-				'ID'			=> $cancel_payment_id,
-				'post_status'	=> 'failed',
-				'edit_date'		=> current_time( 'mysql' )
-			);
-			wp_update_post($postdata);
-			
-			
-			$logs_args = array(
-				'post_type'		=> 'edd_log',
-				'meta_query'	=> array(
-					array(
-						'key'		=> '_edd_log_payment_id',
-						'value'		=> $cancel_payment_id,
-						'compare'	=> '='
-					)
-				)
-			);
-			
-			$logs = new WP_Query( $logs_args );
-			if ( !empty( $logs->posts ) ) {
-				foreach ( $logs->posts as $log ) {
-					$postdata = array(
-						'ID'			=> $log->ID,
-						'post_status'	=> 'failed'
-					);
-					wp_update_post( $postdata );
-				}
+			$WDGInvestment = new WDGInvestment( $cancel_payment_id );
+			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_refused );
 			}
+			$WDGInvestment->refund();
+			$WDGInvestment->cancel();
 			
-			$page_dashboard = get_page_by_path('tableau-de-bord');
-			wp_redirect( get_permalink( $page_dashboard->ID ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
+			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
 			exit();
 		}
 	}
