@@ -56,7 +56,6 @@ class WDGAdjustment {
 				$this->amount = $collection_item->amount;
 				$this->message_organization = $collection_item->message_organization;
 				$this->message_investors = $collection_item->message_investors;
-				// TODO : documents et declarations_checked
 
 			} else {
 				// Récupération en priorité depuis l'API
@@ -71,7 +70,6 @@ class WDGAdjustment {
 					$this->amount = $adjustment_api_item->amount;
 					$this->message_organization = $adjustment_api_item->message_organization;
 					$this->message_investors = $adjustment_api_item->message_investors;
-					// TODO : documents et declarations_checked
 				}
 				self::$collection_by_id[ $declaration_id ] = $this;
 
@@ -92,6 +90,20 @@ class WDGAdjustment {
 			$this->status = ( $declaration->status == WDGROIDeclaration::$status_finished ) ? WDGAdjustment::$status_done :  WDGAdjustment::$status_upcoming;
 		}
 		return $this->status;
+	}
+	
+	public function get_documents() {
+		if ( !isset( $this->documents ) ) {
+			$this->documents = WDGWPREST_Entity_Adjustment::get_linked_files( $this->id );
+		}
+		return $this->documents;
+	}
+	
+	public function get_declarations_checked() {
+		if ( !isset( $this->declarations_checked ) ) {
+			$this->declarations_checked = WDGWPREST_Entity_Adjustment::get_linked_declarations( $this->id );
+		}
+		return $this->declarations_checked;
 	}
 	
 	/**
