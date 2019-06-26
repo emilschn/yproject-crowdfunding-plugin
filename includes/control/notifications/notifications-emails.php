@@ -462,6 +462,8 @@ class NotificationsEmails {
 		$body_content .= "Le pré-investissement que vous avez effectué doit donc être à nouveau validé.<br>";
 		$body_content .= "Merci de vous rendre sur la plateforme pour vous identifier et suivre le processus de validation qui sera affiché.<br><br>";
 		
+		$body_content .= "Cliquez sur <a href=\"" .home_url( '/mon-compte/' ). "\">Mon compte</a> pour vous identifier.<br><br>";
+		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
 		
 		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
