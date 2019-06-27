@@ -5,10 +5,12 @@
 class WDG_File_Cacher {
 	private $website;
 	private $page_list = array(
-		"home" => "",
-		"les-projets" => "les-projets",
-		"financement" => "financement",
-		"investissement" => "investissement"
+		"home"				=> "",
+		"les-projets"		=> "les-projets",
+		"financement"		=> "financement",
+		"investissement"	=> "investissement",
+		"epargne-positive"	=> "epargne-positive",
+		"guide"				=> "guide"
 	);
 
 	protected static $_current = null;
@@ -52,7 +54,7 @@ class WDG_File_Cacher {
 		// - on met en cache 5 campagnes dont le cache a expiré (pour pouvoir finir la procédure)
 		$max_page_to_cache = 4;
 		$nb_page_cached = 0;
-		$list_campaign_recent = ATCF_Campaign::get_list_most_recent( 15 );
+		$list_campaign_recent = ATCF_Campaign::get_list_funded( 15 );
 		foreach ( $list_campaign_recent as $campaign_id ) {
 			$this->build_campaign_page_cache( $campaign_id, ( $nb_page_cached < $max_page_to_cache ) );
 			$nb_page_cached++;
