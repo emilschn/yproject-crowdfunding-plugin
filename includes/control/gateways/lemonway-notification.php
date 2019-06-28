@@ -227,7 +227,7 @@ class LemonwayNotification {
 		
 		
 		// Si jamais la vraie notification n'est pas renvoyé, on envoie quand même la notif admin
-		if ( !$notification_sent ) {
+		if ( FALSE && !$notification_sent ) {
 			// Mail admin
 			$content = "Un document a changé de statut (et le mail normal n'a pas été envoyé) :<br>";
 			$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br>';

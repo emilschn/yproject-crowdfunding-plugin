@@ -1013,7 +1013,7 @@ class WDGROIDeclaration {
 		
 		$campaign = new ATCF_Campaign( $idwp_campaign );
 		$declarations = WDGWPREST_Entity_Project::get_declarations( $campaign->get_api_id() );
-		if ( $declarations ) {
+		if ( !empty( $declarations ) ) {
 			foreach ( $declarations as $declaration_item ) {
 				$add = TRUE;
 
