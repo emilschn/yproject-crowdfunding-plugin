@@ -620,6 +620,9 @@ class WDGPostActions {
 		
 		$zip = new ZipArchive;
 		$zip_path = dirname( __FILE__ ). '/../../files/contracts/' .$campaign_id. '-' .$campaign->data->post_name. '.zip';
+		if ( file_exists( $zip_path ) ) {
+			unlink( $zip_path );
+		}
 		if ( $zip->open( $zip_path, ZipArchive::CREATE ) === TRUE ) {
 			
 			$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_*.pdf';
