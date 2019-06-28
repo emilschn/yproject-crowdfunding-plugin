@@ -46,6 +46,14 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$this->adjustment_id
 		);
 		
+		$this->addField(
+			'hidden',
+			'roi_percent',
+			'',
+			self::$field_group_hidden,
+			$campaign->roi_percent_remaining()
+		);
+		
 		// Champs affichés : $field_group_adjustment
 		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->campaign_id );
 		$declaration_list_by_id = array( ''	=> '' );
