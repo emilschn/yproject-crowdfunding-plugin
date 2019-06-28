@@ -142,10 +142,7 @@ class WDGROIDeclaration {
 	 * @return integer
 	 */
 	public function save( $local = FALSE ) {
-		if ( $this->on_api && !$local ) {
-			$this->update();
-			
-		}
+		$this->update();
 	}
 	
 	public function get_formatted_date( $type = 'due' ) {
@@ -264,7 +261,6 @@ class WDGROIDeclaration {
 		
 		NotificationsEmails::turnover_declaration_adjustment_file_sent( $this->id );
 		$this->update();
-		$this->save();
 	}
 	
 	/**
@@ -640,7 +636,6 @@ class WDGROIDeclaration {
 		if ( $this->status == WDGROIDeclaration::$status_waiting_transfer ) {
 			$this->status = WDGROIDeclaration::$status_transfer;
 			$this->update();
-			$this->save();
 		}
 	}
 	
@@ -818,100 +813,60 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Enregistre les donnÃ©es d'ajustement
-	 * @param boolean $is_validated
-	 * @param boolean $is_needed
-	 * @param number $turnover_difference
-	 * @param number $value
-	 * @param string $message_to_author
-	 * @param string $message_to_investors
-	 */
-	public function set_adjustment( $is_validated, $is_needed, $turnover_difference, $value, $message_to_author, $message_to_investors ) {
-		$buffer = array(
-			'validated'			=> ( $is_validated ) ? 1 : 0,
-			'needed'			=> ( $is_needed ) ? 1 : 0,
-			'turnover_difference' => $turnover_difference,
-			'value'				=> $value,
-			'msg_to_author'		=> $message_to_author,
-			'msg_to_investors'	=> $message_to_investors
-		);
-		$this->adjustment = json_encode( $buffer );
-		$this->update();
-		$this->save();
-	}
-	
-	/**
-	 * DÃ©termine le statut validÃ© ou non
-	 * @return boolean
-	 */
-	public function get_adjustment_validated() {
-		$buffer = false;
-		if ( !empty( $this->adjustment ) ) {
-			$temp = json_decode( $this->adjustment );
-			$buffer = ( $temp->validated == 1 );
-		}
-		return $buffer;
-	}
-	
-	/**
-	 * DÃ©termine si l'ajustement est obligatoire ou non
-	 * @return boolean
-	 */
-	public function get_adjustment_needed() {
-		$buffer = false;
-		if ( !empty( $this->adjustment ) ) {
-			$temp = json_decode( $this->adjustment );
-			$buffer = ( isset( $temp->needed ) && $temp->needed == 1 );
-		}
-		return $buffer;
-	}
-	
-	/**
-	 * DÃ©termine la valeur de l'ajustement
+	 * Détermine la valeur de l'ajustement
 	 * @return number
 	 */
 	public function get_adjustment_value() {
 		$buffer = 0;
-		if ( !empty( $this->adjustment ) ) {
-			$temp = json_decode( $this->adjustment );
-			$temp_value = $temp->value;
-			if ( is_numeric( $temp_value ) ) {
-				$buffer = $temp_value;
+		
+		$adjustments = $this->get_adjustments();
+		
+		if ( empty( $adjustments ) ) {
+			if ( !empty( $this->adjustment ) ) {
+				$temp = json_decode( $this->adjustment );
+				$temp_value = $temp->value;
+				if ( is_numeric( $temp_value ) ) {
+					$buffer = $temp_value;
+				}
+				
+				$this->move_adjustment_to_api();
 			}
+			
+		} else {
+			$buffer = $this->get_adjustments_amount();
 		}
-		$buffer += $this->get_adjustments_amount();
+		
 		return $buffer;
 	}
 	
-	/**
-	 * DÃ©termine la valeur de la diffÃ©rence de chiffre d'affaires
-	 * @return number
-	 */
-	public function get_adjustment_turnover_difference() {
-		$buffer = 0;
-		if ( !empty( $this->adjustment ) ) {
+	public function move_adjustment_to_api() {
+		$adjustments = $this->get_adjustments();
+		
+		if ( !empty( $this->adjustment ) && empty( $adjustments ) ) {
 			$temp = json_decode( $this->adjustment );
-			$temp_value = $temp->turnover_difference;
-			if ( is_numeric( $temp_value ) ) {
-				$buffer = $temp_value;
+			if ( !isset( $temp->on_api ) ) {
+				$temp_value = $temp->value;
+				$temp_turnover_difference = $temp->turnover_difference;
+				$temp_msg_to_author = $temp->msg_to_author;
+				$temp_msg_to_investors = $temp->msg_to_investors;
+
+				$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+
+				$adjustment = new WDGAdjustment();
+				$adjustment->id_api_campaign = $campaign->get_api_id();
+				$adjustment->id_declaration = $this->id;
+				$adjustment->type = WDGAdjustment::$type_turnover_difference;
+				$adjustment->turnover_difference = $temp_turnover_difference;
+				$adjustment->amount = $temp_value;
+				$adjustment->message_organization = $temp_msg_to_author;
+				$adjustment->message_investors = $temp_msg_to_investors;
+				$adjustment->create();
+
+				$temp->on_api = 1;
+				$this->adjustment = json_encode( $temp );
+				$this->update();
 			}
 		}
-		return $buffer;
-	}
-	
-	/**
-	 * Retourne le message enregistrÃ© pour les investisseurs pour le porteur de projet
-	 * @param string $type
-	 * @return string
-	 */
-	public function get_adjustment_message( $type ) {
-		$buffer = '';
-		if ( !empty( $this->adjustment ) ) {
-			$temp = json_decode( $this->adjustment );
-			$var_type = 'msg_to_' .$type;
-			$buffer = $temp->$var_type;
-		}
-		return $buffer;
 	}
 	
 	/**
@@ -970,7 +925,6 @@ class WDGROIDeclaration {
 			}
 			$this->remaining_amount = $remaining_amount;
 			$this->update();
-			$this->save();
 		}
 	}
 	

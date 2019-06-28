@@ -44,7 +44,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_project_force_mandate');
 		WDGAjaxActions::add_action('save_project_declaration_info');
 		WDGAjaxActions::add_action('save_user_infos_dashboard');
-		WDGAjaxActions::add_action('save_declaration_adjustment');
 		WDGAjaxActions::add_action('pay_with_mandate');
         WDGAjaxActions::add_action('create_contacts_table');
 		WDGAjaxActions::add_action('preview_mail_message');
@@ -1055,63 +1054,6 @@ class WDGAjaxActions {
 
 		$return_values = array(
 			"response"	=> 'edit_project',
-			"errors"	=> $errors,
-			"success"	=> $success
-		);
-		echo json_encode($return_values);
-
-		exit();
-	}
-	
-	/**
-	 * Informations d'ajustement de déclaration de ROI
-	 */
-	public static function save_declaration_adjustment() {
-		$declaration_id = filter_input( INPUT_POST, 'declaration_id' );
-        $current_wdg_user = WDGUser::current();
-		if ( empty( $declaration_id ) || !$current_wdg_user->is_admin() ) {
-			exit();
-		}
-		
-		$errors = array();
-		$success = array();
-		
-		$validated = filter_input( INPUT_POST, 'new_declaration_adjustment_validated' );
-		if ( $validated != 0 && $validated != 1 ) {
-			$errors['new_declaration_adjustment_validated'] = __("Validation non conforme",'yproject');
-		}
-		
-		$needed = filter_input( INPUT_POST, 'new_declaration_adjustment_needed' );
-		if ( $needed != 0 && $needed != 1 ) {
-			$errors['new_declaration_adjustment_needed'] = __("Obligation non conforme",'yproject');
-		}
-		
-		$turnover_difference = filter_input( INPUT_POST, 'new_declaration_adjustment_turnover_difference' );
-		if ( !is_numeric( $turnover_difference ) ) {
-			$errors['new_declaration_adjustment_turnover_difference'] = __("Valeur non conforme",'yproject');
-		}
-		
-		$value = filter_input( INPUT_POST, 'new_declaration_adjustment_value' );
-		if ( !is_numeric( $value ) ) {
-			$errors['new_declaration_adjustment_value'] = __("Valeur non conforme",'yproject');
-		}
-		
-		$message_to_author = htmlentities( filter_input( INPUT_POST, 'new_declaration_adjustment_message_author' ) );
-		$message_to_investors = htmlentities( filter_input( INPUT_POST, 'new_declaration_adjustment_message_investors' ) );
-		
-		if ( empty( $errors ) ) {
-			$wdg_declaration = new WDGROIDeclaration( $declaration_id );
-			$wdg_declaration->set_adjustment( ( $validated == 1 ), ( $needed == 1 ), $turnover_difference, $value, $message_to_author, $message_to_investors );
-			$success[ 'new_declaration_adjustment_validated' ] = 1;
-			$success[ 'new_declaration_adjustment_needed' ] = 1;
-			$success[ 'new_declaration_adjustment_turnover_difference' ] = 1;
-			$success[ 'new_declaration_adjustment_value' ] = 1;
-			$success[ 'new_declaration_adjustment_message_author' ] = 1;
-			$success[ 'new_declaration_adjustment_message_investors' ] = 1;
-		}
-
-		$return_values = array(
-			"response"	=> "declaration_adjustment",
 			"errors"	=> $errors,
 			"success"	=> $success
 		);
