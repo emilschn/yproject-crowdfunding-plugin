@@ -76,6 +76,10 @@ class WDGWPREST_Entity_Adjustment {
 		return $result_obj;
 	}
 	
+	public static function get_list_linked_to_declaration_id( $declaration_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'declaration/' .$declaration_id. '/adjustments?linked=1' );
+		return $result_obj;
+	}
 	
 	public static function get_linked_declarations( $adjustment_id ) {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'adjustment/' .$adjustment_id. '/declarations' );

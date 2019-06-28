@@ -364,6 +364,28 @@ class WDGROIDeclaration {
 		return $this->estimated_turnover;
 	}
 	
+	public function get_estimated_amount() {
+		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		
+		$estimated_turnover = $this->get_estimated_turnover();
+		$amount_royalties = $estimated_turnover * $campaign->roi_percent_remaining() / 100;
+		$amount_with_adjustment = $amount_royalties + $this->get_adjustment_value();
+		$buffer = $amount_with_adjustment;
+		
+		$cost = $campaign->get_costs_to_organization();
+		if ( $cost > 0 ) {
+			$buffer += ( round( ( $amount_with_adjustment * $cost / 100 ) * 100) / 100 );
+		}
+		
+		// Si il y a un coût minimal par déclaration
+		$minimum_costs = $campaign->get_minimum_costs_to_organization();
+		if ( $minimum_costs > 0 ) {
+			$buffer = max( $buffer, $minimum_costs );
+		}
+		
+		return $buffer;
+	}
+	
 	public function get_message() {
 		return nl2br( $this->message, ENT_HTML5 );
 	}
@@ -893,19 +915,44 @@ class WDGROIDeclaration {
 	}
 	
 	/**
+	 * Retourne la liste des ajustements qui s'appliquent sur cette déclaration
+	 * @return array
+	 */
+	public function get_adjustments() {
+		if ( !isset( $this->adjustments ) ) {
+			$this->adjustments = WDGWPREST_Entity_Adjustment::get_list_by_declaration_id( $this->id );
+		}
+		return $this->adjustments;
+	}
+	
+	/**
 	 * Retourne le montant des ajustements liés à une déclaration
 	 * @return float
 	 */
 	public function get_adjustments_amount() {
 		$buffer = 0;
-		if ( !isset( $this->adjustments ) ) {
-			$this->adjustments = WDGWPREST_Entity_Adjustment::get_list_by_declaration_id( $this->id );
-		}
+		$this->get_adjustments(); // Initialisation de la liste
 		if ( !empty( $this->adjustments ) ) {
 			foreach ( $this->adjustments as $adjustment_item ) {
 				$buffer += $adjustment_item->amount;
 			}
 		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne vrai si un ajustement concernait cette déclaration
+	 */
+	public function is_checked_by_adjustments() {
+		$buffer = FALSE;
+		
+		if ( $this->status == WDGROIDeclaration::$status_finished ) {
+			$linked_adjustments = WDGWPREST_Entity_Adjustment::get_list_linked_to_declaration_id( $this->id );
+			if ( !empty( $linked_adjustments ) ) {
+				$buffer = TRUE;
+			}
+		}
+		
 		return $buffer;
 	}
 	
