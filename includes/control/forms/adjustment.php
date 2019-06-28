@@ -58,7 +58,9 @@ class WDG_Form_Adjustement extends WDG_Form {
 		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $this->campaign_id );
 		$declaration_list_by_id = array( ''	=> '' );
 		foreach ( $declaration_list as $WDGROIDeclaration ) {
-			$declaration_list_by_id[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
+			if ( $WDGROIDeclaration->get_status() == WDGROIDeclaration::$status_declaration ) {
+				$declaration_list_by_id[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
+			}
 		}
 		$this->addField(
 			'select',
@@ -116,7 +118,14 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$documents_by_id
 		);
 		
-		unset( $declaration_list_by_id[ '' ] );
+		$date_today = new DateTime();
+		$declaration_list_by_id_past = array();
+		foreach ( $declaration_list as $WDGROIDeclaration ) {
+			$date_due = new DateTime( $WDGROIDeclaration->date_due );
+			if ( $date_today > $date_due ) {
+				$declaration_list_by_id_past[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
+			}
+		}
 		$this->addField(
 			'select-multiple',
 			'declarations_checked',
@@ -124,7 +133,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			self::$field_group_adjustment,
 			( !empty( $adjustment ) ) ? $adjustment->declarations_checked : '',
 			FALSE,
-			$declaration_list_by_id
+			$declaration_list_by_id_past
 		);
 		
 		$this->addField(
