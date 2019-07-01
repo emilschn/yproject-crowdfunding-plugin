@@ -9,8 +9,7 @@ class WDG_File_Cacher {
 		"les-projets"		=> "les-projets",
 		"financement"		=> "financement",
 		"investissement"	=> "investissement",
-		"epargne-positive"	=> "epargne-positive",
-		"guide"				=> "guide"
+		"epargne-positive"	=> "epargne-positive"
 	);
 
 	protected static $_current = null;
@@ -120,7 +119,12 @@ class WDG_File_Cacher {
 	 */
 	private function get_content( $page_path ) {
 		ypcf_debug_log( 'WDG_File_Cacher::get_content > ' . $this->website . $page_path );
-		return file_get_contents( $this->website . $page_path . '/' );
+		$context = stream_context_create( array(
+				'http' => array(
+					'timeout' => 120, // Timeout de 2 minutes
+				)
+		) );
+		return file_get_contents( $this->website . $page_path . '/', FALSE, $context );
 	}
 	
 	/**
@@ -129,10 +133,12 @@ class WDG_File_Cacher {
 	 * @param type $page_content
 	 */
 	private function save( $file_path, $page_content ) {
-		ypcf_debug_log( 'WDG_File_Cacher::save > ' . $file_path );
-		$file_handle = fopen( $file_path, 'a' );
-		fwrite( $file_handle, $page_content );
-		fclose( $file_handle );
+		if ( !empty( $file_path ) && !empty( $page_content ) ) {
+			ypcf_debug_log( 'WDG_File_Cacher::save > ' . $file_path );
+			$file_handle = fopen( $file_path, 'a' );
+			fwrite( $file_handle, $page_content );
+			fclose( $file_handle );
+		}
 	}
 	
 	/**
