@@ -294,7 +294,7 @@ class WDGWPREST_Entity_Project {
 		$buffer = FALSE;
 		if ( !empty( $project_id ) ) {
 			if ( !isset( self::$declarations_by_project[ $project_id ] ) ) {
-				self::$declarations_by_project[ $project_id ] = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations' );
+				self::$declarations_by_project[ $project_id ] = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations?data_restricted_to_entity=1' );
 			}
 			$buffer = self::$declarations_by_project[ $project_id ];
 		}
