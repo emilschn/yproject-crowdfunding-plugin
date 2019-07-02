@@ -908,6 +908,24 @@ class WDGAjaxActions {
 			$success[ "new_fake_url" ] = 1;
 		}
 		
+		$new_asset_name_singular = filter_input( INPUT_POST, 'new_asset_name_singular' );
+		if ( !empty( $new_asset_name_singular ) ) {
+			$campaign->__set( ATCF_Campaign::$key_asset_name_singular, $new_asset_name_singular );
+			$success[ "$new_asset_name_singular" ] = 1;
+		}
+		
+		$new_asset_name_plural = filter_input( INPUT_POST, 'new_asset_name_plural' );
+		if ( !empty( $new_asset_name_plural ) ) {
+			$campaign->__set( ATCF_Campaign::$key_asset_name_plural, $new_asset_name_plural );
+			$success[ "$new_asset_name_plural" ] = 1;
+		}
+		
+		$new_partner_company_name = filter_input( INPUT_POST, 'new_partner_company_name' );
+		if ( !empty( $new_partner_company_name ) ) {
+			$campaign->__set( ATCF_Campaign::$key_partner_company_name, $new_partner_company_name );
+			$success[ "new_partner_company_name" ] = 1;
+		}
+		
 		//Champs personnalisés
 		$WDGAuthor = new WDGUser( $campaign->data->post_author );
 		$nb_custom_fields = $WDGAuthor->wp_user->get('wdg-contract-nb-custom-fields');

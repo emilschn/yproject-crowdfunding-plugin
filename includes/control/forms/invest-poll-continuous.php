@@ -34,6 +34,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 			self::$name
 		);
 		
+		$campaign = new ATCF_Campaign( $this->campaign_id );
 		
 		//**********************************************************************
 		// Champs garantie : $field_group_poll_continuous
@@ -45,7 +46,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'new-campaign'			=> __( "Lorsqu'il sera possible d'investir sur les prochains Fairphones", 'yproject' ),
+				'new-campaign'			=> __( "Lorsqu'il sera possible d'investir sur les prochains ", 'yproject' ) . $campaign->get_asset_name_plural(),
 				'new-subject'			=> __( "Lorsqu'il sera possible d'investir sur une nouvelle th&eacute;matique (apiculture, &eacute;nergie, mobilit&eacute;, logement...)", 'yproject' )
 			]
 		);
@@ -61,7 +62,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 				'invest-ponctual'		=> __( "Ponctuelle", 'yproject' ),
 				'invest-monthly'		=> __( "R&eacute;guli&egrave;re : mensuelle", 'yproject' ),
 				'invest-quarterly'		=> __( "R&eacute;guli&egrave;re : trimestrielle", 'yproject' ),
-				'invest-campaign'		=> __( "Occasionnelle : &agrave; chaque fois qu'il est possible d'investir sur de nouveaux Fairphones", 'yproject' ),
+				'invest-campaign'		=> __( "Occasionnelle : &agrave; chaque fois qu'il est possible d'investir sur de nouveaux ", 'yproject' ) . $campaign->get_asset_name_plural(),
 				'invest-other'			=> __( "Autre", 'yproject' )
 			]
 		);
@@ -83,7 +84,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 			FALSE,
 			[
 				'known-by-wedogood'	=> __( "Par WE DO GOOD", 'yproject' ),
-				'known-by-project'	=> __( "Par Commown", 'yproject' ),
+				'known-by-project'	=> __( "Par ", 'yproject' ) . $campaign->get_partner_company_name(),
 				'known-by-other'	=> __( "Autre", 'yproject' )
 			]
 		);

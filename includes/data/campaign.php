@@ -465,6 +465,33 @@ class ATCF_Campaign {
 		return $this->__get( ATCF_Campaign::$key_fake_url );
 	}
 	
+	public static $key_asset_name_singular = 'asset_name_singular';
+	public function get_asset_name_singular() {
+		$buffer = $this->__get( ATCF_Campaign::$key_asset_name_singular );
+		if ( empty( $buffer ) ) {
+			$buffer = "Fairphone";
+		}
+		return $buffer;
+	}
+	
+	public static $key_asset_name_plural = 'asset_name_plural';
+	public function get_asset_name_plural() {
+		$buffer = $this->__get( ATCF_Campaign::$key_asset_name_plural );
+		if ( empty( $buffer ) ) {
+			$buffer = "Fairphones";
+		}
+		return $buffer;
+	}
+	
+	public static $key_partner_company_name = 'partner_company_name';
+	public function get_partner_company_name() {
+		$buffer = $this->__get( ATCF_Campaign::$key_partner_company_name );
+		if ( empty( $buffer ) ) {
+			$buffer = "Commown";
+		}
+		return $buffer;
+	}
+	
 	//Rédaction projet
 	public function subtitle() {
 		return $this->__get_translated_property( 'campaign_subtitle' );
