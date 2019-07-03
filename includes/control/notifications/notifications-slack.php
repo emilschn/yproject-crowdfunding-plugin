@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class NotificationsSlack {
     private static $channel_notifications = "wdg-notifications";
+    private static $channel_notifications_clients = "clients-notifications";
 	
 	private static $icon_bell = ':bell:';
 	private static $icon_hug = ':hugging_face:';
@@ -32,14 +33,20 @@ class NotificationsSlack {
 	    $result = curl_exec($ch);
 	    $error = curl_error($ch);
 	    $errorno = curl_errno($ch);
-		ypcf_debug_log( 'NotificationsSlack::send > ' . print_r( $result, true ) . ' ; ' . print_r( $error, true ) . ' ; ' . print_r( $errorno, true ) );
+		//ypcf_debug_log( 'NotificationsSlack::send > ' . print_r( $result, true ) . ' ; ' . print_r( $error, true ) . ' ; ' . print_r( $errorno, true ) );
 	    curl_close($ch);
     }
 	
-	public static function send_to_notifications( $message, $icon ) {
+	public static function send_to_notifications( $message, $icon, $is_client = FALSE ) {
 	    if (!defined( 'YP_SLACK_WEBHOOK_URL')) { return; }
 	    
-	    NotificationsSlack::send( YP_SLACK_WEBHOOK_URL, NotificationsSlack::$channel_notifications, $message, $icon );
+		$webhook_url = YP_SLACK_WEBHOOK_URL;
+		$channel = NotificationsSlack::$channel_notifications;
+		if ( $is_client ) {
+			$webhook_url = YP_SLACK_WEBHOOK_URL_CLIENTS;
+			$channel = NotificationsSlack::$channel_notifications_clients;
+		}
+	    NotificationsSlack::send( $webhook_url, $channel, $message, $icon );
 	}
 	
 	public static function send_new_user( $wp_user_id ) {
@@ -81,7 +88,7 @@ class NotificationsSlack {
 		$message .= "Tel : ".$user_phone. "\n";
 		$message .= "Organisation : ".$orga_name. "\n";
 		
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_fireworks );
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_fireworks, TRUE );
 	}
 	
 	public static function send_new_project_status( $campaign_id, $status ) {
@@ -95,7 +102,7 @@ class NotificationsSlack {
 		$message .= "Nom : " .$campaign->data->post_title. "\n";
 		$message .= "Nouvelle étape : " .$status_str;
 		
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_rocket );
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_rocket, TRUE );
 	}
 	
 	public static function send_new_project_mandate( $orga_id ) {
@@ -103,7 +110,7 @@ class NotificationsSlack {
 		
 		$message = $WDGOrganization->get_name(). " a signé l'autorisation de prélèvement <!channel>";
 		
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_sign );
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_sign, TRUE );
 	}
 	
 	public static function send_update_summary_current_projects( $params ) {
@@ -146,17 +153,17 @@ class NotificationsSlack {
 	 */
 	public static function send_document_uploaded_admin( $orga, $nb_document ) {
 		$message = "L'organisation " .$orga->get_name(). " a uploadé des documents d'authentification. Nombre de fichiers : ".$nb_document.".";
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box );
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box, TRUE );
 	}
 	
 	public static function send_declaration_document_uploaded( $project_name, $document_name ) {
 		$message = "Le projet " .$project_name. " a uploadé un document justificatif appelé : ".$document_name;
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_mag );
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_mag, TRUE );
 	}
 	
 	public static function send_declaration_filled( $project_name, $turnover_amount, $royalties_amount, $commission_amount ) {
 		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange );
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, TRUE );
 	}
     
 }
