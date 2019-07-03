@@ -522,7 +522,8 @@ class WDGROIDeclaration {
 							$campaign_author = $campaign->post_author();
 							$author_user = get_user_by( 'ID', $campaign_author );
 							$replyto_mail = $author_user->user_email;
-							NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message, $replyto_mail );
+							$declaration_message_decoded = html_entity_decode( $declaration_message );
+							NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
 						}
 					}
 					
