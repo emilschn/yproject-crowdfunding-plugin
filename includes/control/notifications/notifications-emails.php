@@ -446,7 +446,7 @@ class NotificationsEmails {
 		$object = "Votre pré-investissement est validé";
 		
 		$body_content = "Bonjour,<br><br>";
-		$body_content .= "Le pré-investissemnt que vous avez effectué pour le projet ".$campaign->data->post_title." a été validé automatiquement.<br>";
+		$body_content .= "Le pré-investissement que vous avez effectué pour le projet ".$campaign->data->post_title." a été validé automatiquement.<br>";
 		$body_content .= "Aucune modification n'ayant été apportée au contrat, les conditions auxquelles vous avez souscrit restent les mêmes.<br><br>";
 		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
