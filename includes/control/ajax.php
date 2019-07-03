@@ -51,7 +51,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('apply_draft_data');
 		WDGAjaxActions::add_action('create_investment_from_draft');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
-		WDGAjaxActions::add_action('conclude_project');
+		WDGAjaxActions::add_action( 'cancel_pending_investments' );
+		WDGAjaxActions::add_action( 'conclude_project' );
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
 		WDGAjaxActions::add_action('delete_lock_project_edition');
@@ -2893,6 +2894,29 @@ class WDGAjaxActions {
 		
 		echo json_encode( $buffer );
 		exit();
+	}
+	
+	public static function cancel_pending_investments() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		
+		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded
+					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive
+					|| $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+				
+				$payments_data = $campaign->payments_data( TRUE );
+				foreach ( $payments_data as $payment_item ) {
+					if ( $payment_item[ 'status' ] == 'pending' ) {
+						$WDGInvestment = new WDGInvestment( $payment_item[ 'ID' ] );
+						$WDGInvestment->cancel();
+					}
+				}
+			}
+		}
+		
+		exit( '1' );
 	}
 	
 	/**
