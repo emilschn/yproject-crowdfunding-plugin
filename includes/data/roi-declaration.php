@@ -387,7 +387,7 @@ class WDGROIDeclaration {
 	}
 	
 	public function get_message() {
-		return nl2br( $this->message, ENT_HTML5 );
+		return html_entity_decode( nl2br( $this->message, ENT_HTML5 ), ENT_QUOTES | ENT_HTML401 );
 	}
 	public function set_message( $message ) {
 		$this->message = htmlentities( $message );
@@ -522,7 +522,7 @@ class WDGROIDeclaration {
 							$campaign_author = $campaign->post_author();
 							$author_user = get_user_by( 'ID', $campaign_author );
 							$replyto_mail = $author_user->user_email;
-							$declaration_message_decoded = html_entity_decode( $declaration_message );
+							$declaration_message_decoded = $declaration_message;
 							NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
 						}
 					}
