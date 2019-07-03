@@ -59,7 +59,9 @@ class WDGROIDeclaration {
 				$this->percent_commission = $collection_item->percent_commission;
 				$this->status = $collection_item->status;
 				$this->mean_payment = $collection_item->mean_payment;
-				$this->payment_token = $collection_item->payment_token;
+				if ( !empty( $collection_item->payment_token ) ) {
+					$this->payment_token = $collection_item->payment_token;
+				}
 				$this->file_list = $collection_item->file_list;
 				$this->turnover = $collection_item->turnover;
 				$this->message = $collection_item->message;
@@ -67,7 +69,9 @@ class WDGROIDeclaration {
 				$this->transfered_previous_remaining_amount = $collection_item->transfered_previous_remaining_amount;
 				$this->employees_number = $collection_item->employees_number;
 				$this->other_fundings = $collection_item->other_fundings;
-				$this->declared_by = $collection_item->declared_by;
+				if ( !empty( $collection_item->declared_by ) ) {
+					$this->declared_by = $collection_item->declared_by;
+				}
 				$this->on_api = TRUE;
 
 			} else {
