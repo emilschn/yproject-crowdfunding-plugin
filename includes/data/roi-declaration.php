@@ -183,7 +183,7 @@ class WDGROIDeclaration {
 	 * @return number
 	 */
 	public function get_amount_with_adjustment() {
-		return ( $this->get_amount_royalties() + $this->get_adjustment_value() );
+		return max( 0, $this->get_amount_royalties() + $this->get_adjustment_value() );
 	}
 	
 	/**

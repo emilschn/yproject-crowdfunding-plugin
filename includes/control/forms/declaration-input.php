@@ -162,6 +162,34 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 				} else {
 					$roideclaration->status = WDGROIDeclaration::$status_payment;
 				}
+				
+				// Si il reste un montant négatif, on crée un nouvel ajustement à appliquer sur une prochaine déclaration
+				if ( $roideclaration->get_amount_royalties() + $roideclaration->get_adjustments_amount() < 0 ) {
+					$WDGAdjustment = new WDGAdjustment();
+					$WDGAdjustment->id_api_campaign = $campaign->get_api_id();
+					
+					// Recherche de la prochaine déclaration
+					$declaration_list = $campaign->get_roi_declarations();
+					if ( !empty( $declaration_list ) ) {
+						$has_found_current_in_list = false;
+						foreach ( $declaration_list as $declaration_obj ) {
+							if ( $has_found_current_in_list ) {
+								if ( $declaration_obj[ 'status' ] == WDGROIDeclaration::$status_declaration ) {
+									$WDGAdjustment->id_declaration = $declaration_obj[ 'id' ];
+									break;
+								}
+								
+							} elseif ( $declaration_obj[ 'date_due' ] == $roideclaration->date_due ) {
+								$has_found_current_in_list = true;
+							}
+						}
+					}
+					
+					$WDGAdjustment->amount = $roideclaration->get_amount_royalties() + $roideclaration->get_adjustments_amount();
+					$WDGAdjustment->type = WDGAdjustment::$type_turnover_difference_remainders;
+					$WDGAdjustment->create();
+				}
+				
 			} else {
 				NotificationsEmails::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
 				$roideclaration->status = WDGROIDeclaration::$status_payment;
