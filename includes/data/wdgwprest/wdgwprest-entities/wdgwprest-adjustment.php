@@ -96,7 +96,7 @@ class WDGWPREST_Entity_Adjustment {
 	}
 	
 	public static function unlink_declaration( $adjustment_id, $declaration_id, $type = '' ) {
-		$result_obj = WDGWPRESTLib::call_delete_wdg( 'adjustment/' .$adjustment_id. '/declaration/' .$declaration_id. '/type/' .$type );
+		$result_obj = WDGWPRESTLib::call_delete_wdg( 'adjustment/' .$adjustment_id. '/declaration/' .$declaration_id );
 		return $result_obj;
 	}
 	
@@ -116,7 +116,7 @@ class WDGWPREST_Entity_Adjustment {
 	}
 	
 	public static function unlink_file( $adjustment_id, $file_id, $type = '' ) {
-		$result_obj = WDGWPRESTLib::call_delete_wdg( 'adjustment/' .$adjustment_id. '/file/' .$file_id. '/type/' .$type );
+		$result_obj = WDGWPRESTLib::call_delete_wdg( 'adjustment/' .$adjustment_id. '/file/' .$file_id );
 		return $result_obj;
 	}
 }

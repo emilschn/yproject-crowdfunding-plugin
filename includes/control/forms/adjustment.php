@@ -7,15 +7,12 @@ class WDG_Form_Adjustement extends WDG_Form {
 	public static $field_group_adjustment = 'adjustment-data';
 	
 	private $campaign_id;
-	private $adjustment_id;
+	private $adjustment;
 	
-	public function __construct( $campaign_id = FALSE, $adjustment_id = FALSE ) {
+	public function __construct( $campaign_id = FALSE, $adjustment = FALSE ) {
 		parent::__construct( self::$name );
 		$this->campaign_id = $campaign_id;
-		$this->adjustment_id = $adjustment_id;
-		if ( empty( $this->adjustment_id ) ) {
-			$this->adjustment_id = 0;
-		}
+		$this->adjustment = $adjustment;
 		$this->initFields();
 	}
 	
@@ -24,8 +21,8 @@ class WDG_Form_Adjustement extends WDG_Form {
 		
 		$campaign = new ATCF_Campaign( $this->campaign_id );
 		$adjustment = FALSE;
-		if ( !empty( $this->adjustment_id ) ) {
-			$adjustment = new WDGAdjustement( $this->adjustment_id );
+		if ( !empty( $this->adjustment ) ) {
+			$adjustment = new WDGAdjustment( $this->adjustment->id, $this->adjustment );
 		}
 
 		
@@ -43,7 +40,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			'adjustment_id',
 			'',
 			self::$field_group_hidden,
-			$this->adjustment_id
+			$this->adjustment->id
 		);
 		
 		$this->addField(
@@ -67,7 +64,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			'declaration',
 			__( "Versement au moment duquel l'ajustement s'applique *", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->id_declaration : '',
+			( !empty( $adjustment ) ) ? 'declaration-' .$adjustment->id_declaration : '',
 			FALSE,
 			$declaration_list_by_id
 		);
@@ -108,12 +105,19 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$file_item_metadata = json_decode( $file_item->metadata );
 			$documents_by_id[ 'file-' . $file_item->id ] = $file_item_metadata->name;
 		}
+		$document_values = array();
+		if ( !empty( $adjustment ) ) {
+			$temp_documents = $adjustment->get_documents();
+			foreach ( $temp_documents as $document_item ) {
+				array_push( $document_values, 'file-' . $document_item->id );
+			}
+		}
 		$this->addField(
 			'select-multiple',
 			'documents',
 			__( "Documents justificatifs li&eacute;s", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->documents : '',
+			$document_values,
 			FALSE,
 			$documents_by_id
 		);
@@ -126,12 +130,19 @@ class WDG_Form_Adjustement extends WDG_Form {
 				$declaration_list_by_id_past[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
 			}
 		}
+		$declaration_checked_values = array();
+		if ( !empty( $adjustment ) ) {
+			$temp_declarations_checked = $adjustment->get_declarations_checked();
+			foreach ( $temp_declarations_checked as $declaration_item ) {
+				array_push( $declaration_checked_values, 'declaration-' . $declaration_item->id );
+			}
+		}
 		$this->addField(
 			'select-multiple',
 			'declarations_checked',
 			__( "Versements &agrave; marquer comme v&eacute;rifi&eacute;s", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->declarations_checked : '',
+			$declaration_checked_values,
 			FALSE,
 			$declaration_list_by_id_past
 		);
@@ -248,8 +259,8 @@ class WDG_Form_Adjustement extends WDG_Form {
 			}
 		
 			$adjustment = FALSE;
-			if ( !empty( $this->adjustment_id ) ) {
-				$adjustment = new WDGAdjustment( $this->adjustment_id );
+			if ( !empty( $this->adjustment->id ) ) {
+				$adjustment = new WDGAdjustment( $this->adjustment->id );
 			} else {
 				$adjustment = new WDGAdjustment();
 			}
@@ -264,8 +275,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$adjustment->message_organization = $message_organization;
 			$adjustment->message_investors = $message_investors;
 			
-			
-			if ( !empty( $this->adjustment_id ) ) {
+			if ( !empty( $this->adjustment->id ) ) {
 				$adjustment->update();
 			} else {
 				$adjustment->create();

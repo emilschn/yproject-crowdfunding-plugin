@@ -953,7 +953,8 @@ class WDGPostActions {
 		
 		$core = ATCF_CrowdFunding::instance();
 		$core->include_form( 'adjustment' );
-		$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment_id );
+		$adjustment = WDGWPREST_Entity_Adjustment::get( $adjustment_id );
+		$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment );
 		$form_return = $form_adjustment->postForm();
 		
 		$success = ( $form_return != FALSE ) ? '1' : '100';

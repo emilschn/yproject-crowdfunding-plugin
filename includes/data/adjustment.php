@@ -132,28 +132,36 @@ class WDGAdjustment {
 		self::$collection_by_id[ $this->id ] = $this;
 		
 		$existing_document_list = WDGWPREST_Entity_Adjustment::get_linked_files( $this->id );
+		$existing_document_list_ids = array();
+		foreach ( $existing_document_list as $document ) {
+			array_push( $existing_document_list_ids, $document->id );
+		}
 		// Ajout des nouveaux documents
 		foreach ( $this->documents as $document_id ) {
-			if ( !in_array( $document_id, $existing_document_list) ) {
+			if ( !in_array( $document_id, $existing_document_list_ids) ) {
 				WDGWPREST_Entity_Adjustment::link_file( $this->id, $document_id );
 			}
 		}
 		// Retrait des anciens documents
-		foreach ( $existing_document_list as $document_id ) {
+		foreach ( $existing_document_list_ids as $document_id ) {
 			if ( !in_array( $document_id, $this->documents) ) {
 				WDGWPREST_Entity_Adjustment::unlink_file( $this->id, $document_id );
 			}
 		}
 		
 		$existing_declaration_list = WDGWPREST_Entity_Adjustment::get_linked_declarations( $this->id );
+		$existing_declaration_list_ids = array();
+		foreach ( $existing_declaration_list as $declaration ) {
+			array_push( $existing_declaration_list_ids, $declaration->id );
+		}
 		// Ajout des nouvelles déclarations
 		foreach ( $this->declarations_checked as $declaration_id ) {
-			if ( !in_array( $declaration_id, $existing_declaration_list) ) {
+			if ( !in_array( $declaration_id, $existing_declaration_list_ids) ) {
 				WDGWPREST_Entity_Adjustment::link_declaration( $this->id, $declaration_id );
 			}
 		}
 		// Retrait des nouvelles déclarations
-		foreach ( $existing_declaration_list as $declaration_id ) {
+		foreach ( $existing_declaration_list_ids as $declaration_id ) {
 			if ( !in_array( $declaration_id, $this->declarations_checked) ) {
 				WDGWPREST_Entity_Adjustment::unlink_declaration( $this->id, $declaration_id );
 			}
