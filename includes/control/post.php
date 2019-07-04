@@ -38,7 +38,8 @@ class WDGPostActions {
         self::add_action( 'add_declaration_document' );
         self::add_action( 'edit_adjustment' );
         self::add_action("roi_mark_transfer_received");
-        self::add_action("generate_royalties_bill");
+        self::add_action( 'generate_royalties_bill' );
+        self::add_action( 'save_declaration_bill' );
         self::add_action("refund_investors");
         self::add_action( 'user_account_organization_details' );
         self::add_action( 'user_account_organization_identitydocs' );
@@ -1002,7 +1003,26 @@ class WDGPostActions {
 			exit();
 			
 		}
+	}
+	
+	public static function save_declaration_bill() {
+		$WDGUser_current = WDGUser::current();
+		$roi_declaration_id = filter_input( INPUT_POST, 'declaration_id' );
 		
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $roi_declaration_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'declaration-bill' );
+			$new_form = new WDG_Form_Declaration_Bill( $roi_declaration_id );
+			$new_form->postForm();
+		
+			wp_redirect( wp_get_referer() );
+			exit();
+			
+		} else {
+			wp_redirect( home_url() );
+			exit();
+			
+		}
 	}
 	
 	public static function refund_investors() {

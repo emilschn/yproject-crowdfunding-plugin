@@ -102,4 +102,9 @@ class WDGWPREST_Entity_Declaration {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'declaration/' .$declaration_id. '/rois' );
 		return $result_obj;
 	}
+	
+	public static function get_bill_file( $declaration_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'declaration/' .$declaration_id. '/files?file_type=bill' );
+		return $result_obj;
+	}
 }
