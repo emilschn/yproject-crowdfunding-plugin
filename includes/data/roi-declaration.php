@@ -512,7 +512,7 @@ class WDGROIDeclaration {
 						$transfer_id = $transfer->ID;
 					}
 					WDGROI::insert( $investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer_id, $status, $id_investment_contract );
-
+					
 					if ( $send_notifications ) {
 						WDGQueue::add_notification_royalties( $investment_item['user'] );
 						

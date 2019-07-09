@@ -1068,9 +1068,13 @@ class WDGUser {
 	 * @param int $campaign_id
 	 * @return array
 	 */
-	public function get_royalties_by_campaign_id( $campaign_id ) {
+	public function get_royalties_by_campaign_id( $campaign_id, $campaign_api_id = FALSE ) {
 		$buffer = array();
-		$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		
+		if ( empty( $campaign_api_id ) ) {
+			$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		}
+		
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
 			if ( $roi_item->id_project == $campaign_api_id && $roi_item->status == WDGROI::$status_transferred ) {

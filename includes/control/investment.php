@@ -210,9 +210,14 @@ class WDGInvestment {
 	public function get_saved_amount() {
 		$buffer = FALSE;
 		if ( !empty( $this->id ) ) {
-			$buffer = edd_get_payment_amount( $this->id  );
+			$buffer = edd_get_payment_amount( $this->id );
 		}
 		return $buffer;
+	}
+	
+	public function get_saved_date() {
+		$post_invest = get_post( $this->id );
+		return $post_invest->post_date;
 	}
 	
 	/**

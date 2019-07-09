@@ -48,7 +48,8 @@ class NotificationsAPI {
 		'150' => "Déclaration faite sans CA",
 		'692' => "Déclaration - Avertissement prolongation",
 		'139' => "Versement de royalties - résumé quotidien",
-		'522' => "Versement de royalties - transfert avec message"
+		'522' => "Versement de royalties - transfert avec message",
+		'691' => "Versement de royalties - montant maximum atteint"
 	);
 	
 
@@ -1049,6 +1050,30 @@ class NotificationsAPI {
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name,
 			'CONTENU_MESSAGE'	=> $declaration_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATION VERSEMENT AYANT ATTEINT LE MAXIMUM
+    //*******************************************************
+	public static function roi_transfer_with_max_reached( $recipient, $name, $project_name, $max_profit, $date_investment, $url_project, $amount_investment, $amount_royalties ) {
+		$id_template = '691';
+		$options = array(
+			'personal'			=> 1,
+			'NOM'				=> $name,
+			'NOM_PROJET'		=> $project_name,
+			'RETOUR_MAXIMUM'	=> $max_profit,
+			'DATE'				=> $date_investment,
+			'URL_PROJET'		=> $url_project,
+			'MONTANT_INVESTI'	=> $amount_investment,
+			'MONTANT_ROYALTIES'	=> $amount_royalties
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
