@@ -557,6 +557,7 @@ class WDGROIDeclaration {
 				} else {
 					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
 				}
+				$this->check_declaration_to_be_extended_notification( $campaign, $organization_obj->get_email(), $wdguser_author->get_firstname() );
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->date_transfer = $date_now_formatted;
 			}
@@ -565,6 +566,38 @@ class WDGROIDeclaration {
 			$this->update();
 		}
 		return $buffer;
+	}
+	
+	/**
+	 * 
+	 * @param ATCF_campaign $campaign
+	 * @param string $recipient
+	 * @param string $name
+	 */
+	private function check_declaration_to_be_extended_notification( $campaign, $recipient, $name ) {
+		$send_notification = TRUE;
+		
+		$amount_transferred = 0;
+		$existing_roi_declarations = $campaign->get_roi_declarations();
+		foreach ( $existing_roi_declarations as $declaration_object ) {
+			// On n'envoie pas la notification si il reste des déclarations pas encore faites
+			if ( $declaration_object[ 'status' ] == WDGROIDeclaration::$status_declaration ) {
+				$send_notification = FALSE;
+				break;
+			} else {
+				$amount_transferred += $declaration_object[ 'total_roi' ];
+			}
+		}
+		
+		if ( $send_notification ) {
+			$amount_minimum_royalties = $campaign->current_amount( FALSE ) * $campaign->minimum_profit();
+			$amount_remaining = $amount_minimum_royalties - $amount_transferred;
+			
+			$amount_transferred_str = UIHelpers::format_number( $amount_transferred );
+			$amount_minimum_royalties_str = UIHelpers::format_number( $amount_minimum_royalties );
+			$amount_remaining_str = UIHelpers::format_number( $amount_remaining );
+			NotificationsAPI::declaration_to_be_extended( $recipient, $name, $amount_transferred_str, $amount_minimum_royalties_str, $amount_remaining_str );
+		}
 	}
 	
 	private function update_investment_contract_amount_received( $investment_contracts, $investment_id, $roi_amount ) {

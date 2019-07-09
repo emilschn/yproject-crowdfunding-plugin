@@ -46,6 +46,7 @@ class NotificationsAPI {
 		'595' => "Déclarations - Avertissement prélèvement",
 		'127' => "Déclaration faite avec CA",
 		'150' => "Déclaration faite sans CA",
+		'692' => "Déclaration - Avertissement prolongation",
 		'139' => "Versement de royalties - résumé quotidien",
 		'522' => "Versement de royalties - transfert avec message"
 	);
@@ -988,6 +989,30 @@ class NotificationsAPI {
 	}
     //*******************************************************
     // FIN - NOTIFICATIONS DECLARATIONS APROUVEES
+    //*******************************************************
+	
+    //*******************************************************
+    // NOTIFICATIONS PROLONGATION DECLARATIONS
+    //*******************************************************
+	public static function declaration_to_be_extended( $recipient, $name, $amount_transferred, $amount_minimum_royalties, $amount_remaining ) {
+		$id_template = '692';
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name,
+			'MONTANT_DEJA_VERSE'		=> $amount_transferred,
+			'MONTANT_MINIMUM_A_VERSER'	=> $amount_minimum_royalties,
+			'MONTANT_RESTANT_A_VERSER'	=> $amount_remaining
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // NOTIFICATIONS PROLONGATION DECLARATIONS
     //*******************************************************
 	
 	
