@@ -784,6 +784,10 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public function maximum_profit_amount() {
+		return $this->current_amount( FALSE ) * $this->maximum_profit_complete();
+	}
+	
 	public function maximum_profit_str() {
 		$buffer = $this->maximum_profit();
 		if ( $buffer == 'infinite' ) {
