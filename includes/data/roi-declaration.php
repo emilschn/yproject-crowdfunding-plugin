@@ -561,7 +561,7 @@ class WDGROIDeclaration {
 				} else {
 					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
 				}
-				$this->check_declaration_to_be_extended_notification( $campaign, $organization_obj->get_email(), $wdguser_author->get_firstname() );
+				$this->check_notifications( $campaign, $organization_obj->get_email(), $wdguser_author->get_firstname() );
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->date_transfer = $date_now_formatted;
 			}
@@ -578,29 +578,40 @@ class WDGROIDeclaration {
 	 * @param string $recipient
 	 * @param string $name
 	 */
-	private function check_declaration_to_be_extended_notification( $campaign, $recipient, $name ) {
-		$send_notification = TRUE;
+	private function check_notifications( $campaign, $recipient, $name ) {
+		$send_notification_extend = TRUE;
 		
 		$amount_transferred = 0;
 		$existing_roi_declarations = $campaign->get_roi_declarations();
 		foreach ( $existing_roi_declarations as $declaration_object ) {
 			// On n'envoie pas la notification si il reste des déclarations pas encore faites
 			if ( $declaration_object[ 'status' ] == WDGROIDeclaration::$status_declaration ) {
-				$send_notification = FALSE;
+				$send_notification_extend = FALSE;
 				break;
 			} else {
 				$amount_transferred += $declaration_object[ 'total_roi' ];
 			}
 		}
 		
-		if ( $send_notification ) {
+		if ( $send_notification_extend ) {
 			$amount_minimum_royalties = $campaign->current_amount( FALSE ) * $campaign->minimum_profit();
+			if ( $amount_transferred < $amount_minimum_royalties ) {
+				$send_notification_extend = FALSE;
+			}
+		}
+			
+		if ( $send_notification_extend ) {
 			$amount_remaining = $amount_minimum_royalties - $amount_transferred;
 			
 			$amount_transferred_str = UIHelpers::format_number( $amount_transferred );
 			$amount_minimum_royalties_str = UIHelpers::format_number( $amount_minimum_royalties );
 			$amount_remaining_str = UIHelpers::format_number( $amount_remaining );
 			NotificationsAPI::declaration_to_be_extended( $recipient, $name, $amount_transferred_str, $amount_minimum_royalties_str, $amount_remaining_str );
+		}
+		
+		if ( $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
+			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
+			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
 	}
 	

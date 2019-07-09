@@ -784,6 +784,15 @@ class NotificationsEmails {
 		$admin_email = 'administratif@wedogood.co';
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
 	}
+	
+	public static function declarations_close_to_maximum_profit( $project_name, $ratio ) {
+		$object = "Projet proche du versement complet de royalties";
+		$body_content = "Coucou !<br><br>";
+		$body_content .= "Le projet " .$project_name. " est proche d'atteindre son versement maximum (ratio de " .$ratio. " %).";
+		
+		$admin_email = 'administratif@wedogood.co';
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
     //*******************************************************
     // FIN NOTIFICATIONS PAIEMENTS ROI
     //*******************************************************
