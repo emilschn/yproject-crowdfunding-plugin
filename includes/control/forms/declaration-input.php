@@ -194,7 +194,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 				NotificationsEmails::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
 				$roideclaration->status = WDGROIDeclaration::$status_payment;
 				
-				// Si le montant des royalties fait que ça dépassera le max, on rajoute un ajustement qui fait baisser le montant
+				// Si le montant des royalties fait que ça dépassera le max, on ajoute un ajustement qui fait baisser le montant
 				if ( $roideclaration->get_amount_with_adjustment() > $campaign->maximum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() ) {
 					$WDGAdjustment = new WDGAdjustment();
 					$WDGAdjustment->id_api_campaign = $campaign->get_api_id();
@@ -203,6 +203,18 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 					$WDGAdjustment->message_organization = "Afin de ne pas dépasser le maximum à reverser";
 					$WDGAdjustment->type = WDGAdjustment::$type_fixed_amount;
 					$WDGAdjustment->create();
+				}
+				// Si la campagne est dans sa prolongation et que la déclaration dépasse le rendement minimal, on ajoute un ajustement qui fait baisser le montant
+				if ( $campaign->is_beyond_funding_duration() ) {
+					if ( $roideclaration->get_amount_with_adjustment() > $campaign->minimum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() ) {
+						$WDGAdjustment = new WDGAdjustment();
+						$WDGAdjustment->id_api_campaign = $campaign->get_api_id();
+						$WDGAdjustment->id_declaration = $roideclaration->id;
+						$WDGAdjustment->amount = $campaign->minimum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() - $roideclaration->get_amount_with_adjustment();
+						$WDGAdjustment->message_organization = "Afin de ne pas dépasser le rendement minimal après prolongation";
+						$WDGAdjustment->type = WDGAdjustment::$type_fixed_amount;
+						$WDGAdjustment->create();
+					}
 				}
 			}
 			$roideclaration->employees_number = $employees_number;

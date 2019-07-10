@@ -806,6 +806,10 @@ class ATCF_Campaign {
 		return $this->get_api_data( 'minimum_profit' );
 	}
 	
+	public function minimum_profit_amount() {
+		return $this->current_amount( FALSE ) * $this->minimum_profit();
+	}
+	
 	public static $key_minimum_goal_display = 'minimum_goal_display';
 	public static $key_minimum_goal_display_option_minimum_as_max = 'minimum_as_max';
 	public static $key_minimum_goal_display_option_minimum_as_step = 'minimum_as_step';
@@ -1034,6 +1038,15 @@ class ATCF_Campaign {
 			$buffer = __( "une dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
 		}
 		return $buffer;
+	}
+	
+	public function is_beyond_funding_duration() {
+		$today_date = new DateTime();
+		$str_date_contract_start = $this->contract_start_date();
+		$date_contract_start = new DateTime( $str_date_contract_start );
+		$date_contract_start->add( new DateInterval( 'P' .$this->funding_duration(). 'Y' ) );
+		
+		return ( $today_date > $date_contract_start );
 	}
 
 	/**
