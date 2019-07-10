@@ -183,11 +183,7 @@ class WDGROIDeclaration {
 	 * @return number
 	 */
 	public function get_amount_with_adjustment() {
-		$amount_with_adjustment = $this->get_amount_royalties() + $this->get_adjustment_value();
-		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
-		$remaining_maximum_profit_amount = max( 0, $campaign->maximum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() );
-		$amount_corrected_with_max_profit = min( $amount_with_adjustment, $remaining_maximum_profit_amount );
-		return max( 0, $amount_corrected_with_max_profit );
+		return max( 0, $this->get_amount_royalties() + $this->get_adjustment_value() );
 	}
 	
 	/**

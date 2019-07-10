@@ -164,7 +164,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 				}
 				
 				// Si il reste un montant négatif, on crée un nouvel ajustement à appliquer sur une prochaine déclaration
-				if ( $roideclaration->get_amount_royalties() + $roideclaration->get_adjustments_amount() < 0 ) {
+				if ( $roideclaration->get_amount_with_adjustment() < 0 ) {
 					$WDGAdjustment = new WDGAdjustment();
 					$WDGAdjustment->id_api_campaign = $campaign->get_api_id();
 					
@@ -185,7 +185,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 						}
 					}
 					
-					$WDGAdjustment->amount = $roideclaration->get_amount_royalties() + $roideclaration->get_adjustments_amount();
+					$WDGAdjustment->amount = $roideclaration->get_amount_with_adjustment();
 					$WDGAdjustment->type = WDGAdjustment::$type_turnover_difference_remainders;
 					$WDGAdjustment->create();
 				}
@@ -193,6 +193,17 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			} else {
 				NotificationsEmails::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
 				$roideclaration->status = WDGROIDeclaration::$status_payment;
+				
+				// Si le montant des royalties fait que ça dépassera le max, on rajoute un ajustement qui fait baisser le montant
+				if ( $roideclaration->get_amount_with_adjustment() > $campaign->maximum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() ) {
+					$WDGAdjustment = new WDGAdjustment();
+					$WDGAdjustment->id_api_campaign = $campaign->get_api_id();
+					$WDGAdjustment->id_declaration = $roideclaration->id;
+					$WDGAdjustment->amount = $campaign->maximum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() - $roideclaration->get_amount_with_adjustment();
+					$WDGAdjustment->message_organization = "Afin de ne pas dépasser le maximum à reverser";
+					$WDGAdjustment->type = WDGAdjustment::$type_fixed_amount;
+					$WDGAdjustment->create();
+				}
 			}
 			$roideclaration->employees_number = $employees_number;
 			
