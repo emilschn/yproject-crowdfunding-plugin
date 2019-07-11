@@ -251,6 +251,10 @@ class WDGInvestment {
 		return $post_invest->post_status;
 	}
 	
+	public function get_saved_payment_key() {
+		return edd_get_payment_key( $this->get_id() );
+	}
+	
 	/**
 	 * Retourne le token d'investissement
 	 * @return string
@@ -955,7 +959,7 @@ class WDGInvestment {
 /******************************************************************************/
 	public function refund() {
 		$payment_key = edd_get_payment_key( $this->get_id() );
-		if ($payment_key != 'check') {
+		if ( $payment_key != 'check' && strpos( $payment_key, 'unset' ) === FALSE ) {
 			$campaign = $this->get_saved_campaign();
 			$organization = $campaign->get_organization();
 			$organization_obj = new WDGOrganization( $organization->wpref, $organization );
