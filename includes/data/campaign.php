@@ -803,7 +803,11 @@ class ATCF_Campaign {
 	}
 	
 	public function minimum_profit() {
-		return $this->get_api_data( 'minimum_profit' );
+		$buffer = $this->get_api_data( 'minimum_profit' );
+		if ( empty( $buffer ) ) {
+			$buffer = 1;
+		}
+		return $buffer;
 	}
 	
 	public function minimum_profit_amount() {
