@@ -114,8 +114,22 @@ class WDGQueue {
 		$recipient_email = empty( $WDGOrganization ) ? $WDGUser->get_email() : $WDGOrganization->get_email();
 		$recipient_name = empty( $WDGOrganization ) ? $WDGUser->get_firstname() : $WDGOrganization->get_name();
 		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
+		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
+		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 		
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
+			$first_investment_contract = FALSE;
+			if ( !empty( $investment_contracts ) ) {
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->subscription_id == $purchase_id ) {
+						$first_investment_contract = $investment_contract;
+					}
+				}
+			}
+			if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
+				continue;
+			}
+
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$campaign_organization = $campaign->get_organization();
 			if ( !empty( $campaign_organization ) ) {
