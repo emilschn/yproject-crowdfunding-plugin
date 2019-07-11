@@ -512,17 +512,20 @@ class LemonwayLib {
 		if (!isset($iban)) return FALSE;
 		if (!isset($dom1)) return FALSE;
 		
+		$holder_name_decoded = html_entity_decode( $holder_name );
 		$clean_iban = str_replace( ' ', '', $iban );
 		$clean_bic = str_replace( ' ', '', $bic );
+		$dom1_decoded = html_entity_decode( $dom1 );
+		$dom2_decoded = html_entity_decode( $dom2 );
 		
 		//wallet ; holder; bic ; iban ; dom1 ; dom2
 		$param_list = array(
 			'wallet'	=> $wallet_id,
-			'holder'	=> $holder_name,
+			'holder'	=> $holder_name_decoded,
 			'iban'		=> $clean_iban,
 			'bic'		=> $clean_bic,
-			'dom1'		=> $dom1,
-			'dom2'		=> $dom2
+			'dom1'		=> $dom1_decoded,
+			'dom2'		=> $dom2_decoded
 		);
 		
 		$result = LemonwayLib::call('RegisterIBAN', $param_list);
