@@ -74,16 +74,12 @@ class WDGQueue {
 		$date_next_dispatch = new DateTime();
 		// Les envois se font à 21h
 		$date_next_dispatch->setTime( 21, 0 );
-		// Si la date est avant le 6, on envoie le 6
-		if ( $date_next_dispatch->format( 'd' ) < 6 ) {
-			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 6 );
-		}
-		// Si la date est entre le 6 et le 10, on envoie le 10
-		if ( $date_next_dispatch->format( 'd' ) > 6 && $date_next_dispatch->format( 'd' ) < 10 ) {
+		// Si la date est avant le 10 (ou le 10), on envoie le 10
+		if ( $date_next_dispatch->format( 'd' ) <= 10 ) {
 			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 10 );
 		}
-		// Si la date est entre le 10 et le 15, on envoie le 15
-		if ( $date_next_dispatch->format( 'd' ) > 10 && $date_next_dispatch->format( 'd' ) < 15 ) {
+		// Si la date est entre le 10 et le 15 (compris), on envoie le 15
+		if ( $date_next_dispatch->format( 'd' ) > 10 && $date_next_dispatch->format( 'd' ) <= 15 ) {
 			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 15 );
 		}
 		// Faut-il décaler sur un jour ouvré si ça tombe le samedi / dimanche ?
