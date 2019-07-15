@@ -1738,7 +1738,7 @@ class WDGUser {
 	/**
 	 * Upload des KYC vers Lemonway si possible
 	 */
-	public function send_kyc() {
+	public function send_kyc( $force_upload = TRUE ) {
 		if ($this->can_register_lemonway()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
@@ -1753,7 +1753,16 @@ class WDGUser {
 					if ( !empty( $document_filelist ) ) {
 						$current_document = $document_filelist[0];
 						if ( !empty( $current_document ) ) {
-							LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+							$do_upload = TRUE;
+							if ( !$force_upload ) {
+								$document_status = $this->get_document_lemonway_status( $lemonway_type );
+								if ( $document_status !== FALSE ) {
+									$do_upload = FALSE;
+								}
+							}
+							if ( $do_upload ) {
+								LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+							}
 						}
 					}
 				}

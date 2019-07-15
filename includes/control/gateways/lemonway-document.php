@@ -111,6 +111,7 @@ class LemonwayDocument {
 
 	
 	private function init() {
+		$this->status = FALSE;
 		$this->error_str = FALSE;
 		if ( !empty( $this->wallet_details->DOCS ) && !empty( $this->wallet_details->DOCS->DOC ) ) {
 			foreach( $this->wallet_details->DOCS->DOC as $document_object ) {
