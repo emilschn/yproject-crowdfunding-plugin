@@ -2296,7 +2296,7 @@ class WDGAjaxActions {
             new ContactColumn('vote_date',"Date d'éval.",$display_vote_infos, "date"),
             new ContactColumn('vote_rate',"Note d'éval.",true),
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
-			new ContactColumn('vote_advice','Conseil',$display_vote_infos),
+			new ContactColumn('vote_advice','Conseil', true),
 			new ContactColumn( 'source-how-known', 'Src. (connu)', ( $display_vote_infos || $display_invest_infos ) ),
 			new ContactColumn( 'source-where-from', 'Src. (arrivée)', ( $display_vote_infos || $display_invest_infos ) ),
 
