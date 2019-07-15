@@ -93,7 +93,7 @@ class WDGCronActions {
 					if ( $declaration_data->status == WDGROIDeclaration::$status_declaration ) {
 						$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
 						$organization = $campaign->get_organization();
-						$wdgorganization = new WDGOrganization( $organization->id, $organization );
+						$wdgorganization = new WDGOrganization( $organization->wpref, $organization );
 						
 						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded && $wdgorganization->has_signed_mandate() ) {
 							
