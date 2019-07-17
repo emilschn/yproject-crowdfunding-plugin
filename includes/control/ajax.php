@@ -235,7 +235,11 @@ class WDGAjaxActions {
 					$buffer[ $campaign_id ][ 'items' ] = array();
 				}
 				
-				$investor_proportion = $payment_amount / $buffer[ $campaign_id ][ 'amount' ];
+				if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+					$investor_proportion = $payment_amount / $buffer[ $campaign_id ][ 'amount' ];
+				} else {
+					$investor_proportion = $payment_amount / $campaign->goal( FALSE );
+				}
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
