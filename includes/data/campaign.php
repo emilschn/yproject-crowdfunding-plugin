@@ -774,18 +774,27 @@ class ATCF_Campaign {
 	
 	public function maximum_profit_complete() {
 		$maximum_profit = $this->maximum_profit();
-		$maximum_profit_precision = $this->maximum_profit_precision();
-		if ( $maximum_profit_precision > 0 ) {
-			$buffer = $maximum_profit .'.'. $maximum_profit_precision;
+		if ( $maximum_profit == 'infinite' ) {
+			$buffer = 1000000000;
 		} else {
-			$buffer = $maximum_profit;
+			$maximum_profit_precision = $this->maximum_profit_precision();
+			if ( $maximum_profit_precision > 0 ) {
+				$buffer = $maximum_profit .'.'. $maximum_profit_precision;
+			} else {
+				$buffer = $maximum_profit;
+			}
 		}
 		
 		return $buffer;
 	}
 	
 	public function maximum_profit_amount() {
-		return $this->current_amount( FALSE ) * $this->maximum_profit_complete();
+		$maximum_profit = $this->maximum_profit();
+		if ( $maximum_profit == 'infinite' ) {
+			return 1000000000;
+		} else {
+			return $this->current_amount( FALSE ) * $this->maximum_profit_complete();
+		}
 	}
 	
 	public function maximum_profit_str() {

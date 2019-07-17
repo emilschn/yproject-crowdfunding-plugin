@@ -605,7 +605,7 @@ class WDGROIDeclaration {
 			NotificationsAPI::declaration_to_be_extended( $recipient, $name, $amount_transferred_str, $amount_minimum_royalties_str, $amount_remaining_str );
 		}
 		
-		if ( $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
+		if ( $campaign->maximum_profit() != 'infinite' && $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
 			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
