@@ -328,7 +328,12 @@ class WDGAjaxActions {
 				// Création du tableau des prévisionnels par année
 				$investment_item[ 'rois_by_year' ] = array();
 				$year_end_dates = array();
-				$estimated_turnover_list = $campaign->estimated_turnover();
+				$estimated_turnover_list = FALSE;
+				$campaign_roi_list = FALSE;
+				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_archive ) {
+					$estimated_turnover_list = $campaign->estimated_turnover();
+					$campaign_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
+				}
 				if ( !empty( $estimated_turnover_list ) ){
 					
 					// On démarre de la date de démarrage du contrat
@@ -356,7 +361,6 @@ class WDGAjaxActions {
 				
 				
 				// - Déclarations de royalties liées à la campagne
-				$campaign_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 				if ( !empty( $campaign_roi_list ) ) {
 					foreach ( $campaign_roi_list as $roi_declaration ) {
 						
