@@ -62,7 +62,26 @@ class WDGFormProjects {
 				array_push( $recipients, get_userdata( $item->user_id )->user_email );
 			}
 			$recipients_string = implode( ',', $recipients );
-			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $_POST[ 'posttitle' ], $_POST[ 'postcontent' ] );
+			
+			$content = $_POST[ 'postcontent' ];
+			$content_exploded_by_href = explode( 'href="', $content );
+			$count_content_exploded_by_href = count( $content_exploded_by_href );
+			if ( $count_content_exploded_by_href > 1 ) {
+				for ( $i = 1; $i < $count_content_exploded_by_href; $i++ ) {
+					$nodes_to_analyse_exploded = explode( '</a>', $content_exploded_by_href[ $i ] );
+					$inside_of_link = $nodes_to_analyse_exploded[ 0 ];
+					if ( strpos( $inside_of_link, '<img' ) ) {
+						$content_without_link_exploded = explode( '"', $inside_of_link );
+						$content_without_link_exploded = array_shift( $content_without_link_exploded );
+						$inside_of_link = implode( '"', $content_without_link_exploded );
+						$nodes_to_analyse_exploded[ 0 ] = $inside_of_link;
+					}
+					$content_exploded_by_href[ $i ] = implode( '</a>', $nodes_to_analyse_exploded );
+				}
+			}
+			$content_without_links = implode( 'href="', $content_exploded_by_href );
+			
+			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $_POST[ 'posttitle' ], $content_without_links );
 		}
 	}
 	
