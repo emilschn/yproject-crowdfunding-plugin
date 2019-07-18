@@ -20,6 +20,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
 		
+		WDGAjaxActions::add_action( 'get_current_user_info' );
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		WDGAjaxActions::add_action('get_searchable_projects_list');
 		
@@ -76,6 +77,66 @@ class WDGAjaxActions {
 	public static function add_action($action_name) {
 		add_action('wp_ajax_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
 		add_action('wp_ajax_nopriv_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
+	}
+	
+	public static function get_current_user_info() {
+		$buffer = '0';
+		
+		if ( is_user_logged_in() ) {
+			$response = array();
+			
+			$WDGUserCurrent = WDGUser::current();
+			$firstname_WDGUserCurrent = $WDGUserCurrent->get_firstname();
+			$response[ 'userinfos' ] = array();
+			$response[ 'userinfos' ][ 'username' ] = ( !empty( $firstname_WDGUserCurrent ) ) ? $firstname_WDGUserCurrent : $WDGUserCurrent->get_login();
+			$response[ 'userinfos' ][ 'image_dom_element' ] = UIHelpers::get_user_avatar( $WDGUserCurrent->get_wpref(), 'icon' );
+			$response[ 'userinfos' ][ 'logout_url' ] = wp_logout_url(). '&page_id=' .get_the_ID();
+			
+			$is_project_needing_authentication = FALSE;
+			$response[ 'projectlist' ] = array();
+			global $WDG_cache_plugin;
+			if ( $WDG_cache_plugin == null ) {
+				$WDG_cache_plugin = new WDG_Cache_Plugin();
+			}
+			$cache_project_list = $WDG_cache_plugin->get_cache( 'WDGUser::get_projects_by_id(' .$WDGUserCurrent->wp_user->ID. ', TRUE)', 1 );
+			if ( $cache_project_list !== FALSE ) {
+				$project_list = json_decode( $cache_project_list );
+				
+			} else {
+				$project_list = WDGUser::get_projects_by_id( $WDGUserCurrent->wp_user->ID, TRUE );
+				$WDG_cache_plugin->set_cache( 'WDGUser::get_projects_by_id(' .$WDGUserCurrent->wp_user->ID. ', TRUE)', json_encode( $project_list ), 60*10, 1 ); //MAJ 10min
+			}
+			if ( $project_list ) {
+				$page_dashboard = home_url( '/tableau-de-bord/' );
+				foreach ( $project_list as $project_id ) { 
+					if ( !empty( $project_id ) ) {
+						$project_campaign = new ATCF_Campaign( $project_id );
+						if ( isset( $project_campaign ) && $project_campaign->get_name() != '' ) {
+							$campaign_organization = $project_campaign->get_organization();
+							$WDGOrganizationCampaign = new WDGOrganization( $campaign_organization->wpref );
+							
+							$campaign_item = array();
+							$campaign_item[ 'name' ] = $project_campaign->get_name();
+							$campaign_item[ 'url' ] = $page_dashboard. '?campaign_id=' .$project_id;
+							$campaign_item[ 'display_need_authentication' ] = '0';
+							if ( !$WDGOrganizationCampaign->is_registered_lemonway_wallet() ) {
+								$is_project_needing_authentication = TRUE;
+								$campaign_item[ 'display_need_authentication' ] = '1';
+							}
+							
+							array_push( $response[ 'projectlist' ], $campaign_item );
+						}
+					}
+				}
+			}
+			
+			$response[ 'userinfos' ][ 'display_need_authentication' ] = ( !$is_project_needing_authentication && !$WDGUserCurrent->is_lemonway_registered() ) ? '1' : '0';
+			
+			$buffer = json_encode( $response );
+		}
+		
+		echo $buffer;
+		exit();
 	}
 	
 	/**
