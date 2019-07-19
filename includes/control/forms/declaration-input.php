@@ -164,7 +164,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 				}
 				
 				// Si il reste un montant négatif, on crée un nouvel ajustement à appliquer sur une prochaine déclaration
-				if ( $roideclaration->get_amount_with_adjustment() < 0 ) {
+				if ( $roideclaration->get_amount_royalties() + $roideclaration->get_adjustment_value() < 0 ) {
 					$WDGAdjustment = new WDGAdjustment();
 					$WDGAdjustment->id_api_campaign = $campaign->get_api_id();
 					
