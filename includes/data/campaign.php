@@ -3038,7 +3038,7 @@ class ATCF_Campaign {
 					$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
 				}
 
-				$turnover_to_apply = $adjustement_turned_into_turnover + $declaration->get_turnover_total();
+				$turnover_to_apply = max( 0, $adjustement_turned_into_turnover + $declaration->get_turnover_total() );
 
 				// Détermination des montants par contrat
 				foreach ( $investment_contracts as $investment_contract ) {
