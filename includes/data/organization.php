@@ -886,7 +886,11 @@ class WDGOrganization {
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
 					LemonwayLib::ask_transfer_funds( $this->get_campaign_lemonway_id(), $this->get_lemonway_id(), ( $transfer_amount + $transfer_commission ) );
-					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
+					if ( $transfer_amount > 0 ) {
+						$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
+					} else {
+						LemonwayLib::ask_transfer_funds( $this->get_lemonway_id(), 'SC', $transfer_commission );
+					}
 				}
 			}
 		}
