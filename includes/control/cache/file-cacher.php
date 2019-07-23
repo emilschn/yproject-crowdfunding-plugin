@@ -102,8 +102,6 @@ class WDG_File_Cacher {
 	 * @param int $campaign_id
 	 */
 	public function build_campaign_page_cache( $campaign_id, $rebuild = TRUE ) {
-		$vote_cache_duration = 60 * 60 * 2;
-		$funding_cache_duration = 60 * 60 * 2;
 		$funded_cache_duration = 60 * 60 * 48;
 		
 		$db_cacher = WDG_Cache_Plugin::current();
@@ -112,16 +110,11 @@ class WDG_File_Cacher {
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$lang_list = $campaign->get_lang_list();
 			$this->delete( $campaign->data->post_name );
-			if ( $rebuild && empty( $lang_list ) && ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) ) {
+			if ( $rebuild && empty( $lang_list ) && $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$file_path = $this->get_filepath( $campaign->data->post_name );
 				$page_content = $this->get_content( $campaign->data->post_name );
 				$this->save( $file_path, $page_content );
-				$duration = $vote_cache_duration;
-				if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
-					$duration = $funding_cache_duration;
-				} else if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
-					$duration = $funded_cache_duration;
-				}
+				$duration = $funded_cache_duration;
 				$db_cacher->set_cache( 'cache_campaign_' . $campaign_id, '1', $duration, 1 );
 			}
 		}

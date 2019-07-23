@@ -1,3 +1,4 @@
+files/cache/*
 files/campaign-funded/*
 !files/campaign-funded/index.php
 files/contracts/*
