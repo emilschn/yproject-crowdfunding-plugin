@@ -133,14 +133,18 @@ class WDGAjaxActions {
 			$response[ 'userinfos' ][ 'display_need_authentication' ] = ( !$is_project_needing_authentication && !$WDGUserCurrent->is_lemonway_registered() ) ? '1' : '0';
 			
 			$response[ 'scripts' ] = array();
+			$response[ 'context' ] = array();
 			$input_pageinfo = filter_input( INPUT_POST, 'pageinfo' );
 			if ( !empty( $input_pageinfo ) ) {
 				$current_campaign = new ATCF_Campaign( $input_pageinfo );
 				if ( $current_campaign->current_user_can_edit() ) {
 					$project_editor_script_url = dirname( get_bloginfo('stylesheet_url') ). '/_inc/js/wdg-project-editor.js?d=' .time();
 					array_push( $response[ 'scripts' ], $project_editor_script_url );
+					$response[ 'context' ][ 'dashboard_url' ] = home_url( '/tableau-de-bord/?campaign_id=' . $current_campaign->ID );
 				}
 			}
+			
+			
 			
 			$buffer = json_encode( $response );
 		}
