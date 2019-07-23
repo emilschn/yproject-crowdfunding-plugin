@@ -54,8 +54,10 @@ class WDG_File_Cacher {
 		$nb_page_cached = 0;
 		$list_campaign_funded = ATCF_Campaign::get_list_funded( 15 );
 		foreach ( $list_campaign_funded as $project_post ) {
-			$this->build_campaign_page_cache( $project_post->ID, TRUE );
-			$nb_page_cached++;
+			$has_built_campaign = $this->build_campaign_page_cache( $project_post->ID, TRUE );
+			if ( $has_built_campaign ) {
+				$nb_page_cached++;
+			}
 			if ( $nb_page_cached >= $max_page_to_cache ) {
 				break;
 			}
@@ -105,6 +107,7 @@ class WDG_File_Cacher {
 	 * @param int $campaign_id
 	 */
 	public function build_campaign_page_cache( $campaign_id, $rebuild = TRUE ) {
+		$buffer = FALSE;
 		$funded_cache_duration = 60 * 60 * 48;
 		
 		$db_cacher = WDG_Cache_Plugin::current();
@@ -119,8 +122,11 @@ class WDG_File_Cacher {
 				$this->save( $file_path, $page_content );
 				$duration = $funded_cache_duration;
 				$db_cacher->set_cache( 'cache_campaign_' . $campaign_id, '1', $duration, 1 );
+				$buffer = TRUE;
 			}
 		}
+		
+		return $buffer;
 	}
 	
 	/**
