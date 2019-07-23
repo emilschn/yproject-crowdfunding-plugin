@@ -52,10 +52,13 @@ class WDG_File_Cacher {
 		// - on met en cache 5 campagnes dont le cache a expiré (pour pouvoir finir la procédure)
 		$max_page_to_cache = 4;
 		$nb_page_cached = 0;
-		$list_campaign_recent = ATCF_Campaign::get_list_funded( 15 );
-		foreach ( $list_campaign_recent as $campaign_id ) {
-			$this->build_campaign_page_cache( $campaign_id, ( $nb_page_cached < $max_page_to_cache ) );
+		$list_campaign_funded = ATCF_Campaign::get_list_funded( 15 );
+		foreach ( $list_campaign_funded as $project_post ) {
+			$this->build_campaign_page_cache( $project_post->ID, TRUE );
 			$nb_page_cached++;
+			if ( $nb_page_cached >= $max_page_to_cache ) {
+				break;
+			}
 		}
 		
 	}
