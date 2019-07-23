@@ -590,5 +590,33 @@ class WDGQueue {
 
 
 	
+/******************************************************************************/
+/* GENERATION CACHE PAGE STATIQUE */
+/******************************************************************************/
+	public static function add_cache_post_as_html( $post_id, $input_priority = 'date' ) {
+		$action = 'cache_post_as_html';
+		$entity_id = $post_id;
+		$priority = $input_priority;
+		$date_next_dispatch = new DateTime();
+		// On programme le prochain envoi 10 minutes plus tard
+		$date_next_dispatch->add( new DateInterval( 'PT10M' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_cache_post_as_html( $post_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $post_id ) ) {
+			
+			$WDG_File_Cacher = WDG_File_Cacher::current();
+			$WDG_File_Cacher->build_post( $post_id );
+			
+		}
+		
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+	}
+
+	
 	
 }

@@ -3,13 +3,12 @@
  * Se charge de visiter les pages à intervale régulier pour en enregistrer le contenu
  */
 class WDG_File_Cacher {
+	public static $key_post_is_cached_as_html = 'is_cached_as_html';
+	
 	private $website;
-	private $page_list = array(
+	private static $page_list_to_recache = array(
 		"home"				=> "",
-		"les-projets"		=> "les-projets",
-		"financement"		=> "financement",
-		"investissement"	=> "investissement",
-		"epargne-positive"	=> "epargne-positive"
+		"les-projets"		=> "les-projets"
 	);
 
 	protected static $_current = null;
@@ -20,7 +19,7 @@ class WDG_File_Cacher {
 	public function __construct() {
 		$this->website = home_url( '/' );
 
-		add_action( 'wdg_delete_cache', array( $this, 'delete_db_cache' ), 10, 1 );
+		add_action( 'wdg_delete_cache', array( $this, 'delete_from_action' ), 10, 1 );
 	}
 	
 	/**
@@ -43,7 +42,7 @@ class WDG_File_Cacher {
 		}
 		
 		// Mise en cache des pages statiques de base
-		foreach ( $this->page_list as $page_name => $page_path ) {
+		foreach ( WDG_File_Cacher::$page_list_to_recache as $page_name => $page_path ) {
 			$this->build_static_page_cache( $page_name );
 		}
 		
@@ -66,11 +65,36 @@ class WDG_File_Cacher {
 	 * @param string $page_name
 	 */
 	public function build_static_page_cache( $page_name ) {
-		$page_path = $this->page_list[ $page_name ];
+		$page_path = WDG_File_Cacher::$page_list_to_recache[ $page_name ];
 		$this->delete( $page_name );
 		$file_path = $this->get_filepath( $page_name );
 		$page_content = $this->get_content( $page_path );
 		$this->save( $file_path, $page_content );
+	}
+	
+	/**
+	 * Recontruit le fichier html pour une page statique
+	 * @param int $id_post
+	 */
+	public function build_post( $id_post ) {
+		switch ( $id_post ) {
+			case 1:
+				$this->build_static_page_cache( 'home' );
+				break;
+			case 2:
+				$this->build_static_page_cache( 'les-projets' );
+				break;
+			default:
+				$post_uri = get_page_uri( $id_post );
+				if ( !empty( $post_uri ) ) {
+					$this->delete( $post_uri );
+
+					$file_path = $this->get_filepath( $post_uri );
+					$page_content = $this->get_content( $post_uri );
+					$this->save( $file_path, $page_content );
+				}
+				break;
+		}
 	}
 	
 	/**
@@ -109,7 +133,7 @@ class WDG_File_Cacher {
 	 * @return string
 	 */
 	private function get_filepath( $name ) {
-		return dirname( __FILE__ ) . '/files/' .$name. '.html';
+		return dirname( __FILE__ ) . '/../../../files/cache/' .$name. '.html';
 	}
 	
 	/**
@@ -135,9 +159,30 @@ class WDG_File_Cacher {
 	private function save( $file_path, $page_content ) {
 		if ( !empty( $file_path ) && !empty( $page_content ) ) {
 			ypcf_debug_log( 'WDG_File_Cacher::save > ' . $file_path );
+			$dir = dirname( $file_path );
+			mkdir( $dir, 0777, TRUE );
 			$file_handle = fopen( $file_path, 'a' );
 			fwrite( $file_handle, $page_content );
 			fclose( $file_handle );
+		}
+	}
+	
+	/**
+	 * Met dans la liste des queues d'action la création d'une nouvelle page html
+	 * @param int $id_post
+	 */
+	public function queue_cache_post( $id_post, $priority = 'date' ) {
+		WDGQueue::add_cache_post_as_html( $id_post, $priority );
+	}
+	
+	/**
+	 * Supprime un fichier de cache par l'ID de post correspondant
+	 * @param int $id_post
+	 */
+	public function delete_by_post_id( $id_post ) {
+		$post_uri = get_page_uri( $id_post );
+		if ( !empty( $post_uri ) ) {
+			$this->delete( $post_uri );
 		}
 	}
 	
@@ -155,15 +200,17 @@ class WDG_File_Cacher {
 	/**
 	 * Récupération action de suppression de cache de la base de données
 	 */
-	public function delete_db_cache( $array_name ) {
+	public function delete_from_action( $array_name ) {
 		foreach ( $array_name as $name ) {
 			switch ( $name ) {
 				case 'home-projects':
 					$this->delete( 'home' );
+					$this->queue_cache_post( 1, 'high' );
 					break;
 				case 'projectlist-projects-current':
 				case 'projectlist-projects-funded':
 					$this->delete( 'les-projets' );
+					$this->queue_cache_post( 2, 'high' );
 					break;
 			}
 		}
