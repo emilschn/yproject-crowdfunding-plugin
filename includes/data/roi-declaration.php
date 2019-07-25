@@ -624,6 +624,23 @@ class WDGROIDeclaration {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
 			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
+		
+		
+		// **************
+		// NOTIFICATION 3
+		// Doit-on envoyer une notification au porteur de projet et aux investisseurs pour dire que c'était le dernier versement ?
+		$amount_minimum_royalties = $campaign->current_amount( FALSE ) * $campaign->minimum_profit();
+		// Si la durée du financement n'est pas indéterminée
+		if ( $campaign->funding_duration() > 0
+			// Si le nombre actuel de déclaration est au moins égal au nombre de déclarations par année * le nombre d'années
+			&& count( $existing_roi_declarations ) >= $campaign->funding_duration() * $campaign->get_declararations_count_per_year()
+			// Si le minimum à reverser a été atteint
+			&& $amount_transferred >= $amount_minimum_royalties ) {
+				
+				// Alors c'est la première fois qu'on va ajouter une déclaration, donc on notifie tout le monde
+				WDGQueue::add_contract_finished_notifications( $campaign->ID );
+		}
+		
 	}
 	
 	private function update_investment_contract_amount_received( $investment_contracts, $investment_id, $roi_amount ) {

@@ -1052,6 +1052,42 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
+	
+	public static function declaration_finished_project_manager( $recipient, $name ) {
+		$id_template = '735';
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties ) {
+		$id_template = '693';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'DATE'						=> $date,
+			'URL_PROJET'				=> $project_url,
+			'MONTANT_INVESTI'			=> $amount_investment,
+			'MONTANT_ROYALTIES'			=> $amount_royalties
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
     //*******************************************************
     // NOTIFICATIONS PROLONGATION DECLARATIONS
     //*******************************************************

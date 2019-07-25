@@ -294,6 +294,55 @@ class WDGQueue {
 
 	
 /******************************************************************************/
+/* FIN CONTRAT ROYALTIES */
+/******************************************************************************/
+	public static function add_contract_finished_notifications( $campaign_id ) {
+		$action = 'contract_finished_notifications';
+		$entity_id = $campaign_id;
+		$priority = 'high';
+		
+		self::create_or_replace_action( $action, $entity_id, $priority );
+	}
+	
+	public static function execute_contract_finished_notifications( $campaign_id, $queued_action_params, $queued_action_id ) {
+		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		
+		// Envoi de la notification au porteur de projet
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$current_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
+		$wdguser_author = new WDGUser( $campaign->data->post_author );
+		NotificationsAPI::declaration_finished_project_manager( $organization_obj->get_email(), $wdguser_author->get_firstname() );
+		
+		// Envoi de la notification aux investisseurs
+		$project_name = $campaign->get_name();
+		$project_url = $campaign->get_public_url();
+		$investment_contracts = WDGInvestmentContract::get_list( $campaign_id );
+		foreach ( $investment_contracts as $investment_contract ) {
+			if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+				$recipient = '';
+				$name = '';
+				if ( $investment_contract->investor_type == 'user' ) {
+					$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+					$recipient = $WDGUser->get_email();
+					$name = $WDGUser->get_firstname();
+				} else {
+					$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+					$recipient = $WDGOrganization->get_email();
+					$name = $WDGOrganization->get_name();
+				}
+				$date = $investment_contract->subscription_date;
+				$amount_investment = $investment_contract->subscription_amount;
+				$amount_royalties = $investment_contract->amount_received;
+				NotificationsAPI::declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties );
+			}
+		}
+		
+	}
+
+	
+/******************************************************************************/
 /* VALIDATION PREINVESTISSEMENTS */
 /******************************************************************************/
 	public static function add_preinvestments_validation( $campaign_id ) {
