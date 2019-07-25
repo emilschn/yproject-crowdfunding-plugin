@@ -557,13 +557,17 @@ class WDGROIDeclaration {
 				} else {
 					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
 				}
-				$this->check_notifications( $campaign, $organization_obj->get_email(), $wdguser_author->get_firstname() );
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->date_transfer = $date_now_formatted;
 			}
 			
 			// On met à jour de toute façon pour mettre à jour le reliquat
 			$this->update();
+			
+			// A la toute fin, on vérifie les notifications à envoyer
+			if ( $buffer == 100 ) {
+				$this->check_notifications( $campaign, $organization_obj->get_email(), $wdguser_author->get_firstname() );
+			}
 		}
 		return $buffer;
 	}
@@ -575,23 +579,30 @@ class WDGROIDeclaration {
 	 * @param string $name
 	 */
 	private function check_notifications( $campaign, $recipient, $name ) {
+		// **************
+		// NOTIFICATION 1
+		// Doit-on envoyer une notification au PP pour dire que la prochaine déclaration est la dernière ?
 		$send_notification_extend = TRUE;
 		
+		// La notification ne sera envoyée que si il reste une seule déclaration à venir
+		$nb_declarations_waiting = 0;
 		$amount_transferred = 0;
 		$existing_roi_declarations = $campaign->get_roi_declarations();
 		foreach ( $existing_roi_declarations as $declaration_object ) {
-			// On n'envoie pas la notification si il reste des déclarations pas encore faites
 			if ( $declaration_object[ 'status' ] == WDGROIDeclaration::$status_declaration ) {
-				$send_notification_extend = FALSE;
-				break;
+				$nb_declarations_waiting++;
 			} else {
 				$amount_transferred += $declaration_object[ 'total_roi' ];
 			}
 		}
+		if ( $nb_declarations_waiting == 1 ) {
+			$send_notification_extend = FALSE;
+		}
 		
+		// La notification ne sera envoyée que si le montant minimum de versement n'a pas été atteint
 		if ( $send_notification_extend ) {
 			$amount_minimum_royalties = $campaign->current_amount( FALSE ) * $campaign->minimum_profit();
-			if ( $amount_transferred < $amount_minimum_royalties ) {
+			if ( $amount_transferred >= $amount_minimum_royalties ) {
 				$send_notification_extend = FALSE;
 			}
 		}
@@ -605,6 +616,10 @@ class WDGROIDeclaration {
 			NotificationsAPI::declaration_to_be_extended( $recipient, $name, $amount_transferred_str, $amount_minimum_royalties_str, $amount_remaining_str );
 		}
 		
+		
+		// **************
+		// NOTIFICATION 2
+		// Si on approche du maximum à verser pour un projet, on prévient le service administratif
 		if ( $campaign->maximum_profit() != 'infinite' && $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
 			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
