@@ -286,7 +286,7 @@ class WDGQueue {
 				$amount_investment = $investment_contract->subscription_amount;
 				$amount_royalties = $investment_contract->amount_received;
 				$amount_remaining = $investment_contract->subscription_amount - $investment_contract->amount_received;
-				NotificationsAPI::declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining );
+				NotificationsAPI::declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $campaign->get_api_id() );
 			}
 		}
 		
@@ -335,7 +335,7 @@ class WDGQueue {
 				$date = $investment_contract->subscription_date;
 				$amount_investment = $investment_contract->subscription_amount;
 				$amount_royalties = $investment_contract->amount_received;
-				NotificationsAPI::declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties );
+				NotificationsAPI::declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $campaign->get_api_id() );
 			}
 		}
 		

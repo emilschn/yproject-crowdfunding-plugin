@@ -49,6 +49,8 @@ class NotificationsAPI {
 		'692' => "Déclaration - Avertissement prolongation",
 		'736' => "Déclaration - Prolongation (porteur de projet)",
 		'694' => "Déclaration - Prolongation (investisseurs)",
+		'735' => "Déclaration - Fin (porteur de projet)",
+		'693' => "Déclaration - Fin (investisseurs)",
 		'139' => "Versement de royalties - résumé quotidien",
 		'522' => "Versement de royalties - transfert avec message",
 		'691' => "Versement de royalties - montant maximum atteint"
@@ -1030,7 +1032,7 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
-	public static function declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining ) {
+	public static function declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $project_api_id ) {
 		$id_template = '694';
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1048,6 +1050,7 @@ class NotificationsAPI {
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
 			'recipient'	=> $recipient,
+			'id_project'	=> $project_api_id,
 			'options'	=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
@@ -1068,7 +1071,7 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
-	public static function declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties ) {
+	public static function declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $project_api_id ) {
 		$id_template = '693';
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1084,6 +1087,7 @@ class NotificationsAPI {
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
 			'recipient'	=> $recipient,
+			'id_project'	=> $project_api_id,
 			'options'	=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
