@@ -47,6 +47,8 @@ class NotificationsAPI {
 		'127' => "Déclaration faite avec CA",
 		'150' => "Déclaration faite sans CA",
 		'692' => "Déclaration - Avertissement prolongation",
+		'736' => "Déclaration - Prolongation (porteur de projet)",
+		'694' => "Déclaration - Prolongation (investisseurs)",
 		'139' => "Versement de royalties - résumé quotidien",
 		'522' => "Versement de royalties - transfert avec message",
 		'691' => "Versement de royalties - montant maximum atteint"
@@ -1003,6 +1005,44 @@ class NotificationsAPI {
 			'MONTANT_DEJA_VERSE'		=> $amount_transferred,
 			'MONTANT_MINIMUM_A_VERSER'	=> $amount_minimum_royalties,
 			'MONTANT_RESTANT_A_VERSER'	=> $amount_remaining
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_extended_project_manager( $recipient, $name ) {
+		$id_template = '736';
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining ) {
+		$id_template = '694';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'DUREE_FINANCEMENT'			=> $funding_duration,
+			'DATE'						=> $date,
+			'URL_PROJET'				=> $project_url,
+			'MONTANT_INVESTI'			=> $amount_investment,
+			'MONTANT_ROYALTIES'			=> $amount_royalties,
+			'MONTANT_RESTANT'			=> $amount_remaining
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
