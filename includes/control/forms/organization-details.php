@@ -276,7 +276,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 				$WDGOrganization->set_rcs( $rcs );
 			}
 			
-			$capital = $this->getInputText( 'capital' );
+			$capital = $this->getInputTextMoney( 'capital' );
 			if ( !empty( $capital ) && ( $capital === '0' || is_numeric( $capital ) ) ) {
 				$WDGOrganization->set_capital( $capital );
 			} else {

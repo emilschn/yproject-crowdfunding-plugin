@@ -118,10 +118,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		$total_turnover = 0;
 		$nb_fields = $campaign->get_turnover_per_declaration();
 		for ( $index_field = 0; $index_field < $nb_fields; $index_field++ ) {
-			$input_declaration_turnover = $this->getInputText( 'turnover_' .$index_field );
-			$input_declaration_turnover = trim( $input_declaration_turnover );
-			$input_declaration_turnover = str_replace( ' ', '', $input_declaration_turnover );
-			$input_declaration_turnover = str_replace( ',', '.', $input_declaration_turnover );
+			$input_declaration_turnover = $this->getInputTextMoney( 'turnover_' .$index_field );
 			if ( empty( $input_declaration_turnover ) ) {
 				$input_declaration_turnover = 0;
 			}

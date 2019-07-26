@@ -215,7 +215,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			);
 		}
 		
-		$turnover_difference = $this->getInputText( 'turnover_difference' );
+		$turnover_difference = $this->getInputTextMoney( 'turnover_difference', FALSE );
 		if ( empty( $turnover_difference ) ) {
 			$turnover_difference = 0;
 		}
@@ -227,7 +227,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			);
 		}
 		
-		$amount = $this->getInputText( 'amount' );
+		$amount = $this->getInputTextMoney( 'amount', FALSE );
 		if ( !is_numeric( $amount ) || empty( $amount ) ) {
 			$this->addPostError(
 				'amount',

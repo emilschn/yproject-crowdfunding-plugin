@@ -1170,8 +1170,8 @@ class WDGAjaxActions {
 		$success = array();
 
 		//Update required amount
-		$new_minimum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_minimum_goal')));
-		$new_maximum_goal = intval(sanitize_text_field(filter_input(INPUT_POST, 'new_maximum_goal')));
+		$new_minimum_goal = WDG_Form::formatInputTextNumber( 'new_minimum_goal', TRUE );
+		$new_maximum_goal = WDG_Form::formatInputTextNumber( 'new_maximum_goal', TRUE );
 		if($new_minimum_goal > $new_maximum_goal){
 			$errors['new_minimum_goal']="Le montant maximum ne peut &ecirc;tre inf&eacute;rieur au montant minimum";
 			$errors['new_maximum_goal']="Le montant maximum ne peut &ecirc;tre inf&eacute;rieur au montant minimum";
@@ -1204,8 +1204,7 @@ class WDGAjaxActions {
 			$errors[ 'new_funding_duration' ] = "Erreur de valeur";
 		}
 		
-		$new_platform_commission = sanitize_text_field( filter_input( INPUT_POST, 'new_platform_commission' ) );
-		$new_platform_commission = str_replace( ',', '.', $new_platform_commission );
+		$new_platform_commission = WDG_Form::formatInputTextNumber( 'new_platform_commission' );
 		if ( $new_platform_commission >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
 			$success['new_platform_commission'] = 1;
@@ -1213,8 +1212,7 @@ class WDGAjaxActions {
 			$errors['new_platform_commission'] = "Le pourcentage doit &ecirc;tre positif";
 		}
 		
-		$new_platform_commission_above_100000 = sanitize_text_field( filter_input( INPUT_POST, 'new_platform_commission_above_100000' ) );
-		$new_platform_commission_above_100000 = str_replace( ',', '.', $new_platform_commission_above_100000 );
+		$new_platform_commission_above_100000 = WDG_Form::formatInputTextNumber( 'new_platform_commission_above_100000' );
 		if ( $new_platform_commission_above_100000 >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission_above_100000, $new_platform_commission_above_100000 );
 			$success['new_platform_commission_above_100000'] = 1;
@@ -1242,7 +1240,7 @@ class WDGAjaxActions {
 		}
 
 		//Update roi_percent_estimated
-		$new_roi_percent_estimated = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent_estimated' ) ) );
+		$new_roi_percent_estimated = WDG_Form::formatInputTextNumber( 'new_roi_percent_estimated' );
 		if ( $new_roi_percent_estimated >= 0 ){
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent_estimated, $new_roi_percent_estimated );
 			$campaign->set_api_data( 'roi_percent_estimated', $new_roi_percent_estimated );
@@ -1251,7 +1249,7 @@ class WDGAjaxActions {
 			$errors['new_roi_percent_estimated'] = "Le pourcentage de CA reversé doit Ãªtre positif";
 		}
 		
-		$new_roi_percent = floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_roi_percent' ) ) );
+		$new_roi_percent = WDG_Form::formatInputTextNumber( 'new_roi_percent' );
 		if( $new_roi_percent >= 0 ){
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_roi_percent, $new_roi_percent );
 			$campaign->set_api_data( 'roi_percent', $new_roi_percent );
@@ -1291,7 +1289,7 @@ class WDGAjaxActions {
 			$errors['new_declaration_periodicity'] = "S&eacute;lection non valide";
 		}
 		
-		$new_minimum_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_costs_to_organization') ) ), 2 );
+		$new_minimum_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_minimum_costs_to_organization', TRUE );
 		if ( $new_minimum_costs_to_organization >= 0 ) {
 			$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );
 			$success['new_minimum_costs_to_organization'] = 1;
@@ -1299,7 +1297,7 @@ class WDGAjaxActions {
 			$errors['new_minimum_costs_to_organization'] = "Nombre non valide";
 		}
 		
-		$new_costs_to_organization = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_organization') ) ), 2 );
+		$new_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_costs_to_organization' );
 		if ( $new_costs_to_organization >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
 			$campaign->set_api_data( 'costs_to_organization', $new_costs_to_organization );
@@ -1308,7 +1306,7 @@ class WDGAjaxActions {
 			$errors['new_costs_to_organization'] = "Nombre non valide";
 		}
 		
-		$new_costs_to_investors = round( floatval( sanitize_text_field( filter_input( INPUT_POST, 'new_costs_to_investors') ) ), 2 );
+		$new_costs_to_investors = WDG_Form::formatInputTextNumber( 'new_costs_to_investors' );
 		if ( $new_costs_to_investors >= 0 ) {
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
 			$campaign->set_api_data( 'costs_to_investors', $new_costs_to_investors );
