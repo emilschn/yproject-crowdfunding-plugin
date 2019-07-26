@@ -72,9 +72,9 @@ class WDGFormProjects {
 					$inside_of_link = $nodes_to_analyse_exploded[ 0 ];
 					if ( strpos( $inside_of_link, '<img' ) ) {
 						$content_without_link_exploded = explode( '"', $inside_of_link );
-						$content_without_link_exploded = array_shift( $content_without_link_exploded );
+						array_shift( $content_without_link_exploded );
 						$inside_of_link = implode( '"', $content_without_link_exploded );
-						$nodes_to_analyse_exploded[ 0 ] = $inside_of_link;
+						$nodes_to_analyse_exploded[ 0 ] = '#"'. $inside_of_link;
 					}
 					$content_exploded_by_href[ $i ] = implode( '</a>', $nodes_to_analyse_exploded );
 				}
