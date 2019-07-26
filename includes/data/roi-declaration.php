@@ -226,7 +226,7 @@ class WDGROIDeclaration {
 	}
 	
 	public function get_commission_to_pay_without_tax() {
-		return round( $this->get_commission_to_pay() / 1.2 );
+		return round( $this->get_commission_to_pay() / 1.2, 2 );
 	}
 	
 	public function get_commission_tax() {
