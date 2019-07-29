@@ -46,7 +46,8 @@ class WDGWPREST_Entity_Declaration {
 			'message'				=> $declaration->message,
 			'adjustment'			=> $declaration->adjustment,
 			'employees_number'		=> $declaration->employees_number,
-			'other_fundings'		=> $declaration->other_fundings
+			'other_fundings'		=> $declaration->other_fundings,
+			'declared_by'			=> $declaration->declared_by
 		);
 		return $parameters;
 	}
@@ -99,6 +100,11 @@ class WDGWPREST_Entity_Declaration {
 	 */
 	public static function get_roi_list( $declaration_id ) {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'declaration/' .$declaration_id. '/rois' );
+		return $result_obj;
+	}
+	
+	public static function get_bill_file( $declaration_id ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'declaration/' .$declaration_id. '/files?file_type=bill' );
 		return $result_obj;
 	}
 }

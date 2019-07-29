@@ -35,6 +35,8 @@ class NotificationsAPI {
 		'605' => "KYC - Wallet validé et investissement en attente",
 		'606' => "KYC - Wallet validé et investissement en attente - Rappel",
 		'175' => "Erreur d'investissement",
+		'687' => "Investissement sur projet validé",
+		'688' => "Investissement sur épargne positive validé",
 		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
 		'115' => "Déclarations - Rappel J-9 (sans prélèvement)",
 		'119' => "Déclarations - Rappel J-2 (avec prélèvement)",
@@ -44,8 +46,14 @@ class NotificationsAPI {
 		'595' => "Déclarations - Avertissement prélèvement",
 		'127' => "Déclaration faite avec CA",
 		'150' => "Déclaration faite sans CA",
+		'692' => "Déclaration - Avertissement prolongation",
+		'736' => "Déclaration - Prolongation (porteur de projet)",
+		'694' => "Déclaration - Prolongation (investisseurs)",
+		'735' => "Déclaration - Fin (porteur de projet)",
+		'693' => "Déclaration - Fin (investisseurs)",
 		'139' => "Versement de royalties - résumé quotidien",
-		'522' => "Versement de royalties - transfert avec message"
+		'522' => "Versement de royalties - transfert avec message",
+		'691' => "Versement de royalties - montant maximum atteint"
 	);
 	
 
@@ -742,6 +750,57 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Investissement
 	//**************************************************************************
+	public static function investment_success_project( $recipient, $name, $amount, $project_name, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
+		$id_template = '687';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'				=> 1,
+			'NOM_UTILISATEUR'		=> $name,
+			'MONTANT'				=> $amount,
+			'NOM_PROJET'			=> $project_name,
+			'URL_PROJET'			=> $project_url,
+			'DATE'					=> $date,
+			'TEXTE_AVANT'			=> $text_before,
+			'TEXTE_APRES'			=> $text_after,
+		);
+		if ( !empty( $attachment_url ) ) {
+			$options[ 'url_attachment' ] = $attachment_url;
+		}
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function investment_success_positive_savings( $recipient, $name, $amount, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
+		$id_template = '688';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'				=> 1,
+			'NOM_UTILISATEUR'		=> $name,
+			'MONTANT'				=> $amount,
+			'URL_PROJET'			=> $project_url,
+			'DATE'					=> $date,
+			'TEXTE_AVANT'			=> $text_before,
+			'TEXTE_APRES'			=> $text_after,
+		);
+		if ( !empty( $attachment_url ) ) {
+			$options[ 'url_attachment' ] = $attachment_url;
+		}
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
     //*******************************************************
     // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
     //*******************************************************
@@ -937,6 +996,106 @@ class NotificationsAPI {
     // FIN - NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
 	
+    //*******************************************************
+    // NOTIFICATIONS PROLONGATION DECLARATIONS
+    //*******************************************************
+	public static function declaration_to_be_extended( $recipient, $name, $amount_transferred, $amount_minimum_royalties, $amount_remaining ) {
+		$id_template = '692';
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name,
+			'MONTANT_DEJA_VERSE'		=> $amount_transferred,
+			'MONTANT_MINIMUM_A_VERSER'	=> $amount_minimum_royalties,
+			'MONTANT_RESTANT_A_VERSER'	=> $amount_remaining
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_extended_project_manager( $recipient, $name ) {
+		$id_template = '736';
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $project_api_id ) {
+		$id_template = '694';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'DUREE_FINANCEMENT'			=> $funding_duration,
+			'DATE'						=> $date,
+			'URL_PROJET'				=> $project_url,
+			'MONTANT_INVESTI'			=> $amount_investment,
+			'MONTANT_ROYALTIES'			=> $amount_royalties,
+			'MONTANT_RESTANT'			=> $amount_remaining
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_finished_project_manager( $recipient, $name ) {
+		$id_template = '735';
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	public static function declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $project_api_id ) {
+		$id_template = '693';
+		$project_url = str_replace( 'https://', '', $project_url );
+		$options = array(
+			'personal'					=> 1,
+			'NOM'						=> $name,
+			'NOM_PROJET'				=> $project_name,
+			'DATE'						=> $date,
+			'URL_PROJET'				=> $project_url,
+			'MONTANT_INVESTI'			=> $amount_investment,
+			'MONTANT_ROYALTIES'			=> $amount_royalties
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+    //*******************************************************
+    // NOTIFICATIONS PROLONGATION DECLARATIONS
+    //*******************************************************
+	
 	
 	//**************************************************************************
 	// Versements
@@ -971,6 +1130,30 @@ class NotificationsAPI {
 			'NOM_UTILISATEUR'	=> $name,
 			'NOM_PROJET'		=> $project_name,
 			'CONTENU_MESSAGE'	=> $declaration_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATION VERSEMENT AYANT ATTEINT LE MAXIMUM
+    //*******************************************************
+	public static function roi_transfer_with_max_reached( $recipient, $name, $project_name, $max_profit, $date_investment, $url_project, $amount_investment, $amount_royalties ) {
+		$id_template = '691';
+		$options = array(
+			'personal'			=> 1,
+			'NOM'				=> $name,
+			'NOM_PROJET'		=> $project_name,
+			'RETOUR_MAXIMUM'	=> $max_profit,
+			'DATE'				=> $date_investment,
+			'URL_PROJET'		=> $url_project,
+			'MONTANT_INVESTI'	=> $amount_investment,
+			'MONTANT_ROYALTIES'	=> $amount_royalties
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',

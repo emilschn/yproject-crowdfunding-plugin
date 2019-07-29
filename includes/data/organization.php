@@ -92,6 +92,7 @@ class WDGOrganization {
 			return false;
 		}
         $org_object->set_creator( $user_id );
+		
         return $org_object;
     }
 
@@ -269,7 +270,9 @@ class WDGOrganization {
 		$buffer = FALSE;
 		if ( !empty( $api_id ) ) {
 			$api_data = WDGWPREST_Entity_Organization::get( $api_id );
-			$buffer = new WDGOrganization( $api_data->wpref );
+			if ( !empty( $api_data->wpref ) ) {
+				$buffer = new WDGOrganization( $api_data->wpref );
+			}
 		}
 		return $buffer;
 	}
@@ -672,11 +675,6 @@ class WDGOrganization {
 	 * Gère les documents à enregistrer en local
 	 */
 	public function submit_documents() {
-		global $errors_submit;
-		if ( empty( $errors_submit ) ) {
-			$errors_submit = new WP_Error();
-		}
-		
 		$documents_list = array(
 			'org_doc_bank'					=> WDGKYCFile::$type_bank,
 			'org_doc_kbis'					=> WDGKYCFile::$type_kbis,
@@ -696,14 +694,12 @@ class WDGOrganization {
 			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
 				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
 				if ($result == 'ext') {
-					$errors_submit->add('document-wrong-extension', __("Le format de fichier n'est pas accept&eacute;.", 'yproject'));
 					$files_info[$document_key]['code'] = 1;
-					$files_info[$document_key]['info'] = $errors_submit->get_error_message('document-wrong-extension');
+					$files_info[$document_key]['info'] = __( "Le format de fichier n'est pas accept&eacute;.", 'yproject' );
 				} 
 				else if ($result == 'size') {
-					$errors_submit->add('document-heavy-size', __("Le fichier est trop lourd.", 'yproject'));
 					$files_info[$document_key]['code'] = 1;
-					$files_info[$document_key]['info'] = $errors_submit->get_error_message('document-heavy-size');
+					$files_info[$document_key]['info'] = __( "Le fichier est trop lourd.", 'yproject' );
 				} else if ($result != FALSE) {
 					$notify++;
 					$kycfile = new WDGKYCFile($result);
@@ -711,7 +707,7 @@ class WDGOrganization {
 					$date_upload = $kycfile->get_date_uploaded();
 					$files_info[$document_key]['code'] = 0;
 					$files_info[$document_key]['info'] = $filepath;
-					$files_info[$document_key]['date'] = __("T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject').$date_upload;
+					$files_info[$document_key]['date'] = __( "T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject' ) .$date_upload;
 				}
 			}
 			else {
@@ -890,7 +886,11 @@ class WDGOrganization {
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
 					LemonwayLib::ask_transfer_funds( $this->get_campaign_lemonway_id(), $this->get_lemonway_id(), ( $transfer_amount + $transfer_commission ) );
-					$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
+					if ( $transfer_amount > 0 ) {
+						$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
+					} else {
+						LemonwayLib::ask_transfer_funds( $this->get_lemonway_id(), 'SC', $transfer_commission );
+					}
 				}
 			}
 		}
@@ -1487,7 +1487,11 @@ class WDGOrganization {
 	 */
 	public function get_royalties_by_campaign_id( $campaign_id ) {
 		$buffer = array();
-		$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		
+		if ( empty( $campaign_api_id ) ) {
+			$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		}
+		
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
 			if ( $roi_item->id_project == $campaign_api_id ) {
@@ -1789,124 +1793,6 @@ class WDGOrganization {
 		$return['org_object'] = $org_object;
 		$return['errors_edit'] = $errors_edit;
 		return $return;
-	}
-	
-	public static function edit($org_object) {
-		global $errors_edit;
-		$errors_edit = new WP_Error();
-		
-		$errors_data = WDGOrganization::control_data();
-		//Vérification que l'on a posté le formulaire
-		$action = filter_input(INPUT_POST, 'action');
-		if ($action !== 'save_edit_organization') { 
-			return FALSE;
-		}
-		
-		//Vérification que l'utilisateur est connecté
-		if (!is_user_logged_in()) {
-			$errors_edit->add('not-loggedin', __('Vous devez vous connecter.', 'yproject'));
-		}
-		
-		//On poursuit la procédure
-		if (count($errors_edit->errors) > 0) {
-			return FALSE;
-		}
-		
-		if (count($errors_data) == 0) {
-			$new_org_name = filter_input( INPUT_POST, 'org_name' );
-			if ( !empty( $new_org_name ) ) {
-				$org_object->set_name( $new_org_name );
-			}
-			
-			$new_org_email = filter_input( INPUT_POST, 'org_email' );
-			if ( email_exists( $new_org_email ) || empty( $new_org_email ) ) {
-				$errors_edit->add( 'email-already', __( "L'e-mail est d&eacute;j&agrave; utilis&eacute.", 'yproject' ) );
-			} else {
-				$org_object->set_email( $new_org_email );
-			}
-			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
-			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
-			$org_object->set_website(filter_input(INPUT_POST, 'org_website'));
-			$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
-			$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
-			$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
-			$org_object->set_capital(filter_input(INPUT_POST, 'org_capital'));
-			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
-			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
-			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
-			$org_object->set_address_number(filter_input(INPUT_POST, 'org_address_number'));
-			$org_object->set_address_number_comp(filter_input(INPUT_POST, 'org_address_number_comp'));
-			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
-			$org_object->set_postal_code(filter_input(INPUT_POST, 'org_postal_code'));
-			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
-			$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
-			$org_object->set_id_quickbooks( filter_input( INPUT_POST, 'org_id_quickbooks' ) );
-			$org_object->submit_bank_info( TRUE );
-			$org_object->save();
-			$files_info = $org_object->submit_documents();
-		} else {
-			$files_info = null;
-		}
-		$return['files_info'] = $files_info;
-		$return['errors_edit'] = $errors_data;
-		return $return;
-	}
-	/**
-	 * Fonction de contrôle des données pour les formulaires de création et d'édition
-	 * @return array messages d'erreurs
-	 */
-	public static function control_data() {
-		$errors_edit = array();
-		$errors_submit = new WP_Error();
-
-		//Vérification du code postal
-		$org_postal_code = filter_input(INPUT_POST, 'org_postal_code');
-		if (substr($org_postal_code, 0, 1) === '0') { $org_postal_code = substr($org_postal_code, 1); }
-		$org_postal_code = filter_var($org_postal_code, FILTER_VALIDATE_INT);
-		if ($org_postal_code === FALSE) {
-			$errors_submit->add('postalcode-not-integer', __('Le code postal doit &ecirc;tre un nombre entier.', 'yproject'));
-			$errors_edit['org_postal_code'] = $errors_submit->get_error_message('postalcode-not-integer');
-		} else {
-			if (strlen($org_postal_code) === 4) { $org_postal_code = '0' . $org_postal_code; }
-		}
-
-		//Vérification du capital (autorise nombre décimal)
-		$temp_org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_SANITIZE_NUMBER_FLOAT);
-		$org_capital = filter_var($temp_org_capital, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-
-		if ($org_capital === FALSE || $org_capital === 0) {
-			$errors_submit->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier et sup&eacute;rieur &agrave; z&eacute;ro.', 'yproject'));
-			$errors_edit['org_capital'] = $errors_submit->get_error_message('capital-not-integer');
-		}
-
-		//Vérification du code APE
-		$org_ape = filter_input(INPUT_POST, 'org_ape');
-		if ($org_ape == 0) {
-			$errors_submit->add('ape-not-valid', __('Le code APE ne doit pas &ecirc;tre &eacute;gal &agrave; z&eacute;ro.', 'yproject'));
-			$errors_edit['org_ape'] = $errors_submit->get_error_message('ape-not-valid');
-		}
-
-		//Vérification des données obligatoires
-		$necessary_fields = array(
-				'd&eacute;nomination sociale' => 'org_name',
-				'e-mail' => 'org_email',
-				'descriptif de l\'activit&eacute;' => 'org_description',
-				'adresse' => 'org_address',
-				'ville' => 'org_city',
-				'pays' => 'org_nationality',
-				'forme juridique' =>'org_legalform',
-				'num&eacute;ro SIRET' =>'org_idnumber',
-				'APE' =>'org_ape',
-				'RCS' => 'org_rcs'
-			);
-		foreach ($necessary_fields as $name => $field) {
-			$value = filter_input(INPUT_POST, $field);
-			if ($value === "") {
-				$errors_submit->add('empty_'.$field, __('Le champ', 'yproject').' '.$name.' '.__('ne doit pas &ecirc;tre vide.', 'yproject'));
-				$errors_edit[$field] = $errors_submit->get_error_message('empty_'.$field);
-			}
-		}
-		return $errors_edit;
 	}
 
 }

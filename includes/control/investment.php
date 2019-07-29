@@ -126,6 +126,12 @@ class WDGInvestment {
 		$current_datetime = new DateTime();
 		$_SESSION[ 'invest_update_date' ] = $current_datetime->format( 'Y-m-d H:i:s' );
 		
+		if ( !isset( $_SESSION[ 'invest_update_date' ] ) ) {
+			ypcf_debug_log( 'WDGInvestment::update_session >> UPDATE invest_update_date NOT SET' );
+		} else {
+			ypcf_debug_log( 'WDGInvestment::update_session >> UPDATE invest_update_date = ' . $_SESSION[ 'invest_update_date' ] );
+		}
+		
 		if ( !empty( $amount ) ) {
 			$_SESSION[ 'invest_amount' ] = $amount;
 			$_SESSION[ 'redirect_current_amount_part' ] = $amount;
@@ -206,9 +212,14 @@ class WDGInvestment {
 	public function get_saved_amount() {
 		$buffer = FALSE;
 		if ( !empty( $this->id ) ) {
-			$buffer = edd_get_payment_amount( $this->id  );
+			$buffer = edd_get_payment_amount( $this->id );
 		}
 		return $buffer;
+	}
+	
+	public function get_saved_date() {
+		$post_invest = get_post( $this->id );
+		return $post_invest->post_date;
 	}
 	
 	/**
@@ -231,6 +242,19 @@ class WDGInvestment {
 		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
 		$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
 		return $user_id;
+	}
+	
+	/**
+	 * Retourne le statut du post de paiement
+	 * @return string
+	 */
+	public function get_saved_status() {
+		$post_invest = get_post( $this->get_id() );
+		return $post_invest->post_status;
+	}
+	
+	public function get_saved_payment_key() {
+		return edd_get_payment_key( $this->get_id() );
 	}
 	
 	/**
@@ -962,7 +986,7 @@ class WDGInvestment {
 /******************************************************************************/
 	public function refund() {
 		$payment_key = edd_get_payment_key( $this->get_id() );
-		if ($payment_key != 'check') {
+		if ( $payment_key != 'check' && strpos( $payment_key, 'unset' ) === FALSE ) {
 			$campaign = $this->get_saved_campaign();
 			$organization = $campaign->get_organization();
 			$organization_obj = new WDGOrganization( $organization->wpref, $organization );

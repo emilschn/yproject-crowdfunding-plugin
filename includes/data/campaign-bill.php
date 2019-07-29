@@ -137,6 +137,7 @@ class WDGCampaignBill {
 			case '4.8':
 				$buffer = 'private';
 				break;
+			case '7.2':
 			case '9.6':
 				$buffer = 'crowdfunding';
 				break;
@@ -160,13 +161,24 @@ class WDGCampaignBill {
 		$amount_collected_check = UIHelpers::format_number( $this->campaign->current_amount_with_check() );
 		$platform_commission = UIHelpers::format_number( $this->campaign->platform_commission( FALSE ) );
 		$platform_commission_amount = UIHelpers::format_number( $this->campaign->platform_commission_amount( FALSE ) );
+		$platform_commission_below_100000 = UIHelpers::format_number( $this->campaign->platform_commission( FALSE ) );
+		$platform_commission_below_100000_amount = UIHelpers::format_number( $this->campaign->platform_commission_below_100000_amount( FALSE ) );
+		$platform_commission_above_100000 = UIHelpers::format_number( $this->campaign->platform_commission_above_100000( FALSE ) );
+		$platform_commission_above_100000_amount = UIHelpers::format_number( $this->campaign->platform_commission_above_100000_amount( FALSE ) );
 		
 		if ( $this->campaign->platform_commission() == '2.4' || $this->campaign->platform_commission() == '4.8' ) {
 			$buffer = "Levée de fonds privée.
-Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
+";
 		} else {
 			$buffer = "Levée de fonds de crowdfunding.
-Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
+";
+		}
+		
+		if ( $platform_commission_above_100000_amount > 0 && $platform_commission_below_100000 != $platform_commission_above_100000 ) {
+			$buffer .= "Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission_below_100000." % HT de 100 000 € : ".$platform_commission_below_100000_amount." € et commission de ".$platform_commission_above_100000." % HT au-delà de 100 000 € : ".$platform_commission_above_100000_amount." €.";
+			
+		} else {
+			$buffer .= "Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
 		}
 		
 		return $buffer;
@@ -198,7 +210,7 @@ Les chèques vous seront directement adressés.";
 		$line_description = $this->get_royalties_line_description();
 		$campaign_organization = $this->campaign->get_organization();
 		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-		$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay() / 1.2;
+		$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay_without_tax();
 		$options = array(
 			'customerid'		=> $WDGOrganization->get_id_quickbooks(),
 			'customeremail'		=> $WDGOrganization->get_email(),

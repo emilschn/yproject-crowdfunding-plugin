@@ -137,7 +137,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 			);
 		}
 		
-		$invest_amount = $this->getInputText( 'amount' );
+		$invest_amount = $this->getInputTextMoney( 'amount' );
 		$min_value = ypcf_get_min_value_to_invest();
 		$max_part_value = ypcf_get_max_part_value();
 		if ( empty( $invest_amount ) ) {

@@ -24,6 +24,8 @@ class WDGCampaignVotes {
 			'count_voters' => $wpdb->get_var( "SELECT count(user_id) FROM ".$table_name." WHERE post_id = ".$campaign_id ),
 			'count_preinvestments' => 0,
 			'amount_preinvestments' => 0,
+			'count_not_validate_preinvestments' => 0,
+			'amount_not_validate_preinvestments' => 0,
 			'average_impact_economy' => 0,
 			'average_impact_environment' => 0,
 			'average_impact_social' => 0,
@@ -76,6 +78,8 @@ class WDGCampaignVotes {
 					$buffer[ 'amount_preinvestments' ] += $payment_investment->get_saved_amount();
 					array_push( $buffer[ 'list_preinvestments' ], $investment_item );
 				} else {
+					$buffer[ 'count_not_validate_preinvestments' ]++;
+					$buffer[ 'amount_not_validate_preinvestments' ] += $payment_investment->get_saved_amount();
 					array_push( $buffer[ 'list_investments' ], $investment_item );
 				}
 			}

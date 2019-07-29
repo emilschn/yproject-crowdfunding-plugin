@@ -85,7 +85,6 @@ class ATCF_Campaigns {
 	}
 	
 	function campaigns_rewrite_news_links() {
-		flush_rewrite_rules();
 		add_rewrite_rule( '^les-projets/([^/]+)/?', 'index.php?name=$matches[1]', 'top' );
 	}
 	

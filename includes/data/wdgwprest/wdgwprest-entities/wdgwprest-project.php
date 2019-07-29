@@ -294,7 +294,7 @@ class WDGWPREST_Entity_Project {
 		$buffer = FALSE;
 		if ( !empty( $project_id ) ) {
 			if ( !isset( self::$declarations_by_project[ $project_id ] ) ) {
-				self::$declarations_by_project[ $project_id ] = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations' );
+				self::$declarations_by_project[ $project_id ] = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations?data_restricted_to_entity=1' );
 			}
 			$buffer = self::$declarations_by_project[ $project_id ];
 		}
@@ -318,6 +318,16 @@ class WDGWPREST_Entity_Project {
 	
 	public static function get_emails( $project_id ) {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/emails' );
+		return $result_obj;
+	}
+	
+	public static function get_files( $project_id, $file_type ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/files?file_type=' .$file_type );
+		return $result_obj;
+	}
+	
+	public static function get_files_unused( $project_id, $file_type ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/files?file_type=' .$file_type. '&exclude_linked_to_adjustment=1' );
 		return $result_obj;
 	}
 }

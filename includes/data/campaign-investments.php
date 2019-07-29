@@ -17,6 +17,7 @@ class WDGCampaignInvestments {
 			'payments_data' => $payments_data,
 			'count_validate_investments' => 0,
 			'count_not_validate_investments' => 0,
+			'amount_not_validate_investments' => 0,
 			'count_validate_investors' => 0,
 			'count_age' => 0,
 			'count_average_age' => 0,
@@ -64,6 +65,7 @@ class WDGCampaignInvestments {
 			    $buffer['count_validate_investments']++;
 			} else if ($item['status'] == 'pending') {
 			    $buffer['count_not_validate_investments']++;
+			    $buffer['amount_not_validate_investments'] += $item['amount'];
 			}
 		}
 

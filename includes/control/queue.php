@@ -74,16 +74,12 @@ class WDGQueue {
 		$date_next_dispatch = new DateTime();
 		// Les envois se font à 21h
 		$date_next_dispatch->setTime( 21, 0 );
-		// Si la date est avant le 6, on envoie le 6
-		if ( $date_next_dispatch->format( 'd' ) < 6 ) {
-			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 6 );
-		}
-		// Si la date est entre le 6 et le 10, on envoie le 10
-		if ( $date_next_dispatch->format( 'd' ) > 6 && $date_next_dispatch->format( 'd' ) < 10 ) {
+		// Si la date est avant le 10 (ou le 10), on envoie le 10
+		if ( $date_next_dispatch->format( 'd' ) <= 10 ) {
 			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 10 );
 		}
-		// Si la date est entre le 10 et le 15, on envoie le 15
-		if ( $date_next_dispatch->format( 'd' ) > 10 && $date_next_dispatch->format( 'd' ) < 15 ) {
+		// Si la date est entre le 10 et le 15 (compris), on envoie le 15
+		if ( $date_next_dispatch->format( 'd' ) > 10 && $date_next_dispatch->format( 'd' ) <= 15 ) {
 			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 15 );
 		}
 		// Faut-il décaler sur un jour ouvré si ça tombe le samedi / dimanche ?
@@ -114,8 +110,22 @@ class WDGQueue {
 		$recipient_email = empty( $WDGOrganization ) ? $WDGUser->get_email() : $WDGOrganization->get_email();
 		$recipient_name = empty( $WDGOrganization ) ? $WDGUser->get_firstname() : $WDGOrganization->get_name();
 		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
+		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
+		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 		
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
+			$first_investment_contract = FALSE;
+			if ( !empty( $investment_contracts ) ) {
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->subscription_id == $purchase_id ) {
+						$first_investment_contract = $investment_contract;
+					}
+				}
+			}
+			if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
+				continue;
+			}
+
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$campaign_organization = $campaign->get_organization();
 			if ( !empty( $campaign_organization ) ) {
@@ -229,6 +239,106 @@ class WDGQueue {
 		if ( !empty( $message ) ) {
 			NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
 		}
+	}
+
+	
+/******************************************************************************/
+/* PROLONGATION CONTRAT ROYALTIES */
+/******************************************************************************/
+	public static function add_contract_extension_notifications( $campaign_id ) {
+		$action = 'contract_extension_notifications';
+		$entity_id = $campaign_id;
+		$priority = 'high';
+		
+		self::create_or_replace_action( $action, $entity_id, $priority );
+	}
+	
+	public static function execute_contract_extension_notifications( $campaign_id, $queued_action_params, $queued_action_id ) {
+		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		
+		// Envoi de la notification au porteur de projet
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$current_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
+		$wdguser_author = new WDGUser( $campaign->data->post_author );
+		NotificationsAPI::declaration_extended_project_manager( $organization_obj->get_email(), $wdguser_author->get_firstname() );
+		
+		// Envoi de la notification aux investisseurs
+		$project_name = $campaign->get_name();
+		$funding_duration = $campaign->funding_duration();
+		$project_url = $campaign->get_public_url();
+		$investment_contracts = WDGInvestmentContract::get_list( $campaign_id );
+		foreach ( $investment_contracts as $investment_contract ) {
+			if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+				$recipient = '';
+				$name = '';
+				if ( $investment_contract->investor_type == 'user' ) {
+					$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+					$recipient = $WDGUser->get_email();
+					$name = $WDGUser->get_firstname();
+				} else {
+					$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+					$recipient = $WDGOrganization->get_email();
+					$name = $WDGOrganization->get_name();
+				}
+				$date = $investment_contract->subscription_date;
+				$amount_investment = $investment_contract->subscription_amount;
+				$amount_royalties = $investment_contract->amount_received;
+				$amount_remaining = $investment_contract->subscription_amount - $investment_contract->amount_received;
+				NotificationsAPI::declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $campaign->get_api_id() );
+			}
+		}
+		
+	}
+
+	
+/******************************************************************************/
+/* FIN CONTRAT ROYALTIES */
+/******************************************************************************/
+	public static function add_contract_finished_notifications( $campaign_id ) {
+		$action = 'contract_finished_notifications';
+		$entity_id = $campaign_id;
+		$priority = 'high';
+		
+		self::create_or_replace_action( $action, $entity_id, $priority );
+	}
+	
+	public static function execute_contract_finished_notifications( $campaign_id, $queued_action_params, $queued_action_id ) {
+		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		
+		// Envoi de la notification au porteur de projet
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$current_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
+		$wdguser_author = new WDGUser( $campaign->data->post_author );
+		NotificationsAPI::declaration_finished_project_manager( $organization_obj->get_email(), $wdguser_author->get_firstname() );
+		
+		// Envoi de la notification aux investisseurs
+		$project_name = $campaign->get_name();
+		$project_url = $campaign->get_public_url();
+		$investment_contracts = WDGInvestmentContract::get_list( $campaign_id );
+		foreach ( $investment_contracts as $investment_contract ) {
+			if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+				$recipient = '';
+				$name = '';
+				if ( $investment_contract->investor_type == 'user' ) {
+					$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+					$recipient = $WDGUser->get_email();
+					$name = $WDGUser->get_firstname();
+				} else {
+					$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+					$recipient = $WDGOrganization->get_email();
+					$name = $WDGOrganization->get_name();
+				}
+				$date = $investment_contract->subscription_date;
+				$amount_investment = $investment_contract->subscription_amount;
+				$amount_royalties = $investment_contract->amount_received;
+				NotificationsAPI::declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $campaign->get_api_id() );
+			}
+		}
+		
 	}
 
 	
@@ -578,6 +688,34 @@ class WDGQueue {
 		}
 	}
 
+
+	
+/******************************************************************************/
+/* GENERATION CACHE PAGE STATIQUE */
+/******************************************************************************/
+	public static function add_cache_post_as_html( $post_id, $input_priority = 'date' ) {
+		$action = 'cache_post_as_html';
+		$entity_id = $post_id;
+		$priority = $input_priority;
+		$date_next_dispatch = new DateTime();
+		// On programme le prochain envoi 10 minutes plus tard
+		$date_next_dispatch->add( new DateInterval( 'PT10M' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_cache_post_as_html( $post_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $post_id ) ) {
+			
+			$WDG_File_Cacher = WDG_File_Cacher::current();
+			$WDG_File_Cacher->build_post( $post_id );
+			
+		}
+		
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+	}
 
 	
 	

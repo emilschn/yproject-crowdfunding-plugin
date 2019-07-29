@@ -10,11 +10,16 @@ class WDG_Template_PDF_Campaign_Funded {
 		$organization_address,
 		$organization_postalcode,
 		$organization_city,
+		$free_field,
 		$date_campaign_end,
 		$number_investors,
 		$amount_funded,
 		$percent_commission,
 		$amount_commission,
+		$platform_commission_below_100000,
+		$platform_commission_below_100000_amount,
+		$platform_commission_above_100000,
+		$platform_commission_above_100000_amount,
 		$amount_project,
 		$date_contract_start,
 		$contract_duration,
@@ -60,6 +65,9 @@ class WDG_Template_PDF_Campaign_Funded {
 		<div style="margin-top: 40px;">
 			<p>
 				<span style="font-weight: bold; font-size: 18pt;">ATTESTATION DE LEV&Eacute;E DE FONDS</span><br>
+				<?php if ( !empty( $free_field ) ): ?>
+				<span><?php echo $free_field; ?></span><br><br>
+				<?php endif; ?>
 				<span>Date : <?php echo $date_campaign_end; ?></span>
 			</p>
 		</div>
@@ -80,7 +88,15 @@ class WDG_Template_PDF_Campaign_Funded {
 				<tr>
 					<td style="border-bottom: 1px solid gray; padding: 10px;" width="500">
 						COMMISSION WE DO GOOD<br>
-						* <?php echo $percent_commission; ?> % de la lev&eacute;e de fonds TTC
+						
+						<?php if ( $platform_commission_above_100000_amount > 0 && $platform_commission_below_100000 != $platform_commission_above_100000 ): ?>
+							- <?php echo $platform_commission_below_100000; ?> % de 100 000 &euro; : <?php echo $platform_commission_below_100000_amount; ?> &euro;<br>
+							- <?php echo $platform_commission_above_100000; ?> % au-delà de 100 000 &euro; : <?php echo $platform_commission_above_100000_amount; ?> &euro;
+							
+						<?php else: ?>
+							* <?php echo $percent_commission; ?> % de la lev&eacute;e de fonds TTC
+							
+						<?php endif; ?>
 					</td>
 					<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $amount_commission; ?> &euro;</td>
 				</tr>

@@ -227,7 +227,7 @@ class LemonwayNotification {
 		
 		
 		// Si jamais la vraie notification n'est pas renvoyé, on envoie quand même la notif admin
-		if ( !$notification_sent ) {
+		if ( FALSE && !$notification_sent ) {
 			// Mail admin
 			$content = "Un document a changé de statut (et le mail normal n'a pas été envoyé) :<br>";
 			$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br>';
@@ -413,7 +413,7 @@ class LemonwayNotification {
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
 	
-		$content = 'Un virement a été reçu avec les infos suivantes :<br />';
+		$content = 'Un prélèvement a été reçu avec les infos suivantes :<br />';
 		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br />';
 		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br />';
 		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br />';
@@ -426,7 +426,9 @@ class LemonwayNotification {
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
 			$WDGOrga_wallet->check_register_royalties_lemonway_wallet();
-			LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $lemonway_posted_amount );
+			$transaction_details = LemonwayLib::get_transaction_by_id( $lemonway_posted_id_transaction, 'transactionId' );
+			$transfer_amount = $transaction_details->CRED;
+			LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $transfer_amount );
 		}
 	}
 	

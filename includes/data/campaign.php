@@ -97,7 +97,7 @@ function atcf_create_campaign($author_ID, $title){
     add_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category );
 
     // Extra Campaign Information
-    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_preparing );
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_validated );
     add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0);
 
     add_post_meta( $newcampaign_id, 'campaign_part_value', 1 );
@@ -465,6 +465,33 @@ class ATCF_Campaign {
 		return $this->__get( ATCF_Campaign::$key_fake_url );
 	}
 	
+	public static $key_asset_name_singular = 'asset_name_singular';
+	public function get_asset_name_singular() {
+		$buffer = $this->__get( ATCF_Campaign::$key_asset_name_singular );
+		if ( empty( $buffer ) ) {
+			$buffer = "Fairphone";
+		}
+		return $buffer;
+	}
+	
+	public static $key_asset_name_plural = 'asset_name_plural';
+	public function get_asset_name_plural() {
+		$buffer = $this->__get( ATCF_Campaign::$key_asset_name_plural );
+		if ( empty( $buffer ) ) {
+			$buffer = "Fairphones";
+		}
+		return $buffer;
+	}
+	
+	public static $key_partner_company_name = 'partner_company_name';
+	public function get_partner_company_name() {
+		$buffer = $this->__get( ATCF_Campaign::$key_partner_company_name );
+		if ( empty( $buffer ) ) {
+			$buffer = "Commown";
+		}
+		return $buffer;
+	}
+	
 	//Rédaction projet
 	public function subtitle() {
 		return $this->__get_translated_property( 'campaign_subtitle' );
@@ -747,14 +774,27 @@ class ATCF_Campaign {
 	
 	public function maximum_profit_complete() {
 		$maximum_profit = $this->maximum_profit();
-		$maximum_profit_precision = $this->maximum_profit_precision();
-		if ( $maximum_profit_precision > 0 ) {
-			$buffer = $maximum_profit .'.'. $maximum_profit_precision;
+		if ( $maximum_profit == 'infinite' ) {
+			$buffer = 1000000000;
 		} else {
-			$buffer = $maximum_profit;
+			$maximum_profit_precision = $this->maximum_profit_precision();
+			if ( $maximum_profit_precision > 0 ) {
+				$buffer = $maximum_profit .'.'. $maximum_profit_precision;
+			} else {
+				$buffer = $maximum_profit;
+			}
 		}
 		
 		return $buffer;
+	}
+	
+	public function maximum_profit_amount() {
+		$maximum_profit = $this->maximum_profit();
+		if ( $maximum_profit == 'infinite' ) {
+			return 1000000000;
+		} else {
+			return $this->current_amount( FALSE ) * $this->maximum_profit_complete();
+		}
 	}
 	
 	public function maximum_profit_str() {
@@ -772,7 +812,15 @@ class ATCF_Campaign {
 	}
 	
 	public function minimum_profit() {
-		return $this->get_api_data( 'minimum_profit' );
+		$buffer = $this->get_api_data( 'minimum_profit' );
+		if ( empty( $buffer ) ) {
+			$buffer = 1;
+		}
+		return $buffer;
+	}
+	
+	public function minimum_profit_amount() {
+		return $this->current_amount( FALSE ) * $this->minimum_profit();
 	}
 	
 	public static $key_minimum_goal_display = 'minimum_goal_display';
@@ -848,7 +896,7 @@ class ATCF_Campaign {
 		$buffer = 'funded-certificate-' .$this->ID. '-' .$this->get_api_id(). '.pdf';
 		return $buffer;
 	}
-	public function make_funded_certificate( $force = FALSE ) {
+	public function make_funded_certificate( $force = FALSE, $str_date_end = FALSE, $free_field = '' ) {
 		$filename = $this->get_funded_certificate_filename();
 		$filepath = __DIR__ . '/../../files/campaign-funded/' . $filename;
 		if ( !$force && file_exists( $filepath ) ) {
@@ -876,9 +924,17 @@ class ATCF_Campaign {
 		
 		$project_investors_list = array();
 		$investments_list = $this->payments_data( TRUE );
+		$date_end = FALSE;
+		if ( !empty( $str_date_end ) ) {
+			$date_end = new DateTime( $str_date_end );
+			$date_end->setTime( 23, 59, 59 );
+		}
+		
+		$amount = 0;
 		
 		foreach ( $investments_list as $investment_item ) {
-			if ( $investment_item[ 'status' ] == 'publish' ) {
+			$date_investment = new DateTime( $investment_item[ 'date' ] );
+			if ( $investment_item[ 'status' ] == 'publish' && ( empty( $date_end ) || $date_end >= $date_investment ) ) {
 				if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
 					$orga = new WDGOrganization( $investment_item[ 'user' ] );
 					$firstname = $orga->get_name();
@@ -895,9 +951,18 @@ class ATCF_Campaign {
 					}
 				}
 
+				$amount += $investment_item['amount'];
 				array_push( $project_investors_list, array( "firstname" => $firstname, "lastname" => $lastname, "amount" => $investment_item['amount'] ) );
 			}
 		}
+		
+		$today_date = new DateTime();
+		$platform_commission = $this->platform_commission();
+		$platform_commission_amount = $this->platform_commission_amount();
+		$platform_commission_below_100000 = $this->platform_commission();
+		$platform_commission_below_100000_amount = $this->platform_commission_below_100000_amount();
+		$platform_commission_above_100000 = $this->platform_commission_above_100000();
+		$platform_commission_above_100000_amount = $this->platform_commission_above_100000_amount();
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get(
@@ -907,12 +972,17 @@ class ATCF_Campaign {
 			$WDGOrganization->get_full_address_str(),
 			$WDGOrganization->get_postal_code(),
 			$WDGOrganization->get_city(),
-			$this->end_date( 'd/m/Y' ),
+			$free_field,
+			$today_date->format( 'd/m/Y' ),
 			$this->backers_count(),
-			UIHelpers::format_number( $this->current_amount( FALSE ) ),
-			UIHelpers::format_number( $this->platform_commission() ),
-			UIHelpers::format_number( $this->platform_commission_amount() ),
-			UIHelpers::format_number( $this->current_amount( FALSE ) - $this->platform_commission_amount() ),
+			UIHelpers::format_number( $amount ),
+			UIHelpers::format_number( $platform_commission ),
+			UIHelpers::format_number( $platform_commission_amount ),
+			UIHelpers::format_number( $platform_commission_below_100000 ),
+			UIHelpers::format_number( $platform_commission_below_100000_amount ),
+			UIHelpers::format_number( $platform_commission_above_100000 ),
+			UIHelpers::format_number( $platform_commission_above_100000_amount ),
+			UIHelpers::format_number( $amount - $platform_commission_amount ),
 			$start_datetime->format( 'd/m/Y' ),
 			$this->funding_duration(),
 			UIHelpers::format_number( $this->roi_percent(), 10 ),
@@ -958,6 +1028,10 @@ class ATCF_Campaign {
 		'8'				=> "8 ans",
 		'9'				=> "9 ans",
 		'10'			=> "10 ans",
+		'15'			=> "15 ans",
+		'20'			=> "20 ans",
+		'25'			=> "25 ans",
+		'30'			=> "30 ans",
 		'0'				=> "Dur&eacute;e ind&eacute;termin&eacute;e"
 	);
     public static $key_funding_duration = 'campaign_funding_duration';
@@ -977,6 +1051,15 @@ class ATCF_Campaign {
 			$buffer = __( "une dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
 		}
 		return $buffer;
+	}
+	
+	public function is_beyond_funding_duration() {
+		$today_date = new DateTime();
+		$str_date_contract_start = $this->contract_start_date();
+		$date_contract_start = new DateTime( $str_date_contract_start );
+		$date_contract_start->add( new DateInterval( 'P' .$this->funding_duration(). 'Y' ) );
+		
+		return ( $today_date > $date_contract_start );
 	}
 
 	/**
@@ -1239,6 +1322,22 @@ class ATCF_Campaign {
 				}
 			}
 		}
+	}
+	
+	private $adjustments;
+	public function get_adjustments() {
+		if ( !isset( $this->adjustments ) ) {
+			$this->adjustments = array();
+			
+			$adjustment_list = WDGWPREST_Entity_Adjustment::get_list_by_project_id( $this->get_api_id() );
+			if ( !empty( $adjustment_list ) ) {
+				foreach ( $adjustment_list as $adjustment_item ) {
+					$WDGAdjustment = new WDGAdjustment( $adjustment_item->id, $adjustment_item );
+					array_push( $this->adjustments, $WDGAdjustment );
+				}
+			}
+		}
+		return $this->adjustments;
 	}
 	
 	private $roi_declarations;
@@ -1551,13 +1650,13 @@ class ATCF_Campaign {
 	 * Returns true if it is possible to invest on the project
 	 */
 	public function is_investable() {
-		// Possible d'investir si le porteur de projet a bien rempli ses informations et qu'il reste du temps (peu importe l'étape)
-		$buffer = ypcf_check_user_is_complete( $this->data->post_author ) && $this->is_remaining_time();
-		// Si en vote, il faut que l'utilisateur ait voté
+		// Possible d'investir si le porteur de projet a bien rempli ses informations et que le montant max n'a pas été atteint
+		$buffer = ypcf_check_user_is_complete( $this->data->post_author ) && $this->percent_completed( false ) < 100;
+		// Si en évaluation, il faut que l'utilisateur ait évalué
 		$WDGUser_current = WDGUser::current();
 		$is_vote_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) && ( $WDGUser_current->has_voted_on_campaign( $this->ID ) );
-		// Si en collecte
-		$is_collecte_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte );
+		// Si en investissement et qu'il reste du temps
+		$is_collecte_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) && $this->is_remaining_time();
 		return $buffer && ( $is_vote_investable || $is_collecte_investable );
 	}
 	
@@ -1718,8 +1817,34 @@ class ATCF_Campaign {
 		}
 	    return $buffer;
 	}
+	public function platform_commission_below_100000_amount( $with_tax = TRUE ) {
+		$buffer = round( min( $this->current_amount( FALSE ), 100000 ) * $this->platform_commission( $with_tax ) / 100, 2 );
+		return $buffer;
+	}
+	
+	public static $key_platform_commission_above_100000 = 'campaign_platform_commission_above_100000';
+	public function platform_commission_above_100000( $with_tax = TRUE ) {
+		$commission_with_tax = $this->__get( ATCF_Campaign::$key_platform_commission_above_100000 );
+		// Par défaut (si pas rempli), on reprend la commission normale
+		if ( empty( $commission_with_tax ) ) {
+			$buffer = $this->platform_commission( $with_tax );
+			
+		} else {
+			if ( !empty( $commission_with_tax ) && !$with_tax ) {
+				$buffer = $commission_with_tax / 1.2;
+			} else {
+				$buffer = $commission_with_tax;
+			}
+		}
+	    return $buffer;
+	}
+	public function platform_commission_above_100000_amount( $with_tax = TRUE ) {
+		$buffer = round( max( $this->current_amount( FALSE ) - 100000, 0 ) * $this->platform_commission_above_100000( $with_tax ) / 100, 2 );
+		return $buffer;
+	}
+	
 	public function platform_commission_amount( $with_tax = TRUE ) {
-		$buffer = round( $this->current_amount( FALSE ) * $this->platform_commission( $with_tax ) / 100, 2 );
+		$buffer = $this->platform_commission_below_100000_amount( $with_tax ) + $this->platform_commission_above_100000_amount( $with_tax );
 		return $buffer;
 	}
 
@@ -2153,14 +2278,40 @@ class ATCF_Campaign {
 	
 	public function is_remaining_time() {
 		$buffer = TRUE;
+		
 		if ( $this->time_remaining_str() == '-' ) {
+			$update = false;
+					
 			$can_invest_after = $this->can_invest_until_contract_start_date();
-			if ( !$can_invest_after ) {
-				$buffer = FALSE;
-			} else {
+			if ( $can_invest_after ) {
 				$datetime_end = $this->get_end_date_when_can_invest_until_contract_start_date();
 				$datetime_today = new DateTime();
 				$buffer = ( $datetime_today < $datetime_end );
+				
+			} else {
+				$buffer = FALSE;
+			}
+				
+			if ( !$buffer && $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+				if ( $this->is_funded() ) {
+					$this->set_status( ATCF_Campaign::$campaign_status_funded );
+					$update = true;
+				} else {
+					$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
+					$this->set_status( ATCF_Campaign::$campaign_status_archive );
+					$update = true;
+				}
+			
+				if ( $update ) {
+					$this->update_api();
+					do_action('wdg_delete_cache', array(
+						'home-projects',
+						'projectlist-projects-current',
+						'projectlist-projects-funded'
+					));
+					$file_cacher = WDG_File_Cacher::current();
+					$file_cacher->build_campaign_page_cache( $this->ID );
+				}
 			}
 		}
 		return $buffer;
@@ -2193,29 +2344,6 @@ class ATCF_Campaign {
 			//Si on a dépassé la date de fin, on retourne "-"
 			if ( $now > $expires ) {
 				$buffer = '-';
-				if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
-					$update = false;
-					if ( $this->is_funded() ) {
-						if ( !$this->can_invest_until_contract_start_date() ) {
-							$this->set_status( ATCF_Campaign::$campaign_status_funded );
-							$update = true;
-						}
-					} else {
-						$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
-						$this->set_status( ATCF_Campaign::$campaign_status_archive );
-						$update = true;
-					}
-					if ( $update ) {
-						$this->update_api();
-						do_action('wdg_delete_cache', array(
-							'home-projects',
-							'projectlist-projects-current',
-							'projectlist-projects-funded'
-						));
-						$file_cacher = WDG_File_Cacher::current();
-						$file_cacher->build_campaign_page_cache( $this->ID );
-					}
-				}
 			} else {
 				$diff = $expires - $now;
 				$nb_days = floor($diff / (60 * 60 * 24));
@@ -2854,68 +2982,107 @@ class ATCF_Campaign {
 	 * Retourne la liste des paiement, augmentée par les informations utiles pour un ROI particulier
 	 * @param WDGROIDeclaration $declaration
 	 */
-	public function roi_payments_data( $declaration, $transfer_remaining_amount = false ) {
+	public function roi_payments_data( $declaration, $transfer_remaining_amount = false, $is_refund = false ) {
 		$buffer = array();
-		
-		//Calculs des montants à reverser
-		$total_amount = $this->current_amount(FALSE);
-		$roi_amount = $declaration->get_amount_with_adjustment();
-		if ( $transfer_remaining_amount ) {
-			$roi_amount += $declaration->get_previous_remaining_amount();
-		}
 		
 		// Récupération de la liste des investissements concernés
 		$investment_contracts = WDGInvestmentContract::get_list( $this->ID );
 		if ( !empty( $investment_contracts ) ) {
-			// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
-			$adjustement_turned_into_turnover = 0;
-			if ( $declaration->get_adjustment_value() != 0 ) {
-				// Pour transformer l'ajustement en CA, il faut avoir le nombre de contrats actifs pris en compte et en additionner le pourcentage de CA
-				$total_turnover_percent = 0;
+			
+			// Si c'est un remboursement, on fait juste une soustraction
+			if ( $is_refund ) {
 				foreach ( $investment_contracts as $investment_contract ) {
 					if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
-						$total_turnover_percent += $investment_contract->turnover_percent;
+						$investor_id = 0;
+						if ( $investment_contract->investor_type == 'user' ) {
+							$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGUser->get_wpref();
+						} else {
+							$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGOrganization->get_wpref();
+						}
+						$investment_item = array(
+							'contract_id'	=> $investment_contract->id,
+							'ID'			=> $investment_contract->subscription_id,
+							'amount'		=> $investment_contract->subscription_amount,
+							'user'			=> $investor_id
+						);
+
+						// Calcul du montant à récupérer
+						$investor_amount = $investment_contract->subscription_amount - $investment_contract->amount_received;
+						// Calcul de la commission sur le roi de l'utilisateur
+						$fees_total = $investor_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+						// Et arrondi
+						$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+						$investment_item['roi_fees'] = $fees;
+						// Reste à verser pour l'investisseur
+						$investor_proportion_amount_remaining = $investor_amount - $fees;
+						$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+
+						array_push( $buffer, $investment_item );
 					}
 				}
-				$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
-			}
-			
-			$turnover_to_apply = $adjustement_turned_into_turnover + $declaration->get_turnover_total();
-			
-			// Détermination des montants par contrat
-			foreach ( $investment_contracts as $investment_contract ) {
-				if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
-					$investor_id = 0;
-					if ( $investment_contract->investor_type == 'user' ) {
-						$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
-						$investor_id = $WDGUser->get_wpref();
-					} else {
-						$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
-						$investor_id = $WDGOrganization->get_wpref();
-					}
-					$investment_item = array(
-						'contract_id'	=> $investment_contract->id,
-						'ID'			=> $investment_contract->subscription_id,
-						'amount'		=> $investment_contract->subscription_amount,
-						'user'			=> $investor_id
-					);
-					
-					// Calcul du montant à récupérer en roi à partir du pourcentage du CA
-					$investor_proportion_amount = floor( $turnover_to_apply * $investment_contract->turnover_percent ) / 100; //10.50
-					// Calcul de la commission sur le roi de l'utilisateur
-					$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
-					// Et arrondi
-					$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
-					$investment_item['roi_fees'] = $fees;
-					// Reste à verser pour l'investisseur
-					$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
-					$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
 				
-					array_push( $buffer, $investment_item );
+				
+			} else {
+				// Calcul préalable spécifique à l'ajustement pour pouvoir le prendre en compte en tant que CA
+				$adjustement_turned_into_turnover = 0;
+				if ( $declaration->get_adjustment_value() != 0 ) {
+					// Pour transformer l'ajustement en CA, il faut avoir le nombre de contrats actifs pris en compte et en additionner le pourcentage de CA
+					$total_turnover_percent = 0;
+					foreach ( $investment_contracts as $investment_contract ) {
+						if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+							$total_turnover_percent += $investment_contract->turnover_percent;
+						}
+					}
+					$adjustement_turned_into_turnover = $declaration->get_adjustment_value() * 100 / $total_turnover_percent;
 				}
+
+				$turnover_to_apply = max( 0, $adjustement_turned_into_turnover + $declaration->get_turnover_total() );
+
+				// Détermination des montants par contrat
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
+						$investor_id = 0;
+						if ( $investment_contract->investor_type == 'user' ) {
+							$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGUser->get_wpref();
+						} else {
+							$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
+							$investor_id = $WDGOrganization->get_wpref();
+						}
+						$investment_item = array(
+							'contract_id'	=> $investment_contract->id,
+							'ID'			=> $investment_contract->subscription_id,
+							'amount'		=> $investment_contract->subscription_amount,
+							'user'			=> $investor_id
+						);
+
+						// Calcul du montant à récupérer en roi à partir du pourcentage du CA
+						$investor_proportion_amount = floor( $turnover_to_apply * $investment_contract->turnover_percent ) / 100; //10.50
+						// Calcul de la commission sur le roi de l'utilisateur
+						$fees_total = $investor_proportion_amount * $this->get_costs_to_investors() / 100; //10.50 * 1.8 / 100 = 0.189
+						// Et arrondi
+						$fees = round($fees_total * 100) / 100; //0.189 * 100 = 18.9 = 19 = 0.19
+						$investment_item['roi_fees'] = $fees;
+						// Reste à verser pour l'investisseur
+						$investor_proportion_amount_remaining = $investor_proportion_amount - $fees;
+						$investment_item['roi_amount'] = $investor_proportion_amount_remaining;
+
+						array_push( $buffer, $investment_item );
+					}
+				}
+				
 			}
 			
 		} else {
+			//Calculs des montants à reverser
+			$total_amount = $this->current_amount(FALSE);
+			$roi_amount = $declaration->get_amount_with_adjustment();
+			if ( $transfer_remaining_amount ) {
+				$roi_amount += $declaration->get_previous_remaining_amount();
+			}
+		
 			$investments_list = $this->payments_data(TRUE);
 		
 			// Parcours
@@ -3523,7 +3690,8 @@ function atcf_get_locations() {
 		'974 La Réunion',
 		'976 Mayotte',
 		'Italie',
-		'Belgique'
+		'Belgique',
+		'Espagne'
 	);
 	return $buffer;
 }
@@ -3547,7 +3715,7 @@ function atcf_get_regions() {
 		"Occitanie"						=> array( 9, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82 ),
 		"Pays de la Loire"				=> array( 44, 49, 53, 72, 85 ),
 		"Provence-Alpes-Côte d'Azur"	=> array( 4, 5, 6, 13, 83, 84 ),
-		"Etranger"						=> array( 'Ita', 'Bel' )
+		"Etranger"						=> array( 'Ita', 'Bel', 'Esp' )
 	);
 	return $buffer;
 }

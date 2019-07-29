@@ -182,7 +182,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'address_number',
-			__( "Num&eacute;ro", 'yproject' ),
+			__( "Num&eacute;ro de rue", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_address_number()
 		);

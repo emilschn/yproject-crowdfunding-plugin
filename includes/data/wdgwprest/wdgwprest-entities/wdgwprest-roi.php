@@ -47,6 +47,11 @@ class WDGWPREST_Entity_ROI {
 		$parameters = WDGWPREST_Entity_ROI::set_post_parameters( $roi );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'roi', $parameters );
+		if ( $parameters[ 'recipient_type' ] == 'user' ) {
+			WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$parameters[ 'id_user' ]. '/rois' );
+		} else {
+			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$parameters[ 'id_user' ]. '/rois' );
+		}
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}

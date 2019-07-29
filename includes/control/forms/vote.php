@@ -244,7 +244,7 @@ class WDG_Form_Vote extends WDG_Form {
 			
 			
 			// Vérifications sur la valeur d'investissement saisie
-			$invest_sum = $this->getInputText( 'invest-sum' );
+			$invest_sum = $this->getInputTextMoney( 'invest-sum' );
 			if ( empty( $invest_sum ) ) {
 				$invest_sum = 0;
 			}

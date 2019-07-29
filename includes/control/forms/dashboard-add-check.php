@@ -19,7 +19,6 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 	}
 	
 	protected function initFields() {
-		ypcf_session_start();
 		parent::initFields();
 		
 		//**********************************************************************
@@ -150,7 +149,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 		$this->addField(
 			'text',
 			'address_number',
-			__( "Num&eacute;ro", 'yproject' ),
+			__( "Num&eacute;ro de rue", 'yproject' ),
 			self::$field_group_user_info
 		);
 
@@ -217,7 +216,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			'orga_id',
 			__( "Au nom de", 'yproject' ),
 			self::$field_group_orga_select,
-			$_SESSION[ 'orga_id' ],
+			'',
 			FALSE,
 			[
 				''			=> "",
@@ -240,7 +239,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			__( "E-mail de contact *", 'yproject' ),
 			self::$field_group_orga_info,
 			FALSE,
-			__( "Cette adresse doit &ecirc;tre diff&eacute;rente de celle de votre compte.", 'yproject' )
+			__( "Cette adresse doit &ecirc;tre diff&eacute;rente de celle de la personne physique rattach&eacute;e &agrave; l'organisation.", 'yproject' )
 		);
 		
 		$this->addField(
@@ -248,7 +247,8 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			'org_website',
 			__( "Site internet *", 'yproject' ),
 			self::$field_group_orga_info,
-			FALSE
+			FALSE,
+			__( "Si la structure n'a pas de site internet, indiquez l'url de sa page societe.com.", 'yproject' )
 		);
 		
 		$this->addField(
@@ -282,7 +282,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 		$this->addField(
 			'text',
 			'org_address_number',
-			__( "Num&eacute;ro *", 'yproject' ),
+			__( "Num&eacute;ro de rue *", 'yproject' ),
 			self::$field_group_orga_info
 		);
 
@@ -560,16 +560,38 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					);
 					array_push( $feedback_errors, $error );
 				}
+				
 				$orga_email = $this->getInputText( 'org_email' );
 				$data_to_save[ 'orga_email' ] = $orga_email;
-				if ( empty( $orga_email ) ) {
+				if ( empty( $orga_email ) || !is_email( $orga_email ) ) {
 					$error = array(
 						'orga_email',
-						__( "Le mail de l'organisation ne peut pas &ecirc;tre ind&eacute;fini", 'yproject' ),
+						__( "Le mail de l'organisation est incorrect.", 'yproject' ),
 						'orga_email'
 					);
 					array_push( $feedback_errors, $error );
 				}
+				if ( $orga_id == 'new-orga' ) {
+					if ( !is_email( $orga_email ) ) {
+						$error = array(
+							'orga_email',
+							__( "Le mail de l'organisation est d&eacute;j&agrave; utilis&eacute;", 'yproject' ),
+							'orga_email'
+						);
+						array_push( $feedback_errors, $error );
+					}
+				} else {
+					$WDGOrganizationExisting = new WDGOrganization( $orga_id );
+					if ( $orga_email != $WDGOrganizationExisting->get_email() && email_exists( $orga_email ) ) {
+						$error = array(
+							'code'		=> 'email',
+							'text'		=> __( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
+							'element'	=> 'email'
+						);
+						array_push( $feedback_errors, $error );
+					}
+				}
+				
 				$orga_website = $this->getInputText( 'org_website' );
 				$data_to_save[ 'orga_website' ] = $orga_website;
 				if ( empty( $orga_website ) ) {

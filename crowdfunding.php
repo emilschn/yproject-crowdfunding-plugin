@@ -104,8 +104,9 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/campaign-votes.php' );
 		require( $this->includes_dir . 'data/campaign-investments.php' );
 		require( $this->includes_dir . 'data/campaign-bill.php' );
-		require( $this->includes_dir . 'data/roi.php' );
 		require( $this->includes_dir . 'data/roi-declaration.php' );
+		require( $this->includes_dir . 'data/adjustment.php' );
+		require( $this->includes_dir . 'data/roi.php' );
 		require( $this->includes_dir . 'data/kyc-file.php' );
 		require( $this->includes_dir . 'data/rewards.php');
 		require( $this->includes_dir . 'data/organization.php' );
@@ -123,6 +124,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment-draft.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment-contract.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-declaration.php' );
+		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-adjustment.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-bankinfo.php' );
 		require( $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-poll-answer.php' );

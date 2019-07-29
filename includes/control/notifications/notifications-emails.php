@@ -88,15 +88,10 @@ class NotificationsEmails {
      * @param type $payment_id
      * @return type
      */
-    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE, $remaining_amount_when_authenticated = 0 ) {
+    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
 		
 		$particular_content = "";
-		if ( $remaining_amount_when_authenticated > 0 ) {
-			$particular_content .= __( "Lorsque vos justificatifs d'identit&eacute; seront valid&eacute;s, un nouveau paiement par carte sera d&eacute;clench&eacute; automatiquement pour un montant de", 'yproject' );
-			$particular_content .= " " .$remaining_amount_when_authenticated. " &euro;.<br><br>"; 
-		}
-		
 		if ( $is_card_contribution ) {
 			$particular_content .= self::$alert_lemonway_card;
 		}
@@ -127,65 +122,39 @@ class NotificationsEmails {
 		$user_data = get_user_by('email', $email);
 		$payment_key = edd_get_payment_key( $payment_id );
 
-		$object = "Confirmation d'investissement";
-		$body_content = '';
-		$dear_str = ( isset( $user_info['gender'] ) && $user_info['gender'] == "female") ? "Chère" : "Cher";
-		$body_content = $dear_str." ".$user_data->first_name . " " . $user_data->last_name.",<br><br>";
+		$attachment_url = '';
+		$text_before = '';
+		$text_after = '';
 		
-		if ( $campaign->is_positive_savings() ) {
-			$body_content .= "Nous vous remercions pour votre investissement ! ";
-			$body_content .= "Vous faites maintenant partie de la communaut&eacute; des activateurs de l'&Eacute;pargne positive, un nouveau mod&egrave;le de placement qui r&eacute;concilie votre portefeuille avec le bien commun, la finance telle qu'elle devrait &ecirc;tre.<br><br>";
-			$body_content .= "Avec vous, nous changeons le monde pas &agrave; pas, un smartphone apr&egrave;s l'autre.<br><br>";
-		
-		} else {
-			$body_content .= $post_campaign->post_title . " vous remercie pour votre investissement. ";
+		if ( $payment_key != 'check' ) {
+			$text_before .= 'Votre compte a été débité.<br>';
 		}
+		$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
 		
-		if ( $payment_key == 'check' ) {
-			$body_content .= "N'oubliez pas que ";
-		} else {
-			$body_content .= "Votre compte a été débité mais n'oubliez pas que ";
-		}
-		$body_content .= "l'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement. N'hésitez donc pas à en parler autour de vous et sur les réseaux sociaux !<br>";
-        
 		if ( !empty( $particular_content ) ) {
-			$body_content .= $particular_content . "<br><br>";
+			$text_before .= "<br>" .$particular_content. "<br>";
 		}
 		
 		if ( !empty( $preinvestment ) ) {
-			$body_content .= "Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
+			$text_before .= "<br>Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
 						. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
 						. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
-						. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br><br>";
+						. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br>";
 		}
-
-		$body_content .= "<strong>Détails concernant votre investissement</strong><br>";
-		if ( $campaign->is_positive_savings() ) {
-			$body_content .= "Page de pr&eacute;sentation : <a href=\"".$campaign->get_fake_url()."\">".$campaign->get_fake_url()."</a><br>";
-			
-		} else {
-			$body_content .= "Projet : " . $post_campaign->post_title . "<br>";
-			$body_content .= "Page de pr&eacute;sentation : <a href=\"".get_permalink($campaign->ID)."\">".get_permalink($campaign->ID)."</a><br>";
-		}
-		$body_content .= "Montant : ".$payment_amount." &euro;<br>";
-		$body_content .= "Horodatage : ". get_post_field( 'post_date', $payment_id ) ."<br><br>";
 		
 		if ( !empty( $attachments ) ) {
-			$body_content .= "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
+			$attachment_url_filename = basename( $attachments[ 0 ] );
+			$attachment_url = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $attachment_url_filename );
+			$text_after = "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
 		}
 		
 		if ( $campaign->is_positive_savings() ) {
-			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">projets en cours de lev&eacute;e de fonds !</a><br><br>";
+			NotificationsAPI::investment_success_positive_savings( $email, $user_data->first_name, $payment_amount, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			
 		} else {
-			$body_content .= "Nous vous invitons &eacute;galement &agrave; d&eacute;couvrir les <a href=\"".home_url( '/les-projets/' )."\">autres projets en cours de lev&eacute;e de fonds</a>, ainsi que notre nouveau produit d'<a href=\"".home_url( '/epargne-positive/' )."\">&Eacute;pargne positive</a> !<br><br>";
+			NotificationsAPI::investment_success_project( $email, $user_data->first_name, $payment_amount, $post_campaign->post_title, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
 		}
 		
-		$body_content .= "&Agrave; bient&ocirc;t sur WEDOGOOD.co<br>";
-		$body_content .= "L'&Eacute;quipe WE DO GOOD<br><br>";
-		
-		$body_content .= "<a href=\"".home_url( '/epargne-positive/' )."\"><img src=\"".home_url( '/wp-content/themes/yproject/images/emails/mail-positive-saivings.png' )."\"></a>";
-
-		return NotificationsEmails::send_mail($email, $object, $body_content, true, $attachments);
     }
 	
 	public static function new_purchase_pending_wire_user( $payment_id, $lemonway_id ) {
@@ -477,7 +446,7 @@ class NotificationsEmails {
 		$object = "Votre pré-investissement est validé";
 		
 		$body_content = "Bonjour,<br><br>";
-		$body_content .= "Le pré-investissemnt que vous avez effectué pour le projet ".$campaign->data->post_title." a été validé automatiquement.<br>";
+		$body_content .= "Le pré-investissement que vous avez effectué pour le projet ".$campaign->data->post_title." a été validé automatiquement.<br>";
 		$body_content .= "Aucune modification n'ayant été apportée au contrat, les conditions auxquelles vous avez souscrit restent les mêmes.<br><br>";
 		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
@@ -492,6 +461,8 @@ class NotificationsEmails {
 		$body_content .= "Suite à la phase d'&eacute;valuation, des modifications ont été apportées sur les conditions d'investissement pour le projet ".$campaign->data->post_title.".";
 		$body_content .= "Le pré-investissement que vous avez effectué doit donc être à nouveau validé.<br>";
 		$body_content .= "Merci de vous rendre sur la plateforme pour vous identifier et suivre le processus de validation qui sera affiché.<br><br>";
+		
+		$body_content .= "Cliquez sur <a href=\"" .home_url( '/mon-compte/' ). "\">Mon compte</a> pour vous identifier.<br><br>";
 		
 		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
 		
@@ -684,7 +655,7 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
 	
-	public static function turnover_declaration_null( $declaration_id ) {
+	public static function turnover_declaration_null( $declaration_id, $declaration_message ) {
 		ypcf_debug_log('NotificationsEmails::turnover_declaration_null > ' . $declaration_id);
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
@@ -693,11 +664,13 @@ class NotificationsEmails {
 		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA à zero";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le projet " .$campaign->data->post_title. " a fait sa déclaration de CA, mais a déclaré 0. :'(<br /><br />";
+		$body_content .= "Message du PP :";
+		$body_content .= $declaration_message;
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
 	
-	public static function turnover_declaration_not_null( $declaration_id ) {
+	public static function turnover_declaration_not_null( $declaration_id, $declaration_message ) {
 		ypcf_debug_log('NotificationsEmails::turnover_declaration_not_null > ' . $declaration_id);
 		$declaration = new WDGROIDeclaration($declaration_id);
 		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
@@ -706,6 +679,8 @@ class NotificationsEmails {
 		$object = "Projet " . $campaign->data->post_title . " - Déclaration de CA effectuée";
 		$body_content = "Hello !<br><br>";
 		$body_content .= "Le projet " .$campaign->data->post_title. " a fait sa déclaration de CA ! :)<br><br>";
+		$body_content .= "Message du PP :";
+		$body_content .= $declaration_message;
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
@@ -723,6 +698,7 @@ class NotificationsEmails {
 		
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
 	}
+	
     public static function send_notification_roi_payment_success_admin( $declaration_id ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_success_admin > ' . $declaration_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
@@ -732,6 +708,19 @@ class NotificationsEmails {
 		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI effectué";
 		$body_content = "Hello !<br /><br />";
 		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € a été effectué.<br /><br />";
+		
+		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
+	}
+	
+    public static function send_notification_roi_payment_pending_admin( $declaration_id ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_pending_admin > ' . $declaration_id);
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+		
+		$admin_email = 'administratif@wedogood.co';
+		$object = "Projet " . $campaign->data->post_title . " - Paiement ROI en attente";
+		$body_content = "Hello !<br /><br />";
+		$body_content .= "Le paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " de ".$roi_declaration->get_amount_with_commission()." € est déclenché et en attente.<br /><br />";
 		
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
 	}
@@ -791,6 +780,15 @@ class NotificationsEmails {
 		$body_content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
 		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
 		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
+		
+		$admin_email = 'administratif@wedogood.co';
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
+	
+	public static function declarations_close_to_maximum_profit( $project_name, $ratio ) {
+		$object = "Projet proche du versement complet de royalties";
+		$body_content = "Coucou !<br><br>";
+		$body_content .= "Le projet " .$project_name. " est proche d'atteindre son versement maximum (ratio de " .$ratio. " %).";
 		
 		$admin_email = 'administratif@wedogood.co';
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );

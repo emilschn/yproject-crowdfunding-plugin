@@ -57,6 +57,10 @@ class LemonwayLib {
 	 * @return boolean
 	 */
 	public static function call($method_name, $params, $params_override = array()) {
+		if ( defined( 'YP_LW_SKIP' ) ) {
+			return FALSE;
+		}
+		
 		global $lemonway_lib;
 		ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $params : ' .print_r($params, true));
 		
@@ -408,6 +412,34 @@ class LemonwayLib {
 		return $result->WALLET;
 	}
 	
+	/**
+	 * 
+	 * @param int $wallet_id
+	 * @param int $date_start Secondes UTC
+	 * @param int $date_end Secondes UTC
+	 * @return type
+	 */
+	public static function wallet_get_transactions_between( $wallet_id, $date_start = FALSE, $date_end = FALSE ) {
+		if ( empty( $wallet_id ) ) {
+			return array();
+		}
+		
+		$param_list = array(
+			'wallet'	=> $wallet_id
+		);
+		if ( !empty( $date_start ) ) {
+			$param_list[ 'startDate' ] = $date_start;
+			
+			if ( !empty( $date_end ) ) {
+				$param_list[ 'endDate' ] = $date_end;
+			}
+		}
+		
+		$result = LemonwayLib::call( 'GetWalletTransHistory', $param_list );
+		
+		return $result;
+	}
+	
 	public static $status_blocked = 'blocked';
 	public static $status_ready = 'ready';
 	public static $status_waiting = 'waiting';
@@ -480,14 +512,20 @@ class LemonwayLib {
 		if (!isset($iban)) return FALSE;
 		if (!isset($dom1)) return FALSE;
 		
+		$holder_name_decoded = html_entity_decode( $holder_name );
+		$clean_iban = str_replace( ' ', '', $iban );
+		$clean_bic = str_replace( ' ', '', $bic );
+		$dom1_decoded = html_entity_decode( $dom1 );
+		$dom2_decoded = html_entity_decode( $dom2 );
+		
 		//wallet ; holder; bic ; iban ; dom1 ; dom2
 		$param_list = array(
-			'wallet' => $wallet_id,
-			'holder' => $holder_name,
-			'iban' => $iban,
-			'bic' => $bic,
-			'dom1' => $dom1,
-			'dom2' => $dom2
+			'wallet'	=> $wallet_id,
+			'holder'	=> $holder_name_decoded,
+			'iban'		=> $clean_iban,
+			'bic'		=> $clean_bic,
+			'dom1'		=> $dom1_decoded,
+			'dom2'		=> $dom2_decoded
 		);
 		
 		$result = LemonwayLib::call('RegisterIBAN', $param_list);
@@ -671,6 +709,13 @@ class LemonwayLib {
 					$result = LemonwayLib::call('GetPaymentDetails', $param_list);
 					break;
 
+				case 'transactionId':
+					$param_list = array( 
+						'transactionId' => $transaction_id
+					);
+					$result = LemonwayLib::call('GetMoneyInTransDetails', $param_list);
+					break;
+				
 				case 'moneyin':
 				default:
 					$param_list = array( 

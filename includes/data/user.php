@@ -140,7 +140,9 @@ class WDGUser {
 		$buffer = FALSE;
 		if ( !empty( $api_id ) ) {
 			$api_data = WDGWPREST_Entity_User::get( $api_id );
-			$buffer = new WDGUser( $api_data->wpref );
+			if ( !empty( $api_data->wpref ) ) {
+				$buffer = new WDGUser( $api_data->wpref );
+			}
 		}
 		return $buffer;
 	}
@@ -1083,9 +1085,13 @@ class WDGUser {
 	 * @param int $campaign_id
 	 * @return array
 	 */
-	public function get_royalties_by_campaign_id( $campaign_id ) {
+	public function get_royalties_by_campaign_id( $campaign_id, $campaign_api_id = FALSE ) {
 		$buffer = array();
-		$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		
+		if ( empty( $campaign_api_id ) ) {
+			$campaign_api_id = get_post_meta( $campaign_id, ATCF_Campaign::$key_api_id, TRUE );
+		}
+		
 		$rois = $this->get_rois();
 		foreach ( $rois as $roi_item ) {
 			if ( $roi_item->id_project == $campaign_api_id && $roi_item->status == WDGROI::$status_transferred ) {
@@ -1749,18 +1755,33 @@ class WDGUser {
 	/**
 	 * Upload des KYC vers Lemonway si possible
 	 */
-	public function send_kyc() {
+	public function send_kyc( $force_upload = TRUE ) {
 		if ($this->can_register_lemonway()) {
 			if ( $this->register_lemonway() ) {
 				$documents_type_list = array( 
-					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id, 
-					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
-					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_passport_euro
+					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
+					WDGKYCFile::$type_id_back	=> LemonwayDocument::$document_type_id_back,
+					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_idbis,
+					WDGKYCFile::$type_id_2_back	=> LemonwayDocument::$document_type_idbis_back,
+					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home
 				);
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
-					$current_document = $document_filelist[0];
-					LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+					if ( !empty( $document_filelist ) ) {
+						$current_document = $document_filelist[0];
+						if ( !empty( $current_document ) ) {
+							$do_upload = TRUE;
+							if ( !$force_upload ) {
+								$document_status = $this->get_document_lemonway_status( $lemonway_type );
+								if ( $document_status !== FALSE ) {
+									$do_upload = FALSE;
+								}
+							}
+							if ( $do_upload ) {
+								LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+							}
+						}
+					}
 				}
 			}
 		}

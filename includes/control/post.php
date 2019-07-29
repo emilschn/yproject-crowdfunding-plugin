@@ -34,9 +34,12 @@ class WDGPostActions {
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
         self::add_action("post_confirm_check");
-        self::add_action("declaration_auto_generate");
+        self::add_action( 'declaration_auto_generate' );
+        self::add_action( 'add_declaration_document' );
+        self::add_action( 'edit_adjustment' );
         self::add_action("roi_mark_transfer_received");
-        self::add_action("generate_royalties_bill");
+        self::add_action( 'generate_royalties_bill' );
+        self::add_action( 'save_declaration_bill' );
         self::add_action("refund_investors");
         self::add_action( 'user_account_organization_details' );
         self::add_action( 'user_account_organization_identitydocs' );
@@ -48,8 +51,8 @@ class WDGPostActions {
      * @param string $action_name
      */
     public static function add_action($action_name) {
-        add_action('admin_post_' . $action_name, array(WDGPostActions::$class_name, $action_name));
-        add_action('admin_post_nopriv_' . $action_name, array(WDGPostActions::$class_name, $action_name));
+        add_action( 'admin_post_' .$action_name, array( self::$class_name, $action_name ) );
+        add_action( 'admin_post_nopriv_' .$action_name, array( self::$class_name, $action_name ) );
     }
 
 	/**
@@ -581,9 +584,11 @@ class WDGPostActions {
 	public static function generate_campaign_funded_certificate() {
 		$WDGUser_current = WDGUser::current();
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$date_end = filter_input( INPUT_POST, 'date_end' );
+		$free_field = filter_input( INPUT_POST, 'free_field' );
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$campaign->make_funded_certificate( TRUE );
+			$campaign->make_funded_certificate( TRUE, $date_end, $free_field );
 		}
 		
 		$url_return = wp_get_referer() . "#documents";
@@ -616,6 +621,9 @@ class WDGPostActions {
 		
 		$zip = new ZipArchive;
 		$zip_path = dirname( __FILE__ ). '/../../files/contracts/' .$campaign_id. '-' .$campaign->data->post_name. '.zip';
+		if ( file_exists( $zip_path ) ) {
+			unlink( $zip_path );
+		}
 		if ( $zip->open( $zip_path, ZipArchive::CREATE ) === TRUE ) {
 			
 			$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_*.pdf';
@@ -927,6 +935,34 @@ class WDGPostActions {
 		
 	}
 	
+	public static function add_declaration_document() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		
+		$core = ATCF_CrowdFunding::instance();
+		$core->include_form( 'declaration-document' );
+		$form_document = new WDG_Form_Declaration_Document( $campaign_id );
+		$form_return = $form_document->postForm();
+		
+		$success = ( $form_return != FALSE ) ? '1' : '100';
+		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_declaration_document_success=' .$success. '#royalties' );
+		exit();
+	}
+	
+	public static function edit_adjustment() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$adjustment_id = filter_input( INPUT_POST, 'adjustment_id' );
+		
+		$core = ATCF_CrowdFunding::instance();
+		$core->include_form( 'adjustment' );
+		$adjustment = WDGWPREST_Entity_Adjustment::get( $adjustment_id );
+		$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment );
+		$form_return = $form_adjustment->postForm();
+		
+		$success = ( $form_return != FALSE ) ? '1' : '100';
+		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
+		exit();
+	}
+	
 	public static function roi_mark_transfer_received() {
 		$WDGUser_current = WDGUser::current();
 		$roi_declaration_id = filter_input( INPUT_POST, 'roi_declaration_id' );
@@ -967,7 +1003,26 @@ class WDGPostActions {
 			exit();
 			
 		}
+	}
+	
+	public static function save_declaration_bill() {
+		$WDGUser_current = WDGUser::current();
+		$roi_declaration_id = filter_input( INPUT_POST, 'declaration_id' );
 		
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $roi_declaration_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'declaration-bill' );
+			$new_form = new WDG_Form_Declaration_Bill( $roi_declaration_id );
+			$new_form->postForm();
+		
+			wp_redirect( wp_get_referer() );
+			exit();
+			
+		} else {
+			wp_redirect( home_url() );
+			exit();
+			
+		}
 	}
 	
 	public static function refund_investors() {

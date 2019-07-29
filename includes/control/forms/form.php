@@ -185,7 +185,32 @@ class WDG_Form {
 	 * @param string $name
 	 * @return string
 	 */
-	public function getInputTextMoney( $name ) {
+	public function getInputTextMoney( $name, $round_value = TRUE ) {
+		$buffer = '';
+		$input_result = trim( filter_input( INPUT_POST, $name ) );
+
+		//Supprime les espaces et arrondit la valeur du capital à l'unité
+		if ( !is_numeric( $input_result ) ) {
+			if ( preg_match('#\s#', $input_result) ) {
+				$input_result = str_replace( ' ', '', $input_result );
+			}
+			$input_result = str_replace( ',', '.', $input_result );
+			if ( is_numeric( $input_result ) && $round_value ) {
+				$input_result = round( $input_result );
+			}
+			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
+		} else {
+			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Applique le format nombre à un champ de formulaire
+	 * @param string $name
+	 * @return string
+	 */
+	public static function formatInputTextNumber( $name, $do_round = FALSE ) {
 		$buffer = '';
 		$input_result = filter_input( INPUT_POST, $name );
 
@@ -194,10 +219,11 @@ class WDG_Form {
 			if ( preg_match('#\s#', $input_result) ) {
 				$input_result = str_replace( ' ', '', $input_result );
 			}
-			$input_result = round($input_result );
+			$input_result = str_replace( ',', '.', $input_result );
 			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
-		} else {
-			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
+			if ( $do_round ) {
+				$buffer = round( $buffer );
+			}
 		}
 		return $buffer;
 	}
