@@ -193,41 +193,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $email, $object, $body_content, true );
 		
 	}
-	
-	public static function new_purchase_pending_check_user( $payment_id, $with_picture ) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
-		$campaign_organization = $campaign->get_organization();
-		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-		
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
-		$user_data = get_user_by('email', $email);
-		$WDGUser_current = new WDGUser( $user_data->ID );
-		
-		$object = "Votre investissement par chèque est en attente de validation";
-		
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Vous avez demand&eacute; un investissement de ".$payment_amount." &euro; par chèque pour le projet " .$campaign->data->post_title. ".<br /><br />";
-		
-		$body_content .= "Afin de valider votre investissement, nous vous rappelons que vous devez envoyer votre chèque (à l'ordre de ".$organization_obj->get_name().") par courrier à l'adresse suivante :<br />";
-		$body_content .= "WE DO GOOD<br>";
-		$body_content .= "chez Novapuls<br>";
-		$body_content .= "13 Square la Pérouse<br>";
-		$body_content .= "44000 Nantes<br><br>";
-
-		if ( !$with_picture ) {
-			$body_content .= "Si vous souhaitez que votre investissement soit pris en compte plus rapidement, envoyez-nous d'abord une photo du chèque à investir@wedogood.co<br /><br />";
-		}
-		
-		$body_content .= "N'h&eacute;sitez pas &agrave; nous contacter si vous avez eu un souci lors de cette procédure à l'adresse investir@wedogood.co.<br /><br />";
-		$body_content .= "Toute l'&eacute;quipe de ".ATCF_CrowdFunding::get_platform_name()." vous remercie pour votre investissement !";
-		
-		
-		return NotificationsEmails::send_mail( $email, $object, $body_content, true );
-		
-	}
     
     /**
      * Mail pour l'équipe projet lors d'un achat

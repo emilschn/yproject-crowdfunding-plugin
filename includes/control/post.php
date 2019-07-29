@@ -840,8 +840,12 @@ class WDGPostActions {
 				'', '', '', '', '', 
 				$orga_email
 			);
+			$WDGOrganization = new WDGOrganization( $user_type_session );
+			$mail_name = $WDGUser_current->get_firstname();
 		} else {
 			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
+			$WDGUser_current = WDGUser::current();
+			$mail_name = $WDGUser_current->get_firstname();
 		}
 		
 		
@@ -863,7 +867,10 @@ class WDGPostActions {
 		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../files/investment-check/' . $random_filename );
 		$picture_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 		
-		NotificationsEmails::new_purchase_pending_check_user( $investment_id, TRUE );
+		$campaign_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
+		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, $picture_url );
 		
 		if ( $has_moved ) {
@@ -896,11 +903,18 @@ class WDGPostActions {
 				'', '', '', '', '', 
 				$orga_email
 			);
+			$WDGOrganization = new WDGOrganization( $user_type_session );
+			$mail_name = $WDGUser_current->get_firstname();
 		} else {
 			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
+			$WDGUser_current = WDGUser::current();
+			$mail_name = $WDGUser_current->get_firstname();
 		}
 		
-		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
+		$campaign_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
+		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
 		
 		wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
