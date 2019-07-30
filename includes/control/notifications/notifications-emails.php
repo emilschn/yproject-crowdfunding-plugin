@@ -156,43 +156,6 @@ class NotificationsEmails {
 		}
 		
     }
-	
-	public static function new_purchase_pending_wire_user( $payment_id, $lemonway_id ) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
-		
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
-		$user_data = get_user_by('email', $email);
-		$WDGUser_current = new WDGUser( $user_data->ID );
-		
-		$object = "Rappels pour votre virement";
-		
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Vous avez demand&eacute; un investissement de ".$payment_amount." &euro; par virement pour le projet " .$campaign->data->post_title. ".<br /><br />";
-		
-		$body_content .= "Voici le rappel des informations pour proc&eacute;der au virement, si vous ne l'avez pas encore fait :<br />";
-		
-		$body_content .= "<ul>";
-		$body_content .= "	<li><strong>" .__("Titulaire du compte :", 'yproject'). "</strong> LEMON WAY</li>";
-		$body_content .= "	<li><strong>IBAN :</strong> FR76 3000 4025 1100 0111 8625 268</li>";
-		$body_content .= "	<li><strong>BIC :</strong> BNPAFRPPIFE</li>";
-		$body_content .= "	<li>";
-		$body_content .= "		<strong>" .__("Code &agrave; indiquer (pour identifier votre paiement) :", 'yproject'). "</strong> wedogood-" .$lemonway_id. "<br />";
-		$body_content .= "		<ul>";
-		$body_content .= "			<li>" .__("Indiquez imp&eacute;rativement ce code comme 'libell&eacute; b&eacute;n&eacute;ficiaire' ou 'code destinataire' au moment du virement !", 'yproject'). "</li>";
-		$body_content .= "		</ul>";
-		$body_content .= "	</li>";
-		$body_content .= "</ul><br /><br />";
-		
-		$body_content .= "N'h&eacute;sitez pas &agrave; nous contacter si vous avez eu un souci lors de l'envoi des documents.<br /><br />";
-		$body_content .= "Toute l'&eacute;quipe de ".ATCF_CrowdFunding::get_platform_name()." vous remercie pour votre investissement !";
-		
-		
-		return NotificationsEmails::send_mail( $email, $object, $body_content, true );
-		
-	}
     
     /**
      * Mail pour l'équipe projet lors d'un achat

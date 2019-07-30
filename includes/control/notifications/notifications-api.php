@@ -754,7 +754,7 @@ class NotificationsAPI {
 	//**************************************************************************
 	
     //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT - EN ATTENTE
+    // NOTIFICATIONS INVESTISSEMENT PAR CHEQUE - EN ATTENTE
     //*******************************************************
 	public static function investment_pending_check( $recipient, $name, $amount, $project_name, $percent_to_reach, $minimum_goal, $organization_name, $project_api_id ) {
 		$id_template = '172';
@@ -775,6 +775,28 @@ class NotificationsAPI {
 			'options'		=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT PAR VIREMENT - EN ATTENTE
+	//*******************************************************
+	public static function investment_pending_wire( $recipient, $name, $amount, $project_name, $user_lw_wallet_id, $project_api_id ) {
+			$id_template = '177';
+			$options = array(
+				'personal'				=> 1,
+				'NOM'					=> $name,
+				'MONTANT'				=> $amount,
+				'NOM_PROJET'			=> $project_name,
+				'ID_WALLET_LEMONWAY'	=> $user_lw_wallet_id,
+			);
+			$parameters = array(
+				'tool'			=> 'sendinblue',
+				'template'		=> $id_template,
+				'recipient'		=> $recipient,
+				'id_project'	=> $project_api_id,
+				'options'		=> json_encode( $options )
+			);
+			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
     //*******************************************************

@@ -704,7 +704,7 @@ class WDGInvestment {
 		// Notifications
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
 			NotificationsEmails::new_purchase_pending_wire_admin( $payment_id );
-			NotificationsEmails::new_purchase_pending_wire_user( $payment_id, $lemonway_id );
+			NotificationsAPI::investment_pending_wire( $WDGUser_current->get_email(), $save_display_name, $amount, $this->campaign->get_name(), $lemonway_id, $this->campaign->get_api_id() );
 		}
 		
 		//Si un utilisateur investit, il croit au projet
