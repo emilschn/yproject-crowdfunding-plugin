@@ -378,7 +378,6 @@ class WDGQueue {
 			}
 		}
 	}
-
 	
 /******************************************************************************/
 /* NOTIFICATIONS ADMIN LORSQUE ERREURS DOCUMENTS LEMON WAY */
@@ -456,6 +455,141 @@ class WDGQueue {
 		}
 		
 		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+	}
+	
+/******************************************************************************/
+/* NOTIFICATIONS USER LORSQUE ERREURS DOCUMENTS LEMON WAY */
+/******************************************************************************/
+	public static function add_document_refused_user_notification( $user_id ) {
+		$action = 'document_refused_user_notification';
+		$entity_id = $user_id;
+		$priority = 'high';
+		self::create_or_replace_action( $action, $entity_id, $priority );
+	}
+
+	public static function execute_document_refused_user_notification( $user_id, $queued_action_params, $queued_action_id ) {
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		
+		$wallet_details = FALSE;
+		$email = '';
+		$name = '';
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$WDGOrga_wallet = new WDGOrganization( $user_id );
+			if ( !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
+				$wallet_details = $WDGOrga_wallet->get_wallet_details();
+				$email = $WDGOrga_wallet->get_email();
+				$name = $WDGOrga_wallet->get_name();
+			}
+
+		} else {
+			$WDGUser_wallet = new WDGUser( $user_id );
+			if ( !$WDGUser_wallet->is_lemonway_registered() ) {
+				$wallet_details = $WDGUser_wallet->get_wallet_details();
+				$email = $WDGUser_wallet->get_email();
+				$name = $WDGUser_wallet->get_firstname();
+			}
+		}
+
+		$buffer_returns = '';
+		if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+			foreach ( $wallet_details->DOCS->DOC as $document_object ) {
+				// Type de document au format écrit pour l'utilisateur
+				$document_type = '';
+				if ( !empty( $document_object->TYPE ) ) {
+					switch ( $document_object->TYPE ) {
+						case LemonwayDocument::$document_type_id:
+							$document_type = "La pièce d'identité principale";
+							break;
+						case LemonwayDocument::$document_type_home:
+							$document_type = "Le justificatif de domicile";
+							break;
+						case LemonwayDocument::$document_type_bank:
+							// Rien, le RIB ne bloque pas l'authentification
+							break;
+						case LemonwayDocument::$document_type_idbis:
+							$document_type = "La deuxième pièce d'identité";
+							break;
+						case LemonwayDocument::$document_type_id_back:
+							$document_type = "Le verso de la pièce d'identité principale";
+							break;
+						case LemonwayDocument::$document_type_residence_permit:
+							$document_type = "Le permis de résidence";
+							break;
+						case LemonwayDocument::$document_type_kbis:
+							$document_type = "Le KBIS de l'organisation";
+							break;
+						case LemonwayDocument::$document_type_status:
+							$document_type = "Les statuts de l'organisation";
+							break;
+						case LemonwayDocument::$document_type_idbis_back:
+							$document_type = "Le verso de la deuxième pièce d'identité";
+							break;
+						case LemonwayDocument::$document_type_selfie:
+							$document_type = "Le selfie (Type 13)";
+							break;
+						case LemonwayDocument::$document_type_id2:
+							$document_type = "La pièce d'identité de la deuxième personne (Type 16)";
+							break;
+						case LemonwayDocument::$document_type_home2:
+							$document_type = "Le justificatif de domicile de la deuxième personne (Type 17)";
+							break;
+						case LemonwayDocument::$document_type_id3:
+							$document_type = "La pièce d'identité de la troisième personne (Type 18)";
+							break;
+						case LemonwayDocument::$document_type_home3:
+							$document_type = "Le justificatif de domicile de la troisième personne (Type 19)";
+							break;
+						case LemonwayDocument::$document_type_capital_allocation:
+							$document_type = "Le document de répartition du capital (Type 20)";
+							break;
+					}
+				}
+
+				// Statut de document au format écrit pour l'utilisateur
+				$document_status = '';
+				if ( !empty( $document_object->S ) && $document_object->S > 2 ) {
+					switch ( $document_object->S ) {
+						case LemonwayDocument::$document_status_refused:
+							$document_status = "refusé";
+							break;
+						case LemonwayDocument::$document_status_refused_unreadable:
+							$document_status = "considéré illisible";
+							break;
+						case LemonwayDocument::$document_status_refused_expired:
+							$document_status = "considéré expiré";
+							break;
+						case LemonwayDocument::$document_status_refused_wrong_type:
+							$document_status = "considéré du mauvais type";
+							break;
+						case LemonwayDocument::$document_status_refused_wrong_person:
+							$document_status = "considéré comme lié à une personne qui ne correspond pas";
+							break;
+					}
+				}
+
+				if ( !empty( $document_type ) && !empty( $document_status ) ) {
+					$buffer_returns .= $document_type. " bloque l'authentification. Le document a été " .$document_status. ".";
+					if ( !empty( $document_object->C ) ) {
+						$buffer_returns .= " Commentaire complémentaire de Lemon Way : \"" .$document_object->C. "\"";
+					}
+					$buffer_returns .= '<br>';
+				}
+			}
+		}
+
+
+		// Temporairement on envoie la notification à admin ; à remplacer par template SIB
+		if ( !empty( $buffer_returns) ) {
+			$buffer_message = "-- MESSAGE TEST ADMIN --<br>";
+			$buffer_message .= "(serait envoyé à " .$email. ")<br>";
+			$buffer_message .= "Bonjour " . $name . ",<br>";
+			$buffer_message .= "Notre prestataire a effectué des vérifications sur vos documents d'authentification.<br>";
+			$buffer_message .= "Vous trouverez la liste des retours ci-dessous.<br>";
+			$buffer_message .= "Il arrive que ces retours soient contestables. Dans ce cas, n'hésitez pas à nous contacter sur le chat en ligne ou à l'adresse investir@wedogood.co.<br><br>";
+			$buffer_message .= $buffer_returns;
+			$buffer_message .= "<br>";
+			NotificationsEmails::send_mail( 'admin@wedogood.co', 'TEMP - Mail de retour de document', $buffer_message );
+		}
 	}
 
 	

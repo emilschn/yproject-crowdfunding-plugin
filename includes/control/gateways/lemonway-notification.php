@@ -209,6 +209,7 @@ class LemonwayNotification {
 						NotificationsAPI::kyc_refused( $user_email, $user_firstname );
 						// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
 						if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
+							WDGQueue::add_document_refused_user_notification( $WDGUser_wallet->get_wpref() );
 							WDGQueue::add_document_refused_admin_notification( $WDGUser_wallet->get_wpref(), $lemonway_posted_document_type, $lemonway_posted_document_status );
 						}
 					}
@@ -223,20 +224,6 @@ class LemonwayNotification {
 				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
 				$notification_sent = TRUE;
 			}
-		}
-		
-		
-		// Si jamais la vraie notification n'est pas renvoyé, on envoie quand même la notif admin
-		if ( FALSE && !$notification_sent ) {
-			// Mail admin
-			$content = "Un document a changé de statut (et le mail normal n'a pas été envoyé) :<br>";
-			$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br>';
-			$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br>';
-			$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br>';
-			$content .= '$lemonway_posted_document_id :' .$lemonway_posted_document_id. '<br>';
-			$content .= '$lemonway_posted_document_type :' .$lemonway_posted_document_type. '<br>';
-			$content .= '$lemonway_posted_document_status :' .$lemonway_posted_document_status. '<br>';
-			NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Changement statut document (données brutes)', $content, true );
 		}
 	}
 	
