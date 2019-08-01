@@ -228,7 +228,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 		}
 		
 		$amount = $this->getInputTextMoney( 'amount', FALSE );
-		if ( !is_numeric( $amount ) || empty( $amount ) ) {
+		if ( !is_numeric( $amount ) ) {
 			$this->addPostError(
 				'amount',
 				__( "Erreur de saisie du montant (ne peut pas &ecirc;tre &eacute;gal &agrave; zero).", 'yproject' ),
