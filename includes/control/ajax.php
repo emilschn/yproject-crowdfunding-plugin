@@ -1358,7 +1358,7 @@ class WDGAjaxActions {
 			$funding_duration = 5;
 		}
 		while(filter_input(INPUT_POST, 'new_estimated_turnover_'.$i)!='' && ($i+1 <= $funding_duration)){
-			$current_val = filter_input(INPUT_POST, 'new_estimated_turnover_'.$i);
+			$current_val = WDG_Form::formatInputTextNumber( 'new_estimated_turnover_' .$i );
 
 			if(is_numeric($current_val)){
 				if(intval($current_val)>=0){
