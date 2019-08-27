@@ -1865,7 +1865,7 @@ class WDGAjaxActions {
 		$investments_list = (json_decode(filter_input(INPUT_POST, 'data'),true));
 
 		//Données de vote
-		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, rate_project, advice FROM ".$table_vote." WHERE post_id = ".$campaign_id );
+		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, rate_project, advice, more_info_impact, more_info_service, more_info_team, more_info_finance, more_info_other FROM ".$table_vote." WHERE post_id = ".$campaign_id );
 
 
         /******************Lignes du tableau*********************/
@@ -1888,6 +1888,25 @@ class WDGAjaxActions {
 
             $array_contacts[$u_id]["vote_advice"]= ( !empty( $item_vote->advice ) ) ? '<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>' : '';
 			$array_contacts[$u_id]["vote_rate"] = $item_vote->rate_project;
+
+			$list_more_info = array();
+			if ( $item_vote->more_info_impact == '1' ) {
+				array_push( $list_more_info, 'Impacts' );
+			}
+			if ( $item_vote->more_info_service == '1' ) {
+				array_push( $list_more_info, 'Service' );
+			}
+			if ( $item_vote->more_info_team == '1' ) {
+				array_push( $list_more_info, 'Equipe' );
+			}
+			if ( $item_vote->more_info_finance == '1' ) {
+				array_push( $list_more_info, 'Prévisionnel' );
+			}
+			if ( $item_vote->more_info_other != '' ) {
+				array_push( $list_more_info, $item_vote->more_info_other );
+			}
+			$more_info_string = implode( ', ', $list_more_info );
+			$array_contacts[$u_id]["vote_more_info"] = $more_info_string;
         }
 		
 		// Contrats complémentaires éventuels
@@ -2304,6 +2323,7 @@ class WDGAjaxActions {
             new ContactColumn('vote_rate',"Note d'éval.",true),
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
 			new ContactColumn('vote_advice','Conseil', true),
+			new ContactColumn( 'vote_more_info', '+ infos sur', $display_vote_infos ),
 			new ContactColumn( 'source-how-known', 'Src. (connu)', ( $display_vote_infos || $display_invest_infos ) ),
 			new ContactColumn( 'source-where-from', 'Src. (arrivée)', ( $display_vote_infos || $display_invest_infos ) ),
 
