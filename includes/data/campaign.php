@@ -3329,6 +3329,39 @@ class ATCF_Campaign {
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
 	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
 	public static function get_list_funding( $nb = 0, $client = '', $random = FALSE, $is_time_remaining = TRUE ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client, $is_time_remaining ); }
+	
+	public static function get_list_positive_savings( $nb = 0, $random = TRUE ) {
+		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
+		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
+		$query_options = array(
+			'numberposts'	=> $nb,
+			'post_type'		=> 'download',
+			'post_status'	=> 'publish',
+			'meta_query'	=> array (
+				array ( 'key' => 'campaign_vote', 'value' => 'collecte' ),
+				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') )
+			),
+			'tax_query'		=> array(
+				array(
+					'taxonomy'	=> 'download_category',
+					'terms'		=> $id_cat_positive_savings
+				)
+				
+			)
+		);
+		
+		if ( $random ) {
+			$query_options[ 'orderby' ] = 'rand';
+			
+		} else {
+			$query_options[ 'orderby' ] = 'post_date';
+			$query_options[ 'order' ] = 'asc';
+			
+		}
+		
+		return get_posts( $query_options );
+	}
+	
 	public static function get_list_funded( $nb = 0, $client = '', $include_current = false, $skip_hidden = true ) {
 		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client, $skip_hidden );
 		if ( $include_current ) {
