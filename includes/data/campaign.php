@@ -2451,6 +2451,8 @@ class ATCF_Campaign {
 				}
 			}
 		}
+		    
+		return $buffer;
 	}
 
 	public static $invest_amount_min_wire = 500;
