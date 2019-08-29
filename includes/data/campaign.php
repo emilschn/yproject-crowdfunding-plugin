@@ -2428,6 +2428,30 @@ class ATCF_Campaign {
 		    
 		return $buffer;
 	}
+	public function time_remaining_str_until_contract_start_date() {
+		$datetime_end = $this->get_end_date_when_can_invest_until_contract_start_date();
+		$expires = $datetime_end->getTimestamp();
+		$now = current_time( 'timestamp' );
+
+		//Si on a dépassé la date de fin, on retourne "-"
+		if ( $now > $expires ) {
+			$buffer = '-';
+		} else {
+			$diff = $expires - $now;
+			$nb_days = floor( $diff / ( 60 * 60 * 24 ) );
+			if ( $nb_days > 1 ) {
+				$buffer = 'J-' . $nb_days;
+			} else {
+				$nb_hours = floor( $diff / ( 60 * 60 ) );
+				if ( $nb_hours > 1 ) {
+					$buffer = 'H-' . $nb_hours;
+				} else {
+					$nb_minutes = floor( $diff / 60 );
+					$buffer = 'M-' . $nb_minutes;
+				}
+			}
+		}
+	}
 
 	public static $invest_amount_min_wire = 500;
 	public static $invest_time_min_wire = 7;
