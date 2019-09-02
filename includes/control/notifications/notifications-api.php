@@ -245,11 +245,12 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS KYC - REFUSES
     //*******************************************************
-	public static function kyc_refused( $recipient, $name ) {
-		$id_template = '323';
+	public static function kyc_refused( $recipient, $name, $authentication_info ) {
+		$id_template = '749';
 		$options = array(
 			'personal'				=> 1,
-			'PRENOM'				=> $name
+			'PRENOM'				=> $name,
+			'PRECISIONS'			=> $authentication_info
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',

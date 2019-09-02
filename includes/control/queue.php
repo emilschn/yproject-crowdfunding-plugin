@@ -580,7 +580,8 @@ class WDGQueue {
 
 		// Temporairement on envoie la notification à admin ; à remplacer par template SIB
 		if ( !empty( $buffer_returns) ) {
-			$buffer_message = "-- MESSAGE TEST ADMIN --<br>";
+			NotificationsAPI::kyc_refused( $email, $name, $buffer_returns );
+			/*$buffer_message = "-- MESSAGE TEST ADMIN --<br>";
 			$buffer_message .= "(serait envoyé à " .$email. ")<br>";
 			$buffer_message .= "Bonjour " . $name . ",<br>";
 			$buffer_message .= "Notre prestataire a effectué des vérifications sur vos documents d'authentification.<br>";
@@ -588,7 +589,7 @@ class WDGQueue {
 			$buffer_message .= "Il arrive que ces retours soient contestables. Dans ce cas, n'hésitez pas à nous contacter sur le chat en ligne ou à l'adresse investir@wedogood.co.<br><br>";
 			$buffer_message .= $buffer_returns;
 			$buffer_message .= "<br>";
-			NotificationsEmails::send_mail( 'admin@wedogood.co', 'TEMP - Mail de retour de document', $buffer_message );
+			NotificationsEmails::send_mail( 'admin@wedogood.co', 'TEMP - Mail de retour de document', $buffer_message );*/
 		}
 	}
 
