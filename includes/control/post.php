@@ -872,6 +872,19 @@ class WDGPostActions {
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, $picture_url );
+
+		// Annulation des investissements non-démarrés du même investisseur
+		$pending_not_validated_investments = array();
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
+		} else {
+			$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
+		}
+		if ( !empty( $pending_not_validated_investments ) ) {
+			foreach ( $pending_not_validated_investments as $pending_not_validated_investment_item ) {
+				$pending_not_validated_investment_item->cancel();
+			}
+		}
 		
 		if ( $has_moved ) {
 			update_post_meta( $investment_id, 'check_picture', $random_filename );
@@ -916,6 +929,19 @@ class WDGPostActions {
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
+		
+		// Annulation des investissements non-démarrés du même investisseur
+		$pending_not_validated_investments = array();
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
+		} else {
+			$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
+		}
+		if ( !empty( $pending_not_validated_investments ) ) {
+			foreach ( $pending_not_validated_investments as $pending_not_validated_investment_item ) {
+				$pending_not_validated_investment_item->cancel();
+			}
+		}
 		
 		wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
 	}
