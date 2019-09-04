@@ -330,12 +330,18 @@ class LemonwayNotification {
 				$organization_obj->check_register_campaign_lemonway_wallet();
 				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_campaign_lemonway_id(), $lemonway_posted_amount );
 				
-				$postdata = array(
-					'ID'			=> $investment_id,
-					'post_status'	=> 'publish',
-					'edit_date'		=> current_time( 'mysql' )
-				);
-				wp_update_post($postdata);
+				// Si la campagne n'est pas en cours d'évaluation, on peut valider l'investissement
+				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
+					$postdata = array(
+						'ID'			=> $investment_id,
+						'post_status'	=> 'publish',
+						'edit_date'		=> current_time( 'mysql' )
+					);
+					wp_update_post($postdata);
+
+				} else {
+					add_post_meta( $investment_id, 'has_received_wire', '1' );
+				}
 				
 				// - Créer le contrat pdf
 				// - Envoyer validation d'investissement par mail

@@ -354,8 +354,10 @@ class WDGQueue {
 	}
 	
 	public static function execute_preinvestments_validation( $campaign_id, $queued_action_params, $queued_action_id ) {
-		// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
-		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		if ( !empty( $queued_action_id ) ) {
+			// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+			WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		}
 		
 		// Envoi des notifications de validation ou mise en attente des pré-investissements
 		$campaign = new ATCF_Campaign( $campaign_id );
@@ -363,9 +365,14 @@ class WDGQueue {
 		$pending_preinvestments = $campaign->pending_preinvestments();
 		if ( !empty( $pending_preinvestments ) ) {
 			foreach ( $pending_preinvestments as $preinvestment ) {
+				$wire_with_received_payments = get_post_meta( $preinvestment->get_id(), 'has_received_wire', TRUE );
 				// On n'agit que sur les préinvestissements qui peuvent être validés (pas en attente de paiement, et pas en virement)
+				// Il reste à traiter le cas des virements qui sont lancés en évaluation, mais reçus qu'en investissement (ils sont validés automatiquement)
 				$payment_key = $preinvestment->get_payment_key();
-				if ( $preinvestment->get_contract_status() != WDGInvestment::$contract_status_not_validated && strpos( $payment_key, 'wire_' ) === FALSE ) {
+				if ( 
+						$preinvestment->get_contract_status() != WDGInvestment::$contract_status_not_validated 
+						&& ( strpos( $payment_key, 'wire_' ) === FALSE || $wire_with_received_payments == '1' )
+						) {
 					$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
 					if ( $contract_has_been_modified ) {
 						NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
