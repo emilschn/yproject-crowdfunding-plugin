@@ -265,7 +265,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		if ( !is_user_logged_in() ) {
 		
 		// Sécurité, ne devrait pas arriver non plus
-		} else if ( !$this->is_orga && $WDGUser->get_wpref() != $WDGUser_current->get_wpref() ) {
+		} else if ( !$this->is_orga && $WDGUser->get_wpref() != $WDGUser_current->get_wpref() && !$WDGUser_current->is_admin() ) {
 
 		// Analyse du formulaire
 		} else {
