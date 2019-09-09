@@ -64,6 +64,7 @@ class LemonwayDocument {
 	private $wallet_details;
 	
 	private $status;
+	private $lw_comment;
 	private $error_str;
 	
 	public function __construct( $wallet_id, $document_type, $wallet_details = FALSE, $wallet_email = FALSE ) {
@@ -117,15 +118,18 @@ class LemonwayDocument {
 			foreach( $this->wallet_details->DOCS->DOC as $document_object ) {
 				if ( isset( $document_object->TYPE ) && $document_object->TYPE == $this->document_type ) {
 					$this->status = $document_object->S;
+					$this->lw_comment = $document_object->C;
 					$this->error_str = $this->init_error_str();
 				} else if ( isset( $document_object->DOCS->DOC->TYPE ) && $document_object->DOCS->DOC->TYPE == $this->document_type ) {
 					$this->status = $this->wallet_details->DOCS->DOC->S;
+					$this->lw_comment = $this->wallet_details->DOCS->DOC->C;
 					$this->error_str = $this->init_error_str();
 				}
 			}
 			
 			if ( empty( $this->status ) && $this->wallet_details->DOCS->DOC->TYPE == $this->document_type ) {
 				$this->status = $this->wallet_details->DOCS->DOC->S;
+				$this->lw_comment = $this->wallet_details->DOCS->DOC->C;
 				$this->error_str = $this->init_error_str();
 			}
 		}
@@ -172,6 +176,10 @@ class LemonwayDocument {
 				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire car il ne correspond pas au propri&eacute;taire du porte-monnaie.", 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
+		}
+		
+		if ( !empty( $this->lw_comment ) ) {
+			$buffer .= ' ' . __( "Commentaire compl&eacute;mentaire de Lemon Way :", 'yproject' ) . '"' .$this->lw_comment. '"';
 		}
 		
 		return $buffer;
