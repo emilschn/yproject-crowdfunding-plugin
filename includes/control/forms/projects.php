@@ -46,7 +46,12 @@ class WDGFormProjects {
 			'post_parent'	=> $page_projects->ID
 		);
 		$post_id = wp_insert_post($blog, true);
-		do_action('wdg_delete_cache', array( 'project-header-menu-'.$post_campaign->ID ));
+		do_action('wdg_delete_cache', array(
+			'cache_campaign_' . $post_campaign->ID,
+			'project-header-menu-' . $post_campaign->ID
+		));
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->delete( $campaign->get_name() );
                 
 		//Envoi de notifications mails
 		$send_mail = filter_input( INPUT_POST, 'send_mail' );
