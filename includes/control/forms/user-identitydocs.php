@@ -64,7 +64,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$id_label,
 			WDG_Form_User_Identity_Docs::$field_group_files,
 			$id_file_path,
-			__( "Pour une personne fran&ccedil;aise : carte d'identit&eacute; recto-verso avec bande MRZ lisible en intégralité ou passeport fran&ccedil;ais. Sinon : le titre de s&eacute;jour et le passeport d'origine.", 'yproject' ),
+			__( "Pour une personne fran&ccedil;aise : carte d'identit&eacute; recto-verso ou passeport fran&ccedil;ais avec bande MRZ lisible en int&eacute;gralit&eacute;.", 'yproject' ) . '<br>' 
+				. __( "Pour une personne &eacute;trang&egrave;re : passeport d'origine.", 'yproject' ),
 			$field_id_params
 		);
 		
@@ -73,7 +74,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$current_filelist_home = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_home );
 			$current_file_home = $current_filelist_home[0];
 			$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
-			$home_label = __( "Justificatif de domicile du g&eacute;rant ou du pr&eacute;sident *", 'yproject' );
+			$home_label = __( "Deuxi&egrave;me justificatif d'identit&eacute; du g&eacute;rant ou du pr&eacute;sident *", 'yproject' );
 			$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
 			$this->addField(
 				'file',
@@ -81,7 +82,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$home_label,
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$home_file_path,
-				__( "Datant de moins de 3 mois, provenant d'un fournisseur d'&eacute;nergie (&eacute;lectricit&eacute;, gaz, eau) ou d'un bailleur, ou un relev&eacute; d'imp&ocirc;t datant de moins de 3 mois.", 'yproject' ),
+				__( "M&ecirc;me types que pour le premier. Sinon le permis de conduire ou le dernier avis d'imposition peuvent &ecirc;tre fournis.", 'yproject' ),
 				$field_home_params
 			);
 		
@@ -148,10 +149,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'home2' .$suffix,
-				__( "Justificatif de domicile de la deuxi&egrave;me personne (facultatif)", 'yproject' ),
+				__( "Deuxi&egrave;me justificatif d'identit&eacute; de la deuxi&egrave;me personne (facultatif)", 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$home2_file_path,
-				__( "Si une deuxi&egrave;me personne physique d&eacute;tient au moins 25% du capital", 'yproject' ),
+				__( "M&ecirc;me types que pour le premier. Sinon le permis de conduire ou le dernier avis d'imposition peuvent &ecirc;tre fournis.", 'yproject' ),
 				$field_status_home_2
 			);
 		
@@ -176,10 +177,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'home3' .$suffix,
-				__( "Justificatif de domicile de la troisi&egrave;me personne (facultatif)", 'yproject' ),
+				__( "Deuxi&egrave;me justificatif d'identit&eacute; de la troisi&egrave;me personne (facultatif)", 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$home3_file_path,
-				__( "Si une troisi&egrave;me personne physique d&eacute;tient au moins 25% du capital", 'yproject' ),
+				__( "M&ecirc;me types que pour le premier. Sinon le permis de conduire ou le dernier avis d'imposition peuvent &ecirc;tre fournis.", 'yproject' ),
 				$field_status_home_3
 			);
 			
@@ -211,9 +212,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$id2_label,
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id2_file_path,
-				__( "Ce fichier est obligatoire si votre compte bancaire est domicili&eacute; chez une banque en ligne (ex : Compte Nickel, Boursorama, ...).", 'yproject' ). '<br>'
-					. __( "Sinon, ce fichier peut &ecirc;tre remplac&eacute; par un justificatif de domicile.", 'yproject' ). '<br>'
-					. __( "Il est possible de fournir un passeport ou un permis de conduire.", 'yproject' ),
+				__( "Passeport ou carte d'identit&eacute; recto-verso avec bande MRZ lisible en intégralit&eacute;, qui n'aurait pas &eacute;t&eacute; d&eacute;pos&eacute; en premi&egrave;re pi&egrave;ce d'identit&eacute;.", 'yproject' ). '<br>'
+					. __( "Sinon, permis de conduire ou dernier avis d'imposition.", 'yproject' ),
 				$field_status_id2
 			);
 		
@@ -234,19 +234,24 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		
 			$current_filelist_home = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_user, WDGKYCFile::$type_home );
 			$current_file_home = $current_filelist_home[0];
-			$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
-			$home_label = __( "Justificatif de domicile", 'yproject' );
-			$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
-			$this->addField(
-				'file',
-				'home' .$suffix,
-				$home_label,
-				WDG_Form_User_Identity_Docs::$field_group_files,
-				$home_file_path,
-				__( "Ce champ est facultatif. Il est utile si vous n'avez pas de deuxi&egrave;me pi&egrave;ce d'identit&eacute;.", 'yproject' ). '<br>'
-					. __( "Il doit dater de moins de 3 mois, et provenir d'un fournisseur d'&eacute;nergie (&eacute;lectricit&eacute;, gaz, eau) ou d'un bailleur, ou &ecirc;tre un relev&eacute; d'imp&ocirc;t.", 'yproject' ),
-				$field_home_params
-			);
+			if ( !empty( $current_file_home ) ) {
+				$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
+				$home_label = __( "Justificatif de domicile", 'yproject' );
+				$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
+				if ( empty( $field_home_params[ 'message_instead_of_field' ] ) ) {
+					$field_home_params[ 'message_instead_of_field' ] = __( "Depuis le 1er octobre 2019, Lemon Way n'accepte plus les justificatifs de domicile pour authentifier les comptes.", 'yproject' );
+				}
+				$this->addField(
+					'file',
+					'home' .$suffix,
+					$home_label,
+					WDG_Form_User_Identity_Docs::$field_group_files,
+					$home_file_path,
+					__( "Ce champ est facultatif. Il est utile si vous n'avez pas de deuxi&egrave;me pi&egrave;ce d'identit&eacute;.", 'yproject' ). '<br>'
+						. __( "Il doit dater de moins de 3 mois, et provenir d'un fournisseur d'&eacute;nergie (&eacute;lectricit&eacute;, gaz, eau) ou d'un bailleur, ou &ecirc;tre un relev&eacute; d'imp&ocirc;t.", 'yproject' ),
+					$field_home_params
+				);
+			}
 		}
 		
 	}
