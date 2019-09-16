@@ -64,8 +64,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$id_label,
 			WDG_Form_User_Identity_Docs::$field_group_files,
 			$id_file_path,
-			__( "Pour une personne fran&ccedil;aise : carte d'identit&eacute; recto-verso ou passeport fran&ccedil;ais avec bande MRZ lisible en int&eacute;gralit&eacute;.", 'yproject' ) . '<br>' 
-				. __( "Pour une personne &eacute;trang&egrave;re : passeport d'origine.", 'yproject' ),
+			__( "Carte d'identit&eacute; recto-verso ou passeport avec bande MRZ lisible en int&eacute;gralit&eacute;.", 'yproject' ),
 			$field_id_params
 		);
 		
@@ -213,7 +212,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id2_file_path,
 				__( "Passeport ou carte d'identit&eacute; recto-verso avec bande MRZ lisible en intégralit&eacute;, qui n'aurait pas &eacute;t&eacute; d&eacute;pos&eacute; en premi&egrave;re pi&egrave;ce d'identit&eacute;.", 'yproject' ). '<br>'
-					. __( "Sinon, permis de conduire ou dernier avis d'imposition.", 'yproject' ),
+					. __( "Sinon un des documents suivants : permis de conduire, dernier avis d'imposition, carte vitale, livret de famille, acte de naissance.", 'yproject' ). '<br>'
+					. __( "Les titres de s&eacute;jour sont accept&eacute;s pour les personnes qui ne sont pas fran&ccedil;aises.", 'yproject' ),
 				$field_status_id2
 			);
 		
@@ -239,7 +239,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$home_label = __( "Justificatif de domicile", 'yproject' );
 				$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
 				if ( empty( $field_home_params[ 'message_instead_of_field' ] ) ) {
-					$field_home_params[ 'message_instead_of_field' ] = __( "Depuis le 1er octobre 2019, Lemon Way n'accepte plus les justificatifs de domicile pour authentifier les comptes.", 'yproject' );
+					$field_home_params[ 'message_instead_of_field' ] = __( "Depuis le 16 septembre 2019, Lemon Way n'accepte plus les justificatifs de domicile pour authentifier les comptes.", 'yproject' );
 				}
 				$this->addField(
 					'file',
