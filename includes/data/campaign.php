@@ -2951,12 +2951,14 @@ class ATCF_Campaign {
 				array(
 					'name'			=> get_the_title( $this->ID ),
 					'id'			=> $this->ID,
-					'price'			=> 1,
 					'item_number'	=> array(
 						'id'			=> $this->ID,
-						'quantity'		=> $value,
 						'options'		=> array()
-					)
+					),
+					'item_price'	=> 1,
+					'subtotal'		=> $amount,
+					'price'			=> $amount,
+					'quantity'		=> $amount
 				)
 			);
 

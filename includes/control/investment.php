@@ -623,12 +623,14 @@ class WDGInvestment {
 			array(
 				'name'			=> $this->campaign->data->post_title,
 				'id'			=> $this->campaign->ID,
-				'price'			=> 1,
 				'item_number'	=> array(
 					'id'			=> $this->campaign->ID,
-					'quantity'		=> $amount,
 					'options'		=> array()
-				)
+				),
+				'item_price'	=> 1,
+				'subtotal'		=> $amount,
+				'price'			=> $amount,
+				'quantity'		=> $amount
 			)
 		);
 
