@@ -625,10 +625,11 @@ class WDGInvestment {
 				'id'			=> $this->campaign->ID,
 				'item_number'	=> array(
 					'id'			=> $this->campaign->ID,
-					'options'		=> array()
+					'options'		=> array(
+						'quantity'		=> $amount
+					)
 				),
-				'price'			=> 1,
-				'quantity'		=> $amount
+				'price'			=> 1
 			)
 		);
 

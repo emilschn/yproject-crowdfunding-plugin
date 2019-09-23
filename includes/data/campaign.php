@@ -2953,10 +2953,11 @@ class ATCF_Campaign {
 					'id'          => $this->ID,
 					'item_number' => array(
 						'id'	    => $this->ID,
-						'options'   => array()
+						'options'   => array(
+							'quantity'    => $value
+						)
 					),
-					'price'       => 1,
-					'quantity'    => $value
+					'price'       => 1
 				)
 			);
 
