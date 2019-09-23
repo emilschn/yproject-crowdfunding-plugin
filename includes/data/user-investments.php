@@ -56,12 +56,23 @@ class WDGUserInvestments {
 /*******************************************************************************
  * Récupérations des investissements
 *******************************************************************************/
+	public function get_posts_investments( $payment_status ) {
+		$buffer = get_posts( array(
+			'numberposts'	=> -1,
+			'post_type'		=> 'edd_payment',
+			'post_status'	=> $payment_status,
+			'meta_key'		=> '_edd_payment_user_id',
+			'meta_value'	=> $this->wp_ref
+		) );
+		return $buffer;
+	}
+
 	/**
 	 * Retourne les ID d'investissements d'un utilisateur, triés par ID de projets ; filtré selon statut de l'utilisateur
 	 */
 	public function get_investments( $payment_status ) {
 		$buffer = array();
-		$purchases = edd_get_users_purchases( $this->wp_ref, -1, false, $payment_status );
+		$purchases = $this->get_posts_investments( $payment_status );
 		
 		if ( !empty($purchases) ) {
 			foreach ( $purchases as $purchase_post ) {

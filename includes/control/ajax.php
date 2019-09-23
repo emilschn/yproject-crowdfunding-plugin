@@ -241,7 +241,8 @@ class WDGAjaxActions {
 		
 		$today_datetime = new DateTime();
 		$payment_status = array( 'publish', 'completed', 'pending' );
-		$purchases = edd_get_users_purchases( $user_id, -1, false, $payment_status );
+		$user_investments = new WDGUserInvestments( $WDGUserEntity );
+		$purchases = $user_investments->get_posts_investments( $payment_status );
 		
 		// Ajout des contrats qui n'ont pas été liés à un investissement (post-campagne)
 		if ( !empty( $investment_contracts ) ) {
@@ -270,7 +271,7 @@ class WDGAjaxActions {
 				
 			} else {
 				$purchase_id = $purchase_post->ID;
-				$purchase_status = $purchase_post->post_status;
+				$purchase_status = get_post_status( $purchase_id );
 				$downloads = edd_get_payment_meta_downloads( $purchase_id );
 				if ( !is_array( $downloads[ 0 ] ) ){
 					$campaign_id = $downloads[0];
