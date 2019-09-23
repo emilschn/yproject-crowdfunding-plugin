@@ -2949,15 +2949,14 @@ class ATCF_Campaign {
 			
 			$cart_details = array(
 				array(
-					'name'        => get_the_title( $this->ID ),
-					'id'          => $this->ID,
-					'item_number' => array(
-						'id'	    => $this->ID,
-						'options'   => array(
-							'quantity'    => $value
-						)
-					),
-					'price'       => 1
+					'name'			=> get_the_title( $this->ID ),
+					'id'			=> $this->ID,
+					'price'			=> 1,
+					'item_number'	=> array(
+						'id'			=> $this->ID,
+						'quantity'		=> $value,
+						'options'		=> array()
+					)
 				)
 			);
 
