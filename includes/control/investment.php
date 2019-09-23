@@ -625,6 +625,7 @@ class WDGInvestment {
 				'id'			=> $this->campaign->ID,
 				'item_number'	=> array(
 					'id'			=> $this->campaign->ID,
+					'quantity'		=> $amount,
 					'options'		=> array()
 				),
 				'item_price'	=> 1,
@@ -637,6 +638,7 @@ class WDGInvestment {
 		$this->set_status( WDGInvestment::$status_validated );
 
 		$payment_data = array( 
+			'subtotal'		=> $amount, 
 			'price'			=> $amount, 
 			'date'			=> date('Y-m-d H:i:s'), 
 			'user_email'	=> $WDGUser_current->get_email(),
@@ -648,6 +650,7 @@ class WDGInvestment {
 			'status'		=> 'pending'
 		);
 		$payment_id = edd_insert_payment( $payment_data );
+		update_post_meta( $payment_id, '_edd_payment_total', $amount );
 		$this->id = $payment_id;
 		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
 		if ( strpos( $mean_of_payment, 'wallet' ) !== FALSE ) {

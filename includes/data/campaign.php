@@ -2953,27 +2953,30 @@ class ATCF_Campaign {
 					'id'			=> $this->ID,
 					'item_number'	=> array(
 						'id'			=> $this->ID,
+						'quantity'		=> $value,
 						'options'		=> array()
 					),
 					'item_price'	=> 1,
-					'subtotal'		=> $amount,
-					'price'			=> $amount,
-					'quantity'		=> $amount
+					'subtotal'		=> $value,
+					'price'			=> $value,
+					'quantity'		=> $value
 				)
 			);
 
 			$payment_data = array( 
-				'price'		=> $value, 
-				'date'		=> date('Y-m-d H:i:s'), 
+				'subtotal'		=> $value, 
+				'price'			=> $value, 
+				'date'			=> date('Y-m-d H:i:s'), 
 				'user_email'	=> $email,
 				'purchase_key'	=> $type,
-				'currency'	=> edd_get_currency(),
-				'downloads'	=> array($this->ID),
-				'user_info'	=> $user_info,
+				'currency'		=> edd_get_currency(),
+				'downloads'		=> array($this->ID),
+				'user_info'		=> $user_info,
 				'cart_details'	=> $cart_details,
-				'status'	=> $status
+				'status'		=> $status
 			);
 			$payment_id = edd_insert_payment( $payment_data );
+			update_post_meta( $payment_id, '_edd_payment_total', $amount );
 			edd_record_sale_in_log($this->ID, $payment_id);
 			
 			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
