@@ -2976,7 +2976,7 @@ class ATCF_Campaign {
 				'status'		=> $status
 			);
 			$payment_id = edd_insert_payment( $payment_data );
-			update_post_meta( $payment_id, '_edd_payment_total', $amount );
+			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
 			
 			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
