@@ -175,22 +175,24 @@ class WDGKYCFile {
 	public static function get_list_by_owner_id( $id_owner, $type_owner = 'organization', $type = '' ) {
 		$buffer = array();
 		
-		global $wpdb;
-		$query = "SELECT id FROM " .$wpdb->prefix . WDGKYCFile::$table_name;
-		if ($type_owner == WDGKYCFile::$owner_organization) {
-			$query .= " WHERE orga_id=".$id_owner;
-		} else {
-			$query .= " WHERE user_id=".$id_owner;
-		}
-		if ( !empty( $type ) ) {
-			$query .= " AND type='" . $type . "'";
-		}
-		$query .= " ORDER BY date_uploaded DESC, id DESC";
-		
-		$kycfile_list = $wpdb->get_results( $query );
-		foreach ( $kycfile_list as $kycfile_item ) {
-			$KYCfile = new WDGKYCFile( $kycfile_item->id );
-			array_push($buffer, $KYCfile);
+		if ( !empty( $id_owner ) ) {
+			global $wpdb;
+			$query = "SELECT id FROM " .$wpdb->prefix . WDGKYCFile::$table_name;
+			if ($type_owner == WDGKYCFile::$owner_organization) {
+				$query .= " WHERE orga_id=".$id_owner;
+			} else {
+				$query .= " WHERE user_id=".$id_owner;
+			}
+			if ( !empty( $type ) ) {
+				$query .= " AND type='" . $type . "'";
+			}
+			$query .= " ORDER BY date_uploaded DESC, id DESC";
+			
+			$kycfile_list = $wpdb->get_results( $query );
+			foreach ( $kycfile_list as $kycfile_item ) {
+				$KYCfile = new WDGKYCFile( $kycfile_item->id );
+				array_push($buffer, $KYCfile);
+			}
 		}
 		
 		return $buffer;
