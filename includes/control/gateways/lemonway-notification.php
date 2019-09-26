@@ -277,7 +277,7 @@ class LemonwayNotification {
 		$WDGOrga_invest_author = false;
 		if ( WDGOrganization::is_user_organization( $WDGUser_invest_author->get_wpref() ) ) {
 			$WDGOrga_invest_author = new WDGOrganization( $WDGUser_invest_author->get_wpref() );
-			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			$linked_users_creator = $WDGOrga_invest_author->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 			if ( !empty( $linked_users_creator ) ) {
 				$WDGUser_invest_author = $linked_users_creator[ 0 ];
 			}
