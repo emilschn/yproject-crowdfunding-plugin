@@ -859,6 +859,73 @@ class WDGQueue {
 		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
 	}
 
+
+	
+	/******************************************************************************/
+	/* TRANSFERT AUTOMATIQUE DE ROYALTIES */
+	/******************************************************************************/
+		public static function add_royalties_auto_transfer_start( $declaration_id, $date ) {
+			$action = 'royalties_auto_transfer_start';
+			$entity_id = $declaration_id;
+			$priority = 'date';
+			$date_priority = $date->format( 'Y-m-d H:i:s' );
+			$params = array();
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+		
+		public static function execute_royalties_auto_transfer_start( $declaration_id, $queued_action_params, $queued_action_id ) {
+			if ( !empty( $declaration_id ) ) {
+
+				$roi_declaration = new WDGROIDeclaration( $declaration_id );
+				$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+				$current_organization = $campaign->get_organization();
+				if ( !empty( $current_organization ) ) {
+					$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
+					$amount_wallet = $organization_obj->get_lemonway_balance( 'royalties' );
+				}
+
+				// On vérifie qu'il y a toujours l'argent sur le wallet
+				if ( $amount_wallet > $roi_declaration->get_amount_with_adjustment() ) {
+					self::add_royalties_auto_transfer_next( $declaration_id );
+
+				} else {
+					// Sinon on prévient qu'il n'y a plus assez
+					$content_mail = "Il n'y a pas assez d'argent dans le wallet de royalties pour faire le versement trimestriel de " . $campaign->get_name();
+					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Fonds insuffisants', $content_mail );
+
+				}
+			}
+
+			if ( !empty( $queued_action_id ) ) {
+				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+			}
+		}
+
+		public static function add_royalties_auto_transfer_next( $declaration_id ) {
+			$action = 'royalties_auto_transfer_next';
+			$entity_id = $declaration_id;
+			$priority = 'high';
+			$params = array();
+			self::create_or_replace_action( $action, $entity_id, $priority, $params );
+		}
+		
+		public static function execute_royalties_auto_transfer_next( $declaration_id, $queued_action_params, $queued_action_id ) {
+			if ( !empty( $declaration_id ) ) {
+
+				$roi_declaration = new WDGROIDeclaration( $declaration_id );
+				$result = $roi_declaration->make_transfer();
+				if ( $result == 100 ) {
+					if ( !empty( $queued_action_id ) ) {
+						WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+					}
+					$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
+					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
+				}
+				
+			}
+		}
+
 	
 	
 }
