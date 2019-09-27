@@ -14,6 +14,7 @@ class WDGUserInvestments {
 	private $orga;
 	private $wp_ref;
 	
+	private static $posts_investments;
 	private $pending_preinvestments;
 	private $pending_not_validated_investments;
 	
@@ -57,14 +58,25 @@ class WDGUserInvestments {
  * Récupérations des investissements
 *******************************************************************************/
 	public function get_posts_investments( $payment_status ) {
-		$buffer = get_posts( array(
-			'numberposts'	=> -1,
-			'post_type'		=> 'edd_payment',
-			'post_status'	=> $payment_status,
-			'meta_key'		=> '_edd_payment_user_id',
-			'meta_value'	=> $this->wp_ref
-		) );
-		return $buffer;
+		if ( is_null( self::$posts_investments ) ) {
+			self::$posts_investments = array();
+		}
+		if ( !isset( self::$posts_investments[ $this->wp_ref ] ) ) {
+			self::$posts_investments[ $this->wp_ref ] = array();
+		}
+
+		$payment_status_key = print_r( $payment_status, TRUE );
+		if ( !isset( self::$posts_investments[ $this->wp_ref ][ $payment_status_key ] ) ) {
+			self::$posts_investments[ $this->wp_ref ][ $payment_status_key ] = get_posts( array(
+				'numberposts'	=> -1,
+				'post_type'		=> 'edd_payment',
+				'post_status'	=> $payment_status,
+				'meta_key'		=> '_edd_payment_user_id',
+				'meta_value'	=> $this->wp_ref
+			) );
+		}
+
+		return self::$posts_investments[ $this->wp_ref ][ $payment_status_key ];
 	}
 
 	/**

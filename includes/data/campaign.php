@@ -1875,7 +1875,11 @@ class ATCF_Campaign {
 	 */
 	public function get_location_number() {
 		$locations = atcf_get_locations();
-		$location_complete = $locations[ $this->location() ];
+		$this_location = $this->location();
+		$location_complete = '';
+		if ( !empty( $this_location ) ) {
+			$location_complete = $locations[ $this_location ];
+		}
 		
 		$buffer = substr( $location_complete, 0, 3 );
 		
@@ -2536,7 +2540,7 @@ class ATCF_Campaign {
 				return $formatted ? 0 . '%' : 0;
 	
 			$this->percent_minimum_completed = ( $current / $goal ) * 100;
-			if ( $percent < 90 ) {
+			if ( $this->percent_minimum_completed < 90 ) {
 				$this->percent_minimum_completed = round( $this->percent_minimum_completed );
 			} else {
 				$this->percent_minimum_completed = floor( $this->percent_minimum_completed );
