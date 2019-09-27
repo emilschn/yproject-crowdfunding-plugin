@@ -3485,14 +3485,15 @@ class ATCF_Campaign {
 		return get_posts( $query_options );
 	}
 	
-	public static function get_list_current_hidden( $type ) {
+	public static function get_list_current_hidden( $type, $is_time_remaining = true ) {
+		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
 			'numberposts' => $nb,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
 				array ( 'key' => 'campaign_vote', 'value' => $type ),
-				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') ),
+				array ( 'key' => 'campaign_end_date', 'compare' => $compare_end_date, 'value' => date('Y-m-d H:i:s') ),
 				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'EXISTS' )
 			)
 		);
