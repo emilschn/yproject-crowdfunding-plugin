@@ -116,18 +116,21 @@ class WDG_Cache_Plugin {
 		$people_list = array();
 		$count_projects = 0;
 		$count_roi = 0;
+		$project_list_funded = array();
 
-		$project_list_funded = ATCF_Campaign::get_list_funded( WDG_Cache_Plugin::$nb_query_campaign_funded, '', true, false );
-		foreach ( $project_list_funded as $project_post ) {
-			$count_projects++;
-			$campaign = atcf_get_campaign( $project_post->ID );
-			$backers_id_list = $campaign->backers_id_list();
-			$people_list = array_merge( $people_list, $backers_id_list );
-			$count_amount += $campaign->current_amount( false );
-			$declaration_list = $campaign->get_roi_declarations();
-
-			foreach ( $declaration_list as $declaration ) {
-				$count_roi += count( $declaration[ 'roi_list' ] );
+		if ( !defined( 'WDG_DISABLE_CACHE') || WDG_DISABLE_CACHE == FALSE ) {
+			$project_list_funded = ATCF_Campaign::get_list_funded( WDG_Cache_Plugin::$nb_query_campaign_funded, '', true, false );
+			foreach ( $project_list_funded as $project_post ) {
+				$count_projects++;
+				$campaign = atcf_get_campaign( $project_post->ID );
+				$backers_id_list = $campaign->backers_id_list();
+				$people_list = array_merge( $people_list, $backers_id_list );
+				$count_amount += $campaign->current_amount( false );
+				$declaration_list = $campaign->get_roi_declarations();
+	
+				foreach ( $declaration_list as $declaration ) {
+					$count_roi += count( $declaration[ 'roi_list' ] );
+				}
 			}
 		}
 

@@ -2525,24 +2525,30 @@ class ATCF_Campaign {
 
 		return $percent;
 	}
-	public function percent_minimum_completed($formatted = true ) {
-		$goal    = $this->minimum_goal(false);
-		$current = $this->current_amount(false);
 
-		if ( 0 == $goal )
-			return $formatted ? 0 . '%' : 0;
-
-		$percent = ( $current / $goal ) * 100;
-		if ( $percent < 90 ) {
-			$percent = round( $percent );
-		} else {
-			$percent = floor( $percent );
+	private $percent_minimum_completed;
+	public function percent_minimum_completed( $formatted = true ) {
+		if ( !isset( $this->percent_minimum_completed ) ) {
+			$goal    = $this->minimum_goal(false);
+			$current = $this->current_amount(false);
+	
+			if ( 0 == $goal )
+				return $formatted ? 0 . '%' : 0;
+	
+			$this->percent_minimum_completed = ( $current / $goal ) * 100;
+			if ( $percent < 90 ) {
+				$this->percent_minimum_completed = round( $this->percent_minimum_completed );
+			} else {
+				$this->percent_minimum_completed = floor( $this->percent_minimum_completed );
+			}
+	
 		}
-
-		if ( $formatted )
-			return $percent . '%';
-
-		return $percent;
+	
+		if ( $formatted ) {
+			return $this->percent_minimum_completed . '%';
+		} else {
+			return $this->percent_minimum_completed;
+		}
 	}
 	
 	public function percent_minimum_to_total() {
@@ -2559,37 +2565,43 @@ class ATCF_Campaign {
 	 * @param boolean $formatted Return formatted currency or not
 	 * @return sting $total The amount funded (currency formatted or not)
 	 */
+	private $current_amount;
 	public function current_amount( $formatted = true ) {
-		$total   = 0;
-		$backers = $this->backers();
-
-		if ($backers > 0) {
-		    foreach ( $backers as $backer ) {
-			    $payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-			    $payment    = get_post( $payment_id );
-
-			    if ( empty( $payment ) || $payment->post_status == 'pending' )
-				    continue;
-
-			    $total      = $total + edd_get_payment_amount( $payment_id );
-		    }
-		}
+		if ( !isset( $this->current_amount ) ) {
+			$total   = 0;
+			$backers = $this->backers();
+	
+			if ($backers > 0) {
+				foreach ( $backers as $backer ) {
+					$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
+					$payment    = get_post( $payment_id );
+	
+					if ( empty( $payment ) || $payment->post_status == 'pending' )
+						continue;
+	
+					$total      = $total + edd_get_payment_amount( $payment_id );
+				}
+			}
 		
-		$amount_check = $this->current_amount_check_meta(FALSE);
-		$total += $amount_check;
+			$amount_check = $this->current_amount_check_meta(FALSE);
+			$total += $amount_check;
+			$this->current_amount = $total;
+		}
 		
 		if ( $formatted ) {
 		    $currency = edd_get_currency();
 		    if ($currency == "EUR") {
-			if (strpos($total, '.00') !== false) $total = substr ($total, 0, -3);
-			$total = number_format($total, 0, ".", " ");
-			return $total . ' &euro;';
+				if (strpos($this->current_amount, '.00') !== false) {
+					$this->current_amount = substr ($this->current_amount, 0, -3);
+				}
+				$this->current_amount = number_format($this->current_amount, 0, ".", " ");
+				return $this->current_amount . ' &euro;';
 		    } else {
-			return edd_currency_filter( edd_format_amount( $total ) );
+				return edd_currency_filter( edd_format_amount( $this->current_amount ) );
 		    }
 		}
 
-		return $total;
+		return $this->current_amount;
 	}
 	
 	public function current_amount_with_check() {
@@ -3170,10 +3182,14 @@ class ATCF_Campaign {
 		return $this->get_jycrois_nb();
 	}
 	
+	private $nb_followers;
 	public function get_jycrois_nb() {
-		global $wpdb;
-		$table_jcrois = $wpdb->prefix . "jycrois";
-		return $wpdb->get_var( 'SELECT count(campaign_id) FROM '.$table_jcrois.' WHERE campaign_id = '.$this->ID );
+		if ( !isset( $this->nb_followers ) ) {
+			global $wpdb;
+			$table_jcrois = $wpdb->prefix . "jycrois";
+			$this->nb_followers = $wpdb->get_var( 'SELECT count(campaign_id) FROM '.$table_jcrois.' WHERE campaign_id = '.$this->ID );
+		}
+		return $this->nb_followers;
 	}
 	
 	public function get_header_picture_src($force = true) {
