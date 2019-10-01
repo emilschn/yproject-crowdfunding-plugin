@@ -2532,7 +2532,7 @@ class ATCF_Campaign {
 
 	private $percent_minimum_completed;
 	public function percent_minimum_completed( $formatted = true ) {
-		if ( !isset( $this->percent_minimum_completed ) ) {
+		if ( !isset( $this->percent_minimum_completed ) || empty( $this->percent_minimum_completed ) ) {
 			$goal    = $this->minimum_goal(false);
 			$current = $this->current_amount(false);
 	
