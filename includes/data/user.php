@@ -1804,7 +1804,7 @@ class WDGUser {
 			$user_id = $current_user->ID;
 		}
 		$current_signed_terms = get_user_meta($user_id, WDGUser::$key_validated_general_terms_version, TRUE);
-		return ($current_signed_terms == $edd_options[WDGUser::$edd_general_terms_version]);
+		return ( isset( $edd_options[ WDGUser::$edd_general_terms_version ] ) && $current_signed_terms == $edd_options[ WDGUser::$edd_general_terms_version ] );
 	}
 	
 	/**
@@ -1836,7 +1836,7 @@ class WDGUser {
 	 */
 	public static function must_show_general_terms_block($user_id = FALSE) {
 		global $post, $edd_options;
-		if (isset($edd_options[WDGUser::$edd_general_terms_version]) && !empty($edd_options[WDGUser::$edd_general_terms_version])) $isset_general_terms = TRUE;
+		$isset_general_terms = isset( $edd_options[ WDGUser::$edd_general_terms_version ] ) && !empty( $edd_options[ WDGUser::$edd_general_terms_version ] );
 		//On affiche la lightbox de cgu si : l'utilisateur est connectÃ©, il n'est pas sur la page cgu, il ne les a pas encore validÃ©es
 		return (is_user_logged_in() && $post->post_name != 'cgu' && !WDGUser::has_validated_general_terms($user_id) && $isset_general_terms);
 	}

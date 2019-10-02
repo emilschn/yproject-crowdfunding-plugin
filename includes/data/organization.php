@@ -546,7 +546,11 @@ class WDGOrganization {
 	}
 	
 	public function get_bank_owner() {
-		return $this->bank_owner;
+		$buffer = $this->bank_owner;
+		if ( $buffer == '---' || empty( $buffer ) ) {
+			$buffer = $this->get_name();
+		}
+		return $buffer;
 	}
 	public function set_bank_owner($value) {
 		$this->bank_owner = $value;

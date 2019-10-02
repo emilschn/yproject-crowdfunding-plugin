@@ -752,23 +752,7 @@ class WDGPostActions {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		
 		if ( !empty( $campaign_id ) ) {
-			$campaign = new ATCF_Campaign( $campaign_id );
-			$contract_has_been_modified = ( $campaign->contract_modifications() != '' );
-			$pending_preinvestments = $campaign->pending_preinvestments();
-			foreach ( $pending_preinvestments as $preinvestment ) {
-				// On n'agit que sur les préinvestissements qui peuvent être validés (pas en attente de paiement, et pas en virement)
-				$payment_key = $preinvestment->get_payment_key();
-				if ( $preinvestment->get_contract_status() != WDGInvestment::$contract_status_not_validated && strpos( $payment_key, 'wire_' ) === FALSE ) {
-					$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
-					if ( $contract_has_been_modified ) {
-						NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
-
-					} else {
-						NotificationsEmails::preinvestment_auto_validated( $user_info['email'], $campaign );
-						$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
-					}
-				}
-			}
+			WDGQueue::execute_preinvestments_validation( $campaign_id, FALSE, FALSE );
 		}
 		
 		$url_return = wp_get_referer() . "#contracts";
@@ -840,8 +824,12 @@ class WDGPostActions {
 				'', '', '', '', '', 
 				$orga_email
 			);
+			$WDGOrganization = new WDGOrganization( $user_type_session );
+			$mail_name = $WDGUser_current->get_firstname();
 		} else {
 			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
+			$WDGUser_current = WDGUser::current();
+			$mail_name = $WDGUser_current->get_firstname();
 		}
 		
 		
@@ -863,8 +851,24 @@ class WDGPostActions {
 		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../files/investment-check/' . $random_filename );
 		$picture_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 		
-		NotificationsEmails::new_purchase_pending_check_user( $investment_id, TRUE );
+		$campaign_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
+		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, $picture_url );
+
+		// Annulation des investissements non-démarrés du même investisseur
+		$pending_not_validated_investments = array();
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
+		} else {
+			$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
+		}
+		if ( !empty( $pending_not_validated_investments ) ) {
+			foreach ( $pending_not_validated_investments as $pending_not_validated_investment_item ) {
+				$pending_not_validated_investment_item->cancel();
+			}
+		}
 		
 		if ( $has_moved ) {
 			update_post_meta( $investment_id, 'check_picture', $random_filename );
@@ -896,12 +900,32 @@ class WDGPostActions {
 				'', '', '', '', '', 
 				$orga_email
 			);
+			$WDGOrganization = new WDGOrganization( $user_type_session );
+			$mail_name = $WDGUser_current->get_firstname();
 		} else {
 			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
+			$WDGUser_current = WDGUser::current();
+			$mail_name = $WDGUser_current->get_firstname();
 		}
 		
-		NotificationsEmails::new_purchase_pending_check_user( $investment_id, FALSE );
+		$campaign_organization = $campaign->get_organization();
+		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
+		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
 		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
+		
+		// Annulation des investissements non-démarrés du même investisseur
+		$pending_not_validated_investments = array();
+		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
+			$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
+		} else {
+			$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
+		}
+		if ( !empty( $pending_not_validated_investments ) ) {
+			foreach ( $pending_not_validated_investments as $pending_not_validated_investment_item ) {
+				$pending_not_validated_investment_item->cancel();
+			}
+		}
 		
 		wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
 	}

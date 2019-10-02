@@ -242,7 +242,8 @@ class WDGAjaxActions {
 		
 		$today_datetime = new DateTime();
 		$payment_status = array( 'publish', 'completed', 'pending' );
-		$purchases = edd_get_users_purchases( $user_id, -1, false, $payment_status );
+		$user_investments = new WDGUserInvestments( $WDGUserEntity );
+		$purchases = $user_investments->get_posts_investments( $payment_status );
 		
 		// Ajout des contrats qui n'ont pas été liés à un investissement (post-campagne)
 		if ( !empty( $investment_contracts ) ) {
@@ -271,14 +272,18 @@ class WDGAjaxActions {
 				
 			} else {
 				$purchase_id = $purchase_post->ID;
-				$purchase_status = $purchase_post->post_status;
+				$purchase_status = get_post_status( $purchase_id );
 				$downloads = edd_get_payment_meta_downloads( $purchase_id );
 				if ( !is_array( $downloads[ 0 ] ) ){
-					$campaign_id = $downloads[0];
-					$campaign = atcf_get_campaign( $campaign_id );
-					if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte && $purchase_status == 'pending' ) {
-						continue;
+					$campaign_id = $downloads[ 0 ];
+				} else {
+					if ( isset( $downloads[ 0 ][ 'id' ] ) ) {
+						$campaign_id = $downloads[ 0 ][ 'id' ];
 					}
+				}
+				$campaign = atcf_get_campaign( $campaign_id );
+				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte && $purchase_status == 'pending' ) {
+					continue;
 				}
 				$payment_amount = edd_get_payment_amount( $purchase_id );
 				$purchase_date = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_id ) ) );
@@ -674,20 +679,6 @@ class WDGAjaxActions {
 			}
 		}
 	}
-
-
-	/**
-	 * Enregistre l'image head
-	 */
-	public static function save_image_head() {
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$image_header =  $_FILES['image_header'];
-		
-		WDGFormProjects::edit_image_banniere($image_header, $campaign_id);
-		
-		exit();
-	}
-	
 	
 
 	/**
@@ -1359,7 +1350,7 @@ class WDGAjaxActions {
 			$funding_duration = 5;
 		}
 		while(filter_input(INPUT_POST, 'new_estimated_turnover_'.$i)!='' && ($i+1 <= $funding_duration)){
-			$current_val = filter_input(INPUT_POST, 'new_estimated_turnover_'.$i);
+			$current_val = WDG_Form::formatInputTextNumber( 'new_estimated_turnover_' .$i );
 
 			if(is_numeric($current_val)){
 				if(intval($current_val)>=0){
@@ -1866,7 +1857,7 @@ class WDGAjaxActions {
 		$investments_list = (json_decode(filter_input(INPUT_POST, 'data'),true));
 
 		//Données de vote
-		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, rate_project, advice FROM ".$table_vote." WHERE post_id = ".$campaign_id );
+		$list_user_voters = $wpdb->get_results( "SELECT user_id, invest_sum, date, rate_project, advice, more_info_impact, more_info_service, more_info_team, more_info_finance, more_info_other FROM ".$table_vote." WHERE post_id = ".$campaign_id );
 
 
         /******************Lignes du tableau*********************/
@@ -1889,6 +1880,25 @@ class WDGAjaxActions {
 
             $array_contacts[$u_id]["vote_advice"]= ( !empty( $item_vote->advice ) ) ? '<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>' : '';
 			$array_contacts[$u_id]["vote_rate"] = $item_vote->rate_project;
+
+			$list_more_info = array();
+			if ( $item_vote->more_info_impact == '1' ) {
+				array_push( $list_more_info, 'Impacts' );
+			}
+			if ( $item_vote->more_info_service == '1' ) {
+				array_push( $list_more_info, 'Service' );
+			}
+			if ( $item_vote->more_info_team == '1' ) {
+				array_push( $list_more_info, 'Equipe' );
+			}
+			if ( $item_vote->more_info_finance == '1' ) {
+				array_push( $list_more_info, 'Prévisionnel' );
+			}
+			if ( $item_vote->more_info_other != '' ) {
+				array_push( $list_more_info, $item_vote->more_info_other );
+			}
+			$more_info_string = implode( ', ', $list_more_info );
+			$array_contacts[$u_id]["vote_more_info"] = $more_info_string;
         }
 		
 		// Contrats complémentaires éventuels
@@ -2305,6 +2315,7 @@ class WDGAjaxActions {
             new ContactColumn('vote_rate',"Note d'éval.",true),
             new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
 			new ContactColumn('vote_advice','Conseil', true),
+			new ContactColumn( 'vote_more_info', '+ infos sur', $display_vote_infos ),
 			new ContactColumn( 'source-how-known', 'Src. (connu)', ( $display_vote_infos || $display_invest_infos ) ),
 			new ContactColumn( 'source-where-from', 'Src. (arrivée)', ( $display_vote_infos || $display_invest_infos ) ),
 

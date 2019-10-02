@@ -357,7 +357,7 @@ class WDGCampaignInvestments {
 				$last_24h .= "- " .$count_new_preinvestments. " nouveau pr&eacute;-investissement, pour un montant de ".$count_new_preinvestments_amount." €<br>";
 			}
 			
-			$last_24h .= "<strong>Total des évaluations :</strong> " .$count_votes. " (dont " .$count_votes_with_intention. " avec une intention d'investissement, pour un montant de " .$count_votes_with_intention_amount. " €)<br>";
+			$last_24h .= "<br><strong>Total des évaluations :</strong> " .$count_votes. " (dont " .$count_votes_with_intention. " avec une intention d'investissement, pour un montant de " .$count_votes_with_intention_amount. " €)<br>";
 			
 			$percent_preinvestment = round( $count_preinvestments_to_validate_amount / $campaign->minimum_goal( false ) * 100 );
 			$last_24h .= "<strong>Total des pr&eacute;-investissements validés :</strong> " .$count_preinvestments_to_validate. ", pour un montant de " .$count_preinvestments_to_validate_amount. " € (soit " .$percent_preinvestment. " % de l'objectif minimum)<br>";
@@ -389,7 +389,7 @@ class WDGCampaignInvestments {
 				$last_24h .= "- " .$count_investments_to_validate. " investissement en attente de validation, pour un montant de " .$count_investments_to_validate_amount. " €<br>";
 			}
 			
-			$last_24h .= "<strong>Total des investissements validés et comptabilisés :</strong> " .$campaign->current_amount(). " (" .$campaign->percent_minimum_completed(). ")<br>";
+			$last_24h .= "<br><strong>Total des investissements validés et comptabilisés :</strong> " .$campaign->current_amount(). " (" .$campaign->percent_minimum_completed(). ")<br>";
 			
 			// Les nouveaux investisseurs à remercier
 			if ( count( $list_new_investments ) > 0 ) {

@@ -60,13 +60,17 @@ class WDG_Form {
 		$message_document_validated = __( "Document valid&eacute; par notre prestataire", 'yproject' );
 		$message_document_waiting = __( "Document en cours de validation par notre prestataire", 'yproject' );
 		
-		$lw_document_id = new LemonwayDocument( $wallet_id, $document_type );
-		if ( $lw_document_id->get_status() == LemonwayDocument::$document_status_accepted ) {
+		$lw_document = new LemonwayDocument( $wallet_id, $document_type );
+		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
-		} else if ( $lw_document_id->get_status() == LemonwayDocument::$document_status_waiting ) {
+		} else if ( $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
-		} else if ( $lw_document_id->get_status() > 2 ) {
+		} else if ( $lw_document->get_status() > 2 ) {
 			$buffer[ 'display_refused_alert' ] = TRUE;
+			$lw_error_str = $lw_document->get_error_str();
+			if ( !empty( $lw_error_str ) ) {
+				$buffer[ 'display_refused_alert' ] = $lw_error_str;
+			}
 		}
 		
 		return $buffer;

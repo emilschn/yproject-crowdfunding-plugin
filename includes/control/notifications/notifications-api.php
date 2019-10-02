@@ -35,6 +35,8 @@ class NotificationsAPI {
 		'605' => "KYC - Wallet validé et investissement en attente",
 		'606' => "KYC - Wallet validé et investissement en attente - Rappel",
 		'175' => "Erreur d'investissement",
+		'172' => "Investissement par chèque en attente",
+		'177' => "Investissement par virement en attente",
 		'687' => "Investissement sur projet validé",
 		'688' => "Investissement sur épargne positive validé",
 		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
@@ -243,11 +245,12 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS KYC - REFUSES
     //*******************************************************
-	public static function kyc_refused( $recipient, $name ) {
-		$id_template = '323';
+	public static function kyc_refused( $recipient, $name, $authentication_info ) {
+		$id_template = '749';
 		$options = array(
 			'personal'				=> 1,
-			'PRENOM'				=> $name
+			'PRENOM'				=> $name,
+			'PRECISIONS'			=> $authentication_info
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -750,6 +753,56 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Investissement
 	//**************************************************************************
+	
+    //*******************************************************
+    // NOTIFICATIONS INVESTISSEMENT PAR CHEQUE - EN ATTENTE
+    //*******************************************************
+	public static function investment_pending_check( $recipient, $name, $amount, $project_name, $percent_to_reach, $minimum_goal, $organization_name, $project_api_id ) {
+		$id_template = '172';
+		$options = array(
+			'personal'				=> 1,
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount,
+			'NOM_PROJET'			=> $project_name,
+			'POURCENT_ATTEINT'		=> $percent_to_reach,
+			'OBJECTIF'				=> $minimum_goal,
+			'NOM_ORGANISATION'		=> $organization_name,
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT PAR VIREMENT - EN ATTENTE
+	//*******************************************************
+	public static function investment_pending_wire( $recipient, $name, $amount, $project_name, $user_lw_wallet_id, $project_api_id ) {
+			$id_template = '177';
+			$options = array(
+				'personal'				=> 1,
+				'NOM'					=> $name,
+				'MONTANT'				=> $amount,
+				'NOM_PROJET'			=> $project_name,
+				'ID_WALLET_LEMONWAY'	=> $user_lw_wallet_id,
+			);
+			$parameters = array(
+				'tool'			=> 'sendinblue',
+				'template'		=> $id_template,
+				'recipient'		=> $recipient,
+				'id_project'	=> $project_api_id,
+				'options'		=> json_encode( $options )
+			);
+			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS INVESTISSEMENT - VALIDE
+    //*******************************************************
 	public static function investment_success_project( $recipient, $name, $amount, $project_name, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
 		$id_template = '687';
 		$project_url = str_replace( 'https://', '', $project_url );

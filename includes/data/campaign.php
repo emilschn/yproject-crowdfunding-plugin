@@ -1875,7 +1875,11 @@ class ATCF_Campaign {
 	 */
 	public function get_location_number() {
 		$locations = atcf_get_locations();
-		$location_complete = $locations[ $this->location() ];
+		$this_location = $this->location();
+		$location_complete = '';
+		if ( !empty( $this_location ) ) {
+			$location_complete = $locations[ $this_location ];
+		}
 		
 		$buffer = substr( $location_complete, 0, 3 );
 		
@@ -2428,6 +2432,32 @@ class ATCF_Campaign {
 		    
 		return $buffer;
 	}
+	public function time_remaining_str_until_contract_start_date() {
+		$datetime_end = $this->get_end_date_when_can_invest_until_contract_start_date();
+		$expires = $datetime_end->getTimestamp();
+		$now = current_time( 'timestamp' );
+
+		//Si on a dépassé la date de fin, on retourne "-"
+		if ( $now > $expires ) {
+			$buffer = '-';
+		} else {
+			$diff = $expires - $now;
+			$nb_days = floor( $diff / ( 60 * 60 * 24 ) );
+			if ( $nb_days > 1 ) {
+				$buffer = 'J-' . $nb_days;
+			} else {
+				$nb_hours = floor( $diff / ( 60 * 60 ) );
+				if ( $nb_hours > 1 ) {
+					$buffer = 'H-' . $nb_hours;
+				} else {
+					$nb_minutes = floor( $diff / 60 );
+					$buffer = 'M-' . $nb_minutes;
+				}
+			}
+		}
+		    
+		return $buffer;
+	}
 
 	public static $invest_amount_min_wire = 500;
 	public static $invest_time_min_wire = 7;
@@ -2499,24 +2529,30 @@ class ATCF_Campaign {
 
 		return $percent;
 	}
-	public function percent_minimum_completed($formatted = true ) {
-		$goal    = $this->minimum_goal(false);
-		$current = $this->current_amount(false);
 
-		if ( 0 == $goal )
-			return $formatted ? 0 . '%' : 0;
-
-		$percent = ( $current / $goal ) * 100;
-		if ( $percent < 90 ) {
-			$percent = round( $percent );
-		} else {
-			$percent = floor( $percent );
+	private $percent_minimum_completed;
+	public function percent_minimum_completed( $formatted = true ) {
+		if ( !isset( $this->percent_minimum_completed ) || empty( $this->percent_minimum_completed ) ) {
+			$goal    = $this->minimum_goal(false);
+			$current = $this->current_amount(false);
+	
+			if ( 0 == $goal )
+				return $formatted ? 0 . '%' : 0;
+	
+			$this->percent_minimum_completed = ( $current / $goal ) * 100;
+			if ( $this->percent_minimum_completed < 90 ) {
+				$this->percent_minimum_completed = round( $this->percent_minimum_completed );
+			} else {
+				$this->percent_minimum_completed = floor( $this->percent_minimum_completed );
+			}
+	
 		}
-
-		if ( $formatted )
-			return $percent . '%';
-
-		return $percent;
+	
+		if ( $formatted ) {
+			return $this->percent_minimum_completed . '%';
+		} else {
+			return $this->percent_minimum_completed;
+		}
 	}
 	
 	public function percent_minimum_to_total() {
@@ -2533,37 +2569,44 @@ class ATCF_Campaign {
 	 * @param boolean $formatted Return formatted currency or not
 	 * @return sting $total The amount funded (currency formatted or not)
 	 */
+	private $current_amount;
 	public function current_amount( $formatted = true ) {
-		$total   = 0;
-		$backers = $this->backers();
-
-		if ($backers > 0) {
-		    foreach ( $backers as $backer ) {
-			    $payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-			    $payment    = get_post( $payment_id );
-
-			    if ( empty( $payment ) || $payment->post_status == 'pending' )
-				    continue;
-
-			    $total      = $total + edd_get_payment_amount( $payment_id );
-		    }
-		}
+		if ( !isset( $this->current_amount ) ) {
+			$total   = 0;
+			$backers = $this->backers();
+	
+			if ($backers > 0) {
+				foreach ( $backers as $backer ) {
+					$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
+					$payment = get_post( $payment_id );
+	
+					if ( empty( $payment ) || $payment->post_status == 'pending' )
+						continue;
+	
+					$total = $total + edd_get_payment_amount( $payment_id );
+				}
+			}
 		
-		$amount_check = $this->current_amount_check_meta(FALSE);
-		$total += $amount_check;
+			$amount_check = $this->current_amount_check_meta(FALSE);
+			$total += $amount_check;
+			$this->current_amount = $total;
+		}
 		
 		if ( $formatted ) {
-		    $currency = edd_get_currency();
-		    if ($currency == "EUR") {
-			if (strpos($total, '.00') !== false) $total = substr ($total, 0, -3);
-			$total = number_format($total, 0, ".", " ");
-			return $total . ' &euro;';
-		    } else {
-			return edd_currency_filter( edd_format_amount( $total ) );
-		    }
+			$current_amount = $this->current_amount;
+			$currency = edd_get_currency();
+			if ($currency == "EUR") {
+				if ( strpos( $current_amount, '.00' ) !== false ) {
+					$current_amount = substr ( $current_amount, 0, -3 );
+				}
+				$current_amount = number_format( $current_amount, 0, ".", " " );
+				return $current_amount . ' &euro;';
+			} else {
+				return edd_currency_filter( edd_format_amount( $current_amount ) );
+			}
 		}
 
-		return $total;
+		return $this->current_amount;
 	}
 	
 	public function current_amount_with_check() {
@@ -2922,30 +2965,35 @@ class ATCF_Campaign {
 			
 			$cart_details = array(
 				array(
-					'name'        => get_the_title( $this->ID ),
-					'id'          => $this->ID,
-					'item_number' => array(
-						'id'	    => $this->ID,
-						'options'   => array()
+					'name'			=> get_the_title( $this->ID ),
+					'id'			=> $this->ID,
+					'item_number'	=> array(
+						'id'			=> $this->ID,
+						'quantity'		=> $value,
+						'options'		=> array()
 					),
-					'price'       => 1,
-					'quantity'    => $value
+					'item_price'	=> 1,
+					'subtotal'		=> $value,
+					'price'			=> $value,
+					'quantity'		=> $value
 				)
 			);
 
 			$payment_data = array( 
-				'price'		=> $value, 
-				'date'		=> date('Y-m-d H:i:s'), 
+				'subtotal'		=> $value, 
+				'price'			=> $value, 
+				'date'			=> date('Y-m-d H:i:s'), 
 				'user_email'	=> $email,
 				'purchase_key'	=> $type,
-				'currency'	=> edd_get_currency(),
-				'downloads'	=> array($this->ID),
-				'user_info'	=> $user_info,
+				'currency'		=> edd_get_currency(),
+				'downloads'		=> array($this->ID),
+				'user_info'		=> $user_info,
 				'cart_details'	=> $cart_details,
-				'status'	=> $status
+				'status'		=> $status
 			);
 			$payment_id = edd_insert_payment( $payment_data );
 			$_SESSION[ 'investment_id' ] = $payment_id;
+			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
 			
 			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
@@ -3139,10 +3187,14 @@ class ATCF_Campaign {
 		return $this->get_jycrois_nb();
 	}
 	
+	private $nb_followers;
 	public function get_jycrois_nb() {
-		global $wpdb;
-		$table_jcrois = $wpdb->prefix . "jycrois";
-		return $wpdb->get_var( 'SELECT count(campaign_id) FROM '.$table_jcrois.' WHERE campaign_id = '.$this->ID );
+		if ( !isset( $this->nb_followers ) ) {
+			global $wpdb;
+			$table_jcrois = $wpdb->prefix . "jycrois";
+			$this->nb_followers = $wpdb->get_var( 'SELECT count(campaign_id) FROM '.$table_jcrois.' WHERE campaign_id = '.$this->ID );
+		}
+		return $this->nb_followers;
 	}
 	
 	public function get_header_picture_src($force = true) {
@@ -3329,6 +3381,39 @@ class ATCF_Campaign {
 	public static function get_list_preview( $nb = 0, $client = '' ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_preview, 'asc', $client ); }
 	public static function get_list_vote( $nb = 0, $client = '', $random = false ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_vote, ( $random ? 'rand' : 'desc'), $client ); }
 	public static function get_list_funding( $nb = 0, $client = '', $random = FALSE, $is_time_remaining = TRUE ) { return ATCF_Campaign::get_list_current( $nb, ATCF_Campaign::$campaign_status_collecte, ( $random ? 'rand' : 'asc'), $client, $is_time_remaining ); }
+	
+	public static function get_list_positive_savings( $nb = 0, $random = TRUE ) {
+		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
+		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
+		$query_options = array(
+			'numberposts'	=> $nb,
+			'post_type'		=> 'download',
+			'post_status'	=> 'publish',
+			'meta_query'	=> array (
+				array ( 'key' => 'campaign_vote', 'value' => 'collecte' ),
+				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') )
+			),
+			'tax_query'		=> array(
+				array(
+					'taxonomy'	=> 'download_category',
+					'terms'		=> $id_cat_positive_savings
+				)
+				
+			)
+		);
+		
+		if ( $random ) {
+			$query_options[ 'orderby' ] = 'rand';
+			
+		} else {
+			$query_options[ 'orderby' ] = 'post_date';
+			$query_options[ 'order' ] = 'asc';
+			
+		}
+		
+		return get_posts( $query_options );
+	}
+	
 	public static function get_list_funded( $nb = 0, $client = '', $include_current = false, $skip_hidden = true ) {
 		$buffer = ATCF_Campaign::get_list_finished( $nb, array( ATCF_Campaign::$campaign_status_funded, ATCF_Campaign::$campaign_status_closed ), $client, $skip_hidden );
 		if ( $include_current ) {
@@ -3421,14 +3506,15 @@ class ATCF_Campaign {
 		return get_posts( $query_options );
 	}
 	
-	public static function get_list_current_hidden( $type ) {
+	public static function get_list_current_hidden( $type, $is_time_remaining = true ) {
+		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
 			'numberposts' => $nb,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
 				array ( 'key' => 'campaign_vote', 'value' => $type ),
-				array ( 'key' => 'campaign_end_date', 'compare' => '>', 'value' => date('Y-m-d H:i:s') ),
+				array ( 'key' => 'campaign_end_date', 'compare' => $compare_end_date, 'value' => date('Y-m-d H:i:s') ),
 				array ( 'key' => ATCF_Campaign::$key_campaign_is_hidden, 'compare' => 'EXISTS' )
 			)
 		);

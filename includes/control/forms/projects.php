@@ -46,7 +46,12 @@ class WDGFormProjects {
 			'post_parent'	=> $page_projects->ID
 		);
 		$post_id = wp_insert_post($blog, true);
-		do_action('wdg_delete_cache', array( 'project-header-menu-'.$post_campaign->ID ));
+		do_action('wdg_delete_cache', array(
+			'cache_campaign_' . $post_campaign->ID,
+			'project-header-menu-' . $post_campaign->ID
+		));
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->delete( $campaign->get_name() );
                 
 		//Envoi de notifications mails
 		$send_mail = filter_input( INPUT_POST, 'send_mail' );
@@ -185,69 +190,7 @@ class WDGFormProjects {
 		}
 	}
 
-	/**
-	 * Gère l'édition image bannière
-	 */
-	public static function edit_image_banniere($image_header, $campaign_id) {
-		if (!empty($image_header)) {
-			$upload_overrides = array( 'test_form' => false );
-
-			$upload = wp_handle_upload( $image_header, $upload_overrides );
-			if (isset($upload[ 'url' ])) {
-				$path = $image_header['name'];
-				$ext = pathinfo($path, PATHINFO_EXTENSION);
-				$is_image_accepted = true;
-				switch (strtolower($ext)) {
-					case 'png':
-						$image_header = imagecreatefrompng($upload[ 'file' ]);
-						break;
-					case 'jpg':
-					case 'jpeg':
-						$image_header = imagecreatefromjpeg($upload[ 'file' ]);
-						break;
-					default:
-						$is_image_accepted = false;
-						break;
-				}
-				if ($is_image_accepted) {
-					/*for ($i = 0; $i < 10; $i++) {
-						imagefilter($image_header, IMG_FILTER_GAUSSIAN_BLUR);
-						imagefilter($image_header, IMG_FILTER_SELECTIVE_BLUR);
-					}*/
-					$withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $upload[ 'file' ]);
-					$img_name = $withoutExt.'_noblur.jpg';
-					imagejpeg($image_header,$img_name);
-
-					//Suppression dans la base de données de l'ancienne image
-					global $wpdb;
-					$table_posts = $wpdb->prefix . "posts";
-					$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_header'" );
-					wp_delete_attachment( $old_attachement_id, true );
-					
-					$attachment = array(
-						'guid'           => $upload[ 'url' ], 
-						'post_mime_type' => $upload[ 'type' ],
-						'post_title'     => 'image_header',
-						'post_content'   => '',
-						'post_status'    => 'inherit'
-					);
-					$attach_id = wp_insert_attachment( $attachment, $img_name, $campaign_id );		
-
-					wp_update_attachment_metadata( 
-						$attach_id, 
-						wp_generate_attachment_metadata( $attach_id, $img_name ) 
-					);
-					//Suppression de la position de la couverture
-					delete_post_meta($campaign_id, 'campaign_cover_position');
-
-					add_post_meta( $campaign_id, '_thumbnail_id', absint( $attach_id ) );
-				}
-			}
-		}
-	}
-
-
-	public static function edit_image_url_video($image, $post_video, $campaign_id) {
+	public static function edit_image_url_video( $image, $post_video, $campaign_id ) {
 		$buffer = '';
 		//ajout de l'image
 		if (!empty($image)) {
@@ -267,14 +210,22 @@ class WDGFormProjects {
 				$table_posts = $wpdb->prefix . "posts";
 				$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_home'" );
 				wp_delete_attachment($old_attachement_id, true);
-
-				$attach_id = wp_insert_attachment($attachment, $upload[ 'file' ], $campaign_id);		
+				
+				$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign_id );	
 
 				wp_update_attachment_metadata( 
 					$attach_id, 
 					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
 				);
 				$buffer .= $upload[ 'url' ] . '|';
+
+				$file = get_attached_file( $attach_id );
+				$path = pathinfo( $file );
+				$file_name_without_ext = $campaign_id . '-' . time();
+				$file_name_final = $file_name_without_ext . '.' . $path[ 'extension' ];
+				$newfile = $path['dirname'] . "/" . $file_name_final;
+				rename( $file, $newfile );
+				update_attached_file( $attach_id, $newfile );
 			}
 		}
 		//ajout de l'url de la vidéo

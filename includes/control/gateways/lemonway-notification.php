@@ -206,9 +206,9 @@ class LemonwayNotification {
 				// Si c'est une personne physique, on prévient
 				if ( empty( $WDGOrga_wallet ) ) {
 					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
-						NotificationsAPI::kyc_refused( $user_email, $user_firstname );
 						// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
 						if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
+							WDGQueue::add_document_refused_user_notification( $WDGUser_wallet->get_wpref() );
 							WDGQueue::add_document_refused_admin_notification( $WDGUser_wallet->get_wpref(), $lemonway_posted_document_type, $lemonway_posted_document_status );
 						}
 					}
@@ -223,20 +223,6 @@ class LemonwayNotification {
 				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
 				$notification_sent = TRUE;
 			}
-		}
-		
-		
-		// Si jamais la vraie notification n'est pas renvoyé, on envoie quand même la notif admin
-		if ( FALSE && !$notification_sent ) {
-			// Mail admin
-			$content = "Un document a changé de statut (et le mail normal n'a pas été envoyé) :<br>";
-			$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br>';
-			$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br>';
-			$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br>';
-			$content .= '$lemonway_posted_document_id :' .$lemonway_posted_document_id. '<br>';
-			$content .= '$lemonway_posted_document_type :' .$lemonway_posted_document_type. '<br>';
-			$content .= '$lemonway_posted_document_status :' .$lemonway_posted_document_status. '<br>';
-			NotificationsEmails::send_mail( 'emilien@wedogood.co', 'Notif interne - Changement statut document (données brutes)', $content, true );
 		}
 	}
 	
@@ -290,7 +276,7 @@ class LemonwayNotification {
 		$WDGOrga_invest_author = false;
 		if ( WDGOrganization::is_user_organization( $WDGUser_invest_author->get_wpref() ) ) {
 			$WDGOrga_invest_author = new WDGOrganization( $WDGUser_invest_author->get_wpref() );
-			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			$linked_users_creator = $WDGOrga_invest_author->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 			if ( !empty( $linked_users_creator ) ) {
 				$WDGUser_invest_author = $linked_users_creator[ 0 ];
 			}
@@ -343,12 +329,18 @@ class LemonwayNotification {
 				$organization_obj->check_register_campaign_lemonway_wallet();
 				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_campaign_lemonway_id(), $lemonway_posted_amount );
 				
-				$postdata = array(
-					'ID'			=> $investment_id,
-					'post_status'	=> 'publish',
-					'edit_date'		=> current_time( 'mysql' )
-				);
-				wp_update_post($postdata);
+				// Si la campagne n'est pas en cours d'évaluation, on peut valider l'investissement
+				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
+					$postdata = array(
+						'ID'			=> $investment_id,
+						'post_status'	=> 'publish',
+						'edit_date'		=> current_time( 'mysql' )
+					);
+					wp_update_post($postdata);
+
+				} else {
+					add_post_meta( $investment_id, 'has_received_wire', '1' );
+				}
 				
 				// - Créer le contrat pdf
 				// - Envoyer validation d'investissement par mail
@@ -412,24 +404,77 @@ class LemonwayNotification {
 		 */
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
-	
-		$content = 'Un prélèvement a été reçu avec les infos suivantes :<br />';
-		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br />';
-		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br />';
-		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br />';
-		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br />';
-		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br />';
-		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br />';
-		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Prélèvement reçu', $content, true );
+		// Préparation du mail de notification
+		$content = 'Un prélèvement a été reçu avec les infos suivantes :<br>';
+		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br>';
+		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br>';
+		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br>';
+		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br>';
+		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br>';
+		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br>';
+		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Prélèvement reçu', $content );
 		
+		$content_mail_auto_royalties = '';
+
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
+			
+			// Transfert vers le wallet de séquestre de royalties
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
 			$WDGOrga_wallet->check_register_royalties_lemonway_wallet();
 			$transaction_details = LemonwayLib::get_transaction_by_id( $lemonway_posted_id_transaction, 'transactionId' );
 			$transfer_amount = $transaction_details->CRED;
 			LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $transfer_amount );
+
+			// Récupération des projets pour voir les versements de royalties en attente
+			$list_campaign_orga = $WDGOrga_wallet->get_campaigns();
+			if ( !empty( $list_campaign_orga ) ) {
+				foreach ( $list_campaign_orga as $project ) {
+					$campaign = new ATCF_Campaign( $project->wpref );
+					$list_declarations_campaign = WDGROIDeclaration::get_list_by_campaign_id( $project->wpref, WDGROIDeclaration::$status_waiting_transfer );
+					if ( !empty( $list_declarations_campaign ) ) {
+						foreach( $list_declarations_campaign as $declaration ) {
+							$list_investments = $campaign->roi_payments_data( $declaration );
+							$total_roi = 0;
+							foreach ($list_investments as $investment_item) {
+								$total_roi += $investment_item[ 'roi_amount' ];
+							}
+
+							// Calcul de la date à laquelle on fera le versement auto
+							$date_of_royalties_transfer = new DateTime();
+							$date_of_royalties_transfer->add( new DateInterval( 'P3D' ) );
+							// Si lundi, on fera un jour plus tard
+							if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
+								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+							}
+							// Si samedi, on fera un jour plus tard
+							if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
+								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+							}
+							// Si dimanche, on fera un jour plus tard
+							if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
+								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+							}
+							$date_of_royalties_transfer->setTime( 15, 30, 0 );
+
+							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . '<br>';
+							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . '<br>';
+							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . '<br>';
+							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . ' €<br>';
+							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €<br><br>';
+
+							// Programmer versement auto
+							WDGQueue::add_royalties_auto_transfer_start( $declaration->id, $date_of_royalties_transfer );
+						}
+					}
+				}
+			}
 		}
+
+		if ( !empty( $content_mail_auto_royalties ) ) {
+			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto à venir', $content_mail_auto_royalties );
+		}
+
 	}
 	
 }

@@ -630,9 +630,12 @@ class WDGInvestment {
 				'id'			=> $this->campaign->ID,
 				'item_number'	=> array(
 					'id'			=> $this->campaign->ID,
+					'quantity'		=> $amount,
 					'options'		=> array()
 				),
-				'price'			=> 1,
+				'item_price'	=> 1,
+				'subtotal'		=> $amount,
+				'price'			=> $amount,
 				'quantity'		=> $amount
 			)
 		);
@@ -640,6 +643,7 @@ class WDGInvestment {
 		$this->set_status( WDGInvestment::$status_validated );
 
 		$payment_data = array( 
+			'subtotal'		=> $amount, 
 			'price'			=> $amount, 
 			'date'			=> date('Y-m-d H:i:s'), 
 			'user_email'	=> $WDGUser_current->get_email(),
@@ -651,6 +655,7 @@ class WDGInvestment {
 			'status'		=> 'pending'
 		);
 		$payment_id = edd_insert_payment( $payment_data );
+		update_post_meta( $payment_id, '_edd_payment_total', $amount );
 		$this->id = $payment_id;
 		$_SESSION[ 'investment_id' ] = $payment_id;
 		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
@@ -710,7 +715,7 @@ class WDGInvestment {
 		// Notifications
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
 			NotificationsEmails::new_purchase_pending_wire_admin( $payment_id );
-			NotificationsEmails::new_purchase_pending_wire_user( $payment_id, $lemonway_id );
+			NotificationsAPI::investment_pending_wire( $WDGUser_current->get_email(), $save_display_name, $amount, $this->campaign->get_name(), $lemonway_id, $this->campaign->get_api_id() );
 		}
 		
 		//Si un utilisateur investit, il croit au projet

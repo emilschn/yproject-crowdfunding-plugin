@@ -116,7 +116,7 @@ class WDGFormUsers {
 			}
 
 			if ( $user_id && is_integer( $user_id ) ) {
-				wp_set_auth_cookie( $user_id, false, is_ssl() );
+				wp_set_auth_cookie( $user_id, true, is_ssl() );
 				$do_fb_login = TRUE;
 			}
 		}
