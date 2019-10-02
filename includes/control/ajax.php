@@ -678,20 +678,6 @@ class WDGAjaxActions {
 			}
 		}
 	}
-
-
-	/**
-	 * Enregistre l'image head
-	 */
-	public static function save_image_head() {
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$image_header =  $_FILES['image_header'];
-		
-		WDGFormProjects::edit_image_banniere($image_header, $campaign_id);
-		
-		exit();
-	}
-	
 	
 
 	/**
