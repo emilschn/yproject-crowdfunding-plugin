@@ -2578,12 +2578,12 @@ class ATCF_Campaign {
 			if ($backers > 0) {
 				foreach ( $backers as $backer ) {
 					$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-					$payment    = get_post( $payment_id );
+					$payment = get_post( $payment_id );
 	
 					if ( empty( $payment ) || $payment->post_status == 'pending' )
 						continue;
 	
-					$total      = $total + edd_get_payment_amount( $payment_id );
+					$total = $total + edd_get_payment_amount( $payment_id );
 				}
 			}
 		
@@ -2593,16 +2593,17 @@ class ATCF_Campaign {
 		}
 		
 		if ( $formatted ) {
-		    $currency = edd_get_currency();
-		    if ($currency == "EUR") {
-				if (strpos($this->current_amount, '.00') !== false) {
-					$this->current_amount = substr ($this->current_amount, 0, -3);
+			$current_amount = $this->current_amount;
+			$currency = edd_get_currency();
+			if ($currency == "EUR") {
+				if ( strpos( $current_amount, '.00' ) !== false ) {
+					$current_amount = substr ( $current_amount, 0, -3 );
 				}
-				$this->current_amount = number_format($this->current_amount, 0, ".", " ");
-				return $this->current_amount . ' &euro;';
-		    } else {
-				return edd_currency_filter( edd_format_amount( $this->current_amount ) );
-		    }
+				$current_amount = number_format( $current_amount, 0, ".", " " );
+				return $current_amount . ' &euro;';
+			} else {
+				return edd_currency_filter( edd_format_amount( $current_amount ) );
+			}
 		}
 
 		return $this->current_amount;
