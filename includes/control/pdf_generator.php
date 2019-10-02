@@ -263,7 +263,7 @@ class WDG_PDF_Generator {
 			$number_exploded = explode( '.', $roi_percent_estimated );
 			$buffer_in_words .= " VIRGULE ";
 			$index_of_zero = 0;
-			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) == '0' ) {
+			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) === '0' ) {
 				$buffer_in_words .= "ZERO ";
 				$index_of_zero++;
 			}
