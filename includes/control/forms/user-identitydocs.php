@@ -261,7 +261,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$id2_file_date_uploaded = $current_file_id2->date_uploaded;
 			}
 			$id2_label = __( "Deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
-			$field_status_id2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id2, $id2_file_date_uploaded );
+			$field_status_id2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis, $id2_file_date_uploaded );
 			$this->addField(
 				'file',
 				'identity2',
