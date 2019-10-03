@@ -1495,6 +1495,25 @@ class WDGUser {
 		}
 		return $buffer;
 	}
+
+	/**
+	 * Enregistre la date d'expiration de la carte qui vient d'être utilisée et enregistrée
+	 */
+	public function save_lemonway_card_expiration_date() {
+		$expiration_date = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
+			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+				if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+					$expiration_date = $card_object->EXTRA->EXP;
+				}
+			}
+		}
+
+		if ( !empty( $expiration_date ) ) {
+			update_user_meta( $this->get_wpref(), 'save_card_expiration_date', $expiration_date );
+		}
+	}
 	
 	/**
 	 * Retourne le statut de l'identification sur lemonway
