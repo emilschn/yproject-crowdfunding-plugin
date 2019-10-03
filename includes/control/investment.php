@@ -755,7 +755,7 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	public function try_payment( $meanofpayment ) {
+	public function try_payment( $meanofpayment, $save_card = FALSE ) {
 		$payment_key = FALSE;
 		switch ( $meanofpayment ) {
 			case WDGInvestment::$meanofpayment_wallet:
@@ -763,10 +763,10 @@ class WDGInvestment {
 				$buffer = $this->save_payment( $payment_key, $meanofpayment );
 				break;
 			case WDGInvestment::$meanofpayment_cardwallet:
-				$buffer = $this->try_payment_card( TRUE );
+				$buffer = $this->try_payment_card( TRUE, $save_card );
 				break;
 			case WDGInvestment::$meanofpayment_card:
-				$buffer = $this->try_payment_card();
+				$buffer = $this->try_payment_card( FALSE, $save_card );
 				break;
 		}
 		
@@ -821,7 +821,7 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	private function try_payment_card( $with_wallet = FALSE) {
+	private function try_payment_card( $with_wallet = FALSE, $save_card = FALSE ) {
 		$invest_type = $this->get_session_user_type();
 		
 		$WDGuser_current = WDGUser::current();
@@ -852,10 +852,8 @@ class WDGInvestment {
 			}
 			$return_url .= '&meanofpayment=' .WDGInvestment::$meanofpayment_cardwallet;
 		}
-		// Si le montant dépasse toujours le montant maximal, le montant par carte reste le maximum autorisé
-		if ( $amount > $WDGUserInvestments_current->get_maximum_investable_amount_without_alert() ) {
-			$_SESSION[ 'remaining_amount_when_authenticated' ] = $this->get_session_amount() - $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
-			$amount = $WDGUserInvestments_current->get_maximum_investable_amount_without_alert();
+		// Si on a demandé à enregistrer la carte
+		if ( $save_card ) {
 			$register_card = 1;
 		}
 		
