@@ -886,7 +886,7 @@ class WDGQueue {
 				}
 
 				// On vérifie qu'il y a toujours l'argent sur le wallet
-				if ( $amount_wallet > $roi_declaration->get_amount_with_adjustment() ) {
+				if ( $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
 					self::add_royalties_auto_transfer_next( $declaration_id );
 
 				} else {
