@@ -165,5 +165,10 @@ class NotificationsSlack {
 		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, TRUE );
 	}
+	
+	public static function send_auto_transfer_done( $project_name ) {
+		$message = "Le versement du projet " .$project_name. " a été fait automatiquement.";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, TRUE );
+	}
     
 }
