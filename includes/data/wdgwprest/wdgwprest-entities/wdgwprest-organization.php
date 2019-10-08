@@ -39,6 +39,7 @@ class WDGWPREST_Entity_Organization {
 			'ape'						=> $organization->get_ape(),
 			'vat'						=> $organization->get_vat(),
 			'fiscal_year_end_month'		=> $organization->get_fiscal_year_end_month(),
+			'employees_count'			=> $organization->get_employees_count(),
 			'capital'					=> $organization->get_capital(),
 			'address_number'			=> $organization->get_address_number(),
 			'address_number_comp'		=> $organization->get_address_number_comp(),

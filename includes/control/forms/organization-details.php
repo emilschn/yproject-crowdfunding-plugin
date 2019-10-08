@@ -5,6 +5,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 	
 	public static $field_group_hidden = 'organization-details-hidden';
 	public static $field_group_complete = 'organization-details-complete';
+	public static $field_group_dashboard = 'organization-details-dashboard';
 	public static $field_group_address = 'organization-details-address';
 	
 	private $organization_id;
@@ -138,10 +139,18 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			'select',
 			'fiscal_year_end_month',
 			__( "L'exerice comptable se termine &agrave; la fin du mois", 'yproject' ),
-			self::$field_group_complete,
+			self::$field_group_dashboard,
 			$WDGOrganization->get_fiscal_year_end_month(),
 			FALSE,
 			$months_list
+		);
+
+		$this->addField(
+			'number',
+			'employees_count',
+			__( "Nombre d'employ&eacute;s", 'yproject' ),
+			self::$field_group_dashboard,
+			$WDGOrganization->get_employees_count()
 		);
 		
 		//$field_group_address
@@ -301,6 +310,11 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$fiscal_year_end_month = $this->getInputText( 'fiscal_year_end_month' );
 			if ( !empty( $fiscal_year_end_month ) ) {
 				$WDGOrganization->set_fiscal_year_end_month( $fiscal_year_end_month );
+			}
+			
+			$employees_count = $this->getInputText( 'employees_count' );
+			if ( !empty( $employees_count ) ) {
+				$WDGOrganization->set_employees_count( $employees_count );
 			}
 			
 			$address_number = $this->getInputText( 'address_number' );
