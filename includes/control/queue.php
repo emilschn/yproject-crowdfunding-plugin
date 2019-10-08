@@ -921,6 +921,9 @@ class WDGQueue {
 					}
 					$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
 					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
+
+				} else {
+					self::add_royalties_auto_transfer_next( $declaration_id );
 				}
 				
 			}
