@@ -69,17 +69,24 @@ class WDGFormProjects {
 			$recipients_string = implode( ',', $recipients );
 			
 			$content = $_POST[ 'postcontent' ];
+
+			// Algo pour supprimer les liens qui mènent vers WDG et qui sont automatiquement appliqués aux images par WP
+			// (car ce sont des liens qui mènent directement aux images et sont inutiles)
 			$content_exploded_by_href = explode( 'href="', $content );
 			$count_content_exploded_by_href = count( $content_exploded_by_href );
 			if ( $count_content_exploded_by_href > 1 ) {
 				for ( $i = 1; $i < $count_content_exploded_by_href; $i++ ) {
 					$nodes_to_analyse_exploded = explode( '</a>', $content_exploded_by_href[ $i ] );
 					$inside_of_link = $nodes_to_analyse_exploded[ 0 ];
+					// Si c'est un lien posé sur une image
 					if ( strpos( $inside_of_link, '<img' ) ) {
 						$content_without_link_exploded = explode( '"', $inside_of_link );
-						array_shift( $content_without_link_exploded );
-						$inside_of_link = implode( '"', $content_without_link_exploded );
-						$nodes_to_analyse_exploded[ 0 ] = '#"'. $inside_of_link;
+						// Si c'est un lien menant vers WDG, on le supprime
+						if ( strpos( $content_without_link_exploded, 'wedogood.co' ) !== FALSE ) {
+							array_shift( $content_without_link_exploded );
+							$inside_of_link = implode( '"', $content_without_link_exploded );
+							$nodes_to_analyse_exploded[ 0 ] = '#"'. $inside_of_link;
+						}
 					}
 					$content_exploded_by_href[ $i ] = implode( '</a>', $nodes_to_analyse_exploded );
 				}
