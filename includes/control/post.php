@@ -393,11 +393,11 @@ class WDGPostActions {
 		$WDGUser_current = WDGUser::current();
 		$phone_number = $WDGUser_current->get_phone_number();
 		$url_return = wp_get_referer() . '&has_signed_mandate=1';
+		$url_error = wp_get_referer() . '&has_signed_mandate=0';
 		
 		// Récupération de l'organisation
 		$organization_obj = new WDGOrganization( $organization_id );
-		$organization_obj->register_lemonway_iban();
-		$token = $organization_obj->get_sign_mandate_token( $phone_number, $url_return, $url_return );
+		$token = $organization_obj->get_sign_mandate_token( $phone_number, $url_return, $url_error );
 		
 		if ( $token != FALSE ) {
 			// Redirection vers la page de signature de document
