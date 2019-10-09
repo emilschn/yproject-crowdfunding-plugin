@@ -886,7 +886,7 @@ class WDGQueue {
 				}
 
 				// On vérifie qu'il y a toujours l'argent sur le wallet
-				if ( $amount_wallet > $roi_declaration->get_amount_with_adjustment() ) {
+				if ( $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
 					self::add_royalties_auto_transfer_next( $declaration_id );
 
 				} else {
@@ -921,6 +921,10 @@ class WDGQueue {
 					}
 					$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
 					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
+					NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
+
+				} else {
+					self::add_royalties_auto_transfer_next( $declaration_id );
 				}
 				
 			}

@@ -60,7 +60,7 @@ class WDGUser {
 	 * Constructeur
 	 * @param int $user_id
 	 */
-	public function __construct($user_id = '') {
+	public function __construct( $user_id = '', $load_api_data = TRUE ) {
 		// Initialisation avec l'objet WP
 		if ($user_id === '') {
 			$this->wp_user = wp_get_current_user();
@@ -71,7 +71,7 @@ class WDGUser {
 		// NÃ©cessaire pour Ã©viter boucle infinie
 		// Dans cette fonction, il a des appels Ã  l'API oÃ¹ on vÃ©rifie l'utilisateur en cours
 		// Il ne faut pas faire ces appels Ã  l'API tant que l'inialisation n'est pas terminÃ©e
-		if ( !is_null( self::$_current ) ) {
+		if ( $load_api_data && !is_null( self::$_current ) ) {
 			$this->construct_with_api_data();
 		}
 	}

@@ -21,6 +21,8 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		
 		parent::initFields();
 		$campaign = new ATCF_Campaign( $this->campaign_id );
+		$campaign_organization = $campaign->get_organization();
+		$organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$roideclaration = new WDGROIDeclaration( $this->declaration_id );
 
 		
@@ -70,6 +72,9 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		);
 		
 		$input_declaration_nb_employees = filter_input( INPUT_POST, 'nb_employees' );
+		if ( empty( $input_declaration_nb_employees ) ) {
+			$input_declaration_nb_employees = $organization->get_employees_count();
+		}
 		$this->addField(
 			'text',
 			'nb_employees',
@@ -227,6 +232,12 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$roideclaration->save();
 			
 			NotificationsSlack::send_declaration_filled( $campaign->get_name(), $roideclaration->get_turnover_total(), $roideclaration->get_amount_with_adjustment(), $roideclaration->get_commission_to_pay() );
+
+			// Mise à jour du nombre d'employés de l'organisation en fonction de ce qui a été rempli dans cette déclaration
+			$campaign_organization = $campaign->get_organization();
+			$organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+			$organization->set_employees_count( $employees_number );
+			$organization->save();
 		}
 		
 		return !$this->hasErrors();

@@ -409,7 +409,10 @@ class LemonwayLib {
 		 * Retourne les éléments suivants :
 		 * ID (identifiant) ; BAL (solde) ; NAME ; EMAIL ; DOCS (liste de documents dont le statut a changé) ; IBANS (liste des IBANs) ; S (statut)
 		 */
-		return $result->WALLET;
+		if ( !empty( $result->WALLET ) ) {
+			return $result->WALLET;
+		}
+		return FALSE;
 	}
 	
 	/**

@@ -537,6 +537,7 @@ class NotificationsAPI {
 			'NOM_PROJET'				=> $project_name,
 			'URL_PROJET'				=> $project_url,
 			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
 			'DATE_HEURE_FIN'			=> $date_hour_end
 		);
 		$parameters = array(
@@ -586,6 +587,7 @@ class NotificationsAPI {
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description,
 			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
 			'DATE_HEURE_FIN'			=> $date_hour_end
 		);
 		$parameters = array(
@@ -611,6 +613,7 @@ class NotificationsAPI {
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description,
 			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
 			'DATE_HEURE_FIN'			=> $date_hour_end
 		);
 		$parameters = array(
@@ -636,6 +639,7 @@ class NotificationsAPI {
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description,
 			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
+			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
 			'DATE_HEURE_FIN'			=> $date_hour_end
 		);
 		$parameters = array(
