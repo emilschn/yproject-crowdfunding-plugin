@@ -905,12 +905,15 @@ class WDGInvestment {
 			
 			$payment_key = $_REQUEST["response_wkToken"];
 			if ( !$this->exists_payment( $payment_key ) ) {
-				$transaction_type = 'moneyin';
 				$input_with_registered_card = filter_input( INPUT_GET, 'with_registered_card' );
 				if ( !empty( $input_with_registered_card ) ) {
-					$transaction_type = 'transactionId';
+					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key, 'transactionId' );
+					$payment_key = $lw_transaction_result->ID;
+					
+				} else {
+					$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key );
 				}
-				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key, $transaction_type );
+
 				$return_cancel = filter_input( INPUT_GET, 'cancel' );
 				$return_error = filter_input( INPUT_GET, 'error' );
 				$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
