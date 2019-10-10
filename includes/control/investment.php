@@ -865,7 +865,7 @@ class WDGInvestment {
 		// Si on a demandé à enregistrer la carte
 		if ( $save_card ) {
 			$register_card = 1;
-			$_SESSION[ 'save_card' ] = '1';
+			$return_url .= '&savecard=1';
 		}
 		
 		$error_url = $return_url . '&error=1';
@@ -921,18 +921,19 @@ class WDGInvestment {
 				// Compléter par wallet
 				if ( !$is_failed ) {
 					$invest_type = $this->get_session_user_type();
+					$input_savecard = filter_input( INPUT_GET, 'savecard' );
 					if ( $invest_type != 'user' ) {
 						$WDGOrganization_debit = new WDGOrganization( $invest_type );
 						$amount = min( $this->get_session_amount(), $amount_by_card + $WDGOrganization_debit->get_available_rois_amount() );
 						// Sauvegarde de la date d'expiration
-						if ( $this->get_session_save_card() ) {
+						if ( !empty( $input_savecard ) ) {
 							$WDGOrganization_debit->save_lemonway_card_expiration_date();
 						}
 					} else {
 						$WDGUser_current = WDGUser::current();
 						$amount = min( $this->get_session_amount(), $WDGUser_current->get_lemonway_wallet_amount() );
 						// Sauvegarde de la date d'expiration
-						if ( $this->get_session_save_card() ) {
+						if ( !empty( $input_savecard ) ) {
 							$WDGUser_current->save_lemonway_card_expiration_date();
 						}
 					}
