@@ -975,17 +975,22 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
-	public function get_lemonway_cardid() {
-		$buffer = FALSE;
+	public function get_lemonway_registered_cards() {
+		$buffer = array();
 		$wallet_details = $this->get_wallet_details();
 		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
 			foreach( $wallet_details->CARDS->CARD as $card_object ) {
 				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
-					$buffer = $card_object->ID;
+					$card_item = array();
+					$card_item[ 'id' ] = $card_object->ID;
+					if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+						$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
+					}
+					if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
+						$card_item[ 'number' ] = $card_object->EXTRA->NUM;
+					}
+					array_push( $buffer, $card_item );
 				}
-			}
-			if ( empty( $buffer ) ) {
-				$buffer = $wallet_details->CARDS->CARD->ID;
 			}
 		}
 		return $buffer;
@@ -1008,6 +1013,14 @@ class WDGOrganization {
 		if ( !empty( $expiration_date ) ) {
 			update_user_meta( $this->get_wpref(), 'save_card_expiration_date', $expiration_date );
 		}
+	}
+
+	/**
+	 * Retourne vrai si il a enregistré une carte bancaire précédemment
+	 */
+	public function has_saved_card_expiration_date() {
+		$expiration_date = get_user_meta( $this->get_wpref(), 'save_card_expiration_date', TRUE );
+		return !empty( $expiration_date );
 	}
 	
 	/**
