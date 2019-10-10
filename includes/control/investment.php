@@ -874,7 +874,7 @@ class WDGInvestment {
 		if ( !empty( $card_type ) ) {
 			$result = LemonwayLib::ask_payment_registered_card( $wallet_id, $card_type, $amount );
 			$purchase_key = $result->TRANS->HPAY->ID;
-			$return_url .= '&response_wkToken=' . $purchase_key;
+			$return_url .= '&response_wkToken=' . $purchase_key . '&with_registered_card=1';
 			wp_redirect( $return_url );
 			exit();
 
@@ -911,7 +911,12 @@ class WDGInvestment {
 			
 			$payment_key = $_REQUEST["response_wkToken"];
 			if ( !$this->exists_payment( $payment_key ) ) {
-				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key );
+				$transaction_type = 'moneyin';
+				$input_with_registered_card = filter_input( INPUT_GET, 'with_registered_card' );
+				if ( !empty( $input_with_registered_card ) ) {
+					$transaction_type = 'transactionId';
+				}
+				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key, $transaction_type );
 				$return_cancel = filter_input( INPUT_GET, 'cancel' );
 				$return_error = filter_input( INPUT_GET, 'error' );
 				$is_failed = ( !empty( $return_cancel ) || !empty( $return_error ) );
