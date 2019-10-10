@@ -3134,7 +3134,11 @@ class ATCF_Campaign {
 			$investments_list = $this->payments_data(TRUE);
 		
 			// Parcours
-			foreach ($investments_list as $investment_item) {
+			foreach ( $investments_list as $investment_item ) {
+				if ( $investment_item[ 'status' ] != 'publish' ) {
+					continue;
+				}
+
 				// Calcul de la part de l'investisseur dans le total
 				$investor_proportion = $investment_item['amount'] / $total_amount; //0.105
 				// Calcul du montant à récupérer en roi

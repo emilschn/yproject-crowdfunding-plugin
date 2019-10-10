@@ -600,7 +600,7 @@ class WDGROIDeclaration {
 		}
 		
 		// La notification ne sera envoyée que si le montant minimum de versement n'a pas été atteint
-		if ( $send_notification_extend && $this->current_campaign->funding_duration() > 0 ) {
+		if ( $send_notification_extend && $campaign->funding_duration() > 0 ) {
 			$amount_minimum_royalties = $campaign->current_amount( FALSE ) * $campaign->minimum_profit();
 			if ( $amount_transferred >= $amount_minimum_royalties ) {
 				$send_notification_extend = FALSE;

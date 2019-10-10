@@ -39,6 +39,7 @@ class WDGOrganization {
 	private $ape;
 	private $vat;
 	private $fiscal_year_end_month;
+	private $employees_count;
 	private $bank_owner;
 	private $bank_address;
 	private $bank_address2;
@@ -81,6 +82,7 @@ class WDGOrganization {
         $org_object->set_ape('---');
         $org_object->set_vat('---');
         $org_object->set_fiscal_year_end_month('---');
+        $org_object->set_employees_count(0);
         $org_object->set_bank_owner('---');
         $org_object->set_bank_address('---');
         $org_object->set_bank_iban('---');
@@ -147,6 +149,7 @@ class WDGOrganization {
 			$this->ape = $this->bopp_object->ape;
 			$this->vat = $this->bopp_object->vat;
 			$this->fiscal_year_end_month = $this->bopp_object->fiscal_year_end_month;
+			$this->employees_count = $this->bopp_object->employees_count;
 			$geolocation = explode( ',', $this->bopp_object->geolocation );
 			if ( count( $geolocation ) > 1 ) {
 				$this->latitude = $geolocation[0];
@@ -543,6 +546,13 @@ class WDGOrganization {
 	}
 	public function set_fiscal_year_end_month($value) {
 		$this->fiscal_year_end_month = $value;
+	}
+	
+	public function get_employees_count() {
+		return $this->employees_count;
+	}
+	public function set_employees_count( $value ) {
+		$this->employees_count = $value;
 	}
 	
 	public function get_bank_owner() {
@@ -965,20 +975,52 @@ class WDGOrganization {
 		return $buffer;
 	}
 	
-	public function get_lemonway_cardid() {
-		$buffer = FALSE;
+	public function get_lemonway_registered_cards() {
+		$buffer = array();
 		$wallet_details = $this->get_wallet_details();
 		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
 			foreach( $wallet_details->CARDS->CARD as $card_object ) {
 				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
-					$buffer = $card_object->ID;
+					$card_item = array();
+					$card_item[ 'id' ] = $card_object->ID;
+					if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+						$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
+					}
+					if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
+						$card_item[ 'number' ] = $card_object->EXTRA->NUM;
+					}
+					array_push( $buffer, $card_item );
 				}
-			}
-			if ( empty( $buffer ) ) {
-				$buffer = $wallet_details->CARDS->CARD->ID;
 			}
 		}
 		return $buffer;
+	}
+
+	/**
+	 * Enregistre la date d'expiration de la carte qui vient d'être utilisée et enregistrée
+	 */
+	public function save_lemonway_card_expiration_date() {
+		$expiration_date = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
+			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+				if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+					$expiration_date = $card_object->EXTRA->EXP;
+				}
+			}
+		}
+
+		if ( !empty( $expiration_date ) ) {
+			update_user_meta( $this->get_wpref(), 'save_card_expiration_date', $expiration_date );
+		}
+	}
+
+	/**
+	 * Retourne vrai si il a enregistré une carte bancaire précédemment
+	 */
+	public function has_saved_card_expiration_date() {
+		$expiration_date = get_user_meta( $this->get_wpref(), 'save_card_expiration_date', TRUE );
+		return !empty( $expiration_date );
 	}
 	
 	/**
@@ -1769,6 +1811,7 @@ class WDGOrganization {
 			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
 			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
 			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
+			$org_object->set_employees_count(filter_input(INPUT_POST, 'org_employees_count'));
 			$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
 			$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
 			$org_object->set_bank_address2(filter_input(INPUT_POST, 'org_bankowneraddress2'));

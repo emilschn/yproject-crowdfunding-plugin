@@ -45,15 +45,6 @@ class WDGUserInvestments {
 		}
 	}
 	
-	private function get_lemonway_cardid() {
-		if ( !empty( $this->user ) ) {
-			return $this->user->get_lemonway_cardid();
-		}
-		if ( !empty( $this->orga ) ) {
-			return $this->orga->get_lemonway_cardid();
-		}
-	}
-	
 /*******************************************************************************
  * Récupérations des investissements
 *******************************************************************************/
@@ -404,37 +395,6 @@ class WDGUserInvestments {
 			$buffer = round( array_sum( $purchases ), 2 );
 		}
 		return $buffer;
-	}
-	
-/*******************************************************************************
- * Gestion des paiements par carte en attente
-*******************************************************************************/
-	public function try_pending_card_investments( $force = FALSE ) {
-		// Parcourir tous les investissements en attente pour cet utilisateur, déclencher le paiement et valider l'investissement
-		$pending_investments = $this->get_pending_investments();
-		foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
-			$investment_campaign = new ATCF_Campaign( $campaign_id );
-			if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $force ) {
-				foreach ( $campaign_investments as $investment_id ) {
-					$wdg_investment = new WDGInvestment( $investment_id );
-					$investment_key = $wdg_investment->get_payment_key();
-					if ( strpos( $investment_key, 'card_TEMP_' ) !== FALSE ) {
-						$lemonway_id = $this->get_lemonway_id();
-						$lemonway_cardid = $this->get_lemonway_cardid();
-						$result = LemonwayLib::ask_payment_registered_card( $lemonway_id, $lemonway_cardid, $wdg_investment->get_saved_amount() );
-						if ( $result->TRANS->HPAY->STATUS == '3' ) {
-							$purchase_key = $result->TRANS->HPAY->ID;
-							$purchase_key .= $wdg_investment->try_payment_wallet( $wdg_investment->get_saved_amount(), FALSE );
-							update_post_meta( $investment_id, '_edd_payment_purchase_key', $purchase_key );
-							ypcf_get_updated_payment_status( $investment_id, false, false, $wdg_investment );
-							
-						} else {
-							NotificationsEmails::new_purchase_pending_admin_error( ( $this->user ? $this->user : $this->orga ), $result, $investment_id, $wdg_investment->get_saved_amount() );
-						}
-					}
-				}
-			}
-		}
 	}
 	
 /*******************************************************************************

@@ -60,7 +60,7 @@ class WDGUser {
 	 * Constructeur
 	 * @param int $user_id
 	 */
-	public function __construct($user_id = '') {
+	public function __construct( $user_id = '', $load_api_data = TRUE ) {
 		// Initialisation avec l'objet WP
 		if ($user_id === '') {
 			$this->wp_user = wp_get_current_user();
@@ -71,7 +71,7 @@ class WDGUser {
 		// NÃ©cessaire pour Ã©viter boucle infinie
 		// Dans cette fonction, il a des appels Ã  l'API oÃ¹ on vÃ©rifie l'utilisateur en cours
 		// Il ne faut pas faire ces appels Ã  l'API tant que l'inialisation n'est pas terminÃ©e
-		if ( !is_null( self::$_current ) ) {
+		if ( $load_api_data && !is_null( self::$_current ) ) {
 			$this->construct_with_api_data();
 		}
 	}
@@ -1497,20 +1497,52 @@ class WDGUser {
 		return $birthday_datetime->format( 'd/m/Y' );
 	}
 	
-	public function get_lemonway_cardid() {
-		$buffer = FALSE;
+	public function get_lemonway_registered_cards() {
+		$buffer = array();
 		$wallet_details = $this->get_wallet_details();
 		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
 			foreach( $wallet_details->CARDS->CARD as $card_object ) {
 				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
-					$buffer = $card_object->ID;
+					$card_item = array();
+					$card_item[ 'id' ] = $card_object->ID;
+					if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+						$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
+					}
+					if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
+						$card_item[ 'number' ] = $card_object->EXTRA->NUM;
+					}
+					array_push( $buffer, $card_item );
 				}
-			}
-			if ( empty( $buffer ) ) {
-				$buffer = $wallet_details->CARDS->CARD->ID;
 			}
 		}
 		return $buffer;
+	}
+
+	/**
+	 * Enregistre la date d'expiration de la carte qui vient d'être utilisée et enregistrée
+	 */
+	public function save_lemonway_card_expiration_date() {
+		$expiration_date = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
+			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+				if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+					$expiration_date = $card_object->EXTRA->EXP;
+				}
+			}
+		}
+
+		if ( !empty( $expiration_date ) ) {
+			update_user_meta( $this->get_wpref(), 'save_card_expiration_date', $expiration_date );
+		}
+	}
+
+	/**
+	 * Retourne vrai si il a enregistré une carte bancaire précédemment
+	 */
+	public function has_saved_card_expiration_date() {
+		$expiration_date = get_user_meta( $this->get_wpref(), 'save_card_expiration_date', TRUE );
+		return !empty( $expiration_date );
 	}
 	
 	/**
