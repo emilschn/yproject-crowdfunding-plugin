@@ -759,7 +759,7 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	public function try_payment( $meanofpayment, $save_card = FALSE ) {
+	public function try_payment( $meanofpayment, $save_card = FALSE, $card_type = FALSE ) {
 		$payment_key = FALSE;
 		switch ( $meanofpayment ) {
 			case WDGInvestment::$meanofpayment_wallet:
@@ -767,10 +767,10 @@ class WDGInvestment {
 				$buffer = $this->save_payment( $payment_key, $meanofpayment );
 				break;
 			case WDGInvestment::$meanofpayment_cardwallet:
-				$buffer = $this->try_payment_card( TRUE, $save_card );
+				$buffer = $this->try_payment_card( TRUE, $save_card, $card_type );
 				break;
 			case WDGInvestment::$meanofpayment_card:
-				$buffer = $this->try_payment_card( FALSE, $save_card );
+				$buffer = $this->try_payment_card( FALSE, $save_card, $card_type );
 				break;
 		}
 		
@@ -825,7 +825,7 @@ class WDGInvestment {
 		return $buffer;
 	}
 	
-	private function try_payment_card( $with_wallet = FALSE, $save_card = FALSE ) {
+	private function try_payment_card( $with_wallet = FALSE, $save_card = FALSE, $card_type = FALSE ) {
 		$invest_type = $this->get_session_user_type();
 		
 		$WDGuser_current = WDGUser::current();
@@ -865,17 +865,26 @@ class WDGInvestment {
 		$error_url = $return_url . '&error=1';
 		$cancel_url = $return_url . '&cancel=1';
 		
-		$return = LemonwayLib::ask_payment_webkit( $wallet_id, $amount, 0, $wk_token, $return_url, $error_url, $cancel_url, $register_card );
-		if ( !empty($return->MONEYINWEB->TOKEN) ) {
-			$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
-			$url_css_encoded = urlencode( $url_css );
-			wp_redirect( YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded );
+		if ( !empty( $card_type ) ) {
+			$result = LemonwayLib::ask_payment_registered_card( $wallet_id, $card_type, $amount );
+			$purchase_key = $result->TRANS->HPAY->ID;
+			$return_url .= '&response_wkToken=' . $purchase_key;
+			wp_redirect( $return_url );
 			exit();
-			
+
 		} else {
-			ypcf_debug_log( 'WDGInvestment::try_payment_card > error - ' .LemonwayLib::get_last_error_code(). ' - ' .LemonwayLib::get_last_error_message() );
-			array_push( $this->error, LemonwayLib::get_last_error_code(). ' - ' .LemonwayLib::get_last_error_message() );
-			return FALSE;
+			$return = LemonwayLib::ask_payment_webkit( $wallet_id, $amount, 0, $wk_token, $return_url, $error_url, $cancel_url, $register_card );
+			if ( !empty($return->MONEYINWEB->TOKEN) ) {
+				$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
+				$url_css_encoded = urlencode( $url_css );
+				wp_redirect( YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded );
+				exit();
+				
+			} else {
+				ypcf_debug_log( 'WDGInvestment::try_payment_card > error - ' .LemonwayLib::get_last_error_code(). ' - ' .LemonwayLib::get_last_error_message() );
+				array_push( $this->error, LemonwayLib::get_last_error_code(). ' - ' .LemonwayLib::get_last_error_message() );
+				return FALSE;
+			}
 		}
 	}
 	
