@@ -865,7 +865,7 @@ class WDGInvestment {
 		$error_url = $return_url . '&error=1';
 		$cancel_url = $return_url . '&cancel=1';
 		
-		if ( !empty( $card_type ) ) {
+		if ( !empty( $card_type ) && $card_type != 'other' ) {
 			$result = LemonwayLib::ask_payment_registered_card( $wallet_id, $card_type, $amount );
 			$purchase_key = $result->TRANS->HPAY->ID;
 			$return_url .= '&response_wkToken=' . $purchase_key . '&with_registered_card=1';
