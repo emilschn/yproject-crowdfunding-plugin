@@ -830,68 +830,6 @@ class LemonwayLib {
 		return $result;
 	}
 	
-	public static function ask_payment_3Dsecure($wallet_id, $card_type, $card_number, $card_code, $card_date, $amount, $amount_com, $wk_token, $return_url, $comment = '', $auto_commission = 0) {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($card_type)) return FALSE;
-		if (!isset($card_number)) return FALSE;
-		if (!isset($card_code)) return FALSE;
-		if (!isset($card_date)) return FALSE;
-		if (!isset($amount)) return FALSE;
-		if (!isset($amount_com)) return FALSE;
-		if (!isset($wk_token)) return FALSE;
-		if (!isset($return_url)) return FALSE;
-		
-		$amount = LemonwayLib::check_amount($amount);
-		$amount_com = LemonwayLib::check_amount($amount_com);
-		
-		$param_list = array( 
-			'wallet' => $wallet_id, 
-			'amountTot' => $amount, 
-			'amountCom' => $amount_com,
-			'comment' => $comment,
-		    
-			'wkToken' => $wk_token,
-		    
-			'cardType' => $card_type, 
-			'cardNumber' => $card_number, 
-			'cardCode' => $card_code,
-			'cardDate' => $card_date,
-			'autoCommission' => $auto_commission,
-		    
-			'returnUrl' => $return_url 
-		);
-		
-		$result = LemonwayLib::call('MoneyIn3DInit', $param_list);
-		if ($result !== FALSE) {
-			//Retourne : 
-			//  - ACS => actionURL ; actionMethod ; pareqFieldName ; pareqFieldValue ; termurFieldName ; mdFieldName ; mdFieldValue ; mpiResult
-			//  - TRANS->HPAY => ID ; MLABEL ; DATE ; SEN ; REC; DEB ; CRED ; COM ; MSG ; STATUS
-		}
-		return $result;
-	}
-	
-//	public static function complete_payment_3Dsecure($transaction_id, $md, $pares, $card_type, $card_number, $card_code, $card_date) {
-	public static function complete_payment_3Dsecure($transaction_id) {
-		if (!isset($transaction_id)) return FALSE;
-//		if (!isset($md)) return FALSE;
-//		if (!isset($pares)) return FALSE;
-//		if (!isset($card_type)) return FALSE;
-//		if (!isset($card_number)) return FALSE;
-//		if (!isset($card_code)) return FALSE;
-//		if (!isset($card_date)) return FALSE;
-		
-		$param_list = array( 
-			'transactionId' => $transaction_id
-		);
-		
-		$result = LemonwayLib::call('MoneyIn3DConfirm', $param_list);
-		if ($result !== FALSE) {
-			//Retourne : 
-			//  - TRANS->HPAY => ID ; MLABEL ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
-		}
-		return $result;
-	}
-	
 	public static function ask_payment_registered_card($wallet_id, $card_id, $amount, $amount_com = 0, $message = '', $auto_commission = 0) {
 		if (!isset($wallet_id)) return FALSE;
 		if (!isset($card_id)) return FALSE;
