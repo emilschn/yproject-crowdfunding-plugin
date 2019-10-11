@@ -979,7 +979,23 @@ class WDGOrganization {
 		$buffer = array();
 		$wallet_details = $this->get_wallet_details();
 		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
-			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+			if ( is_array( $wallet_details->CARDS->CARD ) ) {
+				foreach( $wallet_details->CARDS->CARD as $card_object ) {
+					if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
+						$card_item = array();
+						$card_item[ 'id' ] = $card_object->ID;
+						if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+							$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
+						}
+						if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
+							$card_item[ 'number' ] = $card_object->EXTRA->NUM;
+						}
+						array_push( $buffer, $card_item );
+					}
+				}
+
+			} elseif ( isset( $wallet_details->CARDS->CARD ) ) {
+				$card_object = $wallet_details->CARDS->CARD;
 				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
 					$card_item = array();
 					$card_item[ 'id' ] = $card_object->ID;
@@ -991,6 +1007,7 @@ class WDGOrganization {
 					}
 					array_push( $buffer, $card_item );
 				}
+
 			}
 		}
 		return $buffer;
@@ -1007,7 +1024,15 @@ class WDGOrganization {
 		$expiration_date = FALSE;
 		$wallet_details = $this->get_wallet_details();
 		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
-			foreach( $wallet_details->CARDS->CARD as $card_object ) {
+			if ( is_array( $wallet_details->CARDS->CARD ) ) {
+				foreach( $wallet_details->CARDS->CARD as $card_object ) {
+					if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+						$expiration_date = $card_object->EXTRA->EXP;
+					}
+				}
+
+			} elseif ( isset( $wallet_details->CARDS->CARD ) ) {
+				$card_object = $wallet_details->CARDS->CARD;
 				if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
 					$expiration_date = $card_object->EXTRA->EXP;
 				}
