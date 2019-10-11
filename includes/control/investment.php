@@ -581,7 +581,7 @@ class WDGInvestment {
 /******************************************************************************/
 // PAYMENT
 /******************************************************************************/
-	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_param = 0, $amount_by_card = 0 ) {
+	private function save_payment( $payment_key, $mean_of_payment, $is_failed = FALSE, $amount_param = 0, $amount_by_card = 0, $lw_transaction = FALSE ) {
 		if ( $this->exists_payment( $payment_key ) ) {
 			return 'publish';
 		}
@@ -693,7 +693,7 @@ class WDGInvestment {
 			
 
 			// Vérifie le statut du paiement, envoie un mail de confirmation et crée un contrat si on est ok
-			$buffer = ypcf_get_updated_payment_status( $payment_id, false, false, $this );
+			$buffer = ypcf_get_updated_payment_status( $payment_id, false, $lw_transaction, $this );
 			
 			// Si c'est un préinvestissement,
 			//	on passe le statut de préinvestissement
@@ -903,11 +903,14 @@ class WDGInvestment {
 		// Retour de paiement par carte
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_card || $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet ) {
 			
+			$force_status = FALSE;
 			$payment_key = $_REQUEST[ 'response_wkToken' ];
 			$input_with_registered_card = filter_input( INPUT_GET, 'with_registered_card' );
 			if ( !empty( $input_with_registered_card ) ) {
 				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key, 'transactionId' );
-				$payment_key = $lw_transaction_result->ID;
+				if ( $lw_transaction_result->STATUS == '3' ) {
+					$force_status = 'publish';
+				}
 				
 			} else {
 				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key );
@@ -948,7 +951,7 @@ class WDGInvestment {
 				}
 
 				// Sauvegarde du paiement (la session est écrasée)
-				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount, $amount_by_card );
+				$buffer = $this->save_payment( $payment_key, $mean_of_payment, $is_failed, $amount, $amount_by_card, $lw_transaction_result );
 
 				if ( $buffer == 'failed' ) {
 					$WDGUser_current = WDGUser::current();
