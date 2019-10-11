@@ -127,7 +127,11 @@ class NotificationsEmails {
 		$text_after = '';
 		
 		if ( $payment_key != 'check' ) {
-			$text_before .= 'Votre compte a été débité.<br>';
+			if ( strpos( $payment_key, 'TRANSID' ) !== FALSE ) {
+				$text_before .= 'Le compte bancaire de votre carte enregistrée a été débité.<br>';
+			} else {
+				$text_before .= 'Votre compte a été débité.<br>';
+			}
 		}
 		$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
 		
