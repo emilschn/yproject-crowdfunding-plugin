@@ -63,11 +63,11 @@ function ypcf_login_gobackinvest_url() {
  * Met à jour le statut edd en fonction du statut du paiement sur LW
  * @param int $payment_id
  * @param type $mangopay_contribution
- * @param type $lemonway_transaction
+ * @param type $lw_transaction_result
  * @param WDGInvestment $wdginvestment
  * @return string
  */
-function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = FALSE, $lemonway_transaction = FALSE, $wdginvestment = FALSE ) {
+function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = FALSE, $lw_transaction_result = FALSE, $wdginvestment = FALSE ) {
 	$payment_investment = new WDGInvestment( $payment_id );
     $payment_post = get_post($payment_id);
 	$downloads = edd_get_payment_meta_downloads($payment_id);
@@ -123,7 +123,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				//On teste une contribution classique
 				} else {
 
-					if ($lemonway_transaction === FALSE) {
+					if ($lw_transaction_result === FALSE) {
 						$lw_transaction_result = LemonwayLib::get_transaction_by_id( $contribution_id );
 					}
 					if ($lw_transaction_result) {
