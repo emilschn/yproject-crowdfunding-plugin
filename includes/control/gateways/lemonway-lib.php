@@ -554,6 +554,22 @@ class LemonwayLib {
 		}
 		return $result;
 	}
+
+	public static function unregister_card( $wallet_id, $id_card ) {
+		if ( empty( $wallet_id ) ) return FALSE;
+		if ( empty( $id_card ) ) return FALSE;
+
+		$param_list = array(
+			'wallet'	=> $wallet_id,
+			'cardId'	=> $id_card
+		);
+		
+		$result = LemonwayLib::call( 'UnregisterCard', $param_list );
+		if ($result !== FALSE) {
+			//Retourne : CARD > ID
+		}
+		return $result;
+	}
 	
 	/**
 	 * Enregistre un mandat de prélévement automatique lié à un wallet
