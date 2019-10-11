@@ -44,6 +44,7 @@ class WDGPostActions {
         self::add_action( 'user_account_organization_details' );
         self::add_action( 'user_account_organization_identitydocs' );
         self::add_action( 'user_account_organization_bank' );
+        self::add_action( 'remove_user_registered_card' );
     }
 
     /**
@@ -1101,5 +1102,19 @@ class WDGPostActions {
 			wp_redirect( home_url( '/mon-compte/#orga-bank-' . $organization_id ) );
 			exit();
 		}
+	}
+
+	public static function remove_user_registered_card() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$card_id = filter_input( INPUT_POST, 'card_id' );
+		$WDGUser_current = WDGUser::current();
+
+		if ( $WDGUser_current->get_wpref() == $user_id || $WDGUser_current->is_admin() ) {
+			$WDGUser_displayed = new WDGUser( $user_id );
+			$WDGUser_displayed->unregister_card( $card_id );
+		}
+
+		wp_redirect( home_url( '/mon-compte/#bank' ) );
+		exit();
 	}
 }

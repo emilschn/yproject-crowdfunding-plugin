@@ -909,14 +909,11 @@ class WDGInvestment {
 		// Retour de paiement par carte
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_card || $mean_of_payment == WDGInvestment::$meanofpayment_cardwallet ) {
 			
-			$force_status = FALSE;
 			$payment_key = $_REQUEST[ 'response_wkToken' ];
 			$input_with_registered_card = filter_input( INPUT_GET, 'with_registered_card' );
 			if ( !empty( $input_with_registered_card ) ) {
 				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key, 'transactionId' );
-				if ( $lw_transaction_result->STATUS == '3' ) {
-					$force_status = 'publish';
-				}
+				$payment_key = 'TRANSID' . $payment_key;
 				
 			} else {
 				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key );
@@ -929,7 +926,6 @@ class WDGInvestment {
 				$is_failed = $is_failed || ( $lw_transaction_result->STATUS != 3 && $lw_transaction_result->STATUS != 0 );
 				$amount_by_card = $lw_transaction_result->CRED;
 
-				// Compléter par wallet
 				if ( !$is_failed ) {
 					$invest_type = $this->get_session_user_type();
 					$input_savecard = filter_input( INPUT_GET, 'savecard' );
@@ -948,6 +944,8 @@ class WDGInvestment {
 							$WDGUser_current->save_lemonway_card_expiration_date();
 						}
 					}
+					
+					// Compléter par wallet
 					$wallet_payment_key = $this->try_payment_wallet( $amount, TRUE, $amount_by_card );
 					if ( !empty( $wallet_payment_key ) ) {
 						$payment_key .= '_' . $wallet_payment_key;

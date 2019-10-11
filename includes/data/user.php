@@ -1518,6 +1518,10 @@ class WDGUser {
 		return $buffer;
 	}
 
+	public function unregister_card( $id_card ) {
+		LemonwayLib::unregister_card( $this->get_lemonway_id(), $id_card );
+	}
+
 	/**
 	 * Enregistre la date d'expiration de la carte qui vient d'être utilisée et enregistrée
 	 */
@@ -1541,6 +1545,7 @@ class WDGUser {
 	 * Retourne vrai si il a enregistré une carte bancaire précédemment
 	 */
 	public function has_saved_card_expiration_date() {
+		return TRUE;
 		$expiration_date = get_user_meta( $this->get_wpref(), 'save_card_expiration_date', TRUE );
 		return !empty( $expiration_date );
 	}
