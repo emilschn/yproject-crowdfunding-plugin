@@ -1105,15 +1105,29 @@ class WDGPostActions {
 	}
 
 	public static function remove_user_registered_card() {
-		$user_id = filter_input( INPUT_POST, 'user_id' );
-		$card_id = filter_input( INPUT_POST, 'card_id' );
 		$WDGUser_current = WDGUser::current();
+		$card_id = filter_input( INPUT_POST, 'card_id' );
+		
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		if ( !empty( $user_id ) ) {
+			if ( $WDGUser_current->get_wpref() == $user_id || $WDGUser_current->is_admin() ) {
+				$WDGUser_displayed = new WDGUser( $user_id );
+				$WDGUser_displayed->unregister_card( $card_id );
+			}
 
-		if ( $WDGUser_current->get_wpref() == $user_id || $WDGUser_current->is_admin() ) {
-			$WDGUser_displayed = new WDGUser( $user_id );
-			$WDGUser_displayed->unregister_card( $card_id );
+		} else {
+			$orga_id = filter_input( INPUT_POST, 'orga_id' );
+			if ( !empty( $orga_id ) ) {
+				if ( $WDGUser_current->can_edit_organization( $orga_id ) || $WDGUser_current->is_admin() ) {
+					$WDGOrganization_displayed = new WDGOrganization( $user_id );
+					$WDGOrganization_displayed->unregister_card( $card_id );
+				}
+
+				wp_redirect( home_url( '/mon-compte/#orga-bank-' . $orga_id ) );
+				exit();
+			}
 		}
-
+	
 		wp_redirect( home_url( '/mon-compte/#bank' ) );
 		exit();
 	}

@@ -996,6 +996,10 @@ class WDGOrganization {
 		return $buffer;
 	}
 
+	public function unregister_card( $id_card ) {
+		LemonwayLib::unregister_card( $this->get_lemonway_id(), $id_card );
+	}
+
 	/**
 	 * Enregistre la date d'expiration de la carte qui vient d'être utilisée et enregistrée
 	 */

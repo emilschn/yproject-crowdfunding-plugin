@@ -1528,7 +1528,6 @@ class WDGUser {
 	 * Retourne vrai si il a enregistré une carte bancaire précédemment
 	 */
 	public function has_saved_card_expiration_date() {
-		return TRUE;
 		$expiration_date = get_user_meta( $this->get_wpref(), 'save_card_expiration_date', TRUE );
 		return !empty( $expiration_date );
 	}
