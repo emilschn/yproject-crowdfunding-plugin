@@ -921,6 +921,9 @@ class WDGQueue {
 					NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
 
 				} else {
+					// Passage à complete avant, pour pouvoir en ajouter un à la suite
+					WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+					// On continue au prochain tour
 					self::add_royalties_auto_transfer_next( $declaration_id );
 				}
 				
