@@ -264,7 +264,7 @@ class WDGFormProjects {
 		$buffer = FALSE;
 		
 		$wk_token = filter_input( INPUT_GET, 'response_wkToken' );
-		if ( !empty( $wk_token ) ) {
+		if ( !empty( $wk_token ) && $wk_token != 'error' ) {
 			$declaration = WDGROIDeclaration::get_by_payment_token( $wk_token );
 			if ($declaration->status == WDGROIDeclaration::$status_payment) {
 
