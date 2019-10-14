@@ -582,7 +582,7 @@ class WDGROIDeclaration {
 		// **************
 		// NOTIFICATION 1
 		// Doit-on envoyer une notification au PP pour dire que la prochaine déclaration est la dernière ?
-		$send_notification_extend = TRUE;
+		$send_notification_extend = FALSE;
 		
 		// La notification ne sera envoyée que si il reste une seule déclaration à venir
 		$nb_declarations_waiting = 0;
@@ -596,7 +596,7 @@ class WDGROIDeclaration {
 			}
 		}
 		if ( $nb_declarations_waiting == 1 ) {
-			$send_notification_extend = FALSE;
+			$send_notification_extend = TRUE;
 		}
 		
 		// La notification ne sera envoyée que si le montant minimum de versement n'a pas été atteint
