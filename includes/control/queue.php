@@ -113,12 +113,16 @@ class WDGQueue {
 		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 		
+		// Parcours de la liste des investissements validés sur le site
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
+			// On vérifie que cet investissement n'a pas été annulé via les enregistrements dans l'API
 			$first_investment_contract = FALSE;
-			if ( !empty( $investment_contracts ) ) {
-				foreach ( $investment_contracts as $investment_contract ) {
-					if ( $investment_contract->subscription_id == $purchase_id ) {
-						$first_investment_contract = $investment_contract;
+			foreach ( $campaign_investments as $investment_id ) {
+				if ( !empty( $investment_contracts ) ) {
+					foreach ( $investment_contracts as $investment_contract ) {
+						if ( $investment_contract->subscription_id == $investment_id ) {
+							$first_investment_contract = $investment_contract;
+						}
 					}
 				}
 			}
