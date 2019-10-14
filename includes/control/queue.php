@@ -22,8 +22,10 @@ class WDGQueue {
 		
 		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( FALSE, FALSE, $entity_id, $action );
 		if ( !empty( $queued_action_list ) ) {
-			$already_existing_action_id = $queued_action_list[ 0 ]->id;
-			$already_existing_action_params = $queued_action_list[ 0 ]->params;
+			if ( $queued_action_list[ 0 ]->status != self::$status_complete ) {
+				$already_existing_action_id = $queued_action_list[ 0 ]->id;
+				$already_existing_action_params = $queued_action_list[ 0 ]->params;
+			}
 		}
 		
 		if ( empty( $already_existing_action_id ) ) {
@@ -859,8 +861,6 @@ class WDGQueue {
 			$WDG_File_Cacher->build_post( $post_id );
 			
 		}
-		
-		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
 	}
 
 
@@ -900,10 +900,6 @@ class WDGQueue {
 
 				}
 			}
-
-			if ( !empty( $queued_action_id ) ) {
-				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
-			}
 		}
 
 		public static function add_royalties_auto_transfer_next( $declaration_id ) {
@@ -920,9 +916,6 @@ class WDGQueue {
 				$roi_declaration = new WDGROIDeclaration( $declaration_id );
 				$result = $roi_declaration->make_transfer();
 				if ( $result == 100 ) {
-					if ( !empty( $queued_action_id ) ) {
-						WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
-					}
 					$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
 					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
 					NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
