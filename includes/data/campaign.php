@@ -3220,8 +3220,12 @@ class ATCF_Campaign {
 		return $src;
 	}
 	
+	private $home_picture;
 	public function get_home_picture_src( $force = true, $size = 'full' ) {
-		return $this->get_picture_src( 'image_home', $force, $size );
+		if ( empty( $this->home_picture ) ) {
+			$this->home_picture = $this->get_picture_src( 'image_home', $force, $size );
+		}
+		return $this->home_picture;
 	}
 	
 	public function get_picture_src( $type, $force, $size = 'full' ) {
