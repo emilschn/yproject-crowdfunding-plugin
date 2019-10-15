@@ -2150,17 +2150,20 @@ class ATCF_Campaign {
 	 *
 	 * @return sting Campaign Backers
 	 */
+	private $backers;
 	public function backers() {
-		global $edd_logs;
+		if ( empty( $this->backers ) ) {
+			global $edd_logs;
+	
+			$this->backers = $edd_logs->get_connected_logs( array(
+				'post_parent'    => $this->ID, 
+				'log_type'       => /*atcf_has_preapproval_gateway()*/FALSE ? 'preapproval' : 'sale',
+				'post_status'    => array( 'publish' ),
+				'posts_per_page' => -1
+			) );
+		}
 
-		$backers = $edd_logs->get_connected_logs( array(
-			'post_parent'    => $this->ID, 
-			'log_type'       => /*atcf_has_preapproval_gateway()*/FALSE ? 'preapproval' : 'sale',
-			'post_status'    => array( 'publish' ),
-			'posts_per_page' => -1
-		) );
-
-		return $backers;
+		return $this->backers;
 	}
 
 	/**
