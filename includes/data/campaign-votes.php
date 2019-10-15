@@ -179,11 +179,9 @@ class WDGCampaignVotes {
 			    }
 				array_push( $buffer[ 'list_votes' ], $vote );
 
-			    if ($vote->validate_project==1){
-					$buffer['list_cumul'][count($buffer['list_cumul'])-1]++;
-			    } else {
-					$buffer['list_cumul'][count($buffer['list_cumul'])-1]++;
-			    }
+				if ( count( $buffer[ 'list_cumul' ] ) > 0 ) {
+					$buffer[ 'list_cumul' ][ count( $buffer[ 'list_cumul' ] ) - 1 ]++;
+				}
 			}
 		} else {
 			$buffer['count_voters'] = 0;
