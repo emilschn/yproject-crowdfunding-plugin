@@ -2086,6 +2086,7 @@ class WDGAjaxActions {
                 $orga = new WDGOrganization($user_id);
 				$orga_wallet_details = $orga->get_wallet_details();
 				$span_class = 'error';
+				$error_str = '';
 				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
 				if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
 					switch ( $orga_wallet_details->STATUS ) {
@@ -2120,8 +2121,15 @@ class WDGAjaxActions {
 							$orga_authentication = __( "En attente de documents", 'yproject' );
 							break;
 					}
+
+					if ( $orga_wallet_details->STATUS != 2 ) {
+						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+					}
 				}
 				$orga_authentication = '<span class="payment-status-' .$span_class. '">' .$orga_authentication. '</span>';
+				if ( !empty( $error_str ) ) {
+					$orga_authentication .= '<span><a href="#" class="authentication-more-info">+</a><span class="hidden">' . $error_str . '</span></span>';
+				}
                 $orga_creator = $orga->get_creator();
 				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
                 $array_contacts[$user_id]["user_email"]= $orga->get_email();
@@ -2151,6 +2159,7 @@ class WDGAjaxActions {
 				$WDGUser = new WDGUser( $user_id );
 				$WDGUser_wallet_details = $WDGUser->get_wallet_details();
 				$span_class = 'error';
+				$error_str = '';
 				$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
 				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
 					switch ( $WDGUser_wallet_details->STATUS ) {
@@ -2185,8 +2194,15 @@ class WDGAjaxActions {
 							$user_authentication = __( "En attente de documents", 'yproject' );
 							break;
 					}
+
+					if ( $orga_wallet_details->STATUS != 2 ) {
+						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
+					}
 				}
 				$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
+				if ( !empty( $error_str ) ) {
+					$user_authentication .= '<span><a href="#" class="authentication-more-info">+</a><span class="hidden">' . $error_str . '</span></span>';
+				}
 				
 				//Infos supplémentaires pour les investisseurs
 				if($array_contacts[$user_id]["invest"] == 1){
