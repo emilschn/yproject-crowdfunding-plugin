@@ -2122,13 +2122,13 @@ class WDGAjaxActions {
 							break;
 					}
 
-					if ( $orga_wallet_details->STATUS != 2 ) {
+					if ( $orga_wallet_details->STATUS != 6 ) {
 						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
 					}
 				}
 				$orga_authentication = '<span class="payment-status-' .$span_class. '">' .$orga_authentication. '</span>';
 				if ( !empty( $error_str ) ) {
-					$orga_authentication .= '<span><a href="#" class="authentication-more-info">+</a><span class="hidden">' . $error_str . '</span></span>';
+					$orga_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
 				}
                 $orga_creator = $orga->get_creator();
 				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
@@ -2195,13 +2195,13 @@ class WDGAjaxActions {
 							break;
 					}
 
-					if ( $orga_wallet_details->STATUS != 2 ) {
+					if ( $orga_wallet_details->STATUS != 6 ) {
 						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
 					}
 				}
 				$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
 				if ( !empty( $error_str ) ) {
-					$user_authentication .= '<span><a href="#" class="authentication-more-info">+</a><span class="hidden">' . $error_str . '</span></span>';
+					$user_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
 				}
 				
 				//Infos supplémentaires pour les investisseurs
