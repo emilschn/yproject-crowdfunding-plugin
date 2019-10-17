@@ -605,6 +605,64 @@ class WDGQueue {
 			NotificationsEmails::send_mail( 'admin@wedogood.co', 'TEMP - Mail de retour de document', $buffer_message );*/
 		}
 	}
+	
+/******************************************************************************/
+/* NOTIFICATIONS ADMIN LORSQUE VALIDATION DOCUMENTS LEMON WAY MAIS PAS WALLET */
+/******************************************************************************/
+	public static function add_document_validated_but_not_wallet_admin_notification( $user_id ) {
+		$action = 'document_validated_but_not_wallet_admin_notification';
+		$entity_id = $user_id;
+		$priority = 'date';
+		$date_next_dispatch = new DateTime();
+		// On programme la vérification 3 heures plus tard
+		$date_next_dispatch->add( new DateInterval( 'PT3H' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_document_validated_but_not_wallet_admin_notification( $user_id, $queued_action_params, $queued_action_id ) {
+		$is_lemonway_registered = FALSE;
+		$user_name = FALSE;
+		$user_email = FALSE;
+		
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$WDGOrga_wallet = new WDGOrganization( $user_id );
+			$is_lemonway_registered = $WDGOrga_wallet->is_registered_lemonway_wallet();
+			if ( !$is_lemonway_registered ) {
+				$wallet_details = $WDGOrga_wallet->get_wallet_details();
+				$user_name = $WDGOrga_wallet->get_name();
+				$user_email = $WDGOrga_wallet->get_email();
+			}
+			
+		} else {
+			$WDGUser_wallet = new WDGUser( $user_id );
+			$is_lemonway_registered = $WDGUser_wallet->is_lemonway_registered();
+			if ( !$is_lemonway_registered ) {
+				$wallet_details = $WDGUser_wallet->get_wallet_details();
+				$user_name = $WDGUser_wallet->get_firstname() . ' ' . $WDGUser_wallet->get_lastname();
+				$user_email = $WDGUser_wallet->get_email();
+			}
+		}
+		
+		// Vérifie si le statut du document n'a pas changé
+		if ( !$is_lemonway_registered ) {
+			$has_all_documents_validated = TRUE;
+
+			if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+				foreach ( $wallet_details->DOCS->DOC as $document_object ) {
+					if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
+						$has_all_documents_validated = FALSE;
+					}
+				}
+			}
+			
+			if ( $has_all_documents_validated ) {
+				NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name );
+			}
+		}
+	}
 
 	
 /******************************************************************************/

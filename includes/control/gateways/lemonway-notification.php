@@ -189,9 +189,9 @@ class LemonwayNotification {
 			if ( !empty( $WDGOrga_wallet ) ) {
 				$content_slack .= $WDGOrga_wallet->get_name();
 			} else {
-				$content_slack .= $WDGUser_wallet->get_display_name();
 				$user_email = $WDGUser_wallet->get_email();
 				$user_firstname = $WDGUser_wallet->get_firstname();
+				$content_slack .= $user_firstname . ' ' . $WDGUser_wallet->get_lastname() . ' (' . $user_email . ')';
 			}
 			$content_slack .= "\n";
 			
@@ -201,9 +201,10 @@ class LemonwayNotification {
 			$content_slack .= "Nouveau statut : " . LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
 			$content_slack .= "\n";
 			
+			// Notifications pour indiquer les documents non-validés
 			// Si le document n'est ni validé, ni en attente
 			if ( $lemonway_posted_document_status > 2 ) {
-				// Si c'est une personne physique, on prévient
+				// Seulement si c'est une personne physique
 				if ( empty( $WDGOrga_wallet ) ) {
 					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
 						// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
@@ -212,6 +213,37 @@ class LemonwayNotification {
 							WDGQueue::add_document_refused_admin_notification( $WDGUser_wallet->get_wpref(), $lemonway_posted_document_type, $lemonway_posted_document_status );
 						}
 					}
+				}
+			
+			// Notifications pour indiquer que les documents sont validés mais que le wallet ne l'est pas
+			} else if ( $lemonway_posted_document_status == 2 ) {
+				$wallet_details = FALSE;
+				$user_wpref = FALSE;
+				$has_all_documents_validated = TRUE;
+
+				// Si c'est une organisation pas authentifiée
+				if ( !empty( $WDGOrga_wallet ) && !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
+					$wallet_details = $WDGOrga_wallet->get_wallet_details();
+					$user_wpref = $WDGOrga_wallet->get_wpref();
+
+				// Si c'est une personne physique pas authentifiée
+				} else if ( empty( $WDGOrga_wallet ) && !$WDGUser_wallet->is_lemonway_registered() ) {
+					$wallet_details = $WDGUser_wallet->get_wallet_details();
+					$user_wpref = $WDGUser_wallet->get_wpref();
+				}
+
+				// On vérifie si tous les documents sont validés
+				if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+					foreach ( $wallet_details->DOCS->DOC as $document_object ) {
+						if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
+							$has_all_documents_validated = FALSE;
+						}
+					}
+				}
+				
+				// Si ils sont tous validés, on enverra une notification plus tard
+				if ( $has_all_documents_validated ) {
+					WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
 				}
 			}
 		
