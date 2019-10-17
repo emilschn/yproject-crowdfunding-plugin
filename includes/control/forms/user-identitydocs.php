@@ -219,7 +219,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$home3_file_path = ( empty( $current_file_home_3 ) ) ? '' : $current_file_home_3->get_public_filepath();
 				$home3_file_date_uploaded = $current_file_home_3->date_uploaded;
 			}
-			$field_status_home_3 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home3, $current_file_home_3->date_uploaded );
+			$field_status_home_3 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home3, $home3_file_date_uploaded );
 			$this->addField(
 				'file',
 				'home3' .$suffix,

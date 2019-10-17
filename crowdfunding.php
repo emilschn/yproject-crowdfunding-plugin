@@ -213,7 +213,16 @@ final class ATCF_CrowdFunding {
 		
 		do_action( 'atcf_setup_actions' );
 
+		add_filter( 'override_load_textdomain', 'ATCF_CrowdFunding::override_load_textdomain', 10, 3 );
 		$this->load_textdomain();
+	}
+
+	
+	public static function override_load_textdomain( $override, $domain, $mofile ) {
+		if ( $domain == 'easy-digital-downloads' ) {
+			return true;
+		}
+		return $override;
 	}
 
 	
@@ -343,29 +352,8 @@ final class ATCF_CrowdFunding {
 		$find    = array();
 		$files   = array();
 
-		/** Check if we are editing */
-		if ( isset ( $wp_query->query_vars[ 'edit' ] ) && 
-			 is_singular( 'download' ) && 
-			 ( $wp_query->queried_object->post_author == get_current_user_id() || current_user_can( 'manage_options' ) ) &&
-			 atcf_theme_supports( 'campaign-edit' )
-		) {
-			do_action( 'atcf_found_edit' );
-
-			$files = apply_filters( 'atcf_crowdfunding_templates_edit', array( 'single-campaign-edit.php' ) );
-		} 
-
-		/** Check if viewing a widget */
-		else if ( isset ( $wp_query->query_vars[ 'widget' ] ) && 
-			 is_singular( 'download' ) &&
-			 atcf_theme_supports( 'campaign-widget' )
-		) {
-			do_action( 'atcf_found_widget' );
-
-			$files = apply_filters( 'atcf_crowdfunding_templates_widget', array( 'campaign-widget.php' ) );
-		}
-
 		/** Check if viewing standard campaign */
-		else if ( is_singular( 'download' ) ) {
+		if ( is_singular( 'download' ) ) {
 			do_action( 'atcf_found_single' );
 
 			$files = apply_filters( 'atcf_crowdfunding_templates_campaign', array( 'single-campaign.php', 'single-download.php', 'single.php' ) );
@@ -455,3 +443,4 @@ function crowdfunding() {
 }
 
 crowdfunding();
+

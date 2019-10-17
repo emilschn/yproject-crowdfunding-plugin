@@ -182,7 +182,9 @@ class ATCF_Campaign {
 			$post = $this->api_data->wpref;
 		}
 		$this->data = get_post( $post );
-		$this->ID   = $this->data->ID;
+		if ( !empty( $this->data ) ) {
+			$this->ID   = $this->data->ID;
+		}
 		$this->load_api_data();
 	}
 	
@@ -304,10 +306,10 @@ class ATCF_Campaign {
 	public static $key_api_id = 'id_api';
 	private $api_id;
 	public function get_api_id() {
-		if ( !isset( $this->api_id ) ) {
+		if ( !isset( $this->api_id ) && !empty( $this->data ) ) {
 			$this->api_id = FALSE;
 			$is_campaign = ( get_post_meta( $this->data->ID, 'campaign_funding_type', TRUE ) != '' );
-			if ($is_campaign) {
+			if ( $is_campaign ) {
 				$this->api_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
 				if ( empty( $this->api_id ) ) {
 					$api_project_return = WDGWPREST_Entity_Project::create( $this );
@@ -438,7 +440,7 @@ class ATCF_Campaign {
  ******************************************************************************/
 	public function get_name() {
 		$buffer = $this->get_api_data( 'name' );
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) && !empty( $this->data ) ) {
 			$buffer = $this->data->post_title;
 		}
 		return $buffer;
@@ -1910,7 +1912,10 @@ class ATCF_Campaign {
 	
 	private $organization;
 	public function get_organization() {
-		return $this->api_data->organization;
+		if ( !empty( $this->api_data ) ) {
+			return $this->api_data->organization;
+		}
+		return FALSE;
 	}
 	
 	public function link_organization( $id_api_organization, $link_type = '' ) {
