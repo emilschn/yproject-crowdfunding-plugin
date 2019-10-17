@@ -814,13 +814,12 @@ class WDGQueue {
 /******************************************************************************/
 /* GENERATION CACHE PAGE STATIQUE */
 /******************************************************************************/
-	public static function add_cache_post_as_html( $post_id, $input_priority = 'date' ) {
+	public static function add_cache_post_as_html( $post_id, $input_priority = 'date', $date_interval = 'PT10M' ) {
 		$action = 'cache_post_as_html';
 		$entity_id = $post_id;
 		$priority = $input_priority;
 		$date_next_dispatch = new DateTime();
-		// On programme le prochain envoi 10 minutes plus tard
-		$date_next_dispatch->add( new DateInterval( 'PT10M' ) );
+		$date_next_dispatch->add( new DateInterval( $date_interval ) );
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
 		
@@ -832,6 +831,10 @@ class WDGQueue {
 			
 			$WDG_File_Cacher = WDG_File_Cacher::current();
 			$WDG_File_Cacher->build_post( $post_id );
+
+			// Relance 1 jour plus tard au cas où des modifs de dev doivent être prises en compte
+			WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+			self::add_cache_post_as_html( $post_id, 'date', 'P1D' );
 			
 		}
 	}
