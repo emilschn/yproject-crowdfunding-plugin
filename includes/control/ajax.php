@@ -2122,7 +2122,7 @@ class WDGAjaxActions {
 							break;
 					}
 
-					if ( $orga_wallet_details->STATUS != 6 ) {
+					if ( $orga_wallet_details->STATUS != '6' ) {
 						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
 					}
 				}
@@ -2195,7 +2195,7 @@ class WDGAjaxActions {
 							break;
 					}
 
-					if ( $orga_wallet_details->STATUS != 6 ) {
+					if ( $WDGUser_wallet_details->STATUS != '6' ) {
 						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
 					}
 				}
