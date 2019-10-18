@@ -538,31 +538,36 @@ class WDGQueue {
 	}
 	
 	public static function execute_document_validated_but_not_wallet_admin_notification( $user_id, $queued_action_params, $queued_action_id ) {
-		$is_lemonway_registered = FALSE;
+		$is_lemonway_registered = TRUE;
+		$wallet_details = FALSE;
 		$user_name = FALSE;
 		$user_email = FALSE;
+
+		if ( empty( $user_id ) ) {
+			return FALSE;
+		}
 		
 		if ( WDGOrganization::is_user_organization( $user_id ) ) {
-			$WDGOrga_wallet = new WDGOrganization( $user_id );
-			$is_lemonway_registered = $WDGOrga_wallet->is_registered_lemonway_wallet();
+			$WDGOrga = new WDGOrganization( $user_id );
+			$is_lemonway_registered = $WDGOrga->is_registered_lemonway_wallet();
 			if ( !$is_lemonway_registered ) {
-				$wallet_details = $WDGOrga_wallet->get_wallet_details();
-				$user_name = $WDGOrga_wallet->get_name();
-				$user_email = $WDGOrga_wallet->get_email();
+				$wallet_details = $WDGOrga->get_wallet_details();
+				$user_name = $WDGOrga->get_name();
+				$user_email = $WDGOrga->get_email();
 			}
 			
 		} else {
-			$WDGUser_wallet = new WDGUser( $user_id );
-			$is_lemonway_registered = $WDGUser_wallet->is_lemonway_registered();
+			$WDGUser = new WDGUser( $user_id );
+			$is_lemonway_registered = $WDGUser->is_lemonway_registered();
 			if ( !$is_lemonway_registered ) {
-				$wallet_details = $WDGUser_wallet->get_wallet_details();
-				$user_name = $WDGUser_wallet->get_firstname() . ' ' . $WDGUser_wallet->get_lastname();
-				$user_email = $WDGUser_wallet->get_email();
+				$wallet_details = $WDGUser->get_wallet_details();
+				$user_name = $WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname();
+				$user_email = $WDGUser->get_email();
 			}
 		}
 		
 		// Vérifie si le statut du document n'a pas changé
-		if ( !$is_lemonway_registered ) {
+		if ( !$is_lemonway_registered && !empty( $wallet_details ) ) {
 			$has_all_documents_validated = TRUE;
 
 			if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {

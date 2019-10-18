@@ -242,7 +242,7 @@ class LemonwayNotification {
 				}
 				
 				// Si ils sont tous validés, on enverra une notification plus tard
-				if ( $has_all_documents_validated ) {
+				if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
 					WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
 				}
 			}
