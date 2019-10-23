@@ -82,7 +82,7 @@ class WDGFormProjects {
 					if ( strpos( $inside_of_link, '<img' ) ) {
 						$content_without_link_exploded = explode( '"', $inside_of_link );
 						// Si c'est un lien menant vers WDG, on le supprime
-						if ( strpos( $content_without_link_exploded, 'wedogood.co' ) !== FALSE ) {
+						if ( strpos( $content_without_link_exploded[ 0 ], 'wedogood.co' ) !== FALSE ) {
 							array_shift( $content_without_link_exploded );
 							$inside_of_link = implode( '"', $content_without_link_exploded );
 							$nodes_to_analyse_exploded[ 0 ] = '#"'. $inside_of_link;
