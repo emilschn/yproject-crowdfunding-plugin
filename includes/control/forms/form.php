@@ -35,6 +35,10 @@ class WDG_Form {
 		if ( !isset( $this->fields[ $group ] ) ) {
 			$this->fields[ $group ] = array();
 		}
+		$warning = FALSE;
+		if ( !empty( $options[ 'warning' ] ) ) {
+			$warning = $options[ 'warning' ];
+		}
 		
 		$field = array(
 			'type'			=> $type,
@@ -42,6 +46,7 @@ class WDG_Form {
 			'label'			=> $label,
 			'value'			=> $value,
 			'description'	=> $description,
+			'warning'		=> $warning,
 			'options'		=> $options
 		);
 		
