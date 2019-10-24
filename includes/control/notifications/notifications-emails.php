@@ -153,10 +153,10 @@ class NotificationsEmails {
 		}
 		
 		if ( $campaign->is_positive_savings() ) {
-			NotificationsAPI::investment_success_positive_savings( $email, $user_data->first_name, $payment_amount, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_positive_savings( $email, $user_data->first_name, $payment_amount, $campaign->get_public_url(), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
 			
 		} else {
-			NotificationsAPI::investment_success_project( $email, $user_data->first_name, $payment_amount, $post_campaign->post_title, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_project( $email, $user_data->first_name, $payment_amount, $post_campaign->post_title, $campaign->get_public_url(), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
 		}
 		
     }
