@@ -976,14 +976,18 @@ class WDGPostActions {
 	public static function edit_adjustment() {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$adjustment_id = filter_input( INPUT_POST, 'adjustment_id' );
-		
-		$core = ATCF_CrowdFunding::instance();
-		$core->include_form( 'adjustment' );
-		$adjustment = WDGWPREST_Entity_Adjustment::get( $adjustment_id );
-		$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment );
-		$form_return = $form_adjustment->postForm();
-		
-		$success = ( $form_return != FALSE ) ? '1' : '100';
+		$success = '100';
+
+		if ( !empty( $campaign_id ) && !empty( $adjustment_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'adjustment' );
+			$adjustment = WDGWPREST_Entity_Adjustment::get( $adjustment_id );
+			$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment );
+			$form_return = $form_adjustment->postForm();
+			
+			$success = ( $form_return != FALSE ) ? '1' : '100';
+		}
+
 		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
 		exit();
 	}
