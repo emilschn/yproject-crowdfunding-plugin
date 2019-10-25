@@ -141,7 +141,7 @@ class WDGQueue {
 				$campaign_name = $campaign->get_name();
 			}
 			
-			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$amount_royalties = 0;
 				$has_declared = FALSE;
 
