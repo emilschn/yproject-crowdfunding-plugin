@@ -567,6 +567,14 @@ class ATCF_Campaign {
 /*******************************************************************************
  * CONTRATS
  ******************************************************************************/
+	public function copy_default_contract_if_empty() {
+		$project_override_contract = $this->override_contract();
+		if ( empty( $project_override_contract ) ) {
+			$edd_settings = get_option( 'edd_settings' );
+			update_post_meta( $this->ID, self::$key_override_contract, $edd_settings[ 'standard_contract' ] );
+		}
+	}
+
     // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
     public static $key_backoffice_contract_agreement = 'campaign_backoffice_contract_agreement';

@@ -315,6 +315,7 @@ class WDGPostActions {
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
 							$organization_obj->check_register_campaign_lemonway_wallet();
+							$campaign->copy_default_contract_if_empty();
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 		
 							// Mise à jour cache
@@ -354,6 +355,7 @@ class WDGPostActions {
                             $campaign->set_begin_collecte_date(new DateTime());
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
+							$campaign->copy_default_contract_if_empty();
 							
 							$campaign_organization = $campaign->get_organization();
 							$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
