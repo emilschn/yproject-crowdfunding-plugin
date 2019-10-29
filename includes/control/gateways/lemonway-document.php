@@ -318,5 +318,24 @@ class LemonwayDocument {
 
 		return $buffer;
 	}
-	
+
+	public static function get_list_sorted_by_kyc_type() {
+		return array( 
+			WDGKYCFile::$type_bank		=> LemonwayDocument::$document_type_bank,
+			WDGKYCFile::$type_kbis		=> LemonwayDocument::$document_type_kbis,
+			WDGKYCFile::$type_status	=> LemonwayDocument::$document_type_status,
+			WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
+			WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
+			WDGKYCFile::$type_capital_allocation		=> LemonwayDocument::$document_type_capital_allocation,
+			WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_id2,
+			WDGKYCFile::$type_home_2	=> LemonwayDocument::$document_type_home2,
+			WDGKYCFile::$type_id_3		=> LemonwayDocument::$document_type_id3,
+			WDGKYCFile::$type_home_3	=> LemonwayDocument::$document_type_home3
+		);
+	}
+
+	public static function get_type_by_kyc_type( $kyc_type ) {
+		$documents_type_list = self::get_list_sorted_by_kyc_type();
+		return $documents_type_list[ $kyc_type ];
+	}
 }

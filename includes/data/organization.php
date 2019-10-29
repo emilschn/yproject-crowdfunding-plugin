@@ -722,6 +722,9 @@ class WDGOrganization {
 					$files_info[$document_key]['code'] = 0;
 					$files_info[$document_key]['info'] = $filepath;
 					$files_info[$document_key]['date'] = __( "T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject' ) .$date_upload;
+					if ( $this->has_sent_all_documents() && $this->register_lemonway() ) {
+						LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $kycfile->file_name, LemonwayDocument::get_type_by_kyc_type( $document_type ), $kycfile->get_byte_array() );
+					}
 				}
 			}
 			else {
@@ -757,18 +760,7 @@ class WDGOrganization {
 	public function send_kyc() {
 		if ( $this->has_sent_all_documents() ) {
 			if ( $this->register_lemonway() ) {
-				$documents_type_list = array( 
-					WDGKYCFile::$type_bank		=> LemonwayDocument::$document_type_bank,
-					WDGKYCFile::$type_kbis		=> LemonwayDocument::$document_type_kbis,
-					WDGKYCFile::$type_status	=> LemonwayDocument::$document_type_status,
-					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
-					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
-					WDGKYCFile::$type_capital_allocation		=> LemonwayDocument::$document_type_capital_allocation,
-					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_id2,
-					WDGKYCFile::$type_home_2	=> LemonwayDocument::$document_type_home2,
-					WDGKYCFile::$type_id_3		=> LemonwayDocument::$document_type_id3,
-					WDGKYCFile::$type_home_3	=> LemonwayDocument::$document_type_home3
-				);
+				$documents_type_list = LemonwayDocument::get_list_sorted_by_kyc_type();
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 					if ( count( $document_filelist ) > 0 ) {
