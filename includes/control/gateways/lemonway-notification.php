@@ -232,18 +232,33 @@ class LemonwayNotification {
 					$user_wpref = $WDGUser_wallet->get_wpref();
 				}
 
+				// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
+				// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
+				$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
+
 				// On vérifie si tous les documents sont validés
 				if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
 					foreach ( $wallet_details->DOCS->DOC as $document_object ) {
 						if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
 							$has_all_documents_validated = FALSE;
 						}
+						// Si le document est validé et que ce n'est pas la première pièce ou le RIB, on n'envoie pas de notif à ce sujet
+						if ( $document_object->S == 2 
+									&& $document_object->TYPE != LemonwayDocument::$document_type_id
+									&& $document_object->TYPE != LemonwayDocument::$document_type_id_back
+									&& $document_object->TYPE != LemonwayDocument::$document_type_bank ) {
+							$only_first_document = FALSE;
+						}
 					}
 				}
 				
 				// Si ils sont tous validés, on enverra une notification plus tard
 				if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
-					WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
+					if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
+						NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
+					} else {
+						WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
+					}
 				}
 			}
 		
@@ -251,7 +266,7 @@ class LemonwayNotification {
 			NotificationsSlack::send_new_doc_status( $content_slack );
 			
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
-			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == 2 && empty( $WDGOrga_wallet ) ) {
+			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == LemonwayDocument::$document_type_bank && empty( $WDGOrga_wallet ) ) {
 				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
 				$notification_sent = TRUE;
 			}

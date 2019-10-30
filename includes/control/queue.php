@@ -530,7 +530,7 @@ class WDGQueue {
 		$priority = 'date';
 		$date_next_dispatch = new DateTime();
 		// On programme la vérification 3 heures plus tard
-		$date_next_dispatch->add( new DateInterval( 'PT3H' ) );
+		$date_next_dispatch->add( new DateInterval( 'P1D' ) );
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
 		

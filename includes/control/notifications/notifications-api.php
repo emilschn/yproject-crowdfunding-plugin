@@ -10,7 +10,8 @@ class NotificationsAPI {
 		'181' => "Inscription",
 		'311' => "KYC - RIB validé",
 		'322' => "KYC - Doc en cours de validation",
-		'323' => "KYC - Doc refusé",
+		'749' => "KYC - Doc refusé",
+		'777' => "KYC - Un seul doc validé",
 		'324' => "KYC - Wallet validé",
 		'641' => "Conseils quotidiens",
 		'573' => "Relance - Evaluation - Avec intention",
@@ -251,6 +252,24 @@ class NotificationsAPI {
 			'personal'				=> 1,
 			'PRENOM'				=> $name,
 			'PRECISIONS'			=> $authentication_info
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS KYC - REFUSES
+    //*******************************************************
+	public static function kyc_single_validated( $recipient, $name ) {
+		$id_template = '777';
+		$options = array(
+			'personal'				=> 1,
+			'PRENOM'				=> $name
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
