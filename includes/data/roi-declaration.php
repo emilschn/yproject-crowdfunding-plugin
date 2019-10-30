@@ -262,11 +262,11 @@ class WDGROIDeclaration {
 			
 		// Nouvelle méthode : on calcule directement depuis les données HT
 		} else {
+			$campaign = $this->get_campaign_object();
 			$cost_without_tax = $campaign->get_percent_commission_without_tax();
 			$buffer = round( ( $this->get_amount_with_adjustment() * $cost_without_tax / 100 ) * 100 ) / 100;
 
 			// Si il y a un coût minimal par déclaration
-			$campaign = $this->get_campaign_object();
 			$minimum_costs = $campaign->get_minimum_costs_to_organization() / 1.2;
 			if ( $minimum_costs > 0 ) {
 				$buffer = max( $buffer, $minimum_costs );
