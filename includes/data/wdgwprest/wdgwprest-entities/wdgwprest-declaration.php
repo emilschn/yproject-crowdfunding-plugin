@@ -37,6 +37,7 @@ class WDGWPREST_Entity_Declaration {
 			'amount'				=> $declaration->amount,
 			'remaining_amount'		=> $declaration->remaining_amount,
 			'transfered_previous_remaining_amount'	=> $declaration->transfered_previous_remaining_amount,
+			'percent_commission_without_tax'	=> $declaration->percent_commission_without_tax,
 			'percent_commission'	=> $declaration->percent_commission,
 			'status'				=> $declaration->status,
 			'mean_payment'			=> $declaration->mean_payment,
