@@ -225,16 +225,20 @@ class WDG_Form {
 
 		//Supprime les espaces et arrondit la valeur du capital à l'unité
 		if ( !empty( $input_result ) ) {
-			if ( preg_match('#\s#', $input_result) ) {
-				$input_result = str_replace( ' ', '', $input_result );
-			}
-			$input_result = str_replace( ',', '.', $input_result );
-			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
+			$buffer = self::clean_input_number( $input_result );
 			if ( $do_round ) {
 				$buffer = round( $buffer );
 			}
 		}
 		return $buffer;
+	}
+
+	public static function clean_input_number( $input ) {
+		if ( preg_match('#\s#', $input) ) {
+			$input = str_replace( ' ', '', $input );
+		}
+		$input = str_replace( ',', '.', $input );
+		return stripslashes( htmlentities( $input, ENT_QUOTES | ENT_HTML401 ) );
 	}
 	
 	/**

@@ -399,8 +399,14 @@ class WDGFormUsers {
 			return FALSE;
 		}
 		$WDGUser_current = WDGUser::current();
-		if ($WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin()) {
+		if ( $WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin() ) {
 			return __( "Ce transfert n'est pas autoris&eacute;.", 'yproject' );
+		}
+
+		$amount_to_bank = filter_input( INPUT_POST, 'amount_to_bank' );
+		$amount = FALSE;
+		if ( !empty( $amount_to_bank ) ) {
+			$amount = WDG_Form::clean_input_number( $amount_to_bank );
 		}
 		
 		$buffer = __( "Votre compte bancaire n'est pas encore valid&eacute;.", 'yproject' );
@@ -412,7 +418,7 @@ class WDGFormUsers {
 			
 		} else {
 			$WDGUser = new WDGUser( $user_id );
-			$buffer = $WDGUser->transfer_wallet_to_bankaccount();
+			$buffer = $WDGUser->transfer_wallet_to_bankaccount( $amount );
 		}
 		
 		return $buffer;
