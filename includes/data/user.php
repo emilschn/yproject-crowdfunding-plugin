@@ -1729,7 +1729,6 @@ class WDGUser {
 				}
 
 				if ( $buffer === TRUE ) {
-					NotificationsEmails::wallet_transfer_to_account( $this->wp_user->ID, $amount );
 					$withdrawal_post = array(
 						'post_author'   => $this->wp_user->ID,
 						'post_title'    => $amount,
@@ -1738,6 +1737,8 @@ class WDGUser {
 						'post_type'	    => 'withdrawal_order_lw'
 					);
 					wp_insert_post( $withdrawal_post );
+					$WDGUser = new WDGUser( $this->wp_user->ID );
+					NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser->get_email(), $WDGUser->get_firstname(), $amount );
 				}
 			}
 		}

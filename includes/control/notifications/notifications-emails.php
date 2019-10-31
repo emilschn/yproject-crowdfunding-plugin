@@ -730,25 +730,6 @@ class NotificationsEmails {
     //*******************************************************
 	
     //*******************************************************
-    // NOTIFICATIONS PORTE-MONNAIE ELECTRONIQUE
-    //*******************************************************
-	public static function wallet_transfer_to_account( $user_id, $amount ) {
-		ypcf_debug_log('NotificationsEmails::wallet_transfer_to_account > ' . $user_id . ' ; ' . $amount);
-		$WDGUser = new WDGUser( $user_id );
-		
-		$object = "Transfert d'argent vers votre compte bancaire";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "La somme de ".$amount." € a bien été virée de votre porte-monnaie électronique ".ATCF_CrowdFunding::get_platform_name()." vers votre compte bancaire.<br />";
-		$body_content .= "Toute l’équipe ".ATCF_CrowdFunding::get_platform_name()." vous souhaite une agréable journée.";
-		
-		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
-	}
-
-    //*******************************************************
-    // FIN NOTIFICATIONS PORTE-MONNAIE ELECTRONIQUE
-    //*******************************************************
-	
-    //*******************************************************
     // NOTIFICATIONS KYC
     //*******************************************************
     public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {

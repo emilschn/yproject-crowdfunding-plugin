@@ -56,7 +56,8 @@ class NotificationsAPI {
 		'693' => "Déclaration - Fin (investisseurs)",
 		'139' => "Versement de royalties - résumé quotidien",
 		'522' => "Versement de royalties - transfert avec message",
-		'691' => "Versement de royalties - montant maximum atteint"
+		'691' => "Versement de royalties - montant maximum atteint",
+		'779' => "Versement sur compte bancaire - confirmation"
 	);
 	
 
@@ -1239,5 +1240,25 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
+	
+    //*******************************************************
+    // NOTIFICATION VERSEMENT SUR COMPTE BANCAIRE
+    //*******************************************************
+	public static function transfer_to_bank_account_confirmation( $recipient, $name, $amount ) {
+		$id_template = '779';
+		$options = array(
+			'personal'			=> 1,
+			'NOM'				=> $name,
+			'MONTANT'			=> $amount
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
 	
 }
