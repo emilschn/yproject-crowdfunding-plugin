@@ -770,7 +770,7 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
 	}
 	
-    public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name ) {
+    public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin > ' . $user_email);
 		
 		$admin_email = get_option('admin_email');
@@ -780,6 +780,11 @@ class NotificationsEmails {
 		$body_content .= "Lemon Way a validé tous les documents du wallet, mais le wallet n'est pas authentifié.<br>";
 		$body_content .= "Il s'agit de " .$user_name. ".<br>";
 		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
+		
+		$body_content .= "Voici ses actions sur le site :<br>";
+		foreach ( $pending_actions as $pending_action ) {
+			$body_content .= "- " .$pending_action. "<br>";
+		}
 
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
     }

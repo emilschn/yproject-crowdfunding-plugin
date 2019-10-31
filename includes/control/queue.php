@@ -579,7 +579,39 @@ class WDGQueue {
 			}
 			
 			if ( $has_all_documents_validated ) {
-				NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name );
+				//On vérifie si il y'a une action en cours :
+				$pending_actions = array();
+				// - investissement en attente
+				if ( !empty( $WDGOrga ) ) {
+					$pending_investments = $WDGOrga->get_pending_investments();
+				} else {
+					$pending_investments = $WDGUser->get_pending_investments();
+				}
+				if ( !empty( $pending_investments ) ) {
+					foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
+						$campaign = new ATCF_Campaign( $campaign_id );
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+							foreach ( $campaign_investments as $campaign_investment_id ) {
+								$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+								array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
+							}
+						}
+					}
+				}
+				// - évaluation avec intention d'investissement
+				if ( !empty( $WDGUser ) ) {
+					$votes_with_amount = $WDGUser->get_votes_with_amount();
+					foreach ( $votes_with_amount as $vote ) {
+						$campaign = new ATCF_Campaign( $vote->post_id );
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+							array_push( $pending_actions, 'Evaluation avec intention pour ' .$campaign->get_name(). ' (' .$vote->invest_sum. ' €)' );
+						}
+					}
+				}
+				
+				if ( !empty( $pending_actions ) ) {
+					NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions );
+				}
 			}
 		}
 	}
