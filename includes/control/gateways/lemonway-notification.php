@@ -411,8 +411,17 @@ class LemonwayNotification {
 				
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				NotificationsEmails::new_purchase_team_members( $investment_id );
+
 			} else {
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
+				if ( empty( $WDGOrga_invest_author ) ) {
+					$recipient_email = $WDGUser_invest_author->get_email();
+					$recipient_name = $WDGUser_invest_author->get_firstname();
+					$wallet_details = $WDGUser_invest_author->get_wallet_details();
+					$amount = $wallet_details->BAL;
+					NotificationsAPI::wire_transfer_received( $recipient_email, $recipient_name, $amount );
+				} else {
+					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - ORGA - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
+				}
 			}
 		} else {
 			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$WDGUser_invest_author === FALSE', true );

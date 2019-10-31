@@ -36,6 +36,7 @@ class NotificationsAPI {
 		'605' => "KYC - Wallet validé et investissement en attente",
 		'606' => "KYC - Wallet validé et investissement en attente - Rappel",
 		'175' => "Erreur d'investissement",
+		'780' => "Réception virement bancaire sans investissement en attente",
 		'172' => "Investissement par chèque en attente",
 		'177' => "Investissement par virement en attente",
 		'687' => "Investissement sur projet validé",
@@ -890,6 +891,26 @@ class NotificationsAPI {
 			'NOM_PROJET'			=> $project_name,
 			'RAISON_LEMONWAY'		=> $lemonway_reason,
 			'LIEN_INVESTISSEMENT'	=> $investment_link,
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+    //*******************************************************
+	public static function wire_transfer_received( $recipient, $name, $amount ) {
+		$id_template = '780';
+		$options = array(
+			'personal'				=> 1,
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
