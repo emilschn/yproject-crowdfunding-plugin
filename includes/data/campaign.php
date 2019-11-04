@@ -3006,18 +3006,19 @@ class ATCF_Campaign {
 				'downloads'		=> array($this->ID),
 				'user_info'		=> $user_info,
 				'cart_details'	=> $cart_details,
-				'status'		=> $status
+				'status'		=> 'pending' // On initialise à pending, sinon la sauvegarde se fait 2 fois dans les logs (edd_record_sale_in_log)
 			);
 			$payment_id = edd_insert_payment( $payment_data );
 			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
 			
-			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
+			// Mise à jour du statut de paiement si nécessaire
+			if ( $this->campaign_status() != ATCF_Campaign::$campaign_status_vote && $status != 'pending' ) {
 				$wdg_investment = new WDGInvestment( $payment_id );
 				$wdg_investment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
 				$postdata = array(
 					'ID'			=> $payment_id,
-					'post_status'	=> 'pending'
+					'post_status'	=> $status
 				);
 				wp_update_post( $postdata );
 			}
