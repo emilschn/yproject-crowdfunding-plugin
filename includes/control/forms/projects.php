@@ -181,21 +181,6 @@ class WDGFormProjects {
 			exit();
 		}
 	}
-	
-	/**
-	 * Force la validation a posteriori des paiements par carte en attente
-	 */
-	public static function form_try_pending_card() {
-		$WDGUser_current = WDGUser::current();
-		$try_pending_card_payment_id = filter_input( INPUT_GET, 'try_pending_card' );
-		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
-		if ( !empty( $try_pending_card_payment_id ) && !empty( $campaign_id ) && $WDGUser_current->is_admin() ) {
-			$payment_investment = new WDGInvestment( $try_pending_card_payment_id );
-			$user = $payment_investment->get_saved_user_id();
-			$user_investment = new WDGUserInvestments( $user );
-			$user_investment->try_pending_card_investments( TRUE );
-		}
-	}
 
 	public static function edit_image_url_video( $image, $post_video, $campaign_id ) {
 		$buffer = '';

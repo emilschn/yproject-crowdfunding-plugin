@@ -114,7 +114,6 @@ class LemonwayNotification {
 			}
 			
 			if ( !empty( $WDGUserInvestments ) ) {
-				$WDGUserInvestments->try_pending_card_investments();
 				$WDGUserInvestments->try_transfer_waiting_roi_to_wallet();
 				if ( $WDGUserInvestments->has_pending_not_validated_investments() ) {
 					$pending_not_validated_investment = $WDGUserInvestments->get_first_pending_not_validated_investment();
