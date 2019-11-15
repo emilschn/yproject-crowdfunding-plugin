@@ -130,6 +130,10 @@ class LemonwayNotification {
 				} else {
 					NotificationsAPI::kyc_authentified( $user_email, $user_name );
 				}
+
+				if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+					NotificationsAPI::phone_kyc_authentified( $user_email, $user_name );
+				}
 				
 			} else {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, $lemonway_posted_wallet_status );
@@ -255,6 +259,10 @@ class LemonwayNotification {
 				if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
 					if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
 						NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
+						if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+							NotificationsAPI::phone_kyc_single_validated( $user_email, $user_firstname );
+						}
+						
 					} else {
 						WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
 					}

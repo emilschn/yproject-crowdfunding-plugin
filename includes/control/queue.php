@@ -509,6 +509,9 @@ class WDGQueue {
 		// Temporairement on envoie la notification à admin ; à remplacer par template SIB
 		if ( !empty( $buffer_returns) ) {
 			NotificationsAPI::kyc_refused( $email, $name, $buffer_returns );
+			if ( isset( $WDGUser_wallet ) && $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+				NotificationsAPI::phone_kyc_refused( $email, $name );
+			}
 			/*$buffer_message = "-- MESSAGE TEST ADMIN --<br>";
 			$buffer_message .= "(serait envoyé à " .$email. ")<br>";
 			$buffer_message .= "Bonjour " . $name . ",<br>";
