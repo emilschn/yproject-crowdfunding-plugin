@@ -1419,7 +1419,9 @@ class ATCF_Campaign {
 		$buffer = 0;
 		$declaration_list = $this->get_roi_declarations();
 		foreach ( $declaration_list as $declaration_item ) {
-			$buffer += $declaration_item["total_roi"];
+			if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_declaration ) {
+				$buffer += $declaration_item["total_roi"];
+			}
 		}
 		return $buffer;
 	}
