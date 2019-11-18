@@ -243,7 +243,17 @@ class WDGQueue {
 		}
 		
 		if ( !empty( $message ) ) {
-			NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
+			$recipient_notification = $WDGUser->get_unsubscribe_royalties_notifications();
+			print_r('execute_roi_transfer_message : recipient_notification = '.recipient_notification.'<br>');
+
+			if( $recipient_notification == 'all' ){
+				$cancel_notification = true;
+			} elseif ( $recipient_notification == 'zero' && empty( $message_categories[ 'with_royalties' ] )) {
+				$cancel_notification = true;
+			}
+			if (!$cancel_notification ){
+				NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
+			}
 		}
 	}
 

@@ -6,6 +6,7 @@ class WDG_Form_User_Notifications extends WDG_Form {
 	public static $field_group_hidden = 'user-notifications-hidden';
 	public static $field_group_newsletters = 'user-notifications-newsletters';
 	public static $field_group_projects = 'user-notifications-projects';
+	public static $field_group_transactions = 'user-notifications-transactions';
 	
 	private static $sendinblue_nl_list = array( 
 		5	=> "Newsletter WE DO GOOD",
@@ -106,6 +107,26 @@ class WDG_Form_User_Notifications extends WDG_Form {
 			$campaign_list_labels
 		);
 		
+		// $field_group_transactions : les notifications liées aux transactions
+		// '' on est inscrit à toutes les notifications
+		// 'all' on est désinscrit de toutes les notifications
+		// 'zero' on est désinscrits des notifications dont le montant est zéro €
+
+		$royalties_notifications_labels = [
+			0 		=> __('Toujours', 'yproject'),
+			'all' 	=> __('Jamais', 'yproject'),
+			'zero' 	=> __('Si le montant est positif', 'yproject'),
+		];
+
+		$this->addField(
+			'select',
+			'royalties',
+			__('Royalties', 'yproject'),
+			WDG_Form_User_Notifications::$field_group_transactions,
+			$WDGUser->get_unsubscribe_royalties_notifications(),
+			FALSE,
+			$royalties_notifications_labels
+		);
 	}
 	
 	public function postForm() {
@@ -173,7 +194,9 @@ class WDG_Form_User_Notifications extends WDG_Form {
 					);
 				}
 			}
-			
+
+			// suivi des notifications de transactions
+			$WDGUser->set_unsubscribe_royalties_notifications($this->getInputText('royalties'));
 		}
 		
 		$buffer = array(
