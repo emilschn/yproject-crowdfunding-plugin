@@ -2910,6 +2910,8 @@ class WDGAjaxActions {
 		NotificationsEmails::new_purchase_user_success_check( $investment_id );
 		NotificationsEmails::new_purchase_team_members( $investment_id );
 		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
+		$WDGInvestment = new WDGInvestment( $investment_id );
+		$WDGInvestment->save_to_api( $campaign, 'publish' );
 		
 		// Valider le draft
 		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );

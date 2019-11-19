@@ -72,7 +72,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
     $payment_post = get_post($payment_id);
 	$downloads = edd_get_payment_meta_downloads($payment_id);
 	$download_id = '';
-	if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+	if (is_array($downloads[0])) $download_id = $downloads[0]["id"];
 	else $download_id = $downloads[0];
 	$post_campaign = get_post($download_id);
 	$campaign = atcf_get_campaign($post_campaign);
@@ -189,6 +189,8 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					
 					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 					NotificationsEmails::new_purchase_team_members( $payment_id );
+					$WDGInvestment = new WDGInvestment( $payment_id );
+					$WDGInvestment->save_to_api( $campaign, 'publish' );
 
 				//Le paiement vient d'échouer
 				} else if ($buffer == 'failed' && $buffer !== $init_payment_status) {

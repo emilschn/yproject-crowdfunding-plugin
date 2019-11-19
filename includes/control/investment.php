@@ -328,13 +328,15 @@ class WDGInvestment {
 	public function set_contract_status( $status ) {
 		if ( !empty( $this->id ) ) {
 			update_post_meta( $this->id, WDGInvestment::$contract_status_meta, $status );
-			if ( $status == WDGInvestment::$contract_status_investment_validated ) {
-				$buffer = 'publish';
+			if ( $status == WDGInvestment::$contract_status_investment_validated && $this->get_saved_status() != 'publish' ) {
 				$postdata = array(
 					'ID'			=> $this->id,
-					'post_status'	=> $buffer
+					'post_status'	=> 'publish'
 				);
 				wp_update_post($postdata);
+
+				$campaign = $this->get_saved_campaign();
+				$this->save_to_api( $campaign, 'publish' );
 			}
 		}
 	}
@@ -1110,5 +1112,22 @@ class WDGInvestment {
 				}
 			}
 		}
+	}
+
+	public function save_to_api( $campaign, $payment_status ) {
+		$payment = edd_get_payment( $this->id );
+		WDGWPREST_Entity_Investment::create( $campaign, $payment );
+		
+		$user_info = edd_get_payment_meta_user_info( $payment->ID );
+		$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+
+		$payment_data = array(
+			'ID'			=> $this->id,
+			'email'			=> edd_get_payment_user_email( $this->id ),
+			'amount'		=> edd_get_payment_amount( $this->id ),
+			'date'			=> $payment->post_date,
+			'user'			=> $user_id
+		);
+		WDGInvestmentContract::create_item_from_payment_data( $payment_data, $campaign );
 	}
 }
