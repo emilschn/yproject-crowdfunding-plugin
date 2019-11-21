@@ -153,8 +153,8 @@ class WDGPostActions {
             update_user_meta( $WPuserID, 'user_mobile_phone', $new_phone );
         }
 
-        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $orga_email ) && !empty( $new_phone )
-				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms) ) {
+        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && !empty( $new_phone )
+				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms)  && (is_email( $orga_email ) || is_numeric( $orga_name )) ) {
 
 			//On commence par essayer de créer l'organisation d'abord
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
