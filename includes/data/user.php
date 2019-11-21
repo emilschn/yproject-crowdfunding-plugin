@@ -1571,6 +1571,15 @@ class WDGUser {
 	public function set_subscribe_authentication_notification( $value ) {
 		if ( $value === TRUE ) {
 			update_user_meta( $this->get_wpref(), 'subscribe_authentication_notification', '1' );
+			
+			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+			$return = $mailin->create_update_user( array(
+				"email"			=> $this->get_email(),
+				"attributes"	=> array(
+					"SMS"	=> $this->get_lemonway_phone_number()
+				)
+			) );
+
 		} else {
 			delete_user_meta( $this->get_wpref(), 'subscribe_authentication_notification' );
 		}

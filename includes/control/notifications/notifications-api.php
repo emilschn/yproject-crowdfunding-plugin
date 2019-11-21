@@ -265,16 +265,13 @@ class NotificationsAPI {
 	}
 
 	public static function phone_kyc_refused( $recipient, $name ) {
-		$param_content = "Bonjour " .$name.", un ou plusieurs documents ont été refusés sur votre compte WE DO GOOD. Ceci bloque votre authentification.";
-		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$param_content = "Bonjour " .$name.", un ou plusieurs documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Ceci bloque votre authentification. Connectez-vous afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
-			'recipient'	=> $param_recipients
+			'recipient'	=> $recipient
 		);
-		if ( WP_IS_DEV_SITE ) {
-			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-		}
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
     //*******************************************************
@@ -296,16 +293,13 @@ class NotificationsAPI {
 	}
 
 	public static function phone_kyc_single_validated( $recipient, $name ) {
-		$param_content = "Bonjour " .$name.", un document a été authentifié sur votre compte WE DO GOOD ! Nous attendons les autres pour que votre compte soit complet.";
-		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$param_content = "Bonjour " .$name.", un document a été validé sur WE DO GOOD ! Finalisez l'authentification de votre compte en y déposant le(s) document(s) manquant(s) : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
-			'recipient'	=> $param_recipients
+			'recipient'	=> $recipient
 		);
-		if ( WP_IS_DEV_SITE ) {
-			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-		}
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
     //*******************************************************
@@ -327,16 +321,13 @@ class NotificationsAPI {
 	}
 
 	public static function phone_kyc_authentified( $recipient, $name ) {
-		$param_content = "Bonjour " .$name.", votre compte est à présent authentifié sur WE DO GOOD !";
-		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$param_content = "Bonjour " .$name.", nous avons le plaisir de vous annoncer que votre compte est désormais authentifié sur WE DO GOOD ! www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
-			'recipient'	=> $param_recipients
+			'recipient'	=> $recipient
 		);
-		if ( WP_IS_DEV_SITE ) {
-			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-		}
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
     //*******************************************************
