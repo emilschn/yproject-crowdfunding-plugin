@@ -839,9 +839,12 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('MoneyInWebInit', $param_list);
-		if ($result !== FALSE) {
+		if ($result !== FALSE && isset( $result->MONEYINWEB->TOKEN ) ) {
 			//Retourne : 
 			//  - MONEYINWEB => TOKEN
+			$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
+			$url_css_encoded = urlencode( $url_css );
+			return YP_LW_WEBKIT_URL . '?moneyInToken=' . $result->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded;
 		}
 		return $result;
 	}
