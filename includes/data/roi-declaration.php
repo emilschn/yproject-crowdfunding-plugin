@@ -245,7 +245,7 @@ class WDGROIDeclaration {
 			
 		// Nouvelle méthode : on calcule à partir du HT
 		} else {
-			$buffer = $this->get_commission_to_pay_without_tax() * 1.2;
+			$buffer = round( ( $this->get_commission_to_pay_without_tax() * 1.2) * 100 ) / 100;
 		}
 		
 		return $buffer;
