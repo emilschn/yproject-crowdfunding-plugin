@@ -138,7 +138,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'fiscal_year_end_month',
-			__( "L'exerice comptable se termine &agrave; la fin du mois", 'yproject' ),
+			__( "L'exercice comptable se termine &agrave; la fin du mois", 'yproject' ),
 			self::$field_group_dashboard,
 			$WDGOrganization->get_fiscal_year_end_month(),
 			FALSE,
