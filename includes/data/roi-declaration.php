@@ -562,19 +562,17 @@ class WDGROIDeclaration {
 					
 					if ( $send_notifications ) {
 
-						$cancel_notification = false;
+						$cancel_notification = FALSE;
 						if( $WDGUser ) {
-							$recipient_notification = $WDGUser->get_unsubscribe_royalties_notifications();
-							print_r('make_transfer : recipient_notification = '.recipient_notification.'<br>');
-							if( $recipient_notification == 'all' ){
-								$cancel_notification = true;
-							} elseif ($recipient_notification == 'zero' && $investment_item['roi_amount'] == 0) {
-								$cancel_notification = true;
+							$recipient_notification = $WDGUser->get_royalties_notifications();
+							if( $recipient_notification == 'none' ){
+								$cancel_notification = TRUE;
+							} elseif ($recipient_notification == 'positive' && $investment_item['roi_amount'] == 0) {
+								$cancel_notification = TRUE;
 							}
 						}
-						print_r('make_transfer : cancel_notification = '.$cancel_notification.'<br>');
 
-						if (!cancel_notification) {
+						if (!$cancel_notification) {
 							WDGQueue::add_notification_royalties( $investment_item['user'] );
 							
 							$declaration_message = $this->get_message();

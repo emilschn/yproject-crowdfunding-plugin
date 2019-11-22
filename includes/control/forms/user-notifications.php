@@ -108,14 +108,14 @@ class WDG_Form_User_Notifications extends WDG_Form {
 		);
 		
 		// $field_group_transactions : les notifications liées aux transactions
-		// '' on est inscrit à toutes les notifications
-		// 'all' on est désinscrit de toutes les notifications
-		// 'zero' on est désinscrits des notifications dont le montant est zéro €
+		// '' ou 0 on est inscrit à toutes les notifications
+		// 'none' on est inscrit à aucune notification
+		// 'positive' on est inscrits aux notifications quand les royalties sont supérieures à 0€
 
 		$royalties_notifications_labels = [
 			0 		=> __('Toujours', 'yproject'),
-			'all' 	=> __('Jamais', 'yproject'),
-			'zero' 	=> __('Si le montant est positif', 'yproject'),
+			'none' 	=> __('Aucune', 'yproject'),
+			'positive' 	=> __('Si le montant est positif', 'yproject'),
 		];
 
 		$this->addField(
@@ -123,7 +123,7 @@ class WDG_Form_User_Notifications extends WDG_Form {
 			'royalties',
 			__('Royalties', 'yproject'),
 			WDG_Form_User_Notifications::$field_group_transactions,
-			$WDGUser->get_unsubscribe_royalties_notifications(),
+			$WDGUser->get_royalties_notifications(),
 			FALSE,
 			$royalties_notifications_labels
 		);
@@ -196,7 +196,7 @@ class WDG_Form_User_Notifications extends WDG_Form {
 			}
 
 			// suivi des notifications de transactions
-			$WDGUser->set_unsubscribe_royalties_notifications($this->getInputText('royalties'));
+			$WDGUser->set_royalties_notifications($this->getInputText('royalties'));
 		}
 		
 		$buffer = array(
