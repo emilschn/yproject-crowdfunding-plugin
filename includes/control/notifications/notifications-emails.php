@@ -57,10 +57,10 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_error_contract( $payment_id, $preinvestment = FALSE ) {
+    public static function new_purchase_user_error_contract( $payment_id, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_error_contract > ' . $payment_id);
 		$particular_content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span>";
-		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment );
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment, $is_only_wallet_contribution );
     }
     
 	private static $alert_lemonway_card = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », le nom de notre prestataire de paiement, dans le détail des opérations.<br>";
@@ -69,18 +69,18 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_success( $payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success( $payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
 
 		$particular_content = "";
-		if ( $is_card_contribution ) {
+		if ( $is_card_contribution && !$is_only_wallet_contribution ) {
 			$particular_content .= self::$alert_lemonway_card;
 		}
 
 		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Eversign ";
 		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
 		$attachments = FALSE;
-		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment, $is_only_wallet_contribution );
     }
     
     /**
@@ -88,16 +88,16 @@ class NotificationsEmails {
      * @param type $payment_id
      * @return type
      */
-    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
 		
 		$particular_content = "";
-		if ( $is_card_contribution ) {
+		if ( $is_card_contribution && !$is_only_wallet_contribution) {
 			$particular_content .= self::$alert_lemonway_card;
 		}
 		
 		$attachments = array($new_contract_pdf_file);
-		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment, $is_only_wallet_contribution );
     }
 	
 	public static function new_purchase_user_success_check( $payment_id ) {
@@ -110,7 +110,7 @@ class NotificationsEmails {
      * @param string $particular_content
      * @return bool
      */
-    public static function new_purchase_user( $payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE ) {
+    public static function new_purchase_user( $payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
@@ -126,7 +126,7 @@ class NotificationsEmails {
 		$text_before = '';
 		$text_after = '';
 		
-		if ( $payment_key != 'check' ) {
+		if ( $payment_key != 'check' && !$is_only_wallet_contribution ) {
 			if ( strpos( $payment_key, 'TRANSID' ) !== FALSE ) {
 				$text_before .= 'Le compte bancaire de votre carte enregistrée a été débité.<br>';
 			} else {
