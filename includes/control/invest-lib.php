@@ -204,10 +204,12 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					));
 					foreach ($post_items as $post_item) {
 						$postdata = array(
-						'ID' => $post_item->ID,
-						'post_status' => $buffer
+							'ID' => $post_item->ID,
+							'post_status' => $buffer
 						);
 						wp_update_post($postdata);
+						$WDGInvestment = new WDGInvestment( $post_item->ID );
+						$WDGInvestment->save_to_api( $campaign, 'failed' );
 					}
 
 				//Le paiement est validé, mais aucun contrat n'existe
@@ -223,6 +225,8 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						'edit_date'	=> current_time( 'mysql' )
 					);
 					wp_update_post($postdata);
+					$WDGInvestment = new WDGInvestment( $payment_id );
+					$WDGInvestment->save_to_api( $campaign, $buffer );
 
 					if (isset($download_id) && !empty($download_id)) {
 						do_action('wdg_delete_cache', array(
