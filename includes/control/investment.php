@@ -1115,17 +1115,5 @@ class WDGInvestment {
 	public function save_to_api( $campaign, $payment_status ) {
 		$payment = edd_get_payment( $this->id );
 		WDGWPREST_Entity_Investment::create( $campaign, $payment );
-		
-		$user_info = edd_get_payment_meta_user_info( $payment->ID );
-		$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-
-		$payment_data = array(
-			'ID'			=> $this->id,
-			'email'			=> edd_get_payment_user_email( $this->id ),
-			'amount'		=> edd_get_payment_amount( $this->id ),
-			'date'			=> $payment->post_date,
-			'user'			=> $user_id
-		);
-		WDGInvestmentContract::create_item_from_payment_data( $payment_data, $campaign );
 	}
 }
