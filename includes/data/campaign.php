@@ -2817,7 +2817,6 @@ class ATCF_Campaign {
 						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
 						$signature_status = $WDGInvestmentSignature->get_status();
 
-						$mangopay_contribution = FALSE;
 						$lemonway_contribution = FALSE;
 						if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 							$lemonway_id = edd_get_payment_key($payment->ID);
@@ -2838,7 +2837,7 @@ class ATCF_Campaign {
 							}
 						}
 
-						$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
+						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
 
 						if ($payment_status != 'failed') {
 							$this->payments_data[] = array(
@@ -2849,7 +2848,7 @@ class ATCF_Campaign {
 								'date'			=> $payment->post_date,
 								'user'			=> $user_id,
 								'status'		=> $payment_status,
-								'mangopay_contribution' => $mangopay_contribution,
+								'mangopay_contribution' => FALSE,
 								'lemonway_contribution' => $lemonway_contribution,
 								'payment_key' => $lemonway_id,
 								'signsquid_status'	=> $signature_status

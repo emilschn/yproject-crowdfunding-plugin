@@ -149,6 +149,8 @@ class WDGFormProjects {
 				}
 
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+				$WDGInvestment = new WDGInvestment( $approve_payment_id );
+				$WDGInvestment->save_to_api( $campaign, 'publish' );
 				
 			}
 			
