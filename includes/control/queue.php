@@ -243,7 +243,16 @@ class WDGQueue {
 		}
 		
 		if ( !empty( $message ) ) {
-			NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
+			$recipient_notification = $WDGUser->get_royalties_notifications();
+
+			if( $recipient_notification == 'none' ){
+				$cancel_notification = TRUE;
+			} elseif ( $recipient_notification == 'positive' && empty( $message_categories[ 'with_royalties' ] )) {
+				$cancel_notification = TRUE;
+			}
+			if (!$cancel_notification ){
+				NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
+			}
 		}
 	}
 

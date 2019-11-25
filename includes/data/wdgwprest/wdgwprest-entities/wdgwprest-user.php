@@ -85,7 +85,8 @@ class WDGWPREST_Entity_User {
 			'document_rib'		=> $file_list_rib[ 0 ]->file_name,
 			'authentification_mode'	=> $authentication_mode,
 			/* 'picture_url', 'website_url', 'twitter_url', 'facebook_url', 'linkedin_url', 'viadeo_url', 'activation_key', 'password' */
-			'signup_date'		=> $user->get_signup_date()
+			'signup_date'		=> $user->get_signup_date(),
+			'royalties_notifications'		=> $user->get_royalties_notifications(),
 		);
 		return $parameters;
 	}
