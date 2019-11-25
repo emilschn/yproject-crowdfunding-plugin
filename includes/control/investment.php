@@ -665,7 +665,7 @@ class WDGInvestment {
 		}
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
-		$this->save_to_api( $this->campaign, $buffer );
+		$this->save_to_api( $this->campaign, 'pending' );
 		// FIN GESTION DU PAIEMENT COTE EDD
 
 		// Si on sait déjà que ça a échoué, pas la peine de tester
@@ -708,7 +708,7 @@ class WDGInvestment {
 					'post_status'	=> 'pending'
 				);
 				wp_update_post( $postdata );
-				$this->save_to_api( $this->campaign, $buffer );
+				$this->save_to_api( $this->campaign, 'pending' );
 			}
 		}
 
