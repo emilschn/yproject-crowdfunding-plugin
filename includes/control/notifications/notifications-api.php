@@ -841,7 +841,7 @@ class NotificationsAPI {
 			'TEXTE_AVANT'			=> $text_before,
 			'TEXTE_APRES'			=> $text_after,
 		);
-		if ( !empty( $attachment_url ) ) {
+		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
 			$options[ 'url_attachment' ] = $attachment_url;
 		}
 		$parameters = array(
@@ -866,7 +866,7 @@ class NotificationsAPI {
 			'TEXTE_AVANT'			=> $text_before,
 			'TEXTE_APRES'			=> $text_after,
 		);
-		if ( !empty( $attachment_url ) ) {
+		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE ) {
 			$options[ 'url_attachment' ] = $attachment_url;
 		}
 		$parameters = array(
