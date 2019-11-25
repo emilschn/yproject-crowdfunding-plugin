@@ -94,12 +94,8 @@ class WDGCampaignInvestments {
 	 * @param type $id_payment
 	 */
 	public static function cancel($payment_id) {
-		$postdata = array(
-		    'ID'	    => $payment_id,
-		    'post_status'   => 'failed',
-		    'edit_date'	    => current_time( 'mysql' )
-		);
-		wp_update_post($postdata);
+		$investment = new WDGInvestment( $payment_id );
+		$investment->cancel();
 	}
 	
 	

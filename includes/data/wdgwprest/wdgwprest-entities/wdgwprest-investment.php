@@ -166,7 +166,7 @@ class WDGWPREST_Entity_Investment {
 	 * @param ATCF_Campaign $campaign
 	 * @param object $edd_payment_item
 	 */
-	public static function create( $campaign, $edd_payment_item ) {
+	public static function create_or_update( $campaign, $edd_payment_item ) {
 		$buffer = FALSE;
 		
 		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item );
