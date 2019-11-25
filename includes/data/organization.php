@@ -116,53 +116,53 @@ class WDGOrganization {
 			}
 			$this->wpref = $user_id;
 			
-			$this->name = $this->bopp_object->name;
-			
-			$this->email = $this->bopp_object->email;
+			if ( !empty( $this->bopp_object ) ) {
+				$this->name = $this->bopp_object->name;
+				$this->email = $this->bopp_object->email;
+				$this->representative_function = $this->bopp_object->representative_function;
+				$this->description = $this->bopp_object->description;
+				$this->website = $this->bopp_object->website_url;
+				$this->strong_authentication = $this->bopp_object->strong_authentication;
+				$this->address_number = $this->bopp_object->address_number;
+				$this->address_number_comp = $this->bopp_object->address_number_comp;
+				$this->address = $this->bopp_object->address;
+				$this->postal_code = $this->bopp_object->postalcode;
+				$this->city = $this->bopp_object->city;
+				$this->nationality = $this->bopp_object->country;
+				$this->type = $this->bopp_object->type;
+				$this->legalform = $this->bopp_object->legalform;
+				$this->capital = $this->bopp_object->capital;
+				$this->idnumber = $this->bopp_object->idnumber;
+				$this->rcs = $this->bopp_object->rcs;
+				$this->ape = $this->bopp_object->ape;
+				$this->vat = $this->bopp_object->vat;
+				$this->fiscal_year_end_month = $this->bopp_object->fiscal_year_end_month;
+				$this->employees_count = $this->bopp_object->employees_count;
+				$geolocation = explode( ',', $this->bopp_object->geolocation );
+				if ( count( $geolocation ) > 1 ) {
+					$this->latitude = $geolocation[0];
+					$this->longitude = $geolocation[1];
+				}
+				
+				$this->bank_owner = $this->bopp_object->bank_owner;
+				$this->bank_address = $this->bopp_object->bank_address;
+				$this->bank_address2 = $this->bopp_object->bank_address2;
+				$this->bank_iban = $this->bopp_object->bank_iban;
+				$this->bank_bic = $this->bopp_object->bank_bic;
+				$this->id_quickbooks = $this->bopp_object->id_quickbooks;
+			}
+
 			if ( empty( $this->email ) ) {
 				$meta_email = get_user_meta( $user_id, 'orga_contact_email', TRUE );
-				if (empty($meta_email)) {
+				if ( empty( $meta_email ) && !empty( $this->creator ) ) {
 					$this->email = $this->creator->user_email;
 				} else {
 					$this->email = $meta_email;
 				}
 			}
-			
-			$this->representative_function = $this->bopp_object->representative_function;
-			$this->description = $this->bopp_object->description;
 			if ( empty( $this->description ) ) {
 				$this->description = get_user_meta( $user_id, WDGOrganization::$key_description, TRUE );
 			}
-			$this->website = $this->bopp_object->website_url;
-			$this->strong_authentication = $this->bopp_object->strong_authentication;
-			$this->address_number = $this->bopp_object->address_number;
-			$this->address_number_comp = $this->bopp_object->address_number_comp;
-			$this->address = $this->bopp_object->address;
-			$this->postal_code = $this->bopp_object->postalcode;
-			$this->city = $this->bopp_object->city;
-			$this->nationality = $this->bopp_object->country;
-			$this->type = $this->bopp_object->type;
-			$this->legalform = $this->bopp_object->legalform;
-			$this->capital = $this->bopp_object->capital;
-			$this->idnumber = $this->bopp_object->idnumber;
-			$this->rcs = $this->bopp_object->rcs;
-			$this->ape = $this->bopp_object->ape;
-			$this->vat = $this->bopp_object->vat;
-			$this->fiscal_year_end_month = $this->bopp_object->fiscal_year_end_month;
-			$this->employees_count = $this->bopp_object->employees_count;
-			$geolocation = explode( ',', $this->bopp_object->geolocation );
-			if ( count( $geolocation ) > 1 ) {
-				$this->latitude = $geolocation[0];
-				$this->longitude = $geolocation[1];
-			}
-			
-			$this->bank_owner = $this->bopp_object->bank_owner;
-			$this->bank_address = $this->bopp_object->bank_address;
-			$this->bank_address2 = $this->bopp_object->bank_address2;
-			$this->bank_iban = $this->bopp_object->bank_iban;
-			$this->bank_bic = $this->bopp_object->bank_bic;
-			
-			$this->id_quickbooks = $this->bopp_object->id_quickbooks;
 		}
 	}
 	

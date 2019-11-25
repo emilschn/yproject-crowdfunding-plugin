@@ -730,7 +730,11 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 		} else {
 			$buffer .= 'Fait avec l\'adresse IP '.$payment_data["ip"].'<br />';
 		}
-		$payment_date = new DateTime( $payment_data[ "date" ] );
+		$date_str = '';
+		if ( isset( $payment_data[ 'date' ] ) ) {
+			$date_str = $payment_data[ 'date' ];
+		}
+		$payment_date = new DateTime( $date_str );
 		$day = $payment_date->format( 'd' );
 		$month = mb_strtoupper(__($months[$payment_date->format( 'm' ) - 1]));
 		$year = $payment_date->format( 'Y' );
