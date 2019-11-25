@@ -115,6 +115,7 @@ class WDGUser {
 					$this->bank_address2 = $this->api_data->bank_address2;
 					$this->authentification_mode = $this->api_data->authentification_mode;
 					$this->signup_date = $this->api_data->signup_date;
+					$this->royalties_notifications = $this->api_data->royalties_notifications;
 				}
 			}
 		}
@@ -538,6 +539,19 @@ class WDGUser {
 		return $this->birthday_country;
 	}
 	
+	
+	public function get_royalties_notifications() {
+		$buffer = $this->royalties_notifications;
+		return $buffer;
+	}
+
+	public function set_royalties_notifications($value) {
+		if($this->royalties_notifications != $value) {
+			$this->royalties_notifications = $value;		
+			$this->update_api();
+		}
+	}
+
 /*******************************************************************************
  * Fonctions nÃ©cessitant des requetes
 *******************************************************************************/
