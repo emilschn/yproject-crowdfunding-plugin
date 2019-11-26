@@ -2481,8 +2481,8 @@ class ATCF_Campaign {
 	public static $invest_time_min_wire = 7;
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
-		// Si il reste assez de jours ou si la campagne est déjà validée
-		return ( $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->is_funded() || $this->has_overridden_wire_constraints() );
+		// Si on a annulé les contraintes des virements ou si il reste assez de jours ou si la campagne a déjà atteint 80%
+		return ( $this->has_overridden_wire_constraints() || $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->percent_minimum_completed( FALSE ) > 80 );
 	}
 	public function can_use_wire_amount($amount_part) {
 		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
