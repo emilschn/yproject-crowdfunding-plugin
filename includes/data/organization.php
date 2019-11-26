@@ -625,16 +625,21 @@ class WDGOrganization {
 		return (empty($organization_can_invest_errors));
 	}
 	
+	private $transfers;
 	public function get_transfers() {
+		if ( isset( $this->transfers ) ) {
+			return $this->transfers;
+		}
+
 		$args = array(
-		    'author'    => $this->wpref,
-		    'post_type' => 'withdrawal_order',
-		    'post_status' => 'any',
-		    'orderby'   => 'post_date',
-		    'order'     =>  'ASC'
+		    'author'		=> $this->wpref,
+		    'post_type'		=> 'withdrawal_order',
+		    'post_status'	=> 'any',
+		    'orderby'		=> 'post_date',
+		    'order'			=>  'ASC'
 		);
-		$transfers = get_posts($args);
-		return $transfers;
+		$this->transfers = get_posts($args);
+		return $this->transfers;
 	}
 	
 	public function get_pending_transfers() {
