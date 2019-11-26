@@ -812,5 +812,16 @@ class NotificationsEmails {
     }
     //*******************************************************
     // FIN NOTIFICATIONS STATUT
-    //*******************************************************
+	//*******************************************************
+	
+	
+    public static function investment_to_api_error_admin( $edd_payment_item ) {
+		$admin_email = get_option('admin_email');
+		
+		$object = "Erreur d'ajout d'investissement sur l'API";
+		$body_content = "Salut !!<br>";
+		$body_content .= "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $edd_payment_item->ID;
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
+    }
 }
