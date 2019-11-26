@@ -132,7 +132,7 @@ class LemonwayNotification {
 				}
 
 				if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
-					NotificationsAPI::phone_kyc_authentified( $user_email, $user_name );
+					WDGQueue::add_document_user_phone_notification( $WDGUser_wallet->get_wpref(), 'authentified' );
 				}
 				
 			} else {
@@ -260,7 +260,7 @@ class LemonwayNotification {
 					if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
 						NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
 						if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
-							NotificationsAPI::phone_kyc_single_validated( $user_email, $user_firstname );
+							WDGQueue::add_document_user_phone_notification( $user_wpref, 'one_doc' );
 						}
 						
 					} else {
