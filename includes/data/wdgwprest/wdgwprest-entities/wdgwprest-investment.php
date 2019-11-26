@@ -172,7 +172,11 @@ class WDGWPREST_Entity_Investment {
 		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item );
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
-			if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
+			if ( isset( $buffer->code ) && $buffer->code == 400 ) {
+				$buffer = TRUE;
+			} else {
+				NotificationsEmails::investment_to_api_error_admin( $edd_payment_item )
+			}
 		}
 		
 		return $buffer;
