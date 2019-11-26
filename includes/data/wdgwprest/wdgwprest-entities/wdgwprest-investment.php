@@ -175,7 +175,7 @@ class WDGWPREST_Entity_Investment {
 			if ( isset( $buffer->code ) && $buffer->code == 400 ) {
 				$buffer = TRUE;
 			} else {
-				NotificationsEmails::investment_to_api_error_admin( $edd_payment_item )
+				NotificationsEmails::investment_to_api_error_admin( $edd_payment_item );
 			}
 		}
 		
