@@ -328,13 +328,15 @@ class WDGInvestment {
 	public function set_contract_status( $status ) {
 		if ( !empty( $this->id ) ) {
 			update_post_meta( $this->id, WDGInvestment::$contract_status_meta, $status );
-			if ( $status == WDGInvestment::$contract_status_investment_validated ) {
-				$buffer = 'publish';
+			if ( $status == WDGInvestment::$contract_status_investment_validated && $this->get_saved_status() != 'publish' ) {
 				$postdata = array(
 					'ID'			=> $this->id,
-					'post_status'	=> $buffer
+					'post_status'	=> 'publish'
 				);
 				wp_update_post($postdata);
+
+				$campaign = $this->get_saved_campaign();
+				$this->save_to_api( $campaign, 'publish' );
 			}
 		}
 	}
@@ -663,6 +665,7 @@ class WDGInvestment {
 		}
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
+		$this->save_to_api( $this->campaign, 'pending' );
 		// FIN GESTION DU PAIEMENT COTE EDD
 
 		// Si on sait déjà que ça a échoué, pas la peine de tester
@@ -705,6 +708,7 @@ class WDGInvestment {
 					'post_status'	=> 'pending'
 				);
 				wp_update_post( $postdata );
+				$this->save_to_api( $this->campaign, 'pending' );
 			}
 		}
 
@@ -873,11 +877,9 @@ class WDGInvestment {
 			exit();
 
 		} else {
-			$return = LemonwayLib::ask_payment_webkit( $wallet_id, $amount, 0, $wk_token, $return_url, $error_url, $cancel_url, $register_card );
-			if ( !empty($return->MONEYINWEB->TOKEN) ) {
-				$url_css = 'https://www.wedogood.co/wp-content/themes/yproject/_inc/css/lemonway.css';
-				$url_css_encoded = urlencode( $url_css );
-				wp_redirect( YP_LW_WEBKIT_URL . '?moneyInToken=' . $return->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded );
+			$ask_payment_webkit_url = LemonwayLib::ask_payment_webkit( $wallet_id, $amount, 0, $wk_token, $return_url, $error_url, $cancel_url, $register_card );
+			if ( $ask_payment_webkit_url !== FALSE ) {
+				wp_redirect( $ask_payment_webkit_url );
 				exit();
 				
 			} else {
@@ -1077,6 +1079,7 @@ class WDGInvestment {
 				'post_status'	=> 'failed'
 			);
 			wp_update_post($postdata);
+			$this->save_to_api( $this->get_campaign(), 'failed' );
 
 			$log_post_items = get_posts(array(
 				'post_type'		=> 'edd_log',
@@ -1106,9 +1109,14 @@ class WDGInvestment {
 
 			if ( $payments ) {
 				foreach ( $payments as $payment ) {
-					WDGWPREST_Entity_Investment::create( $campaign, $payment );
+					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment );
 				}
 			}
 		}
+	}
+
+	public function save_to_api( $campaign, $payment_status ) {
+		$payment = edd_get_payment( $this->id );
+		WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment );
 	}
 }

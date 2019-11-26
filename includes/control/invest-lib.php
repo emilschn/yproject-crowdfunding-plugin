@@ -72,7 +72,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
     $payment_post = get_post($payment_id);
 	$downloads = edd_get_payment_meta_downloads($payment_id);
 	$download_id = '';
-	if (is_array($downloads[0])) $download_id = $downloads[0]["id"]; 
+	if (is_array($downloads[0])) $download_id = $downloads[0]["id"];
 	else $download_id = $downloads[0];
 	$post_campaign = get_post($download_id);
 	$campaign = atcf_get_campaign($post_campaign);
@@ -109,7 +109,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 			if ( isset( $contribution_id ) && $contribution_id != '' && $contribution_id != 'check' && strpos( $contribution_id, 'unset_' ) === FALSE ) {
 				$update_post = FALSE;
 				$is_card_contribution = TRUE;
-
+				$is_only_wallet = FALSE;
 				//Si la clé de contribution contient "wire", il s'agissait d'un paiement par virement, il faut découper la clé
 				if (strpos($contribution_id, 'wire_') !== FALSE) {
 					$is_card_contribution = FALSE;
@@ -119,6 +119,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 				} elseif (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
 					$buffer = 'publish';
 					$update_post = TRUE;
+					$is_only_wallet = TRUE;
 
 				//On teste une contribution classique
 				} else {
@@ -157,12 +158,14 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 
 					$amount = edd_get_payment_amount($payment_id);
 					$current_user = get_user_by('id', $payment_post->post_author);
+
+					
 					if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
 						//Création du contrat à signer
 						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment_id );
 						$contract_id = $WDGInvestmentSignature->create_eversign();
 						if ( !empty( $contract_id ) ) {
-							NotificationsEmails::new_purchase_user_success( $payment_id, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+							NotificationsEmails::new_purchase_user_success( $payment_id, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 							if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 								global $contract_filename;
 								$new_contract_pdf_filename = basename( $contract_filename );
@@ -173,13 +176,13 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						} else {
 							global $contract_errors;
 							$contract_errors = 'contract_failed';
-							NotificationsEmails::new_purchase_user_error_contract( $payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+							NotificationsEmails::new_purchase_user_error_contract( $payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 							NotificationsEmails::new_purchase_admin_error_contract( $payment_id );
 						}
 						
 					} else {
 						$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
-						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 						if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 							$new_contract_pdf_filename = basename( $new_contract_pdf_file );
 							$new_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
@@ -189,6 +192,8 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					
 					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 					NotificationsEmails::new_purchase_team_members( $payment_id );
+					$WDGInvestment = new WDGInvestment( $payment_id );
+					$WDGInvestment->save_to_api( $campaign, 'publish' );
 
 				//Le paiement vient d'échouer
 				} else if ($buffer == 'failed' && $buffer !== $init_payment_status) {
@@ -199,10 +204,12 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					));
 					foreach ($post_items as $post_item) {
 						$postdata = array(
-						'ID' => $post_item->ID,
-						'post_status' => $buffer
+							'ID' => $post_item->ID,
+							'post_status' => $buffer
 						);
 						wp_update_post($postdata);
+						$WDGInvestment = new WDGInvestment( $post_item->ID );
+						$WDGInvestment->save_to_api( $campaign, 'failed' );
 					}
 
 				//Le paiement est validé, mais aucun contrat n'existe
@@ -218,6 +225,8 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						'edit_date'	=> current_time( 'mysql' )
 					);
 					wp_update_post($postdata);
+					$WDGInvestment = new WDGInvestment( $payment_id );
+					$WDGInvestment->save_to_api( $campaign, $buffer );
 
 					if (isset($download_id) && !empty($download_id)) {
 						do_action('wdg_delete_cache', array(

@@ -418,6 +418,10 @@ class LemonwayNotification {
 				
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				NotificationsEmails::new_purchase_team_members( $investment_id );
+				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
+					$WDGInvestment = new WDGInvestment( $investment_id );
+					$WDGInvestment->save_to_api( $campaign, 'publish' );
+				}
 
 			} else {
 				if ( empty( $WDGOrga_invest_author ) ) {

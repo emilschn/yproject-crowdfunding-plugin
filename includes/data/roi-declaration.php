@@ -245,7 +245,7 @@ class WDGROIDeclaration {
 			
 		// Nouvelle méthode : on calcule à partir du HT
 		} else {
-			$buffer = $this->get_commission_to_pay_without_tax() * 1.2;
+			$buffer = round( ( $this->get_commission_to_pay_without_tax() * 1.2) * 100 ) / 100;
 		}
 		
 		return $buffer;
@@ -561,16 +561,29 @@ class WDGROIDeclaration {
 					WDGROI::insert( $investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer_id, $status, $id_investment_contract );
 					
 					if ( $send_notifications ) {
-						WDGQueue::add_notification_royalties( $investment_item['user'] );
-						
-						$declaration_message = $this->get_message();
-						if ( !empty( $declaration_message ) ) {
-							$campaign = $this->get_campaign_object();
-							$campaign_author = $campaign->post_author();
-							$author_user = get_user_by( 'ID', $campaign_author );
-							$replyto_mail = $author_user->user_email;
-							$declaration_message_decoded = $declaration_message;
-							NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+
+						$cancel_notification = FALSE;
+						if( $WDGUser ) {
+							$recipient_notification = $WDGUser->get_royalties_notifications();
+							if( $recipient_notification == 'none' ){
+								$cancel_notification = TRUE;
+							} elseif ($recipient_notification == 'positive' && $investment_item['roi_amount'] == 0) {
+								$cancel_notification = TRUE;
+							}
+						}
+
+						if (!$cancel_notification) {
+							WDGQueue::add_notification_royalties( $investment_item['user'] );
+							
+							$declaration_message = $this->get_message();
+							if ( !empty( $declaration_message ) ) {
+								$campaign = $this->get_campaign_object();
+								$campaign_author = $campaign->post_author();
+								$author_user = get_user_by( 'ID', $campaign_author );
+								$replyto_mail = $author_user->user_email;
+								$declaration_message_decoded = $declaration_message;
+								NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+							}
 						}
 					}
 					

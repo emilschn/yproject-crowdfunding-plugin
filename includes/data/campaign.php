@@ -2481,8 +2481,8 @@ class ATCF_Campaign {
 	public static $invest_time_min_wire = 7;
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
-		// Si il reste assez de jours ou si la campagne est déjà validée
-		return ( $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->is_funded() || $this->has_overridden_wire_constraints() );
+		// Si on a annulé les contraintes des virements ou si il reste assez de jours ou si la campagne a déjà atteint 80%
+		return ( $this->has_overridden_wire_constraints() || $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->percent_minimum_completed( FALSE ) > 80 );
 	}
 	public function can_use_wire_amount($amount_part) {
 		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
@@ -2817,7 +2817,6 @@ class ATCF_Campaign {
 						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
 						$signature_status = $WDGInvestmentSignature->get_status();
 
-						$mangopay_contribution = FALSE;
 						$lemonway_contribution = FALSE;
 						if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 							$lemonway_id = edd_get_payment_key($payment->ID);
@@ -2838,7 +2837,7 @@ class ATCF_Campaign {
 							}
 						}
 
-						$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
+						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
 
 						if ($payment_status != 'failed') {
 							$this->payments_data[] = array(
@@ -2849,7 +2848,7 @@ class ATCF_Campaign {
 								'date'			=> $payment->post_date,
 								'user'			=> $user_id,
 								'status'		=> $payment_status,
-								'mangopay_contribution' => $mangopay_contribution,
+								'mangopay_contribution' => FALSE,
 								'lemonway_contribution' => $lemonway_contribution,
 								'payment_key' => $lemonway_id,
 								'signsquid_status'	=> $signature_status
@@ -3013,16 +3012,19 @@ class ATCF_Campaign {
 			$payment_id = edd_insert_payment( $payment_data );
 			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
+
+			$wdg_investment = new WDGInvestment( $payment_id );
+			$this->save_to_api( $this, 'pending' );
 			
 			// Mise à jour du statut de paiement si nécessaire
 			if ( $this->campaign_status() != ATCF_Campaign::$campaign_status_vote && $status != 'pending' ) {
-				$wdg_investment = new WDGInvestment( $payment_id );
 				$wdg_investment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
 				$postdata = array(
 					'ID'			=> $payment_id,
 					'post_status'	=> $status
 				);
 				wp_update_post( $postdata );
+				$this->save_to_api( $this, $status );
 			}
 
 		} else {
