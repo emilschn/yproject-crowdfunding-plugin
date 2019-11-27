@@ -3017,11 +3017,11 @@ class ATCF_Campaign {
 			$WDGInvestment->save_to_api();
 			
 			// Mise à jour du statut de paiement si nécessaire
-			if ( $this->campaign_status() != ATCF_Campaign::$campaign_status_vote && $status != 'pending' ) {
+			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
 				$postdata = array(
 					'ID'			=> $payment_id,
-					'post_status'	=> $status
+					'post_status'	=> 'pending'
 				);
 				wp_update_post( $postdata );
 				$WDGInvestment->save_to_api();
