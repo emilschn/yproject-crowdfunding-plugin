@@ -222,7 +222,6 @@ class LemonwayNotification {
 			} else if ( $lemonway_posted_document_status == 2 ) {
 				$wallet_details = FALSE;
 				$user_wpref = FALSE;
-				$has_all_documents_validated = TRUE;
 
 				// Si c'est une organisation pas authentifiée
 				if ( !empty( $WDGOrga_wallet ) && !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
@@ -235,6 +234,7 @@ class LemonwayNotification {
 					$user_wpref = $WDGUser_wallet->get_wpref();
 				}
 
+				$has_all_documents_validated = TRUE;
 				// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
 				// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
 				$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );

@@ -57,6 +57,33 @@ class WDGQueue {
 		}
 		return $buffer;
 	}
+
+
+
+/******************************************************************************/
+/* Helpers */
+/******************************************************************************/
+	public static function get_next_open_date() {
+		$buffer = new DateTime();
+		// Si avant 9h, on fait à 9h30
+		if ( $buffer->format( 'H' ) < 9 ) {
+			$buffer->setTime( 9, 30 );
+		}
+		// Si après 19h, on fait le lendemain à 9h30
+		if ( $buffer->format( 'H' ) >= 19 ) {
+			$buffer->setTime( 9, 30 );
+			$buffer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si samedi, on fera un jour plus tard
+		if ( $buffer->format( 'N' ) == 6 ) {
+			$buffer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si dimanche, on fera un jour plus tard
+		if ( $buffer->format( 'N' ) == 7 ) {
+			$buffer->add( new DateInterval( 'P1D' ) );
+		}
+		return $buffer;
+	}
 	
 	
 	
@@ -531,24 +558,7 @@ class WDGQueue {
 		$action = 'document_user_phone_notification';
 		$entity_id = $user_id;
 		$priority = 'date';
-		$date_next_dispatch = new DateTime();
-		// Si avant 9h, on fait à 9h30
-		if ( $date_next_dispatch->format( 'H' ) < 9 ) {
-			$date_next_dispatch->setTime( 9, 30 );
-		}
-		// Si après 19h, on fait le lendemain à 9h30
-		if ( $date_next_dispatch->format( 'H' ) >= 19 ) {
-			$date_next_dispatch->setTime( 9, 30 );
-			$date_next_dispatch->add( new DateInterval( 'P1D' ) );
-		}
-		// Si samedi, on fera un jour plus tard
-		if ( $date_next_dispatch->format( 'N' ) == 6 ) {
-			$date_next_dispatch->add( new DateInterval( 'P1D' ) );
-		}
-		// Si dimanche, on fera un jour plus tard
-		if ( $date_next_dispatch->format( 'N' ) == 7 ) {
-			$date_next_dispatch->add( new DateInterval( 'P1D' ) );
-		}
+		$date_next_dispatch = self::get_next_open_date();
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array(
 			'status'	=> $status
@@ -580,21 +590,24 @@ class WDGQueue {
 			}
 		}
 
-		$buffer_returns = LemonwayDocument::build_error_str_from_wallet_details( $wallet_details );
-		if ( !empty( $buffer_returns) ) {
-			NotificationsAPI::kyc_refused( $email, $name, $buffer_returns );
-			if ( isset( $WDGUser_wallet ) && $WDGUser_wallet->has_subscribed_authentication_notification() ) {
-				switch ( $queued_action_param->status ) {
-					case 'refused':
+		if ( isset( $WDGUser_wallet ) && $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+			switch ( $queued_action_param->status ) {
+				case 'refused':
+					// On refait la vérification que le statut du wallet n'a pas changé (avec un éventuel décalage temporel)
+					$buffer_returns = LemonwayDocument::build_error_str_from_wallet_details( $wallet_details );
+					if ( !empty( $buffer_returns) ) {
 						NotificationsAPI::phone_kyc_refused( $email, $name );
-						break;
-					case 'authentified':
-						NotificationsAPI::phone_kyc_authentified( $email, $name );
-						break;
-					case 'one_doc':
+					}
+					break;
+				case 'authentified':
+					NotificationsAPI::phone_kyc_authentified( $email, $name );
+					break;
+				case 'one_doc':
+					// Si ils sont tous validés, on enverra une notification plus tard
+					if ( LemonwayDocument::has_only_first_doc_validated( $wallet_details ) ) {
 						NotificationsAPI::phone_kyc_single_validated( $email, $name );
-						break;
-				}
+					}
+					break;
 			}
 		}
 	}
