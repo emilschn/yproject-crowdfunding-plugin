@@ -24,6 +24,10 @@ class WDGWPREST_Entity_Investment {
 	public static function set_post_parameters( $campaign, $edd_payment_item ) {
 		$user_info = edd_get_payment_meta_user_info( $edd_payment_item->ID );
 		$payment_date = $edd_payment_item->post_date;
+		if ( empty( $payment_date ) ) {
+			$date_now = new DateTime();
+			$payment_date = $date_now->format( 'Y-m-d H:i:s' );
+		}
 		
 		$WDGUser = FALSE;
 		$WDGOrganization = FALSE;

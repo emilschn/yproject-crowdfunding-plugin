@@ -3013,18 +3013,18 @@ class ATCF_Campaign {
 			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
 
-			$wdg_investment = new WDGInvestment( $payment_id );
-			$this->save_to_api( $this, 'pending' );
+			$WDGInvestment = new WDGInvestment( $payment_id );
+			$WDGInvestment->save_to_api();
 			
 			// Mise à jour du statut de paiement si nécessaire
 			if ( $this->campaign_status() != ATCF_Campaign::$campaign_status_vote && $status != 'pending' ) {
-				$wdg_investment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
+				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
 				$postdata = array(
 					'ID'			=> $payment_id,
 					'post_status'	=> $status
 				);
 				wp_update_post( $postdata );
-				$this->save_to_api( $this, $status );
+				$WDGInvestment->save_to_api();
 			}
 
 		} else {
