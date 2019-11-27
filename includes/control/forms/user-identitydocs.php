@@ -6,6 +6,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 	public static $field_group_hidden = 'user-user-identity-docs-hidden';
 	public static $field_group_files = 'user-user-identity-docs-files';
 	public static $field_group_files_orga = 'user-user-identity-docs-files-orga';
+	public static $field_group_phone_notification = 'user-user-identity-docs-phone-notification';
+	public static $field_group_phone_number = 'user-user-identity-docs-phone-number';
 	
 	private $user_id;
 	private $is_orga;
@@ -316,6 +318,33 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$field_home_params
 				);
 			}
+
+			
+			// Activation des notifications par téléphone
+			$WDGUser = new WDGUser( $this->user_id );
+			$values_has_checked_notification = $WDGUser->has_subscribed_authentication_notification();
+			if ( $values_has_checked_notification ) {
+				$values_has_checked_notification = array( '1' );
+			}
+			$this->addField(
+				'checkboxes',
+				'',
+				'',
+				WDG_Form_User_Identity_Docs::$field_group_phone_notification,
+				$values_has_checked_notification,
+				FALSE,
+				[
+					'phone-notification' => __( "&Ecirc;tre averti par SMS de l'&eacute;tat de mon authentification", 'yproject' )
+				]
+			);
+		
+			$this->addField(
+				'text',
+				'phone_number',
+				__( "Le SMS sera envoy&eacute; au num&eacute;ro suivant :", 'yproject' ),
+				WDG_Form_User_Identity_Docs::$field_group_phone_number,
+				$WDGUser->get_phone_number()
+			);
 		}
 		
 	}
@@ -476,6 +505,14 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				}
 				if ( $send_notification_validation && $WDGUser->is_lemonway_registered() ) {
 					NotificationsAPI::kyc_waiting( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				}
+
+				
+				$subscribe_authentication_notification = $this->getInputChecked( 'phone-notification' );
+				$WDGUser->set_subscribe_authentication_notification( $subscribe_authentication_notification );
+				if ( $WDGUser->has_subscribed_authentication_notification() ) {
+					$phone_number = $this->getInputText( 'phone_number' );
+					$WDGUser->save_phone_number( $phone_number );
 				}
 			}
 			

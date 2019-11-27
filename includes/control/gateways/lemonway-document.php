@@ -338,4 +338,29 @@ class LemonwayDocument {
 		$documents_type_list = self::get_list_sorted_by_kyc_type();
 		return $documents_type_list[ $kyc_type ];
 	}
+
+	public static function has_only_first_doc_validated( $wallet_details ) {
+		$has_all_documents_validated = TRUE;
+		// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
+		// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
+		$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
+
+		// On vérifie si tous les documents sont validés
+		if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+			foreach ( $wallet_details->DOCS->DOC as $document_object ) {
+				if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
+					$has_all_documents_validated = FALSE;
+				}
+				// Si le document est validé et que ce n'est pas la première pièce ou le RIB, on n'envoie pas de notif à ce sujet
+				if ( $document_object->S == 2 
+							&& $document_object->TYPE != LemonwayDocument::$document_type_id
+							&& $document_object->TYPE != LemonwayDocument::$document_type_id_back
+							&& $document_object->TYPE != LemonwayDocument::$document_type_bank ) {
+					$only_first_document = FALSE;
+				}
+			}
+		}
+
+		return $has_all_documents_validated && $only_first_document;
+	}
 }

@@ -57,6 +57,33 @@ class WDGQueue {
 		}
 		return $buffer;
 	}
+
+
+
+/******************************************************************************/
+/* Helpers */
+/******************************************************************************/
+	public static function get_next_open_date() {
+		$buffer = new DateTime();
+		// Si avant 9h, on fait à 9h30
+		if ( $buffer->format( 'H' ) < 9 ) {
+			$buffer->setTime( 9, 30 );
+		}
+		// Si après 19h, on fait le lendemain à 9h30
+		if ( $buffer->format( 'H' ) >= 19 ) {
+			$buffer->setTime( 9, 30 );
+			$buffer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si samedi, on fera un jour plus tard
+		if ( $buffer->format( 'N' ) == 6 ) {
+			$buffer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si dimanche, on fera un jour plus tard
+		if ( $buffer->format( 'N' ) == 7 ) {
+			$buffer->add( new DateInterval( 'P1D' ) );
+		}
+		return $buffer;
+	}
 	
 	
 	
@@ -515,18 +542,73 @@ class WDGQueue {
 		$buffer_returns = LemonwayDocument::build_error_str_from_wallet_details( $wallet_details );
 
 
-		// Temporairement on envoie la notification à admin ; à remplacer par template SIB
+		// Envoi template SIB + SMS décalé
 		if ( !empty( $buffer_returns) ) {
 			NotificationsAPI::kyc_refused( $email, $name, $buffer_returns );
-			/*$buffer_message = "-- MESSAGE TEST ADMIN --<br>";
-			$buffer_message .= "(serait envoyé à " .$email. ")<br>";
-			$buffer_message .= "Bonjour " . $name . ",<br>";
-			$buffer_message .= "Notre prestataire a effectué des vérifications sur vos documents d'authentification.<br>";
-			$buffer_message .= "Vous trouverez la liste des retours ci-dessous.<br>";
-			$buffer_message .= "Il arrive que ces retours soient contestables. Dans ce cas, n'hésitez pas à nous contacter sur le chat en ligne ou à l'adresse investir@wedogood.co.<br><br>";
-			$buffer_message .= $buffer_returns;
-			$buffer_message .= "<br>";
-			NotificationsEmails::send_mail( 'admin@wedogood.co', 'TEMP - Mail de retour de document', $buffer_message );*/
+			if ( isset( $WDGUser_wallet ) && $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+				self::add_document_user_phone_notification( $user_id, 'refused' );
+			}
+		}
+	}
+	
+/******************************************************************************/
+/* NOTIFICATIONS USER PAR SMS LORSQUE MAJ DOCUMENTS LEMON WAY */
+/******************************************************************************/
+	public static function add_document_user_phone_notification( $user_id, $status ) {
+		$action = 'document_user_phone_notification';
+		$entity_id = $user_id;
+		$priority = 'date';
+		$date_next_dispatch = self::get_next_open_date();
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array(
+			'status'	=> $status
+		);
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+
+	public static function execute_document_user_phone_notification( $user_id, $queued_action_params, $queued_action_id ) {
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		
+		$queued_action_param = json_decode( $queued_action_params[ 0 ] );
+		$wallet_details = FALSE;
+		$email = '';
+		$name = '';
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$WDGOrga_wallet = new WDGOrganization( $user_id );
+			if ( !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
+				$wallet_details = $WDGOrga_wallet->get_wallet_details();
+				$email = $WDGOrga_wallet->get_email();
+				$name = $WDGOrga_wallet->get_name();
+			}
+
+		} else {
+			$WDGUser_wallet = new WDGUser( $user_id );
+			if ( !$WDGUser_wallet->is_lemonway_registered() ) {
+				$wallet_details = $WDGUser_wallet->get_wallet_details();
+				$email = $WDGUser_wallet->get_email();
+				$name = $WDGUser_wallet->get_firstname();
+			}
+		}
+
+		if ( isset( $WDGUser_wallet ) && $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+			switch ( $queued_action_param->status ) {
+				case 'refused':
+					// On refait la vérification que le statut du wallet n'a pas changé (avec un éventuel décalage temporel)
+					$buffer_returns = LemonwayDocument::build_error_str_from_wallet_details( $wallet_details );
+					if ( !empty( $buffer_returns) ) {
+						NotificationsAPI::phone_kyc_refused( $email, $name );
+					}
+					break;
+				case 'authentified':
+					NotificationsAPI::phone_kyc_authentified( $email, $name );
+					break;
+				case 'one_doc':
+					// Si ils sont tous validés, on enverra une notification plus tard
+					if ( LemonwayDocument::has_only_first_doc_validated( $wallet_details ) ) {
+						NotificationsAPI::phone_kyc_single_validated( $email, $name );
+					}
+					break;
+			}
 		}
 	}
 	
@@ -538,7 +620,7 @@ class WDGQueue {
 		$entity_id = $user_id;
 		$priority = 'date';
 		$date_next_dispatch = new DateTime();
-		// On programme la vérification 3 heures plus tard
+		// On programme la vérification 1 jour plus tard
 		$date_next_dispatch->add( new DateInterval( 'P1D' ) );
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
