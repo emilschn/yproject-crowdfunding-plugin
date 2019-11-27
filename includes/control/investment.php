@@ -336,7 +336,7 @@ class WDGInvestment {
 				wp_update_post($postdata);
 
 				$campaign = $this->get_saved_campaign();
-				$this->save_to_api( $campaign, 'publish' );
+				$this->save_to_api();
 			}
 		}
 	}
@@ -665,7 +665,7 @@ class WDGInvestment {
 		}
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
-		$this->save_to_api( $this->campaign, 'pending' );
+		$this->save_to_api();
 		// FIN GESTION DU PAIEMENT COTE EDD
 
 		// Si on sait déjà que ça a échoué, pas la peine de tester
@@ -708,7 +708,7 @@ class WDGInvestment {
 					'post_status'	=> 'pending'
 				);
 				wp_update_post( $postdata );
-				$this->save_to_api( $this->campaign, 'pending' );
+				$this->save_to_api();
 			}
 		}
 
@@ -1079,7 +1079,7 @@ class WDGInvestment {
 				'post_status'	=> 'failed'
 			);
 			wp_update_post($postdata);
-			$this->save_to_api( $this->get_campaign(), 'failed' );
+			$this->save_to_api();
 
 			$log_post_items = get_posts(array(
 				'post_type'		=> 'edd_log',
@@ -1115,8 +1115,8 @@ class WDGInvestment {
 		}
 	}
 
-	public function save_to_api( $campaign, $payment_status ) {
+	public function save_to_api() {
 		$payment = edd_get_payment( $this->id );
-		WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment );
+		WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment );
 	}
 }

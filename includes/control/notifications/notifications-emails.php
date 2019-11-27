@@ -816,7 +816,7 @@ class NotificationsEmails {
 	
 	
     public static function investment_to_api_error_admin( $edd_payment_item ) {
-		$admin_email = get_option('admin_email');
+		$admin_email = 'admin@wedogood.co';
 		
 		$object = "Erreur d'ajout d'investissement sur l'API";
 		$body_content = "Salut !!<br>";

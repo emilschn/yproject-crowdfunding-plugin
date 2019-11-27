@@ -420,7 +420,7 @@ class LemonwayNotification {
 				NotificationsEmails::new_purchase_team_members( $investment_id );
 				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
 					$WDGInvestment = new WDGInvestment( $investment_id );
-					$WDGInvestment->save_to_api( $campaign, 'publish' );
+					$WDGInvestment->save_to_api();
 				}
 
 			} else {
