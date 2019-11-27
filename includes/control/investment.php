@@ -1118,7 +1118,7 @@ class WDGInvestment {
 	public function save_to_api() {
 		$payments = edd_get_payments( array(
 			'number'	 => -1,
-			'download'   => $campaign->ID
+			'download'   => $this->get_saved_campaign()->ID
 		) );
 		$payment = FALSE;
 		if ( $payments ) {
