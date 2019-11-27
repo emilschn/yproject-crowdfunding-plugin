@@ -832,6 +832,14 @@ class WDGUser {
 	public function save_meta( $meta_name, $meta_value ) {
 		update_user_meta( $this->wp_user->ID, $meta_name, $meta_value );
 	}
+
+	public function save_phone_number( $phone_number ) {
+		if ( !empty( $phone_number ) ) {
+			$this->phone_number = $phone_number;
+			$this->save_meta( 'user_mobile_phone', $phone_number );
+			$this->update_api();
+		}
+	}
 	
 	/**
 	 * Envoie les donnÃ©es sur l'API
@@ -1586,6 +1594,34 @@ class WDGUser {
 	public function has_saved_card_expiration_date() {
 		$expiration_date = get_user_meta( $this->get_wpref(), 'save_card_expiration_date', TRUE );
 		return !empty( $expiration_date );
+	}
+
+	/**
+	 * Met à jour la souscription à la notification d'authentification
+	 */
+	public function set_subscribe_authentication_notification( $value ) {
+		if ( $value === TRUE ) {
+			update_user_meta( $this->get_wpref(), 'subscribe_authentication_notification', '1' );
+			
+			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+			$return = $mailin->create_update_user( array(
+				"email"			=> $this->get_email(),
+				"attributes"	=> array(
+					"SMS"	=> $this->get_lemonway_phone_number()
+				)
+			) );
+
+		} else {
+			delete_user_meta( $this->get_wpref(), 'subscribe_authentication_notification' );
+		}
+	}
+
+	/**
+	 * Retourne vrai si il a souscrit à la notification d'authentification
+	 */
+	public function has_subscribed_authentication_notification() {
+		$subscribe_authentication_notification = get_user_meta( $this->get_wpref(), 'subscribe_authentication_notification', TRUE );
+		return !empty( $subscribe_authentication_notification );
 	}
 	
 	/**

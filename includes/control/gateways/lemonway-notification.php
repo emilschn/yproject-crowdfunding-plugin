@@ -130,6 +130,10 @@ class LemonwayNotification {
 				} else {
 					NotificationsAPI::kyc_authentified( $user_email, $user_name );
 				}
+
+				if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+					WDGQueue::add_document_user_phone_notification( $WDGUser_wallet->get_wpref(), 'authentified' );
+				}
 				
 			} else {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, $lemonway_posted_wallet_status );
@@ -218,7 +222,6 @@ class LemonwayNotification {
 			} else if ( $lemonway_posted_document_status == 2 ) {
 				$wallet_details = FALSE;
 				$user_wpref = FALSE;
-				$has_all_documents_validated = TRUE;
 
 				// Si c'est une organisation pas authentifiée
 				if ( !empty( $WDGOrga_wallet ) && !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
@@ -231,6 +234,7 @@ class LemonwayNotification {
 					$user_wpref = $WDGUser_wallet->get_wpref();
 				}
 
+				$has_all_documents_validated = TRUE;
 				// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
 				// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
 				$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
@@ -255,6 +259,10 @@ class LemonwayNotification {
 				if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
 					if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
 						NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
+						if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+							WDGQueue::add_document_user_phone_notification( $user_wpref, 'one_doc' );
+						}
+						
 					} else {
 						WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
 					}
