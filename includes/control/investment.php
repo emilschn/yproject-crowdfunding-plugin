@@ -1116,7 +1116,21 @@ class WDGInvestment {
 	}
 
 	public function save_to_api() {
-		$payment = edd_get_payment( $this->id );
-		WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment );
+		$payments = edd_get_payments( array(
+			'number'	 => -1,
+			'download'   => $this->get_saved_campaign()->ID
+		) );
+		$payment = FALSE;
+		if ( $payments ) {
+			foreach ( $payments as $payment_item ) {
+				if ( $payment_item->ID == $this->id ) {
+					$payment = $payment_item;
+				}
+			}
+		}
+
+		if ( !empty( $payment ) ) {
+			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment );
+		}
 	}
 }
