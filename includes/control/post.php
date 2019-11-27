@@ -36,6 +36,7 @@ class WDGPostActions {
         self::add_action("post_confirm_check");
         self::add_action( 'declaration_auto_generate' );
         self::add_action( 'add_declaration_document' );
+        self::add_action( 'add_adjustment' );
         self::add_action( 'edit_adjustment' );
         self::add_action("roi_mark_transfer_received");
         self::add_action( 'generate_royalties_bill' );
@@ -152,8 +153,8 @@ class WDGPostActions {
             update_user_meta( $WPuserID, 'user_mobile_phone', $new_phone );
         }
 
-        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && is_email( $orga_email ) && !empty( $new_phone )
-				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms) ) {
+        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && !empty( $new_phone )
+				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms)  && (is_email( $orga_email ) || is_numeric( $orga_name )) ) {
 
 			//On commence par essayer de créer l'organisation d'abord
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
@@ -315,6 +316,7 @@ class WDGPostActions {
                             $campaign->set_status(ATCF_Campaign::$campaign_status_vote);
                             $campaign->set_validation_next_status(0);
 							$organization_obj->check_register_campaign_lemonway_wallet();
+							$campaign->copy_default_contract_if_empty();
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 		
 							// Mise à jour cache
@@ -354,6 +356,7 @@ class WDGPostActions {
                             $campaign->set_begin_collecte_date(new DateTime());
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
                             $campaign->set_validation_next_status(0);
+							$campaign->copy_default_contract_if_empty();
 							
 							$campaign_organization = $campaign->get_organization();
 							$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
@@ -973,17 +976,38 @@ class WDGPostActions {
 		exit();
 	}
 	
+	public static function add_adjustment() {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$success = '100';
+
+		if ( !empty( $campaign_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'adjustment' );
+			$form_adjustment = new WDG_Form_Adjustement( $campaign_id );
+			$form_return = $form_adjustment->postForm();
+			
+			$success = ( $form_return != FALSE ) ? '1' : '100';
+		}
+
+		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
+		exit();
+	}
+	
 	public static function edit_adjustment() {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$adjustment_id = filter_input( INPUT_POST, 'adjustment_id' );
-		
-		$core = ATCF_CrowdFunding::instance();
-		$core->include_form( 'adjustment' );
-		$adjustment = WDGWPREST_Entity_Adjustment::get( $adjustment_id );
-		$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment );
-		$form_return = $form_adjustment->postForm();
-		
-		$success = ( $form_return != FALSE ) ? '1' : '100';
+		$success = '100';
+
+		if ( !empty( $campaign_id ) && !empty( $adjustment_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'adjustment' );
+			$adjustment = WDGWPREST_Entity_Adjustment::get( $adjustment_id );
+			$form_adjustment = new WDG_Form_Adjustement( $campaign_id, $adjustment );
+			$form_return = $form_adjustment->postForm();
+			
+			$success = ( $form_return != FALSE ) ? '1' : '100';
+		}
+
 		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
 		exit();
 	}

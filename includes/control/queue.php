@@ -22,8 +22,10 @@ class WDGQueue {
 		
 		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( FALSE, FALSE, $entity_id, $action );
 		if ( !empty( $queued_action_list ) ) {
-			$already_existing_action_id = $queued_action_list[ 0 ]->id;
-			$already_existing_action_params = $queued_action_list[ 0 ]->params;
+			if ( $queued_action_list[ 0 ]->status != self::$status_complete ) {
+				$already_existing_action_id = $queued_action_list[ 0 ]->id;
+				$already_existing_action_params = $queued_action_list[ 0 ]->params;
+			}
 		}
 		
 		if ( empty( $already_existing_action_id ) ) {
@@ -113,12 +115,16 @@ class WDGQueue {
 		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 		
+		// Parcours de la liste des investissements validés sur le site
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
+			// On vérifie que cet investissement n'a pas été annulé via les enregistrements dans l'API
 			$first_investment_contract = FALSE;
-			if ( !empty( $investment_contracts ) ) {
-				foreach ( $investment_contracts as $investment_contract ) {
-					if ( $investment_contract->subscription_id == $purchase_id ) {
-						$first_investment_contract = $investment_contract;
+			foreach ( $campaign_investments as $investment_id ) {
+				if ( !empty( $investment_contracts ) ) {
+					foreach ( $investment_contracts as $investment_contract ) {
+						if ( $investment_contract->subscription_id == $investment_id ) {
+							$first_investment_contract = $investment_contract;
+						}
 					}
 				}
 			}
@@ -135,7 +141,7 @@ class WDGQueue {
 				$campaign_name = $campaign->get_name();
 			}
 			
-			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$amount_royalties = 0;
 				$has_declared = FALSE;
 
@@ -237,7 +243,16 @@ class WDGQueue {
 		}
 		
 		if ( !empty( $message ) ) {
-			NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
+			$recipient_notification = $WDGUser->get_royalties_notifications();
+
+			if( $recipient_notification == 'none' ){
+				$cancel_notification = TRUE;
+			} elseif ( $recipient_notification == 'positive' && empty( $message_categories[ 'with_royalties' ] )) {
+				$cancel_notification = TRUE;
+			}
+			if (!$cancel_notification ){
+				NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
+			}
 		}
 	}
 
@@ -497,92 +512,7 @@ class WDGQueue {
 			}
 		}
 
-		$buffer_returns = '';
-		if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
-			foreach ( $wallet_details->DOCS->DOC as $document_object ) {
-				// Type de document au format écrit pour l'utilisateur
-				$document_type = '';
-				if ( !empty( $document_object->TYPE ) ) {
-					switch ( $document_object->TYPE ) {
-						case LemonwayDocument::$document_type_id:
-							$document_type = "La pièce d'identité principale";
-							break;
-						case LemonwayDocument::$document_type_home:
-							$document_type = "Le justificatif de domicile";
-							break;
-						case LemonwayDocument::$document_type_bank:
-							// Rien, le RIB ne bloque pas l'authentification
-							break;
-						case LemonwayDocument::$document_type_idbis:
-							$document_type = "La deuxième pièce d'identité";
-							break;
-						case LemonwayDocument::$document_type_id_back:
-							$document_type = "Le verso de la pièce d'identité principale";
-							break;
-						case LemonwayDocument::$document_type_residence_permit:
-							$document_type = "Le permis de résidence";
-							break;
-						case LemonwayDocument::$document_type_kbis:
-							$document_type = "Le KBIS de l'organisation";
-							break;
-						case LemonwayDocument::$document_type_status:
-							$document_type = "Les statuts de l'organisation";
-							break;
-						case LemonwayDocument::$document_type_idbis_back:
-							$document_type = "Le verso de la deuxième pièce d'identité";
-							break;
-						case LemonwayDocument::$document_type_selfie:
-							$document_type = "Le selfie (Type 13)";
-							break;
-						case LemonwayDocument::$document_type_id2:
-							$document_type = "La pièce d'identité de la deuxième personne (Type 16)";
-							break;
-						case LemonwayDocument::$document_type_home2:
-							$document_type = "Le justificatif de domicile de la deuxième personne (Type 17)";
-							break;
-						case LemonwayDocument::$document_type_id3:
-							$document_type = "La pièce d'identité de la troisième personne (Type 18)";
-							break;
-						case LemonwayDocument::$document_type_home3:
-							$document_type = "Le justificatif de domicile de la troisième personne (Type 19)";
-							break;
-						case LemonwayDocument::$document_type_capital_allocation:
-							$document_type = "Le document de répartition du capital (Type 20)";
-							break;
-					}
-				}
-
-				// Statut de document au format écrit pour l'utilisateur
-				$document_status = '';
-				if ( !empty( $document_object->S ) && $document_object->S > 2 ) {
-					switch ( $document_object->S ) {
-						case LemonwayDocument::$document_status_refused:
-							$document_status = "refusé";
-							break;
-						case LemonwayDocument::$document_status_refused_unreadable:
-							$document_status = "considéré illisible";
-							break;
-						case LemonwayDocument::$document_status_refused_expired:
-							$document_status = "considéré expiré";
-							break;
-						case LemonwayDocument::$document_status_refused_wrong_type:
-							$document_status = "considéré du mauvais type";
-							break;
-						case LemonwayDocument::$document_status_refused_wrong_person:
-							$document_status = "considéré comme lié à une personne qui ne correspond pas";
-							break;
-					}
-				}
-
-				if ( !empty( $document_type ) && !empty( $document_status ) ) {
-					$buffer_returns .= $document_type. " bloque l'authentification. Le document a été " .$document_status. ".";
-					if ( !empty( $document_object->C ) ) {
-						$buffer_returns .= " Commentaire complémentaire de Lemon Way : \"" .$document_object->C. "\"";
-					}
-					$buffer_returns .= '<br>';
-				}
-			}
-		}
+		$buffer_returns = LemonwayDocument::build_error_str_from_wallet_details( $wallet_details );
 
 
 		// Temporairement on envoie la notification à admin ; à remplacer par template SIB
@@ -597,6 +527,101 @@ class WDGQueue {
 			$buffer_message .= $buffer_returns;
 			$buffer_message .= "<br>";
 			NotificationsEmails::send_mail( 'admin@wedogood.co', 'TEMP - Mail de retour de document', $buffer_message );*/
+		}
+	}
+	
+/******************************************************************************/
+/* NOTIFICATIONS ADMIN LORSQUE VALIDATION DOCUMENTS LEMON WAY MAIS PAS WALLET */
+/******************************************************************************/
+	public static function add_document_validated_but_not_wallet_admin_notification( $user_id ) {
+		$action = 'document_validated_but_not_wallet_admin_notification';
+		$entity_id = $user_id;
+		$priority = 'date';
+		$date_next_dispatch = new DateTime();
+		// On programme la vérification 3 heures plus tard
+		$date_next_dispatch->add( new DateInterval( 'P1D' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_document_validated_but_not_wallet_admin_notification( $user_id, $queued_action_params, $queued_action_id ) {
+		$is_lemonway_registered = TRUE;
+		$wallet_details = FALSE;
+		$user_name = FALSE;
+		$user_email = FALSE;
+
+		if ( empty( $user_id ) ) {
+			return FALSE;
+		}
+		
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$WDGOrga = new WDGOrganization( $user_id );
+			$is_lemonway_registered = $WDGOrga->is_registered_lemonway_wallet();
+			if ( !$is_lemonway_registered ) {
+				$wallet_details = $WDGOrga->get_wallet_details();
+				$user_name = $WDGOrga->get_name();
+				$user_email = $WDGOrga->get_email();
+			}
+			
+		} else {
+			$WDGUser = new WDGUser( $user_id );
+			$is_lemonway_registered = $WDGUser->is_lemonway_registered();
+			if ( !$is_lemonway_registered ) {
+				$wallet_details = $WDGUser->get_wallet_details();
+				$user_name = $WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname();
+				$user_email = $WDGUser->get_email();
+			}
+		}
+		
+		// Vérifie si le statut du document n'a pas changé
+		if ( !$is_lemonway_registered && !empty( $wallet_details ) ) {
+			$has_all_documents_validated = TRUE;
+
+			if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+				foreach ( $wallet_details->DOCS->DOC as $document_object ) {
+					if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
+						$has_all_documents_validated = FALSE;
+					}
+				}
+			}
+			
+			if ( $has_all_documents_validated ) {
+				//On vérifie si il y'a une action en cours :
+				$pending_actions = array();
+				// - investissement en attente
+				if ( !empty( $WDGOrga ) ) {
+					$pending_investments = $WDGOrga->get_pending_investments();
+				} else {
+					$pending_investments = $WDGUser->get_pending_investments();
+				}
+				if ( !empty( $pending_investments ) ) {
+					foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
+						$campaign = new ATCF_Campaign( $campaign_id );
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+							foreach ( $campaign_investments as $campaign_investment_id ) {
+								$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+								array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
+							}
+						}
+					}
+				}
+				// - évaluation avec intention d'investissement
+				if ( !empty( $WDGUser ) ) {
+					$votes_with_amount = $WDGUser->get_votes_with_amount();
+					foreach ( $votes_with_amount as $vote ) {
+						$campaign = new ATCF_Campaign( $vote->post_id );
+						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+							array_push( $pending_actions, 'Evaluation avec intention pour ' .$campaign->get_name(). ' (' .$vote->invest_sum. ' €)' );
+						}
+					}
+				}
+				
+				if ( !empty( $pending_actions ) ) {
+					NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions );
+				}
+			}
 		}
 	}
 
@@ -835,13 +860,12 @@ class WDGQueue {
 /******************************************************************************/
 /* GENERATION CACHE PAGE STATIQUE */
 /******************************************************************************/
-	public static function add_cache_post_as_html( $post_id, $input_priority = 'date' ) {
+	public static function add_cache_post_as_html( $post_id, $input_priority = 'date', $date_interval = 'PT10M' ) {
 		$action = 'cache_post_as_html';
 		$entity_id = $post_id;
 		$priority = $input_priority;
 		$date_next_dispatch = new DateTime();
-		// On programme le prochain envoi 10 minutes plus tard
-		$date_next_dispatch->add( new DateInterval( 'PT10M' ) );
+		$date_next_dispatch->add( new DateInterval( $date_interval ) );
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
 		
@@ -853,10 +877,12 @@ class WDGQueue {
 			
 			$WDG_File_Cacher = WDG_File_Cacher::current();
 			$WDG_File_Cacher->build_post( $post_id );
+
+			// Relance 1 jour plus tard au cas où des modifs de dev doivent être prises en compte
+			WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+			self::add_cache_post_as_html( $post_id, 'date', 'P1D' );
 			
 		}
-		
-		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
 	}
 
 
@@ -896,10 +922,6 @@ class WDGQueue {
 
 				}
 			}
-
-			if ( !empty( $queued_action_id ) ) {
-				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
-			}
 		}
 
 		public static function add_royalties_auto_transfer_next( $declaration_id ) {
@@ -916,14 +938,15 @@ class WDGQueue {
 				$roi_declaration = new WDGROIDeclaration( $declaration_id );
 				$result = $roi_declaration->make_transfer();
 				if ( $result == 100 ) {
-					if ( !empty( $queued_action_id ) ) {
-						WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
-					}
+					$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 					$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
 					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
 					NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
 
 				} else {
+					// Passage à complete avant, pour pouvoir en ajouter un à la suite
+					WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+					// On continue au prochain tour
 					self::add_royalties_auto_transfer_next( $declaration_id );
 				}
 				

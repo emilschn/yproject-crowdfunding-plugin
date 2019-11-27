@@ -57,10 +57,10 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_error_contract( $payment_id, $preinvestment = FALSE ) {
+    public static function new_purchase_user_error_contract( $payment_id, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_error_contract > ' . $payment_id);
 		$particular_content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span>";
-		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment );
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment, $is_only_wallet_contribution );
     }
     
 	private static $alert_lemonway_card = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », le nom de notre prestataire de paiement, dans le détail des opérations.<br>";
@@ -69,18 +69,18 @@ class NotificationsEmails {
      * @param int $payment_id
      * @return bool
      */
-    public static function new_purchase_user_success( $payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success( $payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
 
 		$particular_content = "";
-		if ( $is_card_contribution ) {
+		if ( $is_card_contribution && !$is_only_wallet_contribution ) {
 			$particular_content .= self::$alert_lemonway_card;
 		}
 
 		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Eversign ";
 		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
 		$attachments = FALSE;
-		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment, $is_only_wallet_contribution );
     }
     
     /**
@@ -88,16 +88,16 @@ class NotificationsEmails {
      * @param type $payment_id
      * @return type
      */
-    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE ) {
+    public static function new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution = TRUE, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success_nocontract > ' . $payment_id);
 		
 		$particular_content = "";
-		if ( $is_card_contribution ) {
+		if ( $is_card_contribution && !$is_only_wallet_contribution) {
 			$particular_content .= self::$alert_lemonway_card;
 		}
 		
 		$attachments = array($new_contract_pdf_file);
-		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment );
+		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment, $is_only_wallet_contribution );
     }
 	
 	public static function new_purchase_user_success_check( $payment_id ) {
@@ -110,7 +110,7 @@ class NotificationsEmails {
      * @param string $particular_content
      * @return bool
      */
-    public static function new_purchase_user( $payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE ) {
+    public static function new_purchase_user( $payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE, $is_only_wallet_contribution = FALSE ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
@@ -126,7 +126,7 @@ class NotificationsEmails {
 		$text_before = '';
 		$text_after = '';
 		
-		if ( $payment_key != 'check' ) {
+		if ( $payment_key != 'check' && !$is_only_wallet_contribution ) {
 			if ( strpos( $payment_key, 'TRANSID' ) !== FALSE ) {
 				$text_before .= 'Le compte bancaire de votre carte enregistrée a été débité.<br>';
 			} else {
@@ -153,10 +153,10 @@ class NotificationsEmails {
 		}
 		
 		if ( $campaign->is_positive_savings() ) {
-			NotificationsAPI::investment_success_positive_savings( $email, $user_data->first_name, $payment_amount, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_positive_savings( $email, $user_data->first_name, $payment_amount, $campaign->get_public_url(), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
 			
 		} else {
-			NotificationsAPI::investment_success_project( $email, $user_data->first_name, $payment_amount, $post_campaign->post_title, get_permalink( $campaign->ID ), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_project( $email, $user_data->first_name, $payment_amount, $post_campaign->post_title, $campaign->get_public_url(), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
 		}
 		
     }
@@ -730,25 +730,6 @@ class NotificationsEmails {
     //*******************************************************
 	
     //*******************************************************
-    // NOTIFICATIONS PORTE-MONNAIE ELECTRONIQUE
-    //*******************************************************
-	public static function wallet_transfer_to_account( $user_id, $amount ) {
-		ypcf_debug_log('NotificationsEmails::wallet_transfer_to_account > ' . $user_id . ' ; ' . $amount);
-		$WDGUser = new WDGUser( $user_id );
-		
-		$object = "Transfert d'argent vers votre compte bancaire";
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "La somme de ".$amount." € a bien été virée de votre porte-monnaie électronique ".ATCF_CrowdFunding::get_platform_name()." vers votre compte bancaire.<br />";
-		$body_content .= "Toute l’équipe ".ATCF_CrowdFunding::get_platform_name()." vous souhaite une agréable journée.";
-		
-		return NotificationsEmails::send_mail($WDGUser->wp_user->user_email, $object, $body_content, true);
-	}
-
-    //*******************************************************
-    // FIN NOTIFICATIONS PORTE-MONNAIE ELECTRONIQUE
-    //*******************************************************
-	
-    //*******************************************************
     // NOTIFICATIONS KYC
     //*******************************************************
     public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
@@ -759,6 +740,25 @@ class NotificationsEmails {
 		
 		$body_content = "Hello !<br>";
 		$body_content .= "Lemon Way a refusé des documents depuis quelques jours, et l'utilisateur a quelques actions en attente.<br>";
+		$body_content .= "Il s'agit de " .$user_name. ".<br>";
+		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
+		
+		$body_content .= "Voici ses actions sur le site :<br>";
+		foreach ( $pending_actions as $pending_action ) {
+			$body_content .= "- " .$pending_action. "<br>";
+		}
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
+	}
+	
+    public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions ) {
+		ypcf_debug_log('NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin > ' . $user_email);
+		
+		$admin_email = get_option('admin_email');
+		$object = "Wallet à vérifier !";
+		
+		$body_content = "Hello !<br>";
+		$body_content .= "Lemon Way a validé tous les documents du wallet, mais le wallet n'est pas authentifié.<br>";
 		$body_content .= "Il s'agit de " .$user_name. ".<br>";
 		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
 		
@@ -812,5 +812,16 @@ class NotificationsEmails {
     }
     //*******************************************************
     // FIN NOTIFICATIONS STATUT
-    //*******************************************************
+	//*******************************************************
+	
+	
+    public static function investment_to_api_error_admin( $edd_payment_item ) {
+		$admin_email = get_option('admin_email');
+		
+		$object = "Erreur d'ajout d'investissement sur l'API";
+		$body_content = "Salut !!<br>";
+		$body_content .= "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $edd_payment_item->ID;
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
+    }
 }

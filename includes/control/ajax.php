@@ -760,34 +760,34 @@ class WDGAjaxActions {
 			}
 		}
 		
-		// Masquer au public
-		$new_is_hidden = filter_input( INPUT_POST, 'new_is_hidden');
-        if ( $new_is_hidden === true || $new_is_hidden === "true" || $new_is_hidden === 1 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden, '1' );
-		} else {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden );
-		}
-		$success[ 'new_is_hidden' ] = 1;
-		
-		// Passer la phase de vote
-		$new_skip_vote = filter_input( INPUT_POST, 'new_skip_vote');
-        if ( $new_skip_vote === true || $new_skip_vote === "true" || $new_skip_vote === 1 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote, '1' );
-		} else {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote );
-		}
-		$success[ 'new_skip_vote' ] = 1;
-		
-		// Ne pas compter dans les stats
-		$new_skip_in_stats = filter_input( INPUT_POST, 'new_skip_in_stats' );
-        if ( $new_skip_in_stats === true || $new_skip_in_stats === "true" || $new_skip_in_stats === 1 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats, '1' );
-		} else {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats );
-		}
-		$success[ 'new_skip_in_stats' ] = 1;
-
 		if ( $current_wdg_user->is_admin() ) {
+			// Masquer au public
+			$new_is_hidden = filter_input( INPUT_POST, 'new_is_hidden');
+			if ( $new_is_hidden === true || $new_is_hidden === "true" || $new_is_hidden === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_hidden );
+			}
+			$success[ 'new_is_hidden' ] = 1;
+			
+			// Passer la phase de vote
+			$new_skip_vote = filter_input( INPUT_POST, 'new_skip_vote');
+			if ( $new_skip_vote === true || $new_skip_vote === "true" || $new_skip_vote === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_vote );
+			}
+			$success[ 'new_skip_vote' ] = 1;
+			
+			// Ne pas compter dans les stats
+			$new_skip_in_stats = filter_input( INPUT_POST, 'new_skip_in_stats' );
+			if ( $new_skip_in_stats === true || $new_skip_in_stats === "true" || $new_skip_in_stats === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats );
+			}
+			$success[ 'new_skip_in_stats' ] = 1;
+
 			//Catégories du projet
 			$new_project_categories = array();
 			if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
@@ -839,41 +839,44 @@ class WDGAjaxActions {
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
 		
-		$new_enable_advice_notifications = sanitize_text_field( filter_input( INPUT_POST, 'new_enable_advice_notifications' ) );
-		$queued_action_id = $campaign->has_planned_advice_notification();
-        if ( $new_enable_advice_notifications === true || $new_enable_advice_notifications === "true" || $new_enable_advice_notifications === 1 ) {
-			if ( $queued_action_id == FALSE ) {
-				WDGQueue::add_campaign_advice_notification( $campaign->ID );
+		if ( $current_wdg_user->is_admin() ) {
+			$new_enable_advice_notifications = sanitize_text_field( filter_input( INPUT_POST, 'new_enable_advice_notifications' ) );
+			$queued_action_id = $campaign->has_planned_advice_notification();
+			if ( $new_enable_advice_notifications === true || $new_enable_advice_notifications === "true" || $new_enable_advice_notifications === 1 ) {
+				if ( $queued_action_id == FALSE ) {
+					WDGQueue::add_campaign_advice_notification( $campaign->ID );
+				}
+			} else {
+				if ( $queued_action_id != FALSE ) {
+					WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, WDGQueue::$status_complete );
+				}
 			}
-		} else {
-			if ( $queued_action_id != FALSE ) {
-				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, WDGQueue::$status_complete );
+		
+			$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
+			if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone );
+			}
+		
+			$new_hide_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_hide_investors' ) );
+			if ( $new_hide_investors === true || $new_hide_investors === "true" || $new_hide_investors === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors );
+			}
+			$new_can_invest_until_contract_start_date = sanitize_text_field( filter_input( INPUT_POST, 'new_can_invest_until_contract_start_date' ) );
+			if ( $new_can_invest_until_contract_start_date === true || $new_can_invest_until_contract_start_date === "true" || $new_can_invest_until_contract_start_date === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date );
 			}
 		}
-		
-		$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
-        if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone, '1' );
-		} else {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone );
-		}
-		
-		$new_hide_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_hide_investors' ) );
-        if ( $new_hide_investors === true || $new_hide_investors === "true" || $new_hide_investors === 1 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors, '1' );
-		} else {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_hide_investors );
-		}
+
 		$new_archive_message = sanitize_text_field( filter_input( INPUT_POST, 'new_archive_message' ) );
 		if ( !empty( $new_archive_message ) ) {
 			$campaign->__set( ATCF_Campaign::$key_archive_message, $new_archive_message );
 			$success[ "new_archive_message" ] = 1;
-		}
-		$new_can_invest_until_contract_start_date = sanitize_text_field( filter_input( INPUT_POST, 'new_can_invest_until_contract_start_date' ) );
-        if ( $new_can_invest_until_contract_start_date === true || $new_can_invest_until_contract_start_date === "true" || $new_can_invest_until_contract_start_date === 1 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date, '1' );
-		} else {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_can_invest_until_contract_start_date );
 		}
 		$new_end_vote_pending_message = sanitize_text_field( filter_input( INPUT_POST, 'new_end_vote_pending_message' ) );
 		if ( !empty( $new_end_vote_pending_message ) ) {
@@ -890,20 +893,23 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
 			$success[ "new_custom_footer_code" ] = 1;
 		}
-		$new_is_check_payment_available = filter_input( INPUT_POST, 'new_is_check_payment_available');
-        if ( $new_is_check_payment_available === true || $new_is_check_payment_available === "true" || $new_is_check_payment_available === 1 ) {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check );
-		} else {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check, '0' );
+		
+		if ( $current_wdg_user->is_admin() ) {
+			$new_is_check_payment_available = filter_input( INPUT_POST, 'new_is_check_payment_available');
+			if ( $new_is_check_payment_available === true || $new_is_check_payment_available === "true" || $new_is_check_payment_available === 1 ) {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check );
+			} else {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_can_use_check, '0' );
+			}
+			$success[ 'new_is_check_payment_available' ] = 1;
+			$new_has_overridden_wire_constraints = filter_input( INPUT_POST, 'new_has_overridden_wire_constraints');
+			if ( $new_has_overridden_wire_constraints === true || $new_has_overridden_wire_constraints === "true" || $new_has_overridden_wire_constraints === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints );
+			}
+			$success[ 'new_has_overridden_wire_constraints' ] = 1;
 		}
-		$success[ 'new_is_check_payment_available' ] = 1;
-		$new_has_overridden_wire_constraints = filter_input( INPUT_POST, 'new_has_overridden_wire_constraints');
-        if ( $new_has_overridden_wire_constraints === true || $new_has_overridden_wire_constraints === "true" || $new_has_overridden_wire_constraints === 1 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints, '1' );
-		} else {
-			delete_post_meta( $campaign_id, ATCF_Campaign::$key_has_overridden_wire_constraints );
-		}
-		$success[ 'new_has_overridden_wire_constraints' ] = 1;
 		
 		$new_fake_url = filter_input( INPUT_POST, 'new_fake_url' );
 		if ( !empty( $new_fake_url ) ) {
@@ -2087,6 +2093,7 @@ class WDGAjaxActions {
                 $orga = new WDGOrganization($user_id);
 				$orga_wallet_details = $orga->get_wallet_details();
 				$span_class = 'error';
+				$error_str = '';
 				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
 				if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
 					switch ( $orga_wallet_details->STATUS ) {
@@ -2121,8 +2128,15 @@ class WDGAjaxActions {
 							$orga_authentication = __( "En attente de documents", 'yproject' );
 							break;
 					}
+
+					if ( $orga_wallet_details->STATUS != '6' ) {
+						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+					}
 				}
 				$orga_authentication = '<span class="payment-status-' .$span_class. '">' .$orga_authentication. '</span>';
+				if ( !empty( $error_str ) ) {
+					$orga_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
+				}
                 $orga_creator = $orga->get_creator();
 				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
                 $array_contacts[$user_id]["user_email"]= $orga->get_email();
@@ -2152,6 +2166,7 @@ class WDGAjaxActions {
 				$WDGUser = new WDGUser( $user_id );
 				$WDGUser_wallet_details = $WDGUser->get_wallet_details();
 				$span_class = 'error';
+				$error_str = '';
 				$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
 				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
 					switch ( $WDGUser_wallet_details->STATUS ) {
@@ -2186,8 +2201,15 @@ class WDGAjaxActions {
 							$user_authentication = __( "En attente de documents", 'yproject' );
 							break;
 					}
+
+					if ( $WDGUser_wallet_details->STATUS != '6' ) {
+						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
+					}
 				}
 				$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
+				if ( !empty( $error_str ) ) {
+					$user_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
+				}
 				
 				//Infos supplémentaires pour les investisseurs
 				if($array_contacts[$user_id]["invest"] == 1){
@@ -2900,6 +2922,8 @@ class WDGAjaxActions {
 		NotificationsEmails::new_purchase_user_success_check( $investment_id );
 		NotificationsEmails::new_purchase_team_members( $investment_id );
 		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
+		$WDGInvestment = new WDGInvestment( $investment_id );
+		$WDGInvestment->save_to_api( $campaign, 'publish' );
 		
 		// Valider le draft
 		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );

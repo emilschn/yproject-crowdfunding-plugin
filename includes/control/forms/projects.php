@@ -82,7 +82,7 @@ class WDGFormProjects {
 					if ( strpos( $inside_of_link, '<img' ) ) {
 						$content_without_link_exploded = explode( '"', $inside_of_link );
 						// Si c'est un lien menant vers WDG, on le supprime
-						if ( strpos( $content_without_link_exploded, 'wedogood.co' ) !== FALSE ) {
+						if ( strpos( $content_without_link_exploded[ 0 ], 'wedogood.co' ) !== FALSE ) {
 							array_shift( $content_without_link_exploded );
 							$inside_of_link = implode( '"', $content_without_link_exploded );
 							$nodes_to_analyse_exploded[ 0 ] = '#"'. $inside_of_link;
@@ -123,26 +123,34 @@ class WDGFormProjects {
 				// - Envoyer validation d'investissement par mail
 				$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
 				$amount = edd_get_payment_amount( $approve_payment_id );
+				$contribution_id = edd_get_payment_key($approve_payment_id);
+				$is_only_wallet = FALSE;
+				if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
+					$is_only_wallet = TRUE;
+				}
+
 				$campaign = new ATCF_Campaign( $campaign_id );
 				if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
 					$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
 					$contract_id = $WDGInvestmentSignature->create_eversign();
 					if ( !empty( $contract_id ) ) {
-						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
 
 					} else {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
-						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
 						NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
 					}
 
 				} else {
 					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
-					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
 				}
 
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+				$WDGInvestment = new WDGInvestment( $approve_payment_id );
+				$WDGInvestment->save_to_api( $campaign, 'publish' );
 				
 			}
 			
@@ -179,21 +187,6 @@ class WDGFormProjects {
 			
 			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
 			exit();
-		}
-	}
-	
-	/**
-	 * Force la validation a posteriori des paiements par carte en attente
-	 */
-	public static function form_try_pending_card() {
-		$WDGUser_current = WDGUser::current();
-		$try_pending_card_payment_id = filter_input( INPUT_GET, 'try_pending_card' );
-		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
-		if ( !empty( $try_pending_card_payment_id ) && !empty( $campaign_id ) && $WDGUser_current->is_admin() ) {
-			$payment_investment = new WDGInvestment( $try_pending_card_payment_id );
-			$user = $payment_investment->get_saved_user_id();
-			$user_investment = new WDGUserInvestments( $user );
-			$user_investment->try_pending_card_investments( TRUE );
 		}
 	}
 
@@ -264,7 +257,7 @@ class WDGFormProjects {
 		$buffer = FALSE;
 		
 		$wk_token = filter_input( INPUT_GET, 'response_wkToken' );
-		if ( !empty( $wk_token ) ) {
+		if ( !empty( $wk_token ) && $wk_token != 'error' ) {
 			$declaration = WDGROIDeclaration::get_by_payment_token( $wk_token );
 			if ($declaration->status == WDGROIDeclaration::$status_payment) {
 

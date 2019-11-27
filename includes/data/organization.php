@@ -116,53 +116,53 @@ class WDGOrganization {
 			}
 			$this->wpref = $user_id;
 			
-			$this->name = $this->bopp_object->name;
-			
-			$this->email = $this->bopp_object->email;
+			if ( !empty( $this->bopp_object ) ) {
+				$this->name = $this->bopp_object->name;
+				$this->email = $this->bopp_object->email;
+				$this->representative_function = $this->bopp_object->representative_function;
+				$this->description = $this->bopp_object->description;
+				$this->website = $this->bopp_object->website_url;
+				$this->strong_authentication = $this->bopp_object->strong_authentication;
+				$this->address_number = $this->bopp_object->address_number;
+				$this->address_number_comp = $this->bopp_object->address_number_comp;
+				$this->address = $this->bopp_object->address;
+				$this->postal_code = $this->bopp_object->postalcode;
+				$this->city = $this->bopp_object->city;
+				$this->nationality = $this->bopp_object->country;
+				$this->type = $this->bopp_object->type;
+				$this->legalform = $this->bopp_object->legalform;
+				$this->capital = $this->bopp_object->capital;
+				$this->idnumber = $this->bopp_object->idnumber;
+				$this->rcs = $this->bopp_object->rcs;
+				$this->ape = $this->bopp_object->ape;
+				$this->vat = $this->bopp_object->vat;
+				$this->fiscal_year_end_month = $this->bopp_object->fiscal_year_end_month;
+				$this->employees_count = $this->bopp_object->employees_count;
+				$geolocation = explode( ',', $this->bopp_object->geolocation );
+				if ( count( $geolocation ) > 1 ) {
+					$this->latitude = $geolocation[0];
+					$this->longitude = $geolocation[1];
+				}
+				
+				$this->bank_owner = $this->bopp_object->bank_owner;
+				$this->bank_address = $this->bopp_object->bank_address;
+				$this->bank_address2 = $this->bopp_object->bank_address2;
+				$this->bank_iban = $this->bopp_object->bank_iban;
+				$this->bank_bic = $this->bopp_object->bank_bic;
+				$this->id_quickbooks = $this->bopp_object->id_quickbooks;
+			}
+
 			if ( empty( $this->email ) ) {
 				$meta_email = get_user_meta( $user_id, 'orga_contact_email', TRUE );
-				if (empty($meta_email)) {
-					$this->email = $this->creator->user_email;
-				} else {
+				if ( !empty( $meta_email ) ) {
 					$this->email = $meta_email;
+				} else if ( !empty( $this->creator ) ) {
+					$this->email = $this->creator->user_email;
 				}
 			}
-			
-			$this->representative_function = $this->bopp_object->representative_function;
-			$this->description = $this->bopp_object->description;
 			if ( empty( $this->description ) ) {
 				$this->description = get_user_meta( $user_id, WDGOrganization::$key_description, TRUE );
 			}
-			$this->website = $this->bopp_object->website_url;
-			$this->strong_authentication = $this->bopp_object->strong_authentication;
-			$this->address_number = $this->bopp_object->address_number;
-			$this->address_number_comp = $this->bopp_object->address_number_comp;
-			$this->address = $this->bopp_object->address;
-			$this->postal_code = $this->bopp_object->postalcode;
-			$this->city = $this->bopp_object->city;
-			$this->nationality = $this->bopp_object->country;
-			$this->type = $this->bopp_object->type;
-			$this->legalform = $this->bopp_object->legalform;
-			$this->capital = $this->bopp_object->capital;
-			$this->idnumber = $this->bopp_object->idnumber;
-			$this->rcs = $this->bopp_object->rcs;
-			$this->ape = $this->bopp_object->ape;
-			$this->vat = $this->bopp_object->vat;
-			$this->fiscal_year_end_month = $this->bopp_object->fiscal_year_end_month;
-			$this->employees_count = $this->bopp_object->employees_count;
-			$geolocation = explode( ',', $this->bopp_object->geolocation );
-			if ( count( $geolocation ) > 1 ) {
-				$this->latitude = $geolocation[0];
-				$this->longitude = $geolocation[1];
-			}
-			
-			$this->bank_owner = $this->bopp_object->bank_owner;
-			$this->bank_address = $this->bopp_object->bank_address;
-			$this->bank_address2 = $this->bopp_object->bank_address2;
-			$this->bank_iban = $this->bopp_object->bank_iban;
-			$this->bank_bic = $this->bopp_object->bank_bic;
-			
-			$this->id_quickbooks = $this->bopp_object->id_quickbooks;
 		}
 	}
 	
@@ -625,16 +625,21 @@ class WDGOrganization {
 		return (empty($organization_can_invest_errors));
 	}
 	
+	private $transfers;
 	public function get_transfers() {
+		if ( isset( $this->transfers ) ) {
+			return $this->transfers;
+		}
+
 		$args = array(
-		    'author'    => $this->wpref,
-		    'post_type' => 'withdrawal_order',
-		    'post_status' => 'any',
-		    'orderby'   => 'post_date',
-		    'order'     =>  'ASC'
+		    'author'		=> $this->wpref,
+		    'post_type'		=> 'withdrawal_order',
+		    'post_status'	=> 'any',
+		    'orderby'		=> 'post_date',
+		    'order'			=>  'ASC'
 		);
-		$transfers = get_posts($args);
-		return $transfers;
+		$this->transfers = get_posts($args);
+		return $this->transfers;
 	}
 	
 	public function get_pending_transfers() {
@@ -722,6 +727,9 @@ class WDGOrganization {
 					$files_info[$document_key]['code'] = 0;
 					$files_info[$document_key]['info'] = $filepath;
 					$files_info[$document_key]['date'] = __( "T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject' ) .$date_upload;
+					if ( $this->has_sent_all_documents() && $this->register_lemonway() ) {
+						LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $kycfile->file_name, LemonwayDocument::get_type_by_kyc_type( $document_type ), $kycfile->get_byte_array() );
+					}
 				}
 			}
 			else {
@@ -757,18 +765,7 @@ class WDGOrganization {
 	public function send_kyc() {
 		if ( $this->has_sent_all_documents() ) {
 			if ( $this->register_lemonway() ) {
-				$documents_type_list = array( 
-					WDGKYCFile::$type_bank		=> LemonwayDocument::$document_type_bank,
-					WDGKYCFile::$type_kbis		=> LemonwayDocument::$document_type_kbis,
-					WDGKYCFile::$type_status	=> LemonwayDocument::$document_type_status,
-					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
-					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
-					WDGKYCFile::$type_capital_allocation		=> LemonwayDocument::$document_type_capital_allocation,
-					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_id2,
-					WDGKYCFile::$type_home_2	=> LemonwayDocument::$document_type_home2,
-					WDGKYCFile::$type_id_3		=> LemonwayDocument::$document_type_id3,
-					WDGKYCFile::$type_home_3	=> LemonwayDocument::$document_type_home3
-				);
+				$documents_type_list = LemonwayDocument::get_list_sorted_by_kyc_type();
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 					if ( count( $document_filelist ) > 0 ) {

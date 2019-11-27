@@ -116,66 +116,73 @@ class WDGInvestmentContract {
 			}
 			
 			if ( $create_this_item ) {
-				$investment_contract = new WDGInvestmentContract();
-
-				// Initialisation de l'investisseur
-				if ( WDGOrganization::is_user_organization( $investment[ 'user' ] ) ) {
-					$WDGOrganization = new WDGOrganization( $investment[ 'user' ] );
-					$investment_contract->investor_id = $WDGOrganization->get_api_id();
-					$investment_contract->investor_type = 'organization';
-				} else {
-					$WDGUser = new WDGUser( $investment[ 'user' ] );
-					$investment_contract->investor_id = $WDGUser->get_api_id();
-					$investment_contract->investor_type = 'user';
-				}
-
-				// Initialisation de la campagne et de l'organisation
-				$investment_contract->project_id = $campaign->get_api_id();
-				$campaign_organization = $campaign->get_organization();
-				$investment_contract->organization_id = $campaign_organization->id;
-
-				// Initialisation de l'investissement
-				$investment_contract->subscription_id = $investment[ 'ID' ];
-				$investment_contract->subscription_date = $investment[ 'date' ];
-				$investment_contract->subscription_amount = $investment[ 'amount' ];
-
-				// Initialisation du statut
-				$investment_contract->status = WDGInvestmentContract::$status_active;
-
-				// Initialisation des dates de début et de fin
-				$investment_contract->start_date = $campaign->contract_start_date();
-				// La date de fin correspond à date de début + durée du contrat - 1 jour
-				$contract_end_date = new DateTime( $campaign->contract_start_date() );
-				$contract_end_date->modify( '+' .$campaign->funding_duration(). ' years' );
-				$contract_end_date->modify( '-1 day' );
-				$investment_contract->end_date = $contract_end_date->format( 'Y-m-d' );
-
-				// Initialisation des données relatives au contrat : fréquence, type et pourcent de CA, retour minimum et maximum
-				$investment_contract->frequency = WDGInvestmentContract::$frequency_default;
-				$investment_contract->turnover_type = WDGInvestmentContract::$turnover_type_overall;
-
-				$investor_proportion = $investment[ 'amount' ] / $campaign->current_amount( false );
-				$investment_contract->turnover_percent = $investor_proportion * $campaign->roi_percent();
-
-				$investment_contract->minimum_to_receive = $campaign->minimum_profit() * $investment[ 'amount' ];
-				if ( $campaign->maximum_profit() == 'infinite' ) {
-					$investment_contract->maximum_to_receive = 0;
-				} else {
-					$investment_contract->maximum_to_receive = floatval( $campaign->maximum_profit() .'.'. $campaign->maximum_profit_precision() ) * $investment[ 'amount' ];
-				}
-
-				// Initialisation des montants perçus à partir des versements qui ont déjà eu lieu
-				$investment_contract->amount_received = 0;
-				foreach ( $declarations as $declaration ) {
-					if ( !empty( $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ] ) ) {
-						$investment_contract->amount_received += $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ][ 'amount' ];
-					}
-				}
-
-				$investment_contract->create();
-				
+				self::create_item_from_payment_data( $investment, $campaign, $declarations );
 			}
 		}
+	}
+
+	public static function create_item_from_payment_data( $investment, $campaign, $declarations = FALSE ) {
+		if ( empty( $declarations ) ) {
+			$declarations = $campaign->get_roi_declarations();
+		}
+		
+		$investment_contract = new WDGInvestmentContract();
+
+		// Initialisation de l'investisseur
+		if ( WDGOrganization::is_user_organization( $investment[ 'user' ] ) ) {
+			$WDGOrganization = new WDGOrganization( $investment[ 'user' ] );
+			$investment_contract->investor_id = $WDGOrganization->get_api_id();
+			$investment_contract->investor_type = 'organization';
+		} else {
+			$WDGUser = new WDGUser( $investment[ 'user' ] );
+			$investment_contract->investor_id = $WDGUser->get_api_id();
+			$investment_contract->investor_type = 'user';
+		}
+
+		// Initialisation de la campagne et de l'organisation
+		$investment_contract->project_id = $campaign->get_api_id();
+		$campaign_organization = $campaign->get_organization();
+		$investment_contract->organization_id = $campaign_organization->id;
+
+		// Initialisation de l'investissement
+		$investment_contract->subscription_id = $investment[ 'ID' ];
+		$investment_contract->subscription_date = $investment[ 'date' ];
+		$investment_contract->subscription_amount = $investment[ 'amount' ];
+
+		// Initialisation du statut
+		$investment_contract->status = WDGInvestmentContract::$status_active;
+
+		// Initialisation des dates de début et de fin
+		$investment_contract->start_date = $campaign->contract_start_date();
+		// La date de fin correspond à date de début + durée du contrat - 1 jour
+		$contract_end_date = new DateTime( $campaign->contract_start_date() );
+		$contract_end_date->modify( '+' .$campaign->funding_duration(). ' years' );
+		$contract_end_date->modify( '-1 day' );
+		$investment_contract->end_date = $contract_end_date->format( 'Y-m-d' );
+
+		// Initialisation des données relatives au contrat : fréquence, type et pourcent de CA, retour minimum et maximum
+		$investment_contract->frequency = WDGInvestmentContract::$frequency_default;
+		$investment_contract->turnover_type = WDGInvestmentContract::$turnover_type_overall;
+
+		$investor_proportion = $investment[ 'amount' ] / $campaign->current_amount( false );
+		$investment_contract->turnover_percent = $investor_proportion * $campaign->roi_percent();
+
+		$investment_contract->minimum_to_receive = $campaign->minimum_profit() * $investment[ 'amount' ];
+		if ( $campaign->maximum_profit() == 'infinite' ) {
+			$investment_contract->maximum_to_receive = 0;
+		} else {
+			$investment_contract->maximum_to_receive = floatval( $campaign->maximum_profit() .'.'. $campaign->maximum_profit_precision() ) * $investment[ 'amount' ];
+		}
+
+		// Initialisation des montants perçus à partir des versements qui ont déjà eu lieu
+		$investment_contract->amount_received = 0;
+		foreach ( $declarations as $declaration ) {
+			if ( !empty( $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ] ) ) {
+				$investment_contract->amount_received += $declaration[ 'roi_list_by_investment_id' ][ $investment[ 'ID' ] ][ 'amount' ];
+			}
+		}
+
+		$investment_contract->create();
 	}
 	
 	/**

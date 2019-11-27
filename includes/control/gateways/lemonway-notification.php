@@ -114,7 +114,6 @@ class LemonwayNotification {
 			}
 			
 			if ( !empty( $WDGUserInvestments ) ) {
-				$WDGUserInvestments->try_pending_card_investments();
 				$WDGUserInvestments->try_transfer_waiting_roi_to_wallet();
 				if ( $WDGUserInvestments->has_pending_not_validated_investments() ) {
 					$pending_not_validated_investment = $WDGUserInvestments->get_first_pending_not_validated_investment();
@@ -189,9 +188,9 @@ class LemonwayNotification {
 			if ( !empty( $WDGOrga_wallet ) ) {
 				$content_slack .= $WDGOrga_wallet->get_name();
 			} else {
-				$content_slack .= $WDGUser_wallet->get_display_name();
 				$user_email = $WDGUser_wallet->get_email();
 				$user_firstname = $WDGUser_wallet->get_firstname();
+				$content_slack .= $user_firstname . ' ' . $WDGUser_wallet->get_lastname() . ' (' . $user_email . ')';
 			}
 			$content_slack .= "\n";
 			
@@ -201,9 +200,10 @@ class LemonwayNotification {
 			$content_slack .= "Nouveau statut : " . LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
 			$content_slack .= "\n";
 			
+			// Notifications pour indiquer les documents non-validés
 			// Si le document n'est ni validé, ni en attente
 			if ( $lemonway_posted_document_status > 2 ) {
-				// Si c'est une personne physique, on prévient
+				// Seulement si c'est une personne physique
 				if ( empty( $WDGOrga_wallet ) ) {
 					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
 						// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
@@ -213,13 +213,59 @@ class LemonwayNotification {
 						}
 					}
 				}
+			
+			// Notifications pour indiquer que les documents sont validés mais que le wallet ne l'est pas
+			} else if ( $lemonway_posted_document_status == 2 ) {
+				$wallet_details = FALSE;
+				$user_wpref = FALSE;
+				$has_all_documents_validated = TRUE;
+
+				// Si c'est une organisation pas authentifiée
+				if ( !empty( $WDGOrga_wallet ) && !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
+					$wallet_details = $WDGOrga_wallet->get_wallet_details();
+					$user_wpref = $WDGOrga_wallet->get_wpref();
+
+				// Si c'est une personne physique pas authentifiée
+				} else if ( empty( $WDGOrga_wallet ) && !$WDGUser_wallet->is_lemonway_registered() ) {
+					$wallet_details = $WDGUser_wallet->get_wallet_details();
+					$user_wpref = $WDGUser_wallet->get_wpref();
+				}
+
+				// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
+				// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
+				$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
+
+				// On vérifie si tous les documents sont validés
+				if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+					foreach ( $wallet_details->DOCS->DOC as $document_object ) {
+						if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
+							$has_all_documents_validated = FALSE;
+						}
+						// Si le document est validé et que ce n'est pas la première pièce ou le RIB, on n'envoie pas de notif à ce sujet
+						if ( $document_object->S == 2 
+									&& $document_object->TYPE != LemonwayDocument::$document_type_id
+									&& $document_object->TYPE != LemonwayDocument::$document_type_id_back
+									&& $document_object->TYPE != LemonwayDocument::$document_type_bank ) {
+							$only_first_document = FALSE;
+						}
+					}
+				}
+				
+				// Si ils sont tous validés, on enverra une notification plus tard
+				if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
+					if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
+						NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
+					} else {
+						WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
+					}
+				}
 			}
 		
 			// On prévient l'équipe par Slack
 			NotificationsSlack::send_new_doc_status( $content_slack );
 			
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
-			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == 2 && empty( $WDGOrga_wallet ) ) {
+			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == LemonwayDocument::$document_type_bank && empty( $WDGOrga_wallet ) ) {
 				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
 				$notification_sent = TRUE;
 			}
@@ -364,8 +410,21 @@ class LemonwayNotification {
 				
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				NotificationsEmails::new_purchase_team_members( $investment_id );
+				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
+					$WDGInvestment = new WDGInvestment( $investment_id );
+					$WDGInvestment->save_to_api( $campaign, 'publish' );
+				}
+
 			} else {
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
+				if ( empty( $WDGOrga_invest_author ) ) {
+					$recipient_email = $WDGUser_invest_author->get_email();
+					$recipient_name = $WDGUser_invest_author->get_firstname();
+					$wallet_details = $WDGUser_invest_author->get_wallet_details();
+					$amount = $wallet_details->BAL;
+					NotificationsAPI::wire_transfer_received( $recipient_email, $recipient_name, $amount );
+				} else {
+					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - ORGA - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
+				}
 			}
 		} else {
 			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$WDGUser_invest_author === FALSE', true );

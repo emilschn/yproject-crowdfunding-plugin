@@ -26,6 +26,7 @@ class WDGROIDeclaration {
 	public $date_transfer;
 	public $amount;
 	public $remaining_amount;
+	public $percent_commission_without_tax;
 	public $percent_commission;
 	public $status;
 	public $mean_payment;
@@ -42,6 +43,7 @@ class WDGROIDeclaration {
 	public $declared_by;
 	
 	public $on_api;
+	private $campaign_object;
 	
 	
 	public function __construct( $declaration_id = FALSE, $local = FALSE, $data = FALSE ) {
@@ -56,6 +58,7 @@ class WDGROIDeclaration {
 				$this->date_transfer = $collection_item->date_transfer;
 				$this->amount = $collection_item->amount;
 				$this->remaining_amount = $collection_item->remaining_amount;
+				$this->percent_commission_without_tax = $collection_item->percent_commission_without_tax;
 				$this->percent_commission = $collection_item->percent_commission;
 				$this->status = $collection_item->status;
 				$this->mean_payment = $collection_item->mean_payment;
@@ -88,6 +91,10 @@ class WDGROIDeclaration {
 					$this->remaining_amount = $declaration_api_item->remaining_amount;
 					if ( !is_numeric( $this->remaining_amount ) ) {
 						$this->remaining_amount = 0;
+					}
+					$this->percent_commission_without_tax = $declaration_api_item->percent_commission_without_tax;
+					if ( !is_numeric( $this->percent_commission_without_tax ) ) {
+						$this->percent_commission_without_tax = 0;
 					}
 					$this->percent_commission = $declaration_api_item->percent_commission;
 					if ( !is_numeric( $this->percent_commission ) ) {
@@ -148,6 +155,13 @@ class WDGROIDeclaration {
 	public function save( $local = FALSE ) {
 		$this->update();
 	}
+
+	private function get_campaign_object() {
+		if ( !isset( $this->campaign_object ) ) {
+			$this->campaign_object = new ATCF_Campaign( FALSE, $this->id_campaign );
+		}
+		return $this->campaign_object;
+	}
 	
 	public function get_formatted_date( $type = 'due' ) {
 		$buffer = '';
@@ -193,40 +207,73 @@ class WDGROIDeclaration {
 	public function get_amount_with_commission() {
 		return ( $this->get_amount_with_adjustment() + $this->get_commission_to_pay() );
 	}
+
+	/**
+	 * Retourne le pourcentage de commission associée à la déclaration
+	 */
+	public function get_percent_commission_without_tax() {
+		if ( !empty( $this->percent_commission_without_tax ) ) {
+			return $this->percent_commission_without_tax;
+
+		} else if ( !empty( $this->percent_commission ) ) {
+			return $this->percent_commission / 1.2;
+			
+		} else {
+			$campaign = $this->get_campaign_object();
+			return $campaign->get_costs_to_organization() / 1.2;
+		}
+	}
 	
 	/**
-	 * Retourne la commission Ã©ventuelle que doit payer le porteur de projet au moment de reverser les fonds
+	 * Retourne la commission TTC que doit payer le porteur de projet au moment de reverser les fonds
 	 * @return number
 	 */
 	public function get_commission_to_pay() {
 		$buffer = 0;
 		
-		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		// Ancienne méthode avec erreur : si percent_commission est défini, on calcule directement en TTC
+		if ( !empty( $this->percent_commission ) && $this->status == WDGROIDeclaration::$status_finished ) {
+			$cost_with_tax = $this->percent_commission;
+			$buffer = round( ( $this->get_amount_with_adjustment() * $cost_with_tax / 100 ) * 100 ) / 100;
 		
-		//Si le porteur de projet a déjà payé, on considère qu'on a déjà enregistré la commission
-		if ( $this->status == WDGROIDeclaration::$status_transfer || $this->status == WDGROIDeclaration::$status_finished ) {
-			$cost = $this->percent_commission;
+			// Si il y a un coût minimal par déclaration
+			$campaign = $this->get_campaign_object();
+			$minimum_costs = $campaign->get_minimum_costs_to_organization();
+			if ( $minimum_costs > 0 ) {
+				$buffer = max( $buffer, $minimum_costs );
+			}
 			
-		//Sinon, on la calcule avec les frais enregistrés en rapport avec la campagne
+		// Nouvelle méthode : on calcule à partir du HT
 		} else {
-			$cost = $campaign->get_costs_to_organization();
-		}
-		
-		if ( $cost > 0 ) {
-			$buffer = (round(($this->get_amount_with_adjustment() * $cost / 100) * 100) / 100);
-		}
-		
-		// Si il y a un coût minimal par déclaration
-		$minimum_costs = $campaign->get_minimum_costs_to_organization();
-		if ( $minimum_costs > 0 ) {
-			$buffer = max( $buffer, $minimum_costs );
+			$buffer = round( ( $this->get_commission_to_pay_without_tax() * 1.2) * 100 ) / 100;
 		}
 		
 		return $buffer;
 	}
 	
-	public function get_commission_to_pay_without_tax() {
-		return round( $this->get_commission_to_pay() / 1.2, 2 );
+	/**
+	 * Retourne la commission HT que doit payer le porteur de projet au moment de reverser les fonds
+	 * @return number
+	 */
+	public function get_commission_to_pay_without_tax( $force_new_method = FALSE ) {
+		// Ancienne méthode avec erreur : si percent_commission est défini, on calcule à partir du TTC
+		if ( !$force_new_method && !empty( $this->percent_commission ) && $this->status == WDGROIDeclaration::$status_finished ) {
+			$buffer = round( $this->get_commission_to_pay() / 1.2, 2 );
+			
+		// Nouvelle méthode : on calcule directement depuis les données HT
+		} else {
+			$cost_without_tax = $this->get_percent_commission_without_tax();
+			$buffer = round( ( $this->get_amount_with_adjustment() * $cost_without_tax / 100 ) * 100 ) / 100;
+
+			// Si il y a un coût minimal par déclaration
+			$campaign = $this->get_campaign_object();
+			$minimum_costs = $campaign->get_minimum_costs_to_organization() / 1.2;
+			if ( $minimum_costs > 0 ) {
+				$buffer = max( $buffer, $minimum_costs );
+			}
+		}
+		
+		return $buffer;
 	}
 	
 	public function get_commission_tax() {
@@ -321,7 +368,7 @@ class WDGROIDeclaration {
 	private $estimated_turnover;
 	public function get_estimated_turnover() {
 		if ( !isset( $this->estimated_turnover ) ) {
-			$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+			$campaign = $this->get_campaign_object();
 			$declaration_date_due = new DateTime( $this->date_due );
 			$quarter_percent_list = array( 10, 20, 30, 40 );
 			$nb_quarter = 0;
@@ -365,7 +412,7 @@ class WDGROIDeclaration {
 	}
 	
 	public function get_estimated_amount() {
-		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		$campaign = $this->get_campaign_object();
 		
 		$estimated_turnover = $this->get_estimated_turnover();
 		$amount_royalties = $estimated_turnover * $campaign->roi_percent_remaining() / 100;
@@ -422,7 +469,7 @@ class WDGROIDeclaration {
 		$buffer = false;
 		$date_now = new DateTime();
 		$date_now_formatted = $date_now->format( 'Y-m-d' );
-		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		$campaign = $this->get_campaign_object();
 		$investment_contracts = WDGInvestmentContract::get_list( $campaign->ID );
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
@@ -514,16 +561,29 @@ class WDGROIDeclaration {
 					WDGROI::insert( $investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer_id, $status, $id_investment_contract );
 					
 					if ( $send_notifications ) {
-						WDGQueue::add_notification_royalties( $investment_item['user'] );
-						
-						$declaration_message = $this->get_message();
-						if ( !empty( $declaration_message ) ) {
-							$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
-							$campaign_author = $campaign->post_author();
-							$author_user = get_user_by( 'ID', $campaign_author );
-							$replyto_mail = $author_user->user_email;
-							$declaration_message_decoded = $declaration_message;
-							NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+
+						$cancel_notification = FALSE;
+						if( $WDGUser ) {
+							$recipient_notification = $WDGUser->get_royalties_notifications();
+							if( $recipient_notification == 'none' ){
+								$cancel_notification = TRUE;
+							} elseif ($recipient_notification == 'positive' && $investment_item['roi_amount'] == 0) {
+								$cancel_notification = TRUE;
+							}
+						}
+
+						if (!$cancel_notification) {
+							WDGQueue::add_notification_royalties( $investment_item['user'] );
+							
+							$declaration_message = $this->get_message();
+							if ( !empty( $declaration_message ) ) {
+								$campaign = $this->get_campaign_object();
+								$campaign_author = $campaign->post_author();
+								$author_user = get_user_by( 'ID', $campaign_author );
+								$replyto_mail = $author_user->user_email;
+								$declaration_message_decoded = $declaration_message;
+								NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+							}
 						}
 					}
 					
@@ -582,7 +642,7 @@ class WDGROIDeclaration {
 		// **************
 		// NOTIFICATION 1
 		// Doit-on envoyer une notification au PP pour dire que la prochaine déclaration est la dernière ?
-		$send_notification_extend = TRUE;
+		$send_notification_extend = FALSE;
 		
 		// La notification ne sera envoyée que si il reste une seule déclaration à venir
 		$nb_declarations_waiting = 0;
@@ -596,7 +656,7 @@ class WDGROIDeclaration {
 			}
 		}
 		if ( $nb_declarations_waiting == 1 ) {
-			$send_notification_extend = FALSE;
+			$send_notification_extend = TRUE;
 		}
 		
 		// La notification ne sera envoyée que si le montant minimum de versement n'a pas été atteint
@@ -661,7 +721,7 @@ class WDGROIDeclaration {
 	 * Répare un versement qui n'a pas eu lieu vers un utilisateur
 	 */
 	public function redo_transfers() {
-		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		$campaign = $this->get_campaign_object();
 		$current_organization = $campaign->get_organization();
 		if (!empty($current_organization)) {
 			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
@@ -743,7 +803,7 @@ class WDGROIDeclaration {
 		$date_due = new DateTime( $this->date_due );
 		$certificate_date = $date_due->format( 'd/m/Y' );
 		
-		$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+		$campaign = $this->get_campaign_object();
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
 			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
@@ -931,7 +991,7 @@ class WDGROIDeclaration {
 				$temp_msg_to_author = $temp->msg_to_author;
 				$temp_msg_to_investors = $temp->msg_to_investors;
 
-				$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+				$campaign = $this->get_campaign_object();
 
 				$adjustment = new WDGAdjustment();
 				$adjustment->id_api_campaign = $campaign->get_api_id();
@@ -997,7 +1057,7 @@ class WDGROIDeclaration {
 	 */
 	public function save_remaining_amount() {
 		if ( $this->status == WDGROIDeclaration::$status_finished ) {
-			$campaign = new ATCF_Campaign( FALSE, $this->id_campaign );
+			$campaign = $this->get_campaign_object();
 			$investments_list = $campaign->roi_payments_data( $this );
 			$remaining_amount = $this->get_amount_with_adjustment();
 			foreach ($investments_list as $investment_item) {

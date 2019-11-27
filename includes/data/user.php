@@ -115,6 +115,7 @@ class WDGUser {
 					$this->bank_address2 = $this->api_data->bank_address2;
 					$this->authentification_mode = $this->api_data->authentification_mode;
 					$this->signup_date = $this->api_data->signup_date;
+					$this->royalties_notifications = $this->api_data->royalties_notifications;
 				}
 			}
 		}
@@ -555,6 +556,19 @@ class WDGUser {
 		return $this->birthday_country;
 	}
 	
+	
+	public function get_royalties_notifications() {
+		$buffer = $this->royalties_notifications;
+		return $buffer;
+	}
+
+	public function set_royalties_notifications($value) {
+		if($this->royalties_notifications != $value) {
+			$this->royalties_notifications = $value;		
+			$this->update_api();
+		}
+	}
+
 /*******************************************************************************
  * Fonctions nÃ©cessitant des requetes
 *******************************************************************************/
@@ -1705,18 +1719,18 @@ class WDGUser {
 	}
 	
 	/**
-	 * TransfÃ¨re l'argent du porte-monnaie utilisateur vers son compte bancaire
+	 * Transfère l'argent du porte-monnaie utilisateur vers son compte bancaire
 	 */
 	public function transfer_wallet_to_bankaccount( $amount = FALSE ) {
 		$buffer = __( "Votre compte bancaire n'est pas encore valid&eacute;.", 'yproject' );
 		
-		//Il faut qu'un iban ait dÃ©jÃ  Ã©tÃ© enregistrÃ©
+		//Il faut qu'un iban ait déjà été enregistré
 		if ($this->has_saved_iban()) {
-			//VÃ©rification que des IBANS existent
+			//Vérification que des IBANS existent
 			$wallet_details = $this->get_wallet_details();
 			$first_iban = $wallet_details->IBANS->IBAN;
 			$save_transfer = TRUE;
-			//Sinon on l'enregistre auprÃ¨s de Lemonway
+			//Sinon on l'enregistre auprès de Lemonway
 			if (empty($first_iban)) {
 				$saved_holdername = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, TRUE );
 				$saved_iban = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, TRUE );
@@ -1725,28 +1739,37 @@ class WDGUser {
 				$saved_dom2 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address2, TRUE );
 				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
 				if ($result_iban == FALSE) {
-					$buffer = LemonwayLib::get_last_error_message();
+					$buffer .= ' ' . LemonwayLib::get_last_error_message();
 					$save_transfer = FALSE;
 				}
 			}
 			
 			if ( $save_transfer ) {
-				//ExÃ©cution du transfert vers le compte du montant du solde
+				//Exécution du transfert vers le compte du montant du solde
 				if ( empty( $amount ) ) {
 					$amount = $wallet_details->BAL;
+
+				} elseif( $amount > $wallet_details->BAL ) {
+					$amount = FALSE;
+					$buffer = __( "Montant non-autoris&eacute;", 'yproject' );
 				}
-				$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount );
-				$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
+
+				if ( !empty( $amount ) ) {
+					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount );
+					$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
+				}
+
 				if ( $buffer === TRUE ) {
-					NotificationsEmails::wallet_transfer_to_account( $this->wp_user->ID, $amount );
 					$withdrawal_post = array(
 						'post_author'   => $this->wp_user->ID,
 						'post_title'    => $amount,
-						'post_content'  => print_r($result_transfer, TRUE),
+						'post_content'  => print_r( $result_transfer, TRUE ),
 						'post_status'   => 'publish',
 						'post_type'	    => 'withdrawal_order_lw'
 					);
 					wp_insert_post( $withdrawal_post );
+					$WDGUser = new WDGUser( $this->wp_user->ID );
+					NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser->get_email(), $WDGUser->get_firstname(), $amount );
 				}
 			}
 		}

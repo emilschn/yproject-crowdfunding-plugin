@@ -10,7 +10,8 @@ class NotificationsAPI {
 		'181' => "Inscription",
 		'311' => "KYC - RIB validé",
 		'322' => "KYC - Doc en cours de validation",
-		'323' => "KYC - Doc refusé",
+		'749' => "KYC - Doc refusé",
+		'777' => "KYC - Un seul doc validé",
 		'324' => "KYC - Wallet validé",
 		'641' => "Conseils quotidiens",
 		'573' => "Relance - Evaluation - Avec intention",
@@ -35,6 +36,7 @@ class NotificationsAPI {
 		'605' => "KYC - Wallet validé et investissement en attente",
 		'606' => "KYC - Wallet validé et investissement en attente - Rappel",
 		'175' => "Erreur d'investissement",
+		'780' => "Réception virement bancaire sans investissement en attente",
 		'172' => "Investissement par chèque en attente",
 		'177' => "Investissement par virement en attente",
 		'687' => "Investissement sur projet validé",
@@ -55,7 +57,8 @@ class NotificationsAPI {
 		'693' => "Déclaration - Fin (investisseurs)",
 		'139' => "Versement de royalties - résumé quotidien",
 		'522' => "Versement de royalties - transfert avec message",
-		'691' => "Versement de royalties - montant maximum atteint"
+		'691' => "Versement de royalties - montant maximum atteint",
+		'779' => "Versement sur compte bancaire - confirmation"
 	);
 	
 
@@ -251,6 +254,24 @@ class NotificationsAPI {
 			'personal'				=> 1,
 			'PRENOM'				=> $name,
 			'PRECISIONS'			=> $authentication_info
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS KYC - REFUSES
+    //*******************************************************
+	public static function kyc_single_validated( $recipient, $name ) {
+		$id_template = '777';
+		$options = array(
+			'personal'				=> 1,
+			'PRENOM'				=> $name
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -820,7 +841,7 @@ class NotificationsAPI {
 			'TEXTE_AVANT'			=> $text_before,
 			'TEXTE_APRES'			=> $text_after,
 		);
-		if ( !empty( $attachment_url ) ) {
+		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
 			$options[ 'url_attachment' ] = $attachment_url;
 		}
 		$parameters = array(
@@ -845,7 +866,7 @@ class NotificationsAPI {
 			'TEXTE_AVANT'			=> $text_before,
 			'TEXTE_APRES'			=> $text_after,
 		);
-		if ( !empty( $attachment_url ) ) {
+		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE ) {
 			$options[ 'url_attachment' ] = $attachment_url;
 		}
 		$parameters = array(
@@ -870,6 +891,26 @@ class NotificationsAPI {
 			'NOM_PROJET'			=> $project_name,
 			'RAISON_LEMONWAY'		=> $lemonway_reason,
 			'LIEN_INVESTISSEMENT'	=> $investment_link,
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+    //*******************************************************
+	public static function wire_transfer_received( $recipient, $name, $amount ) {
+		$id_template = '780';
+		$options = array(
+			'personal'				=> 1,
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1220,5 +1261,25 @@ class NotificationsAPI {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
+	
+    //*******************************************************
+    // NOTIFICATION VERSEMENT SUR COMPTE BANCAIRE
+    //*******************************************************
+	public static function transfer_to_bank_account_confirmation( $recipient, $name, $amount ) {
+		$id_template = '779';
+		$options = array(
+			'personal'			=> 1,
+			'NOM'				=> $name,
+			'MONTANT'			=> $amount
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
 	
 }

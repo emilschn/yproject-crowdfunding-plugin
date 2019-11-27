@@ -182,7 +182,9 @@ class ATCF_Campaign {
 			$post = $this->api_data->wpref;
 		}
 		$this->data = get_post( $post );
-		$this->ID   = $this->data->ID;
+		if ( !empty( $this->data ) ) {
+			$this->ID   = $this->data->ID;
+		}
 		$this->load_api_data();
 	}
 	
@@ -304,10 +306,10 @@ class ATCF_Campaign {
 	public static $key_api_id = 'id_api';
 	private $api_id;
 	public function get_api_id() {
-		if ( !isset( $this->api_id ) ) {
+		if ( !isset( $this->api_id ) && !empty( $this->data ) ) {
 			$this->api_id = FALSE;
 			$is_campaign = ( get_post_meta( $this->data->ID, 'campaign_funding_type', TRUE ) != '' );
-			if ($is_campaign) {
+			if ( $is_campaign ) {
 				$this->api_id = get_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, TRUE );
 				if ( empty( $this->api_id ) ) {
 					$api_project_return = WDGWPREST_Entity_Project::create( $this );
@@ -438,7 +440,7 @@ class ATCF_Campaign {
  ******************************************************************************/
 	public function get_name() {
 		$buffer = $this->get_api_data( 'name' );
-		if ( empty( $buffer ) ) {
+		if ( empty( $buffer ) && !empty( $this->data ) ) {
 			$buffer = $this->data->post_title;
 		}
 		return $buffer;
@@ -565,6 +567,14 @@ class ATCF_Campaign {
 /*******************************************************************************
  * CONTRATS
  ******************************************************************************/
+	public function copy_default_contract_if_empty() {
+		$project_override_contract = $this->override_contract();
+		if ( empty( $project_override_contract ) ) {
+			$edd_settings = get_option( 'edd_settings' );
+			update_post_meta( $this->ID, self::$key_override_contract, $edd_settings[ 'standard_contract' ] );
+		}
+	}
+
     // Contrat vierge pour les personnes morales
     public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
     public static $key_backoffice_contract_agreement = 'campaign_backoffice_contract_agreement';
@@ -1409,7 +1419,9 @@ class ATCF_Campaign {
 		$buffer = 0;
 		$declaration_list = $this->get_roi_declarations();
 		foreach ( $declaration_list as $declaration_item ) {
-			$buffer += $declaration_item["total_roi"];
+			if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_declaration ) {
+				$buffer += $declaration_item["total_roi"];
+			}
 		}
 		return $buffer;
 	}
@@ -1910,7 +1922,10 @@ class ATCF_Campaign {
 	
 	private $organization;
 	public function get_organization() {
-		return $this->api_data->organization;
+		if ( !empty( $this->api_data ) ) {
+			return $this->api_data->organization;
+		}
+		return FALSE;
 	}
 	
 	public function link_organization( $id_api_organization, $link_type = '' ) {
@@ -2150,17 +2165,20 @@ class ATCF_Campaign {
 	 *
 	 * @return sting Campaign Backers
 	 */
+	private $backers;
 	public function backers() {
-		global $edd_logs;
+		if ( empty( $this->backers ) ) {
+			global $edd_logs;
+	
+			$this->backers = $edd_logs->get_connected_logs( array(
+				'post_parent'    => $this->ID, 
+				'log_type'       => /*atcf_has_preapproval_gateway()*/FALSE ? 'preapproval' : 'sale',
+				'post_status'    => array( 'publish' ),
+				'posts_per_page' => -1
+			) );
+		}
 
-		$backers = $edd_logs->get_connected_logs( array(
-			'post_parent'    => $this->ID, 
-			'log_type'       => /*atcf_has_preapproval_gateway()*/FALSE ? 'preapproval' : 'sale',
-			'post_status'    => array( 'publish' ),
-			'posts_per_page' => -1
-		) );
-
-		return $backers;
+		return $this->backers;
 	}
 
 	/**
@@ -2463,8 +2481,8 @@ class ATCF_Campaign {
 	public static $invest_time_min_wire = 7;
 	public static $campaign_max_remaining_amount = 3000;
 	public function can_use_wire_remaining_time() {
-		// Si il reste assez de jours ou si la campagne est déjà validée
-		return ( $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->is_funded() || $this->has_overridden_wire_constraints() );
+		// Si on a annulé les contraintes des virements ou si il reste assez de jours ou si la campagne a déjà atteint 80%
+		return ( $this->has_overridden_wire_constraints() || $this->days_remaining() > ATCF_Campaign::$invest_time_min_wire || $this->percent_minimum_completed( FALSE ) > 80 );
 	}
 	public function can_use_wire_amount($amount_part) {
 		return ($this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_wire);
@@ -2798,7 +2816,6 @@ class ATCF_Campaign {
 						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
 						$signature_status = $WDGInvestmentSignature->get_status();
 
-						$mangopay_contribution = FALSE;
 						$lemonway_contribution = FALSE;
 						if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
 							$lemonway_id = edd_get_payment_key($payment->ID);
@@ -2819,7 +2836,7 @@ class ATCF_Campaign {
 							}
 						}
 
-						$payment_status = ypcf_get_updated_payment_status( $payment->ID, $mangopay_contribution, $lemonway_contribution );
+						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
 
 						if ($payment_status != 'failed') {
 							$this->payments_data[] = array(
@@ -2830,7 +2847,7 @@ class ATCF_Campaign {
 								'date'			=> $payment->post_date,
 								'user'			=> $user_id,
 								'status'		=> $payment_status,
-								'mangopay_contribution' => $mangopay_contribution,
+								'mangopay_contribution' => FALSE,
 								'lemonway_contribution' => $lemonway_contribution,
 								'payment_key' => $lemonway_id,
 								'signsquid_status'	=> $signature_status
@@ -2989,21 +3006,25 @@ class ATCF_Campaign {
 				'downloads'		=> array($this->ID),
 				'user_info'		=> $user_info,
 				'cart_details'	=> $cart_details,
-				'status'		=> $status
+				'status'		=> 'pending' // On initialise à pending, sinon la sauvegarde se fait 2 fois dans les logs (edd_record_sale_in_log)
 			);
 			$payment_id = edd_insert_payment( $payment_data );
 			$_SESSION[ 'investment_id' ] = $payment_id;
 			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
+
+			$wdg_investment = new WDGInvestment( $payment_id );
+			$this->save_to_api( $this, 'pending' );
 			
-			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
-				$wdg_investment = new WDGInvestment( $payment_id );
+			// Mise à jour du statut de paiement si nécessaire
+			if ( $this->campaign_status() != ATCF_Campaign::$campaign_status_vote && $status != 'pending' ) {
 				$wdg_investment->set_contract_status( WDGInvestment::$contract_status_preinvestment_validated );
 				$postdata = array(
 					'ID'			=> $payment_id,
-					'post_status'	=> 'pending'
+					'post_status'	=> $status
 				);
 				wp_update_post( $postdata );
+				$this->save_to_api( $this, $status );
 			}
 
 		} else {
@@ -3220,8 +3241,12 @@ class ATCF_Campaign {
 		return $src;
 	}
 	
+	private $home_picture;
 	public function get_home_picture_src( $force = true, $size = 'full' ) {
-		return $this->get_picture_src( 'image_home', $force, $size );
+		if ( empty( $this->home_picture ) ) {
+			$this->home_picture = $this->get_picture_src( 'image_home', $force, $size );
+		}
+		return $this->home_picture;
 	}
 	
 	public function get_picture_src( $type, $force, $size = 'full' ) {

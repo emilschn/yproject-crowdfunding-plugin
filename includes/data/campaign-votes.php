@@ -4,14 +4,24 @@
  */
 class WDGCampaignVotes {
 	public static $table_name_votes = 'ypcf_project_votes';
-    
+	private static $results_by_campaign_id;
+	
 	/**
 	 * Retourne les résultats de vote d'un projet
 	 * @param int $camp_id
 	 * @return array
 	 */
-	public static function get_results($camp_id) {
-		if (!isset($camp_id)) return FALSE;
+	public static function get_results( $camp_id ) {
+		if ( !isset( $camp_id ) ) {
+			return FALSE;
+		}
+		if ( !isset( self::$results_by_campaign_id ) ) {
+			self::$results_by_campaign_id = array();
+		}
+
+		if ( isset( self::$results_by_campaign_id[ $camp_id ] ) ) {
+			return self::$results_by_campaign_id[ $camp_id ];
+		}
 		
 		global $wpdb;
 		$table_name = $wpdb->prefix . WDGCampaignVotes::$table_name_votes;
@@ -179,16 +189,15 @@ class WDGCampaignVotes {
 			    }
 				array_push( $buffer[ 'list_votes' ], $vote );
 
-			    if ($vote->validate_project==1){
-					$buffer['list_cumul'][count($buffer['list_cumul'])-1]++;
-			    } else {
-					$buffer['list_cumul'][count($buffer['list_cumul'])-1]++;
-			    }
+				if ( count( $buffer[ 'list_cumul' ] ) > 0 ) {
+					$buffer[ 'list_cumul' ][ count( $buffer[ 'list_cumul' ] ) - 1 ]++;
+				}
 			}
 		} else {
 			$buffer['count_voters'] = 0;
 		}
 
+		self::$results_by_campaign_id[ $camp_id ] = $buffer;
 		return $buffer;
 	}
 	
