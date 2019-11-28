@@ -573,24 +573,15 @@ class WDGQueue {
 		$wallet_details = FALSE;
 		$email = '';
 		$name = '';
-		if ( WDGOrganization::is_user_organization( $user_id ) ) {
-			$WDGOrga_wallet = new WDGOrganization( $user_id );
-			if ( !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
-				$wallet_details = $WDGOrga_wallet->get_wallet_details();
-				$email = $WDGOrga_wallet->get_email();
-				$name = $WDGOrga_wallet->get_name();
-			}
-
-		} else {
+		// Uniquement pour les personnes physiques
+		if ( !WDGOrganization::is_user_organization( $user_id ) ) {
 			$WDGUser_wallet = new WDGUser( $user_id );
-			if ( !$WDGUser_wallet->is_lemonway_registered() ) {
-				$wallet_details = $WDGUser_wallet->get_wallet_details();
-				$email = $WDGUser_wallet->get_email();
-				$name = $WDGUser_wallet->get_firstname();
-			}
+			$wallet_details = $WDGUser_wallet->get_wallet_details();
+			$email = $WDGUser_wallet->get_email();
+			$name = $WDGUser_wallet->get_firstname();
 		}
 
-		if ( isset( $WDGUser_wallet ) && $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+		if ( !empty( $email ) && $WDGUser_wallet->has_subscribed_authentication_notification() ) {
 			switch ( $queued_action_param->status ) {
 				case 'refused':
 					// On refait la vérification que le statut du wallet n'a pas changé (avec un éventuel décalage temporel)
