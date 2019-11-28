@@ -1183,7 +1183,7 @@ class WDGUser {
 			if ( $wdg_roi->id_investment > 0 ) {
 				array_push( $invest_list, $wdg_roi->id_investment );
 			}
-			$wdg_organization = new WDGOrganization( $wdg_roi->id_orga );
+			$wdg_organization = WDGOrganization::get_by_api_id( $wdg_roi->id_orga );
 			$wdg_roi_declaration = new WDGROIDeclaration( $wdg_roi->id_declaration );
 			$roi_item[ 'organization_name' ] = $wdg_organization->get_name();
 			$roi_item[ 'trimester_months' ] = '';
@@ -1218,7 +1218,7 @@ class WDGUser {
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
-				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
+				$invest_item['organization_address'] = $wdg_organization->get_full_address_str(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
 				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
 				$invest_item['organization_vat'] = $wdg_organization->get_vat();
 			}
@@ -1238,7 +1238,7 @@ class WDGUser {
 			'',
 			$this->get_firstname(). ' ' .$this->get_lastname(),
 			$this->get_email(),
-			$this->get_address(),
+			$this->get_full_address_str(),
 			$this->get_postal_code(),
 			$this->get_city(),
 			'01/01/'.($year + 1),
