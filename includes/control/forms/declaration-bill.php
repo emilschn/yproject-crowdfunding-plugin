@@ -40,7 +40,7 @@ class WDG_Form_Declaration_Bill extends WDG_Form {
 			'bill',
 			__( "Facture", 'yproject' ),
 			self::$field_group_file,
-			$bill_file_path,
+			$current_file_bill_url,
 			FALSE,
 			$options
 		);
