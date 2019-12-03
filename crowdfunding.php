@@ -157,6 +157,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/gateways/lemonway-lib-errors.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-document.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-notification.php' );
+		require( $this->includes_dir . 'control/lib/bank.php' );
 		
 		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
