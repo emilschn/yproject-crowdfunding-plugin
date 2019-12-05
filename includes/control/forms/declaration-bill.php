@@ -33,11 +33,12 @@ class WDG_Form_Declaration_Bill extends WDG_Form {
 			$current_file_bill_url = $current_filelist_bill[0];
 			if ( !empty( $current_file_bill_url ) ) {
 				$options[ 'message_instead_of_field' ] = 'Facture disponible';
+				$options[ 'keep_editing_for_admin' ] = TRUE;
 			}
 		}
 		$this->addField(
 			'file',
-			'bill',
+			'bill-' . $this->declaration_id,
 			__( "Facture", 'yproject' ),
 			self::$field_group_file,
 			$current_file_bill_url,
@@ -68,7 +69,7 @@ class WDG_Form_Declaration_Bill extends WDG_Form {
 			return;
 		}
 		
-		$file_bill = $this->getInputFile( 'bill' );
+		$file_bill = $this->getInputFile( 'bill-' . $this->declaration_id );
 		if ( empty( $file_bill ) ) {
 			$this->addPostError(
 				'bill',
