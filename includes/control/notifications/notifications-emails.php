@@ -133,7 +133,10 @@ class NotificationsEmails {
 				$text_before .= 'Votre compte a été débité.<br>';
 			}
 		}
-		$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
+
+		if ( !$campaign->is_funded() ){
+			$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
+		}
 		
 		if ( !empty( $particular_content ) ) {
 			$text_before .= "<br>" .$particular_content. "<br>";
