@@ -59,10 +59,11 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 
 	<div style="margin-top: 40px;">
 		<p>
-			<span style="font-weight: bold; font-size: 18pt;">DOCUMENT R&Eacute;CAPITULATIF DES TRANSACTIONS PER&Ccedil;UES EN <?php echo $certificate_year; ?></span><br>
+			<span style="font-weight: bold; font-size: 13pt;">DOCUMENT R&Eacute;CAPITULATIF DES TRANSACTIONS PER&Ccedil;UES EN <?php echo $certificate_year; ?></span><br>
 			<?php echo $certificate_date; ?><br><br>
-			<?php _e( "Montant total per&ccedil;u en ", 'yproject' ); ?><?php echo $certificate_year; ?> : <?php echo $roi_total; ?><br>
-			<?php _e( "dont montant total imposable pour ", 'yproject' ); ?><?php echo $certificate_year; ?> : <?php echo $tax_total; ?><br>
+			<?php _e( "Montant total per&ccedil;u en ", 'yproject' ); ?><?php echo $certificate_year; ?> : <b><?php echo $roi_total; ?></b><br>
+			<?php _e( "dont montant total imposable pour ", 'yproject' ); ?><?php echo $certificate_year; ?> : <b><?php echo $tax_total; ?></b><br>
+			<br>
 			<span style="font-size: 8pt;">Les informations fiscales de cette attestation ne concernent que les foyers fiscaux français. Sinon, veuillez vous référer aux lois en vigueur dans votre résidence fiscale.</span>
 		</p>
 	</div>
@@ -71,7 +72,7 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 	<?php // Liste d'investissements avec les royalties correspondantes perçues ?>
 	<div style="margin-top: 40px;">
 		<p>
-			<span style="font-weight: bold; font-size: 16pt;">REDEVANCES PER&Ccedil;UES</span>
+			<span style="font-weight: bold; font-size: 12pt;">REDEVANCES PER&Ccedil;UES</span>
 		</p>
 	</div>
 	
@@ -85,6 +86,7 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 				<?php if ( !empty( $investment['organization_vat'] ) ): ?>
 					Numéro TVA : <?php echo $investment['organization_vat']; ?><br>
 				<?php endif; ?>
+				<br>
 				Investissement réalisé le : <b><?php echo $investment['date']; ?></b><br>
 				Montant investi : <b><?php echo $investment['amount']; ?></b><br>
 				Total per&ccedil;u : <b><?php echo $investment['roi_total']; ?></b><br>

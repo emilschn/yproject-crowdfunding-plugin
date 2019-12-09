@@ -1209,7 +1209,6 @@ class WDGUser {
 				$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
 				$invest_item['date'] = $date_invest->format('d/m/Y');
 				$invest_item_amount = edd_get_payment_amount( $invest_id );
-				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
 
 				// Infos royalties liés
 				$invest_item['roi_list'] = array();
@@ -1233,7 +1232,6 @@ class WDGUser {
 						}
 						
 						$roi_item[ 'date' ] = $date_transfer->format('d/m/Y');
-						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
 						$invest_item['roi_for_year'] += $investment_roi->amount;
 						$roi_total += $investment_roi->amount;
 
@@ -1245,10 +1243,12 @@ class WDGUser {
 							$tax_total += $investment_roi_tax;
 						}
 
+						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
 						array_push( $invest_item['roi_list'], $roi_item );
 					}
 				}
 
+				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
 				$invest_item['roi_total'] = UIHelpers::format_number( $invest_item['roi_total'] ) . ' &euro;';
 				$invest_item['roi_for_year'] = UIHelpers::format_number( $invest_item['roi_for_year'] ) . ' &euro;';
 				$invest_item['tax_for_year'] = UIHelpers::format_number( $invest_item['tax_for_year'] ) . ' &euro;';
