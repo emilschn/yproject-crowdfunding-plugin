@@ -24,6 +24,10 @@ class WDGWPREST_Entity_Investment {
 	public static function set_post_parameters( $campaign, $edd_payment_item ) {
 		$user_info = edd_get_payment_meta_user_info( $edd_payment_item->ID );
 		$payment_date = $edd_payment_item->post_date;
+		if ( empty( $payment_date ) ) {
+			$date_now = new DateTime();
+			$payment_date = $date_now->format( 'Y-m-d H:i:s' );
+		}
 		
 		$WDGUser = FALSE;
 		$WDGOrganization = FALSE;
@@ -172,9 +176,7 @@ class WDGWPREST_Entity_Investment {
 		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item );
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
-			if ( isset( $buffer->code ) && $buffer->code == 400 ) {
-				$buffer = TRUE;
-			} else {
+			if ( $buffer === FALSE ) {
 				NotificationsEmails::investment_to_api_error_admin( $edd_payment_item );
 			}
 		}

@@ -133,7 +133,10 @@ class NotificationsEmails {
 				$text_before .= 'Votre compte a été débité.<br>';
 			}
 		}
-		$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
+
+		if ( !$campaign->is_funded() ){
+			$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
+		}
 		
 		if ( !empty( $particular_content ) ) {
 			$text_before .= "<br>" .$particular_content. "<br>";
@@ -816,7 +819,7 @@ class NotificationsEmails {
 	
 	
     public static function investment_to_api_error_admin( $edd_payment_item ) {
-		$admin_email = get_option('admin_email');
+		$admin_email = 'admin@wedogood.co';
 		
 		$object = "Erreur d'ajout d'investissement sur l'API";
 		$body_content = "Salut !!<br>";

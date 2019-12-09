@@ -192,7 +192,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $current_user->user_email );
 					NotificationsEmails::new_purchase_team_members( $payment_id );
 					$WDGInvestment = new WDGInvestment( $payment_id );
-					$WDGInvestment->save_to_api( $campaign, 'publish' );
+					$WDGInvestment->save_to_api();
 
 				//Le paiement vient d'échouer
 				} else if ($buffer == 'failed' && $buffer !== $init_payment_status) {
@@ -208,7 +208,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						);
 						wp_update_post($postdata);
 						$WDGInvestment = new WDGInvestment( $post_item->ID );
-						$WDGInvestment->save_to_api( $campaign, 'failed' );
+						$WDGInvestment->save_to_api();
 					}
 
 				//Le paiement est validé, mais aucun contrat n'existe
@@ -225,7 +225,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 					);
 					wp_update_post($postdata);
 					$WDGInvestment = new WDGInvestment( $payment_id );
-					$WDGInvestment->save_to_api( $campaign, $buffer );
+					$WDGInvestment->save_to_api();
 
 					if (isset($download_id) && !empty($download_id)) {
 						do_action('wdg_delete_cache', array(
