@@ -1208,7 +1208,8 @@ class WDGUser {
 				// Infos date et montant
 				$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
 				$invest_item['date'] = $date_invest->format('d/m/Y');
-				$invest_item['amount'] = UIHelpers::format_number( edd_get_payment_amount( $invest_id ) ) . ' &euro;';
+				$invest_item_amount = edd_get_payment_amount( $invest_id );
+				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
 
 				// Infos royalties liés
 				$invest_item['roi_list'] = array();
@@ -1237,8 +1238,8 @@ class WDGUser {
 						$roi_total += $investment_roi->amount;
 
 						// Calcul de la part imposable
-						if ( $invest_item['roi_total'] > $invest_item['amount'] ) {
-							$amount_to_tax = min( $invest_item['roi_total'] - $invest_item['amount'], $investment_roi->amount );
+						if ( $invest_item['roi_total'] > $invest_item_amount ) {
+							$amount_to_tax = min( $invest_item['roi_total'] - $invest_item_amount, $investment_roi->amount );
 							$investment_roi_tax = round( $amount_to_tax * 0.3 );
 							$invest_item['tax_for_year'] += $investment_roi_tax;
 							$tax_total += $investment_roi_tax;
