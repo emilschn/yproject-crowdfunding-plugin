@@ -15,9 +15,8 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 		$certificate_date,
 		$certificate_year,
 		$investment_list,
-		$roi_number,
-		$roi_list,
 		$roi_total,
+		$tax_total,
 		$info_yearly_certificate
 			
 	) {
@@ -34,24 +33,24 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 		<table>
 			<tr>
 				<td width="400">
-					WEDOGOOD.co<br />
+					WEDOGOOD.co<br>
 					Changeons le monde par la finance !<br>
-					<br />
-					www.wedogood.co<br />
+					<br>
+					www.wedogood.co<br>
 					bonjour@wedogood.co
 				</td>
 				<td>
 					<?php if (!empty($user_organization_name)): ?>
-						<?php echo $user_organization_name; ?><br />
-						Numéro SIREN : <?php echo $user_organization_id; ?><br />
+						<?php echo $user_organization_name; ?><br>
+						Numéro SIREN : <?php echo $user_organization_id; ?><br>
 						<?php if (!empty($user_organisation_vat)): ?>
-						Numéro TVA : <?php echo $user_organisation_vat; ?><br />
+						Numéro TVA : <?php echo $user_organisation_vat; ?><br>
 						<?php endif; ?>
 					<?php else: ?>
-						<?php echo $user_name; ?><br />
+						<?php echo $user_name; ?><br>
 					<?php endif; ?>
-					<?php echo $user_email; ?><br />
-					<?php echo $user_address; ?><br />
+					<?php echo $user_email; ?><br>
+					<?php echo $user_address; ?><br>
 					<?php echo $user_postal_code; ?> <?php echo $user_city; ?>
 				</td>
 			</tr>
@@ -60,93 +59,55 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 
 	<div style="margin-top: 40px;">
 		<p>
-			<span style="font-weight: bold; font-size: 18pt;">DOCUMENT R&Eacute;CAPITULATIF DES TRANSACTIONS PER&Ccedil;UES EN <?php echo $certificate_year; ?></span><br />
-			<span><?php echo $certificate_date; ?></span>
+			<span style="font-weight: bold; font-size: 13pt;">DOCUMENT R&Eacute;CAPITULATIF DES TRANSACTIONS PER&Ccedil;UES EN <?php echo $certificate_year; ?></span><br>
+			<?php echo $certificate_date; ?><br><br>
+			<?php _e( "Montant total per&ccedil;u en ", 'yproject' ); ?><?php echo $certificate_year; ?> : <b><?php echo $roi_total; ?></b><br>
+			<?php _e( "dont montant total imposable pour ", 'yproject' ); ?><?php echo $certificate_year; ?> : <b><?php echo $tax_total; ?></b><br>
+			<br>
+			<span style="font-size: 8pt;">Les informations fiscales de cette attestation ne concernent que les foyers fiscaux français. Sinon, veuillez vous référer aux lois en vigueur dans votre résidence fiscale.</span>
 		</p>
 	</div>
 
 	
-	<?php // Tableau investissements ?>
+	<?php // Liste d'investissements avec les royalties correspondantes perçues ?>
 	<div style="margin-top: 40px;">
 		<p>
-			<span style="font-weight: bold; font-size: 16pt;">RAPPEL DES INVESTISSEMENTS CONCERN&Eacute;S</span>
+			<span style="font-weight: bold; font-size: 12pt;">REDEVANCES PER&Ccedil;UES</span>
 		</p>
 	</div>
 	
-	<?php if ( $roi_number > 0 ): ?>
-	<div style="margin-top: 30px;">
-		
-		<table>
-			<tr style="font-weight: bold;">
-				<td style="border-top: 1px solid; border-bottom: 1px solid; padding: 10px;" colspan="3">INVESTISSEMENTS</td>
-			</tr>
-			
-			<tr>
-				<td style="border-bottom: 1px solid gray; padding: 10px;" width="400">Description</td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;" width="50">Date</td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;">Montant</td>
-			</tr>
-			
-			<?php foreach ( $investment_list as $investment ): ?>
-			<tr>
-				<td style="border-bottom: 1px solid gray; padding: 10px;">
-					Investissement sur le projet de la société <?php echo $investment['organization_name']; ?><br />
-					<?php echo $investment['organization_address']; ?><br />
-					Numéro SIREN : <?php echo $investment['organization_id']; ?>
-					<?php if (!empty($investment['organization_vat'])): ?>
-					Numéro TVA : <?php echo $investment['organization_vat']; ?><br />
-					<?php endif; ?>
-				</td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $investment['date']; ?></td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $investment['amount']; ?></td>
-			</tr>
-			<?php endforeach; ?>
-		</table>
-		
-	</div>
+	<?php if ( !empty( $investment_list ) ): ?>
+		<?php foreach ( $investment_list as $investment ): ?>
+			<div style="margin-top: 25px;">
 
-	
-	<?php // Tableau investissements ?>
-	<div style="margin-top: 40px;">
-		<p>
-			<span style="font-weight: bold; font-size: 16pt;"><?php echo $roi_number; ?> TRANSACTION<?php if ( $roi_number > 1 ): ?>S<?php endif; ?> PER&Ccedil;UE<?php if ( $roi_number > 1 ): ?>S<?php endif; ?> EN <?php echo $certificate_year; ?></span>
-		</p>
-	</div>
-
-	<div style="margin-top: 30px;">
-		
-		<table>
-			<tr style="font-weight: bold;">
-				<td style="border-top: 1px solid; border-bottom: 1px solid; padding: 10px;" colspan="3">RECETTES ENCAISS&Eacute;ES</td>
-			</tr>
-			
-			<tr>
-				<td style="border-bottom: 1px solid gray; padding: 10px;" width="400">Description des recettes</td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;" width="50">Date de versement</td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;">Montant</td>
-			</tr>
-			
-			<?php foreach ( $roi_list as $roi ): ?>
-			<tr>
-				<td style="border-bottom: 1px solid gray; padding: 10px;">Redevance <?php echo $roi['organization_name']; ?> - <?php echo $roi['trimester_months']; ?></td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $roi['date']; ?></td>
-				<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $roi['amount']; ?></td>
-			</tr>
-			<?php endforeach; ?>
-			
-			<tr style="font-weight: bold;">
-				<td style="border-top: 1px solid; border-bottom: 1px solid; padding: 10px;" colspan="2">Total</td>
-				<td style="border-top: 1px solid; border-bottom: 1px solid; padding: 10px;"><?php echo $roi_total; ?></td>
-			</tr>
-		</table>
-		
-	</div>
+				<b>Projet <?php echo $investment[ 'project_name' ]; ?> de la société <?php echo $investment[ 'organization_name' ]; ?></b><br>
+				<?php echo $investment['organization_address']; ?><br>
+				Numéro SIRET : <?php echo $investment['organization_id']; ?><br>
+				<?php if ( !empty( $investment['organization_vat'] ) ): ?>
+					Numéro TVA : <?php echo $investment['organization_vat']; ?><br>
+				<?php endif; ?>
+				<br>
+				Investissement réalisé le : <b><?php echo $investment['date']; ?></b><br>
+				Montant investi : <b><?php echo $investment['amount']; ?></b><br>
+				Total per&ccedil;u : <b><?php echo $investment['roi_total']; ?></b><br>
+				dont total per&ccedil;u en <?php echo $certificate_year; ?> : <b><?php echo $investment['roi_for_year']; ?></b><br>
+				dont total imposable en <?php echo $certificate_year; ?> : <b><?php echo $investment['tax_for_year']; ?></b><br>
+				<br>
+				<b>Détail des redevances perçues</b><br>
+				<ul>
+					<?php foreach ( $investment['roi_list'] as $roi ): ?>
+						<li><?php echo $roi['date'] ?> (<?php echo $roi['trimester_months'] ?>) : <b><?php echo $roi['amount'] ?></b></li>
+					<?php endforeach; ?>
+				</ul>
+				
+			</div>
+		<?php endforeach; ?>
 	
 	<?php else: ?>
 	
-	<div style="margin-top: 30px;">
-		Aucune transaction en <?php echo $certificate_year; ?>
-	</div>
+		<div style="margin-top: 30px;">
+			Aucune transaction en <?php echo $certificate_year; ?>.
+		</div>
 	
 	<?php endif; ?>
 	
