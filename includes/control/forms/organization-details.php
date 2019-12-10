@@ -7,6 +7,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 	public static $field_group_complete = 'organization-details-complete';
 	public static $field_group_dashboard = 'organization-details-dashboard';
 	public static $field_group_address = 'organization-details-address';
+	public static $field_group_admin = 'organization-details-admin';
 	
 	private $organization_id;
 	
@@ -208,6 +209,15 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$country_list
 		);
 		
+
+		$this->addField(
+			'text',
+			'org_id_quickbooks',
+			__( "ID Quickbooks", 'yproject' ),
+			self::$field_group_admin,
+			$WDGOrganization->get_id_quickbooks()
+		);
+	
 	}
 	
 	public function postForm( $skip_wallet = FALSE ) {
@@ -361,9 +371,11 @@ class WDG_Form_Organization_Details extends WDG_Form {
 				$WDGOrganization->set_nationality( $nationality );
 			}
 			
-			$id_quickbooks = $this->getInputText( 'org_id_quickbooks' );
-			if ( !empty( $id_quickbooks ) ) {
-				$WDGOrganization->set_id_quickbooks( $id_quickbooks );
+			if ( $WDGUser_current->is_admin() ) {
+				$id_quickbooks = $this->getInputText( 'org_id_quickbooks' );
+				if ( !empty( $id_quickbooks ) ) {
+					$WDGOrganization->set_id_quickbooks( $id_quickbooks );
+				}
 			}
 			
 			$WDGOrganization->save();

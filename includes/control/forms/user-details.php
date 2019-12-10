@@ -459,7 +459,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		);
 		
 		$this->initFields(); // Reinit pour avoir les bonnes valeurs
-		WDGUser::reload();
+		WDGUser::reload_current();
 		
 		return $buffer;
 	}

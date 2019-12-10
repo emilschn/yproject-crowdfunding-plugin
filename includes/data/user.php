@@ -137,7 +137,7 @@ class WDGUser {
 	 * Recharge systématiquement l'utilisateur en cours
 	 * @return WDGUser
 	 */
-	public static function reload() {
+	public static function reload_current() {
 		self::$_current = new self();
 		self::$_current->construct_with_api_data();
 		return self::$_current;
