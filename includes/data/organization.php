@@ -699,9 +699,12 @@ class WDGOrganization {
 			'org_doc_kbis'					=> WDGKYCFile::$type_kbis,
 			'org_doc_status'				=> WDGKYCFile::$type_status,
 			'org_doc_id'					=> WDGKYCFile::$type_id,
+			'org_doc_idbis'					=> WDGKYCFile::$type_idbis,
 			'org_doc_capital_allocation'	=> WDGKYCFile::$type_capital_allocation,
 			'org_doc_id_2'					=> WDGKYCFile::$type_id_2,
-			'org_doc_id_3'					=> WDGKYCFile::$type_id_3
+			'org_doc_idbis_2'				=> WDGKYCFile::$type_idbis_2,
+			'org_doc_id_3'					=> WDGKYCFile::$type_id_3,
+			'org_doc_idbis_3'				=> WDGKYCFile::$type_idbis_3
 		);
 		$files_info = array();//stocke les infos des fichiers uploadés
 		$notify = 0;
@@ -744,7 +747,7 @@ class WDGOrganization {
 	 */
 	public function has_sent_all_documents() {
 		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id);
+		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_idbis);
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 			$current_document = $document_filelist[0];
