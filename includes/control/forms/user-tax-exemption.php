@@ -69,7 +69,6 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 		
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$action_posted = filter_input( INPUT_POST, 'real-action' );
-		ypcf_debug_log( 'user-tax-exemption.php :: postForm  action_posted = '.$action_posted);
 		$WDGUser = new WDGUser( $user_id );
 		$WDGUser_current = WDGUser::current();
 		// On s'en fout du feedback, ça ne devrait pas arriver
@@ -84,16 +83,15 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 			// Création et enregistrement en base du nom du fichier
 			$date_today = new DateTime();
 			
-			$filename = $WDGUser->get_wpref(). '-' .sanitize_title( $WDGUser->get_firstname() ). '-' .sanitize_title( $WDGUser->get_lastname() ). '.pdf';
+			$filename = $WDGUser->get_wpref(). '-' .sanitize_title( $WDGUser->get_firstname() ). '-' .sanitize_title( $WDGUser->get_lastname() );
 			$filepath = __DIR__ . '/../../../files/tax-exemption/' .$date_today->format( 'Y' ). '/' . $filename;
 			$dirname = dirname( $filepath );
 			if ( !is_dir( $dirname ) ) {
 				mkdir( $dirname, 0755, true );
 			}
-			update_user_meta( $WDGUser->get_wpref(), 'tax_exemption_' .$date_today->format( 'Y' ), $filename );
 
 			if ( $action_posted == 'create' ){
-				// Création du fichier PDF correspondant
+				$ext = 'pdf';				// Création du fichier PDF correspondant
 				$core = ATCF_CrowdFunding::instance();
 				$core->include_control( 'templates/pdf/form-tax-exemption' );
 				$user_name = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname();
@@ -104,7 +102,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 			
 				$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
 				$html2pdf->WriteHTML( urldecode( $html_content ) );
-				$html2pdf->Output( $filepath, 'F' );				
+				$html2pdf->Output( $filepath.'.'.$ext , 'F' );				
 			}
 			
 			if ( $action_posted == 'upload' ){
@@ -114,7 +112,6 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 					$file_name = $_FILES[ 'tax-exemption-file' ]['name'];
 					$file_name_exploded = explode('.', $file_name);
 					$ext = $file_name_exploded[count($file_name_exploded) - 1];
-					ypcf_debug_log( 'user-tax-exemption.php ::  $ext => '. $ext);
 					
 					// TODO : prendre le bon tableau des formats ?
 					$good_file = TRUE;
@@ -139,12 +136,13 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 		
 					if ( $good_file ) {
 						// si pas d'erreur, on renomme et déplace le fichier
-						ypcf_debug_log( 'user-tax-exemption.php ::  __DIR__ . $filepath => '. __DIR__ . $filepath);
-						move_uploaded_file( $_FILES[ 'tax-exemption-file' ], __DIR__ . $filepath );
+						move_uploaded_file( $_FILES[ 'tax-exemption-file' ][ 'tmp_name' ], $filepath.'.'.$ext  );
 					}
 				}
 		
 			}
+			// enregistrement en base du nom du fichier
+			update_user_meta( $WDGUser->get_wpref(), 'tax_exemption_' .$date_today->format( 'Y' ), $filename.'.'.$ext );
 			
 		}
 		
