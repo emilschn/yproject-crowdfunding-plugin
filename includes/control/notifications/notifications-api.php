@@ -41,6 +41,10 @@ class NotificationsAPI {
 		'177' => "Investissement par virement en attente",
 		'687' => "Investissement sur projet validé",
 		'688' => "Investissement sur épargne positive validé",
+		'178' => "Projet validé - campagne publique",
+		'629' => "Projet validé - campagne privée",
+		'699' => "Projet en attente d'atteinte du seuil de validation",
+		'179' => "Projet échoué",
 		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
 		'115' => "Déclarations - Rappel J-9 (sans prélèvement)",
 		'119' => "Déclarations - Rappel J-2 (avec prélèvement)",
@@ -977,6 +981,92 @@ class NotificationsAPI {
     //*******************************************************
 	public static function investment_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
 		$id_template = '604';
+		$options = array(
+			'personal'			=> 1,
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+
+	//**************************************************************************
+	// Fin de campagne
+	//**************************************************************************
+    //*******************************************************
+    // NOTIFICATIONS SUCCES CAMPAGNE PUBLIQUE
+	//*******************************************************
+	public static function campaign_end_success_public( $recipient, $name, $project_name, $project_date_first_payment, $project_api_id ) {
+		$id_template = '178';
+		$options = array(
+			'personal'			=> 1,
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name,
+			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS SUCCES CAMPAGNE PRIVEE
+	//*******************************************************
+	public static function campaign_end_success_private( $recipient, $name, $project_name, $project_date_first_payment, $project_api_id ) {
+		$id_template = '629';
+		$options = array(
+			'personal'			=> 1,
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name,
+			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS EN ATTENTE DU SEUIL DE VALIDATION
+	//*******************************************************
+	public static function campaign_end_pending_goal( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '699';
+		$options = array(
+			'personal'			=> 1,
+			'NOM_UTILISATEUR'	=> $name,
+			'NOM_PROJET'		=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // NOTIFICATIONS ECHEC CAMPAGNE
+    //*******************************************************
+	public static function campaign_end_failure( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '179';
 		$options = array(
 			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
