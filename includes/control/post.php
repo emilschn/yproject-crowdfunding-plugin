@@ -832,8 +832,8 @@ class WDGPostActions {
 		$WDGInvestment = WDGInvestment::current();
 		$amount_total = $WDGInvestment->get_session_amount();
 		$user_type_session = $WDGInvestment->get_session_user_type();
-		$current_user = wp_get_current_user();
-		$invest_email = $current_user->user_email;
+		$WDGUser_current = WDGUser::current();
+		$invest_email = $WDGUser_current->get_email();
 		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
 			$orga_creator = get_user_by( 'id', $user_type_session );
 			$orga_email = $orga_creator->user_email;
@@ -849,7 +849,6 @@ class WDGPostActions {
 			$mail_name = $WDGUser_current->get_firstname();
 		} else {
 			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
-			$WDGUser_current = WDGUser::current();
 			$mail_name = $WDGUser_current->get_firstname();
 		}
 		
@@ -908,8 +907,8 @@ class WDGPostActions {
 		$WDGInvestment = WDGInvestment::current();
 		$amount_total = $WDGInvestment->get_session_amount();
 		$user_type_session = $WDGInvestment->get_session_user_type();
-		$current_user = wp_get_current_user();
-		$invest_email = $current_user->user_email;
+		$WDGUser_current = WDGUser::current();
+		$invest_email = $WDGUser_current->get_email();
 		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
 			$orga_creator = get_user_by( 'id', $user_type_session );
 			$orga_email = $orga_creator->user_email;
@@ -1116,7 +1115,12 @@ class WDGPostActions {
 			$core->include_form( 'organization-details' );
 			$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
 			$WDGOrganizationDetailsForm->postForm();
-			wp_redirect( home_url( '/mon-compte/#orga-parameters-' . $organization_id ) );
+			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
+			if ( stristr(wp_get_referer() , 'tableau-de-bord')  === FALSE) {
+				wp_redirect( home_url( '/mon-compte/#orga-parameters-' . $organization_id ) );
+			} else {
+				wp_redirect( wp_get_referer().'#organization' );
+			}			
 			exit();
 		}
 	}
@@ -1128,7 +1132,12 @@ class WDGPostActions {
 			$core->include_form( 'user-identitydocs' );
 			$WDGFormIdentityDocs = new WDG_Form_User_Identity_Docs( $organization_id, TRUE );
 			$WDGFormIdentityDocs->postForm();
-			wp_redirect( home_url( '/mon-compte/#orga-identitydocs-' . $organization_id ) );
+			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
+			if ( stristr(wp_get_referer() , 'tableau-de-bord')  === FALSE) {
+				wp_redirect( home_url( '/mon-compte/#orga-identitydocs-' . $organization_id ) );
+			} else {
+				wp_redirect( wp_get_referer().'#organization' );
+			}			
 			exit();
 		}
 	}
@@ -1140,7 +1149,12 @@ class WDGPostActions {
 			$core->include_form( 'user-bank' );
 			$WDGFormBank = new WDG_Form_User_Bank( $organization_id, TRUE );
 			$WDGFormBank->postForm();
-			wp_redirect( home_url( '/mon-compte/#orga-bank-' . $organization_id ) );
+			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
+			if ( stristr(wp_get_referer() , 'tableau-de-bord')  === FALSE) {
+				wp_redirect( home_url( '/mon-compte/#orga-bank-' . $organization_id ) );
+			} else {
+				wp_redirect( wp_get_referer().'#organization' );
+			}			
 			exit();
 		}
 	}
