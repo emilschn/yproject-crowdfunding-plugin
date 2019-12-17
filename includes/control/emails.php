@@ -187,5 +187,74 @@ class WDGEmails {
 			}
 		}
 	}
+
+	public static function end_notifications( $campaign_id, $mail_type, $input_send_option ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$project_name = $campaign->get_name();
+		$project_api_id = $campaign->get_api_id();
+		$project_date_first_payment = $campaign->first_payment_date();
+		$date_first_payment = new DateTime( $project_date_first_payment );
+		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+		$month_str = __( $months[ $date_first_payment->format('m') - 1 ] );
+		$project_date_first_payment_month_str = $month_str . ' ' . $date_first_payment->format( 'Y' );
+		
+		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
+			$recipient_email = 'communication@wedogood.co';
+			$recipient_name = 'Anna';
+			switch ( $mail_type ) {
+				case 'end-success-public':
+					NotificationsAPI::campaign_end_success_public( $recipient_email, $recipient_name, $project_name, $project_date_first_payment_month_str, $project_api_id );
+					break;
+				case 'end-success-private':
+					NotificationsAPI::campaign_end_success_private( $recipient_email, $recipient_name, $project_name, $project_date_first_payment_month_str, $project_api_id );
+					break;
+				case 'end-pending-goal':
+					NotificationsAPI::campaign_end_pending_goal( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					break;
+				case 'end-failure':
+					NotificationsAPI::campaign_end_failure( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					break;
+			}
+			return;
+		}
+
+		
+		$list_user_investors = $campaign->payments_data();
+		foreach ( $list_user_investors as $item_investment ) {
+			if ( $item_investment[ 'status' ] == 'publish' ) {
+				$user_id = $item_investment[ 'user' ];
+				if ( empty( $user_id ) ) {
+					continue;
+				}
+				
+				if ( WDGOrganization::is_user_organization( $user_id ) ) {
+					$WDGOrganization = new WDGOrganization( $user_id );
+					$recipient_email = $WDGOrganization->get_email();
+					$recipient_name = $WDGOrganization->get_name();
+				} else {
+					$WDGUser = new WDGUser( $user_id );
+					$recipient_email = $WDGUser->get_email();
+					$recipient_name = $WDGUser->get_firstname();
+				}
+
+				if ( !empty( $recipient_email ) && !empty( $recipient_name ) ) {
+					switch ( $mail_type ) {
+						case 'end-success-public':
+							NotificationsAPI::campaign_end_success_public( $recipient_email, $recipient_name, $project_name, $project_date_first_payment, $project_api_id );
+							break;
+						case 'end-success-private':
+							NotificationsAPI::campaign_end_success_private( $recipient_email, $recipient_name, $project_name, $project_date_first_payment, $project_api_id );
+							break;
+						case 'end-pending-goal':
+							NotificationsAPI::campaign_end_pending_goal( $recipient_email, $recipient_name, $project_name, $project_api_id );
+							break;
+						case 'end-failure':
+							NotificationsAPI::campaign_end_failure( $recipient_email, $recipient_name, $project_name, $project_api_id );
+							break;
+					}
+				}
+			}
+		}
+	}
 	
 }
