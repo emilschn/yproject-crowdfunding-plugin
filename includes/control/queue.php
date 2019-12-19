@@ -968,10 +968,13 @@ class WDGQueue {
 	/******************************************************************************/
 	/* TRANSFERT AUTOMATIQUE DE ROYALTIES */
 	/******************************************************************************/
-		public static function add_royalties_auto_transfer_start( $declaration_id, $date ) {
+		public static function add_royalties_auto_transfer_start( $declaration_id, $date = FALSE ) {
 			$action = 'royalties_auto_transfer_start';
 			$entity_id = $declaration_id;
 			$priority = 'date';
+			if ( $date == FALSE ) {
+				$date = new DateTime();
+			}
 			$date_priority = $date->format( 'Y-m-d H:i:s' );
 			$params = array();
 			
