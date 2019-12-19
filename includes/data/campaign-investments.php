@@ -331,7 +331,8 @@ class WDGCampaignInvestments {
 		}
 		
 		
-		$send_mail = FALSE;
+		$send_mail = FALSE;		
+		$top_actions = '';
 		
 		// Résumé
 		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
@@ -366,6 +367,11 @@ class WDGCampaignInvestments {
 					$last_24h .= "- " .$new_investment. "<br>";
 				}
 			}
+			// si on est en évaluation et qu'il n'y a pas assez d'évaluateurs, alors au lieu d'afficher les top_actions habituelles
+			// on affiche un texte pour inciter à mobiliser plus d'évaluateurs
+			if ( $count_votes < ATCF_Campaign::$voters_min_required ) {
+				$top_actions = "Les précédentes levées de fonds réussies ont mobilisé en moyenne une centaine d'évaluateurs, nous vous recommandons donc d'en faire votre principal objectif aujourd'hui !<br>Pour rappel, vous devez mobiliser ".ATCF_Campaign::$voters_min_required." évaluateurs minimum pour pouvoir passer à l'étape d'investissement. Plus que ". ( ATCF_Campaign::$voters_min_required - $count_votes )."/".ATCF_Campaign::$voters_min_required." pour débloquer de nouveaux conseils !";
+			}
 		}
 		
 		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
@@ -398,17 +404,16 @@ class WDGCampaignInvestments {
 		}
 		
 		
-		
-		
-		// Les autres priorités du jour
-		$top_actions = '';
-		for ( $i = 0; $i <= 10; $i++ ) {
-			if ( isset( $list_priorities[ $i ] ) ) {
-				$send_mail = TRUE;
-				$top_actions .= "- " .$list_priorities[ $i ]. "<br>";
+		// si on n'a pas déjà défini top_actions
+		if ( $top_actions == '' ) {
+			// Les autres priorités du jour
+			for ( $i = 0; $i <= 10; $i++ ) {
+				if ( isset( $list_priorities[ $i ] ) ) {
+					$send_mail = TRUE;
+					$top_actions .= "- " .$list_priorities[ $i ]. "<br>";
+				}
 			}
 		}
-
 
 		if ( $send_mail ) {
 			$url_dashboard = home_url( '/tableau-de-bord/?campaign_id=' .$campaign->ID );
