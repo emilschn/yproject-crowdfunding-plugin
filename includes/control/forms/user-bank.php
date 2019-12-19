@@ -104,7 +104,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		
 		$iban_value = ( $this->is_orga ) ? $WDGOrganization->get_bank_iban() : $WDGUser->get_bank_iban();
 		$iban_options = array();
-		if ( !empty( $iban_value ) && !self::is_iban( $iban_value ) ) {
+		if ( !empty( $iban_value ) && !WDG_Bank::is_iban( $iban_value ) ) {
 			$iban_error = __( "Cette valeur ne correspond pas &agrave; un IBAN.", 'yproject' );
 			$iban_options[ 'warning' ] = $iban_error;
 		}

@@ -48,7 +48,7 @@ class WDGWPREST_Entity_User {
 	 */
 	public static function set_post_parameters( WDGUser $user ) {
 		$file_list_id = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_id );
-		$file_list_home = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_home );
+		$file_list_idbis = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_idbis );
 		$file_list_rib = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
 		$authentication_mode = $user->is_logged_in_with_facebook() ? 'facebook' : 'account';
 		$parameters = array(
@@ -81,7 +81,7 @@ class WDGWPREST_Entity_User {
 			'bank_address'		=> $user->get_bank_address(),
 			'bank_address2'		=> $user->get_bank_address2(),
 			'document_id'		=> $file_list_id[ 0 ]->file_name,
-			'document_home'		=> $file_list_home[ 0 ]->file_name,
+			'document_home'		=> $file_list_idbis[ 0 ]->file_name,
 			'document_rib'		=> $file_list_rib[ 0 ]->file_name,
 			'authentification_mode'	=> $authentication_mode,
 			/* 'picture_url', 'website_url', 'twitter_url', 'facebook_url', 'linkedin_url', 'viadeo_url', 'activation_key', 'password' */

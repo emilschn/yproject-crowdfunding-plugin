@@ -32,9 +32,9 @@ class LemonwayDocument {
 	public static $document_type_idbis_back = 12;
 	public static $document_type_selfie = 13;
 	public static $document_type_id2 = 16;
-	public static $document_type_home2 = 17;
+	public static $document_type_idbis2 = 17;
 	public static $document_type_id3 = 18;
-	public static $document_type_home3 = 19;
+	public static $document_type_idbis3 = 19;
 	public static $document_type_capital_allocation = 20;
 	
 	/**
@@ -269,14 +269,14 @@ class LemonwayDocument {
 						case LemonwayDocument::$document_type_id2:
 							$document_type = "La pièce d'identité de la deuxième personne (Type 16)";
 							break;
-						case LemonwayDocument::$document_type_home2:
-							$document_type = "Le justificatif de domicile de la deuxième personne (Type 17)";
+						case LemonwayDocument::$document_type_idbis2:
+							$document_type = "La deuxième pièce d'identité de la deuxième personne (Type 17)";
 							break;
 						case LemonwayDocument::$document_type_id3:
 							$document_type = "La pièce d'identité de la troisième personne (Type 18)";
 							break;
-						case LemonwayDocument::$document_type_home3:
-							$document_type = "Le justificatif de domicile de la troisième personne (Type 19)";
+						case LemonwayDocument::$document_type_idbis3:
+							$document_type = "La deuxième pièce d'identité de la troisième personne (Type 19)";
 							break;
 						case LemonwayDocument::$document_type_capital_allocation:
 							$document_type = "Le document de répartition du capital (Type 20)";
@@ -325,12 +325,12 @@ class LemonwayDocument {
 			WDGKYCFile::$type_kbis		=> LemonwayDocument::$document_type_kbis,
 			WDGKYCFile::$type_status	=> LemonwayDocument::$document_type_status,
 			WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
-			WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home,
+			WDGKYCFile::$type_idbis		=> LemonwayDocument::$document_type_idbis,
 			WDGKYCFile::$type_capital_allocation		=> LemonwayDocument::$document_type_capital_allocation,
 			WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_id2,
-			WDGKYCFile::$type_home_2	=> LemonwayDocument::$document_type_home2,
+			WDGKYCFile::$type_idbis_2	=> LemonwayDocument::$document_type_idbis2,
 			WDGKYCFile::$type_id_3		=> LemonwayDocument::$document_type_id3,
-			WDGKYCFile::$type_home_3	=> LemonwayDocument::$document_type_home3
+			WDGKYCFile::$type_idbis_3	=> LemonwayDocument::$document_type_idbis3
 		);
 	}
 

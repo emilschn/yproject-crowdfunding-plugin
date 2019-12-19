@@ -115,8 +115,8 @@ class WDG_Cache_Plugin {
 		$count_amount = 0;
 		$people_list = array();
 		$count_projects = 0;
-		$count_roi = 0;
 		$project_list_funded = array();
+		$royaltying_projects = 0;
 
 		if ( !defined( 'WDG_DISABLE_CACHE') || WDG_DISABLE_CACHE == FALSE ) {
 			$project_list_funded = ATCF_Campaign::get_list_funded( WDG_Cache_Plugin::$nb_query_campaign_funded, '', true, false );
@@ -128,8 +128,16 @@ class WDG_Cache_Plugin {
 				$count_amount += $campaign->current_amount( false );
 				$declaration_list = $campaign->get_roi_declarations();
 	
+				$is_royaltying = FALSE;
 				foreach ( $declaration_list as $declaration ) {
-					$count_roi += count( $declaration[ 'roi_list' ] );
+					if( $declaration[ 'total_roi' ] > 0 ) {
+						$is_royaltying = TRUE;
+						break;
+					}
+				}
+
+				if( $is_royaltying ){
+					$royaltying_projects++;
 				}
 			}
 		}
@@ -137,10 +145,10 @@ class WDG_Cache_Plugin {
 		$people_list_unique = array_unique( $people_list );
 		$count_people = count( $people_list_unique );
 		$stats_list = array(
-			'count_amount'	=> $count_amount,
-			'count_people'	=> $count_people,
-			'nb_projects'	=> count($project_list_funded),
-			'count_roi'		=> $count_roi
+			'count_amount'				=> $count_amount,
+			'count_people'				=> $count_people,
+			'nb_projects'				=> count($project_list_funded),
+			'royaltying_projects'		=> $royaltying_projects
 		);
 		$stats_content = json_encode($stats_list);
 

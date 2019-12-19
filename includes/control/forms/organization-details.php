@@ -7,6 +7,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 	public static $field_group_complete = 'organization-details-complete';
 	public static $field_group_dashboard = 'organization-details-dashboard';
 	public static $field_group_address = 'organization-details-address';
+	public static $field_group_admin = 'organization-details-admin';
 	
 	private $organization_id;
 	
@@ -92,7 +93,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'legalform',
-			__( "Forme juridique", 'yproject' ),
+			__( "Forme juridique *", 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_legalform()
 		);
@@ -100,7 +101,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'rcs',
-			__( "RCS (Ville)", 'yproject' ),
+			__( "RCS (Ville) *", 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_rcs()
 		);
@@ -108,7 +109,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text-money',
 			'capital',
-			__( "Capital social (en euros)", 'yproject' ),
+			__( "Capital social (en euros) *", 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_capital()
 		);
@@ -176,7 +177,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'address',
-			__( "Adresse", 'yproject' ),
+			__( "Adresse *", 'yproject' ),
 			self::$field_group_address,
 			$WDGOrganization->get_address()
 		);
@@ -184,7 +185,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'postal_code',
-			__( "Code postal", 'yproject' ),
+			__( "Code postal *", 'yproject' ),
 			self::$field_group_address,
 			$WDGOrganization->get_postal_code()
 		);
@@ -192,7 +193,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'city',
-			__( "Ville", 'yproject' ),
+			__( "Ville *", 'yproject' ),
 			self::$field_group_address,
 			$WDGOrganization->get_city()
 		);
@@ -201,13 +202,22 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'nationality',
-			__( "Pays", 'yproject' ),
+			__( "Pays *", 'yproject' ),
 			self::$field_group_address,
 			$WDGOrganization->get_nationality(),
 			FALSE,
 			$country_list
 		);
 		
+
+		$this->addField(
+			'text',
+			'org_id_quickbooks',
+			__( "ID Quickbooks", 'yproject' ),
+			self::$field_group_admin,
+			$WDGOrganization->get_id_quickbooks()
+		);
+	
 	}
 	
 	public function postForm( $skip_wallet = FALSE ) {
@@ -359,6 +369,13 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$nationality = $this->getInputText( 'nationality' );
 			if ( !empty( $nationality ) ) {
 				$WDGOrganization->set_nationality( $nationality );
+			}
+			
+			if ( $WDGUser_current->is_admin() ) {
+				$id_quickbooks = $this->getInputText( 'org_id_quickbooks' );
+				if ( !empty( $id_quickbooks ) ) {
+					$WDGOrganization->set_id_quickbooks( $id_quickbooks );
+				}
 			}
 			
 			$WDGOrganization->save();
