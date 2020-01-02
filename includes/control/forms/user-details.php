@@ -97,7 +97,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$is_subscribed_to_newsletter = FALSE;
 			$user_email = $WDGUser->get_email();
 			if ( !empty( $user_email ) ) {
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
 				$return = $mailin->get_user( array(
 					"email"		=> $user_email
 				) );
@@ -436,7 +436,7 @@ class WDG_Form_User_Details extends WDG_Form {
 						$subscribe_newsletter = $this->getInputChecked( 'subscribe_newsletter' );
 						if ( empty( $subscribe_newsletter ) ) {
 							try {
-								$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+								$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
 								$return = $mailin->create_update_user( array(
 									"email"		=> $email,
 									"listid_unlink"	=> array( 5, 6 )
