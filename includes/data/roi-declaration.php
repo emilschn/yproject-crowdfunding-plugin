@@ -44,9 +44,13 @@ class WDGROIDeclaration {
 	
 	public $on_api;
 	private $campaign_object;
+
+	public $api_data_adjustments;
+	public $api_data_rois;
+	public $api_data_files;
 	
 	
-	public function __construct( $declaration_id = FALSE, $local = FALSE, $data = FALSE ) {
+	public function __construct( $declaration_id = FALSE, $data = FALSE ) {
 		if ( !empty( $declaration_id ) ) {
 			// Si déjà chargé précédemment
 			if ( isset( self::$collection_by_id[ $declaration_id ] ) || $data !== FALSE ) {
@@ -76,10 +80,13 @@ class WDGROIDeclaration {
 					$this->declared_by = $collection_item->declared_by;
 				}
 				$this->on_api = TRUE;
+				$this->api_data_adjustments = isset( self::$collection_by_id[ $declaration_id ] ) ? $collection_item->api_data_adjustments : $collection_item->adjustments;
+				$this->api_data_rois = isset( self::$collection_by_id[ $declaration_id ] ) ? $collection_item->api_data_rois : $collection_item->rois;
+				$this->api_data_files = isset( self::$collection_by_id[ $declaration_id ] ) ? $collection_item->api_data_files : $collection_item->files;
 
 			} else {
-				// Récupération en priorité depuis l'API
-				$declaration_api_item = ( !$local ) ? WDGWPREST_Entity_Declaration::get( $declaration_id ) : FALSE;
+				// Récupération depuis l'API
+				$declaration_api_item = WDGWPREST_Entity_Declaration::get( $declaration_id );
 				if ( $declaration_api_item != FALSE ) {
 
 					$this->id = $declaration_id;
@@ -120,6 +127,9 @@ class WDGROIDeclaration {
 					$this->declared_by = $declaration_api_item->declared_by;
 
 					$this->on_api = TRUE;
+					$this->api_data_adjustments = $declaration_api_item->adjustments;
+					$this->api_data_rois = $declaration_api_item->rois;
+					$this->api_data_files = $declaration_api_item->files;
 
 					// Les déclarations sans statut doivent passer en statut "Déclaration"
 					if ( empty( $this->status ) || $this->status == null ) {
@@ -133,8 +143,11 @@ class WDGROIDeclaration {
 					}
 
 				}
-				self::$collection_by_id[ $declaration_id ] = $this;
 
+			}
+
+			if ( !isset( self::$collection_by_id[ $declaration_id ] ) ) {
+				self::$collection_by_id[ $declaration_id ] = $this;
 			}
 		}
 	}
@@ -148,11 +161,11 @@ class WDGROIDeclaration {
 	}
 	
 	/**
-	 * Sauvegarde dans la BDD locale
+	 * Sauvegarde dans l'API
 	 * @deprecated
 	 * @return integer
 	 */
-	public function save( $local = FALSE ) {
+	public function save() {
 		$this->update();
 	}
 
@@ -332,6 +345,14 @@ class WDGROIDeclaration {
 	 */
 	public function get_file_path() {
 		return home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/accounts/';
+	}
+
+	public function get_bill_file() {
+		if ( empty( $this->api_data_files ) ) {
+			return WDGWPREST_Entity_Declaration::get_bill_file( $this->declaration_id );
+		} else {
+			return $this->api_data_files;
+		}
 	}
 	
 	/**
@@ -1016,7 +1037,11 @@ class WDGROIDeclaration {
 	 */
 	public function get_adjustments() {
 		if ( !isset( $this->adjustments ) ) {
-			$this->adjustments = WDGWPREST_Entity_Adjustment::get_list_by_declaration_id( $this->id );
+			if ( empty( $this->api_data_adjustments ) ) {
+				$this->adjustments = WDGWPREST_Entity_Adjustment::get_list_by_declaration_id( $this->id );
+			} else {
+				$this->adjustments = $this->api_data_adjustments;
+			}
 		}
 		return $this->adjustments;
 	}
@@ -1108,7 +1133,11 @@ class WDGROIDeclaration {
 	private $roi_list;
 	public function get_rois() {
 		if ( !isset( $this->roi_list ) ) {
-			$this->roi_list = WDGWPREST_Entity_Declaration::get_roi_list( $this->id );
+			if ( empty( $this->api_data_rois ) ) {
+				$this->roi_list = WDGWPREST_Entity_Declaration::get_roi_list( $this->id );
+			} else {
+				$this->roi_list = $this->api_data_rois;
+			}
 		}
 		return $this->roi_list;
 	}
@@ -1149,11 +1178,11 @@ class WDGROIDeclaration {
 	/**
 	 * Liste des dÃ©clarations ROI pour un projet
 	 */
-	public static function get_list_by_campaign_id( $idwp_campaign, $status = '' ) {
+	public static function get_list_by_campaign_id( $idwp_campaign, $status = '', $with_links = TRUE ) {
 		$buffer = array();
 		
 		$campaign = new ATCF_Campaign( $idwp_campaign );
-		$declarations = WDGWPREST_Entity_Project::get_declarations( $campaign->get_api_id() );
+		$declarations = WDGWPREST_Entity_Project::get_declarations( $campaign->get_api_id(), $with_links );
 		if ( !empty( $declarations ) ) {
 			foreach ( $declarations as $declaration_item ) {
 				$add = TRUE;
@@ -1172,8 +1201,8 @@ class WDGROIDeclaration {
 				}
 
 				if ( $add ) {
-					$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id, false, $declaration_item );
-					array_push($buffer, $ROIdeclaration);
+					$ROIdeclaration = new WDGROIDeclaration( $declaration_item->id, $declaration_item );
+					array_push( $buffer, $ROIdeclaration );
 				}
 			}
 		}
