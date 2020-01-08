@@ -335,7 +335,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		} else {
 			// Informations de base
 			$email = $this->getInputText( 'email' );
-			if ( !is_email( $email ) ) {
+			if ( !is_email( $email ) || !WDGRESTAPI_Lib_Validator::is_email( $email )  ) {
 				$error = array(
 					'code'		=> 'email',
 					'text'		=> __( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
@@ -345,7 +345,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			}
 			
 			$firstname = $this->getInputText( 'firstname' );
-			if ( empty( $firstname ) ) {
+			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
 				$error = array(
 					'code'		=> 'firstname',
 					'text'		=> __( "Votre pr&eacute;nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
@@ -355,7 +355,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			}
 			
 			$lastname = $this->getInputText( 'lastname' );
-			if ( empty( $lastname ) ) {
+			if ( empty( $lastname ) || !WDGRESTAPI_Lib_Validator::is_name( $lastname ) ) {
 				$error = array(
 					'code'		=> 'lastname',
 					'text'		=> __( "Votre nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
@@ -364,6 +364,8 @@ class WDG_Form_User_Details extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 			
+
+
 			$user_details_type = $this->getInputText( 'user_details_type' );
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_complete ) {
 				$use_lastname = $this->getInputText( 'use_lastname' );
@@ -371,15 +373,52 @@ class WDG_Form_User_Details extends WDG_Form {
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
+				if ( empty( $birthplace ) || !WDGRESTAPI_Lib_Validator::is_name( $birthplace ) ) {
+					$error = array(
+						'code'		=> 'birthplace',
+						'text'		=> __( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						'element'	=> 'birthplace'
+					);
+					array_push( $feedback_errors, $error );
+				}
+
 				$birthplace_district = $this->getInputText( 'birthplace_district' );
 				$birthplace_department = $this->getInputText( 'birthplace_department' );
 				$birthplace_country = $this->getInputText( 'birthplace_country' );
 				$nationality = $this->getInputText( 'nationality' );
 				$address_number = $this->getInputText( 'address_number' );
 				$address_number_complement = $this->getInputText( 'address_number_complement' );
+
 				$address = $this->getInputText( 'address' );
-				$postal_code = $this->getInputText( 'postal_code' );
+				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
+					$error = array(
+						'code'		=> 'address',
+						'text'		=> __( "Votre adresse n'est pas correcte.", 'yproject' ),
+						'element'	=> 'address'
+					);
+					array_push( $feedback_errors, $error );
+				}
+
+				$postal_code = $this->getInputText( 'postal_code' );				
+				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code ) ) {
+					$error = array(
+						'code'		=> 'postal_code',
+						'text'		=> __( "Votre code postal n'est pas correct.", 'yproject' ),
+						'element'	=> 'postal_code'
+					);
+					array_push( $feedback_errors, $error );
+				}
+
 				$city = $this->getInputText( 'city' );
+				if ( empty( $city ) || !WDGRESTAPI_Lib_Validator::is_name( $city ) ) {
+					$error = array(
+						'code'		=> 'city',
+						'text'		=> __( "Votre ville n'est pas correcte.", 'yproject' ),
+						'element'	=> 'city'
+					);
+					array_push( $feedback_errors, $error );
+				}
+
 				$country = $this->getInputText( 'country' );
 				$tax_country = $this->getInputText( 'tax_country' );
 			}
