@@ -388,6 +388,8 @@ class WDG_Form_User_Details extends WDG_Form {
 				$nationality = $this->getInputText( 'nationality' );
 				$address_number = $this->getInputText( 'address_number' );
 				$address_number_complement = $this->getInputText( 'address_number_complement' );
+				$country = $this->getInputText( 'country' );
+				$tax_country = $this->getInputText( 'tax_country' );
 
 				$address = $this->getInputText( 'address' );
 				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
@@ -400,7 +402,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				}
 
 				$postal_code = $this->getInputText( 'postal_code' );				
-				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code ) ) {
+				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code, $country ) ) {
 					$error = array(
 						'code'		=> 'postal_code',
 						'text'		=> __( "Votre code postal n'est pas correct.", 'yproject' ),
@@ -418,9 +420,6 @@ class WDG_Form_User_Details extends WDG_Form {
 					);
 					array_push( $feedback_errors, $error );
 				}
-
-				$country = $this->getInputText( 'country' );
-				$tax_country = $this->getInputText( 'tax_country' );
 			}
 			
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended || $user_details_type == WDG_Form_User_Details::$type_vote ) {
