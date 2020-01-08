@@ -21,8 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             $post_belong_campaign = true;
         }
     }
-    ypcf_debug_log( 'shortcode-edit-news.php :: ypcf_shortcode_edit_news()  $post_belong_campaign = '.$post_belong_campaign." edit_post_id = ".$_GET['edit_post_id']);
-    ypcf_debug_log( 'shortcode-edit-news.php :: ypcf_shortcode_edit_news()  $campaign->current_user_can_edit() = '.$campaign->current_user_can_edit()." action = ".$_POST['action']);
     if ($campaign->current_user_can_edit() && isset($_GET['edit_post_id']) && $post_belong_campaign) {
 	if (isset($_POST['action']) && $_POST['action'] == 'ypcf-campaign-edit-news') {
 	    $blog  = array(
