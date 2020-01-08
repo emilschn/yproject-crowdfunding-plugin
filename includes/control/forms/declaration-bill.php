@@ -26,7 +26,8 @@ class WDG_Form_Declaration_Bill extends WDG_Form {
 			$this->declaration_id
 		);
 		
-		$current_filelist_bill = WDGWPREST_Entity_Declaration::get_bill_file( $this->declaration_id );
+		$WDGROIDeclaration = new WDGROIDeclaration( $this->declaration_id );
+		$current_filelist_bill = $WDGROIDeclaration->get_bill_file();
 		$current_file_bill_url = '';
 		$options = array();
 		if ( !empty( $current_filelist_bill ) ) {
