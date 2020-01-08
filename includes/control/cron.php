@@ -63,11 +63,16 @@ class WDGCronActions {
 									$year--;
 								}
 								$last_months_str .= ' ' . $year;
+								// TODO : dans les options, ajouter un lien vers la déclaration
+								// http://wedogood.local/tableau-de-bord/?campaign_id=3314#royalties
+								// ou http://wedogood.local/declarer-chiffre-daffaires/?campaign_id=2880&declaration_id=5 
 								$options = array(
 									'NOM'					=> $wdguser_author->get_firstname(),
 									'TROIS_DERNIERS_MOIS'	=> $last_months_str,
 									'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
-									'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
+									'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' ),
+									// 'DECLARATION_DIRECT_URL'=> 'https://www.wedogood.co/tableau-de-bord/?campaign_id='.$campaign->ID.'#royalties'
+									'DECLARATION_DIRECT_URL'=> 'https://www.wedogood.co/declarer-chiffre-daffaires/?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id
 								);
 
 								NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
@@ -143,8 +148,10 @@ class WDGCronActions {
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
 							$amount_total = $amount_royalties + $amount_fees;
 							$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
+							// $declaration_direct_url = 'https://www.wedogood.co/tableau-de-bord/?campaign_id='.$campaign->ID.'#royalties';
+							$declaration_direct_url = 'https://www.wedogood.co/declarer-chiffre-daffaires/?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id
 							
-							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author->get_firstname(), $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date );
+							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author->get_firstname(), $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date, $declaration_direct_url );
 						}
 					}
 				}
