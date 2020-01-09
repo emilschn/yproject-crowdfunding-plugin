@@ -871,7 +871,7 @@ class WDGOrganization {
 	 */
 	public function has_saved_iban() {
 		$saved_iban = $this->get_bank_iban();
-		return (!empty($saved_iban) && WDG_Bank::is_iban( $saved_iban ));
+		return (!empty($saved_iban) && WDGRESTAPI_Lib_Validator::is_iban( $saved_iban ));
 	}
 	
 /*******************************************************************************
