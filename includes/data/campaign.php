@@ -1215,17 +1215,23 @@ class ATCF_Campaign {
 	}
 	
 	public static $key_declaration_periodicity = 'declaration_periodicity';
-	public static $declaration_periodicity_list = array( 
-		'month'		=> 'mensuelle', 
-		'quarter'	=> 'trimestrielle', 
-		'semester'	=> 'semestrielle', 
+	public static $declaration_periodicity_list = array(
+		'month'		=> 'mensuelle',
+		'quarter'	=> 'trimestrielle',
+		'semester'	=> 'semestrielle',
 		'year'		=> 'annuelle'
 	);
-	public static $declaration_period_list = array( 
-		'month'		=> 'mois', 
-		'quarter'	=> 'trimestre', 
-		'semester'	=> 'semestre', 
+	public static $declaration_period_list = array(
+		'month'		=> 'mois',
+		'quarter'	=> 'trimestre',
+		'semester'	=> 'semestre',
 		'year'		=> 'an'
+	);
+	public static $declaration_period_list_plural = array(
+		'month'		=> 'mois',
+		'quarter'	=> 'trimestres',
+		'semester'	=> 'semestres',
+		'year'		=> 'ans'
 	);
 	public function get_declaration_periodicity() {
 		$buffer = $this->get_api_data( self::$key_declaration_periodicity );
