@@ -40,6 +40,9 @@ class WDGAdjustment {
 	 */
 	public $declaration;
 	public $status;
+
+	private $api_data_declarations;
+	private $api_data_files;
 	
 	
 	public function __construct( $adjustment_id = FALSE, $data = FALSE ) {
@@ -56,6 +59,9 @@ class WDGAdjustment {
 				$this->amount = $collection_item->amount;
 				$this->message_organization = $collection_item->message_organization;
 				$this->message_investors = $collection_item->message_investors;
+				
+				$this->api_data_declarations = isset( self::$collection_by_id[ $adjustment_id ] ) ? $collection_item->api_data_declarations : $collection_item->declarations;
+				$this->api_data_files = isset( self::$collection_by_id[ $adjustment_id ] ) ? $collection_item->api_data_files : $collection_item->files;
 
 			} else {
 				// Récupération en priorité depuis l'API
@@ -71,8 +77,11 @@ class WDGAdjustment {
 					$this->message_organization = $adjustment_api_item->message_organization;
 					$this->message_investors = $adjustment_api_item->message_investors;
 				}
-				self::$collection_by_id[ $declaration_id ] = $this;
 
+			}
+
+			if ( !isset( self::$collection_by_id[ $adjustment_id ] ) ) {
+				self::$collection_by_id[ $adjustment_id ] = $this;
 			}
 		}
 	}
@@ -94,14 +103,22 @@ class WDGAdjustment {
 	
 	public function get_documents() {
 		if ( !isset( $this->documents ) ) {
-			$this->documents = WDGWPREST_Entity_Adjustment::get_linked_files( $this->id );
+			if ( !isset( $this->api_data_files ) ) {
+				$this->documents = WDGWPREST_Entity_Adjustment::get_linked_files( $this->id );
+			} else {
+				$this->documents = $this->api_data_files;
+			}
 		}
 		return $this->documents;
 	}
 	
 	public function get_declarations_checked() {
 		if ( !isset( $this->declarations_checked ) ) {
-			$this->declarations_checked = WDGWPREST_Entity_Adjustment::get_linked_declarations( $this->id );
+			if ( !isset( $this->api_data_declarations ) ) {
+				$this->declarations_checked = WDGWPREST_Entity_Adjustment::get_linked_declarations( $this->id );
+			} else {
+				$this->declarations_checked = $this->api_data_declarations;
+			}
 		}
 		return $this->declarations_checked;
 	}

@@ -348,7 +348,7 @@ class WDGROIDeclaration {
 	}
 
 	public function get_bill_file() {
-		if ( empty( $this->api_data_files ) ) {
+		if ( !isset( $this->api_data_files ) ) {
 			return WDGWPREST_Entity_Declaration::get_bill_file( $this->declaration_id );
 		} else {
 			return $this->api_data_files;
@@ -1037,7 +1037,7 @@ class WDGROIDeclaration {
 	 */
 	public function get_adjustments() {
 		if ( !isset( $this->adjustments ) ) {
-			if ( empty( $this->api_data_adjustments ) ) {
+			if ( !isset( $this->api_data_adjustments ) ) {
 				$this->adjustments = WDGWPREST_Entity_Adjustment::get_list_by_declaration_id( $this->id );
 			} else {
 				$this->adjustments = $this->api_data_adjustments;
@@ -1133,7 +1133,7 @@ class WDGROIDeclaration {
 	private $roi_list;
 	public function get_rois() {
 		if ( !isset( $this->roi_list ) ) {
-			if ( empty( $this->api_data_rois ) ) {
+			if ( !isset( $this->api_data_rois ) ) {
 				$this->roi_list = WDGWPREST_Entity_Declaration::get_roi_list( $this->id );
 			} else {
 				$this->roi_list = $this->api_data_rois;
