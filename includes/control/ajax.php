@@ -570,7 +570,7 @@ class WDGAjaxActions {
 			    //Affichage utilisateur
 				?>
 			    <tr>
-					<td><?php echo $user_data->first_name.' '.$user_data->last_name; ?></td>
+					<td><?php echo html_entity_decode($user_data->first_name).' '.html_entity_decode($user_data->last_name); ?></td>
 					<td><?php echo $investment_item['amount']; ?> &euro;</td>
 					<td><?php echo $investment_item['roi_amount']; ?> &euro;</td>
 					<td><?php echo $investment_item['roi_fees']; ?> &euro;</td>

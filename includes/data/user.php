@@ -1622,13 +1622,17 @@ class WDGUser {
 		if ( $value === TRUE ) {
 			update_user_meta( $this->get_wpref(), 'subscribe_authentication_notification', '1' );
 			
-			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-			$return = $mailin->create_update_user( array(
-				"email"			=> $this->get_email(),
-				"attributes"	=> array(
-					"SMS"	=> $this->get_lemonway_phone_number()
-				)
-			) );
+			try {
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$return = $mailin->create_update_user( array(
+					"email"			=> $this->get_email(),
+					"attributes"	=> array(
+						"SMS"	=> $this->get_lemonway_phone_number()
+					)
+				) );
+			} catch ( Exception $e ) {
+				ypcf_debug_log( "WDGUser::set_subscribe_authentication_notification > erreur sendinblue" );
+			}
 
 		} else {
 			delete_user_meta( $this->get_wpref(), 'subscribe_authentication_notification' );
