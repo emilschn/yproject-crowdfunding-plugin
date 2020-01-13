@@ -51,10 +51,17 @@ class WDG_Form_User_Notifications extends WDG_Form {
 		$is_subscribed_to_newsletter = array();
 		$user_email = $WDGUser->get_email();
 		if ( !empty( $user_email ) ) {
-			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
-			$return = $mailin->get_user( array(
-				"email"		=> $user_email
-			) );
+			$return = FALSE;
+			try {
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$return = $mailin->get_user( array(
+					"email"		=> $user_email
+				) );
+			
+			} catch ( Exception $e ) {
+				ypcf_debug_log( "WDGUser::set_subscribe_authentication_notification > erreur sendinblue" );
+			}
+
 			if ( isset( $return[ 'code' ] ) && $return[ 'code' ] != 'failure' ) {
 				if ( isset( $return[ 'data' ] ) && isset( $return[ 'data' ][ 'listid' ] ) ) {
 					$lists_is_in = array();
@@ -161,7 +168,7 @@ class WDG_Form_User_Notifications extends WDG_Form {
 			}
 			
 			try {
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
 				if ( !empty( $listid_unlink ) ) {
 					$return = $mailin->create_update_user( array(
 						"email"			=> $WDGUser->get_email(),

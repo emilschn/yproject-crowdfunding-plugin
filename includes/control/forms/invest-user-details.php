@@ -611,7 +611,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		} else {
 			// Informations de base
 			$email = $this->getInputText( 'email' );
-			if ( !is_email( $email ) ) {
+			if ( !is_email( $email )  || !WDGRESTAPI_Lib_Validator::is_email( $email )) {
 				$this->addPostError(
 					'email',
 					__( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
@@ -628,7 +628,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			}
 			
 			$firstname = $this->getInputText( 'firstname' );
-			if ( empty( $firstname ) ) {
+			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
 				$this->addPostError(
 					'firstname',
 					__( "Votre pr&eacute;nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
@@ -643,7 +643,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			}
 			
 			$lastname = $this->getInputText( 'lastname' );
-			if ( empty( $lastname ) ) {
+			if ( empty( $lastname ) || !WDGRESTAPI_Lib_Validator::is_name( $lastname ) ) {
 				$this->addPostError(
 					'lastname',
 					__( "Votre nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
@@ -665,6 +665,13 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$birthday = $this->getInputText( 'birthday' );
 				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
 				$birthplace = $this->getInputText( 'birthplace' );
+				if ( empty( $birthplace ) || !WDGRESTAPI_Lib_Validator::is_name( $birthplace ) ) {
+					$this->addPostError(
+						'birthplace',
+						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						'birthplace'
+					);
+				}
 				$birthplace_district = $this->getInputText( 'birthplace_district' );
 				$birthplace_department = $this->getInputText( 'birthplace_department' );
 				$birthplace_country = $this->getInputText( 'birthplace_country' );
@@ -672,8 +679,29 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$address_number = $this->getInputText( 'address_number' );
 				$address_number_comp = $this->getInputText( 'address_number_comp' );
 				$address = $this->getInputText( 'address' );
+				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
+					$this->addPostError(
+						'birthplace',
+						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						'birthplace'
+					);
+				}
 				$postal_code = $this->getInputText( 'postal_code' );
+				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code, $country ) ) {
+					$this->addPostError(
+						'birthplace',
+						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						'birthplace'
+					);
+				}
 				$city = $this->getInputText( 'city' );
+				if ( empty( $city ) || !WDGRESTAPI_Lib_Validator::is_name( $city ) ) {
+					$this->addPostError(
+						'birthplace',
+						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						'birthplace'
+					);
+				}
 				$country = $this->getInputText( 'country' );
 				$tax_country = $this->getInputText( 'tax_country' );
 				$phone_number = $this->getInputText( 'phone_number' );

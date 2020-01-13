@@ -11,7 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     
     //Test pour vérifier que le post de blog appartient à la campagne
     $posts_blog = get_posts( array(
-		'category' => $campaign->get_news_category_id()
+		'category' => $campaign->get_news_category_id(),
+		'numberposts' => -1
 	));
     if (isset($_GET['edit_post_id'])) $edit_post_id = ($_GET['edit_post_id']);
     $post_belong_campaign = false;
@@ -20,7 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             $post_belong_campaign = true;
         }
     }
-    
     if ($campaign->current_user_can_edit() && isset($_GET['edit_post_id']) && $post_belong_campaign) {
 	if (isset($_POST['action']) && $_POST['action'] == 'ypcf-campaign-edit-news') {
 	    $blog  = array(

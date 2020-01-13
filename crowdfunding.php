@@ -158,6 +158,7 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/gateways/lemonway-lib-errors.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-document.php' );
 		require( $this->includes_dir . 'control/gateways/lemonway-notification.php' );
+		require( $this->includes_dir . 'control/lib/validator.php' );
 		
 		require( $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php' );
 		require( $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php' );
@@ -274,7 +275,7 @@ final class ATCF_CrowdFunding {
 	function save_locale() {
 		global $save_locale;
 		if ( isset($save_locale) ) {
-			setcookie( 'locale', $save_locale, 10 * DAYS_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+			setcookie( 'locale', $save_locale, 10 * DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
 		}
 	}
 	

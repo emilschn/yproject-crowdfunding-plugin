@@ -67,7 +67,7 @@ class WDGWPREST_Entity_Adjustment {
 	}
 	
 	public static function get_list_by_project_id( $project_id ) {
-		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/adjustments' );
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/adjustments?with_links=1' );
 		return $result_obj;
 	}
 	

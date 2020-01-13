@@ -368,9 +368,6 @@ class WDGFormUsers {
 			'secret'    => RECAPTCHA_SECRET,
 			'response'  => $code
 		];
-		if( $ip ){
-			$params['remoteip'] = $ip;
-		}
 		$url = "https://www.google.com/recaptcha/api/siteverify?" . http_build_query($params);
 		$curl = curl_init($url);
 		curl_setopt($curl, CURLOPT_HEADER, false);

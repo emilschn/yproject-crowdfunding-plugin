@@ -20,6 +20,7 @@ class NotificationsSlack {
 	private static $icon_currency_exchange = ':currency_exchange:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
+		$message = str_replace( '&', 'and', $message );
 	    $data = "payload=" . json_encode(array(
 		    "channel"       =>  "#{$room}",
 		    "text"          =>  $message,

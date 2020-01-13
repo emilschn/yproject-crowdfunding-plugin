@@ -613,14 +613,14 @@ class WDGOrganization {
 		
 		//Infos nécessaires pour tout type de financement
 		if ($this->get_type() != 'society') { array_push($organization_can_invest_errors, __("Ce type d'organisation ne peut pas investir.", 'yproject')); }
-		if ($this->get_legalform() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la forme juridique de l'organisation", 'yproject')); }
-		if ($this->get_idnumber() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le num&eacute;ro SIRET de l'organisation", 'yproject')); }
-		if ($this->get_rcs() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le RCS de l'organisation", 'yproject')); }
-		if ($this->get_capital() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le capital de l'organisation", 'yproject')); }
-		if ($this->get_address() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser l'adresse de l'organisation", 'yproject')); }
-		if ($this->get_postal_code() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le code postal de l'organisation", 'yproject')); }
-		if ($this->get_city() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la ville de l'organisation", 'yproject')); }
-		if ($this->get_nationality() == '') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le pays de l'organisation", 'yproject')); }
+		if ($this->get_legalform() == '' || $this->get_legalform() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la forme juridique de l'organisation", 'yproject')); }
+		if ($this->get_idnumber() == '' || $this->get_idnumber() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le num&eacute;ro SIRET de l'organisation", 'yproject')); }
+		if ($this->get_rcs() == '' || $this->get_rcs() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le RCS de l'organisation", 'yproject')); }
+		if ($this->get_capital() == '' || $this->get_capital() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le capital de l'organisation", 'yproject')); }
+		if ($this->get_address() == '' || $this->get_address() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser l'adresse de l'organisation", 'yproject')); }
+		if ($this->get_postal_code() == '' || $this->get_postal_code() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le code postal de l'organisation", 'yproject')); }
+		if ($this->get_city() == '' || $this->get_city() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la ville de l'organisation", 'yproject')); }
+		if ($this->get_nationality() == '' || $this->get_nationality() == '---') { array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser le pays de l'organisation", 'yproject')); }
 		
 		return (empty($organization_can_invest_errors));
 	}
@@ -699,12 +699,12 @@ class WDGOrganization {
 			'org_doc_kbis'					=> WDGKYCFile::$type_kbis,
 			'org_doc_status'				=> WDGKYCFile::$type_status,
 			'org_doc_id'					=> WDGKYCFile::$type_id,
-			'org_doc_home'					=> WDGKYCFile::$type_home,
+			'org_doc_idbis'					=> WDGKYCFile::$type_idbis,
 			'org_doc_capital_allocation'	=> WDGKYCFile::$type_capital_allocation,
 			'org_doc_id_2'					=> WDGKYCFile::$type_id_2,
-			'org_doc_home_2'				=> WDGKYCFile::$type_home_2,
+			'org_doc_idbis_2'				=> WDGKYCFile::$type_idbis_2,
 			'org_doc_id_3'					=> WDGKYCFile::$type_id_3,
-			'org_doc_home_3'				=> WDGKYCFile::$type_home_3
+			'org_doc_idbis_3'				=> WDGKYCFile::$type_idbis_3
 		);
 		$files_info = array();//stocke les infos des fichiers uploadés
 		$notify = 0;
@@ -747,7 +747,25 @@ class WDGOrganization {
 	 */
 	public function has_sent_all_documents() {
 		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_home );
+		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_idbis);
+		foreach ( $documents_type_list as $document_type ) {
+			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
+			$current_document = $document_filelist[0];
+			if ( !isset($current_document) ) {
+				$buffer = FALSE;
+				break;
+			}
+		}
+		return $buffer;
+	}
+
+	
+	/**
+	 * Détermine si l'organisation a envoyé tous ses documents
+	 */
+	public function has_sent_orga_documents() {
+		$buffer = TRUE;
+		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 			$current_document = $document_filelist[0];
@@ -813,15 +831,7 @@ class WDGOrganization {
 		$file_id = $filelist_id[0];
 		return (isset($file_id)) ? $file_id : null;
 	}
-	/**
-	 * Récupère les infos du fichier uploadé concernant le domicile
-	 * @return fichier domicile
-	 */
-	public function get_doc_home(){
-		$filelist_home = WDGKYCFile::get_list_by_owner_id($this->get_wpref(), WDGKYCFile::$owner_organization, WDGKYCFile::$type_home);
-		$file_home = $filelist_home[0];
-		return (isset($file_home)) ? $file_home : null;
-	}
+
 
 /*******************************************************************************
  * Gestion RIB
@@ -860,8 +870,8 @@ class WDGOrganization {
 	 * Est-ce que le RIB est enregistré ?
 	 */
 	public function has_saved_iban() {
-		$saved_holdername = $this->get_bank_owner();
-		return (!empty($saved_holdername));
+		$saved_iban = $this->get_bank_iban();
+		return (!empty($saved_iban) && WDGRESTAPI_Lib_Validator::is_iban( $saved_iban ));
 	}
 	
 /*******************************************************************************
@@ -1103,10 +1113,10 @@ class WDGOrganization {
 	 * Détermine si les données sont bien remplies pour pouvoir enregistrer sur Lemonway
 	 */
 	public function can_register_lemonway() {
-		$buffer = ($this->get_name() != "")
-					&& ($this->get_description() != "")
-					&& ($this->get_website() != "")
-					&& ($this->get_idnumber() != "");
+		$buffer = ( $this->get_name() != "" && $this->get_name() != "---" )
+					&& ( $this->get_description() != "" && $this->get_description() != "---")
+					&& ( $this->get_website() != "" && $this->get_website() != "---")
+					&& ( $this->get_idnumber() != "" && $this->get_idnumber() != "---");
 		return $buffer;
 	}
 	
@@ -1630,47 +1640,30 @@ class WDGOrganization {
 			return $buffer;
 		}
 		
-		$invest_list = array();
-		$roi_list = array();
-		$roi_number = 0;
-		$roi_total = 0;
-		$royalties_list = $this->get_royalties_for_year( $year );
-		foreach ( $royalties_list as $wdg_roi ) {
-			$roi_item = array();
-			if ( $wdg_roi->id_investment > 0 ) {
-				array_push( $invest_list, $wdg_roi->id_investment );
-			}
-			$wdg_organization = new WDGOrganization( $wdg_roi->id_orga );
-			$wdg_roi_declaration = new WDGROIDeclaration( $wdg_roi->id_declaration );
-			$roi_item[ 'organization_name' ] = $wdg_organization->get_name();
-			$roi_item[ 'trimester_months' ] = '';
-			$month_list = $wdg_roi_declaration->get_month_list();
-			foreach ( $month_list as $month_item ) {
-				if ( !empty( $roi_item[ 'trimester_months' ] ) ) {
-					$roi_item[ 'trimester_months' ] .= ', ';
-				}
-				$roi_item[ 'trimester_months' ] .= $month_item;
-			}
-			
-			$date_transfer = new DateTime( $wdg_roi->date_transfer );
-			$roi_item[ 'date' ] = $date_transfer->format('d/m/Y');
-			$roi_item[ 'amount' ] = UIHelpers::format_number( $wdg_roi->amount ) . ' &euro;';
-			$roi_number++;
-			$roi_total += $wdg_roi->amount;
-			array_push( $roi_list, $roi_item );
-		}
-		
 		global $country_list;
-		$investment_list = array();
+		$invest_list = array();
+		$roi_total = 0;
+		$tax_total = 0;
+		
+		// Récupération d'abord de la liste des royalties de l'année pour ne faire un récapitulatif que pour ceux-là
+		$royalties_list = $this->get_royalties_for_year( $year );
+		foreach ( $royalties_list as $roi_item ) {
+			if ( $roi_item->id_investment > 0 ) {
+				array_push( $invest_list, $roi_item->id_investment );
+			}
+		}
 		$invest_list_unique = array_unique( $invest_list );
+		
+		// Parcours de la liste des investissements
+		$investment_list = array();
 		foreach ( $invest_list_unique as $invest_id ) {
 			$invest_item = array();
 			
-			$invest_item['organization_name'] = '';
-			$invest_item['organization_id'] = '';
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			if ( !is_array( $downloads[0] ) ){
+			if ( !is_array( $downloads[0] ) ) {
+				// Infos campagne et organisations
 				$campaign = atcf_get_campaign( $downloads[0] );
+				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
@@ -1678,12 +1671,56 @@ class WDGOrganization {
 				$invest_item['organization_address'] = $wdg_organization->get_full_address_str(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
 				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
 				$invest_item['organization_vat'] = $wdg_organization->get_vat();
-			}
 			
-			$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
-			$invest_item['date'] = $date_invest->format('d/m/Y');
-			$invest_item['amount'] = UIHelpers::format_number( edd_get_payment_amount( $invest_id ) ) . ' &euro;';
-			array_push( $investment_list, $invest_item );
+				// Infos date et montant
+				$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
+				$invest_item['date'] = $date_invest->format('d/m/Y');
+				$invest_item_amount = edd_get_payment_amount( $invest_id );
+
+				// Infos royalties liés
+				$invest_item['roi_list'] = array();
+				$invest_item['roi_total'] = 0;
+				$invest_item['roi_for_year'] = 0;
+				$invest_item['tax_for_year'] = 0;
+				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
+				foreach ( $investment_royalties as $investment_roi ) {
+					$invest_item['roi_total'] += $investment_roi->amount;
+					$date_transfer = new DateTime( $investment_roi->date_transfer );
+					if ( $date_transfer->format( 'Y' ) == $year ) {
+						$roi_item = array();
+						$roi_item[ 'trimester_months' ] = '';
+						$investment_roi_declaration = new WDGROIDeclaration( $investment_roi->id_declaration );
+						$month_list = $investment_roi_declaration->get_month_list();
+						foreach ( $month_list as $month_item ) {
+							if ( !empty( $roi_item[ 'trimester_months' ] ) ) {
+								$roi_item[ 'trimester_months' ] .= ', ';
+							}
+							$roi_item[ 'trimester_months' ] .= $month_item;
+						}
+						
+						$roi_item[ 'date' ] = $date_transfer->format('d/m/Y');
+						$invest_item['roi_for_year'] += $investment_roi->amount;
+						$roi_total += $investment_roi->amount;
+
+						// Calcul de la part imposable
+						if ( $invest_item['roi_total'] > $invest_item_amount ) {
+							$amount_to_tax = min( $invest_item['roi_total'] - $invest_item_amount, $investment_roi->amount );
+							$investment_roi_tax = round( $amount_to_tax * 0.3 );
+							$invest_item['tax_for_year'] += $investment_roi_tax;
+							$tax_total += $investment_roi_tax;
+						}
+
+						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
+						array_push( $invest_item['roi_list'], $roi_item );
+					}
+				}
+
+				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
+				$invest_item['roi_total'] = UIHelpers::format_number( $invest_item['roi_total'] ) . ' &euro;';
+				$invest_item['roi_for_year'] = UIHelpers::format_number( $invest_item['roi_for_year'] ) . ' &euro;';
+				$invest_item['tax_for_year'] = UIHelpers::format_number( $invest_item['tax_for_year'] ) . ' &euro;';
+				array_push( $investment_list, $invest_item );
+			}
 		}
  		
 		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
@@ -1701,9 +1738,8 @@ class WDGOrganization {
 			'01/01/'.($year + 1),
 			$year,
 			$investment_list,
-			$roi_number,
-			$roi_list,
 			UIHelpers::format_number( $roi_total ). ' &euro;',
+			UIHelpers::format_number( $tax_total ). ' &euro;',
 			$info_yearly_certificate
 		);
 		
@@ -1735,137 +1771,4 @@ class WDGOrganization {
 		return (isset($result) && !empty($result));
 	}
 	
-	/**
-	 * Formulaire de nouvelle organisation
-	 */
-	public static function submit_new($redirect = TRUE) {
-		$errors_edit = array();
-		$errors_submit_new = new WP_Error();
-				
-		//Dans le TB, data-action = save_new_organization
-		if($redirect){
-			//Vérification que l'on a posté le formulaire
-			$action = filter_input(INPUT_POST, 'action');
-			if ($action !== 'save_new_organization') {
-				return FALSE;
-			}
-		}
-
-		//Vérification que l'utilisateur est connecté
-		if (!is_user_logged_in()) {
-			$errors_submit_new->add('not-loggedin', __('Vous devez vous connecter.', 'yproject'));
-			return FALSE;
-		} else {
-			$current_user = wp_get_current_user();
-		}
-		
-		//Vérification de la case à cocher
-		if (filter_input(INPUT_POST, 'org_capable', FILTER_VALIDATE_BOOLEAN) !== TRUE) {
-			$errors_submit_new->add('not-capable', __('Vous devez cocher la case pour certifier que vous &ecirc;tes en capacit&eacute; de repr&eacute;senter l&apos;organisation.', 'yproject'));
-			$errors_edit['org_capable'] = $errors_submit_new->get_error_message('not-capable');
-		}
-		
-		//Vérification du code postal
-		$org_postal_code = filter_input(INPUT_POST, 'org_postal_code');
-		if (substr($org_postal_code, 0, 1) === '0') { $org_postal_code = substr($org_postal_code, 1); }
-		$org_postal_code = filter_var($org_postal_code, FILTER_VALIDATE_INT);
-		if ($org_postal_code === FALSE) {
-			$errors_submit_new->add('postalcode-not-integer', __('Le code postal doit &ecirc;tre un nombre entier.', 'yproject'));
-			$errors_edit['org_postal_code'] = $errors_submit_new->get_error_message('postalcode-not-integer');
-		} else {
-			if (strlen($org_postal_code) === 4) { $org_postal_code = '0' . $org_postal_code; }
-		}
-
-		//Vérification du capital (autorise nombre décimal)
-		$temp_org_capital = filter_input(INPUT_POST, 'org_capital', FILTER_SANITIZE_NUMBER_FLOAT);
-		$org_capital = filter_var($temp_org_capital, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-
-		if ($org_capital === FALSE || $org_capital === 0) {
-			$errors_submit_new->add('capital-not-integer', __('Le capital doit &ecirc;tre un nombre entier et sup&eacute;rieur &agrave; z&eacute;ro.', 'yproject'));
-			$errors_edit['org_capital'] = $errors_submit_new->get_error_message('capital-not-integer');
-		}
-
-		//Vérification du code APE
-		$org_ape = filter_input(INPUT_POST, 'org_ape');
-		if ( empty( $org_ape ) ) {
-			$errors_submit_new->add('ape-not-valid', __('Le code APE ne doit pas &ecirc;tre vide.', 'yproject'));
-			$errors_edit['org_ape'] = $errors_submit_new->get_error_message('ape-not-valid');
-		}
-		
-		//Vérification des données obligatoires
-		$necessary_fields = array(
-				'd&eacute;nomination sociale' => 'org_name',
-				'e-mail' => 'org_email',
-				'descriptif de l\'activit&eacute;' => 'org_description',
-				'adresse' => 'org_address',
-				'ville' => 'org_city',
-				'pays' => 'org_nationality',
-				'forme juridique' =>'org_legalform',
-				'num&eacute;ro SIRET' =>'org_idnumber',
-				'APE' =>'org_ape',
-				'RCS' => 'org_rcs'
-			);
-		foreach ($necessary_fields as $name => $field) {
-			$value = filter_input(INPUT_POST, $field);
-			if ($value === "") {
-				$errors_submit_new->add('empty_'.$field, __('Le champ', 'yproject').' '.$name.' '.__('ne doit pas &ecirc;tre vide.', 'yproject'));
-				$errors_edit[$field] = $errors_submit_new->get_error_message('empty_'.$field);
-			}
-		}
-
-		//Si on n'a pas d'erreur, on crée l'organisation
-		if(count($errors_edit) == 0){
-			//Création de l'objet organisation
-			global $current_user;
-			$org_object = new WDGOrganization();
-			$org_object->set_strong_authentication(FALSE);
-			$org_object->set_name(filter_input(INPUT_POST, 'org_name'));
-			$org_object->set_email(filter_input(INPUT_POST, 'org_email'));
-			$org_object->set_representative_function(filter_input(INPUT_POST, 'org_representative_function'));
-			$org_object->set_description(filter_input(INPUT_POST, 'org_description'));
-			$org_object->set_address_number(filter_input(INPUT_POST, 'org_address_number'));
-			$org_object->set_address_number_comp(filter_input(INPUT_POST, 'org_address_number_comp'));
-			$org_object->set_address(filter_input(INPUT_POST, 'org_address'));
-			$org_object->set_postal_code($org_postal_code);
-			$org_object->set_city(filter_input(INPUT_POST, 'org_city'));
-			$org_object->set_nationality(filter_input(INPUT_POST, 'org_nationality'));
-			$org_object->set_type('society');
-			$org_object->set_legalform(filter_input(INPUT_POST, 'org_legalform'));
-			$org_object->set_capital($org_capital);
-			$org_object->set_idnumber(filter_input(INPUT_POST, 'org_idnumber'));
-			$org_object->set_rcs(filter_input(INPUT_POST, 'org_rcs'));
-			$org_object->set_ape(filter_input(INPUT_POST, 'org_ape'));
-			$org_object->set_vat(filter_input(INPUT_POST, 'org_vat'));
-			$org_object->set_fiscal_year_end_month(filter_input(INPUT_POST, 'org_fiscal_year_end_month'));
-			$org_object->set_employees_count(filter_input(INPUT_POST, 'org_employees_count'));
-			$org_object->set_bank_owner(filter_input(INPUT_POST, 'org_bankownername'));
-			$org_object->set_bank_address(filter_input(INPUT_POST, 'org_bankowneraddress'));
-			$org_object->set_bank_address2(filter_input(INPUT_POST, 'org_bankowneraddress2'));
-			$org_object->set_bank_iban(filter_input(INPUT_POST, 'org_bankowneriban'));
-			$org_object->set_bank_bic(filter_input(INPUT_POST, 'org_bankownerbic'));
-			$wp_orga_user_id = $org_object->create();
-
-			if ($wp_orga_user_id !== FALSE) {
-				$org_object->set_creator($current_user->ID);
-				if($redirect){
-					if (session_id() == '') session_start();
-					if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] == 'new_organization') {
-						$_SESSION['redirect_current_invest_type'] = $wp_orga_user_id;
-						wp_redirect(ypcf_login_gobackinvest_url());
-						exit();
-
-					} else {
-						wp_safe_redirect( home_url( '/mon-compte/' ) );
-						exit();
-					}
-				}
-			}
-		}else{
-			$org_object = null;
-		}
-		$return['org_object'] = $org_object;
-		$return['errors_edit'] = $errors_edit;
-		return $return;
-	}
-
 }

@@ -134,6 +134,16 @@ class WDGUser {
 	}
 	
 	/**
+	 * Recharge systématiquement l'utilisateur en cours
+	 * @return WDGUser
+	 */
+	public static function reload_current() {
+		self::$_current = new self();
+		self::$_current->construct_with_api_data();
+		return self::$_current;
+	} 
+
+	/**
 	 * Retourne un utilisateurs en dÃ©coupant l'id de l'API
 	 * @param int $api_id
 	 */
@@ -1190,60 +1200,87 @@ class WDGUser {
 			return $buffer;
 		}
 		
-		$invest_list = array();
-		$roi_list = array();
-		$roi_number = 0;
-		$roi_total = 0;
-		$royalties_list = $this->get_royalties_for_year( $year );
-		foreach ( $royalties_list as $wdg_roi ) {
-			$roi_item = array();
-			if ( $wdg_roi->id_investment > 0 ) {
-				array_push( $invest_list, $wdg_roi->id_investment );
-			}
-			$wdg_organization = new WDGOrganization( $wdg_roi->id_orga );
-			$wdg_roi_declaration = new WDGROIDeclaration( $wdg_roi->id_declaration );
-			$roi_item[ 'organization_name' ] = $wdg_organization->get_name();
-			$roi_item[ 'trimester_months' ] = '';
-			$month_list = $wdg_roi_declaration->get_month_list();
-			foreach ( $month_list as $month_item ) {
-				if ( !empty( $roi_item[ 'trimester_months' ] ) ) {
-					$roi_item[ 'trimester_months' ] .= ', ';
-				}
-				$roi_item[ 'trimester_months' ] .= $month_item;
-			}
-			
-			$date_transfer = new DateTime( $wdg_roi->date_transfer );
-			$roi_item[ 'date' ] = $date_transfer->format('d/m/Y');
-			$roi_item[ 'amount' ] = UIHelpers::format_number( $wdg_roi->amount ) . ' &euro;';
-			$roi_number++;
-			$roi_total += $wdg_roi->amount;
-			array_push( $roi_list, $roi_item );
-		}
-		
 		global $country_list;
-		$investment_list = array();
+		$invest_list = array();
+		$roi_total = 0;
+		$tax_total = 0;
+		
+		// Récupération d'abord de la liste des royalties de l'année pour ne faire un récapitulatif que pour ceux-là
+		$royalties_list = $this->get_royalties_for_year( $year );
+		foreach ( $royalties_list as $roi_item ) {
+			if ( $roi_item->id_investment > 0 ) {
+				array_push( $invest_list, $roi_item->id_investment );
+			}
+		}
 		$invest_list_unique = array_unique( $invest_list );
+		
+		// Parcours de la liste des investissements
+		$investment_list = array();
 		foreach ( $invest_list_unique as $invest_id ) {
 			$invest_item = array();
 			
-			$invest_item['organization_name'] = '';
-			$invest_item['organization_id'] = '';
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			if ( !is_array( $downloads[0] ) ){
+			if ( !is_array( $downloads[0] ) ) {
+				// Infos campagne et organisations
 				$campaign = atcf_get_campaign( $downloads[0] );
+				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 				$invest_item['organization_name'] = $wdg_organization->get_name();
 				$organization_country = $country_list[ $wdg_organization->get_nationality() ];
-				$invest_item['organization_address'] = $wdg_organization->get_address(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
+				$invest_item['organization_address'] = $wdg_organization->get_full_address_str(). ' ' .$wdg_organization->get_postal_code(). ' ' .$wdg_organization->get_city(). ' ' .$organization_country;
 				$invest_item['organization_id'] = $wdg_organization->get_idnumber();
 				$invest_item['organization_vat'] = $wdg_organization->get_vat();
-			}
 			
-			$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
-			$invest_item['date'] = $date_invest->format('d/m/Y');
-			$invest_item['amount'] = UIHelpers::format_number( edd_get_payment_amount( $invest_id ) ) . ' &euro;';
-			array_push( $investment_list, $invest_item );
+				// Infos date et montant
+				$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
+				$invest_item['date'] = $date_invest->format('d/m/Y');
+				$invest_item_amount = edd_get_payment_amount( $invest_id );
+
+				// Infos royalties liés
+				$invest_item['roi_list'] = array();
+				$invest_item['roi_total'] = 0;
+				$invest_item['roi_for_year'] = 0;
+				$invest_item['tax_for_year'] = 0;
+				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
+				foreach ( $investment_royalties as $investment_roi ) {
+					$invest_item['roi_total'] += $investment_roi->amount;
+					$date_transfer = new DateTime( $investment_roi->date_transfer );
+					if ( $date_transfer->format( 'Y' ) == $year ) {
+						$roi_item = array();
+						$roi_item[ 'trimester_months' ] = '';
+						$investment_roi_declaration = new WDGROIDeclaration( $investment_roi->id_declaration );
+						$month_list = $investment_roi_declaration->get_month_list();
+						foreach ( $month_list as $month_item ) {
+							if ( !empty( $roi_item[ 'trimester_months' ] ) ) {
+								$roi_item[ 'trimester_months' ] .= ', ';
+							}
+							$roi_item[ 'trimester_months' ] .= $month_item;
+						}
+						
+						$roi_item[ 'date' ] = $date_transfer->format('d/m/Y');
+						$invest_item['roi_for_year'] += $investment_roi->amount;
+						$roi_total += $investment_roi->amount;
+
+						// Calcul de la part imposable
+						if ( $invest_item['roi_total'] > $invest_item_amount ) {
+							$amount_to_tax = min( $invest_item['roi_total'] - $invest_item_amount, $investment_roi->amount );
+							$investment_roi_tax = round( $amount_to_tax * 0.3 );
+							$invest_item['tax_for_year'] += $investment_roi_tax;
+							$tax_total += $investment_roi_tax;
+						}
+
+						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
+						array_push( $invest_item['roi_list'], $roi_item );
+					}
+				}
+
+				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
+				$invest_item['roi_total'] = UIHelpers::format_number( $invest_item['roi_total'] ) . ' &euro;';
+				$invest_item['roi_for_year'] = UIHelpers::format_number( $invest_item['roi_for_year'] ) . ' &euro;';
+				$invest_item['tax_for_year'] = UIHelpers::format_number( $invest_item['tax_for_year'] ) . ' &euro;';
+				array_push( $investment_list, $invest_item );
+			}
 		}
  		
 		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
@@ -1255,15 +1292,14 @@ class WDGUser {
 			'',
 			$this->get_firstname(). ' ' .$this->get_lastname(),
 			$this->get_email(),
-			$this->get_address(),
+			$this->get_full_address_str(),
 			$this->get_postal_code(),
 			$this->get_city(),
 			'01/01/'.($year + 1),
 			$year,
 			$investment_list,
-			$roi_number,
-			$roi_list,
 			UIHelpers::format_number( $roi_total ). ' &euro;',
+			UIHelpers::format_number( $tax_total ). ' &euro;',
 			$info_yearly_certificate
 		);
 		
@@ -1603,13 +1639,17 @@ class WDGUser {
 		if ( $value === TRUE ) {
 			update_user_meta( $this->get_wpref(), 'subscribe_authentication_notification', '1' );
 			
-			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 5000 );
-			$return = $mailin->create_update_user( array(
-				"email"			=> $this->get_email(),
-				"attributes"	=> array(
-					"SMS"	=> $this->get_lemonway_phone_number()
-				)
-			) );
+			try {
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$return = $mailin->create_update_user( array(
+					"email"			=> $this->get_email(),
+					"attributes"	=> array(
+						"SMS"	=> $this->get_lemonway_phone_number()
+					)
+				) );
+			} catch ( Exception $e ) {
+				ypcf_debug_log( "WDGUser::set_subscribe_authentication_notification > erreur sendinblue" );
+			}
 
 		} else {
 			delete_user_meta( $this->get_wpref(), 'subscribe_authentication_notification' );
@@ -1857,7 +1897,7 @@ class WDGUser {
 	public function has_sent_all_documents() {
 		$is_id_doc_sent = FALSE;
 		$nb_docs_sent = 0;
-		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_home, WDGKYCFile::$type_id_2 );
+		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_idbis );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
 			$current_document = $document_filelist[0];
@@ -1882,8 +1922,7 @@ class WDGUser {
 					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
 					WDGKYCFile::$type_id_back	=> LemonwayDocument::$document_type_id_back,
 					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_idbis,
-					WDGKYCFile::$type_id_2_back	=> LemonwayDocument::$document_type_idbis_back,
-					WDGKYCFile::$type_home		=> LemonwayDocument::$document_type_home
+					WDGKYCFile::$type_id_2_back	=> LemonwayDocument::$document_type_idbis_back
 				);
 				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );

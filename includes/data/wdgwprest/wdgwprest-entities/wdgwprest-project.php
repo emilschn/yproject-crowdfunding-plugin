@@ -290,11 +290,15 @@ class WDGWPREST_Entity_Project {
 	 * @return array
 	 */
 	private static $declarations_by_project;
-	public static function get_declarations( $project_id ) {
+	public static function get_declarations( $project_id, $with_links = FALSE ) {
 		$buffer = FALSE;
 		if ( !empty( $project_id ) ) {
 			if ( !isset( self::$declarations_by_project[ $project_id ] ) ) {
-				self::$declarations_by_project[ $project_id ] = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations?data_restricted_to_entity=1' );
+				$with_links_param = '';
+				if ( $with_links ) {
+					$with_links_param = '&with_links=1';
+				}
+				self::$declarations_by_project[ $project_id ] = WDGWPRESTLib::call_get_wdg( 'project/' .$project_id. '/declarations?data_restricted_to_entity=1' .$with_links_param );
 			}
 			$buffer = self::$declarations_by_project[ $project_id ];
 		}

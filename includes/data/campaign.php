@@ -870,9 +870,9 @@ class ATCF_Campaign {
 	}
 	
 	public function get_end_date_when_can_invest_until_contract_start_date() {
-		// 15 jours avant la date de début de contrat
+		// 14 jours avant la date de début de contrat
 		$datetime_first_payment = new DateTime( $this->contract_start_date() );
-		$datetime_first_payment->sub( new DateInterval( 'P15D' ) );
+		$datetime_first_payment->sub( new DateInterval( 'P14D' ) );
 		return $datetime_first_payment;
 	}
 	
@@ -1215,17 +1215,23 @@ class ATCF_Campaign {
 	}
 	
 	public static $key_declaration_periodicity = 'declaration_periodicity';
-	public static $declaration_periodicity_list = array( 
-		'month'		=> 'mensuelle', 
-		'quarter'	=> 'trimestrielle', 
-		'semester'	=> 'semestrielle', 
+	public static $declaration_periodicity_list = array(
+		'month'		=> 'mensuelle',
+		'quarter'	=> 'trimestrielle',
+		'semester'	=> 'semestrielle',
 		'year'		=> 'annuelle'
 	);
-	public static $declaration_period_list = array( 
-		'month'		=> 'mois', 
-		'quarter'	=> 'trimestre', 
-		'semester'	=> 'semestre', 
+	public static $declaration_period_list = array(
+		'month'		=> 'mois',
+		'quarter'	=> 'trimestre',
+		'semester'	=> 'semestre',
 		'year'		=> 'an'
+	);
+	public static $declaration_period_list_plural = array(
+		'month'		=> 'mois',
+		'quarter'	=> 'trimestres',
+		'semester'	=> 'semestres',
+		'year'		=> 'ans'
 	);
 	public function get_declaration_periodicity() {
 		$buffer = $this->get_api_data( self::$key_declaration_periodicity );

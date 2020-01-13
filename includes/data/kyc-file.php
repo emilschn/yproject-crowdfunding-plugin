@@ -11,15 +11,15 @@ class WDGKYCFile {
 	public static $type_bank = 'bank';
 	public static $type_id = 'id';
 	public static $type_id_back = 'id_back';
-	public static $type_home = 'home';
+	public static $type_idbis = 'idbis';
 	public static $type_kbis = 'kbis';
 	public static $type_status = 'status';
 	public static $type_capital_allocation = 'capital_allocation';
 	public static $type_id_2 = 'id_2';
 	public static $type_id_2_back = 'id_2_back';
-	public static $type_home_2 = 'home_2';
+	public static $type_idbis_2 = 'idbis_2';
 	public static $type_id_3 = 'id_3';
-	public static $type_home_3 = 'home_3';
+	public static $type_idbis_3 = 'idbis_3';
 	
 	public static $status_uploaded = 'uploaded';
 	public static $status_sent = 'sent';
@@ -153,17 +153,53 @@ class WDGKYCFile {
 		
 		global $wpdb;
 		$date_now = new DateTime();
-		$result = $wpdb->insert( 
-			$wpdb->prefix . WDGKYCFile::$table_name, 
-			array( 
-				'type'			=> $type,
-				'orga_id'		=> ($type_owner == WDGKYCFile::$owner_organization ? $id_owner : 0),
-				'user_id'		=> ($type_owner == WDGKYCFile::$owner_user ? $id_owner : 0),
-				'file_name'		=> $random_filename, 
-				'status'		=> WDGKYCFile::$status_uploaded, 
-				'date_uploaded'	=> $date_now->format("Y-m-d")
-			) 
-		);
+		$more_orga = false;
+		
+		if ( $type_owner == WDGKYCFile::$owner_user ){
+			$user_id = $id_owner;
+			$WDGUser = new WDGUser( $id_owner );
+			$orga_id = 0;
+			$orga_list = $WDGUser->get_organizations_list();
+			
+			if( is_array($orga_list) && count($orga_list) == 1 ){
+				$orga_id = $orga_list[0]->wpref;
+			} elseif ( is_array($orga_list) && count($orga_list) > 1 ) {
+				$more_orga = true;
+			}
+		} elseif ($type_owner == WDGKYCFile::$owner_organization){
+			$orga_id = $id_owner;
+			$user_id = 0;
+		}
+			
+		if ( $more_orga ) {
+			foreach ( $orga_list as $orga ) {
+				$result = $wpdb->insert( 
+					$wpdb->prefix . WDGKYCFile::$table_name, 
+					array( 
+						'type'			=> $type,
+						'orga_id'		=> $orga->wpref,
+						'user_id'		=> $user_id,
+						'file_name'		=> $random_filename, 
+						'status'		=> WDGKYCFile::$status_uploaded, 
+						'date_uploaded'	=> $date_now->format("Y-m-d")
+					) 
+				);
+			}
+		} else {
+			$result = $wpdb->insert( 
+				$wpdb->prefix . WDGKYCFile::$table_name, 
+				array( 
+					'type'			=> $type,
+					'orga_id'		=> $orga_id,
+					'user_id'		=> $user_id,
+					'file_name'		=> $random_filename, 
+					'status'		=> WDGKYCFile::$status_uploaded, 
+					'date_uploaded'	=> $date_now->format("Y-m-d")
+				) 
+			);
+		}
+
+
 		if ($result !== FALSE) {
 			return $wpdb->insert_id;
 		}
