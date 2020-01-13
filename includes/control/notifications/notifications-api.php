@@ -1112,7 +1112,6 @@ class NotificationsAPI {
 			$index .= '-nomandate';
 		}
 		$param_template = isset( $param_template_by_remaining_days[ $index ] ) ? $param_template_by_remaining_days[ $index ] : FALSE;
-		
 		if ( !empty( $param_template ) ) {
 			$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
 			$parameters = array(
@@ -1127,7 +1126,7 @@ class NotificationsAPI {
 		return FALSE;
 	}
 	
-	public static function declaration_to_do_warning( $recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date ) {
+	public static function declaration_to_do_warning( $recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date, $declaration_direct_url ) {
 		$id_template = '595';
 		$options = array(
 			'personal'							=> 1,
@@ -1140,7 +1139,9 @@ class NotificationsAPI {
 			'MONTANT_ROYALTIES'					=> $amount_royalties,
 			'MONTANT_COMMISSION'				=> $amount_fees,
 			'MONTANT_TOTAL'						=> $amount_total,
-			'DATE_PRELEVEMENT'					=> $mandate_wire_date
+			'DATE_PRELEVEMENT'					=> $mandate_wire_date,
+			'DECLARATION_DIRECT_URL'			=> $declaration_direct_url
+								
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',

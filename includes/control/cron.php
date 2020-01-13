@@ -13,6 +13,7 @@ class WDGCronActions {
 			$date_in_10_days = new DateTime();
 			$date_in_10_days->add( new DateInterval('P19D') );
 			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
+			
 			if ( $declaration_list ) {
 				foreach ( $declaration_list as $declaration_data ) {
 					// On n'envoie des notifications que pour les déclarations qui ne sont pas commencées
@@ -35,7 +36,6 @@ class WDGCronActions {
 							
 							$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
 							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
-
 								$organization = $campaign->get_organization();
 								$wdgorganization = new WDGOrganization( $organization->id, $organization );
 								$wdguser_author = new WDGUser( $campaign->data->post_author );
@@ -63,11 +63,14 @@ class WDGCronActions {
 									$year--;
 								}
 								$last_months_str .= ' ' . $year;
+
+								$declaration_direct_url = home_url( '/declarer-chiffre-daffaires/?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id );
 								$options = array(
 									'NOM'					=> $wdguser_author->get_firstname(),
 									'TROIS_DERNIERS_MOIS'	=> $last_months_str,
 									'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
-									'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' )
+									'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' ),
+									'DECLARATION_DIRECT_URL'=> $declaration_direct_url
 								);
 
 								NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
@@ -143,8 +146,9 @@ class WDGCronActions {
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
 							$amount_total = $amount_royalties + $amount_fees;
 							$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
-							
-							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author->get_firstname(), $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date );
+							$declaration_direct_url = home_url( '/declarer-chiffre-daffaires/?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id );
+
+							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author->get_firstname(), $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date, $declaration_direct_url );
 						}
 					}
 				}
