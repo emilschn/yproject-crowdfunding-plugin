@@ -162,7 +162,9 @@ class WDG_File_Cacher {
 		if ( !empty( $file_path ) && !empty( $page_content ) ) {
 			ypcf_debug_log( 'WDG_File_Cacher::save > ' . $file_path );
 			$dir = dirname( $file_path );
-			mkdir( $dir, 0777, TRUE );
+			if ( !is_dir( $dir ) ) {
+				mkdir( $dir, 0777, TRUE );
+			}
 			$file_handle = fopen( $file_path, 'a' );
 			fwrite( $file_handle, $page_content );
 			fclose( $file_handle );
