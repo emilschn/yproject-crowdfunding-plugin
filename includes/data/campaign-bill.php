@@ -48,6 +48,8 @@ class WDGCampaignBill {
 	);
 	
 	public static $item_tax_20 = 31;
+	public static $location_startup_id = 1;
+	public static $class_royalties = '1400000000000673963';
 
 
 	public function __construct( $campaign, $tool_name, $bill_type ) {
@@ -218,6 +220,8 @@ Les chèques vous seront directement adressés.";
 			'itemdescription'	=> $line_description,
 			'itemvalue'			=> $commission_to_pay_without_tax,
 			'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
+			'locationid'		=> WDGCampaignBill::$location_startup_id,
+			'classid'			=> WDGCampaignBill::$class_royalties,
 			'billdescription'	=> ''
 		);
 		return $options;
