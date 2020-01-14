@@ -222,7 +222,8 @@ Les chèques vous seront directement adressés.";
 			'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
 			'locationid'		=> WDGCampaignBill::$location_startup_id,
 			'classid'			=> WDGCampaignBill::$class_royalties,
-			'billdescription'	=> ''
+			'billdescription'	=> '',
+			'sendemail'			=> '1'
 		);
 		return $options;
 	}
