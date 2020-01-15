@@ -328,7 +328,7 @@ class LemonwayNotification {
 		// - Trouver l'utilisateur à partir de son identifiant externe
 		$WDGUser_invest_author = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		$WDGOrga_invest_author = false;
-		if ( WDGOrganization::is_user_organization( $WDGUser_invest_author->get_wpref() ) ) {
+		if ( $WDGUser_invest_author !== FALSE && WDGOrganization::is_user_organization( $WDGUser_invest_author->get_wpref() ) ) {
 			$WDGOrga_invest_author = new WDGOrganization( $WDGUser_invest_author->get_wpref() );
 			$linked_users_creator = $WDGOrga_invest_author->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 			if ( !empty( $linked_users_creator ) ) {
