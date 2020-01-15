@@ -47,9 +47,9 @@ class WDGCampaignBill {
 		)
 	);
 	
-	public static $item_tax_20 = 31;
-	public static $location_startup_id = 1;
-	public static $class_royalties = '1400000000000673963';
+	public static $item_tax_20 = 31;// identifiant du type de TVA à 20% dans quickbooks
+	public static $location_startup_id = 1;// identifiant du site "startup" dans quickbooks
+	public static $class_royalties = '1400000000000673963';//identifiant de la classe de vente "commissions sur les royalties" dans quickbooks
 
 
 	public function __construct( $campaign, $tool_name, $bill_type ) {
