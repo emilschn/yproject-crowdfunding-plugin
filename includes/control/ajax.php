@@ -2054,7 +2054,7 @@ class WDGAjaxActions {
             new ContactColumn('user_birthplace', 'Ville de naissance', false, ($display_vote_infos?27:22)),
 			new ContactColumn('user_nationality', 'Nationalité', false, ($display_vote_infos?28:23)),
 
-			new ContactColumn('user_id','',false, 30),
+			new ContactColumn('user_id','',false, 30),// cette colonne est cachée, mais sert à l'envoi des mails
 			
         );
 		
@@ -2065,6 +2065,9 @@ class WDGAjaxActions {
 				$contract_model_index++;
 			}
 		}
+
+		// on trie le tableau des colonnes suivant l'ordre de priorité déclaré
+		usort($array_columns, array("ContactColumn", "cmp_obj"));
 
         ?>
         <div class="wdg-datatable" >
@@ -2192,21 +2195,11 @@ class WDGAjaxActions {
             $i++;
 		}
 		
-		//ordre des colonnes suivant la phase d'investissement
-        $column_order = array();
-		$nb_columns = count($array_columns);
-		for($i=0; $i<$nb_columns; $i++){
-			$column = $array_columns[$i];
-			$column_order[$column->columnPriority]=$i;
-		}		
-		// réindexation du tableau
-		ksort($column_order);
-
         $result = array(
             'default_sort' => $default_sort,
             'array_hidden' => $array_hidden,
-            'column_order' => $column_order,
-			'id_column_index' => 2
+            'id_column_user_id' => 30,
+			'id_column_index' => 4
         );
         ?>
         <script type="text/javascript">
@@ -2835,5 +2828,16 @@ class ContactColumn {
 		$this->columnPriority = $columnPriority;
 		$this->filterClass = $newFilterClass;
 		$this->filterQtip = $newFilterQtip;
-    }
+	}
+	
+	    /* Ceci est une fonction de comparaison statique */
+		static function cmp_obj($a, $b)
+		{
+			if ($a->columnPriority == $b->columnPriority) {
+				return 0;
+			}
+			return ($a->columnPriority > $b->columnPriority) ? +1 : -1;
+		}
+
+
 }
