@@ -2021,30 +2021,33 @@ class WDGAjaxActions {
 		$imggoodmains = '<img src="'.get_stylesheet_directory_uri().'/images/goodmains.png" alt="investi" title="A investi" width="30px" class="infobutton" style="margin-left:0px;"/>';
 
         $array_columns = array(
-        	new ContactColumn('checkbox', '', true , 0, "none"),
-            new ContactColumn('user_link', 'Utilisateur', true, 1),
-			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,2,"check","N'afficher que les contacts suivant le projet"),
-			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,3,"check","N'afficher que les contacts ayant évalué"),
-            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,4,"check","N'afficher que les contacts ayant investi"),
+			new ContactColumn('checkbox', '', true , 0, "none"),
+			new ContactColumn('user_first_name', 'Prénom', true, 1),
+            new ContactColumn('user_last_name', 'Nom', true, 2),
+            
+			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,3,"check","N'afficher que les contacts suivant le projet"),
+			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,4,"check","N'afficher que les contacts ayant évalué"),
+            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,5,"check","N'afficher que les contacts ayant investi"),
+			new ContactColumn('vote_invest_sum','Intention d\'inv.',true, 6),
 			 
-			new ContactColumn('vote_rate',"Note d'éval.",$display_vote_infos, ($display_vote_infos?5:25)),
-            new ContactColumn('vote_date',"Date d'éval.",$display_vote_infos, ($display_vote_infos?6:26)),
-            new ContactColumn('vote_invest_sum','Intention d\'inv.',true, 7),
-			new ContactColumn('vote_advice','Conseil', $display_vote_infos, ($display_vote_infos?8:27)),
-			new ContactColumn( 'vote_more_info', '+ infos sur', $display_vote_infos, ($display_vote_infos?9:28) ),
+			new ContactColumn('vote_rate',"Note d'éval.",$display_vote_infos, ($display_vote_infos?7:25)),
+            new ContactColumn('vote_date',"Date d'éval.",$display_vote_infos, ($display_vote_infos?8:26)),
+			new ContactColumn('vote_advice','Conseil', $display_vote_infos, ($display_vote_infos?9:27)),
+			new ContactColumn( 'vote_more_info', '+ infos sur', $display_vote_infos, ($display_vote_infos?10:28) ),
+			
+            new ContactColumn('user_link', 'Utilisateur', true, ($display_vote_infos?11:12)),
+			
+			new ContactColumn('invest_amount', 'Montant investi', true, ($display_vote_infos?12:7)),
+            new ContactColumn('invest_date', 'Date d\'inv.', true, ($display_vote_infos?13:8)),
+            new ContactColumn('invest_payment_type', 'Moyen de paiement', true, ($display_vote_infos?14:9) ),
+            new ContactColumn('user_authentication', 'Authentification', true, ($display_vote_infos?15:10) ),
+			new ContactColumn('invest_payment_status', 'Paiement', true, ($display_vote_infos?16:11) ),
+			
+			new ContactColumn('invest_sign', 'Signature', $display_vote_infos, ($display_vote_infos?17:24) ),	
+
 			new ContactColumn( 'source-how-known', 'Src. (connu)', true, ($display_vote_infos?18:13)),
 			new ContactColumn( 'source-where-from', 'Src. (arrivée)', true, ($display_vote_infos?19:14) ),
-
-			new ContactColumn('invest_amount', 'Montant investi', true, ($display_vote_infos?12:5)),
-            new ContactColumn('invest_date', 'Date d\'inv.', true, ($display_vote_infos?13:6)),
-            new ContactColumn('invest_payment_type', 'Moyen de paiement', true, ($display_vote_infos?14:8) ),
-            new ContactColumn('user_authentication', 'Authentification', true, ($display_vote_infos?15:9) ),
-            new ContactColumn('invest_payment_status', 'Paiement', true, ($display_vote_infos?16:10) ),
-			new ContactColumn('invest_sign', 'Signature', $display_vote_infos, ($display_vote_infos?17:24) ),			
-			
-			new ContactColumn('user_last_name', 'Nom', true, ($display_vote_infos?10:11)),
-            new ContactColumn('user_first_name', 'Prénom', true, ($display_vote_infos?11:12)),
-            new ContactColumn('user_mobile_phone', 'Téléphone', true, ($display_vote_infos?20:15)),
+			new ContactColumn('user_mobile_phone', 'Téléphone', true, ($display_vote_infos?20:15)),
             new ContactColumn('user_address', 'Adresse', false, ($display_vote_infos?21:16)),
             new ContactColumn('user_postal_code', 'Code postal', false, ($display_vote_infos?22:17)),
             new ContactColumn('user_city', 'Ville', false, ($display_vote_infos?23:18)),
