@@ -1,7 +1,9 @@
 <?php
 class WDGEmails {
+
+	private static $batch_of_notifications = 20; // Nombre arbitraire de notifications envoyées d'un coup
 	
-	public static function auto_notifications( $campaign_id, $mail_type, $input_testimony_in, $input_image_url, $input_image_description, $input_send_option ) {
+	public static function auto_notifications( $campaign_id, $mail_type, $input_testimony_in, $input_image_url, $input_image_description, $input_send_option, $user_already_sent_to = array() ) {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$project_name = $campaign->get_name();
 		$project_url = get_permalink( $campaign->ID );
@@ -105,10 +107,12 @@ class WDGEmails {
 			}
 		}
 
+		$count_to_batch_limit = 0;
 		foreach ( $user_list_by_id as $user_id => $vote_data ) {
-			if ( empty( $user_id ) ) {
+			if ( empty( $user_id ) || in_array( $user_id, $user_already_sent_to ) ) {
 				continue;
 			}
+
 			
 			if ( WDGOrganization::is_user_organization( $user_id ) ) {
 				$WDGOrganization = new WDGOrganization( $user_id );
@@ -185,6 +189,16 @@ class WDGEmails {
 					}
 					break;
 			}
+			
+			array_push( $user_already_sent_to, $user_id );
+			$count_to_batch_limit++;
+			if ( $count_to_batch_limit >= self::$batch_of_notifications ) {
+				break;
+			}
+		}
+
+		if ( count( $user_already_sent_to ) < count( $user_list_by_id ) ) {
+			WDGQueue::add_campaign_notifications( $campaign_id, $mail_type, $input_testimony_in, $input_image_url, $input_image_description, $user_already_sent_to );
 		}
 	}
 
