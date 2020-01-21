@@ -1725,7 +1725,7 @@ class WDGOrganization {
  		
 		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
 		
-		require __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
+		require_once __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get(
 			$this->get_name(),
 			$this->get_idnumber(),
