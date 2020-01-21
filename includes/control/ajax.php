@@ -1927,6 +1927,7 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_address"] = $user_item[ 'invest_item' ][ 'item' ][ 'address' ];
 						$array_contacts[$user_id]["user_country"] = $user_item[ 'invest_item' ][ 'item' ][ 'country' ];
 						$array_contacts[$user_id]["user_mobile_phone"] = $user_item[ 'invest_item' ][ 'item' ][ 'phone_number' ];
+						$array_contacts[$user_id]["user_gender"] = $user_item[ 'invest_item' ][ 'item' ][ 'gender' ];
 						$array_contacts[$user_id]["user_authentication"] = $user_authentication;
 						
 					} else {
@@ -1942,6 +1943,7 @@ class WDGAjaxActions {
 						$array_contacts[$user_id]["user_address"] = $WDGUser->get_full_address_str();
 						$array_contacts[$user_id]["user_country"] = $WDGUser->get_country( 'full' );
 						$array_contacts[$user_id]["user_mobile_phone"] = $WDGUser->get_phone_number();
+						$array_contacts[$user_id]["user_gender"] = $WDGUser->get_gender();
 						$array_contacts[$user_id]["user_authentication"] = $user_authentication;
 					}
 					
@@ -1996,7 +1998,8 @@ class WDGAjaxActions {
         }
 
         /*********Intitulés et paramÃ¨tres des colonnes***********/
-        $status = $campaign->campaign_status();
+		$status = $campaign->campaign_status();
+		// l'ordre et l'affichage des colonnes dépend de la phase, évaluation ou collecte
         $display_invest_infos = false;
         if ( $status == ATCF_Campaign::$campaign_status_collecte
 				|| $status == ATCF_Campaign::$campaign_status_funded
@@ -2018,48 +2021,56 @@ class WDGAjaxActions {
 		$imggoodmains = '<img src="'.get_stylesheet_directory_uri().'/images/goodmains.png" alt="investi" title="A investi" width="30px" class="infobutton" style="margin-left:0px;"/>';
 
         $array_columns = array(
-        	new ContactColumn('checkbox','',true,"none"),
-            new ContactColumn('user_link', 'Utilisateur', true),
-			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,"check","N'afficher que les contacts suivant le projet"),
-			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,"check","N'afficher que les contacts ayant évalué"),
-            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,"check","N'afficher que les contacts ayant investi"),
-			new ContactColumn('user_id','',false),
+			new ContactColumn('checkbox', '', true , 0, "none"),
+			new ContactColumn('user_first_name', 'Prénom', true, 1),
+            new ContactColumn('user_last_name', 'Nom', true, 2),
+            
+			new ContactColumn('follow',$imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>',true,3,"check","N'afficher que les contacts suivant le projet"),
+			new ContactColumn('vote',$imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>',true,4,"check","N'afficher que les contacts ayant évalué"),
+            new ContactColumn('invest',$imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>',true,5,"check","N'afficher que les contacts ayant investi"),
+			new ContactColumn('vote_invest_sum','Intention d\'inv.',true, 6),
+			 
+			new ContactColumn('vote_rate',"Note d'éval.",$display_vote_infos, ($display_vote_infos?7:25)),
+            new ContactColumn('vote_date',"Date d'éval.",$display_vote_infos, ($display_vote_infos?8:26)),
+			new ContactColumn('vote_advice','Conseil', $display_vote_infos, ($display_vote_infos?9:27)),
+			new ContactColumn( 'vote_more_info', '+ infos sur', $display_vote_infos, ($display_vote_infos?10:28) ),
+			
+            new ContactColumn('user_link', 'Utilisateur', true, ($display_vote_infos?11:12)),
+			
+			new ContactColumn('invest_amount', 'Montant investi', true, ($display_vote_infos?12:7)),
+            new ContactColumn('invest_date', 'Date d\'inv.', true, ($display_vote_infos?13:8)),
+            new ContactColumn('invest_payment_type', 'Moyen de paiement', true, ($display_vote_infos?14:9) ),
+            new ContactColumn('user_authentication', 'Authentification', true, ($display_vote_infos?15:10) ),
+			new ContactColumn('invest_payment_status', 'Paiement', true, ($display_vote_infos?16:11) ),
+			
+			new ContactColumn('invest_sign', 'Signature', $display_vote_infos, ($display_vote_infos?17:24) ),	
 
-			new ContactColumn('user_last_name', 'Nom', true),
-            new ContactColumn('user_first_name', 'Prénom', true),
-            new ContactColumn('user_birthday', 'Date de naissance', false, "date"),
-            new ContactColumn('user_birthplace', 'Ville de naissance', false),
-            new ContactColumn('user_nationality', 'Nationalité', false),
-            new ContactColumn('user_address', 'Adresse', false),
-            new ContactColumn('user_city', 'Ville', true),
-            new ContactColumn('user_postal_code', 'Code postal', false),
-            new ContactColumn('user_country', 'Pays', false),
-            new ContactColumn('user_email', 'Mail', true),
-            new ContactColumn('user_mobile_phone', 'Téléphone', false),
+			new ContactColumn( 'source-how-known', 'Src. (connu)', true, ($display_vote_infos?18:13)),
+			new ContactColumn( 'source-where-from', 'Src. (arrivée)', true, ($display_vote_infos?19:14) ),
+			new ContactColumn('user_mobile_phone', 'Téléphone', true, ($display_vote_infos?20:15)),
+            new ContactColumn('user_address', 'Adresse', false, ($display_vote_infos?21:16)),
+            new ContactColumn('user_postal_code', 'Code postal', false, ($display_vote_infos?22:17)),
+            new ContactColumn('user_city', 'Ville', false, ($display_vote_infos?23:18)),
+            new ContactColumn('user_country', 'Pays', false, ($display_vote_infos?24:19)),
+            new ContactColumn('user_gender', 'Genre', false, ($display_vote_infos?25:20)),
+            new ContactColumn('user_birthday', 'Date de naissance', false, ($display_vote_infos?26:21)),
+            new ContactColumn('user_birthplace', 'Ville de naissance', false, ($display_vote_infos?27:22)),
+			new ContactColumn('user_nationality', 'Nationalité', false, ($display_vote_infos?28:23)),
 
-            new ContactColumn('vote_date',"Date d'éval.",$display_vote_infos, "date"),
-            new ContactColumn('vote_rate',"Note d'éval.",true),
-            new ContactColumn('vote_invest_sum','Intention d\'inv.',true, "range"),
-			new ContactColumn('vote_advice','Conseil', true),
-			new ContactColumn( 'vote_more_info', '+ infos sur', $display_vote_infos ),
-			new ContactColumn( 'source-how-known', 'Src. (connu)', ( $display_vote_infos || $display_invest_infos ) ),
-			new ContactColumn( 'source-where-from', 'Src. (arrivée)', ( $display_vote_infos || $display_invest_infos ) ),
-
-			new ContactColumn('invest_amount', 'Montant investi', ( $display_vote_infos || $display_invest_infos ), "range" ),
-            new ContactColumn('invest_date', 'Date d\'inv.', $display_invest_infos, "date"),
-            new ContactColumn('invest_payment_type', 'Moyen de paiement', ( $display_vote_infos || $display_invest_infos ) ),
-            new ContactColumn('user_authentication', 'Authentification', ( $display_vote_infos || $display_invest_infos ) ),
-            new ContactColumn('invest_payment_status', 'Paiement', ( $display_vote_infos || $display_invest_infos ) ),
-            new ContactColumn('invest_sign', 'Signature', ( $display_vote_infos || $display_invest_infos ) )
+			new ContactColumn('user_id','',false, 30),// cette colonne est cachée, mais sert à l'envoi des mails
+			
         );
 		
 		if ( $contracts_to_add ) {
 			$contract_model_index = 1;
 			foreach ( $contracts_to_add as $contract_model ) {
-				array_push( $array_columns, new ContactColumn('invest_contract_' .$contract_model_index, 'Contrat ' .$contract_model_index, $display_invest_infos) );
+				array_push( $array_columns, new ContactColumn('invest_contract_' .$contract_model_index, 'Contrat ' .$contract_model_index, $display_invest_infos, 29) );
 				$contract_model_index++;
 			}
 		}
+
+		// on trie le tableau des colonnes suivant l'ordre de priorité déclaré
+		usort($array_columns, array("ContactColumn", "cmp_obj"));
 
         ?>
         <div class="wdg-datatable" >
@@ -2148,19 +2159,11 @@ class WDGAjaxActions {
 						<?php
 						switch ($type_filter){
 							case "text":
-							case "range" :
-							case "date":
-								echo '<input type="text" class="qtip-element" placeholder="Filtrer " data-index="'.$i.'" title="'.$column->filterQtip.'"/><br/>'.$column->columnName;
+								echo '<input type="text" class="qtip-element" placeholder="Filtrer " data-index="'.$column->columnPriority.'" title="'.$column->filterQtip.'"/><br/>'.$column->columnName;
 								break;
 							case "check":
-								echo '<input type="checkbox" class="qtip-element" data-index="'.$i.'" title="'.$column->filterQtip.'"/>';
+								echo '<input type="checkbox" class="qtip-element" data-index="'.$column->columnPriority.'" title="'.$column->filterQtip.'"/>';
 								break;
-							/*case "range":
-								echo '<input type="number" placeholder="Min." /><br/><input type="number" placeholder="Max." data-index="'.$i.'"/>';
-								break;
-							case "date":
-								echo '<input type="text" placeholder="Min." /><br/><input type="text" placeholder="Max."  data-index="'.$i.'"/>';
-								break;*/
 						}
 						$i++;
 						?>
@@ -2181,7 +2184,7 @@ class WDGAjaxActions {
                 $array_hidden[]=$i;
             }
             $i++;
-        }
+		}
 
         //Identifiants de colonnes par lesquels seront triés les contacts par défaut
         $default_sort=false;
@@ -2193,12 +2196,13 @@ class WDGAjaxActions {
                 $default_sort=$i;
             }
             $i++;
-        }
-
+		}
+		
         $result = array(
             'default_sort' => $default_sort,
             'array_hidden' => $array_hidden,
-			'id_column_index' => 5
+            'id_column_user_id' => 30,
+			'id_column_index' => 4
         );
         ?>
         <script type="text/javascript">
@@ -2818,12 +2822,25 @@ class ContactColumn {
     public $defaultDisplay = false;
 	public $filterClass = "text";
 	public $filterQtip = "";
+	public $columnPriority;
 
-    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $newFilterClass = "text", $newFilterQtip = "") {
+    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $columnPriority, $newFilterClass = "text", $newFilterQtip = "") {
         $this->columnData = $newColumnData;
         $this->columnName = $newColumnName;
         $this->defaultDisplay = $newDefaultDisplay;
+		$this->columnPriority = $columnPriority;
 		$this->filterClass = $newFilterClass;
 		$this->filterQtip = $newFilterQtip;
-    }
+	}
+	
+	    /* Ceci est une fonction de comparaison statique */
+		static function cmp_obj($a, $b)
+		{
+			if ($a->columnPriority == $b->columnPriority) {
+				return 0;
+			}
+			return ($a->columnPriority > $b->columnPriority) ? +1 : -1;
+		}
+
+
 }
