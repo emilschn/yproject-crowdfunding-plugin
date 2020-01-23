@@ -68,7 +68,7 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 		
 		// Un admin peut faire la manip à la place de l'utilisateur, mais c'est tout
 		} else if ( ( $WDGUser->get_wpref() != $WDGUser_current->get_wpref() ) && !$WDGUser_current->is_admin() ) {
-			ypcf_debug_log( 'user-unlink-facebook.php ::  l\'utilisateur '.$WDGUser_current->get_wpref().' (non-admin) essaie de modifier l\'utilisateur '.$user_id);
+			
 		// Analyse du formulaire
 		} else {
 				
