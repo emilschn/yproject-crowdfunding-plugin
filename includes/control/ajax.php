@@ -29,10 +29,13 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('show_project_money_flow');
 		WDGAjaxActions::add_action('check_invest_input');
 		WDGAjaxActions::add_action('save_user_docs');
+
+		// Page projet
 		WDGAjaxActions::add_action('save_image_head');
 		WDGAjaxActions::add_action('save_image_url_video');
+		WDGAjaxActions::add_action('send_project_notification');
 
-        //Dashboard
+        // TBPP
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
@@ -54,6 +57,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
 		WDGAjaxActions::add_action('delete_lock_project_edition');
+
+
 	}
 	
 	/**
@@ -688,6 +693,24 @@ class WDGAjaxActions {
 		
 		echo WDGFormProjects::edit_image_url_video( $image, $url_video, $campaign_id );
 		exit();
+	}
+
+	public static function send_project_notification() {
+		$id_campaign = filter_input( INPUT_POST, 'id_campaign' );
+		$is_for_project = filter_input( INPUT_POST, 'is_for_project' );
+
+		$buffer = FALSE;
+		if ( $is_for_project ) {
+			$buffer = NotificationsEmails::send_project_description_notification_to_project( $id_campaign );
+		} else {
+			$buffer = NotificationsEmails::send_project_description_notification_to_wdg( $id_campaign );
+		}
+		
+		if ( $buffer ) {
+			exit( '1' );
+		} else {
+			exit( '0' );
+		}
 	}
 		
 	/**
