@@ -5,16 +5,16 @@ class WDGFormUsers {
 		$do_fb_login = FALSE;
 		$fbcallback = filter_input( INPUT_GET, 'fbcallback' );
 		if ( !empty( $fbcallback ) ) {
-			$fb = new Facebook\Facebook([
-				'app_id' => YP_FB_APP_ID,
-				'app_secret' => YP_FB_SECRET,
-				'default_graph_version' => 'v2.8',
-			]);
-
-			$helper = $fb->getRedirectLoginHelper();
-
 			try {
+				$fb = new Facebook\Facebook([
+					'app_id' => YP_FB_APP_ID,
+					'app_secret' => YP_FB_SECRET,
+					'default_graph_version' => 'v2.8',
+				]);
+
+				$helper = $fb->getRedirectLoginHelper();
 				$accessToken = $helper->getAccessToken();
+				
 			} catch(Facebook\Exceptions\FacebookResponseException $e) {
 				// When Graph returns an error
 				ypcf_debug_log( 'Graph returned an error: ' . $e->getMessage() );
@@ -24,8 +24,8 @@ class WDGFormUsers {
 				ypcf_debug_log( 'Facebook SDK returned an error: ' . $e->getMessage() );
 			}
 
-			if (! isset($accessToken)) {
-				if ($helper->getError()) {
+			if ( !isset( $accessToken ) ) {
+				if ( $helper->getError() ) {
 					header('HTTP/1.0 401 Unauthorized');
 					ypcf_debug_log( "Error: " . $helper->getError() . "\n"
 					."Error Code: " . $helper->getErrorCode() . "\n"
@@ -37,21 +37,23 @@ class WDGFormUsers {
 				}
 			}
 
-			// Logged in
-			//echo '<h3>Access Token</h3>';
-			//var_dump($accessToken->getValue());
+			
+			try {
+				// The OAuth 2.0 client handler helps us manage access tokens
+				$oAuth2Client = $fb->getOAuth2Client();
 
-			// The OAuth 2.0 client handler helps us manage access tokens
-			$oAuth2Client = $fb->getOAuth2Client();
+				// Get the access token metadata from /debug_token
+				$tokenMetadata = $oAuth2Client->debugToken($accessToken);
+				$fbUserId = $tokenMetadata->getField("user_id");
+				$sc_provider_identity_key = 'social_connect_facebook_id';
+				global $wpdb;
+				$sql = "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '%s' AND meta_value = '%s'";
+				$user_id = $wpdb->get_var( $wpdb->prepare( $sql, $sc_provider_identity_key, $fbUserId ) );
+				
+			} catch ( Exception $e ) {
+				ypcf_debug_log( 'getOAuth2Client returned an error: ' . $e->getMessage() );
+			}
 
-			// Get the access token metadata from /debug_token
-			$tokenMetadata = $oAuth2Client->debugToken($accessToken);
-			$fbUserId = $tokenMetadata->getField("user_id");
-			$sc_provider_identity_key = 'social_connect_facebook_id';
-
-			global $wpdb;
-			$sql = "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '%s' AND meta_value = '%s'";
-			$user_id = $wpdb->get_var( $wpdb->prepare( $sql, $sc_provider_identity_key, $fbUserId ) );
 
 			// On a trouvé l'utilisateur correspondant
 			if ( $user_id ) {
