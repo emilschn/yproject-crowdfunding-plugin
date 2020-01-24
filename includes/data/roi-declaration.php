@@ -629,8 +629,8 @@ class WDGROIDeclaration {
 					}
 				}
 
-				if ($total_fees > 0) {
-					LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees);
+				if ( $total_fees > 0 ) {
+					LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees );
 				}
 				$wdguser_author = new WDGUser( $campaign->data->post_author );
 				if ( $this->get_amount_with_adjustment() > 0 ) {
@@ -642,9 +642,11 @@ class WDGROIDeclaration {
 				$this->date_transfer = $date_now_formatted;
 
 				// Envoi de la facture
-				$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
-				$campaign_bill->set_declaration( $this );
-				$campaign_bill->generate();
+				if ( $this->get_commission_to_pay() > 0 ) {
+					$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
+					$campaign_bill->set_declaration( $this );
+					$campaign_bill->generate();
+				}
 			}
 			
 			// On met à jour de toute façon pour mettre à jour le reliquat
