@@ -640,6 +640,11 @@ class WDGROIDeclaration {
 				}
 				$this->status = WDGROIDeclaration::$status_finished;
 				$this->date_transfer = $date_now_formatted;
+
+				// Envoi de la facture
+				$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
+				$campaign_bill->set_declaration( $this );
+				$campaign_bill->generate();
 			}
 			
 			// On met à jour de toute façon pour mettre à jour le reliquat
