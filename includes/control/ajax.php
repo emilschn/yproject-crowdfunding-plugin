@@ -2847,7 +2847,7 @@ class ContactColumn {
 	public $filterQtip = "";
 	public $columnPriority;
 
-    function ContactColumn ($newColumnData, $newColumnName, $newDefaultDisplay=false, $columnPriority, $newFilterClass = "text", $newFilterQtip = "") {
+    function __construct ($newColumnData, $newColumnName, $newDefaultDisplay=false, $columnPriority, $newFilterClass = "text", $newFilterQtip = "") {
         $this->columnData = $newColumnData;
         $this->columnName = $newColumnName;
         $this->defaultDisplay = $newDefaultDisplay;
@@ -2855,15 +2855,15 @@ class ContactColumn {
 		$this->filterClass = $newFilterClass;
 		$this->filterQtip = $newFilterQtip;
 	}
-	
-	    /* Ceci est une fonction de comparaison statique */
-		static function cmp_obj($a, $b)
-		{
-			if ($a->columnPriority == $b->columnPriority) {
-				return 0;
-			}
-			return ($a->columnPriority > $b->columnPriority) ? +1 : -1;
+
+	/* Ceci est une fonction de comparaison statique */
+	static function cmp_obj($a, $b)
+	{
+		if ($a->columnPriority == $b->columnPriority) {
+			return 0;
 		}
+		return ($a->columnPriority > $b->columnPriority) ? +1 : -1;
+	}
 
 
 }
