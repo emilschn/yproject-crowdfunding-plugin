@@ -645,7 +645,11 @@ class WDGROIDeclaration {
 					// Envoi de la facture
 					$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
 					$campaign_bill->set_declaration( $this );
-					$campaign_bill->generate();
+					if ( $campaign_bill->can_generate() ) {
+						$campaign_bill->generate();
+					} else {
+						NotificationsEmails::declaration_bill_failed( $campaign->data->post_title );
+					}
 					
 					// Transfert vers le compte bancaire de WDG
 					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay() );
