@@ -1128,6 +1128,7 @@ class NotificationsAPI {
 	
 	public static function declaration_to_do_warning( $recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date, $declaration_direct_url ) {
 		$id_template = '595';
+		$declaration_direct_url = str_replace( 'https://', '', $declaration_direct_url );
 		$options = array(
 			'personal'							=> 1,
 			'NOM_UTILISATEUR'					=> $user_name,

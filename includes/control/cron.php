@@ -65,6 +65,8 @@ class WDGCronActions {
 								$last_months_str .= ' ' . $year;
 
 								$declaration_direct_url = home_url( '/declarer-chiffre-daffaires/?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id );
+								$declaration_direct_url = str_replace( 'https://', '', $declaration_direct_url );
+
 								$options = array(
 									'NOM'					=> $wdguser_author->get_firstname(),
 									'TROIS_DERNIERS_MOIS'	=> $last_months_str,
