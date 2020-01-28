@@ -1861,13 +1861,13 @@ class WDGAjaxActions {
 					$orga_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
 				}
                 $orga_creator = $orga->get_creator();
-				$array_contacts[$user_id]["user_link"]= 'ORG - ' . $orga->get_name();
-                $array_contacts[$user_id]["user_email"]= $orga->get_email();
+				$array_contacts[$user_id]["user_link"] = $orga->get_email();
+                $array_contacts[$user_id]["user_email"] = $orga->get_email();
+                $array_contacts[$user_id]["user_first_name"] = 'ORGA';
+                $array_contacts[$user_id]["user_last_name"] = $orga->get_name();
 
 				//Infos supplémentaires pour les votants
 				if($array_contacts[$user_id]["vote"] == 1 || $array_contacts[$user_id]["invest"] == 1){
-					$array_contacts[$user_id]["user_last_name"]=$orga_creator->last_name;
-					$array_contacts[$user_id]["user_first_name"]=$orga_creator->first_name;
 					$array_contacts[$user_id]["user_city"]= $orga->get_city();
 					$array_contacts[$user_id]["user_postal_code"]= $orga->get_postal_code();
 					$array_contacts[$user_id]["user_nationality"] = ucfirst(strtolower($orga->get_nationality()));
