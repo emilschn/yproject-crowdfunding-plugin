@@ -308,7 +308,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error_card_wallet( $user_data, $project_title, $amount, $amount_wallet ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error_card_wallet > ' . $user_data->user_email);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Erreur transfert wallet après carte';
 		$body_content = "Salut !<br />";
 		$body_content .= "Il y a un souci pour un transfert de wallet en complément d'un paiement par carte :<br />";
@@ -334,7 +334,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Erreur investissement';
 		$body_content = "Tentative d'investissement avec erreur :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
@@ -357,7 +357,7 @@ class NotificationsEmails {
 	
 	public static function new_purchase_pending_wire_admin( $payment_id ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_pending_wire_admin > ' . $payment_id);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'support@wedogood.co';
 		
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
@@ -382,7 +382,7 @@ class NotificationsEmails {
 	
 	public static function new_purchase_pending_check_admin( $payment_id, $picture_url ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_pending_check_admin > ' . $payment_id);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'support@wedogood.co';
 		
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
@@ -454,7 +454,7 @@ class NotificationsEmails {
 	}
 	
 	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {
-		$user_email = "investir@wedogood.co";
+		$user_email = "support@wedogood.co";
 		
 		$object = "Ajout de chèque dans TB par le PP pour le projet " . $campaign_name;
 		
