@@ -51,7 +51,7 @@ class WDGFormProjects {
 			'project-header-menu-' . $post_campaign->ID
 		));
 		$file_cacher = WDG_File_Cacher::current();
-		$file_cacher->delete( $campaign->get_name() );
+		$file_cacher->delete( $campaign->data->post_name );
                 
 		//Envoi de notifications mails
 		$send_mail = filter_input( INPUT_POST, 'send_mail' );
