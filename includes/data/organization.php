@@ -1516,7 +1516,8 @@ class WDGOrganization {
 			'post_type'		=> 'withdrawal_order_lw',
 			'post_status'	=> 'any',
 			'orderby'		=> 'post_date',
-			'order'			=> 'ASC'
+			'order'			=> 'ASC',
+			'showposts'		=> -1
 		);
 		$transfers = get_posts($args);
 		foreach ( $transfers as $post_transfer ){
