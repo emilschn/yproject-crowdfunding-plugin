@@ -20,9 +20,10 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
 		
+		WDGAjaxActions::add_action( 'try_user_login' );
 		WDGAjaxActions::add_action( 'get_current_user_info' );
-		WDGAjaxActions::add_action('get_connect_to_facebook_url');
-		WDGAjaxActions::add_action('get_searchable_projects_list');
+		WDGAjaxActions::add_action( 'get_connect_to_facebook_url' );
+		WDGAjaxActions::add_action( 'get_searchable_projects_list' );
 		
 		WDGAjaxActions::add_action('display_user_investments');
 		WDGAjaxActions::add_action('display_roi_user_list');
@@ -79,6 +80,38 @@ class WDGAjaxActions {
 	public static function add_action($action_name) {
 		add_action('wp_ajax_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
 		add_action('wp_ajax_nopriv_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
+	}
+
+	public static function try_user_login() {
+		$input_email = filter_input( INPUT_POST, 'email' );
+		$input_password = filter_input( INPUT_POST, 'password' );
+		$input_honeypot1 = filter_input( INPUT_POST, 'honeypot1' );
+		$input_honeypot2 = filter_input( INPUT_POST, 'honeypot2' );
+		$input_rememberme = filter_input( INPUT_POST, 'rememberme' );
+
+		$result = array(
+			'user_display_name'	=> '0',
+			'has_error'	=> '0',
+			'error_str'	=> ''
+		);
+		if ( !empty( $input_honeypot1 ) || !empty( $input_honeypot2 ) ) {
+			$result['has_error'] = '1';
+			$result['error_str'] = __( "Erreur de saisie", 'yproject' );
+		}
+
+		if ( $result['has_error'] == '0' ) {
+			$user_result = WDGFormUsers::filter_login_email( FALSE, $input_email, $input_password );
+			if ( is_wp_error( $user_result ) ) {
+				$result[ 'has_error' ] = '1';
+				$result[ 'error_str' ] = $user_result->get_error_code();
+	
+			} else {
+				$WDGUser = new WDGUser( $user_result->ID );
+				$result[ 'user_display_name' ] = $WDGUser->get_display_name();
+			}
+		}
+
+		exit( json_encode( $result ) );
 	}
 	
 	public static function get_current_user_info() {
