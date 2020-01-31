@@ -13,7 +13,6 @@ class WDGWPREST_Entity_Project_Draft {
 	 * @return object
 	 */
 	public static function get( $guid ) {
-		echo $guid.'-----WDGWPREST_Entity_Project_Draft-----------<br>';
 		if ( empty( $guid ) ) {
 			return FALSE;
 		}
