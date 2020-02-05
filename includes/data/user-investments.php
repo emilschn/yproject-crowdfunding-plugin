@@ -20,10 +20,9 @@ class WDGUserInvestments {
 	
 	public function __construct( $WDGInvestorEntity ) {
 		$this->wp_ref = $WDGInvestorEntity->get_wpref();
-		if ( get_class( $WDGInvestorEntity ) == 'WDGOrganization' ) {
+		if ( get_class( $WDGInvestorEntity ) == 'WDGOrganization' && WDGOrganization::is_user_organization( $WDGInvestorEntity->get_wpref() )) {
 			$this->orga = $WDGInvestorEntity;
-		}
-		if ( get_class( $WDGInvestorEntity ) == 'WDGUser' ) {
+		} elseif ( get_class( $WDGInvestorEntity ) == 'WDGUser' ) {
 			$this->user = $WDGInvestorEntity;
 		}
 	}
