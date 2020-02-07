@@ -19,6 +19,10 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Vote' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
+
+		WDGAjaxActions::add_action( 'try_user_login' );
+		WDGAjaxActions::add_action( 'try_user_register' );
+		WDGAjaxActions::add_action( 'create_project_form' );
 		
 		WDGAjaxActions::add_action( 'get_current_user_info' );
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
@@ -79,6 +83,12 @@ class WDGAjaxActions {
 	public static function add_action($action_name) {
 		add_action('wp_ajax_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
 		add_action('wp_ajax_nopriv_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
+	}
+	
+	public static function create_project_form() {
+		ypcf_debug_log( 'ajax.php :: create_project_form'.filter_input( INPUT_POST, 'firstname' ));
+		$result = WDGPostActions::create_project_form();
+		exit( json_encode( $result ) );
 	}
 	
 	public static function get_current_user_info() {

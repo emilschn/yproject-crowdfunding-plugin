@@ -143,6 +143,12 @@ class WDGPostActions {
         $project_desc = sanitize_text_field(filter_input(INPUT_POST,'project-description'));
         $project_terms = filter_input( INPUT_POST, 'project-terms' );
 
+		$result = array(
+			'user_display_name'	=> '0',
+			'has_error'	=> '0',
+			'error_str'	=> ''
+		);
+
         //User data
         if(!empty($new_firstname)){
             wp_update_user( array ( 'ID' => $WPuserID, 'first_name' => $new_firstname ) ) ;
@@ -154,7 +160,7 @@ class WDGPostActions {
             update_user_meta( $WPuserID, 'user_mobile_phone', $new_phone );
         }
 
-        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && !empty( $new_phone )
+        if ( !empty( $new_firstname ) && !empty( $new_lastname ) && !empty( $new_phone )
 				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms)  && (is_email( $orga_email ) || is_numeric( $orga_name )) ) {
 
 			//On commence par essayer de créer l'organisation d'abord
@@ -177,6 +183,8 @@ class WDGPostActions {
 						
 					} else {
 						$success = false;
+						$result['has_error'] = '1';
+						$result['error_str'] = 'existing_orga_error';
 					}
 				}
 				
@@ -187,11 +195,15 @@ class WDGPostActions {
 					$orga_api_id = $organization_created->get_api_id();
 				} else {
 					$success = false;
+					$result['has_error'] = '1';
+					$result['error_str'] = 'errors_create_orga';
 				}
 				
 			//Sinon on arrête la procédure
 			} else {
 				$success = false;
+				$result['has_error'] = '1';
+				$result['error_str'] = 'orga_error';
 			}
 
 			if ( $success && !empty( $orga_api_id ) ) {
@@ -219,6 +231,8 @@ class WDGPostActions {
 				if ( empty( $test_organization ) ) {
 					$error_content = 'Aucune organisation liée au projet';
 					NotificationsEmails::new_project_posted_error_admin( $project_name, $error_content );
+					$result['has_error'] = '1';
+					$result['error_str'] = 'project_no_orga_linked';
 				}
 
 
@@ -235,15 +249,43 @@ class WDGPostActions {
 				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_create_orga, true) );
 				$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 				$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-				wp_safe_redirect( home_url( '/lancement/?error=creation#newproject' ) );
+				$result['has_error'] = '1';
+				if($errors_submit_new) {
+					$result['errors_submit_new'] = array();
+					foreach ( $errors_submit_new as $error) {
+						$result['errors_submit_new'][] = $error;
+					}
+				}
+				if($errors_create_orga) {
+					$result['errors_create_orga'] = array();
+					foreach ( $errors_create_orga as $error) {
+						$result['errors_create_orga'][] = $error;
+					}
+				}
+				// wp_safe_redirect( home_url( '/lancement/?error=creation#newproject') );
 			}
         } else {
 			global $errors_submit_new, $errors_create_orga;
 			$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 			$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-            wp_safe_redirect( home_url( '/lancement/?error=field_empty#newproject' ) );
-        }
-		exit();
+			$result['has_error'] = '1';
+			if($errors_submit_new) {
+				$result['errors_submit_new'] = array();
+				foreach ( $errors_submit_new as $error) {
+					$result['errors_submit_new'][] = $error;
+				}
+			}
+			if($errors_create_orga) {
+				$result['errors_create_orga'] = array();
+				foreach ( $errors_create_orga as $error) {
+					$result['errors_create_orga'][] = $error;
+				}
+			}
+            // wp_safe_redirect( home_url( '/lancement/?error=field_empty#newproject' ) );
+		}
+
+		return $result;
+		// exit( json_encode( $result ) );
     }
 
     public static function change_project_status(){
