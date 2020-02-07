@@ -21,6 +21,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
 		
 		WDGAjaxActions::add_action( 'try_user_login' );
+		WDGAjaxActions::add_action( 'try_user_register' );
+
 		WDGAjaxActions::add_action( 'get_current_user_info' );
 		WDGAjaxActions::add_action( 'get_connect_to_facebook_url' );
 		WDGAjaxActions::add_action( 'get_searchable_projects_list' );
@@ -96,7 +98,7 @@ class WDGAjaxActions {
 		);
 		if ( !empty( $input_honeypot1 ) || !empty( $input_honeypot2 ) ) {
 			$result['has_error'] = '1';
-			$result['error_str'] = __( "Erreur de saisie", 'yproject' );
+			$result['error_str'] = 'type_error';
 		}
 
 		if ( $result['has_error'] == '0' ) {
@@ -106,8 +108,47 @@ class WDGAjaxActions {
 				$result[ 'error_str' ] = $user_result->get_error_code();
 	
 			} else {
+				wp_set_auth_cookie( $user_result->ID, ( $input_rememberme === 'true' ), is_ssl() );
 				$WDGUser = new WDGUser( $user_result->ID );
 				$result[ 'user_display_name' ] = $WDGUser->get_display_name();
+			}
+		}
+
+		exit( json_encode( $result ) );
+	}
+
+	public static function try_user_register() {
+		$input_email = filter_input( INPUT_POST, 'email' );
+		$input_firstname = filter_input( INPUT_POST, 'firstname' );
+		$input_lastname = filter_input( INPUT_POST, 'lastname' );
+		$input_password = filter_input( INPUT_POST, 'password' );
+		$input_password2 = filter_input( INPUT_POST, 'password2' );
+		$input_honeypot1 = filter_input( INPUT_POST, 'honeypot1' );
+		$input_honeypot2 = filter_input( INPUT_POST, 'honeypot2' );
+		$input_acceptterms = filter_input( INPUT_POST, 'acceptterms' );
+
+		$result = array(
+			'user_display_name'	=> '0',
+			'has_error'	=> '0',
+			'error_str'	=> ''
+		);
+		if ( !empty( $input_honeypot1 ) || !empty( $input_honeypot2 ) ) {
+			$result['has_error'] = '1';
+			$result['error_str'] = 'type_error';
+		}
+		if ( $input_acceptterms !== 'true' ) {
+			$result['has_error'] = '1';
+			$result['error_str'] = 'validate_terms_check';
+		}
+
+		if ( $result['has_error'] == '0' ) {
+			$user_result = WDGFormUsers::register( $input_email, $input_firstname, $input_lastname, $input_password, $input_password2, $input_acceptterms );
+			if ( is_wp_error( $user_result ) ) {
+				$result[ 'has_error' ] = '1';
+				$result[ 'error_str' ] = $user_result->get_error_code();
+	
+			} else {
+				$result[ 'user_display_name' ] = $user_result->get_display_name();
 			}
 		}
 
