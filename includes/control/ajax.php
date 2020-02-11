@@ -2543,7 +2543,7 @@ class WDGAjaxActions {
 			$birthday_date_day, $birthday_date_month, $birthday_date_year,
 			$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 			$address_number, $address_number_complement, $address, $postal_code, $city, $country,
-			FALSE, FALSE, FALSE, FALSE
+			FALSE, FALSE, FALSE
 		);
 		
 		if ( $has_modified_organization ) {
@@ -2596,7 +2596,7 @@ class WDGAjaxActions {
 				$birthday_date_day, $birthday_date_month, $birthday_date_year,
 				$investments_drafts_item_data->birthplace, $investments_drafts_item_data->birthplace_district, $investments_drafts_item_data->birthplace_department, $investments_drafts_item_data->birthplace_country, $investments_drafts_item_data->nationality,
 				$investments_drafts_item_data->address_number, $investments_drafts_item_data->address_number_complement, $investments_drafts_item_data->address, $investments_drafts_item_data->postal_code, $investments_drafts_item_data->city, $investments_drafts_item_data->country,
-				FALSE, FALSE, FALSE, FALSE
+				FALSE, FALSE, FALSE
 			);
 			
 			// Notification de création de compte

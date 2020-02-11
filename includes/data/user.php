@@ -40,7 +40,6 @@ class WDGUser {
 	private $tax_country;
 	private $email;
 	private $phone_number;
-	private $description;
 	private $contact_if_deceased;
 	private $bank_iban;
 	private $bank_bic;
@@ -106,7 +105,6 @@ class WDGUser {
 					$this->tax_country = $this->api_data->tax_country;
 					$this->email = $this->api_data->email;
 					$this->phone_number = $this->api_data->phone_number;
-					$this->description = $this->api_data->description;
 					$this->contact_if_deceased = $this->api_data->contact_if_deceased;
 					$this->bank_iban = $this->api_data->bank_iban;
 					$this->bank_bic = $this->api_data->bank_bic;
@@ -510,14 +508,6 @@ class WDGUser {
 		return $buffer;
 	}
 	
-	public function get_description() {
-		$buffer = $this->description;
-		if ( empty( $buffer ) || $buffer == '---' ) {
-			$buffer = $this->wp_user->get('description');
-		}
-		return $buffer;
-	}
-	
 	public function get_contact_if_deceased() {
 		$buffer = $this->contact_if_deceased;
 		return $buffer;
@@ -696,7 +686,7 @@ class WDGUser {
 	/**
 	 * Enregistre les donnÃ©es nÃ©cessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $description = '', $contact_if_deceased = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $contact_if_deceased = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
@@ -780,10 +770,6 @@ class WDGUser {
 		if ( !empty( $phone_number ) ) {
 			$this->phone_number = $phone_number;
 			$this->save_meta( 'user_mobile_phone', $phone_number );
-		}
-		if ( !empty( $description ) ) {
-			$this->description = $description;
-			$this->save_meta( 'description', $description );
 		}
 		if ( !empty( $contact_if_deceased ) ) {
 			$this->contact_if_deceased = $contact_if_deceased;
