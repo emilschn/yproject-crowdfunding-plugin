@@ -3,6 +3,9 @@
  * Classe de gestion des queues d'actions
  */
 class WDGQueue {
+	private static $priority_date = 'date';
+	private static $priority_high = 'high';
+
 	public static $status_init = 'init';
 	public static $status_complete = 'complete';
 	
@@ -99,7 +102,7 @@ class WDGQueue {
 	public static function add_notification_royalties( $user_id ) {
 		$action = 'roi_transfer_message';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// Les envois se font à 21h
 		$date_next_dispatch->setTime( 21, 0 );
@@ -295,7 +298,7 @@ class WDGQueue {
 	public static function add_contract_extension_notifications( $campaign_id ) {
 		$action = 'contract_extension_notifications';
 		$entity_id = $campaign_id;
-		$priority = 'high';
+		$priority = self::$priority_high;
 		
 		self::create_or_replace_action( $action, $entity_id, $priority );
 	}
@@ -346,7 +349,7 @@ class WDGQueue {
 	public static function add_contract_finished_notifications( $campaign_id ) {
 		$action = 'contract_finished_notifications';
 		$entity_id = $campaign_id;
-		$priority = 'high';
+		$priority = self::$priority_high;
 		
 		self::create_or_replace_action( $action, $entity_id, $priority );
 	}
@@ -395,7 +398,7 @@ class WDGQueue {
 	public static function add_preinvestments_validation( $campaign_id ) {
 		$action = 'preinvestments_validation';
 		$entity_id = $campaign_id;
-		$priority = 'high';
+		$priority = self::$priority_high;
 		
 		self::create_or_replace_action( $action, $entity_id, $priority );
 	}
@@ -434,12 +437,38 @@ class WDGQueue {
 	}
 	
 /******************************************************************************/
+/* NOTIFICATIONS RELANCE CAMPAGNE */
+/******************************************************************************/
+	public static function add_campaign_notifications( $campaign_id, $mail_type, $input_testimony_in, $input_image_url, $input_image_description, $user_already_sent_to ) {
+		$action = 'campaign_notifications';
+		$entity_id = $campaign_id;
+		$priority = self::$priority_high;
+		
+		$params = array(
+			'mail_type'				=> $mail_type,
+			'testimony_in'			=> $input_testimony_in,
+			'image_url'				=> $input_image_url,
+			'image_description'		=> $input_image_description,
+			'user_already_sent_to'	=> $user_already_sent_to
+		);
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params );
+	}
+
+	public static function execute_campaign_notifications( $campaign_id, $queued_action_params, $queued_action_id ) {
+		$queued_action_param = json_decode( $queued_action_params[ 0 ] );
+		// Passage à complete avant, pour pouvoir en ajouter un à la suite
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		WDGEmails::auto_notifications( $campaign_id, $queued_action_param->mail_type, $queued_action_param->testimony_in, $queued_action_param->image_url, $queued_action_param->image_description, '', $queued_action_param->user_already_sent_to );
+	}
+	
+/******************************************************************************/
 /* NOTIFICATIONS ADMIN LORSQUE ERREURS DOCUMENTS LEMON WAY */
 /******************************************************************************/
-	public static function add_document_refused_admin_notification( $user_id, $lemonway_posted_document_type, $lemonway_posted_document_status) {
+	public static function add_document_refused_admin_notification( $user_id, $lemonway_posted_document_type, $lemonway_posted_document_status ) {
 		$action = 'document_refused_notification';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme la vérification 3 jours plus tard
 		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
@@ -517,7 +546,7 @@ class WDGQueue {
 	public static function add_document_refused_user_notification( $user_id ) {
 		$action = 'document_refused_user_notification';
 		$entity_id = $user_id;
-		$priority = 'high';
+		$priority = self::$priority_high;
 		self::create_or_replace_action( $action, $entity_id, $priority );
 	}
 
@@ -562,7 +591,7 @@ class WDGQueue {
 	public static function add_document_user_phone_notification( $user_id, $status ) {
 		$action = 'document_user_phone_notification';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = self::get_next_open_date();
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array(
@@ -614,7 +643,7 @@ class WDGQueue {
 	public static function add_document_validated_but_not_wallet_admin_notification( $user_id ) {
 		$action = 'document_validated_but_not_wallet_admin_notification';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme la vérification 1 jour plus tard
 		$date_next_dispatch->add( new DateInterval( 'P1D' ) );
@@ -710,7 +739,7 @@ class WDGQueue {
 	public static function add_campaign_advice_notification( $campaign_id ) {
 		$action = 'campaign_advice_notification';
 		$entity_id = $campaign_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme le prochain envoi 1 jour plus tard
 		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
@@ -754,7 +783,7 @@ class WDGQueue {
 	public static function add_vote_authentication_needed_reminder( $user_id, $user_email, $campaign_name, $campaign_api_id ) {
 		$action = 'vote_authentication_needed_reminder';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme le prochain envoi 3 jours plus tard
 		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
@@ -800,7 +829,7 @@ class WDGQueue {
 	public static function add_vote_authenticated_reminder( $user_id, $user_email, $campaign_name, $campaign_url, $campaign_id, $campaign_api_id, $vote_amount ) {
 		$action = 'vote_authenticated_reminder';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme le prochain envoi 3 jours plus tard
 		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
@@ -843,7 +872,7 @@ class WDGQueue {
 	public static function add_investment_authentified_reminder( $user_id, $user_email, $user_name, $campaign_name, $campaign_api_id ) {
 		$action = 'investment_authentified_reminder';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme le prochain envoi 3 jours plus tard
 		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
@@ -893,7 +922,7 @@ class WDGQueue {
 	public static function add_investment_authentication_needed_reminder( $user_id, $user_email, $user_name, $campaign_name, $campaign_api_id ) {
 		$action = 'investment_authentication_needed_reminder';
 		$entity_id = $user_id;
-		$priority = 'date';
+		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme le prochain envoi 3 jours plus tard
 		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
@@ -918,14 +947,16 @@ class WDGQueue {
 				$WDGEntity = new WDGOrganization( $user_id );
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_name();
+				$LW_registered = $WDGEntity->is_registered_lemonway_wallet();
 			} else {
 				$WDGEntity = new WDGUser( $user_id );
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_firstname();
+				$LW_registered = $WDGEntity->is_lemonway_registered();
 			}
 			
 			// On vérifie que les documents n'ont toujours pas été envoyés
-			if ( !$WDGEntity->has_sent_all_documents() ) {
+			if ( !$WDGEntity->has_sent_all_documents() && !$LW_registered ) {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
 				NotificationsAPI::investment_authentication_needed_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_api_id );
 			}
@@ -971,7 +1002,7 @@ class WDGQueue {
 		public static function add_royalties_auto_transfer_start( $declaration_id, $date = FALSE ) {
 			$action = 'royalties_auto_transfer_start';
 			$entity_id = $declaration_id;
-			$priority = 'date';
+			$priority = self::$priority_date;
 			if ( $date == FALSE ) {
 				$date = new DateTime();
 			}
@@ -1008,7 +1039,7 @@ class WDGQueue {
 		public static function add_royalties_auto_transfer_next( $declaration_id ) {
 			$action = 'royalties_auto_transfer_next';
 			$entity_id = $declaration_id;
-			$priority = 'high';
+			$priority = self::$priority_high;
 			$params = array();
 			self::create_or_replace_action( $action, $entity_id, $priority, $params );
 		}

@@ -747,7 +747,7 @@ class WDGOrganization {
 	 */
 	public function has_sent_all_documents() {
 		$buffer = TRUE;
-		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id, WDGKYCFile::$type_idbis);
+		$documents_type_list = array( WDGKYCFile::$type_kbis, WDGKYCFile::$type_status, WDGKYCFile::$type_id );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 			$current_document = $document_filelist[0];
@@ -1516,7 +1516,8 @@ class WDGOrganization {
 			'post_type'		=> 'withdrawal_order_lw',
 			'post_status'	=> 'any',
 			'orderby'		=> 'post_date',
-			'order'			=> 'ASC'
+			'order'			=> 'ASC',
+			'showposts'		=> -1
 		);
 		$transfers = get_posts($args);
 		foreach ( $transfers as $post_transfer ){
@@ -1725,7 +1726,7 @@ class WDGOrganization {
  		
 		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
 		
-		require __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
+		require_once __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get(
 			$this->get_name(),
 			$this->get_idnumber(),

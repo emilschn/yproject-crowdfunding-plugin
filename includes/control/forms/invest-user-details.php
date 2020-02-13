@@ -705,10 +705,18 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$country = $this->getInputText( 'country' );
 				$tax_country = $this->getInputText( 'tax_country' );
 				$phone_number = $this->getInputText( 'phone_number' );
+				$birthdate_day = FALSE;
+				$birthdate_month = FALSE;
+				$birthdate_year = FALSE;
+				if ( !empty( $birthdate ) ) {
+					$birthdate_day = $birthdate->format('d');
+					$birthdate_month = $birthdate->format('m');
+					$birthdate_year = $birthdate->format('Y');
+				}
 			
 				$WDGUser->save_data(
 					$email, $gender, $firstname, $lastname, $use_lastname,
-					$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
+					$birthdate_day, $birthdate_month, $birthdate_year,
 					$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 					$address_number, $address_number_comp, $address, $postal_code, $city, $country, $tax_country, $phone_number
 				);

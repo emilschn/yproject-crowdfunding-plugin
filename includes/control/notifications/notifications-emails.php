@@ -48,6 +48,40 @@ class NotificationsEmails {
 		return $buffer;
     }
     
+    //*******************************************************
+    // RELECTURE
+	//*******************************************************
+	public static function send_project_description_notification_to_project( $id_campaign ) {
+		$campaign = new ATCF_Campaign( $id_campaign );
+
+		$campaign_author = $campaign->post_author();
+		$author_user = get_user_by( 'ID', $campaign_author );
+		$recipient = $author_user->user_email;
+		$campaign_organization = $campaign->get_organization();
+		$WDGOrganizationCampaign = new WDGOrganization( $campaign_organization->wpref );
+		$recipient .= ',' . $WDGOrganizationCampaign->get_email();
+
+		$object = $campaign->get_name() . ' /// Relecture de votre présentation';
+		$content = "Bonjour,<br>";
+		$content .= "WE DO GOOD a bien relu la présentation de votre projet et a mis quelques annotations sur votre page projet.<br>";
+		$content .= "Vous pouvez vous rendre sur la page de présentation de votre projet pour apporter les corrections demandées : " . $campaign->get_public_url() . "<br>";
+		$content .= "Bon courage, et bonne journée !<br>";
+		$content .= "L'équipe WE DO GOOD";
+		return NotificationsEmails::send_mail( $recipient, $object, $content, TRUE );
+	}
+
+	public static function send_project_description_notification_to_wdg( $id_campaign ) {
+		$campaign = new ATCF_Campaign( $id_campaign );
+		$recipient = 'support@wedogood.co';
+		$object = $campaign->get_name() . ' /// Présentation à relire !';
+		$content = "Le porteur de projet a cliqué sur le bouton de relecture<br>";
+		$content .= "URL du projet : " . $campaign->get_public_url();
+		return NotificationsEmails::send_mail( $recipient, $object, $content );
+	}
+    //*******************************************************
+    // FIN RELECTURE
+	//*******************************************************
+	
     
     //*******************************************************
     // ACHATS
@@ -274,7 +308,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error_card_wallet( $user_data, $project_title, $amount, $amount_wallet ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error_card_wallet > ' . $user_data->user_email);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Erreur transfert wallet après carte';
 		$body_content = "Salut !<br />";
 		$body_content .= "Il y a un souci pour un transfert de wallet en complément d'un paiement par carte :<br />";
@@ -300,7 +334,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Erreur investissement';
 		$body_content = "Tentative d'investissement avec erreur :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
@@ -323,7 +357,7 @@ class NotificationsEmails {
 	
 	public static function new_purchase_pending_wire_admin( $payment_id ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_pending_wire_admin > ' . $payment_id);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'support@wedogood.co';
 		
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
@@ -348,7 +382,7 @@ class NotificationsEmails {
 	
 	public static function new_purchase_pending_check_admin( $payment_id, $picture_url ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_pending_check_admin > ' . $payment_id);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'support@wedogood.co';
 		
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
@@ -420,7 +454,7 @@ class NotificationsEmails {
 	}
 	
 	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {
-		$user_email = "investir@wedogood.co";
+		$user_email = "support@wedogood.co";
 		
 		$object = "Ajout de chèque dans TB par le PP pour le projet " . $campaign_name;
 		
@@ -540,31 +574,6 @@ class NotificationsEmails {
 		$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink( $comment_object->comment_post_ID ).'">'.$campaign->data->post_title.'</a>.';
 
 		$user = get_userdata( $campaign->data->post_author );
-		$emails = $user->user_email;
-		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
-
-		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
-    }
-    //*******************************************************
-    // FIN NOUVEAU COMMENTAIRE
-    //*******************************************************
-    
-    //*******************************************************
-    // NOUVEAU COMMENTAIRE
-    //*******************************************************
-    public static function new_topic($topic_id, $forum_id, $anonymous_data, $topic_author) {
-		ypcf_debug_log('NotificationsEmails::new_topic > ' . $topic_id);
-		$object = 'Nouveau sujet !';
-
-		$post_topic = get_post($topic_id);
-		$post_forum = get_post($post_topic->post_parent);
-		$post_campaign = get_post($post_forum->post_title);
-		$campaign = new ATCF_Campaign( $post_campaign );
-
-		$body_content = "Un nouveau sujet a été ouvert sur votre projet ".$post_campaign->post_title." :<br /><br />";
-		$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink($topic_id).'">'.$post_topic->post_title.'</a>.';
-
-		$user = get_userdata($post_campaign->post_author);
 		$emails = $user->user_email;
 		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
@@ -724,6 +733,15 @@ class NotificationsEmails {
 		$object = "Projet proche du versement complet de royalties";
 		$body_content = "Coucou !<br><br>";
 		$body_content .= "Le projet " .$project_name. " est proche d'atteindre son versement maximum (ratio de " .$ratio. " %).";
+		
+		$admin_email = 'administratif@wedogood.co';
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
+	}
+
+	public static function declaration_bill_failed( $campaign_name ) {
+		$object = "Erreur génération facture - " . $campaign_name;
+		$body_content = "Hello !<br><br>";
+		$body_content .= "La facture automatique de la dernière déclaration de royalties pour le projet " .$campaign_name. " n'a pas pu être créée.";
 		
 		$admin_email = 'administratif@wedogood.co';
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );

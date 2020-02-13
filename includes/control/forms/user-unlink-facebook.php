@@ -62,13 +62,13 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$WDGUser = new WDGUser( $user_id );
 		$WDGUser_current = WDGUser::current();
-		
+
 		// On s'en fout du feedback, ça ne devrait pas arriver
 		if ( !is_user_logged_in() ) {
 		
-		// Sécurité, ne devrait pas arriver non plus
-		} else if ( $WDGUser->get_wpref() != $WDGUser_current->get_wpref() ) {
-
+		// Un admin peut faire la manip à la place de l'utilisateur, mais c'est tout
+		} else if ( ( $WDGUser->get_wpref() != $WDGUser_current->get_wpref() ) && !$WDGUser_current->is_admin() ) {
+			
 		// Analyse du formulaire
 		} else {
 				
