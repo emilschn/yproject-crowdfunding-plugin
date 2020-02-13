@@ -264,7 +264,7 @@ class WDGFormUsers {
 		exit();
 	}
 	
-	public static function register() {
+	public static function register( $user_email = null, $user_firstname = null, $user_lastname = null, $password = null, $password_confirm = null, $validate_terms_check = null ) {
 		if ( is_user_logged_in() ) { return FALSE; }
 			
 		global $signup_errors, $signup_step;
@@ -272,11 +272,14 @@ class WDGFormUsers {
 		$signup_step = 'request-details';
 		
 		$register_form_posted = filter_input(INPUT_POST, 'signup_submit');
-		if ( empty( $register_form_posted ) ) { return FALSE; }
-		
+		if ( empty( $register_form_posted ) && is_null( $user_email ) ) { return FALSE; }
+
+		$need_post_data = is_null( $user_email );
 		
 		// Vérifications de l'e-mail
-		$user_email = rtrim( filter_input( INPUT_POST, 'signup_email' ) );
+		if ( is_null( $user_email ) ) {
+			$user_email = rtrim( filter_input( INPUT_POST, 'signup_email' ) );
+		}
 		$user_name = $user_email;
 		if ( empty( $user_email ) ) {
 			$signup_errors->add( 'user_email', __( "L'adresse e-mail doit &ecirc;tre d&eacute;finie.", 'yproject' ) );
@@ -285,40 +288,50 @@ class WDGFormUsers {
 			$signup_errors->add( 'user_name', __( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ) );
 		}
 		if ( !is_email( $user_email ) ) {
-			$signup_errors->add( 'user_email', __( "Cette adresse e-mail n'est pas valide.", 'yproject' ) );
+			$signup_errors->add( 'user_email_incorrect', __( "Cette adresse e-mail n'est pas valide.", 'yproject' ) );
 		}
 
 		// Vérifications sur prénom et nom
-		$user_firstname = filter_input( INPUT_POST, 'signup_firstname' );
+		if ( is_null( $user_firstname ) ) {
+			$user_firstname = filter_input( INPUT_POST, 'signup_firstname' );
+		}
 		$user_firstname = mb_convert_case( $user_firstname , MB_CASE_TITLE );
 		if ( empty( $user_firstname ) ) {
 			$signup_errors->add( 'user_firstname', __( "Le pr&eacute;nom doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
 		}
-		$user_lastname = filter_input( INPUT_POST, 'signup_lastname' );
+		if ( is_null( $user_lastname ) ) {
+			$user_lastname = filter_input( INPUT_POST, 'signup_lastname' );
+		}
 		$user_lastname = mb_convert_case( $user_lastname , MB_CASE_TITLE );
 		if ( empty( $user_lastname ) ) {
 			$signup_errors->add( 'user_lastname', __( "Le nom de famille doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
 		}
 
 		// Vérifications concernant le mot de passe
-		$password = filter_input(INPUT_POST, 'signup_password');
-		$password_confirm = filter_input(INPUT_POST, 'signup_password_confirm');
+		if ( is_null( $password ) ) {
+			$password = filter_input(INPUT_POST, 'signup_password');
+		}
+		if ( is_null( $password_confirm ) ) {
+			$password_confirm = filter_input(INPUT_POST, 'signup_password_confirm');
+		}
 		if ( empty( $password ) || empty( $password_confirm ) ) {
 			$signup_errors->add( 'user_password', __( "Avez-vous saisi deux fois le mot de passe ?", 'yproject' ) );
 		}
 		if ( !empty( $password ) && !empty( $password_confirm ) && $password != $password_confirm ) {
-			$signup_errors->add( 'user_password', __( "Les mots de passe saisis ne correspondent pas.", 'yproject' ) );
+			$signup_errors->add( 'user_password_match', __( "Les mots de passe saisis ne correspondent pas.", 'yproject' ) );
 		}
 
 		// Vérifications CGU
-		$validate_terms_check = filter_input(INPUT_POST, 'validate-terms-check');
+		if ( is_null( $validate_terms_check ) ) {
+			$validate_terms_check = filter_input(INPUT_POST, 'validate-terms-check');
+		}
 		if ( empty( $validate_terms_check ) ) {
 			$signup_errors->add( 'validate_terms_check', __( "Merci de cocher la case pour accepter les conditions g&eacute;n&eacute;rales d&apos;utilisation.", 'yproject' ) );
 		}
 		
 		
 		// Si le formulaire d'inscription est rempli
-		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && WDGFormUsers::check_recaptcha($_POST['g-recaptcha-response']) ) {
+		if ( !$need_post_data || ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && WDGFormUsers::check_recaptcha($_POST['g-recaptcha-response']) ) ) {
 
 			$signup_error_message = $signup_errors->get_error_message();
 			if ( empty( $signup_error_message ) ) {
@@ -345,20 +358,28 @@ class WDGFormUsers {
 					NotificationsSlack::send_new_user( $wp_user_id );
 					NotificationsAPI::user_registration( $user_email, $user_firstname );
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
-					if (isset($_POST['redirect-home'])) {
-						ypcf_debug_log( 'WDGFormUsers::register > redirect home' );
-						wp_redirect(home_url());
-					} else {
-						ypcf_debug_log( 'WDGFormUsers::register > redirect page' );
-						wp_redirect( wp_unslash( WDGUser::get_login_redirect_page() ) );
+					if ( $need_post_data ) {
+						if ( isset( $_POST[ 'redirect-home' ] ) ) {
+							ypcf_debug_log( 'WDGFormUsers::register > redirect home' );
+							wp_redirect(home_url());
+						} else {
+							ypcf_debug_log( 'WDGFormUsers::register > redirect page' );
+							wp_redirect( wp_unslash( WDGUser::get_login_redirect_page() ) );
+						}
+						exit();
 					}
-					exit();
 				}
 			}
 
 		} else {
-			$signup_errors->add( 'user_insert', __( "Merci de cocher la case confirmant que vous n'&ecirc;tes pas un robot.", 'yproject' ) );
+			$signup_errors->add( 'user_robot', __( "Merci de cocher la case confirmant que vous n'&ecirc;tes pas un robot.", 'yproject' ) );
 			
+		}
+
+		if ( $signup_step == 'completed-confirmation' ) {
+			return new WDGUser( $wp_user_id );
+		} else {
+			return $signup_errors;
 		}
 	}
 	
