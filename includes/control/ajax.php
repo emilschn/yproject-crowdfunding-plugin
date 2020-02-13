@@ -53,6 +53,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('create_investment_from_draft');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action( 'cancel_pending_investments' );
+		WDGAjaxActions::add_action( 'campaign_duplicate' );
 		WDGAjaxActions::add_action( 'conclude_project' );
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
@@ -2693,6 +2694,44 @@ class WDGAjaxActions {
 		exit( '1' );
 	}
 	
+	/**
+	 * Lance la duplication d'une campagne
+	 */
+	
+	public static function campaign_duplicate() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		
+		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign_ref = new ATCF_Campaign( $campaign_id ); // on utilise la campagne existante pour reprendre certains paramètres
+			$newcampaign_id = atcf_duplicate_campaign($campaign_ref);
+			$newcampaign = atcf_get_campaign($newcampaign_id);							
+
+			// lier l'organization
+			$newcampaign->link_organization( $campaign_ref->get_organization()->wpref );
+			// mettre à jour l'API
+			$newcampaign->update_api();
+
+			// Liaison aux catégories
+			$api_data_type = json_decode( $campaign_ref->get_api_data( 'type' ) );
+			$api_data_category = json_decode( $campaign_ref->get_api_data( 'category' ) );
+			$api_data_impacts = json_decode( $campaign_ref->get_api_data( 'impacts' ) );
+			$api_data_partners = json_decode( $campaign_ref->get_api_data( 'partners' ) );
+			$api_data_tousnosprojets = json_decode( $campaign_ref->get_api_data( 'tousnosprojets' ) );
+			$cat_ids = array_merge( $api_data_type, $api_data_category, $api_data_impacts, $api_data_partners, $api_data_tousnosprojets );
+			$cat_ids = array_map( 'intval', $cat_ids );
+			if ( !empty( $cat_ids ) ) { 
+				wp_set_object_terms( $newcampaign->ID, $cat_ids, 'download_category' );
+			}
+			$newcampaign->set_api_data( 'type', $campaign_ref->get_categories_by_type( 'types', TRUE ) );
+			$newcampaign->set_api_data( 'category', $campaign_ref->get_categories_by_type( 'activities', TRUE ) );
+			$newcampaign->set_api_data( 'impacts', $campaign_ref->get_categories_by_type( 'categories', TRUE ) );
+			$newcampaign->set_api_data( 'partners', $campaign_ref->get_categories_by_type( 'partners', TRUE ) );
+			$newcampaign->set_api_data( 'tousnosprojets', $campaign_ref->get_categories_by_type( 'tousnosprojets', TRUE ) );
+		}
+		
+		exit('1' );
+	}
 	/**
 	 * Lance la finalisation du projet (transfert des données d'investissement sur l'API, ...)
 	 */

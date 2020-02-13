@@ -123,6 +123,109 @@ function atcf_create_campaign($author_ID, $title){
 
 }
 
+function atcf_duplicate_campaign($campaign_ref){
+    global $edd_options;
+
+	// on numérote les projets dupliqués
+	$duplicata = $campaign_ref->__get( 'campaign_duplicata');
+	if ( ! isset( $duplicata ) ) {
+		$duplicata = 1;
+		$campaign_ref->__set('campaign_duplicata', $duplicata);
+	} else {
+		$duplicata++;
+		$campaign_ref->__set('campaign_duplicata', $duplicata);
+	}
+	$title = $campaign_ref->get_name().' '.$duplicata;
+	$author_ID = $campaign_ref->post_author();
+
+
+    $args = array(
+        'post_type'   		 	=> 'download', //TODO ?
+        'post_status'  		 	=> 'publish',//TODO ?
+        'post_content' 		 	=> $campaign_ref->description() ,
+        'post_title'   		 	=> $title,
+        'post_author'  			=> $author_ID,
+
+    );
+
+    $newcampaign_id = wp_insert_post( $args, true );
+
+	$today_date = date_format(new DateTime(), 'Y-m-d H:i:s');
+
+    // Create category for blog
+	$id_category = wp_insert_category( array('cat_name' => 'cat'.$newcampaign_id, 'category_nicename' => sanitize_title($newcampaign_id . '-blog-' . $title)) );
+    add_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category );
+
+    // Extra Campaign Information
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_funded );// on change le status pour passer à funded
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0 );
+
+    add_post_meta( $newcampaign_id, 'campaign_part_value', $campaign_ref->part_value() );
+    add_post_meta( $newcampaign_id, 'campaign_funding_type', $campaign_ref->funding_type() );
+
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_end_vote_date, $campaign_ref->__get(ATCF_Campaign::$key_end_vote_date));
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_end_collecte_date,  $today_date);// la phase d'investissement se termine le jour de la duplication
+	add_post_meta( $newcampaign_id, ATCF_Campaign::$key_begin_collecte_date, $campaign_ref->begin_collecte_date());
+	// TODO : changer les dates de la campagne dupliquée ?
+
+    add_post_meta( $newcampaign_id, 'campaign_societal_challenge', $campaign_ref->societal_challenge());
+    add_post_meta( $newcampaign_id, 'campaign_added_value', $campaign_ref->added_value());
+    add_post_meta( $newcampaign_id, 'campaign_economic_model', $campaign_ref->economic_model());
+    add_post_meta( $newcampaign_id, 'campaign_implementation', $campaign_ref->implementation());
+
+    // EDD Stuff
+    add_post_meta( $newcampaign_id, '_variable_pricing', $campaign_ref->__get('_variable_pricing') );
+    add_post_meta( $newcampaign_id, '_edd_price_options_mode', $campaign_ref->__get('_edd_price_options_mode') );
+    add_post_meta( $newcampaign_id, '_edd_hide_purchase_link', $campaign_ref->__get('_edd_hide_purchase_link') );
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_payment_provider, $campaign_ref->get_payment_provider() );
+    add_post_meta( $newcampaign_id, 'edd_variable_prices', $campaign_ref->__get('edd_variable_prices') );
+	add_post_meta( $newcampaign_id, '_edd_download_earnings', $campaign_ref->__get('_edd_download_earnings'));
+	add_post_meta( $newcampaign_id, '_edd_download_sales', $campaign_ref->__get('_edd_download_sales'));
+	add_post_meta( $newcampaign_id, 'edd_download_files', $campaign_ref->__get('edd_download_files'));
+	add_post_meta( $newcampaign_id, 'edd_price', $campaign_ref->__get('edd_price'));
+
+	// TODO : manquent des metas ? certains inutiles ?
+	add_post_meta( $newcampaign_id, '_edit_last', $campaign_ref->__get('_edit_last'));
+	add_post_meta( $newcampaign_id, '_edit_lock', $campaign_ref->__get('_edit_lock'));
+	add_post_meta( $newcampaign_id, '_vc_post_settings', $campaign_ref->__get('_vc_post_settings'));
+	add_post_meta( $newcampaign_id, 'add_first_declaration', $campaign_ref->__get('add_first_declaration'));
+	add_post_meta( $newcampaign_id, 'campaign_backoffice_businessplan', $campaign_ref->__get('campaign_backoffice_businessplan'));
+	add_post_meta( $newcampaign_id, 'campaign_backoffice_contract_orga', $campaign_ref->__get('campaign_backoffice_contract_orga'));
+	add_post_meta( $newcampaign_id, 'campaign_backoffice_summary', $campaign_ref->__get('campaign_backoffice_summary'));
+	add_post_meta( $newcampaign_id, 'campaign_backoffice_WDG_notoriety', $campaign_ref->__get('campaign_backoffice_WDG_notoriety'));
+	add_post_meta( $newcampaign_id, 'campaign_contact_phone', $campaign_ref->__get('campaign_contact_phone'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_detailed_info', $campaign_ref->__get('campaign_contract_detailed_info'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_earnings_description', $campaign_ref->__get('campaign_contract_earnings_description'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_modifications', $campaign_ref->__get('campaign_contract_modifications'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_premium', $campaign_ref->__get('campaign_contract_premium'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_simple_info', $campaign_ref->__get('campaign_contract_simple_info'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_spendings_description', $campaign_ref->__get('campaign_contract_spendings_description'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_title', $campaign_ref->__get('campaign_contract_title'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_title_en_US', $campaign_ref->__get('campaign_contract_title_en_US'));
+	add_post_meta( $newcampaign_id, 'campaign_contract_warranty', $campaign_ref->__get('campaign_contract_warranty'));
+	add_post_meta( $newcampaign_id, 'campaign_edit_version', $campaign_ref->__get('campaign_edit_version'));
+	add_post_meta( $newcampaign_id, 'campaign_estimated_turnover', $campaign_ref->__get('campaign_estimated_turnover'));
+	add_post_meta( $newcampaign_id, 'campaign_first_payment_date', $campaign_ref->__get('campaign_first_payment_date'));
+	add_post_meta( $newcampaign_id, 'campaign_forced_mandate', $campaign_ref->__get('campaign_forced_mandate'));
+	add_post_meta( $newcampaign_id, 'campaign_funding_duration', $campaign_ref->__get('campaign_funding_duration'));
+	add_post_meta( $newcampaign_id, 'campaign_goal', $campaign_ref->__get('campaign_goal'));
+	add_post_meta( $newcampaign_id, 'campaign_location', $campaign_ref->__get('campaign_location'));
+	add_post_meta( $newcampaign_id, 'campaign_minimum_goal', $campaign_ref->__get('campaign_minimum_goal'));
+	add_post_meta( $newcampaign_id, 'campaign_override_contract', $campaign_ref->__get('campaign_override_contract'));
+	add_post_meta( $newcampaign_id, 'campaign_postname', $campaign_ref->__get('campaign_postname'));
+	add_post_meta( $newcampaign_id, 'campaign_roi_percent_estimated', $campaign_ref->__get('campaign_roi_percent_estimated'));
+	add_post_meta( $newcampaign_id, 'campaign_type', $campaign_ref->__get('campaign_type'));
+	add_post_meta( $newcampaign_id, 'campaign_validation_steps', $campaign_ref->__get('campaign_validation_steps'));
+	add_post_meta( $newcampaign_id, 'contract_budget_type', $campaign_ref->__get('contract_budget_type'));
+	add_post_meta( $newcampaign_id, 'contract_maximum_type', $campaign_ref->__get('contract_maximum_type'));
+	add_post_meta( $newcampaign_id, 'contract_quarter_earnings_estimation_type', $campaign_ref->__get('contract_quarter_earnings_estimation_type'));
+	add_post_meta( $newcampaign_id, 'filter', $campaign_ref->__get('filter'));
+	add_post_meta( $newcampaign_id, 'societal_challenge_add_value_reservation_fr_FR', $campaign_ref->__get('societal_challenge_add_value_reservation_fr_FR'));
+	add_post_meta( $newcampaign_id, 'static_content_api_post_id', $campaign_ref->__get('static_content_api_post_id'));
+
+    return $newcampaign_id;
+}
+
 /** Single Campaign *******************************************************/
 
 class ATCF_Campaign {
