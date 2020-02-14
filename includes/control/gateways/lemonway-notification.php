@@ -530,6 +530,8 @@ class LemonwayNotification {
 							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . ' €<br>';
 							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €<br><br>';
 
+							$declaration->send_admin_tax_document();
+
 							// Programmer versement auto
 							WDGQueue::add_royalties_auto_transfer_start( $declaration->id, $date_of_royalties_transfer );
 						}

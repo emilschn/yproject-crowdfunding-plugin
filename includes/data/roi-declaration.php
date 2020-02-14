@@ -18,6 +18,8 @@ class WDGROIDeclaration {
 	public static $mean_payment_mandate = 'mandate';
 	
 	public static $min_amount_for_wire_payment = 1000;
+	public static $tax_without_exemption = 30;
+	public static $tax_with_exemption = 17.2;
 	
 	public $id;
 	public $id_campaign;
@@ -744,7 +746,7 @@ class WDGROIDeclaration {
 				if ( $investment_contract_item->subscription_id == $investment_id ) {
 					$amount_received = $investment_contract_item->amount_received + $roi_amount;
 					$investment_contract = new WDGInvestmentContract( $investment_contract_item->id, $investment_contract_item );
-					$investment_contract->check_amount_received( $amount_received );
+					$investment_contract->check_amount_received( $amount_received, $roi_amount );
 					WDGWPREST_Entity_InvestmentContract::edit( $investment_contract_item->id, $amount_received );
 					break;
 				}
@@ -929,6 +931,84 @@ class WDGROIDeclaration {
 		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-payment/';
 		$buffer .= $this->get_payment_certificate_filename();
 		return $buffer;
+	}
+
+	/**
+	 * Se charge 
+	 * - de vérifier si des investisseurs vont toucher une plus-value
+	 * - de vérifier si ils vont devoir payer des impots dessus et à quel taux 
+	 * (personne physique, dont la résidence fiscale est en France, dispense ou non)
+	 * - d'envoyer le résumé par mail à admin si il y a des infos à transmettre
+	 */
+	public function send_admin_tax_document() {
+		$buffer_mail = FALSE;
+		$total_tax_amount = 0;
+		$today_date = new DateTime();
+
+		//********************** */
+		$campaign = $this->get_campaign_object();
+		$investment_contracts = WDGInvestmentContract::get_list( $campaign->ID );
+		$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount, $is_refund );
+		foreach ($investments_list as $investment_item) {
+			$this->remaining_amount -= $investment_item['roi_amount'];
+
+			//Versement vers utilisateur personne physique
+			if ( WDGOrganization::is_user_organization( $investment_item['user'] ) ) {
+				$WDGOrganization = new WDGOrganization( $investment_item['user'] );
+				$buffer_mail .= "- L'organisation " . $WDGOrganization->get_name() . " (" . $WDGOrganization->get_email() . ") ";
+				$buffer_mail .= "n'a pas de prélévement.<br>";
+
+			} else {
+				$WDGUser = new WDGUser( $investment_item['user'] );
+				$buffer_mail .= "- L'investisseur " . $WDGUser->get_firstname() . " " . $WDGUser->get_lastname() . " (" . $WDGUser->get_email() . ") ";
+				if ( $investment_item['roi_amount'] == 0 ) {
+					$buffer_mail .= "n'a pas reçu de royalties.<br>";
+					break;
+				}
+
+				foreach ( $investment_contracts as $investment_contract_item ) {
+					if ( $investment_contract_item->subscription_id == $investment_id ) {
+
+						$amount_received = $investment_contract_item->amount_received + $roi_amount;
+						// Est-ce que c'est une plus-value ?
+						if ( $amount_received <= $investment_contract_item->subscription_amount ) {
+							$buffer_mail .= "n'a pas reçu de plus-value.<br>";
+							break;
+						}
+
+						// Est-ce que la résidence fiscale est en France (ou non définie -> grande chance que ce soit en France)
+						$tax_country = $WDGUser->get_tax_country();
+						if ( !empty( $tax_country ) && $tax_country != 'FR' ) {
+							$buffer_mail .= "n'est pas résident fiscal en France.<br>";
+							break;
+						}
+
+
+						// Est-ce qu'il y a une dispense ?
+						$tax_amount = 0;
+						if ( $WDGUser->has_tax_exemption_for_year( $today_date->format( 'Y' ) ) ) {
+							$tax_amount = min( $amount_received, $investment_contract_item->subscription_amount - $amount_received );
+							$total_tax_amount += round( $tax_amount * WDGROIDeclaration::$tax_with_exemption / 100, 2 );
+
+						} else {
+							$tax_amount = min( $amount_received, $investment_contract_item->subscription_amount - $amount_received );
+							$total_tax_amount += round( $tax_amount * WDGROIDeclaration::$tax_without_exemption / 100, 2 );
+						}
+
+						// Chaine
+						$buffer_mail .= "subit un prélévement de " . $tax_amount . " €.<br>";
+					}
+				}
+			}
+		
+		}
+
+		if ( $total_tax_amount > 0 ) {
+			$content_mail = "Prélèvement à la source pour le projet " . $campaign->get_name() . " :<br>";
+			$content_mail .= "Montant total " . $total_tax_amount . " €.<br><br>";
+			$content_mail .= $buffer_mail;
+			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement avec prélévement à la source', $content_mail );
+		}
 	}
 	
 	/**
