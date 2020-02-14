@@ -1759,8 +1759,8 @@ class WDGUser {
 	 */
 	public function can_pay_with_card_and_wallet( $amount, $campaign ) {
 		$lemonway_amount = $this->get_lemonway_wallet_amount();
-		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5â‚¬ Ã  payer par carte
-		return ($lemonway_amount > 0 && $amount - $lemonway_amount > 5 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 1 euro à payer par carte
+		return ($lemonway_amount > 0 && $amount - $lemonway_amount >= 1 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
 	/**
