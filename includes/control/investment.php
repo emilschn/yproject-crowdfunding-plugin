@@ -82,7 +82,86 @@ class WDGInvestment {
 		return $this->payment_key;
 	}
 	
-	
+	/**
+	 * transfère un investissement vers une campagne
+	 * @param ATCF_Campaign $to_campaign
+	 */
+	public function transfer($to_campaign) {
+		// on mémorise l'id de la campagne de départ et d'arrivée
+		$from_campaign_id = $this->get_saved_campaign()->ID;
+		$to_campaign_id = $to_campaign->ID;
+		
+		// on mémorise tous les paiements de la campagne de départ
+		$payments = edd_get_payments( array(
+			'number'	 => -1,
+			'download'   => $from_campaign_id
+		) );
+
+		// on mémorise l'id du paiement en cours
+		$payment_id = $this->get_id();		
+
+		// on change la campagne du paiement en cours
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$new_downloads = edd_get_payment_meta_downloads( $payment_id );
+		if ( !is_array( $new_downloads[ 0 ] ) ){
+			$campaign_id = $new_downloads[ 0 ];
+			$new_downloads[ 0 ] = $to_campaign_id;
+		} else {
+			if ( isset( $new_downloads[ 0 ][ 'id' ] ) ) {
+				$campaign_id = $new_downloads[ 0 ][ 'id' ];
+				$new_downloads[ 0 ][ 'id' ] = $to_campaign_id;
+			}
+		}
+		$payment_data['downloads'] = $new_downloads;
+		$payment_data['cart_details'][ 0 ][ 'name' ] = $to_campaign->get_name();
+		$payment_data['cart_details'][ 0 ][ 'id' ] = $to_campaign_id;
+		$payment_data['cart_details'][ 0 ][ 'item_number' ][ 'id' ] = $to_campaign_id;
+		// sécurité
+		if ($campaign_id == $from_campaign_id){
+			// Donnée investissement sur site : table postmeta : modifier l'identifiant du projet WP dans les meta (_edd_payment_meta). 
+			update_post_meta($payment_id, '_edd_payment_meta', $payment_data);
+
+			// Donnée investissement sur API : table entity_investment : modifier la donnée "project" avec l'ID API du nouveau projet
+			$payment = FALSE;
+			if ( $payments ) {
+				foreach ( $payments as $payment_item ) {
+					if ( $payment_item->ID == $this->id ) {
+						$payment = $payment_item;
+					}
+				}
+			}
+
+			if ( !empty( $payment ) ) {
+				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment );
+			}
+
+			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
+			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
+			// le contrat est nommé de cette façon : dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf'
+			
+			$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$this->get_saved_user_id(). '_*.pdf';
+			ypcf_debug_log( 'investment.php :: $exp = '.$exp);
+			// $exp = dirname( __FILE__ ). '/../../../../plugins/appthemer-crowdfunding/includes/pdf_files/' .$campaign_id. '_' .$WDGUser_current->wp_user->ID. '_*.pdf';
+			$files = glob( $exp );
+			foreach ($files as $filename) {
+				ypcf_debug_log( 'investment.php :: $filename = '.$filename);
+				// sachant que l'on transfère les investissements du plus vieux au plus récent, s'il y a plusieurs contrats de cet investisseur sur cette campagne
+				// c'est le plus vieux contrat qu'il faut renommer, donc le premier de la liste
+				break;
+			}
+			$new_filename = str_replace('pdf_files/' .$campaign_id. '_', 'pdf_files/' .$to_campaign_id. '_', $filename);
+			ypcf_debug_log( 'investment.php :: $new_filename = '.$new_filename);	
+			rename($filename, $new_filename);
+		}
+	}
+	/**
+	 * coupe un investissement en 2 et transfère la valeur de amount vers une campagne
+	 * @param ATCF_Campaign $to_campaign
+	 * @param int $amount
+	 */
+	public function cut_and_transfer($to_campaign, $amount) {
+
+	}
 	/**
 	 * Détermine si les valeurs de sessions sont correctes pour l'investissement
 	 */

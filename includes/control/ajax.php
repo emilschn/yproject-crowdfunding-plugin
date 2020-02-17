@@ -54,6 +54,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action( 'cancel_pending_investments' );
 		WDGAjaxActions::add_action( 'campaign_duplicate' );
+		WDGAjaxActions::add_action( 'campaign_transfer_investments' );
 		WDGAjaxActions::add_action( 'conclude_project' );
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
@@ -2704,7 +2705,7 @@ class WDGAjaxActions {
 		
 		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign_ref = new ATCF_Campaign( $campaign_id ); // on utilise la campagne existante pour reprendre certains paramètres
-			$newcampaign_id = atcf_duplicate_campaign($campaign_ref);
+			$newcampaign_id = $campaign_ref->duplicate();
 			$newcampaign = atcf_get_campaign($newcampaign_id);							
 
 			// lier l'organization
@@ -2713,21 +2714,29 @@ class WDGAjaxActions {
 			$newcampaign->update_api();
 
 			// Liaison aux catégories
-			$api_data_type = json_decode( $campaign_ref->get_api_data( 'type' ) );
-			$api_data_category = json_decode( $campaign_ref->get_api_data( 'category' ) );
-			$api_data_impacts = json_decode( $campaign_ref->get_api_data( 'impacts' ) );
-			$api_data_partners = json_decode( $campaign_ref->get_api_data( 'partners' ) );
-			$api_data_tousnosprojets = json_decode( $campaign_ref->get_api_data( 'tousnosprojets' ) );
-			$cat_ids = array_merge( $api_data_type, $api_data_category, $api_data_impacts, $api_data_partners, $api_data_tousnosprojets );
-			$cat_ids = array_map( 'intval', $cat_ids );
-			if ( !empty( $cat_ids ) ) { 
-				wp_set_object_terms( $newcampaign->ID, $cat_ids, 'download_category' );
+			$categories = get_the_terms($campaign_id,'download_category');
+			$categories_id = array();
+			foreach( $categories as $categorie ) {
+				$categories_id[] = $categorie->term_id;
 			}
-			$newcampaign->set_api_data( 'type', $campaign_ref->get_categories_by_type( 'types', TRUE ) );
-			$newcampaign->set_api_data( 'category', $campaign_ref->get_categories_by_type( 'activities', TRUE ) );
-			$newcampaign->set_api_data( 'impacts', $campaign_ref->get_categories_by_type( 'categories', TRUE ) );
-			$newcampaign->set_api_data( 'partners', $campaign_ref->get_categories_by_type( 'partners', TRUE ) );
-			$newcampaign->set_api_data( 'tousnosprojets', $campaign_ref->get_categories_by_type( 'tousnosprojets', TRUE ) );
+			$term_taxonomy_ids = wp_set_object_terms( $newcampaign_id, $categories_id, 'download_category', TRUE );
+		}
+		
+		exit('1' );
+	}
+
+	/**
+	 * Transfert des investissements d'une campagne à une autre
+	 */
+	public static function campaign_transfer_investments(){
+		$WDGUser_current = WDGUser::current();
+		$from_campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$to_campaign_id = filter_input(INPUT_POST, 'duplicated_campaign');
+		ypcf_debug_log( 'ajax.php ::campaign_transfer_investments $from_campaign_id'.$from_campaign_id);
+		ypcf_debug_log( 'ajax.php ::campaign_transfer_investments $to_campaign_id'.$to_campaign_id);
+		
+		if ( $WDGUser_current->is_admin() && !empty( $from_campaign_id ) && !empty( $to_campaign_id ) ) {
+			WDGCampaignInvestments::transfer_investments( $from_campaign_id, $to_campaign_id );
 		}
 		
 		exit('1' );
