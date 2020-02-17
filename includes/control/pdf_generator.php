@@ -148,7 +148,11 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_organization_reprensentative_civility( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_creator;
-		return ( $shortcode_organization_creator->get_gender() == 'male' ) ? 'M' : 'Mme';
+		if ( isset ($shortcode_organization_creator) ) {
+			return ( $shortcode_organization_creator->get_gender() == 'male' ) ? 'M' : 'Mme';
+		} else {
+			return '';
+		}		
 	}
 	/**
 	 * Shortcode affichant le prénom de la personne représentant l'organisation qui porte le projet
