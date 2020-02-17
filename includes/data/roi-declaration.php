@@ -294,6 +294,26 @@ class WDGROIDeclaration {
 	public function get_commission_tax() {
 		return $this->get_commission_to_pay() - $this->get_commission_to_pay_without_tax();
 	}
+
+	/**
+	 * Définir si il y a des plus-values
+	 */
+	public function has_paid_gain() {
+		// Si il y a eu un versement pendant cette déclaration
+		if ( $this->get_amount_with_adjustment() > 0 ) {
+			$investment_contracts = WDGInvestmentContract::get_list_by_status( $this->get_campaign_object()->ID, WDGInvestmentContract::$status_active );
+			if ( !empty( $investment_contracts ) ) {
+				
+				foreach ( $investment_contracts as $investment_contract ) {
+					if ( $investment_contract->amount_received > $investment_contract->subscription_amount ) {
+						return TRUE;
+					}
+				}
+			}
+		}
+		
+		return FALSE;
+	}
 	
 	/**
 	 * Traite un fichier uploadÃ© qui doit Ãªtre ajoutÃ© Ã  la liste
@@ -636,7 +656,14 @@ class WDGROIDeclaration {
 				}
 				$wdguser_author = new WDGUser( $campaign->data->post_author );
 				if ( $this->get_amount_with_adjustment() > 0 ) {
-					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment() );
+					$tax_infos = '';
+					if ( $this->has_paid_gain() ) {
+						$tax_infos = "<br><br>Vos investisseurs ont réalisé une plus-value sur leur investissement.";
+						$tax_infos .= "Ceux et celles dont le foyer fiscal est en France et qui sont soumis à l’impôt sur le revenu ";
+						$tax_infos .= "verront donc 30 % de leur plus-value prélevés à la source (Prélèvement Forfaitaire Unique - flat tax), sauf en cas de demande de dispense de leur part. ";
+						$tax_infos .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement">En savoir plus sur la fiscalité des investissements</a>.';
+					}
+					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment(), $tax_infos );
 				} else {
 					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
 				}
