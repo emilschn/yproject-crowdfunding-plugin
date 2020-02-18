@@ -553,7 +553,36 @@ class WDGUser {
 	}
 
 /*******************************************************************************
- * Fonctions nÃ©cessitant des requetes
+ * Préférences d'affichage de l'aide contextuelle
+*******************************************************************************/
+	private $removed_help_items;
+	public function get_removed_help_items() {
+		if ( !isset( $this->removed_help_items ) ) {
+			$this->removed_help_items = array();
+			$removed_help_items_meta = $this->wp_user->get( 'removed_help_items' );
+			if ( !empty( $removed_help_items_meta ) ) {
+				$this->removed_help_items = json_decode( $removed_help_items_meta );
+			}
+		}
+		return $this->removed_help_items;
+	}
+
+	public function has_removed_help_item( $item_name, $version ) {
+		$removed_help_items = $this->get_removed_help_items();
+		return isset( $removed_help_items->{ $item_name } ) && $removed_help_items->{ $item_name } >= $version;
+	}
+
+	public function set_removed_help_items( $item_name, $version ) {
+		// Initialisation de la liste dans la variable de classe, qu'on modifie directement après
+		$this->get_removed_help_items();
+		$this->removed_help_items->{ $item_name } = $version;
+		$removed_help_items_meta = json_encode( $this->removed_help_items );
+		update_user_meta( $this->get_wpref(), 'removed_help_items', $removed_help_items_meta );
+	}
+
+
+/*******************************************************************************
+ * Fonctions nécessitant des requetes
 *******************************************************************************/
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
