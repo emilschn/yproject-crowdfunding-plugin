@@ -681,7 +681,8 @@ class WDGROIDeclaration {
 					}
 					
 					// Transfert vers le compte bancaire de WDG
-					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay() );
+					$transfer_message = 'ROYALTIES ' . $organization_obj->get_name() . ' - D' . $this->id;
+					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
 				}
 			}
 			
