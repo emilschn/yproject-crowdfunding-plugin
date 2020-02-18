@@ -148,7 +148,7 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_organization_reprensentative_civility( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_creator;
-		if ( isset ($shortcode_organization_creator) ) {
+		if ( !empty ($shortcode_organization_creator) ) {
 			return ( $shortcode_organization_creator->get_gender() == 'male' ) ? 'M' : 'Mme';
 		} else {
 			return '';
