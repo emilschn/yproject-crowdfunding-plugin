@@ -192,15 +192,15 @@ class ATCF_Campaign {
 
 	public function duplicate(){
 		global $edd_options;
+		// on sauvegarde dans la campagne parente l'id de toutes les campagnes dupliquées
+		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns'));
 
-		// on numérote les projets dupliqués
-		$duplicata = $this->__get( 'campaign_duplicata');
-		if ( ! isset( $duplicata ) ) {
+		$duplicata = count($duplicated_campaigns);
+		if ( empty( $duplicated_campaigns ) ) {
 			$duplicata = 1;
 		} else {
 			$duplicata++;
 		}
-		$this->__set('campaign_duplicata', $duplicata);
 		$title = $this->get_name().' '.$duplicata;
 		$author_ID = $this->post_author();
 
@@ -215,88 +215,43 @@ class ATCF_Campaign {
 		);
 
 		$newcampaign_id = wp_insert_post( $args, true );	
-		
-		// on sauvegarde dans la campagne arente l'id de toutes les campagnes dupliquées
-		$duplicated_campaigns = $this->__get('duplicated_campaigns');
-		if ( ! isset( $duplicated_campaigns ) && $duplicated_campaigns != '') {
-			$duplicated_campaigns = '';
-		} else {
-			$duplicated_campaigns = $duplicated_campaigns.',';
-		}
-		$this->__set('duplicated_campaigns', $duplicated_campaigns.$newcampaign_id);
+		$duplicated_campaigns[] = $newcampaign_id;
+		$this->__set('duplicated_campaigns', json_encode($duplicated_campaigns));
 
-		$today_date = date_format(new DateTime(), 'Y-m-d H:i:s');
+		// on copie les metas en bloc
+		$metas = get_post_meta( $this->ID );		
+		foreach ( $metas as $key => $value ) {
+			add_post_meta( $newcampaign_id, $key, $this->__get($key) );
+		}
 
 		// Create category for blog
 		$id_category = wp_insert_category( array('cat_name' => 'cat'.$newcampaign_id, 'category_nicename' => sanitize_title($newcampaign_id . '-blog-' . $title)) );
-		add_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category );
+		if ( ! add_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category, true) ) { 
+			update_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category );
+		}		
+		// on change le status de la campagne dupliquée
+		if ( ! add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_funded, true) ) { 
+			update_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_funded );
+		}
+		if ( ! add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0, true) ) { 
+			update_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0 );
+		}
+		// on ajoute ces tags au cas où ils n'ont pas été créés
+		if ( ! add_post_meta( $newcampaign_id, '_vc_post_settings',  $this->__get('_vc_post_settings'), true) ) { 
+			update_post_meta( $newcampaign_id, '_vc_post_settings',  $this->__get('_vc_post_settings') );
+		}
+		if ( ! add_post_meta( $newcampaign_id, '_variable_pricing', $this->__get('_variable_pricing'), true) ) { 
+			update_post_meta( $newcampaign_id, '_variable_pricing', $this->__get('_variable_pricing') );
+		}
+		// on change l'objectif max d ela campagne dupliquée
+		if ( ! add_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal'), true) ) { 
+			update_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal') );
+		}
+		// on vide la liste des campagnes dupliquées
+		delete_post_meta($newcampaign_id, 'duplicated_campaigns');
+		delete_post_meta($newcampaign_id, 'campaign_duplicata');
+		delete_post_meta($newcampaign_id, 'id_api');
 
-		// Extra Campaign Information
-		add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_funded );// on change le status pour passer à funded
-		add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0 );
-
-		add_post_meta( $newcampaign_id, 'campaign_part_value', $this->part_value() );
-		add_post_meta( $newcampaign_id, 'campaign_funding_type', $this->funding_type() );
-
-		add_post_meta( $newcampaign_id, ATCF_Campaign::$key_end_vote_date, $this->__get(ATCF_Campaign::$key_end_vote_date));
-		add_post_meta( $newcampaign_id, ATCF_Campaign::$key_end_collecte_date,  $today_date);// la phase d'investissement se termine le jour de la duplication
-		add_post_meta( $newcampaign_id, ATCF_Campaign::$key_begin_collecte_date, $this->begin_collecte_date());
-		// TODO : changer les dates de la campagne dupliquée ?
-
-		add_post_meta( $newcampaign_id, 'campaign_societal_challenge', $this->societal_challenge());
-		add_post_meta( $newcampaign_id, 'campaign_added_value', $this->added_value());
-		add_post_meta( $newcampaign_id, 'campaign_economic_model', $this->economic_model());
-		add_post_meta( $newcampaign_id, 'campaign_implementation', $this->implementation());
-
-		// EDD Stuff
-		add_post_meta( $newcampaign_id, '_variable_pricing', $this->__get('_variable_pricing') );
-		add_post_meta( $newcampaign_id, '_edd_price_options_mode', $this->__get('_edd_price_options_mode') );
-		add_post_meta( $newcampaign_id, '_edd_hide_purchase_link', $this->__get('_edd_hide_purchase_link') );
-		add_post_meta( $newcampaign_id, ATCF_Campaign::$key_payment_provider, $this->get_payment_provider() );
-		add_post_meta( $newcampaign_id, 'edd_variable_prices', $this->__get('edd_variable_prices') );
-		add_post_meta( $newcampaign_id, '_edd_download_earnings', $this->__get('_edd_download_earnings'));
-		add_post_meta( $newcampaign_id, '_edd_download_sales', $this->__get('_edd_download_sales'));
-		add_post_meta( $newcampaign_id, 'edd_download_files', $this->__get('edd_download_files'));
-		add_post_meta( $newcampaign_id, 'edd_price', $this->__get('edd_price'));
-
-		// TODO : manquent des metas ? certains inutiles ?
-		add_post_meta( $newcampaign_id, '_edit_last', $this->__get('_edit_last'));
-		add_post_meta( $newcampaign_id, '_edit_lock', $this->__get('_edit_lock'));
-		add_post_meta( $newcampaign_id, '_vc_post_settings', $this->__get('_vc_post_settings'));
-		add_post_meta( $newcampaign_id, 'add_first_declaration', $this->__get('add_first_declaration'));
-		add_post_meta( $newcampaign_id, 'campaign_backoffice_businessplan', $this->__get('campaign_backoffice_businessplan'));
-		add_post_meta( $newcampaign_id, 'campaign_backoffice_contract_orga', $this->__get('campaign_backoffice_contract_orga'));
-		add_post_meta( $newcampaign_id, 'campaign_backoffice_summary', $this->__get('campaign_backoffice_summary'));
-		add_post_meta( $newcampaign_id, 'campaign_backoffice_WDG_notoriety', $this->__get('campaign_backoffice_WDG_notoriety'));
-		add_post_meta( $newcampaign_id, 'campaign_contact_phone', $this->__get('campaign_contact_phone'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_detailed_info', $this->__get('campaign_contract_detailed_info'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_earnings_description', $this->__get('campaign_contract_earnings_description'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_modifications', $this->__get('campaign_contract_modifications'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_premium', $this->__get('campaign_contract_premium'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_simple_info', $this->__get('campaign_contract_simple_info'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_spendings_description', $this->__get('campaign_contract_spendings_description'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_title', $this->__get('campaign_contract_title'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_title_en_US', $this->__get('campaign_contract_title_en_US'));
-		add_post_meta( $newcampaign_id, 'campaign_contract_warranty', $this->__get('campaign_contract_warranty'));
-		add_post_meta( $newcampaign_id, 'campaign_edit_version', $this->__get('campaign_edit_version'));
-		add_post_meta( $newcampaign_id, 'campaign_estimated_turnover', $this->__get('campaign_estimated_turnover'));
-		add_post_meta( $newcampaign_id, 'campaign_first_payment_date', $this->__get('campaign_first_payment_date'));
-		add_post_meta( $newcampaign_id, 'campaign_forced_mandate', $this->__get('campaign_forced_mandate'));
-		add_post_meta( $newcampaign_id, 'campaign_funding_duration', $this->__get('campaign_funding_duration'));
-		add_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_goal'));
-		add_post_meta( $newcampaign_id, 'campaign_location', $this->__get('campaign_location'));
-		add_post_meta( $newcampaign_id, 'campaign_minimum_goal', $this->__get('campaign_minimum_goal'));
-		add_post_meta( $newcampaign_id, 'campaign_override_contract', $this->__get('campaign_override_contract'));
-		add_post_meta( $newcampaign_id, 'campaign_postname', $this->__get('campaign_postname'));
-		add_post_meta( $newcampaign_id, 'campaign_roi_percent_estimated', $this->__get('campaign_roi_percent_estimated'));
-		add_post_meta( $newcampaign_id, 'campaign_type', $this->__get('campaign_type'));
-		add_post_meta( $newcampaign_id, 'campaign_validation_steps', $this->__get('campaign_validation_steps'));
-		add_post_meta( $newcampaign_id, 'contract_budget_type', $this->__get('contract_budget_type'));
-		add_post_meta( $newcampaign_id, 'contract_maximum_type', $this->__get('contract_maximum_type'));
-		add_post_meta( $newcampaign_id, 'contract_quarter_earnings_estimation_type', $this->__get('contract_quarter_earnings_estimation_type'));
-		add_post_meta( $newcampaign_id, 'filter', $this->__get('filter'));
-		add_post_meta( $newcampaign_id, 'societal_challenge_add_value_reservation_fr_FR', $this->__get('societal_challenge_add_value_reservation_fr_FR'));
-		add_post_meta( $newcampaign_id, 'static_content_api_post_id', $this->__get('static_content_api_post_id'));
 
 		return $newcampaign_id;
 	}
@@ -346,6 +301,8 @@ class ATCF_Campaign {
 	}
 	
 	public function update_api() {
+		ypcf_debug_log( 'campaign.php :: update_api() $this->ID = '.$this->ID);
+		ypcf_debug_log( 'campaign.php :: update_api() $this->get_api_id() = '.$this->get_api_id());
 		WDGWPREST_Entity_Project::update( $this );
 	}
 	
@@ -415,11 +372,11 @@ class ATCF_Campaign {
  * GESTION DES CAMPAGNES DUPLIQUEES
  ******************************************************************************/
 	public function get_duplicate_campaigns_id() {		
-		$duplicated_campaigns = explode( ',' , $this->__get('duplicated_campaigns') );
+		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
 		return $duplicated_campaigns;
 	}
 	public function get_duplicate_campaigns_titles() {
-		$duplicated_campaigns = explode( ',' , $this->__get('duplicated_campaigns') );
+		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
 		$duplicated_campaigns_title = array();
 		foreach ( $duplicated_campaigns as $wpcampaign ) {
 			$WDGCampaign = new ATCF_Campaign( $wpcampaign );
@@ -2065,6 +2022,8 @@ class ATCF_Campaign {
 	}
 	
 	public function link_organization( $id_api_organization, $link_type = '' ) {
+		ypcf_debug_log( 'campaign.php :: link_organization() $this->ID = '.$this->ID);
+		ypcf_debug_log( 'campaign.php :: link_organization() $this->get_api_id() = '.$this->get_api_id());
 		if ( empty( $link_type ) ) {
 			$link_type = WDGWPREST_Entity_Project::$link_organization_type_manager;
 		}
