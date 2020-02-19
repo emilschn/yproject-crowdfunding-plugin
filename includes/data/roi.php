@@ -6,6 +6,7 @@ class WDGROI {
 	public static $table_name = 'ypcf_roi';
 	
 	public static $status_waiting_authentication = "waiting_authentication";
+	public static $status_waiting_transfer = "waiting_transfer";
 	public static $status_transferred = "transferred";
 	public static $status_canceled = "canceled";
 	public static $status_error = "error";
@@ -20,6 +21,7 @@ class WDGROI {
 	public $id_declaration;
 	public $date_transfer;
 	public $amount;
+	public $amount_tax;
 	public $id_transfer;
 	public $status;
 	public $on_api;
@@ -44,30 +46,10 @@ class WDGROI {
 				$this->id_declaration = $roi_api_item->id_declaration;
 				$this->date_transfer = $roi_api_item->date_transfer;
 				$this->amount = $roi_api_item->amount;
+				$this->amount_tax = $roi_api_item->amount_tax_in_cents / 100;
 				$this->id_transfer = $roi_api_item->id_transfer;
 				$this->status = $roi_api_item->status;
 				$this->on_api = TRUE;
-
-			// Sinon récupération sur la bdd locale (deprecated)
-			} else {
-				global $wpdb;
-				$table_name = $wpdb->prefix . WDGROI::$table_name;
-				$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$roi_id;
-				$roi_item = $wpdb->get_row( $query );
-				if ( $roi_item ) {
-					$this->id = $roi_item->id;
-					$this->id_investment = $roi_item->id_investment;
-					$this->id_campaign = $roi_item->id_campaign;
-					$this->id_orga = $roi_item->id_orga;
-					$this->id_user = $roi_item->id_user;
-					$this->recipient_type = 'user';
-					$this->id_declaration = $roi_item->id_declaration;
-					$this->date_transfer = $roi_item->date_transfer;
-					$this->amount = $roi_item->amount;
-					$this->id_transfer = $roi_item->id_transfer;
-					$this->status = $roi_item->status;
-					$this->on_api = ( $roi_item->on_api == 1 );
-				}
 			}
 		}
 	}
@@ -79,35 +61,11 @@ class WDGROI {
 		WDGWPREST_Entity_ROI::update( $this );
 	}
 	
+	/**
+	 * deprecated
+	 */
 	public function save( $local = FALSE ) {
-		if ( $this->on_api && !$local ) {
-			$this->update();
-			
-		} else {
-			global $wpdb;
-			$table_name = $wpdb->prefix . WDGROI::$table_name;
-			$result = $wpdb->update( 
-				$table_name, 
-				array( 
-					'id_investment' => $this->id_investment,
-					'id_campaign' => $this->id_campaign,
-					'id_orga' => $this->id_orga,
-					'id_user' => $this->id_user,
-					'id_declaration' => $this->id_declaration,
-					'date_transfer' => $this->date_transfer, 
-					'amount' => $this->amount,
-					'id_transfer' => $this->id_transfer,
-					'status' => $this->status,
-					'on_api' => ( $this->on_api ? 1 : 0 )
-				),
-				array(
-					'id' => $this->id
-				)
-			);
-			if ($result !== FALSE) {
-				return $this->id;
-			}
-		}
+		$this->update();
 	}
 	
 	public function get_formatted_date( $type = 'transfer' ) {
@@ -201,35 +159,9 @@ class WDGROI {
 	}
 	
 	/**
-	 * Mise à jour base de données
-	 */
-	public static function upgrade_db() {
-		global $wpdb;
-		$charset_collate = $wpdb->get_charset_collate();
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		
-		$table_name = $wpdb->prefix . WDGROI::$table_name;
-		$sql = "CREATE TABLE " .$table_name. " (
-			id mediumint(9) NOT NULL AUTO_INCREMENT,
-			id_investment mediumint(9) NOT NULL,
-			id_campaign mediumint(9) NOT NULL,
-			id_orga mediumint(9) NOT NULL,
-			id_user mediumint(9) NOT NULL,
-			id_declaration mediumint(9) NOT NULL,
-			date_transfer date DEFAULT '0000-00-00',
-			amount float,
-			id_transfer mediumint(9) NOT NULL,
-			status tinytext,
-			on_api tinyint DEFAULT 0,
-			UNIQUE KEY id (id)
-		) $charset_collate;";
-		$result = dbDelta( $sql );
-	}
-	
-	/**
 	 * Ajout d'une nouvelle déclaration
 	 */
-	public static function insert( $id_investment, $id_campaign, $id_orga, $id_user, $recipient_type, $id_declaration, $date_transfer, $amount, $id_transfer, $status, $id_investment_contract ) {
+	public static function insert( $id_investment, $id_campaign, $id_orga, $id_user, $recipient_type, $id_declaration, $date_transfer, $amount, $id_transfer, $status, $id_investment_contract, $amount_tax ) {
 		$roi = new WDGROI();
 		$roi->id_investment = $id_investment;
 		$roi->id_investment_contract = $id_investment_contract;
@@ -240,6 +172,7 @@ class WDGROI {
 		$roi->id_declaration = $id_declaration;
 		$roi->date_transfer = $date_transfer;
 		$roi->amount = $amount;
+		$roi->amount_tax = $amount_tax;
 		$roi->id_transfer = $id_transfer;
 		$roi->status = $status;
 		WDGWPREST_Entity_ROI::create( $roi );

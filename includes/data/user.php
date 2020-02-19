@@ -1296,6 +1296,19 @@ class WDGUser {
 		}
 		return $buffer;
 	}
+
+	public function get_tax_amount( $roi_amount ) {
+		$date_now = new DateTime();
+		$tax_amount = 0;
+		$tax_country = $this->get_tax_country();
+		if ( empty( $tax_country ) || $tax_country == 'FR' ) {
+			if ( $this->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) ) {
+				$tax_amount = round( $roi_amount * WDGROIDeclaration::$tax_with_exemption / 100, 2 );
+			} else {
+				$tax_amount = round( $roi_amount * WDGROIDeclaration::$tax_without_exemption / 100, 2 );
+			}
+		}
+	}
 	
 /*******************************************************************************
  * Gestion RIB

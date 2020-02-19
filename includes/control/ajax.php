@@ -2663,7 +2663,7 @@ class WDGAjaxActions {
 			$input_transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
 			$transfer_remaining_amount = ( $input_transfer_remaining_amount != 'false' && ( $input_transfer_remaining_amount === 1 || $input_transfer_remaining_amount === TRUE || $input_transfer_remaining_amount === 'true' ) );
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$buffer = $roi_declaration->make_transfer( $send_notifications, $transfer_remaining_amount, $is_refund );
+			$buffer = $roi_declaration->transfer_pending_rois();
 		}
 		
 		echo json_encode( $buffer );

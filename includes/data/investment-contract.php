@@ -80,27 +80,10 @@ class WDGInvestmentContract {
 		WDGWPREST_Entity_InvestmentContract::create( $this );
 	}
 	
-	public function check_amount_received( $amount_received, $amount_current_declaration ) {
+	public function check_amount_received( $amount_received, $amount_current_declaration, $amount_tax ) {
 		// Est-ce que l'investisseur a reçu une plus-value
 		if ( $amount_received > $this->subscription_amount ) {
 			NotificationsEmails::roi_received_exceed_investment( $this->investor_id, $this->investor_type, $this->project_id );
-
-			// Transfert sur le wallet de séquestre d'impots de l'organisation
-			if ( $this->investor_type == 'user' ) {
-				$WDGUser = new WDGUser( $this->investor_id );
-				$tax_country = $WDGUser->get_tax_country();
-				if ( empty( $tax_country ) || $tax_country != 'FR' ) {
-					$WDGOrganization = new WDGOrganization( $this->organization_id );
-					$WDGOrganization->check_register_tax_lemonway_wallet();
-					$transfer_gain = min( $amount_current_declaration, $amount_received - $this->subscription_amount );
-					$tax = round( $transfer_gain * WDGROIDeclaration::$tax_without_exemption / 100, 2 );
-					$today_date = new DateTime();
-					if ( $WDGUser->has_tax_exemption_for_year( $today_date->format( 'Y' ) ) ) {
-						$tax = round( $transfer_gain * WDGROIDeclaration::$tax_with_exemption / 100, 2 );
-					}
-					LemonwayLib::ask_transfer_funds( $WDGUser->get_lemonway_id(), $WDGOrganization->get_tax_lemonway_id(), $tax );
-				}
-			}
 		}
 
 		// Notification de sécurité : Est-ce que l'investisseur a dépassé le maximum qu'il devrait pouvoir recevoir ?

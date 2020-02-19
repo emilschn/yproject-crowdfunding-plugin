@@ -145,14 +145,6 @@ class WDGQueue {
 		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 		$total_tax_amount = 0;
-		$tax_percent = 0;
-		$tax_country = $WDGUser->get_tax_country();
-		if ( empty( $tax_country ) || $tax_country == 'FR' ) {
-			$tax_percent = WDGROIDeclaration::$tax_without_exemption;
-			if ( $WDGUser->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) ) {
-				$tax_percent = WDGROIDeclaration::$tax_with_exemption;
-			}
-		}
 		
 		// Parcours de la liste des investissements validés sur le site
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
@@ -183,23 +175,19 @@ class WDGQueue {
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$amount_royalties = 0;
 				$amount_royalties_for_project = 0;
+				$amount_tax = 0;
 				$has_declared = FALSE;
 
 				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
 				foreach ( $campaign_roi_list as $campaign_roi ) {
 					$date_transfer = new DateTime( $campaign_roi->date_transfer );
+					$amount_tax += $campaign_roi->amount_tax;
+					$total_tax_amount += $amount_tax;
 					$amount_royalties_for_project += $campaign_roi->amount;
 					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
 						$amount_royalties += $campaign_roi->amount;
 						$has_declared = TRUE;
 					}
-				}
-
-				$amount_tax = 0;
-				if ( $tax_percent > 0 && $first_investment_contract->subscription_amount > $amount_royalties_for_project ) {
-					$transfer_gain = min( $amount_royalties, $first_investment_contract->subscription_amount - $amount_royalties_for_project );
-					$amount_tax = round( $transfer_gain * $tax_percent / 100, 2 );
-					$total_tax_amount += $amount_tax;
 				}
 
 				if ( $has_declared ) {
@@ -1081,7 +1069,7 @@ class WDGQueue {
 			if ( !empty( $declaration_id ) ) {
 
 				$roi_declaration = new WDGROIDeclaration( $declaration_id );
-				$result = $roi_declaration->make_transfer();
+				$result = $roi_declaration->transfer_pending_rois();
 				if ( $result == 100 ) {
 					$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 					$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();

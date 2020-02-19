@@ -299,24 +299,18 @@ class WDGROIDeclaration {
 	 * Définir si il y a des plus-values
 	 */
 	public function has_paid_gain() {
-		// Si il y a eu un versement pendant cette déclaration
-		if ( $this->get_amount_with_adjustment() > 0 ) {
-			$investment_contracts = WDGInvestmentContract::get_list_by_status( $this->get_campaign_object()->ID, WDGInvestmentContract::$status_active );
-			if ( !empty( $investment_contracts ) ) {
-				
-				foreach ( $investment_contracts as $investment_contract ) {
-					if ( $investment_contract->amount_received > $investment_contract->subscription_amount ) {
-						return TRUE;
-					}
-				}
+		// Parcours des rois
+		$roi_list = $this->get_rois();
+		foreach ( $roi_list as $roi_item ) {
+			if ( $roi_item->amount_tax > 0 ) {
+				return TRUE;
 			}
 		}
-		
 		return FALSE;
 	}
 	
 	/**
-	 * Traite un fichier uploadÃ© qui doit Ãªtre ajoutÃ© Ã  la liste
+	 * Traite un fichier uploadé qui doit être ajouté à la liste
 	 * @param array $file_uploaded_data
 	 */
 	public function add_file( $file_uploaded_data, $file_description ) {
@@ -503,198 +497,163 @@ class WDGROIDeclaration {
 		$this->declared_by = json_encode( $declared_by_data );
 	}
 	
-	
-	
 	/**
-	 * S'occuper des versements vers les utilisateurs
+	 * Transfert de tous les ROIs qui ont été préparés dans la fonction d'initialisation
 	 */
-	public function make_transfer( $send_notifications = true, $transfer_remaining_amount = false, $is_refund = false ) {
-		$buffer = false;
-		$date_now = new DateTime();
-		$date_now_formatted = $date_now->format( 'Y-m-d' );
+	public function transfer_pending_rois() {
 		$campaign = $this->get_campaign_object();
+		$campaign_organization = $campaign->get_organization();
 		$investment_contracts = WDGInvestmentContract::get_list( $campaign->ID );
-		$current_organization = $campaign->get_organization();
-		if ( !empty( $current_organization ) ) {
-			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
-			$organization_obj->register_lemonway();
-			$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount, $is_refund );
-			$total_fees = 0;
-			
-			// Initialisation du montant restant pour que ce soit toujours la variable de classe qui soit mise à jour
-			if ( $this->remaining_amount == 0 ) {
-				$this->remaining_amount = $this->get_amount_with_adjustment();
-				if ( $transfer_remaining_amount ) {
-					$previous_remaining_amount = $this->get_previous_remaining_amount();
-					$this->remaining_amount += $previous_remaining_amount;
+		if ( !empty( $campaign_organization ) ) {
+			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+		}
+		
+		// Nombre arbitraire de versements avant de faire un retour au site
+		$max_transfer_per_try = 15;
+		// On différencie $count et $count_done
+		// Le premier sert à compter le nombre total (pour donner un pourcentage en retour)
+		// Le second sert à déterminer quand on s'arrête lors de ce passage
+		$count = 0;
+		$count_done = 0;
+
+		$roi_list = $this->get_rois();
+		foreach ( $roi_list as $roi_item ) {
+			$count++;
+			if ( $roi_item->amount > 0 && $roi_item->id_transfer == 0 && $roi_item->status == WDGROI::$status_waiting_transfer ) {
+				$count_done++;
+				$ROI = new WDGROI( $roi_item->id );
+
+				if ( $ROI->id_user == 0 ) {
+					continue;
 				}
-			}
-			
-			// Nombre arbitraire de versements avant de faire un retour au site
-			$max_transfer_per_try = 10;
-			// On différencie $count et $count_done
-			// Le premier sert à compter le nombre total (pour donner un pourcentage en retour)
-			// Le second sert à déterminer quand on s'arrête lors de ce passage
-			$count = 0;
-			$count_done = 0;
-			foreach ($investments_list as $investment_item) {
-				$count++;
-				$saved_roi = $this->get_roi_by_investment( $investment_item['ID'] );
-				if ( empty( $saved_roi ) ) {
-					$count_done++;
-					$total_fees += $investment_item['roi_fees'];
-					$this->remaining_amount -= $investment_item['roi_fees'];
-					$this->remaining_amount -= $investment_item['roi_amount'];
 
-					//Versement vers organisation
-					$recipient_api_id = FALSE;
-					$recipient_type = 'user';
-					$recipient_name = '';
-					$recipient_email = '';
-					$transfer = FALSE;
-					$status = WDGROI::$status_error;
-					if (WDGOrganization::is_user_organization( $investment_item['user'] )) {
-						$WDGOrga = new WDGOrganization( $investment_item['user'] );
-						$WDGOrga->register_lemonway();
-						$recipient_api_id = $WDGOrga->get_api_id();
-						$recipient_type = 'orga';
-						$recipient_name = $WDGOrga->get_name();
-						$recipient_email = $WDGOrga->get_email();
-						if ( $investment_item['roi_amount'] > 0 ) {
-							if ( $WDGOrga->is_registered_lemonway_wallet() ) {
-								$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $investment_item['roi_amount'] );
-								$status = WDGROI::$status_transferred;
-							} else {
-								$status = WDGROI::$status_waiting_authentication;
-							}
-							
-							$this->update_investment_contract_amount_received( $investment_contracts, $investment_item['ID'], $investment_item['roi_amount'] );
-						}
+				$transfer = FALSE;
+				$recipient_name = '';
+				$recipient_email = '';
 
-					//Versement vers utilisateur personne physique
-					} else {
-						$WDGUser = new WDGUser( $investment_item['user'] );
-						$WDGUser->register_lemonway();
-						$recipient_api_id = $WDGUser->get_api_id();
-						$recipient_name = $WDGUser->get_firstname();
-						$recipient_email = $WDGUser->get_email();
-						if ( $investment_item['roi_amount'] > 0 ) {
-							if ( $WDGUser->is_lemonway_registered() ) {
-								$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $investment_item['roi_amount'] );
-								$status = WDGROI::$status_transferred;
-							} else {
-								$status = WDGROI::$status_waiting_authentication;
-							}
-							$this->update_investment_contract_amount_received( $investment_contracts, $investment_item['ID'], $investment_item['roi_amount'] );
-						}
-					}
-
-					
-					if ( $investment_item['roi_amount'] == 0 ) {
+				//Gestion versement vers organisation
+				if ( $ROI->recipient_type == 'orga' ) {
+					$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
+					$WDGOrga->register_lemonway();
+					$recipient_name = $WDGOrga->get_name();
+					$recipient_email = $WDGOrga->get_email();
+					if ( $WDGOrga->is_registered_lemonway_wallet() ) {
+						$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
 						$status = WDGROI::$status_transferred;
-					}
-					$id_investment_contract = FALSE;
-					if ( !empty( $investment_item[ 'contract_id' ] ) ) {
-						$id_investment_contract = $investment_item[ 'contract_id' ];
-					}
-					$transfer_id = 0;
-					if ( !empty( $transfer ) ) {
-						$transfer_id = $transfer->ID;
-					}
-					WDGROI::insert( $investment_item['ID'], $this->id_campaign, $organization_obj->get_api_id(), $recipient_api_id, $recipient_type, $this->id, $date_now_formatted, $investment_item['roi_amount'], $transfer_id, $status, $id_investment_contract );
-					
-					if ( $send_notifications ) {
-
-						$cancel_notification = FALSE;
-						if( $WDGUser ) {
-							$recipient_notification = $WDGUser->get_royalties_notifications();
-							if( $recipient_notification == 'none' ){
-								$cancel_notification = TRUE;
-							} elseif ($recipient_notification == 'positive' && $investment_item['roi_amount'] == 0) {
-								$cancel_notification = TRUE;
-							}
-						}
-
-						if (!$cancel_notification) {
-							WDGQueue::add_notification_royalties( $investment_item['user'] );
-							
-							$declaration_message = $this->get_message();
-							if ( !empty( $declaration_message ) ) {
-								$campaign = $this->get_campaign_object();
-								$campaign_author = $campaign->post_author();
-								$author_user = get_user_by( 'ID', $campaign_author );
-								$replyto_mail = $author_user->user_email;
-								$declaration_message_decoded = $declaration_message;
-								NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
-							}
-						}
-					}
-					
-					if ( $count_done >= $max_transfer_per_try ) {
-						break;
-					}
-				}
-				
-			}
-			
-			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
-			
-			// En retour, on veut le pourcentage d'avancement
-			$buffer = $count / count( $investments_list ) * 100;
-			
-			// Si on a terminé, on finalise la déclaration
-			if ( $buffer == 100 ) {
-				if ( $transfer_remaining_amount ) {
-					// Mise à jour de la somme des reliquats précédents qui ont été reversés
-					if ( $previous_remaining_amount > $this->remaining_amount ) {
-						$this->transfered_previous_remaining_amount = $previous_remaining_amount - $this->remaining_amount;
-					}
-				}
-
-				if ( $total_fees > 0 ) {
-					LemonwayLib::ask_transfer_funds( $organization_obj->get_lemonway_id(), "SC", $total_fees );
-				}
-				$wdguser_author = new WDGUser( $campaign->data->post_author );
-				if ( $this->get_amount_with_adjustment() > 0 ) {
-					$tax_infos = '';
-					if ( $this->has_paid_gain() ) {
-						$tax_infos = "<br><br>Vos investisseurs ont réalisé une plus-value sur leur investissement.";
-						$tax_infos .= "Ceux et celles dont le foyer fiscal est en France et qui sont soumis à l’impôt sur le revenu ";
-						$tax_infos .= "verront donc 30 % de leur plus-value prélevés à la source (Prélèvement Forfaitaire Unique - flat tax), sauf en cas de demande de dispense de leur part. ";
-						$tax_infos .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement">En savoir plus sur la fiscalité des investissements</a>.';
-					}
-					NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment(), $tax_infos );
-				} else {
-					NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
-				}
-				$this->status = WDGROIDeclaration::$status_finished;
-				$this->date_transfer = $date_now_formatted;
-
-				if ( $this->get_commission_to_pay() > 0 ) {
-					// Envoi de la facture
-					$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
-					$campaign_bill->set_declaration( $this );
-					if ( $campaign_bill->can_generate() ) {
-						$campaign_bill->generate();
 					} else {
-						NotificationsEmails::declaration_bill_failed( $campaign->data->post_title );
+						$status = WDGROI::$status_waiting_authentication;
 					}
-					
-					// Transfert vers le compte bancaire de WDG
-					$transfer_message = 'ROYALTIES ' . $organization_obj->get_name() . ' - D' . $this->id;
-					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
+					$this->update_investment_contract_amount_received( $investment_contracts, $ROI->id_investment, $ROI->amount );
+
+				//Versement vers utilisateur personne physique
+				} else {
+					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+					$WDGUser->register_lemonway();
+
+					// Transfert sur le wallet de séquestre d'impots de l'organisation
+					if ( $ROI->amount_tax > 0 ) {
+						$WDGOrganization_campaign->check_register_tax_lemonway_wallet();
+						LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrganization_campaign->get_tax_lemonway_id(), $ROI->amount_tax );
+					}
+
+					$recipient_name = $WDGUser->get_firstname();
+					$recipient_email = $WDGUser->get_email();
+					if ( $WDGUser->is_lemonway_registered() ) {
+						$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+						$status = WDGROI::$status_transferred;
+					} else {
+						$status = WDGROI::$status_waiting_authentication;
+					}
+					$this->update_investment_contract_amount_received( $investment_contracts, $ROI->id_investment, $ROI->amount );
 				}
-			}
-			
-			// On met à jour de toute façon pour mettre à jour le reliquat
-			$this->update();
-			
-			// A la toute fin, on vérifie les notifications à envoyer
-			if ( $buffer == 100 ) {
-				$this->check_notifications( $campaign, $organization_obj->get_email(), $wdguser_author->get_firstname() );
+
+				if ( $transfer != FALSE ) {
+					$ROI->status = $status;
+					$ROI->id_transfer = $transfer->ID;
+				} else {
+					$ROI->status = WDGROI::$status_error;
+				}
+				$ROI->update();
+
+				
+				$cancel_notification = FALSE;
+				if ( $WDGUser ) {
+					$recipient_notification = $WDGUser->get_royalties_notifications();
+					if ( $recipient_notification == 'none' ) {
+						$cancel_notification = TRUE;
+					} elseif ( $recipient_notification == 'positive' && $investment_item['roi_amount'] == 0 ) {
+						$cancel_notification = TRUE;
+					}
+				}
+
+				if ( !$cancel_notification ) {
+					WDGQueue::add_notification_royalties( $investment_item[ 'user' ] );
+					
+					$declaration_message = $this->get_message();
+					if ( !empty( $declaration_message ) ) {
+						$campaign_author = $campaign->post_author();
+						$author_user = get_user_by( 'ID', $campaign_author );
+						$replyto_mail = $author_user->user_email;
+						$declaration_message_decoded = $declaration_message;
+						NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+					}
+				}
+
+				if ( $count_done >= $max_transfer_per_try ) {
+					break;
+				}
 			}
 		}
-		return $buffer;
+
+		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
+
+		
+		// En retour, on veut le pourcentage d'avancement
+		$buffer = $count / count( $roi_list ) * 100;
+		
+		// Si on a terminé, on finalise la déclaration
+		if ( $buffer == 100 ) {
+			$wdguser_author = new WDGUser( $campaign->data->post_author );
+			if ( $this->get_amount_with_adjustment() > 0 ) {
+				$tax_infos = '';
+				if ( $this->has_paid_gain() ) {
+					$tax_infos = "<br><br>Vos investisseurs ont réalisé une plus-value sur leur investissement.";
+					$tax_infos .= "Ceux et celles dont le foyer fiscal est en France et qui sont soumis à l’impôt sur le revenu ";
+					$tax_infos .= "verront donc 30 % de leur plus-value prélevés à la source (Prélèvement Forfaitaire Unique - flat tax), sauf en cas de demande de dispense de leur part. ";
+					$tax_infos .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement">En savoir plus sur la fiscalité des investissements</a>.';
+				}
+				NotificationsAPI::declaration_done_with_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment(), $tax_infos );
+			
+			} else {
+				NotificationsAPI::declaration_done_without_turnover( $organization_obj->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
+			}
+
+			$this->status = WDGROIDeclaration::$status_finished;
+			$this->date_transfer = $date_now_formatted;
+
+			if ( $this->get_commission_to_pay() > 0 ) {
+				// Envoi de la facture
+				$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
+				$campaign_bill->set_declaration( $this );
+				if ( $campaign_bill->can_generate() ) {
+					$campaign_bill->generate();
+				} else {
+					NotificationsEmails::declaration_bill_failed( $campaign->data->post_title );
+				}
+				
+				// Transfert vers le compte bancaire de WDG
+				$transfer_message = 'ROYALTIES ' . $organization_obj->get_name() . ' - D' . $this->id;
+				LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
+			}
+		}
+		
+		// On met à jour de toute façon pour mettre à jour le reliquat
+		$this->update();
+		
+		// A la toute fin, on vérifie les notifications à envoyer
+		if ( $buffer == 100 ) {
+			$this->check_notifications( $campaign, $organization_obj->get_email(), $wdguser_author->get_firstname() );
+		}
 	}
 	
 	/**
@@ -968,28 +927,36 @@ class WDGROIDeclaration {
 	 * (personne physique, dont la résidence fiscale est en France, dispense ou non)
 	 * - d'envoyer le résumé par mail à admin si il y a des infos à transmettre
 	 */
-	public function send_admin_tax_document() {
-		$buffer_mail = FALSE;
+	public function init_rois_and_tax() {
+		$buffer_mail = '';
 		$total_tax_amount = 0;
-		$today_date = new DateTime();
 
 		//********************** */
 		$campaign = $this->get_campaign_object();
+		$campaign_organization = $campaign->get_organization();
+		if ( empty( $campaign_organization ) ) {
+			return;
+		}
+		$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$investment_contracts = WDGInvestmentContract::get_list( $campaign->ID );
 		$investments_list = $campaign->roi_payments_data( $this, $transfer_remaining_amount, $is_refund );
 		foreach ($investments_list as $investment_item) {
-			$this->remaining_amount -= $investment_item['roi_amount'];
+			$recipient_type = 'user';
+			$this->remaining_amount -= $investment_item[ 'roi_amount' ];
 
 			//Versement vers utilisateur personne physique
-			if ( WDGOrganization::is_user_organization( $investment_item['user'] ) ) {
-				$WDGOrganization = new WDGOrganization( $investment_item['user'] );
+			if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
+				$WDGOrganization = new WDGOrganization( $investment_item[ 'user' ] );
+				$recipient_api_id = $WDGOrga->get_api_id();
+				$recipient_type = 'orga';
 				$buffer_mail .= "- L'organisation " . $WDGOrganization->get_name() . " (" . $WDGOrganization->get_email() . ") ";
-				$buffer_mail .= "n'a pas de prélévement.<br>";
+				$buffer_mail .= "ne subit pas de prélèvement à la source.<br>";
 
 			} else {
-				$WDGUser = new WDGUser( $investment_item['user'] );
+				$WDGUser = new WDGUser( $investment_item[ 'user' ] );
+				$recipient_api_id = $WDGUser->get_api_id();
 				$buffer_mail .= "- L'investisseur " . $WDGUser->get_firstname() . " " . $WDGUser->get_lastname() . " (" . $WDGUser->get_email() . ") ";
-				if ( $investment_item['roi_amount'] == 0 ) {
+				if ( $investment_item[ 'roi_amount' ] == 0 ) {
 					$buffer_mail .= "n'a pas reçu de royalties.<br>";
 					break;
 				}
@@ -997,40 +964,41 @@ class WDGROIDeclaration {
 				foreach ( $investment_contracts as $investment_contract_item ) {
 					if ( $investment_contract_item->subscription_id == $investment_id ) {
 
-						$amount_received = $investment_contract_item->amount_received + $roi_amount;
-						// Est-ce que c'est une plus-value ?
-						if ( $amount_received <= $investment_contract_item->subscription_amount ) {
+						// D'abord vérifier qu'il s'agit d'une plus-value
+						$user_amount_updated = $investment_contract_item->amount_received + $investment_item[ 'roi_amount' ];
+						if ( $user_amount_updated <= $investment_contract_item->subscription_amount ) {
 							$buffer_mail .= "n'a pas reçu de plus-value.<br>";
 							break;
 						}
 
-						// Est-ce que la résidence fiscale est en France (ou non définie -> grande chance que ce soit en France)
-						$tax_country = $WDGUser->get_tax_country();
-						if ( !empty( $tax_country ) && $tax_country != 'FR' ) {
-							$buffer_mail .= "n'est pas résident fiscal en France.<br>";
+						// Puis récupérer le montant de la taxe appliquée
+						$user_taxed_amount = min( $user_amount_updated, $investment_contract_item->subscription_amount - $user_amount_updated );
+						$roi_tax_amount = $WDGUser->get_tax_amount( $user_taxed_amount );
+
+						if ( $tax_amount == 0 ) {
+							$buffer_mail .= "ne subit pas de prélèvement à la source (pas résident fiscal en France, ou montant insuffisant).<br>";
 							break;
-						}
-
-
-						// Est-ce qu'il y a une dispense ?
-						$tax_amount = 0;
-						if ( $WDGUser->has_tax_exemption_for_year( $today_date->format( 'Y' ) ) ) {
-							$tax_amount = min( $amount_received, $investment_contract_item->subscription_amount - $amount_received );
-							$total_tax_amount += round( $tax_amount * WDGROIDeclaration::$tax_with_exemption / 100, 2 );
-
 						} else {
-							$tax_amount = min( $amount_received, $investment_contract_item->subscription_amount - $amount_received );
-							$total_tax_amount += round( $tax_amount * WDGROIDeclaration::$tax_without_exemption / 100, 2 );
+							$total_tax_amount += $roi_tax_amount;
+							$buffer_mail .= "subit un prélévement de " . $roi_tax_amount . " €.<br>";
 						}
-
-						// Chaine
-						$buffer_mail .= "subit un prélévement de " . $tax_amount . " €.<br>";
 					}
 				}
 			}
-		
+
+			// Enregistrer en tant que transfert à venir
+			$status = WDGROI::$status_waiting_transfer;
+			$id_investment_contract = FALSE;
+			if ( !empty( $investment_item[ 'contract_id' ] ) ) {
+				$id_investment_contract = $investment_item[ 'contract_id' ];
+			}
+			WDGROI::insert( $investment_item['ID'], $this->id_campaign, $WDGOrganization_campaign->get_api_id(), $recipient_api_id, $recipient_type, $this->id, '0000-00-00', $investment_item['roi_amount'], 0, $status, $id_investment_contract, $roi_tax_amount );
 		}
 
+		// On met à jour de toute façon pour mettre à jour le reliquat
+		$this->update();
+		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
+		
 		if ( $total_tax_amount > 0 ) {
 			$content_mail = "Prélèvement à la source pour le projet " . $campaign->get_name() . " :<br>";
 			$content_mail .= "Montant total " . $total_tax_amount . " €.<br><br>";
