@@ -558,10 +558,11 @@ class WDGUser {
 	private $removed_help_items;
 	public function get_removed_help_items() {
 		if ( !isset( $this->removed_help_items ) ) {
-			$this->removed_help_items = array();
 			$removed_help_items_meta = $this->wp_user->get( 'removed_help_items' );
 			if ( !empty( $removed_help_items_meta ) ) {
 				$this->removed_help_items = json_decode( $removed_help_items_meta );
+			} else {
+				$this->removed_help_items = new stdClass();
 			}
 		}
 		return $this->removed_help_items;
