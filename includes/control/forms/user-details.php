@@ -302,14 +302,6 @@ class WDG_Form_User_Details extends WDG_Form {
 		
 			$this->addField(
 				'textarea',
-				'description',
-				__( "Description", 'yproject' ),
-				WDG_Form_User_Details::$field_group_extended,
-				$WDGUser->get_description()
-			);
-		
-			$this->addField(
-				'textarea',
 				'contact_if_deceased',
 				__( "Personne de confiance", 'yproject' ),
 				WDG_Form_User_Details::$field_group_extended,
@@ -453,7 +445,7 @@ class WDG_Form_User_Details extends WDG_Form {
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
 						$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 						$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, 
-						$description, $contact_if_deceased
+						$contact_if_deceased
 					);
 					
 					$was_registered = $WDGUser->has_lemonway_wallet();

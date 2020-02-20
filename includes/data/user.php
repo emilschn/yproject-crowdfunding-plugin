@@ -40,7 +40,6 @@ class WDGUser {
 	private $tax_country;
 	private $email;
 	private $phone_number;
-	private $description;
 	private $contact_if_deceased;
 	private $bank_iban;
 	private $bank_bic;
@@ -106,7 +105,6 @@ class WDGUser {
 					$this->tax_country = $this->api_data->tax_country;
 					$this->email = $this->api_data->email;
 					$this->phone_number = $this->api_data->phone_number;
-					$this->description = $this->api_data->description;
 					$this->contact_if_deceased = $this->api_data->contact_if_deceased;
 					$this->bank_iban = $this->api_data->bank_iban;
 					$this->bank_bic = $this->api_data->bank_bic;
@@ -510,14 +508,6 @@ class WDGUser {
 		return $buffer;
 	}
 	
-	public function get_description() {
-		$buffer = $this->description;
-		if ( empty( $buffer ) || $buffer == '---' ) {
-			$buffer = $this->wp_user->get('description');
-		}
-		return $buffer;
-	}
-	
 	public function get_contact_if_deceased() {
 		$buffer = $this->contact_if_deceased;
 		return $buffer;
@@ -563,7 +553,37 @@ class WDGUser {
 	}
 
 /*******************************************************************************
- * Fonctions nÃ©cessitant des requetes
+ * Préférences d'affichage de l'aide contextuelle
+*******************************************************************************/
+	private $removed_help_items;
+	public function get_removed_help_items() {
+		if ( !isset( $this->removed_help_items ) ) {
+			$removed_help_items_meta = $this->wp_user->get( 'removed_help_items' );
+			if ( !empty( $removed_help_items_meta ) ) {
+				$this->removed_help_items = json_decode( $removed_help_items_meta );
+			} else {
+				$this->removed_help_items = new stdClass();
+			}
+		}
+		return $this->removed_help_items;
+	}
+
+	public function has_removed_help_item( $item_name, $version ) {
+		$removed_help_items = $this->get_removed_help_items();
+		return isset( $removed_help_items->{ $item_name } ) && $removed_help_items->{ $item_name } >= $version;
+	}
+
+	public function set_removed_help_items( $item_name, $version ) {
+		// Initialisation de la liste dans la variable de classe, qu'on modifie directement après
+		$this->get_removed_help_items();
+		$this->removed_help_items->{ $item_name } = $version;
+		$removed_help_items_meta = json_encode( $this->removed_help_items );
+		update_user_meta( $this->get_wpref(), 'removed_help_items', $removed_help_items_meta );
+	}
+
+
+/*******************************************************************************
+ * Fonctions nécessitant des requetes
 *******************************************************************************/
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
@@ -696,7 +716,7 @@ class WDGUser {
 	/**
 	 * Enregistre les donnÃ©es nÃ©cessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $description = '', $contact_if_deceased = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $contact_if_deceased = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
@@ -780,10 +800,6 @@ class WDGUser {
 		if ( !empty( $phone_number ) ) {
 			$this->phone_number = $phone_number;
 			$this->save_meta( 'user_mobile_phone', $phone_number );
-		}
-		if ( !empty( $description ) ) {
-			$this->description = $description;
-			$this->save_meta( 'description', $description );
 		}
 		if ( !empty( $contact_if_deceased ) ) {
 			$this->contact_if_deceased = $contact_if_deceased;
@@ -1773,8 +1789,8 @@ class WDGUser {
 	 */
 	public function can_pay_with_card_and_wallet( $amount, $campaign ) {
 		$lemonway_amount = $this->get_lemonway_wallet_amount();
-		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5â‚¬ Ã  payer par carte
-		return ($lemonway_amount > 0 && $amount - $lemonway_amount > 5 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 1 euro à payer par carte
+		return ($lemonway_amount > 0 && $amount - $lemonway_amount >= 1 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
 	/**

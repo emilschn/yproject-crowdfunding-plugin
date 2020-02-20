@@ -73,7 +73,6 @@ class WDGWPREST_Entity_User {
 			'tax_country'		=> $user->get_tax_country(),
 			'email'				=> $user->get_email(),
 			'phone_number'		=> $user->get_phone_number(),
-			'description'		=> $user->get_description(),
 			'contact_if_deceased'	=> $user->get_contact_if_deceased(),
 			'bank_iban'			=> $user->get_bank_iban(),
 			'bank_bic'			=> $user->get_bank_bic(),

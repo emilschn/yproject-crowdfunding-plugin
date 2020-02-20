@@ -39,6 +39,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('send_project_notification');
 
         // TBPP
+		WDGAjaxActions::add_action('remove_help_item');
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
@@ -60,7 +61,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
 		WDGAjaxActions::add_action('delete_lock_project_edition');
-
 
 	}
 	
@@ -785,6 +785,13 @@ class WDGAjaxActions {
 		} else {
 			exit( '0' );
 		}
+	}
+
+	public static function remove_help_item() {
+		$name = filter_input(INPUT_POST, 'name');
+		$version = filter_input(INPUT_POST, 'version');
+		$WDGUser_current = WDGUser::current();
+		$WDGUser_current->set_removed_help_items( $name, $version );
 	}
 		
 	/**
@@ -2617,7 +2624,7 @@ class WDGAjaxActions {
 			$birthday_date_day, $birthday_date_month, $birthday_date_year,
 			$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 			$address_number, $address_number_complement, $address, $postal_code, $city, $country,
-			FALSE, FALSE, FALSE, FALSE
+			FALSE, FALSE, FALSE
 		);
 		
 		if ( $has_modified_organization ) {
@@ -2670,7 +2677,7 @@ class WDGAjaxActions {
 				$birthday_date_day, $birthday_date_month, $birthday_date_year,
 				$investments_drafts_item_data->birthplace, $investments_drafts_item_data->birthplace_district, $investments_drafts_item_data->birthplace_department, $investments_drafts_item_data->birthplace_country, $investments_drafts_item_data->nationality,
 				$investments_drafts_item_data->address_number, $investments_drafts_item_data->address_number_complement, $investments_drafts_item_data->address, $investments_drafts_item_data->postal_code, $investments_drafts_item_data->city, $investments_drafts_item_data->country,
-				FALSE, FALSE, FALSE, FALSE
+				FALSE, FALSE, FALSE
 			);
 			
 			// Notification de création de compte
@@ -2707,16 +2714,16 @@ class WDGAjaxActions {
 			$investments_drafts_item_data->orga_email
 		);
 		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
-			
-		// Notifications de validation d'investissement
-		NotificationsEmails::new_purchase_user_success_check( $investment_id );
-		NotificationsEmails::new_purchase_team_members( $investment_id );
-		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
 		$WDGInvestment = new WDGInvestment( $investment_id );
 		$WDGInvestment->save_to_api();
 		
 		// Valider le draft
 		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
+			
+		// Notifications de validation d'investissement
+		NotificationsEmails::new_purchase_user_success_check( $investment_id );
+		NotificationsEmails::new_purchase_team_members( $investment_id );
+		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
 		
 		echo 'ok';
 		exit();

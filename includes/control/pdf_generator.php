@@ -148,7 +148,11 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_organization_reprensentative_civility( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_creator;
-		return ( $shortcode_organization_creator->get_gender() == 'male' ) ? 'M' : 'Mme';
+		if ( !empty ($shortcode_organization_creator) ) {
+			return ( $shortcode_organization_creator->get_gender() == 'male' ) ? 'M' : 'Mme';
+		} else {
+			return '';
+		}		
 	}
 	/**
 	 * Shortcode affichant le prénom de la personne représentant l'organisation qui porte le projet
@@ -782,11 +786,11 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 			$buffer .= '<div style="margin-top: 20px; border: 1px solid green; color: green;">';
 			if ($lang == 'en_US') {
 				$buffer .= 'Investment done on '.$month.' '.$day.' '.$year.', at '.$hour.':'.$minute.'<br />';
-				$buffer .= 'E-mail address: '.$user_obj->user_email.'<br />';
+				$buffer .= 'E-mail address: '.$WDGUser->get_email().'<br />';
 				$buffer .= 'IP address: '.$payment_data["ip"].'<br />';
 			} else {
 				$buffer .= 'Investissement réalisé le '.$day.' '.$month.' '.$year.', à '.$hour.'h'.$minute.'<br />';
-				$buffer .= 'Adresse e-mail : '.$user_obj->user_email.'<br />';
+				$buffer .= 'Adresse e-mail : '.$WDGUser->get_email().'<br />';
 				$buffer .= 'Adresse IP : '.$payment_data["ip"].'<br />';
 			}
 			$buffer .= '</div>';
