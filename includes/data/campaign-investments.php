@@ -103,8 +103,10 @@ class WDGCampaignInvestments {
 		// on récupère la liste des investissements du plus ancien au plus récent
 		$payments_data = $from_campaign->payments_data( FALSE , TRUE );
 
-		$amount_to_reach = 40; // TODO ? c'est bien ça ?
-		//$amount_to_reach = $to_campaign->minimum_goal(); // TODO ? c'est bien ça ?
+		// TODO : trier $payments_data pour avoir les plus vieux en premier
+
+		$amount_to_reach = 40; 
+		//$amount_to_reach = $to_campaign->minimum_goal(); 
 		ypcf_debug_log( 'campaign-investments.php ::transfer_investments $amount_to_reach = '.$amount_to_reach);
 		$amount_transfered = 0;
 		foreach ( $payments_data as $payment_data ) {

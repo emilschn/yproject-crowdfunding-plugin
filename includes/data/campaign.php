@@ -3060,6 +3060,7 @@ class ATCF_Campaign {
 				//Vérification si organisation existante
 				$orga_payment = get_user_by('email', $orga_email);
 				ypcf_debug_log( 'campaign.php ::add_investment ORGA $orga_payment->ID = '.$orga_payment->ID);
+				ypcf_debug_log( 'campaign.php ::add_investment ORGA $orga_email = '.$orga_email);
 				if ($orga_payment) {
 					if ( WDGOrganization::is_user_organization( $orga_payment->ID ) ) {
 						$saved_user_id = $orga_payment->ID;
@@ -3079,7 +3080,7 @@ class ATCF_Campaign {
 		ypcf_debug_log( 'campaign.php ::add_investment ORGA $saved_user_id = '.$saved_user_id);
 		if (!is_wp_error($saved_user_id) && !empty($saved_user_id) && $saved_user_id != FALSE) {
 			$user_info = array(
-				'id'		=> $saved_user_id,
+				'id'		=> $user_id,
 				'gender'	=> $new_gender,
 				'email'		=> $email,
 				'first_name'	=> $new_firstname,
@@ -3119,10 +3120,13 @@ class ATCF_Campaign {
 			$payment_id = edd_insert_payment( $payment_data );
 			ypcf_debug_log( 'campaign.php ::add_investment $payment_id = '.$payment_id);
 			update_post_meta( $payment_id, '_edd_payment_total', $value );
+			ypcf_debug_log( 'campaign.php ::add_investment APRES update_post_meta ');
 			edd_record_sale_in_log($this->ID, $payment_id);
+			ypcf_debug_log( 'campaign.php ::add_investment APRES edd_record_sale_in_log ');
 
 			$WDGInvestment = new WDGInvestment( $payment_id );
 			$WDGInvestment->save_to_api();
+			ypcf_debug_log( 'campaign.php ::add_investment APRES save_to_api ');
 			
 			// Mise à jour du statut de paiement si nécessaire
 			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
@@ -3139,6 +3143,7 @@ class ATCF_Campaign {
 			$payment_id = FALSE;
 		}
 		
+		ypcf_debug_log( 'campaign.php ::add_investment THE END ');
 		return $payment_id;
 	}
 	

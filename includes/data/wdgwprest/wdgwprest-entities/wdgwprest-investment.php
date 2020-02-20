@@ -23,6 +23,7 @@ class WDGWPREST_Entity_Investment {
 	 */
 	public static function set_post_parameters( $campaign, $edd_payment_item ) {
 		$user_info = edd_get_payment_meta_user_info( $edd_payment_item->ID );
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  $edd_payment_item->ID'.$edd_payment_item->ID);
 		$payment_date = $edd_payment_item->post_date;
 		if ( empty( $payment_date ) ) {
 			$date_now = new DateTime();
@@ -47,6 +48,7 @@ class WDGWPREST_Entity_Investment {
 		$info_city = '';
 		$info_country = '';
 		$info_phone = '';
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  $user_info[\'id\']'.$user_info['id']);
 		if ( !empty( $user_info['id'] ) ) {
 			if ( WDGOrganization::is_user_organization( $user_info['id'] ) ) {
 				$WDGOrganization = new WDGOrganization( $user_info['id'] );
@@ -85,12 +87,16 @@ class WDGWPREST_Entity_Investment {
 		}
 		
 		$amount = edd_get_payment_amount( $edd_payment_item->ID );
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  $amount  '.$amount);
 		$amount_with_royalties_in_cents = 0;
 		$payment_status = ypcf_get_updated_payment_status( $edd_payment_item->ID );
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  $payment_status  '.$payment_status);
 		$contract_status = get_post_meta( $edd_payment_item->ID, WDGInvestment::$contract_status_meta, TRUE );
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  $contract_status  '.$contract_status);
 		
 		$payment_key = edd_get_payment_key( $edd_payment_item->ID );
 		$mean_of_payment = 'card';
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  $payment_key  '.$payment_key);
 		if ( strpos( $payment_key, 'wire_' ) !== FALSE) {
 			$mean_of_payment = 'wire';
 		} else if ( strpos( $payment_key, '_wallet_' ) !== FALSE) {
@@ -109,6 +115,7 @@ class WDGWPREST_Entity_Investment {
 		$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
 		$signature_status = $WDGInvestmentSignature->get_status();
 		$signature_id = $WDGInvestmentSignature->get_external_id();
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  $signature_id  '.$signature_id);
 		
 		$parameters = array(
 			'wpref'				=> $edd_payment_item->ID,
@@ -162,6 +169,7 @@ class WDGWPREST_Entity_Investment {
 			$parameters[ 'legal_entity_city' ] = $WDGOrganization->get_city();
 			$parameters[ 'legal_entity_nationality' ] = $WDGOrganization->get_nationality();
 		}
+		ypcf_debug_log( 'wdgwprest-investment.php ::set_post_parameters  FIN  ');
 		return $parameters;
 	}
 	
@@ -172,10 +180,13 @@ class WDGWPREST_Entity_Investment {
 	 */
 	public static function create_or_update( $campaign, $edd_payment_item ) {
 		$buffer = FALSE;
+		ypcf_debug_log( 'wdgwprest-investment.php :: create_or_update ' );
 		
 		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item );
 		if ( !empty( $parameters ) ) {
+			ypcf_debug_log( 'wdgwprest-investment.php :: create_or_update  $$parameters not empty = ' );
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
+			ypcf_debug_log( 'wdgwprest-investment.php :: create_or_update  $buffer = '.$buffer );
 			if ( $buffer === FALSE ) {
 				NotificationsEmails::investment_to_api_error_admin( $edd_payment_item );
 			}
