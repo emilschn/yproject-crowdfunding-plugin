@@ -93,8 +93,9 @@ class WDGAjaxActions {
 
 		$result = array(
 			'user_display_name'	=> '0',
-			'has_error'	=> '0',
-			'error_str'	=> ''
+			'url_redirect'		=> '',
+			'has_error'			=> '0',
+			'error_str'			=> ''
 		);
 		if ( !empty( $input_honeypot1 ) || !empty( $input_honeypot2 ) ) {
 			$result['has_error'] = '1';
@@ -111,6 +112,7 @@ class WDGAjaxActions {
 				wp_set_auth_cookie( $user_result->ID, ( $input_rememberme === 'true' ), is_ssl() );
 				$WDGUser = new WDGUser( $user_result->ID );
 				$result[ 'user_display_name' ] = $WDGUser->get_display_name();
+				$result[ 'url_redirect' ] = WDGUser::get_login_redirect_page( '#' );
 			}
 		}
 
@@ -129,8 +131,9 @@ class WDGAjaxActions {
 
 		$result = array(
 			'user_display_name'	=> '0',
-			'has_error'	=> '0',
-			'error_str'	=> ''
+			'url_redirect'		=> '',
+			'has_error'			=> '0',
+			'error_str'			=> ''
 		);
 		if ( !empty( $input_honeypot1 ) || !empty( $input_honeypot2 ) ) {
 			$result['has_error'] = '1';
@@ -149,6 +152,7 @@ class WDGAjaxActions {
 	
 			} else {
 				$result[ 'user_display_name' ] = $user_result->get_display_name();
+				$result[ 'url_redirect' ] = WDGUser::get_login_redirect_page( '#' );
 			}
 		}
 
