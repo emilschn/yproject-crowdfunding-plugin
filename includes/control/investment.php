@@ -166,10 +166,13 @@ class WDGInvestment {
 		// on crée un nouvel investissement dans la campagne de destination avec la somme manquante $amount
 		$payment_key = edd_get_payment_key( $this->get_id() );
 		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
-		$user_email = $user_info['email'];
-		$orga_email = $to_campaign->get_organization()->get_email();
-		ypcf_debug_log( 'investment.php ::cut_and_transfer $payment_key '.$payment_key.' $user_email '.$user_email.' $orga_email = '.$orga_email);
-
+		$user_id = $user_info['id'];
+		$user = new WDGUser($user_id);
+		$user_email = $user->get_email();
+		$organization = $to_campaign->get_organization();
+		$WDGOrganization = new WDGOrganization( $organization->wpref );
+		$orga_email = $WDGOrganization->get_email();
+		
 		$new_investment_id = $to_campaign->add_investment(
 			$payment_key, $user_email, $amount, 'publish',
 			'', '', 
@@ -178,9 +181,11 @@ class WDGInvestment {
 			'', '', '', '', '', 
 			$orga_email
 		);
+		ypcf_debug_log( 'investment.php ::cut_and_transfer $new_investment_id '.$new_investment_id);
 
 		// on conserve une trace de l'origine de ce nouveau paiement
-		add_post_meta( $new_investment_id, 'created-from-cutting', $this->get_id() );
+		$id_meta = add_post_meta( $new_investment_id, 'created-from-cutting', $this->get_id() );
+		ypcf_debug_log( 'investment.php ::cut_and_transfer $id_meta '.$id_meta);
 		// on enregistre ce nouvel investissement dans l'API
 		$WDGNewInvestment = new WDGInvestment( $new_investment_id );
 		$WDGNewInvestment->save_to_api();
@@ -188,7 +193,9 @@ class WDGInvestment {
 
 
 		// on modifie le montant de l'investissement en cours (on soustrait $amount)
+		ypcf_debug_log( 'investment.php ::cut_and_transfer montant actuel $this->get_amount()'.$this->get_amount());
 		$this->set_amount($this->get_amount() - $amount);
+		ypcf_debug_log( 'investment.php ::cut_and_transfer montant actualisé $this->get_amount()'.$this->get_amount());
 
 		// on génère 1 contrat pour le nouvel investissement		
 		$new_investment_downloads = edd_get_payment_meta_downloads($new_investment_id);

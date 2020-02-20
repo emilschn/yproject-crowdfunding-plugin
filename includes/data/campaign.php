@@ -3002,6 +3002,9 @@ class ATCF_Campaign {
 			$orga_email = '', $orga_name = '') {
 		$user_id = FALSE;
 		
+		ypcf_debug_log( 'campaign.php ::add_investment $email'.$email);
+		ypcf_debug_log( 'campaign.php ::add_investment $value'.$value);
+		ypcf_debug_log( 'campaign.php ::add_investment $type'.$type);
 		if ( empty( $email ) || empty( $value ) ) {
 			return;
 		}
@@ -3016,7 +3019,9 @@ class ATCF_Campaign {
 	    
 		//Vérification si un utilisateur existe avec l'email en paramètre
 		$user_payment = get_user_by('email', $email);
+		ypcf_debug_log( 'campaign.php ::add_investment $user_payment->ID'.$user_payment->ID);
 		if ($user_payment) {
+			ypcf_debug_log( 'campaign.php ::add_investment un utilisateur existe avec l\'email en paramètre');
 			if (!WDGOrganization::is_user_organization($user_payment->ID)) {
 				$user_id = $user_payment->ID;
 				$wdg_user = new WDGUser( $user_id );
@@ -3048,11 +3053,13 @@ class ATCF_Campaign {
 		}
 		$saved_user_id = $user_id;
 		
+		ypcf_debug_log( 'campaign.php ::add_investment $saved_user_id = '.$saved_user_id);
 		if (!is_wp_error($saved_user_id) && !empty($saved_user_id) && $saved_user_id != FALSE) {
 			//Gestion organisation
 			if ( !empty($orga_email) ) {
 				//Vérification si organisation existante
 				$orga_payment = get_user_by('email', $orga_email);
+				ypcf_debug_log( 'campaign.php ::add_investment ORGA $orga_payment->ID = '.$orga_payment->ID);
 				if ($orga_payment) {
 					if ( WDGOrganization::is_user_organization( $orga_payment->ID ) ) {
 						$saved_user_id = $orga_payment->ID;
@@ -3069,6 +3076,7 @@ class ATCF_Campaign {
 			}
 		}
 		
+		ypcf_debug_log( 'campaign.php ::add_investment ORGA $saved_user_id = '.$saved_user_id);
 		if (!is_wp_error($saved_user_id) && !empty($saved_user_id) && $saved_user_id != FALSE) {
 			$user_info = array(
 				'id'		=> $saved_user_id,
@@ -3109,6 +3117,7 @@ class ATCF_Campaign {
 				'status'		=> 'pending' // On initialise à pending, sinon la sauvegarde se fait 2 fois dans les logs (edd_record_sale_in_log)
 			);
 			$payment_id = edd_insert_payment( $payment_data );
+			ypcf_debug_log( 'campaign.php ::add_investment $payment_id = '.$payment_id);
 			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
 
