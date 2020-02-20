@@ -2709,7 +2709,10 @@ class WDGAjaxActions {
 			$newcampaign = atcf_get_campaign($newcampaign_id);							
 
 			// lier l'organization
-			$newcampaign->link_organization( $campaign_ref->get_organization()->wpref );
+			$organization = $campaign_ref->get_organization();
+			$WDGOrganization = new WDGOrganization( $organization->wpref );
+			$orga_email = $WDGOrganization->get_email();
+			$newcampaign->link_organization( $WDGOrganization->get_api_id() );
 			// mettre à jour l'API
 			$newcampaign->update_api();
 
