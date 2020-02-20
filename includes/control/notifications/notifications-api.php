@@ -62,7 +62,8 @@ class NotificationsAPI {
 		'139' => "Versement de royalties - résumé quotidien",
 		'522' => "Versement de royalties - transfert avec message",
 		'691' => "Versement de royalties - montant maximum atteint",
-		'779' => "Versement sur compte bancaire - confirmation"
+		'779' => "Versement sur compte bancaire - confirmation",
+		'1075' => "Réinitialisation de mot de passe"
 	);
 	
 
@@ -181,6 +182,24 @@ class NotificationsAPI {
 	}
 
 
+    //*******************************************************
+    // Réinitialisation de mot de passe
+    //*******************************************************
+	public static function password_reinit( $recipient, $name, $link ) {
+		$id_template = '1075';
+		$options = array(
+			'skip_admin'			=> 1,
+			'NOM'				=> $name,
+			'LIEN'				=> $link
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
 	//**************************************************************************
 	// Entrepreneurs
 	//**************************************************************************
