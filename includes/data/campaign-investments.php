@@ -131,6 +131,7 @@ class WDGCampaignInvestments {
 		$count_preinvestments_to_validate_amount = 0;
 		$count_investments_to_validate = 0;
 		$count_investments_to_validate_amount = 0;
+		$amount_not_validate_investments = 0;
 
 		// Données utiles tout le long
 		$list_priorities = array();
@@ -242,6 +243,9 @@ class WDGCampaignInvestments {
 				if ( isset( $contact_list[ $item_invest[ 'user' ] ] ) ) {
 					$contact_list[ $item_invest[ 'user' ] ][ 'skip_contact' ] = TRUE;
 				}
+			}
+			if( $item_invest[ 'status' ] == 'pending' ) {
+				$amount_not_validate_investments += $item_invest[ 'amount' ];
 			}
 			
 			// Investissements validés
@@ -392,6 +396,7 @@ class WDGCampaignInvestments {
 			}
 			
 			$last_24h .= "<br><strong>Total des investissements validés et comptabilisés :</strong> " .$campaign->current_amount(). " (" .$campaign->percent_minimum_completed(). ")<br>";
+			$last_24h .= "<br><strong>Total des investissements en attente de validation :</strong> " .$amount_not_validate_investments." €<br>";
 			
 			// Les nouveaux investisseurs à remercier
 			if ( count( $list_new_investments ) > 0 ) {

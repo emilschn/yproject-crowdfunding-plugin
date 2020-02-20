@@ -570,7 +570,37 @@ class WDGUser {
 	}
 
 /*******************************************************************************
- * Fonctions nÃ©cessitant des requetes
+ * Préférences d'affichage de l'aide contextuelle
+*******************************************************************************/
+	private $removed_help_items;
+	public function get_removed_help_items() {
+		if ( !isset( $this->removed_help_items ) ) {
+			$removed_help_items_meta = $this->wp_user->get( 'removed_help_items' );
+			if ( !empty( $removed_help_items_meta ) ) {
+				$this->removed_help_items = json_decode( $removed_help_items_meta );
+			} else {
+				$this->removed_help_items = new stdClass();
+			}
+		}
+		return $this->removed_help_items;
+	}
+
+	public function has_removed_help_item( $item_name, $version ) {
+		$removed_help_items = $this->get_removed_help_items();
+		return isset( $removed_help_items->{ $item_name } ) && $removed_help_items->{ $item_name } >= $version;
+	}
+
+	public function set_removed_help_items( $item_name, $version ) {
+		// Initialisation de la liste dans la variable de classe, qu'on modifie directement après
+		$this->get_removed_help_items();
+		$this->removed_help_items->{ $item_name } = $version;
+		$removed_help_items_meta = json_encode( $this->removed_help_items );
+		update_user_meta( $this->get_wpref(), 'removed_help_items', $removed_help_items_meta );
+	}
+
+
+/*******************************************************************************
+ * Fonctions nécessitant des requetes
 *******************************************************************************/
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
@@ -1776,8 +1806,8 @@ class WDGUser {
 	 */
 	public function can_pay_with_card_and_wallet( $amount, $campaign ) {
 		$lemonway_amount = $this->get_lemonway_wallet_amount();
-		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 5â‚¬ Ã  payer par carte
-		return ($lemonway_amount > 0 && $amount - $lemonway_amount > 5 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
+		//Il faut de l'argent dans le porte-monnaie, que la campagne soit sur lemonway et qu'il reste au moins 1 euro à payer par carte
+		return ($lemonway_amount > 0 && $amount - $lemonway_amount >= 1 && $campaign->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway);
 	}
 	
 	/**

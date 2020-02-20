@@ -39,6 +39,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('send_project_notification');
 
         // TBPP
+		WDGAjaxActions::add_action('remove_help_item');
 		WDGAjaxActions::add_action('save_project_infos');
 		WDGAjaxActions::add_action('save_project_funding');
 		WDGAjaxActions::add_action('save_project_communication');
@@ -61,7 +62,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
 		WDGAjaxActions::add_action('delete_lock_project_edition');
-
 
 	}
 	
@@ -786,6 +786,13 @@ class WDGAjaxActions {
 		} else {
 			exit( '0' );
 		}
+	}
+
+	public static function remove_help_item() {
+		$name = filter_input(INPUT_POST, 'name');
+		$version = filter_input(INPUT_POST, 'version');
+		$WDGUser_current = WDGUser::current();
+		$WDGUser_current->set_removed_help_items( $name, $version );
 	}
 		
 	/**
