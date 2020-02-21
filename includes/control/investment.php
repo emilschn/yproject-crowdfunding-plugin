@@ -90,8 +90,7 @@ class WDGInvestment {
 		// on mémorise l'id de la campagne de départ et d'arrivée
 		$from_campaign_id = $this->get_saved_campaign()->ID;
 		$to_campaign_id = $to_campaign->ID;
-		ypcf_debug_log( 'investment.php ::transfer $from_campaign_id '.$from_campaign_id.' $to_campaign_id '.$to_campaign_id);
-
+		
 		// on mémorise tous les paiements de la campagne de départ
 		$payments = edd_get_payments( array(
 			'number'	 => -1,
@@ -161,19 +160,23 @@ class WDGInvestment {
 		// on mémorise l'id de la campagne de départ et d'arrivée
 		$from_campaign_id = $this->get_saved_campaign()->ID;
 		$to_campaign_id = $to_campaign->ID;
-		ypcf_debug_log( 'investment.php ::cut_and_transfer $from_campaign_id '.$from_campaign_id.' $to_campaign_id '.$to_campaign_id.' $amount = '.$amount);
-
+		
 		// on crée un nouvel investissement dans la campagne de destination avec la somme manquante $amount
 		$payment_key = edd_get_payment_key( $this->get_id() );
 		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
 		$user_id = $user_info['id'];
 		$user = new WDGUser($user_id);
 		$user_email = $user->get_email();
-		$organization = $to_campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $organization->wpref );
-		$orga_email = $WDGOrganization->get_email();
-		ypcf_debug_log( 'investment.php ::cut_and_transfer $orga_email '.$orga_email);
+
+		$orga_email = '';
+		// si l'investisseur est une organisation, on récupère son email
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$WDGOrganization = new WDGOrganization( $user_id );			
+			$orga_email = $WDGOrganization->get_email();
+
+		}
 		
+		// la fonction add_investment créé l'investissement dans le site, dans l'API, génère le contrat et envoie un mail de notification
 		$new_investment_id = $to_campaign->add_investment(
 			$payment_key, $user_email, $amount, 'publish',
 			'', '', 
@@ -182,65 +185,56 @@ class WDGInvestment {
 			'', '', '', '', '', 
 			$orga_email
 		);
-		ypcf_debug_log( 'investment.php ::cut_and_transfer $new_investment_id '.$new_investment_id);
-
+		
 		if ( $new_investment_id ) {
+			// on change le statut du nouvel investissement
+			$WDGInvestment = new WDGInvestment( $new_investment_id );
+			$postdata = array(
+				'ID'			=> $new_investment_id,
+				'post_status'	=> 'publish'
+			);
+			wp_update_post( $postdata );
+			$WDGInvestment->save_to_api();
 			// on conserve une trace de l'origine de ce nouveau paiement
 			$id_meta = add_post_meta( $new_investment_id, 'created-from-cutting', $this->get_id() );
-			ypcf_debug_log( 'investment.php ::cut_and_transfer $id_meta '.$id_meta);
-			// on enregistre ce nouvel investissement dans l'API
-			$WDGNewInvestment = new WDGInvestment( $new_investment_id );
-			$WDGNewInvestment->save_to_api();
-			ypcf_debug_log( 'investment.php ::cut_and_transfer nouvel investissement créé '.$new_investment_id);
-	
-	
 			// on modifie le montant de l'investissement en cours (on soustrait $amount)
-			ypcf_debug_log( 'investment.php ::cut_and_transfer montant actuel $this->get_amount()'.$this->get_amount());
-			$this->set_amount($this->get_amount() - $amount);
-			ypcf_debug_log( 'investment.php ::cut_and_transfer montant actualisé $this->get_amount()'.$this->get_amount());
-	
-			/*
+			$this->set_amount($this->get_saved_amount() - $amount);
 			// on génère 1 contrat pour le nouvel investissement		
 			$new_investment_downloads = edd_get_payment_meta_downloads($new_investment_id);
 			$new_investment_download_id = '';
 			if (is_array($new_investment_downloads[0])) $new_investment_download_id = $new_investment_downloads[0]["id"];
 			else $new_investment_download_id = $new_investment_downloads[0];
-			$new_investment_contract_pdf_file = getNewPdfToSign($new_investment_download_id, $new_investment_id, $current_user->ID);
+			$new_investment_contract_pdf_file = getNewPdfToSign($new_investment_download_id, $new_investment_id, $user_id);
 			if ( !empty( $WDGNewInvestment ) && $WDGNewInvestment->has_token() ) {
 				$new_investment_contract_pdf_filename = basename( $new_investment_contract_pdf_file );
 				$new_investment_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_investment_contract_pdf_filename;
 				$WDGNewInvestment->update_contract_url( $new_investment_contract_pdf_url );
 			}
-			ypcf_debug_log( 'investment.php ::cut_and_transfer nouveau contrat du nouvel investissement créé '.$new_investment_contract_pdf_url);
-	*/
+			
 			// on regénère un contrat pour l'investissement en cours		
 			$current_investment_downloads = edd_get_payment_meta_downloads($this->id);
 			$current_investment_download_id = '';
 			if (is_array($current_investment_downloads[0])) $current_investment_download_id = $current_investment_downloads[0]["id"];
 			else $current_investment_download_id = $current_investment_downloads[0];
-			$current_investment_contract_pdf_file = getNewPdfToSign($current_investment_download_id, $this->id, $current_user->ID);
+			$current_investment_contract_pdf_file = getNewPdfToSign($current_investment_download_id, $this->id, $user_id);
 			if ( !empty( $this ) && $this->has_token() ) {
 				$current_investment_contract_pdf_filename = basename( $current_investment_contract_pdf_file );
 				$current_investment_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $current_investment_contract_pdf_filename;
 				$this->update_contract_url( $current_investment_contract_pdf_url );
 			}
-			ypcf_debug_log( 'investment.php ::cut_and_transfer nouveau contrat de l\'investissement courant '.$current_investment_contract_pdf_url);
-	
-			// on renomme/supprime l'ancien contrat de l'investissement en cours
-	
+				
 			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
 			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 			// le contrat est nommé de cette façon : dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf'
-			$exp = dirname( __FILE__ ). '/../pdf_files/' .$from_campaign_id. '_' .$current_user->ID. '_*.pdf';
+			$exp = dirname( __FILE__ ). '/../pdf_files/' .$from_campaign_id. '_' .$user_id. '_*.pdf';
 			$files = glob( $exp );
 			foreach ($files as $filename) {
 				// sachant que l'on transfère les investissements du plus vieux au plus récent, s'il y a plusieurs contrats de cet investisseur sur cette campagne
 				// c'est le plus vieux contrat qu'il faut renommer, donc le premier de la liste
 				break;
 			}
-			$new_filename = str_replace('pdf_files/' .$from_campaign_id. '_', 'pdf_files/_old' .$from_campaign_id. '_', $filename);
-			ypcf_debug_log( 'investment.php ::cut_and_transfer on renomme l\'ancien contrat '.$filename.' en '.$new_filename);
-	
+			$new_filename = str_replace('pdf_files/' .$from_campaign_id. '_', 'pdf_files/_old_' .$from_campaign_id. '_', $filename);
+			
 			rename($filename, $new_filename);
 		}else{
 			ypcf_debug_log( 'investment.php ::cut_and_transfer erreur d\'ajout du nouvel investissement ');
@@ -482,11 +476,9 @@ class WDGInvestment {
 	 */
 	public function set_amount($new_amount) {
 		// on sauvegarde le nouveau montant sur le site
-		ypcf_debug_log( 'investment.php ::set_amount $new_amount '.$new_amount);
 		if ( !empty( $this->id ) ) {
-			$meta = edd_get_payment_meta($this->ID);
-			ypcf_debug_log( 'investment.php ::set_amount $meta[amount] = '.$meta['amount']);
-			edd_update_payment_meta($this->ID, '_edd_payment_total', $new_amount);
+			$meta = edd_get_payment_meta($this->get_id());
+			edd_update_payment_meta($this->get_id(), '_edd_payment_total', $new_amount);
 		}
 		// on sauvegarde le nouveau montant sur l'API
 		$this->save_to_api();
@@ -1301,13 +1293,9 @@ class WDGInvestment {
 			'number'	 => -1,
 			'download'   => $this->get_saved_campaign()->ID
 		) );
-		ypcf_debug_log( 'investment.php :: save_to_api  count($payments) = '.count($payments));
-		ypcf_debug_log( 'investment.php :: save_to_api  $this->id = '.$this->id);
-		ypcf_debug_log( 'investment.php :: save_to_api  $this->get_saved_campaign()->ID = '.$this->get_saved_campaign()->ID);
 		$payment = FALSE;
 		if ( $payments ) {
 			foreach ( $payments as $payment_item ) {
-				ypcf_debug_log( 'investment.php :: save_to_api  $payment_item->ID = '.$payment_item->ID);
 				if ( $payment_item->ID == $this->id ) {
 					$payment = $payment_item;
 					break;
@@ -1315,11 +1303,8 @@ class WDGInvestment {
 			}
 		}
 
-		ypcf_debug_log( 'investment.php :: save_to_api  $payment->ID = '.$payment->ID);
 		if ( !empty( $payment ) ) {
-			ypcf_debug_log( 'investment.php :: save_to_api  on le créé dans l\'api = ');
 			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment );
-			ypcf_debug_log( 'investment.php :: save_to_api  DONE --------------------------------------------------- ');
 		}
 	}
 }

@@ -185,7 +185,6 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 						}
 						
 					} else {
-						ypcf_debug_log( 'invest-lib.php :: ypcf_get_updated_payment_status on créé le contrat et on envoie un email ');
 						$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
 						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 						if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
