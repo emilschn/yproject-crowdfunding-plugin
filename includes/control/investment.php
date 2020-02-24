@@ -120,6 +120,19 @@ class WDGInvestment {
 		if ($campaign_id == $from_campaign_id){
 			// Donnée investissement sur site : table postmeta : modifier l'identifiant du projet WP dans les meta (_edd_payment_meta). 
 			update_post_meta($payment_id, '_edd_payment_meta', $payment_data);
+			// on met à jour le post d'investissement			
+			$log_post_items = get_posts(array(
+				'post_type'		=> 'edd_log',
+				'meta_key'		=> '_edd_log_payment_id',
+				'meta_value'	=> $payment_id
+			));
+			foreach ( $log_post_items as $log_post_item ) {
+				$postdata = array(
+					'ID'			=> $log_post_item->ID,
+					'post_parent'	=> $to_campaign_id
+				);
+				wp_update_post($postdata);
+			}
 
 			// Donnée investissement sur API : table entity_investment : modifier la donnée "project" avec l'ID API du nouveau projet
 			$payment = FALSE;
@@ -240,7 +253,7 @@ class WDGInvestment {
 				$this->update_contract_url( $current_investment_contract_pdf_url );
 			}
 		}else{
-			ypcf_debug_log( 'investment.php ::cut_and_transfer erreur d\'ajout du nouvel investissement ');
+			ypcf_debug_log( 'WDGInvestment::cut_and_transfer erreur d\'ajout du nouvel investissement ');
 		
 		}
 		
