@@ -250,6 +250,8 @@ class ATCF_Campaign {
 		// on vide la liste des campagnes dupliquées
 		delete_post_meta($newcampaign_id, 'duplicated_campaigns');
 		delete_post_meta($newcampaign_id, 'campaign_duplicata');
+		delete_post_meta($newcampaign_id, 'campaign_backoffice_contract_orga ');
+		delete_post_meta($newcampaign_id, 'campaign_backoffice_contract_agreement');
 		delete_post_meta($newcampaign_id, 'id_api');
 
 
@@ -2952,7 +2954,7 @@ class ATCF_Campaign {
 			
 			if( $order_by_older ){
 				// on trie les investissements par date, le plus vieux en premier
-				array_multisort (array_column($this->payments_data, 'date'), SORT_DESC, $this->payments_data);
+				array_multisort (array_column($this->payments_data, 'date'), SORT_ASC, $this->payments_data);
 			}
 		}
 		

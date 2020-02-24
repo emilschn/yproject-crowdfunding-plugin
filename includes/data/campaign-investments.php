@@ -103,27 +103,30 @@ class WDGCampaignInvestments {
 		// on récupère la liste des investissements du plus ancien au plus récent
 		$payments_data = $from_campaign->payments_data( FALSE , TRUE );
 		// on trie les investissements par date, le plus vieux en premier
-		array_multisort (array_column($payments_data, 'date'), SORT_DESC, $payments_data);
+		array_multisort (array_column($payments_data, 'date'), SORT_ASC, $payments_data);
 
 		$amount_to_reach = $to_campaign->minimum_goal(); 
 		$amount_transfered = 0;
 		foreach ( $payments_data as $payment_data ) {
-			if ( $amount_transfered + $payment_data[ 'amount' ] == $amount_to_reach ) {
-				// on a transféré la totalité de la somme du nouveau projet
-				break;
-			} else if ( $amount_transfered + $payment_data[ 'amount' ] <= $amount_to_reach ) {
-				// on n'a pas atteint la somme, on continue de transférer les investissements
-				$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
-				$WDGInvestment->transfer($to_campaign);
-				$amount_transfered = $amount_transfered + $payment_data[ 'amount' ] ;
-			} else if ($amount_transfered + $payment_data[ 'amount' ] > $amount_to_reach) {
-				// on a besoin de découper un investissement pour atteindre pile la somme
-				$amount_to_cut = $amount_to_reach - $amount_transfered;
-				$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
-				$WDGInvestment->cut_and_transfer($to_campaign, $amount_to_cut);
-				$amount_transfered = $amount_transfered + $amount_to_cut ;
-				break;
-			} 
+			// on ne transfère que les investissements validés
+			if( $payment_data[ 'status' ] == 'publish' ) {
+				if ( $amount_transfered + $payment_data[ 'amount' ] == $amount_to_reach ) {
+					// on a transféré la totalité de la somme du nouveau projet
+					break;
+				} else if ( $amount_transfered + $payment_data[ 'amount' ] <= $amount_to_reach ) {
+					// on n'a pas atteint la somme, on continue de transférer les investissements
+					$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
+					$WDGInvestment->transfer($to_campaign);
+					$amount_transfered = $amount_transfered + $payment_data[ 'amount' ] ;
+				} else if ($amount_transfered + $payment_data[ 'amount' ] > $amount_to_reach) {
+					// on a besoin de découper un investissement pour atteindre pile la somme
+					$amount_to_cut = $amount_to_reach - $amount_transfered;
+					$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
+					$WDGInvestment->cut_and_transfer($to_campaign, $amount_to_cut);
+					$amount_transfered = $amount_transfered + $amount_to_cut ;
+					break;
+				} 
+			}
 		}
 
 		//TODO : retourne un code de quelque-chose ?
