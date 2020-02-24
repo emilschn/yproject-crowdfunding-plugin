@@ -541,12 +541,18 @@ class WDGROIDeclaration {
 					$recipient_email = $WDGOrga->get_email();
 					if ( $ROI->amount > 0 ) {
 						if ( $WDGOrga->is_registered_lemonway_wallet() ) {
-							$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
+							$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount - $ROI->amount_tax );
 							$status = WDGROI::$status_transferred;
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
 						}
 						$this->update_investment_contract_amount_received( $investment_contracts, $ROI->id_investment, $ROI->amount );
+
+						// Transfert sur le wallet de séquestre d'impots de l'organisation
+						if ( $ROI->amount_tax > 0 ) {
+							$WDGOrganization_campaign->check_register_tax_lemonway_wallet();
+							LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrganization_campaign->get_tax_lemonway_id(), $ROI->amount_tax );
+						}
 
 					} else {
 						$transfer = TRUE;
@@ -782,7 +788,7 @@ class WDGROIDeclaration {
 						$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
 						$WDGOrga->register_lemonway();
 						if ( $WDGOrga->is_registered_lemonway_wallet() ) {
-							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
+							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount - $ROI->amount_tax );
 							$status = WDGROI::$status_transferred;
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
@@ -793,7 +799,7 @@ class WDGROIDeclaration {
 						$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
 						$WDGUser->register_lemonway();
 						if ( $WDGUser->is_lemonway_registered() ) {
-							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount );
+							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount - $ROI->amount_tax );
 							$status = WDGROI::$status_transferred;
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
