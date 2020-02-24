@@ -2732,15 +2732,20 @@ class WDGAjaxActions {
 	 * Transfert des investissements d'une campagne à une autre
 	 */
 	public static function campaign_transfer_investments(){
-		$WDGUser_current = WDGUser::current();
 		$from_campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$to_campaign_id = filter_input(INPUT_POST, 'duplicated_campaign');
-		
-		if ( $WDGUser_current->is_admin() && !empty( $from_campaign_id ) && !empty( $to_campaign_id ) ) {
-			WDGCampaignInvestments::transfer_investments( $from_campaign_id, $to_campaign_id );
+		$campaign_ref = new ATCF_Campaign( $from_campaign_id ); 
+
+		if($campaign_ref->is_funded()){
+			$WDGUser_current = WDGUser::current();
+			$to_campaign_id = filter_input(INPUT_POST, 'duplicated_campaign');
+			
+			if ( $WDGUser_current->is_admin() && !empty( $from_campaign_id ) && !empty( $to_campaign_id ) ) {
+				WDGCampaignInvestments::transfer_investments( $from_campaign_id, $to_campaign_id );
+			}
+			
+			exit('1' );
 		}
-		
-		exit('1' );
+		exit('0' );
 	}
 	/**
 	 * Lance la finalisation du projet (transfert des données d'investissement sur l'API, ...)
