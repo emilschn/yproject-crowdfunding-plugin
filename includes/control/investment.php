@@ -228,14 +228,16 @@ class WDGInvestment {
 			// le contrat est nommé de cette façon : dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf'
 			$exp = dirname( __FILE__ ). '/../pdf_files/' .$from_campaign_id. '_' .$user_id. '_*.pdf';
 			$files = glob( $exp );
+			$old_filename = '';
 			foreach ($files as $filename) {
 				// sachant que l'on transfère les investissements du plus vieux au plus récent, s'il y a plusieurs contrats de cet investisseur sur cette campagne
 				// c'est le plus vieux contrat qu'il faut renommer, donc le premier de la liste
+				$old_filename = $filename;
 				break;
 			}
-			$new_filename = str_replace('pdf_files/' .$from_campaign_id. '_', 'pdf_files/_old_' .$from_campaign_id. '_', $filename);
+			$new_filename = str_replace('pdf_files/' .$from_campaign_id. '_', 'pdf_files/_old_' .$from_campaign_id. '_', $old_filename);
 			
-			rename($filename, $new_filename);
+			rename($old_filename, $new_filename);
 		}else{
 			ypcf_debug_log( 'investment.php ::cut_and_transfer erreur d\'ajout du nouvel investissement ');
 		
