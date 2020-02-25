@@ -242,45 +242,35 @@ class WDGPostActions {
 				$campaign_id_param .= $newcampaign_id;
 
 				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject" ;
-				wp_safe_redirect( $redirect_url);
+				ypcf_debug_log( 'create_project_form > $redirect_url > ' . $redirect_url, TRUE );
+				$result['url_redirect'] = $redirect_url;
+
+
+				// wp_safe_redirect( $redirect_url);
 			} else {
 				global $errors_submit_new, $errors_create_orga;
-				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_submit_new, true) );
-				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_create_orga, true) );
+				ypcf_debug_log( 'create_project_form > error > errors_submit_new ' . print_r($errors_submit_new, true) );
+				ypcf_debug_log( 'create_project_form > error > errors_create_orga ' . print_r($errors_create_orga, true) );
 				$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 				$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
 				$result['has_error'] = '1';
 				if($errors_submit_new) {
 					$result['errors_submit_new'] = array();
 					foreach ( $errors_submit_new as $error) {
-						$result['errors_submit_new'][] = $error;
+						$result['errors_submit_new'][] = html_entity_decode($error);
 					}
 				}
 				if($errors_create_orga) {
 					$result['errors_create_orga'] = array();
 					foreach ( $errors_create_orga as $error) {
-						$result['errors_create_orga'][] = $error;
+						$result['errors_create_orga'][] = html_entity_decode($error);
 					}
 				}
 				// wp_safe_redirect( home_url( '/lancement/?error=creation#newproject') );
 			}
-        } else {
-			global $errors_submit_new, $errors_create_orga;
-			$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
-			$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-			$result['has_error'] = '1';
-			if($errors_submit_new) {
-				$result['errors_submit_new'] = array();
-				foreach ( $errors_submit_new as $error) {
-					$result['errors_submit_new'][] = $error;
-				}
-			}
-			if($errors_create_orga) {
-				$result['errors_create_orga'] = array();
-				foreach ( $errors_create_orga as $error) {
-					$result['errors_create_orga'][] = $error;
-				}
-			}
+        } else {				
+			$result['has_error'] = '1';			
+			$result['error_str'] = 'empty_or_wrong_format_field';
             // wp_safe_redirect( home_url( '/lancement/?error=field_empty#newproject' ) );
 		}
 

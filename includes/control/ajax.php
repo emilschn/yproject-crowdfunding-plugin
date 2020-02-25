@@ -88,7 +88,7 @@ class WDGAjaxActions {
 	}
 	
 	public static function create_project_form() {
-		ypcf_debug_log( 'ajax.php :: create_project_form'.filter_input( INPUT_POST, 'firstname' ));
+		ypcf_debug_log( 'ajax.php :: create_project_form  '.filter_input( INPUT_POST, 'firstname' ));
 		$result = WDGPostActions::create_project_form();
 		exit( json_encode( $result ) );
 	}
