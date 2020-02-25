@@ -947,14 +947,16 @@ class WDGQueue {
 				$WDGEntity = new WDGOrganization( $user_id );
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_name();
+				$LW_registered = $WDGEntity->is_registered_lemonway_wallet();
 			} else {
 				$WDGEntity = new WDGUser( $user_id );
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_firstname();
+				$LW_registered = $WDGEntity->is_lemonway_registered();
 			}
 			
 			// On vérifie que les documents n'ont toujours pas été envoyés
-			if ( !$WDGEntity->has_sent_all_documents() ) {
+			if ( !$WDGEntity->has_sent_all_documents() && !$LW_registered ) {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
 				NotificationsAPI::investment_authentication_needed_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_api_id );
 			}

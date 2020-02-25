@@ -156,8 +156,10 @@ class WDGFormProjects {
 			
 			do_action('wdg_delete_cache', array(
 				'home-projects',
-				'projectlist-projects-current'
-			));
+				'projectlist-projects-current',
+				'cache_campaign_' . $campaign_id,
+				'API::wdg/v1/project/' . $campaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1 ?'
+			));			
 			$file_cacher = WDG_File_Cacher::current();
 			$file_cacher->build_campaign_page_cache( $campaign_id );
 			

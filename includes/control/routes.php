@@ -64,8 +64,11 @@ class WDGRoutes {
 	 */
 	public static function redirect_invest_if_project_not_investable() {
 		$wdginvestment = WDGInvestment::current();
-		if ( !$wdginvestment->get_campaign()->is_investable() ) {
+		if ( $wdginvestment->get_campaign() && !$wdginvestment->get_campaign()->is_investable() ) {
 			wp_redirect( get_permalink( $wdginvestment->get_campaign()->ID ) );
+			exit();
+		} elseif( !$wdginvestment->get_campaign() ){
+			wp_redirect( home_url( '/les-projets/' ) );
 			exit();
 		}
 	}

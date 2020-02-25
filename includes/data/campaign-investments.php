@@ -90,6 +90,49 @@ class WDGCampaignInvestments {
 	}
 	
 	/**
+	 * Transfert les investissements d'un projet à un autre en partant du plus vieux
+	 * jusqu'à atteindre la somme totale du nouveau projet
+	 * @param int $from_campaign_id
+	 * @param int $to_campaign_id
+	 * @return array
+	 */
+	public static function transfer_investments($from_campaign_id, $to_campaign_id) {
+
+		$from_campaign = new ATCF_Campaign( $from_campaign_id );
+		$to_campaign = new ATCF_Campaign( $to_campaign_id );
+		// on récupère la liste des investissements du plus ancien au plus récent
+		$payments_data = $from_campaign->payments_data( FALSE , TRUE );
+		// on trie les investissements par date, le plus vieux en premier
+		array_multisort (array_column($payments_data, 'date'), SORT_ASC, $payments_data);
+
+		$amount_to_reach = $to_campaign->minimum_goal(); 
+		$amount_transfered = 0;
+		foreach ( $payments_data as $payment_data ) {
+			// on ne transfère que les investissements validés
+			if( $payment_data[ 'status' ] == 'publish' ) {
+				if ( $amount_transfered + $payment_data[ 'amount' ] == $amount_to_reach ) {
+					// on a transféré la totalité de la somme du nouveau projet
+					break;
+				} else if ( $amount_transfered + $payment_data[ 'amount' ] <= $amount_to_reach ) {
+					// on n'a pas atteint la somme, on continue de transférer les investissements
+					$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
+					$WDGInvestment->transfer($to_campaign);
+					$amount_transfered = $amount_transfered + $payment_data[ 'amount' ] ;
+				} else if ($amount_transfered + $payment_data[ 'amount' ] > $amount_to_reach) {
+					// on a besoin de découper un investissement pour atteindre pile la somme
+					$amount_to_cut = $amount_to_reach - $amount_transfered;
+					$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
+					$WDGInvestment->cut_and_transfer($to_campaign, $amount_to_cut);
+					$amount_transfered = $amount_transfered + $amount_to_cut ;
+					break;
+				} 
+			}
+		}
+
+		//TODO : retourne un code de quelque-chose ?
+
+	}
+	/**
 	 * 
 	 * @param type $id_payment
 	 */
@@ -131,6 +174,7 @@ class WDGCampaignInvestments {
 		$count_preinvestments_to_validate_amount = 0;
 		$count_investments_to_validate = 0;
 		$count_investments_to_validate_amount = 0;
+		$amount_not_validate_investments = 0;
 
 		// Données utiles tout le long
 		$list_priorities = array();
@@ -242,6 +286,9 @@ class WDGCampaignInvestments {
 				if ( isset( $contact_list[ $item_invest[ 'user' ] ] ) ) {
 					$contact_list[ $item_invest[ 'user' ] ][ 'skip_contact' ] = TRUE;
 				}
+			}
+			if( $item_invest[ 'status' ] == 'pending' ) {
+				$amount_not_validate_investments += $item_invest[ 'amount' ];
 			}
 			
 			// Investissements validés
@@ -392,6 +439,7 @@ class WDGCampaignInvestments {
 			}
 			
 			$last_24h .= "<br><strong>Total des investissements validés et comptabilisés :</strong> " .$campaign->current_amount(). " (" .$campaign->percent_minimum_completed(). ")<br>";
+			$last_24h .= "<br><strong>Total des investissements en attente de validation :</strong> " .$amount_not_validate_investments." €<br>";
 			
 			// Les nouveaux investisseurs à remercier
 			if ( count( $list_new_investments ) > 0 ) {

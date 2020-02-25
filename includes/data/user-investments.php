@@ -20,9 +20,9 @@ class WDGUserInvestments {
 	
 	public function __construct( $WDGInvestorEntity ) {
 		$this->wp_ref = $WDGInvestorEntity->get_wpref();
-		if ( WDGOrganization::is_user_organization( $WDGInvestorEntity->get_wpref() ) ) {
+		if ( get_class( $WDGInvestorEntity ) == 'WDGOrganization' && WDGOrganization::is_user_organization( $WDGInvestorEntity->get_wpref() )) {
 			$this->orga = $WDGInvestorEntity;
-		} else {
+		} elseif ( get_class( $WDGInvestorEntity ) == 'WDGUser' ) {
 			$this->user = $WDGInvestorEntity;
 		}
 	}
@@ -33,7 +33,7 @@ class WDGUserInvestments {
 		}
 		if ( !empty( $this->orga ) ) {
 			return $this->orga->is_registered_lemonway_wallet();
-		}
+		}	
 	}
 	
 	private function get_lemonway_id() {

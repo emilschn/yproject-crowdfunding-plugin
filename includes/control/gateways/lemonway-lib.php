@@ -903,6 +903,7 @@ class LemonwayLib {
 		
 		$amount = LemonwayLib::check_amount($amount);
 		$amount_com = LemonwayLib::check_amount($amount_com);
+		$message = substr( $message, 0, 140 );
 		
 		$param_list = array(
 			'wallet' => $wallet_id,
