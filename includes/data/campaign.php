@@ -188,6 +188,76 @@ class ATCF_Campaign {
 		$this->load_api_data();
 	}
 	
+	
+
+	public function duplicate(){
+		global $edd_options;
+		// on sauvegarde dans la campagne parente l'id de toutes les campagnes dupliquées
+		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns'));
+
+		$duplicata = count($duplicated_campaigns);
+		if ( empty( $duplicated_campaigns ) ) {
+			$duplicata = 1;
+		} else {
+			$duplicata++;
+		}
+		$title = $this->get_name().' '.$duplicata;
+		$author_ID = $this->post_author();
+
+
+		$args = array(
+			'post_type'   		 	=> 'download', //TODO ?
+			'post_status'  		 	=> 'publish',//TODO ?
+			'post_content' 		 	=> $this->description() ,
+			'post_title'   		 	=> $title,
+			'post_author'  			=> $author_ID,
+
+		);
+
+		$newcampaign_id = wp_insert_post( $args, true );	
+		$duplicated_campaigns[] = $newcampaign_id;
+		$this->__set('duplicated_campaigns', json_encode($duplicated_campaigns));
+
+		// on copie les metas en bloc
+		$metas = get_post_meta( $this->ID );		
+		foreach ( $metas as $key => $value ) {
+			add_post_meta( $newcampaign_id, $key, $this->__get($key) );
+		}
+
+		// Create category for blog
+		$id_category = wp_insert_category( array('cat_name' => 'cat'.$newcampaign_id, 'category_nicename' => sanitize_title($newcampaign_id . '-blog-' . $title)) );
+		if ( ! add_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category, true) ) { 
+			update_post_meta( $newcampaign_id, 'campaign_blog_category_id', $id_category );
+		}		
+		// on change le status de la campagne dupliquée
+		if ( ! add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_funded, true) ) { 
+			update_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_funded );
+		}
+		if ( ! add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0, true) ) { 
+			update_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0 );
+		}
+		// on ajoute ces tags au cas où ils n'ont pas été créés
+		if ( ! add_post_meta( $newcampaign_id, '_vc_post_settings',  $this->__get('_vc_post_settings'), true) ) { 
+			update_post_meta( $newcampaign_id, '_vc_post_settings',  $this->__get('_vc_post_settings') );
+		}
+		if ( ! add_post_meta( $newcampaign_id, '_variable_pricing', $this->__get('_variable_pricing'), true) ) { 
+			update_post_meta( $newcampaign_id, '_variable_pricing', $this->__get('_variable_pricing') );
+		}
+		// on change l'objectif max d ela campagne dupliquée
+		if ( ! add_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal'), true) ) { 
+			update_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal') );
+		}
+		// on vide la liste des campagnes dupliquées
+		delete_post_meta($newcampaign_id, 'duplicated_campaigns');
+		delete_post_meta($newcampaign_id, 'campaign_duplicata');
+		delete_post_meta($newcampaign_id, 'campaign_backoffice_contract_orga ');
+		delete_post_meta($newcampaign_id, 'campaign_backoffice_contract_agreement');
+		delete_post_meta($newcampaign_id, 'id_api');
+
+
+		return $newcampaign_id;
+	}
+
 	/**
 	 * Chargement des données dans l'API
 	 */
@@ -297,6 +367,23 @@ class ATCF_Campaign {
 		return ( get_post_meta( $post_id, 'campaign_funding_type', TRUE ) != '' );
 	}
 	
+
+/*******************************************************************************
+ * GESTION DES CAMPAGNES DUPLIQUEES
+ ******************************************************************************/
+	public function get_duplicate_campaigns_id() {		
+		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
+		return $duplicated_campaigns;
+	}
+	public function get_duplicate_campaigns_titles() {
+		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
+		$duplicated_campaigns_title = array();
+		foreach ( $duplicated_campaigns as $wpcampaign ) {
+			$WDGCampaign = new ATCF_Campaign( $wpcampaign );
+			array_push($duplicated_campaigns_title, $WDGCampaign->get_name());
+		}
+		return $duplicated_campaigns_title;
+	}
 /*******************************************************************************
  * METAS
  ******************************************************************************/
@@ -2777,7 +2864,7 @@ class ATCF_Campaign {
 	 * @return array
 	 */
 	private $payments_data;
-	public function payments_data($skip_apis = FALSE) {
+	public function payments_data($skip_apis = FALSE, $order_by_older = FALSE) {
 		if ( !isset( $this->payments_data ) ) {
 		
 			$this->payments_data = array();
@@ -2865,6 +2952,10 @@ class ATCF_Campaign {
 				
 			}
 			
+			if( $order_by_older ){
+				// on trie les investissements par date, le plus vieux en premier
+				array_multisort (array_column($this->payments_data, 'date'), SORT_ASC, $this->payments_data);
+			}
 		}
 		
 		return $this->payments_data;
@@ -2978,7 +3069,7 @@ class ATCF_Campaign {
 		
 		if (!is_wp_error($saved_user_id) && !empty($saved_user_id) && $saved_user_id != FALSE) {
 			$user_info = array(
-				'id'		=> $saved_user_id,
+				'id'		=> $user_id,
 				'gender'	=> $new_gender,
 				'email'		=> $email,
 				'first_name'	=> $new_firstname,
