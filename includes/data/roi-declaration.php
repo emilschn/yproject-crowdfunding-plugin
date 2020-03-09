@@ -509,7 +509,7 @@ class WDGROIDeclaration {
 		}
 		
 		// Nombre arbitraire de versements avant de faire un retour au site
-		$max_transfer_per_try = 15;
+		$max_transfer_per_try = 20;
 		// On différencie $count et $count_done
 		// Le premier sert à compter le nombre total (pour donner un pourcentage en retour)
 		// Le second sert à déterminer quand on s'arrête lors de ce passage
@@ -965,73 +965,116 @@ class WDGROIDeclaration {
 		}
 		$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$investment_contracts = WDGInvestmentContract::get_list_sorted_by_subscription_id( $campaign->ID );
+
 		$investments_list = $campaign->roi_payments_data( $this );
-		foreach ($investments_list as $investment_item) {
-			$recipient_type = 'user';
-			$roi_tax_amount = 0;
-			$this->remaining_amount -= $investment_item[ 'roi_amount' ];
+		$count_done = 0;
+		$max_items_to_do_now = 30;
+		$count_done_now = 0;
+		foreach ( $investments_list as $investment_item ) {
+			$count_done++;
+			$saved_roi = $this->get_roi_by_investment( $investment_item['ID'] );
+			if ( empty( $saved_roi ) ) {
+				$count_done_now++;
+				$recipient_type = 'user';
+				$roi_tax_amount = 0;
+				$this->remaining_amount -= $investment_item[ 'roi_amount' ];
 
-			// *****
-			// D'abord controle sur les taxes
-			//Versement vers utilisateur personne morale
-			if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
-				$WDGOrganization = new WDGOrganization( $investment_item[ 'user' ] );
-				$recipient_api_id = $WDGOrga->get_api_id();
-				$recipient_type = 'orga';
-				$buffer_mail .= "- L'organisation " . $WDGOrganization->get_name() . " (" . $WDGOrganization->get_email() . ") ";
-				$buffer_mail .= "ne subit pas de prélèvement à la source.<br>";
+				// *****
+				// D'abord controle sur les taxes
+				//Versement vers utilisateur personne morale
+				if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
+					$WDGOrganization = new WDGOrganization( $investment_item[ 'user' ] );
+					$recipient_api_id = $WDGOrga->get_api_id();
+					$recipient_type = 'orga';
+					$buffer_mail .= "- L'organisation " . $WDGOrganization->get_name() . " (" . $WDGOrganization->get_email() . ") ";
+					$buffer_mail .= "ne subit pas de prélèvement à la source.<br>";
 
-			//Versement vers utilisateur personne physique
-			} else {
-				$WDGUser = new WDGUser( $investment_item[ 'user' ] );
-				$recipient_api_id = $WDGUser->get_api_id();
-				$buffer_mail .= "- L'investisseur " . $WDGUser->get_firstname() . " " . $WDGUser->get_lastname() . " (" . $WDGUser->get_email() . ") ";
-				if ( $investment_item[ 'roi_amount' ] == 0 ) {
-					$buffer_mail .= "n'a pas reçu de royalties.<br>";
+				//Versement vers utilisateur personne physique
+				} else {
+					$WDGUser = new WDGUser( $investment_item[ 'user' ] );
+					$recipient_api_id = $WDGUser->get_api_id();
+					$buffer_mail .= "- L'investisseur " . $WDGUser->get_firstname() . " " . $WDGUser->get_lastname() . " (" . $WDGUser->get_email() . ") ";
+					if ( $investment_item[ 'roi_amount' ] == 0 ) {
+						$buffer_mail .= "n'a pas reçu de royalties.<br>";
 
-				} elseif ( isset( $investment_contracts[ $investment_id ] ) ) {
-					$investment_contract_item = $investment_contracts[ $investment_id ];
-	
-					// D'abord vérifier qu'il s'agit d'une plus-value
-					$user_amount_updated = $investment_contract_item->amount_received + $investment_item[ 'roi_amount' ];
-					if ( $user_amount_updated <= $investment_contract_item->subscription_amount ) {
-						$buffer_mail .= "n'a pas reçu de plus-value.<br>";
-
-					// Puis récupérer le montant de la taxe appliquée
-					} else {
-						$user_taxed_amount = min( $user_amount_updated, $investment_contract_item->subscription_amount - $user_amount_updated );
-						$roi_tax_amount = $WDGUser->get_tax_amount( $user_taxed_amount );
+					} elseif ( isset( $investment_contracts[ $investment_id ] ) ) {
+						$investment_contract_item = $investment_contracts[ $investment_id ];
 		
-						if ( $roi_tax_amount == 0 ) {
-							$buffer_mail .= "ne subit pas de prélèvement à la source (pas résident fiscal en France, ou montant insuffisant).<br>";
+						// D'abord vérifier qu'il s'agit d'une plus-value
+						$user_amount_updated = $investment_contract_item->amount_received + $investment_item[ 'roi_amount' ];
+						if ( $user_amount_updated <= $investment_contract_item->subscription_amount ) {
+							$buffer_mail .= "n'a pas reçu de plus-value.<br>";
+
+						// Puis récupérer le montant de la taxe appliquée
 						} else {
-							$total_tax_amount += $roi_tax_amount;
-							$buffer_mail .= "subit un prélévement de " . $roi_tax_amount . " €.<br>";
+							$user_taxed_amount = min( $user_amount_updated, $investment_contract_item->subscription_amount - $user_amount_updated );
+							$roi_tax_amount = $WDGUser->get_tax_amount( $user_taxed_amount );
+			
+							if ( $roi_tax_amount == 0 ) {
+								$buffer_mail .= "ne subit pas de prélèvement à la source (pas résident fiscal en France, ou montant insuffisant).<br>";
+							} else {
+								$total_tax_amount += $roi_tax_amount;
+								$buffer_mail .= "subit un prélévement de " . $roi_tax_amount . " €.<br>";
+							}
 						}
 					}
 				}
-			}
-			// *****
+				// *****
 
-			// Enregistrer en tant que transfert à venir
-			$status = WDGROI::$status_waiting_transfer;
-			$id_investment_contract = FALSE;
-			if ( !empty( $investment_item[ 'contract_id' ] ) ) {
-				$id_investment_contract = $investment_item[ 'contract_id' ];
+				// Enregistrer en tant que transfert à venir
+				$status = WDGROI::$status_waiting_transfer;
+				$id_investment_contract = FALSE;
+				if ( !empty( $investment_item[ 'contract_id' ] ) ) {
+					$id_investment_contract = $investment_item[ 'contract_id' ];
+				}
+				WDGROI::insert( $investment_item['ID'], $this->id_campaign, $WDGOrganization_campaign->get_api_id(), $recipient_api_id, $recipient_type, $this->id, '0000-00-00', $investment_item['roi_amount'], 0, $status, $id_investment_contract, $roi_tax_amount );
+
+				if ( $count_done_now >= $max_items_to_do_now ) {
+					break;
+				}
 			}
-			WDGROI::insert( $investment_item['ID'], $this->id_campaign, $WDGOrganization_campaign->get_api_id(), $recipient_api_id, $recipient_type, $this->id, '0000-00-00', $investment_item['roi_amount'], 0, $status, $id_investment_contract, $roi_tax_amount );
 		}
 
-		// On met à jour de toute façon pour mettre à jour le reliquat
-		$this->status = WDGROIDeclaration::$status_transfer;
-		$this->update();
-		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
+		// On a fini l'initialisation, on déclenche la suite
+		if ( $count_done >= count( $investments_list ) ) {
+			// On met à jour de toute façon
+			$this->status = WDGROIDeclaration::$status_transfer;
+			$this->update();
+			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
+			
+			if ( $total_tax_amount > 0 ) {
+				$content_mail = "Prélèvement à la source pour le projet " . $campaign->get_name() . " :<br>";
+				$content_mail .= "Montant total " . $total_tax_amount . " €.<br><br>";
+				$content_mail .= $buffer_mail;
+				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement avec prélévement à la source', $content_mail );
+			}
 		
-		if ( $total_tax_amount > 0 ) {
-			$content_mail = "Prélèvement à la source pour le projet " . $campaign->get_name() . " :<br>";
-			$content_mail .= "Montant total " . $total_tax_amount . " €.<br><br>";
-			$content_mail .= $buffer_mail;
-			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement avec prélévement à la source', $content_mail );
+			// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
+			$date_of_royalties_transfer = FALSE;
+			if ( $this->mean_payment == WDGROIDeclaration::$mean_payment_mandate ) {
+				$date_of_royalties_transfer = new DateTime();
+				$date_of_royalties_transfer->add( new DateInterval( 'P4D' ) );
+				// Si lundi, on fera un jour plus tard
+				if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
+					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+				}
+				// Si samedi, on fera un jour plus tard
+				if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
+					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+				}
+				// Si dimanche, on fera un jour plus tard
+				if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
+					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+				}
+				$date_of_royalties_transfer->setTime( 15, 30, 0 );
+			}
+
+			// Programmer versement auto
+			WDGQueue::add_royalties_auto_transfer_start( $this->id, $date_of_royalties_transfer );
+
+		// Pas fini, on continue l'initialisation
+		} else {
+			WDGQueue::add_init_declaration_rois( $this->id );
 		}
 	}
 	
