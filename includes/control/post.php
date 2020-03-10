@@ -235,22 +235,15 @@ class WDGPostActions {
 					$result['error_str'] = 'project_no_orga_linked';
 				}
 
-
 				//Redirect then
 				$page_dashboard = get_page_by_path('tableau-de-bord');
 				$campaign_id_param = '?campaign_id=';
 				$campaign_id_param .= $newcampaign_id;
 
 				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject" ;
-				ypcf_debug_log( 'create_project_form > $redirect_url > ' . $redirect_url, TRUE );
 				$result['url_redirect'] = $redirect_url;
-
-
-				// wp_safe_redirect( $redirect_url);
 			} else {
 				global $errors_submit_new, $errors_create_orga;
-				ypcf_debug_log( 'create_project_form > error > errors_submit_new ' . print_r($errors_submit_new, true) );
-				ypcf_debug_log( 'create_project_form > error > errors_create_orga ' . print_r($errors_create_orga, true) );
 				$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 				$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
 				$result['has_error'] = '1';
@@ -266,16 +259,13 @@ class WDGPostActions {
 						$result['errors_create_orga'][] = html_entity_decode($error);
 					}
 				}
-				// wp_safe_redirect( home_url( '/lancement/?error=creation#newproject') );
 			}
         } else {				
 			$result['has_error'] = '1';			
 			$result['error_str'] = 'empty_or_wrong_format_field';
-            // wp_safe_redirect( home_url( '/lancement/?error=field_empty#newproject' ) );
 		}
 
 		return $result;
-		// exit( json_encode( $result ) );
     }
 
     public static function change_project_status(){
