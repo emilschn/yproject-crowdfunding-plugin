@@ -84,7 +84,182 @@ class WDGInvestment {
 		return $this->payment_key;
 	}
 	
-	
+	/**
+	 * transfère un investissement vers une campagne
+	 * @param ATCF_Campaign $to_campaign
+	 */
+	public function transfer($to_campaign) {
+		// on mémorise l'id de la campagne de départ et d'arrivée
+		$from_campaign_id = $this->get_saved_campaign()->ID;
+		$to_campaign_id = $to_campaign->ID;
+		
+		// on mémorise tous les paiements de la campagne de départ
+		$payments = edd_get_payments( array(
+			'number'	 => -1,
+			'download'   => $from_campaign_id
+		) );
+
+		// on mémorise l'id du paiement en cours
+		$payment_id = $this->get_id();		
+
+		// on change la campagne du paiement en cours
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$new_downloads = edd_get_payment_meta_downloads( $payment_id );
+		if ( !is_array( $new_downloads[ 0 ] ) ){
+			$campaign_id = $new_downloads[ 0 ];
+			$new_downloads[ 0 ] = $to_campaign_id;
+		} else {
+			if ( isset( $new_downloads[ 0 ][ 'id' ] ) ) {
+				$campaign_id = $new_downloads[ 0 ][ 'id' ];
+				$new_downloads[ 0 ][ 'id' ] = $to_campaign_id;
+			}
+		}
+		$payment_data['downloads'] = $new_downloads;
+		$payment_data['cart_details'][ 0 ][ 'name' ] = $to_campaign->get_name();
+		$payment_data['cart_details'][ 0 ][ 'id' ] = $to_campaign_id;
+		$payment_data['cart_details'][ 0 ][ 'item_number' ][ 'id' ] = $to_campaign_id;
+		// sécurité
+		if ($campaign_id == $from_campaign_id){
+			// Donnée investissement sur site : table postmeta : modifier l'identifiant du projet WP dans les meta (_edd_payment_meta). 
+			update_post_meta($payment_id, '_edd_payment_meta', $payment_data);
+			// on met à jour le post d'investissement			
+			$log_post_items = get_posts(array(
+				'post_type'		=> 'edd_log',
+				'meta_key'		=> '_edd_log_payment_id',
+				'meta_value'	=> $payment_id
+			));
+			foreach ( $log_post_items as $log_post_item ) {
+				$postdata = array(
+					'ID'			=> $log_post_item->ID,
+					'post_parent'	=> $to_campaign_id
+				);
+				wp_update_post($postdata);
+			}
+
+			// Donnée investissement sur API : table entity_investment : modifier la donnée "project" avec l'ID API du nouveau projet
+			$payment = FALSE;
+			if ( $payments ) {
+				foreach ( $payments as $payment_item ) {
+					if ( $payment_item->ID == $this->id ) {
+						$payment = $payment_item;
+					}
+				}
+			}
+
+			if ( !empty( $payment ) ) {
+				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment );
+			}
+
+			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
+			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
+			// le contrat est nommé de cette façon : dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf'
+			
+			$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$this->get_saved_user_id(). '_*.pdf';
+			// $exp = dirname( __FILE__ ). '/../../../../plugins/appthemer-crowdfunding/includes/pdf_files/' .$campaign_id. '_' .$WDGUser_current->wp_user->ID. '_*.pdf';
+			$files = glob( $exp );
+			foreach ($files as $filename) {
+				// sachant que l'on transfère les investissements du plus vieux au plus récent, s'il y a plusieurs contrats de cet investisseur sur cette campagne
+				// c'est le plus vieux contrat qu'il faut renommer, donc le premier de la liste
+				break;
+			}
+			$new_filename = str_replace('pdf_files/' .$campaign_id. '_', 'pdf_files/' .$to_campaign_id. '_', $filename);
+			rename($filename, $new_filename);
+		}
+	}
+	/**
+	 * coupe un investissement en 2 et transfère la valeur de amount vers une campagne
+	 * @param ATCF_Campaign $to_campaign
+	 * @param int $amount
+	 */
+	public function cut_and_transfer($to_campaign, $amount) {
+		// on mémorise l'id de la campagne de départ et d'arrivée
+		$from_campaign_id = $this->get_saved_campaign()->ID;
+		$to_campaign_id = $to_campaign->ID;
+		
+		// on crée un nouvel investissement dans la campagne de destination avec la somme manquante $amount
+		$payment_key = edd_get_payment_key( $this->get_id() );
+		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
+		$user_id = $user_info['id'];
+		$user = new WDGUser($user_id);
+		$user_email = $user->get_email();
+
+		$orga_email = '';
+		// si l'investisseur est une organisation, on récupère son email
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$WDGOrganization = new WDGOrganization( $user_id );			
+			$orga_email = $WDGOrganization->get_email();
+
+		}
+		
+		// la fonction add_investment créé l'investissement dans le site, dans l'API, génère le contrat et envoie un mail de notification
+		$new_investment_id = $to_campaign->add_investment(
+			$payment_key, $user_email, $amount, 'publish',
+			'', '', 
+			'', '', '', 
+			'', '', '', '', '', 
+			'', '', '', '', '', 
+			$orga_email
+		);
+		
+		if ( $new_investment_id ) {
+			// on change le statut du nouvel investissement
+			$WDGInvestment = new WDGInvestment( $new_investment_id );
+			$postdata = array(
+				'ID'			=> $new_investment_id,
+				'post_status'	=> 'publish'
+			);
+			wp_update_post( $postdata );
+			$WDGInvestment->save_to_api();
+			// on conserve une trace de l'origine de ce nouveau paiement
+			$id_meta = add_post_meta( $new_investment_id, 'created-from-cutting', $this->get_id() );
+			// on modifie le montant de l'investissement en cours (on soustrait $amount)
+			$this->set_amount($this->get_saved_amount() - $amount);			
+				
+			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
+			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
+			// le contrat est nommé de cette façon : dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf'
+			$exp = dirname( __FILE__ ). '/../pdf_files/' .$from_campaign_id. '_' .$user_id. '_*.pdf';
+			$files = glob( $exp );
+			$old_filename = '';
+			foreach ($files as $filename) {
+				// sachant que l'on transfère les investissements du plus vieux au plus récent, s'il y a plusieurs contrats de cet investisseur sur cette campagne
+				// c'est le plus vieux contrat qu'il faut renommer, donc le premier de la liste
+				$old_filename = $filename;
+				break;
+			}
+			$new_filename = str_replace('pdf_files/' .$from_campaign_id. '_', 'pdf_files/_old_' .$from_campaign_id. '_', $old_filename);
+			
+			rename($old_filename, $new_filename);
+
+			// on génère 1 contrat pour le nouvel investissement		
+			$new_investment_downloads = edd_get_payment_meta_downloads($new_investment_id);
+			$new_investment_download_id = '';
+			if (is_array($new_investment_downloads[0])) $new_investment_download_id = $new_investment_downloads[0]["id"];
+			else $new_investment_download_id = $new_investment_downloads[0];
+			$new_investment_contract_pdf_file = getNewPdfToSign($new_investment_download_id, $new_investment_id, $user_id);
+			if ( !empty( $WDGNewInvestment ) && $WDGNewInvestment->has_token() ) {
+				$new_investment_contract_pdf_filename = basename( $new_investment_contract_pdf_file );
+				$new_investment_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_investment_contract_pdf_filename;
+				$WDGNewInvestment->update_contract_url( $new_investment_contract_pdf_url );
+			}
+			
+			// on regénère un contrat pour l'investissement en cours		
+			$current_investment_downloads = edd_get_payment_meta_downloads($this->id);
+			$current_investment_download_id = '';
+			if (is_array($current_investment_downloads[0])) $current_investment_download_id = $current_investment_downloads[0]["id"];
+			else $current_investment_download_id = $current_investment_downloads[0];
+			$current_investment_contract_pdf_file = getNewPdfToSign($current_investment_download_id, $this->id, $user_id);
+			if ( !empty( $this ) && $this->has_token() ) {
+				$current_investment_contract_pdf_filename = basename( $current_investment_contract_pdf_file );
+				$current_investment_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $current_investment_contract_pdf_filename;
+				$this->update_contract_url( $current_investment_contract_pdf_url );
+			}
+		}else{
+			ypcf_debug_log( 'WDGInvestment::cut_and_transfer erreur d\'ajout du nouvel investissement ');
+		
+		}
+		
+	}
 	/**
 	 * Détermine si les valeurs de sessions sont correctes pour l'investissement
 	 */
@@ -313,6 +488,20 @@ class WDGInvestment {
 		}
 	}
 	
+	/**
+	 * Modifie le montant de l'investissement
+	 * @param int $new_amount
+	 */
+	public function set_amount($new_amount) {
+		// on sauvegarde le nouveau montant sur le site
+		if ( !empty( $this->id ) ) {
+			$meta = edd_get_payment_meta($this->get_id());
+			edd_update_payment_meta($this->get_id(), '_edd_payment_total', $new_amount);
+		}
+		// on sauvegarde le nouveau montant sur l'API
+		$this->save_to_api();
+	}
+
 	/**
 	 * Détermine le nouveau statut de l'investissement
 	 * @param string $status
@@ -1152,6 +1341,7 @@ class WDGInvestment {
 			foreach ( $payments as $payment_item ) {
 				if ( $payment_item->ID == $this->id ) {
 					$payment = $payment_item;
+					break;
 				}
 			}
 		}

@@ -58,6 +58,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('create_investment_from_draft');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action( 'cancel_pending_investments' );
+		WDGAjaxActions::add_action( 'campaign_duplicate' );
+		WDGAjaxActions::add_action( 'campaign_transfer_investments' );
 		WDGAjaxActions::add_action( 'conclude_project' );
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
@@ -2790,6 +2792,58 @@ class WDGAjaxActions {
 		exit( '1' );
 	}
 	
+	/**
+	 * Lance la duplication d'une campagne
+	 */
+	
+	public static function campaign_duplicate() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		
+		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign_ref = new ATCF_Campaign( $campaign_id ); // on utilise la campagne existante pour reprendre certains paramètres
+			$newcampaign_id = $campaign_ref->duplicate();
+			$newcampaign = atcf_get_campaign($newcampaign_id);							
+
+			// lier l'organization
+			$organization = $campaign_ref->get_organization();
+			$WDGOrganization = new WDGOrganization( $organization->wpref );
+			$orga_email = $WDGOrganization->get_email();
+			$newcampaign->link_organization( $WDGOrganization->get_api_id() );
+			// mettre à jour l'API
+			$newcampaign->update_api();
+
+			// Liaison aux catégories
+			$categories = get_the_terms($campaign_id,'download_category');
+			$categories_id = array();
+			foreach( $categories as $categorie ) {
+				$categories_id[] = $categorie->term_id;
+			}
+			$term_taxonomy_ids = wp_set_object_terms( $newcampaign_id, $categories_id, 'download_category', TRUE );
+		}
+		
+		exit('1' );
+	}
+
+	/**
+	 * Transfert des investissements d'une campagne à une autre
+	 */
+	public static function campaign_transfer_investments(){
+		$from_campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign_ref = new ATCF_Campaign( $from_campaign_id ); 
+
+		if($campaign_ref->is_funded()){
+			$WDGUser_current = WDGUser::current();
+			$to_campaign_id = filter_input(INPUT_POST, 'duplicated_campaign');
+			
+			if ( $WDGUser_current->is_admin() && !empty( $from_campaign_id ) && !empty( $to_campaign_id ) ) {
+				WDGCampaignInvestments::transfer_investments( $from_campaign_id, $to_campaign_id );
+			}
+			
+			exit('1' );
+		}
+		exit('0' );
+	}
 	/**
 	 * Lance la finalisation du projet (transfert des données d'investissement sur l'API, ...)
 	 */

@@ -634,10 +634,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 					__( "Votre pr&eacute;nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
 					'firstname'
 				);
-			} elseif ( strlen( $firstname ) < 3 ) {
+			} elseif ( strlen( $firstname ) < 2 ) {
 				$this->addPostError(
 					'firstname',
-					__( "Votre pr&eacute;nom doit faire plus de 2 caract&egrave;res.", 'yproject' ),
+					__( "Votre pr&eacute;nom doit faire au moins 2 caract&egrave;res.", 'yproject' ),
 					'firstname'
 				);
 			}
@@ -650,10 +650,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 					'lastname'
 				);
 				
-			} elseif ( strlen( $lastname ) < 3 ) {
+			} elseif ( strlen( $lastname ) < 2 ) {
 				$this->addPostError(
 					'lastname',
-					__( "Votre nom doit faire plus de 2 caract&egrave;res.", 'yproject' ),
+					__( "Votre nom doit faire au moins 2 caract&egrave;res.", 'yproject' ),
 					'lastname'
 				);
 			}
