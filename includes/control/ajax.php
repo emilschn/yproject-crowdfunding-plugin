@@ -1247,6 +1247,14 @@ class WDGAjaxActions {
 			$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
 		}
 		
+		$new_common_goods_turnover_percent = WDG_Form::formatInputTextNumber( 'new_common_goods_turnover_percent' );
+		if ( $new_common_goods_turnover_percent >= 0 ) {
+			$campaign->set_api_data( 'common_goods_turnover_percent', $new_common_goods_turnover_percent );
+			$success['new_common_goods_turnover_percent'] = 1;
+		} else {
+			$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
+		}
+		
 		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
 		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
 		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ){
