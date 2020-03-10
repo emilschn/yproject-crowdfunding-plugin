@@ -756,7 +756,7 @@ class NotificationsEmails {
     public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_refused_admin > ' . $user_email);
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'support@wedogood.co';
 		$object = "Investisseur à relancer !";
 		
 		$body_content = "Hello !<br>";
@@ -775,7 +775,7 @@ class NotificationsEmails {
     public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin > ' . $user_email);
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'support@wedogood.co';
 		$object = "Wallet à vérifier !";
 		
 		$body_content = "Hello !<br>";
@@ -793,47 +793,6 @@ class NotificationsEmails {
     //*******************************************************
     // FIN NOTIFICATIONS KYC
     //*******************************************************
-	
-    //*******************************************************
-    // NOTIFICATIONS STATUT
-    //*******************************************************
-    public static function campaign_change_status_admin( $campaign_id, $status ) {
-		ypcf_debug_log( 'NotificationsEmails::campaign_change_status_admin > ' .$campaign_id. ' ; ' .$status );
-		
-		$admin_email = get_option('admin_email');
-		$campaign = new ATCF_Campaign( $campaign_id );
-		$status_str = "d'&eacute;valuation";
-		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
-			$status_str = "d'investissement";
-		}
-		
-		$object = "Changement d'étape projet";
-		$body_content = "Salut !!<br>";
-		$body_content .= "Un projet a changé d'étape :<br>";
-		$body_content .= "Il s'agit du projet " .$campaign->data->post_title. ".<br>";
-		$body_content .= "Il est passé en phase " .$status_str. ".<br><br>";
-		$body_content .= "GO ! GO ! GO !";
-
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
-    }
-	
-    public static function campaign_sign_mandate_admin( $orga_id ) {
-		ypcf_debug_log( 'NotificationsEmails::campaign_sign_mandate > ' .$orga_id );
-		
-		$admin_email = get_option('admin_email');
-		$WDGOrganization = new WDGOrganization( $orga_id );
-		
-		$object = "Signature de mandat de prélèvement";
-		$body_content = "Salut !!<br>";
-		$body_content .= "Une organisation a signé son mandat de prélèvement :<br>";
-		$body_content .= "Il s'agit de l'organisation " .$WDGOrganization->get_name(). ".<br>";
-		$body_content .= "WOUHOU !";
-
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
-    }
-    //*******************************************************
-    // FIN NOTIFICATIONS STATUT
-	//*******************************************************
 	
 	
     public static function investment_to_api_error_admin( $edd_payment_item ) {
