@@ -19,6 +19,10 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Vote' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
+
+		WDGAjaxActions::add_action( 'try_user_login' );
+		WDGAjaxActions::add_action( 'try_user_register' );
+		WDGAjaxActions::add_action( 'create_project_form' );
 		
 		WDGAjaxActions::add_action( 'try_user_login' );
 		WDGAjaxActions::add_action( 'try_user_register' );
@@ -159,6 +163,12 @@ class WDGAjaxActions {
 			}
 		}
 
+		exit( json_encode( $result ) );
+	}
+	
+	public static function create_project_form() {
+		ypcf_debug_log( 'ajax.php :: create_project_form  '.filter_input( INPUT_POST, 'firstname' ));
+		$result = WDGPostActions::create_project_form();
 		exit( json_encode( $result ) );
 	}
 	
