@@ -355,6 +355,25 @@ class WDGOrganization {
 		$buffer = str_replace( '@', '+royalties@', $current_email );
 		return $buffer;
 	}
+
+	public function get_tax_lemonway_id() {
+		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_tax_id', true );
+		if ( empty( $db_lw_id ) ) {
+			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'TAX';
+			if ( defined( YP_LW_USERID_PREFIX ) ) {
+				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
+			}
+			
+			update_user_meta( $this->wpref, 'lemonway_tax_id', $db_lw_id );
+		}
+		return $db_lw_id;
+	}
+	
+	private function get_tax_lemonway_email() {
+		$current_email = $this->get_email();
+		$buffer = str_replace( '@', '+tax@', $current_email );
+		return $buffer;
+	}
 	
 	
 	public function get_wpref() {
@@ -1162,6 +1181,41 @@ class WDGOrganization {
 		
 		//Vérifie que le wallet n'est pas déjà enregistré
 		$wallet_details = $this->get_wallet_details( 'royalties' );
+		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+			} else {
+				$WDGUser_creator = new WDGUser();
+			}
+			
+			return LemonwayLib::wallet_company_register(
+				$this->get_royalties_lemonway_id(),
+				$this->get_royalties_lemonway_email(),
+				html_entity_decode( $WDGUser_creator->wp_user->user_firstname ),
+				html_entity_decode( $WDGUser_creator->wp_user->user_lastname ),
+				html_entity_decode( $this->get_name() ),
+				html_entity_decode( $this->get_description() ),
+				$this->get_website(),
+				$WDGUser_creator->get_country( 'iso3' ),
+				$WDGUser_creator->get_lemonway_birthdate(),
+				$WDGUser_creator->get_lemonway_phone_number(),
+				$this->get_idnumber(),
+				LemonwayLib::$wallet_type_beneficiary,
+				'1'
+			);
+		}
+		return TRUE;
+	}
+	
+	public function check_register_tax_lemonway_wallet() {
+		if ( !$this->can_register_lemonway() ) {
+			return FALSE;
+		}
+		
+		//Vérifie que le wallet n'est pas déjà enregistré
+		$wallet_details = $this->get_wallet_details( 'tax' );
 		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
 			
 			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );

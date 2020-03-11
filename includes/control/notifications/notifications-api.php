@@ -1178,14 +1178,15 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
-	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount ) {
+	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount, $tax_infos = '' ) {
 		$id_template = '127';
 		$options = array(
 			'personal'				=> 1,
 			'NOM'					=> $name,
 			'NOM_PROJET'			=> $project_name,
 			'TROIS_DERNIERS_MOIS'	=> $last_three_months,
-			'MONTANT_ROYALTIES'		=> $turnover_amount
+			'MONTANT_ROYALTIES'		=> $turnover_amount,
+			'INFOS_FISCALITE'		=> $tax_infos
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',

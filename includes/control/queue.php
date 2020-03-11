@@ -144,6 +144,7 @@ class WDGQueue {
 		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
 		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
+		$total_tax_amount = 0;
 		
 		// Parcours de la liste des investissements validés sur le site
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
@@ -173,11 +174,16 @@ class WDGQueue {
 			
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$amount_royalties = 0;
+				$amount_royalties_for_project = 0;
+				$amount_tax = 0;
 				$has_declared = FALSE;
 
 				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
 				foreach ( $campaign_roi_list as $campaign_roi ) {
 					$date_transfer = new DateTime( $campaign_roi->date_transfer );
+					$amount_tax += $campaign_roi->amount_tax;
+					$total_tax_amount += $amount_tax;
+					$amount_royalties_for_project += $campaign_roi->amount;
 					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
 						$amount_royalties += $campaign_roi->amount;
 						$has_declared = TRUE;
@@ -187,7 +193,8 @@ class WDGQueue {
 				if ( $has_declared ) {
 					array_push( $message_categories[ 'with_royalties' ], array(
 						'campaign_name'		=> $campaign_name,
-						'amount_royalties'	=> $amount_royalties
+						'amount_royalties'	=> $amount_royalties,
+						'amount_tax'		=> $amount_tax
 					) );
 
 				} else {
@@ -224,11 +231,25 @@ class WDGQueue {
 		- Twiza (3,50 €)
 		 */
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
+			$add_tax_sample_info = FALSE;
 			$message .= "<b>Ces entreprises vous ont versé des royalties :</b><br>";
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
-				$message .= "- " .$campaign_params['campaign_name']. " : " .YPUIHelpers::display_number( $campaign_params['amount_royalties'] ). " €<br>";
+				$message .= "- " .$campaign_params['campaign_name']. " : " .YPUIHelpers::display_number( $campaign_params['amount_royalties'] ). " €";
+				if ( $campaign_params[ 'amount_tax' ] > 0 ) {
+					$add_tax_sample_info = TRUE;
+					$message .= " (dont " .$campaign_params[ 'amount_tax' ]. " € prélevés à la source)";
+				}
+				$message .= "<br>";
 			}
 			$message .= "<br>";
+
+			if ( $total_tax_amount > 0 ) {
+				$message .= "Étant donné que vous avez réalisé une plus-value sur votre investissement, ";
+				$message .= "cette plus-value a été soumise au Pélèvement Forfaitaire Unique (flat tax) de " .$tax_percent. " %. ";
+				$message .= $total_tax_amount . " € ont ainsi été prélevés à la source et s'afficheront donc dans votre avis d'impôt sur les revenus. ";
+				$message .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement\">En savoir plus</a>.';
+				$message .= "<br>";
+			}
 		}
 		
 		/**
@@ -996,75 +1017,89 @@ class WDGQueue {
 
 
 	
-	/******************************************************************************/
-	/* TRANSFERT AUTOMATIQUE DE ROYALTIES */
-	/******************************************************************************/
-		public static function add_royalties_auto_transfer_start( $declaration_id, $date = FALSE ) {
-			$action = 'royalties_auto_transfer_start';
-			$entity_id = $declaration_id;
-			$priority = self::$priority_date;
-			if ( $date == FALSE ) {
-				$date = new DateTime();
-			}
-			$date_priority = $date->format( 'Y-m-d H:i:s' );
-			$params = array();
-			
-			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
-		}
+/******************************************************************************/
+/* TRANSFERT AUTOMATIQUE DE ROYALTIES */
+/******************************************************************************/
+	public static function add_init_declaration_rois( $declaration_id ) {
+		$action = 'init_declaration_rois';
+		$entity_id = $declaration_id;
+		$priority = self::$priority_high;
+		$params = array();
 		
-		public static function execute_royalties_auto_transfer_start( $declaration_id, $queued_action_params, $queued_action_id ) {
-			if ( !empty( $declaration_id ) ) {
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_init_declaration_rois( $declaration_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $declaration_id ) ) {
+			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			$roi_declaration->init_rois_and_tax();
+		}
+	}
 
-				$roi_declaration = new WDGROIDeclaration( $declaration_id );
+	public static function add_royalties_auto_transfer_start( $declaration_id, $date = FALSE ) {
+		$action = 'royalties_auto_transfer_start';
+		$entity_id = $declaration_id;
+		$priority = self::$priority_date;
+		if ( $date == FALSE ) {
+			$date = new DateTime();
+		}
+		$date_priority = $date->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_royalties_auto_transfer_start( $declaration_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $declaration_id ) ) {
+
+			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+			$current_organization = $campaign->get_organization();
+			if ( !empty( $current_organization ) ) {
+				$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
+				$amount_wallet = $organization_obj->get_lemonway_balance( 'royalties' );
+			}
+
+			// On vérifie qu'il y a toujours l'argent sur le wallet
+			if ( $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
+				self::add_royalties_auto_transfer_next( $declaration_id );
+
+			} else {
+				// Sinon on prévient qu'il n'y a plus assez
+				$content_mail = "Il n'y a pas assez d'argent dans le wallet de royalties pour faire le versement trimestriel de " . $campaign->get_name();
+				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Fonds insuffisants', $content_mail );
+
+			}
+		}
+	}
+
+	public static function add_royalties_auto_transfer_next( $declaration_id ) {
+		$action = 'royalties_auto_transfer_next';
+		$entity_id = $declaration_id;
+		$priority = self::$priority_high;
+		$params = array();
+		self::create_or_replace_action( $action, $entity_id, $priority, $params );
+	}
+	
+	public static function execute_royalties_auto_transfer_next( $declaration_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $declaration_id ) ) {
+
+			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			$result = $roi_declaration->transfer_pending_rois();
+			if ( $result == 100 ) {
 				$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-				$current_organization = $campaign->get_organization();
-				if ( !empty( $current_organization ) ) {
-					$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
-					$amount_wallet = $organization_obj->get_lemonway_balance( 'royalties' );
-				}
+				$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
+				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
+				NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
 
-				// On vérifie qu'il y a toujours l'argent sur le wallet
-				if ( $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
-					self::add_royalties_auto_transfer_next( $declaration_id );
-
-				} else {
-					// Sinon on prévient qu'il n'y a plus assez
-					$content_mail = "Il n'y a pas assez d'argent dans le wallet de royalties pour faire le versement trimestriel de " . $campaign->get_name();
-					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Fonds insuffisants', $content_mail );
-
-				}
+			} else {
+				// Passage à complete avant, pour pouvoir en ajouter un à la suite
+				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+				// On continue au prochain tour
+				self::add_royalties_auto_transfer_next( $declaration_id );
 			}
+			
 		}
+	}
 
-		public static function add_royalties_auto_transfer_next( $declaration_id ) {
-			$action = 'royalties_auto_transfer_next';
-			$entity_id = $declaration_id;
-			$priority = self::$priority_high;
-			$params = array();
-			self::create_or_replace_action( $action, $entity_id, $priority, $params );
-		}
-		
-		public static function execute_royalties_auto_transfer_next( $declaration_id, $queued_action_params, $queued_action_id ) {
-			if ( !empty( $declaration_id ) ) {
-
-				$roi_declaration = new WDGROIDeclaration( $declaration_id );
-				$result = $roi_declaration->make_transfer();
-				if ( $result == 100 ) {
-					$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-					$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
-					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
-					NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
-
-				} else {
-					// Passage à complete avant, pour pouvoir en ajouter un à la suite
-					WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
-					// On continue au prochain tour
-					self::add_royalties_auto_transfer_next( $declaration_id );
-				}
-				
-			}
-		}
-
-	
-	
 }

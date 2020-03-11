@@ -295,7 +295,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error_wallet( $user_data, $project_title, $amount ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error_wallet > ' . $user_data->user_email);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Erreur transfert wallet';
 		$body_content = "Salut !<br />";
 		$body_content .= "Il y a un souci pour un transfert de wallet :<br />";
