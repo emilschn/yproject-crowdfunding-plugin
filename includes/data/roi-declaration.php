@@ -984,7 +984,7 @@ class WDGROIDeclaration {
 				//Versement vers utilisateur personne morale
 				if ( WDGOrganization::is_user_organization( $investment_item[ 'user' ] ) ) {
 					$WDGOrganization = new WDGOrganization( $investment_item[ 'user' ] );
-					$recipient_api_id = $WDGOrga->get_api_id();
+					$recipient_api_id = $WDGOrganization->get_api_id();
 					$recipient_type = 'orga';
 					$buffer_mail .= "- L'organisation " . $WDGOrganization->get_name() . " (" . $WDGOrganization->get_email() . ") ";
 					$buffer_mail .= "ne subit pas de prélèvement à la source.<br>";
