@@ -789,7 +789,20 @@ class NotificationsEmails {
 		}
 
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
-    }
+	}
+	
+	public static function organization_bank_file_changed_admin( $organization_name ) {
+		ypcf_debug_log('NotificationsEmails::organization_bank_file_changed_admin > ' . $organization_name);
+		
+		$admin_email = 'support@wedogood.co';
+		$object = "RIB d'organisation modifié - " . $organization_name;
+
+		$body_content = "Hello !<br>";
+		$body_content .= "L'organisation ".$organization_name." a changé de RIB.<br>";
+		$body_content .= "Si c'était un projet en versement, il faudrait refaire signer l'autorisation de prélèvement.<br>";
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
+	}
     //*******************************************************
     // FIN NOTIFICATIONS KYC
     //*******************************************************
