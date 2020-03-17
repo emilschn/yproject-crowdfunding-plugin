@@ -176,6 +176,11 @@ class WDG_Form_User_Bank extends WDG_Form {
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						$WDGOrganization->register_lemonway();
 						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						// Si c'est une organisation qui gère des projets, on envoie une alerte admin
+						$list_campaign_orga = $WDGOrganization->get_campaigns();
+						if ( !empty( $list_campaign_orga ) ) {
+							NotificationsEmails::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
+						}
 					}
 					
 				} elseif ( $test_kyc ) {
