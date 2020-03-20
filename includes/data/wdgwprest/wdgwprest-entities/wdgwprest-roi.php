@@ -32,7 +32,7 @@ class WDGWPREST_Entity_ROI {
 			'id_declaration'		=> $roi->id_declaration,
 			'date_transfer'			=> $roi->date_transfer,
 			'amount'				=> $roi->amount,
-			'amount_tax_in_cents'	=> $roi->amount_tax * 100,
+			'amount_taxed_in_cents'	=> $roi->amount_taxed_in_cents,
 			'id_transfer'			=> $roi->id_transfer,
 			'status'				=> $roi->status
 		);

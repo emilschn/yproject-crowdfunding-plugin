@@ -1327,17 +1327,22 @@ class WDGUser {
 		return $buffer;
 	}
 
-	public function get_tax_amount( $roi_amount ) {
+	public function get_tax_amount_in_cents_round( $roi_amount_in_cents ) {
+		$tax_amount_in_cents = $this->get_tax_percent() * $roi_amount_in_cents / 100;
+		return floor( $tax_amount_in_cents / 100 ) * 100;
+	}
+
+	public function get_tax_percent() {
 		$date_now = new DateTime();
-		$tax_amount = 0;
 		$tax_country = $this->get_tax_country();
 		if ( empty( $tax_country ) || $tax_country == 'FR' ) {
 			if ( $this->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) ) {
-				$tax_amount = round( $roi_amount * WDGROIDeclaration::$tax_with_exemption / 100, 2 );
+				return WDGROIDeclaration::$tax_with_exemption;
 			} else {
-				$tax_amount = round( $roi_amount * WDGROIDeclaration::$tax_without_exemption / 100, 2 );
+				return WDGROIDeclaration::$tax_without_exemption;
 			}
 		}
+		return 0;
 	}
 	
 /*******************************************************************************

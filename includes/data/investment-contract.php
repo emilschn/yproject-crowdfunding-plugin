@@ -80,7 +80,7 @@ class WDGInvestmentContract {
 		WDGWPREST_Entity_InvestmentContract::create( $this );
 	}
 	
-	public function check_amount_received( $amount_received, $amount_current_declaration, $amount_tax ) {
+	public function check_amount_received( $amount_received, $amount_current_declaration ) {
 		// Est-ce que l'investisseur a reçu une plus-value
 		if ( $amount_received > $this->subscription_amount ) {
 			NotificationsEmails::roi_received_exceed_investment( $this->investor_id, $this->investor_type, $this->project_id );
