@@ -576,6 +576,7 @@ class WDGROIDeclaration {
 									LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrganization_campaign->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
 									$percent_tax = $WDGUser->get_tax_percent();
 									WDGROITax::insert( $ROI->id, $ROI->id_user, 'user', $date_now->format( 'Y-m-d' ), $ROI->amount_taxed_in_cents, $amount_tax_in_cents, $percent_tax, $WDGUser->get_tax_country(), $WDGUser->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) );
+									WDGQueue::add_tax_monthly_summary( $this->id );
 								}
 							}
 
@@ -822,6 +823,7 @@ class WDGROIDeclaration {
 									LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrganization_campaign->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
 									$percent_tax = $WDGUser->get_tax_percent();
 									WDGROITax::insert( $ROI->id, $ROI->id_user, 'user', $date_now->format( 'Y-m-d' ), $ROI->amount_taxed_in_cents, $amount_tax_in_cents, $percent_tax, $WDGUser->get_tax_country(), $WDGUser->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) );
+									WDGQueue::add_tax_monthly_summary( $this->id );
 								}
 							}
 

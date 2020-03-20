@@ -26,6 +26,16 @@ class WDGWPREST_Entity_ROITax {
 		);
 		return $parameters;
 	}
+
+	/**
+	 * Retourne la taxe associée à un ROI
+	 */
+	public static function get_by_id_roi( $id_roi ) {
+		if ( empty( $id_roi ) ) {
+			return FALSE;
+		}
+		return WDGWPRESTLib::call_get_wdg( 'roi-taxes?id_roi=' . $id_roi );
+	}
 	
 	/**
 	 * Crée un ROITax

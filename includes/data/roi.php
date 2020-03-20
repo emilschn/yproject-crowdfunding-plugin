@@ -68,6 +68,9 @@ class WDGROI {
 		$this->update();
 	}
 	
+	/**
+	 * 
+	 */
 	public function get_formatted_date( $type = 'transfer' ) {
 		$buffer = '';
 		$temp_date = '';
@@ -119,6 +122,7 @@ class WDGROI {
 						LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $organization_obj->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
 						$percent_tax = $WDGUser->get_tax_percent();
 						WDGROITax::insert( $this->id, $this->id_user, 'user', $date_now->format( 'Y-m-d' ), $this->amount_taxed_in_cents, $amount_tax_in_cents, $percent_tax, $WDGUser->get_tax_country(), $WDGUser->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) );
+						WDGQueue::add_tax_monthly_summary( $this->id_declaration );
 					}
 				}
 

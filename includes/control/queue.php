@@ -1084,4 +1084,64 @@ class WDGQueue {
 		}
 	}
 
+
+	
+	/******************************************************************************/
+	/* ENVOI NOTIF ADMIN MENSUELLE POUR TAXES */
+	/******************************************************************************/
+	public static function add_tax_monthly_summary( $declaration_id ) {
+		$action = 'tax_monthly_summary';
+		$entity_id = $declaration_id;
+		$priority = self::$priority_date;
+		$date_next_dispatch = new DateTime();
+		$date_next_dispatch->modify( 'first day of next month' );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_tax_monthly_summary( $declaration_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $declaration_id ) ) {
+			$buffer_mail = '';
+			$total_tax_in_euros = 0;
+
+			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			$list_rois = $roi_declaration->get_rois();
+			foreach ( $list_rois as $roi_item ) {
+				if ( $roi_item->status == WDGROI::$status_transferred && $roi_item->amount_taxed_in_cents > 0 ) {
+					if ( $roi_item->recipient_type == 'orga' ) {
+						$WDGOrganization = WDGOrganization::get_by_api_id( $roi_item->id_user );
+						$buffer_mail .= '- ' . $WDGOrganization->get_name() . ' est une personne morale et ne paie pas de taxes<br>';
+
+					} else {
+						$list_roi_tax = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
+						if ( !empty( $list_roi_tax ) ) {
+							$WDGUser = WDGUser::get_by_api_id( $roi_item->id_user );
+							// Normalement un seul, mais retourné sous forme de liste
+							foreach ( $list_roi_tax as $roi_tax_item ) {
+								$user_tax_in_euros = ( $roi_tax_item->amount_tax_in_cents / 100 );
+								$total_tax_in_euros += $user_tax_in_euros;
+								$buffer_mail .= '- ' . $WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname() . ' (' .$WDGUser->get_email(). ') a une taxe de ' . $roi_tax_item->percent_tax . ' % et paie donc ' . $user_tax_in_euros . ' €<br>';
+							}
+						}
+					}
+				}
+			}
+
+			if ( $buffer_mail != '' ) {
+				$campaign_object = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+				$intro_mail = 'Le projet ' . $campaign_object->get_name() . ' a versé des plus-values. Il faut les déclarer aux impots !<br><br>';
+				$buffer_mail = $intro_mail . $buffer_mail;
+				$buffer_mail .= '<br>';
+				$buffer_mail .= 'Au total, cela devrait faire un versement de ' . $total_tax_in_euros . ' € aux impots de notre part.';
+				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Taxes à payer aux impots /// ' . $campaign_object->get_name(), $buffer_mail );
+
+				// TODO : faire le paiement automatique sur les comptes de WDG
+				// Mais attente des premiers tests pour voir la véracité des infos
+				// Puis le mettre en place
+			}
+		}
+	}
+
 }
