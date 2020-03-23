@@ -103,6 +103,7 @@ class WDGFormProjects {
 	public static function form_approve_payment() {
 		$current_wdg_user = WDGUser::current();
 		$approve_payment_id = filter_input(INPUT_GET, 'approve_payment');
+		ypcf_debug_log( 'form_approve_payment > ' . $approve_payment_id );
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		if ( !empty( $approve_payment_id ) && !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
@@ -144,6 +145,7 @@ class WDGFormProjects {
 					}
 
 				} else {
+					ypcf_debug_log( 'form_approve_payment > getNewPdfToSign' );
 					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
 					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
 				}
