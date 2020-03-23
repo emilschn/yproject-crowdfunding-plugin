@@ -105,6 +105,7 @@ class WDGFormProjects {
 		$approve_payment_id = filter_input(INPUT_GET, 'approve_payment');
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		if ( !empty( $approve_payment_id ) && !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
+			$campaign = new ATCF_Campaign( $campaign_id );
 			
 			$WDGInvestment = new WDGInvestment( $approve_payment_id );
 			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
@@ -129,7 +130,6 @@ class WDGFormProjects {
 					$is_only_wallet = TRUE;
 				}
 
-				$campaign = new ATCF_Campaign( $campaign_id );
 				if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
 					$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
 					$contract_id = $WDGInvestmentSignature->create_eversign();
