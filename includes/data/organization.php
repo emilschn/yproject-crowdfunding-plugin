@@ -1440,6 +1440,19 @@ class WDGOrganization {
 		}
 		return $buffer;
 	}
+
+	public function get_mandate_infos_str() {
+		$buffer = '';
+		$mandates_list = $this->get_lemonway_mandates();
+		if ( !empty( $mandates_list ) ) {
+			$last_mandate = end( $mandates_list );
+			$last_mandate_status = $last_mandate[ "S" ];
+			if ( $last_mandate_status == 5 || $last_mandate_status == 6 ) {
+				$buffer = $last_mandate[ "DATA" ] . ' (' . $last_mandate[ "SWIFT" ] . ')';
+			}
+		}
+		return $buffer;
+	}
 	
 	public function remove_lemonway_mandate( $mandate_id ) {
 		LemonwayLib::wallet_unregister_mandate( $this->get_lemonway_id(), $mandate_id );
