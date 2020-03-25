@@ -140,7 +140,6 @@ class WDGPostActions {
         $orga_name = sanitize_text_field(filter_input(INPUT_POST,'company-name'));
 		$orga_email = sanitize_text_field( filter_input( INPUT_POST, 'email-organization' ) );
         $project_name = sanitize_text_field(filter_input(INPUT_POST,'project-name'));
-        $project_desc = sanitize_text_field(filter_input(INPUT_POST,'project-description'));
         $project_terms = filter_input( INPUT_POST, 'project-terms' );
 
 		$result = array(
@@ -161,7 +160,7 @@ class WDGPostActions {
         }
 
         if ( !empty( $new_firstname ) && !empty( $new_lastname ) && !empty( $new_phone )
-				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms)  && (is_email( $orga_email ) || is_numeric( $orga_name )) ) {
+				&& !empty($orga_name) && !empty($project_name) && !empty($project_terms)  && (is_email( $orga_email ) || is_numeric( $orga_name )) ) {
 
 			//On commence par essayer de créer l'organisation d'abord
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
@@ -212,8 +211,6 @@ class WDGPostActions {
 				$newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
 				$newcampaign = atcf_get_campaign($newcampaign_id);
 
-				$newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
-				$newcampaign->set_api_data( 'description', $project_desc );
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
 				$campaign_ref = new ATCF_Campaign( 27459 ); // Arbitrairement, on utilise une campagne existante pour reprendre certains paramètres
