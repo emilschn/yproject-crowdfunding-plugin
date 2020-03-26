@@ -1052,7 +1052,7 @@ class WDGROIDeclaration {
 			$date_of_royalties_transfer = FALSE;
 			if ( $this->mean_payment == WDGROIDeclaration::$mean_payment_mandate ) {
 				$date_of_royalties_transfer = new DateTime();
-				$date_of_royalties_transfer->add( new DateInterval( 'P4D' ) );
+				$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
 				// Si lundi, on fera un jour plus tard
 				if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
 					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
