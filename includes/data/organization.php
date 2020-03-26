@@ -1698,7 +1698,6 @@ class WDGOrganization {
 		global $country_list;
 		$invest_list = array();
 		$roi_total = 0;
-		$tax_total = 0;
 		
 		// Récupération d'abord de la liste des royalties de l'année pour ne faire un récapitulatif que pour ceux-là
 		$royalties_list = $this->get_royalties_for_year( $year );
@@ -1757,14 +1756,6 @@ class WDGOrganization {
 						$invest_item['roi_for_year'] += $investment_roi->amount;
 						$roi_total += $investment_roi->amount;
 
-						// Calcul de la part imposable
-						if ( $invest_item['roi_total'] > $invest_item_amount ) {
-							$amount_to_tax = min( $invest_item['roi_total'] - $invest_item_amount, $investment_roi->amount );
-							$investment_roi_tax = round( $amount_to_tax * 0.3 );
-							$invest_item['tax_for_year'] += $investment_roi_tax;
-							$tax_total += $investment_roi_tax;
-						}
-
 						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
 						array_push( $invest_item['roi_list'], $roi_item );
 					}
@@ -1794,7 +1785,7 @@ class WDGOrganization {
 			$year,
 			$investment_list,
 			UIHelpers::format_number( $roi_total ). ' &euro;',
-			UIHelpers::format_number( $tax_total ). ' &euro;',
+			UIHelpers::format_number( 0 ). ' &euro;',
 			$info_yearly_certificate
 		);
 		

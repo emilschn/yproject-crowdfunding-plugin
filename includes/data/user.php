@@ -1202,7 +1202,7 @@ class WDGUser {
 		global $country_list;
 		$invest_list = array();
 		$roi_total = 0;
-		$tax_total = 0;
+		$taxed_total = 0;
 		
 		// Récupération d'abord de la liste des royalties de l'année pour ne faire un récapitulatif que pour ceux-là
 		$royalties_list = $this->get_royalties_for_year( $year );
@@ -1263,10 +1263,9 @@ class WDGUser {
 
 						// Calcul de la part imposable
 						if ( $invest_item['roi_total'] > $invest_item_amount ) {
-							$amount_to_tax = min( $invest_item['roi_total'] - $invest_item_amount, $investment_roi->amount );
-							$investment_roi_tax = round( $amount_to_tax * 0.3 );
-							$invest_item['tax_for_year'] += $investment_roi_tax;
-							$tax_total += $investment_roi_tax;
+							$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							$invest_item['taxed_for_year'] += $investment_roi_taxed;
+							$taxed_total += $investment_roi_taxed;
 						}
 
 						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
@@ -1277,7 +1276,7 @@ class WDGUser {
 				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
 				$invest_item['roi_total'] = UIHelpers::format_number( $invest_item['roi_total'] ) . ' &euro;';
 				$invest_item['roi_for_year'] = UIHelpers::format_number( $invest_item['roi_for_year'] ) . ' &euro;';
-				$invest_item['tax_for_year'] = UIHelpers::format_number( $invest_item['tax_for_year'] ) . ' &euro;';
+				$invest_item['taxed_for_year'] = UIHelpers::format_number( $invest_item['taxed_for_year'] ) . ' &euro;';
 				array_push( $investment_list, $invest_item );
 			}
 		}
@@ -1298,7 +1297,7 @@ class WDGUser {
 			$year,
 			$investment_list,
 			UIHelpers::format_number( $roi_total ). ' &euro;',
-			UIHelpers::format_number( $tax_total ). ' &euro;',
+			UIHelpers::format_number( $taxed_total ). ' &euro;',
 			$info_yearly_certificate
 		);
 		
@@ -1327,17 +1326,22 @@ class WDGUser {
 		return $buffer;
 	}
 
-	public function get_tax_amount( $roi_amount ) {
+	public function get_tax_amount_in_cents_round( $roi_amount_in_cents ) {
+		$tax_amount_in_cents = $this->get_tax_percent() * $roi_amount_in_cents / 100;
+		return floor( $tax_amount_in_cents / 100 ) * 100;
+	}
+
+	public function get_tax_percent() {
 		$date_now = new DateTime();
-		$tax_amount = 0;
 		$tax_country = $this->get_tax_country();
 		if ( empty( $tax_country ) || $tax_country == 'FR' ) {
 			if ( $this->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) ) {
-				$tax_amount = round( $roi_amount * WDGROIDeclaration::$tax_with_exemption / 100, 2 );
+				return WDGROIDeclaration::$tax_with_exemption;
 			} else {
-				$tax_amount = round( $roi_amount * WDGROIDeclaration::$tax_without_exemption / 100, 2 );
+				return WDGROIDeclaration::$tax_without_exemption;
 			}
 		}
+		return 0;
 	}
 	
 /*******************************************************************************

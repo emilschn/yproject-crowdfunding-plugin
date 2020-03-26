@@ -144,7 +144,6 @@ class WDGQueue {
 		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
 		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
-		$total_tax_amount = 0;
 		
 		// Parcours de la liste des investissements validés sur le site
 		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
@@ -175,14 +174,11 @@ class WDGQueue {
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$amount_royalties = 0;
 				$amount_royalties_for_project = 0;
-				$amount_tax = 0;
 				$has_declared = FALSE;
 
 				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
 				foreach ( $campaign_roi_list as $campaign_roi ) {
 					$date_transfer = new DateTime( $campaign_roi->date_transfer );
-					$amount_tax += $campaign_roi->amount_tax;
-					$total_tax_amount += $amount_tax;
 					$amount_royalties_for_project += $campaign_roi->amount;
 					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
 						$amount_royalties += $campaign_roi->amount;
@@ -193,8 +189,7 @@ class WDGQueue {
 				if ( $has_declared ) {
 					array_push( $message_categories[ 'with_royalties' ], array(
 						'campaign_name'		=> $campaign_name,
-						'amount_royalties'	=> $amount_royalties,
-						'amount_tax'		=> $amount_tax
+						'amount_royalties'	=> $amount_royalties
 					) );
 
 				} else {
@@ -231,25 +226,12 @@ class WDGQueue {
 		- Twiza (3,50 €)
 		 */
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
-			$add_tax_sample_info = FALSE;
 			$message .= "<b>Ces entreprises vous ont versé des royalties :</b><br>";
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
 				$message .= "- " .$campaign_params['campaign_name']. " : " .YPUIHelpers::display_number( $campaign_params['amount_royalties'] ). " €";
-				if ( $campaign_params[ 'amount_tax' ] > 0 ) {
-					$add_tax_sample_info = TRUE;
-					$message .= " (dont " .$campaign_params[ 'amount_tax' ]. " € prélevés à la source)";
-				}
 				$message .= "<br>";
 			}
 			$message .= "<br>";
-
-			if ( $total_tax_amount > 0 ) {
-				$message .= "Étant donné que vous avez réalisé une plus-value sur votre investissement, ";
-				$message .= "cette plus-value a été soumise au Pélèvement Forfaitaire Unique (flat tax) de " .$tax_percent. " %. ";
-				$message .= $total_tax_amount . " € ont ainsi été prélevés à la source et s'afficheront donc dans votre avis d'impôt sur les revenus. ";
-				$message .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement\">En savoir plus</a>.';
-				$message .= "<br>";
-			}
 		}
 		
 		/**
@@ -1099,6 +1081,66 @@ class WDGQueue {
 				self::add_royalties_auto_transfer_next( $declaration_id );
 			}
 			
+		}
+	}
+
+
+	
+	/******************************************************************************/
+	/* ENVOI NOTIF ADMIN MENSUELLE POUR TAXES */
+	/******************************************************************************/
+	public static function add_tax_monthly_summary( $declaration_id ) {
+		$action = 'tax_monthly_summary';
+		$entity_id = $declaration_id;
+		$priority = self::$priority_date;
+		$date_next_dispatch = new DateTime();
+		$date_next_dispatch->modify( 'first day of next month' );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_tax_monthly_summary( $declaration_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $declaration_id ) ) {
+			$buffer_mail = '';
+			$total_tax_in_euros = 0;
+
+			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			$list_rois = $roi_declaration->get_rois();
+			foreach ( $list_rois as $roi_item ) {
+				if ( $roi_item->status == WDGROI::$status_transferred && $roi_item->amount_taxed_in_cents > 0 ) {
+					if ( $roi_item->recipient_type == 'orga' ) {
+						$WDGOrganization = WDGOrganization::get_by_api_id( $roi_item->id_user );
+						$buffer_mail .= '- ' . $WDGOrganization->get_name() . ' est une personne morale et ne paie pas de taxes<br>';
+
+					} else {
+						$list_roi_tax = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
+						if ( !empty( $list_roi_tax ) ) {
+							$WDGUser = WDGUser::get_by_api_id( $roi_item->id_user );
+							// Normalement un seul, mais retourné sous forme de liste
+							foreach ( $list_roi_tax as $roi_tax_item ) {
+								$user_tax_in_euros = ( $roi_tax_item->amount_tax_in_cents / 100 );
+								$total_tax_in_euros += $user_tax_in_euros;
+								$buffer_mail .= '- ' . $WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname() . ' (' .$WDGUser->get_email(). ') a une taxe de ' . $roi_tax_item->percent_tax . ' % et paie donc ' . $user_tax_in_euros . ' €<br>';
+							}
+						}
+					}
+				}
+			}
+
+			if ( $buffer_mail != '' ) {
+				$campaign_object = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+				$intro_mail = 'Le projet ' . $campaign_object->get_name() . ' a versé des plus-values. Il faut les déclarer aux impots !<br><br>';
+				$buffer_mail = $intro_mail . $buffer_mail;
+				$buffer_mail .= '<br>';
+				$buffer_mail .= 'Au total, cela devrait faire un versement de ' . $total_tax_in_euros . ' € aux impots de notre part.';
+				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Taxes à payer aux impots /// ' . $campaign_object->get_name(), $buffer_mail );
+
+				// TODO : faire le paiement automatique sur les comptes de WDG
+				// Mais attente des premiers tests pour voir la véracité des infos
+				// Puis le mettre en place
+			}
 		}
 	}
 

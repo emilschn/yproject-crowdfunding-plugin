@@ -517,6 +517,13 @@ class WDGAjaxActions {
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+										if ( $roi->amount_taxed_in_cents > 0 ) {
+											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
+											$roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
+											if ( !empty( $roitax_items[ 0 ] ) ) {
+												$roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
+											}
+										}
 									}
 								}
 							}
