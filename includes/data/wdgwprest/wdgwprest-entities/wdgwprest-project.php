@@ -92,7 +92,8 @@ class WDGWPREST_Entity_Project {
 			'turnover_per_declaration'	=> $campaign->get_turnover_per_declaration(),
 			'team_contacts'			=> $campaign->team_contacts(),
 			'employees_number'		=> $campaign->get_api_data( 'employees_number' ),
-			'minimum_goal_display'	=> $campaign->get_minimum_goal_display()
+			'minimum_goal_display'	=> $campaign->get_minimum_goal_display(),
+			'common_goods_turnover_percent'	=> $campaign->get_api_data( 'common_goods_turnover_percent' )
 		);
 		return $parameters;
 	}

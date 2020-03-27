@@ -527,6 +527,13 @@ class WDGAjaxActions {
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+										if ( $roi->amount_taxed_in_cents > 0 ) {
+											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
+											$roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
+											if ( !empty( $roitax_items[ 0 ] ) ) {
+												$roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
+											}
+										}
 									}
 								}
 							}
@@ -1255,6 +1262,14 @@ class WDGAjaxActions {
 			$success['new_platform_commission_above_100000'] = 1;
 		} else {
 			$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
+		}
+		
+		$new_common_goods_turnover_percent = WDG_Form::formatInputTextNumber( 'new_common_goods_turnover_percent' );
+		if ( $new_common_goods_turnover_percent >= 0 ) {
+			$campaign->set_api_data( 'common_goods_turnover_percent', $new_common_goods_turnover_percent );
+			$success['new_common_goods_turnover_percent'] = 1;
+		} else {
+			$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
 		}
 		
 		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
@@ -2682,7 +2697,7 @@ class WDGAjaxActions {
 			$input_transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
 			$transfer_remaining_amount = ( $input_transfer_remaining_amount != 'false' && ( $input_transfer_remaining_amount === 1 || $input_transfer_remaining_amount === TRUE || $input_transfer_remaining_amount === 'true' ) );
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$buffer = $roi_declaration->make_transfer( $send_notifications, $transfer_remaining_amount, $is_refund );
+			$buffer = $roi_declaration->transfer_pending_rois();
 		}
 		
 		echo json_encode( $buffer );

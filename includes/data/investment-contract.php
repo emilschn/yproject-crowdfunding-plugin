@@ -80,10 +80,13 @@ class WDGInvestmentContract {
 		WDGWPREST_Entity_InvestmentContract::create( $this );
 	}
 	
-	public function check_amount_received( $amount_received ) {
+	public function check_amount_received( $amount_received, $amount_current_declaration ) {
+		// Est-ce que l'investisseur a reçu une plus-value
 		if ( $amount_received > $this->subscription_amount ) {
 			NotificationsEmails::roi_received_exceed_investment( $this->investor_id, $this->investor_type, $this->project_id );
 		}
+
+		// Notification de sécurité : Est-ce que l'investisseur a dépassé le maximum qu'il devrait pouvoir recevoir ?
 		if ( $this->maximum_to_receive > 0 && $amount_received > $this->maximum_to_receive ) {
 			NotificationsEmails::roi_received_exceed_maximum( $this->investor_id, $this->investor_type, $this->project_id );
 		}
@@ -215,6 +218,20 @@ class WDGInvestmentContract {
 		} else {
 			return $investment_contracts;
 		}
+	}
+
+	/**
+	 * Retourne la liste des contrats d'investissement d'un projet dans un tableau associatif dont la clé est l'identifiant de souscription
+	 * @param int $campaign_id
+	 * @return array
+	 */
+	public static function get_list_sorted_by_subscription_id( $campaign_id ) {
+		$investment_contracts = self::get_list( $campaign_id );
+		$investment_contracts_sorted_by_subscription_id = array();
+		foreach ( $investment_contracts as $investment_contract_item ) {
+			$investment_contracts_sorted_by_subscription_id[ $investment_contract_item->subscription_id ] = $investment_contract_item;
+		}
+		return $investment_contracts_sorted_by_subscription_id;
 	}
 	
 	/**

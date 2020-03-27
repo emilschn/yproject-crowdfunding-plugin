@@ -57,7 +57,7 @@ class LemonwayLib {
 	 * @return boolean
 	 */
 	public static function call($method_name, $params, $params_override = array()) {
-		if ( defined( 'YP_LW_SKIP' ) ) {
+		if ( defined( 'YP_LW_SKIP' ) && YP_LW_SKIP ) {
 			return FALSE;
 		}
 		

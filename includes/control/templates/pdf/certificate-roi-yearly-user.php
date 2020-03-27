@@ -16,7 +16,7 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 		$certificate_year,
 		$investment_list,
 		$roi_total,
-		$tax_total,
+		$taxed_total,
 		$info_yearly_certificate
 			
 	) {
@@ -62,7 +62,7 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 			<span style="font-weight: bold; font-size: 13pt;">DOCUMENT R&Eacute;CAPITULATIF DES TRANSACTIONS PER&Ccedil;UES EN <?php echo $certificate_year; ?></span><br>
 			<?php echo $certificate_date; ?><br><br>
 			<?php _e( "Montant total per&ccedil;u en ", 'yproject' ); ?><?php echo $certificate_year; ?> : <b><?php echo $roi_total; ?></b><br>
-			<?php _e( "dont montant total imposable pour ", 'yproject' ); ?><?php echo $certificate_year; ?> : <b><?php echo $tax_total; ?></b><br>
+			<?php _e( "dont montant total imposable pour ", 'yproject' ); ?><?php echo $certificate_year; ?> : <b><?php echo $taxed_total; ?></b><br>
 			<br>
 			<span style="font-size: 8pt;">Les informations fiscales de cette attestation ne concernent que les foyers fiscaux français. Sinon, veuillez vous référer aux lois en vigueur dans votre résidence fiscale.</span>
 		</p>
@@ -91,7 +91,7 @@ class WDG_Template_PDF_Certificate_ROI_Yearly_User {
 				Montant investi : <b><?php echo $investment['amount']; ?></b><br>
 				Total per&ccedil;u : <b><?php echo $investment['roi_total']; ?></b><br>
 				dont total per&ccedil;u en <?php echo $certificate_year; ?> : <b><?php echo $investment['roi_for_year']; ?></b><br>
-				dont total imposable en <?php echo $certificate_year; ?> : <b><?php echo $investment['tax_for_year']; ?></b><br>
+				dont total imposable en <?php echo $certificate_year; ?> : <b><?php echo $investment['taxed_for_year']; ?></b><br>
 				<br>
 				<b>Détail des redevances perçues</b><br>
 				<ul>

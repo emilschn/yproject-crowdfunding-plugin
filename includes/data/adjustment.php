@@ -133,11 +133,15 @@ class WDGAdjustment {
 		$this->id = $new_api_item->id;
 		
 		// Récupérer ID pour lier documents et declarations_checked
-		foreach ( $this->documents as $document_id ) {
-			WDGWPREST_Entity_Adjustment::link_file( $this->id, $document_id );
+		if ( !empty( $this->documents ) ) {
+			foreach ( $this->documents as $document_id ) {
+				WDGWPREST_Entity_Adjustment::link_file( $this->id, $document_id );
+			}
 		}
-		foreach ( $this->declarations_checked as $declaration_id ) {
-			WDGWPREST_Entity_Adjustment::link_declaration( $this->id, $declaration_id );
+		if ( !empty( $this->declarations_checked ) ) {
+			foreach ( $this->declarations_checked as $declaration_id ) {
+				WDGWPREST_Entity_Adjustment::link_declaration( $this->id, $declaration_id );
+			}
 		}
 	}
 	
