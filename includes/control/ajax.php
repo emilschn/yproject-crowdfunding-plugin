@@ -312,8 +312,11 @@ class WDGAjaxActions {
 					$buffer[ $campaign_id ][ 'name' ] = $campaign->data->post_title;
 					$buffer[ $campaign_id ][ 'status' ] = utf8_encode( $campaign->campaign_status() );
 					$buffer[ $campaign_id ][ 'amount' ] = utf8_encode( $campaign->current_amount( false ) );
-					$contract_start_date = new DateTime( $campaign->contract_start_date() );
-					$buffer[ $campaign_id ][ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+					$buffer[ $campaign_id ][ 'start_date' ] = '';
+					if ( $campaign->contract_start_date_is_undefined() != '1' ) {
+						$contract_start_date = new DateTime( $campaign->contract_start_date() );
+						$buffer[ $campaign_id ][ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+					}
 					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
 					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
 					$buffer[ $campaign_id ][ 'items' ] = array();
@@ -1313,6 +1316,17 @@ class WDGAjaxActions {
 			} catch (Exception $e) {
 				$errors[ 'new_contract_start_date' ] = "La date est invalide";
 			}
+		}
+
+		$new_contract_start_date_is_undefined = filter_input(INPUT_POST, 'new_contract_start_date_is_undefined');
+		if ( empty( $new_contract_start_date_is_undefined ) ) {
+			$new_contract_start_date_is_undefined = '0';
+		}
+		try {
+			$campaign->set_api_data( 'contract_start_date_is_undefined', $new_contract_start_date_is_undefined );
+			$success[ 'new_contract_start_date_is_undefined']  = 1;
+		} catch (Exception $e) {
+			$errors[ 'new_contract_start_date_is_undefined' ] = "Erreur pour date de début indéfinie";
 		}
 		
 		$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );

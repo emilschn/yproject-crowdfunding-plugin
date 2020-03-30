@@ -1213,6 +1213,11 @@ class ATCF_Campaign {
 	    return $buffer;
 	}
 
+	public function contract_start_date_is_undefined() {
+		$buffer = $this->get_api_data( 'contract_start_date_is_undefined' );
+	    return $buffer;
+	}
+
     public static $key_first_payment_date = 'campaign_first_payment_date';
 	public function first_payment_date() {
 	    return $this->__get(ATCF_Campaign::$key_first_payment_date);
