@@ -68,7 +68,14 @@ class WDGCampaignBill {
 		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$id_quickbooks = $WDGOrganization->get_id_quickbooks();
 		$line_type = $this->get_line_type_by_platform_commission();
-		return ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $line_type ) );
+		$can_generate = ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $line_type ) );
+		if( !$can_generate ){
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $platform_commission = '.$platform_commission, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $id_quickbooks = '.$id_quickbooks, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $line_type = '.$line_type, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $can_generate = '.$can_generate, false);
+		}
+		return $can_generate;
 	}
 	
 	public function generate() {
@@ -106,6 +113,7 @@ class WDGCampaignBill {
 		}
 		
 		$result = WDGWPRESTLib::call_post_wdg( 'bill', $params );
+		ypcf_debug_log( 'WDGCampaignBill :: generate_quickbooks $result = '.$result, false);
 		return $result;
 	}
 	
