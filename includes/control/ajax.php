@@ -440,10 +440,17 @@ class WDGAjaxActions {
 					// On démarre de la date de démarrage du contrat
 					$contract_start_date = new DateTime( $campaign->contract_start_date() );
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
+					$estimated_turnover_unit = $campaign->estimated_turnover_unit();
 					
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
+						$estimated_rois = 0;
+						if ( $estimated_turnover_unit == 'percent' ) {
+							$estimated_rois = round( $turnover * $payment_amount / 100 );
+						} else {
+							$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+						}
 						$year_item = array(
-							'estimated_rois'	=> YPUIHelpers::display_number( round( $turnover * $roi_percent_full / 100 ), TRUE ) . ' &euro;',
+							'estimated_rois'	=> YPUIHelpers::display_number( $estimated_rois, TRUE ) . ' &euro;',
 							'amount_rois_nb'	=> 0,
 							'amount_rois'		=> '0 &euro;',
 							'roi_items'			=> array()
