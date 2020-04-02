@@ -2958,8 +2958,17 @@ class WDGAjaxActions {
 		$return[ 'id_user' ] = $id_user;
 		$return[ 'save_status' ] = 'failed';
 
-		$update_result = WDGWPREST_Entity_Project_Draft::update( $guid, $user_email, $status, $step, $authorization, $metadata );
-		if ( !empty( $update_result ) ) {
+		if ( empty( $guid ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::create( $id_user, $email, $status, $step, $authorization, $metadata );
+
+		} else {
+			$api_result = WDGWPREST_Entity_Project_Draft::update( $guid, $id_user, $email, $status, $step, $authorization, $metadata );
+			$return[ 'trace' ] = print_r($api_result, true);
+		}
+
+		if ( !empty( $api_result ) ) {
+			$return[ 'guid' ] = $api_result->guid;
+			$return[ 'id_user' ] = $api_result->id_user;
 			$return[ 'save_status' ] = 'saved';
 		}
 
