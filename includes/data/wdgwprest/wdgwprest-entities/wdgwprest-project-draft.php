@@ -58,11 +58,17 @@ class WDGWPREST_Entity_Project_Draft {
 	 * @param String $metadata
 	 * @return array
 	 */
-	public static function set_post_parameters( WDGUser $user, $guid, $status, $step, $authorization, $metadata ) {		
+	public static function set_post_parameters( $guid, $user_email, $status, $step, $authorization, $metadata ) {
+		$user_id = '';
+		if ( !empty( $user_email ) ) {
+			$wp_user = get_user_by( 'email', $user_email );
+			$WDGUser = new WDGUser( $wp_user->ID );
+			$user_id = $WDGUser->get_api_id();
+		}
 		$parameters = array(
 			'guid'				=> $guid,
-			'id_user'			=> $user->get_wpref(),
-			'email'				=> $user->get_email(),
+			'id_user'			=> $user_id,
+			'email'				=> $user_email,
 			'status'			=> $status,
 			'step'				=> $step,
 			'authorization'		=> $authorization,
@@ -81,12 +87,11 @@ class WDGWPREST_Entity_Project_Draft {
 	 * @param String $metadata
 	 * @return object
 	 */
-	public static function update( WDGUser $user, $guid, $status, $step, $authorization, $metadata ) {
+	public static function update( $guid, $user_email, $status, $step, $authorization, $metadata ) {
 		$buffer = FALSE;
 		
 		if ( !empty( $guid ) ) {
-			$parameters = WDGWPREST_Entity_Project_Draft::set_post_parameters($user, $guid, $status, $step, $authorization, $metadata );
-
+			$parameters = WDGWPREST_Entity_Project_Draft::set_post_parameters($guid, $user_email, $status, $step, $authorization, $metadata );
 			$buffer = WDGWPRESTLib::call_post_wdg( 'project-draft/' . $guid, $parameters );
 			WDGWPRESTLib::unset_cache( 'wdg/v1/project-draft/' .$guid);
 			if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }

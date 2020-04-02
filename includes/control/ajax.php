@@ -65,6 +65,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('keep_lock_project_edition');
 		WDGAjaxActions::add_action('delete_lock_project_edition');
 
+		// Prospect setup - interface prospect
+		WDGAjaxActions::add_action('prospect_setup_save');
 	}
 	
 	/**
@@ -2939,6 +2941,29 @@ class WDGAjaxActions {
 		echo $property ;
 		wp_die();
 
+		exit();
+	}
+
+	public static function prospect_setup_save() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$id_user = filter_input( INPUT_POST, 'id_user' );
+		$email = filter_input( INPUT_POST, 'email' );
+		$status = filter_input( INPUT_POST, 'status' );
+		$step = filter_input( INPUT_POST, 'step' );
+		$authorization = filter_input( INPUT_POST, 'authorization' );
+		$metadata = filter_input( INPUT_POST, 'metadata' );
+
+		$return = array();
+		$return[ 'guid' ] = $guid;
+		$return[ 'id_user' ] = $id_user;
+		$return[ 'save_status' ] = 'failed';
+
+		$update_result = WDGWPREST_Entity_Project_Draft::update( $guid, $user_email, $status, $step, $authorization, $metadata );
+		if ( !empty( $update_result ) ) {
+			$return[ 'save_status' ] = 'saved';
+		}
+
+		echo json_encode( $return );
 		exit();
 	}
 }
