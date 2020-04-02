@@ -1014,6 +1014,8 @@ class WDGQueue {
 	public static function execute_init_declaration_rois( $declaration_id, $queued_action_params, $queued_action_id ) {
 		if ( !empty( $declaration_id ) ) {
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
+			// On le fait avant : init_rois_and_tax est en mesure d'en relancer un autre en parallèle
+			WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
 			$roi_declaration->init_rois_and_tax();
 		}
 	}

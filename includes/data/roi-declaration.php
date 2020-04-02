@@ -1040,13 +1040,13 @@ class WDGROIDeclaration {
 				}
 			}
 		}
+		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
 
 		// On a fini l'initialisation, on déclenche la suite
 		if ( $count_done >= count( $investments_list ) ) {
 			// On met à jour de toute façon
 			$this->status = WDGROIDeclaration::$status_transfer;
 			$this->update();
-			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
 		
 			// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
 			$date_of_royalties_transfer = FALSE;
