@@ -66,6 +66,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('delete_lock_project_edition');
 
 		// Prospect setup - interface prospect
+		WDGAjaxActions::add_action('prospect_setup_send_mail_user_project_drafts');
 		WDGAjaxActions::add_action('prospect_setup_save');
 	}
 	
@@ -2941,6 +2942,49 @@ class WDGAjaxActions {
 		echo $property ;
 		wp_die();
 
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_user_project_drafts() {
+		$email = filter_input( INPUT_POST, 'email' );
+
+		$return = array();
+		$return[ 'user_email' ] = $email;
+		$return[ 'email_sent' ] = '0';
+		$return[ 'has_error' ] = '0';
+		$return[ 'error_str' ] = '';
+
+		if ( empty( $email ) ) {
+			$return[ 'error_str' ] = 'empty_email';
+		} elseif ( !is_email( $email ) ) {
+			$return[ 'error_str' ] = 'incorrect_email';
+		}
+
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get_by_user_email( $email );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+
+			} else {
+				$array_projects = array();
+				foreach ( $api_result as $project_item ) {
+					$metadata = json_decode( $project_item->metadata );
+					$project_to_send = array();
+					$project_to_send[ 'guid' ] = $project_item->guid;
+					$project_to_send[ 'name' ] = $metadata->organization->name;
+					array_push( $array_projects, $project_to_send );
+				}
+				if ( NotificationsEmails::prospect_setup_user_project_drafts( $email, $array_projects ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
 		exit();
 	}
 

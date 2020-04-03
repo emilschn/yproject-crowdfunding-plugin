@@ -808,7 +808,43 @@ class NotificationsEmails {
     // FIN NOTIFICATIONS KYC
     //*******************************************************
 	
+    //*******************************************************
+    // NOTIFICATIONS INTERFACE PROSPECT
+    //*******************************************************
+    public static function prospect_setup_user_project_drafts( $user_email, $project_list ) {
+		$object = "Reprenez votre test d'éligibilité aux royalties";
+
+		$body_content = "Bonjour,<br>";
+		$body_content .= "Suite à votre demande, vous trouverez ci-dessous ";
+		if ( count( $project_list > 1 ) ) {
+			$body_content .= "la liste de vos tests ";
+		} else {
+			$body_content .= "le lien de votre test ";
+		}
+		$body_content .= "d'éligibilité aux royalties :";
+		$body_content .= "<br><br>";
+
+		$body_content .= "<ul>";
+		foreach ( $project_list as $project_item ) {
+			$body_content .= "<li>";
+			$body_content .= "<a href=\"" . home_url( '/test-royalties/?guid=' . $project_item[ 'guid' ] ) . "\">". $project_item[ 'name' ] ."</a>";
+			$body_content .= "</li>";
+		}
+		$body_content .= "</ul>";
+		$body_content .= "<br><br>";
+
+		$body_content .= "A bientôt sur WE DO GOOD !";
+
+		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
+	}
+    //*******************************************************
+    // FIN NOTIFICATIONS INTERFACE PROSPECT
+    //*******************************************************
 	
+	
+    //*******************************************************
+    // NOTIFICATIONS ERREURS ADMIN
+    //*******************************************************
     public static function investment_to_api_error_admin( $edd_payment_item ) {
 		$admin_email = 'admin@wedogood.co';
 		
@@ -818,4 +854,7 @@ class NotificationsEmails {
 
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
     }
+    //*******************************************************
+    // END NOTIFICATIONS ERREURS ADMIN
+    //*******************************************************
 }
