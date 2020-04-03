@@ -400,26 +400,40 @@ class WDGAjaxActions {
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
 				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
 				
+				
+				$investment_item[ 'contract_file_path' ] = '';
+				$investment_item[ 'contract_file_name' ] = '';
+
 				// Fichier de contrat
-				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
-				$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
-				if ( file_exists( $test_file_name ) ) {
-					$contract_index++;
-					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
+				// on commence par regarder si on a un contrat stocké ici  : API\wp-content\plugins\wdgrestapi\files\investment-draft
+				// ce sont les photos des contrats et chèques ajoutés par l'admin
+				// pour ça, il nous faut retrouver un éventuel post_meta de type 'created-from-draft'
+				$created_from_draft = get_post_meta( $purchase_post->ID, 'created-from-draft', TRUE );
+				if ($created_from_draft){
+					// si c'est le cas, alors on récupère l'investment-draft, et on vérifie s'il y a une photo de contrat associé
+					$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );
+					$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
+					$investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;					
+					$path_parts = pathinfo($investments_drafts_item->contract);
+					$extension = $path_parts['extension'];
+					$investment_item[ 'contract_file_name' ] = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.' .$extension;
+				}
+				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
+				if($investment_item[ 'contract_file_path' ] == '' ){
+					$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
 					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
-					$investment_item[ 'contract_file_name' ] = $download_filename;
-					
-				} elseif ( count( $files ) ) {
-					$filelist_extract = explode( '/', $files[ $contract_index ] );
-					$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
-					$contract_index++;
-					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
-					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
-					$investment_item[ 'contract_file_name' ] = $download_filename;
-					
-				} else {
-					$investment_item[ 'contract_file_path' ] = '';
-					$investment_item[ 'contract_file_name' ] = '';
+					$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
+					if ( file_exists( $test_file_name ) ) {
+						$contract_index++;
+						$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
+						$investment_item[ 'contract_file_name' ] = $download_filename;						
+					} elseif ( count( $files ) ) {
+						$filelist_extract = explode( '/', $files[ $contract_index ] );
+						$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
+						$contract_index++;
+						$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
+						$investment_item[ 'contract_file_name' ] = $download_filename;						
+					} 
 				}
 				
 				
