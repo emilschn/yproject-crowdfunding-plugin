@@ -256,6 +256,9 @@ Les chèques vous seront directement adressés.";
 				'sendemail'			=> '1'
 			);
 			return $options;
+		} else {
+			ypcf_debug_log( 'WDGCampaignBill :: get_quickbooks_royalties_commission_options $product_type = '.$product_type, false);
+			ypcf_debug_log( 'WDGCampaignBill :: get_quickbooks_royalties_commission_options $acquisition = '.$acquisition, false);
 		}
 		return FALSE;
 	}
