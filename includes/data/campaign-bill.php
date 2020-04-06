@@ -93,13 +93,14 @@ class WDGCampaignBill {
 		$campaign_organization = $this->campaign->get_organization();
 		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$id_quickbooks = $WDGOrganization->get_id_quickbooks();
-		$line_type = $this->get_line_type_by_platform_commission();
-		$can_generate = ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $line_type ) );
+		$product_type = $this->campaign->get_api_data( 'product_type' );
+		$acquisition = $this->campaign->get_api_data( 'acquisition' );
+		$can_generate = ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $product_type ) && !empty( $acquisition ) );
 		if( !$can_generate ){
 			ypcf_debug_log( 'WDGCampaignBill :: can_generate $platform_commission = '.$platform_commission, false);
 			ypcf_debug_log( 'WDGCampaignBill :: can_generate $id_quickbooks = '.$id_quickbooks, false);
-			ypcf_debug_log( 'WDGCampaignBill :: can_generate $line_type = '.$line_type, false);
-			ypcf_debug_log( 'WDGCampaignBill :: can_generate $can_generate = '.$can_generate, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $product_type = '.$product_type, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $acquisition = '.$acquisition, false);
 		}
 		return $can_generate;
 	}
