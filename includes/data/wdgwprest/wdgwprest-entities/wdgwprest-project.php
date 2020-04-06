@@ -94,7 +94,9 @@ class WDGWPREST_Entity_Project {
 			'team_contacts'			=> $campaign->team_contacts(),
 			'employees_number'		=> $campaign->get_api_data( 'employees_number' ),
 			'minimum_goal_display'	=> $campaign->get_minimum_goal_display(),
-			'common_goods_turnover_percent'	=> $campaign->get_api_data( 'common_goods_turnover_percent' )
+			'common_goods_turnover_percent'	=> $campaign->get_api_data( 'common_goods_turnover_percent' ),
+			'product_type'					=> $campaign->get_api_data( 'product_type' ),
+			'acquisition'					=> $campaign->get_api_data( 'acquisition' )
 		);
 		return $parameters;
 	}

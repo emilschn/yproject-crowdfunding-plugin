@@ -883,6 +883,18 @@ class WDGAjaxActions {
 			$success["new_project_tousnosprojets"] = 1;
 		}
 
+		$new_project_product_type = sanitize_text_field(filter_input(INPUT_POST,'new_project_product_type'));
+		if ( !empty( $new_project_product_type ) ) {
+			$campaign->set_api_data( 'product_type', $new_project_product_type );
+			$success[ "new_project_product_type" ] = 1;
+		}
+		$new_project_acquisition = sanitize_text_field(filter_input(INPUT_POST,'new_project_acquisition'));
+		if ( !empty( $new_project_acquisition ) ) {
+			$campaign->set_api_data( 'acquisition', $new_project_acquisition );
+			$success[ "new_project_acquisition" ] = 1;
+		}
+		
+
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));
 		if (is_numeric($location)) {
