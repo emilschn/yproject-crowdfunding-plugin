@@ -173,6 +173,11 @@ class WDGCampaignBill {
 		return FALSE;
 	}
 	
+	public function get_line_title() {
+		$product_type = $this->campaign->get_api_data( 'product_type' );
+		return self::$item_types[ $product_type ][ 'label' ];
+	}
+	
 	public function get_line_description() {
 		$amount_collected = UIHelpers::format_number( $this->campaign->current_amount( FALSE ) );
 		$amount_collected_check = UIHelpers::format_number( $this->campaign->current_amount_with_check() );
