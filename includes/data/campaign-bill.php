@@ -175,7 +175,10 @@ class WDGCampaignBill {
 	
 	public function get_line_title() {
 		$product_type = $this->campaign->get_api_data( 'product_type' );
-		return self::$item_types[ $product_type ][ 'label' ];
+		if ( !empty( $product_type ) && !empty( self::$item_types[ $product_type ] ) ) {
+			return self::$item_types[ $product_type ][ 'label' ];
+		}
+		return '';
 	}
 	
 	public function get_line_description() {
