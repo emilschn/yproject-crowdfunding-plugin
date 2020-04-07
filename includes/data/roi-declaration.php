@@ -980,7 +980,9 @@ class WDGROIDeclaration {
 	 * - d'envoyer le résumé par mail à admin si il y a des infos à transmettre
 	 */
 	public function init_rois_and_tax() {
-		$this->remaining_amount = $this->amount;
+		if ( $this->remaining_amount == 0 ) {
+			$this->remaining_amount = $this->amount;
+		}
 
 		//********************** */
 		$campaign = $this->get_campaign_object();
@@ -1071,6 +1073,7 @@ class WDGROIDeclaration {
 
 		// Pas fini, on continue l'initialisation
 		} else {
+			$this->update();
 			WDGQueue::add_init_declaration_rois( $this->id );
 		}
 	}
