@@ -140,7 +140,7 @@ class WDGCampaignBill {
 		}
 		
 		$result = WDGWPRESTLib::call_post_wdg( 'bill', $params );
-		ypcf_debug_log( 'WDGCampaignBill :: generate_quickbooks $result = '.$result, false);
+		ypcf_debug_log( 'WDGCampaignBill :: generate_quickbooks $result = '.print_r($result, true), false);
 		return $result;
 	}
 	
