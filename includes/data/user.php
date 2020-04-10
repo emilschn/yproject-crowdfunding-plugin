@@ -709,6 +709,39 @@ class WDGUser {
 		
 		return $buffer;
 	}
+
+	public function get_campaigns_voted() {
+		$buffer = array();		
+		$list_campaign_funding = ATCF_Campaign::get_list_funding( 0, '', true );
+		foreach ( $list_campaign_funding as $project_post ) {
+			$amount_voted = $this->get_amount_voted_on_campaign( $project_post->ID );
+			if ( $amount_voted > 0 && !$this->has_invested_on_campaign( $project_post->ID ) ) {
+				$intention_item = array(
+					'campaign_name'	=> $project_post->post_title,
+					'campaign_id'	=> $project_post->ID,
+					'vote_amount'	=> $amount_voted,
+					'status'		=> ATCF_Campaign::$campaign_status_collecte
+				);
+				array_push( $buffer, $intention_item );
+			}
+		}
+
+		$list_campaign_vote = ATCF_Campaign::get_list_vote( 0, '', true );
+		foreach ( $list_campaign_vote as $project_post ) {
+			$amount_voted = $this->get_amount_voted_on_campaign( $project_post->ID );
+			if ( $amount_voted > 0 && !$this->has_invested_on_campaign( $project_post->ID ) ) {
+				$intention_item = array(
+					'campaign_name'	=> $project_post->post_title,
+					'campaign_id'	=> $project_post->ID,
+					'vote_amount'	=> $amount_voted,
+					'status'		=> ATCF_Campaign::$campaign_status_vote
+				);
+				array_push( $buffer, $intention_item );
+			}
+		}
+
+		return $buffer;
+	}
 	
 /*******************************************************************************
  * Fonctions de sauvegarde
