@@ -213,8 +213,8 @@ class WDGPostActions {
 
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
-				$campaign_ref = new ATCF_Campaign( 27459 ); // Arbitrairement, on utilise une campagne existante pour reprendre certains paramètres
-				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $campaign_ref->mandate_conditions() );
+				$edd_settings = get_option( 'edd_settings' );
+				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $edd_settings[ 'contract_mandate' ] );
 				$newcampaign->link_organization( $orga_api_id );
 				$newcampaign->update_api();
 			

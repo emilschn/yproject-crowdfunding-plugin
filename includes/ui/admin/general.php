@@ -70,6 +70,7 @@ class WDG_Admin_General {
 		$edd_settings[ 'terms_general_version' ] = filter_input( INPUT_POST, 'terms_general_version' );
 		$edd_settings[ 'terms_general_excerpt' ] = filter_input( INPUT_POST, 'terms_general_excerpt' );
 		$edd_settings[ 'agree_text' ] = filter_input( INPUT_POST, 'agree_text' );
+		$edd_settings[ 'contract_mandate' ] = filter_input( INPUT_POST, 'contract_mandate' );
 		update_option( 'edd_settings', $edd_settings );
 	}
 	
@@ -203,6 +204,12 @@ class WDG_Admin_General {
 		<h3>Conditions particulières</h3>
 		<label for="agree_text">
 			<?php wp_editor( $edd_settings[ 'agree_text' ], 'agree_text' ); ?>
+		</label>
+		<br /><br />
+		
+		<h3>Conditions contractuelles concernant le prélèvement (TBPP > Contrats)</h3>
+		<label for="contract_mandate">
+			<?php wp_editor( $edd_settings[ 'contract_mandate' ], 'contract_mandate' ); ?>
 		</label>
 		<?php
 	}
