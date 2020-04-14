@@ -1024,6 +1024,7 @@ class WDGROIDeclaration {
 					$user_amount_updated = $investment_contract_item->amount_received + $investment_item[ 'roi_amount' ];
 					if ( $user_amount_updated > $investment_contract_item->subscription_amount ) {
 						$user_taxed_amount = min( $investment_item[ 'roi_amount' ], $user_amount_updated - $investment_contract_item->subscription_amount );
+						$user_taxed_amount = floor( $user_taxed_amount );
 					}
 				}
 
