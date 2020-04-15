@@ -700,7 +700,7 @@ class NotificationsEmails {
 		$campaign = new ATCF_Campaign( FALSE, $project_id );
 		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
 		$investor_entity_wpref = 'indefini';
-		if ( empty( $investor_entity ) ) {
+		if ( !empty( $investor_entity ) ) {
 			$investor_entity_wpref = $investor_entity->get_wpref();
 		}
 
