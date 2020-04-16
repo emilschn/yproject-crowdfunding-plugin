@@ -611,13 +611,13 @@ class WDGROIDeclaration {
 					$recipient_notification = $WDGUser->get_royalties_notifications();
 					if ( $recipient_notification == 'none' ) {
 						$cancel_notification = TRUE;
-					} elseif ( $recipient_notification == 'positive' && $investment_item['roi_amount'] == 0 ) {
+					} elseif ( $recipient_notification == 'positive' && $ROI->amount == 0 ) {
 						$cancel_notification = TRUE;
 					}
 				}
 
 				if ( !$cancel_notification ) {
-					WDGQueue::add_notification_royalties( $investment_item[ 'user' ] );
+					WDGQueue::add_notification_royalties( $WDGUser->get_wpref() );
 					
 					$declaration_message = $this->get_message();
 					if ( !empty( $declaration_message ) ) {
