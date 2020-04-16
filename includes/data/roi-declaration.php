@@ -601,7 +601,11 @@ class WDGROIDeclaration {
 						$ROI->id_transfer = $transfer->ID;
 					}
 				} else {
-					$ROI->status = WDGROI::$status_error;
+					if ( $status == WDGROI::$status_waiting_authentication ) {
+						$ROI->status = WDGROI::$status_waiting_authentication;
+					} else {
+						$ROI->status = WDGROI::$status_error;
+					}
 				}
 				$ROI->update();
 
