@@ -295,7 +295,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error_wallet( $user_data, $project_title, $amount ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error_wallet > ' . $user_data->user_email);
-		$admin_email = 'investir@wedogood.co';
+		$admin_email = 'admin@wedogood.co';
 		$object = 'Erreur transfert wallet';
 		$body_content = "Salut !<br />";
 		$body_content .= "Il y a un souci pour un transfert de wallet :<br />";
@@ -699,14 +699,18 @@ class NotificationsEmails {
 		ypcf_debug_log( 'NotificationsEmails::roi_received_exceed_investment > ' .$investor_id. ' | ' .$investor_type. ' | ' .$project_id );
 		$campaign = new ATCF_Campaign( FALSE, $project_id );
 		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
-		
+		$investor_entity_wpref = 'indefini';
+		if ( !empty( $investor_entity ) ) {
+			$investor_entity_wpref = $investor_entity->get_wpref();
+		}
+
 		$object = "Royalties percues supérieures à l'investissement initial";
 		$body_content = "Coucou !<br><br>";
 		$body_content .= "Un investisseur a reçu plus de royalties que son investissement de départ.<br>";
 		$body_content .= "Sur le projet : " .$campaign->get_name(). "<br>";
 		$body_content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
 		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
-		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
+		$body_content .= "ID WP investisseur : " .$investor_entity_wpref;
 		
 		$admin_email = 'administratif@wedogood.co';
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
@@ -739,6 +743,7 @@ class NotificationsEmails {
 	}
 
 	public static function declaration_bill_failed( $campaign_name ) {
+		ypcf_debug_log('NotificationsEmails::declaration_bill_failed > ' . $campaign_name, false);
 		$object = "Erreur génération facture - " . $campaign_name;
 		$body_content = "Hello !<br><br>";
 		$body_content .= "La facture automatique de la dernière déclaration de royalties pour le projet " .$campaign_name. " n'a pas pu être créée.";
@@ -756,7 +761,7 @@ class NotificationsEmails {
     public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_refused_admin > ' . $user_email);
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'support@wedogood.co';
 		$object = "Investisseur à relancer !";
 		
 		$body_content = "Hello !<br>";
@@ -775,7 +780,7 @@ class NotificationsEmails {
     public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin > ' . $user_email);
 		
-		$admin_email = get_option('admin_email');
+		$admin_email = 'support@wedogood.co';
 		$object = "Wallet à vérifier !";
 		
 		$body_content = "Hello !<br>";
@@ -789,51 +794,23 @@ class NotificationsEmails {
 		}
 
 		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
-    }
+	}
+	
+	public static function organization_bank_file_changed_admin( $organization_name ) {
+		ypcf_debug_log('NotificationsEmails::organization_bank_file_changed_admin > ' . $organization_name);
+		
+		$admin_email = 'support@wedogood.co';
+		$object = "RIB d'organisation modifié - " . $organization_name;
+
+		$body_content = "Hello !<br>";
+		$body_content .= "L'organisation ".$organization_name." a changé de RIB.<br>";
+		$body_content .= "Si c'était un projet en versement, il faudrait refaire signer l'autorisation de prélèvement.<br>";
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
+	}
     //*******************************************************
     // FIN NOTIFICATIONS KYC
     //*******************************************************
-	
-    //*******************************************************
-    // NOTIFICATIONS STATUT
-    //*******************************************************
-    public static function campaign_change_status_admin( $campaign_id, $status ) {
-		ypcf_debug_log( 'NotificationsEmails::campaign_change_status_admin > ' .$campaign_id. ' ; ' .$status );
-		
-		$admin_email = get_option('admin_email');
-		$campaign = new ATCF_Campaign( $campaign_id );
-		$status_str = "d'&eacute;valuation";
-		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
-			$status_str = "d'investissement";
-		}
-		
-		$object = "Changement d'étape projet";
-		$body_content = "Salut !!<br>";
-		$body_content .= "Un projet a changé d'étape :<br>";
-		$body_content .= "Il s'agit du projet " .$campaign->data->post_title. ".<br>";
-		$body_content .= "Il est passé en phase " .$status_str. ".<br><br>";
-		$body_content .= "GO ! GO ! GO !";
-
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
-    }
-	
-    public static function campaign_sign_mandate_admin( $orga_id ) {
-		ypcf_debug_log( 'NotificationsEmails::campaign_sign_mandate > ' .$orga_id );
-		
-		$admin_email = get_option('admin_email');
-		$WDGOrganization = new WDGOrganization( $orga_id );
-		
-		$object = "Signature de mandat de prélèvement";
-		$body_content = "Salut !!<br>";
-		$body_content .= "Une organisation a signé son mandat de prélèvement :<br>";
-		$body_content .= "Il s'agit de l'organisation " .$WDGOrganization->get_name(). ".<br>";
-		$body_content .= "WOUHOU !";
-
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
-    }
-    //*******************************************************
-    // FIN NOTIFICATIONS STATUT
-	//*******************************************************
 	
 	
     public static function investment_to_api_error_admin( $edd_payment_item ) {

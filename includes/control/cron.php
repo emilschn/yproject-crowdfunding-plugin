@@ -177,7 +177,7 @@ class WDGCronActions {
 		//Parcours des projets en cours de collecte
 		if ( $funding_project ) {
 			// Récupération des projets en cours
-			ATCF_Campaign::list_projects_funding();
+			ATCF_Campaign::list_projects_funding( -1 );
 			while (have_posts()): the_post();
 				global $post;
 				$campaign = atcf_get_campaign( $post );

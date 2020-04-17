@@ -178,7 +178,7 @@ class WDGOrganization {
 		
 		if ($this->get_name() == "") { array_push( $errors_create_orga, __("Merci de remplir le nom de l'organisation", 'yproject') ); }
 		if ($this->get_email() == "") { array_push( $errors_create_orga, __("Merci de remplir l'adresse e-mail de l'organisation", 'yproject') ); }
-		if ( email_exists( $this->get_email() ) ) { array_push( $errors_create_orga, __("L'e-mail est d&eacute;j&agrave; utilis&eacute.", 'yproject') ); }
+		if ( email_exists( $this->get_email() ) ) { array_push( $errors_create_orga, __("L'e-mail est d&eacute;j&agrave; utilis&eacute;", 'yproject') ); }
 		if ($this->get_type() == "") { array_push( $errors_create_orga, __("Merci de remplir le type de l'organisation", 'yproject') ); }
 		if ($this->get_description() == "") { array_push( $errors_create_orga, __("Merci de remplir le descriptif de l'activit&eacute;", 'yproject') ); }
 		if ($this->get_legalform() == "") { array_push( $errors_create_orga, __("Merci de remplir la forme juridique de l'organisation", 'yproject') ); }
@@ -353,6 +353,25 @@ class WDGOrganization {
 	private function get_royalties_lemonway_email() {
 		$current_email = $this->get_email();
 		$buffer = str_replace( '@', '+royalties@', $current_email );
+		return $buffer;
+	}
+
+	public function get_tax_lemonway_id() {
+		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_tax_id', true );
+		if ( empty( $db_lw_id ) ) {
+			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'TAX';
+			if ( defined( YP_LW_USERID_PREFIX ) ) {
+				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
+			}
+			
+			update_user_meta( $this->wpref, 'lemonway_tax_id', $db_lw_id );
+		}
+		return $db_lw_id;
+	}
+	
+	private function get_tax_lemonway_email() {
+		$current_email = $this->get_email();
+		$buffer = str_replace( '@', '+tax@', $current_email );
 		return $buffer;
 	}
 	
@@ -1190,6 +1209,41 @@ class WDGOrganization {
 		return TRUE;
 	}
 	
+	public function check_register_tax_lemonway_wallet() {
+		if ( !$this->can_register_lemonway() ) {
+			return FALSE;
+		}
+		
+		//Vérifie que le wallet n'est pas déjà enregistré
+		$wallet_details = $this->get_wallet_details( 'tax' );
+		if ( !isset($wallet_details->NAME) || empty($wallet_details->NAME) ) {
+			
+			$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+			} else {
+				$WDGUser_creator = new WDGUser();
+			}
+			
+			return LemonwayLib::wallet_company_register(
+				$this->get_royalties_lemonway_id(),
+				$this->get_royalties_lemonway_email(),
+				html_entity_decode( $WDGUser_creator->wp_user->user_firstname ),
+				html_entity_decode( $WDGUser_creator->wp_user->user_lastname ),
+				html_entity_decode( $this->get_name() ),
+				html_entity_decode( $this->get_description() ),
+				$this->get_website(),
+				$WDGUser_creator->get_country( 'iso3' ),
+				$WDGUser_creator->get_lemonway_birthdate(),
+				$WDGUser_creator->get_lemonway_phone_number(),
+				$this->get_idnumber(),
+				LemonwayLib::$wallet_type_beneficiary,
+				'1'
+			);
+		}
+		return TRUE;
+	}
+	
 	/**
 	 * Met à jour les données sur LW si nécessaire
 	 */
@@ -1383,6 +1437,19 @@ class WDGOrganization {
 			$last_mandate = end( $mandates_list );
 			$last_mandate_status = $last_mandate[ "S" ];
 			$buffer = ( $last_mandate_status == 5 || $last_mandate_status == 6 );
+		}
+		return $buffer;
+	}
+
+	public function get_mandate_infos_str() {
+		$buffer = '';
+		$mandates_list = $this->get_lemonway_mandates();
+		if ( !empty( $mandates_list ) ) {
+			$last_mandate = end( $mandates_list );
+			$last_mandate_status = $last_mandate[ "S" ];
+			if ( $last_mandate_status == 5 || $last_mandate_status == 6 ) {
+				$buffer = $last_mandate[ "DATA" ] . ' (' . $last_mandate[ "SWIFT" ] . ')';
+			}
 		}
 		return $buffer;
 	}
@@ -1591,10 +1658,12 @@ class WDGOrganization {
 	public function get_royalties_by_investment_id( $investment_id, $status = 'transferred' ) {
 		$buffer = array();
 		$rois = $this->get_rois();
-		foreach ( $rois as $roi_item ) {
-			if ( $roi_item->id_investment == $investment_id ) {
-				if ( empty( $status ) || $roi_item->status == $status ) {
-					array_push( $buffer, $roi_item );
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				if ( $roi_item->id_investment == $investment_id ) {
+					if ( empty( $status ) || $roi_item->status == $status ) {
+						array_push( $buffer, $roi_item );
+					}
 				}
 			}
 		}
@@ -1644,7 +1713,6 @@ class WDGOrganization {
 		global $country_list;
 		$invest_list = array();
 		$roi_total = 0;
-		$tax_total = 0;
 		
 		// Récupération d'abord de la liste des royalties de l'année pour ne faire un récapitulatif que pour ceux-là
 		$royalties_list = $this->get_royalties_for_year( $year );
@@ -1703,14 +1771,6 @@ class WDGOrganization {
 						$invest_item['roi_for_year'] += $investment_roi->amount;
 						$roi_total += $investment_roi->amount;
 
-						// Calcul de la part imposable
-						if ( $invest_item['roi_total'] > $invest_item_amount ) {
-							$amount_to_tax = min( $invest_item['roi_total'] - $invest_item_amount, $investment_roi->amount );
-							$investment_roi_tax = round( $amount_to_tax * 0.3 );
-							$invest_item['tax_for_year'] += $investment_roi_tax;
-							$tax_total += $investment_roi_tax;
-						}
-
 						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
 						array_push( $invest_item['roi_list'], $roi_item );
 					}
@@ -1740,7 +1800,7 @@ class WDGOrganization {
 			$year,
 			$investment_list,
 			UIHelpers::format_number( $roi_total ). ' &euro;',
-			UIHelpers::format_number( $tax_total ). ' &euro;',
+			UIHelpers::format_number( 0 ). ' &euro;',
 			$info_yearly_certificate
 		);
 		

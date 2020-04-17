@@ -22,35 +22,61 @@ class WDGCampaignBill {
 	
 	public static $item_types = array(
 		'crowdfunding' => array(
-			'quickbooks_id' => 18,
-			'label' => 'CROWDFUNDING (Levée de fonds publique)'
-		),
-		'wefund' => array(
-			'quickbooks_id' => 12,
-			'label' => 'WE FUND (Financement)'
+			'label' => 'CROWDFUNDING',
+			'quickbooks_campaign' => 34,
+			'quickbooks_royalties' => 35
 		),
 		'private' => array(
-			'quickbooks_id' => 21,
-			'label' => 'RESEAU PRIVE (Levée de fonds privée)'
+			'label' => 'RESEAU PRIVE',
+			'quickbooks_campaign' => 36,
+			'quickbooks_royalties' => 37
 		),
 		'lovemoney' => array(
-			'quickbooks_id' => 5,
-			'label' => 'LOVE-MONEY (Levée de fonds privée)'
+			'label' => 'LOVE-MONEY',
+			'quickbooks_campaign' => 38,
+			'quickbooks_royalties' => 39
 		),
-		'selfservice' => array(
-			'quickbooks_id' => 6,
-			'label' => 'WE PROVIDE (Self-Service)'
-		),
-		'royalties' => array(
-			'quickbooks_id' => 13,
-			'label' => 'Frais de gestion de royalties'
+		'positivesavings' => array(
+			'label' => 'EPARGNE POSITIVE',
+			'quickbooks_campaign' => 47,
+			'quickbooks_royalties' => 48
 		)
+	);
+
+	public static $classes = array(
+		'other' => array(
+			'label' => 'CA source inconnue / autre',
+			'quickbooks_id' => '1400000000001624307'
+		),
+		'events' => array(
+			'label' => 'Evénements',
+			'quickbooks_id' => '1400000000000673977'
+		),
+		'prescription' => array(
+			'label' => 'Prescription',
+			'quickbooks_id' => '1400000000001624227'
+		),
+		'press' => array(
+			'label' => 'Presse',
+			'quickbooks_id' => '1400000000001624228'
+		),
+		'prospection' => array(
+			'label' => 'Prospection',
+			'quickbooks_id' => '1400000000001624232'
+		),
+		'socialnetworks' => array(
+			'label' => 'Réseaux sociaux',
+			'quickbooks_id' => '1400000000001624230'
+		),
+		'web' => array(
+			'label' => 'Visibilité Web',
+			'quickbooks_id' => '1400000000001624225'
+		),
 	);
 	
 	public static $item_tax_20 = 31;// identifiant du type de TVA à 20% dans quickbooks
-	public static $location_startup_id = 1;// identifiant du site "startup" dans quickbooks
-	public static $class_royalties = '1400000000000673963';//identifiant de la classe de vente "commissions sur les royalties" dans quickbooks
-
+	public static $location_company_id = 6;// identifiant du site "Entrepreneurs" dans quickbooks
+	
 
 	public function __construct( $campaign, $tool_name, $bill_type ) {
 		$this->campaign = $campaign;
@@ -67,14 +93,22 @@ class WDGCampaignBill {
 		$campaign_organization = $this->campaign->get_organization();
 		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$id_quickbooks = $WDGOrganization->get_id_quickbooks();
-		$line_type = $this->get_line_type_by_platform_commission();
-		return ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $line_type ) );
+		$product_type = $this->campaign->get_api_data( 'product_type' );
+		$acquisition = $this->campaign->get_api_data( 'acquisition' );
+		$can_generate = ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $product_type ) && !empty( $acquisition ) );
+		if( !$can_generate ){
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $platform_commission = '.$platform_commission, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $id_quickbooks = '.$id_quickbooks, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $product_type = '.$product_type, false);
+			ypcf_debug_log( 'WDGCampaignBill :: can_generate $acquisition = '.$acquisition, false);
+		}
+		return $can_generate;
 	}
 	
 	public function generate() {
 		switch ( $this->tool_name ) {
 			case WDGCampaignBill::$tool_name_quickbooks:
-				$this->generate_quickbooks();
+				return $this->generate_quickbooks();
 				break;
 		}
 	}
@@ -106,6 +140,7 @@ class WDGCampaignBill {
 		}
 		
 		$result = WDGWPRESTLib::call_post_wdg( 'bill', $params );
+		ypcf_debug_log( 'WDGCampaignBill :: generate_quickbooks $result = '.print_r($result, true), false);
 		return $result;
 	}
 	
@@ -113,49 +148,38 @@ class WDGCampaignBill {
  * FONCTIONS LIEES A LA COMMISSION SUR LA CAMPAGNE
 *******************************************************************************/
 	private function get_quickbooks_crowdfunding_commission_options() {
-		$line_description = $this->get_line_description();
-		$bill_description = $this->get_bill_description();
-		$platform_commission_amount = $this->campaign->platform_commission_amount( FALSE );
-		$campaign_organization = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-		$options = array(
-			'customerid'		=> $WDGOrganization->get_id_quickbooks(),
-			'customeremail'		=> $WDGOrganization->get_email(),
-			'itemtitle'			=> $this->get_line_title_id(),
-			'itemdescription'	=> $line_description,
-			'itemvalue'			=> $platform_commission_amount,
-			'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
-			'billdescription'	=> $bill_description
-		);
-		return $options;
-	}
-	
-	private function get_line_type_by_platform_commission() {
-		$buffer = FALSE;
-		switch ( $this->campaign->platform_commission() ) {
-			case '2.4':
-				$buffer = 'lovemoney';
-				break;
-			case '4.8':
-				$buffer = 'private';
-				break;
-			case '7.2':
-			case '9.6':
-				$buffer = 'crowdfunding';
-				break;
-			case '6':
-				$buffer = 'selfservice';
-				break;
+		$product_type = $this->campaign->get_api_data( 'product_type' );
+		$acquisition = $this->campaign->get_api_data( 'acquisition' );
+		if ( !empty( $product_type ) && !empty( self::$item_types[ $product_type ] ) 
+				&& !empty( $acquisition ) && !empty( self::$classes[ $acquisition ] ) 
+					) {
+			$line_description = $this->get_line_description();
+			$bill_description = $this->get_bill_description();
+			$platform_commission_amount = $this->campaign->platform_commission_amount( FALSE );
+			$campaign_organization = $this->campaign->get_organization();
+			$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+			$options = array(
+				'customerid'		=> $WDGOrganization->get_id_quickbooks(),
+				'customeremail'		=> $WDGOrganization->get_email(),
+				'itemtitle'			=> self::$items_types[ $product_type ][ 'quickbooks_campaign' ],
+				'itemdescription'	=> $line_description,
+				'itemvalue'			=> $platform_commission_amount,
+				'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
+				'locationid'		=> WDGCampaignBill::$location_company_id,
+				'classid'			=> self::$classes[ $acquisition ][ 'quickbooks_id' ],
+				'billdescription'	=> $bill_description
+			);
+			return $options;
 		}
-		return $buffer;
+		return FALSE;
 	}
 	
 	public function get_line_title() {
-		return WDGCampaignBill::$item_types[ $this->get_line_type_by_platform_commission() ][ 'label' ];
-	}
-	
-	public function get_line_title_id() {
-		return WDGCampaignBill::$item_types[ $this->get_line_type_by_platform_commission() ][ 'quickbooks_id' ];
+		$product_type = $this->campaign->get_api_data( 'product_type' );
+		if ( !empty( $product_type ) && !empty( self::$item_types[ $product_type ] ) ) {
+			return self::$item_types[ $product_type ][ 'label' ];
+		}
+		return '';
 	}
 	
 	public function get_line_description() {
@@ -168,7 +192,8 @@ class WDGCampaignBill {
 		$platform_commission_above_100000 = UIHelpers::format_number( $this->campaign->platform_commission_above_100000( FALSE ) );
 		$platform_commission_above_100000_amount = UIHelpers::format_number( $this->campaign->platform_commission_above_100000_amount( FALSE ) );
 		
-		if ( $this->campaign->platform_commission() == '2.4' || $this->campaign->platform_commission() == '4.8' ) {
+		$product_type = $this->campaign->get_api_data( 'product_type' );
+		if ( $product_type == 'private' || $product_type == 'lovemoney' ) {
 			$buffer = "Levée de fonds privée.
 ";
 		} else {
@@ -209,27 +234,33 @@ Les chèques vous seront directement adressés.";
  * FONCTIONS LIEES A LA COMMISSION SUR LES ROYALTIES
 *******************************************************************************/
 	private function get_quickbooks_royalties_commission_options() {
-		$line_description = $this->get_royalties_line_description();
-		$campaign_organization = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-		$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay_without_tax( TRUE );
-		$options = array(
-			'customerid'		=> $WDGOrganization->get_id_quickbooks(),
-			'customeremail'		=> $WDGOrganization->get_email(),
-			'itemtitle'			=> $this->get_royalties_line_title_id(),
-			'itemdescription'	=> $line_description,
-			'itemvalue'			=> $commission_to_pay_without_tax,
-			'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
-			'locationid'		=> WDGCampaignBill::$location_startup_id,
-			'classid'			=> WDGCampaignBill::$class_royalties,
-			'billdescription'	=> '',
-			'sendemail'			=> '1'
-		);
-		return $options;
-	}
-	
-	public function get_royalties_line_title_id() {
-		return WDGCampaignBill::$item_types[ 'royalties' ][ 'quickbooks_id' ];
+		$product_type = $this->campaign->get_api_data( 'product_type' );
+		$acquisition = $this->campaign->get_api_data( 'acquisition' );
+		if ( !empty( $product_type ) && !empty( self::$item_types[ $product_type ] ) 
+				&& !empty( $acquisition ) && !empty( self::$classes[ $acquisition ] ) 
+					) {
+			$line_description = $this->get_royalties_line_description();
+			$campaign_organization = $this->campaign->get_organization();
+			$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+			$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay_without_tax( TRUE );
+			$options = array(
+				'customerid'		=> $WDGOrganization->get_id_quickbooks(),
+				'customeremail'		=> $WDGOrganization->get_email(),
+				'itemtitle'			=> self::$item_types[ $product_type ][ 'quickbooks_royalties' ],
+				'itemdescription'	=> $line_description,
+				'itemvalue'			=> $commission_to_pay_without_tax,
+				'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
+				'locationid'		=> WDGCampaignBill::$location_company_id,
+				'classid'			=> self::$classes[ $acquisition ][ 'quickbooks_id' ],
+				'billdescription'	=> '',
+				'sendemail'			=> '1'
+			);
+			return $options;
+		} else {
+			ypcf_debug_log( 'WDGCampaignBill :: get_quickbooks_royalties_commission_options $product_type = '.$product_type, false);
+			ypcf_debug_log( 'WDGCampaignBill :: get_quickbooks_royalties_commission_options $acquisition = '.$acquisition, false);
+		}
+		return FALSE;
 	}
 	
 	public function get_royalties_line_description() {

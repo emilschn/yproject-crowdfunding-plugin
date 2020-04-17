@@ -148,17 +148,18 @@ class WDG_Google_Analytics
 
     $i = 0;
 
-    echo '[';
-    foreach ( $result_rows as $row ) {
-      $citiesFr = str_replace("(not set)", "Inconnue", $row[0]);
-      if ( $i == 0 ){
-        echo '{"cities":"'.$citiesFr.'","visits":'.$row[1].'}';
-      }
-      else {
-        echo ',{"cities":"'.$citiesFr.'","visits":'.$row[1].'}';
-      }
-      $i++;
-    }
+	echo '[';
+	if ( !empty( $result_rows ) ) {
+		foreach ( $result_rows as $row ) {
+			$citiesFr = str_replace("(not set)", "Inconnue", $row[0]);
+			if ( $i == 0 ){
+				echo '{"cities":"'.$citiesFr.'","visits":'.$row[1].'}';
+			} else {
+				echo ',{"cities":"'.$citiesFr.'","visits":'.$row[1].'}';
+			}
+			$i++;
+		}
+	}
     echo ']';
 
   }

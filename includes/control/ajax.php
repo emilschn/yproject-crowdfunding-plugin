@@ -19,6 +19,10 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Vote' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
+
+		WDGAjaxActions::add_action( 'try_user_login' );
+		WDGAjaxActions::add_action( 'try_user_register' );
+		WDGAjaxActions::add_action( 'create_project_form' );
 		
 		WDGAjaxActions::add_action( 'try_user_login' );
 		WDGAjaxActions::add_action( 'try_user_register' );
@@ -58,6 +62,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('create_investment_from_draft');
 		WDGAjaxActions::add_action('proceed_roi_transfers');
 		WDGAjaxActions::add_action( 'cancel_pending_investments' );
+		WDGAjaxActions::add_action( 'campaign_duplicate' );
+		WDGAjaxActions::add_action( 'campaign_transfer_investments' );
 		WDGAjaxActions::add_action( 'conclude_project' );
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
@@ -157,6 +163,12 @@ class WDGAjaxActions {
 			}
 		}
 
+		exit( json_encode( $result ) );
+	}
+	
+	public static function create_project_form() {
+		ypcf_debug_log( 'ajax.php :: create_project_form  '.filter_input( INPUT_POST, 'firstname' ));
+		$result = WDGPostActions::create_project_form();
 		exit( json_encode( $result ) );
 	}
 	
@@ -389,8 +401,11 @@ class WDGAjaxActions {
 					$buffer[ $campaign_id ][ 'name' ] = $campaign->data->post_title;
 					$buffer[ $campaign_id ][ 'status' ] = utf8_encode( $campaign->campaign_status() );
 					$buffer[ $campaign_id ][ 'amount' ] = utf8_encode( $campaign->current_amount( false ) );
-					$contract_start_date = new DateTime( $campaign->contract_start_date() );
-					$buffer[ $campaign_id ][ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+					$buffer[ $campaign_id ][ 'start_date' ] = '';
+					if ( $campaign->contract_start_date_is_undefined() != '1' ) {
+						$contract_start_date = new DateTime( $campaign->contract_start_date() );
+						$buffer[ $campaign_id ][ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+					}
 					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
 					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
 					$buffer[ $campaign_id ][ 'items' ] = array();
@@ -464,26 +479,40 @@ class WDGAjaxActions {
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
 				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
 				
+				
+				$investment_item[ 'contract_file_path' ] = '';
+				$investment_item[ 'contract_file_name' ] = '';
+
 				// Fichier de contrat
-				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
-				$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
-				if ( file_exists( $test_file_name ) ) {
-					$contract_index++;
-					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
+				// on commence par regarder si on a un contrat stocké ici  : API\wp-content\plugins\wdgrestapi\files\investment-draft
+				// ce sont les photos des contrats et chèques ajoutés par l'admin
+				// pour ça, il nous faut retrouver un éventuel post_meta de type 'created-from-draft'
+				$created_from_draft = get_post_meta( $purchase_post->ID, 'created-from-draft', TRUE );
+				if ($created_from_draft){
+					// si c'est le cas, alors on récupère l'investment-draft, et on vérifie s'il y a une photo de contrat associé
+					$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );
+					$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
+					$investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;					
+					$path_parts = pathinfo($investments_drafts_item->contract);
+					$extension = $path_parts['extension'];
+					$investment_item[ 'contract_file_name' ] = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.' .$extension;
+				}
+				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
+				if($investment_item[ 'contract_file_path' ] == '' ){
+					$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
 					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
-					$investment_item[ 'contract_file_name' ] = $download_filename;
-					
-				} elseif ( count( $files ) ) {
-					$filelist_extract = explode( '/', $files[ $contract_index ] );
-					$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
-					$contract_index++;
-					$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
-					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
-					$investment_item[ 'contract_file_name' ] = $download_filename;
-					
-				} else {
-					$investment_item[ 'contract_file_path' ] = '';
-					$investment_item[ 'contract_file_name' ] = '';
+					$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
+					if ( file_exists( $test_file_name ) ) {
+						$contract_index++;
+						$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
+						$investment_item[ 'contract_file_name' ] = $download_filename;						
+					} elseif ( count( $files ) ) {
+						$filelist_extract = explode( '/', $files[ $contract_index ] );
+						$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
+						$contract_index++;
+						$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
+						$investment_item[ 'contract_file_name' ] = $download_filename;						
+					} 
 				}
 				
 				
@@ -504,10 +533,17 @@ class WDGAjaxActions {
 					// On démarre de la date de démarrage du contrat
 					$contract_start_date = new DateTime( $campaign->contract_start_date() );
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
+					$estimated_turnover_unit = $campaign->estimated_turnover_unit();
 					
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
+						$estimated_rois = 0;
+						if ( $estimated_turnover_unit == 'percent' ) {
+							$estimated_rois = round( $turnover * $payment_amount / 100 );
+						} else {
+							$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+						}
 						$year_item = array(
-							'estimated_rois'	=> YPUIHelpers::display_number( round( $turnover * $roi_percent_full / 100 ), TRUE ) . ' &euro;',
+							'estimated_rois'	=> YPUIHelpers::display_number( $estimated_rois, TRUE ) . ' &euro;',
 							'amount_rois_nb'	=> 0,
 							'amount_rois'		=> '0 &euro;',
 							'roi_items'			=> array()
@@ -594,6 +630,13 @@ class WDGAjaxActions {
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+										if ( $roi->amount_taxed_in_cents > 0 ) {
+											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
+											$roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
+											if ( !empty( $roitax_items[ 0 ] ) ) {
+												$roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
+											}
+										}
 									}
 								}
 							}
@@ -918,6 +961,18 @@ class WDGAjaxActions {
 			$success["new_project_partners"] = 1;
 			$success["new_project_tousnosprojets"] = 1;
 		}
+
+		$new_project_product_type = sanitize_text_field(filter_input(INPUT_POST,'new_project_product_type'));
+		if ( !empty( $new_project_product_type ) ) {
+			$campaign->set_api_data( 'product_type', $new_project_product_type );
+			$success[ "new_project_product_type" ] = 1;
+		}
+		$new_project_acquisition = sanitize_text_field(filter_input(INPUT_POST,'new_project_acquisition'));
+		if ( !empty( $new_project_acquisition ) ) {
+			$campaign->set_api_data( 'acquisition', $new_project_acquisition );
+			$success[ "new_project_acquisition" ] = 1;
+		}
+		
 
 		//Localisation du projet
 		$location = sanitize_text_field(filter_input(INPUT_POST,'new_project_location'));
@@ -1324,6 +1379,14 @@ class WDGAjaxActions {
 			$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
 		}
 		
+		$new_common_goods_turnover_percent = WDG_Form::formatInputTextNumber( 'new_common_goods_turnover_percent' );
+		if ( $new_common_goods_turnover_percent >= 0 ) {
+			$campaign->set_api_data( 'common_goods_turnover_percent', $new_common_goods_turnover_percent );
+			$success['new_common_goods_turnover_percent'] = 1;
+		} else {
+			$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
+		}
+		
 		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
 		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
 		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ){
@@ -1375,6 +1438,17 @@ class WDGAjaxActions {
 			} catch (Exception $e) {
 				$errors[ 'new_contract_start_date' ] = "La date est invalide";
 			}
+		}
+
+		$new_contract_start_date_is_undefined = filter_input(INPUT_POST, 'new_contract_start_date_is_undefined');
+		if ( empty( $new_contract_start_date_is_undefined ) ) {
+			$new_contract_start_date_is_undefined = '0';
+		}
+		try {
+			$campaign->set_api_data( 'contract_start_date_is_undefined', $new_contract_start_date_is_undefined );
+			$success[ 'new_contract_start_date_is_undefined']  = 1;
+		} catch (Exception $e) {
+			$errors[ 'new_contract_start_date_is_undefined' ] = "Erreur pour date de début indéfinie";
 		}
 		
 		$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );
@@ -2760,7 +2834,7 @@ class WDGAjaxActions {
 			$input_transfer_remaining_amount = filter_input( INPUT_POST, 'transfer_remaining_amount' );
 			$transfer_remaining_amount = ( $input_transfer_remaining_amount != 'false' && ( $input_transfer_remaining_amount === 1 || $input_transfer_remaining_amount === TRUE || $input_transfer_remaining_amount === 'true' ) );
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$buffer = $roi_declaration->make_transfer( $send_notifications, $transfer_remaining_amount, $is_refund );
+			$buffer = $roi_declaration->transfer_pending_rois();
 		}
 		
 		echo json_encode( $buffer );
@@ -2790,6 +2864,58 @@ class WDGAjaxActions {
 		exit( '1' );
 	}
 	
+	/**
+	 * Lance la duplication d'une campagne
+	 */
+	
+	public static function campaign_duplicate() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		
+		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
+			$campaign_ref = new ATCF_Campaign( $campaign_id ); // on utilise la campagne existante pour reprendre certains paramètres
+			$newcampaign_id = $campaign_ref->duplicate();
+			$newcampaign = atcf_get_campaign($newcampaign_id);							
+
+			// lier l'organization
+			$organization = $campaign_ref->get_organization();
+			$WDGOrganization = new WDGOrganization( $organization->wpref );
+			$orga_email = $WDGOrganization->get_email();
+			$newcampaign->link_organization( $WDGOrganization->get_api_id() );
+			// mettre à jour l'API
+			$newcampaign->update_api();
+
+			// Liaison aux catégories
+			$categories = get_the_terms($campaign_id,'download_category');
+			$categories_id = array();
+			foreach( $categories as $categorie ) {
+				$categories_id[] = $categorie->term_id;
+			}
+			$term_taxonomy_ids = wp_set_object_terms( $newcampaign_id, $categories_id, 'download_category', TRUE );
+		}
+		
+		exit('1' );
+	}
+
+	/**
+	 * Transfert des investissements d'une campagne à une autre
+	 */
+	public static function campaign_transfer_investments(){
+		$from_campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign_ref = new ATCF_Campaign( $from_campaign_id ); 
+
+		if($campaign_ref->is_funded()){
+			$WDGUser_current = WDGUser::current();
+			$to_campaign_id = filter_input(INPUT_POST, 'duplicated_campaign');
+			
+			if ( $WDGUser_current->is_admin() && !empty( $from_campaign_id ) && !empty( $to_campaign_id ) ) {
+				WDGCampaignInvestments::transfer_investments( $from_campaign_id, $to_campaign_id );
+			}
+			
+			exit('1' );
+		}
+		exit('0' );
+	}
 	/**
 	 * Lance la finalisation du projet (transfert des données d'investissement sur l'API, ...)
 	 */

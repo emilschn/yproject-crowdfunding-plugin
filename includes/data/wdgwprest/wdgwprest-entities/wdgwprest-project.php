@@ -72,6 +72,7 @@ class WDGWPREST_Entity_Project {
 			'maximum_profit_precision'	=> $campaign->maximum_profit_precision(),
 			'minimum_profit'		=> $campaign->minimum_profit(),
 			'contract_start_date'	=> $campaign->contract_start_date(),
+			'contract_start_date_is_undefined'	=> $campaign->contract_start_date_is_undefined(),
 			'declarations_start_date'	=> $first_payment_date,
 			'spendings_description'	=> $campaign->contract_spendings_description(),
 			'earnings_description'	=> $campaign->contract_earnings_description(),
@@ -92,7 +93,10 @@ class WDGWPREST_Entity_Project {
 			'turnover_per_declaration'	=> $campaign->get_turnover_per_declaration(),
 			'team_contacts'			=> $campaign->team_contacts(),
 			'employees_number'		=> $campaign->get_api_data( 'employees_number' ),
-			'minimum_goal_display'	=> $campaign->get_minimum_goal_display()
+			'minimum_goal_display'	=> $campaign->get_minimum_goal_display(),
+			'common_goods_turnover_percent'	=> $campaign->get_api_data( 'common_goods_turnover_percent' ),
+			'product_type'					=> $campaign->get_api_data( 'product_type' ),
+			'acquisition'					=> $campaign->get_api_data( 'acquisition' )
 		);
 		return $parameters;
 	}

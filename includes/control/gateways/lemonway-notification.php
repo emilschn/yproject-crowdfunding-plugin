@@ -506,10 +506,11 @@ class LemonwayNotification {
 							foreach ($list_investments as $investment_item) {
 								$total_roi += $investment_item[ 'roi_amount' ];
 							}
-
-							// Calcul de la date à laquelle on fera le versement auto
+							
+							// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
 							$date_of_royalties_transfer = new DateTime();
-							$date_of_royalties_transfer->add( new DateInterval( 'P3D' ) );
+							$date_of_royalties_transfer->setTime( 15, 30, 0 );
+							$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
 							// Si lundi, on fera un jour plus tard
 							if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
 								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
@@ -522,7 +523,6 @@ class LemonwayNotification {
 							if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
 								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
 							}
-							$date_of_royalties_transfer->setTime( 15, 30, 0 );
 
 							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . '<br>';
 							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . '<br>';
@@ -530,8 +530,7 @@ class LemonwayNotification {
 							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . ' €<br>';
 							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €<br><br>';
 
-							// Programmer versement auto
-							WDGQueue::add_royalties_auto_transfer_start( $declaration->id, $date_of_royalties_transfer );
+							$declaration->init_rois_and_tax();
 						}
 					}
 				}

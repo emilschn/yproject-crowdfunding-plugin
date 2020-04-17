@@ -140,8 +140,13 @@ class WDGPostActions {
         $orga_name = sanitize_text_field(filter_input(INPUT_POST,'company-name'));
 		$orga_email = sanitize_text_field( filter_input( INPUT_POST, 'email-organization' ) );
         $project_name = sanitize_text_field(filter_input(INPUT_POST,'project-name'));
-        $project_desc = sanitize_text_field(filter_input(INPUT_POST,'project-description'));
         $project_terms = filter_input( INPUT_POST, 'project-terms' );
+
+		$result = array(
+			'user_display_name'	=> '0',
+			'has_error'	=> '0',
+			'error_str'	=> ''
+		);
 
         //User data
         if(!empty($new_firstname)){
@@ -154,8 +159,8 @@ class WDGPostActions {
             update_user_meta( $WPuserID, 'user_mobile_phone', $new_phone );
         }
 
-        if (	!empty( $new_firstname ) && !empty( $new_lastname ) && !empty( $new_phone )
-				&& !empty($orga_name) && !empty($project_name) && !empty($project_desc) && !empty($project_terms)  && (is_email( $orga_email ) || is_numeric( $orga_name )) ) {
+        if ( !empty( $new_firstname ) && !empty( $new_lastname ) && !empty( $new_phone )
+				&& !empty($orga_name) && !empty($project_name) && !empty($project_terms)  && (is_email( $orga_email ) || is_numeric( $orga_name )) ) {
 
 			//On commence par essayer de créer l'organisation d'abord
 			//Si organisation déjà liée à l'utilisateur, on récupère le wpref de l'orga (selcet du formulaire)
@@ -177,6 +182,8 @@ class WDGPostActions {
 						
 					} else {
 						$success = false;
+						$result['has_error'] = '1';
+						$result['error_str'] = 'existing_orga_error';
 					}
 				}
 				
@@ -187,11 +194,15 @@ class WDGPostActions {
 					$orga_api_id = $organization_created->get_api_id();
 				} else {
 					$success = false;
+					$result['has_error'] = '1';
+					$result['error_str'] = 'errors_create_orga';
 				}
 				
 			//Sinon on arrête la procédure
 			} else {
 				$success = false;
+				$result['has_error'] = '1';
+				$result['error_str'] = 'orga_error';
 			}
 
 			if ( $success && !empty( $orga_api_id ) ) {
@@ -200,12 +211,10 @@ class WDGPostActions {
 				$newcampaign_id = atcf_create_campaign($WPuserID, $project_name);
 				$newcampaign = atcf_get_campaign($newcampaign_id);
 
-				$newcampaign->__set(ATCF_Campaign::$key_backoffice_summary, $project_desc);
-				$newcampaign->set_api_data( 'description', $project_desc );
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
-				$campaign_ref = new ATCF_Campaign( 27459 ); // Arbitrairement, on utilise une campagne existante pour reprendre certains paramètres
-				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $campaign_ref->mandate_conditions() );
+				$edd_settings = get_option( 'edd_settings' );
+				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $edd_settings[ 'contract_mandate' ] );
 				$newcampaign->link_organization( $orga_api_id );
 				$newcampaign->update_api();
 			
@@ -219,8 +228,9 @@ class WDGPostActions {
 				if ( empty( $test_organization ) ) {
 					$error_content = 'Aucune organisation liée au projet';
 					NotificationsEmails::new_project_posted_error_admin( $project_name, $error_content );
+					$result['has_error'] = '1';
+					$result['error_str'] = 'project_no_orga_linked';
 				}
-
 
 				//Redirect then
 				$page_dashboard = get_page_by_path('tableau-de-bord');
@@ -228,22 +238,31 @@ class WDGPostActions {
 				$campaign_id_param .= $newcampaign_id;
 
 				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject" ;
-				wp_safe_redirect( $redirect_url);
+				$result['url_redirect'] = $redirect_url;
 			} else {
 				global $errors_submit_new, $errors_create_orga;
-				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_submit_new, true) );
-				ypcf_debug_log( 'create_project_form > error > ' . print_r($errors_create_orga, true) );
 				$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
 				$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-				wp_safe_redirect( home_url( '/lancement/?error=creation#newproject' ) );
+				$result['has_error'] = '1';
+				if($errors_submit_new) {
+					$result['errors_submit_new'] = array();
+					foreach ( $errors_submit_new as $error) {
+						$result['errors_submit_new'][] = html_entity_decode($error);
+					}
+				}
+				if($errors_create_orga) {
+					$result['errors_create_orga'] = array();
+					foreach ( $errors_create_orga as $error) {
+						$result['errors_create_orga'][] = html_entity_decode($error);
+					}
+				}
 			}
-        } else {
-			global $errors_submit_new, $errors_create_orga;
-			$_SESSION[ 'newproject-errors-submit' ] = $errors_submit_new;
-			$_SESSION[ 'newproject-errors-orga' ] = $errors_create_orga;
-            wp_safe_redirect( home_url( '/lancement/?error=field_empty#newproject' ) );
-        }
-		exit();
+        } else {				
+			$result['has_error'] = '1';			
+			$result['error_str'] = 'empty_or_wrong_format_field';
+		}
+
+		return $result;
     }
 
     public static function change_project_status(){
