@@ -3487,6 +3487,22 @@ class ATCF_Campaign {
 /*******************************************************************************
  * RECUPERATION DE LISTE DE PROJETS
  ******************************************************************************/
+	/**
+	 * Retourne une liste de tous les projets
+	 */
+	public static function get_list_all () {
+		$query_options = array(
+			'numberposts' => $nb,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_key' => 'campaign_vote',
+			'meta_key' => 'campaign_funding_type',
+			'meta_key' => 'campaign_end_date'
+		);
+		return get_posts( $query_options );
+
+	}
+
 	public static function get_list_most_recent( $nb = 1, $client = '' ) {
 		$buffer = array();
 		

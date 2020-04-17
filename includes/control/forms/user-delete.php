@@ -73,7 +73,7 @@ class WDG_Form_User_Delete extends WDG_Form {
 */
 
 
-            $campaigns_voted = $WDGUser->get_campaigns_voted();
+            $campaigns_voted = $WDGUser->get_campaigns_current_voted();
             $campaigns_followed = $WDGUser->get_campaigns_followed();
             $has_pending_preinvestments = $WDGUser->has_pending_preinvestments();
             $has_pending_not_validated_investments = $WDGUser->has_pending_not_validated_investments();
@@ -133,7 +133,8 @@ class WDG_Form_User_Delete extends WDG_Form {
                 //Si possible de supprimer, transformer en __deleted202001011212 les données importantes dans l'API et dans le site
                 //Préparer une chaîne, qu'on appelle “deleted”, sous cette forme, pour conserver la date exacte de suppression : __deletedAAAAMMJJHHMM
                 $deleted_string = '__deleted'.date("YmdHi");
-                $id_user = $WDGUser->get_wpref();
+				$id_user = $WDGUser->get_wpref();
+				$email_user = $WDGUser->get_email(); 
 
                 /* Aller dans la table wpwdg_users
                     Dans le champ user_activation_key, stocker l'user_email et le display name, juste au cas où, sous cette forme user_email;display_name
@@ -155,21 +156,31 @@ class WDG_Form_User_Delete extends WDG_Form {
                 foreach ( $metas as $key => $value ) {
                     if ($key != 'id_api' && $key != 'lemonway_id' && $key != 'lemonway_status' ) {
                         delete_user_meta( $WDGUser->get_wpref(), $key );
-                    }			
+                    } elseif ($key == 'lemonway_id') {
+						// on mémorise l'id lemonway de l'utilisateur pour envoyer un mail au support de lemonway
+						$lemonway_id = $value;
+					}			
                 }
 
                 /*Aller dans la table wdgrestapi1524_entity_user
                     Chercher l'utilisateur en mettant par wpref avec l'ID noté ci-dessus
                     Remplacer les champs email, username par la chaine “deleted”créée ci-dessus
                     Vider les informations de tous les autres champs SAUF id, wpref, signup_date, client_user_id, authentification_mode
-                */
-			/*			
-                WDGWPREST_Entity_User::update( $WDGUser );*/
+				*/
+				// on recharge l'utilisateur avec les données wordpress qu'on vient de modifier
+				$WDGUserReload = new WDGUser( $WDGUser->get_wpref(), FALSE );
+				// on met à jour les données de l'API
+				WDGWPREST_Entity_User::update( $WDGUserReload );
                 
-                // TODO : supprimer les fichiers Kyc s'il y en a
+				// on supprime les fichiers Kyc s'il y en a
+				$WDGUser->delete_all_documents();
 
-                // TODO : envoyer un mail à support@lemonway.com pour demander la suppression de l'utilisateur
-			
+				// on envoie un mail à support@lemonway.com pour demander la suppression de l'utilisateur
+				if ( $lemonway_id ){
+					NotificationsEmails::send_lemonway_delete_order( $email_user, $lemonway_id );
+					// QUESTION  : en envoyer un à l'utilisateur concerné ? à wedogood ?
+				}
+
 				array_push( $feedback_success, __( "Blablablabla" ) );
 			}
 			

@@ -99,6 +99,35 @@ class WDGKYCFile {
 		return $this->date_uploaded;
 	}
 
+	/**
+	 * Supprime un document (en base et dans le système de fichier)
+	 *
+	 * @return void
+	 */
+	public function delete() {
+		// on supprime le fichier dans le système de fichier
+		$file_path = $this->get_public_filepath();
+		if( file_exists ( $file_path)) {
+			unlink( $file_path );
+		};
+		// on le supprime en bdd
+		global $wpdb;
+		$table_name = $wpdb->prefix . WDGKYCFile::$table_name;
+		$result = $wpdb->delete( 
+			$table_name, 
+			array( 
+				'id' => $this->id,
+				'type' => $this->type,
+				'orga_id' => $this->orga_id,
+				'user_id' => $this->user_id,
+				'file_name' => $this->file_name,
+				'status' => $this->status,
+				'date_uploaded' => $this->date_uploaded,
+			)
+		);
+		return $result;
+	}
+
 /*******************************************************************************
  * REQUETES STATIQUES
  ******************************************************************************/

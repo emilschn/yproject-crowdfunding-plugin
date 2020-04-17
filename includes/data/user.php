@@ -710,10 +710,31 @@ class WDGUser {
 		return $buffer;
 	}
 
+	/**
+	 * vérifie si la campagne est en cours selon son statut
+	 *
+	 * @return array
+	 */
+	public function get_campaigns_current_voted() {
+		$buffer = array();		
+		$campaigns_voted = $this->get_campaigns_voted();
+		foreach ( $campaigns_voted as $campaign_item ) {
+			$campaign = new ATCF_Campaign( $campaign_item->campaign_id );
+			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote) {
+				$buffer[] = $campaign;
+			}
+		}
+		return $buffer;
+	}
+	/**
+	 * renvoie la liste des identifiants des campagnes sur lesquelles il a voté
+	 *
+	 * @return array
+	 */
 	public function get_campaigns_voted() {
 		$buffer = array();		
-		$list_campaign_funding = ATCF_Campaign::get_list_funding( 0, '', true );
-		foreach ( $list_campaign_funding as $project_post ) {
+		$list_campaign = ATCF_Campaign::get_list_all( );
+		foreach ( $list_campaign as $project_post ) {
 			$amount_voted = $this->get_amount_voted_on_campaign( $project_post->ID );
 			if ( $amount_voted > 0 && !$this->has_invested_on_campaign( $project_post->ID ) ) {
 				$intention_item = array(
@@ -721,20 +742,6 @@ class WDGUser {
 					'campaign_id'	=> $project_post->ID,
 					'vote_amount'	=> $amount_voted,
 					'status'		=> ATCF_Campaign::$campaign_status_collecte
-				);
-				array_push( $buffer, $intention_item );
-			}
-		}
-
-		$list_campaign_vote = ATCF_Campaign::get_list_vote( 0, '', true );
-		foreach ( $list_campaign_vote as $project_post ) {
-			$amount_voted = $this->get_amount_voted_on_campaign( $project_post->ID );
-			if ( $amount_voted > 0 && !$this->has_invested_on_campaign( $project_post->ID ) ) {
-				$intention_item = array(
-					'campaign_name'	=> $project_post->post_title,
-					'campaign_id'	=> $project_post->ID,
-					'vote_amount'	=> $amount_voted,
-					'status'		=> ATCF_Campaign::$campaign_status_vote
 				);
 				array_push( $buffer, $intention_item );
 			}
@@ -1992,6 +1999,32 @@ class WDGUser {
 					}
 				}
 			}
+		}
+	}
+	/**
+	 * Récupère la liste des documents kyc envoyés par l'utilisateur
+	 */
+	public function get_all_documents() {
+		$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user );
+		return $document_filelist;
+	}
+	/**
+	 * Supprime un document de l'utilisateur
+	 * @param WDGKYCFile $document
+	 */
+	public function delete_document($document) {
+		$document->delete();
+
+	}
+	/**
+	 * Supprime tous les documents de l'utilisateur
+	 *
+	 * @return void
+	 */
+	public function delete_all_documents() {
+		$document_filelist = $this->get_all_documents();
+		foreach ( $document_filelist as $document ) {
+			$this->delete_document($document);
 		}
 	}
     
