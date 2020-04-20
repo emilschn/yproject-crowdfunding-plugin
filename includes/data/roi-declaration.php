@@ -532,10 +532,12 @@ class WDGROIDeclaration {
 				$transfer = FALSE;
 				$recipient_name = '';
 				$recipient_email = '';
+				$wdguser_wpref = 0;
 
 				//Gestion versement vers organisation
 				if ( $ROI->recipient_type == 'orga' ) {
 					$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
+					$wdguser_wpref = $WDGOrga->get_wpref();
 					$WDGOrga->register_lemonway();
 					$recipient_name = $WDGOrga->get_name();
 					$recipient_email = $WDGOrga->get_email();
@@ -562,6 +564,7 @@ class WDGROIDeclaration {
 				//Versement vers utilisateur personne physique
 				} else {
 					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+					$wdguser_wpref = $WDGUser->get_wpref();
 					$WDGUser->register_lemonway();
 					$recipient_name = $WDGUser->get_firstname();
 					$recipient_email = $WDGUser->get_email();
@@ -621,7 +624,9 @@ class WDGROIDeclaration {
 				}
 
 				if ( !$cancel_notification ) {
-					WDGQueue::add_notification_royalties( $WDGUser->get_wpref() );
+					if ( !empty( $wdguser_wpref ) ) {
+						WDGQueue::add_notification_royalties( $wdguser_wpref );
+					}
 					
 					$declaration_message = $this->get_message();
 					if ( !empty( $declaration_message ) ) {
