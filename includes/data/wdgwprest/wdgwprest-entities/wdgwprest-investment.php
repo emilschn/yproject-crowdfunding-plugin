@@ -86,7 +86,8 @@ class WDGWPREST_Entity_Investment {
 		
 		$amount = edd_get_payment_amount( $edd_payment_item->ID );
 		$amount_with_royalties_in_cents = 0;
-		$payment_status = ypcf_get_updated_payment_status( $edd_payment_item->ID );
+		$WDGInvestment = new WDGInvestment( $edd_payment_item->ID );
+		$payment_status = $WDGInvestment->get_saved_status();
 		$contract_status = get_post_meta( $edd_payment_item->ID, WDGInvestment::$contract_status_meta, TRUE );
 		
 		$payment_key = edd_get_payment_key( $edd_payment_item->ID );
