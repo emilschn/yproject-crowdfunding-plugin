@@ -827,6 +827,20 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail( $lemonway_email, $object, $body_content, TRUE );
 	}
 	
+    public static function send_wedogood_delete_order( $user_email ) {
+		ypcf_debug_log('NotificationsEmails::send_wedogood_delete_order > ' . $user_email);
+		
+		$admin_email = 'helene@wedogood.co';
+		// $admin_email = 'admin@wedogood.co';
+		$object = "Utilisateur supprimé";
+		
+		$body_content = "Salut,<br>";
+		$body_content .= "le compte utilisateur suivant a été supprimé, et un mail a été envoyé au support lemonway<br>";
+		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br>";
+		$body_content .= "Merci de prévenir l'utilisateur";
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
+	}
     //*******************************************************
     // FIN SUPPRESSION COMPTE UTILISATEUR
     //*******************************************************
