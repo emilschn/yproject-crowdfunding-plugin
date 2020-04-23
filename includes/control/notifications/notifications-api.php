@@ -64,7 +64,9 @@ class NotificationsAPI {
 		'691' => "Versement de royalties - montant maximum atteint",
 		'779' => "Versement sur compte bancaire - confirmation",
 		'1075' => "Réinitialisation de mot de passe",
-		'1316' => "Test d'éligibilité - Récupération liste de tests"
+		'1316' => "Test d'éligibilité - Récupération liste de tests",
+		'1374' => "Test d'éligibilité - Lien test démarré",
+		'1373' => "Test d'éligibilité - Projet éligible"
 	);
 	
 
@@ -1423,6 +1425,53 @@ class NotificationsAPI {
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
 			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+    //*******************************************************
+    // DEMARRAGE DE TEST
+    //*******************************************************
+	public static function prospect_setup_draft_started( $recipient, $name, $draft_url_full ) {
+		$draft_url = str_replace( 'https://', '', $draft_url_full );
+		$id_template = '1374';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'personal'		=> 1,
+			'NOM'			=> $name,
+			'URL_DRAFT'		=> $draft_url,
+			'URL_DRAFT_FULL'=> $draft_url_full
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+    //*******************************************************
+    // FIN DE TEST
+    //*******************************************************
+	public static function prospect_setup_draft_finished( $recipient, $name, $draft_url_full, $amount_needed, $royalties_percent, $formula, $options ) {
+		$draft_url = str_replace( 'https://', '', $draft_url_full );
+		$id_template = '1373';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'personal'		=> 1,
+			'NOM'			=> $name,
+			'URL_DRAFT'		=> $draft_url,
+			'MONTANT_RECHERCHE'		=> $amount_needed,
+			'POURCENT_ROYALTIES'	=> $royalties_percent,
+			'FORMULE'		=> $formula,
+			'OPTION'		=> $options
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );

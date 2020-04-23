@@ -68,6 +68,8 @@ class WDGAjaxActions {
 		// Prospect setup - interface prospect
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_finished' );
 	}
 	
 	/**
@@ -3046,6 +3048,91 @@ class WDGAjaxActions {
 		
 		if ( !empty( $return[ 'error_str' ] ) ) {
 			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_user_draft_started() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				$draft_url = home_url( '/financement/eligibilite/?guid=' . $api_result->guid );
+				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $draft_url ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_user_draft_finished() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				$draft_url = home_url( '/financement/eligibilite/?guid=' . $api_result->guid );
+				$amount_needed = $metadata_decoded->project->amountNeeded * 1000;
+				$royalties_percent = $metadata_decoded->project->royaltiesAmount;
+				$formula = '';
+				switch ( $metadata_decoded->project->circlesToCommunicate ) {
+					case 'lovemoney':
+						$formula = 'Formule Love Money';
+						break;
+					case 'private':
+						$formula = 'Formule Réseau privé';
+						break;
+					case 'crowdfunding':
+						$formula = 'Formule Crowdfunding';
+						break;
+				}
+				$options = '';
+				if ( $metadata_decoded->project->needCommunicationAdvice ) {
+					$options = 'Accompagnement Intégral';
+
+				} elseif ( $metadata_decoded->project->circlesToCommunicate != 'lovemoney' && !$metadata_decoded->project->alreadydonecrowdfunding ) {
+					$options = 'Accompagnement Intégral';
+
+				} else {
+					$options = 'Accompagnement Essentiel';
+				}
+
+				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $amount_needed, $royalties_percent, $formula, $options ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
 		}
 
 		echo json_encode( $return );
