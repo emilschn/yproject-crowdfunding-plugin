@@ -63,7 +63,8 @@ class NotificationsAPI {
 		'522' => "Versement de royalties - transfert avec message",
 		'691' => "Versement de royalties - montant maximum atteint",
 		'779' => "Versement sur compte bancaire - confirmation",
-		'1075' => "Réinitialisation de mot de passe"
+		'1075' => "Réinitialisation de mot de passe",
+		'1316' => "Test d'éligibilité - Récupération liste de tests"
 	);
 	
 
@@ -1404,5 +1405,27 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 	
+
+	//**************************************************************************
+	// Interface prospect
+	//**************************************************************************
+    //*******************************************************
+    // LISTE DES TESTS DEMARRES
+    //*******************************************************
+	public static function prospect_setup_draft_list( $recipient, $name, $project_list_str ) {
+		$id_template = '1316';
+		$options = array(
+			'personal'			=> 1,
+			'NOM'				=> $name,
+			'LISTE_PROJETS'		=> $project_list_str
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
 	
 }

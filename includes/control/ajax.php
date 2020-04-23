@@ -66,7 +66,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('delete_lock_project_edition');
 
 		// Prospect setup - interface prospect
-		WDGAjaxActions::add_action('prospect_setup_save');
+		WDGAjaxActions::add_action( 'prospect_setup_save' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
 	}
 	
 	/**
@@ -2996,6 +2997,55 @@ class WDGAjaxActions {
 			$return[ 'guid' ] = $api_result->guid;
 			$return[ 'id_user' ] = $api_result->id_user;
 			$return[ 'save_status' ] = 'saved';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_user_project_drafts() {
+		$email = filter_input( INPUT_POST, 'email' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $email ) ) {
+			$return[ 'error_str' ] = 'empty_email';
+		}
+		if ( !is_email( $email ) ) {
+			$return[ 'error_str' ] = 'incorrect_email';
+		}
+
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get_list_by_email( $email );
+
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$recipient_name = '';
+				$project_list = '<ul>';
+				foreach ( $api_result as $project_draft_item ) {
+					$metadata_decoded = json_decode( $project_draft_item->metadata );
+					if ( !empty( $metadata_decoded->user->name ) ) {
+						$recipient_name = $metadata_decoded->user->name;
+					}
+					$project_name = 'Mon projet';
+					if ( !empty( $metadata_decoded->organization->name ) ) {
+						$project_name = $metadata_decoded->organization->name;
+					}
+					$project_list .= '<li><a href="' . home_url( '/financement/eligibilite/?guid=' . $project_draft_item->guid ) . '">' .$project_name. '</a></li>';
+				}
+				$project_list .= '</ul>';
+				if ( NotificationsAPI::prospect_setup_draft_list( $email, $recipient_name, $project_list ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
 		}
 
 		echo json_encode( $return );

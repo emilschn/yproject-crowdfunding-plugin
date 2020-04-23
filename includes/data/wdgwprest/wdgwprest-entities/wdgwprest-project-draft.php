@@ -18,6 +18,18 @@ class WDGWPREST_Entity_Project_Draft {
 		}
 		return WDGWPRESTLib::call_get_wdg( 'project-draft/' .$guid );
 	}
+		
+	/**
+	 * Retourne la liste de brouillons de projets créés par un e-mail
+	 * @param string $email
+	 * @return object
+	 */
+	public static function get_list_by_email( $email ) {
+		if ( empty( $email ) ) {
+			return FALSE;
+		}
+		return WDGWPRESTLib::call_get_wdg( 'project-drafts/' .$email );
+	}
 
 	/**
 	 * Définit les paramètres en fonction de ce qu'on sait sur le site
