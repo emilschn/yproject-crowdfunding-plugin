@@ -32,6 +32,17 @@ class WDGWPREST_Entity_Project_Draft {
 	}
 
 	/**
+	 * Retourne les brouillons de projet associés à un e-mail
+	 */
+	public static function get_by_user_email( $user_email ) {
+		ypcf_debug_log( 'get_by_user_email > user_email : ' . $user_email, false );
+		if ( empty( $user_email ) ) {
+			return FALSE;
+		}
+		return WDGWPRESTLib::call_get_wdg( 'project-drafts/' .$user_email );
+	}
+
+	/**
 	 * Définit les paramètres en fonction de ce qu'on sait sur le site
 	 * @param WDGUser $user
 	 * @param String $guid

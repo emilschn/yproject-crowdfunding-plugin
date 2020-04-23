@@ -3010,6 +3010,7 @@ class WDGAjaxActions {
 		$return = array();
 		$return[ 'error_str' ] = '';
 		$return[ 'has_error' ] = '0';
+		$return[ 'email_sent' ] = '0';
 
 		if ( empty( $email ) ) {
 			$return[ 'error_str' ] = 'empty_email';
