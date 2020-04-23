@@ -210,6 +210,12 @@ class WDGInvestment {
 			$WDGInvestment->save_to_api();
 			// on conserve une trace de l'origine de ce nouveau paiement
 			$id_meta = add_post_meta( $new_investment_id, 'created-from-cutting', $this->get_id() );
+			//si l'investissement a un identifiant de signature électronique
+			$eversign_contract_id = get_post_meta( $this->get_id(), 'eversign_contract_id', TRUE );
+			if ( !empty( $eversign_contract_id ) ) {
+				// on reprend le même identifiant dans les post_meta avec "eversign_contract_id"
+				$id_meta_eversign = add_post_meta( $new_investment_id, 'eversign_contract_id', $eversign_contract_id );
+			}
 			// on modifie le montant de l'investissement en cours (on soustrait $amount)
 			$this->set_amount($this->get_saved_amount() - $amount);			
 				

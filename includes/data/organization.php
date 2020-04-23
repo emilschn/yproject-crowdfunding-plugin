@@ -1658,10 +1658,12 @@ class WDGOrganization {
 	public function get_royalties_by_investment_id( $investment_id, $status = 'transferred' ) {
 		$buffer = array();
 		$rois = $this->get_rois();
-		foreach ( $rois as $roi_item ) {
-			if ( $roi_item->id_investment == $investment_id ) {
-				if ( empty( $status ) || $roi_item->status == $status ) {
-					array_push( $buffer, $roi_item );
+		if ( !empty( $rois ) ) {
+			foreach ( $rois as $roi_item ) {
+				if ( $roi_item->id_investment == $investment_id ) {
+					if ( empty( $status ) || $roi_item->status == $status ) {
+						array_push( $buffer, $roi_item );
+					}
 				}
 			}
 		}
