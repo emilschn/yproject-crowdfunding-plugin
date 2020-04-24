@@ -3074,7 +3074,7 @@ class ATCF_Campaign {
 		
 		if (!is_wp_error($saved_user_id) && !empty($saved_user_id) && $saved_user_id != FALSE) {
 			$user_info = array(
-				'id'		=> $user_id,
+				'id'		=> $saved_user_id,
 				'gender'	=> $new_gender,
 				'email'		=> $email,
 				'first_name'	=> $new_firstname,
