@@ -67,6 +67,7 @@ class WDGAjaxActions {
 
 		// Prospect setup - interface prospect
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
+		WDGAjaxActions::add_action( 'prospect_setup_get_by_guid' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_finished' );
@@ -2994,6 +2995,34 @@ class WDGAjaxActions {
 			$return[ 'guid' ] = $api_result->guid;
 			$return[ 'id_user' ] = $api_result->id_user;
 			$return[ 'save_status' ] = 'saved';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_get_by_guid() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'data' ] = FALSE;
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+
+		$api_result = FALSE;
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+		}
+
+		if ( !empty( $api_result ) ) {
+			$return[ 'data' ] = $api_result;
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
 		}
 
 		echo json_encode( $return );
