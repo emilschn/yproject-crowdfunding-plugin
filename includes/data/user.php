@@ -239,9 +239,17 @@ class WDGUser {
 	}
 	
 	public function get_login() {
-		return $this->wp_user->user_login;
+		$buffer = $this->login;
+		if ( empty( $buffer ) || $buffer == '---' ) {
+			$buffer = $this->wp_user->user_login;
+		}
+		return $buffer;
 	}
 	
+	public function set_login($login) {
+		$this->login = $login;
+	}
+
 	public function get_signup_date() {
 		$buffer = $this->signup_date;
 		if ( empty( $buffer ) ) {
@@ -268,6 +276,10 @@ class WDGUser {
 			$buffer = substr( $buffer, 0, -1 );
 		}
 		return $buffer;
+	}
+	
+	public function set_email($email) {
+		$this->email = $email;
 	}
 	
 	public function get_gender() {

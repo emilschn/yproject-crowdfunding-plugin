@@ -3492,7 +3492,7 @@ class ATCF_Campaign {
 	 */
 	public static function get_list_all () {
 		$query_options = array(
-			'numberposts' => $nb,
+			'numberposts' => -1,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_key' => 'campaign_vote',

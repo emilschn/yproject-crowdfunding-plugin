@@ -178,16 +178,25 @@ class WDG_Form_User_Delete extends WDG_Form {
 
                 /* Aller dans la table wpwdg_users
                     Dans le champ user_activation_key, stocker l'user_email et le display name, juste au cas où, sous cette forme user_email;display_name
-                    Remplacer user_login, user_pass, user_nicename, user_email, display_name par la chaine “deleted” créée ci-dessus*/
-                wp_update_user( array (
-					'ID'		=> $WDGUser->get_wpref(),
-                    'user_login' => $deleted_string,
-                    'user_pass' => $deleted_string,
-                    'user_nicename' => $deleted_string,
-                    'user_email' => $deleted_string,
-                    'display_name' => $deleted_string,
-                    'user_activation_key' => $WDGUser->get_email().';'.$WDGUser->get_display_name()
-                ) );
+					Remplacer user_login, user_pass, user_nicename, user_email, display_name par la chaine “deleted” créée ci-dessus*/
+				
+				global $wpdb;
+				$table_name = $wpdb->prefix . "users";
+
+				$wpdb->update( 
+					$table_name, 
+					array( 
+						'user_login' => $deleted_string,
+						'user_pass' => $deleted_string,
+						'user_nicename' => $deleted_string,
+						'user_email' => $deleted_string,
+						'display_name' => $deleted_string,
+						'user_activation_key' => $WDGUser->get_email().';'.$WDGUser->get_display_name()
+					),
+					array(
+						'ID' => $WDGUser->get_wpref()
+					)
+				);
                
                 /* Aller dans la table wpwdg_usermeta
                     Faire une recherche par user_id, avec l'ID noté ci-dessus
@@ -209,6 +218,8 @@ class WDG_Form_User_Delete extends WDG_Form {
 				*/
 				// on recharge l'utilisateur avec les données wordpress qu'on vient de modifier
 				$WDGUserReload = new WDGUser( $WDGUser->get_wpref(), FALSE );
+				$WDGUserReload->set_login($deleted_string);
+				$WDGUserReload->set_email($deleted_string);
 				// on met à jour les données de l'API
 				WDGWPREST_Entity_User::update( $WDGUserReload );
                 
