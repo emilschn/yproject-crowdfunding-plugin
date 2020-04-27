@@ -341,7 +341,7 @@ class WDGAjaxActions {
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
 				foreach ( $roi_list as $roi_item ) {
-					if ( $roi_item->status != WDGROI::$status_canceled ) {
+					if ( $roi_item->status != WDGROI::$status_canceled && $roi_item->status != WDGROI::$status_waiting_transfer ) {
 						$roi_amount += $roi_item->amount;
 					}
 				}
