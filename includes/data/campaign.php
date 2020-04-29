@@ -3114,9 +3114,10 @@ class ATCF_Campaign {
 			$payment_id = edd_insert_payment( $payment_data );
 			update_post_meta( $payment_id, '_edd_payment_total', $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
+			delete_post_meta( $payment_id, '_edd_payment_customer_id' );
+			update_post_meta( $payment_id, '_edd_payment_user_id', $saved_user_id );
 
 			$WDGInvestment = new WDGInvestment( $payment_id );
-			$WDGInvestment->save_to_api();
 			
 			// Mise à jour du statut de paiement si nécessaire
 			if ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
@@ -3126,8 +3127,16 @@ class ATCF_Campaign {
 					'post_status'	=> 'pending'
 				);
 				wp_update_post( $postdata );
-				$WDGInvestment->save_to_api();
+
+			} elseif ( $status != 'pending' ) {
+				$postdata = array(
+					'ID'			=> $payment_id,
+					'post_status'	=> $status
+				);
+				wp_update_post( $postdata );
 			}
+
+			$WDGInvestment->save_to_api();
 
 		} else {
 			$payment_id = FALSE;

@@ -75,7 +75,10 @@ class WDGCronActions {
 									'DECLARATION_DIRECT_URL'=> $declaration_direct_url
 								);
 
-								NotificationsAPI::declaration_to_do( $organization->email, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+								$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
+								$recipients .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+
+								NotificationsAPI::declaration_to_do( $recipients, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
 
 							}
 						}
@@ -104,6 +107,7 @@ class WDGCronActions {
 							
 							$wdguser_author = new WDGUser( $campaign->data->post_author );
 							$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
+							$recipients .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 						
 							$quarter_str_list = array( "premier", "deuxième", "troisième", "quatrième" );
 							$quarter_percent_list = array( 10, 20, 30, 40 );

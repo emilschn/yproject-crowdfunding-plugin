@@ -1231,6 +1231,19 @@ class WDGROIDeclaration {
 		}
 		return $buffer;
 	}
+
+	public function get_adjustments_amount_as_turnover() {
+		$buffer = 0;
+		$this->get_adjustments(); // Initialisation de la liste
+		if ( !empty( $this->adjustments ) ) {
+			foreach ( $this->adjustments as $adjustment_item ) {
+				$buffer += $adjustment_item->amount;
+			}
+		}
+		$campaign_object = $this->get_campaign_object();
+		$buffer *= 100 / $campaign_object->roi_percent();
+		return $buffer;
+	}
 	
 	/**
 	 * Retourne vrai si un ajustement concernait cette déclaration
