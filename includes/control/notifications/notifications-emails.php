@@ -811,31 +811,15 @@ class NotificationsEmails {
     //*******************************************************
     // SUPPRESSION COMPTE UTILISATEUR
     //*******************************************************
-    public static function send_lemonway_delete_order( $user_email, $user_lemonway_id ) {
-		ypcf_debug_log('NotificationsEmails::send_lemonway_delete_order > ' . $user_email);
-		
-		$lemonway_email = 'helene@wedogood.co';
-		// $lemonway_email = 'support@lemonway.com';
-		$object = "Utilisateur à supprimer";
-		
-		$body_content = "Bonjour,<br>";
-		$body_content .= "merci de supprimer le compte utilisateur suivant<br>";
-		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br>";
-		$body_content .= "Et son id Lemonway : " .$user_lemonway_id. "<br><br>";
-		$body_content .= "Merci !";
 
-		return NotificationsEmails::send_mail( $lemonway_email, $object, $body_content, TRUE );
-	}
-	
     public static function send_wedogood_delete_order( $user_email ) {
 		ypcf_debug_log('NotificationsEmails::send_wedogood_delete_order > ' . $user_email);
 		
-		$admin_email = 'helene@wedogood.co';
-		// $admin_email = 'admin@wedogood.co';
+		$admin_email = 'admin@wedogood.co';
 		$object = "Utilisateur supprimé";
 		
 		$body_content = "Salut,<br>";
-		$body_content .= "le compte utilisateur suivant a été supprimé, et un mail a été envoyé au support lemonway<br>";
+		$body_content .= "le compte utilisateur suivant a été supprimé, il faut maintenant faire la demande de suppression à LemonWay<br>";
 		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br>";
 		$body_content .= "Merci de prévenir l'utilisateur";
 

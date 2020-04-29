@@ -226,14 +226,12 @@ class WDG_Form_User_Delete extends WDG_Form {
 				// on supprime les fichiers Kyc s'il y en a
 				$WDGUser->delete_all_documents();
 
-				// on envoie un mail à support@lemonway.com pour demander la suppression de l'utilisateur
 				if ( $lemonway_id ){
-					NotificationsEmails::send_lemonway_delete_order( $email_user, $lemonway_id );
-					// on envoie aussi un mail à admin@wedogood.co pour informer de la suppression de l'utilisateur
+					// on envoie un mail à admin@wedogood.co pour informer de la suppression de l'utilisateur
 					NotificationsEmails::send_wedogood_delete_order( $email_user );
 				}
 
-				array_push( $feedback_success, __( "Le compte utilisateur a bien &eacute;t&eacute; supprim&eacute;", 'yproject' ) );
+				array_push( $feedback_success, __( "Le compte utilisateur a bien &eacute;t&eacute; supprim&eacute;. Pensez &agrave; envoyer une demande de suppression &agrave; LemonWay. ", 'yproject' ) );
 			}
 			
 		}
