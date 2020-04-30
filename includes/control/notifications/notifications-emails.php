@@ -815,7 +815,7 @@ class NotificationsEmails {
     public static function send_wedogood_delete_order( $user_email ) {
 		ypcf_debug_log('NotificationsEmails::send_wedogood_delete_order > ' . $user_email);
 		
-		$admin_email = 'admin@wedogood.co';
+		$admin_email = 'administratif@wedogood.co';
 		$object = "Utilisateur supprimé";
 		
 		$body_content = "Salut,<br>";
