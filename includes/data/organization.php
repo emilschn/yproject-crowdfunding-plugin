@@ -979,6 +979,9 @@ class WDGOrganization {
 					case 'royalties':
 						$lemonway_id = $this->get_royalties_lemonway_id();
 						break;
+					case 'tax':
+						$lemonway_id = $this->get_tax_lemonway_id();
+						break;
 					default:
 						$lemonway_id = $this->get_lemonway_id();
 						break;
