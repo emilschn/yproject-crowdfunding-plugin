@@ -1027,13 +1027,13 @@ class WDGROIDeclaration {
 				}
 				
 				// Contrôle sur les taxes pour enregistrer la part des royalties qui serait taxée
-				$user_taxed_amount = 0;
+				$user_taxed_amount_in_cents = 0;
 				if ( $investment_item[ 'roi_amount' ] > 0 && isset( $investment_contracts[ $investment_item['ID'] ] ) ) {
 					$investment_contract_item = $investment_contracts[ $investment_item['ID'] ];
 					$user_amount_updated = $investment_contract_item->amount_received + $investment_item[ 'roi_amount' ];
 					if ( $user_amount_updated > $investment_contract_item->subscription_amount ) {
 						$user_taxed_amount = min( $investment_item[ 'roi_amount' ], $user_amount_updated - $investment_contract_item->subscription_amount );
-						$user_taxed_amount = floor( $user_taxed_amount );
+						$user_taxed_amount_in_cents = floor( $user_taxed_amount * 100 );
 					}
 				}
 
@@ -1043,7 +1043,7 @@ class WDGROIDeclaration {
 				if ( !empty( $investment_item[ 'contract_id' ] ) ) {
 					$id_investment_contract = $investment_item[ 'contract_id' ];
 				}
-				WDGROI::insert( $investment_item['ID'], $this->id_campaign, $WDGOrganization_campaign->get_api_id(), $recipient_api_id, $recipient_type, $this->id, '0000-00-00', $investment_item['roi_amount'], 0, $status, $id_investment_contract, $user_taxed_amount );
+				WDGROI::insert( $investment_item['ID'], $this->id_campaign, $WDGOrganization_campaign->get_api_id(), $recipient_api_id, $recipient_type, $this->id, '0000-00-00', $investment_item['roi_amount'], 0, $status, $id_investment_contract, $user_taxed_amount_in_cents );
 
 				if ( $count_done_now >= $max_items_to_do_now ) {
 					break;
