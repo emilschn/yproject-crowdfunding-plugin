@@ -309,7 +309,8 @@ class WDG_Form_Vote extends WDG_Form {
 					$core = ATCF_CrowdFunding::instance();
 					$core->include_form( 'invest-poll' );
 					$WDGPollForm = new WDG_Form_Invest_Poll( $campaign_id, $WDGUser_current->get_wpref(), 'vote' );
-					$WDGPollForm->postForm( $invest_sum );
+					$WDGPollForm->setContextAmount( $invest_sum );
+					$WDGPollForm->postForm();
 					
 					if ( $invest_sum > 0 ) {
 						if ( !$WDGUser_current->is_lemonway_registered() ) {
