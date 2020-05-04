@@ -1060,7 +1060,7 @@ class WDGROIDeclaration {
 		
 			// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
 			$date_of_royalties_transfer = FALSE;
-			if ( $this->mean_payment == WDGROIDeclaration::$mean_payment_mandate ) {
+			if ( $this->mean_payment === WDGROIDeclaration::$mean_payment_mandate ) {
 				$date_of_royalties_transfer = new DateTime();
 				$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
 				// Si lundi, on fera un jour plus tard
