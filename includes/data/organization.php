@@ -1226,8 +1226,8 @@ class WDGOrganization {
 			}
 			
 			return LemonwayLib::wallet_company_register(
-				$this->get_royalties_lemonway_id(),
-				$this->get_royalties_lemonway_email(),
+				$this->get_tax_lemonway_id(),
+				$this->get_tax_lemonway_email(),
 				html_entity_decode( $WDGUser_creator->wp_user->user_firstname ),
 				html_entity_decode( $WDGUser_creator->wp_user->user_lastname ),
 				html_entity_decode( $this->get_name() ),
