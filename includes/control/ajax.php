@@ -67,6 +67,7 @@ class WDGAjaxActions {
 
 		// Prospect setup - interface prospect
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
+		WDGAjaxActions::add_action( 'prospect_setup_save_files' );
 		WDGAjaxActions::add_action( 'prospect_setup_get_by_guid' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
@@ -2999,20 +3000,62 @@ class WDGAjaxActions {
 
 		$return = array();
 		$return[ 'guid' ] = $guid;
+		if ( empty( $id_user ) ) {
+			$id_user = 0;
+		}
 		$return[ 'id_user' ] = $id_user;
 		$return[ 'save_status' ] = 'failed';
 
 		if ( empty( $guid ) ) {
 			$api_result = WDGWPREST_Entity_Project_Draft::create( $id_user, $email, $status, $step, $authorization, $metadata );
+			$return[ 'trace_create' ] = print_r($api_result, true);
 
 		} else {
 			$api_result = WDGWPREST_Entity_Project_Draft::update( $guid, $id_user, $email, $status, $step, $authorization, $metadata );
-			$return[ 'trace' ] = print_r($api_result, true);
+			$return[ 'trace_update' ] = print_r($api_result, true);
 		}
 
 		if ( !empty( $api_result ) ) {
 			$return[ 'guid' ] = $api_result->guid;
 			$return[ 'id_user' ] = $api_result->id_user;
+			$return[ 'save_status' ] = 'saved';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_save_files() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'data' ] = FALSE;
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+
+		$api_result = FALSE;
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			$return[ 'data' ] = print_r($api_result,true);
+		}
+
+		if ( !empty( $api_result ) ) {
+			$i = 0;
+			while ( isset( $_FILES[ 'file' . $i ] ) ) {
+				$file_name = $_FILES[ 'file' . $i ][ 'name' ];
+				$file_name_exploded = explode( '.', $file_name );
+				$ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
+				$byte_array = file_get_contents( $_FILES[ 'file' . $i ][ 'tmp_name' ] );
+				$file_create_item = WDGWPREST_Entity_File::create( $api_result->id, 'project-draft', 'business', $ext, base64_encode( $byte_array ) );
+				$i++;
+			}
+		}
+
+		if ( !empty( $api_result ) ) {
+			$return[ 'guid' ] = $api_result->guid;
 			$return[ 'save_status' ] = 'saved';
 		}
 
