@@ -334,7 +334,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
-		$admin_email = 'admin@wedogood.co';
+		$admin_email = 'support@wedogood.co';
 		$object = 'Erreur investissement';
 		$body_content = "Tentative d'investissement avec erreur :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
