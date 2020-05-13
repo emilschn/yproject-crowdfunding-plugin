@@ -798,7 +798,6 @@ class WDGInvestment {
 				$lemonway_id = $WDGOrganization->get_lemonway_id();
 			}
 		}
-		
 		$amount = 0;
 		if ( $amount_param > 0 ) {
 			$amount = $amount_param;
@@ -860,6 +859,8 @@ class WDGInvestment {
 		}
 		
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
+		delete_post_meta( $payment_id, '_edd_payment_customer_id' );
+		update_post_meta( $payment_id, '_edd_payment_user_id', $save_user_id );
 		$this->save_to_api();
 		// FIN GESTION DU PAIEMENT COTE EDD
 

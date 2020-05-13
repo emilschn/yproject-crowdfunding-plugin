@@ -60,25 +60,26 @@ class WDGWPREST_Entity_Investment {
 				$info_user_api_id = $WDGUser->get_api_id();
 				$info_email = $WDGUser->get_email();
 			}
-			
-			$info_gender = $WDGUser->get_gender();
-			$info_firstname = $WDGUser->get_firstname();
-			$info_lastname = $WDGUser->get_lastname();
-			$info_nationality = $WDGUser->get_nationality();
-			$info_birthday_day = $WDGUser->get_birthday_day();
-			$info_birthday_month = $WDGUser->get_birthday_month();
-			$info_birthday_year = $WDGUser->get_birthday_year();
-			$info_birthplace = $WDGUser->get_birthplace();
-			$info_age = $WDGUser->get_age( $payment_date );
-			$info_address = $WDGUser->get_full_address_str();
-			$info_postalcode = $WDGUser->get_postal_code();
-			$info_postalcode = str_replace( ' ', '', $info_postalcode );
-			if ( strlen( $info_postalcode ) == 4 ) {
-				$info_postalcode = '0' . $info_postalcode;
+			if( isset( $WDGUser)) {
+				$info_gender = $WDGUser->get_gender();
+				$info_firstname = $WDGUser->get_firstname();
+				$info_lastname = $WDGUser->get_lastname();
+				$info_nationality = $WDGUser->get_nationality();
+				$info_birthday_day = $WDGUser->get_birthday_day();
+				$info_birthday_month = $WDGUser->get_birthday_month();
+				$info_birthday_year = $WDGUser->get_birthday_year();
+				$info_birthplace = $WDGUser->get_birthplace();
+				$info_age = $WDGUser->get_age( $payment_date );
+				$info_address = $WDGUser->get_full_address_str();
+				$info_postalcode = $WDGUser->get_postal_code();
+				$info_postalcode = str_replace( ' ', '', $info_postalcode );
+				if ( strlen( $info_postalcode ) == 4 ) {
+					$info_postalcode = '0' . $info_postalcode;
+				}
+				$info_city = $WDGUser->get_city();
+				$info_country = $WDGUser->get_country( 'iso2' );
+				$info_phone = $WDGUser->get_phone_number();
 			}
-			$info_city = $WDGUser->get_city();
-			$info_country = $WDGUser->get_country( 'iso2' );
-			$info_phone = $WDGUser->get_phone_number();
 			
 		} else {
 			return FALSE;
