@@ -160,7 +160,11 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_organization_reprensentative_firstname( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_creator;
-		return $shortcode_organization_creator->get_firstname();
+		if ( !empty ($shortcode_organization_creator) ) {
+			return $shortcode_organization_creator->get_firstname();
+		} else {
+			return '';
+		}				
 	}
 	/**
 	 * Shortcode affichant le nom de famille de la personne représentant l'organisation qui porte le projet
@@ -168,7 +172,11 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_organization_reprensentative_lastname( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_creator;
-		return $shortcode_organization_creator->get_lastname();
+		if ( !empty ($shortcode_organization_creator) ) {
+			return $shortcode_organization_creator->get_lastname();
+		} else {
+			return '';
+		}				
 	}
 	/**
 	 * Shortcode affichant la fonction de la personne représentant l'organisation qui porte le projet
@@ -816,7 +824,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
  * @param type $project_id
  */
 function getNewPdfToSign( $project_id, $payment_id, $user_id, $filepath = FALSE, $with_agreement = FALSE ) {
-    ypcf_debug_log('getNewPdfToSign > ' . $payment_id);
+    ypcf_debug_log('getNewPdfToSign > $payment_id = ' . $payment_id);
     $post_camp = get_post($project_id);
     $campaign = atcf_get_campaign( $post_camp );
     
@@ -857,8 +865,8 @@ function getNewPdfToSign( $project_id, $payment_id, $user_id, $filepath = FALSE,
 	}
 	
     $html_content = fillPDFHTMLDefaultContent( $current_user, $campaign, $invest_data, $organization, FALSE, $with_agreement );
-    $filename = ( empty( $filepath ) ) ? dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf' : $filepath;
-	global $new_pdf_file_name;
+    $filename = ( empty( $filepath ) ) ? dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $saved_user_id . '_' . time() . '.pdf' : $filepath;
+ 	global $new_pdf_file_name;
 	$new_pdf_file_name = basename( $filename );
     
     ypcf_debug_log('getNewPdfToSign > write in ' . $filename);
