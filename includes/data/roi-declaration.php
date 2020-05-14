@@ -532,10 +532,12 @@ class WDGROIDeclaration {
 				$transfer = FALSE;
 				$recipient_name = '';
 				$recipient_email = '';
+				$wdguser_wpref = 0;
 
 				//Gestion versement vers organisation
 				if ( $ROI->recipient_type == 'orga' ) {
 					$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
+					$wdguser_wpref = $WDGOrga->get_wpref();
 					$WDGOrga->register_lemonway();
 					$recipient_name = $WDGOrga->get_name();
 					$recipient_email = $WDGOrga->get_email();
@@ -562,6 +564,7 @@ class WDGROIDeclaration {
 				//Versement vers utilisateur personne physique
 				} else {
 					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+					$wdguser_wpref = $WDGUser->get_wpref();
 					$WDGUser->register_lemonway();
 					$recipient_name = $WDGUser->get_firstname();
 					$recipient_email = $WDGUser->get_email();
@@ -621,7 +624,9 @@ class WDGROIDeclaration {
 				}
 
 				if ( !$cancel_notification ) {
-					WDGQueue::add_notification_royalties( $WDGUser->get_wpref() );
+					if ( !empty( $wdguser_wpref ) ) {
+						WDGQueue::add_notification_royalties( $wdguser_wpref );
+					}
 					
 					$declaration_message = $this->get_message();
 					if ( !empty( $declaration_message ) ) {
@@ -1022,13 +1027,13 @@ class WDGROIDeclaration {
 				}
 				
 				// Contrôle sur les taxes pour enregistrer la part des royalties qui serait taxée
-				$user_taxed_amount = 0;
+				$user_taxed_amount_in_cents = 0;
 				if ( $investment_item[ 'roi_amount' ] > 0 && isset( $investment_contracts[ $investment_item['ID'] ] ) ) {
 					$investment_contract_item = $investment_contracts[ $investment_item['ID'] ];
 					$user_amount_updated = $investment_contract_item->amount_received + $investment_item[ 'roi_amount' ];
 					if ( $user_amount_updated > $investment_contract_item->subscription_amount ) {
 						$user_taxed_amount = min( $investment_item[ 'roi_amount' ], $user_amount_updated - $investment_contract_item->subscription_amount );
-						$user_taxed_amount = floor( $user_taxed_amount );
+						$user_taxed_amount_in_cents = floor( $user_taxed_amount * 100 );
 					}
 				}
 
@@ -1038,7 +1043,7 @@ class WDGROIDeclaration {
 				if ( !empty( $investment_item[ 'contract_id' ] ) ) {
 					$id_investment_contract = $investment_item[ 'contract_id' ];
 				}
-				WDGROI::insert( $investment_item['ID'], $this->id_campaign, $WDGOrganization_campaign->get_api_id(), $recipient_api_id, $recipient_type, $this->id, '0000-00-00', $investment_item['roi_amount'], 0, $status, $id_investment_contract, $user_taxed_amount );
+				WDGROI::insert( $investment_item['ID'], $this->id_campaign, $WDGOrganization_campaign->get_api_id(), $recipient_api_id, $recipient_type, $this->id, '0000-00-00', $investment_item['roi_amount'], 0, $status, $id_investment_contract, $user_taxed_amount_in_cents );
 
 				if ( $count_done_now >= $max_items_to_do_now ) {
 					break;
@@ -1055,7 +1060,7 @@ class WDGROIDeclaration {
 		
 			// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
 			$date_of_royalties_transfer = FALSE;
-			if ( $this->mean_payment == WDGROIDeclaration::$mean_payment_mandate ) {
+			if ( $this->mean_payment === WDGROIDeclaration::$mean_payment_mandate ) {
 				$date_of_royalties_transfer = new DateTime();
 				$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
 				// Si lundi, on fera un jour plus tard
@@ -1224,6 +1229,19 @@ class WDGROIDeclaration {
 				$buffer += $adjustment_item->amount;
 			}
 		}
+		return $buffer;
+	}
+
+	public function get_adjustments_amount_as_turnover() {
+		$buffer = 0;
+		$this->get_adjustments(); // Initialisation de la liste
+		if ( !empty( $this->adjustments ) ) {
+			foreach ( $this->adjustments as $adjustment_item ) {
+				$buffer += $adjustment_item->amount;
+			}
+		}
+		$campaign_object = $this->get_campaign_object();
+		$buffer *= 100 / $campaign_object->roi_percent();
 		return $buffer;
 	}
 	

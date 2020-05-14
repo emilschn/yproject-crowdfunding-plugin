@@ -12,6 +12,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 	private $campaign_id;
 	private $user_id;
 	private $context;
+	private $context_amount;
 	
 	public function __construct( $campaign_id, $user_id, $context = 'investment' ) {
 		parent::__construct( self::$name );
@@ -98,8 +99,12 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 		);
 		
 	}
+
+	public function setContextAmount( $context_investment_amount ) {
+		$this->context_amount = $context_investment_amount;
+	}
 	
-	public function postForm( $context_investment_amount ) {
+	public function postForm() {
 		parent::postForm();
 		
 		$campaign = new ATCF_Campaign( $this->campaign_id );
@@ -155,7 +160,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 			);
 			
 			$poll_source_answers_str = json_encode( $poll_source_answers );
-			WDGWPREST_Entity_PollAnswer::create( self::$poll_source_slug, self::$poll_source_version, $poll_source_answers_str, $this->context, $context_investment_amount, $project_id, $user_id, $user_age, $user_postal_code, $user_gender, $user_email );
+			WDGWPREST_Entity_PollAnswer::create( self::$poll_source_slug, self::$poll_source_version, $poll_source_answers_str, $this->context, $this->context_amount, $project_id, $user_id, $user_age, $user_postal_code, $user_gender, $user_email );
 		}
 		
 		return !$this->hasErrors();

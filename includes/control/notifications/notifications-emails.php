@@ -334,7 +334,7 @@ class NotificationsEmails {
 	
     public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
-		$admin_email = 'admin@wedogood.co';
+		$admin_email = 'support@wedogood.co';
 		$object = 'Erreur investissement';
 		$body_content = "Tentative d'investissement avec erreur :<br />";
 		$body_content .= "Login : " .$user_data->user_login. "<br />";
@@ -574,7 +574,9 @@ class NotificationsEmails {
 		$body_content .= 'Pour y répondre, suivez ce lien : <a href="'.get_permalink( $comment_object->comment_post_ID ).'">'.$campaign->data->post_title.'</a>.';
 
 		$user = get_userdata( $campaign->data->post_author );
-		$emails = $user->user_email;
+		$organization = $campaign->get_organization();
+		$wdgorganization = new WDGOrganization( $organization->id, $organization );
+		$emails = $user->user_email . ',' . $wdgorganization->get_email();
 		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
 		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
