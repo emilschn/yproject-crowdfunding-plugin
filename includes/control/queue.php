@@ -1069,7 +1069,11 @@ class WDGQueue {
 		if ( !empty( $declaration_id ) ) {
 
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$result = $roi_declaration->transfer_pending_rois();
+			$result = 100;
+			// Contrôle au cas où il y ait eu un plantage précédent
+			if ( $roi_declaration->status != WDGROIDeclaration::$status_finished ) {
+				$result = $roi_declaration->transfer_pending_rois();
+			}
 			if ( $result == 100 ) {
 				$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 				$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
