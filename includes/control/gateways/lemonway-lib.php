@@ -62,7 +62,11 @@ class LemonwayLib {
 		}
 		
 		global $lemonway_lib;
-		ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $params : ' .print_r($params, true));
+		if ( $method_name == 'UploadFile' ) {
+			ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $params[wallet] : ' .$params['wallet']. ' ; $params[fileName] : ' .$params['fileName']);
+		} else {
+			ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $params : ' .print_r($params, true));
+		}
 		
 		//Récupération de tous les paramètres à envoyer
 		$lw_params = $lemonway_lib->params;
