@@ -54,7 +54,14 @@ class WDGWPRESTLib {
 					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[response] : ' . print_r( $result['response'], TRUE ) );
 				}
 				if ( !is_wp_error($result) && isset( $result['body'] ) ) {
-					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[body] : ' . print_r( $result['body'], TRUE ) );
+					$traced_body = json_decode( $result["body"] );
+					if ( isset( $traced_body->bank_iban ) ) {
+						$traced_body->bank_iban = 'UNTRACKED';
+					}
+					if ( isset( $traced_body->bank_bic ) ) {
+						$traced_body->bank_bic = 'UNTRACKED';
+					}
+					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $body result : ' . json_encode( $traced_body ) );
 				}
 				
 				$result_save = serialize( $result );
@@ -87,7 +94,14 @@ class WDGWPRESTLib {
  * Appels génériques en POST
  ******************************************************************************/
 	private static function call_post( $route, $parameters ) {
-		ypcf_debug_log( 'WDGWPRESTLib::call_post -- $route : ' . $route . ' --- ' . print_r( $parameters, TRUE ) );
+		$traced_parameters = $parameters;
+		if ( isset( $traced_parameters[ 'bank_iban' ] ) ) {
+			$traced_parameters[ 'bank_iban' ] = 'UNTRACKED';
+		}
+		if ( isset( $traced_parameters[ 'bank_bic' ] ) ) {
+			$traced_parameters[ 'bank_bic' ] = 'UNTRACKED';
+		}
+		ypcf_debug_log( 'WDGWPRESTLib::call_post -- $route : ' . $route . ' --- ' . print_r( $traced_parameters, TRUE ) );
 		
 		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
 		$result = wp_remote_post( 
@@ -99,7 +113,7 @@ class WDGWPRESTLib {
 			) 
 		);
 		
-		ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $buffer : ' . print_r( $result, TRUE ) );
+		ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result["response"], TRUE ) );
 		
 		
 		if ( isset( self::$cache_by_route[ $route ] ) ) {
