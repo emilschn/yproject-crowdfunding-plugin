@@ -175,6 +175,75 @@ class WDGUser {
 	}
 	
 /*******************************************************************************
+ * Destruction
+*******************************************************************************/
+	/**
+	 * "Supprime" cet utilisateur
+	 */
+	public function delete() {
+		//Si possible de supprimer, transformer en __deleted202001011212 les données importantes dans l'API et dans le site
+		//Préparer une chaîne, qu'on appelle “deleted”, sous cette forme, pour conserver la date exacte de suppression : __deletedAAAAMMJJHHMM
+		$deleted_string = '__deleted'.date("YmdHi");
+		$id_user = $this->get_wpref();
+		$email_user = $this->get_email(); 
+
+		/* Aller dans la table wpwdg_users
+			Dans le champ user_activation_key, stocker l'user_email et le display name, juste au cas où, sous cette forme user_email;display_name
+			Remplacer user_login, user_pass, user_nicename, user_email, display_name par la chaine “deleted” créée ci-dessus*/
+		
+		global $wpdb;
+		$table_name = $wpdb->prefix . "users";
+
+		$wpdb->update( 
+			$table_name, 
+			array( 
+				'user_login' => $deleted_string,
+				'user_pass' => $deleted_string,
+				'user_nicename' => $deleted_string,
+				'user_email' => $deleted_string,
+				'display_name' => $deleted_string,
+				'user_activation_key' => $this->get_email().';'.$this->get_display_name()
+			),
+			array(
+				'ID' => $this->get_wpref()
+			)
+		);
+		
+		/* Aller dans la table wpwdg_usermeta
+			Faire une recherche par user_id, avec l'ID noté ci-dessus
+			Supprimer toutes les meta sauf les 3 suivantes id_api, lemonway_id, lemonway_status*/
+		$metas = get_user_meta( $this->get_wpref() );		
+		foreach ( $metas as $key => $value ) {
+			if ($key != 'id_api' && $key != 'lemonway_id' && $key != 'lemonway_status' ) {
+				delete_user_meta( $this->get_wpref(), $key );
+			} elseif ($key == 'lemonway_id') {
+				// on mémorise l'id lemonway de l'utilisateur pour envoyer un mail au support de lemonway
+				$lemonway_id = $value;
+			}			
+		}
+
+		/*Aller dans la table wdgrestapi1524_entity_user
+			Chercher l'utilisateur en mettant par wpref avec l'ID noté ci-dessus
+			Remplacer les champs email, username par la chaine “deleted”créée ci-dessus
+			Vider les informations de tous les autres champs SAUF id, wpref, signup_date, client_user_id, authentification_mode
+		*/
+		// on recharge l'utilisateur avec les données wordpress qu'on vient de modifier
+		$WDGUserReload = new WDGUser( $this->get_wpref(), FALSE );
+		$WDGUserReload->set_login($deleted_string);
+		$WDGUserReload->set_email($deleted_string);
+		// on met à jour les données de l'API
+		WDGWPREST_Entity_User::update( $WDGUserReload );
+		
+		// on supprime les fichiers Kyc s'il y en a
+		$this->delete_all_documents();
+
+		if ( $lemonway_id ){
+			// on envoie un mail à admin@wedogood.co pour informer de la suppression de l'utilisateur
+			NotificationsEmails::send_wedogood_delete_order( $email_user );
+		}
+	}
+
+/*******************************************************************************
  * Identification
 *******************************************************************************/
 	/**
