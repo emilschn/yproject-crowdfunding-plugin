@@ -4,9 +4,17 @@ class WDG_Form {
 	private $formID;
 	protected $fields;
 	private $errors;
+	private $nonce;
+	private $create_nonce;
+	private $hidden_field_nonce;
 	
-	public function __construct( $formid ) {
+	public function __construct( $formid, $create_nonce = FALSE ) {
 		$this->formID = $formid;
+		$this->create_nonce = $create_nonce;
+		if ($this->create_nonce) {
+			$this->hidden_field_nonce = 'hidden_field_nonce';
+			$this->nonce = wp_nonce_field( $this->formID, $this->hidden_field_nonce, true, true );
+		}		
 	}
 	
 	public function getFormID() {
@@ -97,6 +105,11 @@ class WDG_Form {
 		$input_action = $this->getInputText( 'action' );
 		return ( !empty( $input_action ) && $input_action == $this->formID );
 	}
+
+	public function getNonce() {
+
+		return $this->nonce;
+	}
 	
 	/**
 	 * Vérifications standardes sur les champs
@@ -104,6 +117,17 @@ class WDG_Form {
 	protected function postForm() {
 		$this->errors = array();
 		
+		if ($this->create_nonce) {
+			if ( ! wp_verify_nonce( $_POST[$this->hidden_field_nonce], $this->formID ) ) {
+				 // traitement à effectuer si le nonce n'est pas valide
+				 $this->addPostError(
+					 'nonce-not-valid',
+					 __( "Cette action n'est pas autoris&eacute;e.", 'yproject' ),
+					 'general'
+				 );
+			}
+		}	
+
 		$nb_fields = count( $this->fields );
 		for( $i = 0; $i < $nb_fields; $i++ ) {
 			$this_field = $this->fields[ $i ];
