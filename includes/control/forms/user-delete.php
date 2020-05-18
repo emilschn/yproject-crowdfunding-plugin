@@ -61,7 +61,7 @@ class WDG_Form_User_Delete extends WDG_Form {
 			if ( !empty( $campaigns_voted ) ) {
 				$error = array(
 					'code'		=> 'campaigns_voted',
-					'text'		=> __( "L'utilisateur a vot&eacute; sur des projets", 'yproject' ),
+					'text'		=> __( "L'utilisateur a vot&eacute; sur des projets en cours", 'yproject' ),
 					'element'	=> 'campaigns_voted'
 				);
 				array_push( $feedback_errors, $error );

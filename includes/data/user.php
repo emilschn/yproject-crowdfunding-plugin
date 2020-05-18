@@ -800,9 +800,8 @@ class WDGUser {
 		$buffer = array();		
 		$campaigns_voted = $this->get_campaigns_voted();
 		foreach ( $campaigns_voted as $campaign_item ) {
-			$campaign = new ATCF_Campaign( $campaign_item->campaign_id );
-			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote) {
-				$buffer[] = $campaign;
+			if ( $campaign_item['status'] == ATCF_Campaign::$campaign_status_collecte || $campaign_item['status'] == ATCF_Campaign::$campaign_status_vote) {
+				$buffer[] = $campaign_item;
 			}
 		}
 		return $buffer;
