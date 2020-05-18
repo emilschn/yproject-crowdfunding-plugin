@@ -113,7 +113,11 @@ class WDGWPRESTLib {
 			) 
 		);
 		
-		ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result["response"], TRUE ) );
+		if ( !is_wp_error( $result ) && isset( $result["response"] ) ) {
+			ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result["response"], TRUE ) );
+		} else {
+			ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result, TRUE ) );
+		}
 		
 		
 		if ( isset( self::$cache_by_route[ $route ] ) ) {
