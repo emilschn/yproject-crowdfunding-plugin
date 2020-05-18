@@ -822,7 +822,7 @@ class WDGUser {
 					'campaign_name'	=> $project_post->post_title,
 					'campaign_id'	=> $project_post->ID,
 					'vote_amount'	=> $amount_voted,
-					'status'		=> ATCF_Campaign::$campaign_status_collecte
+					'status'		=> get_post_meta( $project_post->ID, 'campaign_vote', TRUE )
 				);
 				array_push( $buffer, $intention_item );
 			}
