@@ -20,6 +20,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
 
+		WDGAjaxActions::add_action( 'temp_init_transactions' );
+
 		WDGAjaxActions::add_action( 'try_user_login' );
 		WDGAjaxActions::add_action( 'try_user_register' );
 		WDGAjaxActions::add_action( 'create_project_form' );
@@ -86,9 +88,16 @@ class WDGAjaxActions {
 		add_action('wp_ajax_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
 		add_action('wp_ajax_nopriv_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
 	}
+
+	public static function temp_init_transactions() {
+		$userid = filter_input( INPUT_POST, 'user_id' );
+		$WDGUser = new WDGUser( $userid );
+		$transactions = $WDGUser->get_transactions();
+		exit( json_encode( $transactions ) );
+
+	}
 	
 	public static function create_project_form() {
-		ypcf_debug_log( 'ajax.php :: create_project_form  '.filter_input( INPUT_POST, 'firstname' ));
 		$result = WDGPostActions::create_project_form();
 		exit( json_encode( $result ) );
 	}
