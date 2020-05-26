@@ -46,7 +46,7 @@ class WDGEmails {
 					NotificationsAPI::confirm_investment_invest2days_no_intention( $recipient_email, $recipient_name, $project_name, $project_url, $input_testimony, $input_image_url, $input_image_description, $project_nb_remaining_days, $project_date_hour_end, $project_api_id );
 					break;
 			}
-			return;
+			return true;
 		}
 
 		$user_list_by_id = array();
@@ -200,6 +200,7 @@ class WDGEmails {
 		if ( count( $user_already_sent_to ) < count( $user_list_by_id ) ) {
 			WDGQueue::add_campaign_notifications( $campaign_id, $mail_type, $input_testimony_in, $input_image_url, $input_image_description, $user_already_sent_to );
 		}
+		return true;
 	}
 
 	public static function end_notifications( $campaign_id, $mail_type, $input_send_option ) {
@@ -229,7 +230,7 @@ class WDGEmails {
 					NotificationsAPI::campaign_end_failure( $recipient_email, $recipient_name, $project_name, $project_api_id );
 					break;
 			}
-			return;
+			return true;
 		}
 
 		
@@ -269,6 +270,7 @@ class WDGEmails {
 				}
 			}
 		}
+		return true;
 	}
 	
 }

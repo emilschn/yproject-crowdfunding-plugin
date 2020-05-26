@@ -784,7 +784,7 @@ class WDGPostActions {
 		die();
 	}
 	
-	public static function send_project_notifications() {
+	public static function send_project_notifications( $skip_redirect = false ) {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$mail_type = filter_input( INPUT_POST, 'mail_type' );
 		$input_testimony = filter_input( INPUT_POST, 'testimony' );
@@ -792,31 +792,43 @@ class WDGPostActions {
 		$input_image_description = filter_input( INPUT_POST, 'image_description' );
 		$input_send_option = filter_input( INPUT_POST, 'send_option' );
 		
+		$result = false;
 		if ( !empty( $campaign_id ) && !empty( $input_testimony ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
-			WDGEmails::auto_notifications(
+			$result = WDGEmails::auto_notifications(
 				$campaign_id, $mail_type, $input_testimony, $input_image_url, $input_image_description, $input_send_option
 			);
 		}
 		
-		$url_return = wp_get_referer() . "#contacts";
-		wp_redirect( $url_return );
-		die();
+		if ( !$skip_redirect ) {
+			$url_return = wp_get_referer() . "#contacts";
+			wp_redirect( $url_return );
+			die();
+
+		} else {
+			return $result;
+		}
 	}
 	
-	public static function send_project_notifications_end() {
+	public static function send_project_notifications_end( $skip_redirect = false ) {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$mail_type = filter_input( INPUT_POST, 'mail_type' );
 		$input_send_option = filter_input( INPUT_POST, 'send_option' );
 		
+		$result = false;
 		if ( !empty( $campaign_id ) && !empty( $mail_type ) ) {
-			WDGEmails::end_notifications(
+			$result = WDGEmails::end_notifications(
 				$campaign_id, $mail_type, $input_send_option
 			);
 		}
 		
-		$url_return = wp_get_referer() . "#contacts";
-		wp_redirect( $url_return );
-		die();
+		if ( !$skip_redirect ) {
+			$url_return = wp_get_referer() . "#contacts";
+			wp_redirect( $url_return );
+			die();
+
+		} else {
+			return $result;
+		}
 	}
 	
 	public static function cancel_token_investment() {

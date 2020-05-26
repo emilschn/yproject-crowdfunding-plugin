@@ -66,7 +66,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('try_lock_project_edition');
 		WDGAjaxActions::add_action('keep_lock_project_edition');
 		WDGAjaxActions::add_action('delete_lock_project_edition');
-
+		WDGAjaxActions::add_action( 'send_test_notifications' );
 	}
 	
 	/**
@@ -2988,6 +2988,21 @@ class WDGAjaxActions {
 		echo $property ;
 		wp_die();
 
+		exit();
+	}
+
+	public static function send_test_notifications() {
+		$notif_type = filter_input( INPUT_POST, 'notif_type' );
+		
+		$result = false;
+		if ( $notif_type == 'send_project_notifications' ) {
+			$result = WDGPostActions::send_project_notifications( true );
+		}
+		if ( $notif_type == 'send_project_notifications_end' ) {
+			$result = WDGPostActions::send_project_notifications_end( true );
+		}
+		
+		echo $result ? '1' : '0';
 		exit();
 	}
 }
