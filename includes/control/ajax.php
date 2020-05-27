@@ -67,6 +67,14 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('keep_lock_project_edition');
 		WDGAjaxActions::add_action('delete_lock_project_edition');
 		WDGAjaxActions::add_action( 'send_test_notifications' );
+
+		// Prospect setup - interface prospect
+		WDGAjaxActions::add_action( 'prospect_setup_save' );
+		WDGAjaxActions::add_action( 'prospect_setup_save_files' );
+		WDGAjaxActions::add_action( 'prospect_setup_get_by_guid' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_finished' );
 	}
 	
 	/**
@@ -3003,6 +3011,243 @@ class WDGAjaxActions {
 		}
 		
 		echo $result ? '1' : '0';
+		exit();
+	}
+
+	public static function prospect_setup_save() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$id_user = filter_input( INPUT_POST, 'id_user' );
+		$email = filter_input( INPUT_POST, 'email' );
+		$status = filter_input( INPUT_POST, 'status' );
+		$step = filter_input( INPUT_POST, 'step' );
+		$authorization = filter_input( INPUT_POST, 'authorization' );
+		$metadata = filter_input( INPUT_POST, 'metadata' );
+
+		$return = array();
+		$return[ 'guid' ] = $guid;
+		if ( empty( $id_user ) ) {
+			$id_user = 0;
+		}
+		$return[ 'id_user' ] = $id_user;
+		$return[ 'save_status' ] = 'failed';
+
+		if ( empty( $guid ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::create( $id_user, $email, $status, $step, $authorization, $metadata );
+			$return[ 'trace_create' ] = print_r($api_result, true);
+
+		} else {
+			$api_result = WDGWPREST_Entity_Project_Draft::update( $guid, $id_user, $email, $status, $step, $authorization, $metadata );
+			$return[ 'trace_update' ] = print_r($api_result, true);
+		}
+
+		if ( !empty( $api_result ) ) {
+			$return[ 'guid' ] = $api_result->guid;
+			$return[ 'id_user' ] = $api_result->id_user;
+			$return[ 'save_status' ] = 'saved';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_save_files() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'data' ] = FALSE;
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+
+		$api_result = FALSE;
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			$return[ 'data' ] = print_r($api_result,true);
+		}
+
+		if ( !empty( $api_result ) ) {
+			$i = 0;
+			while ( isset( $_FILES[ 'file' . $i ] ) ) {
+				$file_name = $_FILES[ 'file' . $i ][ 'name' ];
+				$file_name_exploded = explode( '.', $file_name );
+				$ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
+				$byte_array = file_get_contents( $_FILES[ 'file' . $i ][ 'tmp_name' ] );
+				$file_create_item = WDGWPREST_Entity_File::create( $api_result->id, 'project-draft', 'business', $ext, base64_encode( $byte_array ) );
+				$i++;
+			}
+		}
+
+		if ( !empty( $api_result ) ) {
+			$return[ 'guid' ] = $api_result->guid;
+			$return[ 'save_status' ] = 'saved';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_get_by_guid() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'data' ] = FALSE;
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+
+		$api_result = FALSE;
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+		}
+
+		if ( !empty( $api_result ) ) {
+			$return[ 'data' ] = $api_result;
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_user_project_drafts() {
+		$email = filter_input( INPUT_POST, 'email' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+		$return[ 'email_sent' ] = '0';
+
+		if ( empty( $email ) ) {
+			$return[ 'error_str' ] = 'empty_email';
+		}
+		if ( !is_email( $email ) ) {
+			$return[ 'error_str' ] = 'incorrect_email';
+		}
+
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get_list_by_email( $email );
+
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$recipient_name = '';
+				$project_list = '<ul>';
+				foreach ( $api_result as $project_draft_item ) {
+					$metadata_decoded = json_decode( $project_draft_item->metadata );
+					if ( !empty( $metadata_decoded->user->name ) ) {
+						$recipient_name = $metadata_decoded->user->name;
+					}
+					$project_name = 'Mon projet';
+					if ( !empty( $metadata_decoded->organization->name ) ) {
+						$project_name = $metadata_decoded->organization->name;
+					}
+					$project_list .= '<li><a href="' . home_url( '/financement/eligibilite/?guid=' . $project_draft_item->guid ) . '">' .$project_name. '</a></li>';
+				}
+				$project_list .= '</ul>';
+				if ( NotificationsAPI::prospect_setup_draft_list( $email, $recipient_name, $project_list ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_user_draft_started() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				$draft_url = home_url( '/financement/eligibilite/?guid=' . $api_result->guid );
+				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $draft_url ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_user_draft_finished() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				$draft_url = home_url( '/financement/eligibilite/?guid=' . $api_result->guid );
+				$amount_needed = $metadata_decoded->project->amountNeeded * 1000;
+				$royalties_percent = $metadata_decoded->project->royaltiesAmount;
+				$formula = '';
+				switch ( $metadata_decoded->project->circlesToCommunicate ) {
+					case 'lovemoney':
+						$formula = 'Formule Love Money';
+						break;
+					case 'private':
+						$formula = 'Formule Réseau privé';
+						break;
+					case 'crowdfunding':
+						$formula = 'Formule Crowdfunding';
+						break;
+				}
+				$options = '';
+				if ( $metadata_decoded->project->needCommunicationAdvice ) {
+					$options = 'Accompagnement Intégral';
+
+				} elseif ( $metadata_decoded->project->circlesToCommunicate != 'lovemoney' && !$metadata_decoded->project->alreadydonecrowdfunding ) {
+					$options = 'Accompagnement Intégral';
+
+				} else {
+					$options = 'Accompagnement Essentiel';
+				}
+
+				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $amount_needed, $royalties_percent, $formula, $options ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+
+		echo json_encode( $return );
 		exit();
 	}
 }

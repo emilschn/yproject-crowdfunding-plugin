@@ -17,35 +17,29 @@ class WDGWPREST_Entity_Project_Draft {
 			return FALSE;
 		}
 		return WDGWPRESTLib::call_get_wdg( 'project-draft/' .$guid );
-	}	
-	
+	}
+		
 	/**
-	 * Crée un brouillon de projet sur l'API
-	 * @param WDGUser $user
-	 * @param String $status
-	 * @param String $step
-	 * @param String $authorization
-	 * @param String $metadata
+	 * Retourne la liste de brouillons de projets créés par un e-mail
+	 * @param string $email
 	 * @return object
 	 */
-	public static function create( WDGUser $user, $status, $step, $authorization, $metadata ) {
-		if ( $user->get_wpref() == '' ) {
+	public static function get_list_by_email( $email ) {
+		if ( empty( $email ) ) {
 			return FALSE;
 		}
-		
-		$parameters = array(
-			'guid'				=> wp_generate_uuid4(),
-			'id_user'			=> $user->get_wpref(),
-			'email'				=> $user->get_email(),
-			'status'			=> $status,
-			'step'				=> $step,
-			'authorization'		=> $authorization,
-			'metadata'			=> $metadata,
-		);
-		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'project-draft', $parameters );
-		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
-		return $result_obj;
+		return WDGWPRESTLib::call_get_wdg( 'project-drafts/' .$email );
+	}
+
+	/**
+	 * Retourne les brouillons de projet associés à un e-mail
+	 */
+	public static function get_by_user_email( $user_email ) {
+		ypcf_debug_log( 'get_by_user_email > user_email : ' . $user_email, false );
+		if ( empty( $user_email ) ) {
+			return FALSE;
+		}
+		return WDGWPRESTLib::call_get_wdg( 'project-drafts/' .$user_email );
 	}
 
 	/**
@@ -58,39 +52,70 @@ class WDGWPREST_Entity_Project_Draft {
 	 * @param String $metadata
 	 * @return array
 	 */
-	public static function set_post_parameters( WDGUser $user, $guid, $status, $step, $authorization, $metadata ) {		
+	public static function set_post_parameters( $guid, $user_id, $user_email, $status, $step, $authorization, $metadata ) {
+		if ( empty( $guid ) ) {
+			$guid = wp_generate_uuid4();
+		}
+		if ( !empty( $user_email ) && empty( $user_id ) ) {
+			$wp_user = get_user_by( 'email', $user_email );
+			$WDGUser = new WDGUser( $wp_user->ID );
+			$user_id = $WDGUser->get_api_id();
+		}
+
 		$parameters = array(
 			'guid'				=> $guid,
-			'id_user'			=> $user->get_wpref(),
-			'email'				=> $user->get_email(),
+			'id_user'			=> $user_id,
+			'email'				=> $user_email,
 			'status'			=> $status,
 			'step'				=> $step,
 			'authorization'		=> $authorization,
-			'metadata'			=> $metadata,
+			'metadata'			=> $metadata
 		);
 		return $parameters;
 	}
 	
 	/**
-	 * Mise à jour du brouillon de projet à partir d'un guid
+	 * Crée un brouillon de projet sur l'API
 	 * @param WDGUser $user
-	 * @param String $guid
 	 * @param String $status
 	 * @param String $step
 	 * @param String $authorization
 	 * @param String $metadata
 	 * @return object
 	 */
-	public static function update( WDGUser $user, $guid, $status, $step, $authorization, $metadata ) {
-		$buffer = FALSE;
-		
-		if ( !empty( $guid ) ) {
-			$parameters = WDGWPREST_Entity_Project_Draft::set_post_parameters($user, $guid, $status, $step, $authorization, $metadata );
-
-			$buffer = WDGWPRESTLib::call_post_wdg( 'project-draft/' . $guid, $parameters );
-			WDGWPRESTLib::unset_cache( 'wdg/v1/project-draft/' .$guid);
-			if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
+	public static function create( $user_id, $user_email, $status, $step, $authorization, $metadata ) {
+		if ( empty( $user_email ) ) {
+			return FALSE;
 		}
+
+		$parameters = WDGWPREST_Entity_Project_Draft::set_post_parameters( FALSE, $user_id, $user_email, $status, $step, $authorization, $metadata );
+		$buffer = WDGWPRESTLib::call_post_wdg( 'project-draft', $parameters );
+		if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
+
+		return $buffer;
+	}
+	
+	/**
+	 * Mise à jour du brouillon de projet à partir d'un guid
+	 * @param String $guid
+	 * @param String $user_id
+	 * @param String $user_email
+	 * @param String $status
+	 * @param String $step
+	 * @param String $authorization
+	 * @param String $metadata
+	 * @return object
+	 */
+	public static function update( $guid, $user_id, $user_email, $status, $step, $authorization, $metadata ) {
+		if ( empty( $guid ) || empty( $user_email ) ) {
+			return FALSE;
+		}
+
+		$parameters = WDGWPREST_Entity_Project_Draft::set_post_parameters( $guid, $user_id, $user_email, $status, $step, $authorization, $metadata );
+		$buffer = WDGWPRESTLib::call_post_wdg( 'project-draft/' . $guid, $parameters );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project-draft/' . $guid );
+		if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
+			
 		return $buffer;
 	}
 
