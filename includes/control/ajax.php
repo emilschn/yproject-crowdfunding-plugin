@@ -383,7 +383,8 @@ class WDGAjaxActions {
 						$investment_item[ 'status_str' ] = __( "Valid&eacute;", 'yproject' );
 						
 					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
-						$investment_item[ 'status_str' ] = __( "Termin&eacute;", 'yproject' );
+						$investment_item[ 'status' ] = 'canceled';
+						$investment_item[ 'status_str' ] = __( "Versements termin&eacute;s", 'yproject' );
 						
 					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive ) {
 						$investment_item[ 'status_str' ] = __( "Annul&eacute;", 'yproject' );
