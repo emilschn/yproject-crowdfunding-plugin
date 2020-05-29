@@ -470,8 +470,8 @@ class WDGAjaxActions {
 					$estimated_turnover_list = $campaign->estimated_turnover();
 					$campaign_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 				}
+
 				if ( !empty( $estimated_turnover_list ) ){
-					
 					// On démarre de la date de démarrage du contrat
 					$contract_start_date = new DateTime( $campaign->contract_start_date() );
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
@@ -502,7 +502,6 @@ class WDGAjaxActions {
 						$temp_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), $contract_start_date->format( 'd' ) );
 						array_push( $year_end_dates, $temp_date );
 					}
-					
 				}
 				
 				
@@ -571,10 +570,14 @@ class WDGAjaxActions {
 						}
 						
 						if ( $roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract ) || $first_investment_contract->status != 'canceled' ) {
+							$has_found_roi = false;
+
 							// Si il y a eu un versement de royalties, on récupère les infos du versement
 							if ( $roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
 								foreach ( $roi_list as $roi ) {
 									if ( $roi->id_declaration == $roi_declaration->id && $roi->status != WDGROI::$status_canceled ) {
+										$has_found_roi = true;
+
 										$turnover_list = $roi_declaration->get_turnover();
 										foreach ( $turnover_list as $turnover_item ) {
 											$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $turnover_item;
@@ -598,16 +601,23 @@ class WDGAjaxActions {
 								}
 							}
 							
-							if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_closed || $roi_declaration->status == WDGROIDeclaration::$status_finished || $roi_declaration->status == WDGROIDeclaration::$status_failed ) {
-								array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
+
+							// Ne pas afficher si il n'y a pas eu de versement pour cet utilisateur et que son contrat est annulé
+							$add_roi = true;
+							if ( $investment_item[ 'status' ] == 'canceled' && !$has_found_roi ) {
+								$add_roi = false;
 							}
+
+							if ( $add_roi ) {
+								array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
 						
-							// A optimiser : ne pas trier à chaque fois qu'on ajoute, mais plutôt à la fin...
-							usort( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
-								$item1_date = new DateTime( $item1[ 'date_db' ] );
-								$item2_date = new DateTime( $item2[ 'date_db' ] );
-								return ( $item1_date > $item2_date );
-							} );
+								// A optimiser : ne pas trier à chaque fois qu'on ajoute, mais plutôt à la fin...
+								usort( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
+									$item1_date = new DateTime( $item1[ 'date_db' ] );
+									$item2_date = new DateTime( $item2[ 'date_db' ] );
+									return ( $item1_date > $item2_date );
+								} );
+							}
 						}
 					}
 				}
