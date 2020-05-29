@@ -382,6 +382,9 @@ class WDGAjaxActions {
 					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 						$investment_item[ 'status_str' ] = __( "Valid&eacute;", 'yproject' );
 						
+					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_closed ) {
+						$investment_item[ 'status_str' ] = __( "Termin&eacute;", 'yproject' );
+						
 					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_archive ) {
 						$investment_item[ 'status_str' ] = __( "Annul&eacute;", 'yproject' );
 						$date_end = new DateTime( $campaign->end_date() );
@@ -580,7 +583,6 @@ class WDGAjaxActions {
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
 										
-										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
@@ -595,7 +597,9 @@ class WDGAjaxActions {
 								}
 							}
 							
-							array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
+							if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_closed || $roi_declaration->status == WDGROIDeclaration::$status_finished || $roi_declaration->status == WDGROIDeclaration::$status_failed ) {
+								array_push( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $roi_item );
+							}
 						
 							// A optimiser : ne pas trier à chaque fois qu'on ajoute, mais plutôt à la fin...
 							usort( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
