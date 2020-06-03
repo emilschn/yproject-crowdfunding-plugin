@@ -1017,6 +1017,11 @@ class WDGAjaxActions {
 			$campaign->__set( ATCF_Campaign::$key_maximum_complete_message, $new_maximum_complete_message );
 			$success[ "new_maximum_complete_message" ] = 1;
 		}
+		$new_google_tag_manager_id = filter_input( INPUT_POST, 'new_google_tag_manager_id' );
+		if ( !empty( $new_google_tag_manager_id ) ) {
+			$campaign->__set( ATCF_Campaign::$key_google_tag_manager_id, $new_google_tag_manager_id );
+			$success[ "new_google_tag_manager_id" ] = 1;
+		}
 		$new_custom_footer_code = filter_input( INPUT_POST, 'new_custom_footer_code' );
 		if ( !empty( $new_custom_footer_code ) ) {
 			$campaign->__set( ATCF_Campaign::$key_custom_footer_code, $new_custom_footer_code );
