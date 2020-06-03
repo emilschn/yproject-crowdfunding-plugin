@@ -100,9 +100,88 @@ class WDGAjaxActions {
 	public static function temp_init_transactions() {
 		$userid = filter_input( INPUT_POST, 'user_id' );
 		$WDGUser = new WDGUser( $userid );
+		$WDGUser_api_id = $WDGUser->get_api_id();
 		$transactions = $WDGUser->get_transactions();
-		exit( json_encode( $transactions ) );
 
+		$html_table = 'Aucune transaction';
+		if ( !empty( $transactions ) ) {
+			$html_table = '<table>';
+
+			$html_table .= '<thead>';
+			$html_table .= '<tr>';
+			$html_table .= '<td>' .__( "Date", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( "De", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( "A", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( "Objet", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( "Montant", 'yproject' ). '</td>';
+			$html_table .= '</tr>';
+			$html_table .= '</thead>';
+
+			foreach ( $transactions as $transaction_item ) {
+				$current_user_is_receiving = ( $WDGUser_api_id == $transaction_item->recipient_id );
+
+				$datetime = new DateTime( $transaction_item->datetime );
+				$from = '';
+				$to = '';
+				$object = '';
+
+				// Affichage des investissements
+				if ( $transaction_item->wedogood_entity == 'investment' ) {
+					if ( !empty( $transaction_item->gateway_transaction_id ) ) {
+						$from = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					} else {
+						$from = __( "Compte bancaire", 'yproject' );
+					}
+					$to = 'ID ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')';
+					$object = __( "Investissement", 'yproject' );
+
+				// Affichage des versements de royalties
+				} else if ( $transaction_item->wedogood_entity == 'roi' ) {
+					$from = 'ID ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')';
+					if ( $transaction_item->gateway_name == 'lemonway' ) {
+						$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					} else {
+						$to = __( "Compte bancaire", 'yproject' );
+					}
+					$object = __( "Versement de royalties", 'yproject' );
+
+				// Affichage des rechargements de compte bancaire
+				} else if ( $transaction_item->type == 'moneyin' ) {
+					$from = __( "Compte bancaire", 'yproject' );
+					$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					$object = __( "Rechargement porte-monnaie", 'yproject' );
+
+				// Transfert vers le wallet de l'utilisateur
+				} else if ( $current_user_is_receiving ) {
+					$from = 'ID ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')';
+					$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					$object = __( "Cr&eacute;dit ind&eacute;fini", 'yproject' );
+
+				} else {
+					$from = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					$to = 'ID ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')';;
+					$object = __( "D&eacute;bit ind&eacute;fini", 'yproject' );
+				}
+
+				$td_class = 'positive';
+				$amount_in_euros = $transaction_item->amount_in_cents / 100;
+				if ( !$current_user_is_receiving ) {
+					$amount_in_euros *= -1;
+					$td_class = 'negative';
+				}
+
+				$html_table .= '<tr>';
+				$html_table .= '<td>' .$datetime->format( 'd/m/Y' ). '</td>';
+				$html_table .= '<td>' .$from. '</td>';
+				$html_table .= '<td>' .$to. '</td>';
+				$html_table .= '<td>' .$object. '</td>';
+				$html_table .= '<td class="' .$td_class. '">' .UIHelpers::format_number( $amount_in_euros ). ' &euro;</td>';
+				$html_table .= '</tr>';
+			}
+			$html_table .= '</table>';
+		}
+
+		exit( $html_table );
 	}
 	
 	public static function create_project_form() {
