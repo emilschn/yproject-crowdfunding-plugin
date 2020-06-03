@@ -1660,7 +1660,7 @@ class WDGUser {
 				
 			} elseif ( !empty( $this->wp_user->ID ) ) {
 				$db_lw_id = 'USERW'.$this->wp_user->ID;
-				if ( defined( YP_LW_USERID_PREFIX ) ) {
+				if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 				}
 			}

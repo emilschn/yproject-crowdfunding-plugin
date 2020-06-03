@@ -308,7 +308,7 @@ class WDGOrganization {
 				
 			} else {
 				$db_lw_id = 'ORGA'.$this->api_id.'W'.$this->wpref;
-				if ( defined( YP_LW_USERID_PREFIX ) ) {
+				if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 				}
 			}
@@ -322,7 +322,7 @@ class WDGOrganization {
 		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_campaign_id', true );
 		if ( empty( $db_lw_id ) ) {
 			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'CAMPAIGN';
-			if ( defined( YP_LW_USERID_PREFIX ) ) {
+			if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 			}
 			
@@ -341,7 +341,7 @@ class WDGOrganization {
 		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_royalties_id', true );
 		if ( empty( $db_lw_id ) ) {
 			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'ROYALTIES';
-			if ( defined( YP_LW_USERID_PREFIX ) ) {
+			if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 			}
 			
@@ -360,7 +360,7 @@ class WDGOrganization {
 		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_tax_id', true );
 		if ( empty( $db_lw_id ) ) {
 			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'TAX';
-			if ( defined( YP_LW_USERID_PREFIX ) ) {
+			if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 			}
 			
