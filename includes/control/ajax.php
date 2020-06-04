@@ -171,7 +171,7 @@ class WDGAjaxActions {
 				}
 
 				$html_table .= '<tr>';
-				$html_table .= '<td>' .$datetime->format( 'd/m/Y' ). '</td>';
+				$html_table .= '<td data-order="' .$datetime->format( 'Ymd' ). '">' .$datetime->format( 'd/m/Y' ). '</td>';
 				$html_table .= '<td>' .$from. '</td>';
 				$html_table .= '<td>' .$to. '</td>';
 				$html_table .= '<td>' .$object. '</td>';
