@@ -105,7 +105,7 @@ class WDGAjaxActions {
 
 		$html_table = 'Aucune transaction';
 		if ( !empty( $transactions ) ) {
-			$html_table = '<table>';
+			$html_table = '<table class="user-transactions">';
 
 			$html_table .= '<thead>';
 			$html_table .= '<tr>';
