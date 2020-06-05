@@ -98,6 +98,7 @@ class WDGAjaxActions {
 	}
 
 	public static function temp_init_transactions() {
+		ypcf_function_log( 'account_transactions', 'view' );
 		$userid = filter_input( INPUT_POST, 'user_id' );
 		$WDGUser = new WDGUser( $userid );
 		$WDGUser_api_id = $WDGUser->get_api_id();

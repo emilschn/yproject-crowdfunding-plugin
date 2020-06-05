@@ -66,6 +66,9 @@ function atcf_log_type_preapproval( $types ) {
 add_filter( 'edd_log_types', 'atcf_log_type_preapproval' );
 
 
+/**
+ * Logs WE DO GOOD
+ */
 function ypcf_debug_log( $debug_str, $only_loggedin = TRUE ) {
     global $disable_logs;
     if ( $disable_logs !== TRUE ) {
@@ -121,4 +124,21 @@ function ypcf_debug_log_backtrace() {
 	}
 	
 	ypcf_debug_log( $debug_str );
+}
+
+
+function ypcf_function_log( $function_name, $function_trace ) {
+	if ( is_user_logged_in() ) {
+		$filename = dirname ( __FILE__ ) . '/../logs/function_logs_' .$function_name. '.txt';
+
+		global $current_user;
+		$current_user_str = $current_user->ID. '::' .$current_user->user_nicename;
+
+		date_default_timezone_set( "Europe/Paris" );
+		$line = date( 'H:i:s' ) . " [".$current_user_str."] >> " .$function_trace;
+
+		$file_handle = fopen( $filename, 'a' );
+		fwrite( $file_handle, $line );
+		fclose( $file_handle);
+	}
 }
