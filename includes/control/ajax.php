@@ -181,6 +181,9 @@ class WDGAjaxActions {
 						$to = "WE DO GOOD";
 						$object = __( "Correction d'erreur de versement", 'yproject' );
 					}
+					if ( $transaction_item->recipient_wallet_type == 'campaign' ) {
+						$object = __( "Investissement", 'yproject' );
+					}
 				}
 
 				$td_class = 'positive';
