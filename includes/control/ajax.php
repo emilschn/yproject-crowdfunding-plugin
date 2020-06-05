@@ -149,18 +149,38 @@ class WDGAjaxActions {
 				} else if ( $transaction_item->type == 'moneyin' ) {
 					$from = __( "Compte bancaire", 'yproject' );
 					$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
-					$object = __( "Rechargement porte-monnaie", 'yproject' );
+					$object = __( "Rechargement porte-monnaie par carte", 'yproject' );
+					if ( $transaction_item->gateway_mean_payment == 'wire' ) {
+						$object = __( "Rechargement porte-monnaie par virement", 'yproject' );
+					}
+
+				// Affichage des transferts vers compte bancaire
+				} else if ( $transaction_item->type == 'moneyout' ) {
+					$from = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					$to = __( "Compte bancaire", 'yproject' );
+					if ( $transaction_item->recipient_wallet_type == 'society' ) {
+						$object = __( "Remboursement d'investissement", 'yproject' );
+					} else {
+						$object = __( "Virement bancaire", 'yproject' );
+					}
 
 				// Transfert vers le wallet de l'utilisateur
 				} else if ( $current_user_is_receiving ) {
 					$from = 'ID ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')';
+					if ( $transaction_item->sender_id == 0 ) {
+						$from = "WE DO GOOD";
+					}
 					$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
-					$object = __( "Cr&eacute;dit ind&eacute;fini", 'yproject' );
+					$object = __( "Remboursement sur porte-monnaie", 'yproject' );
 
 				} else {
 					$from = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
-					$to = 'ID ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')';;
+					$to = 'ID ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')';
 					$object = __( "D&eacute;bit ind&eacute;fini", 'yproject' );
+					if ( $transaction_item->recipient_id == 0 ) {
+						$to = "WE DO GOOD";
+						$object = __( "Correction d'erreur de versement", 'yproject' );
+					}
 				}
 
 				$td_class = 'positive';
