@@ -3366,6 +3366,7 @@ class WDGAjaxActions {
 				$email = $api_result->email;
 				$recipient_name = $metadata_decoded->user->name;
 				$draft_url = home_url( '/financement/eligibilite/?guid=' . $api_result->guid );
+				$organization_name = $metadata_decoded->organization->name;
 				$amount_needed = $metadata_decoded->project->amountNeeded * 1000;
 				$royalties_percent = $metadata_decoded->project->royaltiesAmount;
 				$formula = '';
@@ -3391,7 +3392,7 @@ class WDGAjaxActions {
 					$options = 'Accompagnement Essentiel';
 				}
 
-				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $amount_needed, $royalties_percent, $formula, $options ) ) {
+				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}
