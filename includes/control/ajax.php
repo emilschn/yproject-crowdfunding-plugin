@@ -3376,7 +3376,7 @@ class WDGAjaxActions {
 					case 'private':
 						$formula = 'Formule Réseau privé';
 						break;
-					case 'crowdfunding':
+					case 'public':
 						$formula = 'Formule Crowdfunding';
 						break;
 				}
