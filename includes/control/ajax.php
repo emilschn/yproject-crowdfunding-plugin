@@ -111,9 +111,7 @@ class WDGAjaxActions {
 			$html_table .= '<thead>';
 			$html_table .= '<tr>';
 			$html_table .= '<td>' .__( "Date", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "De", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "A", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "Objet", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( "Transaction", 'yproject' ). '</td>';
 			$html_table .= '<td>' .__( "Montant", 'yproject' ). '</td>';
 			$html_table .= '</tr>';
 			$html_table .= '</thead>';
@@ -122,69 +120,100 @@ class WDGAjaxActions {
 				$current_user_is_receiving = ( $WDGUser_api_id == $transaction_item->recipient_id );
 
 				$datetime = new DateTime( $transaction_item->datetime );
-				$from = '';
-				$to = '';
 				$object = '';
 
 				// Affichage des investissements
 				if ( $transaction_item->wedogood_entity == 'investment' ) {
-					if ( !empty( $transaction_item->gateway_transaction_id ) ) {
-						$from = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					if ( !empty( $transaction_item->project_name ) ) {
+						$object = __( "Investissement sur ", 'yproject' ) . $transaction_item->project_name;
+						if ( !empty( $transaction_item->project_organization_name ) ) {
+							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+						}
+
 					} else {
-						$from = __( "Compte bancaire", 'yproject' );
+						$object = __( "Investissement", 'yproject' );
+						$object .= '<div class="hidden">' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 					}
-					$to = 'ID ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')';
-					$object = __( "Investissement", 'yproject' );
 
 				// Affichage des versements de royalties
 				} else if ( $transaction_item->wedogood_entity == 'roi' ) {
-					$from = 'ID ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')';
-					if ( $transaction_item->gateway_name == 'lemonway' ) {
-						$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
+					if ( !empty( $transaction_item->project_name ) ) {
+						$object = __( "Versement de royalties de ", 'yproject' ) . $transaction_item->project_name;
+						if ( !empty( $transaction_item->project_organization_name ) ) {
+							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+						}
 					} else {
-						$to = __( "Compte bancaire", 'yproject' );
+						$object = __( "Versement de royalties", 'yproject' );
+						$object .= '<div class="hidden">' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 					}
-					$object = __( "Versement de royalties", 'yproject' );
 
 				// Affichage des rechargements de compte bancaire
 				} else if ( $transaction_item->type == 'moneyin' ) {
-					$from = __( "Compte bancaire", 'yproject' );
-					$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
-					$object = __( "Rechargement porte-monnaie par carte", 'yproject' );
-					if ( $transaction_item->gateway_mean_payment == 'wire' ) {
-						$object = __( "Rechargement porte-monnaie par virement", 'yproject' );
-					}
+					$object = __( "Rechargement depuis votre compte bancaire", 'yproject' );
 
 				// Affichage des transferts vers compte bancaire
 				} else if ( $transaction_item->type == 'moneyout' ) {
-					$from = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
-					$to = __( "Compte bancaire", 'yproject' );
 					if ( $transaction_item->recipient_wallet_type == 'society' ) {
 						$object = __( "Remboursement d'investissement", 'yproject' );
 					} else {
-						$object = __( "Virement bancaire", 'yproject' );
+						$object = __( "Retrait vers votre compte bancaire", 'yproject' );
 					}
 
 				// Transfert vers le wallet de l'utilisateur
 				} else if ( $current_user_is_receiving ) {
-					$from = 'ID ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')';
+					$object = __( "Remboursement sur votre porte-monnaie de ", 'yproject' );
 					if ( $transaction_item->sender_id == 0 ) {
-						$from = "WE DO GOOD";
+						$object .= "WE DO GOOD";
+					} else if ( !empty( $transaction_item->project_name ) ) {
+						$object .= $transaction_item->project_name;
+						if ( !empty( $transaction_item->project_organization_name ) ) {
+							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+						}
+
+					} else {
+						$object .= '<div class="hidden">' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')</div>';
 					}
-					$to = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
-					$object = __( "Remboursement sur porte-monnaie", 'yproject' );
 
 				} else {
-					$from = __( "Porte-monnaie &eacute;lectronique", 'yproject' );
-					$to = 'ID ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')';
-					$object = __( "D&eacute;bit ind&eacute;fini", 'yproject' );
 					if ( $transaction_item->recipient_id == 0 ) {
-						$to = "WE DO GOOD";
 						$object = __( "Correction d'erreur de versement", 'yproject' );
+					} else if ( $transaction_item->recipient_wallet_type == 'campaign' ) {
+						if ( !empty( $transaction_item->project_name ) ) {
+							$object = __( "Investissement sur ", 'yproject' );
+							$object .= $transaction_item->project_name;
+							if ( !empty( $transaction_item->project_organization_name ) ) {
+								$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							}
+
+						} else {
+							$object = __( "Investissement", 'yproject' );
+							$object .= '<div class="hidden">' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
+						}
+
+					} else {
+						$object = __( "D&eacute;bit ind&eacute;fini", 'yproject' );
 					}
-					if ( $transaction_item->recipient_wallet_type == 'campaign' ) {
-						$object = __( "Investissement", 'yproject' );
+				}
+					
+				if ( !empty( $transaction_item->gateway_mean_payment ) || !empty( $transaction_item->gateway_mean_payment_info ) ) {
+					$object .= '<div class="mean-payment-info">';
+					if ( !empty( $transaction_item->gateway_mean_payment ) ) {
+						switch ( $transaction_item->gateway_mean_payment ) {
+							case 'card':
+								$object .= __( "Carte bancaire : ", 'yproject' );
+								break;
+							case 'wire':
+								$object .= __( "Virement : ", 'yproject' );
+								break;
+							case 'mandate':
+								$object .= __( "Pr&eacute;l&egrave;vement bancaire : ", 'yproject' );
+								break;
+						}
 					}
+					if ( !empty( $transaction_item->gateway_mean_payment_info ) ) {
+						$object .= $transaction_item->gateway_mean_payment_info;
+					}
+					$object .= '</div>';
 				}
 
 				$td_class = 'positive';
@@ -196,8 +225,6 @@ class WDGAjaxActions {
 
 				$html_table .= '<tr>';
 				$html_table .= '<td data-order="' .$datetime->format( 'YmdHis' ). '">' .$datetime->format( 'd/m/Y' ). '</td>';
-				$html_table .= '<td>' .$from. '</td>';
-				$html_table .= '<td>' .$to. '</td>';
 				$html_table .= '<td>' .$object. '</td>';
 				$html_table .= '<td class="' .$td_class. '">' .UIHelpers::format_number( $amount_in_euros ). ' &euro;</td>';
 				$html_table .= '</tr>';
