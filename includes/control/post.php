@@ -328,7 +328,7 @@ class WDGPostActions {
                     //Validation données
                     if($orga_done && ypcf_check_user_is_complete($campaign->post_author())&& isset($_POST['innbdayvote'])){
                         $vote_time = $_POST['innbdayvote'];
-                        if(10<=$vote_time && $vote_time<=30){
+                        if(10<=$vote_time && $vote_time<=45){
                             //Fixe date fin de vote
                             $diffVoteDay = new DateInterval('P'.$vote_time.'D');
                             $VoteEndDate = (new DateTime())->add($diffVoteDay);
