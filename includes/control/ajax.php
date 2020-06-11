@@ -20,8 +20,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_User_Details' );
 		WDGAjaxActions::add_action_by_class( 'WDG_Form_Dashboard_Add_Check' );
 
-		WDGAjaxActions::add_action( 'temp_init_transactions' );
-
 		WDGAjaxActions::add_action( 'try_user_login' );
 		WDGAjaxActions::add_action( 'try_user_register' );
 		WDGAjaxActions::add_action( 'create_project_form' );
@@ -30,14 +28,16 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		WDGAjaxActions::add_action('get_searchable_projects_list');
 		
-		WDGAjaxActions::add_action('display_user_investments');
 		WDGAjaxActions::add_action('display_roi_user_list');
 		WDGAjaxActions::add_action('show_project_money_flow');
 		WDGAjaxActions::add_action('check_invest_input');
 		WDGAjaxActions::add_action('save_user_docs');
 
+		// Mon compte
+		WDGAjaxActions::add_action( 'display_user_investments' );
+		WDGAjaxActions::add_action( 'get_transactions_table' );
+
 		// Page projet
-		WDGAjaxActions::add_action('save_image_head');
 		WDGAjaxActions::add_action('save_image_url_video');
 		WDGAjaxActions::add_action('send_project_notification');
 
@@ -95,144 +95,6 @@ class WDGAjaxActions {
 	public static function add_action($action_name) {
 		add_action('wp_ajax_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
 		add_action('wp_ajax_nopriv_' . $action_name, array(WDGAjaxActions::$class_name, $action_name));
-	}
-
-	public static function temp_init_transactions() {
-		ypcf_function_log( 'account_transactions', 'view' );
-		$userid = filter_input( INPUT_POST, 'user_id' );
-		$WDGUser = new WDGUser( $userid );
-		$WDGUser_api_id = $WDGUser->get_api_id();
-		$transactions = $WDGUser->get_transactions();
-
-		$html_table = 'Aucune transaction';
-		if ( !empty( $transactions ) ) {
-			$html_table = '<table class="user-transactions">';
-
-			$html_table .= '<thead>';
-			$html_table .= '<tr>';
-			$html_table .= '<td>' .__( "Date", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "Transaction", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "Montant", 'yproject' ). '</td>';
-			$html_table .= '</tr>';
-			$html_table .= '</thead>';
-
-			foreach ( $transactions as $transaction_item ) {
-				$current_user_is_receiving = ( $WDGUser_api_id == $transaction_item->recipient_id );
-
-				$datetime = new DateTime( $transaction_item->datetime );
-				$object = '';
-
-				// Affichage des investissements
-				if ( $transaction_item->wedogood_entity == 'investment' ) {
-					if ( !empty( $transaction_item->project_name ) ) {
-						$object = __( "Investissement sur ", 'yproject' ) . $transaction_item->project_name;
-						if ( !empty( $transaction_item->project_organization_name ) ) {
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
-						}
-
-					} else {
-						$object = __( "Investissement", 'yproject' );
-						$object .= '<div class="hidden">' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
-					}
-
-				// Affichage des versements de royalties
-				} else if ( $transaction_item->wedogood_entity == 'roi' ) {
-					if ( !empty( $transaction_item->project_name ) ) {
-						$object = __( "Versement de royalties de ", 'yproject' ) . $transaction_item->project_name;
-						if ( !empty( $transaction_item->project_organization_name ) ) {
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
-						}
-					} else {
-						$object = __( "Versement de royalties", 'yproject' );
-						$object .= '<div class="hidden">' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
-					}
-
-				// Affichage des rechargements de compte bancaire
-				} else if ( $transaction_item->type == 'moneyin' ) {
-					$object = __( "Rechargement depuis votre compte bancaire", 'yproject' );
-
-				// Affichage des transferts vers compte bancaire
-				} else if ( $transaction_item->type == 'moneyout' ) {
-					if ( $transaction_item->recipient_wallet_type == 'society' ) {
-						$object = __( "Remboursement d'investissement", 'yproject' );
-					} else {
-						$object = __( "Retrait vers votre compte bancaire", 'yproject' );
-					}
-
-				// Transfert vers le wallet de l'utilisateur
-				} else if ( $current_user_is_receiving ) {
-					$object = __( "Remboursement sur votre porte-monnaie de ", 'yproject' );
-					if ( $transaction_item->sender_id == 0 ) {
-						$object .= "WE DO GOOD";
-					} else if ( !empty( $transaction_item->project_name ) ) {
-						$object .= $transaction_item->project_name;
-						if ( !empty( $transaction_item->project_organization_name ) ) {
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
-						}
-
-					} else {
-						$object .= '<div class="hidden">' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')</div>';
-					}
-
-				} else {
-					if ( $transaction_item->recipient_id == 0 ) {
-						$object = __( "Correction d'erreur de versement", 'yproject' );
-					} else if ( $transaction_item->recipient_wallet_type == 'campaign' ) {
-						if ( !empty( $transaction_item->project_name ) ) {
-							$object = __( "Investissement sur ", 'yproject' );
-							$object .= $transaction_item->project_name;
-							if ( !empty( $transaction_item->project_organization_name ) ) {
-								$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
-							}
-
-						} else {
-							$object = __( "Investissement", 'yproject' );
-							$object .= '<div class="hidden">' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
-						}
-
-					} else {
-						$object = __( "D&eacute;bit ind&eacute;fini", 'yproject' );
-					}
-				}
-					
-				if ( !empty( $transaction_item->gateway_mean_payment ) || !empty( $transaction_item->gateway_mean_payment_info ) ) {
-					$object .= '<div class="mean-payment-info">';
-					if ( !empty( $transaction_item->gateway_mean_payment ) ) {
-						switch ( $transaction_item->gateway_mean_payment ) {
-							case 'card':
-								$object .= __( "Carte bancaire : ", 'yproject' );
-								break;
-							case 'wire':
-								$object .= __( "Virement : ", 'yproject' );
-								break;
-							case 'mandate':
-								$object .= __( "Pr&eacute;l&egrave;vement bancaire : ", 'yproject' );
-								break;
-						}
-					}
-					if ( !empty( $transaction_item->gateway_mean_payment_info ) ) {
-						$object .= $transaction_item->gateway_mean_payment_info;
-					}
-					$object .= '</div>';
-				}
-
-				$td_class = 'positive';
-				$amount_in_euros = $transaction_item->amount_in_cents / 100;
-				if ( !$current_user_is_receiving ) {
-					$amount_in_euros *= -1;
-					$td_class = 'negative';
-				}
-
-				$html_table .= '<tr>';
-				$html_table .= '<td data-order="' .$datetime->format( 'YmdHis' ). '">' .$datetime->format( 'd/m/Y' ). '</td>';
-				$html_table .= '<td>' .$object. '</td>';
-				$html_table .= '<td class="' .$td_class. '">' .UIHelpers::format_number( $amount_in_euros ). ' &euro;</td>';
-				$html_table .= '</tr>';
-			}
-			$html_table .= '</table>';
-		}
-
-		exit( $html_table );
 	}
 	
 	public static function create_project_form() {
@@ -380,6 +242,146 @@ class WDGAjaxActions {
 		
 		echo $buffer;
 		exit();
+	}
+    
+	/**
+	 * Affiche la liste des utilisateurs d'un projet qui doivent récupérer de l'argent de leur investissement
+	 */
+	public static function display_roi_user_list() {
+		$wdgcurrent_user = WDGUser::current();
+		if ($wdgcurrent_user->is_admin()) {
+		    //Récupération des éléments Ã  traiter
+		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
+		    $is_refund = filter_input( INPUT_POST, 'is_refund' );
+			$declaration = new WDGROIDeclaration($declaration_id);
+		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+			
+			// Si il n'y a pas assez sur le wallet, on bloque
+			$roi_amount = $declaration->get_amount_with_adjustment();
+			$organization = $campaign->get_organization();
+			$WDGOrganization = new WDGOrganization( $organization->wpref );
+			if ( $WDGOrganization->get_lemonway_balance( 'royalties' ) < $roi_amount ) {
+				echo '0';
+				exit();
+			}
+			
+		    $total_amount = 0;
+		    $total_roi = 0;
+		    $total_fees = 0;
+		    $investments_list = $campaign->roi_payments_data( $declaration, FALSE, $is_refund );
+		    foreach ($investments_list as $investment_item) {
+			    $total_amount += $investment_item['amount'];
+			    $total_fees += $investment_item['roi_fees'];
+			    $total_roi += $investment_item['roi_amount']; 
+			    $user_data = get_userdata($investment_item['user']);
+			    //Affichage utilisateur
+				?>
+			    <tr>
+					<td><?php echo html_entity_decode($user_data->first_name).' '.html_entity_decode($user_data->last_name); ?></td>
+					<td><?php echo $investment_item['amount']; ?> &euro;</td>
+					<td><?php echo $investment_item['roi_amount']; ?> &euro;</td>
+					<td><?php echo $investment_item['roi_fees']; ?> &euro;</td>
+				</tr>
+				<?php
+		    }
+
+		    //Affichage total
+			?>
+		    <tr>
+				<td><strong>Total</strong></td>
+				<td><?php echo $total_amount; ?> &euro;</td>
+				<td><?php echo $total_roi; ?> &euro;</td>
+				<td><?php echo $total_fees; ?> &euro;</td>
+			</tr>
+			<?php
+		}
+		exit();
+	}
+	
+	/**
+	 * Affiche le tableau de flux monétaires d'un projet
+	 */
+	public static function show_project_money_flow() {
+		if (current_user_can('manage_options')) {
+			//Récupération des éléments Ã  traiter
+			$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+			$campaign_post = get_post($campaign_id);
+			$campaign = atcf_get_campaign($campaign_post);
+			exit();
+		}
+	}
+	
+	/**
+	 * Vérifie le passage Ã  l'étape suivante pour les utilisateurs lors de l'investissement
+	 */
+	public static function check_invest_input() {
+		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign = new ATCF_Campaign($campaign_id);
+		$invest_type = filter_input(INPUT_POST, 'invest_type');
+		$WDGuser_current = WDGUser::current();
+		
+		//Dans tous les cas, vérifie que l'utilisateur a rempli ses infos pour investir
+		if (!$WDGuser_current->has_filled_invest_infos( $campaign->funding_type() )) {
+			global $user_can_invest_errors;
+			$return_values = array(
+				"response" => "edit_user",
+				"errors" => $user_can_invest_errors,
+				"firstname" => $WDGuser_current->get_firstname(),
+				"lastname" => $WDGuser_current->get_lastname(),
+				"email" => $WDGuser_current->get_email(),
+				"nationality" => $WDGuser_current->get_nationality(),
+				"birthday_day" => $WDGuser_current->get_birthday_day(),
+				"birthday_month" => $WDGuser_current->get_birthday_month(),
+				"birthday_year" => $WDGuser_current->get_birthday_year(),
+				"address" => $WDGuser_current->get_address(),
+				"postal_code" => $WDGuser_current->get_postal_code(),
+				"city" => $WDGuser_current->get_city(),
+				"country" => $WDGuser_current->get_country(),
+				"birthplace" => $WDGuser_current->get_birthplace(),
+				"gender" => $WDGuser_current->get_gender(),
+			);
+			echo json_encode($return_values);
+			exit();
+		}
+		
+		//Vérifie si on crée une organisation
+		if ($invest_type == "new_organization") {
+			$return_values = array(
+				"response" => "new_organization",
+				"errors" => array()
+			);
+			echo json_encode($return_values);
+			exit();
+			
+		//Vérifie si on veut investir en tant qu'organisation (différent de user)
+		} else if ($invest_type != "user") {
+			//Vérifie si les informations de l'organisation sont bien remplies
+			global $organization_can_invest_errors;
+			$organization = new WDGOrganization($invest_type);
+			if (!$organization->has_filled_invest_infos()) {
+				$return_values = array(
+					"response" => "edit_organization",
+					"errors" => $organization_can_invest_errors,
+					"org_name" => $organization->get_name(),
+					"org_email" => $organization->get_email(),
+					
+					"org_legalform" => $organization->get_legalform(),
+					"org_idnumber" => $organization->get_idnumber(),
+					"org_rcs" => $organization->get_rcs(),
+					"org_capital" => $organization->get_capital(),
+					"org_ape" => $organization->get_ape(),
+					"org_vat" => $organization->get_vat(),
+					"org_fiscal_year_end_month" => $organization->get_fiscal_year_end_month(),
+					"org_employees_count" => $organization->get_employees_count(),
+					"org_address" => $organization->get_address(),
+					"org_postal_code" => $organization->get_postal_code(),
+					"org_city" => $organization->get_city(),
+					"org_nationality" => $organization->get_nationality()
+				);
+				echo json_encode($return_values);
+				exit();
+			}
+		}
 	}
 	
 	/**
@@ -762,145 +764,159 @@ class WDGAjaxActions {
 		echo json_encode( $buffer );
 		exit();
 	}
-    
-	/**
-	 * Affiche la liste des utilisateurs d'un projet qui doivent récupérer de l'argent de leur investissement
-	 */
-	public static function display_roi_user_list() {
-		$wdgcurrent_user = WDGUser::current();
-		if ($wdgcurrent_user->is_admin()) {
-		    //Récupération des éléments Ã  traiter
-		    $declaration_id = filter_input(INPUT_POST, 'roideclaration_id');
-		    $is_refund = filter_input( INPUT_POST, 'is_refund' );
-			$declaration = new WDGROIDeclaration($declaration_id);
-		    $campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
-			
-			// Si il n'y a pas assez sur le wallet, on bloque
-			$roi_amount = $declaration->get_amount_with_adjustment();
-			$organization = $campaign->get_organization();
-			$WDGOrganization = new WDGOrganization( $organization->wpref );
-			if ( $WDGOrganization->get_lemonway_balance( 'royalties' ) < $roi_amount ) {
-				echo '0';
-				exit();
-			}
-			
-		    $total_amount = 0;
-		    $total_roi = 0;
-		    $total_fees = 0;
-		    $investments_list = $campaign->roi_payments_data( $declaration, FALSE, $is_refund );
-		    foreach ($investments_list as $investment_item) {
-			    $total_amount += $investment_item['amount'];
-			    $total_fees += $investment_item['roi_fees'];
-			    $total_roi += $investment_item['roi_amount']; 
-			    $user_data = get_userdata($investment_item['user']);
-			    //Affichage utilisateur
-				?>
-			    <tr>
-					<td><?php echo html_entity_decode($user_data->first_name).' '.html_entity_decode($user_data->last_name); ?></td>
-					<td><?php echo $investment_item['amount']; ?> &euro;</td>
-					<td><?php echo $investment_item['roi_amount']; ?> &euro;</td>
-					<td><?php echo $investment_item['roi_fees']; ?> &euro;</td>
-				</tr>
-				<?php
-		    }
 
-		    //Affichage total
-			?>
-		    <tr>
-				<td><strong>Total</strong></td>
-				<td><?php echo $total_amount; ?> &euro;</td>
-				<td><?php echo $total_roi; ?> &euro;</td>
-				<td><?php echo $total_fees; ?> &euro;</td>
-			</tr>
-			<?php
-		}
-		exit();
-	}
-	
 	/**
-	 * Affiche le tableau de flux monétaires d'un projet
+	 * Récupère le tableau avec les transactions des investisseurs
 	 */
-	public static function show_project_money_flow() {
-		if (current_user_can('manage_options')) {
-			//Récupération des éléments Ã  traiter
-			$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-			$campaign_post = get_post($campaign_id);
-			$campaign = atcf_get_campaign($campaign_post);
-			exit();
+	public static function get_transactions_table() {
+		ypcf_function_log( 'account_transactions', 'view' );
+		$WDGUserCurrent = WDGUser::current();
+		$userid = filter_input( INPUT_POST, 'user_id' );
+
+		if ( !$WDGUserCurrent->is_admin() && $WDGUserCurrent->get_wpref() != $userid ) {
+			exit( '<div class="align-center">' .__( "Aucune transaction", 'yproject' ). '</div>' );
 		}
-	}
-	
-	/**
-	 * Vérifie le passage Ã  l'étape suivante pour les utilisateurs lors de l'investissement
-	 */
-	public static function check_invest_input() {
-		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
-		$campaign = new ATCF_Campaign($campaign_id);
-		$invest_type = filter_input(INPUT_POST, 'invest_type');
-		$WDGuser_current = WDGUser::current();
-		
-		//Dans tous les cas, vérifie que l'utilisateur a rempli ses infos pour investir
-		if (!$WDGuser_current->has_filled_invest_infos( $campaign->funding_type() )) {
-			global $user_can_invest_errors;
-			$return_values = array(
-				"response" => "edit_user",
-				"errors" => $user_can_invest_errors,
-				"firstname" => $WDGuser_current->get_firstname(),
-				"lastname" => $WDGuser_current->get_lastname(),
-				"email" => $WDGuser_current->get_email(),
-				"nationality" => $WDGuser_current->get_nationality(),
-				"birthday_day" => $WDGuser_current->get_birthday_day(),
-				"birthday_month" => $WDGuser_current->get_birthday_month(),
-				"birthday_year" => $WDGuser_current->get_birthday_year(),
-				"address" => $WDGuser_current->get_address(),
-				"postal_code" => $WDGuser_current->get_postal_code(),
-				"city" => $WDGuser_current->get_city(),
-				"country" => $WDGuser_current->get_country(),
-				"birthplace" => $WDGuser_current->get_birthplace(),
-				"gender" => $WDGuser_current->get_gender(),
-			);
-			echo json_encode($return_values);
-			exit();
-		}
-		
-		//Vérifie si on crée une organisation
-		if ($invest_type == "new_organization") {
-			$return_values = array(
-				"response" => "new_organization",
-				"errors" => array()
-			);
-			echo json_encode($return_values);
-			exit();
-			
-		//Vérifie si on veut investir en tant qu'organisation (différent de user)
-		} else if ($invest_type != "user") {
-			//Vérifie si les informations de l'organisation sont bien remplies
-			global $organization_can_invest_errors;
-			$organization = new WDGOrganization($invest_type);
-			if (!$organization->has_filled_invest_infos()) {
-				$return_values = array(
-					"response" => "edit_organization",
-					"errors" => $organization_can_invest_errors,
-					"org_name" => $organization->get_name(),
-					"org_email" => $organization->get_email(),
+
+		$WDGUser = new WDGUser( $userid );
+		$WDGUser_api_id = $WDGUser->get_api_id();
+		$transactions = $WDGUser->get_transactions();
+
+		$html_table = 'Aucune transaction';
+		if ( !empty( $transactions ) ) {
+			$html_table = '<table class="user-transactions">';
+
+			$html_table .= '<thead>';
+			$html_table .= '<tr>';
+			$html_table .= '<td>' .__( "Date", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( "Transaction", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( "Montant", 'yproject' ). '</td>';
+			$html_table .= '</tr>';
+			$html_table .= '</thead>';
+			$excel_separator = '<div class="hidden"> - </div>';
+
+			foreach ( $transactions as $transaction_item ) {
+				$current_user_is_receiving = ( $WDGUser_api_id == $transaction_item->recipient_id );
+
+				$datetime = new DateTime( $transaction_item->datetime );
+				$object = '<div class="date-mobile">' .$datetime->format( 'd/m/Y' ). '</div>';
+				$object .= $excel_separator;
+
+				// Affichage des investissements
+				if ( $transaction_item->wedogood_entity == 'investment' ) {
+					if ( !empty( $transaction_item->project_name ) ) {
+						$object .= __( "Investissement sur ", 'yproject' ) . $transaction_item->project_name;
+						if ( !empty( $transaction_item->project_organization_name ) ) {
+							$object .= $excel_separator;
+							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+						}
+
+					} else {
+						$object .= __( "Investissement", 'yproject' );
+						$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
+					}
+
+				// Affichage des versements de royalties
+				} else if ( $transaction_item->wedogood_entity == 'roi' ) {
+					if ( !empty( $transaction_item->project_name ) ) {
+						$object .= __( "Versement de royalties de ", 'yproject' ) . $transaction_item->project_name;
+						if ( !empty( $transaction_item->project_organization_name ) ) {
+							$object .= $excel_separator;
+							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+						}
+					} else {
+						$object .= __( "Versement de royalties", 'yproject' );
+						$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
+					}
+
+				// Affichage des rechargements de compte bancaire
+				} else if ( $transaction_item->type == 'moneyin' ) {
+					$object .= __( "Rechargement depuis votre compte bancaire", 'yproject' );
+
+				// Affichage des transferts vers compte bancaire
+				} else if ( $transaction_item->type == 'moneyout' ) {
+					if ( $transaction_item->recipient_wallet_type == 'society' ) {
+						$object .= __( "Remboursement d'investissement", 'yproject' );
+					} else {
+						$object .= __( "Retrait vers votre compte bancaire", 'yproject' );
+					}
+
+				// Transfert vers le wallet de l'utilisateur
+				} else if ( $current_user_is_receiving ) {
+					$object = __( "Remboursement sur votre porte-monnaie de ", 'yproject' );
+					if ( $transaction_item->sender_id == 0 ) {
+						$object .= "WE DO GOOD";
+					} else if ( !empty( $transaction_item->project_name ) ) {
+						$object .= $transaction_item->project_name;
+						if ( !empty( $transaction_item->project_organization_name ) ) {
+							$object .= $excel_separator;
+							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+						}
+
+					} else {
+						$object .= '<div class="hidden"> - ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')</div>';
+					}
+
+				} else {
+					if ( $transaction_item->recipient_id == 0 ) {
+						$object .= __( "Correction d'erreur de versement", 'yproject' );
+					} else if ( $transaction_item->recipient_wallet_type == 'campaign' ) {
+						if ( !empty( $transaction_item->project_name ) ) {
+							$object .= __( "Investissement sur ", 'yproject' );
+							$object .= $transaction_item->project_name;
+							if ( !empty( $transaction_item->project_organization_name ) ) {
+								$object .= $excel_separator;
+								$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							}
+
+						} else {
+							$object .= __( "Investissement", 'yproject' );
+							$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
+						}
+
+					} else {
+						$object .= __( "D&eacute;bit ind&eacute;fini", 'yproject' );
+					}
+				}
 					
-					"org_legalform" => $organization->get_legalform(),
-					"org_idnumber" => $organization->get_idnumber(),
-					"org_rcs" => $organization->get_rcs(),
-					"org_capital" => $organization->get_capital(),
-					"org_ape" => $organization->get_ape(),
-					"org_vat" => $organization->get_vat(),
-					"org_fiscal_year_end_month" => $organization->get_fiscal_year_end_month(),
-					"org_employees_count" => $organization->get_employees_count(),
-					"org_address" => $organization->get_address(),
-					"org_postal_code" => $organization->get_postal_code(),
-					"org_city" => $organization->get_city(),
-					"org_nationality" => $organization->get_nationality()
-				);
-				echo json_encode($return_values);
-				exit();
+				if ( !empty( $transaction_item->gateway_mean_payment ) || !empty( $transaction_item->gateway_mean_payment_info ) ) {
+					$object .= $excel_separator;
+					$object .= '<div class="mean-payment-info">';
+					if ( !empty( $transaction_item->gateway_mean_payment ) ) {
+						switch ( $transaction_item->gateway_mean_payment ) {
+							case 'card':
+								$object .= __( "Carte bancaire : ", 'yproject' );
+								break;
+							case 'wire':
+								$object .= __( "Virement : ", 'yproject' );
+								break;
+							case 'mandate':
+								$object .= __( "Pr&eacute;l&egrave;vement bancaire : ", 'yproject' );
+								break;
+						}
+					}
+					if ( !empty( $transaction_item->gateway_mean_payment_info ) ) {
+						$object .= $transaction_item->gateway_mean_payment_info;
+					}
+					$object .= '</div>';
+				}
+
+				$td_class = 'positive';
+				$amount_in_euros = $transaction_item->amount_in_cents / 100;
+				if ( !$current_user_is_receiving ) {
+					$amount_in_euros *= -1;
+					$td_class = 'negative';
+				}
+
+				$html_table .= '<tr>';
+				$html_table .= '<td data-order="' .$datetime->format( 'YmdHis' ). '">' .$datetime->format( 'd/m/Y' ). '</td>';
+				$html_table .= '<td data-order="' .$datetime->format( 'YmdHis' ). '" class="transaction-titre">' .$object. '</td>';
+				$html_table .= '<td class="' .$td_class. '">' .UIHelpers::format_number( $amount_in_euros ). ' &euro;</td>';
+				$html_table .= '</tr>';
 			}
+			$html_table .= '</table>';
 		}
+
+		exit( $html_table );
 	}
 	
 
