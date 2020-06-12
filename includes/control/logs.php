@@ -135,7 +135,7 @@ function ypcf_function_log( $function_name, $function_trace ) {
 		$current_user_str = $current_user->ID. '::' .$current_user->user_nicename;
 
 		date_default_timezone_set( "Europe/Paris" );
-		$line = date( 'H:i:s' ) . " [".$current_user_str."] >> " .$function_trace;
+		$line = date( 'H:i:s' ) . " [".$current_user_str."] >> " .$function_trace . "\n";
 
 		$file_handle = fopen( $filename, 'a' );
 		fwrite( $file_handle, $line );
