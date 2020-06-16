@@ -652,6 +652,19 @@ class WDGROIDeclaration {
 		
 		// Si on a terminé, on finalise la déclaration
 		if ( $buffer == 100 ) {
+			// On envoie le message en copie au PP
+			$declaration_message = $this->get_message();
+			if ( !empty( $declaration_message ) ) {
+				$campaign_author = $campaign->post_author();
+				$WDGUser_author = new WDGUser( $campaign_author );
+				$recipient_name = $WDGUser_author->get_firstname();
+				$replyto_mail = $WDGUser_author->get_email();
+				$declaration_message_decoded = '(vous êtes en copie de ce message en tant que porteur de projet)';
+				$declaration_message_decoded .= '<br><br>';
+				$declaration_message_decoded .= $declaration_message;
+				NotificationsAPI::roi_transfer_message( $replyto_mail, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+			}
+
 			$wdguser_author = new WDGUser( $campaign->data->post_author );
 			if ( $this->get_amount_with_adjustment() > 0 ) {
 				$tax_infos = '';
