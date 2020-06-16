@@ -79,7 +79,8 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			'website',
 			__( "Site Web *", 'yproject' ),
 			self::$field_group_complete,
-			$WDGOrganization->get_website()
+			$WDGOrganization->get_website(),
+			__( "Adresse de votre site Internet, commen&ccedil;ant par http ou www", 'yproject' )
 		);
 		
 		$this->addField(
