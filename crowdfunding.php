@@ -276,9 +276,9 @@ final class ATCF_CrowdFunding {
 	}
 	
 	function save_locale() {
-		global $save_locale;
-		if ( isset($save_locale) ) {
-			setcookie( 'locale', $save_locale, 10 * DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+		$input_get_lang = filter_input(INPUT_GET, 'lang');
+		if ( !empty( $input_get_lang ) ) {
+			setcookie( 'locale', $input_get_lang, time() + 10 * DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
 		}
 	}
 	

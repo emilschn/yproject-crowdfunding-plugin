@@ -175,6 +175,75 @@ class WDGUser {
 	}
 	
 /*******************************************************************************
+ * Destruction
+*******************************************************************************/
+	/**
+	 * "Supprime" cet utilisateur
+	 */
+	public function delete() {
+		//Si possible de supprimer, transformer en __deleted202001011212 les données importantes dans l'API et dans le site
+		//Préparer une chaîne, qu'on appelle “deleted”, sous cette forme, pour conserver la date exacte de suppression : __deletedAAAAMMJJHHMM
+		$deleted_string = '__deleted'.date("YmdHi");
+		$id_user = $this->get_wpref();
+		$email_user = $this->get_email(); 
+
+		/* Aller dans la table wpwdg_users
+			Dans le champ user_activation_key, stocker l'user_email et le display name, juste au cas où, sous cette forme user_email;display_name
+			Remplacer user_login, user_pass, user_nicename, user_email, display_name par la chaine “deleted” créée ci-dessus*/
+		
+		global $wpdb;
+		$table_name = $wpdb->prefix . "users";
+
+		$wpdb->update( 
+			$table_name, 
+			array( 
+				'user_login' => $deleted_string,
+				'user_pass' => $deleted_string,
+				'user_nicename' => $deleted_string,
+				'user_email' => $deleted_string,
+				'display_name' => $deleted_string,
+				'user_activation_key' => $this->get_email().';'.$this->get_display_name()
+			),
+			array(
+				'ID' => $this->get_wpref()
+			)
+		);
+		
+		/* Aller dans la table wpwdg_usermeta
+			Faire une recherche par user_id, avec l'ID noté ci-dessus
+			Supprimer toutes les meta sauf les 3 suivantes id_api, lemonway_id, lemonway_status*/
+		$metas = get_user_meta( $this->get_wpref() );		
+		foreach ( $metas as $key => $value ) {
+			if ($key != 'id_api' && $key != 'lemonway_id' && $key != 'lemonway_status' ) {
+				delete_user_meta( $this->get_wpref(), $key );
+			} elseif ($key == 'lemonway_id') {
+				// on mémorise l'id lemonway de l'utilisateur pour envoyer un mail au support de lemonway
+				$lemonway_id = $value;
+			}			
+		}
+
+		/*Aller dans la table wdgrestapi1524_entity_user
+			Chercher l'utilisateur en mettant par wpref avec l'ID noté ci-dessus
+			Remplacer les champs email, username par la chaine “deleted”créée ci-dessus
+			Vider les informations de tous les autres champs SAUF id, wpref, signup_date, client_user_id, authentification_mode
+		*/
+		// on recharge l'utilisateur avec les données wordpress qu'on vient de modifier
+		$WDGUserReload = new WDGUser( $this->get_wpref(), FALSE );
+		$WDGUserReload->set_login($deleted_string);
+		$WDGUserReload->set_email($deleted_string);
+		// on met à jour les données de l'API
+		WDGWPREST_Entity_User::update( $WDGUserReload );
+		
+		// on supprime les fichiers Kyc s'il y en a
+		$this->delete_all_documents();
+
+		if ( $lemonway_id ){
+			// on envoie un mail à admin@wedogood.co pour informer de la suppression de l'utilisateur
+			NotificationsEmails::send_wedogood_delete_order( $email_user );
+		}
+	}
+
+/*******************************************************************************
  * Identification
 *******************************************************************************/
 	/**
@@ -239,9 +308,17 @@ class WDGUser {
 	}
 	
 	public function get_login() {
-		return $this->wp_user->user_login;
+		$buffer = $this->login;
+		if ( empty( $buffer ) || $buffer == '---' ) {
+			$buffer = $this->wp_user->user_login;
+		}
+		return $buffer;
 	}
 	
+	public function set_login($login) {
+		$this->login = $login;
+	}
+
 	public function get_signup_date() {
 		$buffer = $this->signup_date;
 		if ( empty( $buffer ) ) {
@@ -268,6 +345,10 @@ class WDGUser {
 			$buffer = substr( $buffer, 0, -1 );
 		}
 		return $buffer;
+	}
+	
+	public function set_email($email) {
+		$this->email = $email;
 	}
 	
 	public function get_gender() {
@@ -724,6 +805,45 @@ class WDGUser {
 			$buffer[ $campaign_item->campaign_id ] = $campaign->get_name();
 		}
 		
+		return $buffer;
+	}
+
+	/**
+	 * vérifie si la campagne est en cours selon son statut
+	 *
+	 * @return array
+	 */
+	public function get_campaigns_current_voted() {
+		$buffer = array();		
+		$campaigns_voted = $this->get_campaigns_voted();
+		foreach ( $campaigns_voted as $campaign_item ) {
+			if ( $campaign_item['status'] == ATCF_Campaign::$campaign_status_collecte || $campaign_item['status'] == ATCF_Campaign::$campaign_status_vote) {
+				$buffer[] = $campaign_item;
+			}
+		}
+		return $buffer;
+	}
+	/**
+	 * renvoie la liste des identifiants des campagnes sur lesquelles il a voté
+	 *
+	 * @return array
+	 */
+	public function get_campaigns_voted() {
+		$buffer = array();		
+		$list_campaign = ATCF_Campaign::get_list_all( );
+		foreach ( $list_campaign as $project_post ) {
+			$amount_voted = $this->get_amount_voted_on_campaign( $project_post->ID );
+			if ( $amount_voted > 0 && !$this->has_invested_on_campaign( $project_post->ID ) ) {
+				$intention_item = array(
+					'campaign_name'	=> $project_post->post_title,
+					'campaign_id'	=> $project_post->ID,
+					'vote_amount'	=> $amount_voted,
+					'status'		=> get_post_meta( $project_post->ID, 'campaign_vote', TRUE )
+				);
+				array_push( $buffer, $intention_item );
+			}
+		}
+
 		return $buffer;
 	}
 	
@@ -1449,6 +1569,15 @@ class WDGUser {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
+	public function get_encoded_gateway_list() {
+		$array_buffer = array();
+		$lw_id = $this->get_lemonway_id();
+		if ( !empty( $lw_id ) ) {
+			$array_buffer[ 'lemonway' ] = $lw_id;
+		}
+		return json_encode( $array_buffer );
+	}
+
 	/**
 	 * RÃ©cupÃ¨re les infos sur LW, via l'ID ou via l'e-mail
 	 * @param boolean $reload
@@ -1548,7 +1677,7 @@ class WDGUser {
 				
 			} elseif ( !empty( $this->wp_user->ID ) ) {
 				$db_lw_id = 'USERW'.$this->wp_user->ID;
-				if ( defined( YP_LW_USERID_PREFIX ) ) {
+				if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 				}
 			}
@@ -1920,6 +2049,17 @@ class WDGUser {
 		$rib_lemonway_error = $this->get_document_lemonway_error( $document_type );
 		return ( !empty( $rib_lemonway_error ) );
 	}
+
+	public function get_transactions() {
+		if ( !$this->is_lemonway_registered() ) {
+			return FALSE;
+		}
+
+		if ( empty( $this->api_data->gateway_list ) || empty( $this->api_data->gateway_list[ 'lemonway' ] ) ) {
+			$this->update_api();
+		}
+		return WDGWPREST_Entity_User::get_transactions( $this->get_api_id() );
+	}
 	
 /*******************************************************************************
  * Gestion Lemonway - KYC
@@ -1976,6 +2116,32 @@ class WDGUser {
 					}
 				}
 			}
+		}
+	}
+	/**
+	 * Récupère la liste des documents kyc envoyés par l'utilisateur
+	 */
+	public function get_all_documents() {
+		$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user );
+		return $document_filelist;
+	}
+	/**
+	 * Supprime un document de l'utilisateur
+	 * @param WDGKYCFile $document
+	 */
+	public function delete_document($document) {
+		$document->delete();
+
+	}
+	/**
+	 * Supprime tous les documents de l'utilisateur
+	 *
+	 * @return void
+	 */
+	public function delete_all_documents() {
+		$document_filelist = $this->get_all_documents();
+		foreach ( $document_filelist as $document ) {
+			$this->delete_document($document);
 		}
 	}
     

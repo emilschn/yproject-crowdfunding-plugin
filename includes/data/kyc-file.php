@@ -99,6 +99,47 @@ class WDGKYCFile {
 		return $this->date_uploaded;
 	}
 
+	/**
+	 * Retourne le chemin vers le fichier pour suppression
+	 * @return string
+	 */
+	private function get_filepath( ) {
+		return dirname( __FILE__ ) . '/../../includes/kyc/' .$this->file_name;
+	}
+
+	/**
+	 * Supprime un document (en base et dans le système de fichier)
+	 *
+	 * @return void
+	 */
+	public function delete() {
+		$is_deleted = FALSE;
+		$result = FALSE;
+		// on supprime le fichier dans le système de fichier
+		$file_path = $this->get_filepath();
+		if( file_exists ( $file_path)) {
+			$is_deleted = unlink( $file_path );
+		};
+		if ( $is_deleted ){
+			// on le supprime en bdd
+			global $wpdb;
+			$table_name = $wpdb->prefix . WDGKYCFile::$table_name;
+			$result = $wpdb->delete( 
+				$table_name, 
+				array( 
+					'id' => $this->id,
+					'type' => $this->type,
+					'orga_id' => $this->orga_id,
+					'user_id' => $this->user_id,
+					'file_name' => $this->file_name,
+					'status' => $this->status,
+					'date_uploaded' => $this->date_uploaded,
+				)
+			);
+		}
+		return $result;
+	}
+
 /*******************************************************************************
  * REQUETES STATIQUES
  ******************************************************************************/

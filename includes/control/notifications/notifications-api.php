@@ -1455,14 +1455,16 @@ class NotificationsAPI {
     //*******************************************************
     // FIN DE TEST
     //*******************************************************
-	public static function prospect_setup_draft_finished( $recipient, $name, $draft_url_full, $amount_needed, $royalties_percent, $formula, $options ) {
+	public static function prospect_setup_draft_finished( $recipient, $name, $draft_url_full, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = '1373';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'personal'		=> 1,
 			'NOM'			=> $name,
+			'EMAIL'			=> $recipient,
 			'URL_DRAFT'		=> $draft_url,
+			'NOM_ENTREPRISE'		=> $organization_name,
 			'MONTANT_RECHERCHE'		=> $amount_needed,
 			'POURCENT_ROYALTIES'	=> $royalties_percent,
 			'FORMULE'		=> $formula,

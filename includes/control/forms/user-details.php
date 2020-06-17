@@ -369,7 +369,10 @@ class WDG_Form_User_Details extends WDG_Form {
 				$use_lastname = $this->getInputText( 'use_lastname' );
 				$gender = $this->getInputText( 'gender' );
 				$birthday = $this->getInputText( 'birthday' );
-				$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
+				$birthdate = new DateTime();
+				if ( !empty( $birthday ) ) {
+					$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
+				}
 				$birthplace = $this->getInputText( 'birthplace' );
 				if ( empty( $birthplace ) || !WDGRESTAPI_Lib_Validator::is_name( $birthplace ) ) {
 					$error = array(

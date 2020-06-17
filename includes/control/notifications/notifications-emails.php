@@ -815,6 +815,26 @@ class NotificationsEmails {
     //*******************************************************
 	
     //*******************************************************
+    // SUPPRESSION COMPTE UTILISATEUR
+    //*******************************************************
+    public static function send_wedogood_delete_order( $user_email ) {
+		ypcf_debug_log('NotificationsEmails::send_wedogood_delete_order > ' . $user_email);
+		
+		$admin_email = 'administratif@wedogood.co';
+		$object = "Utilisateur supprimé";
+		
+		$body_content = "Salut,<br>";
+		$body_content .= "le compte utilisateur suivant a été supprimé, il faut maintenant faire la demande de suppression à LemonWay<br>";
+		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br>";
+		$body_content .= "Merci de prévenir l'utilisateur";
+
+		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
+	}
+    //*******************************************************
+    // FIN SUPPRESSION COMPTE UTILISATEUR
+	//*******************************************************
+	
+    //*******************************************************
     // NOTIFICATIONS INTERFACE PROSPECT
     //*******************************************************
     public static function prospect_setup_user_project_drafts( $user_email, $project_list ) {
@@ -846,7 +866,6 @@ class NotificationsEmails {
     //*******************************************************
     // FIN NOTIFICATIONS INTERFACE PROSPECT
     //*******************************************************
-	
 	
     //*******************************************************
     // NOTIFICATIONS ERREURS ADMIN

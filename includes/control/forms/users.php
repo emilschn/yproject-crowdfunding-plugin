@@ -165,7 +165,7 @@ class WDGFormUsers {
 		if (empty($username) || empty($password)) {
 			global $signon_errors;
 			$signon_errors = new WP_Error();
-			$signon_errors->add('empty_authentication', __( "Merci de remplir tous les champs", 'yproject' ));
+			$signon_errors->add('empty_authentication', __( 'login.ERROR_EMPTY_FIELD', 'yproject' ));
 			WDGFormUsers::redirect_after_login_failed( 'empty_fields' );
 		}
 
@@ -184,7 +184,7 @@ class WDGFormUsers {
 			if ( WDGOrganization::is_user_organization( $user_by_login->ID ) ) {
 				global $signon_errors;
 				$signon_errors = new WP_Error();
-				$signon_errors->add('empty_authentication', __('Ce compte correspond &agrave; une organisation', 'yproject'));
+				$signon_errors->add('empty_authentication', __('login.ERROR_ORGANIZATION_ACCOUNT', 'yproject'));
 				WDGFormUsers::redirect_after_login_failed( 'orga_account' );
 			}
 		}
@@ -205,13 +205,11 @@ class WDGFormUsers {
 				case 'empty_authentication':
 				case 'empty_username':
 				case 'empty_password':
-					$buffer = __('Merci de saisir votre identifiant et votre mot de passe.', 'yproject');
+					$buffer = __('login.ERROR_EMPTY_FIELD', 'yproject');
 					break;
 				case 'invalid_username':
-					$buffer = __('Cet utilisateur n&apos;existe pas.', 'yproject');
-					break;
 				case 'incorrect_password':
-					$buffer = __('Le mot de passe saisi ne correspond pas.', 'yproject');
+					$buffer = __('login.ERROR_USER_NOT_FOUND', 'yproject');
 					break;
 			}
 		}
@@ -282,13 +280,13 @@ class WDGFormUsers {
 		}
 		$user_name = $user_email;
 		if ( empty( $user_email ) ) {
-			$signup_errors->add( 'user_email', __( "L'adresse e-mail doit &ecirc;tre d&eacute;finie.", 'yproject' ) );
+			$signup_errors->add( 'user_email', __( 'signup.ERROR_EMAIL_EMPTY', 'yproject' ) );
 		}
 		if ( email_exists( $user_email ) || username_exists( $user_email ) ) {
-			$signup_errors->add( 'user_name', __( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ) );
+			$signup_errors->add( 'user_name', __( 'signup.ERROR_EMAIL_ALREADY_USED', 'yproject' ) );
 		}
 		if ( !is_email( $user_email ) ) {
-			$signup_errors->add( 'user_email_incorrect', __( "Cette adresse e-mail n'est pas valide.", 'yproject' ) );
+			$signup_errors->add( 'user_email', __( 'signup.ERROR_EMAIL_NOT_OK', 'yproject' ) );
 		}
 
 		// Vérifications sur prénom et nom
@@ -297,14 +295,14 @@ class WDGFormUsers {
 		}
 		$user_firstname = mb_convert_case( $user_firstname , MB_CASE_TITLE );
 		if ( empty( $user_firstname ) ) {
-			$signup_errors->add( 'user_firstname', __( "Le pr&eacute;nom doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
+			$signup_errors->add( 'user_firstname', __( 'signup.ERROR_FIRST_NAME_EMPTY', 'yproject' ) );
 		}
 		if ( is_null( $user_lastname ) ) {
 			$user_lastname = filter_input( INPUT_POST, 'signup_lastname' );
 		}
 		$user_lastname = mb_convert_case( $user_lastname , MB_CASE_TITLE );
 		if ( empty( $user_lastname ) ) {
-			$signup_errors->add( 'user_lastname', __( "Le nom de famille doit &ecirc;tre d&eacute;fini.", 'yproject' ) );
+			$signup_errors->add( 'user_lastname', __( 'signup.ERROR_LAST_NAME_EMPTY', 'yproject' ) );
 		}
 
 		// Vérifications concernant le mot de passe
@@ -315,10 +313,10 @@ class WDGFormUsers {
 			$password_confirm = filter_input(INPUT_POST, 'signup_password_confirm');
 		}
 		if ( empty( $password ) || empty( $password_confirm ) ) {
-			$signup_errors->add( 'user_password', __( "Avez-vous saisi deux fois le mot de passe ?", 'yproject' ) );
+			$signup_errors->add( 'user_password', __( 'signup.ERROR_PASSWORD_EMPTY', 'yproject' ) );
 		}
 		if ( !empty( $password ) && !empty( $password_confirm ) && $password != $password_confirm ) {
-			$signup_errors->add( 'user_password_match', __( "Les mots de passe saisis ne correspondent pas.", 'yproject' ) );
+			$signup_errors->add( 'user_password', __( 'signup.ERROR_PASSWORDS_DONT_MATCH', 'yproject' ) );
 		}
 
 		// Vérifications CGU
@@ -326,7 +324,7 @@ class WDGFormUsers {
 			$validate_terms_check = filter_input(INPUT_POST, 'validate-terms-check');
 		}
 		if ( empty( $validate_terms_check ) ) {
-			$signup_errors->add( 'validate_terms_check', __( "Merci de cocher la case pour accepter les conditions g&eacute;n&eacute;rales d&apos;utilisation.", 'yproject' ) );
+			$signup_errors->add( 'validate_terms_check', __( 'signup.ERROR_TERMS_NOT_CHECKED', 'yproject' ) );
 		}
 		
 		
@@ -348,7 +346,7 @@ class WDGFormUsers {
 				) );
 
 				if ( is_wp_error( $wp_user_id ) ) {
-					$signup_errors->add( 'user_insert', __( "Probl&egrave;me de cr&eacute;ation d'utilisateur.", 'yproject' ) );
+					$signup_errors->add( 'user_insert', __( 'signup.ERROR_USER_CREATION', 'yproject' ) );
 					
 				} else {
 					global $wpdb, $edd_options;
@@ -372,7 +370,7 @@ class WDGFormUsers {
 			}
 
 		} else {
-			$signup_errors->add( 'user_robot', __( "Merci de cocher la case confirmant que vous n'&ecirc;tes pas un robot.", 'yproject' ) );
+			$signup_errors->add( 'user_insert', __( 'signup.ERROR_ROBOT_CHECKBOX', 'yproject' ) );
 			
 		}
 

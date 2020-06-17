@@ -34,7 +34,8 @@ class WDGWPREST_Entity_ROI {
 			'amount'				=> $roi->amount,
 			'amount_taxed_in_cents'	=> $roi->amount_taxed_in_cents,
 			'id_transfer'			=> $roi->id_transfer,
-			'status'				=> $roi->status
+			'status'				=> $roi->status,
+			'gateway'				=> $roi->gateway
 		);
 		return $parameters;
 	}

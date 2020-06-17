@@ -61,9 +61,20 @@ class LemonwayLib {
 			return FALSE;
 		}
 		
-		global $lemonway_lib;
-		ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $params : ' .print_r($params, true));
+		// Trace de la requete en supprimant des données trop lourds ou sensibles
+		$trace_params = $params;
+		if ( isset( $trace_params[ 'iban' ] ) ) {
+			$trace_params[ 'iban' ] = 'UNTRACKED';
+		}
+		if ( isset( $trace_params[ 'bic' ] ) ) {
+			$trace_params[ 'bic' ] = 'UNTRACKED';
+		}
+		if ( isset( $trace_params[ 'buffer' ] ) ) {
+			$trace_params[ 'buffer' ] = 'UNTRACKED';
+		}
+		ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $trace_params : ' .print_r($trace_params, true));
 		
+		global $lemonway_lib;
 		//Récupération de tous les paramètres à envoyer
 		$lw_params = $lemonway_lib->params;
 		foreach ($lw_params as $key => $value) {

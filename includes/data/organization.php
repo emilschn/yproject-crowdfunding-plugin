@@ -308,7 +308,7 @@ class WDGOrganization {
 				
 			} else {
 				$db_lw_id = 'ORGA'.$this->api_id.'W'.$this->wpref;
-				if ( defined( YP_LW_USERID_PREFIX ) ) {
+				if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 					$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 				}
 			}
@@ -322,7 +322,7 @@ class WDGOrganization {
 		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_campaign_id', true );
 		if ( empty( $db_lw_id ) ) {
 			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'CAMPAIGN';
-			if ( defined( YP_LW_USERID_PREFIX ) ) {
+			if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 			}
 			
@@ -341,7 +341,7 @@ class WDGOrganization {
 		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_royalties_id', true );
 		if ( empty( $db_lw_id ) ) {
 			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'ROYALTIES';
-			if ( defined( YP_LW_USERID_PREFIX ) ) {
+			if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 			}
 			
@@ -360,7 +360,7 @@ class WDGOrganization {
 		$db_lw_id = get_user_meta( $this->wpref, 'lemonway_tax_id', true );
 		if ( empty( $db_lw_id ) ) {
 			$db_lw_id = 'ORGA' .$this->api_id. 'W' .$this->wpref. 'TAX';
-			if ( defined( YP_LW_USERID_PREFIX ) ) {
+			if ( defined( 'YP_LW_USERID_PREFIX' ) ) {
 				$db_lw_id = YP_LW_USERID_PREFIX . $db_lw_id;
 			}
 			
@@ -967,6 +967,15 @@ class WDGOrganization {
 /*******************************************************************************
  * Gestion Lemonway
 *******************************************************************************/
+	public function get_encoded_gateway_list() {
+		$array_buffer = array();
+		$lw_id = $this->get_lemonway_id();
+		if ( !empty( $lw_id ) ) {
+			$array_buffer[ 'lemonway' ] = $lw_id;
+		}
+		return json_encode( $array_buffer );
+	}
+
 	public function get_wallet_details( $type = '', $reload = false, $by_email = false ) {
 		if ( !isset($this->{ 'wallet_details_' . $type }) || empty($this->{ 'wallet_details_' . $type }) || $reload == true ) {
 			if ( $by_email ) {
@@ -1483,7 +1492,17 @@ class WDGOrganization {
 		$rib_lemonway_error = $this->get_document_lemonway_error( $document_type );
 		return ( !empty( $rib_lemonway_error ) );
 	}
-	
+
+	public function get_transactions() {
+		if ( !$this->is_registered_lemonway_wallet() ) {
+			return FALSE;
+		}
+
+		if ( empty( $this->api_data->gateway_list ) || empty( $this->api_data->gateway_list[ 'lemonway' ] ) ) {
+			$this->save();
+		}
+		return WDGWPREST_Entity_Organization::get_transactions( $this->get_api_id() );
+	}
 
 	
 /*******************************************************************************

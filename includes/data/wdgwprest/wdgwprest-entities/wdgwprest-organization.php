@@ -53,6 +53,7 @@ class WDGWPREST_Entity_Organization {
 			'bank_iban'					=> $organization->get_bank_iban(),
 			'bank_bic'					=> $organization->get_bank_bic(),
 			'id_quickbooks'				=> $organization->get_id_quickbooks(),
+			'gateway_list'				=> $organization->get_encoded_gateway_list()
 		);
 		return $parameters;
 	}
@@ -135,6 +136,18 @@ class WDGWPREST_Entity_Organization {
 	public static function get_rois( $organization_id ) {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/rois' );
 		return $result_obj;
+	}
+	
+	/**
+	 * Retourne les transactions liées à une organisation
+	 * @return array
+	 */
+	public static function get_transactions( $organization_id ) {
+		$buffer = array();
+		if ( !empty( $organization_id ) ) {
+			$buffer = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/transactions' );
+		}
+		return $buffer;
 	}
 	
 	/**

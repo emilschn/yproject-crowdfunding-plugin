@@ -806,18 +806,21 @@ class WDGQueue {
 
 		if ( !empty( $user_id ) ) {
 			
+			$is_user_authenticated = FALSE;
 			if ( WDGOrganization::is_user_organization( $user_id ) ) {
 				$WDGEntity = new WDGOrganization( $user_id );
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_name();
+				$is_user_authenticated = $WDGEntity->is_registered_lemonway_wallet();
 			} else {
 				$WDGEntity = new WDGUser( $user_id );
 				$user_email = $WDGEntity->get_email();
 				$user_name = $WDGEntity->get_firstname();
+				$is_user_authenticated = $WDGEntity->is_lemonway_registered();
 			}
 			
 			// On vérifie que les documents n'ont toujours pas été envoyés
-			if ( !$WDGEntity->has_sent_all_documents() ) {
+			if ( !$WDGEntity->has_sent_all_documents() && !$is_user_authenticated ) {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
 				NotificationsAPI::vote_authentication_needed_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_api_id );
 			}
@@ -1069,7 +1072,11 @@ class WDGQueue {
 		if ( !empty( $declaration_id ) ) {
 
 			$roi_declaration = new WDGROIDeclaration( $declaration_id );
-			$result = $roi_declaration->transfer_pending_rois();
+			$result = 100;
+			// Contrôle au cas où il y ait eu un plantage précédent
+			if ( $roi_declaration->status != WDGROIDeclaration::$status_finished ) {
+				$result = $roi_declaration->transfer_pending_rois();
+			}
 			if ( $result == 100 ) {
 				$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 				$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();

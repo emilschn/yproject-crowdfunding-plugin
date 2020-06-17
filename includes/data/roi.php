@@ -24,6 +24,7 @@ class WDGROI {
 	public $amount_taxed_in_cents;
 	public $id_transfer;
 	public $status;
+	public $gateway;
 	public $on_api;
 	
 	
@@ -49,6 +50,7 @@ class WDGROI {
 				$this->amount_taxed_in_cents = $roi_api_item->amount_taxed_in_cents;
 				$this->id_transfer = $roi_api_item->id_transfer;
 				$this->status = $roi_api_item->status;
+				$this->gateway = $roi_api_item->gateway;
 				$this->on_api = TRUE;
 			}
 		}
@@ -201,6 +203,7 @@ class WDGROI {
 		$roi->amount_taxed_in_cents = $amount_taxed_in_cents;
 		$roi->id_transfer = $id_transfer;
 		$roi->status = $status;
+		$roi->gateway = 'lemonway';
 		WDGWPREST_Entity_ROI::create( $roi );
 		
 		if ( $roi->amount > 0 ) {

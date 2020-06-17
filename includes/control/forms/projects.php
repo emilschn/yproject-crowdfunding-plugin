@@ -234,7 +234,11 @@ class WDGFormProjects {
 		}
 		//ajout de l'url de la vidéo
 		if (isset($post_video)) {
-			update_post_meta($campaign_id, 'campaign_video', esc_url($post_video));
+			$current_lang = get_locale();
+			if ($current_lang == 'fr_FR') { $current_lang = ''; }
+			else { $current_lang = '_' . $current_lang; }
+			
+			update_post_meta( $campaign_id, 'campaign_video' .$current_lang, esc_url( $post_video ) );
 			$buffer .= $post_video . '|';
 		}
 		return $buffer;

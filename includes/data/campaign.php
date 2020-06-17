@@ -978,6 +978,11 @@ class ATCF_Campaign {
 		return $this->__get( ATCF_Campaign::$key_maximum_complete_message );
 	}
 	
+	public static $key_google_tag_manager_id = 'google_tag_manager_id';
+	public function google_tag_manager_id() {
+		return $this->__get( ATCF_Campaign::$key_google_tag_manager_id );
+	}
+	
 	public static $key_custom_footer_code = 'custom_footer_code';
 	public function custom_footer_code() {
 		return $this->__get( ATCF_Campaign::$key_custom_footer_code );
@@ -3496,6 +3501,22 @@ class ATCF_Campaign {
 /*******************************************************************************
  * RECUPERATION DE LISTE DE PROJETS
  ******************************************************************************/
+	/**
+	 * Retourne une liste de tous les projets
+	 */
+	public static function get_list_all () {
+		$query_options = array(
+			'numberposts' => -1,
+			'post_type' => 'download',
+			'post_status' => 'publish',
+			'meta_key' => 'campaign_vote',
+			'meta_key' => 'campaign_funding_type',
+			'meta_key' => 'campaign_end_date'
+		);
+		return get_posts( $query_options );
+
+	}
+
 	public static function get_list_most_recent( $nb = 1, $client = '' ) {
 		$buffer = array();
 		
