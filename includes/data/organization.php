@@ -46,6 +46,7 @@ class WDGOrganization {
 	private $bank_iban;
 	private $bank_bic;
 	private $id_quickbooks;
+	private $mandate_info;
 	
 	protected static $_current = null;
 	public static function current() {
@@ -150,6 +151,7 @@ class WDGOrganization {
 				$this->bank_iban = $this->bopp_object->bank_iban;
 				$this->bank_bic = $this->bopp_object->bank_bic;
 				$this->id_quickbooks = $this->bopp_object->id_quickbooks;
+				$this->mandate_info = json_decode( $this->bopp_object->mandate_info );
 			}
 
 			if ( empty( $this->email ) ) {
@@ -263,6 +265,10 @@ class WDGOrganization {
 		} else {
 			update_user_meta( $this->wpref, 'orga_contact_email', $new_mail );
 		}
+	}
+
+	private function update_api() {
+		WDGWPREST_Entity_Organization::update( $this );
 	}
 	
 	/**
@@ -1390,6 +1396,60 @@ class WDGOrganization {
 		$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
 		return $result_iban;
 	}
+
+
+
+	/**
+	 * Infos de mandat de prélèvement enregistrées localement
+	 */
+	public function get_encoded_mandate_info() {
+		return json_encode( $this->mandate_info );
+	}
+
+	/**
+	 * enregistre une info de mandat de prélèvement dans la BDD
+	 */
+	private function add_mandate_info( $gateway, $b2b, $iban, $status, $save_api = true ) {
+		if ( empty( $this->mandate_info ) ) {
+			$this->mandate_info = array();
+		}
+		if ( empty( $this->mandate_info[ $gateway ] ) ) {
+			$this->mandate_info[ $gateway ][ 'core' ] = array();
+			$this->mandate_info[ $gateway ][ 'b2b' ] = array();
+		}
+		$type = $b2b ? 'b2b' : 'core';
+		$this->mandate_info[ $gateway ][ $type ] = array();
+		$this->mandate_info[ $gateway ][ $type ][ 'iban' ] = $iban;
+		$this->mandate_info[ $gateway ][ $type ][ 'status' ] = $status;
+		$this->mandate_info[ $gateway ][ $type ][ 'approved_by_bank' ] = 0;
+
+		if ( $save_api ) {
+			$this->update_api();
+		}
+	}
+
+	/**
+	 * met à jour les infos de mandat de prélèvement dans la BDD
+	 */
+	private function update_mandate_info( $gateway, $iban, $status ) {
+		if ( !empty( $this->mandate_info[ $gateway ][ 'b2b' ] ) ) {
+			$this->mandate_info[ $gateway ][ 'b2b' ][ 'status' ] = $status;
+		} else {
+			if ( empty( $this->mandate_info[ $gateway ][ 'core' ] ) ) {
+				$this->add_mandate_info( $gateway, 'core', $iban, $status, false );
+			}
+			$this->mandate_info[ $gateway ][ 'core' ][ 'status' ] = $status;
+		}
+		$this->update_api();
+	}
+
+	/**
+	 * retourne TRUE si c'est un mandat b2b
+	 */
+	public function is_mandate_b2b() {
+		return !empty( $this->mandate_info[ $gateway ][ 'b2b' ] );
+	}
+
 	
 	/**
 	 * Liste les mandats enregistrés auprès de LW
@@ -1429,7 +1489,9 @@ class WDGOrganization {
 	 * Ajoute un mandat de prélévement lié au wallet de l'organisation
 	 */
 	public function add_lemonway_mandate() {
-		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 0, $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
+		// Enregistrement infos mandat B2B
+		$this->add_mandate_info( 'lemonway', true, $this->get_bank_iban(), 0 );
+		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 1, $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
 	}
 	
 	/**
@@ -1442,12 +1504,16 @@ class WDGOrganization {
 		return LemonwayLib::wallet_sign_mandate_init( $this->get_lemonway_id(), $phone_number, $last_mandate['ID'], $url_return, $url_error );;
 	}
 	
+	/**
+	 * Retourne TRUE si le dernier mandat créé est signé
+	 */
 	public function has_signed_mandate() {
 		$buffer = FALSE;
 		$mandates_list = $this->get_lemonway_mandates();
 		if ( !empty( $mandates_list ) ) {
 			$last_mandate = end( $mandates_list );
 			$last_mandate_status = $last_mandate[ "S" ];
+			$this->update_mandate_info( 'lemonway', $last_mandate[ 'DATA' ], $last_mandate_status );
 			$buffer = ( $last_mandate_status == 5 || $last_mandate_status == 6 );
 		}
 		return $buffer;

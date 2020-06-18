@@ -53,7 +53,8 @@ class WDGWPREST_Entity_Organization {
 			'bank_iban'					=> $organization->get_bank_iban(),
 			'bank_bic'					=> $organization->get_bank_bic(),
 			'id_quickbooks'				=> $organization->get_id_quickbooks(),
-			'gateway_list'				=> $organization->get_encoded_gateway_list()
+			'gateway_list'				=> $organization->get_encoded_gateway_list(),
+			'mandate_info'				=> $organization->get_encoded_mandate_info()
 		);
 		return $parameters;
 	}
