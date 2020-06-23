@@ -3351,8 +3351,9 @@ class WDGAjaxActions {
 				$metadata_decoded = json_decode( $api_result->metadata );
 				$email = $api_result->email;
 				$recipient_name = $metadata_decoded->user->name;
+				$organization_name = $metadata_decoded->organization->name;
 				$draft_url = home_url( '/financement/eligibilite/?guid=' . $api_result->guid );
-				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $draft_url ) ) {
+				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $organization_name, $draft_url ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}
