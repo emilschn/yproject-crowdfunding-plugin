@@ -511,23 +511,7 @@ class LemonwayNotification {
 								$total_roi += $investment_item[ 'roi_amount' ];
 							}
 							
-							// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
-							$date_of_royalties_transfer = new DateTime();
-							$date_of_royalties_transfer->setTime( 15, 30, 0 );
-							$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
-							// Si lundi, on fera un jour plus tard
-							if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
-								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-							}
-							// Si samedi, on fera un jour plus tard
-							if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
-								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-							}
-							// Si dimanche, on fera un jour plus tard
-							if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
-								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-							}
-
+							$date_of_royalties_transfer = $declaration->get_transfer_date();
 							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . '<br>';
 							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . '<br>';
 							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . '<br>';

@@ -47,6 +47,10 @@ class WDG_Form {
 		if ( !empty( $options[ 'warning' ] ) ) {
 			$warning = $options[ 'warning' ];
 		}
+		$admin_theme = FALSE;
+		if ( !empty( $options[ 'admin_theme' ] ) ) {
+			$admin_theme = $options[ 'admin_theme' ];
+		}
 		
 		$field = array(
 			'type'			=> $type,
@@ -55,6 +59,7 @@ class WDG_Form {
 			'value'			=> $value,
 			'description'	=> $description,
 			'warning'		=> $warning,
+			'admin_theme'	=> $admin_theme,
 			'options'		=> $options
 		);
 		
