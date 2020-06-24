@@ -47,6 +47,7 @@ class WDGOrganization {
 	private $bank_bic;
 	private $id_quickbooks;
 	private $mandate_info;
+	private $mandate_file_url;
 	
 	protected static $_current = null;
 	public static function current() {
@@ -151,7 +152,11 @@ class WDGOrganization {
 				$this->bank_iban = $this->bopp_object->bank_iban;
 				$this->bank_bic = $this->bopp_object->bank_bic;
 				$this->id_quickbooks = $this->bopp_object->id_quickbooks;
-				$this->mandate_info = json_decode( $this->bopp_object->mandate_info );
+				$this->mandate_info = array();
+				if ( !empty( $this->bopp_object->mandate_info ) ) {
+					$this->mandate_info = json_decode( $this->bopp_object->mandate_info, TRUE );
+				}
+				$this->mandate_file_url = $this->bopp_object->mandate_file_url;
 			}
 
 			if ( empty( $this->email ) ) {
@@ -1431,15 +1436,24 @@ class WDGOrganization {
 	/**
 	 * met à jour les infos de mandat de prélèvement dans la BDD
 	 */
-	private function update_mandate_info( $gateway, $iban, $status ) {
+	public function update_mandate_info( $gateway, $iban, $status, $approved_by_bank ) {
 		if ( !empty( $this->mandate_info[ $gateway ][ 'b2b' ] ) ) {
-			$this->mandate_info[ $gateway ][ 'b2b' ][ 'status' ] = $status;
+			if ( !empty( $status ) ) {
+				$this->mandate_info[ $gateway ][ 'b2b' ][ 'status' ] = $status;
+			}
+			if ( $approved_by_bank === '0' || $approved_by_bank === '1' ) {
+				$this->mandate_info[ $gateway ][ 'b2b' ][ 'approved_by_bank' ] = $approved_by_bank;
+			}
+
 		} else {
-			if ( empty( $this->mandate_info[ $gateway ][ 'core' ] ) ) {
+			if ( empty( $this->mandate_info[ $gateway ][ 'core' ] ) && !empty( $iban ) && !empty( $status ) ) {
 				$this->add_mandate_info( $gateway, 'core', $iban, $status, false );
 			}
-			$this->mandate_info[ $gateway ][ 'core' ][ 'status' ] = $status;
+			if ( !empty( $status ) ) {
+				$this->mandate_info[ $gateway ][ 'core' ][ 'status' ] = $status;
+			}
 		}
+
 		$this->update_api();
 	}
 
@@ -1447,7 +1461,18 @@ class WDGOrganization {
 	 * retourne TRUE si c'est un mandat b2b
 	 */
 	public function is_mandate_b2b() {
-		return !empty( $this->mandate_info[ $gateway ][ 'b2b' ] );
+		return !empty( $this->mandate_info[ 'lemonway' ][ 'b2b' ] );
+	}
+
+	/**
+	 * retourne TRUE si c'est un mandat b2b et si la banque l'a validé
+	 */
+	public function is_mandate_b2b_approved_by_bank() {
+		return !empty( $this->mandate_info[ 'lemonway' ][ 'b2b' ] && $this->mandate_info[ 'lemonway' ][ 'b2b' ][ 'approved_by_bank' ] == 1 );
+	}
+
+	public function get_mandate_file_url() {
+		return $this->mandate_file_url;
 	}
 
 	
@@ -1513,7 +1538,7 @@ class WDGOrganization {
 		if ( !empty( $mandates_list ) ) {
 			$last_mandate = end( $mandates_list );
 			$last_mandate_status = $last_mandate[ "S" ];
-			$this->update_mandate_info( 'lemonway', $last_mandate[ 'DATA' ], $last_mandate_status );
+			$this->update_mandate_info( 'lemonway', $last_mandate[ 'DATA' ], $last_mandate_status, FALSE );
 			$buffer = ( $last_mandate_status == 5 || $last_mandate_status == 6 );
 		}
 		return $buffer;

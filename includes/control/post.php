@@ -42,7 +42,9 @@ class WDGPostActions {
         self::add_action("roi_mark_transfer_received");
         self::add_action( 'generate_royalties_bill' );
         self::add_action( 'save_declaration_bill' );
-        self::add_action("refund_investors");
+		self::add_action( 'refund_investors' );
+		self::add_action( 'mandate_b2b_admin_update' );
+		
         self::add_action( 'user_account_organization_details' );
         self::add_action( 'user_account_organization_identitydocs' );
         self::add_action( 'user_account_organization_bank' );
@@ -1137,6 +1139,32 @@ class WDGPostActions {
 			exit();
 			
 		}
+	}
+
+	public static function mandate_b2b_admin_update() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$organization_id = filter_input( INPUT_POST, 'organization_id' );
+		if ( empty( $WDGUser_current ) || !$WDGUser_current->is_admin() || empty( $organization_id ) || empty( $campaign_id ) ) {
+			wp_redirect( home_url() );
+			exit();
+		}
+
+		$WDGOrganization = new WDGOrganization( $organization_id );
+
+		$file_mandate_b2b = $_FILES[ 'mandate_b2b_file' ];
+		if ( !empty( $file_mandate_b2b ) && !empty( $file_mandate_b2b[ 'name' ] ) ) {
+			$file_name = $file_mandate_b2b[ 'name' ];
+			$file_name_exploded = explode( '.', $file_name );
+			$ext = $file_name_exploded[ count( $file_name_exploded ) - 1];
+			$byte_array = file_get_contents( $file_mandate_b2b[ 'tmp_name' ] );
+			$file_create_item = WDGWPREST_Entity_File::create( $WDGOrganization->get_api_id(), 'organization', 'mandate', $ext, base64_encode( $byte_array ) );
+		}
+		
+		$mandate_b2b_is_approved_by_bank = filter_input( INPUT_POST, 'mandate_b2b_is_approved_by_bank' );
+		$WDGOrganization->update_mandate_info( 'lemonway', FALSE, FALSE, $mandate_b2b_is_approved_by_bank );
+		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#contracts' );
+		exit();
 	}
 	
 	public static function user_account_organization_details() {
