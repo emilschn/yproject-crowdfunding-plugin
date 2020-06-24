@@ -20,6 +20,7 @@ class WDGROIDeclaration {
 	public static $min_amount_for_wire_payment = 1000;
 	public static $tax_without_exemption = 30;
 	public static $tax_with_exemption = 17.2;
+	public static $default_transfer_delay = 10;
 	
 	public $id;
 	public $id_campaign;
@@ -42,6 +43,7 @@ class WDGROIDeclaration {
 	
 	public $employees_number;
 	public $other_fundings;
+	public $transfer_delay;
 	public $declared_by;
 	
 	public $on_api;
@@ -78,6 +80,7 @@ class WDGROIDeclaration {
 				$this->transfered_previous_remaining_amount = $collection_item->transfered_previous_remaining_amount;
 				$this->employees_number = $collection_item->employees_number;
 				$this->other_fundings = $collection_item->other_fundings;
+				$this->transfer_delay = $collection_item->transfer_delay;
 				if ( !empty( $collection_item->declared_by ) ) {
 					$this->declared_by = $collection_item->declared_by;
 				}
@@ -126,6 +129,7 @@ class WDGROIDeclaration {
 
 					$this->employees_number = $declaration_api_item->employees_number;
 					$this->other_fundings = $declaration_api_item->other_fundings;
+					$this->transfer_delay = $declaration_api_item->transfer_delay;
 					$this->declared_by = $declaration_api_item->declared_by;
 
 					$this->on_api = TRUE;
@@ -482,6 +486,48 @@ class WDGROIDeclaration {
 	}
 	public function set_other_fundings( $other_fundings ) {
 		$this->other_fundings = htmlentities( $other_fundings );
+	}
+
+	public function get_transfer_delay() {
+		if ( empty( $this->transfer_delay ) ) {
+			return self::$default_transfer_delay;
+		}
+		return nl2br( $this->transfer_delay, ENT_HTML5 );
+	}
+	public function set_transfer_delay( $transfer_delay ) {
+		if ( is_numeric( $transfer_delay ) ) {
+			$this->transfer_delay = htmlentities( $transfer_delay );
+		} else {
+			$this->transfer_delay = self::$default_transfer_delay;
+		}
+	}
+
+	/**
+	 * Retourne la date à laquelle on fera le versement auto
+	 */
+	public function get_transfer_date() {
+		$date_of_royalties_transfer = new DateTime();
+		$date_of_royalties_transfer->setTime( 15, 30, 0 );
+		$transfer_delay = $this->get_transfer_delay();
+		if ( empty( $transfer_delay ) ) {
+			$transfer_delay = WDGROIDeclaration::$default_transfer_delay;
+		}
+
+		$date_of_royalties_transfer->add( new DateInterval( 'P' .$transfer_delay. 'D' ) );
+		// Si samedi, on fera un jour plus tard
+		if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
+			$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si dimanche, on fera un jour plus tard
+		if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
+			$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si lundi, on fera un jour plus tard
+		if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
+			$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+		}
+
+		return $date_of_royalties_transfer;
 	}
 	
 	public function get_declared_by() {
@@ -1074,21 +1120,7 @@ class WDGROIDeclaration {
 			// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
 			$date_of_royalties_transfer = FALSE;
 			if ( $this->mean_payment === WDGROIDeclaration::$mean_payment_mandate ) {
-				$date_of_royalties_transfer = new DateTime();
-				$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
-				// Si lundi, on fera un jour plus tard
-				if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
-					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-				}
-				// Si samedi, on fera un jour plus tard
-				if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
-					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-				}
-				// Si dimanche, on fera un jour plus tard
-				if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
-					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-				}
-				$date_of_royalties_transfer->setTime( 15, 30, 0 );
+				$date_of_royalties_transfer = $this->get_transfer_date();
 			}
 
 			// Programmer versement auto

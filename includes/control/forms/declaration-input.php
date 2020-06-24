@@ -93,6 +93,23 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$input_declaration_other_fundings,
 			__( "Information statistique non-communiqu&eacute;e", 'yproject' )
 		);
+
+		$WDGUser_current = WDGUser::current();
+		if ( $WDGUser_current->is_admin() ) {
+			$input_declaration_transfer_delay = filter_input( INPUT_POST, 'transfer_delay' );
+			if ( empty( $input_declaration_transfer_delay ) ) {
+				$input_declaration_transfer_delay = WDGROIDeclaration::$default_transfer_delay;
+			}
+			$this->addField(
+				'text',
+				'transfer_delay',
+				__( "Nombre de jours de d&eacute;lais", 'yproject' ),
+				self::$field_group_declaration,
+				$input_declaration_transfer_delay,
+				__( "D&eacute;lais avant versement, une fois l'argent re&ccedil;u", 'yproject' ),
+				array( 'admin_theme' => 1 )
+			);
+		}
 	}
 	
 	public function postForm() {
@@ -225,6 +242,13 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$roideclaration->set_other_fundings( $other_fundings );
 			
 			$WDGUser_current = WDGUser::current();
+			
+			$roideclaration->set_transfer_delay( WDGROIDeclaration::$default_transfer_delay );
+			if ( $WDGUser_current->is_admin() ) {
+				$transfer_delay = $this->getInputText( 'transfer_delay' );
+				$roideclaration->set_transfer_delay( $transfer_delay );
+			}
+
 			$roideclaration->set_declared_by( $WDGUser_current->get_api_id(), $WDGUser_current->get_firstname(). ' ' .$WDGUser_current->get_lastname(), $WDGUser_current->get_email(), ( $WDGUser_current->is_admin() ? 'admin' : 'team' ) );
 			
 			$roideclaration->set_message( $declaration_message );

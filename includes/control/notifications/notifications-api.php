@@ -1433,13 +1433,15 @@ class NotificationsAPI {
     //*******************************************************
     // DEMARRAGE DE TEST
     //*******************************************************
-	public static function prospect_setup_draft_started( $recipient, $name, $draft_url_full ) {
+	public static function prospect_setup_draft_started( $recipient, $name, $organization_name, $draft_url_full ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = '1374';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'personal'		=> 1,
 			'NOM'			=> $name,
+			'EMAIL'			=> $recipient,
+			'NOM_ENTREPRISE'	=> $organization_name,
 			'URL_DRAFT'		=> $draft_url,
 			'URL_DRAFT_FULL'=> $draft_url_full
 		);
