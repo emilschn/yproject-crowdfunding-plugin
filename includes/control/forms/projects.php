@@ -113,7 +113,7 @@ class WDGFormProjects {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
 				ypcf_get_updated_payment_status( $WDGInvestment->get_id() );
 				
-			} else {
+			} else if ( $WDGInvestment->get_saved_status() != 'publish' ) {
 				$postdata = array(
 					'ID'			=> $approve_payment_id,
 					'post_status'	=> 'publish',
@@ -153,7 +153,6 @@ class WDGFormProjects {
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
 				$WDGInvestment = new WDGInvestment( $approve_payment_id );
 				$WDGInvestment->save_to_api();
-				
 			}
 			
 			do_action('wdg_delete_cache', array(
