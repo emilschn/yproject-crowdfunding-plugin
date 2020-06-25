@@ -24,6 +24,7 @@ class NotificationsSlack {
 	private static $icon_card_file_box = ':card_file_box:';
 	private static $icon_mag = ':mag:';
 	private static $icon_currency_exchange = ':currency_exchange:';
+	private static $icon_scroll = ':scroll:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 		$message = str_replace( '&', 'and', $message );
@@ -189,5 +190,10 @@ class NotificationsSlack {
 		$message = "Le versement du projet " .$project_name. " a été fait automatiquement.";
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, self::$notif_type_royalties );
 	}
-    
+
+	public static function read_project_page( $id_campaign ) {
+		$campaign = new ATCF_Campaign( $id_campaign );
+		$message = "Le porteur de projet ".$campaign->get_name()." a cliqué sur le bouton de relecture : " .$campaign->get_public_url();
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
+	}
 }

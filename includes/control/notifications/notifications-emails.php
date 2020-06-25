@@ -69,15 +69,6 @@ class NotificationsEmails {
 		$content .= "L'équipe WE DO GOOD";
 		return NotificationsEmails::send_mail( $recipient, $object, $content, TRUE );
 	}
-
-	public static function send_project_description_notification_to_wdg( $id_campaign ) {
-		$campaign = new ATCF_Campaign( $id_campaign );
-		$recipient = 'support@wedogood.co';
-		$object = $campaign->get_name() . ' /// Présentation à relire !';
-		$content = "Le porteur de projet a cliqué sur le bouton de relecture<br>";
-		$content .= "URL du projet : " . $campaign->get_public_url();
-		return NotificationsEmails::send_mail( $recipient, $object, $content );
-	}
     //*******************************************************
     // FIN RELECTURE
 	//*******************************************************
