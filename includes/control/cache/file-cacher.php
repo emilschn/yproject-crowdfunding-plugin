@@ -152,7 +152,7 @@ class WDG_File_Cacher {
 		) );
 		
 		try {
-			return file_get_contents( $this->website . $page_path . '/', FALSE, $context );
+			return @file_get_contents( $this->website . $page_path . '/', FALSE, $context );
 		} catch (Exception $e) { }
 
 		return FALSE;

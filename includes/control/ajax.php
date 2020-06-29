@@ -3130,14 +3130,21 @@ class WDGAjaxActions {
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
 		$meta_key = $property.'_add_value_reservation_'.$lang;
 		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
-		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
-		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 
 		$return_values = array(
 			"response" => "done",
 			"values" => $property,
 			"user" => $name
 		);
+		
+		if ( empty( $meta_old_value[ 'user' ] ) ) {
+			$return_values[ 'response' ] = "error";
+			echo json_encode($return_values);
+			exit();
+		}
+
+		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
+		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 
 		if ( !empty($meta_old_value) ) {
 		    if ( $meta_old_value[ 'user' ] != $user_id ) {
