@@ -924,7 +924,11 @@ class WDGOrganization {
 				if ($buffer == FALSE) {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
+					$transfer_amount = str_replace( ' ', '', $transfer_amount );
+					$transfer_amount = str_replace( ',', '.', $transfer_amount );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
+					$transfer_commission = str_replace( ' ', '', $transfer_commission );
+					$transfer_commission = str_replace( ',', '.', $transfer_commission );
 					LemonwayLib::ask_transfer_funds( $this->get_campaign_lemonway_id(), $this->get_lemonway_id(), ( $transfer_amount + $transfer_commission ) );
 					if ( $transfer_amount > 0 ) {
 						$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
