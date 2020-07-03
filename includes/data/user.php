@@ -839,6 +839,7 @@ class WDGUser {
 	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $contact_if_deceased = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
+			$this->copy_sendinblue_params_to_new_email( $this->wp_user->user_email, $email );
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		}
 		if ( !empty( $firstname ) ) {
@@ -937,6 +938,7 @@ class WDGUser {
 	public function save_basics( $email, $firstname, $lastname ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
+			$this->copy_sendinblue_params_to_new_email( $this->wp_user->user_email, $email );
 			wp_update_user( array ( 'ID' => $this->wp_user->ID, 'user_email' => $email ) );
 		}
 		if ( !empty( $firstname ) ) {
@@ -1775,6 +1777,39 @@ class WDGUser {
 	public function has_saved_card_expiration_date() {
 		$expiration_date = get_user_meta( $this->get_wpref(), 'save_card_expiration_date', TRUE );
 		return !empty( $expiration_date );
+	}
+
+	/**
+	 * Copie les paramètres d'inscription à une NL de l'ancienne adresse mail d'un compte à la nouvelle adresse
+	 */
+	public function copy_sendinblue_params_to_new_email( $old_email, $new_email ) {
+		if ( $old_email == $new_email ) {
+			return;
+		}
+
+		try {
+			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+			$return = $mailin->get_user( array(
+				"email"		=> $old_email
+			) );
+
+			$lists_is_in = array();
+			if ( isset( $return[ 'code' ] ) && $return[ 'code' ] != 'failure' ) {
+				if ( isset( $return[ 'data' ] ) && isset( $return[ 'data' ][ 'listid' ] ) ) {
+					foreach( $return[ 'data' ][ 'listid' ] as $list_id ) {
+						array_push( $lists_is_in, $list_id );
+					}
+				}
+			}
+	
+			$mailin->create_update_user( array(
+				"email"		=> $new_email,
+				"listid"	=> $lists_is_in
+			) );
+		
+		} catch ( Exception $e ) {
+			ypcf_debug_log( "WDGUser::copy_sendinblue_params_to_new_email > erreur sendinblue" );
+		}
 	}
 
 	/**
