@@ -197,18 +197,33 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
 
-	public static function investment_pending_wire( $payment_id ) {
-		
+	public static function investment_pending_wire( $payment_id ) {		
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
 		
 		$payment_data = edd_get_payment_meta( $payment_id );
 		$payment_amount = edd_get_payment_amount( $payment_id );
 		$email = $payment_data['email'];
-		$user_data = get_user_by('email', $email);	
-
 		
 		$message = "Nouveau virement pour ".$campaign->data->post_title ." : ".$payment_amount. "euros (".$email.")";
+		
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
+	}
+
+	public static function new_purchase_pending_check_admin( $payment_id, $picture_url ) {		
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data['email'];
+		
+		$message = "Nouveau chèque pour ".$campaign->data->post_title ." : ".$payment_amount. "euros (".$email."). ";
+		if ( $picture_url ) {
+			$message .= "Une photo a été envoyée.";
+		} else {
+			$message .= "Aucune photo n'a été envoyée.";
+		}
 		
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}

@@ -44,7 +44,6 @@ class NotificationsAsana {
 	}
 	
 	public static function investment_pending_wire( $payment_id ) {
-
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);
 		
@@ -55,13 +54,39 @@ class NotificationsAsana {
 		
 		$object = $campaign->get_name() . ' /// Nouveau virement !';
 		
-		$content = "Bonjour,<br /><br />";
-		$content .= "Un nouveau virement de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		$content = "Un nouveau virement de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
 		$content .= "Utilisateur :<br />";
 		$content .= "- login : " .$user_data->user_login. "<br />";
 		$content .= "- e-mail : " .$email. "<br />";
 		$content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
 		$content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function new_purchase_pending_check_admin( $payment_id, $picture_url ) {
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);
+		
+		$object = $campaign->get_name() . ' /// Nouveau chèque !';
+		
+		$content = "Un nouveau chèque de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		$content .= "Utilisateur :<br />";
+		$content .= "- login : " .$user_data->user_login. "<br />";
+		$content .= "- e-mail : " .$email. "<br />";
+		$content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
+		$content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		if ( $picture_url ) {
+			$content .= "Une photo a été envoyée :<br />";
+			$content .= "<img src='".$picture_url."' /><br />";
+		} else {
+			$content .= "Aucune photo n'a été envoyée.<br />";
+		}
 		
 		return self::send( self::$notif_type_support, $object, $content );
 	}
