@@ -120,9 +120,9 @@ class WDG_Cache_Plugin {
 
 		if ( !defined( 'WDG_DISABLE_CACHE') || WDG_DISABLE_CACHE == FALSE ) {
 			$home_stats = WDGWPREST_Entity_Project::get_home_stats();
-			$stats_list[ 'count_amount' ] = $home_stats[ 'amount_collected' ];
-			$stats_list[ 'count_people' ] = $home_stats[ 'count_investors' ];
-			$stats_list[ 'royaltying_projects' ] = $home_stats[ 'royaltying_projects' ];
+			$stats_list[ 'count_amount' ] = $home_stats->amount_collected;
+			$stats_list[ 'count_people' ] = $home_stats->count_investors;
+			$stats_list[ 'royaltying_projects' ] = $home_stats->royaltying_projects;
 		}
 
 		$stats_content = json_encode($stats_list);
