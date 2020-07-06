@@ -53,7 +53,7 @@ class NotificationsAsana {
 		$email = $payment_data['email'];
 		$user_data = get_user_by('email', $email);
 		
-		$object = "Un nouveau virement a été enregistré";
+		$object = $campaign->get_name() . ' /// Nouveau virement !';
 		
 		$content = "Bonjour,<br /><br />";
 		$content .= "Un nouveau virement de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";

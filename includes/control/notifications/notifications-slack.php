@@ -207,8 +207,9 @@ class NotificationsSlack {
 		$email = $payment_data['email'];
 		$user_data = get_user_by('email', $email);	
 
-		$message = "Un nouveau virement de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. "par l'utilisateur : " .$user_data->user_login. ", e-mail : " .$email ;
-
+		
+		$message = "Nouveau virement pour ".$campaign->data->post_title ." : ".$payment_amount. "euros (".$email.")";
+		
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
 }
