@@ -345,32 +345,7 @@ class NotificationsEmails {
 		}
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
 	}
-	
-	public static function new_purchase_pending_wire_admin( $payment_id ) {
-		ypcf_debug_log('NotificationsEmails::new_purchase_pending_wire_admin > ' . $payment_id);
-		$admin_email = 'support@wedogood.co';
 		
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
-		
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
-		$user_data = get_user_by('email', $email);
-		
-		$object = "Un nouveau virement a été enregistré";
-		
-		$body_content = "Bonjour,<br /><br />";
-		$body_content .= "Un nouveau virement de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
-		$body_content .= "Utilisateur :<br />";
-		$body_content .= "- login : " .$user_data->user_login. "<br />";
-		$body_content .= "- e-mail : " .$email. "<br />";
-		$body_content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
-		$body_content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
-		
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
-	}
-	
 	public static function new_purchase_pending_check_admin( $payment_id, $picture_url ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_pending_check_admin > ' . $payment_id);
 		$admin_email = 'support@wedogood.co';

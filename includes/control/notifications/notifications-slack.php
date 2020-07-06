@@ -196,4 +196,19 @@ class NotificationsSlack {
 		$message = "Le porteur de projet ".$campaign->get_name()." a cliqué sur le bouton de relecture : " .$campaign->get_public_url();
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
+
+	public static function investment_pending_wire( $payment_id ) {
+		
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);	
+
+		$message = "Un nouveau virement de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. "par l'utilisateur : " .$user_data->user_login. ", e-mail : " .$email ;
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
+	}
 }
