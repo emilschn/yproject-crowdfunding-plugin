@@ -90,4 +90,14 @@ class NotificationsAsana {
 		
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
+	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {		
+		$object = $campaign_name . ' /// Nouveau chèque ajouté dans TB par le PP';
+		
+		$content = "L'équipe du projet " .$campaign_name. " vient d'ajouter un chèque qu'il faudrait valider.<br>";
+		$content .= "URL du TB : <a href=\"" .$dashboard_url. "\" target=\"_blank\">" .$dashboard_url. "</a><br><br>";
+		$content .= "Bon courage !";
+		
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 }

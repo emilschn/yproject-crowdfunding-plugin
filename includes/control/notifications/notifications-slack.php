@@ -227,4 +227,10 @@ class NotificationsSlack {
 		
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
+
+	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {		
+		$message = "Ajout de chèque dans TB par le PP pour le projet " .$campaign_name. " URL du TB : <a href=\"" .$dashboard_url. "\" target=\"_blank\">" .$dashboard_url. "</a>";
+		
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
+	}
 }

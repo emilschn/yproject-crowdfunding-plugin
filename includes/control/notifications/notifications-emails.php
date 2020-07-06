@@ -387,20 +387,7 @@ class NotificationsEmails {
 		
 		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
 	}
-	
-	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {
-		$user_email = "support@wedogood.co";
 		
-		$object = "Ajout de chèque dans TB par le PP pour le projet " . $campaign_name;
-		
-		$body_content = "Salut,<br><br>";
-		$body_content .= "L'équipe du projet " .$campaign_name. " vient d'ajouter un chèque qu'il faudrait valider.<br>";
-		$body_content .= "URL du TB : <a href=\"" .$dashboard_url. "\" target=\"_blank\">" .$dashboard_url. "</a><br><br>";
-		$body_content .= "Bon courage !";
-		
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
-	}
-	
 	public static function investment_draft_validated_new_user( $user_email, $user_firstname, $user_password, $campaign_name ) {
 		$object = "Création d'un compte sur WE DO GOOD";
 		
