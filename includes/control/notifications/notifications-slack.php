@@ -348,6 +348,12 @@ class NotificationsSlack {
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
+	
+	public static function tax_summaries( $campaign_name, $total_tax_in_euros ) {
+		$message = "Projet " . $campaign_name . " - Taxes à payer aux impots (" . $total_tax_in_euros . ")";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL ROYALTIES-NOTIFICATIONS
     //*******************************************************

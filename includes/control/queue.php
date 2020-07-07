@@ -1137,11 +1137,9 @@ class WDGQueue {
 
 			if ( $buffer_mail != '' ) {
 				$campaign_object = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-				$intro_mail = 'Le projet ' . $campaign_object->get_name() . ' a versé des plus-values. Il faut les déclarer aux impots !<br><br>';
-				$buffer_mail = $intro_mail . $buffer_mail;
-				$buffer_mail .= '<br>';
-				$buffer_mail .= 'Au total, cela devrait faire un versement de ' . $total_tax_in_euros . ' € aux impots de notre part.';
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Taxes à payer aux impots /// ' . $campaign_object->get_name(), $buffer_mail );
+
+				NotificationsSlack::tax_summaries( $campaign_object->get_name(), $total_tax_in_euros );
+				NotificationsAsana::tax_summaries( $campaign_object->get_name(), $total_tax_in_euros );
 
 				// TODO : faire le paiement automatique sur les comptes de WDG
 				// Mais attente des premiers tests pour voir la véracité des infos

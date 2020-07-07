@@ -209,6 +209,13 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
+	public static function tax_summaries( $campaign_name, $total_tax_in_euros ) {
+		$object = 'Taxes à payer aux impots /// ' . $campaign_name;
+		$content = 'Le projet ' . $campaign_name . ' a versé des plus-values. Il faut les déclarer aux impots !<br><br>';
+		$content .= 'Au total, cela devrait faire un versement de ' . $total_tax_in_euros . ' € aux impots de notre part.';
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA DE SUPPORT
