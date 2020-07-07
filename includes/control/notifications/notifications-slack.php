@@ -233,4 +233,12 @@ class NotificationsSlack {
 		
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
+
+	
+
+	public static function new_purchase_admin_error( $user_data, $project_title, $amount ) {		
+		$message = "Tentative d'investissement avec erreur ".$project_title ." : ".$amount. "euros (".$user_data->user_email.")";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
+	}
 }

@@ -323,29 +323,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
 	}
 	
-    public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
-		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error > ' . $user_data->user_email);
-		$admin_email = 'support@wedogood.co';
-		$object = 'Erreur investissement';
-		$body_content = "Tentative d'investissement avec erreur :<br />";
-		$body_content .= "Login : " .$user_data->user_login. "<br />";
-		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
-		if ( !empty( $project_title ) ) {
-			$body_content .= "Projet : " .$project_title. "<br />";
-		}
-		if ( !empty( $amount ) ) {
-			$body_content .= "Montant : " .$amount. "<br />";
-		}
-		$body_content .= "Erreur LW : " .$int_msg. "<br />";
-		$body_content .= "Texte d'erreur pour l'utilisateur : " .$txt_msg. "<br />";
-		if ($ask_restart) {
-			$body_content .= "A proposé de recommencer<br />";
-		} else {
-			$body_content .= "N'a pas proposé de recommencer<br />";
-		}
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
-	}
-	
 	public static function preinvestment_auto_validated( $user_email, $campaign ) {
 		$object = "Votre pré-investissement est validé";
 		

@@ -100,4 +100,27 @@ class NotificationsAsana {
 		
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+
+	
+	public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
+		$object = $project_title . ' /// Erreur investissement !';
+		$content = "Tentative d'investissement avec erreur :<br />";
+		$content .= "Login : " .$user_data->user_login. "<br />";
+		$content .= "e-mail : " .$user_data->user_email. "<br />";
+		if ( !empty( $project_title ) ) {
+			$content .= "Projet : " .$project_title. "<br />";
+		}
+		if ( !empty( $amount ) ) {
+			$content .= "Montant : " .$amount. "<br />";
+		}
+		$content .= "Erreur LW : " .$int_msg. "<br />";
+		$content .= "Texte d'erreur pour l'utilisateur : " .$txt_msg. "<br />";
+		if ($ask_restart) {
+			$content .= "A proposé de recommencer<br />";
+		} else {
+			$content .= "N'a pas proposé de recommencer<br />";
+		}
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 }
