@@ -131,4 +131,11 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
+	public static function investment_to_api_error_admin( $edd_payment_item ) {
+		$object = "Erreur d'ajout d'investissement sur l'API ";
+		$content = "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $edd_payment_item->ID;
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 }
