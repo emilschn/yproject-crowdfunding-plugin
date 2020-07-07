@@ -100,7 +100,6 @@ class NotificationsAsana {
 		
 		return self::send( self::$notif_type_support, $object, $content );
 	}
-
 	
 	public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
 		$object = $project_title . ' /// Erreur investissement !';
@@ -120,6 +119,15 @@ class NotificationsAsana {
 		} else {
 			$content .= "N'a pas proposé de recommencer<br />";
 		}
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function organization_bank_file_changed_admin( $organization_name ) {
+		$object = "RIB d'organisation modifié - " . $organization_name;
+
+		$content = "L'organisation ".$organization_name." a changé de RIB.<br>";
+		$content .= "Si c'était un projet en versement, il faudrait refaire signer l'autorisation de prélèvement.<br>";
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}

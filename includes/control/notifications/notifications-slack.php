@@ -234,11 +234,15 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
 
-	
-
 	public static function new_purchase_admin_error( $user_data, $project_title, $amount ) {		
 		$message = "Tentative d'investissement avec erreur ".$project_title ." : ".$amount. "euros (".$user_data->user_email.")";
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
+	}
+
+	public static function organization_bank_file_changed_admin( $organization_name ) {		
+		$message = "L'organisation ".$organization_name ." a changé de RIB";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
 }
