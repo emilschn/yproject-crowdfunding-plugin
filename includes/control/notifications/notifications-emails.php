@@ -419,15 +419,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
 	}
 
-	public static function declaration_bill_failed( $campaign_name ) {
-		ypcf_debug_log('NotificationsEmails::declaration_bill_failed > ' . $campaign_name, false);
-		$object = "Erreur génération facture - " . $campaign_name;
-		$body_content = "Hello !<br><br>";
-		$body_content .= "La facture automatique de la dernière déclaration de royalties pour le projet " .$campaign_name. " n'a pas pu être créée.";
-		
-		$admin_email = 'administratif@wedogood.co';
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
-	}
     //*******************************************************
     // FIN NOTIFICATIONS PAIEMENTS ROI
     //*******************************************************

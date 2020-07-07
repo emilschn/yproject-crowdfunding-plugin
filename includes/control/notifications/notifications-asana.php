@@ -194,8 +194,13 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
+	public static function declaration_bill_failed( $campaign_name ) {
+		$object = "Erreur génération facture - " . $campaign_name;
+		$content = "La facture automatique de la dernière déclaration de royalties pour le projet " .$campaign_name. " n'a pas pu être créée.";
 
-
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA DE SUPPORT

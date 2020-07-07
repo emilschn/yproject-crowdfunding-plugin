@@ -739,7 +739,8 @@ class WDGROIDeclaration {
 					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
 
 				} else {
-					NotificationsEmails::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsSlack::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsAsana::declaration_bill_failed( $campaign->data->post_title );
 				}
 			}
 		}

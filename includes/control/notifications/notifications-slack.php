@@ -336,6 +336,12 @@ class NotificationsSlack {
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
+	
+	public static function declaration_bill_failed( $campaign_name ) {
+		$message = "Projet " . $campaign_name . " - Erreur génération facture";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL ROYALTIES-NOTIFICATIONS
     //*******************************************************
