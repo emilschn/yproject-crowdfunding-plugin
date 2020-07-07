@@ -1022,7 +1022,7 @@ class WDGInvestment {
 			$buffer = 'wallet_'. $transfer_funds_result->ID;
 
 		} else {
-			NotificationsEmails::new_purchase_admin_error_wallet( $WDGUser_current, $campaign->data->post_title, $amount );
+			NotificationsAsana::new_purchase_admin_error_wallet( $WDGUser_current, $campaign->data->post_title, $amount );
 		}
 		
 		return $buffer;
