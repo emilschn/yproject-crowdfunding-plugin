@@ -161,9 +161,7 @@ class NotificationsAsana {
 		$object = ' - Problème de création de contrat';
 		$content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id."</span>";
 		return self::send( self::$notif_type_support, $object, $content );
-	}
-
-		
+	}		
 	
 	public static function roi_received_exceed_investment( $investor_id, $investor_type, $project_id ) {
 		$campaign = new ATCF_Campaign( FALSE, $project_id );
@@ -182,10 +180,33 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
+	public static function roi_received_exceed_maximum( $investor_id, $investor_type, $project_id ) {
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		
+		$object = "URGENT - Royalties percues supérieures au maximum pouvant être reçu";
+		$content = "Un investisseur a reçu plus de royalties que son investissement de départ ne le permettait (maximum dépassé).<br>";
+		$content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$content .= "ID API investisseur : " .$investor_id. "<br>";
+		$content .= "ID WP investisseur : " .$investor_entity->get_wpref();	
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 
 
 
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA DE SUPPORT
+	//*******************************************************
+	
+    //*******************************************************
+    // CREATION DE TACHES ASANA DE SUIVI CLIENT
+    //*******************************************************
+
+	
+    //*******************************************************
+    // FIN DE CREATION DE TACHES ASANA DE SUIVI CLIENT
     //*******************************************************
 }

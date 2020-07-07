@@ -419,23 +419,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
 	}
 	
-    public static function roi_received_exceed_maximum( $investor_id, $investor_type, $project_id ) {
-		ypcf_debug_log( 'NotificationsEmails::roi_received_exceed_maximum > ' .$investor_id. ' | ' .$investor_type. ' | ' .$project_id );
-		$campaign = new ATCF_Campaign( FALSE, $project_id );
-		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
-		
-		$object = "URGENT - Royalties percues supérieures au maximum pouvant être reçu";
-		$body_content = "Coucou !<br><br>";
-		$body_content .= "Un investisseur a reçu plus de royalties que son investissement de départ ne le permettait (maximum dépassé).<br>";
-		$body_content .= "Sur le projet : " .$campaign->get_name(). "<br>";
-		$body_content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
-		$body_content .= "ID API investisseur : " .$investor_id. "<br>";
-		$body_content .= "ID WP investisseur : " .$investor_entity->get_wpref();
-		
-		$admin_email = 'administratif@wedogood.co';
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, true );
-	}
-	
 	public static function declarations_close_to_maximum_profit( $project_name, $ratio ) {
 		$object = "Projet proche du versement complet de royalties";
 		$body_content = "Coucou !<br><br>";
