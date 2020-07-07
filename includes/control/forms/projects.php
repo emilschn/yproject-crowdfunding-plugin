@@ -287,7 +287,7 @@ class WDGFormProjects {
 						$buffer = TRUE;
 
 				} else {
-					NotificationsEmails::send_notification_roi_payment_error_admin( $declaration->id );
+					NotificationsSlack::send_notification_roi_payment_error_admin( $declaration->id );
 					$buffer = $transaction_result->INT_MSG;
 
 				}

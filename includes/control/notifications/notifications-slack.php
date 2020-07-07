@@ -299,11 +299,19 @@ class NotificationsSlack {
 	}
 
 	public static function send_notification_roi_payment_bank_transfer_admin( $declaration_id ) {
-		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_bank_transfer_admin > ' . $declaration_id);
 		$roi_declaration = new WDGROIDeclaration( $declaration_id );
 		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
 	
 		$message = "Projet " . $campaign->data->post_title . " - Paiement ROI par virement déclaré et en attente : ".$roi_declaration->get_amount_with_commission()." €";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
+
+	public static function send_notification_roi_payment_error_admin( $declaration_id ) {
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+	
+		$message = "Projet " . $campaign->data->post_title . " -Problème de paiement de ROI : ".$roi_declaration->get_amount_with_commission()." €";
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}

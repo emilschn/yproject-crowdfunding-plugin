@@ -418,19 +418,6 @@ class NotificationsEmails {
 		
 		return NotificationsEmails::send_mail($author->user_email, $object, $body_content, true);
 	}
-
-    public static function send_notification_roi_payment_error_admin( $declaration_id ) {
-		ypcf_debug_log('NotificationsEmails::send_notification_roi_payment_error_admin > ' . $declaration_id);
-		$roi_declaration = new WDGROIDeclaration( $declaration_id );
-		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-		
-		$admin_email = 'administratif@wedogood.co';
-		$object = "Projet " . $campaign->data->post_title . " - Problème de paiement de ROI";
-		$body_content = "Hello !<br /><br />";
-		$body_content .= "Il y a eu un problème lors du paiement du reversement de ROI pour le projet " .$campaign->data->post_title. " (".$roi_declaration->get_amount_with_commission()." €).<br /><br />";
-		
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, true);
-	}
 	
     public static function roi_received_exceed_investment( $investor_id, $investor_type, $project_id ) {
 		ypcf_debug_log( 'NotificationsEmails::roi_received_exceed_investment > ' .$investor_id. ' | ' .$investor_type. ' | ' .$project_id );
