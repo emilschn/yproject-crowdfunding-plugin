@@ -175,7 +175,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$roideclaration->percent_commission_without_tax = $campaign->get_costs_to_organization() / 1.2;
 			$roideclaration->amount = round( ( $total_turnover * $campaign->roi_percent_remaining() / 100 ) * 100 ) / 100;
 			if ( $roideclaration->get_amount_with_adjustment() == 0 ) {
-				NotificationsEmails::turnover_declaration_null( $this->declaration_id, $declaration_message );
+				NotificationsSlack::turnover_declaration_null( $this->declaration_id, $declaration_message );
 				if ( $roideclaration->get_amount_with_commission() == 0 ) {
 					$roideclaration->status = WDGROIDeclaration::$status_transfer;
 				} else {

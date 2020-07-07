@@ -69,6 +69,10 @@ class NotificationsSlack {
 	    self::send( $webhook_url, $channel, $message, $icon );
 	}
 	
+
+	//*******************************************************
+    // NOTIFICATIONS SLACK DANS LE CANAL INVESTISSEURS-NOTIFICATIONS
+    //*******************************************************
 	public static function send_new_user( $wp_user_id ) {
 		$user_data = get_userdata( $wp_user_id );
 		$message = "Nouvel utilisateur : " . $user_data->user_login . ' (' . $wp_user_id . ') => ' . $user_data->user_email;
@@ -94,6 +98,13 @@ class NotificationsSlack {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
 	}
 	
+	//*******************************************************
+    // FIN DE NOTIFICATIONS SLACK DANS LE CANAL INVESTISSEURS-NOTIFICATIONS
+    //*******************************************************
+
+	//*******************************************************
+    // NOTIFICATIONS SLACK DANS LE CANAL CLIENTS-NOTIFICATIONS
+    //*******************************************************
 	public static function send_new_project( $campaign_id, $orga_name ) {
 		$post_campaign = get_post($campaign_id);
 		$project_title = $post_campaign->post_title;
@@ -163,8 +174,7 @@ class NotificationsSlack {
 				$message = "- " .$project_info[ 'name' ]. " (" .$project_info[ 'time_remaining' ]. ") : " .$project_info[ 'nb_invest' ]. " investissements pour " .$project_info[ 'value_invest' ]. " € (Objectif minimum : " .$project_info[ 'min_goal' ]. " €). " .$project_info[ 'nb_not_validated' ]. " investissements non-validés pour " .$project_info[ 'value_not_validated' ]. " €.";
 				NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_robot, self::$notif_type_clients );
 			}
-		}
-		
+		}		
 	}
 	
 	/**
@@ -174,21 +184,6 @@ class NotificationsSlack {
 	public static function send_document_uploaded_admin( $orga, $nb_document ) {
 		$message = "L'organisation " .$orga->get_name(). " a uploadé des documents d'authentification. Nombre de fichiers : ".$nb_document.".";
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_card_file_box, self::$notif_type_clients );
-	}
-	
-	public static function send_declaration_document_uploaded( $project_name, $document_name ) {
-		$message = "Le projet " .$project_name. " a uploadé un document justificatif appelé : ".$document_name;
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_mag, self::$notif_type_royalties );
-	}
-	
-	public static function send_declaration_filled( $project_name, $turnover_amount, $royalties_amount, $commission_amount ) {
-		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, self::$notif_type_royalties );
-	}
-	
-	public static function send_auto_transfer_done( $project_name ) {
-		$message = "Le versement du projet " .$project_name. " a été fait automatiquement.";
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, self::$notif_type_royalties );
 	}
 
 	public static function read_project_page( $id_campaign ) {
@@ -240,9 +235,46 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
 
+	//*******************************************************
+    // FIN DE NOTIFICATIONS SLACK DANS LE CANAL CLIENTS-NOTIFICATIONS
+    //*******************************************************
+	
+    //*******************************************************
+    // NOTIFICATIONS SLACK DANS LE CANAL ROYALTIES-NOTIFICATIONS
+	//*******************************************************
+	public static function send_declaration_document_uploaded( $project_name, $document_name ) {
+		$message = "Le projet " .$project_name. " a uploadé un document justificatif appelé : ".$document_name;
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_mag, self::$notif_type_royalties );
+	}
+	
+	public static function send_declaration_filled( $project_name, $turnover_amount, $royalties_amount, $commission_amount ) {
+		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, self::$notif_type_royalties );
+	}
+	
+	public static function send_auto_transfer_done( $project_name ) {
+		$message = "Le versement du projet " .$project_name. " a été fait automatiquement.";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, self::$notif_type_royalties );
+	}
+
 	public static function organization_bank_file_changed_admin( $organization_name ) {		
 		$message = "L'organisation ".$organization_name ." a changé de RIB";
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
+	// DECLARATIONS DE CA	
+	public static function turnover_declaration_null( $declaration_id, $declaration_message ) {
+		$declaration = new WDGROIDeclaration($declaration_id);
+		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );
+		
+		$message = "Projet " . $campaign->data->post_title . " - Déclaration de CA à zero ".$declaration_message;
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
+
+
+
+	//*******************************************************
+    // FIN DE NOTIFICATIONS SLACK DANS LE CANAL ROYALTIES-NOTIFICATIONS
+    //*******************************************************
 }

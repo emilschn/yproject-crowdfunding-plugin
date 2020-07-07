@@ -35,6 +35,9 @@ class NotificationsAsana {
 		return wp_mail( $asana_email, $task_name, $task_content, $headers );
 	}
 
+    //*******************************************************
+    // CREATION DE TACHES ASANA DE SUPPORT
+    //*******************************************************
 	public static function read_project_page( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
 		$object = $campaign->get_name() . ' /// Présentation à relire !';
@@ -150,7 +153,7 @@ class NotificationsAsana {
 	}
 		
 	/**
-     * Mail à l'admin lors d'un achat avec erreur de génération de contrat
+     * Achat avec erreur de génération de contrat
      * @param int $payment_id
      * @return bool
      */
@@ -159,4 +162,7 @@ class NotificationsAsana {
 		$content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id."</span>";
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+    //*******************************************************
+    // FIN DE CREATION DE TACHES ASANA DE SUPPORT
+    //*******************************************************
 }
