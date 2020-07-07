@@ -1078,9 +1078,6 @@ class WDGQueue {
 				$result = $roi_declaration->transfer_pending_rois();
 			}
 			if ( $result == 100 ) {
-				$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-				$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
 				NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
 
 			} else {
