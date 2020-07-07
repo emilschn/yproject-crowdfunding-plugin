@@ -315,6 +315,19 @@ class NotificationsSlack {
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
+	
+	public static function roi_received_exceed_investment( $investor_id, $investor_type, $project_id ) {
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		$investor_entity_wpref = 'indefini';
+		if ( !empty( $investor_entity ) ) {
+			$investor_entity_wpref = $investor_entity->get_wpref();
+		}
+
+		$message = "Projet " . $campaign->get_name() . " - Royalties percues supérieures à l'investissement initial : ( ID API investisseur :".$investor_id.")";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL ROYALTIES-NOTIFICATIONS
     //*******************************************************

@@ -162,6 +162,29 @@ class NotificationsAsana {
 		$content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id."</span>";
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+
+		
+	
+	public static function roi_received_exceed_investment( $investor_id, $investor_type, $project_id ) {
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		$investor_entity_wpref = 'indefini';
+		if ( !empty( $investor_entity ) ) {
+			$investor_entity_wpref = $investor_entity->get_wpref();
+		}
+
+		$object = "Royalties percues supérieures à l'investissement initial";
+		$content = "Un investisseur a reçu plus de royalties que son investissement de départ.<br>";
+		$content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$content .= "ID API investisseur : " .$investor_id. "<br>";
+		$content .= "ID WP investisseur : " .$investor_entity_wpref;		
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
+
+
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA DE SUPPORT
     //*******************************************************
