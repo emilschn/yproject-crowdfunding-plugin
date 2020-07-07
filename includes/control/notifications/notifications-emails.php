@@ -228,17 +228,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     
-    /**
-     * Mail à l'admin lors d'un achat avec erreur de génération de contrat
-     * @param int $payment_id
-     * @return bool
-     */
-    public static function new_purchase_admin_error_contract($payment_id) {
-	ypcf_debug_log('NotificationsEmails::new_purchase_admin_error_contract > ' . $payment_id);
-	$object = ' - Problème de création de contrat';
-	$body_content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id."</span>";
-	return NotificationsEmails::new_purchase_admin_success($payment_id, $object, $body_content);
-    }
     
     /**
      * Mail à l'admin lors d'un achat sans nécessité de signer un contrat

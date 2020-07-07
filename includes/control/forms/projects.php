@@ -141,7 +141,7 @@ class WDGFormProjects {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
 						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
-						NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
+						NotificationsAsana::new_purchase_admin_error_contract( $approve_payment_id );
 					}
 
 				} else {

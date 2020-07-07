@@ -148,5 +148,15 @@ class NotificationsAsana {
 		$content .= "Montant total : " .$amount. "<br />";
 		return self::send( self::$notif_type_support, $object, $content );
 	}
-	
+		
+	/**
+     * Mail à l'admin lors d'un achat avec erreur de génération de contrat
+     * @param int $payment_id
+     * @return bool
+     */
+	public static function new_purchase_admin_error_contract($payment_id) {
+		$object = ' - Problème de création de contrat';
+		$content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id."</span>";
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 }
