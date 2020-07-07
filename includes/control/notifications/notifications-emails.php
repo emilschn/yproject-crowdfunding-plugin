@@ -284,21 +284,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
     }
 	
-	
-    public static function new_purchase_admin_error_card_wallet( $user_data, $project_title, $amount, $amount_wallet ) {
-		ypcf_debug_log('NotificationsEmails::new_purchase_admin_error_card_wallet > ' . $user_data->user_email);
-		$admin_email = 'admin@wedogood.co';
-		$object = 'Erreur transfert wallet après carte';
-		$body_content = "Salut !<br />";
-		$body_content .= "Il y a un souci pour un transfert de wallet en complément d'un paiement par carte :<br />";
-		$body_content .= "Login : " .$user_data->user_login. "<br />";
-		$body_content .= "e-mail : " .$user_data->user_email. "<br />";
-		$body_content .= "Projet : " .$project_title. "<br />";
-		$body_content .= "Montant total : " .$amount. "<br />";
-		$body_content .= "dont montant wallet : " .$amount_wallet. "<br />";
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content );
-	}
-	
     public static function new_purchase_pending_admin_error( $user_data, $lw_msg, $invest_id, $amount ) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_pending_admin_error > ');
 		$admin_email = 'admin@wedogood.co';

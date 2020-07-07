@@ -148,4 +148,5 @@ class NotificationsAsana {
 		$content .= "Montant total : " .$amount. "<br />";
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
 }
