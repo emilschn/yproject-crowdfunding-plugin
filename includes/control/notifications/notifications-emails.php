@@ -228,63 +228,6 @@ class NotificationsEmails {
 		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
     }
     
-    
-    /**
-     * Mail à l'admin lors d'un achat sans nécessité de signer un contrat
-     * @param int $payment_id
-     * @return bool
-     */
-    public static function new_purchase_admin_success_nocontract($payment_id, $new_contract_pdf_file) {
-	$attachments = array($new_contract_pdf_file);
-	return NotificationsEmails::new_purchase_admin_success($payment_id, '', '', $attachments);
-    }
-    
-    /**
-     * Mail à l'admin lors d'un achat réussi
-     * @param int $payment_id
-     * @param string $complement_object
-     * @param string $complement_content
-     * @return bool
-     */
-    public static function new_purchase_admin_success($payment_id, $complement_object = '', $complement_content = '', $attachments = array()) {
-		ypcf_debug_log('NotificationsEmails::new_purchase_admin_success > ' . $payment_id);
-		$admin_email = 'admin@wedogood.co';
-		$object = 'Nouvel achat' . $complement_object;
-
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$user_id = edd_get_payment_user_id( $payment_id );
-		$user_data = get_userdata($user_id);
-		$payment_date = get_post_field( 'post_date', $payment_id );
-
-		$body_content = 'Nouvel investissement avec l\'identifiant de paiement ' . $payment_id . '<br /><br />';
-		$body_content .= "<strong>Détails de l'investissement</strong><br />";
-		$body_content .= "Utilisateur : " . $user_data->user_login . "<br />";
-		$body_content .= "Projet : " . $post_campaign->post_title . "<br />";
-		$body_content .= "Montant investi : ".$payment_amount."&euro;<br />";
-		if ($campaign->funding_type()=="fundingdonation"){
-			$reward = get_post_meta( $payment_id, '_edd_payment_reward', true);
-			$body_content .= " Contrepartie choisie : Palier de ".$reward['amount']."&euro; - ".$reward['name']."<br/>";
-		}
-		$body_content .= "Horodatage : ". $payment_date ."<br /><br />";
-		$body_content .= $complement_content;
-
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content, false, $attachments);
-    }
-	
-    public static function new_purchase_pending_admin_error( $user_data, $lw_msg, $invest_id, $amount ) {
-		ypcf_debug_log('NotificationsEmails::new_purchase_pending_admin_error > ');
-		$admin_email = 'admin@wedogood.co';
-		$object = 'Erreur paiement par carte en attente';
-		$body_content = "Tentative d'investissement avec erreur :<br />";
-		$body_content .= "user_data : " .print_r( $user_data, true ). "<br />";
-		$body_content .= "ID Invest : " .$invest_id. "<br />";
-		$body_content .= "Montant : " .$amount. "<br />";
-		$body_content .= "Retour LW : " .print_r( $lw_msg, true ). "<br />";
-		return NotificationsEmails::send_mail($admin_email, $object, $body_content);
-	}
-	
 	public static function preinvestment_auto_validated( $user_email, $campaign ) {
 		$object = "Votre pré-investissement est validé";
 		
