@@ -1053,8 +1053,8 @@ class WDGQueue {
 
 			} else {
 				// Sinon on prévient qu'il n'y a plus assez
-				$content_mail = "Il n'y a pas assez d'argent dans le wallet de royalties pour faire le versement trimestriel de " . $campaign->get_name();
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Fonds insuffisants', $content_mail );
+				NotificationsSlack::send_notification_roi_insufficient_funds_admin( $campaign->get_name() );
+				NotificationsAsana::send_notification_roi_insufficient_funds_admin( $campaign->get_name() );
 
 			}
 		}

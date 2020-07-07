@@ -331,6 +331,12 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
 	
+	public static function send_notification_roi_insufficient_funds_admin( $project_name ) {
+		$message = "Projet " . $project_name . " - Versement auto - Fonds insuffisants";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
+	
 	public static function declarations_close_to_maximum_profit( $project_name, $ratio ) {
 		$message = "Projet " . $project_name . " est proche d'atteindre son versement maximum (ratio de " .$ratio. " %).";
 
