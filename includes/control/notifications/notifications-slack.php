@@ -272,6 +272,14 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
 
+	public static function turnover_declaration_not_null( $declaration_id, $declaration_message ) {
+		$declaration = new WDGROIDeclaration($declaration_id);
+		$campaign = new ATCF_Campaign( FALSE, $declaration->id_campaign );		
+		$message = "Projet " . $campaign->data->post_title . " - Déclaration de CA effectuée ".$declaration_message;
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
+
 
 
 	//*******************************************************

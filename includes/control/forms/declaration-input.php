@@ -210,7 +210,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 				}
 				
 			} else {
-				NotificationsEmails::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
+				NotificationsSlack::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
 				$roideclaration->status = WDGROIDeclaration::$status_payment;
 				
 				// Si le montant des royalties fait que ça dépassera le max, on ajoute un ajustement qui fait baisser le montant
