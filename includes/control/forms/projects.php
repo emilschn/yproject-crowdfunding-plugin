@@ -276,7 +276,7 @@ class WDGFormProjects {
 						$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
 						$declaration->status = WDGROIDeclaration::$status_transfer;
 						$declaration->save();
-						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
+						NotificationsSlack::send_notification_roi_payment_success_admin( $declaration->id );
 						NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
 						
 						$campaign = atcf_get_current_campaign();
