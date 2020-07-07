@@ -805,7 +805,7 @@ class WDGROIDeclaration {
 		// Si on approche du maximum à verser pour un projet, on prévient le service administratif
 		if ( $campaign->maximum_profit() != 'infinite' && $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
-			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
+			NotificationsSlack::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
 		
 		

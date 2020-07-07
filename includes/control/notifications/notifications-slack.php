@@ -330,6 +330,12 @@ class NotificationsSlack {
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
+	
+	public static function declarations_close_to_maximum_profit( $project_name, $ratio ) {
+		$message = "Projet " . $project_name . " est proche d'atteindre son versement maximum (ratio de " .$ratio. " %).";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL ROYALTIES-NOTIFICATIONS
     //*******************************************************
