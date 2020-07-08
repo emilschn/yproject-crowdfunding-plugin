@@ -135,19 +135,19 @@ class WDGFormProjects {
 					$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
 					$contract_id = $WDGInvestmentSignature->create_eversign();
 					if ( !empty( $contract_id ) ) {
-						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
+						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 
 					} else {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
-						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
+						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 						NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
 					}
 
 				} else {
 					ypcf_debug_log( 'form_approve_payment > getNewPdfToSign' );
 					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
-					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
+					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 				}
 
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
