@@ -429,7 +429,7 @@ class NotificationsEmails {
     public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_refused_admin > ' . $user_email);
 		
-		$admin_email = 'support@wedogood.co';
+		$admin_email = 'investir@wedogood.co';
 		$object = "Investisseur à relancer !";
 		
 		$body_content = "Hello !<br>";

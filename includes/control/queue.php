@@ -537,6 +537,7 @@ class WDGQueue {
 			
 			if ( !empty( $pending_actions ) ) {
 				NotificationsEmails::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions );
+				NotificationsSlack::send_notification_kyc_refused_admin( $user_email, $user_name );
 			}
 		}
 		
