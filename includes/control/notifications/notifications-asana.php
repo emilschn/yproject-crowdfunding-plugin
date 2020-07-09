@@ -38,6 +38,23 @@ class NotificationsAsana {
     //*******************************************************
     // CREATION DE TACHES ASANA DE SUPPORT
     //*******************************************************
+	public static function send_new_project( $campaign_id, $orga_name ) {
+		$post_campaign = get_post($campaign_id);
+		$project_title = $post_campaign->post_title;
+		$user_author = get_user_by('id', $post_campaign->post_author);
+		$user_phone = get_user_meta( $post_campaign->post_author, 'user_mobile_phone', TRUE );
+		
+		$object = $project_title. ' /// Nouveau projet !';
+		$content = "Nouveau projet ! <!channel>\n";
+		$content .= "Nom : " .$project_title. "\n";
+		$content .= "URL : " .get_permalink($campaign_id). "\n";
+		$content .= "Porté par : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")\n";
+		$content .= "Mail : ".$user_author->user_email. "\n";
+		$content .= "Tel : ".$user_phone. "\n";
+		$content .= "Organisation : ".$orga_name. "\n";
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
 	public static function read_project_page( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
 		$object = $campaign->get_name() . ' /// Présentation à relire !';
@@ -45,7 +62,7 @@ class NotificationsAsana {
 		$content .= "URL du projet : " . $campaign->get_public_url();
 		return self::send( self::$notif_type_support, $object, $content );
 	}
-	
+
 	public static function investment_pending_wire( $payment_id ) {
 		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
 		$campaign = atcf_get_campaign($post_campaign);

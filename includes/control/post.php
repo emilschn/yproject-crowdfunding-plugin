@@ -220,6 +220,7 @@ class WDGPostActions {
 			
 				//Mail pour l'équipe
 				NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
+				NotificationsAsana::send_new_project( $newcampaign_id, $orga_name );
 				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
 				
 				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
