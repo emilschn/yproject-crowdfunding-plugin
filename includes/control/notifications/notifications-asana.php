@@ -55,6 +55,21 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_support, $object, $content );
 	}
 	
+	public static function send_new_project_status( $campaign_id, $status ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$status_str = "évaluation";
+		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
+			$status_str = "investissement";
+		}
+		
+		$object = $campaign->data->post_title. ' /// Nouvelle étape !';
+		$content = "Un projet change d'étape ! <!channel>\n";
+		$content .= "Nom : " .$campaign->data->post_title. "\n";
+		$content .= "Nouvelle étape : " .$status_str;
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
 	public static function read_project_page( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
 		$object = $campaign->get_name() . ' /// Présentation à relire !';
