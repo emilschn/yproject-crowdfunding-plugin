@@ -478,6 +478,7 @@ class WDGAjaxActions {
 					}
 					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
 					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
+					$buffer[ $campaign_id ][ 'roi_percent_estimated' ] = utf8_encode( $campaign->roi_percent_estimated() );
 					$buffer[ $campaign_id ][ 'items' ] = array();
 				}
 				
@@ -486,6 +487,7 @@ class WDGAjaxActions {
 				} else {
 					$investor_proportion = $payment_amount / $campaign->goal( FALSE );
 				}
+				$roi_percent_full_estimated = ( $buffer[ $campaign_id ][ 'roi_percent_estimated' ] * $payment_amount / $campaign->goal( FALSE ) );
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
@@ -614,7 +616,11 @@ class WDGAjaxActions {
 						if ( $estimated_turnover_unit == 'percent' ) {
 							$estimated_rois = round( $turnover * $payment_amount / 100 );
 						} else {
-							$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+							if ( !empty( $roi_percent_full ) ) {
+								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+							} else {
+								$estimated_rois = round( $turnover * $roi_percent_full_estimated / 100 );
+							}
 						}
 						$year_item = array(
 							'amount_turnover_nb'=> 0,
