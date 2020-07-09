@@ -98,6 +98,11 @@ class NotificationsSlack {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
 	}
 	
+	public static function send_wedogood_delete_order( $user_email ) {				
+		$message = "Compte utilisateur supprimé : " .$user_email;
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
+	}
+	
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL INVESTISSEURS-NOTIFICATIONS
     //*******************************************************
