@@ -448,7 +448,7 @@ class NotificationsEmails {
     public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions ) {
 		ypcf_debug_log('NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin > ' . $user_email);
 		
-		$admin_email = 'support@wedogood.co';
+		$admin_email = 'investir@wedogood.co';
 		$object = "Wallet à vérifier !";
 		
 		$body_content = "Hello !<br>";

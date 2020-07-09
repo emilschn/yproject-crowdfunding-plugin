@@ -107,6 +107,11 @@ class NotificationsSlack {
 		$message = "Documents refusés par LemonWay pour l'utilisateur : (" .$user_name. "," .$user_email ."), et l'utilisateur a quelques actions en attente. ";
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
 	}
+	
+	public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name ) {
+		$message = "Wallet à vérifier pour l'utilisateur : (" .$user_name. "," .$user_email .")";
+		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
+	}
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL INVESTISSEURS-NOTIFICATIONS
     //*******************************************************
