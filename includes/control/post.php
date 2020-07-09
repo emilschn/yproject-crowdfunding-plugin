@@ -1151,6 +1151,9 @@ class WDGPostActions {
 		}
 
 		$WDGOrganization = new WDGOrganization( $organization_id );
+		
+		$mandate_b2b_is_approved_by_bank = filter_input( INPUT_POST, 'mandate_b2b_is_approved_by_bank' );
+		$WDGOrganization->update_mandate_info( 'lemonway', FALSE, FALSE, $mandate_b2b_is_approved_by_bank );
 
 		$file_mandate_b2b = $_FILES[ 'mandate_b2b_file' ];
 		if ( !empty( $file_mandate_b2b ) && !empty( $file_mandate_b2b[ 'name' ] ) ) {
@@ -1159,10 +1162,21 @@ class WDGPostActions {
 			$ext = $file_name_exploded[ count( $file_name_exploded ) - 1];
 			$byte_array = file_get_contents( $file_mandate_b2b[ 'tmp_name' ] );
 			$file_create_item = WDGWPREST_Entity_File::create( $WDGOrganization->get_api_id(), 'organization', 'mandate', $ext, base64_encode( $byte_array ) );
+			
+			// Préparation notification automatique au porteur de projet
+			$user_name = '';
+			$linked_users_creator = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+				$user_name = $WDGUser_creator->wp_user->user_firstname;
+			}
+			$campaign = new ATCF_Campaign( $campaign_id );
+			//Suppression cache organisation pour récupérer nouvelle version
+			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$WDGOrganization->get_api_id() );
+			$WDGOrganizationUpdated = new WDGOrganization( $organization_id );
+			NotificationsAPI::mandate_to_send_to_bank( $WDGOrganization->get_email(), $user_name, $WDGOrganizationUpdated->get_mandate_file_url(), $campaign->get_api_id() );
 		}
-		
-		$mandate_b2b_is_approved_by_bank = filter_input( INPUT_POST, 'mandate_b2b_is_approved_by_bank' );
-		$WDGOrganization->update_mandate_info( 'lemonway', FALSE, FALSE, $mandate_b2b_is_approved_by_bank );
+
 		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#contracts' );
 		exit();
 	}

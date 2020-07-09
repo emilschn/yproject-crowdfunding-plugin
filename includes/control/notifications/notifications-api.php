@@ -45,6 +45,7 @@ class NotificationsAPI {
 		'629' => "Projet validé - campagne privée",
 		'699' => "Projet en attente d'atteinte du seuil de validation",
 		'179' => "Projet échoué",
+		'1751'	=> "Envoi mandat de prélèvement",
 		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
 		'115' => "Déclarations - Rappel J-9 (sans prélèvement)",
 		'119' => "Déclarations - Rappel J-2 (avec prélèvement)",
@@ -1108,6 +1109,29 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Déclarations
 	//**************************************************************************
+    //*******************************************************
+    // ENVOI MANDAT PRELEVEMENT
+    //*******************************************************
+	public static function mandate_to_send_to_bank( $recipients, $user_name, $attachment_url, $project_api_id ) {
+		$id_template = '1751';
+		$options = array(
+			'personal'		=> 1,
+			'NOM'			=> $user_name
+		);
+		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
+			$options[ 'url_attachment' ] = $attachment_url;
+		}
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipients,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+
     //*******************************************************
     // NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
