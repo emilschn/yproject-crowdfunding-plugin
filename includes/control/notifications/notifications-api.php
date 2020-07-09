@@ -1419,6 +1419,7 @@ class NotificationsAPI {
 		$options = array(
 			'personal'			=> 1,
 			'NOM'				=> $name,
+			'EMAIL'				=> $recipient,
 			'LISTE_PROJETS'		=> $project_list_str
 		);
 		$parameters = array(

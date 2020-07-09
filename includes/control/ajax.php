@@ -478,6 +478,7 @@ class WDGAjaxActions {
 					}
 					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
 					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
+					$buffer[ $campaign_id ][ 'roi_percent_estimated' ] = utf8_encode( $campaign->roi_percent_estimated() );
 					$buffer[ $campaign_id ][ 'items' ] = array();
 				}
 				
@@ -486,6 +487,7 @@ class WDGAjaxActions {
 				} else {
 					$investor_proportion = $payment_amount / $campaign->goal( FALSE );
 				}
+				$roi_percent_full_estimated = ( $buffer[ $campaign_id ][ 'roi_percent_estimated' ] * $payment_amount / $campaign->goal( FALSE ) );
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
@@ -614,7 +616,11 @@ class WDGAjaxActions {
 						if ( $estimated_turnover_unit == 'percent' ) {
 							$estimated_rois = round( $turnover * $payment_amount / 100 );
 						} else {
-							$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+							if ( !empty( $roi_percent_full ) ) {
+								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+							} else {
+								$estimated_rois = round( $turnover * $roi_percent_full_estimated / 100 );
+							}
 						}
 						$year_item = array(
 							'amount_turnover_nb'=> 0,
@@ -939,8 +945,10 @@ class WDGAjaxActions {
 		$buffer = FALSE;
 		if ( $is_for_project ) {
 			$buffer = NotificationsEmails::send_project_description_notification_to_project( $id_campaign );
+
 		} else {
-			$buffer = NotificationsEmails::send_project_description_notification_to_wdg( $id_campaign );
+			NotificationsSlack::read_project_page( $id_campaign );
+			$buffer = NotificationsAsana::read_project_page( $id_campaign );
 		}
 		
 		if ( $buffer ) {
@@ -3128,14 +3136,21 @@ class WDGAjaxActions {
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
 		$meta_key = $property.'_add_value_reservation_'.$lang;
 		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
-		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
-		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 
 		$return_values = array(
 			"response" => "done",
 			"values" => $property,
 			"user" => $name
 		);
+		
+		if ( empty( $meta_old_value[ 'user' ] ) ) {
+			$return_values[ 'response' ] = "error";
+			echo json_encode($return_values);
+			exit();
+		}
+
+		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
+		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 
 		if ( !empty($meta_old_value) ) {
 		    if ( $meta_old_value[ 'user' ] != $user_id ) {

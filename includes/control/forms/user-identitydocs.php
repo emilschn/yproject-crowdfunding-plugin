@@ -453,6 +453,13 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				if ( $send_notification_validation && $WDGOrganization->is_registered_lemonway_wallet() ) {
 					NotificationsAPI::kyc_waiting( $WDGOrganization->get_email(), $WDGOrganization->get_name() );
 				}
+
+				if ( $this->nb_file_sent > 0 ) {
+					$campaign_list = $WDGOrganization->get_campaigns();
+					if ( !empty( $campaign_list ) ) {
+						NotificationsSlack::send_document_uploaded_admin( $WDGOrganization, $this->nb_file_sent );
+					}
+				}
 				
 			} else {
 				if ( $WDGUser->can_register_lemonway() ) {

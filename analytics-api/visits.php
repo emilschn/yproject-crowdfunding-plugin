@@ -110,19 +110,21 @@ class WDG_Google_Analytics
 
     $i = 0;
 
-    echo '[';
-    foreach ( $result_rows as $row ) {
-      $sourceFr = str_replace("Organic Search", "Référencement naturel", $row[0]); // traduction des termes EN de GA
-      $sourceFr = str_replace("Referral", "Lien hypertexte", $sourceFr);
-      $sourceFr = str_replace("(Other)", "Autre", $sourceFr);
-      if ( $i == 0 ){
-        echo '{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
-      }
-      else {
-        echo ',{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
-      }
-      $i++;
-    }
+	echo '[';
+	if ( !empty( $result_rows ) ) {
+		foreach ( $result_rows as $row ) {
+		  $sourceFr = str_replace("Organic Search", "Référencement naturel", $row[0]); // traduction des termes EN de GA
+		  $sourceFr = str_replace("Referral", "Lien hypertexte", $sourceFr);
+		  $sourceFr = str_replace("(Other)", "Autre", $sourceFr);
+		  if ( $i == 0 ){
+			echo '{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
+		  }
+		  else {
+			echo ',{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
+		  }
+		  $i++;
+		}
+	}
     echo ']';
 
   }

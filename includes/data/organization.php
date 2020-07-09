@@ -721,58 +721,6 @@ class WDGOrganization {
 	}
 	
 	/**
-	 * Gère les documents à enregistrer en local
-	 */
-	public function submit_documents() {
-		$documents_list = array(
-			'org_doc_bank'					=> WDGKYCFile::$type_bank,
-			'org_doc_kbis'					=> WDGKYCFile::$type_kbis,
-			'org_doc_status'				=> WDGKYCFile::$type_status,
-			'org_doc_id'					=> WDGKYCFile::$type_id,
-			'org_doc_idbis'					=> WDGKYCFile::$type_idbis,
-			'org_doc_capital_allocation'	=> WDGKYCFile::$type_capital_allocation,
-			'org_doc_id_2'					=> WDGKYCFile::$type_id_2,
-			'org_doc_idbis_2'				=> WDGKYCFile::$type_idbis_2,
-			'org_doc_id_3'					=> WDGKYCFile::$type_id_3,
-			'org_doc_idbis_3'				=> WDGKYCFile::$type_idbis_3
-		);
-		$files_info = array();//stocke les infos des fichiers uploadés
-		$notify = 0;
-		foreach ($documents_list as $document_key => $document_type) {
-			$files_info[$document_key]['date'] = "";
-			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
-				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
-				if ($result == 'ext') {
-					$files_info[$document_key]['code'] = 1;
-					$files_info[$document_key]['info'] = __( "Le format de fichier n'est pas accept&eacute;.", 'yproject' );
-				} 
-				else if ($result == 'size') {
-					$files_info[$document_key]['code'] = 1;
-					$files_info[$document_key]['info'] = __( "Le fichier est trop lourd.", 'yproject' );
-				} else if ($result != FALSE) {
-					$notify++;
-					$kycfile = new WDGKYCFile($result);
-					$filepath = $kycfile->get_public_filepath();
-					$date_upload = $kycfile->get_date_uploaded();
-					$files_info[$document_key]['code'] = 0;
-					$files_info[$document_key]['info'] = $filepath;
-					$files_info[$document_key]['date'] = __( "T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject' ) .$date_upload;
-					if ( $this->has_sent_all_documents() && $this->register_lemonway() ) {
-						LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $kycfile->file_name, LemonwayDocument::get_type_by_kyc_type( $document_type ), $kycfile->get_byte_array() );
-					}
-				}
-			}
-			else {
-				$files_info[$document_key]['code'] = 0;
-				$files_info[$document_key]['info'] = null;
-			}
-		}
-		if ($notify > 0) {
-			NotificationsSlack::send_document_uploaded_admin($this, $notify);
-		}
-		return $files_info;
-	}
-	/**
 	 * Détermine si l'organisation a envoyé tous ses documents
 	 */
 	public function has_sent_all_documents() {
@@ -788,7 +736,6 @@ class WDGOrganization {
 		}
 		return $buffer;
 	}
-
 	
 	/**
 	 * Détermine si l'organisation a envoyé tous ses documents
@@ -935,7 +882,11 @@ class WDGOrganization {
 				if ($buffer == FALSE) {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
+					$transfer_amount = str_replace( ' ', '', $transfer_amount );
+					$transfer_amount = str_replace( ',', '.', $transfer_amount );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
+					$transfer_commission = str_replace( ' ', '', $transfer_commission );
+					$transfer_commission = str_replace( ',', '.', $transfer_commission );
 					LemonwayLib::ask_transfer_funds( $this->get_campaign_lemonway_id(), $this->get_lemonway_id(), ( $transfer_amount + $transfer_commission ) );
 					if ( $transfer_amount > 0 ) {
 						$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );

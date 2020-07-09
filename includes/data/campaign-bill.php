@@ -161,7 +161,7 @@ class WDGCampaignBill {
 			$options = array(
 				'customerid'		=> $WDGOrganization->get_id_quickbooks(),
 				'customeremail'		=> $WDGOrganization->get_email(),
-				'itemtitle'			=> self::$items_types[ $product_type ][ 'quickbooks_campaign' ],
+				'itemtitle'			=> self::$item_types[ $product_type ][ 'quickbooks_campaign' ],
 				'itemdescription'	=> $line_description,
 				'itemvalue'			=> $platform_commission_amount,
 				'itemtaxid'			=> WDGCampaignBill::$item_tax_20,

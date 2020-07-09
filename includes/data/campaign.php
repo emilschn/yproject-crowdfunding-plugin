@@ -962,6 +962,12 @@ class ATCF_Campaign {
 		$datetime_first_payment->sub( new DateInterval( 'P14D' ) );
 		return $datetime_first_payment;
 	}
+
+	public function get_end_date_when_can_invest_until_contract_start_date_as_string() {
+		$datetime_first_payment = $this->get_end_date_when_can_invest_until_contract_start_date();
+		$datetime_first_payment->sub( new DateInterval( 'PT1M' ) );
+		return $datetime_first_payment->format( 'd/m/Y H\hi' );
+	}
 	
 	public static $key_archive_message = 'archive_message';
 	public function archive_message() {

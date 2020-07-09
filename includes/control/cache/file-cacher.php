@@ -150,7 +150,12 @@ class WDG_File_Cacher {
 					'timeout' => 120, // Timeout de 2 minutes
 				)
 		) );
-		return file_get_contents( $this->website . $page_path . '/', FALSE, $context );
+		
+		try {
+			return @file_get_contents( $this->website . $page_path . '/', FALSE, $context );
+		} catch (Exception $e) { }
+
+		return FALSE;
 	}
 	
 	/**
