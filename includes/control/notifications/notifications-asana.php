@@ -79,6 +79,13 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
+	public static function send_document_uploaded_admin( $orga, $nb_document ) {
+		$object = $orga->get_name(). ' /// Nouveau KYC !';
+		$content =  "L'organisation " .$orga->get_name(). " a uploadé des documents d'authentification. Nombre de fichiers : ".$nb_document.".";
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 
 	public static function read_project_page( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
