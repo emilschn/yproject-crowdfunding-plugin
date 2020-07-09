@@ -69,6 +69,16 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+	
+	public static function send_new_project_mandate( $orga_id ) {
+		$WDGOrganization = new WDGOrganization( $orga_id );
+		
+		$object = $WDGOrganization->get_name(). ' /// Mandat de prélèvement !';
+		$content = $WDGOrganization->get_name(). " a signé l'autorisation de prélèvement";
+		// TODO : ajouter l'URL vers le tableau de bord sur LW
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 
 	public static function read_project_page( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
