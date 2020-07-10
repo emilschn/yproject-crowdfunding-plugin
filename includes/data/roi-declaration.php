@@ -631,6 +631,11 @@ class WDGROIDeclaration {
 
 							$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount - $amount_tax_in_cents / 100 );
 							$status = WDGROI::$status_transferred;
+							
+							if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
+								WDGQueue::add_notification_wallet_more_200_euros( $wdguser_wpref );
+								WDGQueue::add_notification_investors_with_more_200_euros( $campaign->ID, $wdguser_wpref );
+							}
 
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
