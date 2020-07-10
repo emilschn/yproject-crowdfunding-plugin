@@ -789,7 +789,7 @@ class WDGInvestment {
 		$save_display_name = $WDGUser_current->wp_user->display_name;
 		$invest_type = $this->get_session_user_type();
 		$lemonway_id = $WDGUser_current->get_lemonway_id();
-		if ( $invest_type != 'user' ) {
+		if ( $invest_type != 'user' && !empty( $invest_type ) ) {
 			$WDGOrganization = new WDGOrganization( $invest_type );
 			if ( $WDGOrganization ) {
 				$current_user_organization = $WDGOrganization->get_creator();
@@ -879,7 +879,7 @@ class WDGInvestment {
 			
 			// Annulation des investissements non-démarrés du même investisseur
 			$pending_not_validated_investments = array();
-			if ( $invest_type != 'user' ) {
+			if ( $invest_type != 'user' && !empty( $invest_type ) ) {
 				$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
 			} else {
 				$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
