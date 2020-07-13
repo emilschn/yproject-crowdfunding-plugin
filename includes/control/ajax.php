@@ -615,7 +615,7 @@ class WDGAjaxActions {
 						$estimated_rois = 0;
 						if ( $estimated_turnover_unit == 'percent' ) {
 							$estimated_rois = round( $turnover * $payment_amount / 100 );
-							$turnover = round( $turnover / $campaign->current_amount( FALSE ) * 100 );
+							$turnover = round( $campaign->current_amount( FALSE ) / $turnover * 100 );
 						} else {
 							if ( !empty( $roi_percent_full ) ) {
 								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
@@ -717,16 +717,14 @@ class WDGAjaxActions {
 									if ( $roi->id_declaration == $roi_declaration->id && $roi->status != WDGROI::$status_canceled ) {
 										$has_found_roi = true;
 
-										if ( $estimated_turnover_unit != 'percent' ) {
-											$turnover_list = $roi_declaration->get_turnover();
-											foreach ( $turnover_list as $turnover_item ) {
-												$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $turnover_item;
-											}
-											$adjustment_value_as_turnover = $roi_declaration->get_adjustments_amount_as_turnover();
-											$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
-											$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
-											$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $amount_turnover_nb, TRUE ) . ' &euro;';
+										$turnover_list = $roi_declaration->get_turnover();
+										foreach ( $turnover_list as $turnover_item ) {
+											$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $turnover_item;
 										}
+										$adjustment_value_as_turnover = $roi_declaration->get_adjustments_amount_as_turnover();
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $amount_turnover_nb, TRUE ) . ' &euro;';
 										
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
