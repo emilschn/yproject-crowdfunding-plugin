@@ -2175,46 +2175,52 @@ class WDGAjaxActions {
             } else {
 				// Etat de l'authentification
 				$WDGUser = new WDGUser( $user_id );
-				$WDGUser_wallet_details = $WDGUser->get_wallet_details();
-				$span_class = 'error';
-				$error_str = '';
-				$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
-					switch ( $WDGUser_wallet_details->STATUS ) {
-						case '2':
-							$user_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
-							break;
-						case '3':
-							$user_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
-							break;
-						case '6':
-							$user_authentication = __( "Valid&eacute;e", 'yproject' );
-							$span_class = 'confirm';
-							break;
-						case '8':
-							$user_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
-							break;
-						case '10':
-						case '12':
-							$user_authentication = __( "Bloqu&eacute;e", 'yproject' );
-							break;
-						
-						case '14':
-						case '15':
-						case '16':
-							$user_authentication = __( "Erreur", 'yproject' );
-							break;
-
-						case '5':
-						case '7':
-						case '13':
-						default:
-							$user_authentication = __( "En attente de documents", 'yproject' );
-							break;
-					}
-
-					if ( $WDGUser_wallet_details->STATUS != '6' ) {
-						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
+				if ( $WDGUser->get_lemonway_status() == LemonwayLib::$status_registered ) {
+					$user_authentication = __( "Valid&eacute;e", 'yproject' );
+					$span_class = 'confirm';
+					
+				} else {
+					$WDGUser_wallet_details = $WDGUser->get_wallet_details();
+					$span_class = 'error';
+					$error_str = '';
+					$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+					if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
+						switch ( $WDGUser_wallet_details->STATUS ) {
+							case '2':
+								$user_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+								break;
+							case '3':
+								$user_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+								break;
+							case '6':
+								$user_authentication = __( "Valid&eacute;e", 'yproject' );
+								$span_class = 'confirm';
+								break;
+							case '8':
+								$user_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+								break;
+							case '10':
+							case '12':
+								$user_authentication = __( "Bloqu&eacute;e", 'yproject' );
+								break;
+							
+							case '14':
+							case '15':
+							case '16':
+								$user_authentication = __( "Erreur", 'yproject' );
+								break;
+	
+							case '5':
+							case '7':
+							case '13':
+							default:
+								$user_authentication = __( "En attente de documents", 'yproject' );
+								break;
+						}
+	
+						if ( $WDGUser_wallet_details->STATUS != '6' ) {
+							$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
+						}
 					}
 				}
 				$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
