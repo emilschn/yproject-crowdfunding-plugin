@@ -2174,11 +2174,11 @@ class WDGAjaxActions {
             //Données si l'investisseur est un utilisateur normal
             } else {
 				
+				$WDGUser = new WDGUser( $user_id );
 				//Infos supplémentaires pour les investisseurs
 				if($array_contacts[$user_id]["invest"] == 1){
-					
+
 					// Etat de l'authentification
-					$WDGUser = new WDGUser( $user_id );
 					if ( $WDGUser->get_lemonway_status() == LemonwayLib::$status_registered ) {
 						$user_authentication = __( "Valid&eacute;e", 'yproject' );
 						$span_class = 'confirm';
