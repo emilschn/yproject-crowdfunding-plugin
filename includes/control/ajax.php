@@ -724,7 +724,7 @@ class WDGAjaxActions {
 										$adjustment_value_as_turnover = $roi_declaration->get_adjustments_amount_as_turnover();
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
-										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $amount_turnover_nb, TRUE ) . ' &euro;';
+										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
 										
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
