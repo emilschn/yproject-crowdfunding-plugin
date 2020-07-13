@@ -2094,56 +2094,63 @@ class WDGAjaxActions {
         foreach ( $array_contacts as $user_id => $user_item ){
             //Données si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"] = $user_id;
-			if ( WDGOrganization::is_user_organization( $user_id ) ) {
-				$WDGOrganization = new WDGOrganization( $user_id );
-				$linked_users = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
-				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
-			}
 
             if(WDGOrganization::is_user_organization($user_id)){
                 $orga = new WDGOrganization($user_id);
-				$orga_wallet_details = $orga->get_wallet_details();
-				$span_class = 'error';
-				$error_str = '';
-				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
-					switch ( $orga_wallet_details->STATUS ) {
-						case '2':
-							$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
-							break;
-						case '3':
-							$orga_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
-							break;
-						case '6':
-							$orga_authentication = __( "Valid&eacute;e", 'yproject' );
-							$span_class = 'confirm';
-							break;
-						case '8':
-							$orga_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
-							break;
-						case '10':
-						case '12':
-							$orga_authentication = __( "Bloqu&eacute;e", 'yproject' );
-							break;
-						
-						case '14':
-						case '15':
-						case '16':
-							$orga_authentication = __( "Erreur", 'yproject' );
-							break;
+				$linked_users = $orga->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+				
+				
+				// Etat de l'authentification
+				if ( $orga->get_lemonway_status() == LemonwayLib::$status_registered ) {
+					$orga_authentication = __( "Valid&eacute;e", 'yproject' );
+					$span_class = 'confirm';
 
-						case '5':
-						case '7':
-						case '13':
-						default:
-							$orga_authentication = __( "En attente de documents", 'yproject' );
-							break;
-					}
-
-					if ( $orga_wallet_details->STATUS != '6' ) {
-						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+				} else {
+					$orga_wallet_details = $orga->get_wallet_details();
+					$span_class = 'error';
+					$error_str = '';
+					$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+					if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
+						switch ( $orga_wallet_details->STATUS ) {
+							case '2':
+								$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+								break;
+							case '3':
+								$orga_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+								break;
+							case '6':
+								$orga_authentication = __( "Valid&eacute;e", 'yproject' );
+								$span_class = 'confirm';
+								break;
+							case '8':
+								$orga_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+								break;
+							case '10':
+							case '12':
+								$orga_authentication = __( "Bloqu&eacute;e", 'yproject' );
+								break;
+							
+							case '14':
+							case '15':
+							case '16':
+								$orga_authentication = __( "Erreur", 'yproject' );
+								break;
+	
+							case '5':
+							case '7':
+							case '13':
+							default:
+								$orga_authentication = __( "En attente de documents", 'yproject' );
+								break;
+						}
+	
+						if ( $orga_wallet_details->STATUS != '6' ) {
+							$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+						}
 					}
 				}
+				
 				$orga_authentication = '<span class="payment-status-' .$span_class. '">' .$orga_authentication. '</span>';
 				if ( !empty( $error_str ) ) {
 					$orga_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
