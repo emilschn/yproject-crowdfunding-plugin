@@ -615,7 +615,7 @@ class WDGAjaxActions {
 						$estimated_rois = 0;
 						if ( $estimated_turnover_unit == 'percent' ) {
 							$estimated_rois = round( $turnover * $payment_amount / 100 );
-							$turnover = round( $campaign->current_amount( FALSE ) / $turnover * 100 );
+							$turnover = round( $campaign->current_amount( FALSE ) * $turnover / 100 );
 						} else {
 							if ( !empty( $roi_percent_full ) ) {
 								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
