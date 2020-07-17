@@ -228,7 +228,9 @@ class LemonwayDocument {
 	 * Construit une chaine avec les infos d'erreurs sur les documents
 	 */
 	public static function build_error_str_from_wallet_details( $wallet_details ) {
-		$buffer = '';
+		// Lemon Way renvoie l'historique de chaque document
+		// Pour éviter les doublons, construction d'un tableau indexé par type de document
+		$return_by_document_type = array();
 
 		if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
 			foreach ( $wallet_details->DOCS->DOC as $document_object ) {
@@ -307,13 +309,18 @@ class LemonwayDocument {
 				}
 
 				if ( !empty( $document_type ) && !empty( $document_status ) ) {
-					$buffer .= $document_type. " bloque l'authentification. Le document a été " .$document_status. ".";
+					$return_by_document_type[ $document_object->TYPE ] = $document_type. " bloque l'authentification. Le document a été " .$document_status. ".";
 					if ( !empty( $document_object->C ) ) {
-						$buffer .= " Commentaire complémentaire de Lemon Way : \"" .$document_object->C. "\"";
+						$return_by_document_type[ $document_object->TYPE ] .= " Commentaire complémentaire de Lemon Way : \"" .$document_object->C. "\"";
 					}
-					$buffer .= '<br>';
 				}
 			}
+		}
+
+		$buffer = '';
+		$return_by_document_type = array();
+		foreach ( $return_by_document_type as $document_type => $return_str ) {
+			$buffer .= $return_str . '<br>';
 		}
 
 		return $buffer;
