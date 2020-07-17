@@ -318,7 +318,6 @@ class LemonwayDocument {
 		}
 
 		$buffer = '';
-		$return_by_document_type = array();
 		foreach ( $return_by_document_type as $document_type => $return_str ) {
 			$buffer .= $return_str . '<br>';
 		}
