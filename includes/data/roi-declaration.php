@@ -1054,7 +1054,7 @@ class WDGROIDeclaration {
 	 */
 	public function init_rois_and_tax() {
 		if ( $this->remaining_amount == 0 ) {
-			$this->remaining_amount = $this->amount;
+			$this->remaining_amount = $this->get_amount_with_adjustment();
 		}
 
 		//********************** */
