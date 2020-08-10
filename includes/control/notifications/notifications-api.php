@@ -296,7 +296,7 @@ class NotificationsAPI {
 	}
 
 	public static function phone_kyc_refused( $recipient, $name ) {
-		$param_content = "Bonjour " .$name.", un ou plusieurs documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Ceci bloque votre authentification. Connectez-vous afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
+		$param_content = "Bonjour " .$name.", des documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
