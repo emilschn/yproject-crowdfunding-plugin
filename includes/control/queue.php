@@ -677,6 +677,7 @@ class WDGQueue {
 			
 			if ( !empty( $pending_actions ) ) {
 				NotificationsEmails::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions );
+				NotificationsSlack::send_notification_kyc_refused_admin( $user_email, $user_name );
 			}
 		}
 		
@@ -870,6 +871,7 @@ class WDGQueue {
 				
 				if ( !empty( $pending_actions ) ) {
 					NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions );
+					NotificationsSlack::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name );
 				}
 			}
 		}
@@ -1193,8 +1195,8 @@ class WDGQueue {
 
 			} else {
 				// Sinon on prévient qu'il n'y a plus assez
-				$content_mail = "Il n'y a pas assez d'argent dans le wallet de royalties pour faire le versement trimestriel de " . $campaign->get_name();
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Fonds insuffisants', $content_mail );
+				NotificationsSlack::send_notification_roi_insufficient_funds_admin( $campaign->get_name() );
+				NotificationsAsana::send_notification_roi_insufficient_funds_admin( $campaign->get_name() );
 
 			}
 		}
@@ -1218,9 +1220,6 @@ class WDGQueue {
 				$result = $roi_declaration->transfer_pending_rois();
 			}
 			if ( $result == 100 ) {
-				$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-				$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
 				NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
 
 			} else {
@@ -1280,11 +1279,9 @@ class WDGQueue {
 
 			if ( $buffer_mail != '' ) {
 				$campaign_object = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-				$intro_mail = 'Le projet ' . $campaign_object->get_name() . ' a versé des plus-values. Il faut les déclarer aux impots !<br><br>';
-				$buffer_mail = $intro_mail . $buffer_mail;
-				$buffer_mail .= '<br>';
-				$buffer_mail .= 'Au total, cela devrait faire un versement de ' . $total_tax_in_euros . ' € aux impots de notre part.';
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Taxes à payer aux impots /// ' . $campaign_object->get_name(), $buffer_mail );
+
+				NotificationsSlack::tax_summaries( $campaign_object->get_name(), $total_tax_in_euros );
+				NotificationsAsana::tax_summaries( $campaign_object->get_name(), $total_tax_in_euros );
 
 				// TODO : faire le paiement automatique sur les comptes de WDG
 				// Mais attente des premiers tests pour voir la véracité des infos

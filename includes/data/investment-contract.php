@@ -83,12 +83,14 @@ class WDGInvestmentContract {
 	public function check_amount_received( $amount_received, $amount_current_declaration ) {
 		// Est-ce que l'investisseur a reçu une plus-value
 		if ( $amount_received > $this->subscription_amount ) {
-			NotificationsEmails::roi_received_exceed_investment( $this->investor_id, $this->investor_type, $this->project_id );
+			NotificationsSlack::roi_received_exceed_investment( $this->investor_id, $this->project_id );
+			NotificationsAsana::roi_received_exceed_investment( $this->investor_id, $this->investor_type, $this->project_id );
 		}
 
 		// Notification de sécurité : Est-ce que l'investisseur a dépassé le maximum qu'il devrait pouvoir recevoir ?
 		if ( $this->maximum_to_receive > 0 && $amount_received > $this->maximum_to_receive ) {
-			NotificationsEmails::roi_received_exceed_maximum( $this->investor_id, $this->investor_type, $this->project_id );
+			NotificationsSlack::roi_received_exceed_maximum( $this->investor_id, $this->project_id );
+			NotificationsAsana::roi_received_exceed_maximum( $this->investor_id, $this->investor_type, $this->project_id );
 		}
 	}
 	

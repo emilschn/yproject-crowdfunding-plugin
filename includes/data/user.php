@@ -240,6 +240,7 @@ class WDGUser {
 		if ( $lemonway_id ){
 			// on envoie un mail à admin@wedogood.co pour informer de la suppression de l'utilisateur
 			NotificationsEmails::send_wedogood_delete_order( $email_user );
+			NotificationsSlack::send_wedogood_delete_order( $email_user );
 		}
 	}
 
