@@ -326,6 +326,7 @@ class WDGAPICalls {
 
 			//Mail pour l'équipe
 			NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
+			NotificationsAsana::send_new_project( $newcampaign_id, $orga_name );
 			NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
 		}
 		

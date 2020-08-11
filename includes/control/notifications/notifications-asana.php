@@ -35,6 +35,58 @@ class NotificationsAsana {
 		return wp_mail( $asana_email, $task_name, $task_content, $headers );
 	}
 
+    //*******************************************************
+    // CREATION DE TACHES ASANA DE SUPPORT
+    //*******************************************************
+	public static function send_new_project( $campaign_id, $orga_name ) {
+		$post_campaign = get_post($campaign_id);
+		$project_title = $post_campaign->post_title;
+		$user_author = get_user_by('id', $post_campaign->post_author);
+		$user_phone = get_user_meta( $post_campaign->post_author, 'user_mobile_phone', TRUE );
+		
+		$object = $project_title. ' /// Nouveau projet !';
+		$content = "Nouveau projet ! <!channel>\n";
+		$content .= "Nom : " .$project_title. "\n";
+		$content .= "URL : " .get_permalink($campaign_id). "\n";
+		$content .= "Porté par : ".$user_author->first_name." ".$user_author->last_name." (".$user_author->user_login.")\n";
+		$content .= "Mail : ".$user_author->user_email. "\n";
+		$content .= "Tel : ".$user_phone. "\n";
+		$content .= "Organisation : ".$orga_name. "\n";
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function send_new_project_status( $campaign_id, $status ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$status_str = "évaluation";
+		if ( $status == ATCF_Campaign::$campaign_status_collecte ) {
+			$status_str = "investissement";
+		}
+		
+		$object = $campaign->data->post_title. ' /// Nouvelle étape !';
+		$content = "Un projet change d'étape ! <!channel>\n";
+		$content .= "Nom : " .$campaign->data->post_title. "\n";
+		$content .= "Nouvelle étape : " .$status_str;
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function send_new_project_mandate( $orga_id ) {
+		$WDGOrganization = new WDGOrganization( $orga_id );
+		
+		$object = $WDGOrganization->get_name(). ' /// Mandat de prélèvement !';
+		$content = $WDGOrganization->get_name(). " a signé l'autorisation de prélèvement";
+		// TODO : ajouter l'URL vers le tableau de bord sur LW
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function send_document_uploaded_admin( $orga, $nb_document ) {
+		$object = $orga->get_name(). ' /// Nouveau KYC !';
+		$content =  "L'organisation " .$orga->get_name(). " a uploadé des documents d'authentification. Nombre de fichiers : ".$nb_document.".";
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
 	public static function read_project_page( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
 		$object = $campaign->get_name() . ' /// Présentation à relire !';
@@ -42,4 +94,192 @@ class NotificationsAsana {
 		$content .= "URL du projet : " . $campaign->get_public_url();
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+
+	public static function investment_pending_wire( $payment_id ) {
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);
+		
+		$object = $campaign->get_name() . ' /// Nouveau virement !';
+		
+		$content = "Un nouveau virement de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		$content .= "Utilisateur :<br />";
+		$content .= "- login : " .$user_data->user_login. "<br />";
+		$content .= "- e-mail : " .$email. "<br />";
+		$content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
+		$content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function new_purchase_pending_check_admin( $payment_id, $picture_url ) {
+		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
+		$campaign = atcf_get_campaign($post_campaign);
+		
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$payment_amount = edd_get_payment_amount( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);
+		
+		$object = $campaign->get_name() . ' /// Nouveau chèque !';
+		
+		$content = "Un nouveau chèque de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		$content .= "Utilisateur :<br />";
+		$content .= "- login : " .$user_data->user_login. "<br />";
+		$content .= "- e-mail : " .$email. "<br />";
+		$content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
+		$content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		if ( $picture_url ) {
+			$content .= "Une photo a été envoyée :<br />";
+			$content .= "<img src='".$picture_url."' /><br />";
+		} else {
+			$content .= "Aucune photo n'a été envoyée.<br />";
+		}
+		
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {		
+		$object = $campaign_name . ' /// Nouveau chèque ajouté dans TB par le PP';
+		
+		$content = "L'équipe du projet " .$campaign_name. " vient d'ajouter un chèque qu'il faudrait valider.<br>";
+		$content .= "URL du TB : <a href=\"" .$dashboard_url. "\" target=\"_blank\">" .$dashboard_url. "</a><br><br>";
+		$content .= "Bon courage !";
+		
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function new_purchase_admin_error( $user_data, $int_msg, $txt_msg, $project_title, $amount, $ask_restart ) {
+		$object = $project_title . ' /// Erreur investissement !';
+		$content = "Tentative d'investissement avec erreur :<br />";
+		$content .= "Login : " .$user_data->user_login. "<br />";
+		$content .= "e-mail : " .$user_data->user_email. "<br />";
+		if ( !empty( $project_title ) ) {
+			$content .= "Projet : " .$project_title. "<br />";
+		}
+		if ( !empty( $amount ) ) {
+			$content .= "Montant : " .$amount. "<br />";
+		}
+		$content .= "Erreur LW : " .$int_msg. "<br />";
+		$content .= "Texte d'erreur pour l'utilisateur : " .$txt_msg. "<br />";
+		if ($ask_restart) {
+			$content .= "A proposé de recommencer<br />";
+		} else {
+			$content .= "N'a pas proposé de recommencer<br />";
+		}
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function organization_bank_file_changed_admin( $organization_name ) {
+		$object = "RIB d'organisation modifié - " . $organization_name;
+
+		$content = "L'organisation ".$organization_name." a changé de RIB.<br>";
+		$content .= "Si c'était un projet en versement, il faudrait refaire signer l'autorisation de prélèvement.<br>";
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+		
+	/**
+     * Achat avec erreur de génération de contrat
+     * @param int $payment_id
+     * @return bool
+     */
+	public static function new_purchase_admin_error_contract($payment_id) {
+		$object = 'Problème de création de contrat';
+		$content = "Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id;
+		return self::send( self::$notif_type_support, $object, $content );
+	}			
+	
+	public static function roi_received_exceed_maximum( $investor_id, $investor_type, $project_id ) {
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		
+		$object = "URGENT - Royalties percues supérieures au maximum pouvant être reçu";
+		$content = "Un investisseur a reçu plus de royalties que son investissement de départ ne le permettait (maximum dépassé).<br>";
+		$content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$content .= "ID API investisseur : " .$investor_id. "<br>";
+		$content .= "ID WP investisseur : " .$investor_entity->get_wpref();	
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+	
+	public static function tax_summaries( $campaign_name, $total_tax_in_euros ) {
+		$object = 'Taxes à payer aux impots /// ' . $campaign_name;
+		$content = 'Le projet ' . $campaign_name . ' a versé des plus-values. Il faut les déclarer aux impots !<br><br>';
+		$content .= 'Au total, cela devrait faire un versement de ' . $total_tax_in_euros . ' € aux impots de notre part.';
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
+    //*******************************************************
+    // FIN DE CREATION DE TACHES ASANA DE SUPPORT
+	//*******************************************************
+	
+    //*******************************************************
+    // CREATION DE TACHES ASANA D'ADMIN
+    //*******************************************************
+
+	public static function new_purchase_admin_error_wallet( $user_data, $project_title, $amount ) {
+		$object = 'Erreur transfert wallet';
+		$content = "Il y a un souci pour un transfert de wallet :<br />";
+		$content .= "Login : " .$user_data->user_login. "<br />";
+		$content .= "e-mail : " .$user_data->user_email. "<br />";
+		$content .= "Projet : " .$project_title. "<br />";
+		$content .= "Montant total : " .$amount. "<br />";
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+	
+	public static function investment_to_api_error_admin( $edd_payment_item ) {
+		$object = "Erreur d'ajout d'investissement sur l'API ";
+		$content = "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $edd_payment_item->ID;
+
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+
+	public static function roi_received_exceed_investment( $investor_id, $investor_type, $project_id ) {
+		$campaign = new ATCF_Campaign( FALSE, $project_id );
+		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );
+		$investor_entity_wpref = 'indefini';
+		if ( !empty( $investor_entity ) ) {
+			$investor_entity_wpref = $investor_entity->get_wpref();
+		}
+
+		$object = "Royalties percues supérieures à l'investissement initial";
+		$content = "Un investisseur a reçu plus de royalties que son investissement de départ.<br>";
+		$content .= "Sur le projet : " .$campaign->get_name(). "<br>";
+		$content .= "Type d'investisseur : " .( $investor_type == 'orga' ) ? 'Organisation' : 'Utilisateur'. "<br>";
+		$content .= "ID API investisseur : " .$investor_id. "<br>";
+		$content .= "ID WP investisseur : " .$investor_entity_wpref;		
+
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+	
+	public static function send_notification_roi_insufficient_funds_admin( $project_name ) {
+		$object = "Versement auto - Fonds insuffisants";
+		$content = "Il n'y a pas assez d'argent dans le wallet de royalties pour faire le versement trimestriel de " . $project_name;
+		return self::send( self::$notif_type_admin, $object, $content );	
+	}
+	
+	public static function declaration_bill_failed( $campaign_name ) {
+		$object = "Erreur génération facture - " . $campaign_name;
+		$content = "La facture automatique de la dernière déclaration de royalties pour le projet " .$campaign_name. " n'a pas pu être créée.";
+
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+    //*******************************************************
+    // FIN DE CREATION DE TACHES ASANA D'ADMIN
+    //*******************************************************
+    //*******************************************************
+    // CREATION DE TACHES ASANA DE SUIVI CLIENT
+    //*******************************************************
+
+	
+    //*******************************************************
+    // FIN DE CREATION DE TACHES ASANA DE SUIVI CLIENT
+    //*******************************************************
 }

@@ -222,6 +222,7 @@ class WDGPostActions {
 			
 				//Mail pour l'équipe
 				NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
+				NotificationsAsana::send_new_project( $newcampaign_id, $orga_name );
 				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
 				
 				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
@@ -340,6 +341,7 @@ class WDGPostActions {
 							$organization_obj->check_register_campaign_lemonway_wallet();
 							$campaign->copy_default_contract_if_empty();
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
+							NotificationsAsana::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 		
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
@@ -385,6 +387,7 @@ class WDGPostActions {
 							$organization_obj->check_register_campaign_lemonway_wallet();
 							
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
+							NotificationsAsana::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
 							WDGQueue::add_preinvestments_validation( $campaign_id );
 		
 							// Mise à jour cache
@@ -908,7 +911,8 @@ class WDGPostActions {
 		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
-		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, $picture_url );
+		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, $picture_url );
+		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, $picture_url );
 
 		// Annulation des investissements non-démarrés du même investisseur
 		$pending_not_validated_investments = array();
@@ -965,7 +969,8 @@ class WDGPostActions {
 		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
-		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
+		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, FALSE );
+		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, FALSE );
 		
 		// Annulation des investissements non-démarrés du même investisseur
 		$pending_not_validated_investments = array();

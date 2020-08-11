@@ -412,7 +412,7 @@ class LemonwayNotification {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
 						NotificationsEmails::new_purchase_user_error_contract( $investment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						NotificationsEmails::new_purchase_admin_error_contract( $investment_id );
+						NotificationsAsana::new_purchase_admin_error_contract( $investment_id );
 					}
 					
 				} else {

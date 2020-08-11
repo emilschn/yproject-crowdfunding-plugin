@@ -744,7 +744,8 @@ class WDGROIDeclaration {
 					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
 
 				} else {
-					NotificationsEmails::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsSlack::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsAsana::declaration_bill_failed( $campaign->data->post_title );
 				}
 			}
 		}
@@ -810,7 +811,7 @@ class WDGROIDeclaration {
 		// Si on approche du maximum à verser pour un projet, on prévient le service administratif
 		if ( $campaign->maximum_profit() != 'infinite' && $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
-			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
+			NotificationsSlack::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
 		
 		
