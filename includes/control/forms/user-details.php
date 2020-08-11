@@ -372,6 +372,9 @@ class WDG_Form_User_Details extends WDG_Form {
 				$birthdate = new DateTime();
 				if ( !empty( $birthday ) ) {
 					$birthdate = DateTime::createFromFormat( 'd/m/Y', $birthday );
+					if ( empty( $birthdate ) ) {
+						$birthdate = new DateTime();
+					}
 				}
 				$birthplace = $this->getInputText( 'birthplace' );
 				if ( empty( $birthplace ) || !WDGRESTAPI_Lib_Validator::is_name( $birthplace ) ) {
