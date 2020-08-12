@@ -256,6 +256,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$roideclaration->save();
 			
 			NotificationsSlack::send_declaration_filled( $campaign->get_name(), $roideclaration->get_turnover_total(), $roideclaration->get_amount_with_adjustment(), $roideclaration->get_commission_to_pay() );
+			NotificationsAsana::send_declaration_filled( $campaign->get_name(), $roideclaration->get_turnover_total(), $roideclaration->get_amount_with_adjustment(), $roideclaration->get_commission_to_pay() );
 
 			// Mise à jour du nombre d'employés de l'organisation en fonction de ce qui a été rempli dans cette déclaration
 			$campaign_organization = $campaign->get_organization();

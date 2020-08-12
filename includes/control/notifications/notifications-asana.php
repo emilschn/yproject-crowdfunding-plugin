@@ -149,7 +149,7 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_support, $object, $content );
 	}
 	
-	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {		
+	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {
 		$object = $campaign_name . ' /// Nouveau chèque ajouté dans TB par le PP';
 		
 		$content = "L'équipe du projet " .$campaign_name. " vient d'ajouter un chèque qu'il faudrait valider.<br>";
@@ -199,7 +199,22 @@ class NotificationsAsana {
 		$object = 'Problème de création de contrat';
 		$content = "Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id;
 		return self::send( self::$notif_type_support, $object, $content );
-	}			
+	}
+	
+
+	public static function send_declaration_document_uploaded( $campaign_name, $document_name ) {
+		$object = $campaign_name . ' /// Upload de justificatif';
+		$content = "Le projet " .$campaign_name. " a uploadé un document justificatif appelé : ".$document_name;
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
+	
+	public static function send_declaration_filled( $campaign_name, $turnover_amount, $royalties_amount, $commission_amount ) {
+		$object = $campaign_name . ' /// Déclaration de royalties effectuée';
+		$content = "Le projet " .$campaign_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
 	
 	public static function roi_received_exceed_maximum( $investor_id, $investor_type, $project_id ) {
 		$campaign = new ATCF_Campaign( FALSE, $project_id );
