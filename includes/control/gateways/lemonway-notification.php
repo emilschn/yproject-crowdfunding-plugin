@@ -313,14 +313,11 @@ class LemonwayNotification {
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
 	
-		$content = 'Un virement a été reçu avec les infos suivantes :<br />';
-		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br />';
-		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br />';
-		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br />';
-		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br />';
-		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br />';
-		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br />';
-		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu', $content, true );
+		$content = 'Virement reçu : ' . $lemonway_posted_date . "\n";
+		$content .= 'ID :' .$lemonway_posted_id_internal . "\n";
+		$content .= 'ID WDG :' .$lemonway_posted_id_external . "\n";
+		$content .= 'Montant :' .$lemonway_posted_amount;
+		NotificationsSlack::wire_payment_received( $content );
 
 		if ( $lemonway_posted_id_external == 'society' ) {
 			return;
@@ -432,11 +429,13 @@ class LemonwayNotification {
 					$amount = $wallet_details->BAL;
 					NotificationsAPI::wire_transfer_received( $recipient_email, $recipient_name, $amount );
 				} else {
-					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - ORGA - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
+					NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
+					NotificationsAsana::wire_payment_received_not_attributed( $content );
 				}
 			}
 		} else {
-			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$WDGUser_invest_author === FALSE', true );
+			NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
+			NotificationsAsana::wire_payment_received_not_attributed( $content );
 		}
 	}
 	

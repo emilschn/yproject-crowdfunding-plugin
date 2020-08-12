@@ -292,6 +292,12 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_admin, $object, $content );
 	}
+
+	public static function wire_payment_received_not_attributed( $message ) {
+		$object = "Versement reçu - non automatisé";
+		return self::send( self::$notif_type_admin, $object, $message );
+	}
+
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA D'ADMIN
     //*******************************************************
