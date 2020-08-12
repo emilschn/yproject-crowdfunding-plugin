@@ -2784,6 +2784,18 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
+
+	public static $key_campaign_is_presentation_visible_only_to_investors = '_campaign_is_presentation_visible_only_to_investors';
+	public function is_presentation_visible_only_to_investors() {
+		$buffer = false;
+		if ( !$this->is_remaining_time() ) {
+			$meta_hidden = $this->__get( ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors );
+			if ( !empty( $meta_hidden ) ) {
+				$buffer = ( $meta_hidden == '1' );
+			}
+		}
+		return $buffer;
+	}
 	
 	public static $key_skip_vote = '_campaign_skip_vote';
 	public function skip_vote() {

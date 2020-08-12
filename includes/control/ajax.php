@@ -1123,6 +1123,15 @@ class WDGAjaxActions {
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
 		
+		if ( !$campaign->is_remaining_time() ) {
+			$new_presentation_visible_only_to_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_presentation_visible_only_to_investors' ) );
+			if ( $new_presentation_visible_only_to_investors === true || $new_presentation_visible_only_to_investors === "true" || $new_presentation_visible_only_to_investors === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors );
+			}
+		}
+		
 		if ( $current_wdg_user->is_admin() ) {
 			$new_enable_advice_notifications = sanitize_text_field( filter_input( INPUT_POST, 'new_enable_advice_notifications' ) );
 			$queued_action_id = $campaign->has_planned_advice_notification();
