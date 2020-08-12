@@ -364,6 +364,14 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
 	
+	public static function mandate_payment_received( $message ) {
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
+	
+	public static function send_notification_roi_transfer_to_come( $message ) {
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
+	
 	public static function send_notification_roi_insufficient_funds_admin( $project_name ) {
 		$message = "Projet " . $project_name . " - Versement auto - Fonds insuffisants";
 

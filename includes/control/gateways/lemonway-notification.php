@@ -473,14 +473,11 @@ class LemonwayNotification {
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
 		// Préparation du mail de notification
-		$content = 'Un prélèvement a été reçu avec les infos suivantes :<br>';
-		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br>';
-		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br>';
-		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br>';
-		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br>';
-		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br>';
-		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br>';
-		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Prélèvement reçu', $content );
+		$content = 'Prélèvement reçu : ' .$lemonway_posted_date. "\n";
+		$content .= 'ID : ' .$lemonway_posted_id_internal. "\n";
+		$content .= 'ID WDG : ' .$lemonway_posted_id_external. "\n";
+		$content .= 'Montant : ' .$lemonway_posted_amount;
+		NotificationsSlack::mandate_payment_received( $content );
 		
 		$content_mail_auto_royalties = '';
 
@@ -509,11 +506,11 @@ class LemonwayNotification {
 							}
 							
 							$date_of_royalties_transfer = $declaration->get_transfer_date();
-							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . '<br>';
-							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . '<br>';
-							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . '<br>';
-							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . ' €<br>';
-							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €<br><br>';
+							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . "\n";
+							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . "\n";
+							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . "\n";
+							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . " €\n";
+							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €';
 
 							$declaration->init_rois_and_tax();
 						}
@@ -523,7 +520,7 @@ class LemonwayNotification {
 		}
 
 		if ( !empty( $content_mail_auto_royalties ) ) {
-			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto à venir', $content_mail_auto_royalties );
+			NotificationsSlack::send_notification_roi_transfer_to_come( $content_mail_auto_royalties );
 		}
 
 	}
