@@ -180,29 +180,22 @@ class LemonwayNotification {
 		$notification_sent = FALSE;
 		
 		// Trouver l'utilisateur à partir de son identifiant externe
+		$asana_content = FALSE;
+		$orga_has_campaigns = FALSE;
 		$WDGOrga_wallet = FALSE;
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+			$orga_campaigns = $WDGOrga_wallet->get_campaigns();
+			$orga_has_campaigns = !empty( $orga_campaigns );
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
-			$content_slack = "Nouveau statut de document : ";
-			
-			$content_slack .= "Wallet " .$lemonway_posted_id_external. " (https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal."), appartenant à ";
 			if ( !empty( $WDGOrga_wallet ) ) {
-				$content_slack .= $WDGOrga_wallet->get_name();
+				$asana_content = $WDGOrga_wallet->get_name();
 			} else {
 				$user_email = $WDGUser_wallet->get_email();
 				$user_firstname = $WDGUser_wallet->get_firstname();
-				$content_slack .= $user_firstname . ' ' . $WDGUser_wallet->get_lastname() . ' (' . $user_email . ')';
 			}
-			$content_slack .= "\n";
-			
-			$content_slack .= "Document : " . LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
-			$content_slack .= "\n";
-			
-			$content_slack .= "Nouveau statut : " . LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
-			$content_slack .= "\n";
 			
 			// Notifications pour indiquer les documents non-validés
 			// Si le document n'est ni validé, ni en attente
@@ -270,7 +263,11 @@ class LemonwayNotification {
 			}
 		
 			// On prévient l'équipe par Slack
-			NotificationsSlack::send_new_doc_status( $content_slack );
+			if ( $orga_has_campaigns && !empty( $asana_content ) ) {
+				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
+				$document_status = LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
+				NotificationsAsana::send_new_project_document_status( $asana_content, $document_type, $document_status );
+			}
 			
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
 			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == LemonwayDocument::$document_type_bank && empty( $WDGOrga_wallet ) ) {

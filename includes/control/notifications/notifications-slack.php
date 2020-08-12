@@ -101,10 +101,6 @@ class NotificationsSlack {
 			}
 		}
 	}
-
-	public static function send_new_doc_status( $message ) {
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_doc, self::$notif_type_investors );
-	}
 	
 	public static function send_new_wallet_status( $wallet_id, $wallet_url, $wallet_name, $status ) {
 		$message = 'Changement de statut pour porte-monnaie : ' . $wallet_id . ' ('.$wallet_name.' - ' .$wallet_url. ') => ' .$status;

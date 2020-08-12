@@ -79,6 +79,12 @@ class NotificationsAsana {
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
+
+	public static function send_new_project_document_status( $orga_name, $document_type, $document_status ) {
+		$object = $orga_name. ' /// Changement de statut de document';
+		$content = "Document : " . $document_type . " - Statut : " . $document_status;
+		return self::send( self::$notif_type_support, $object, $content );
+	}
 	
 	public static function send_document_uploaded_admin( $orga, $nb_document ) {
 		$object = $orga->get_name(). ' /// Nouveau KYC !';
