@@ -73,12 +73,35 @@ class NotificationsSlack {
 	//*******************************************************
     // NOTIFICATIONS SLACK DANS LE CANAL INVESTISSEURS-NOTIFICATIONS
     //*******************************************************
-	public static function send_new_user( $wp_user_id ) {
-		$user_data = get_userdata( $wp_user_id );
-		$message = "Nouvel utilisateur : " . $user_data->user_login . ' (' . $wp_user_id . ') => ' . $user_data->user_email;
-		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_hug, self::$notif_type_investors );
+	public static function send_update_summary_user_subscribed( $users ) {
+		if ( is_array( $users ) ) {
+			$nb_users = count( $users );
+			if ( $nb_users > 0 ) {
+				$message = $nb_users . ' utilisateurs inscrits hier :';
+				NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_hug, self::$notif_type_investors );
+
+				$nb_modulo = 5;
+				$count = 0;
+				$message = '';
+				foreach ( $users as $user ) {
+					if ( $message != '' ) {
+						$message .= ', ';
+					}
+					$message .= $user->data->user_email;
+					$count++;
+					if ( $count % $nb_modulo == 0 ) {
+						NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_hug, self::$notif_type_investors );
+						$count = 0;
+						$message = '';
+					}
+				}
+				if ( $message != '' ) {
+					NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_hug, self::$notif_type_investors );
+				}
+			}
+		}
 	}
-	
+
 	public static function send_new_doc_status( $message ) {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_doc, self::$notif_type_investors );
 	}
