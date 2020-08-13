@@ -127,6 +127,7 @@ class WDG_Form_Declaration_Document extends WDG_Form {
 			$file_document = WDGWPREST_Entity_File::create( $campaign->get_api_id(), 'project', 'project_document', $ext, base64_encode( $byte_array ), $metadata_encoded );
 			
 			NotificationsSlack::send_declaration_document_uploaded( $campaign->get_name(), $document_name );
+			NotificationsAsana::send_declaration_document_uploaded( $campaign->get_name(), $document_name );
 		}
 		
 		

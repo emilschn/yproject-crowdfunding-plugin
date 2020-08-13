@@ -728,7 +728,8 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			$file_picture_contract = WDGWPREST_Entity_File::create( $investment_draft_item->id, 'investment-draft', 'picture-contract', $ext, base64_encode( $byte_array ) );
 			
 			$dashboard_url = home_url( '/tableau-de-bord/?campaign_id=' . $campaign->ID );
-			NotificationsEmails::investment_draft_created_admin( $campaign->get_name(), $dashboard_url );
+			NotificationsSlack::investment_draft_created_admin( $campaign->get_name(), $dashboard_url );
+			NotificationsAsana::investment_draft_created_admin( $campaign->get_name(), $dashboard_url );
 		}
 			
 		$buffer = array(

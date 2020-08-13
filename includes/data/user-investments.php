@@ -49,6 +49,9 @@ class WDGUserInvestments {
  * Récupérations des investissements
 *******************************************************************************/
 	public function get_posts_investments( $payment_status ) {
+		if ( empty( $this->wp_ref ) ) {
+			return array();
+		}
 		if ( is_null( self::$posts_investments ) ) {
 			self::$posts_investments = array();
 		}

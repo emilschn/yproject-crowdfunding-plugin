@@ -631,6 +631,11 @@ class WDGROIDeclaration {
 
 							$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount - $amount_tax_in_cents / 100 );
 							$status = WDGROI::$status_transferred;
+							
+							if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
+								WDGQueue::add_notification_wallet_more_200_euros( $wdguser_wpref );
+								WDGQueue::add_notification_investors_with_more_200_euros( $campaign->ID, $wdguser_wpref );
+							}
 
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
@@ -739,7 +744,8 @@ class WDGROIDeclaration {
 					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
 
 				} else {
-					NotificationsEmails::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsSlack::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsAsana::declaration_bill_failed( $campaign->data->post_title );
 				}
 			}
 		}
@@ -805,7 +811,7 @@ class WDGROIDeclaration {
 		// Si on approche du maximum à verser pour un projet, on prévient le service administratif
 		if ( $campaign->maximum_profit() != 'infinite' && $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
-			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
+			NotificationsSlack::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
 		
 		
@@ -1049,7 +1055,7 @@ class WDGROIDeclaration {
 	 */
 	public function init_rois_and_tax() {
 		if ( $this->remaining_amount == 0 ) {
-			$this->remaining_amount = $this->amount;
+			$this->remaining_amount = $this->get_amount_with_adjustment();
 		}
 
 		//********************** */

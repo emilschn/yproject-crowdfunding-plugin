@@ -61,6 +61,10 @@ class NotificationsAPI {
 		'735' => "Déclaration - Fin (porteur de projet)",
 		'693' => "Déclaration - Fin (investisseurs)",
 		'139' => "Versement de royalties - résumé quotidien",
+		'1042' => "Versement de royalties - plus de 200 euros",
+		'1044' => "Versement de royalties - plus de 200 euros - rappel pas ouvert",
+		'1045' => "Versement de royalties - plus de 200 euros - rappel pas cliqué",
+		'1268' => "Versement de royalties - plus de 200 euros - notif entrepreneur",
 		'522' => "Versement de royalties - transfert avec message",
 		'691' => "Versement de royalties - montant maximum atteint",
 		'779' => "Versement sur compte bancaire - confirmation",
@@ -292,7 +296,7 @@ class NotificationsAPI {
 	}
 
 	public static function phone_kyc_refused( $recipient, $name ) {
-		$param_content = "Bonjour " .$name.", un ou plusieurs documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Ceci bloque votre authentification. Connectez-vous afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
+		$param_content = "Bonjour " .$name.", des documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
@@ -1357,6 +1361,79 @@ class NotificationsAPI {
 			'personal'			=> 1,
 			'NOM_UTILISATEUR'	=> $name,
 			'RESUME_ROYALTIES'	=> $royalties_message,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS
+    //*******************************************************
+	public static function wallet_with_more_than_200_euros( $recipient, $name ) {
+		$id_template = '1042';
+		$options = array(
+			'personal'	=> 1,
+			'NOM'		=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS OUVERT
+    //*******************************************************
+	public static function wallet_with_more_than_200_euros_reminder_not_open( $recipient, $name ) {
+		$id_template = '1044';
+		$options = array(
+			'personal'	=> 1,
+			'NOM'		=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS CLIQUE
+    //*******************************************************
+	public static function wallet_with_more_than_200_euros_reminder_not_clicked( $recipient, $name ) {
+		$id_template = '1045';
+		$options = array(
+			'personal'	=> 1,
+			'NOM'		=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS - NOTIF ENTREPRENEUR
+    //*******************************************************
+	public static function investors_with_wallet_with_more_than_200_euros( $recipient, $name, $investors_list_str ) {
+		$id_template = '1268';
+		$options = array(
+			'personal'		=> 1,
+			'PRENOM'		=> $name,
+			'INVESTISSEURS'	=> $investors_list_str
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',

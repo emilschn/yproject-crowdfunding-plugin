@@ -140,8 +140,8 @@ class WDGFormProjects {
 					} else {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
-						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-						NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
+						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
+						NotificationsAsana::new_purchase_admin_error_contract( $approve_payment_id );
 					}
 
 				} else {
@@ -276,7 +276,7 @@ class WDGFormProjects {
 						$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
 						$declaration->status = WDGROIDeclaration::$status_transfer;
 						$declaration->save();
-						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
+						NotificationsSlack::send_notification_roi_payment_success_admin( $declaration->id );
 						NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
 						
 						$campaign = atcf_get_current_campaign();
@@ -287,7 +287,7 @@ class WDGFormProjects {
 						$buffer = TRUE;
 
 				} else {
-					NotificationsEmails::send_notification_roi_payment_error_admin( $declaration->id );
+					NotificationsSlack::send_notification_roi_payment_error_admin( $declaration->id );
 					$buffer = $transaction_result->INT_MSG;
 
 				}

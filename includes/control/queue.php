@@ -95,7 +95,6 @@ class WDGQueue {
 /* Différentes actions : ajout et exécution */
 /******************************************************************************/
 
-	
 /******************************************************************************/
 /* NOTIFS ROYALTIES */
 /******************************************************************************/
@@ -294,7 +293,148 @@ class WDGQueue {
 		}
 	}
 
-	
+	/******************************************************************************/
+	/* NOTIFS WALLET A PLUS DE 200 EUROS */
+	/******************************************************************************/
+		public static function add_notification_wallet_more_200_euros( $user_id ) {
+			$action = 'wallet_more_200_euros';
+			$entity_id = $user_id;
+			$priority = self::$priority_date;
+			$params = array();
+
+			// Les envois se font dans un mois à 9h
+			$date_next_dispatch = new DateTime();
+			$date_next_dispatch->setTime( 9, 0 );
+			$date_next_dispatch->add( new DateInterval( 'P1M' ) );
+			$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+		
+		public static function execute_wallet_more_200_euros( $user_id, $queued_action_params, $queued_action_id ) {
+			$WDGUser = new WDGUser( $user_id );
+			if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
+				NotificationsAPI::wallet_with_more_than_200_euros( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				self::add_notification_wallet_more_200_euros_reminder( $user_id );
+			}
+		}
+
+	/******************************************************************************/
+	/* NOTIFS RAPPEL WALLET A PLUS DE 200 EUROS */
+	/******************************************************************************/
+		public static function add_notification_wallet_more_200_euros_reminder( $user_id ) {
+			$action = 'wallet_more_200_euros_reminder';
+			$entity_id = $user_id;
+			$priority = self::$priority_date;
+			$params = array();
+
+			// Les envois se font dans un mois à 9h
+			$date_next_dispatch = new DateTime();
+			$date_next_dispatch->setTime( 9, 0 );
+			$date_next_dispatch->add( new DateInterval( 'P7D' ) );
+			$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+		
+		public static function execute_wallet_more_200_euros_reminder( $user_id, $queued_action_params, $queued_action_id ) {
+			$WDGUser = new WDGUser( $user_id );
+			if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
+				$ref_template_id = 1042;
+
+				// Récupération mail le plus récent
+				$api_email_list = WDGWPRESTLib::call_get_wdg( 'emails?id_template=' .$ref_template_id. '&recipient_email=' .$WDGUser->get_email() );
+				if ( count( $api_email_list ) == 0 ) {
+					return;
+				}
+
+				$api_email = $api_email_list[ 0 ];
+				$api_email_result = json_decode( $api_email->result, TRUE );
+				if ( empty( $api_email_result[ 'data' ] ) || empty( $api_email_result[ 'data' ][ 'message-id' ] ) ) {
+					return;
+				}
+				$message_id = $api_email_result[ 'data' ][ 'message-id' ];
+				
+				$data = array( 
+					"message_id" => $message_id,
+					"template_id" => $ref_template_id
+				);
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$mailin_report = $mailin->get_report( $data );
+				if ( empty( $mailin_report[ 'data' ] ) ) {
+					return;
+				}
+
+				$has_viewed = FALSE;
+				$has_clicked = FALSE;
+				$mailin_report_data = $mailin_report[ 'data' ];
+				foreach ( $mailin_report_data as $mail_event ) {
+					if ( !empty( $mail_event[ 'event' ] ) ) {
+						if ( $mail_event[ 'event' ] == 'views' ) {
+							$has_viewed = TRUE;
+						}
+						if ( $mail_event[ 'event' ] == 'clicks' ) {
+							$has_clicked = TRUE;
+						}
+					}
+				}
+				
+				if ( !$has_viewed ) {
+					NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_open( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				} else if ( !$has_clicked ) {
+					NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_clicked( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				}
+			}
+		}
+
+	/******************************************************************************/
+	/* NOTIFS ENTREPRENEURS INVESTISSEURS AVEC WALLET A PLUS DE 200 EUROS */
+	/******************************************************************************/
+		public static function add_notification_investors_with_more_200_euros( $campaign_id, $user_id ) {
+			$action = 'investors_with_more_200_euros';
+			$entity_id = $campaign_id;
+			$priority = self::$priority_date;
+			$params = array(
+				'user_id'	=> $user_id
+			);
+
+			// Les envois se font dans un mois à 9h
+			$date_next_dispatch = new DateTime();
+			$date_next_dispatch->setTime( 9, 0 );
+			$date_next_dispatch->add( new DateInterval( 'P1M' ) );
+			$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+
+		public static function execute_investors_with_more_200_euros( $campaign_id, $queued_action_params, $queued_action_id ) {
+			// Exceptionnellement, on déclare l'action faite au début, pour ne pas envoyer de doublons de mails si coupure au milieu
+			WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+			
+			$campaign = new ATCF_Campaign( $campaign_id );
+			$current_organization = $campaign->get_organization();
+			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
+			$WDGUser_author = new WDGUser( $campaign->data->post_author );
+
+			$investors_list_str = '';
+			$investors_list = array();
+			foreach ( $queued_action_params as $single_param ) {
+				$queued_action_param = json_decode( $single_param );
+				array_push( $investors_list, $queued_action_param->user_id );
+			}
+
+			$investors_list_unique = array_unique( $investors_list );
+			foreach ( $investors_list_unique as $investor_id ) {
+				$WDGUser = new WDGUser( $investor_id );
+				$investors_list_str .= '- ' .$WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname(). '<br>';
+			}
+
+			if ( !empty( $investors_list_str ) ) {
+				NotificationsAPI::investors_with_wallet_with_more_than_200_euros( $WDGUser_author->get_email(), $WDGUser_author->get_firstname(), $investors_list_str );
+			}
+		}
+
+
 /******************************************************************************/
 /* PROLONGATION CONTRAT ROYALTIES */
 /******************************************************************************/
@@ -537,6 +677,7 @@ class WDGQueue {
 			
 			if ( !empty( $pending_actions ) ) {
 				NotificationsEmails::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions );
+				NotificationsSlack::send_notification_kyc_refused_admin( $user_email, $user_name );
 			}
 		}
 		
@@ -730,6 +871,7 @@ class WDGQueue {
 				
 				if ( !empty( $pending_actions ) ) {
 					NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions );
+					NotificationsSlack::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name );
 				}
 			}
 		}
@@ -1053,8 +1195,8 @@ class WDGQueue {
 
 			} else {
 				// Sinon on prévient qu'il n'y a plus assez
-				$content_mail = "Il n'y a pas assez d'argent dans le wallet de royalties pour faire le versement trimestriel de " . $campaign->get_name();
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Fonds insuffisants', $content_mail );
+				NotificationsSlack::send_notification_roi_insufficient_funds_admin( $campaign->get_name() );
+				NotificationsAsana::send_notification_roi_insufficient_funds_admin( $campaign->get_name() );
 
 			}
 		}
@@ -1078,9 +1220,6 @@ class WDGQueue {
 				$result = $roi_declaration->transfer_pending_rois();
 			}
 			if ( $result == 100 ) {
-				$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-				$content_mail = "Transferts de royalties terminés pour le versement trimestriel de " . $campaign->get_name();
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto - Terminé', $content_mail );
 				NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
 
 			} else {
@@ -1140,11 +1279,9 @@ class WDGQueue {
 
 			if ( $buffer_mail != '' ) {
 				$campaign_object = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
-				$intro_mail = 'Le projet ' . $campaign_object->get_name() . ' a versé des plus-values. Il faut les déclarer aux impots !<br><br>';
-				$buffer_mail = $intro_mail . $buffer_mail;
-				$buffer_mail .= '<br>';
-				$buffer_mail .= 'Au total, cela devrait faire un versement de ' . $total_tax_in_euros . ' € aux impots de notre part.';
-				NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Taxes à payer aux impots /// ' . $campaign_object->get_name(), $buffer_mail );
+
+				NotificationsSlack::tax_summaries( $campaign_object->get_name(), $total_tax_in_euros );
+				NotificationsAsana::tax_summaries( $campaign_object->get_name(), $total_tax_in_euros );
 
 				// TODO : faire le paiement automatique sur les comptes de WDG
 				// Mais attente des premiers tests pour voir la véracité des infos

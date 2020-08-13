@@ -21,6 +21,14 @@ if ( isset($_POST['end_date']) )
   $end_date = $_POST['end_date']; // date de fin de période
 }
 
+// Test si la date de début est après la date de fin
+// Si c'est le cas, on définit la date de début avec la valeur de la date de fin
+$datetime_start_test = new DateTime( $start_date );
+$datetime_end_test = new DateTime( $end_date );
+if ( $datetime_start_test > $datetime_end_test ) {
+	$start_date = $end_date;
+}
+
 if ( isset($_POST['path']) )
 {
   $path = $_POST['path']; // path de la page concernée par les stats

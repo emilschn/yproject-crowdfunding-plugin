@@ -179,7 +179,9 @@ class WDG_Form_User_Bank extends WDG_Form {
 						// Si c'est une organisation qui gère des projets, on envoie une alerte admin
 						$list_campaign_orga = $WDGOrganization->get_campaigns();
 						if ( !empty( $list_campaign_orga ) ) {
-							NotificationsEmails::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
+							NotificationsSlack::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
+							// TODO : ne faire la notif Asana que si c'est un projet en cours de versement ?
+							NotificationsAsana::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
 						}
 					}
 					

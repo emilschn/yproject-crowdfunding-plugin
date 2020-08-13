@@ -604,17 +604,18 @@ class WDGAjaxActions {
 					$estimated_turnover_list = $campaign->estimated_turnover();
 					$campaign_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 				}
+				$estimated_turnover_unit = $campaign->estimated_turnover_unit();
 
 				if ( !empty( $estimated_turnover_list ) ){
 					// On démarre de la date de démarrage du contrat
 					$contract_start_date = new DateTime( $campaign->contract_start_date() );
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
-					$estimated_turnover_unit = $campaign->estimated_turnover_unit();
 					
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$estimated_rois = 0;
 						if ( $estimated_turnover_unit == 'percent' ) {
 							$estimated_rois = round( $turnover * $payment_amount / 100 );
+							$turnover = round( $campaign->current_amount( FALSE ) * $turnover / 100 );
 						} else {
 							if ( !empty( $roi_percent_full ) ) {
 								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
@@ -1120,6 +1121,15 @@ class WDGAjaxActions {
 		if ( $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max || $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_step ) {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
+		}
+		
+		if ( !$campaign->is_remaining_time() ) {
+			$new_presentation_visible_only_to_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_presentation_visible_only_to_investors' ) );
+			if ( $new_presentation_visible_only_to_investors === true || $new_presentation_visible_only_to_investors === "true" || $new_presentation_visible_only_to_investors === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors );
+			}
 		}
 		
 		if ( $current_wdg_user->is_admin() ) {
@@ -2094,56 +2104,63 @@ class WDGAjaxActions {
         foreach ( $array_contacts as $user_id => $user_item ){
             //Données si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"] = $user_id;
-			if ( WDGOrganization::is_user_organization( $user_id ) ) {
-				$WDGOrganization = new WDGOrganization( $user_id );
-				$linked_users = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
-				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
-			}
 
             if(WDGOrganization::is_user_organization($user_id)){
                 $orga = new WDGOrganization($user_id);
-				$orga_wallet_details = $orga->get_wallet_details();
-				$span_class = 'error';
-				$error_str = '';
-				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
-					switch ( $orga_wallet_details->STATUS ) {
-						case '2':
-							$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
-							break;
-						case '3':
-							$orga_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
-							break;
-						case '6':
-							$orga_authentication = __( "Valid&eacute;e", 'yproject' );
-							$span_class = 'confirm';
-							break;
-						case '8':
-							$orga_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
-							break;
-						case '10':
-						case '12':
-							$orga_authentication = __( "Bloqu&eacute;e", 'yproject' );
-							break;
-						
-						case '14':
-						case '15':
-						case '16':
-							$orga_authentication = __( "Erreur", 'yproject' );
-							break;
+				$linked_users = $orga->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+				
+				
+				// Etat de l'authentification
+				if ( $orga->get_lemonway_status() == LemonwayLib::$status_registered ) {
+					$orga_authentication = __( "Valid&eacute;e", 'yproject' );
+					$span_class = 'confirm';
 
-						case '5':
-						case '7':
-						case '13':
-						default:
-							$orga_authentication = __( "En attente de documents", 'yproject' );
-							break;
-					}
-
-					if ( $orga_wallet_details->STATUS != '6' ) {
-						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+				} else {
+					$orga_wallet_details = $orga->get_wallet_details();
+					$span_class = 'error';
+					$error_str = '';
+					$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+					if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
+						switch ( $orga_wallet_details->STATUS ) {
+							case '2':
+								$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+								break;
+							case '3':
+								$orga_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+								break;
+							case '6':
+								$orga_authentication = __( "Valid&eacute;e", 'yproject' );
+								$span_class = 'confirm';
+								break;
+							case '8':
+								$orga_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+								break;
+							case '10':
+							case '12':
+								$orga_authentication = __( "Bloqu&eacute;e", 'yproject' );
+								break;
+							
+							case '14':
+							case '15':
+							case '16':
+								$orga_authentication = __( "Erreur", 'yproject' );
+								break;
+	
+							case '5':
+							case '7':
+							case '13':
+							default:
+								$orga_authentication = __( "En attente de documents", 'yproject' );
+								break;
+						}
+	
+						if ( $orga_wallet_details->STATUS != '6' ) {
+							$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+						}
 					}
 				}
+				
 				$orga_authentication = '<span class="payment-status-' .$span_class. '">' .$orga_authentication. '</span>';
 				if ( !empty( $error_str ) ) {
 					$orga_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
@@ -2173,57 +2190,65 @@ class WDGAjaxActions {
 
             //Données si l'investisseur est un utilisateur normal
             } else {
-				// Etat de l'authentification
-				$WDGUser = new WDGUser( $user_id );
-				$WDGUser_wallet_details = $WDGUser->get_wallet_details();
-				$span_class = 'error';
-				$error_str = '';
-				$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
-					switch ( $WDGUser_wallet_details->STATUS ) {
-						case '2':
-							$user_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
-							break;
-						case '3':
-							$user_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
-							break;
-						case '6':
-							$user_authentication = __( "Valid&eacute;e", 'yproject' );
-							$span_class = 'confirm';
-							break;
-						case '8':
-							$user_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
-							break;
-						case '10':
-						case '12':
-							$user_authentication = __( "Bloqu&eacute;e", 'yproject' );
-							break;
-						
-						case '14':
-						case '15':
-						case '16':
-							$user_authentication = __( "Erreur", 'yproject' );
-							break;
-
-						case '5':
-						case '7':
-						case '13':
-						default:
-							$user_authentication = __( "En attente de documents", 'yproject' );
-							break;
-					}
-
-					if ( $WDGUser_wallet_details->STATUS != '6' ) {
-						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
-					}
-				}
-				$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
-				if ( !empty( $error_str ) ) {
-					$user_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
-				}
 				
+				$WDGUser = new WDGUser( $user_id );
 				//Infos supplémentaires pour les investisseurs
 				if($array_contacts[$user_id]["invest"] == 1){
+
+					// Etat de l'authentification
+					if ( $WDGUser->get_lemonway_status() == LemonwayLib::$status_registered ) {
+						$user_authentication = __( "Valid&eacute;e", 'yproject' );
+						$span_class = 'confirm';
+						
+					} else {
+						$WDGUser_wallet_details = $WDGUser->get_wallet_details();
+						$span_class = 'error';
+						$error_str = '';
+						$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+						if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
+							switch ( $WDGUser_wallet_details->STATUS ) {
+								case '2':
+									$user_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+									break;
+								case '3':
+									$user_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+									break;
+								case '6':
+									$user_authentication = __( "Valid&eacute;e", 'yproject' );
+									$span_class = 'confirm';
+									break;
+								case '8':
+									$user_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+									break;
+								case '10':
+								case '12':
+									$user_authentication = __( "Bloqu&eacute;e", 'yproject' );
+									break;
+								
+								case '14':
+								case '15':
+								case '16':
+									$user_authentication = __( "Erreur", 'yproject' );
+									break;
+		
+								case '5':
+								case '7':
+								case '13':
+								default:
+									$user_authentication = __( "En attente de documents", 'yproject' );
+									break;
+							}
+		
+							if ( $WDGUser_wallet_details->STATUS != '6' ) {
+								$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
+							}
+						}
+					}
+					$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
+					if ( !empty( $error_str ) ) {
+						$user_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
+					}
+
 					$count_distinct_investors++;
 					if ( !empty( $user_item[ 'invest_item' ][ 'item' ] ) ) {
 						$array_contacts[$user_id]["user_link"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
@@ -2269,38 +2294,40 @@ class WDGAjaxActions {
 					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 				}
 				
-				foreach ( $campaign_poll_answers as $answer ) {
-					if ( $answer->poll_slug == 'source' && $answer->user_email == $array_contacts[ $user_id ][ 'user_email' ] ) {
-						$answers_decoded = json_decode( $answer->answers );
-						
-						$array_contacts[ $user_id ][ 'source-how-known' ] = '';
-						if ( !empty( $answers_decoded->{ 'how-the-fundraising-was-known' } ) ) {
-							$source_how_known_texts = array(
-								'known-by-project-manager'	=> __( "L'entrepreneur", 'yproject' ),
-								'known-by-wedogood'			=> __( "WE DO GOOD", 'yproject' ),
-								'known-by-other-investor'	=> __( "Un autre investisseur du projet", 'yproject' ),
-								'known-by-other-source'		=> __( "Autre (presse...)", 'yproject' )
-							);
-							$array_contacts[ $user_id ][ 'source-how-known' ] = $source_how_known_texts[ $answers_decoded->{ 'how-the-fundraising-was-known' } ];
-						}
-						if ( !empty( $answers_decoded->{ 'other-source-to-know-the-fundraising' } ) ) {
-							$array_contacts[ $user_id ][ 'source-how-known' ] .= ' (' . $answers_decoded->{ 'other-source-to-know-the-fundraising' } . ')';
-						}
-						
-						$array_contacts[ $user_id ][ 'source-where-from' ] = '';
-						if ( !empty( $answers_decoded->{ 'where-user-come-from' } ) ) {
-							$source_come_from_texts = array(
-								'mail-from-project-manager'			=> __( "Un mail du porteur de projet", 'yproject' ),
-								'social-network-private-message'	=> __( "Un message priv&eacute; sur Facebook, LinkedIn, Twitter...", 'yproject' ),
-								'social-network-publication'		=> __( "Une publication sur les r&eacute;seaux sociaux", 'yproject' ),
-								'wedogood-site-or-newsletter'		=> __( "La newsletter ou le site de WE DO GOOD", 'yproject' ),
-								'press-article'						=> __( "Un article de presse", 'yproject' ),
-								'other-source'						=> __( "Autre(s) :", 'yproject' )
-							);
-							$array_contacts[ $user_id ][ 'source-where-from' ] = $source_come_from_texts[ $answers_decoded->{ 'where-user-come-from' } ];
-						}
-						if ( !empty( $answers_decoded->{ 'other-source-where-the-user-come-from' } ) ) {
-							$array_contacts[ $user_id ][ 'source-where-from' ] .= ' (' . $answers_decoded->{ 'other-source-where-the-user-come-from' } . ')';
+				if ( !empty( $campaign_poll_answers ) ) {
+					foreach ( $campaign_poll_answers as $answer ) {
+						if ( $answer->poll_slug == 'source' && $answer->user_email == $array_contacts[ $user_id ][ 'user_email' ] ) {
+							$answers_decoded = json_decode( $answer->answers );
+							
+							$array_contacts[ $user_id ][ 'source-how-known' ] = '';
+							if ( !empty( $answers_decoded->{ 'how-the-fundraising-was-known' } ) ) {
+								$source_how_known_texts = array(
+									'known-by-project-manager'	=> __( "L'entrepreneur", 'yproject' ),
+									'known-by-wedogood'			=> __( "WE DO GOOD", 'yproject' ),
+									'known-by-other-investor'	=> __( "Un autre investisseur du projet", 'yproject' ),
+									'known-by-other-source'		=> __( "Autre (presse...)", 'yproject' )
+								);
+								$array_contacts[ $user_id ][ 'source-how-known' ] = $source_how_known_texts[ $answers_decoded->{ 'how-the-fundraising-was-known' } ];
+							}
+							if ( !empty( $answers_decoded->{ 'other-source-to-know-the-fundraising' } ) ) {
+								$array_contacts[ $user_id ][ 'source-how-known' ] .= ' (' . $answers_decoded->{ 'other-source-to-know-the-fundraising' } . ')';
+							}
+							
+							$array_contacts[ $user_id ][ 'source-where-from' ] = '';
+							if ( !empty( $answers_decoded->{ 'where-user-come-from' } ) ) {
+								$source_come_from_texts = array(
+									'mail-from-project-manager'			=> __( "Un mail du porteur de projet", 'yproject' ),
+									'social-network-private-message'	=> __( "Un message priv&eacute; sur Facebook, LinkedIn, Twitter...", 'yproject' ),
+									'social-network-publication'		=> __( "Une publication sur les r&eacute;seaux sociaux", 'yproject' ),
+									'wedogood-site-or-newsletter'		=> __( "La newsletter ou le site de WE DO GOOD", 'yproject' ),
+									'press-article'						=> __( "Un article de presse", 'yproject' ),
+									'other-source'						=> __( "Autre(s) :", 'yproject' )
+								);
+								$array_contacts[ $user_id ][ 'source-where-from' ] = $source_come_from_texts[ $answers_decoded->{ 'where-user-come-from' } ];
+							}
+							if ( !empty( $answers_decoded->{ 'other-source-where-the-user-come-from' } ) ) {
+								$array_contacts[ $user_id ][ 'source-where-from' ] .= ' (' . $answers_decoded->{ 'other-source-where-the-user-come-from' } . ')';
+							}
 						}
 					}
 				}
