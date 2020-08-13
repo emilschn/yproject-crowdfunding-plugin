@@ -1066,11 +1066,11 @@ class ATCF_Campaign {
 		
 		$today_date = new DateTime();
 		$platform_commission = $this->platform_commission();
-		$platform_commission_amount = $this->platform_commission_amount();
+		$platform_commission_amount = $this->platform_commission_amount( TRUE, $amount );
 		$platform_commission_below_100000 = $this->platform_commission();
-		$platform_commission_below_100000_amount = $this->platform_commission_below_100000_amount();
+		$platform_commission_below_100000_amount = $this->platform_commission_below_100000_amount( TRUE, $amount );
 		$platform_commission_above_100000 = $this->platform_commission_above_100000();
-		$platform_commission_above_100000_amount = $this->platform_commission_above_100000_amount();
+		$platform_commission_above_100000_amount = $this->platform_commission_above_100000_amount( TRUE, $amount );
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get(
@@ -1938,8 +1938,11 @@ class ATCF_Campaign {
 		}
 	    return $buffer;
 	}
-	public function platform_commission_below_100000_amount( $with_tax = TRUE ) {
-		$buffer = round( min( $this->current_amount( FALSE ), 100000 ) * $this->platform_commission( $with_tax ) / 100, 2 );
+	public function platform_commission_below_100000_amount( $with_tax = TRUE, $current_amount = FALSE ) {
+		if ( empty( $current_amount ) ) {
+			$current_amount = $this->current_amount( FALSE );
+		}
+		$buffer = round( min( $current_amount, 100000 ) * $this->platform_commission( $with_tax ) / 100, 2 );
 		return $buffer;
 	}
 	
@@ -1959,13 +1962,16 @@ class ATCF_Campaign {
 		}
 	    return $buffer;
 	}
-	public function platform_commission_above_100000_amount( $with_tax = TRUE ) {
-		$buffer = round( max( $this->current_amount( FALSE ) - 100000, 0 ) * $this->platform_commission_above_100000( $with_tax ) / 100, 2 );
+	public function platform_commission_above_100000_amount( $with_tax = TRUE, $current_amount = FALSE ) {
+		if ( empty( $current_amount ) ) {
+			$current_amount = $this->current_amount( FALSE );
+		}
+		$buffer = round( max( $current_amount - 100000, 0 ) * $this->platform_commission_above_100000( $with_tax ) / 100, 2 );
 		return $buffer;
 	}
 	
-	public function platform_commission_amount( $with_tax = TRUE ) {
-		$buffer = $this->platform_commission_below_100000_amount( $with_tax ) + $this->platform_commission_above_100000_amount( $with_tax );
+	public function platform_commission_amount( $with_tax = TRUE, $current_amount_param = FALSE ) {
+		$buffer = $this->platform_commission_below_100000_amount( $with_tax, $current_amount_param ) + $this->platform_commission_above_100000_amount( $with_tax, $current_amount_param );
 		return $buffer;
 	}
 
