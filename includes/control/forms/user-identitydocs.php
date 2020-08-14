@@ -65,15 +65,15 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$id_file_path = ( empty( $current_file_id ) ) ? '' : $current_file_id->get_public_filepath();
 			$id_file_date_uploaded = $current_file_id->date_uploaded;
 		}
-		$id_label = ( $this->is_orga ) ? __( "Justificatif d'identit&eacute; du g&eacute;rant ou du pr&eacute;sident *", 'yproject' ) : __( "Justificatif d'identit&eacute; *", 'yproject' );
+		$id_label = ( $this->is_orga ) ? __( 'form.user-identitydocs.ID_OF_PRESIDENT', 'yproject' ) : __( 'form.user-identitydocs.ID', 'yproject' );
 		$field_id_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id, $id_file_date_uploaded );
 		$this->addField(
 			'file',
 			'identity' .$suffix,
-			$id_label,
+			$id_label . ' *',
 			WDG_Form_User_Identity_Docs::$field_group_files,
 			$id_file_path,
-			__( "Carte d'identit&eacute; recto-verso ou passeport avec bande MRZ lisible en int&eacute;gralit&eacute;.", 'yproject' ),
+			__( 'form.user-identitydocs.ID_DESCRIPTION', 'yproject' ),
 			$field_id_params
 		);
 		
@@ -87,15 +87,15 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
 				$home_file_date_uploaded = $current_file_home->date_uploaded;
 			}
-			$home_label = __( "Deuxi&egrave;me justificatif d'identit&eacute; du g&eacute;rant ou du pr&eacute;sident *", 'yproject' );
+			$home_label = __( 'form.user-identitydocs.SECOND_ID_ORGA', 'yproject' );
 			$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis, $home_file_date_uploaded );
 			$this->addField(
 				'file',
 				'home' .$suffix,
-				$home_label,
+				$home_label . ' *',
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$home_file_path,
-				__( "M&ecirc;me types que pour le premier. Sinon le permis de conduire ou le dernier avis d'imposition peuvent &ecirc;tre fournis.", 'yproject' ),
+				__( 'form.user-identitydocs.SECOND_ID_ORGA_DESCRIPTION', 'yproject' ),
 				$field_home_params
 			);
 		
@@ -111,10 +111,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'kbis' .$suffix,
-				__( "K-BIS ou &eacute;quivalent &agrave; un registre du commerce *", 'yproject' ),
+				__( 'form.user-identitydocs.KBIS', 'yproject' ) . ' *',
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$kbis_file_path,
-				__( "Datant de moins de 3 mois", 'yproject' ),
+				__( 'form.user-identitydocs.KBIS_DESCRIPTION', 'yproject' ),
 				$field_kbis_params
 			);
 		
@@ -130,7 +130,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'status' .$suffix,
-				__( "Statuts de la soci&eacute;t&eacute;, certifi&eacute;s conformes à l'original par le g&eacute;rant (faisant figurer id&eacute;alement la r&eacute;partition du capital de l'entreprise) *", 'yproject' ),
+				__( 'form.user-identitydocs.STATUS', 'yproject' ) . ' *',
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$status_file_path,
 				'',
@@ -149,10 +149,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'capital_allocation' .$suffix,
-				__( "Attestation de r&eacute;partition du capital (facultatif)", 'yproject' ),
+				__( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$capital_allocation_file_path,
-				__( "Si la r&eacute;partition du capital n'est pas exprim&eacute;e clairement dans les statuts", 'yproject' ),
+				__( 'form.user-identitydocs.CAPITAL_ALLOCATION_DESCRIPTION', 'yproject' ),
 				$field_status_capital_allocation
 			);
 		
@@ -168,10 +168,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'identity2' .$suffix,
-				__( "Justificatif d'identit&eacute; de la deuxi&egrave;me personne (facultatif)", 'yproject' ),
+				__( 'form.user-identitydocs.ID_SECOND_PERSON', 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$id2_file_path,
-				__( "Si une deuxi&egrave;me personne physique d&eacute;tient au moins 25% du capital", 'yproject' ),
+				__( 'form.user-identitydocs.ID_SECOND_PERSON_DESCRIPTION', 'yproject' ),
 				$field_status_id_2
 			);
 		
@@ -187,10 +187,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'home2' .$suffix,
-				__( "Deuxi&egrave;me justificatif d'identit&eacute; de la deuxi&egrave;me personne (facultatif)", 'yproject' ),
+				__( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON', 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$home2_file_path,
-				__( "M&ecirc;me types que pour le premier. Sinon le permis de conduire ou le dernier avis d'imposition peuvent &ecirc;tre fournis.", 'yproject' ),
+				__( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON_DESCRIPTION', 'yproject' ),
 				$field_status_home_2
 			);
 		
@@ -206,10 +206,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'identity3' .$suffix,
-				__( "Justificatif d'identit&eacute; de la troisi&egrave;me personne (facultatif)", 'yproject' ),
+				__( 'form.user-identitydocs.ID_THIRD_PERSON', 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$id3_file_path,
-				__( "Si une troisi&egrave;me personne physique d&eacute;tient au moins 25% du capital", 'yproject' ),
+				__( 'form.user-identitydocs.ID_THIRD_PERSON_DESCRIPTION', 'yproject' ),
 				$field_status_id_3
 			);
 		
@@ -225,10 +225,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->addField(
 				'file',
 				'home3' .$suffix,
-				__( "Deuxi&egrave;me justificatif d'identit&eacute; de la troisi&egrave;me personne (facultatif)", 'yproject' ),
+				__( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON', 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_files_orga,
 				$home3_file_path,
-				__( "M&ecirc;me types que pour le premier. Sinon le permis de conduire ou le dernier avis d'imposition peuvent &ecirc;tre fournis.", 'yproject' ),
+				__( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON_DESCRIPTION', 'yproject' ),
 				$field_status_home_3
 			);
 			
@@ -242,7 +242,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$id_back_file_path = ( empty( $current_file_id_back ) ) ? '' : $current_file_id_back->get_public_filepath();
 				$id_back_file_date_uploaded = $current_file_id_back->date_uploaded;
 			}
-			$id_back_label = __( "Verso du justificatif d'identit&eacute;", 'yproject' );
+			$id_back_label = __( 'form.user-identitydocs.ID_BACK', 'yproject' );
 			$field_id_back_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id_back, $id_back_file_date_uploaded, TRUE );
 			$this->addField(
 				'file',
@@ -250,7 +250,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$id_back_label,
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id_back_file_path,
-				__( "Ce fichier n'est utile que si le verso ne figure pas dans le fichier pr&eacute;c&eacute;dent.", 'yproject' ),
+				__( 'form.user-identitydocs.ID_BACK_DESCRIPTION', 'yproject' ),
 				$field_id_back_params
 			);
 		
@@ -262,17 +262,17 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$id2_file_path = ( empty( $current_file_id2 ) ) ? '' : $current_file_id2->get_public_filepath();
 				$id2_file_date_uploaded = $current_file_id2->date_uploaded;
 			}
-			$id2_label = __( "Deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+			$id2_label = __( 'form.user-identitydocs.SECOND_ID', 'yproject' );
 			$field_status_id2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis, $id2_file_date_uploaded );
 			$this->addField(
 				'file',
 				'identity2',
-				$id2_label,
+				$id2_label . ' *',
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id2_file_path,
-				__( "Passeport ou carte d'identit&eacute; recto-verso avec bande MRZ lisible en intégralit&eacute;, qui n'aurait pas &eacute;t&eacute; d&eacute;pos&eacute; en premi&egrave;re pi&egrave;ce d'identit&eacute;.", 'yproject' ). '<br>'
-					. __( "Sinon un des documents suivants : permis de conduire, dernier avis d'imposition, carte vitale, livret de famille, acte de naissance.", 'yproject' ). '<br>'
-					. __( "Les titres de s&eacute;jour sont accept&eacute;s pour les personnes qui ne sont pas fran&ccedil;aises.", 'yproject' ),
+				__( 'form.user-identitydocs.SECOND_ID_DESCRIPTION_1', 'yproject' ). '<br>'
+					. __( 'form.user-identitydocs.SECOND_ID_DESCRIPTION_2', 'yproject' ). '<br>'
+					. __( 'form.user-identitydocs.SECOND_ID_DESCRIPTION_3', 'yproject' ),
 				$field_status_id2
 			);
 		
@@ -284,7 +284,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$id2_back_file_path = ( empty( $current_file_id2_back ) ) ? '' : $current_file_id2_back->get_public_filepath();
 				$id2_back_file_date_uploaded = $current_file_id2_back->date_uploaded;
 			}
-			$id2_back_label = __( "Verso du deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+			$id2_back_label = __( 'form.user-identitydocs.SECOND_ID_BACK', 'yproject' );
 			$field_status_id2_back = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis_back, $id2_back_file_date_uploaded, TRUE );
 			$this->addField(
 				'file',
@@ -292,7 +292,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$id2_back_label,
 				WDG_Form_User_Identity_Docs::$field_group_files,
 				$id2_back_file_path,
-				__( "Ce fichier n'est utile que si le verso ne figure pas dans le fichier pr&eacute;c&eacute;dent.", 'yproject' ),
+				__( 'form.user-identitydocs.SECOND_ID_BACK_DESCRIPTION', 'yproject' ),
 				$field_status_id2_back
 			);
 		
@@ -302,10 +302,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			}
 			if ( !empty( $current_file_home ) ) {
 				$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
-				$home_label = __( "Justificatif de domicile", 'yproject' );
+				$home_label = __( 'form.user-identitydocs.PROOF_ADDRESS', 'yproject' );
 				$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
 				if ( empty( $field_home_params[ 'message_instead_of_field' ] ) ) {
-					$field_home_params[ 'message_instead_of_field' ] = __( "Depuis le 16 septembre 2019, Lemon Way n'accepte plus les justificatifs de domicile pour authentifier les comptes.", 'yproject' );
+					$field_home_params[ 'message_instead_of_field' ] = __( 'form.user-identitydocs.PROOF_ADDRESS_ALERT', 'yproject' );
 				}
 				$this->addField(
 					'file',
@@ -313,8 +313,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$home_label,
 					WDG_Form_User_Identity_Docs::$field_group_files,
 					$home_file_path,
-					__( "Ce champ est facultatif. Il est utile si vous n'avez pas de deuxi&egrave;me pi&egrave;ce d'identit&eacute;.", 'yproject' ). '<br>'
-						. __( "Il doit dater de moins de 3 mois, et provenir d'un fournisseur d'&eacute;nergie (&eacute;lectricit&eacute;, gaz, eau) ou d'un bailleur, ou &ecirc;tre un relev&eacute; d'imp&ocirc;t.", 'yproject' ),
+					__( 'form.user-identitydocs.PROOF_ADDRESS_DESCRIPTION_1', 'yproject' ). '<br>'
+						. __( 'form.user-identitydocs.PROOF_ADDRESS_DESCRIPTION_2', 'yproject' ),
 					$field_home_params
 				);
 			}
@@ -334,14 +334,14 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$values_has_checked_notification,
 				FALSE,
 				[
-					'phone-notification' => __( "&Ecirc;tre averti par SMS de l'&eacute;tat de mon authentification", 'yproject' )
+					'phone-notification' => __( 'form.user-identitydocs.ALERT_BY_SMS', 'yproject' )
 				]
 			);
 		
 			$this->addField(
 				'text',
 				'phone_number',
-				__( "Le SMS sera envoy&eacute; au num&eacute;ro suivant :", 'yproject' ),
+				__( 'form.user-identitydocs.PHONE_NUMBER', 'yproject' ),
 				WDG_Form_User_Identity_Docs::$field_group_phone_number,
 				$WDGUser->get_phone_number()
 			);
