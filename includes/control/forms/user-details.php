@@ -58,7 +58,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'email',
-			__( "E-mail *", 'yproject' ),
+			__( 'form.user-details.EMAIL', 'yproject' ) . ' *',
 			WDG_Form_User_Details::$field_group_basics,
 			$WDGUser->get_email(),
 			FALSE,
@@ -68,7 +68,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'firstname',
-			__( "Pr&eacute;nom *", 'yproject' ),
+			__( 'form.user-details.FIRSTNAME', 'yproject' ) . ' *',
 			WDG_Form_User_Details::$field_group_basics,
 			$WDGUser->get_firstname()
 		);
@@ -76,7 +76,7 @@ class WDG_Form_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'lastname',
-			__( "Nom *", 'yproject' ),
+			__( 'form.user-details.LASTNAME', 'yproject' ) . ' *',
 			WDG_Form_User_Details::$field_group_basics,
 			$WDGUser->get_lastname()
 		);
@@ -85,7 +85,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'use_lastname',
-				__( "Nom d'usage", 'yproject' ),
+				__( 'form.user-details.USENAME', 'yproject' ),
 				WDG_Form_User_Details::$field_group_basics,
 				$WDGUser->get_use_lastname()
 			);
@@ -128,7 +128,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				[ $is_subscribed_to_newsletter ],
 				FALSE,
 				[
-					'subscribe_newsletter' => __( "Je souhaite recevoir la newsletter WE DO GOOD mensuelle" )
+					'subscribe_newsletter' => __( 'form.user-details.WISH_RECEIVE_NEWSLETTER', 'yproject' )
 				]
 			);
 			
@@ -140,20 +140,20 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'gender',
-				__( "Vous &ecirc;tes *", 'yproject' ),
+				__( 'form.user-details.YOU_ARE', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_gender(),
 				FALSE,
 				[
-					'female'	=> __( "une femme", 'yproject' ),
-					'male'		=> __( "un homme", 'yproject' )
+					'female'	=> __( 'form.user-details.A_WOMAN', 'yproject' ),
+					'male'		=> __( 'form.user-details.A_MAN', 'yproject' )
 				]
 			);
 			
 			$this->addField(
 				'date',
 				'birthday',
-				__( "Date de naissance *", 'yproject' ),
+				__( 'form.user-details.BIRTH_DATE', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_lemonway_birthdate()
 			);
@@ -161,7 +161,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'birthplace',
-				__( "Ville de naissance *", 'yproject' ),
+				__( 'form.user-details.BIRTH_PLACE', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace()
 			);
@@ -174,10 +174,10 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'birthplace_district',
-				__( "Arrondissement dans la ville de naissance", 'yproject' ),
+				__( 'form.user-details.BIRTH_PLACE_DISTRICT', 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace_district(),
-				__( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ),
+				__( 'form.user-details.BIRTH_PLACE_DISTRICT_DESCRIPTION', 'yproject' ),
 				$district_list
 			);
 			
@@ -185,10 +185,10 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'birthplace_department',
-				__( "D&eacute;partement de naissance", 'yproject' ),
+				__( 'form.user-details.BIRTH_PLACE_COUNTY', 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace_department(),
-				__( "Uniquement si la naissance a eu lieu en France", 'yproject' ),
+				__( 'form.user-details.BIRTH_PLACE_COUNTY_DESCRIPTION', 'yproject' ),
 				$french_departments
 			);
 			
