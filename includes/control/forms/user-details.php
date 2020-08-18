@@ -196,7 +196,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'birthplace_country',
-				__( "Pays de naissance", 'yproject' ),
+				__( 'form.user-details.BIRTH_COUNTRY', 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace_country(),
 				FALSE,
@@ -206,7 +206,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'nationality',
-				__( "Nationalit&eacute; *", 'yproject' ),
+				__( 'form.user-details.NATIONALITY', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_nationality(),
 				FALSE,
@@ -216,7 +216,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'address_number',
-				__( "Num&eacute;ro de rue", 'yproject' ),
+				__( 'form.user-details.ADDRESS_NUMBER', 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_address_number()
 			);
@@ -225,7 +225,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'address_number_complement',
-				__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+				__( 'form.user-details.ADDRESS_NUMBER_COMPLEMENT', 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_address_number_complement(),
 				FALSE,
@@ -235,7 +235,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'address',
-				__( "Adresse *", 'yproject' ),
+				__( 'form.user-details.ADDRESS', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_address()
 			);
@@ -243,7 +243,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'postal_code',
-				__( "Code postal *", 'yproject' ),
+				__( 'form.user-details.ZIP_CODE', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_postal_code()
 			);
@@ -251,7 +251,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'city',
-				__( "Ville *", 'yproject' ),
+				__( 'form.user-details.CITY', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_city()
 			);
@@ -259,7 +259,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'country',
-				__( "Pays *", 'yproject' ),
+				__( 'form.user-details.COUNTRY', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_country( 'iso2' ),
 				FALSE,
@@ -269,7 +269,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'select',
 				'tax_country',
-				__( "R&eacute;sidence fiscale *", 'yproject' ),
+				__( 'form.user-details.TAX_COUNTRY', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_tax_country( 'iso2' ),
 				FALSE,
@@ -283,7 +283,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'phone_number',
-				__( "T&eacute;l&eacute;phone", 'yproject' ),
+				__( 'form.user-details.PHONE', 'yproject' ),
 				WDG_Form_User_Details::$field_group_vote,
 				$WDGUser->get_phone_number()
 			);
@@ -295,7 +295,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'text',
 				'phone_number',
-				__( "T&eacute;l&eacute;phone", 'yproject' ),
+				__( 'form.user-details.PHONE', 'yproject' ),
 				WDG_Form_User_Details::$field_group_extended,
 				$WDGUser->get_phone_number()
 			);
@@ -303,10 +303,10 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'textarea',
 				'contact_if_deceased',
-				__( "Personne de confiance", 'yproject' ),
+				__( 'form.user-details.CONTACT_IF_DECEASED', 'yproject' ),
 				WDG_Form_User_Details::$field_group_extended,
 				$WDGUser->get_contact_if_deceased(),
-				__( "Identifiez ici les coordonn&eacute;es (nom, mail, t&eacute;l&eacute;phone) de votre personne de confiance &agrave; contacter en cas de souci majeur, notamment en cas de d&eacute;c&egrave;s. Pensez &agrave; l'informer au pr&eacute;alable de vos investissements sur WE DO GOOD pour qu'elle soit au courant. En remplissant ce champ, vous nous autorisez &agrave; lui donner l'acc&egrave;s &agrave; votre compte personnel sur justificatif de votre impossibilit&eacute; à acc&eacute;der &agrave; votre compte.", 'yproject' )
+				__( 'form.user-details.CONTACT_IF_DECEASED_DESCRIPTION', 'yproject' )
 			);
 		
 		}
@@ -336,7 +336,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			if ( !is_email( $email ) || !WDGRESTAPI_Lib_Validator::is_email( $email )  ) {
 				$error = array(
 					'code'		=> 'email',
-					'text'		=> __( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
+					'text'		=> __( 'form.user-details.EMAIL_ADDRESS_NOT_OK', 'yproject' ),
 					'element'	=> 'email'
 				);
 				array_push( $feedback_errors, $error );
@@ -346,7 +346,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
 				$error = array(
 					'code'		=> 'firstname',
-					'text'		=> __( "Votre pr&eacute;nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
+					'text'		=> __( 'form.user-details.FIRST_NAME_EMPTY', 'yproject' ),
 					'element'	=> 'firstname'
 				);
 				array_push( $feedback_errors, $error );
@@ -356,7 +356,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			if ( empty( $lastname ) || !WDGRESTAPI_Lib_Validator::is_name( $lastname ) ) {
 				$error = array(
 					'code'		=> 'lastname',
-					'text'		=> __( "Votre nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
+					'text'		=> __( 'form.user-details.LAST_NAME_EMPTY', 'yproject' ),
 					'element'	=> 'lastname'
 				);
 				array_push( $feedback_errors, $error );
@@ -380,7 +380,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				if ( empty( $birthplace ) || !WDGRESTAPI_Lib_Validator::is_name( $birthplace ) ) {
 					$error = array(
 						'code'		=> 'birthplace',
-						'text'		=> __( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						'text'		=> __( 'form.user-details.BIRTH_PLACE_ERROR', 'yproject' ),
 						'element'	=> 'birthplace'
 					);
 					array_push( $feedback_errors, $error );
@@ -399,7 +399,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
 					$error = array(
 						'code'		=> 'address',
-						'text'		=> __( "Votre adresse n'est pas correcte.", 'yproject' ),
+						'text'		=> __( 'form.user-details.ADDRESS_ERROR', 'yproject' ),
 						'element'	=> 'address'
 					);
 					array_push( $feedback_errors, $error );
@@ -409,7 +409,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code, $country ) ) {
 					$error = array(
 						'code'		=> 'postal_code',
-						'text'		=> __( "Votre code postal n'est pas correct.", 'yproject' ),
+						'text'		=> __( 'form.user-details.ZIP_CODE_ERROR', 'yproject' ),
 						'element'	=> 'postal_code'
 					);
 					array_push( $feedback_errors, $error );
@@ -419,7 +419,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				if ( empty( $city ) || !WDGRESTAPI_Lib_Validator::is_name( $city ) ) {
 					$error = array(
 						'code'		=> 'city',
-						'text'		=> __( "Votre ville n'est pas correcte.", 'yproject' ),
+						'text'		=> __( 'form.user-details.CITY_ERROR', 'yproject' ),
 						'element'	=> 'city'
 					);
 					array_push( $feedback_errors, $error );
@@ -465,7 +465,7 @@ class WDG_Form_User_Details extends WDG_Form {
 						}
 					}
 					
-					array_push( $feedback_success, __( "Vos informations ont &eacute;t&eacute; enregistr&eacute;es avec succ&egrave;s." ) );
+					array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) );
 					
 				} else {
 					$WDGUser->save_basics( $email, $firstname, $lastname );

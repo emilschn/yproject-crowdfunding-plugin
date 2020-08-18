@@ -9,12 +9,12 @@ class WDG_Form_User_Notifications extends WDG_Form {
 	public static $field_group_transactions = 'user-notifications-transactions';
 	
 	private static $sendinblue_nl_list = array( 
-		5	=> "Newsletter WE DO GOOD",
-		6	=> "Actualit&eacute;s des projets",
-		283 => "Projets &agrave; impact &eacute;conomique",
-		281 => "Projets &agrave; impact social",
-		280 => "Projets &agrave; impact environnemental",
-		279 => "Projets autour de chez moi"
+		5	=> 'form.user-notifications.newsletters.WEDOGOOD',
+		6	=> 'form.user-notifications.newsletters.PROJECT_NEWS',
+		283 => 'form.user-notifications.newsletters.PROJECTS_ECONOMIC',
+		281 => 'form.user-notifications.newsletters.PROJECTS_SOCIAL',
+		280 => 'form.user-notifications.newsletters.PROJECTS_ENVIRONMENT',
+		279 => 'form.user-notifications.newsletters.PROJECTS_AROUND_ME'
 	);
 	
 	private $user_id;
@@ -82,7 +82,7 @@ class WDG_Form_User_Notifications extends WDG_Form {
 
 		$checkboxes_ids_labels = array();
 		foreach ( self::$sendinblue_nl_list as $sib_id => $sib_label ) {
-			$checkboxes_ids_labels[ 'subscribe_newsletter_' .$sib_id ] = $sib_label;
+			$checkboxes_ids_labels[ 'subscribe_newsletter_' .$sib_id ] = __( $sib_label, 'yproject' );
 		}
 		
 		$this->addField(
@@ -120,15 +120,15 @@ class WDG_Form_User_Notifications extends WDG_Form {
 		// 'positive' on est inscrits aux notifications quand les royalties sont supérieures à 0€
 
 		$royalties_notifications_labels = [
-			0 		=> __('Toujours', 'yproject'),
-			'none' 	=> __('Aucune', 'yproject'),
-			'positive' 	=> __('Si le montant est positif', 'yproject'),
+			0 			=> __( 'common.ALWAYS', 'yproject' ),
+			'none' 		=> __( 'common.NONE.F', 'yproject' ),
+			'positive' 	=> __( 'form.user-notifications.royalties.ONLY_POSITIVE', 'yproject' )
 		];
 
 		$this->addField(
 			'select',
 			'royalties',
-			__('Royalties', 'yproject'),
+			__( 'common.ROYALTIES', 'yproject' ),
 			WDG_Form_User_Notifications::$field_group_transactions,
 			$WDGUser->get_royalties_notifications(),
 			FALSE,
