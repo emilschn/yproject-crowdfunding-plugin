@@ -2115,6 +2115,7 @@ class WDGAjaxActions {
 				if ( $orga->get_lemonway_status() == LemonwayLib::$status_registered ) {
 					$orga_authentication = __( "Valid&eacute;e", 'yproject' );
 					$span_class = 'confirm';
+					$error_str = '';
 
 				} else {
 					$orga_wallet_details = $orga->get_wallet_details();
@@ -2199,6 +2200,7 @@ class WDGAjaxActions {
 					if ( $WDGUser->get_lemonway_status() == LemonwayLib::$status_registered ) {
 						$user_authentication = __( "Valid&eacute;e", 'yproject' );
 						$span_class = 'confirm';
+						$error_str = '';
 						
 					} else {
 						$WDGUser_wallet_details = $WDGUser->get_wallet_details();
