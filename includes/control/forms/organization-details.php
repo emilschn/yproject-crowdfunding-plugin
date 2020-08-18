@@ -43,7 +43,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'name',
-			__( "D&eacute;nomination sociale *", 'yproject' ),
+			__( 'form.organization-details.NAME', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_name()
 		);
@@ -51,7 +51,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'email',
-			__( "E-mail *", 'yproject' ),
+			__( 'form.organization-details.EMAIL', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_email(),
 			FALSE,
@@ -61,7 +61,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'idnumber',
-			__( "Num&eacute;ro SIRET *", 'yproject' ),
+			__( 'form.organization-details.ID_NUMBER', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_idnumber()
 		);
@@ -69,7 +69,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'description',
-			__( "Descriptif de l'activit&eacute; *", 'yproject' ),
+			__( 'form.organization-details.ACTIVITY', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_description()
 		);
@@ -77,16 +77,16 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'website',
-			__( "Site Web *", 'yproject' ),
+			__( 'form.organization-details.WEBSITE', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_website(),
-			__( "Adresse de votre site Internet, commen&ccedil;ant par http ou www", 'yproject' )
+			__( 'form.organization-details.WEBSITE_DESCRIPTION', 'yproject' )
 		);
 		
 		$this->addField(
 			'text',
 			'representative_function',
-			__( "Fonction du repr&eacute;sentant", 'yproject' ),
+			__( 'form.organization-details.ORGANIZATION_MANAGER_TITLE', 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_representative_function()
 		);
@@ -94,7 +94,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'legalform',
-			__( "Forme juridique *", 'yproject' ),
+			__( 'form.organization-details.LEGAL_FORM', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_legalform()
 		);
@@ -102,7 +102,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'rcs',
-			__( "RCS (Ville) *", 'yproject' ),
+			__( 'form.organization-details.CITY', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_rcs()
 		);
@@ -110,7 +110,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text-money',
 			'capital',
-			__( "Capital social (en euros) *", 'yproject' ),
+			__( 'form.organization-details.SHARE_CAPITAL', 'yproject' ) . ' *',
 			self::$field_group_complete,
 			$WDGOrganization->get_capital()
 		);
@@ -118,7 +118,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'ape',
-			__( "Code APE", 'yproject' ),
+			__( 'form.organization-details.APE', 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_ape()
 		);
@@ -126,7 +126,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'vat',
-			__( "Num&eacute;ro de TVA", 'yproject' ),
+			__( 'form.organization-details.VAT_NUMBER', 'yproject' ),
 			self::$field_group_complete,
 			$WDGOrganization->get_vat()
 		);
@@ -140,7 +140,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'fiscal_year_end_month',
-			__( "L'exercice comptable se termine &agrave; la fin du mois", 'yproject' ),
+			__( 'form.organization-details.FISCAL_YEAR_END_MONTH', 'yproject' ),
 			self::$field_group_dashboard,
 			$WDGOrganization->get_fiscal_year_end_month(),
 			FALSE,
@@ -150,7 +150,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'number',
 			'employees_count',
-			__( "Nombre d'employ&eacute;s", 'yproject' ),
+			__( 'form.organization-details.EMPLOYEES_COUNT', 'yproject' ),
 			self::$field_group_dashboard,
 			$WDGOrganization->get_employees_count()
 		);
@@ -159,7 +159,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'address_number',
-			__( "Num&eacute;ro de rue", 'yproject' ),
+			__( 'form.user-details.ADDRESS_NUMBER', 'yproject' ),
 			self::$field_group_address,
 			$WDGOrganization->get_address_number()
 		);
@@ -168,7 +168,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'address_number_comp',
-			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			__( 'form.user-details.ADDRESS_NUMBER_COMPLEMENT', 'yproject' ),
 			self::$field_group_address,
 			$WDGOrganization->get_address_number_comp(),
 			FALSE,
@@ -178,7 +178,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'address',
-			__( "Adresse *", 'yproject' ),
+			__( 'form.user-details.ADDRESS', 'yproject' ) . ' *',
 			self::$field_group_address,
 			$WDGOrganization->get_address()
 		);
@@ -186,7 +186,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'postal_code',
-			__( "Code postal *", 'yproject' ),
+			__( 'form.user-details.ZIP_CODE', 'yproject' ) . ' *',
 			self::$field_group_address,
 			$WDGOrganization->get_postal_code()
 		);
@@ -194,7 +194,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'city',
-			__( "Ville *", 'yproject' ),
+			__( 'form.user-details.CITY', 'yproject' ) . ' *',
 			self::$field_group_address,
 			$WDGOrganization->get_city()
 		);
@@ -203,7 +203,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'nationality',
-			__( "Pays *", 'yproject' ),
+			__( 'form.user-details.COUNTRY', 'yproject' ) . ' *',
 			self::$field_group_address,
 			$WDGOrganization->get_nationality(),
 			FALSE,
@@ -245,7 +245,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 				if ( !is_email( $email ) || email_exists( $email ) ) {
 					$error = array(
 						'code'		=> 'email',
-						'text'		=> __( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
+						'text'		=> __( 'form.user-details.EMAIL_ADDRESS_NOT_OK', 'yproject' ),
 						'element'	=> 'email'
 					);
 					array_push( $feedback_errors, $error );
@@ -260,7 +260,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			} else {
 				$error = array(
 					'code'		=> 'name',
-					'text'		=> __( "Le nom de l'organisation ne peut pas &ecirc;tre vide.", 'yproject' ),
+					'text'		=> __( 'form.organization-details.error.NAME', 'yproject' ),
 					'element'	=> 'name'
 				);
 				array_push( $feedback_errors, $error );
@@ -302,7 +302,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			} else {
 				$error = array(
 					'code'		=> 'capital',
-					'text'		=> __( "Le capital de l'organisation doit &ecirc;tre un nombre.", 'yproject' ),
+					'text'		=> __( 'form.organization-details.error.CAPITAL', 'yproject' ),
 					'element'	=> 'capital'
 				);
 				array_push( $feedback_errors, $error );
@@ -334,7 +334,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			} else {
 				$error = array(
 					'code'		=> 'address_number',
-					'text'		=> __( "Le num&eacute;ro de rue de l'organisation doit &ecirc;tre un nombre.", 'yproject' ),
+					'text'		=> __( 'form.organization-details.error.ADDRESS_NUMBER', 'yproject' ),
 					'element'	=> 'address_number'
 				);
 				array_push( $feedback_errors, $error );
@@ -356,7 +356,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			} else {
 				$error = array(
 					'code'		=> 'postal_code',
-					'text'		=> __( "Le code postal de l'organisation doit &ecirc;tre un nombre.", 'yproject' ),
+					'text'		=> __( 'form.organization-details.error.ZIP_CODE', 'yproject' ),
 					'element'	=> 'postal_code'
 				);
 				array_push( $feedback_errors, $error );
