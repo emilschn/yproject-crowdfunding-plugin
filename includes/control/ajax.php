@@ -772,6 +772,115 @@ class WDGAjaxActions {
 		exit();
 	}
 
+	public static function display_user_investments_optimized() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$user_type = filter_input( INPUT_POST, 'user_type' );
+		$is_authentified = FALSE;
+		if ( $user_type == 'user' ) {
+			$WDGUserEntity = new WDGUser( $user_id );
+			$is_authentified = $WDGUserEntity->is_lemonway_registered();
+		} else {
+			$WDGUserEntity = new WDGOrganization( $user_id );
+			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
+		}
+		$result = WDGWPREST_Entity_User::get_investments( $WDGUserEntity->get_api_id(), 'project' );
+
+		$buffer = array();
+		foreach ( $result as $result_campaign_item ) {
+			$buffer_item = array();
+			$buffer_item[ 'name' ] = $result_campaign_item->project_name;
+			$buffer_item[ 'status' ] = $result_campaign_item->project_status;
+			$buffer_item[ 'funding_duration' ] = $result_campaign_item->project_funding_duration;
+			$buffer_item[ 'start_date' ] = $result_campaign_item->project_contract_start_date;
+
+			$buffer_item[ 'items' ] = array();
+			foreach ( $result_campaign_item->investments as $result_investment_item ) {
+				$buffer_investment_item = array();
+				$buffer_investment_item[ 'amount' ] = $result_investment_item->amount;
+				$buffer_investment_item[ 'date' ] = $result_investment_item->invest_datetime;
+
+				$buffer_investment_item[ 'status_str' ] = '';
+				if ( $result_investment_item->status == 'pending' ) {
+					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'En attente de paiement', 'yproject' );
+					} else {
+						$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
+						if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+							$buffer_investment_item[ 'status_str' ] = __( 'A valider', 'yproject' );
+						}
+					}
+					
+				} elseif ( $result_investment_item->status == 'publish' ) {
+					if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_collecte ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'Valid&eacute;', 'yproject' );
+						
+					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_closed ) {
+						$buffer_investment_item[ 'status' ] = 'canceled';
+						$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+						
+					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_archive ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'Annul&eacute;', 'yproject' );
+						$date_end = new DateTime( $result_campaign_item->project_funding_end_date );
+						$date_end->add( new DateInterval( 'P15D' ) );
+						if ( $today_datetime < $date_end ) {
+							$buffer_investment_item[ 'status_str' ] = __( 'En suspend', 'yproject' );
+						}
+						
+					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'Versements &agrave; venir', 'yproject' );
+						$first_payment_date = $result_campaign_item->project_first_payment_date;
+						if ( empty( $first_payment_date ) ) {
+							$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
+						}
+						$date_first_payement = new DateTime( $first_payment_date );
+						if ( $today_datetime > $date_first_payement ) {
+							$buffer_investment_item[ 'status_str' ] = __( 'Versements en cours', 'yproject' );
+						}
+					
+						$first_investment_contract_status = FALSE;
+						if ( !empty( $result_campaign_item->investments ) ) {
+							$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
+						}
+						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
+							$buffer_investment_item[ 'status' ] = 'canceled';
+							$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+						}
+					}
+				}
+				$buffer_investment_item[ 'status' ] = $result_investment_item->status;
+
+				$buffer_investment_item[ 'roi_amount' ] = 'TODO';
+				$buffer_investment_item[ 'roi_return' ] = 'TODO';
+				$buffer_investment_item[ 'contract_file_path' ] = 'TODO';
+				$buffer_investment_item[ 'contract_file_name' ] = 'TODO';
+				$buffer_investment_item[ 'conclude-investment-url' ] = 'TODO';
+				array_push( $buffer_item[ 'items' ], $buffer_investment_item );
+			}
+
+			$buffer_item[ 'rois_by_year' ] = array();
+			$buffer_year_item = array();
+			$buffer_year_item[ 'estimated_turnover' ] = 'TODO';
+			$buffer_year_item[ 'amount_turnover' ] = 'TODO';
+			$buffer_year_item[ 'estimated_rois' ] = 'TODO';
+			$buffer_year_item[ 'amount_rois' ] = 'TODO';
+			$buffer_year_item[ 'roi_items' ] = array();
+
+			$buffer_roi_item = array();
+			$buffer_roi_item[ 'date' ] = 'TODO';
+			$buffer_roi_item[ 'status' ] = 'TODO';
+			$buffer_roi_item[ 'status_str' ] = 'TODO';
+			$buffer_roi_item[ 'amount' ] = 'TODO';
+			array_push( $buffer_item[ 'roi_items' ], $buffer_roi_item );
+
+			array_push( $buffer_item[ 'rois_by_year' ], $buffer_year_item );
+
+			$buffer[ $result_campaign_item->project_id ] = $buffer_item;
+		}
+		
+		echo json_encode( $buffer );
+		exit();
+	}
+
 	/**
 	 * Récupère le tableau avec les transactions des investisseurs
 	 */
