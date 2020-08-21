@@ -253,22 +253,25 @@ final class ATCF_CrowdFunding {
 	 * Définition de la langue en cours
 	 * @global string $locale
 	 */
-	function set_locale( $locale ) {
-		$input_get_lang = filter_input(INPUT_GET, 'lang');
+	function set_locale( $locale_input ) {
+		$input_get_lang = filter_input( INPUT_GET, 'lang' );
 		if ( empty ( $input_get_lang ) ) {
-			$input_get_lang = filter_input(INPUT_POST, 'lang');
+			$input_get_lang = filter_input( INPUT_POST, 'lang' );
 		}
 		if ( !empty( $input_get_lang ) ) {
-			$locale = $input_get_lang;
-			global $save_locale;
-			$save_locale = $locale;
+			$locale_input = $input_get_lang;
 		} else {
 			if ( isset( $_COOKIE['locale'] ) ) {
-				$locale = $_COOKIE['locale'];
+				$locale_input = $_COOKIE['locale'];
 			}
 		}
+
+		if ( !empty( $locale_input ) ) {
+			global $locale;
+			$locale = $locale_input;
+		}
 		
-		return $locale;
+		return $locale_input;
 	}
 	
 	function save_locale() {
@@ -283,12 +286,13 @@ final class ATCF_CrowdFunding {
 		return $option_platform[ $setting_key ];
 	}
 	
-	public static function get_translated_setting( $setting_id, $locale = '' ) {
-		if ($locale == '') {
-			$locale = get_locale();
+	public static function get_translated_setting( $setting_id, $input_locale = '' ) {
+		if ($input_locale == '') {
+			global $locale;
+			$input_locale = $locale;
 		}
 		
-		$options_saved = get_option(ATCF_CrowdFunding::$option_name .'_'. $locale);
+		$options_saved = get_option(ATCF_CrowdFunding::$option_name .'_'. $input_locale);
 		if ( !empty( $options_saved[$setting_id] ) ) {
 			$buffer = $options_saved[$setting_id];
 		} else {
