@@ -223,7 +223,14 @@ class WDGPostActions {
 				//Mail pour l'équipe
 				NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
 				NotificationsAsana::send_new_project( $newcampaign_id, $orga_name );
-				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
+
+				//Redirect then
+				$dashboard_url = home_url( '/tableau-de-bord/?campaign_id=' .$newcampaign_id );
+				
+				//Mail pour le PP
+				$to = $WDGUser_current->get_email();
+				$to_name = $WDGUser_current->get_firstname();
+				NotificationsAPI::new_project_published( $to, $to_name, $dashboard_url, $newcampaign->get_api_id() );
 				
 				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
 				$test_campaign = new ATCF_Campaign( $newcampaign_id );
@@ -235,12 +242,7 @@ class WDGPostActions {
 					$result['error_str'] = 'project_no_orga_linked';
 				}
 
-				//Redirect then
-				$page_dashboard = get_page_by_path('tableau-de-bord');
-				$campaign_id_param = '?campaign_id=';
-				$campaign_id_param .= $newcampaign_id;
-
-				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject" ;
+				$redirect_url = $dashboard_url ."&lightbox=newproject" ;
 				$result['url_redirect'] = $redirect_url;
 			} else {
 				global $errors_submit_new, $errors_create_orga;
