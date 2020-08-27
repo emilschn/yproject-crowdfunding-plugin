@@ -798,7 +798,6 @@ class WDGAjaxActions {
 			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 			$exp = dirname( __FILE__ ). '/../pdf_files/' .$result_campaign_item->project_wpref. '_' .$user_id. '_*.pdf';
 			$files = glob( $exp );
-			ypcf_debug_log( '>>> files > ' . $result_campaign_item->project_wpref. '_' .$user_id . ' >> ' . print_r( $files, TRUE ) );
 
 
 			$buffer_item[ 'items' ] = array();
@@ -835,7 +834,7 @@ class WDGAjaxActions {
 							$estimated_rois = round( $turnover * $result_investment_item->amount / 100 );
 							$turnover = round( $result_campaign_item->project_amount * $turnover / 100 );
 						} else {
-							if ( !empty( $roi_percent_full ) ) {
+							if ( !empty( $result_campaign_item->project_roi_percent ) ) {
 								$estimated_rois = round( $turnover * $result_campaign_item->project_roi_percent / 100 );
 							} else {
 								$estimated_rois = round( $turnover * $result_campaign_item->project_roi_percent_estimated / 100 );
