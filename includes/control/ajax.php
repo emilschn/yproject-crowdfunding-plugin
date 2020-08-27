@@ -789,10 +789,11 @@ class WDGAjaxActions {
 		$buffer = array();
 		foreach ( $result as $result_campaign_item ) {
 			$buffer_item = array();
-			$buffer_item[ 'name' ] = utf8_encode( $result_campaign_item->project_name );
+			$buffer_item[ 'name' ] = $result_campaign_item->project_name;
 			$buffer_item[ 'status' ] = utf8_encode( $result_campaign_item->project_status );
 			$buffer_item[ 'funding_duration' ] = utf8_encode( $result_campaign_item->project_funding_duration );
-			$buffer_item[ 'start_date' ] = utf8_encode( $result_campaign_item->project_contract_start_date );
+			$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
+			$buffer_item[ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
 
 			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 			$exp = dirname( __FILE__ ). '/../pdf_files/' .$result_campaign_item->project_wpref. '_' .$user_id. '_*.pdf';
@@ -825,7 +826,6 @@ class WDGAjaxActions {
 				}
 				if ( !empty( $estimated_turnover_list ) ){
 					// On démarre de la date de démarrage du contrat
-					$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
 					
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
@@ -944,16 +944,14 @@ class WDGAjaxActions {
 					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .$contract_index. '.pdf';
 					$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf';
 					if ( file_exists( $test_file_name ) ) {
-						$contract_index++;
 						$buffer_investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf' );
 						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;						
 					} elseif ( count( $files ) ) {
 						$filelist_extract = explode( '/', $files[ $contract_index ] );
 						$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
-						$contract_index++;
 						$buffer_investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
 						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;						
-					} 
+					}
 				}
 
 				$buffer_investment_item[ 'conclude-investment-url' ] = '';
