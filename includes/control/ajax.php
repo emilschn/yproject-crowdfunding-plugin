@@ -794,6 +794,9 @@ class WDGAjaxActions {
 			$buffer_item[ 'funding_duration' ] = utf8_encode( $result_campaign_item->project_funding_duration );
 			$buffer_item[ 'start_date' ] = utf8_encode( $result_campaign_item->project_contract_start_date );
 
+			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
+			$exp = dirname( __FILE__ ). '/../pdf_files/' .$result_campaign_item->project_wpref. '_' .$user_id. '_*.pdf';
+			$files = glob( $exp );
 
 
 			$buffer_item[ 'items' ] = array();
