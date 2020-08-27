@@ -934,7 +934,10 @@ class WDGAjaxActions {
 				}
 				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
 				if ( $investment_item[ 'contract_file_path' ] == '' ){
-					$contract_index = count( $buffer[ $result_campaign_item->project_wpref ][ 'items' ] );
+					$contract_index = 0;
+					if ( isset( $buffer[ $result_campaign_item->project_wpref ][ 'items' ] ) ) {
+						$contract_index = count( $buffer[ $result_campaign_item->project_wpref ][ 'items' ] );
+					}
 					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .$contract_index. '.pdf';
 					$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf';
 					if ( file_exists( $test_file_name ) ) {
@@ -1039,10 +1042,13 @@ class WDGAjaxActions {
 											$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $turnover_item;
 										}
 										$adjustment_value = 0;
+										$adjustment_value_as_turnover = 0;
 										foreach ( $roi_declaration->adjustments as $adjustment ) {
 											$adjustment_value += $adjustment->amount;
 										}
-										$adjustment_value_as_turnover = $adjustment_value * 100 / $result_investment_item->project_roi_percent;
+										if ( $result_campaign_item->project_roi_percent > 0 ) {
+											$adjustment_value_as_turnover = $adjustment_value * 100 / $result_campaign_item->project_roi_percent;
+										}
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
