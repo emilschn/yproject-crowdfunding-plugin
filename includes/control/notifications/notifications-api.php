@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class NotificationsAPI {
 	
 	public static $description_str_by_template_id = array(
+		'1143'	=> "Nouveau projet créé",
 		'156' => "Actualité",
 		'184' => "Mail via liste de contacts",
 		'181' => "Inscription",
@@ -78,6 +79,27 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Campagne
 	//**************************************************************************
+    //*******************************************************
+    // NOUVEAU PROJET PUBLIE
+    //*******************************************************
+	public static function new_project_published( $recipient, $name, $project_link, $project_api_id ) {
+		ypcf_debug_log( 'NotificationsAPI::new_project_published > ' . $recipient );
+		$id_template = '1143';
+		$project_link_clean = str_replace( 'https://', '', $project_link );
+		$options = array(
+			'personal'				=> 1,
+			'PRENOM'				=> $name,
+			'DASHBOARD_URL'			=> $project_link_clean
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
     //*******************************************************
     // ENVOI ACTUALITE DE PROJET
     //*******************************************************

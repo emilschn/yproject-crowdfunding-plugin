@@ -180,6 +180,19 @@ class WDGWPREST_Entity_User {
 		}
 		return $buffer;
 	}
+
+	/**
+	 * Retourne les investissements liés à un utilisateur
+	 * @return array
+	 */
+	public static function get_investments( $user_api_id, $sort = FALSE ) {
+		$sort_str = '';
+		if ( !empty( $sort ) ) {
+			$sort_str = '?sort=' .$sort;
+		}
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_api_id. '/investments' .$sort_str );
+		return $result_obj;
+	}
 	
 	/**
 	 * Retourne les contrats d'investissements liés à un utilisateur
