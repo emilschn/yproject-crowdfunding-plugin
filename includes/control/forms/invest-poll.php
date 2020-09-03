@@ -38,9 +38,9 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		
 		//**********************************************************************
 		// Champs garantie : $field_group_poll_source
-		$label = __( "Ce qui m'a motiv&eacute;(e) &agrave; investir aujourd'hui&nbsp;: ", 'yproject' );
+		$label = __( 'form.invest-poll.source.TITLE', 'yproject' );
 		if ( $this->context == 'vote' ) {
-			$label = __( "Ce qui me donnerait envie d'investir sur ce projet&nbsp;: ", 'yproject' );
+			$label = __( 'form.invest-poll.source.TITLE_VOTE', 'yproject' );
 		}
 		$this->addField(
 			'checkboxes',
@@ -50,11 +50,11 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'know-project-manager'			=> __( "Je connais le(s) porteur(s) de projet", 'yproject' ),
-				'interrested-by-domain'			=> __( "Le projet fait partie d'un secteur qui m'int&eacute;resse", 'yproject' ),
-				'diversify-savings'				=> __( "Je cherche &agrave; diversifier les placements de mon &eacute;pargne", 'yproject' ),
-				'looking-for-positive-impact'	=> __( "Je cherche &agrave; investir dans un projet &agrave; impact positif", 'yproject' ),
-				'other-motivations'				=> __( "Autre(s) :", 'yproject' ),
+				'know-project-manager'			=> __( 'form.invest-poll.source.OPTION_PROJECT_MANAGER', 'yproject' ),
+				'interrested-by-domain'			=> __( 'form.invest-poll.source.OPTION_INTEREST', 'yproject' ),
+				'diversify-savings'				=> __( 'form.invest-poll.source.OPTION_SAVINGS', 'yproject' ),
+				'looking-for-positive-impact'	=> __( 'form.invest-poll.source.OPTION_IMPACTS', 'yproject' ),
+				'other-motivations'				=> __( 'form.invest-poll.source.OPTION_OTHER', 'yproject' ),
 			]
 		);
 		
@@ -69,15 +69,15 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		$this->addField(
 			'radio',
 			'how-the-fundraising-was-known',
-			__( "J'ai connu cette lev&eacute;e de fonds via&nbsp;:", 'yproject' ),
+			__( 'form.invest-poll.known.TITLE', 'yproject' ),
 			self::$field_group_poll_source,
 			FALSE,
 			FALSE,
 			[
-				'known-by-project-manager'	=> __( "L'entrepreneur", 'yproject' ),
-				'known-by-wedogood'			=> __( "WE DO GOOD", 'yproject' ),
-				'known-by-other-investor'	=> __( "Un autre investisseur du projet", 'yproject' ),
-				'known-by-other-source'		=> __( "Autre (presse...)", 'yproject' )
+				'known-by-project-manager'	=> __( 'form.invest-poll.known.OPTION_PROJECT_MANAGER', 'yproject' ),
+				'known-by-wedogood'			=> __( 'form.invest-poll.known.OPTION_WEDOGOOD', 'yproject' ),
+				'known-by-other-investor'	=> __( 'form.invest-poll.known.OPTION_OTHER_INVESTOR', 'yproject' ),
+				'known-by-other-source'		=> __( 'form.invest-poll.known.OPTION_OTHER', 'yproject' )
 			]
 		);
 		
@@ -92,17 +92,17 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		$this->addField(
 			'radio',
 			'where-user-come-from',
-			__( "Je suis arriv&eacute;(e) sur la page de cette lev&eacute;e de fonds via&nbsp;:", 'yproject' ),
+			__( 'form.invest-poll.come-from.TITLE', 'yproject' ),
 			self::$field_group_poll_source,
 			FALSE,
 			FALSE,
 			[
-				'mail-from-project-manager'			=> __( "Un mail du porteur de projet", 'yproject' ),
-				'social-network-private-message'	=> __( "Un message priv&eacute; sur Facebook, LinkedIn, Twitter...", 'yproject' ),
-				'social-network-publication'		=> __( "Une publication sur les r&eacute;seaux sociaux", 'yproject' ),
-				'wedogood-site-or-newsletter'		=> __( "La newsletter ou le site de WE DO GOOD", 'yproject' ),
-				'press-article'						=> __( "Un article de presse", 'yproject' ),
-				'other-source'						=> __( "Autre(s) :", 'yproject' )
+				'mail-from-project-manager'			=> __( 'form.invest-poll.come-from.OPTION_MAIL', 'yproject' ),
+				'social-network-private-message'	=> __( 'form.invest-poll.come-from.OPTION_SOCIAL_PRIVATE', 'yproject' ),
+				'social-network-publication'		=> __( 'form.invest-poll.come-from.OPTION_SOCIAL_PUBLIC', 'yproject' ),
+				'wedogood-site-or-newsletter'		=> __( 'form.invest-poll.come-from.OPTION_WEDOGOOD', 'yproject' ),
+				'press-article'						=> __( 'form.invest-poll.come-from.OPTION_PRESS', 'yproject' ),
+				'other-source'						=> __( 'form.invest-poll.come-from.OPTION_OTHER', 'yproject' )
 			]
 		);
 		
@@ -131,7 +131,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		if ( !is_user_logged_in() ) {
 			$this->addPostError(
 				'user-not-logged-in',
-				__( "Vous n'&ecirc;tes pas identifi&eacute;.", 'yproject' ),
+				__( 'form.invest-input.error.NOT_LOGGED_IN', 'yproject' ),
 				'general'
 			);
 		
@@ -139,7 +139,7 @@ class WDG_Form_Invest_Poll extends WDG_Form {
 		} else if ( $WDGUser->get_wpref() != $WDGUser_current->get_wpref() ) {
 			$this->addPostError(
 				'user-not-logged-in',
-				__( "Vous n'&ecirc;tes pas identifi&eacute;.", 'yproject' ),
+				__( 'form.invest-input.error.NOT_LOGGED_IN', 'yproject' ),
 				'general'
 			);
 		}
