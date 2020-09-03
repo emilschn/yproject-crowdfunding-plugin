@@ -774,6 +774,7 @@ class WDGAjaxActions {
 	}
 
 	public static function display_user_investments_optimized() {
+		$today_datetime = new DateTime();
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$user_type = filter_input( INPUT_POST, 'user_type' );
 		$is_authentified = FALSE;
