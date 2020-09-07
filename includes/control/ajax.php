@@ -2209,6 +2209,9 @@ class WDGAjaxActions {
 	 */
 	public static function create_contacts_table(){
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
+		if ( !is_numeric( $campaign_id ) ) {
+			return '<div class="wdg-datatable">Erreur de paramètre</div>';
+		}
 		
 		$campaign = new ATCF_Campaign($campaign_id);
 		$campaign_poll_answers = $campaign->get_api_data( 'poll_answers' );
