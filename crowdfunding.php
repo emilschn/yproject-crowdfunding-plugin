@@ -215,6 +215,7 @@ final class ATCF_CrowdFunding {
 		
 		add_filter( 'locale', array( $this, 'set_locale' ) );
 		add_action( 'init', array( $this, 'save_locale' ), 1 );
+		add_action( 'wpml_language_cookie_added', array( $this, 'update_locale' ), 10, 1 );
 		
 		do_action( 'atcf_setup_actions' );
 
@@ -258,17 +259,30 @@ final class ATCF_CrowdFunding {
 		if ( empty ( $input_get_lang ) ) {
 			$input_get_lang = filter_input( INPUT_POST, 'lang' );
 		}
+
 		if ( !empty( $input_get_lang ) ) {
 			$locale_input = $input_get_lang;
-		} else {
-			if ( isset( $_COOKIE['locale'] ) ) {
-				$locale_input = $_COOKIE['locale'];
-			}
+
+		} else if ( isset( $_COOKIE[ 'locale' ] ) ) {
+			$locale_input = $_COOKIE[ 'locale' ];
+
 		}
 
 		if ( !empty( $locale_input ) ) {
 			global $locale;
-			$locale = $locale_input;
+			switch ( $locale_input ) {
+				case 'fr':
+					$locale = 'fr_FR';
+					break;
+	
+				case 'en':
+					$locale = 'en_US';
+					break;
+
+				default:
+					$locale = $locale_input;
+					break;
+			}
 		}
 		
 		return $locale_input;
@@ -278,6 +292,14 @@ final class ATCF_CrowdFunding {
 		$input_get_lang = filter_input(INPUT_GET, 'lang');
 		if ( !empty( $input_get_lang ) ) {
 			setcookie( 'locale', $input_get_lang, time() + 10 * DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+		}
+	}
+
+	public function update_locale( $lang_code ) {
+		if ( !empty( $lang_code ) ) {
+			global $locale;
+			$locale = $lang_code;
+			setcookie( 'locale', $lang_code, time() + 10 * DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
 		}
 	}
 	
