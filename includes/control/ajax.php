@@ -204,7 +204,7 @@ class WDGAjaxActions {
 	 * Retourne la liste des projets qui peuvent Ãªtre recherchés
 	 */
 	public static function get_searchable_projects_list() {
-		ypcf_debug_log( 'get_searchable_projects_list' );
+		ypcf_function_log( 'get_searchable_projects_list', 'view' );
 		$WDG_cache_plugin = new WDG_Cache_Plugin();
 		
 		$projects_searchable = array();

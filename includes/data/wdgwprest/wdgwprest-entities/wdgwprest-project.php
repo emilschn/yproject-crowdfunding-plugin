@@ -343,4 +343,9 @@ class WDGWPREST_Entity_Project {
 		$result_obj = WDGWPRESTLib::call_get_wdg( 'projects/home-stats' );
 		return $result_obj;
 	}
+
+	public static function get_search_list() {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'projects/search-list' );
+		return $result_obj;
+	}
 }
