@@ -601,7 +601,7 @@ class WDGUser {
 		if ( isset( $this->language ) ) {
 			return $this->language;
 		}
-		return 'fr';
+		return '';
 	}
 		
 	public function get_birthplace() {

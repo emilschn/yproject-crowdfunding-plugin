@@ -316,8 +316,11 @@ class WDG_Form_User_Details extends WDG_Form {
 			
 			if ( is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
 				$language_list = array();
+				$language_list[ 'fr' ] = $active_languages[ 'fr' ][ 'native_name' ];
 				foreach ( $active_languages as $language_key => $language_item ) {
-					$language_list[ $language_key ] = $language_item[ 'native_name' ];
+					if ( $language_key != 'fr' ) {
+						$language_list[ $language_key ] = $language_item[ 'native_name' ];
+					}
 				}
 
 				$this->addField(
