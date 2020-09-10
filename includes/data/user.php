@@ -41,6 +41,7 @@ class WDGUser {
 	private $email;
 	private $phone_number;
 	private $contact_if_deceased;
+	private $language;
 	private $bank_iban;
 	private $bank_bic;
 	private $bank_holdername;
@@ -106,6 +107,7 @@ class WDGUser {
 					$this->email = $this->api_data->email;
 					$this->phone_number = $this->api_data->phone_number;
 					$this->contact_if_deceased = $this->api_data->contact_if_deceased;
+					$this->language = $this->api_data->language;
 					$this->bank_iban = $this->api_data->bank_iban;
 					$this->bank_bic = $this->api_data->bank_bic;
 					$this->bank_holdername = $this->api_data->bank_holdername;
@@ -594,6 +596,13 @@ class WDGUser {
 		$buffer = $this->contact_if_deceased;
 		return $buffer;
 	}
+
+	public function get_language() {
+		if ( isset( $this->language ) ) {
+			return $this->language;
+		}
+		return 'fr';
+	}
 		
 	public function get_birthplace() {
 		$buffer = $this->birthday_city;
@@ -837,7 +846,7 @@ class WDGUser {
 	/**
 	 * Enregistre les donnÃ©es nÃ©cessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $contact_if_deceased = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $contact_if_deceased = '', $language = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			$this->copy_sendinblue_params_to_new_email( $this->wp_user->user_email, $email );
@@ -925,6 +934,9 @@ class WDGUser {
 		}
 		if ( !empty( $contact_if_deceased ) ) {
 			$this->contact_if_deceased = $contact_if_deceased;
+		}
+		if ( !empty( $language ) ) {
+			$this->language = $language;
 		}
 		
 		$this->update_api();

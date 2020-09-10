@@ -27,6 +27,10 @@ class WDG_Form_User_Details extends WDG_Form {
 	protected function initFields() {
 		parent::initFields();
 		
+		if ( is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
+			$active_languages = apply_filters( 'wpml_active_languages', NULL );
+		}
+		
 		$WDGUser = new WDGUser( $this->user_id );
 		
 		// $field_group_hidden
@@ -309,6 +313,23 @@ class WDG_Form_User_Details extends WDG_Form {
 				__( 'form.user-details.CONTACT_IF_DECEASED_DESCRIPTION', 'yproject' )
 			);
 		
+			
+			if ( is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
+				$language_list = array();
+				foreach ( $active_languages as $language_key => $language_item ) {
+					$language_list[ $language_key ] = $language_item[ 'native_name' ];
+				}
+
+				$this->addField(
+					'select',
+					'language',
+					__( 'form.user-details.LANGUAGE', 'yproject' ),
+					WDG_Form_User_Details::$field_group_extended,
+					$WDGUser->get_language(),
+					FALSE,
+					$language_list
+				);
+			}
 		}
 		
 	}
@@ -432,9 +453,11 @@ class WDG_Form_User_Details extends WDG_Form {
 			
 			$description = '';
 			$contact_if_deceased = '';
+			$language = 'fr';
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
 				$description = $this->getInputText( 'description' );
 				$contact_if_deceased = $this->getInputText( 'contact_if_deceased' );
+				$language = $this->getInputText( 'language' );
 			}
 			
 			
@@ -451,7 +474,7 @@ class WDG_Form_User_Details extends WDG_Form {
 						$birthdate->format('d'), $birthdate->format('m'), $birthdate->format('Y'),
 						$birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality,
 						$address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, 
-						$contact_if_deceased
+						$contact_if_deceased, $language
 					);
 					
 					$was_registered = $WDGUser->has_lemonway_wallet();
