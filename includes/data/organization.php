@@ -1546,6 +1546,36 @@ class WDGOrganization {
 		return WDGWPREST_Entity_Organization::get_transactions( $this->get_api_id() );
 	}
 
+	public function get_lemonway_iban() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( isset( $wallet_details->IBANS->IBAN ) ) {
+			if ( is_array( $wallet_details->IBANS->IBAN ) ) {
+				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
+				// Si le premier IBAN est désactivé, on va chercher dans la suite
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected ) ) {
+					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
+						if ( $iban_item->S == WDGUser::$iban_status_validated ) {
+							$buffer = $iban_item;
+						}
+					}
+				}
+			} else {
+				$buffer = $wallet_details->IBANS->IBAN;
+			}
+		}
+		return $buffer;
+	}
+	
+	public function get_lemonway_iban_status() {
+		$first_iban = $this->get_lemonway_iban();
+		if ( !empty( $first_iban ) ) {
+			return $first_iban->S;
+		} else {
+			return FALSE;
+		}
+	}
+
 	
 /*******************************************************************************
  * Gestion investissements
