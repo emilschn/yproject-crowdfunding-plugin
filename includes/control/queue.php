@@ -314,18 +314,18 @@ class WDGQueue {
 		public static function execute_registered_without_investment( $user_id, $queued_action_params, $queued_action_id ) {
 			$WDGUser = new WDGUser( $user_id );
 
-			// Recherche si l'utilisateur a investi sur un des projets d'Epargne Positive en cours
-			$has_invested_on_positive_savings = false;
-			$positive_savings_projects_list = ATCF_Campaign::get_list_positive_savings( 0 );
-			foreach ( $positive_savings_projects_list as $project_post ) {
-				if ( $WDGUser->has_invested_on_campaign( $project_post->ID ) ) {
-					$has_invested_on_positive_savings = true;
-					break;
-				}
-			}
+			// Recherche si l'utilisateur a fait une activité (éval, investissement, authentification)
+			$list_organizations = $WDGUser->get_organizations_list();
+			$list_campaigns_followed = $WDGUser->get_campaigns_followed();
+			$list_campaigns_voted = $WDGUser->get_campaigns_voted();
+			$lw_status = $WDGUser->get_lemonway_status();
+			$has_actions = !empty( $list_organizations )
+							|| !empty( $list_campaigns_followed )
+							|| !empty( $list_campaigns_voted )
+							|| $lw_status != LemonwayLib::$status_ready;
 
-			// Si pas investi : envoi rappel + programmation 2eme rappel
-			if ( !$has_invested_on_positive_savings ) {
+			// Si pas d'action : envoi rappel + programmation 2eme rappel
+			if ( !$has_actions ) {
 				NotificationsAPI::user_registered_without_investment( $WDGUser->get_email(), $WDGUser->get_firstname() );
 				self::add_notification_registered_without_investment_reminder( $user_id );
 			}
@@ -352,18 +352,18 @@ class WDGQueue {
 		public static function execute_registered_without_investment_reminder( $user_id, $queued_action_params, $queued_action_id ) {
 			$WDGUser = new WDGUser( $user_id );
 
-			// Recherche si l'utilisateur a investi sur un des projets d'Epargne Positive en cours
-			$has_invested_on_positive_savings = false;
-			$positive_savings_projects_list = ATCF_Campaign::get_list_positive_savings( 0 );
-			foreach ( $positive_savings_projects_list as $project_post ) {
-				if ( $WDGUser->has_invested_on_campaign( $project_post->ID ) ) {
-					$has_invested_on_positive_savings = true;
-					break;
-				}
-			}
+			// Recherche si l'utilisateur a fait une activité (éval, investissement, authentification)
+			$list_organizations = $WDGUser->get_organizations_list();
+			$list_campaigns_followed = $WDGUser->get_campaigns_followed();
+			$list_campaigns_voted = $WDGUser->get_campaigns_voted();
+			$lw_status = $WDGUser->get_lemonway_status();
+			$has_actions = !empty( $list_organizations )
+							|| !empty( $list_campaigns_followed )
+							|| !empty( $list_campaigns_voted )
+							|| $lw_status != LemonwayLib::$status_ready;
 
-			// Si pas investi : vérification actions sur notification précédente
-			if ( !$has_invested_on_positive_savings ) {
+			// Si pas d'action : envoi rappel selon actions sur le mail
+			if ( !$has_actions ) {
 			
 				$ref_template_id = 932;
 
