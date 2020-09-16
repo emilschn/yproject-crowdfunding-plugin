@@ -39,8 +39,9 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'get_transactions_table' );
 
 		// Page projet
-		WDGAjaxActions::add_action('save_image_url_video');
-		WDGAjaxActions::add_action('send_project_notification');
+		WDGAjaxActions::add_action( 'save_image_url_video' );
+		WDGAjaxActions::add_action( 'send_project_notification' );
+		WDGAjaxActions::add_action( 'remove_project_cache' );
 
         // TBPP
 		WDGAjaxActions::add_action('remove_help_item');
@@ -1295,6 +1296,21 @@ class WDGAjaxActions {
 		} else {
 			exit( '0' );
 		}
+	}
+
+	public static function remove_project_cache() {
+		$id_campaign = filter_input( INPUT_POST, 'id_campaign' );
+		$campaign = new ATCF_Campaign( $id_campaign );
+
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->delete( $campaign->data->post_name );
+		
+		$db_cacher = WDG_Cache_Plugin::current();
+		$db_cacher->set_cache( 'cache_campaign_' . $id_campaign, '0', 1, 1 );
+
+		WDGQueue::add_cache_post_as_html( $id_campaign, 'date', 'PT50M' );
+
+		exit( '1' );
 	}
 
 	public static function remove_help_item() {
