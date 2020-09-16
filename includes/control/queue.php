@@ -294,6 +294,128 @@ class WDGQueue {
 	}
 
 	/******************************************************************************/
+	/* NOTIFS INSCRIPTION J+7 */
+	/******************************************************************************/
+		public static function add_notification_registered_without_investment( $user_id ) {
+			$action = 'registered_without_investment';
+			$entity_id = $user_id;
+			$priority = self::$priority_date;
+			$params = array();
+
+			// Les envois se font dans 7j à 9h
+			$date_next_dispatch = new DateTime();
+			$date_next_dispatch->setTime( 9, 0 );
+			$date_next_dispatch->add( new DateInterval( 'P7D' ) );
+			$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+		
+		public static function execute_registered_without_investment( $user_id, $queued_action_params, $queued_action_id ) {
+			$WDGUser = new WDGUser( $user_id );
+
+			// Recherche si l'utilisateur a investi sur un des projets d'Epargne Positive en cours
+			$has_invested_on_positive_savings = false;
+			$positive_savings_projects_list = ATCF_Campaign::get_list_positive_savings( 0 );
+			foreach ( $positive_savings_projects_list as $project_post ) {
+				if ( $WDGUser->has_invested_on_campaign( $project_post->ID ) ) {
+					$has_invested_on_positive_savings = true;
+					break;
+				}
+			}
+
+			// Si pas investi : envoi rappel + programmation 2eme rappel
+			if ( !$has_invested_on_positive_savings ) {
+				NotificationsAPI::user_registered_without_investment( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				self::add_notification_registered_without_investment_reminder( $user_id );
+			}
+		}
+
+	/******************************************************************************/
+	/* NOTIFS RAPPEL INSCRIPTION J+7 */
+	/******************************************************************************/
+		public static function add_notification_registered_without_investment_reminder( $user_id ) {
+			$action = 'registered_without_investment_reminder';
+			$entity_id = $user_id;
+			$priority = self::$priority_date;
+			$params = array();
+
+			// Les envois se font dans 7j à 9h
+			$date_next_dispatch = new DateTime();
+			$date_next_dispatch->setTime( 9, 0 );
+			$date_next_dispatch->add( new DateInterval( 'P7D' ) );
+			$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+		
+		public static function execute_registered_without_investment_reminder( $user_id, $queued_action_params, $queued_action_id ) {
+			$WDGUser = new WDGUser( $user_id );
+
+			// Recherche si l'utilisateur a investi sur un des projets d'Epargne Positive en cours
+			$has_invested_on_positive_savings = false;
+			$positive_savings_projects_list = ATCF_Campaign::get_list_positive_savings( 0 );
+			foreach ( $positive_savings_projects_list as $project_post ) {
+				if ( $WDGUser->has_invested_on_campaign( $project_post->ID ) ) {
+					$has_invested_on_positive_savings = true;
+					break;
+				}
+			}
+
+			// Si pas investi : vérification actions sur notification précédente
+			if ( !$has_invested_on_positive_savings ) {
+			
+				$ref_template_id = 932;
+
+				// Récupération mail le plus récent
+				$api_email_list = WDGWPRESTLib::call_get_wdg( 'emails?id_template=' .$ref_template_id. '&recipient_email=' .$WDGUser->get_email() );
+				if ( count( $api_email_list ) == 0 ) {
+					return;
+				}
+
+				$api_email = $api_email_list[ 0 ];
+				$api_email_result = json_decode( $api_email->result, TRUE );
+				if ( empty( $api_email_result[ 'data' ] ) || empty( $api_email_result[ 'data' ][ 'message-id' ] ) ) {
+					return;
+				}
+				$message_id = $api_email_result[ 'data' ][ 'message-id' ];
+				
+				$data = array( 
+					"message_id" => $message_id,
+					"template_id" => $ref_template_id
+				);
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$mailin_report = $mailin->get_report( $data );
+				if ( empty( $mailin_report[ 'data' ] ) ) {
+					return;
+				}
+
+				$has_viewed = FALSE;
+				$has_clicked = FALSE;
+				$mailin_report_data = $mailin_report[ 'data' ];
+				foreach ( $mailin_report_data as $mail_event ) {
+					if ( !empty( $mail_event[ 'event' ] ) ) {
+						if ( $mail_event[ 'event' ] == 'views' ) {
+							$has_viewed = TRUE;
+						}
+						if ( $mail_event[ 'event' ] == 'clicks' ) {
+							$has_clicked = TRUE;
+						}
+					}
+				}
+				
+				if ( !$has_viewed ) {
+					NotificationsAPI::user_registered_without_investment_not_open( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				} else if ( !$has_clicked ) {
+					NotificationsAPI::user_registered_without_investment_not_clicked( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				} else {
+					NotificationsAPI::user_registered_without_investment_not_invested( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				}
+
+			}
+		}
+
+	/******************************************************************************/
 	/* NOTIFS WALLET A PLUS DE 200 EUROS */
 	/******************************************************************************/
 		public static function add_notification_wallet_more_200_euros( $user_id ) {

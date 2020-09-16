@@ -9,6 +9,7 @@ class NotificationsAPI {
 		'156' => "Actualité",
 		'184' => "Mail via liste de contacts",
 		'181' => "Inscription",
+		'932' => "Inscription sans investissement",
 		'311' => "KYC - RIB validé",
 		'322' => "KYC - Doc en cours de validation",
 		'749' => "KYC - Doc refusé",
@@ -193,14 +194,82 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Utilisateurs
 	//**************************************************************************
-    //*******************************************************
-    // Inscription
-    //*******************************************************
+	//*******************************************************
+	// Inscription
+	//*******************************************************
 	public static function user_registration( $recipient, $name ) {
 		$id_template = '181';
 		$options = array(
 			'skip_admin'			=> 1,
 			'PRENOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// Inscription sans investissement
+	//*******************************************************
+	public static function user_registered_without_investment( $recipient, $name ) {
+		$id_template = '932';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// Inscription sans investissement - pas ouvert
+	//*******************************************************
+	public static function user_registered_without_investment_not_open( $recipient, $name ) {
+		$id_template = '937';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// Inscription sans investissement - pas cliqué
+	//*******************************************************
+	public static function user_registered_without_investment_not_clicked( $recipient, $name ) {
+		$id_template = '938';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+    //*******************************************************
+    // Inscription sans investissement - pas investi
+    //*******************************************************
+	public static function user_registered_without_investment_not_invested( $recipient, $name ) {
+		$id_template = '939';
+		$options = array(
+			'NOM'				=> $name
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
