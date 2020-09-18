@@ -74,6 +74,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
 		WDGAjaxActions::add_action( 'prospect_setup_save_files' );
 		WDGAjaxActions::add_action( 'prospect_setup_get_by_guid' );
+		WDGAjaxActions::add_action( 'prospect_setup_load_capacities' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_finished' );
@@ -3677,6 +3678,19 @@ class WDGAjaxActions {
 		
 		if ( !empty( $return[ 'error_str' ] ) ) {
 			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_load_capacities() {
+		$WDGUser_current = WDGUser::current();
+		$return = array();
+
+		if ( $WDGUser_current->is_admin() ) {
+			$return[ 'edit_bundles' ] = '1';
+			$return[ 'enable_payment' ] = '1';
 		}
 
 		echo json_encode( $return );
