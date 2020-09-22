@@ -491,31 +491,79 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS INTERFACE PROSPECT
     //*******************************************************
-    public static function prospect_setup_user_project_drafts( $user_email, $project_list ) {
-		$object = "Reprenez votre test d'éligibilité aux royalties";
+    public static function prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded ) {
+		$object = "Nouveau test d'éligibilité aux royalties";
 
 		$body_content = "Bonjour,<br>";
-		$body_content .= "Suite à votre demande, vous trouverez ci-dessous ";
-		if ( count( $project_list > 1 ) ) {
-			$body_content .= "la liste de vos tests ";
-		} else {
-			$body_content .= "le lien de votre test ";
-		}
-		$body_content .= "d'éligibilité aux royalties :";
+		$body_content .= "un nouveau test a été démarré";
 		$body_content .= "<br><br>";
 
-		$body_content .= "<ul>";
-		foreach ( $project_list as $project_item ) {
-			$body_content .= "<li>";
-			$body_content .= "<a href=\"" . home_url( '/test-royalties/?guid=' . $project_item[ 'guid' ] ) . "\">". $project_item[ 'name' ] ."</a>";
-			$body_content .= "</li>";
-		}
-		$body_content .= "</ul>";
+		$body_content .= "URL : " . $draft_url . "<br>";
+		$body_content .= "<br>";
+
+		$body_content .= "E-mail : " . $email . "<br>";
+		$body_content .= "Nom : " . $recipient_name . "<br>";
+		$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
+		$body_content .= "<br>";
+
+		$body_content .= "Organisation : " . $organization_name . "<br>";
+		$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
+		$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
+		$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
+		$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
+		$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . " €<br>";
+		$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . " €<br>";
 		$body_content .= "<br><br>";
 
-		$body_content .= "A bientôt sur WE DO GOOD !";
+		$body_content .= "Données en vrac :<br>" . print_r( $metadata_decoded, true );
+		$body_content .= "<br><br>";
 
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
+		$from_data = array();
+		$from_data['name'] = $recipient_name;
+		$from_data['email'] = $email;
+
+		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, array() );
+	}
+
+
+    public static function prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded ) {
+		$object = "Test d'éligibilité aux royalties terminé";
+
+		$body_content = "Bonjour,<br>";
+		$body_content .= "un nouveau test a été terminé";
+		$body_content .= "<br><br>";
+
+		$body_content .= "URL : " . $draft_url . "<br>";
+		$body_content .= "<br>";
+
+		$body_content .= "E-mail : " . $email . "<br>";
+		$body_content .= "Nom : " . $recipient_name . "<br>";
+		$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
+		$body_content .= "<br>";
+
+		$body_content .= "Organisation : " . $organization_name . "<br>";
+		$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
+		$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
+		$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
+		$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
+		$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . " €<br>";
+		$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . " €<br>";
+		$body_content .= "<br>";
+
+		$body_content .= "Montant à lever : " . $amount_needed . "<br>";
+		$body_content .= "% de royalties : " . $royalties_percent . "<br>";
+		$body_content .= "Formule : " . $formula . "<br>";
+		$body_content .= "Option : " . $options . "<br>";
+		$body_content .= "<br><br>";
+
+		$body_content .= "Données en vrac :<br>" . print_r( $metadata_decoded, true );
+		$body_content .= "<br><br>";
+
+		$from_data = array();
+		$from_data['name'] = $recipient_name;
+		$from_data['email'] = $email;
+
+		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, array() );
 	}
     //*******************************************************
     // FIN NOTIFICATIONS INTERFACE PROSPECT
