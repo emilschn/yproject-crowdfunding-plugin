@@ -825,7 +825,7 @@ class WDGAjaxActions {
 
 				$estimated_turnover_unit = $result_campaign_item->project_estimated_turnover_unit;
 				if ( empty( $estimated_turnover_unit ) ) {
-					$estimated_turnover_unit = get_post_meta( $result_investment_item->wpref, ATCF_Campaign::$key_estimated_turnover_unit, TRUE );
+					$estimated_turnover_unit = get_post_meta( $result_campaign_item->wpref, ATCF_Campaign::$key_estimated_turnover_unit, TRUE );
 				}
 				if ( !empty( $estimated_turnover_list ) ){
 					// On démarre de la date de démarrage du contrat
