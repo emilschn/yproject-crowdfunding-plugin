@@ -1045,7 +1045,7 @@ class WDGROIDeclaration {
 		}
 		$declaration_declared_turnover = $this->get_turnover_total();
 		$declaration_amount = $this->amount;
-		$declaration_percent_commission = $this->percent_commission;
+		$declaration_percent_commission = $this->get_percent_commission_without_tax() * 1.2;
 		$declaration_amount_commission = $this->get_commission_to_pay();
 		$declaration_amount_and_commission = $this->get_amount_with_commission();
 		$declaration_adjustment_value = $this->get_adjustment_value();
