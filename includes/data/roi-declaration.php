@@ -1052,7 +1052,7 @@ class WDGROIDeclaration {
 		$declaration_remaining_amount_transfered = $this->transfered_previous_remaining_amount;
 		
 		
-		require __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
+		require_once __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Payment::get(
 			$certificate_date,
 			$project_roi_percent,
