@@ -3772,7 +3772,7 @@ class WDGAjaxActions {
 					$return[ 'email_sent' ] = '1';
 				}
 
-				NotificationsEmail::prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded );
+				NotificationsEmails::prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded );
 			}
 		}
 
@@ -3830,7 +3830,7 @@ class WDGAjaxActions {
 					$return[ 'email_sent' ] = '1';
 				}
 
-				NotificationsEmail::prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded );
+				NotificationsEmails::prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded );
 			}
 		}
 
