@@ -1189,15 +1189,18 @@ class WDGAjaxActions {
 
 				// Transfert vers le wallet de l'utilisateur
 				} else if ( $current_user_is_receiving ) {
-					$object = __( "Remboursement sur votre porte-monnaie de ", 'yproject' );
+					$object = __( "Remboursement sur votre porte-monnaie", 'yproject' );
 					if ( $transaction_item->sender_id == 0 ) {
-						$object .= "WE DO GOOD";
+						$object .= " de WE DO GOOD";
 					} else if ( !empty( $transaction_item->project_name ) ) {
-						$object .= $transaction_item->project_name;
+						$object .= " de " . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
 							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
 						}
+
+					} else if ( !empty( $transaction_item->project_organization_name ) ) {
+						$object .= " de " . $transaction_item->project_organization_name;
 
 					} else {
 						$object .= '<div class="hidden"> - ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')</div>';
