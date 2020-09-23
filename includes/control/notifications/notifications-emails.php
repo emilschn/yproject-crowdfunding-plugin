@@ -495,7 +495,7 @@ class NotificationsEmails {
 		$object = "Nouveau test d'éligibilité aux royalties";
 
 		$body_content = "Bonjour,<br>";
-		$body_content .= "un nouveau test a été démarré";
+		$body_content .= "Le test suivant a démarré :";
 		$body_content .= "<br><br>";
 
 		$body_content .= "URL : " . $draft_url . "<br>";
@@ -503,26 +503,32 @@ class NotificationsEmails {
 
 		$body_content .= "E-mail : " . $email . "<br>";
 		$body_content .= "Nom : " . $recipient_name . "<br>";
-		$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
+		if ( isset( $metadata_decoded->user ) ) {
+			$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
+		}
 		$body_content .= "<br>";
 
 		$body_content .= "Organisation : " . $organization_name . "<br>";
-		$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
-		$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
-		$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
-		$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
-		$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . " €<br>";
-		$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . " €<br>";
+		if ( isset( $metadata_decoded->organization ) ) {
+			$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
+			$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
+			$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
+			$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
+			$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . "<br>";
+			$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . "<br>";
+		}
 		$body_content .= "<br><br>";
 
 		$body_content .= "Données en vrac :<br>" . print_r( $metadata_decoded, true );
 		$body_content .= "<br><br>";
 
+		$attachments = array();
+
 		$from_data = array();
 		$from_data['name'] = $recipient_name;
 		$from_data['email'] = $email;
 
-		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, array() );
+		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
 	}
 
 
@@ -530,7 +536,7 @@ class NotificationsEmails {
 		$object = "Test d'éligibilité aux royalties terminé";
 
 		$body_content = "Bonjour,<br>";
-		$body_content .= "un nouveau test a été terminé";
+		$body_content .= "Le test suivant est réussi !";
 		$body_content .= "<br><br>";
 
 		$body_content .= "URL : " . $draft_url . "<br>";
@@ -538,16 +544,20 @@ class NotificationsEmails {
 
 		$body_content .= "E-mail : " . $email . "<br>";
 		$body_content .= "Nom : " . $recipient_name . "<br>";
-		$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
+		if ( isset( $metadata_decoded->user ) ) {
+			$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
+		}
 		$body_content .= "<br>";
 
 		$body_content .= "Organisation : " . $organization_name . "<br>";
-		$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
-		$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
-		$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
-		$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
-		$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . " €<br>";
-		$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . " €<br>";
+		if ( isset( $metadata_decoded->organization ) ) {
+			$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
+			$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
+			$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
+			$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
+			$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . " €<br>";
+			$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . " €<br>";
+		}
 		$body_content .= "<br>";
 
 		$body_content .= "Montant à lever : " . $amount_needed . "<br>";
@@ -559,11 +569,13 @@ class NotificationsEmails {
 		$body_content .= "Données en vrac :<br>" . print_r( $metadata_decoded, true );
 		$body_content .= "<br><br>";
 
+		$attachments = array();
+
 		$from_data = array();
 		$from_data['name'] = $recipient_name;
 		$from_data['email'] = $email;
 
-		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, array() );
+		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
 	}
     //*******************************************************
     // FIN NOTIFICATIONS INTERFACE PROSPECT
