@@ -486,7 +486,6 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$campaign_list = $WDGOrganization->get_campaigns();
 					if ( !empty( $campaign_list ) ) {
 						NotificationsSlack::send_document_uploaded_admin( $WDGOrganization, $this->nb_file_sent );
-						NotificationsAsana::send_document_uploaded_admin( $WDGOrganization, $this->nb_file_sent );
 					}
 				}
 				
