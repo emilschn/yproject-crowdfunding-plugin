@@ -263,7 +263,7 @@ class LemonwayNotification {
 			}
 		
 			// On prévient l'équipe par Slack
-			if ( $orga_has_campaigns && !empty( $asana_content ) ) {
+			if ( $orga_has_campaigns && !empty( $asana_content ) && $lemonway_posted_document_status != 2 ) {
 				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
 				$document_status = LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
 				NotificationsAsana::send_new_project_document_status( $asana_content, $document_type, $document_status );
