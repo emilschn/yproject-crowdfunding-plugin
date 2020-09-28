@@ -2343,7 +2343,7 @@ class WDGAjaxActions {
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			if ( $post_invest_status == 'pending' ) {
-				if ( strpos($payment_key, 'wire_') ) {
+				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
 					$payment_status_span_class = 'error';
 				} else if ($payment_key == 'check') {
