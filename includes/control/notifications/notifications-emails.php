@@ -528,6 +528,10 @@ class NotificationsEmails {
 		$from_data['name'] = $recipient_name;
 		$from_data['email'] = $email;
 
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > recipient_name : ' . $recipient_name, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > email : ' . $email, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > body_content : ' . $body_content, FALSE);
+
 		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
 	}
 
@@ -574,6 +578,10 @@ class NotificationsEmails {
 		$from_data = array();
 		$from_data['name'] = $recipient_name;
 		$from_data['email'] = $email;
+
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > recipient_name : ' . $recipient_name, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > email : ' . $email, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > body_content : ' . $body_content, FALSE);
 
 		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
 	}
