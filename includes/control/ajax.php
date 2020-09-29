@@ -1372,6 +1372,7 @@ class WDGAjaxActions {
 				$errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
 
 			} else {
+				$old_name = $campaign->data->post_name;
 				$campaign->set_api_data( 'url', $new_name );
 				wp_update_post( array(
 					'ID'		=> $campaign_id,
@@ -1379,7 +1380,7 @@ class WDGAjaxActions {
 				) );
 				$campaign->data->post_name = $new_name;
 				$success[ 'new_project_url' ] = 1;
-				// Mise Ã  jour de l'URL sur LW
+				// Mise à jour de l'URL sur LW
 				$campaign_organization = $campaign->get_organization();
 				$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
 				LemonwayLib::wallet_update( 
@@ -1387,6 +1388,8 @@ class WDGAjaxActions {
 						'', '', '', '', '', '', '', '',
 						get_permalink( $campaign_id )
 				);
+				// Notification à l'équipe
+				NotificationsSlack::campaign_url_changed( $campaign->get_name(), $old_name, $new_name );
 			}
 		}
 		

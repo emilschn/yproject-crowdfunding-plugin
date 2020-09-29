@@ -275,6 +275,11 @@ class NotificationsSlack {
 	public static function wire_payment_received_not_attributed( $message ) {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
+
+	public static function campaign_url_changed( $campaign_name, $old_url, $new_url ) {
+		$message = 'Le projet ' .$campaign_name. ' a changé son URL => ancienne : ' . $old_url . ' ; nouvelle : ' . $new_url;
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
+	}
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL CLIENTS-NOTIFICATIONS
     //*******************************************************
