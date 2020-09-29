@@ -948,6 +948,13 @@ class ATCF_Campaign {
 	public function has_planned_advice_notification() {
 		return WDGQueue::has_planned_campaign_advice_notification( $this->ID );
 	}
+
+	public static $key_advice_notifications_frequency = 'advice_notifications_frequency';
+	public function get_advice_notifications_frequency() {
+		$metadata_value = $this->__get( ATCF_Campaign::$key_advice_notifications_frequency );
+		$buffer = ( !empty( $metadata_value ) ) ? $metadata_value : 3;
+		return $buffer;
+	}
 	
 	public static $key_can_invest_until_contract_start_date = 'can_invest_until_contract_start_date';
 	public function can_invest_until_contract_start_date() {
