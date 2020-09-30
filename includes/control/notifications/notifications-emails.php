@@ -43,13 +43,23 @@ class NotificationsEmails {
 			$content = wpautop( $edd_options['header_global_mail'] ) .'<br /><br />'. $content .'<br /><br />'. wpautop( $edd_options['footer_global_mail'] );
 		}
 
+		// Log des erreurs de mails
+		add_action( 'wp_mail_failed', 'NotificationsEmails::log_mail_error', 10, 1 );
+
 		$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
 		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
 		return $buffer;
-    }
-    
-    //*******************************************************
-    // RELECTURE
+	}
+	
+	/**
+	 * Log des erreurs de mails
+	 */
+	public static function log_mail_error( $wp_error ) {
+		ypcf_debug_log( 'NotificationsEmails::log_mail_error > wp_error : ' . print_r( $wp_error, TRUE ), FALSE );
+	}
+	
+	//*******************************************************
+	// RELECTURE
 	//*******************************************************
 	public static function send_project_description_notification_to_project( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
@@ -532,7 +542,11 @@ class NotificationsEmails {
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > email : ' . $email, FALSE);
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > body_content : ' . $body_content, FALSE);
 
-		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+		
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > result : ' . $result, FALSE);
+
+		return $result;
 	}
 
 
@@ -559,8 +573,8 @@ class NotificationsEmails {
 			$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
 			$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
 			$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
-			$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . " €<br>";
-			$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . " €<br>";
+			$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . "<br>";
+			$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . "<br>";
 		}
 		$body_content .= "<br>";
 
@@ -583,7 +597,11 @@ class NotificationsEmails {
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > email : ' . $email, FALSE);
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > body_content : ' . $body_content, FALSE);
 
-		return NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > result : ' . $result, FALSE);
+
+		return $result;
 	}
     //*******************************************************
     // FIN NOTIFICATIONS INTERFACE PROSPECT
