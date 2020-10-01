@@ -62,7 +62,7 @@ class WDGEversign {
 	private static function call_post( $route, $parameters, $parameters_get = FALSE ) {
 		$access_key = WDG_EVERSIGN_ACCESS_KEY;
 		$route_to_post = self::$eversign_route_base .$route. 
-				'&access_key=' .$access_key.
+				'?access_key=' .$access_key.
 				'&business_id=' .WDG_EVERSIGN_BUSINESS_ID;
 		if ( !empty( $parameters_get ) ) {
 			$route_to_post .= '&' .$parameters_get;
