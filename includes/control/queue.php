@@ -1343,7 +1343,7 @@ class WDGQueue {
 				$result = $roi_declaration->transfer_pending_rois();
 			}
 			if ( $result == 100 ) {
-				NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
+				NotificationsSlack::send_auto_transfer_done( $roi_declaration->get_campaign_object()->get_name() );
 
 			} else {
 				// Passage à complete avant, pour pouvoir en ajouter un à la suite

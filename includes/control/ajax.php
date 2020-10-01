@@ -78,6 +78,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_finished' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_payment_method_select_wire' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_payment_method_received_wire' );
 	}
 	
 	/**
@@ -3700,6 +3702,7 @@ class WDGAjaxActions {
 		if ( $WDGUser_current->is_admin() ) {
 			$return[ 'edit_bundles' ] = '1';
 			$return[ 'enable_payment' ] = '1';
+			$return[ 'accept_wire_payment' ] = '1';
 		}
 
 		echo json_encode( $return );
@@ -3840,6 +3843,58 @@ class WDGAjaxActions {
 				}
 
 				NotificationsEmails::prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded );
+			}
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_payment_method_select_wire() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $email, $recipient_name, $draft_url ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_payment_method_received_wire() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $draft_url ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
 			}
 		}
 

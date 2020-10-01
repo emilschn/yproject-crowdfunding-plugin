@@ -1603,9 +1603,9 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Interface prospect
 	//**************************************************************************
-    //*******************************************************
-    // LISTE DES TESTS DEMARRES
-    //*******************************************************
+	//*******************************************************
+	// LISTE DES TESTS DEMARRES
+	//*******************************************************
 	public static function prospect_setup_draft_list( $recipient, $name, $project_list_str ) {
 		$id_template = '1316';
 		$options = array(
@@ -1623,9 +1623,9 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 
-    //*******************************************************
-    // DEMARRAGE DE TEST
-    //*******************************************************
+	//*******************************************************
+	// DEMARRAGE DE TEST
+	//*******************************************************
 	public static function prospect_setup_draft_started( $recipient, $name, $organization_name, $draft_url_full ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = '1374';
@@ -1647,9 +1647,9 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 
-    //*******************************************************
-    // FIN DE TEST
-    //*******************************************************
+	//*******************************************************
+	// FIN DE TEST
+	//*******************************************************
 	public static function prospect_setup_draft_finished( $recipient, $name, $draft_url_full, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = '1373';
@@ -1664,6 +1664,44 @@ class NotificationsAPI {
 			'POURCENT_ROYALTIES'	=> $royalties_percent,
 			'FORMULE'		=> $formula,
 			'OPTION'		=> $options
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// SELECTION DE VIREMENT
+	//*******************************************************
+	public static function prospect_setup_payment_method_select_wire( $recipient, $name ) {
+		// TODO
+		$id_template = '';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// VIREMENT RECU
+	//*******************************************************
+	public static function prospect_setup_payment_method_received_wire( $recipient, $name ) {
+		// TODO
+		$id_template = '';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
