@@ -178,7 +178,7 @@ class WDGROIDeclaration {
 		$this->update();
 	}
 
-	private function get_campaign_object() {
+	public function get_campaign_object() {
 		if ( !isset( $this->campaign_object ) ) {
 			$this->campaign_object = new ATCF_Campaign( FALSE, $this->id_campaign );
 		}
