@@ -27,7 +27,7 @@ class WDGEversign {
 		} else {
 			$access_key = WDG_EVERSIGN_ACCESS_KEY;
 			$route_to_get = self::$eversign_route_base .$route. 
-					'&access_key=' .$access_key.
+					'?access_key=' .$access_key.
 					'&business_id=' .WDG_EVERSIGN_BUSINESS_ID;
 			if ( !empty( $parameters ) ) {
 				$route_to_get .= '&' .$parameters;
