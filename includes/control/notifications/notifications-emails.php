@@ -534,17 +534,23 @@ class NotificationsEmails {
 
 		$attachments = array();
 
-		$from_data = array();
+		/*$from_data = array();
 		$from_data['name'] = $recipient_name;
-		$from_data['email'] = $email;
+		$from_data['email'] = $email;*/
+
+		add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { return $email; } );
+		add_filter( 'wp_mail_from_name', $from_name_func = function ( $from_name ) { return $recipient_name; } );
 
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > recipient_name : ' . $recipient_name, FALSE);
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > email : ' . $email, FALSE);
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > body_content : ' . $body_content, FALSE);
 
-		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments );
 		
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > result : ' . $result, FALSE);
+		
+		remove_filter( 'wp_mail_from', $from_func );
+		remove_filter( 'wp_mail_from_name', $from_name_func );
 
 		return $result;
 	}
@@ -589,17 +595,23 @@ class NotificationsEmails {
 
 		$attachments = array();
 
-		$from_data = array();
+		/*$from_data = array();
 		$from_data['name'] = $recipient_name;
-		$from_data['email'] = $email;
+		$from_data['email'] = $email;*/
+
+		add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { return $email; } );
+		add_filter( 'wp_mail_from_name', $from_name_func = function ( $from_name ) { return $recipient_name; } );
 
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > recipient_name : ' . $recipient_name, FALSE);
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > email : ' . $email, FALSE);
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > body_content : ' . $body_content, FALSE);
 
-		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments );
 
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > result : ' . $result, FALSE);
+		
+		remove_filter( 'wp_mail_from', $from_func );
+		remove_filter( 'wp_mail_from_name', $from_name_func );
 
 		return $result;
 	}
