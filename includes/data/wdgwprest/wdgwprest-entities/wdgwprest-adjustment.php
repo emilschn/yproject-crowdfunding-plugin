@@ -44,6 +44,11 @@ class WDGWPREST_Entity_Adjustment {
 		$parameters = self::set_post_parameters( $adjustment );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'adjustment', $parameters );
+		// Suppression cache déclaration liée
+		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$adjustment->id_declaration );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$adjustment->id_api_campaign. '/declarations' );
+		// Suppression cache projet lié
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$adjustment->id_api_campaign. '?with_investments=1&with_organization=1&with_poll_answers=1' );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
@@ -59,6 +64,11 @@ class WDGWPREST_Entity_Adjustment {
 		if ( !empty( $adjustment->id ) ) {
 			$result_obj = WDGWPRESTLib::call_post_wdg( 'adjustment/' . $adjustment->id, $parameters );
 			WDGWPRESTLib::unset_cache( 'wdg/v1/adjustment/' .$adjustment->id );
+			// Suppression cache déclaration liée
+			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$adjustment->id_declaration );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$adjustment->id_api_campaign. '/declarations' );
+			// Suppression cache projet lié
+			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$adjustment->id_api_campaign. '?with_investments=1&with_organization=1&with_poll_answers=1' );
 			if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 			return $result_obj;
 		} else {
