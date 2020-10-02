@@ -1677,7 +1677,7 @@ class NotificationsAPI {
 	//*******************************************************
 	// SELECTION DE VIREMENT
 	//*******************************************************
-	public static function prospect_setup_payment_method_select_wire( $recipient, $name ) {
+	public static function prospect_setup_payment_method_select_wire( $recipient, $name, $draft_url ) {
 		// TODO
 		$id_template = '';
 		$options = array(
@@ -1696,7 +1696,45 @@ class NotificationsAPI {
 	//*******************************************************
 	// VIREMENT RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_wire( $recipient, $name ) {
+	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $draft_url ) {
+		// TODO
+		$id_template = '';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// PAIEMENT PAR CARTE RECU
+	//*******************************************************
+	public static function prospect_setup_payment_method_received_card( $recipient, $name, $draft_url ) {
+		// TODO
+		$id_template = '';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// PAIEMENT PAR CARTE ERREUR
+	//*******************************************************
+	public static function prospect_setup_payment_method_error_card( $recipient, $name, $draft_url ) {
 		// TODO
 		$id_template = '';
 		$options = array(

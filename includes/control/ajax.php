@@ -78,6 +78,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_finished' );
+		WDGAjaxActions::add_action( 'prospect_setup_ask_card_payment' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_payment_method_select_wire' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_payment_method_received_wire' );
 	}
@@ -3787,6 +3788,10 @@ class WDGAjaxActions {
 				NotificationsEmails::prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded );
 			}
 		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
 
 		echo json_encode( $return );
 		exit();
@@ -3845,6 +3850,56 @@ class WDGAjaxActions {
 				NotificationsEmails::prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded );
 			}
 		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_ask_card_payment() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$amount = filter_input( INPUT_POST, 'amount' );
+		$return = array();
+		$return[ 'url_redirect' ] = '';
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $amount ) ) {
+			$return[ 'error_str' ] = 'empty_amount';
+		}
+
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$orga_email = 'bonjour@wedogood.co';
+			if ( defined( 'PAYMENT_ORGA_EMAIL' ) ) {
+				$orga_email = PAYMENT_ORGA_EMAIL;
+			}
+			$orga_user = get_user_by( 'email', $orga_email );
+			$WDGOrganization = new WDGOrganization( $orga_user->ID );
+
+			$token = LemonwayLib::make_token( $guid );
+
+			$url_success = home_url( '/financement/eligibilite/?guid=' .$guid. '&is_success=1' );
+			$url_error = home_url( '/financement/eligibilite/?guid=' .$guid. '&is_error=1' );
+			$url_cancel = home_url( '/financement/eligibilite/?guid=' .$guid. '&is_canceled=1' );
+
+			$url_redirect = LemonwayLib::ask_payment_webkit( $WDGOrganization->get_lemonway_id(), $amount, 0, $token, $url_success, $url_error, $url_cancel );
+			if ( $url_redirect !== FALSE ) {
+				$return[ 'url_redirect' ] = $url_redirect;
+
+			} else {
+				$return[ 'error_str' ] = 'payment_failed';
+			}
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
 
 		echo json_encode( $return );
 		exit();
@@ -3866,6 +3921,7 @@ class WDGAjaxActions {
 			}
 
 			if ( empty( $return[ 'error_str' ] ) ) {
+				$draft_url = home_url( '/financement/eligibilite/?guid=' . $guid );
 				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $email, $recipient_name, $draft_url ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
@@ -3892,6 +3948,7 @@ class WDGAjaxActions {
 			}
 
 			if ( empty( $return[ 'error_str' ] ) ) {
+				$draft_url = home_url( '/financement/eligibilite/?guid=' . $guid );
 				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $draft_url ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
