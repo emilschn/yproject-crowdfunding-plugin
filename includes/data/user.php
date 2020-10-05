@@ -1927,7 +1927,7 @@ class WDGUser {
 				// Si le premier IBAN est désactivé, on va chercher dans la suite
 				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected ) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
-						if ( $iban_item->S == self::$iban_status_validated ) {
+						if ( $iban_item->S == self::$iban_status_validated || $iban_item->S == self::$iban_status_waiting ) {
 							$buffer = $iban_item;
 						}
 					}
