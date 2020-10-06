@@ -3953,6 +3953,11 @@ class WDGAjaxActions {
 					$return[ 'email_sent' ] = '1';
 				}
 
+				$new_status = 'paid';
+				$new_step = 'project-complete';
+				$new_authorization = 'can-create-db';
+				WDGWPREST_Entity_Project_Draft::update( $guid, $api_result->id_user, $api_result->email, $new_status, $new_step, $new_authorization, $api_result->metadata );
+
 				NotificationsZapier::send_prospect_setup_payment_received( $api_result );
 			}
 		}
