@@ -3952,6 +3952,8 @@ class WDGAjaxActions {
 				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $draft_url ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
+
+				NotificationsZapier::send_prospect_setup_payment_received( $api_result );
 			}
 		}
 
