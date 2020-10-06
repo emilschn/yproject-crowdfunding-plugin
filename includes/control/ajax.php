@@ -632,7 +632,7 @@ class WDGAjaxActions {
 						$year_item = array(
 							'amount_turnover_nb'=> 0,
 							'amount_turnover'	=> '0 &euro;',
-							'estimated_turnover'=> YPUIHelpers::display_number( $turnover, TRUE ) . ' &euro;',
+							'estimated_turnover'=> YPUIHelpers::display_number( $turnover, TRUE, 0 ) . ' &euro;',
 							'estimated_rois'	=> YPUIHelpers::display_number( $estimated_rois, TRUE ) . ' &euro;',
 							'amount_rois_nb'	=> 0,
 							'amount_rois'		=> '0 &euro;',
