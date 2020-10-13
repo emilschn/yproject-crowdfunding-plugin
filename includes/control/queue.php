@@ -1436,4 +1436,32 @@ class WDGQueue {
 		}
 	}
 
+
+	/******************************************************************************/
+	/* ENVOI NOTIF TB PAS CREE PLUSIEURS JOURS APRES AVOIR PAYE */
+	/******************************************************************************/
+	public static function add_notifications_dashboard_not_created( $draft_id ) {
+		$action = 'notifications_dashboard_not_created';
+		$entity_id = $draft_id;
+		$priority = self::$priority_date;
+		$date_next_dispatch = new DateTime();
+		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_notifications_dashboard_not_created( $draft_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $draft_id ) ) {
+
+			// TODO : Test si pas encore créé
+			$api_result = WDGWPREST_Entity_Project_Draft::get_by_id( $draft_id );
+			if ( true ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				NotificationsAPI::prospect_setup_dashboard_not_created( $api_result->email, $metadata_decoded->user->name );
+			}
+			
+		}
+	}
+
 }

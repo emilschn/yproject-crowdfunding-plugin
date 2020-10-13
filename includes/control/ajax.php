@@ -3865,6 +3865,7 @@ class WDGAjaxActions {
 	public static function prospect_setup_ask_card_payment() {
 		$guid = filter_input( INPUT_POST, 'guid' );
 		$amount = filter_input( INPUT_POST, 'amount' );
+
 		$return = array();
 		$return[ 'url_redirect' ] = '';
 		$return[ 'error_str' ] = '';
@@ -3910,6 +3911,8 @@ class WDGAjaxActions {
 
 	public static function prospect_setup_send_mail_payment_method_select_wire() {
 		$guid = filter_input( INPUT_POST, 'guid' );
+		$amount = filter_input( INPUT_POST, 'amount' );
+
 		$return = array();
 		$return[ 'error_str' ] = '';
 		$return[ 'has_error' ] = '0';
@@ -3924,8 +3927,11 @@ class WDGAjaxActions {
 			}
 
 			if ( empty( $return[ 'error_str' ] ) ) {
-				$draft_url = home_url( '/financement/eligibilite/?guid=' . $guid );
-				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $email, $recipient_name, $draft_url ) ) {
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				$iban = WDG_IBAN;
+				$subscription_reference = $metadata_decoded->organization->name;
+				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $email, $recipient_name, $amount, $iban, $subscription_reference ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}
@@ -3937,6 +3943,8 @@ class WDGAjaxActions {
 
 	public static function prospect_setup_send_mail_payment_method_received_wire() {
 		$guid = filter_input( INPUT_POST, 'guid' );
+		$amount = filter_input( INPUT_POST, 'amount' );
+
 		$return = array();
 		$return[ 'error_str' ] = '';
 		$return[ 'has_error' ] = '0';
@@ -3951,17 +3959,26 @@ class WDGAjaxActions {
 			}
 
 			if ( empty( $return[ 'error_str' ] ) ) {
-				$draft_url = home_url( '/financement/eligibilite/?guid=' . $guid );
-				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $draft_url ) ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				date_default_timezone_set("Europe/Paris");
+				$today_datetime = new DateTime();
+				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $amount, $today_datetime->format( 'd/m/Y H:i' ) ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 
 				$new_status = 'paid';
 				$new_step = 'project-complete';
 				$new_authorization = 'can-create-db';
+				$metadata_decoded->package->paymentDate = $today_datetime->format( 'Y-m-d H:i:s' );
+				$api_result->metadata = json_encode( $metadata_decoded );
 				WDGWPREST_Entity_Project_Draft::update( $guid, $api_result->id_user, $api_result->email, $new_status, $new_step, $new_authorization, $api_result->metadata );
 
 				NotificationsZapier::send_prospect_setup_payment_received( $api_result );
+
+				// Ajout test dans 3 jours si TBPP créé
+				WDGQueue::add_notifications_dashboard_not_created( $api_result->id );
 			}
 		}
 

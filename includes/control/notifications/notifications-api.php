@@ -76,7 +76,12 @@ class NotificationsAPI {
 		'1075' => "Réinitialisation de mot de passe",
 		'1316' => "Test d'éligibilité - Récupération liste de tests",
 		'1374' => "Test d'éligibilité - Lien test démarré",
-		'1373' => "Test d'éligibilité - Projet éligible"
+		'1373' => "Test d'éligibilité - Projet éligible",
+		'2298' => "Test d'éligibilité - Paiement par virement bancaire choisi",
+		'2299' => "Test d'éligibilité - Paiement par virement bancaire reçu",
+		'2294' => "Test d'éligibilité - Paiement par carte bancaire réussi",
+		'2295' => "Test d'éligibilité - Paiement par carte bancaire échoué",
+		'2297' => "Test d'éligibilité - Tableau de bord pas encore créé"
 	);
 	
 
@@ -1737,11 +1742,14 @@ class NotificationsAPI {
 	//*******************************************************
 	// SELECTION DE VIREMENT
 	//*******************************************************
-	public static function prospect_setup_payment_method_select_wire( $recipient, $name, $draft_url ) {
-		// TODO
-		$id_template = '';
+	public static function prospect_setup_payment_method_select_wire( $recipient, $name, $amount, $iban, $subscription_reference ) {
+		$id_template = '2298';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
+			'NOM'						=> $name,
+			'MONTANT'					=> $amount,
+			'IBAN_WDG'					=> $iban,
+			'REFERENCE_SOUSCRIPTION'	=> $subscription_reference,
 			'personal'		=> 1
 		);
 		$parameters = array(
@@ -1756,11 +1764,13 @@ class NotificationsAPI {
 	//*******************************************************
 	// VIREMENT RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $draft_url ) {
-		// TODO
-		$id_template = '';
+	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $amount, $date_payment ) {
+		$id_template = '2299';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount,
+			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
 		);
 		$parameters = array(
@@ -1775,11 +1785,13 @@ class NotificationsAPI {
 	//*******************************************************
 	// PAIEMENT PAR CARTE RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_card( $recipient, $name, $draft_url ) {
-		// TODO
-		$id_template = '';
+	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment ) {
+		$id_template = '2294';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount,
+			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
 		);
 		$parameters = array(
@@ -1795,10 +1807,30 @@ class NotificationsAPI {
 	// PAIEMENT PAR CARTE ERREUR
 	//*******************************************************
 	public static function prospect_setup_payment_method_error_card( $recipient, $name, $draft_url ) {
-		// TODO
-		$id_template = '';
+		$id_template = '2295';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
+			'NOM'			=> $name,
+			'URL_DRAFT'		=> $draft_url,
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// TABLEAU DE BORD PAS ENCORE CREE
+	//*******************************************************
+	public static function prospect_setup_dashboard_not_created( $recipient, $name ) {
+		$id_template = '2297';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'NOM'			=> $name,
 			'personal'		=> 1
 		);
 		$parameters = array(
