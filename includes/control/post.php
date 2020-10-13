@@ -31,6 +31,7 @@ class WDGPostActions {
         self::add_action("upload_contract_files");
         self::add_action( 'send_project_contract_modification_notification' );
         self::add_action( 'send_project_notifications' );
+        self::add_action( 'send_project_notifications_end_vote' );
         self::add_action( 'send_project_notifications_end' );
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
@@ -803,6 +804,28 @@ class WDGPostActions {
 		if ( !empty( $campaign_id ) && !empty( $input_testimony ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
 			$result = WDGEmails::auto_notifications(
 				$campaign_id, $mail_type, $input_testimony, $input_image_url, $input_image_description, $input_send_option
+			);
+		}
+		
+		if ( !$skip_redirect ) {
+			$url_return = wp_get_referer() . "#contacts";
+			wp_redirect( $url_return );
+			die();
+
+		} else {
+			return $result;
+		}
+	}
+	
+	public static function send_project_notifications_end_vote( $skip_redirect = false ) {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$mail_type = filter_input( INPUT_POST, 'mail_type' );
+		$input_send_option = filter_input( INPUT_POST, 'send_option' );
+		
+		$result = false;
+		if ( !empty( $campaign_id ) && !empty( $mail_type ) ) {
+			$result = WDGEmails::end_vote_notifications(
+				$campaign_id, $mail_type, $input_send_option
 			);
 		}
 		

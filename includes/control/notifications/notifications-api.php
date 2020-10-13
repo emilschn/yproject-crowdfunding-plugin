@@ -21,6 +21,9 @@ class NotificationsAPI {
 		'576' => "Relance - Pré-lancement - Evaluation avec intention",
 		'577' => "Relance - Pré-lancement - Evaluation sans intention",
 		'578' => "Relance - Pré-lancement - Suit le projet",
+		'2249' => "Fin évaluation - En attente",
+		'2246' => "Fin évaluation - Annulé",
+		'2247' => "Fin évaluation - Annulé - Remboursement",
 		'579' => "Relance - Investissement 30 % - Avec intention",
 		'580' => "Relance - Investissement 30 % - Sans intention",
 		'650' => "Relance - Investissement 30 % - Suit le projet",
@@ -611,6 +614,63 @@ class NotificationsAPI {
 			'TEMOIGNAGES'				=> $testimony,
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// FIN EVALUATION - EN ATTENTE
+	//*******************************************************
+	public static function vote_end_pending_campaign( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '2249';
+		$options = array(
+			'personal'					=> 1,
+			'PRENOM'					=> $name,
+			'NOM_PROJET'				=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// FIN EVALUATION - ANNULATION
+	//*******************************************************
+	public static function vote_end_canceled_campaign( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '2246';
+		$options = array(
+			'personal'					=> 1,
+			'PRENOM'					=> $name,
+			'NOM_PROJET'				=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	public static function vote_end_canceled_campaign_refund( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '2247';
+		$options = array(
+			'personal'					=> 1,
+			'PRENOM'					=> $name,
+			'NOM_PROJET'				=> $project_name
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',

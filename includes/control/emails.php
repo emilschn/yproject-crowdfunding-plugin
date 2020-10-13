@@ -203,6 +203,102 @@ class WDGEmails {
 		return true;
 	}
 
+	public static function end_vote_notifications( $campaign_id, $mail_type, $input_send_option, $user_already_sent_to = array() ) {
+		$campaign = new ATCF_Campaign( $campaign_id );
+		$project_name = $campaign->get_name();
+		$project_api_id = $campaign->get_api_id();
+
+		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
+			$recipient_email = 'communication@wedogood.co';
+			$recipient_name = 'Anna';
+			switch ( $mail_type ) {
+				case 'vote-end-pending-campaign':
+					NotificationsAPI::vote_end_pending_campaign( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					break;
+				case 'vote-end-canceled-campaign':
+					NotificationsAPI::vote_end_canceled_campaign( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					NotificationsAPI::vote_end_canceled_campaign_refund( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					break;
+			}
+			return true;
+		}
+
+		$user_list_by_id = array();
+
+		// Récupération des followers
+		$followers_list_by_id = array();
+		$list_user_followers = $campaign->get_followers();
+		foreach ( $list_user_followers as $db_item_follower_user_id ) {
+			$followers_list_by_id[ $db_item_follower_user_id ] = 1;
+		}
+
+		// Récupération des investisseurs
+		$list_user_investors = $campaign->payments_data();
+		foreach ( $list_user_investors as $item_investment ) {
+			$investment_status = $item_investment[ 'status' ];
+
+			if ( !isset( $user_list_by_id[ $item_investment[ 'user' ] ] ) ) {
+				$user_list_by_id[ $item_investment[ 'user' ] ] = array();
+			}
+			$user_list_by_id[ $item_investment[ 'user' ] ][ 'invest_amount' ] = $item_investment[ 'amount' ];
+		}
+
+		// On parcourt la liste des évaluateurs
+		$list_user_voters = $campaign->get_voters();
+		foreach ( $list_user_voters as $db_item_vote ) {
+					// On ne prend que des notes d'au moins 3
+			if (	$db_item_vote->rate_project >= 3
+					// On ne prend que ceux qui suivent toujours le projet
+					&& isset( $followers_list_by_id[ $db_item_vote->user_id ] ) ) {
+
+				if ( !isset( $user_list_by_id[ $db_item_vote->user_id ] ) ) {
+					$user_list_by_id[ $db_item_vote->user_id ] = array();
+				}
+				$user_list_by_id[ $db_item_vote->user_id ][ 'vote_amount' ] = $db_item_vote->invest_sum;
+			}
+		}
+
+		foreach ( $user_list_by_id as $user_id => $vote_data ) {
+			if ( empty( $user_id ) || in_array( $user_id, $user_already_sent_to ) ) {
+				continue;
+			}
+
+			if ( WDGOrganization::is_user_organization( $user_id ) ) {
+				$WDGOrganization = new WDGOrganization( $user_id );
+				$recipient_email = $WDGOrganization->get_email();
+				$recipient_name = $WDGOrganization->get_name();
+			} else {
+				$WDGUser = new WDGUser( $user_id );
+				$recipient_email = $WDGUser->get_email();
+				$recipient_name = $WDGUser->get_firstname();
+			}
+
+			switch ( $mail_type ) {
+				case 'vote-end-pending-campaign':
+					NotificationsAPI::vote_end_pending_campaign( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					break;
+				case 'vote-end-canceled-campaign':
+					if ( isset( $vote_data[ 'invest_amount' ] ) && $vote_data[ 'invest_amount' ] > 0 ) {
+						NotificationsAPI::vote_end_canceled_campaign_refund( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					} else {
+						NotificationsAPI::vote_end_canceled_campaign( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					}
+					break;
+			}
+			
+			array_push( $user_already_sent_to, $user_id );
+			$count_to_batch_limit++;
+			if ( $count_to_batch_limit >= self::$batch_of_notifications ) {
+				break;
+			}
+		}
+
+		if ( count( $user_already_sent_to ) < count( $user_list_by_id ) ) {
+			WDGQueue::add_campaign_end_vote_notifications( $campaign_id, $mail_type, $user_already_sent_to );
+		}
+		return true;
+	}
+
 	public static function end_notifications( $campaign_id, $mail_type, $input_send_option ) {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$project_name = $campaign->get_name();

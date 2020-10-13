@@ -3586,6 +3586,9 @@ class WDGAjaxActions {
 		if ( $notif_type == 'send_project_notifications' ) {
 			$result = WDGPostActions::send_project_notifications( true );
 		}
+		if ( $notif_type == 'send_project_notifications_end_vote' ) {
+			$result = WDGPostActions::send_project_notifications_end_vote( true );
+		}
 		if ( $notif_type == 'send_project_notifications_end' ) {
 			$result = WDGPostActions::send_project_notifications_end( true );
 		}

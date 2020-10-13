@@ -728,6 +728,29 @@ class WDGQueue {
 	}
 	
 /******************************************************************************/
+/* NOTIFICATIONS FIN EVALUATION */
+/******************************************************************************/
+	public static function add_campaign_end_vote_notifications( $campaign_id, $mail_type, $user_already_sent_to ) {
+		$action = 'campaign_end_vote_notifications';
+		$entity_id = $campaign_id;
+		$priority = self::$priority_high;
+		
+		$params = array(
+			'mail_type'				=> $mail_type,
+			'user_already_sent_to'	=> $user_already_sent_to
+		);
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params );
+	}
+
+	public static function execute_campaign_end_vote_notifications( $campaign_id, $queued_action_params, $queued_action_id ) {
+		$queued_action_param = json_decode( $queued_action_params[ 0 ] );
+		// Passage à complete avant, pour pouvoir en ajouter un à la suite
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		WDGEmails::end_vote_notifications( $campaign_id, $queued_action_param->mail_type, '', $queued_action_param->user_already_sent_to );
+	}
+	
+/******************************************************************************/
 /* NOTIFICATIONS ADMIN LORSQUE ERREURS DOCUMENTS LEMON WAY */
 /******************************************************************************/
 	public static function add_document_refused_admin_notification( $user_id, $lemonway_posted_document_type, $lemonway_posted_document_status ) {
