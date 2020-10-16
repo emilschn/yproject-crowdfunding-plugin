@@ -180,7 +180,7 @@ function ypcf_get_updated_payment_status( $payment_id, $mangopay_contribution = 
 							global $contract_errors;
 							$contract_errors = 'contract_failed';
 							NotificationsEmails::new_purchase_user_error_contract( $payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-							NotificationsEmails::new_purchase_admin_error_contract( $payment_id );
+							NotificationsAsana::new_purchase_admin_error_contract( $payment_id );
 						}
 						
 					} else {

@@ -152,6 +152,8 @@ final class ATCF_CrowdFunding {
 		require( $this->includes_dir . 'control/notifications/notifications-emails.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-api.php' );
 		require( $this->includes_dir . 'control/notifications/notifications-slack.php' );
+		require( $this->includes_dir . 'control/notifications/notifications-asana.php' );
+		require( $this->includes_dir . 'control/notifications/notifications-zapier.php' );
 		require( $this->includes_dir . 'control/forms/form.php' );
 		require( $this->includes_dir . 'control/forms/projects.php' );
 		require( $this->includes_dir . 'control/forms/users.php' );

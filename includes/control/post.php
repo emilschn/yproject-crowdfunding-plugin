@@ -31,6 +31,7 @@ class WDGPostActions {
         self::add_action("upload_contract_files");
         self::add_action( 'send_project_contract_modification_notification' );
         self::add_action( 'send_project_notifications' );
+        self::add_action( 'send_project_notifications_end_vote' );
         self::add_action( 'send_project_notifications_end' );
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
@@ -42,7 +43,9 @@ class WDGPostActions {
         self::add_action("roi_mark_transfer_received");
         self::add_action( 'generate_royalties_bill' );
         self::add_action( 'save_declaration_bill' );
-        self::add_action("refund_investors");
+		self::add_action( 'refund_investors' );
+		self::add_action( 'mandate_b2b_admin_update' );
+		
         self::add_action( 'user_account_organization_details' );
         self::add_action( 'user_account_organization_identitydocs' );
         self::add_action( 'user_account_organization_bank' );
@@ -220,7 +223,15 @@ class WDGPostActions {
 			
 				//Mail pour l'équipe
 				NotificationsSlack::send_new_project( $newcampaign_id, $orga_name );
-				NotificationsEmails::new_project_posted_owner($newcampaign_id, '');
+				NotificationsAsana::send_new_project( $newcampaign_id, $orga_name );
+
+				//Redirect then
+				$dashboard_url = home_url( '/tableau-de-bord/?campaign_id=' .$newcampaign_id );
+				
+				//Mail pour le PP
+				$to = $WDGUser_current->get_email();
+				$to_name = $WDGUser_current->get_firstname();
+				NotificationsAPI::new_project_published( $to, $to_name, $dashboard_url, $newcampaign->get_api_id() );
 				
 				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
 				$test_campaign = new ATCF_Campaign( $newcampaign_id );
@@ -232,12 +243,7 @@ class WDGPostActions {
 					$result['error_str'] = 'project_no_orga_linked';
 				}
 
-				//Redirect then
-				$page_dashboard = get_page_by_path('tableau-de-bord');
-				$campaign_id_param = '?campaign_id=';
-				$campaign_id_param .= $newcampaign_id;
-
-				$redirect_url = get_permalink($page_dashboard->ID) . $campaign_id_param ."&lightbox=newproject" ;
+				$redirect_url = $dashboard_url ."&lightbox=newproject" ;
 				$result['url_redirect'] = $redirect_url;
 			} else {
 				global $errors_submit_new, $errors_create_orga;
@@ -338,6 +344,7 @@ class WDGPostActions {
 							$organization_obj->check_register_campaign_lemonway_wallet();
 							$campaign->copy_default_contract_if_empty();
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
+							NotificationsAsana::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 		
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
@@ -383,6 +390,7 @@ class WDGPostActions {
 							$organization_obj->check_register_campaign_lemonway_wallet();
 							
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
+							NotificationsAsana::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_collecte );
 							WDGQueue::add_preinvestments_validation( $campaign_id );
 		
 							// Mise à jour cache
@@ -809,6 +817,28 @@ class WDGPostActions {
 		}
 	}
 	
+	public static function send_project_notifications_end_vote( $skip_redirect = false ) {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$mail_type = filter_input( INPUT_POST, 'mail_type' );
+		$input_send_option = filter_input( INPUT_POST, 'send_option' );
+		
+		$result = false;
+		if ( !empty( $campaign_id ) && !empty( $mail_type ) ) {
+			$result = WDGEmails::end_vote_notifications(
+				$campaign_id, $mail_type, $input_send_option
+			);
+		}
+		
+		if ( !$skip_redirect ) {
+			$url_return = wp_get_referer() . "#contacts";
+			wp_redirect( $url_return );
+			die();
+
+		} else {
+			return $result;
+		}
+	}
+	
 	public static function send_project_notifications_end( $skip_redirect = false ) {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$mail_type = filter_input( INPUT_POST, 'mail_type' );
@@ -906,7 +936,8 @@ class WDGPostActions {
 		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
-		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, $picture_url );
+		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, $picture_url );
+		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, $picture_url );
 
 		// Annulation des investissements non-démarrés du même investisseur
 		$pending_not_validated_investments = array();
@@ -963,7 +994,8 @@ class WDGPostActions {
 		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
-		NotificationsEmails::new_purchase_pending_check_admin( $investment_id, FALSE );
+		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, FALSE );
+		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, FALSE );
 		
 		// Annulation des investissements non-démarrés du même investisseur
 		$pending_not_validated_investments = array();
@@ -1137,6 +1169,46 @@ class WDGPostActions {
 			exit();
 			
 		}
+	}
+
+	public static function mandate_b2b_admin_update() {
+		$WDGUser_current = WDGUser::current();
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$organization_id = filter_input( INPUT_POST, 'organization_id' );
+		if ( empty( $WDGUser_current ) || !$WDGUser_current->is_admin() || empty( $organization_id ) || empty( $campaign_id ) ) {
+			wp_redirect( home_url() );
+			exit();
+		}
+
+		$WDGOrganization = new WDGOrganization( $organization_id );
+		
+		$mandate_b2b_is_approved_by_bank = filter_input( INPUT_POST, 'mandate_b2b_is_approved_by_bank' );
+		$WDGOrganization->update_mandate_info( 'lemonway', FALSE, FALSE, $mandate_b2b_is_approved_by_bank );
+
+		$file_mandate_b2b = $_FILES[ 'mandate_b2b_file' ];
+		if ( !empty( $file_mandate_b2b ) && !empty( $file_mandate_b2b[ 'name' ] ) ) {
+			$file_name = $file_mandate_b2b[ 'name' ];
+			$file_name_exploded = explode( '.', $file_name );
+			$ext = $file_name_exploded[ count( $file_name_exploded ) - 1];
+			$byte_array = file_get_contents( $file_mandate_b2b[ 'tmp_name' ] );
+			$file_create_item = WDGWPREST_Entity_File::create( $WDGOrganization->get_api_id(), 'organization', 'mandate', $ext, base64_encode( $byte_array ) );
+			
+			// Préparation notification automatique au porteur de projet
+			$user_name = '';
+			$linked_users_creator = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+				$user_name = $WDGUser_creator->wp_user->user_firstname;
+			}
+			$campaign = new ATCF_Campaign( $campaign_id );
+			//Suppression cache organisation pour récupérer nouvelle version
+			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$WDGOrganization->get_api_id() );
+			$WDGOrganizationUpdated = new WDGOrganization( $organization_id );
+			NotificationsAPI::mandate_to_send_to_bank( $WDGOrganization->get_email(), $user_name, $WDGOrganizationUpdated->get_mandate_file_url(), $campaign->get_api_id() );
+		}
+
+		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#contracts' );
+		exit();
 	}
 	
 	public static function user_account_organization_details() {

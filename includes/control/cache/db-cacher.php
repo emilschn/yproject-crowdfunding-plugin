@@ -2,7 +2,7 @@
 class WDG_Cache_Plugin {
 	
 	// TODO : Déplacer dans une classe spécifique de gestion de configuration de cache	
-	public static $nb_query_campaign_funded = 100;
+	public static $nb_query_campaign_funded = 130;
 	public static $stats_key = 'home-stats';
 	public static $stats_duration = 864000; // 10 jours de cache (10*24*60*60)
 	public static $stats_version = 1;
@@ -112,47 +112,22 @@ class WDG_Cache_Plugin {
 	public static function initialize_home_stats() {
 		$db_cacher = WDG_Cache_Plugin::current();
 
-		$count_amount = 0;
-		$people_list = array();
-		$count_projects = 0;
-		$project_list_funded = array();
-		$royaltying_projects = 0;
+		$stats_list = array(
+			'count_amount'				=> 0,
+			'count_people'				=> 0,
+			'royaltying_projects'		=> 0
+		);
 
 		if ( !defined( 'WDG_DISABLE_CACHE') || WDG_DISABLE_CACHE == FALSE ) {
-			$project_list_funded = ATCF_Campaign::get_list_funded( WDG_Cache_Plugin::$nb_query_campaign_funded, '', true, false );
-			foreach ( $project_list_funded as $project_post ) {
-				$count_projects++;
-				$campaign = atcf_get_campaign( $project_post->ID );
-				$backers_id_list = $campaign->backers_id_list();
-				$people_list = array_merge( $people_list, $backers_id_list );
-				$count_amount += $campaign->current_amount( false );
-				$declaration_list = $campaign->get_roi_declarations();
-	
-				$is_royaltying = FALSE;
-				foreach ( $declaration_list as $declaration ) {
-					if( $declaration[ 'total_roi' ] > 0 ) {
-						$is_royaltying = TRUE;
-						break;
-					}
-				}
-
-				if( $is_royaltying ){
-					$royaltying_projects++;
-				}
-			}
+			$home_stats = WDGWPREST_Entity_Project::get_home_stats();
+			$stats_list[ 'count_amount' ] = $home_stats->amount_collected;
+			$stats_list[ 'count_people' ] = $home_stats->count_investors;
+			$stats_list[ 'royaltying_projects' ] = $home_stats->royaltying_projects;
 		}
 
-		$people_list_unique = array_unique( $people_list );
-		$count_people = count( $people_list_unique );
-		$stats_list = array(
-			'count_amount'				=> $count_amount,
-			'count_people'				=> $count_people,
-			'nb_projects'				=> count($project_list_funded),
-			'royaltying_projects'		=> $royaltying_projects
-		);
 		$stats_content = json_encode($stats_list);
-
-	    $db_cacher->set_cache( WDG_Cache_Plugin::$stats_key, $stats_content, WDG_Cache_Plugin::$stats_duration, WDG_Cache_Plugin::$stats_version );
+		$db_cacher->set_cache( WDG_Cache_Plugin::$stats_key, $stats_content, WDG_Cache_Plugin::$stats_duration, WDG_Cache_Plugin::$stats_version );
+		
 	    return $stats_list;
 	}
 

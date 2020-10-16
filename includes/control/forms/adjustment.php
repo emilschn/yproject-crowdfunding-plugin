@@ -147,20 +147,22 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$declaration_list_by_id_past
 		);
 		
+		$message_organization_default = "Nous avons procédé à l'ajustement annuel des comptes en prenant en compte le différentiel de chiffre d'affaires entre les chiffres indiqués tout au long de l'année et ce que vous nous avez transmis, qui représente XXX €. Vous aurez donc un montant supplémentaire à verser à vos investisseurs de XXX €. / Vous aurez donc un solde qui se déduira de votre prochain paiement de XXX €";
 		$this->addField(
 			'textarea',
 			'message_organization',
 			__( "Message pour l'entrepreneur", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->message_organization : ''
+			( !empty( $adjustment ) ) ? $adjustment->message_organization : $message_organization_default
 		);
 		
+		$message_investors_default = "Le versement de ce trimestre a été ajusté par rapport aux comptes annuels de l'entreprise pour l'année XXXX. Chaque année, nous demandons à l'entrepreneur ses comptes, comparons le chiffre annuel déclaré trimestriellement au chiffre d'affaires effectivement réalisé et procédons à un ajustement en cas de décalage. Cela peut être simplement dû à des délais entre les facturations et les encaissements, par exemple.";
 		$this->addField(
 			'textarea',
 			'message_investors',
 			__( "Message pour les investisseurs", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->message_investors : ''
+			( !empty( $adjustment ) ) ? $adjustment->message_investors : $message_investors_default
 		);
 	}
 	

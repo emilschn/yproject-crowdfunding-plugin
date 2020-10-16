@@ -38,11 +38,13 @@ class WDGAjaxActions {
 
 		// Mon compte
 		WDGAjaxActions::add_action( 'display_user_investments' );
+		WDGAjaxActions::add_action( 'display_user_investments_optimized' );
 		WDGAjaxActions::add_action( 'get_transactions_table' );
 
 		// Page projet
-		WDGAjaxActions::add_action('save_image_url_video');
-		WDGAjaxActions::add_action('send_project_notification');
+		WDGAjaxActions::add_action( 'save_image_url_video' );
+		WDGAjaxActions::add_action( 'send_project_notification' );
+		WDGAjaxActions::add_action( 'remove_project_cache' );
 
         // TBPP
 		WDGAjaxActions::add_action('remove_help_item');
@@ -76,9 +78,13 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
 		WDGAjaxActions::add_action( 'prospect_setup_save_files' );
 		WDGAjaxActions::add_action( 'prospect_setup_get_by_guid' );
+		WDGAjaxActions::add_action( 'prospect_setup_load_capacities' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_project_drafts' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_started' );
 		WDGAjaxActions::add_action( 'prospect_setup_send_mail_user_draft_finished' );
+		WDGAjaxActions::add_action( 'prospect_setup_ask_card_payment' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_payment_method_select_wire' );
+		WDGAjaxActions::add_action( 'prospect_setup_send_mail_payment_method_received_wire' );
 	}
 	
 	/**
@@ -282,7 +288,7 @@ class WDGAjaxActions {
 	 * Retourne la liste des projets qui peuvent Ãªtre recherchés
 	 */
 	public static function get_searchable_projects_list() {
-		ypcf_debug_log( 'get_searchable_projects_list' );
+		ypcf_function_log( 'get_searchable_projects_list', 'view' );
 		$WDG_cache_plugin = new WDG_Cache_Plugin();
 		
 		$projects_searchable = array();
@@ -557,6 +563,7 @@ class WDGAjaxActions {
 					}
 					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
 					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
+					$buffer[ $campaign_id ][ 'roi_percent_estimated' ] = utf8_encode( $campaign->roi_percent_estimated() );
 					$buffer[ $campaign_id ][ 'items' ] = array();
 				}
 				
@@ -565,6 +572,7 @@ class WDGAjaxActions {
 				} else {
 					$investor_proportion = $payment_amount / $campaign->goal( FALSE );
 				}
+				$roi_percent_full_estimated = ( $buffer[ $campaign_id ][ 'roi_percent_estimated' ] * $payment_amount / $campaign->goal( FALSE ) );
 				$roi_percent_full = ( $buffer[ $campaign_id ][ 'roi_percent' ] * $investor_proportion );
 				$roi_percent_display = round( $roi_percent_full * 10000 ) / 10000;
 				$roi_amount = 0;
@@ -681,24 +689,29 @@ class WDGAjaxActions {
 					$estimated_turnover_list = $campaign->estimated_turnover();
 					$campaign_roi_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 				}
+				$estimated_turnover_unit = $campaign->estimated_turnover_unit();
 
 				if ( !empty( $estimated_turnover_list ) ){
 					// On démarre de la date de démarrage du contrat
 					$contract_start_date = new DateTime( $campaign->contract_start_date() );
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
-					$estimated_turnover_unit = $campaign->estimated_turnover_unit();
 					
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$estimated_rois = 0;
 						if ( $estimated_turnover_unit == 'percent' ) {
 							$estimated_rois = round( $turnover * $payment_amount / 100 );
+							$turnover = round( $campaign->current_amount( FALSE ) * $turnover / 100 );
 						} else {
-							$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+							if ( !empty( $roi_percent_full ) ) {
+								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+							} else {
+								$estimated_rois = round( $turnover * $roi_percent_full_estimated / 100 );
+							}
 						}
 						$year_item = array(
 							'amount_turnover_nb'=> 0,
 							'amount_turnover'	=> '0 &euro;',
-							'estimated_turnover'=> YPUIHelpers::display_number( $turnover, TRUE ) . ' &euro;',
+							'estimated_turnover'=> YPUIHelpers::display_number( $turnover, TRUE, 0 ) . ' &euro;',
 							'estimated_rois'	=> YPUIHelpers::display_number( $estimated_rois, TRUE ) . ' &euro;',
 							'amount_rois_nb'	=> 0,
 							'amount_rois'		=> '0 &euro;',
@@ -844,6 +857,343 @@ class WDGAjaxActions {
 		exit();
 	}
 
+	public static function display_user_investments_optimized() {
+		$today_datetime = new DateTime();
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$user_type = filter_input( INPUT_POST, 'user_type' );
+		$is_authentified = FALSE;
+		if ( $user_type == 'user' ) {
+			$WDGUserEntity = new WDGUser( $user_id );
+			$is_authentified = $WDGUserEntity->is_lemonway_registered();
+		} else {
+			$WDGUserEntity = new WDGOrganization( $user_id );
+			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
+		}
+		$result = WDGWPREST_Entity_User::get_investments( $WDGUserEntity->get_api_id(), 'project' );
+
+		$buffer = array();
+		foreach ( $result as $result_campaign_item ) {
+			$buffer_item = array();
+			$buffer_item[ 'name' ] = $result_campaign_item->project_name;
+			$buffer_item[ 'status' ] = utf8_encode( $result_campaign_item->project_status );
+			$buffer_item[ 'funding_duration' ] = utf8_encode( $result_campaign_item->project_funding_duration );
+			$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
+			$buffer_item[ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+
+			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
+			$exp = dirname( __FILE__ ). '/../pdf_files/' .$result_campaign_item->project_wpref. '_' .$user_id. '_*.pdf';
+			$files = glob( $exp );
+
+
+			$buffer_item[ 'items' ] = array();
+			foreach ( $result_campaign_item->investments as $result_investment_item ) {
+				$buffer_investment_item = array();
+				$buffer_investment_item[ 'amount' ] = utf8_encode( $result_investment_item->amount );
+				$buffer_investment_item[ 'date' ] = utf8_encode( $result_investment_item->invest_datetime );
+				$buffer_investment_item[ 'status' ] = utf8_encode( $result_investment_item->status );
+
+				
+
+
+				// Création du tableau des prévisionnels par année
+				$buffer_investment_item[ 'rois_by_year' ] = array();
+				$year_end_dates = array();
+				$estimated_turnover_list = FALSE;
+				$campaign_declarations_list = FALSE;
+				if ( $result_campaign_item->project_status != ATCF_Campaign::$campaign_status_archive ) {
+					$estimated_turnover_list = json_decode( $result_campaign_item->project_estimated_turnover );
+					$campaign_declarations_list = $result_campaign_item->declarations;
+				}
+
+				$estimated_turnover_unit = $result_campaign_item->project_estimated_turnover_unit;
+				if ( empty( $estimated_turnover_unit ) ) {
+					$estimated_turnover_unit = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_estimated_turnover_unit, TRUE );
+				}
+				if ( !empty( $estimated_turnover_list ) ){
+					// On démarre de la date de démarrage du contrat
+					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
+					
+					foreach ( $estimated_turnover_list as $key => $turnover ) {
+						$estimated_rois = 0;
+						if ( $estimated_turnover_unit == 'percent' ) {
+							$estimated_rois = round( $turnover * $result_investment_item->amount / 100 );
+							$turnover = round( $result_campaign_item->project_amount * $turnover / 100 );
+						} else {
+							if ( !empty( $result_campaign_item->project_roi_percent ) ) {
+								if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded || $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_closed ) {
+									$investor_proportion = $result_investment_item->amount / $result_campaign_item->project_amount;
+								} else {
+									$investor_proportion = $result_investment_item->amount / $result_campaign_item->project_goal_maximum;
+								}
+								$roi_percent_full = ( $result_campaign_item->project_roi_percent * $investor_proportion );
+								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
+							} else {
+								$roi_percent_full_estimated = ( $result_campaign_item->project_roi_percent_estimated * $result_investment_item->amount / $result_campaign_item->project_amount );
+								$estimated_rois = round( $turnover * $roi_percent_full_estimated / 100 );
+							}
+						}
+						
+						$buffer_year_item = array();
+						$buffer_year_item[ 'amount_turnover_nb' ] = 0;
+						$buffer_year_item[ 'amount_turnover' ] = '0 &euro;';
+						$buffer_year_item[ 'estimated_turnover' ] = YPUIHelpers::display_number( $turnover, TRUE ) . ' &euro;';
+						$buffer_year_item[ 'estimated_rois' ] = YPUIHelpers::display_number( $estimated_rois, TRUE ) . ' &euro;';
+						$buffer_year_item[ 'amount_rois_nb' ] = 0;
+						$buffer_year_item[ 'amount_rois' ] = '0 &euro;';
+						$buffer_year_item[ 'roi_items' ] = array();
+						array_push( $buffer_investment_item[ 'rois_by_year' ], $buffer_year_item );
+						
+					
+						// Pour trouver toutes les échéances qui ont lieu sur une année, on avance au 21, et d'une année
+						$contract_start_date->add( new DateInterval( 'P1Y' ) );
+						$temp_date = new DateTime();
+						$temp_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), $contract_start_date->format( 'd' ) );
+						array_push( $year_end_dates, $temp_date );
+					}
+				}
+
+
+
+				$buffer_investment_item[ 'status_str' ] = '';
+				if ( $result_investment_item->status == 'pending' ) {
+					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'En attente de paiement', 'yproject' );
+					} else {
+						$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
+						if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+							$buffer_investment_item[ 'status_str' ] = __( 'A valider', 'yproject' );
+						}
+					}
+					
+				} elseif ( $result_investment_item->status == 'publish' ) {
+					if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_collecte ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'Valid&eacute;', 'yproject' );
+						
+					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_closed ) {
+						$buffer_investment_item[ 'status' ] = 'canceled';
+						$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+						
+					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_archive ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'Annul&eacute;', 'yproject' );
+						$date_end = new DateTime( $result_campaign_item->project_funding_end_date );
+						$date_end->add( new DateInterval( 'P15D' ) );
+						if ( $today_datetime < $date_end ) {
+							$buffer_investment_item[ 'status_str' ] = __( 'En suspend', 'yproject' );
+						}
+						
+					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded ) {
+						$buffer_investment_item[ 'status_str' ] = __( 'Versements &agrave; venir', 'yproject' );
+						$first_payment_date = $result_campaign_item->project_first_payment_date;
+						if ( empty( $first_payment_date ) ) {
+							$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
+						}
+						$date_first_payement = new DateTime( $first_payment_date );
+						if ( $today_datetime > $date_first_payement ) {
+							$buffer_investment_item[ 'status_str' ] = __( 'Versements en cours', 'yproject' );
+						}
+					
+						$first_investment_contract_status = FALSE;
+						if ( !empty( $result_campaign_item->investments ) ) {
+							$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
+						}
+						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
+							$buffer_investment_item[ 'status' ] = 'canceled';
+							$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+						}
+					}
+				}
+
+				$buffer_investment_item[ 'roi_amount' ] = 0;
+				foreach ( $result_investment_item->rois as $roi_item ) {
+					$buffer_investment_item[ 'roi_amount' ] += $roi_item->amount;
+				}
+				$buffer_investment_item[ 'roi_amount' ] = utf8_encode( $buffer_investment_item[ 'roi_amount' ] );
+				$buffer_investment_item[ 'roi_return' ] = utf8_encode( round( $buffer_investment_item[ 'roi_amount' ] / $result_investment_item->amount * 100 ) );
+				
+
+				// Fichier de contrat
+				$buffer_investment_item[ 'contract_file_path' ] = '';
+				$buffer_investment_item[ 'contract_file_name' ] = '';
+				// on commence par regarder si on a un contrat stocké ici  : API\wp-content\plugins\wdgrestapi\files\investment-draft
+				// ce sont les photos des contrats et chèques ajoutés par l'admin
+				// pour ça, il nous faut retrouver un éventuel post_meta de type 'created-from-draft'
+				$created_from_draft = get_post_meta( $result_investment_item->wpref, 'created-from-draft', TRUE );
+				if ( $created_from_draft ) {
+					// si c'est le cas, alors on récupère l'investment-draft, et on vérifie s'il y a une photo de contrat associé
+					$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );
+					$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
+					$buffer_investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;					
+					$path_parts = pathinfo( $investments_drafts_item->contract );
+					$extension = $path_parts[ 'extension' ];
+					$buffer_investment_item[ 'contract_file_name' ] = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '.' .$extension;
+				}
+				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
+				if ( $investment_item[ 'contract_file_path' ] == '' ){
+					$contract_index = 0;
+					if ( isset( $buffer[ $result_campaign_item->project_wpref ][ 'items' ] ) ) {
+						$contract_index = count( $buffer[ $result_campaign_item->project_wpref ][ 'items' ] );
+					}
+					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .$contract_index. '.pdf';
+					$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf';
+					if ( file_exists( $test_file_name ) ) {
+						$buffer_investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf' );
+						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;						
+					} elseif ( count( $files ) ) {
+						$filelist_extract = explode( '/', $files[ $contract_index ] );
+						$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
+						$buffer_investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
+						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;						
+					}
+				}
+
+				$buffer_investment_item[ 'conclude-investment-url' ] = '';
+				if ( $buffer_investment_item[ 'status' ] == 'pending' && $is_authentified ) {
+					$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
+					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
+						$buffer_investment_item[ 'conclude-investment-url' ] = home_url( '/investir/?init_with_id=' .$result_investment_item->wpref. '&campaign_id=' .$result_campaign_item->project_wpref );
+					}
+				}
+
+
+
+
+
+				// - Déclarations de royalties liées à la campagne
+				if ( !empty( $campaign_declarations_list ) ) {
+					foreach ( $campaign_declarations_list as $roi_declaration ) {
+						
+						// On détermine sur quelle année ça se situe
+						$current_year_index = 0;
+						$decla_datetime = new DateTime( $roi_declaration->date_due );
+						
+						foreach ( $year_end_dates as $year_end_date ) {
+							if ( $decla_datetime < $year_end_date ) {
+								break;
+							}
+							$current_year_index++;
+						}
+
+						// On a dépassé les années prévues par le prévisionnel, on en rajoute une au tableau
+						if ( !isset( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ] ) ) {
+							$buffer_year_item = array();
+							$buffer_year_item[ 'amount_turnover_nb' ] = 0;
+							$buffer_year_item[ 'amount_turnover' ] = '0 &euro;';
+							$buffer_year_item[ 'estimated_turnover' ] = '-';
+							$buffer_year_item[ 'estimated_rois' ] = '-';
+							$buffer_year_item[ 'amount_rois_nb' ] = 0;
+							$buffer_year_item[ 'amount_rois' ] = '0 &euro;';
+							$buffer_year_item[ 'roi_items' ] = array();
+							array_push( $buffer_investment_item[ 'rois_by_year' ], $buffer_year_item );
+						
+							$contract_start_date->add( new DateInterval( 'P1Y' ) );
+							$temp_date = new DateTime();
+							$temp_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), $contract_start_date->format( 'd' ) );
+							array_push( $year_end_dates, $temp_date );
+						}
+
+						// Initialisation de la ligne avec les infos de la déclaration
+						$buffer_roi_item = array();
+						$buffer_roi_item[ 'date_db' ] = $roi_declaration->date_due;
+						$buffer_roi_item[ 'date' ] = date_i18n( 'F Y', strtotime( $roi_declaration->date_due ) );
+						$buffer_roi_item[ 'status' ] = $roi_declaration->status;
+						$buffer_roi_item[ 'status_str' ] = '';
+						$buffer_roi_item[ 'amount' ] = '0 &euro;';
+						switch ( $roi_declaration->status ) {
+							case WDGROIDeclaration::$status_declaration:
+								if ( $decla_datetime < $today_datetime ) {
+									$buffer_roi_item[ 'status' ] = 'late';
+									$buffer_roi_item[ 'status_str' ] = __( 'En retard', 'yproject' );
+								} else {
+									$buffer_roi_item[ 'status' ] = 'upcoming';
+									$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
+								}
+								break;
+							case WDGROIDeclaration::$status_finished:
+								// Rien
+								break;
+							case WDGROIDeclaration::$status_failed:
+								$buffer_roi_item[ 'status_str' ] = __( 'En d&eacute;faut', 'yproject' );
+								break;
+							default:
+								$buffer_roi_item[ 'status' ] = 'upcoming';
+								$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
+								break;
+						}
+						
+						if ( $buffer_roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract ) || $first_investment_contract->status != 'canceled' ) {
+							$has_found_roi = false;
+
+							// Si il y a eu un versement de royalties, on récupère les infos du versement
+							$roi_list = $result_investment_item->rois;
+							if ( $buffer_roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
+								foreach ( $roi_list as $roi ) {
+									if ( $roi->id_declaration == $roi_declaration->id && $roi->status != WDGROI::$status_canceled ) {
+										$has_found_roi = true;
+
+										$turnover_list = json_decode( $roi_declaration->turnover );
+										foreach ( $turnover_list as $turnover_item ) {
+											$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $turnover_item;
+										}
+										$adjustment_value = 0;
+										$adjustment_value_as_turnover = 0;
+										foreach ( $roi_declaration->adjustments as $adjustment ) {
+											$adjustment_value += $adjustment->amount;
+										}
+										if ( $result_campaign_item->project_roi_percent > 0 ) {
+											$adjustment_value_as_turnover = $adjustment_value * 100 / $result_campaign_item->project_roi_percent;
+										}
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
+										
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
+										$buffer_roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+										if ( $roi->amount_taxed_in_cents > 0 ) {
+											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
+											$buffer_roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
+											if ( !empty( $roitax_items[ 0 ] ) ) {
+												$buffer_roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
+											}
+										}
+									}
+								}
+							}
+							
+
+							// Ne pas afficher si il n'y a pas eu de versement pour cet utilisateur et que son contrat est annulé
+							$add_roi = true;
+							if ( $buffer_investment_item[ 'status' ] == 'canceled' && !$has_found_roi ) {
+								$add_roi = false;
+							}
+
+							if ( $add_roi ) {
+								array_push( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], $buffer_roi_item );
+							}
+						}
+					}
+				}
+
+
+				foreach ( $buffer_investment_item[ 'rois_by_year' ] as $current_year_index => $year_item ) {
+					usort( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ( $item1, $item2 ) {
+						$item1_date = new DateTime( $item1[ 'date_db' ] );
+						$item2_date = new DateTime( $item2[ 'date_db' ] );
+						return ( $item1_date > $item2_date );
+					} );
+				}
+
+				array_push( $buffer_item[ 'items' ], $buffer_investment_item );
+			}
+
+
+			$buffer[ $result_campaign_item->project_wpref ] = $buffer_item;
+		}
+		
+		echo json_encode( $buffer );
+		exit();
+	}
+
 	/**
 	 * Récupère le tableau avec les transactions des investisseurs
 	 */
@@ -921,15 +1271,18 @@ class WDGAjaxActions {
 
 				// Transfert vers le wallet de l'utilisateur
 				} else if ( $current_user_is_receiving ) {
-					$object = __( "Remboursement sur votre porte-monnaie de ", 'yproject' );
+					$object = __( "Remboursement sur votre porte-monnaie", 'yproject' );
 					if ( $transaction_item->sender_id == 0 ) {
-						$object .= "WE DO GOOD";
+						$object .= " de WE DO GOOD";
 					} else if ( !empty( $transaction_item->project_name ) ) {
-						$object .= $transaction_item->project_name;
+						$object .= " de " . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
 							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
 						}
+
+					} else if ( !empty( $transaction_item->project_organization_name ) ) {
+						$object .= " de " . $transaction_item->project_organization_name;
 
 					} else {
 						$object .= '<div class="hidden"> - ' . $transaction_item->sender_id . ' (' .$transaction_item->sender_wallet_type. ')</div>';
@@ -1018,8 +1371,10 @@ class WDGAjaxActions {
 		$buffer = FALSE;
 		if ( $is_for_project ) {
 			$buffer = NotificationsEmails::send_project_description_notification_to_project( $id_campaign );
+
 		} else {
-			$buffer = NotificationsEmails::send_project_description_notification_to_wdg( $id_campaign );
+			NotificationsSlack::read_project_page( $id_campaign );
+			$buffer = NotificationsAsana::read_project_page( $id_campaign );
 		}
 		
 		if ( $buffer ) {
@@ -1027,6 +1382,21 @@ class WDGAjaxActions {
 		} else {
 			exit( '0' );
 		}
+	}
+
+	public static function remove_project_cache() {
+		$id_campaign = filter_input( INPUT_POST, 'id_campaign' );
+		$campaign = new ATCF_Campaign( $id_campaign );
+
+		$file_cacher = WDG_File_Cacher::current();
+		$file_cacher->delete( $campaign->data->post_name );
+		
+		$db_cacher = WDG_Cache_Plugin::current();
+		$db_cacher->set_cache( 'cache_campaign_' . $id_campaign, '0', 1, 1 );
+
+		WDGQueue::add_cache_post_as_html( $id_campaign, 'date', 'PT50M' );
+
+		exit( '1' );
 	}
 
 	public static function remove_help_item() {
@@ -1084,6 +1454,7 @@ class WDGAjaxActions {
 				$errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
 
 			} else {
+				$old_name = $campaign->data->post_name;
 				$campaign->set_api_data( 'url', $new_name );
 				wp_update_post( array(
 					'ID'		=> $campaign_id,
@@ -1091,7 +1462,7 @@ class WDGAjaxActions {
 				) );
 				$campaign->data->post_name = $new_name;
 				$success[ 'new_project_url' ] = 1;
-				// Mise Ã  jour de l'URL sur LW
+				// Mise à jour de l'URL sur LW
 				$campaign_organization = $campaign->get_organization();
 				$WDGOrganization = new WDGOrganization( $campaign_organization->wpref );
 				LemonwayLib::wallet_update( 
@@ -1099,6 +1470,8 @@ class WDGAjaxActions {
 						'', '', '', '', '', '', '', '',
 						get_permalink( $campaign_id )
 				);
+				// Notification à l'équipe
+				NotificationsSlack::campaign_url_changed( $campaign->get_name(), $old_name, $new_name );
 			}
 		}
 		
@@ -1193,6 +1566,15 @@ class WDGAjaxActions {
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
 		
+		if ( !$campaign->is_remaining_time() ) {
+			$new_presentation_visible_only_to_investors = sanitize_text_field( filter_input( INPUT_POST, 'new_presentation_visible_only_to_investors' ) );
+			if ( $new_presentation_visible_only_to_investors === true || $new_presentation_visible_only_to_investors === "true" || $new_presentation_visible_only_to_investors === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors );
+			}
+		}
+		
 		if ( $current_wdg_user->is_admin() ) {
 			$new_enable_advice_notifications = sanitize_text_field( filter_input( INPUT_POST, 'new_enable_advice_notifications' ) );
 			$queued_action_id = $campaign->has_planned_advice_notification();
@@ -1205,6 +1587,9 @@ class WDGAjaxActions {
 					WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, WDGQueue::$status_complete );
 				}
 			}
+
+			$new_advice_notifications_frequency = sanitize_text_field( filter_input( INPUT_POST, 'new_advice_notifications_frequency' ) );
+			update_post_meta( $campaign_id, ATCF_Campaign::$key_advice_notifications_frequency, $new_advice_notifications_frequency );
 		
 			$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
 			if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
@@ -1932,6 +2317,9 @@ class WDGAjaxActions {
 	 */
 	public static function create_contacts_table(){
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
+		if ( !is_numeric( $campaign_id ) ) {
+			return '<div class="wdg-datatable">Erreur de paramètre</div>';
+		}
 		
 		$campaign = new ATCF_Campaign($campaign_id);
 		$campaign_poll_answers = $campaign->get_api_data( 'poll_answers' );
@@ -2043,7 +2431,7 @@ class WDGAjaxActions {
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			if ( $post_invest_status == 'pending' ) {
-				if ( strpos($payment_key, 'wire_') ) {
+				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
 					$payment_status_span_class = 'error';
 				} else if ($payment_key == 'check') {
@@ -2165,56 +2553,64 @@ class WDGAjaxActions {
         foreach ( $array_contacts as $user_id => $user_item ){
             //Données si l'investisseur est une organisation
 			$array_contacts[$user_id]["user_id"] = $user_id;
-			if ( WDGOrganization::is_user_organization( $user_id ) ) {
-				$WDGOrganization = new WDGOrganization( $user_id );
-				$linked_users = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
-				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
-			}
 
             if(WDGOrganization::is_user_organization($user_id)){
                 $orga = new WDGOrganization($user_id);
-				$orga_wallet_details = $orga->get_wallet_details();
-				$span_class = 'error';
-				$error_str = '';
-				$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
-					switch ( $orga_wallet_details->STATUS ) {
-						case '2':
-							$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
-							break;
-						case '3':
-							$orga_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
-							break;
-						case '6':
-							$orga_authentication = __( "Valid&eacute;e", 'yproject' );
-							$span_class = 'confirm';
-							break;
-						case '8':
-							$orga_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
-							break;
-						case '10':
-						case '12':
-							$orga_authentication = __( "Bloqu&eacute;e", 'yproject' );
-							break;
-						
-						case '14':
-						case '15':
-						case '16':
-							$orga_authentication = __( "Erreur", 'yproject' );
-							break;
+				$linked_users = $orga->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+				
+				
+				// Etat de l'authentification
+				if ( $orga->get_lemonway_status() == LemonwayLib::$status_registered ) {
+					$orga_authentication = __( "Valid&eacute;e", 'yproject' );
+					$span_class = 'confirm';
+					$error_str = '';
 
-						case '5':
-						case '7':
-						case '13':
-						default:
-							$orga_authentication = __( "En attente de documents", 'yproject' );
-							break;
-					}
-
-					if ( $orga_wallet_details->STATUS != '6' ) {
-						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+				} else {
+					$orga_wallet_details = $orga->get_wallet_details();
+					$span_class = 'error';
+					$error_str = '';
+					$orga_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+					if ( isset( $orga_wallet_details->STATUS ) && !empty( $orga_wallet_details->STATUS ) ) {
+						switch ( $orga_wallet_details->STATUS ) {
+							case '2':
+								$orga_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+								break;
+							case '3':
+								$orga_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+								break;
+							case '6':
+								$orga_authentication = __( "Valid&eacute;e", 'yproject' );
+								$span_class = 'confirm';
+								break;
+							case '8':
+								$orga_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+								break;
+							case '10':
+							case '12':
+								$orga_authentication = __( "Bloqu&eacute;e", 'yproject' );
+								break;
+							
+							case '14':
+							case '15':
+							case '16':
+								$orga_authentication = __( "Erreur", 'yproject' );
+								break;
+	
+							case '5':
+							case '7':
+							case '13':
+							default:
+								$orga_authentication = __( "En attente de documents", 'yproject' );
+								break;
+						}
+	
+						if ( $orga_wallet_details->STATUS != '6' ) {
+							$error_str = LemonwayDocument::build_error_str_from_wallet_details( $orga_wallet_details );
+						}
 					}
 				}
+				
 				$orga_authentication = '<span class="payment-status-' .$span_class. '">' .$orga_authentication. '</span>';
 				if ( !empty( $error_str ) ) {
 					$orga_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
@@ -2244,57 +2640,66 @@ class WDGAjaxActions {
 
             //Données si l'investisseur est un utilisateur normal
             } else {
-				// Etat de l'authentification
-				$WDGUser = new WDGUser( $user_id );
-				$WDGUser_wallet_details = $WDGUser->get_wallet_details();
-				$span_class = 'error';
-				$error_str = '';
-				$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
-				if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
-					switch ( $WDGUser_wallet_details->STATUS ) {
-						case '2':
-							$user_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
-							break;
-						case '3':
-							$user_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
-							break;
-						case '6':
-							$user_authentication = __( "Valid&eacute;e", 'yproject' );
-							$span_class = 'confirm';
-							break;
-						case '8':
-							$user_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
-							break;
-						case '10':
-						case '12':
-							$user_authentication = __( "Bloqu&eacute;e", 'yproject' );
-							break;
-						
-						case '14':
-						case '15':
-						case '16':
-							$user_authentication = __( "Erreur", 'yproject' );
-							break;
-
-						case '5':
-						case '7':
-						case '13':
-						default:
-							$user_authentication = __( "En attente de documents", 'yproject' );
-							break;
-					}
-
-					if ( $WDGUser_wallet_details->STATUS != '6' ) {
-						$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
-					}
-				}
-				$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
-				if ( !empty( $error_str ) ) {
-					$user_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
-				}
 				
+				$WDGUser = new WDGUser( $user_id );
 				//Infos supplémentaires pour les investisseurs
 				if($array_contacts[$user_id]["invest"] == 1){
+
+					// Etat de l'authentification
+					if ( $WDGUser->get_lemonway_status() == LemonwayLib::$status_registered ) {
+						$user_authentication = __( "Valid&eacute;e", 'yproject' );
+						$span_class = 'confirm';
+						$error_str = '';
+						
+					} else {
+						$WDGUser_wallet_details = $WDGUser->get_wallet_details();
+						$span_class = 'error';
+						$error_str = '';
+						$user_authentication = __( "Pas commenc&eacute;e", 'yproject' );
+						if ( isset( $WDGUser_wallet_details->STATUS ) && !empty( $WDGUser_wallet_details->STATUS ) ) {
+							switch ( $WDGUser_wallet_details->STATUS ) {
+								case '2':
+									$user_authentication = __( "Documents envoy&eacute;s mais incomplets", 'yproject' );
+									break;
+								case '3':
+									$user_authentication = __( "Documents envoy&eacute;s mais rejet&eacute;s", 'yproject' );
+									break;
+								case '6':
+									$user_authentication = __( "Valid&eacute;e", 'yproject' );
+									$span_class = 'confirm';
+									break;
+								case '8':
+									$user_authentication = __( "Documents envoy&eacute;s mais expir&eacute;s", 'yproject' );
+									break;
+								case '10':
+								case '12':
+									$user_authentication = __( "Bloqu&eacute;e", 'yproject' );
+									break;
+								
+								case '14':
+								case '15':
+								case '16':
+									$user_authentication = __( "Erreur", 'yproject' );
+									break;
+		
+								case '5':
+								case '7':
+								case '13':
+								default:
+									$user_authentication = __( "En attente de documents", 'yproject' );
+									break;
+							}
+		
+							if ( $WDGUser_wallet_details->STATUS != '6' ) {
+								$error_str = LemonwayDocument::build_error_str_from_wallet_details( $WDGUser_wallet_details );
+							}
+						}
+					}
+					$user_authentication = '<span class="payment-status-' .$span_class. '">' .$user_authentication. '</span>';
+					if ( !empty( $error_str ) ) {
+						$user_authentication .= '<span class="authentication-more-info"><a href="#">+</a><span class="hidden">' . $error_str . '</span></span>';
+					}
+
 					$count_distinct_investors++;
 					if ( !empty( $user_item[ 'invest_item' ][ 'item' ] ) ) {
 						$array_contacts[$user_id]["user_link"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
@@ -2340,38 +2745,40 @@ class WDGAjaxActions {
 					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 				}
 				
-				foreach ( $campaign_poll_answers as $answer ) {
-					if ( $answer->poll_slug == 'source' && $answer->user_email == $array_contacts[ $user_id ][ 'user_email' ] ) {
-						$answers_decoded = json_decode( $answer->answers );
-						
-						$array_contacts[ $user_id ][ 'source-how-known' ] = '';
-						if ( !empty( $answers_decoded->{ 'how-the-fundraising-was-known' } ) ) {
-							$source_how_known_texts = array(
-								'known-by-project-manager'	=> __( "L'entrepreneur", 'yproject' ),
-								'known-by-wedogood'			=> __( "WE DO GOOD", 'yproject' ),
-								'known-by-other-investor'	=> __( "Un autre investisseur du projet", 'yproject' ),
-								'known-by-other-source'		=> __( "Autre (presse...)", 'yproject' )
-							);
-							$array_contacts[ $user_id ][ 'source-how-known' ] = $source_how_known_texts[ $answers_decoded->{ 'how-the-fundraising-was-known' } ];
-						}
-						if ( !empty( $answers_decoded->{ 'other-source-to-know-the-fundraising' } ) ) {
-							$array_contacts[ $user_id ][ 'source-how-known' ] .= ' (' . $answers_decoded->{ 'other-source-to-know-the-fundraising' } . ')';
-						}
-						
-						$array_contacts[ $user_id ][ 'source-where-from' ] = '';
-						if ( !empty( $answers_decoded->{ 'where-user-come-from' } ) ) {
-							$source_come_from_texts = array(
-								'mail-from-project-manager'			=> __( "Un mail du porteur de projet", 'yproject' ),
-								'social-network-private-message'	=> __( "Un message priv&eacute; sur Facebook, LinkedIn, Twitter...", 'yproject' ),
-								'social-network-publication'		=> __( "Une publication sur les r&eacute;seaux sociaux", 'yproject' ),
-								'wedogood-site-or-newsletter'		=> __( "La newsletter ou le site de WE DO GOOD", 'yproject' ),
-								'press-article'						=> __( "Un article de presse", 'yproject' ),
-								'other-source'						=> __( "Autre(s) :", 'yproject' )
-							);
-							$array_contacts[ $user_id ][ 'source-where-from' ] = $source_come_from_texts[ $answers_decoded->{ 'where-user-come-from' } ];
-						}
-						if ( !empty( $answers_decoded->{ 'other-source-where-the-user-come-from' } ) ) {
-							$array_contacts[ $user_id ][ 'source-where-from' ] .= ' (' . $answers_decoded->{ 'other-source-where-the-user-come-from' } . ')';
+				if ( !empty( $campaign_poll_answers ) ) {
+					foreach ( $campaign_poll_answers as $answer ) {
+						if ( $answer->poll_slug == 'source' && $answer->user_email == $array_contacts[ $user_id ][ 'user_email' ] ) {
+							$answers_decoded = json_decode( $answer->answers );
+							
+							$array_contacts[ $user_id ][ 'source-how-known' ] = '';
+							if ( !empty( $answers_decoded->{ 'how-the-fundraising-was-known' } ) ) {
+								$source_how_known_texts = array(
+									'known-by-project-manager'	=> __( "L'entrepreneur", 'yproject' ),
+									'known-by-wedogood'			=> __( "WE DO GOOD", 'yproject' ),
+									'known-by-other-investor'	=> __( "Un autre investisseur du projet", 'yproject' ),
+									'known-by-other-source'		=> __( "Autre (presse...)", 'yproject' )
+								);
+								$array_contacts[ $user_id ][ 'source-how-known' ] = $source_how_known_texts[ $answers_decoded->{ 'how-the-fundraising-was-known' } ];
+							}
+							if ( !empty( $answers_decoded->{ 'other-source-to-know-the-fundraising' } ) ) {
+								$array_contacts[ $user_id ][ 'source-how-known' ] .= ' (' . $answers_decoded->{ 'other-source-to-know-the-fundraising' } . ')';
+							}
+							
+							$array_contacts[ $user_id ][ 'source-where-from' ] = '';
+							if ( !empty( $answers_decoded->{ 'where-user-come-from' } ) ) {
+								$source_come_from_texts = array(
+									'mail-from-project-manager'			=> __( "Un mail du porteur de projet", 'yproject' ),
+									'social-network-private-message'	=> __( "Un message priv&eacute; sur Facebook, LinkedIn, Twitter...", 'yproject' ),
+									'social-network-publication'		=> __( "Une publication sur les r&eacute;seaux sociaux", 'yproject' ),
+									'wedogood-site-or-newsletter'		=> __( "La newsletter ou le site de WE DO GOOD", 'yproject' ),
+									'press-article'						=> __( "Un article de presse", 'yproject' ),
+									'other-source'						=> __( "Autre(s) :", 'yproject' )
+								);
+								$array_contacts[ $user_id ][ 'source-where-from' ] = $source_come_from_texts[ $answers_decoded->{ 'where-user-come-from' } ];
+							}
+							if ( !empty( $answers_decoded->{ 'other-source-where-the-user-come-from' } ) ) {
+								$array_contacts[ $user_id ][ 'source-where-from' ] .= ' (' . $answers_decoded->{ 'other-source-where-the-user-come-from' } . ')';
+							}
 						}
 					}
 				}
@@ -3218,14 +3625,21 @@ class WDGAjaxActions {
 	    $meta_value = array( 'user' => $user_id, 'date' => $current_datetime->format('Y-m-d H:i:s') );
 		$meta_key = $property.'_add_value_reservation_'.$lang;
 		$meta_old_value = get_post_meta( $campaign_id, $meta_key, TRUE );
-		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
-		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 
 		$return_values = array(
 			"response" => "done",
 			"values" => $property,
 			"user" => $name
 		);
+		
+		if ( empty( $meta_old_value[ 'user' ] ) ) {
+			$return_values[ 'response' ] = "error";
+			echo json_encode($return_values);
+			exit();
+		}
+
+		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
+		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
 
 		if ( !empty($meta_old_value) ) {
 		    if ( $meta_old_value[ 'user' ] != $user_id ) {
@@ -3261,6 +3675,9 @@ class WDGAjaxActions {
 		$result = false;
 		if ( $notif_type == 'send_project_notifications' ) {
 			$result = WDGPostActions::send_project_notifications( true );
+		}
+		if ( $notif_type == 'send_project_notifications_end_vote' ) {
+			$result = WDGPostActions::send_project_notifications_end_vote( true );
 		}
 		if ( $notif_type == 'send_project_notifications_end' ) {
 			$result = WDGPostActions::send_project_notifications_end( true );
@@ -3372,6 +3789,20 @@ class WDGAjaxActions {
 		exit();
 	}
 
+	public static function prospect_setup_load_capacities() {
+		$WDGUser_current = WDGUser::current();
+		$return = array();
+
+		if ( $WDGUser_current->is_admin() ) {
+			$return[ 'edit_bundles' ] = '1';
+			$return[ 'enable_payment' ] = '1';
+			$return[ 'accept_wire_payment' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
 	public static function prospect_setup_send_mail_user_project_drafts() {
 		$email = filter_input( INPUT_POST, 'email' );
 		$return = array();
@@ -3441,11 +3872,18 @@ class WDGAjaxActions {
 				$metadata_decoded = json_decode( $api_result->metadata );
 				$email = $api_result->email;
 				$recipient_name = $metadata_decoded->user->name;
+				$organization_name = $metadata_decoded->organization->name;
 				$draft_url = home_url( '/financement/eligibilite/?guid=' . $api_result->guid );
-				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $draft_url ) ) {
+				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $organization_name, $draft_url ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
+
+				NotificationsEmails::prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded );
 			}
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
 		}
 
 		echo json_encode( $return );
@@ -3501,6 +3939,136 @@ class WDGAjaxActions {
 				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
+
+				NotificationsEmails::prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded );
+			}
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_ask_card_payment() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$amount = filter_input( INPUT_POST, 'amount' );
+
+		$return = array();
+		$return[ 'url_redirect' ] = '';
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $amount ) ) {
+			$return[ 'error_str' ] = 'empty_amount';
+		}
+
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$orga_email = 'bonjour@wedogood.co';
+			if ( defined( 'PAYMENT_ORGA_EMAIL' ) ) {
+				$orga_email = PAYMENT_ORGA_EMAIL;
+			}
+			$orga_user = get_user_by( 'email', $orga_email );
+			$WDGOrganization = new WDGOrganization( $orga_user->ID );
+
+			$token = LemonwayLib::make_token( $guid );
+
+			$url_success = home_url( '/financement/eligibilite/?guid=' .$guid. '&is_success=1' );
+			$url_error = home_url( '/financement/eligibilite/?guid=' .$guid. '&is_error=1' );
+			$url_cancel = home_url( '/financement/eligibilite/?guid=' .$guid. '&is_canceled=1' );
+
+			$url_redirect = LemonwayLib::ask_payment_webkit( $WDGOrganization->get_lemonway_id(), $amount, 0, $token, $url_success, $url_error, $url_cancel );
+			if ( $url_redirect !== FALSE ) {
+				$return[ 'url_redirect' ] = $url_redirect;
+
+			} else {
+				$return[ 'error_str' ] = 'payment_failed';
+			}
+		}
+		
+		if ( !empty( $return[ 'error_str' ] ) ) {
+			$return[ 'has_error' ] = '1';
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_payment_method_select_wire() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$amount = filter_input( INPUT_POST, 'amount' );
+
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				$iban = WDG_IBAN;
+				$subscription_reference = $metadata_decoded->organization->name;
+				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $email, $recipient_name, $amount, $iban, $subscription_reference ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+			}
+		}
+
+		echo json_encode( $return );
+		exit();
+	}
+
+	public static function prospect_setup_send_mail_payment_method_received_wire() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$amount = filter_input( INPUT_POST, 'amount' );
+
+		$return = array();
+		$return[ 'error_str' ] = '';
+		$return[ 'has_error' ] = '0';
+
+		if ( empty( $guid ) ) {
+			$return[ 'error_str' ] = 'empty_guid';
+		}
+		if ( empty( $return[ 'error_str' ] ) ) {
+			$api_result = WDGWPREST_Entity_Project_Draft::get( $guid );
+			if ( empty( $api_result ) ) {
+				$return[ 'error_str' ] = 'no_project';
+			}
+
+			if ( empty( $return[ 'error_str' ] ) ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				$email = $api_result->email;
+				$recipient_name = $metadata_decoded->user->name;
+				date_default_timezone_set("Europe/Paris");
+				$today_datetime = new DateTime();
+				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $amount, $today_datetime->format( 'd/m/Y H:i' ) ) ) {
+					$return[ 'email_sent' ] = '1';
+				}
+
+				$new_status = 'paid';
+				$new_step = 'project-complete';
+				$new_authorization = 'can-create-db';
+				$metadata_decoded->package->paymentDate = $today_datetime->format( 'Y-m-d H:i:s' );
+				$api_result->metadata = json_encode( $metadata_decoded );
+				WDGWPREST_Entity_Project_Draft::update( $guid, $api_result->id_user, $api_result->email, $new_status, $new_step, $new_authorization, $api_result->metadata );
+
+				NotificationsZapier::send_prospect_setup_payment_received( $api_result );
+
+				// Ajout test dans 3 jours si TBPP créé
+				WDGQueue::add_notifications_dashboard_not_created( $api_result->id );
 			}
 		}
 

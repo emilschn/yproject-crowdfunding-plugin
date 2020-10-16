@@ -46,6 +46,8 @@ class WDGOrganization {
 	private $bank_iban;
 	private $bank_bic;
 	private $id_quickbooks;
+	private $mandate_info;
+	private $mandate_file_url;
 	
 	protected static $_current = null;
 	public static function current() {
@@ -150,6 +152,11 @@ class WDGOrganization {
 				$this->bank_iban = $this->bopp_object->bank_iban;
 				$this->bank_bic = $this->bopp_object->bank_bic;
 				$this->id_quickbooks = $this->bopp_object->id_quickbooks;
+				$this->mandate_info = array();
+				if ( !empty( $this->bopp_object->mandate_info ) ) {
+					$this->mandate_info = json_decode( $this->bopp_object->mandate_info, TRUE );
+				}
+				$this->mandate_file_url = $this->bopp_object->mandate_file_url;
 			}
 
 			if ( empty( $this->email ) ) {
@@ -263,6 +270,10 @@ class WDGOrganization {
 		} else {
 			update_user_meta( $this->wpref, 'orga_contact_email', $new_mail );
 		}
+	}
+
+	private function update_api() {
+		WDGWPREST_Entity_Organization::update( $this );
 	}
 	
 	/**
@@ -710,58 +721,6 @@ class WDGOrganization {
 	}
 	
 	/**
-	 * Gère les documents à enregistrer en local
-	 */
-	public function submit_documents() {
-		$documents_list = array(
-			'org_doc_bank'					=> WDGKYCFile::$type_bank,
-			'org_doc_kbis'					=> WDGKYCFile::$type_kbis,
-			'org_doc_status'				=> WDGKYCFile::$type_status,
-			'org_doc_id'					=> WDGKYCFile::$type_id,
-			'org_doc_idbis'					=> WDGKYCFile::$type_idbis,
-			'org_doc_capital_allocation'	=> WDGKYCFile::$type_capital_allocation,
-			'org_doc_id_2'					=> WDGKYCFile::$type_id_2,
-			'org_doc_idbis_2'				=> WDGKYCFile::$type_idbis_2,
-			'org_doc_id_3'					=> WDGKYCFile::$type_id_3,
-			'org_doc_idbis_3'				=> WDGKYCFile::$type_idbis_3
-		);
-		$files_info = array();//stocke les infos des fichiers uploadés
-		$notify = 0;
-		foreach ($documents_list as $document_key => $document_type) {
-			$files_info[$document_key]['date'] = "";
-			if ( isset( $_FILES[$document_key]['tmp_name'] ) && !empty( $_FILES[$document_key]['tmp_name'] ) ) {
-				$result = WDGKYCFile::add_file( $document_type, $this->get_wpref(), WDGKYCFile::$owner_organization, $_FILES[$document_key] );
-				if ($result == 'ext') {
-					$files_info[$document_key]['code'] = 1;
-					$files_info[$document_key]['info'] = __( "Le format de fichier n'est pas accept&eacute;.", 'yproject' );
-				} 
-				else if ($result == 'size') {
-					$files_info[$document_key]['code'] = 1;
-					$files_info[$document_key]['info'] = __( "Le fichier est trop lourd.", 'yproject' );
-				} else if ($result != FALSE) {
-					$notify++;
-					$kycfile = new WDGKYCFile($result);
-					$filepath = $kycfile->get_public_filepath();
-					$date_upload = $kycfile->get_date_uploaded();
-					$files_info[$document_key]['code'] = 0;
-					$files_info[$document_key]['info'] = $filepath;
-					$files_info[$document_key]['date'] = __( "T&eacute;l&eacute;charger le fichier envoy&eacute; le ", 'yproject' ) .$date_upload;
-					if ( $this->has_sent_all_documents() && $this->register_lemonway() ) {
-						LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $kycfile->file_name, LemonwayDocument::get_type_by_kyc_type( $document_type ), $kycfile->get_byte_array() );
-					}
-				}
-			}
-			else {
-				$files_info[$document_key]['code'] = 0;
-				$files_info[$document_key]['info'] = null;
-			}
-		}
-		if ($notify > 0) {
-			NotificationsSlack::send_document_uploaded_admin($this, $notify);
-		}
-		return $files_info;
-	}
-	/**
 	 * Détermine si l'organisation a envoyé tous ses documents
 	 */
 	public function has_sent_all_documents() {
@@ -777,7 +736,6 @@ class WDGOrganization {
 		}
 		return $buffer;
 	}
-
 	
 	/**
 	 * Détermine si l'organisation a envoyé tous ses documents
@@ -924,7 +882,11 @@ class WDGOrganization {
 				if ($buffer == FALSE) {
 					// Récupération des montants à transférer
 					$transfer_amount = filter_input( INPUT_POST, 'transfer_amount' );
+					$transfer_amount = str_replace( ' ', '', $transfer_amount );
+					$transfer_amount = str_replace( ',', '.', $transfer_amount );
 					$transfer_commission = filter_input( INPUT_POST, 'transfer_commission' );
+					$transfer_commission = str_replace( ' ', '', $transfer_commission );
+					$transfer_commission = str_replace( ',', '.', $transfer_commission );
 					LemonwayLib::ask_transfer_funds( $this->get_campaign_lemonway_id(), $this->get_lemonway_id(), ( $transfer_amount + $transfer_commission ) );
 					if ( $transfer_amount > 0 ) {
 						$this->transfer_wallet_to_bankaccount( $transfer_amount, $transfer_commission, 'campaign' );
@@ -1390,6 +1352,80 @@ class WDGOrganization {
 		$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
 		return $result_iban;
 	}
+
+
+
+	/**
+	 * Infos de mandat de prélèvement enregistrées localement
+	 */
+	public function get_encoded_mandate_info() {
+		return json_encode( $this->mandate_info );
+	}
+
+	/**
+	 * enregistre une info de mandat de prélèvement dans la BDD
+	 */
+	private function add_mandate_info( $gateway, $b2b, $iban, $status, $save_api = true ) {
+		if ( empty( $this->mandate_info ) ) {
+			$this->mandate_info = array();
+		}
+		if ( empty( $this->mandate_info[ $gateway ] ) ) {
+			$this->mandate_info[ $gateway ][ 'core' ] = array();
+			$this->mandate_info[ $gateway ][ 'b2b' ] = array();
+		}
+		$type = $b2b ? 'b2b' : 'core';
+		$this->mandate_info[ $gateway ][ $type ] = array();
+		$this->mandate_info[ $gateway ][ $type ][ 'iban' ] = $iban;
+		$this->mandate_info[ $gateway ][ $type ][ 'status' ] = $status;
+		$this->mandate_info[ $gateway ][ $type ][ 'approved_by_bank' ] = 0;
+
+		if ( $save_api ) {
+			$this->update_api();
+		}
+	}
+
+	/**
+	 * met à jour les infos de mandat de prélèvement dans la BDD
+	 */
+	public function update_mandate_info( $gateway, $iban, $status, $approved_by_bank ) {
+		if ( !empty( $this->mandate_info[ $gateway ][ 'b2b' ] ) ) {
+			if ( !empty( $status ) ) {
+				$this->mandate_info[ $gateway ][ 'b2b' ][ 'status' ] = $status;
+			}
+			if ( $approved_by_bank === '0' || $approved_by_bank === '1' ) {
+				$this->mandate_info[ $gateway ][ 'b2b' ][ 'approved_by_bank' ] = $approved_by_bank;
+			}
+
+		} else {
+			if ( empty( $this->mandate_info[ $gateway ][ 'core' ] ) && !empty( $iban ) && !empty( $status ) ) {
+				$this->add_mandate_info( $gateway, 'core', $iban, $status, false );
+			}
+			if ( !empty( $status ) ) {
+				$this->mandate_info[ $gateway ][ 'core' ][ 'status' ] = $status;
+			}
+		}
+
+		$this->update_api();
+	}
+
+	/**
+	 * retourne TRUE si c'est un mandat b2b
+	 */
+	public function is_mandate_b2b() {
+		return !empty( $this->mandate_info[ 'lemonway' ][ 'b2b' ] );
+	}
+
+	/**
+	 * retourne TRUE si c'est un mandat b2b et si la banque l'a validé
+	 */
+	public function is_mandate_b2b_approved_by_bank() {
+		return !empty( $this->mandate_info[ 'lemonway' ][ 'b2b' ] && $this->mandate_info[ 'lemonway' ][ 'b2b' ][ 'approved_by_bank' ] == 1 );
+	}
+
+	public function get_mandate_file_url() {
+		return $this->mandate_file_url;
+	}
+
 	
 	/**
 	 * Liste les mandats enregistrés auprès de LW
@@ -1429,7 +1465,9 @@ class WDGOrganization {
 	 * Ajoute un mandat de prélévement lié au wallet de l'organisation
 	 */
 	public function add_lemonway_mandate() {
-		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 0, $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
+		// Enregistrement infos mandat B2B
+		$this->add_mandate_info( 'lemonway', true, $this->get_bank_iban(), 0 );
+		return LemonwayLib::wallet_register_mandate( $this->get_lemonway_id(), $this->get_bank_owner(), $this->get_bank_iban(), $this->get_bank_bic(), 1, 1, $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), $this->get_country() );
 	}
 	
 	/**
@@ -1442,12 +1480,16 @@ class WDGOrganization {
 		return LemonwayLib::wallet_sign_mandate_init( $this->get_lemonway_id(), $phone_number, $last_mandate['ID'], $url_return, $url_error );;
 	}
 	
+	/**
+	 * Retourne TRUE si le dernier mandat créé est signé
+	 */
 	public function has_signed_mandate() {
 		$buffer = FALSE;
 		$mandates_list = $this->get_lemonway_mandates();
 		if ( !empty( $mandates_list ) ) {
 			$last_mandate = end( $mandates_list );
 			$last_mandate_status = $last_mandate[ "S" ];
+			$this->update_mandate_info( 'lemonway', $last_mandate[ 'DATA' ], $last_mandate_status, FALSE );
 			$buffer = ( $last_mandate_status == 5 || $last_mandate_status == 6 );
 		}
 		return $buffer;
@@ -1502,6 +1544,36 @@ class WDGOrganization {
 			$this->save();
 		}
 		return WDGWPREST_Entity_Organization::get_transactions( $this->get_api_id() );
+	}
+
+	public function get_lemonway_iban() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( isset( $wallet_details->IBANS->IBAN ) ) {
+			if ( is_array( $wallet_details->IBANS->IBAN ) ) {
+				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
+				// Si le premier IBAN est désactivé, on va chercher dans la suite
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected ) ) {
+					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
+						if ( $iban_item->S == WDGUser::$iban_status_validated ) {
+							$buffer = $iban_item;
+						}
+					}
+				}
+			} else {
+				$buffer = $wallet_details->IBANS->IBAN;
+			}
+		}
+		return $buffer;
+	}
+	
+	public function get_lemonway_iban_status() {
+		$first_iban = $this->get_lemonway_iban();
+		if ( !empty( $first_iban ) ) {
+			return $first_iban->S;
+		} else {
+			return FALSE;
+		}
 	}
 
 	

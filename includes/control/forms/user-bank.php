@@ -172,14 +172,19 @@ class WDG_Form_User_Bank extends WDG_Form {
 
 				if ( isset( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' .$bank_file_suffix ] );
-					$WDGFile = new WDGKYCFile( $file_id );
-					if ( $WDGOrganization->can_register_lemonway() ) {
-						$WDGOrganization->register_lemonway();
-						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
-						// Si c'est une organisation qui gère des projets, on envoie une alerte admin
-						$list_campaign_orga = $WDGOrganization->get_campaigns();
-						if ( !empty( $list_campaign_orga ) ) {
-							NotificationsEmails::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
+					
+					if ( is_int( $file_id ) ) {
+						$WDGFile = new WDGKYCFile( $file_id );
+						if ( $WDGOrganization->can_register_lemonway() ) {
+							$WDGOrganization->register_lemonway();
+							LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+							// Si c'est une organisation qui gère des projets, on envoie une alerte admin
+							$list_campaign_orga = $WDGOrganization->get_campaigns();
+							if ( !empty( $list_campaign_orga ) ) {
+								NotificationsSlack::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
+								// TODO : ne faire la notif Asana que si c'est un projet en cours de versement ?
+								NotificationsAsana::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
+							}
 						}
 					}
 					
@@ -206,10 +211,13 @@ class WDG_Form_User_Bank extends WDG_Form {
 
 				if ( isset( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'bank-file' ] );
-					$WDGFile = new WDGKYCFile( $file_id );
-					if ( $WDGUser->can_register_lemonway() ) {
-						$WDGUser->register_lemonway();
-						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+					
+					if ( is_int( $file_id ) ) {
+						$WDGFile = new WDGKYCFile( $file_id );
+						if ( $WDGUser->can_register_lemonway() ) {
+							$WDGUser->register_lemonway();
+							LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						}
 					}
 					
 				} elseif ( $test_kyc ) {

@@ -678,7 +678,6 @@ class WDGInvestment {
 			global $wpdb, $edd_options;
 			$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 			update_user_meta( $wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version] );
-			NotificationsSlack::send_new_user( $wp_user_id );
 			
 		} else {
 			$wp_user_id = $wdg_user_by_email->ID;
@@ -792,7 +791,7 @@ class WDGInvestment {
 		$save_display_name = $WDGUser_current->wp_user->display_name;
 		$invest_type = $this->get_session_user_type();
 		$lemonway_id = $WDGUser_current->get_lemonway_id();
-		if ( $invest_type != 'user' ) {
+		if ( $invest_type != 'user' && !empty( $invest_type ) ) {
 			$WDGOrganization = new WDGOrganization( $invest_type );
 			if ( $WDGOrganization ) {
 				$current_user_organization = $WDGOrganization->get_creator();
@@ -885,7 +884,7 @@ class WDGInvestment {
 			
 			// Annulation des investissements non-démarrés du même investisseur
 			$pending_not_validated_investments = array();
-			if ( $invest_type != 'user' ) {
+			if ( $invest_type != 'user' && !empty( $invest_type ) ) {
 				$pending_not_validated_investments = $WDGOrganization->get_pending_not_validated_investments();
 			} else {
 				$pending_not_validated_investments = $WDGUser_current->get_pending_not_validated_investments();
@@ -918,7 +917,10 @@ class WDGInvestment {
 		
 		// Notifications
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
-			NotificationsEmails::new_purchase_pending_wire_admin( $payment_id );
+			
+			NotificationsSlack::investment_pending_wire( $payment_id );
+			$buffer = NotificationsAsana::investment_pending_wire( $payment_id );
+
 			NotificationsAPI::investment_pending_wire( $WDGUser_current->get_email(), $save_display_name, $amount, $this->campaign->get_name(), $lemonway_id, $this->campaign->get_api_id() );
 		}
 		
@@ -1025,7 +1027,7 @@ class WDGInvestment {
 			$buffer = 'wallet_'. $transfer_funds_result->ID;
 
 		} else {
-			NotificationsEmails::new_purchase_admin_error_wallet( $WDGUser_current, $campaign->data->post_title, $amount );
+			NotificationsAsana::new_purchase_admin_error_wallet( $WDGUser_current, $campaign->data->post_title, $amount );
 		}
 		
 		return $buffer;
@@ -1158,7 +1160,9 @@ class WDGInvestment {
 				if ( $buffer == 'failed' ) {
 					$WDGUser_current = WDGUser::current();
 					$this->error_item = new LemonwayLibErrors( $lw_transaction_result->INT_MSG );
-					NotificationsEmails::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
+					NotificationsSlack::new_purchase_admin_error( $WDGUser_current->wp_user,  $this->campaign->data->post_title, $this->get_session_amount() );
+					NotificationsAsana::new_purchase_admin_error( $WDGUser_current->wp_user, $lw_transaction_result->INT_MSG, $this->error_item->get_error_message(), $this->campaign->data->post_title, $this->get_session_amount(), $this->error_item->ask_restart() );
+					
 					$investment_link = home_url( '/investir/' ) . '?campaign_id=' . $this->campaign->ID . '&invest_start=1&init_invest=' . $this->get_session_amount();
 					$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
 					NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->campaign->get_api_id(), $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );

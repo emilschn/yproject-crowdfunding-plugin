@@ -180,29 +180,22 @@ class LemonwayNotification {
 		$notification_sent = FALSE;
 		
 		// Trouver l'utilisateur à partir de son identifiant externe
+		$asana_content = FALSE;
+		$orga_has_campaigns = FALSE;
 		$WDGOrga_wallet = FALSE;
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+			$orga_campaigns = $WDGOrga_wallet->get_campaigns();
+			$orga_has_campaigns = !empty( $orga_campaigns );
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
-			$content_slack = "Nouveau statut de document : ";
-			
-			$content_slack .= "Wallet " .$lemonway_posted_id_external. " (https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal."), appartenant à ";
 			if ( !empty( $WDGOrga_wallet ) ) {
-				$content_slack .= $WDGOrga_wallet->get_name();
+				$asana_content = $WDGOrga_wallet->get_name();
 			} else {
 				$user_email = $WDGUser_wallet->get_email();
 				$user_firstname = $WDGUser_wallet->get_firstname();
-				$content_slack .= $user_firstname . ' ' . $WDGUser_wallet->get_lastname() . ' (' . $user_email . ')';
 			}
-			$content_slack .= "\n";
-			
-			$content_slack .= "Document : " . LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
-			$content_slack .= "\n";
-			
-			$content_slack .= "Nouveau statut : " . LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
-			$content_slack .= "\n";
 			
 			// Notifications pour indiquer les documents non-validés
 			// Si le document n'est ni validé, ni en attente
@@ -270,7 +263,11 @@ class LemonwayNotification {
 			}
 		
 			// On prévient l'équipe par Slack
-			NotificationsSlack::send_new_doc_status( $content_slack );
+			if ( $orga_has_campaigns && !empty( $asana_content ) && $lemonway_posted_document_status != 2 ) {
+				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
+				$document_status = LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
+				NotificationsAsana::send_new_project_document_status( $asana_content, $document_type, $document_status );
+			}
 			
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
 			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == LemonwayDocument::$document_type_bank && empty( $WDGOrga_wallet ) ) {
@@ -316,14 +313,11 @@ class LemonwayNotification {
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
 	
-		$content = 'Un virement a été reçu avec les infos suivantes :<br />';
-		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br />';
-		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br />';
-		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br />';
-		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br />';
-		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br />';
-		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br />';
-		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu', $content, true );
+		$content = 'Virement reçu : ' . $lemonway_posted_date . "\n";
+		$content .= 'ID :' .$lemonway_posted_id_internal . "\n";
+		$content .= 'ID WDG :' .$lemonway_posted_id_external . "\n";
+		$content .= 'Montant :' .$lemonway_posted_amount;
+		NotificationsSlack::wire_payment_received( $content );
 
 		if ( $lemonway_posted_id_external == 'society' ) {
 			return;
@@ -412,7 +406,7 @@ class LemonwayNotification {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
 						NotificationsEmails::new_purchase_user_error_contract( $investment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						NotificationsEmails::new_purchase_admin_error_contract( $investment_id );
+						NotificationsAsana::new_purchase_admin_error_contract( $investment_id );
 					}
 					
 				} else {
@@ -435,11 +429,13 @@ class LemonwayNotification {
 					$amount = $wallet_details->BAL;
 					NotificationsAPI::wire_transfer_received( $recipient_email, $recipient_name, $amount );
 				} else {
-					NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - ORGA - erreur', '$investment_id == FALSE || $investment_campaign_id == FALSE => ' . $trace, true );
+					NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
+					NotificationsAsana::wire_payment_received_not_attributed( $content );
 				}
 			}
 		} else {
-			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Virement reçu - erreur', '$WDGUser_invest_author === FALSE', true );
+			NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
+			NotificationsAsana::wire_payment_received_not_attributed( $content );
 		}
 	}
 	
@@ -476,14 +472,11 @@ class LemonwayNotification {
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
 		// Préparation du mail de notification
-		$content = 'Un prélèvement a été reçu avec les infos suivantes :<br>';
-		$content .= '$lemonway_posted_date :' .$lemonway_posted_date. '<br>';
-		$content .= '$lemonway_posted_id_internal :' .$lemonway_posted_id_internal. '<br>';
-		$content .= '$lemonway_posted_id_external :' .$lemonway_posted_id_external. '<br>';
-		$content .= '$lemonway_posted_id_transaction :' .$lemonway_posted_id_transaction. '<br>';
-		$content .= '$lemonway_posted_amount :' .$lemonway_posted_amount. '<br>';
-		$content .= '$lemonway_posted_status :' .$lemonway_posted_status. '<br>';
-		NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Prélèvement reçu', $content );
+		$content = 'Prélèvement reçu : ' .$lemonway_posted_date. "\n";
+		$content .= 'ID : ' .$lemonway_posted_id_internal. "\n";
+		$content .= 'ID WDG : ' .$lemonway_posted_id_external. "\n";
+		$content .= 'Montant : ' .$lemonway_posted_amount;
+		NotificationsSlack::mandate_payment_received( $content );
 		
 		$content_mail_auto_royalties = '';
 
@@ -511,28 +504,12 @@ class LemonwayNotification {
 								$total_roi += $investment_item[ 'roi_amount' ];
 							}
 							
-							// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
-							$date_of_royalties_transfer = new DateTime();
-							$date_of_royalties_transfer->setTime( 15, 30, 0 );
-							$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
-							// Si lundi, on fera un jour plus tard
-							if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
-								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-							}
-							// Si samedi, on fera un jour plus tard
-							if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
-								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-							}
-							// Si dimanche, on fera un jour plus tard
-							if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
-								$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-							}
-
-							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . '<br>';
-							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . '<br>';
-							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . '<br>';
-							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . ' €<br>';
-							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €<br><br>';
+							$date_of_royalties_transfer = $declaration->get_transfer_date();
+							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . "\n";
+							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . "\n";
+							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . "\n";
+							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . " €\n";
+							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €';
 
 							$declaration->init_rois_and_tax();
 						}
@@ -542,7 +519,7 @@ class LemonwayNotification {
 		}
 
 		if ( !empty( $content_mail_auto_royalties ) ) {
-			NotificationsEmails::send_mail( 'administratif@wedogood.co', 'Notif interne - Versement auto à venir', $content_mail_auto_royalties );
+			NotificationsSlack::send_notification_roi_transfer_to_come( $content_mail_auto_royalties );
 		}
 
 	}

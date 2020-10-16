@@ -39,11 +39,16 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		$nb_fields = $campaign->get_turnover_per_declaration();
 		$date_due = new DateTime( $roideclaration->date_due );
 		$date_due->sub( new DateInterval( 'P' .$nb_fields. 'M' ) );
+		$declaration_turnover = $roideclaration->get_turnover();
 		
 		for ( $index_field = 0; $index_field < $nb_fields; $index_field++ ) {
 			$input_declaration_turnover = filter_input( INPUT_POST, 'turnover_' .$index_field );
 			if ( empty( $input_declaration_turnover ) ) {
-				$input_declaration_turnover = 0;
+				if ( isset( $declaration_turnover[ $index_field ] ) ) {
+					$input_declaration_turnover = $declaration_turnover[ $index_field ];
+				} else {
+					$input_declaration_turnover = 0;
+				}
 			}
 			$label = ucfirst( __( $months[ $date_due->format( 'm' ) - 1 ] ) );
 			
@@ -60,10 +65,20 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		}
 		
 		$input_declaration_message = filter_input( INPUT_POST, 'message' );
+		$declaration_message = $roideclaration->get_message();
+		if ( empty( $input_declaration_message ) && !empty( $declaration_message ) ) {
+			if ( $roideclaration->get_is_message_rich() ) {
+				$input_declaration_message = $roideclaration->get_message_rich_decoded();
+			} else {
+				$input_declaration_message = $declaration_message;
+			}
+		}
 		$description = __( "Informez vos investisseurs de l'&eacute;tat d'avancement de votre projet et incitez-les &agrave; &ecirc;tre vos ambassadeurs.", 'yproject' );
 		$description .= ' ' . __( "Nous leur transmettrons le message en m&ecirc;me temps que le versement de leurs royalties.", 'yproject' );
+		$description .= '<br>';
+		$description .= ' ' . __( "<strong>Attention :</strong> ce champ de texte enrichi vous permet de mettre en forme le texte et d'ajouter quelques images d'illustrations. Veillez &agrave; limiter la taille de ces images (500px de largeur maximum) et &agrave; &eacute;viter les autres types de media (vid&eacute;o notamment).", 'yproject' );
 		$this->addField(
-			'textarea',
+			'wpeditor',
 			'message',
 			__( "Informations aux investisseurs", 'yproject' ),
 			self::$field_group_declaration,
@@ -73,7 +88,12 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		
 		$input_declaration_nb_employees = filter_input( INPUT_POST, 'nb_employees' );
 		if ( empty( $input_declaration_nb_employees ) ) {
-			$input_declaration_nb_employees = $organization->get_employees_count();
+			$declaration_employees_number = $roideclaration->employees_number;
+			if ( !empty( $declaration_employees_number ) ) {
+				$input_declaration_nb_employees = $declaration_employees_number;
+			} else {
+				$input_declaration_nb_employees = $organization->get_employees_count();
+			}
 		}
 		$this->addField(
 			'text',
@@ -85,6 +105,10 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		);
 		
 		$input_declaration_other_fundings = filter_input( INPUT_POST, 'other_fundings' );
+		$declaration_other_fundings = $roideclaration->get_other_fundings();
+		if ( empty( $input_declaration_other_fundings ) && !empty( $declaration_other_fundings ) ) {
+			$input_declaration_other_fundings = $declaration_other_fundings;
+		}
 		$this->addField(
 			'text',
 			'other_fundings',
@@ -93,6 +117,23 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$input_declaration_other_fundings,
 			__( "Information statistique non-communiqu&eacute;e", 'yproject' )
 		);
+
+		$WDGUser_current = WDGUser::current();
+		if ( $WDGUser_current->is_admin() ) {
+			$input_declaration_transfer_delay = filter_input( INPUT_POST, 'transfer_delay' );
+			if ( empty( $input_declaration_transfer_delay ) ) {
+				$input_declaration_transfer_delay = WDGROIDeclaration::$default_transfer_delay;
+			}
+			$this->addField(
+				'text',
+				'transfer_delay',
+				__( "Nombre de jours de d&eacute;lais", 'yproject' ),
+				self::$field_group_declaration,
+				$input_declaration_transfer_delay,
+				__( "D&eacute;lais avant versement, une fois l'argent re&ccedil;u", 'yproject' ),
+				array( 'admin_theme' => 1 )
+			);
+		}
 	}
 	
 	public function postForm() {
@@ -158,7 +199,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$roideclaration->percent_commission_without_tax = $campaign->get_costs_to_organization() / 1.2;
 			$roideclaration->amount = round( ( $total_turnover * $campaign->roi_percent_remaining() / 100 ) * 100 ) / 100;
 			if ( $roideclaration->get_amount_with_adjustment() == 0 ) {
-				NotificationsEmails::turnover_declaration_null( $this->declaration_id, $declaration_message );
+				NotificationsSlack::turnover_declaration_null( $this->declaration_id, $declaration_message );
 				if ( $roideclaration->get_amount_with_commission() == 0 ) {
 					$roideclaration->status = WDGROIDeclaration::$status_transfer;
 				} else {
@@ -193,7 +234,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 				}
 				
 			} else {
-				NotificationsEmails::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
+				NotificationsSlack::turnover_declaration_not_null( $this->declaration_id, $declaration_message );
 				$roideclaration->status = WDGROIDeclaration::$status_payment;
 				
 				// Si le montant des royalties fait que ça dépassera le max, on ajoute un ajustement qui fait baisser le montant
@@ -225,13 +266,22 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 			$roideclaration->set_other_fundings( $other_fundings );
 			
 			$WDGUser_current = WDGUser::current();
+			
+			$roideclaration->set_transfer_delay( WDGROIDeclaration::$default_transfer_delay );
+			if ( $WDGUser_current->is_admin() ) {
+				$transfer_delay = $this->getInputText( 'transfer_delay' );
+				$roideclaration->set_transfer_delay( $transfer_delay );
+			}
+
 			$roideclaration->set_declared_by( $WDGUser_current->get_api_id(), $WDGUser_current->get_firstname(). ' ' .$WDGUser_current->get_lastname(), $WDGUser_current->get_email(), ( $WDGUser_current->is_admin() ? 'admin' : 'team' ) );
 			
 			$roideclaration->set_message( $declaration_message );
+			$roideclaration->set_is_message_rich( true );
 			
 			$roideclaration->save();
 			
 			NotificationsSlack::send_declaration_filled( $campaign->get_name(), $roideclaration->get_turnover_total(), $roideclaration->get_amount_with_adjustment(), $roideclaration->get_commission_to_pay() );
+			NotificationsAsana::send_declaration_filled( $campaign->get_name(), $roideclaration->get_turnover_total(), $roideclaration->get_amount_with_adjustment(), $roideclaration->get_commission_to_pay() );
 
 			// Mise à jour du nombre d'employés de l'organisation en fonction de ce qui a été rempli dans cette déclaration
 			$campaign_organization = $campaign->get_organization();

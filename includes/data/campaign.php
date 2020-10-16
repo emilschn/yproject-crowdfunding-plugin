@@ -948,6 +948,13 @@ class ATCF_Campaign {
 	public function has_planned_advice_notification() {
 		return WDGQueue::has_planned_campaign_advice_notification( $this->ID );
 	}
+
+	public static $key_advice_notifications_frequency = 'advice_notifications_frequency';
+	public function get_advice_notifications_frequency() {
+		$metadata_value = $this->__get( ATCF_Campaign::$key_advice_notifications_frequency );
+		$buffer = ( !empty( $metadata_value ) ) ? $metadata_value : 3;
+		return $buffer;
+	}
 	
 	public static $key_can_invest_until_contract_start_date = 'can_invest_until_contract_start_date';
 	public function can_invest_until_contract_start_date() {
@@ -961,6 +968,12 @@ class ATCF_Campaign {
 		$datetime_first_payment = new DateTime( $this->contract_start_date() );
 		$datetime_first_payment->sub( new DateInterval( 'P14D' ) );
 		return $datetime_first_payment;
+	}
+
+	public function get_end_date_when_can_invest_until_contract_start_date_as_string() {
+		$datetime_first_payment = $this->get_end_date_when_can_invest_until_contract_start_date();
+		$datetime_first_payment->sub( new DateInterval( 'PT1M' ) );
+		return $datetime_first_payment->format( 'd/m/Y H\hi' );
 	}
 	
 	public static $key_archive_message = 'archive_message';
@@ -1060,11 +1073,11 @@ class ATCF_Campaign {
 		
 		$today_date = new DateTime();
 		$platform_commission = $this->platform_commission();
-		$platform_commission_amount = $this->platform_commission_amount();
+		$platform_commission_amount = $this->platform_commission_amount( TRUE, $amount );
 		$platform_commission_below_100000 = $this->platform_commission();
-		$platform_commission_below_100000_amount = $this->platform_commission_below_100000_amount();
+		$platform_commission_below_100000_amount = $this->platform_commission_below_100000_amount( TRUE, $amount );
 		$platform_commission_above_100000 = $this->platform_commission_above_100000();
-		$platform_commission_above_100000_amount = $this->platform_commission_above_100000_amount();
+		$platform_commission_above_100000_amount = $this->platform_commission_above_100000_amount( TRUE, $amount );
 		
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get(
@@ -1932,8 +1945,11 @@ class ATCF_Campaign {
 		}
 	    return $buffer;
 	}
-	public function platform_commission_below_100000_amount( $with_tax = TRUE ) {
-		$buffer = round( min( $this->current_amount( FALSE ), 100000 ) * $this->platform_commission( $with_tax ) / 100, 2 );
+	public function platform_commission_below_100000_amount( $with_tax = TRUE, $current_amount = FALSE ) {
+		if ( empty( $current_amount ) ) {
+			$current_amount = $this->current_amount( FALSE );
+		}
+		$buffer = round( min( $current_amount, 100000 ) * $this->platform_commission( $with_tax ) / 100, 2 );
 		return $buffer;
 	}
 	
@@ -1953,13 +1969,16 @@ class ATCF_Campaign {
 		}
 	    return $buffer;
 	}
-	public function platform_commission_above_100000_amount( $with_tax = TRUE ) {
-		$buffer = round( max( $this->current_amount( FALSE ) - 100000, 0 ) * $this->platform_commission_above_100000( $with_tax ) / 100, 2 );
+	public function platform_commission_above_100000_amount( $with_tax = TRUE, $current_amount = FALSE ) {
+		if ( empty( $current_amount ) ) {
+			$current_amount = $this->current_amount( FALSE );
+		}
+		$buffer = round( max( $current_amount - 100000, 0 ) * $this->platform_commission_above_100000( $with_tax ) / 100, 2 );
 		return $buffer;
 	}
 	
-	public function platform_commission_amount( $with_tax = TRUE ) {
-		$buffer = $this->platform_commission_below_100000_amount( $with_tax ) + $this->platform_commission_above_100000_amount( $with_tax );
+	public function platform_commission_amount( $with_tax = TRUE, $current_amount_param = FALSE ) {
+		$buffer = $this->platform_commission_below_100000_amount( $with_tax, $current_amount_param ) + $this->platform_commission_above_100000_amount( $with_tax, $current_amount_param );
 		return $buffer;
 	}
 
@@ -2775,6 +2794,18 @@ class ATCF_Campaign {
 		$meta_hidden = $this->__get( ATCF_Campaign::$key_campaign_is_hidden );
 		if ( !empty( $meta_hidden ) ) {
 			$buffer = ( $meta_hidden == '1' );
+		}
+		return $buffer;
+	}
+
+	public static $key_campaign_is_presentation_visible_only_to_investors = '_campaign_is_presentation_visible_only_to_investors';
+	public function is_presentation_visible_only_to_investors() {
+		$buffer = false;
+		if ( !$this->is_remaining_time() ) {
+			$meta_hidden = $this->__get( ATCF_Campaign::$key_campaign_is_presentation_visible_only_to_investors );
+			if ( !empty( $meta_hidden ) ) {
+				$buffer = ( $meta_hidden == '1' );
+			}
 		}
 		return $buffer;
 	}
@@ -3762,20 +3793,14 @@ class ATCF_Campaign {
 	
 	public static function list_projects_searchable() {
 		global $wpdb;
-		$results = $wpdb->get_results( "
-			SELECT ID, post_title, post_name FROM ".$wpdb->posts."
-			INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id
-			WHERE ".$wpdb->posts.".post_type = 'download' AND ".$wpdb->posts.".post_status = 'publish' AND ".$wpdb->postmeta.".meta_key = 'campaign_vote' 
-				AND (".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_vote."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_collecte."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_funded."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_closed."' OR ".$wpdb->postmeta.".meta_value = '".ATCF_Campaign::$campaign_status_archive."')
-			ORDER BY ".$wpdb->posts.".post_date DESC
-		", OBJECT );
+		$results = WDGWPREST_Entity_Project::get_search_list();
 		
 		$buffer = array();
-		foreach ( $results as $project_post ) {
-			$meta_is_hidden = get_post_meta( $project_post->ID, ATCF_Campaign::$key_campaign_is_hidden, TRUE );
-			$meta_project_type = get_post_meta( $project_post->ID, 'campaign_funding_type', TRUE );
+		foreach ( $results as $project_item ) {
+			$meta_is_hidden = get_post_meta( $project_item->wpref, ATCF_Campaign::$key_campaign_is_hidden, TRUE );
+			$meta_project_type = get_post_meta( $project_item->wpref, 'campaign_funding_type', TRUE );
 			if ( empty( $meta_is_hidden ) && $meta_project_type == 'fundingproject' ) {
-				array_push( $buffer, $project_post );
+				array_push( $buffer, $project_item );
 			}
 		}
 		return $buffer;

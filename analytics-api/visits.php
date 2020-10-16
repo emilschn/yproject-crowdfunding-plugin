@@ -21,6 +21,14 @@ if ( isset($_POST['end_date']) )
   $end_date = $_POST['end_date']; // date de fin de période
 }
 
+// Test si la date de début est après la date de fin
+// Si c'est le cas, on définit la date de début avec la valeur de la date de fin
+$datetime_start_test = new DateTime( $start_date );
+$datetime_end_test = new DateTime( $end_date );
+if ( $datetime_start_test > $datetime_end_test ) {
+	$start_date = $end_date;
+}
+
 if ( isset($_POST['path']) )
 {
   $path = $_POST['path']; // path de la page concernée par les stats
@@ -110,19 +118,21 @@ class WDG_Google_Analytics
 
     $i = 0;
 
-    echo '[';
-    foreach ( $result_rows as $row ) {
-      $sourceFr = str_replace("Organic Search", "Référencement naturel", $row[0]); // traduction des termes EN de GA
-      $sourceFr = str_replace("Referral", "Lien hypertexte", $sourceFr);
-      $sourceFr = str_replace("(Other)", "Autre", $sourceFr);
-      if ( $i == 0 ){
-        echo '{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
-      }
-      else {
-        echo ',{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
-      }
-      $i++;
-    }
+	echo '[';
+	if ( !empty( $result_rows ) ) {
+		foreach ( $result_rows as $row ) {
+		  $sourceFr = str_replace("Organic Search", "Référencement naturel", $row[0]); // traduction des termes EN de GA
+		  $sourceFr = str_replace("Referral", "Lien hypertexte", $sourceFr);
+		  $sourceFr = str_replace("(Other)", "Autre", $sourceFr);
+		  if ( $i == 0 ){
+			echo '{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
+		  }
+		  else {
+			echo ',{"source":"'.$sourceFr.'","visits":'.$row[1].'}';
+		  }
+		  $i++;
+		}
+	}
     echo ']';
 
   }

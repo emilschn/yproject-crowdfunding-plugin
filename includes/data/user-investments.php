@@ -49,6 +49,9 @@ class WDGUserInvestments {
  * Récupérations des investissements
 *******************************************************************************/
 	public function get_posts_investments( $payment_status ) {
+		if ( empty( $this->wp_ref ) ) {
+			return array();
+		}
 		if ( is_null( self::$posts_investments ) ) {
 			self::$posts_investments = array();
 		}
@@ -185,7 +188,8 @@ class WDGUserInvestments {
 				$pending_investments = $this->get_pending_investments();
 				foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
 					$investment_campaign = new ATCF_Campaign( $campaign_id );
-					if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+					$contract_has_been_modified = ( $investment_campaign->contract_modifications() != '' );
+					if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte && $contract_has_been_modified ) {
 						foreach ( $campaign_investments as $investment_id ) {
 							$wdg_investment = new WDGInvestment( $investment_id );
 							if ( $wdg_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {

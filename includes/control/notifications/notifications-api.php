@@ -5,9 +5,11 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class NotificationsAPI {
 	
 	public static $description_str_by_template_id = array(
+		'1143'	=> "Nouveau projet créé",
 		'156' => "Actualité",
 		'184' => "Mail via liste de contacts",
 		'181' => "Inscription",
+		'932' => "Inscription sans investissement",
 		'311' => "KYC - RIB validé",
 		'322' => "KYC - Doc en cours de validation",
 		'749' => "KYC - Doc refusé",
@@ -19,6 +21,9 @@ class NotificationsAPI {
 		'576' => "Relance - Pré-lancement - Evaluation avec intention",
 		'577' => "Relance - Pré-lancement - Evaluation sans intention",
 		'578' => "Relance - Pré-lancement - Suit le projet",
+		'2249' => "Fin évaluation - En attente",
+		'2246' => "Fin évaluation - Annulé",
+		'2247' => "Fin évaluation - Annulé - Remboursement",
 		'579' => "Relance - Investissement 30 % - Avec intention",
 		'580' => "Relance - Investissement 30 % - Sans intention",
 		'650' => "Relance - Investissement 30 % - Suit le projet",
@@ -45,6 +50,7 @@ class NotificationsAPI {
 		'629' => "Projet validé - campagne privée",
 		'699' => "Projet en attente d'atteinte du seuil de validation",
 		'179' => "Projet échoué",
+		'1751'	=> "Envoi mandat de prélèvement",
 		'114' => "Déclarations - Rappel J-9 (avec prélèvement)",
 		'115' => "Déclarations - Rappel J-9 (sans prélèvement)",
 		'119' => "Déclarations - Rappel J-2 (avec prélèvement)",
@@ -60,19 +66,49 @@ class NotificationsAPI {
 		'735' => "Déclaration - Fin (porteur de projet)",
 		'693' => "Déclaration - Fin (investisseurs)",
 		'139' => "Versement de royalties - résumé quotidien",
+		'1042' => "Versement de royalties - plus de 200 euros",
+		'1044' => "Versement de royalties - plus de 200 euros - rappel pas ouvert",
+		'1045' => "Versement de royalties - plus de 200 euros - rappel pas cliqué",
+		'1268' => "Versement de royalties - plus de 200 euros - notif entrepreneur",
 		'522' => "Versement de royalties - transfert avec message",
 		'691' => "Versement de royalties - montant maximum atteint",
 		'779' => "Versement sur compte bancaire - confirmation",
 		'1075' => "Réinitialisation de mot de passe",
 		'1316' => "Test d'éligibilité - Récupération liste de tests",
 		'1374' => "Test d'éligibilité - Lien test démarré",
-		'1373' => "Test d'éligibilité - Projet éligible"
+		'1373' => "Test d'éligibilité - Projet éligible",
+		'2298' => "Test d'éligibilité - Paiement par virement bancaire choisi",
+		'2299' => "Test d'éligibilité - Paiement par virement bancaire reçu",
+		'2294' => "Test d'éligibilité - Paiement par carte bancaire réussi",
+		'2295' => "Test d'éligibilité - Paiement par carte bancaire échoué",
+		'2297' => "Test d'éligibilité - Tableau de bord pas encore créé"
 	);
 	
 
 	//**************************************************************************
 	// Campagne
 	//**************************************************************************
+    //*******************************************************
+    // NOUVEAU PROJET PUBLIE
+    //*******************************************************
+	public static function new_project_published( $recipient, $name, $project_link, $project_api_id ) {
+		ypcf_debug_log( 'NotificationsAPI::new_project_published > ' . $recipient );
+		$id_template = '1143';
+		$project_link_clean = str_replace( 'https://', '', $project_link );
+		$options = array(
+			'personal'				=> 1,
+			'PRENOM'				=> $name,
+			'DASHBOARD_URL'			=> $project_link_clean
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
     //*******************************************************
     // ENVOI ACTUALITE DE PROJET
     //*******************************************************
@@ -166,14 +202,82 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Utilisateurs
 	//**************************************************************************
-    //*******************************************************
-    // Inscription
-    //*******************************************************
+	//*******************************************************
+	// Inscription
+	//*******************************************************
 	public static function user_registration( $recipient, $name ) {
 		$id_template = '181';
 		$options = array(
 			'skip_admin'			=> 1,
 			'PRENOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// Inscription sans investissement
+	//*******************************************************
+	public static function user_registered_without_investment( $recipient, $name ) {
+		$id_template = '932';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// Inscription sans investissement - pas ouvert
+	//*******************************************************
+	public static function user_registered_without_investment_not_open( $recipient, $name ) {
+		$id_template = '937';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// Inscription sans investissement - pas cliqué
+	//*******************************************************
+	public static function user_registered_without_investment_not_clicked( $recipient, $name ) {
+		$id_template = '938';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+    //*******************************************************
+    // Inscription sans investissement - pas investi
+    //*******************************************************
+	public static function user_registered_without_investment_not_invested( $recipient, $name ) {
+		$id_template = '939';
+		$options = array(
+			'NOM'				=> $name
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -291,7 +395,7 @@ class NotificationsAPI {
 	}
 
 	public static function phone_kyc_refused( $recipient, $name ) {
-		$param_content = "Bonjour " .$name.", un ou plusieurs documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Ceci bloque votre authentification. Connectez-vous afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
+		$param_content = "Bonjour " .$name.", des documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
@@ -515,6 +619,63 @@ class NotificationsAPI {
 			'TEMOIGNAGES'				=> $testimony,
 			'IMAGE'						=> $image_element,
 			'DESCRIPTION_PROJET'		=> $image_description
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// FIN EVALUATION - EN ATTENTE
+	//*******************************************************
+	public static function vote_end_pending_campaign( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '2249';
+		$options = array(
+			'personal'					=> 1,
+			'PRENOM'					=> $name,
+			'NOM_PROJET'				=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// FIN EVALUATION - ANNULATION
+	//*******************************************************
+	public static function vote_end_canceled_campaign( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '2246';
+		$options = array(
+			'personal'					=> 1,
+			'PRENOM'					=> $name,
+			'NOM_PROJET'				=> $project_name
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	public static function vote_end_canceled_campaign_refund( $recipient, $name, $project_name, $project_api_id ) {
+		$id_template = '2247';
+		$options = array(
+			'personal'					=> 1,
+			'PRENOM'					=> $name,
+			'NOM_PROJET'				=> $project_name
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1109,6 +1270,29 @@ class NotificationsAPI {
 	// Déclarations
 	//**************************************************************************
     //*******************************************************
+    // ENVOI MANDAT PRELEVEMENT
+    //*******************************************************
+	public static function mandate_to_send_to_bank( $recipients, $user_name, $attachment_url, $project_api_id ) {
+		$id_template = '1751';
+		$options = array(
+			'personal'		=> 1,
+			'NOM'			=> $user_name
+		);
+		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
+			$options[ 'url_attachment' ] = $attachment_url;
+		}
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipients,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+
+    //*******************************************************
     // NOTIFICATIONS DECLARATIONS ROI A FAIRE
     //*******************************************************
 	/**
@@ -1344,6 +1528,79 @@ class NotificationsAPI {
 	}
 	
     //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS
+    //*******************************************************
+	public static function wallet_with_more_than_200_euros( $recipient, $name ) {
+		$id_template = '1042';
+		$options = array(
+			'personal'	=> 1,
+			'NOM'		=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS OUVERT
+    //*******************************************************
+	public static function wallet_with_more_than_200_euros_reminder_not_open( $recipient, $name ) {
+		$id_template = '1044';
+		$options = array(
+			'personal'	=> 1,
+			'NOM'		=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS CLIQUE
+    //*******************************************************
+	public static function wallet_with_more_than_200_euros_reminder_not_clicked( $recipient, $name ) {
+		$id_template = '1045';
+		$options = array(
+			'personal'	=> 1,
+			'NOM'		=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
+    // WALLET AVEC PLUS DE 200 EUROS - NOTIF ENTREPRENEUR
+    //*******************************************************
+	public static function investors_with_wallet_with_more_than_200_euros( $recipient, $name, $investors_list_str ) {
+		$id_template = '1268';
+		$options = array(
+			'personal'		=> 1,
+			'PRENOM'		=> $name,
+			'INVESTISSEURS'	=> $investors_list_str
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+	
+    //*******************************************************
     // MESSAGE D'ENTREPRENEUR SUITE VERSEMENT ROYALTIES
     //*******************************************************
 	public static function roi_transfer_message( $recipient, $name, $project_name, $declaration_message, $replyto_mail ) {
@@ -1411,14 +1668,15 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Interface prospect
 	//**************************************************************************
-    //*******************************************************
-    // LISTE DES TESTS DEMARRES
-    //*******************************************************
+	//*******************************************************
+	// LISTE DES TESTS DEMARRES
+	//*******************************************************
 	public static function prospect_setup_draft_list( $recipient, $name, $project_list_str ) {
 		$id_template = '1316';
 		$options = array(
 			'personal'			=> 1,
 			'NOM'				=> $name,
+			'EMAIL'				=> $recipient,
 			'LISTE_PROJETS'		=> $project_list_str
 		);
 		$parameters = array(
@@ -1430,16 +1688,18 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 
-    //*******************************************************
-    // DEMARRAGE DE TEST
-    //*******************************************************
-	public static function prospect_setup_draft_started( $recipient, $name, $draft_url_full ) {
+	//*******************************************************
+	// DEMARRAGE DE TEST
+	//*******************************************************
+	public static function prospect_setup_draft_started( $recipient, $name, $organization_name, $draft_url_full ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = '1374';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'personal'		=> 1,
 			'NOM'			=> $name,
+			'EMAIL'			=> $recipient,
+			'NOM_ENTREPRISE'	=> $organization_name,
 			'URL_DRAFT'		=> $draft_url,
 			'URL_DRAFT_FULL'=> $draft_url_full
 		);
@@ -1452,9 +1712,9 @@ class NotificationsAPI {
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 
-    //*******************************************************
-    // FIN DE TEST
-    //*******************************************************
+	//*******************************************************
+	// FIN DE TEST
+	//*******************************************************
 	public static function prospect_setup_draft_finished( $recipient, $name, $draft_url_full, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = '1373';
@@ -1469,6 +1729,109 @@ class NotificationsAPI {
 			'POURCENT_ROYALTIES'	=> $royalties_percent,
 			'FORMULE'		=> $formula,
 			'OPTION'		=> $options
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// SELECTION DE VIREMENT
+	//*******************************************************
+	public static function prospect_setup_payment_method_select_wire( $recipient, $name, $amount, $iban, $subscription_reference ) {
+		$id_template = '2298';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'NOM'						=> $name,
+			'MONTANT'					=> $amount,
+			'IBAN_WDG'					=> $iban,
+			'REFERENCE_SOUSCRIPTION'	=> $subscription_reference,
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// VIREMENT RECU
+	//*******************************************************
+	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $amount, $date_payment ) {
+		$id_template = '2299';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount,
+			'DATE_PAIEMENT_RECU'	=> $date_payment,
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// PAIEMENT PAR CARTE RECU
+	//*******************************************************
+	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment ) {
+		$id_template = '2294';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount,
+			'DATE_PAIEMENT_RECU'	=> $date_payment,
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// PAIEMENT PAR CARTE ERREUR
+	//*******************************************************
+	public static function prospect_setup_payment_method_error_card( $recipient, $name, $draft_url ) {
+		$id_template = '2295';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'NOM'			=> $name,
+			'URL_DRAFT'		=> $draft_url,
+			'personal'		=> 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient . ',projets@wedogood.co',
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// TABLEAU DE BORD PAS ENCORE CREE
+	//*******************************************************
+	public static function prospect_setup_dashboard_not_created( $recipient, $name ) {
+		$id_template = '2297';
+		$options = array(
+			'replyto'		=> 'projets@wedogood.co',
+			'NOM'			=> $name,
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',

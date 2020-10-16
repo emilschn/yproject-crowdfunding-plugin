@@ -243,7 +243,7 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_minimum_goal( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = YPUIHelpers::display_number( $shortcode_campaign_obj->minimum_goal() );
+		$buffer = YPUIHelpers::display_number( $shortcode_campaign_obj->minimum_goal(), TRUE, 0 );
 		return $buffer;
 	}
 	
@@ -253,7 +253,7 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_maximum_goal( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = YPUIHelpers::display_number( $shortcode_campaign_obj->goal( false ) );
+		$buffer = YPUIHelpers::display_number( $shortcode_campaign_obj->goal( false ), TRUE, 0 );
 		if ( $shortcode_campaign_obj->contract_maximum_type() == 'infinite' ) {
 			$buffer = ATCF_Campaign::$contract_maximum_types[ $shortcode_campaign_obj->contract_maximum_type() ];
 		}

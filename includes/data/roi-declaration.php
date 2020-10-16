@@ -20,6 +20,7 @@ class WDGROIDeclaration {
 	public static $min_amount_for_wire_payment = 1000;
 	public static $tax_without_exemption = 30;
 	public static $tax_with_exemption = 17.2;
+	public static $default_transfer_delay = 10;
 	
 	public $id;
 	public $id_campaign;
@@ -36,12 +37,14 @@ class WDGROIDeclaration {
 	public $file_list;
 	public $turnover;
 	public $message;
+	public $message_rich;
 	public $adjustment;
 	public $adjustments;
 	public $transfered_previous_remaining_amount;
 	
 	public $employees_number;
 	public $other_fundings;
+	public $transfer_delay;
 	public $declared_by;
 	
 	public $on_api;
@@ -74,10 +77,12 @@ class WDGROIDeclaration {
 				$this->file_list = $collection_item->file_list;
 				$this->turnover = $collection_item->turnover;
 				$this->message = $collection_item->message;
+				$this->message_rich = $collection_item->message_rich;
 				$this->adjustment = $collection_item->adjustment;
 				$this->transfered_previous_remaining_amount = $collection_item->transfered_previous_remaining_amount;
 				$this->employees_number = $collection_item->employees_number;
 				$this->other_fundings = $collection_item->other_fundings;
+				$this->transfer_delay = $collection_item->transfer_delay;
 				if ( !empty( $collection_item->declared_by ) ) {
 					$this->declared_by = $collection_item->declared_by;
 				}
@@ -115,6 +120,7 @@ class WDGROIDeclaration {
 					$this->file_list = $declaration_api_item->file_list;
 					$this->turnover = $declaration_api_item->turnover;
 					$this->message = $declaration_api_item->message;
+					$this->message_rich = $declaration_api_item->message_rich;
 					$this->adjustment = $declaration_api_item->adjustment;
 					if ( is_null( $this->adjustment ) ) {
 						$this->adjustment = '';
@@ -126,6 +132,7 @@ class WDGROIDeclaration {
 
 					$this->employees_number = $declaration_api_item->employees_number;
 					$this->other_fundings = $declaration_api_item->other_fundings;
+					$this->transfer_delay = $declaration_api_item->transfer_delay;
 					$this->declared_by = $declaration_api_item->declared_by;
 
 					$this->on_api = TRUE;
@@ -171,7 +178,7 @@ class WDGROIDeclaration {
 		$this->update();
 	}
 
-	private function get_campaign_object() {
+	public function get_campaign_object() {
 		if ( !isset( $this->campaign_object ) ) {
 			$this->campaign_object = new ATCF_Campaign( FALSE, $this->id_campaign );
 		}
@@ -476,12 +483,90 @@ class WDGROIDeclaration {
 	public function set_message( $message ) {
 		$this->message = htmlentities( $message );
 	}
+
+	public function get_is_message_rich() {
+		return ( $this->message_rich == '1' );
+	}
+	public function set_is_message_rich( $is_message_rich ) {
+		$this->message_rich = $is_message_rich ? '1' : '0';
+	}
+	public function get_message_rich_decoded() {
+		$message = $this->get_message();
+		$content = html_entity_decode( $message, ENT_QUOTES | ENT_HTML401 );
+
+		// Algo pour supprimer les liens qui mènent vers WDG et qui sont automatiquement appliqués aux images par WP
+		// (car ce sont des liens qui mènent directement aux images et sont inutiles)
+		$content_exploded_by_href = explode( 'href="', $content );
+		$count_content_exploded_by_href = count( $content_exploded_by_href );
+		if ( $count_content_exploded_by_href > 1 ) {
+			for ( $i = 1; $i < $count_content_exploded_by_href; $i++ ) {
+				$nodes_to_analyse_exploded = explode( '</a>', $content_exploded_by_href[ $i ] );
+				$inside_of_link = $nodes_to_analyse_exploded[ 0 ];
+				// Si c'est un lien posé sur une image
+				if ( strpos( $inside_of_link, '<img' ) ) {
+					$content_without_link_exploded = explode( '"', $inside_of_link );
+					// Si c'est un lien menant vers WDG, on le supprime
+					if ( strpos( $content_without_link_exploded[ 0 ], 'wedogood.co' ) !== FALSE ) {
+						array_shift( $content_without_link_exploded );
+						$inside_of_link = implode( '"', $content_without_link_exploded );
+						$nodes_to_analyse_exploded[ 0 ] = '#"'. $inside_of_link;
+					}
+				}
+				$content_exploded_by_href[ $i ] = implode( '</a>', $nodes_to_analyse_exploded );
+			}
+		}
+		$content_without_links = implode( 'href="', $content_exploded_by_href );
+
+		return $content_without_links;
+	}
 	
 	public function get_other_fundings() {
 		return nl2br( $this->other_fundings, ENT_HTML5 );
 	}
 	public function set_other_fundings( $other_fundings ) {
 		$this->other_fundings = htmlentities( $other_fundings );
+	}
+
+	public function get_transfer_delay() {
+		if ( empty( $this->transfer_delay ) ) {
+			return self::$default_transfer_delay;
+		}
+		return nl2br( $this->transfer_delay, ENT_HTML5 );
+	}
+	public function set_transfer_delay( $transfer_delay ) {
+		if ( is_numeric( $transfer_delay ) ) {
+			$this->transfer_delay = htmlentities( $transfer_delay );
+		} else {
+			$this->transfer_delay = self::$default_transfer_delay;
+		}
+	}
+
+	/**
+	 * Retourne la date à laquelle on fera le versement auto
+	 */
+	public function get_transfer_date() {
+		$date_of_royalties_transfer = new DateTime();
+		$date_of_royalties_transfer->setTime( 15, 30, 0 );
+		$transfer_delay = $this->get_transfer_delay();
+		if ( empty( $transfer_delay ) ) {
+			$transfer_delay = WDGROIDeclaration::$default_transfer_delay;
+		}
+
+		$date_of_royalties_transfer->add( new DateInterval( 'P' .$transfer_delay. 'D' ) );
+		// Si samedi, on fera un jour plus tard
+		if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
+			$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si dimanche, on fera un jour plus tard
+		if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
+			$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+		}
+		// Si lundi, on fera un jour plus tard
+		if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
+			$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
+		}
+
+		return $date_of_royalties_transfer;
 	}
 	
 	public function get_declared_by() {
@@ -585,6 +670,11 @@ class WDGROIDeclaration {
 
 							$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount - $amount_tax_in_cents / 100 );
 							$status = WDGROI::$status_transferred;
+							
+							if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
+								WDGQueue::add_notification_wallet_more_200_euros( $wdguser_wpref );
+								WDGQueue::add_notification_investors_with_more_200_euros( $campaign->ID, $wdguser_wpref );
+							}
 
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
@@ -630,10 +720,13 @@ class WDGROIDeclaration {
 					
 					$declaration_message = $this->get_message();
 					if ( !empty( $declaration_message ) ) {
+						$declaration_message_decoded = $declaration_message;
+						if ( $this->get_is_message_rich() ) {
+							$declaration_message_decoded = $this->get_message_rich_decoded();
+						}
 						$campaign_author = $campaign->post_author();
 						$author_user = get_user_by( 'ID', $campaign_author );
 						$replyto_mail = $author_user->user_email;
-						$declaration_message_decoded = $declaration_message;
 						NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
 					}
 				}
@@ -655,6 +748,9 @@ class WDGROIDeclaration {
 			// On envoie le message en copie au PP
 			$declaration_message = $this->get_message();
 			if ( !empty( $declaration_message ) ) {
+				if ( $this->get_is_message_rich() ) {
+					$declaration_message = $this->get_message_rich_decoded();
+				}
 				$campaign_author = $campaign->post_author();
 				$WDGUser_author = new WDGUser( $campaign_author );
 				$recipient_name = $WDGUser_author->get_firstname();
@@ -693,7 +789,8 @@ class WDGROIDeclaration {
 					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
 
 				} else {
-					NotificationsEmails::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsSlack::declaration_bill_failed( $campaign->data->post_title );
+					NotificationsAsana::declaration_bill_failed( $campaign->data->post_title );
 				}
 			}
 		}
@@ -759,7 +856,7 @@ class WDGROIDeclaration {
 		// Si on approche du maximum à verser pour un projet, on prévient le service administratif
 		if ( $campaign->maximum_profit() != 'infinite' && $amount_transferred / $campaign->maximum_profit_amount() > 0.8 ) {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
-			NotificationsEmails::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
+			NotificationsSlack::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
 		
 		
@@ -948,14 +1045,14 @@ class WDGROIDeclaration {
 		}
 		$declaration_declared_turnover = $this->get_turnover_total();
 		$declaration_amount = $this->amount;
-		$declaration_percent_commission = $this->percent_commission;
+		$declaration_percent_commission = $this->get_percent_commission_without_tax() * 1.2;
 		$declaration_amount_commission = $this->get_commission_to_pay();
 		$declaration_amount_and_commission = $this->get_amount_with_commission();
 		$declaration_adjustment_value = $this->get_adjustment_value();
 		$declaration_remaining_amount_transfered = $this->transfered_previous_remaining_amount;
 		
 		
-		require __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
+		require_once __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Payment::get(
 			$certificate_date,
 			$project_roi_percent,
@@ -1003,7 +1100,7 @@ class WDGROIDeclaration {
 	 */
 	public function init_rois_and_tax() {
 		if ( $this->remaining_amount == 0 ) {
-			$this->remaining_amount = $this->amount;
+			$this->remaining_amount = $this->get_amount_with_adjustment();
 		}
 
 		//********************** */
@@ -1074,21 +1171,7 @@ class WDGROIDeclaration {
 			// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
 			$date_of_royalties_transfer = FALSE;
 			if ( $this->mean_payment === WDGROIDeclaration::$mean_payment_mandate ) {
-				$date_of_royalties_transfer = new DateTime();
-				$date_of_royalties_transfer->add( new DateInterval( 'P10D' ) );
-				// Si lundi, on fera un jour plus tard
-				if ( $date_of_royalties_transfer->format( 'N' ) == 1 ) {
-					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-				}
-				// Si samedi, on fera un jour plus tard
-				if ( $date_of_royalties_transfer->format( 'N' ) == 6 ) {
-					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-				}
-				// Si dimanche, on fera un jour plus tard
-				if ( $date_of_royalties_transfer->format( 'N' ) == 7 ) {
-					$date_of_royalties_transfer->add( new DateInterval( 'P1D' ) );
-				}
-				$date_of_royalties_transfer->setTime( 15, 30, 0 );
+				$date_of_royalties_transfer = $this->get_transfer_date();
 			}
 
 			// Programmer versement auto

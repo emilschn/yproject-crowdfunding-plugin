@@ -101,8 +101,8 @@ class WDGFormUsers {
 						$user_id = wp_insert_user( $userdata );
 
 						if ( $user_id && is_integer( $user_id ) ) {
-							NotificationsSlack::send_new_user( $user_id );
 							NotificationsAPI::user_registration( $user_email, $user_first_name );
+							WDGQueue::add_notification_registered_without_investment( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );
 						} else {
 							ypcf_debug_log( 'WDGFormUsers::login_facebook ' . print_r($user_id, true) );
@@ -353,8 +353,8 @@ class WDGFormUsers {
 					$signup_step = 'completed-confirmation';
 					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 					update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
-					NotificationsSlack::send_new_user( $wp_user_id );
 					NotificationsAPI::user_registration( $user_email, $user_firstname );
+					WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 					if ( $need_post_data ) {
 						if ( isset( $_POST[ 'redirect-home' ] ) ) {
@@ -470,10 +470,13 @@ class WDGFormUsers {
 			
 			if ( isset( $_FILES[ 'rib' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'rib' ][ 'tmp_name' ] ) ) {
 				$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $orga_id, WDGKYCFile::$owner_organization, $_FILES[ 'rib' ] );
-				$WDGFile = new WDGKYCFile( $file_id );
-				$WDGOrganization->register_lemonway();
-				if ( $WDGOrganization->can_register_lemonway() ) {
-					LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+				
+				if ( is_int( $file_id ) ) {
+					$WDGFile = new WDGKYCFile( $file_id );
+					$WDGOrganization->register_lemonway();
+					if ( $WDGOrganization->can_register_lemonway() ) {
+						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+					}
 				}
 			}
 			
@@ -491,10 +494,13 @@ class WDGFormUsers {
 
 			if ( isset( $_FILES[ 'rib' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'rib' ][ 'tmp_name' ] ) ) {
 				$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'rib' ] );
-				$WDGFile = new WDGKYCFile( $file_id );
-				$WDGUser->register_lemonway();
-				if ( $WDGUser->can_register_lemonway() ) {
-					LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+				
+				if ( is_int( $file_id ) ) {
+					$WDGFile = new WDGKYCFile( $file_id );
+					$WDGUser->register_lemonway();
+					if ( $WDGUser->can_register_lemonway() ) {
+						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+					}
 				}
 			}
 		}

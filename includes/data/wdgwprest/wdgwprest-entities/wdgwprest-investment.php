@@ -179,7 +179,7 @@ class WDGWPREST_Entity_Investment {
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
 			if ( $buffer === FALSE ) {
-				NotificationsEmails::investment_to_api_error_admin( $edd_payment_item );
+				NotificationsAsana::investment_to_api_error_admin( $edd_payment_item );
 			}
 		}
 		

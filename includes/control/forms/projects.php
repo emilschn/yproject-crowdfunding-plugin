@@ -113,7 +113,7 @@ class WDGFormProjects {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
 				ypcf_get_updated_payment_status( $WDGInvestment->get_id() );
 				
-			} else {
+			} else if ( $WDGInvestment->get_saved_status() != 'publish' ) {
 				$postdata = array(
 					'ID'			=> $approve_payment_id,
 					'post_status'	=> 'publish',
@@ -135,25 +135,24 @@ class WDGFormProjects {
 					$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
 					$contract_id = $WDGInvestmentSignature->create_eversign();
 					if ( !empty( $contract_id ) ) {
-						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
+						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 
 					} else {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
 						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
-						NotificationsEmails::new_purchase_admin_error_contract( $approve_payment_id );
+						NotificationsAsana::new_purchase_admin_error_contract( $approve_payment_id );
 					}
 
 				} else {
 					ypcf_debug_log( 'form_approve_payment > getNewPdfToSign' );
 					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
-					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), is_only_wallet );
+					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 				}
 
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
 				$WDGInvestment = new WDGInvestment( $approve_payment_id );
 				$WDGInvestment->save_to_api();
-				
 			}
 			
 			do_action('wdg_delete_cache', array(
@@ -277,7 +276,7 @@ class WDGFormProjects {
 						$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
 						$declaration->status = WDGROIDeclaration::$status_transfer;
 						$declaration->save();
-						NotificationsEmails::send_notification_roi_payment_success_admin( $declaration->id );
+						NotificationsSlack::send_notification_roi_payment_success_admin( $declaration->id );
 						NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
 						
 						$campaign = atcf_get_current_campaign();
@@ -288,7 +287,7 @@ class WDGFormProjects {
 						$buffer = TRUE;
 
 				} else {
-					NotificationsEmails::send_notification_roi_payment_error_admin( $declaration->id );
+					NotificationsSlack::send_notification_roi_payment_error_admin( $declaration->id );
 					$buffer = $transaction_result->INT_MSG;
 
 				}
