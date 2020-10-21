@@ -178,24 +178,29 @@ class WDGInvestment {
 		$payment_key = edd_get_payment_key( $this->get_id() );
 		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
 		$user_id = $user_info['id'];
-		$user = new WDGUser($user_id);
-		$user_email = $user->get_email();
-
 		$orga_email = '';
+
 		// si l'investisseur est une organisation, on récupère son email
 		if ( WDGOrganization::is_user_organization( $user_id ) ) {
-			$WDGOrganization = new WDGOrganization( $user_id );			
+			$WDGOrganization = new WDGOrganization( $user_id );
 			$orga_email = $WDGOrganization->get_email();
-
+			$linked_users_creator = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+				$user_id = $WDGUser_creator->get_wpref();
+			}
 		}
+
+		$user = new WDGUser( $user_id );
+		$user_email = $user->get_email();
 		
 		// la fonction add_investment créé l'investissement dans le site, dans l'API, génère le contrat et envoie un mail de notification
 		$new_investment_id = $to_campaign->add_investment(
 			$payment_key, $user_email, $amount, 'publish',
-			'', '', 
-			'', '', '', 
-			'', '', '', '', '', 
-			'', '', '', '', '', 
+			'', '',
+			'', '', '',
+			'', '', '', '', '',
+			'', '', '', '', '',
 			$orga_email
 		);
 		
