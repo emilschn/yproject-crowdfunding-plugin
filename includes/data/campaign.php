@@ -708,6 +708,9 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_earnings_description );
 		}
+		if ( empty( $buffer ) ) {
+			$buffer = "le chiffre d’affaires net hors taxes du Porteur de Projet. En cas de non possibilité de publier ses comptes, les Revenus considérés seront ceux indiqués dans les déclarations transmises à l'administration fiscale";
+		}
 		return $buffer;
 	}
     public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
@@ -725,6 +728,9 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_simple_info );
 		}
+		if ( empty( $buffer ) ) {
+			$buffer = "les informations sur l'évolution de l'Activité du Porteur de Projet, communiquées par l'intermédiaire d'une newsletter, d'actualités publiées sur sa Page Projet sur le site www.wedogood.co, ou par tout autre moyen de communication";
+		}
 		return $buffer;
 	}
     public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
@@ -733,16 +739,25 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_detailed_info );
 		}
+		if ( empty( $buffer ) ) {
+			$buffer = "les comptes certifiés conformes par le dirigeant éventuellement publiés du Porteur de Projet, les déclarations faites à l'administration fiscale, ainsi que l'attestation d'un expert-comptable ou commissaire aux comptes pour les périodes non couvertes par ces documents";
+		}
 		return $buffer;
 	}
 	// Contrat : prime et garantie
     public static $key_contract_premium = 'campaign_contract_premium';
 	public function contract_premium() {
         return $this->__get( ATCF_Campaign::$key_contract_premium );
+		if ( empty( $buffer ) ) {
+			$buffer = "Ce montant est égal au montant de la Souscription";
+		}
 	}
     public static $key_contract_warranty = 'campaign_contract_warranty';
 	public function contract_warranty() {
         return $this->__get( ATCF_Campaign::$key_contract_warranty );
+		if ( empty( $buffer ) ) {
+			$buffer = "Dans le cas où à l’issue du contrat le montant total de la Redevance perçue par le Souscripteur serait inférieur au montant de la Souscription, le Porteur de Projet s'engage à continuer à s'acquitter de la Redevance, dans les mêmes conditions que définies aux termes des présentes, jusqu'à ce que le total de celle-ci atteigne le montant de la Souscription.";
+		}
 	} 
 	// Contrat : Type de budget
 	public static $key_contract_budget_type = 'contract_budget_type';
