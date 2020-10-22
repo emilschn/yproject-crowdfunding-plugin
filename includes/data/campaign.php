@@ -747,17 +747,19 @@ class ATCF_Campaign {
 	// Contrat : prime et garantie
     public static $key_contract_premium = 'campaign_contract_premium';
 	public function contract_premium() {
-        return $this->__get( ATCF_Campaign::$key_contract_premium );
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_premium );
 		if ( empty( $buffer ) ) {
 			$buffer = "Ce montant est égal au montant de la Souscription";
 		}
+		return $buffer;
 	}
     public static $key_contract_warranty = 'campaign_contract_warranty';
 	public function contract_warranty() {
-        return $this->__get( ATCF_Campaign::$key_contract_warranty );
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_warranty );
 		if ( empty( $buffer ) ) {
 			$buffer = "Dans le cas où à l’issue du contrat le montant total de la Redevance perçue par le Souscripteur serait inférieur au montant de la Souscription, le Porteur de Projet s'engage à continuer à s'acquitter de la Redevance, dans les mêmes conditions que définies aux termes des présentes, jusqu'à ce que le total de celle-ci atteigne le montant de la Souscription.";
 		}
+		return $buffer;
 	} 
 	// Contrat : Type de budget
 	public static $key_contract_budget_type = 'contract_budget_type';
