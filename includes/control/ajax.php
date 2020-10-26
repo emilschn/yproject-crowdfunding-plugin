@@ -3785,6 +3785,7 @@ class WDGAjaxActions {
 			$return[ 'has_error' ] = '1';
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_get_by_guid > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
@@ -3799,6 +3800,7 @@ class WDGAjaxActions {
 			$return[ 'accept_wire_payment' ] = '1';
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_load_capacities > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
@@ -3849,6 +3851,7 @@ class WDGAjaxActions {
 			$return[ 'has_error' ] = '1';
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_send_mail_user_project_drafts > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
@@ -3886,6 +3889,7 @@ class WDGAjaxActions {
 			$return[ 'has_error' ] = '1';
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_send_mail_user_draft_started > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
@@ -3948,6 +3952,7 @@ class WDGAjaxActions {
 			$return[ 'has_error' ] = '1';
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_send_mail_user_draft_finished > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
@@ -3995,6 +4000,7 @@ class WDGAjaxActions {
 			$return[ 'has_error' ] = '1';
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_ask_card_payment > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
@@ -4027,6 +4033,7 @@ class WDGAjaxActions {
 			}
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_send_mail_payment_method_select_wire > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
@@ -4072,6 +4079,7 @@ class WDGAjaxActions {
 			}
 		}
 
+		ypcf_debug_log( 'ajax::prospect_setup_send_mail_payment_method_received_wire > ' . print_r( $return, true ), false );
 		echo json_encode( $return );
 		exit();
 	}
