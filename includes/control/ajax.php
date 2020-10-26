@@ -849,7 +849,10 @@ class WDGAjaxActions {
 								$roi_percent_full = ( $result_campaign_item->project_roi_percent * $investor_proportion );
 								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
 							} else {
-								$roi_percent_full_estimated = ( $result_campaign_item->project_roi_percent_estimated * $result_investment_item->amount / $result_campaign_item->project_amount );
+								$roi_percent_full_estimated = 0;
+								if ( $result_campaign_item->project_amount > 0 ) {
+									$roi_percent_full_estimated = ( $result_campaign_item->project_roi_percent_estimated * $result_investment_item->amount / $result_campaign_item->project_amount );
+								}
 								$estimated_rois = round( $turnover * $roi_percent_full_estimated / 100 );
 							}
 						}
