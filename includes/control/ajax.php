@@ -1294,11 +1294,10 @@ class WDGAjaxActions {
 
 		$buffer = FALSE;
 		if ( $is_for_project ) {
-			$buffer = NotificationsEmails::send_project_description_notification_to_project( $id_campaign );
+			$buffer = WDGCampaignNotifications::send_has_finished_proofreading( $id_campaign );
 
 		} else {
-			NotificationsSlack::read_project_page( $id_campaign );
-			$buffer = NotificationsAsana::read_project_page( $id_campaign );
+			$buffer = WDGCampaignNotifications::ask_proofreading( $id_campaign );
 		}
 		
 		if ( $buffer ) {
