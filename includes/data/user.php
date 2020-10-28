@@ -2274,10 +2274,10 @@ class WDGUser {
 		$buffer = home_url();
 		
 		//Si on est sur la page de connexion ou d'inscription,
-		// il faut retrouver la page prÃ©cÃ©dente et vÃ©rifier qu'elle est de WDG
+		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
 		if ( $post->post_name == 'connexion' || $post->post_name == 'inscription' ) {
 			// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1', FALSE );
-			//On vÃ©rifie d'abord si cela a Ã©tÃ© passÃ© en paramÃ¨tre d'URL
+			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
 				// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2', FALSE );
@@ -2289,8 +2289,8 @@ class WDGUser {
 					// on ajoute un éventuel id de déclaration
 					$input_get_declaration_id = filter_input( INPUT_GET, 'declaration_id' );
 					if ( !empty( $input_get_declaration_id ) ) {
-						$buffer .= '&declaration_id=' . $input_get_declaration_id;					
-					}					
+						$buffer .= '&declaration_id=' . $input_get_declaration_id;
+					}
 				}
 			} else {
 				// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1b', FALSE );
@@ -2303,13 +2303,13 @@ class WDGUser {
 					}
 					
 				} else {
-					//RÃ©cupÃ©ration de la page prÃ©cÃ©dente
+					//Récupération de la page précédente
 					$referer_url = wp_get_referer();
-					//On vÃ©rifie que l'url appartient bien au site en cours (home_url dans referer)
+					//On vérifie que l'url appartient bien au site en cours (home_url dans referer)
 					if (strpos($referer_url, $buffer) !== FALSE) {
 
-						//Si la page prÃ©cÃ©dente Ã©tait dÃ©jÃ  la page connexion ou enregistrement, 
-						// on tente de voir si la redirection Ã©tait passÃ©e en paramÃ¨tre
+						//Si la page précédente était déjà la page connexion ou inscription,
+						// on tente de voir si la redirection était passée en paramètre
 						if ( strpos($referer_url, '/connexion/') !== FALSE || strpos($referer_url, '/inscription/') !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
@@ -2317,10 +2317,10 @@ class WDGUser {
 								$buffer = $posted_redirect_page;
 							} else {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b', FALSE );
-								$buffer = home_url();
+								$buffer = home_url( '/mon-compte/' );
 							}
 
-						//Sinon on peut effectivement rediriger vers la page prÃ©cÃ©dente
+						//Sinon on peut effectivement rediriger vers la page précédente
 						} else {
 							//Si c'est une page projet et qu'il y a un vote en cours, on redirige vers le formulaire de vote
 							$path = substr( $referer_url, strlen( home_url() ) + 1, -1 );
