@@ -29,10 +29,10 @@ class NotificationsZapier {
 
 	public static function send_prospect_setup_payment_received(
 			$project_draft_api_data,
-			$amount, $payment_date,
-			$user_name, $organization_name, $organization_email, $tax_number, $address, $postal_code, $city, $country,
-			$bundle1_title, $bundle1_type, $bundle1_price_without_discount, $bundle1_discount, $bundle1_discount_reason,
-			$bundle2_title, $bundle2_type, $bundle2_price_without_discount, $bundle2_discount, $bundle2_discount_reason
+			$amount = FALSE, $payment_date = FALSE,
+			$user_name = FALSE, $organization_name = FALSE, $organization_email = FALSE, $tax_number = FALSE, $address = FALSE, $postal_code = FALSE, $city = FALSE, $country = FALSE,
+			$bundle1_title = FALSE, $bundle1_type = FALSE, $bundle1_price_without_discount = FALSE, $bundle1_discount = FALSE, $bundle1_discount_reason = FALSE,
+			$bundle2_title = FALSE, $bundle2_type = FALSE, $bundle2_price_without_discount = FALSE, $bundle2_discount = FALSE, $bundle2_discount_reason = FALSE
 			) {
 
 		if ( !empty( $project_draft_api_data ) ) {
