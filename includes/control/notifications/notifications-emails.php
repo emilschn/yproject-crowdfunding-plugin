@@ -538,7 +538,7 @@ class NotificationsEmails {
 		$from_data['name'] = $recipient_name;
 		$from_data['email'] = $email;
 
-		add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { PHPMailer::$validator = 'noregex'; return $from_email; } );
+		//add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { PHPMailer::$validator = 'noregex'; return $from_email; } );
 		add_filter( 'wp_mail_from_name', $from_name_func = function ( $from_name ) { return $recipient_name; } );
 
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > recipient_name : ' . $recipient_name, FALSE);
@@ -549,7 +549,7 @@ class NotificationsEmails {
 		
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > result : ' . $result, FALSE);
 		
-		remove_filter( 'wp_mail_from', $from_func );
+		//remove_filter( 'wp_mail_from', $from_func );
 		remove_filter( 'wp_mail_from_name', $from_name_func );
 
 		return $result;
@@ -599,7 +599,7 @@ class NotificationsEmails {
 		$from_data['name'] = $recipient_name;
 		$from_data['email'] = $email;
 
-		add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { PHPMailer::$validator = 'noregex'; return $from_email; } );
+		//add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { PHPMailer::$validator = 'noregex'; return $from_email; } );
 		add_filter( 'wp_mail_from_name', $from_name_func = function ( $from_name ) { return $recipient_name; } );
 
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > recipient_name : ' . $recipient_name, FALSE);
@@ -610,7 +610,7 @@ class NotificationsEmails {
 
 		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > result : ' . $result, FALSE);
 		
-		remove_filter( 'wp_mail_from', $from_func );
+		//remove_filter( 'wp_mail_from', $from_func );
 		remove_filter( 'wp_mail_from_name', $from_name_func );
 
 		return $result;
