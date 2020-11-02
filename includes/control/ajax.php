@@ -566,7 +566,8 @@ class WDGAjaxActions {
 				$investment_item[ 'contract_file_name' ] = '';
 
 				// Index du contrat à aller chercher
-				// A ce moment là, ce n'est pas encore ajouté au tableau
+				// A ce moment là, l'investissement n'est pas encore ajouté au tableau,
+				// donc l'index du contrat est bien le count du tableau (= au début, c'est 0)
 				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
 				// Fichier de contrat
 				// on commence par regarder si on a un contrat stocké ici  : API\wp-content\plugins\wdgrestapi\files\investment-draft
@@ -954,10 +955,10 @@ class WDGAjaxActions {
 				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
 				if ( $investment_item[ 'contract_file_path' ] == '' ){
 					$contract_index = 0;
-					if ( isset( $buffer[ $result_campaign_item->project_wpref ][ 'items' ] ) ) {
-						$contract_index = count( $buffer[ $result_campaign_item->project_wpref ][ 'items' ] );
+					if ( isset( $buffer_item[ 'items' ] ) ) {
+						$contract_index = count( $buffer_item[ 'items' ] );
 					}
-					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .$contract_index. '.pdf';
+					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .($contract_index + 1). '.pdf';
 					$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf';
 					if ( file_exists( $test_file_name ) ) {
 						$buffer_investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf' );
