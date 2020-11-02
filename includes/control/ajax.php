@@ -565,6 +565,9 @@ class WDGAjaxActions {
 				$investment_item[ 'contract_file_path' ] = '';
 				$investment_item[ 'contract_file_name' ] = '';
 
+				// Index du contrat à aller chercher
+				// A ce moment là, ce n'est pas encore ajouté au tableau
+				$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
 				// Fichier de contrat
 				// on commence par regarder si on a un contrat stocké ici  : API\wp-content\plugins\wdgrestapi\files\investment-draft
 				// ce sont les photos des contrats et chèques ajoutés par l'admin
@@ -577,21 +580,18 @@ class WDGAjaxActions {
 					$investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;					
 					$path_parts = pathinfo($investments_drafts_item->contract);
 					$extension = $path_parts['extension'];
-					$investment_item[ 'contract_file_name' ] = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.' .$extension;
+					$investment_item[ 'contract_file_name' ] = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .($contract_index + 1). '.' .$extension;
 				}
 				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
 				if($investment_item[ 'contract_file_path' ] == '' ){
-					$contract_index = count( $buffer[ $campaign_id ][ 'items' ] );
-					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .$contract_index. '.pdf';
+					$download_filename = __( "contrat-investissement-", 'yproject' ) .$campaign->data->post_name. '-'  .($contract_index + 1). '.pdf';
 					$test_file_name = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf';
 					if ( file_exists( $test_file_name ) ) {
-						$contract_index++;
 						$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign_id. '-' .$campaign->get_url(). '/' .$purchase_id. '.pdf' );
 						$investment_item[ 'contract_file_name' ] = $download_filename;						
 					} elseif ( count( $files ) ) {
 						$filelist_extract = explode( '/', $files[ $contract_index ] );
 						$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
-						$contract_index++;
 						$investment_item[ 'contract_file_path' ] = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
 						$investment_item[ 'contract_file_name' ] = $download_filename;						
 					} 
