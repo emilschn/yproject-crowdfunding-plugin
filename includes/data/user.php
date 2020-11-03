@@ -2012,7 +2012,8 @@ class WDGUser {
 				}
 
 				if ( !empty( $amount ) ) {
-					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount );
+					$message = 'WE DO GOOD';
+					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount, 0, 0, $message );
 					$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
 				}
 

@@ -903,7 +903,8 @@ class WDGOrganization {
 		
 		if ( !empty( $amount_without_commission ) ) {
 			$lemonway_id = ( $wallet_type == 'campaign ') ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();
-			$result_transfer = LemonwayLib::ask_transfer_to_iban( $lemonway_id, $amount_without_commission + $amount_commission, 0, $amount_commission );
+			$message = $this->get_name() . ' - WE DO GOOD';
+			$result_transfer = LemonwayLib::ask_transfer_to_iban( $lemonway_id, $amount_without_commission + $amount_commission, 0, $amount_commission, $message );
 			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
 			$post_type = 'withdrawal_order';
 			if ( $amount_commission == 0 ) {
