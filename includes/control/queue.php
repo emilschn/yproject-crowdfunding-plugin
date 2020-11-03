@@ -172,23 +172,27 @@ class WDGQueue {
 			
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$amount_royalties = 0;
-				$amount_royalties_for_project = 0;
+				$amount_tax_in_cents = 0;
 				$has_declared = FALSE;
 
 				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
 				foreach ( $campaign_roi_list as $campaign_roi ) {
 					$date_transfer = new DateTime( $campaign_roi->date_transfer );
-					$amount_royalties_for_project += $campaign_roi->amount;
 					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
 						$amount_royalties += $campaign_roi->amount;
+						// si il y a un montant taxé, on va prendre le montant du prélèvement social
+						if ( $campaign_roi->amount_taxed_in_cents > 0 ) {
+							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+						}
 						$has_declared = TRUE;
 					}
 				}
 
 				if ( $has_declared ) {
 					array_push( $message_categories[ 'with_royalties' ], array(
-						'campaign_name'		=> $campaign_name,
-						'amount_royalties'	=> $amount_royalties
+						'campaign_name'			=> $campaign_name,
+						'amount_royalties'		=> $amount_royalties,
+						'amount_tax_in_cents'	=> $amount_tax_in_cents,
 					) );
 
 				} else {
@@ -227,7 +231,10 @@ class WDGQueue {
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
 			$message .= "<b>Ces entreprises vous ont versé des royalties :</b><br>";
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
-				$message .= "- " .$campaign_params['campaign_name']. " : " .YPUIHelpers::display_number( $campaign_params['amount_royalties'] ). " €";
+				$message .= "- " .$campaign_params[ 'campaign_name' ]. " : " .YPUIHelpers::display_number( $campaign_params[ 'amount_royalties' ] ). " €";
+				if ( $campaign_params[ 'amount_tax_in_cents' ] > 0 ) {
+					$message .= " (dont prélèvement " .YPUIHelpers::display_number( $campaign_params['amount_tax_in_cents'] ). " €)";
+				}
 				$message .= "<br>";
 			}
 			$message .= "<br>";

@@ -15,6 +15,7 @@ class NotificationsAPI {
 		'749' => "KYC - Doc refusé",
 		'777' => "KYC - Un seul doc validé",
 		'324' => "KYC - Wallet validé",
+		'2344' => "Demande de relecture reçue",
 		'641' => "Conseils quotidiens",
 		'573' => "Relance - Evaluation - Avec intention",
 		'575' => "Relance - Evaluation - Sans intention",
@@ -310,6 +311,25 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Entrepreneurs
 	//**************************************************************************
+    //*******************************************************
+    // Demande de relecture
+    //*******************************************************
+	public static function proofreading_request_received( $recipient_name, $recipient_mail, $replyto_mail, $id_api ) {
+		$id_template = '2344';
+		$options = array(
+			'personal'					=> 1,
+			'replyto'					=> $replyto_mail,
+			'NOM'						=> $recipient_name,
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient_mail,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
     //*******************************************************
     // Conseils quotidiens
     //*******************************************************

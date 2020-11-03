@@ -7,7 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
  function ypcf_shortcode_edit_news() {
     global $campaign, $post, $edd_options;
-    $campaign = atcf_get_current_campaign();
+	$campaign = atcf_get_current_campaign();
+	if ( empty( $campaign ) ) {
+		return '';
+	}
     
     //Test pour vérifier que le post de blog appartient à la campagne
     $posts_blog = get_posts( array(
