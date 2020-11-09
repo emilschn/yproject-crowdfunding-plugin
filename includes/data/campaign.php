@@ -786,7 +786,7 @@ class ATCF_Campaign {
 	public function contract_maximum_type() {
 		$buffer = $this->__get( ATCF_Campaign::$key_contract_maximum_type );
 		if ( empty( $buffer ) ) {
-			$buffer = ( $this->goal( false ) > 0 ) ? 'fixed' : 'infinite';
+			$buffer = 'fixed';
 		}
         return $buffer;
 	}
