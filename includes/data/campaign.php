@@ -780,7 +780,7 @@ class ATCF_Campaign {
 	// Contrat : Type de plafond
 	public static $key_contract_maximum_type = 'contract_maximum_type';
 	public static $contract_maximum_types = array(
-		'fixed'				=> "D&eacute;t&eacute;rmin&eacute;",
+		'fixed'				=> "D&eacute;termin&eacute;",
 		'infinite'			=> "Infini"
 	);
 	public function contract_maximum_type() {
