@@ -780,13 +780,13 @@ class ATCF_Campaign {
 	// Contrat : Type de plafond
 	public static $key_contract_maximum_type = 'contract_maximum_type';
 	public static $contract_maximum_types = array(
-		'fixed'				=> "D&eacute;t&eacute;rmin&eacute;",
+		'fixed'				=> "D&eacute;termin&eacute;",
 		'infinite'			=> "Infini"
 	);
 	public function contract_maximum_type() {
 		$buffer = $this->__get( ATCF_Campaign::$key_contract_maximum_type );
 		if ( empty( $buffer ) ) {
-			$buffer = ( $this->goal( false ) > 0 ) ? 'fixed' : 'infinite';
+			$buffer = 'fixed';
 		}
         return $buffer;
 	}
