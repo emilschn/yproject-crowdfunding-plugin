@@ -205,11 +205,13 @@ class WDGInvestment {
 		);
 		
 		if ( $new_investment_id ) {
-			// on change le statut du nouvel investissement
+			// on change le statut et la date du nouvel investissement
 			$WDGInvestment = new WDGInvestment( $new_investment_id );
 			$postdata = array(
 				'ID'			=> $new_investment_id,
-				'post_status'	=> 'publish'
+				'post_status'	=> 'publish',
+				'post_date'		=> $this->get_saved_date(), 
+				'post_date_gmt'	=> $this->get_saved_date_gmt()
 			);
 			wp_update_post( $postdata );
 			$WDGInvestment->save_to_api();
@@ -406,6 +408,10 @@ class WDGInvestment {
 		return $post_invest->post_date;
 	}
 	
+	public function get_saved_date_gmt() {
+		$post_invest = get_post( $this->id );
+		return $post_invest->post_date_gmt;
+	}
 	/**
 	 * Retourne le type d'utilisateur / id d'organisation stocké en session
 	 */
