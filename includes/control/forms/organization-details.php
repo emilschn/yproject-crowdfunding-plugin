@@ -409,6 +409,10 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			}
 		}
 		
+		if ( empty( $feedback_errors ) ) {
+			$feedback_success = array();
+			array_push( $feedback_success, __( "Informations de l'organisation enregistr&eacute;es avec succ&egrave;s", 'yproject' ) );
+		}
 		$buffer = array(
 			'success'	=> $feedback_success,
 			'errors'	=> $feedback_errors
