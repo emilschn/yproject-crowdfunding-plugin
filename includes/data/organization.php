@@ -339,6 +339,9 @@ class WDGOrganization {
 			
 			update_user_meta( $this->wpref, 'lemonway_campaign_id', $db_lw_id );
 		}
+		if ($db_lw_id == 'ORGAWCAMPAIGN') {			
+			ypcf_debug_log( "WDGOrganization::get_campaign_lemonway_id > " .$this->api_id. " ; " . $this->wpref);
+		}
 		return $db_lw_id;
 	}
 	
