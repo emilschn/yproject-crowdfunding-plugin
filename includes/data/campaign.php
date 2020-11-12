@@ -799,7 +799,7 @@ class ATCF_Campaign {
 	public function quarter_earnings_estimation_type() {
 		$buffer = $this->__get( ATCF_Campaign::$key_quarter_earnings_estimation_type );
 		if ( empty( $buffer ) ) {
-			$buffer = 'progressive';
+			$buffer = 'linear';
 		}
         return $buffer;
 	}
