@@ -1326,7 +1326,11 @@ class ATCF_Campaign {
 		$roi_amount_estimated = $estimated_turnover_total * $roi_percent_estimated / 100;
 				
 		$goal = $this->goal( false );
-		$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		if ( $goal != 0) {
+			$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		} else {
+			$buffer = 0;
+		}		
 		
 		return $buffer;
 	}
