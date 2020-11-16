@@ -217,11 +217,9 @@ class WDGCronActions {
 
 			foreach ( $project_list_positive_savings as $project_post ) {
 				$campaign = atcf_get_campaign( $project_post );
-				if ( !$campaign->is_hidden() ) {
-					// TODO : si on veut des infos différentes pour les projets en EP, il faudra refaire une autre fonction
-					$result = WDGCronActions::make_single_project_rss( $campaign, $current_date );
-					$buffer_positive_savings .= $result[ 'partners' ];
-				}
+				// TODO : si on veut des infos différentes pour les projets en EP, il faudra refaire une autre fonction
+				$result = WDGCronActions::make_single_project_rss( $campaign, $current_date );
+				$buffer_positive_savings .= $result[ 'partners' ];
 			}
 
 			
