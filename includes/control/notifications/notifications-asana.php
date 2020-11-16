@@ -238,11 +238,11 @@ class NotificationsAsana {
     // CREATION DE TACHES ASANA D'ADMIN
     //*******************************************************
 
-	public static function new_purchase_admin_error_wallet( $user_data, $project_title, $amount ) {
+	public static function new_purchase_admin_error_wallet( $WDGUser_current, $project_title, $amount ) {
 		$object = 'Erreur transfert wallet';
 		$content = "Il y a un souci pour un transfert de wallet :<br />";
-		$content .= "Login : " .$user_data->user_login. "<br />";
-		$content .= "e-mail : " .$user_data->user_email. "<br />";
+		$content .= "Login : " .$WDGUser_current->get_firstname(). "<br />";
+		$content .= "e-mail : " .$WDGUser_current->get_email(). "<br />";
 		$content .= "Projet : " .$project_title. "<br />";
 		$content .= "Montant total : " .$amount. "<br />";
 		return self::send( self::$notif_type_admin, $object, $content );
