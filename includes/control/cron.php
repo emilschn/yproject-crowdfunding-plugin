@@ -212,6 +212,19 @@ class WDGCronActions {
 			endwhile;
 			wp_reset_query();
 			
+			// Récupération des projets EP en cours
+			$project_list_positive_savings = ATCF_Campaign::get_list_positive_savings( 0 );
+
+			foreach ( $project_list_positive_savings as $project_post ) {
+				$campaign = atcf_get_campaign( $project_post );
+				if ( !$campaign->is_hidden() ) {
+					// TODO : si on veut des infos différentes pour les projets en EP, il faudra refaire une autre fonction
+					$result = WDGCronActions::make_single_project_rss( $campaign, $current_date );
+					$buffer_positive_savings .= $result[ 'partners' ];
+				}
+			}
+
+			
 		} else {
 			ATCF_Campaign::list_projects_funded( 80 );
 			while (have_posts()): the_post();
@@ -224,18 +237,7 @@ class WDGCronActions {
 				}
 			endwhile;
 			wp_reset_query();
-		}
 
-		// Récupération des projets EP en cours
-		$project_list_positive_savings = ATCF_Campaign::get_list_positive_savings( 0 );
-
-		foreach ( $project_list_positive_savings as $project_post ) {
-			$campaign = atcf_get_campaign( $project_post );
-			if ( !$campaign->is_hidden() ) {
-				// TODO : si on veut des infos différentes pour les projets en EP, il faudra refaire une autre fonction
-				$result = WDGCronActions::make_single_project_rss( $campaign, $current_date );
-				$buffer_positive_savings .= $result[ 'partners' ];
-			}
 		}
 
 		$buffer_partners .= '</partenaire>';
