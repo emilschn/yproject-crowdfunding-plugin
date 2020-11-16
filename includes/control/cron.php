@@ -177,7 +177,11 @@ class WDGCronActions {
 		
 		$buffer_partners = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
 		$buffer_partners .= '<partenaire>' . "\n";
-		
+
+		// création d'un xml et d'un json sur les projets d'épargne positive
+		$buffer_positive_savings = '<?xml version="1.0" encoding="utf-8" ?>' . "\n";
+		$buffer_positive_savings .= '<positive_saving>' . "\n";
+
 		//Parcours des projets en cours de collecte
 		if ( $funding_project ) {
 			// Récupération des projets en cours
@@ -208,6 +212,19 @@ class WDGCronActions {
 			endwhile;
 			wp_reset_query();
 			
+			// Récupération des projets EP en cours
+			$project_list_positive_savings = ATCF_Campaign::get_list_positive_savings( 0 );
+
+			foreach ( $project_list_positive_savings as $project_post ) {
+				$campaign = atcf_get_campaign( $project_post );
+				if ( !$campaign->is_hidden() ) {
+					// TODO : si on veut des infos différentes pour les projets en EP, il faudra refaire une autre fonction
+					$result = WDGCronActions::make_single_project_rss( $campaign, $current_date );
+					$buffer_positive_savings .= $result[ 'partners' ];
+				}
+			}
+
+			
 		} else {
 			ATCF_Campaign::list_projects_funded( 80 );
 			while (have_posts()): the_post();
@@ -220,12 +237,14 @@ class WDGCronActions {
 				}
 			endwhile;
 			wp_reset_query();
+
 		}
-		
-		
+
 		$buffer_partners .= '</partenaire>';
 		$buffer_rss .= '</channel>';
 		$buffer_rss .= '</rss>';
+		
+		$buffer_positive_savings .= '</positive_saving>';
 		
 		$filename = dirname ( __FILE__ ) . '/../../../../../current-projects.xml';
 		if ( !$funding_project ) {
@@ -239,6 +258,33 @@ class WDGCronActions {
 		$file_handle_rss = fopen($filename_rss, 'w');
 		fwrite($file_handle_rss, $buffer_rss);
 		fclose($file_handle_rss);
+		
+		// transformation du xml de projets en json
+		$xml_partners     = simplexml_load_string($buffer_partners,'SimpleXMLElement', LIBXML_NOCDATA);
+		$json_partners    = json_encode($xml_partners);
+
+		$filename_json = dirname ( __FILE__ ) . '/../../../../../current-projects.json';
+		if ( !$funding_project ) {
+			$filename_json = dirname ( __FILE__ ) . '/../../../../../finished-projects.json';
+		}
+		$file_handle_json = fopen($filename_json, 'w');
+		fwrite($file_handle_json, $json_partners);
+		fclose($file_handle_json);
+
+
+		$filename_positive_savings = dirname ( __FILE__ ) . '/../../../../../current-projects-positive-savings.xml';
+		$file_handle_positive_savings = fopen($filename_positive_savings, 'w');
+		fwrite($file_handle_positive_savings, $buffer_positive_savings);
+		fclose($file_handle_positive_savings);
+
+		$xml_positive_savings    = simplexml_load_string($buffer_positive_savings,'SimpleXMLElement', LIBXML_NOCDATA);
+		$json_positive_savings    = json_encode($xml_positive_savings);
+
+		$filename_positive_savings_json = dirname ( __FILE__ ) . '/../../../../../current-projects-positive-savings.json';
+		$file_handle_positive_savings_json = fopen($filename_positive_savings_json, 'w');
+		fwrite($file_handle_positive_savings_json, $json_positive_savings);
+		fclose($file_handle_positive_savings_json);
+
 	}
 	
 	public static function make_campaign_xml( $campaign_id ) {
@@ -289,10 +335,32 @@ class WDGCronActions {
 		$buffer_partners .= '<reference_projet>'.$campaign->ID.'</reference_projet>' . "\n"; //TNP :: ref unique interne
 
 		//TNP :: impacts : min 1, max 2
-		$buffer_partners .= '<impact_social>non</impact_social>' . "\n";
-		$buffer_partners .= '<impact_environnemental>non</impact_environnemental>' . "\n";
-		$buffer_partners .= '<impact_culturel>non</impact_culturel>' . "\n";
-		$buffer_partners .= '<impact_eco>oui</impact_eco>' . "\n";
+		$categories =  $campaign->get_categories_by_type( 'categories', TRUE );
+
+		if (strrpos($categories, "Social") === false) {
+			$social = 'non';
+		} else {
+			$social = 'oui';
+		}
+		$buffer_partners .= '<impact_social>'.$social.'</impact_social>' . "\n";
+		if (strrpos($categories, "Environnemental") === false) {
+			$environnemental = 'non';
+		} else {
+			$environnemental = 'oui';
+		}
+		$buffer_partners .= '<impact_environnemental>'.$environnemental.'</impact_environnemental>' . "\n";
+		if (strrpos($categories, "Collaboratif") === false) {
+			$collaboratif = 'non';
+		} else {
+			$collaboratif = 'oui';
+		}
+		$buffer_partners .= '<impact_culturel>'.$collaboratif.'</impact_culturel>' . "\n"; // ???
+		if (strrpos($categories, "Economique") === false) {
+			$eco = 'non';
+		} else {
+			$eco = 'oui';
+		}
+		$buffer_partners .= '<impact_eco>'.$eco.'</impact_eco>' . "\n";
 		
 		//TNP : catégories, 2 max
 		$tnp_categories = WDGCronActions::get_single_project_rss_tousnosprojet_categories( $campaign );
@@ -303,7 +371,6 @@ class WDGCronActions {
 		}
 		$buffer_partners .= '</categorie>' . "\n";
 		
-
 		$buffer_partners .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>' . "\n"; //TNP :: Mots-clés TODO
 		$buffer_partners .= '<mode_financement>ROY</mode_financement>' . "\n"; //TNP :: Mode de financement (DON, DOC, PRE, PRR, ACT, OBL) - invention ROY
 		$buffer_partners .= '<type_porteur_projet>ENT</type_porteur_projet>' . "\n"; //TNP :: Statut du PP (ENT, ASS, PAR, COL)
