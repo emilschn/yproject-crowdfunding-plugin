@@ -1846,11 +1846,12 @@ class NotificationsAPI {
 	//*******************************************************
 	// TABLEAU DE BORD PAS ENCORE CREE
 	//*******************************************************
-	public static function prospect_setup_dashboard_not_created( $recipient, $name ) {
+	public static function prospect_setup_dashboard_not_created( $recipient, $name, $orga_name ) {
 		$id_template = '2297';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'			=> $name,
+			'NOM_PROJET'	=> $orga_name,
 			'personal'		=> 1
 		);
 		$parameters = array(
