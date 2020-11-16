@@ -708,6 +708,9 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_earnings_description );
 		}
+		if ( empty( $buffer ) ) {
+			$buffer = "le chiffre d’affaires net hors taxes du Porteur de Projet. En cas de non possibilité de publier ses comptes, les Revenus considérés seront ceux indiqués dans les déclarations transmises à l'administration fiscale";
+		}
 		return $buffer;
 	}
     public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
@@ -725,6 +728,9 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_simple_info );
 		}
+		if ( empty( $buffer ) ) {
+			$buffer = "les informations sur l'évolution de l'Activité du Porteur de Projet, communiquées par l'intermédiaire d'une newsletter, d'actualités publiées sur sa Page Projet sur le site www.wedogood.co, ou par tout autre moyen de communication";
+		}
 		return $buffer;
 	}
     public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
@@ -733,16 +739,27 @@ class ATCF_Campaign {
 		if ( empty( $buffer ) ) {
 			$buffer = $this->__get( ATCF_Campaign::$key_contract_detailed_info );
 		}
+		if ( empty( $buffer ) ) {
+			$buffer = "les comptes certifiés conformes par le dirigeant éventuellement publiés du Porteur de Projet, les déclarations faites à l'administration fiscale, ainsi que l'attestation d'un expert-comptable ou commissaire aux comptes pour les périodes non couvertes par ces documents";
+		}
 		return $buffer;
 	}
 	// Contrat : prime et garantie
     public static $key_contract_premium = 'campaign_contract_premium';
 	public function contract_premium() {
-        return $this->__get( ATCF_Campaign::$key_contract_premium );
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_premium );
+		if ( empty( $buffer ) ) {
+			$buffer = "Ce montant est égal au montant de la Souscription";
+		}
+		return $buffer;
 	}
     public static $key_contract_warranty = 'campaign_contract_warranty';
 	public function contract_warranty() {
-        return $this->__get( ATCF_Campaign::$key_contract_warranty );
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_warranty );
+		if ( empty( $buffer ) ) {
+			$buffer = "Dans le cas où à l’issue du contrat le montant total de la Redevance perçue par le Souscripteur serait inférieur au montant de la Souscription, le Porteur de Projet s'engage à continuer à s'acquitter de la Redevance, dans les mêmes conditions que définies aux termes des présentes, jusqu'à ce que le total de celle-ci atteigne le montant de la Souscription.";
+		}
+		return $buffer;
 	} 
 	// Contrat : Type de budget
 	public static $key_contract_budget_type = 'contract_budget_type';
@@ -763,13 +780,13 @@ class ATCF_Campaign {
 	// Contrat : Type de plafond
 	public static $key_contract_maximum_type = 'contract_maximum_type';
 	public static $contract_maximum_types = array(
-		'fixed'				=> "D&eacute;t&eacute;rmin&eacute;",
+		'fixed'				=> "D&eacute;termin&eacute;",
 		'infinite'			=> "Infini"
 	);
 	public function contract_maximum_type() {
 		$buffer = $this->__get( ATCF_Campaign::$key_contract_maximum_type );
 		if ( empty( $buffer ) ) {
-			$buffer = ( $this->goal( false ) > 0 ) ? 'fixed' : 'infinite';
+			$buffer = 'fixed';
 		}
         return $buffer;
 	}
@@ -782,7 +799,7 @@ class ATCF_Campaign {
 	public function quarter_earnings_estimation_type() {
 		$buffer = $this->__get( ATCF_Campaign::$key_quarter_earnings_estimation_type );
 		if ( empty( $buffer ) ) {
-			$buffer = 'progressive';
+			$buffer = 'linear';
 		}
         return $buffer;
 	}
@@ -947,6 +964,13 @@ class ATCF_Campaign {
 	
 	public function has_planned_advice_notification() {
 		return WDGQueue::has_planned_campaign_advice_notification( $this->ID );
+	}
+
+	public static $key_advice_notifications_frequency = 'advice_notifications_frequency';
+	public function get_advice_notifications_frequency() {
+		$metadata_value = $this->__get( ATCF_Campaign::$key_advice_notifications_frequency );
+		$buffer = ( !empty( $metadata_value ) ) ? $metadata_value : 3;
+		return $buffer;
 	}
 	
 	public static $key_can_invest_until_contract_start_date = 'can_invest_until_contract_start_date';
@@ -1302,7 +1326,11 @@ class ATCF_Campaign {
 		$roi_amount_estimated = $estimated_turnover_total * $roi_percent_estimated / 100;
 				
 		$goal = $this->goal( false );
-		$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		if ( $goal != 0) {
+			$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		} else {
+			$buffer = 0;
+		}		
 		
 		return $buffer;
 	}

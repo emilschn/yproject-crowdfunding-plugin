@@ -274,11 +274,25 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			$description = $this->getInputText( 'description' );
 			if ( !empty( $description ) ) {
 				$WDGOrganization->set_description( $description );
+			} else {
+				$error = array(
+					'code'		=> 'description',
+					'text'		=> __( "La description de l'activit&eacute; doit &ecirc;tre renseign&eacute;e.", 'yproject' ),
+					'element'	=> 'description'
+				);
+				array_push( $feedback_errors, $error );
 			}
 			
 			$website = $this->getInputText( 'website' );
 			if ( !empty( $website ) ) {
 				$WDGOrganization->set_website( $website );
+			} else {
+				$error = array(
+					'code'		=> 'website',
+					'text'		=> __( "Le site web doit &ecirc;tre renseign&eacute; (si impossible, mettre l'adresse sur societe.com).", 'yproject' ),
+					'element'	=> 'website'
+				);
+				array_push( $feedback_errors, $error );
 			}
 			
 			$representative_function = $this->getInputText( 'representative_function' );
@@ -395,6 +409,10 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			}
 		}
 		
+		if ( empty( $feedback_errors ) ) {
+			$feedback_success = array();
+			array_push( $feedback_success, __( "Informations de l'organisation enregistr&eacute;es avec succ&egrave;s", 'yproject' ) );
+		}
 		$buffer = array(
 			'success'	=> $feedback_success,
 			'errors'	=> $feedback_errors

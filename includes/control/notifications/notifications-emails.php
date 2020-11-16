@@ -43,13 +43,23 @@ class NotificationsEmails {
 			$content = wpautop( $edd_options['header_global_mail'] ) .'<br /><br />'. $content .'<br /><br />'. wpautop( $edd_options['footer_global_mail'] );
 		}
 
+		// Log des erreurs de mails
+		add_action( 'wp_mail_failed', 'NotificationsEmails::log_mail_error', 10, 1 );
+
 		$buffer = wp_mail( $to, $object, $content, $headers, $attachments );
 		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' | ' . $object . ' >> ' . $buffer);
 		return $buffer;
-    }
-    
-    //*******************************************************
-    // RELECTURE
+	}
+	
+	/**
+	 * Log des erreurs de mails
+	 */
+	public static function log_mail_error( $wp_error ) {
+		ypcf_debug_log( 'NotificationsEmails::log_mail_error > wp_error : ' . print_r( $wp_error, TRUE ), FALSE );
+	}
+	
+	//*******************************************************
+	// RELECTURE
 	//*******************************************************
 	public static function send_project_description_notification_to_project( $id_campaign ) {
 		$campaign = new ATCF_Campaign( $id_campaign );
@@ -491,31 +501,119 @@ class NotificationsEmails {
     //*******************************************************
     // NOTIFICATIONS INTERFACE PROSPECT
     //*******************************************************
-    public static function prospect_setup_user_project_drafts( $user_email, $project_list ) {
-		$object = "Reprenez votre test d'éligibilité aux royalties";
+    public static function prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded ) {
+		$object = "Nouveau test d'éligibilité aux royalties";
 
 		$body_content = "Bonjour,<br>";
-		$body_content .= "Suite à votre demande, vous trouverez ci-dessous ";
-		if ( count( $project_list > 1 ) ) {
-			$body_content .= "la liste de vos tests ";
-		} else {
-			$body_content .= "le lien de votre test ";
-		}
-		$body_content .= "d'éligibilité aux royalties :";
+		$body_content .= "Le test suivant a démarré :";
 		$body_content .= "<br><br>";
 
-		$body_content .= "<ul>";
-		foreach ( $project_list as $project_item ) {
-			$body_content .= "<li>";
-			$body_content .= "<a href=\"" . home_url( '/test-royalties/?guid=' . $project_item[ 'guid' ] ) . "\">". $project_item[ 'name' ] ."</a>";
-			$body_content .= "</li>";
+		$body_content .= "URL : " . $draft_url . "<br>";
+		$body_content .= "<br>";
+
+		$body_content .= "E-mail : " . $email . "<br>";
+		$body_content .= "Nom : " . $recipient_name . "<br>";
+		if ( isset( $metadata_decoded->user ) ) {
+			$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
 		}
-		$body_content .= "</ul>";
+		$body_content .= "<br>";
+
+		$body_content .= "Organisation : " . $organization_name . "<br>";
+		if ( isset( $metadata_decoded->organization ) ) {
+			$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
+			$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
+			$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
+			$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
+			$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . "<br>";
+			$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . "<br>";
+		}
 		$body_content .= "<br><br>";
 
-		$body_content .= "A bientôt sur WE DO GOOD !";
+		$body_content .= "Données en vrac :<br>" . print_r( $metadata_decoded, true );
+		$body_content .= "<br><br>";
 
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
+		$attachments = array();
+
+		$from_data = array();
+		$from_data['name'] = $recipient_name;
+		$from_data['email'] = $email;
+
+		//add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { PHPMailer::$validator = 'noregex'; return $from_email; } );
+		add_filter( 'wp_mail_from_name', $from_name_func = function ( $from_name ) { return $recipient_name; } );
+
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > recipient_name : ' . $recipient_name, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > email : ' . $email, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > body_content : ' . $body_content, FALSE);
+
+		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+		
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_started_admin > result : ' . $result, FALSE);
+		
+		//remove_filter( 'wp_mail_from', $from_func );
+		remove_filter( 'wp_mail_from_name', $from_name_func );
+
+		return $result;
+	}
+
+
+    public static function prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded ) {
+		$object = "Test d'éligibilité aux royalties terminé";
+
+		$body_content = "Bonjour,<br>";
+		$body_content .= "Le test suivant est réussi !";
+		$body_content .= "<br><br>";
+
+		$body_content .= "URL : " . $draft_url . "<br>";
+		$body_content .= "<br>";
+
+		$body_content .= "E-mail : " . $email . "<br>";
+		$body_content .= "Nom : " . $recipient_name . "<br>";
+		if ( isset( $metadata_decoded->user ) ) {
+			$body_content .= "Téléphone : " . $metadata_decoded->user->phone . "<br>";
+		}
+		$body_content .= "<br>";
+
+		$body_content .= "Organisation : " . $organization_name . "<br>";
+		if ( isset( $metadata_decoded->organization ) ) {
+			$body_content .= "Type : " . $metadata_decoded->organization->type . "<br>";
+			$body_content .= "Description : " . $metadata_decoded->organization->description . "<br>";
+			$body_content .= "Localisation : " . $metadata_decoded->organization->location . "<br>";
+			$body_content .= "Montant recherché : " . $metadata_decoded->organization->amountNeeded . " €<br>";
+			$body_content .= "Source : " . $metadata_decoded->organization->sourceProspect . "<br>";
+			$body_content .= "Détails : " . $metadata_decoded->organization->sourceProspectDetails . "<br>";
+		}
+		$body_content .= "<br>";
+
+		$body_content .= "Montant à lever : " . $amount_needed . "<br>";
+		$body_content .= "% de royalties : " . $royalties_percent . "<br>";
+		$body_content .= "Formule : " . $formula . "<br>";
+		$body_content .= "Option : " . $options . "<br>";
+		$body_content .= "<br><br>";
+
+		$body_content .= "Données en vrac :<br>" . print_r( $metadata_decoded, true );
+		$body_content .= "<br><br>";
+
+		$attachments = array();
+
+		$from_data = array();
+		$from_data['name'] = $recipient_name;
+		$from_data['email'] = $email;
+
+		//add_filter( 'wp_mail_from', $from_func = function ( $from_email ) { PHPMailer::$validator = 'noregex'; return $from_email; } );
+		add_filter( 'wp_mail_from_name', $from_name_func = function ( $from_name ) { return $recipient_name; } );
+
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > recipient_name : ' . $recipient_name, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > email : ' . $email, FALSE);
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > body_content : ' . $body_content, FALSE);
+
+		$result = NotificationsEmails::send_mail( 'projets@wedogood.co', $object, $body_content, true, $attachments, $from_data );
+
+		ypcf_debug_log('NotificationsEmails::prospect_setup_draft_finished_admin > result : ' . $result, FALSE);
+		
+		//remove_filter( 'wp_mail_from', $from_func );
+		remove_filter( 'wp_mail_from_name', $from_name_func );
+
+		return $result;
 	}
     //*******************************************************
     // FIN NOTIFICATIONS INTERFACE PROSPECT

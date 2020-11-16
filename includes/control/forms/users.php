@@ -102,6 +102,7 @@ class WDGFormUsers {
 
 						if ( $user_id && is_integer( $user_id ) ) {
 							NotificationsAPI::user_registration( $user_email, $user_first_name );
+							WDGQueue::add_notification_registered_without_investment( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );
 						} else {
 							ypcf_debug_log( 'WDGFormUsers::login_facebook ' . print_r($user_id, true) );
@@ -340,6 +341,7 @@ class WDGFormUsers {
 					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 					update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
 					NotificationsAPI::user_registration( $user_email, $user_firstname );
+					WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 					if (isset($_POST['redirect-home'])) {
 						ypcf_debug_log( 'WDGFormUsers::register > redirect home' );

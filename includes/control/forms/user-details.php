@@ -74,7 +74,8 @@ class WDG_Form_User_Details extends WDG_Form {
 			'firstname',
 			__( 'form.user-details.FIRSTNAME', 'yproject' ) . ' *',
 			WDG_Form_User_Details::$field_group_basics,
-			$WDGUser->get_firstname()
+			$WDGUser->get_firstname(),
+			__( "Merci de renseigner votre vrai pr&eacute;nom, sans abr&eacute;viation" )
 		);
 		
 		$this->addField(
@@ -82,7 +83,8 @@ class WDG_Form_User_Details extends WDG_Form {
 			'lastname',
 			__( 'form.user-details.LASTNAME', 'yproject' ) . ' *',
 			WDG_Form_User_Details::$field_group_basics,
-			$WDGUser->get_lastname()
+			$WDGUser->get_lastname(),
+			__( "Merci de renseigner votre vrai nom, sans abr&eacute;viation" )
 		);
 		
 		if ( $this->user_details_type == WDG_Form_User_Details::$type_complete || $this->user_details_type == WDG_Form_User_Details::$type_extended ) {

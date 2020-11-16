@@ -37,6 +37,7 @@ class WDGROIDeclaration {
 	public $file_list;
 	public $turnover;
 	public $message;
+	public $message_rich;
 	public $adjustment;
 	public $adjustments;
 	public $transfered_previous_remaining_amount;
@@ -76,6 +77,7 @@ class WDGROIDeclaration {
 				$this->file_list = $collection_item->file_list;
 				$this->turnover = $collection_item->turnover;
 				$this->message = $collection_item->message;
+				$this->message_rich = $collection_item->message_rich;
 				$this->adjustment = $collection_item->adjustment;
 				$this->transfered_previous_remaining_amount = $collection_item->transfered_previous_remaining_amount;
 				$this->employees_number = $collection_item->employees_number;
@@ -118,6 +120,7 @@ class WDGROIDeclaration {
 					$this->file_list = $declaration_api_item->file_list;
 					$this->turnover = $declaration_api_item->turnover;
 					$this->message = $declaration_api_item->message;
+					$this->message_rich = $declaration_api_item->message_rich;
 					$this->adjustment = $declaration_api_item->adjustment;
 					if ( is_null( $this->adjustment ) ) {
 						$this->adjustment = '';
@@ -175,7 +178,7 @@ class WDGROIDeclaration {
 		$this->update();
 	}
 
-	private function get_campaign_object() {
+	public function get_campaign_object() {
 		if ( !isset( $this->campaign_object ) ) {
 			$this->campaign_object = new ATCF_Campaign( FALSE, $this->id_campaign );
 		}
@@ -480,6 +483,42 @@ class WDGROIDeclaration {
 	public function set_message( $message ) {
 		$this->message = htmlentities( $message );
 	}
+
+	public function get_is_message_rich() {
+		return ( $this->message_rich == '1' );
+	}
+	public function set_is_message_rich( $is_message_rich ) {
+		$this->message_rich = $is_message_rich ? '1' : '0';
+	}
+	public function get_message_rich_decoded() {
+		$message = $this->get_message();
+		$content = html_entity_decode( $message, ENT_QUOTES | ENT_HTML401 );
+
+		// Algo pour supprimer les liens qui mènent vers WDG et qui sont automatiquement appliqués aux images par WP
+		// (car ce sont des liens qui mènent directement aux images et sont inutiles)
+		$content_exploded_by_href = explode( 'href="', $content );
+		$count_content_exploded_by_href = count( $content_exploded_by_href );
+		if ( $count_content_exploded_by_href > 1 ) {
+			for ( $i = 1; $i < $count_content_exploded_by_href; $i++ ) {
+				$nodes_to_analyse_exploded = explode( '</a>', $content_exploded_by_href[ $i ] );
+				$inside_of_link = $nodes_to_analyse_exploded[ 0 ];
+				// Si c'est un lien posé sur une image
+				if ( strpos( $inside_of_link, '<img' ) ) {
+					$content_without_link_exploded = explode( '"', $inside_of_link );
+					// Si c'est un lien menant vers WDG, on le supprime
+					if ( strpos( $content_without_link_exploded[ 0 ], 'wedogood.co' ) !== FALSE ) {
+						array_shift( $content_without_link_exploded );
+						$inside_of_link = implode( '"', $content_without_link_exploded );
+						$nodes_to_analyse_exploded[ 0 ] = '#"'. $inside_of_link;
+					}
+				}
+				$content_exploded_by_href[ $i ] = implode( '</a>', $nodes_to_analyse_exploded );
+			}
+		}
+		$content_without_links = implode( 'href="', $content_exploded_by_href );
+
+		return $content_without_links;
+	}
 	
 	public function get_other_fundings() {
 		return nl2br( $this->other_fundings, ENT_HTML5 );
@@ -681,10 +720,13 @@ class WDGROIDeclaration {
 					
 					$declaration_message = $this->get_message();
 					if ( !empty( $declaration_message ) ) {
+						$declaration_message_decoded = $declaration_message;
+						if ( $this->get_is_message_rich() ) {
+							$declaration_message_decoded = $this->get_message_rich_decoded();
+						}
 						$campaign_author = $campaign->post_author();
 						$author_user = get_user_by( 'ID', $campaign_author );
 						$replyto_mail = $author_user->user_email;
-						$declaration_message_decoded = $declaration_message;
 						NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
 					}
 				}
@@ -706,6 +748,9 @@ class WDGROIDeclaration {
 			// On envoie le message en copie au PP
 			$declaration_message = $this->get_message();
 			if ( !empty( $declaration_message ) ) {
+				if ( $this->get_is_message_rich() ) {
+					$declaration_message = $this->get_message_rich_decoded();
+				}
 				$campaign_author = $campaign->post_author();
 				$WDGUser_author = new WDGUser( $campaign_author );
 				$recipient_name = $WDGUser_author->get_firstname();
@@ -1000,14 +1045,14 @@ class WDGROIDeclaration {
 		}
 		$declaration_declared_turnover = $this->get_turnover_total();
 		$declaration_amount = $this->amount;
-		$declaration_percent_commission = $this->percent_commission;
+		$declaration_percent_commission = $this->get_percent_commission_without_tax() * 1.2;
 		$declaration_amount_commission = $this->get_commission_to_pay();
 		$declaration_amount_and_commission = $this->get_amount_with_commission();
 		$declaration_adjustment_value = $this->get_adjustment_value();
 		$declaration_remaining_amount_transfered = $this->transfered_previous_remaining_amount;
 		
 		
-		require __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
+		require_once __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Payment::get(
 			$certificate_date,
 			$project_roi_percent,

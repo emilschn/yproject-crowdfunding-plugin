@@ -31,6 +31,7 @@ class WDGPostActions {
         self::add_action("upload_contract_files");
         self::add_action( 'send_project_contract_modification_notification' );
         self::add_action( 'send_project_notifications' );
+        self::add_action( 'send_project_notifications_end_vote' );
         self::add_action( 'send_project_notifications_end' );
         self::add_action("cancel_token_investment");
         self::add_action("post_invest_check");
@@ -816,6 +817,28 @@ class WDGPostActions {
 		}
 	}
 	
+	public static function send_project_notifications_end_vote( $skip_redirect = false ) {
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+		$mail_type = filter_input( INPUT_POST, 'mail_type' );
+		$input_send_option = filter_input( INPUT_POST, 'send_option' );
+		
+		$result = false;
+		if ( !empty( $campaign_id ) && !empty( $mail_type ) ) {
+			$result = WDGEmails::end_vote_notifications(
+				$campaign_id, $mail_type, $input_send_option
+			);
+		}
+		
+		if ( !$skip_redirect ) {
+			$url_return = wp_get_referer() . "#contacts";
+			wp_redirect( $url_return );
+			die();
+
+		} else {
+			return $result;
+		}
+	}
+	
 	public static function send_project_notifications_end( $skip_redirect = false ) {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$mail_type = filter_input( INPUT_POST, 'mail_type' );
@@ -1194,13 +1217,15 @@ class WDGPostActions {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_form( 'organization-details' );
 			$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
-			$WDGOrganizationDetailsForm->postForm();
+			ypcf_session_start();
+			$_SESSION[ 'account_organization_form_feedback_' . $organization_id ] = $WDGOrganizationDetailsForm->postForm();
+			
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
-			if ( stristr(wp_get_referer() , 'tableau-de-bord')  === FALSE) {
+			if ( stristr( wp_get_referer(), 'tableau-de-bord' ) === FALSE ) {
 				wp_redirect( home_url( '/mon-compte/#orga-parameters-' . $organization_id ) );
 			} else {
 				wp_redirect( wp_get_referer().'#organization' );
-			}			
+			}
 			exit();
 		}
 	}

@@ -339,6 +339,9 @@ class WDGOrganization {
 			
 			update_user_meta( $this->wpref, 'lemonway_campaign_id', $db_lw_id );
 		}
+		if ($db_lw_id == 'ORGAWCAMPAIGN') {			
+			ypcf_debug_log( "WDGOrganization::get_campaign_lemonway_id > " .$this->api_id. " ; " . $this->wpref);
+		}
 		return $db_lw_id;
 	}
 	
@@ -903,7 +906,8 @@ class WDGOrganization {
 		
 		if ( !empty( $amount_without_commission ) ) {
 			$lemonway_id = ( $wallet_type == 'campaign ') ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();
-			$result_transfer = LemonwayLib::ask_transfer_to_iban( $lemonway_id, $amount_without_commission + $amount_commission, 0, $amount_commission );
+			$message = $this->get_name() . ' - WE DO GOOD';
+			$result_transfer = LemonwayLib::ask_transfer_to_iban( $lemonway_id, $amount_without_commission + $amount_commission, 0, $amount_commission, $message );
 			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
 			$post_type = 'withdrawal_order';
 			if ( $amount_commission == 0 ) {
@@ -1544,6 +1548,36 @@ class WDGOrganization {
 			$this->save();
 		}
 		return WDGWPREST_Entity_Organization::get_transactions( $this->get_api_id() );
+	}
+
+	public function get_lemonway_iban() {
+		$buffer = FALSE;
+		$wallet_details = $this->get_wallet_details();
+		if ( isset( $wallet_details->IBANS->IBAN ) ) {
+			if ( is_array( $wallet_details->IBANS->IBAN ) ) {
+				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
+				// Si le premier IBAN est désactivé, on va chercher dans la suite
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected ) ) {
+					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
+						if ( $iban_item->S == WDGUser::$iban_status_validated ) {
+							$buffer = $iban_item;
+						}
+					}
+				}
+			} else {
+				$buffer = $wallet_details->IBANS->IBAN;
+			}
+		}
+		return $buffer;
+	}
+	
+	public function get_lemonway_iban_status() {
+		$first_iban = $this->get_lemonway_iban();
+		if ( !empty( $first_iban ) ) {
+			return $first_iban->S;
+		} else {
+			return FALSE;
+		}
 	}
 
 	

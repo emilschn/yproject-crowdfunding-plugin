@@ -45,6 +45,7 @@ class WDGWPREST_Entity_Declaration {
 			'file_list'				=> $declaration->file_list,
 			'turnover'				=> $declaration->turnover,
 			'message'				=> $declaration->message,
+			'message_rich'			=> $declaration->message_rich,
 			'adjustment'			=> $declaration->adjustment,
 			'employees_number'		=> $declaration->employees_number,
 			'other_fundings'		=> $declaration->other_fundings,

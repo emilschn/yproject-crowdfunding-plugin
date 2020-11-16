@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Gestion des brouillons de projets côté WDGWPREST
  */
 class WDGWPREST_Entity_Project_Draft {
-		
+
 	/**
 	 * Retourne un brouillon de projet à partir d'un guid
 	 * @param string $guid
@@ -17,6 +17,18 @@ class WDGWPREST_Entity_Project_Draft {
 			return FALSE;
 		}
 		return WDGWPRESTLib::call_get_wdg( 'project-draft/' .$guid );
+	}
+
+	/**
+	 * Retourne un brouillon de projet à partir d'un id
+	 * @param string $id
+	 * @return object
+	 */
+	public static function get_by_id( $id ) {
+		if ( empty( $id ) ) {
+			return FALSE;
+		}
+		return WDGWPRESTLib::call_get_wdg( 'project-draft/id/' .$id );
 	}
 		
 	/**

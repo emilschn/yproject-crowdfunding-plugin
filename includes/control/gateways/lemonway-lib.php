@@ -30,6 +30,8 @@ class LemonwayLib {
 	public static $limit_kyc2_p2p_out_month_nb = 10000;
 	public static $limit_kyc2_p2p_in_month_amount = 1000000;
 	public static $limit_kyc2_p2p_out_month_amount = 1000000;
+
+	public static $cache_wallet_details;
 	
 	public $soap_client, $params, $last_error;
     
@@ -37,6 +39,8 @@ class LemonwayLib {
 	 * Initialise les données à envoyer à Lemonway
 	 */
 	public function __construct() {
+		self::$cache_wallet_details = array();
+
 		$this->params = array(
 			'wlLogin' => YP_LW_LOGIN,
 			'wlPass' => YP_LW_PASSWORD,
@@ -158,6 +162,21 @@ class LemonwayLib {
 		return $buffer;
 	}
 
+	public static function get_cached_data( $wallet_id ) {
+		if ( isset( self::$cache_wallet_details[ $wallet_id ] ) ) {
+			return self::$cache_wallet_details[ $wallet_id ];
+		}
+		return FALSE;
+	}
+
+	public static function set_cached_data( $wallet_id, $wallet_data ) {
+		self::$cache_wallet_details[ $wallet_id ] = $wallet_data;
+	}
+
+	public static function remove_cached_data( $wallet_id ) {
+		unset( self::$cache_wallet_details[ $wallet_id ] );
+	}
+
 
 	
 /*********************** HELPERS ***********************/
@@ -241,6 +260,8 @@ class LemonwayLib {
 			$param_list['phoneNumber'] = $phone_number;
 		}
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
+		self::remove_cached_data( $new_wallet_id );
+
 		if ($result !== FALSE) {
 			$result = $result->WALLET->LWID;
 		}
@@ -282,6 +303,8 @@ class LemonwayLib {
 			'isTechWallet'					=> ( !empty( $is_tech_wallet ) ) ? '1' : '0'
 		);
 		$result = LemonwayLib::call('RegisterWallet', $param_list);
+		self::remove_cached_data( $new_wallet_id );
+
 		if ($result !== FALSE) {
 			$result = $result->WALLET->LWID;
 		}
@@ -338,6 +361,8 @@ class LemonwayLib {
 		
 		
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		return $result;
 	}
 	
@@ -395,6 +420,8 @@ class LemonwayLib {
 		
 		
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		return $result;
 	}
 	
@@ -406,21 +433,29 @@ class LemonwayLib {
 	public static function wallet_get_details( $wallet_id = FALSE, $wallet_email = FALSE ) {
 		if ( empty( $wallet_id ) && empty( $wallet_email ) ) return FALSE;
 		
+		$result = FALSE;
+
 		if ( !empty( $wallet_id ) ) {
 			$param_list = array( 'wallet' => $wallet_id );
+			$result = self::get_cached_data( $wallet_id );
 			
 		} elseif ( !empty( $wallet_email ) ) {
 			$param_list = array( 'email' => $wallet_email );
 		
 		}
 		
-		$result = LemonwayLib::call('GetWalletDetails', $param_list);
+		if ( empty( $result ) ) {
+			$result = LemonwayLib::call('GetWalletDetails', $param_list);
+		}
 		
 		/**
 		 * Retourne les éléments suivants :
 		 * ID (identifiant) ; BAL (solde) ; NAME ; EMAIL ; DOCS (liste de documents dont le statut a changé) ; IBANS (liste des IBANs) ; S (statut)
 		 */
 		if ( !empty( $result->WALLET ) ) {
+			if ( !empty( $wallet_id ) ) {
+				self::set_cached_data( $wallet_id, $result );
+			}
 			return $result->WALLET;
 		}
 		return FALSE;
@@ -503,6 +538,7 @@ class LemonwayLib {
 			if (isset($result->E)) {
 				$result = FALSE;
 			} else {
+				self::remove_cached_data( $wallet_id );
 				$result = $result->UPLOAD->ID;
 			}
 		}
@@ -543,6 +579,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('RegisterIBAN', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
@@ -560,6 +598,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call( 'UnregisterIBAN', $param_list );
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
@@ -576,6 +616,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call( 'UnregisterCard', $param_list );
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : CARD > ID
 		}
@@ -619,6 +661,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('RegisterSddMandate', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
@@ -636,6 +680,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call( 'UnregisterSddMandate', $param_list );
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
@@ -672,6 +718,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('SignDocumentInit', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : TOKEN
 		}
@@ -814,6 +862,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('RegisterCard', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : ID
 			$result = $result->ID->__toString();
@@ -878,6 +928,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('MoneyInWithCardId', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : 
 			//  - TRANS->HPAY => ID ; MLABEL ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
@@ -900,6 +952,8 @@ class LemonwayLib {
 		);
 		
 		$result = LemonwayLib::call('SendPayment', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : 
 			//  - TRANS->HPAY => ID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
@@ -928,6 +982,8 @@ class LemonwayLib {
 		}
 		
 		$result = LemonwayLib::call('MoneyOut', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : 
 			//  - TRANS->HPAY => ID ; MLABEL ; MID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
@@ -957,6 +1013,8 @@ class LemonwayLib {
 		}
 		
 		$result = LemonwayLib::call('MoneyInSddInit', $param_list);
+		self::remove_cached_data( $wallet_id );
+
 		if ($result !== FALSE) {
 			//Retourne : 
 			//  - TRANS->HPAY => ID ; MLABEL ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS ; REFUND
@@ -978,6 +1036,8 @@ class LemonwayLib {
 		}
 		
 		$result = LemonwayLib::call('RefundMoneyIn', $param_list);
+		self::remove_cached_data( $wallet_id );
+		
 		if ($result !== FALSE) {
 			//Retourne : 
 			//  - TRANS->HPAY => ID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; STATUS

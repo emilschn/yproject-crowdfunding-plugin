@@ -172,23 +172,27 @@ class WDGQueue {
 			
 			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 				$amount_royalties = 0;
-				$amount_royalties_for_project = 0;
+				$amount_tax_in_cents = 0;
 				$has_declared = FALSE;
 
 				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
 				foreach ( $campaign_roi_list as $campaign_roi ) {
 					$date_transfer = new DateTime( $campaign_roi->date_transfer );
-					$amount_royalties_for_project += $campaign_roi->amount;
 					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
 						$amount_royalties += $campaign_roi->amount;
+						// si il y a un montant taxé, on va prendre le montant du prélèvement social
+						if ( $campaign_roi->amount_taxed_in_cents > 0 ) {
+							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+						}
 						$has_declared = TRUE;
 					}
 				}
 
 				if ( $has_declared ) {
 					array_push( $message_categories[ 'with_royalties' ], array(
-						'campaign_name'		=> $campaign_name,
-						'amount_royalties'	=> $amount_royalties
+						'campaign_name'			=> $campaign_name,
+						'amount_royalties'		=> $amount_royalties,
+						'amount_tax_in_cents'	=> $amount_tax_in_cents,
 					) );
 
 				} else {
@@ -227,7 +231,10 @@ class WDGQueue {
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
 			$message .= "<b>Ces entreprises vous ont versé des royalties :</b><br>";
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
-				$message .= "- " .$campaign_params['campaign_name']. " : " .YPUIHelpers::display_number( $campaign_params['amount_royalties'] ). " €";
+				$message .= "- " .$campaign_params[ 'campaign_name' ]. " : " .YPUIHelpers::display_number( $campaign_params[ 'amount_royalties' ] ). " €";
+				if ( $campaign_params[ 'amount_tax_in_cents' ] > 0 ) {
+					$message .= " (dont prélèvement " .YPUIHelpers::display_number( $campaign_params['amount_tax_in_cents'] ). " €)";
+				}
 				$message .= "<br>";
 			}
 			$message .= "<br>";
@@ -292,6 +299,128 @@ class WDGQueue {
 			}
 		}
 	}
+
+	/******************************************************************************/
+	/* NOTIFS INSCRIPTION J+7 */
+	/******************************************************************************/
+		public static function add_notification_registered_without_investment( $user_id ) {
+			$action = 'registered_without_investment';
+			$entity_id = $user_id;
+			$priority = self::$priority_date;
+			$params = array();
+
+			// Les envois se font dans 7j à 9h
+			$date_next_dispatch = new DateTime();
+			$date_next_dispatch->setTime( 9, 0 );
+			$date_next_dispatch->add( new DateInterval( 'P7D' ) );
+			$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+		
+		public static function execute_registered_without_investment( $user_id, $queued_action_params, $queued_action_id ) {
+			$WDGUser = new WDGUser( $user_id );
+
+			// Recherche si l'utilisateur a fait une activité (éval, investissement, authentification)
+			$list_organizations = $WDGUser->get_organizations_list();
+			$list_campaigns_followed = $WDGUser->get_campaigns_followed();
+			$list_campaigns_voted = $WDGUser->get_campaigns_voted();
+			$lw_status = $WDGUser->get_lemonway_status();
+			$has_actions = !empty( $list_organizations )
+							|| !empty( $list_campaigns_followed )
+							|| !empty( $list_campaigns_voted )
+							|| $lw_status != LemonwayLib::$status_ready;
+
+			// Si pas d'action : envoi rappel + programmation 2eme rappel
+			if ( !$has_actions ) {
+				NotificationsAPI::user_registered_without_investment( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				self::add_notification_registered_without_investment_reminder( $user_id );
+			}
+		}
+
+	/******************************************************************************/
+	/* NOTIFS RAPPEL INSCRIPTION J+7 */
+	/******************************************************************************/
+		public static function add_notification_registered_without_investment_reminder( $user_id ) {
+			$action = 'registered_without_investment_reminder';
+			$entity_id = $user_id;
+			$priority = self::$priority_date;
+			$params = array();
+
+			// Les envois se font dans 7j à 9h
+			$date_next_dispatch = new DateTime();
+			$date_next_dispatch->setTime( 9, 0 );
+			$date_next_dispatch->add( new DateInterval( 'P7D' ) );
+			$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+			
+			self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		}
+		
+		public static function execute_registered_without_investment_reminder( $user_id, $queued_action_params, $queued_action_id ) {
+			$WDGUser = new WDGUser( $user_id );
+
+			// Recherche si l'utilisateur a fait une activité (éval, investissement, authentification)
+			$list_organizations = $WDGUser->get_organizations_list();
+			$list_campaigns_followed = $WDGUser->get_campaigns_followed();
+			$list_campaigns_voted = $WDGUser->get_campaigns_voted();
+			$lw_status = $WDGUser->get_lemonway_status();
+			$has_actions = !empty( $list_organizations )
+							|| !empty( $list_campaigns_followed )
+							|| !empty( $list_campaigns_voted )
+							|| $lw_status != LemonwayLib::$status_ready;
+
+			// Si pas d'action : envoi rappel selon actions sur le mail
+			if ( !$has_actions ) {
+			
+				$ref_template_id = 932;
+
+				// Récupération mail le plus récent
+				$api_email_list = WDGWPRESTLib::call_get_wdg( 'emails?id_template=' .$ref_template_id. '&recipient_email=' .$WDGUser->get_email() );
+				if ( count( $api_email_list ) == 0 ) {
+					return;
+				}
+
+				$api_email = $api_email_list[ 0 ];
+				$api_email_result = json_decode( $api_email->result, TRUE );
+				if ( empty( $api_email_result[ 'data' ] ) || empty( $api_email_result[ 'data' ][ 'message-id' ] ) ) {
+					return;
+				}
+				$message_id = $api_email_result[ 'data' ][ 'message-id' ];
+				
+				$data = array( 
+					"message_id" => $message_id,
+					"template_id" => $ref_template_id
+				);
+				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$mailin_report = $mailin->get_report( $data );
+				if ( empty( $mailin_report[ 'data' ] ) ) {
+					return;
+				}
+
+				$has_viewed = FALSE;
+				$has_clicked = FALSE;
+				$mailin_report_data = $mailin_report[ 'data' ];
+				foreach ( $mailin_report_data as $mail_event ) {
+					if ( !empty( $mail_event[ 'event' ] ) ) {
+						if ( $mail_event[ 'event' ] == 'views' ) {
+							$has_viewed = TRUE;
+						}
+						if ( $mail_event[ 'event' ] == 'clicks' ) {
+							$has_clicked = TRUE;
+						}
+					}
+				}
+				
+				if ( !$has_viewed ) {
+					NotificationsAPI::user_registered_without_investment_not_open( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				} else if ( !$has_clicked ) {
+					NotificationsAPI::user_registered_without_investment_not_clicked( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				} else {
+					NotificationsAPI::user_registered_without_investment_not_invested( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				}
+
+			}
+		}
 
 	/******************************************************************************/
 	/* NOTIFS WALLET A PLUS DE 200 EUROS */
@@ -606,6 +735,29 @@ class WDGQueue {
 	}
 	
 /******************************************************************************/
+/* NOTIFICATIONS FIN EVALUATION */
+/******************************************************************************/
+	public static function add_campaign_end_vote_notifications( $campaign_id, $mail_type, $user_already_sent_to ) {
+		$action = 'campaign_end_vote_notifications';
+		$entity_id = $campaign_id;
+		$priority = self::$priority_high;
+		
+		$params = array(
+			'mail_type'				=> $mail_type,
+			'user_already_sent_to'	=> $user_already_sent_to
+		);
+		
+		self::create_or_replace_action( $action, $entity_id, $priority, $params );
+	}
+
+	public static function execute_campaign_end_vote_notifications( $campaign_id, $queued_action_params, $queued_action_id ) {
+		$queued_action_param = json_decode( $queued_action_params[ 0 ] );
+		// Passage à complete avant, pour pouvoir en ajouter un à la suite
+		WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+		WDGEmails::end_vote_notifications( $campaign_id, $queued_action_param->mail_type, '', $queued_action_param->user_already_sent_to );
+	}
+	
+/******************************************************************************/
 /* NOTIFICATIONS ADMIN LORSQUE ERREURS DOCUMENTS LEMON WAY */
 /******************************************************************************/
 	public static function add_document_refused_admin_notification( $user_id, $lemonway_posted_document_type, $lemonway_posted_document_status ) {
@@ -884,10 +1036,11 @@ class WDGQueue {
 	public static function add_campaign_advice_notification( $campaign_id ) {
 		$action = 'campaign_advice_notification';
 		$entity_id = $campaign_id;
+		$campaign = new ATCF_Campaign( $campaign_id );
 		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// On programme le prochain envoi 1 jour plus tard
-		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
+		$date_next_dispatch->add( new DateInterval( 'P' .$campaign->get_advice_notifications_frequency(). 'D' ) );
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
 		
@@ -1190,7 +1343,16 @@ class WDGQueue {
 			}
 
 			// On vérifie qu'il y a toujours l'argent sur le wallet
-			if ( $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
+			$mandate_is_success = TRUE;
+			$payment_token = $roi_declaration->payment_token;
+			if ( !empty( $payment_token ) ) {
+				$payment_result = LemonwayLib::get_transaction_by_id( $payment_token, 'transactionId' );
+				if ( $payment_result->STATUS != '3' ) {
+					$mandate_is_success = FALSE;
+				}
+			}
+			
+			if ( $mandate_is_success && $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
 				self::add_royalties_auto_transfer_next( $declaration_id );
 
 			} else {
@@ -1220,7 +1382,7 @@ class WDGQueue {
 				$result = $roi_declaration->transfer_pending_rois();
 			}
 			if ( $result == 100 ) {
-				NotificationsSlack::send_auto_transfer_done( $campaign->get_name() );
+				NotificationsSlack::send_auto_transfer_done( $roi_declaration->get_campaign_object()->get_name() );
 
 			} else {
 				// Passage à complete avant, pour pouvoir en ajouter un à la suite
@@ -1287,6 +1449,34 @@ class WDGQueue {
 				// Mais attente des premiers tests pour voir la véracité des infos
 				// Puis le mettre en place
 			}
+		}
+	}
+
+
+	/******************************************************************************/
+	/* ENVOI NOTIF TB PAS CREE PLUSIEURS JOURS APRES AVOIR PAYE */
+	/******************************************************************************/
+	public static function add_notifications_dashboard_not_created( $draft_id ) {
+		$action = 'notifications_dashboard_not_created';
+		$entity_id = $draft_id;
+		$priority = self::$priority_date;
+		$date_next_dispatch = new DateTime();
+		$date_next_dispatch->add( new DateInterval( 'P3D' ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		$params = array();
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+	
+	public static function execute_notifications_dashboard_not_created( $draft_id, $queued_action_params, $queued_action_id ) {
+		if ( !empty( $draft_id ) ) {
+
+			// TODO : Test si pas encore créé
+			$api_result = WDGWPREST_Entity_Project_Draft::get_by_id( $draft_id );
+			if ( true ) {
+				$metadata_decoded = json_decode( $api_result->metadata );
+				NotificationsAPI::prospect_setup_dashboard_not_created( $api_result->email, $metadata_decoded->user->name );
+			}
+			
 		}
 	}
 
