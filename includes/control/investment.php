@@ -1016,9 +1016,14 @@ class WDGInvestment {
 		$transfer_funds_result = FALSE;
 		if ( $can_use_wallet ) {
 			$campaign_organization = $campaign->get_organization();
+			if ( !$campaign_organization ) {
+				ypcf_debug_log( 'WDGInvestment::try_payment_wallet > error -  get_organization ne renvoie rien pour '. $campaign->data->post_title. ' get_api_data("organsiation") '. $campaign->get_api_data( 'organisation' ) . '  get_api_id = ' . $campaign->get_api_id());
+			}
 			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-			$WDGOrganization_campaign->check_register_campaign_lemonway_wallet();
-			
+			if ( !$WDGOrganization_campaign->check_register_campaign_lemonway_wallet() ){
+				ypcf_debug_log( 'WDGInvestment::try_payment_wallet > error - check_register_campaign_lemonway_wallet  :: get_campaign_lemonway_id = '. $WDGOrganization_campaign->get_campaign_lemonway_id());
+			}
+
 			if ( $invest_type == 'user' ) { 
 				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_campaign_lemonway_id(), $amount );
 			
