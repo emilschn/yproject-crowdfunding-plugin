@@ -119,7 +119,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 						$good_file = FALSE;
 						$error = array(
 							'code'		=> 'format',
-							'text'		=> __( "Ce fichier n'est pas au bon format.", 'yproject' ),
+							'text'		=> __( 'common.forms.error.FILE_WRONG_FORMAT', 'yproject' ),
 							'element'	=> 'format'
 						);
 						array_push( $feedback_errors, $error );
@@ -128,7 +128,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 						$good_file = FALSE;
 						$error = array(
 							'code'		=> 'size',
-							'text'		=> __( "Ce fichier est trop lourd.", 'yproject' ),
+							'text'		=> __( 'common.forms.error.FILE_TOO_BIG', 'yproject' ),
 							'element'	=> 'size'
 						);
 						array_push( $feedback_errors, $error );

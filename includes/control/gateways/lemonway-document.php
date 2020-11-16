@@ -137,15 +137,15 @@ class LemonwayDocument {
 	
 	private function init_error_str() {
 		$buffer = FALSE;
-		$contact_us_error = __( "Merci de nous contacter par chat ou par mail sur investir@wedogood.co." );
+		$contact_us_error = __( 'lemonway.document.CONTACT', 'yproject' );
 		switch ( $this->status ) {
 			case LemonwayDocument::$document_status_waiting_verification:
-				$buffer = __( "Il manque des informations pour permettre la validation.", 'yproject' );
+				$buffer = __( 'lemonway.document.MISSING_INFO', 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
 			case LemonwayDocument::$document_status_waiting:
-				$buffer = __( "Le document est re&ccedil;u mais pas encore analys&eacute;.", 'yproject' );
+				$buffer = __( 'lemonway.document.DOCUMENT_RECEIVED_NOT_ANALYZED', 'yproject' );
 				break;
 			
 			case LemonwayDocument::$document_status_accepted:
@@ -153,27 +153,27 @@ class LemonwayDocument {
 				break;
 			
 			case LemonwayDocument::$document_status_refused:
-				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire.", 'yproject' );
+				$buffer = __( 'lemonway.document.DOCUMENT_REJECTED', 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
 			case LemonwayDocument::$document_status_refused_unreadable:
-				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire qui l'a jug&eacute; illisible.", 'yproject' );
+				$buffer = __( 'lemonway.document.DOCUMENT_REJECTED_ILLEGIBLE', 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
 			case LemonwayDocument::$document_status_refused_expired:
-				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire car le document a expir&eacute;.", 'yproject' );
+				$buffer = __( 'lemonway.document.DOCUMENT_REJECTED_EXPIRED', 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
 			case LemonwayDocument::$document_status_refused_wrong_type:
-				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire car ce n'est pas le bon document.", 'yproject' );
+				$buffer = __( 'lemonway.document.DOCUMENT_REJECTED_WRONG', 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 			
 			case LemonwayDocument::$document_status_refused_wrong_person:
-				$buffer = __( "Le document a &eacute;t&eacute; refus&eacute; par notre prestataire car il ne correspond pas au propri&eacute;taire du porte-monnaie.", 'yproject' );
+				$buffer = __( 'lemonway.document.DOCUMENT_REJECTED_WRONG_OWNER', 'yproject' );
 				$buffer .= ' ' . $contact_us_error;
 				break;
 		}
@@ -187,16 +187,16 @@ class LemonwayDocument {
 	
 	public static function get_document_type_str_by_type_id( $type_id ) {
 		$document_type_str = array(
-			0	=> "Pi&egrave;ce d'identit&eacute;",
-			1	=> "Justificatif de domicile",
-			2	=> "RIB",
-			3	=> "Passeport",
-			4	=> "Passeport",
-			5	=> "Permis de r&eacute;sidence",
-			7	=> "KBIS"
+			0	=> 'lemonway.document.type.ID',
+			1	=> 'lemonway.document.type.PROOF_ADDRESS',
+			2	=> 'lemonway.document.type.RIB',
+			3	=> 'lemonway.document.type.PASSPORT',
+			4	=> 'lemonway.document.type.PASSPORT',
+			5	=> 'lemonway.document.type.RESIDENCY_PERMIT',
+			7	=> 'lemonway.document.type.KBIS'
 		);
 		
-		$buffer = __( "Autre", 'yproject' );
+		$buffer = __( 'common.OTHER', 'yproject' );
 		if ( isset( $document_type_str[ $type_id ] ) ) {
 			$buffer = __( $document_type_str[ $type_id ], 'yproject' );
 		}
@@ -206,17 +206,17 @@ class LemonwayDocument {
 	
 	public static function get_document_status_str_by_status_id( $status_id ) {
 		$document_status_str = array(
-			0	=> "En attente de v&eacute;rification",
-			1	=> "En attente",
-			2	=> "Accept&eacute;",
-			3	=> "Refus&eacute;",
-			4	=> "Illisible",
-			5	=> "Expir&eacute;",
-			6	=> "Mauvais type",
-			7	=> "Mauvaise personne"
+			0	=> 'lemonway.document.status.WAITING',
+			1	=> 'lemonway.document.status.PENDING',
+			2	=> 'lemonway.document.status.ACCEPTED',
+			3	=> 'lemonway.document.status.REJECTED',
+			4	=> 'lemonway.document.status.ILLEGIBLE',
+			5	=> 'lemonway.document.status.EXPIRED',
+			6	=> 'lemonway.document.status.WRONG_TYPE',
+			7	=> 'lemonway.document.status.WRONG_OWNER'
 		);
 		
-		$buffer = __( "Autre", 'yproject' );
+		$buffer = __( 'common.OTHER', 'yproject' );
 		if ( isset( $document_status_str[ $status_id ] ) ) {
 			$buffer = __( $document_status_str[ $status_id ], 'yproject' );
 		}

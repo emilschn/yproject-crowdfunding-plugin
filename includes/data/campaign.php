@@ -780,13 +780,13 @@ class ATCF_Campaign {
 	// Contrat : Type de plafond
 	public static $key_contract_maximum_type = 'contract_maximum_type';
 	public static $contract_maximum_types = array(
-		'fixed'				=> "D&eacute;t&eacute;rmin&eacute;",
+		'fixed'				=> "D&eacute;termin&eacute;",
 		'infinite'			=> "Infini"
 	);
 	public function contract_maximum_type() {
 		$buffer = $this->__get( ATCF_Campaign::$key_contract_maximum_type );
 		if ( empty( $buffer ) ) {
-			$buffer = ( $this->goal( false ) > 0 ) ? 'fixed' : 'infinite';
+			$buffer = 'fixed';
 		}
         return $buffer;
 	}
@@ -799,7 +799,7 @@ class ATCF_Campaign {
 	public function quarter_earnings_estimation_type() {
 		$buffer = $this->__get( ATCF_Campaign::$key_quarter_earnings_estimation_type );
 		if ( empty( $buffer ) ) {
-			$buffer = 'progressive';
+			$buffer = 'linear';
 		}
         return $buffer;
 	}
@@ -1326,7 +1326,11 @@ class ATCF_Campaign {
 		$roi_amount_estimated = $estimated_turnover_total * $roi_percent_estimated / 100;
 				
 		$goal = $this->goal( false );
-		$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		if ( $goal != 0) {
+			$buffer = round( ( ( $roi_amount_estimated / $goal ) - 1 ) * 100 * 100 ) / 100;
+		} else {
+			$buffer = 0;
+		}		
 		
 		return $buffer;
 	}

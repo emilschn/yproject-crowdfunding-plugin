@@ -37,7 +37,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('save_user_docs');
 
 		// Mon compte
-		WDGAjaxActions::add_action( 'display_user_investments' );
 		WDGAjaxActions::add_action( 'display_user_investments_optimized' );
 		WDGAjaxActions::add_action( 'get_transactions_table' );
 
@@ -1207,22 +1206,22 @@ class WDGAjaxActions {
 		$userid = filter_input( INPUT_POST, 'user_id' );
 
 		if ( !$WDGUserCurrent->is_admin() && $WDGUserCurrent->get_wpref() != $userid ) {
-			exit( '<div class="align-center">' .__( "Aucune transaction", 'yproject' ). '</div>' );
+			exit( '<div class="align-center">' .__( 'account.wallet.transactions.NONE', 'yproject' ). '</div>' );
 		}
 
 		$WDGUser = new WDGUser( $userid );
 		$WDGUser_api_id = $WDGUser->get_api_id();
 		$transactions = $WDGUser->get_transactions();
 
-		$html_table = 'Aucune transaction';
+		$html_table = __( 'account.wallet.transactions.NONE', 'yproject' );
 		if ( !empty( $transactions ) ) {
 			$html_table = '<table class="user-transactions">';
 
 			$html_table .= '<thead>';
 			$html_table .= '<tr>';
-			$html_table .= '<td>' .__( "Date", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "Transaction", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "Montant", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( 'common.DATE', 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( 'common.TRANSACTION', 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( 'common.AMOUNT', 'yproject' ). '</td>';
 			$html_table .= '</tr>';
 			$html_table .= '</thead>';
 			$excel_separator = '<div class="hidden"> - </div>';
@@ -1237,52 +1236,52 @@ class WDGAjaxActions {
 				// Affichage des investissements
 				if ( $transaction_item->wedogood_entity == 'investment' ) {
 					if ( !empty( $transaction_item->project_name ) ) {
-						$object .= __( "Investissement sur ", 'yproject' ) . $transaction_item->project_name;
+						$object .= __( 'account.wallet.transactions.INVESTMENT_ON', 'yproject' ) . ' ' . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ) . ' ' . $transaction_item->project_organization_name. '</div>';
 						}
 
 					} else {
-						$object .= __( "Investissement", 'yproject' );
+						$object .= __( 'common.INVESTMENT', 'yproject' );
 						$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 					}
 
 				// Affichage des versements de royalties
 				} else if ( $transaction_item->wedogood_entity == 'roi' ) {
 					if ( !empty( $transaction_item->project_name ) ) {
-						$object .= __( "Versement de royalties de ", 'yproject' ) . $transaction_item->project_name;
+						$object .= __( 'account.wallet.transactions.ROYALTIES_TRANSFER_FROM', 'yproject' ) . ' ' . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ) . ' ' . $transaction_item->project_organization_name. '</div>';
 						}
 					} else {
-						$object .= __( "Versement de royalties", 'yproject' );
+						$object .= __( 'account.wallet.transactions.ROYALTIES_TRANSFER', 'yproject' );
 						$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 					}
 
 				// Affichage des rechargements de compte bancaire
 				} else if ( $transaction_item->type == 'moneyin' ) {
-					$object .= __( "Rechargement depuis votre compte bancaire", 'yproject' );
+					$object .= __( 'account.wallet.transactions.TRANSFER_FROM_BANK_ACCOUNT', 'yproject' );
 
 				// Affichage des transferts vers compte bancaire
 				} else if ( $transaction_item->type == 'moneyout' ) {
 					if ( $transaction_item->recipient_wallet_type == 'society' ) {
-						$object .= __( "Remboursement d'investissement", 'yproject' );
+						$object .= __( 'account.wallet.transactions.REFUND_INVESTMENT', 'yproject' );
 					} else {
-						$object .= __( "Retrait vers votre compte bancaire", 'yproject' );
+						$object .= __( 'account.wallet.transactions.TRANSFER_TO_BANK_ACCOUNT', 'yproject' );
 					}
 
 				// Transfert vers le wallet de l'utilisateur
 				} else if ( $current_user_is_receiving ) {
-					$object = __( "Remboursement sur votre porte-monnaie", 'yproject' );
+					$object = __( 'account.wallet.transactions.REFUND_TO_WALLET_FROM', 'yproject' ) . ' ';
 					if ( $transaction_item->sender_id == 0 ) {
 						$object .= " de WE DO GOOD";
 					} else if ( !empty( $transaction_item->project_name ) ) {
 						$object .= " de " . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ).' '.$transaction_item->project_organization_name. '</div>';
 						}
 
 					} else if ( !empty( $transaction_item->project_organization_name ) ) {
@@ -1294,23 +1293,23 @@ class WDGAjaxActions {
 
 				} else {
 					if ( $transaction_item->recipient_id == 0 ) {
-						$object .= __( "Correction d'erreur de versement", 'yproject' );
+						$object .= __( 'account.wallet.transactions.TRANSFER_CORRECTION', 'yproject' );
 					} else if ( $transaction_item->recipient_wallet_type == 'campaign' ) {
 						if ( !empty( $transaction_item->project_name ) ) {
-							$object .= __( "Investissement sur ", 'yproject' );
+							$object .= __( 'account.wallet.transactions.INVESTMENT_ON', 'yproject' ) . ' ';
 							$object .= $transaction_item->project_name;
 							if ( !empty( $transaction_item->project_organization_name ) ) {
 								$object .= $excel_separator;
-								$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+								$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ).' '.$transaction_item->project_organization_name. '</div>';
 							}
 
 						} else {
-							$object .= __( "Investissement", 'yproject' );
+							$object .= __( 'common.INVESTMENT', 'yproject' );
 							$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 						}
 
 					} else {
-						$object .= __( "D&eacute;bit ind&eacute;fini", 'yproject' );
+						$object .= __( 'account.wallet.transactions.UNDEFINED_DEBIT', 'yproject' );
 					}
 				}
 					
@@ -1320,18 +1319,18 @@ class WDGAjaxActions {
 					if ( !empty( $transaction_item->gateway_mean_payment ) ) {
 						switch ( $transaction_item->gateway_mean_payment ) {
 							case 'card':
-								$object .= __( "Carte bancaire : ", 'yproject' );
+								$object .= __( 'account.wallet.transactions.BANK_CARD', 'yproject' );
 								break;
 							case 'wire':
-								$object .= __( "Virement : ", 'yproject' );
+								$object .= __( 'account.wallet.transactions.BANK_TRANSFER', 'yproject' );
 								break;
 							case 'mandate':
-								$object .= __( "Pr&eacute;l&egrave;vement bancaire : ", 'yproject' );
+								$object .= __( 'account.wallet.transactions.BANK_DIRECT_DEBIT', 'yproject' );
 								break;
 						}
 					}
 					if ( !empty( $transaction_item->gateway_mean_payment_info ) ) {
-						$object .= $transaction_item->gateway_mean_payment_info;
+						$object .= ' ' . $transaction_item->gateway_mean_payment_info;
 					}
 					$object .= '</div>';
 				}

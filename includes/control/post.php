@@ -1217,13 +1217,15 @@ class WDGPostActions {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_form( 'organization-details' );
 			$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
-			$WDGOrganizationDetailsForm->postForm();
+			ypcf_session_start();
+			$_SESSION[ 'account_organization_form_feedback_' . $organization_id ] = $WDGOrganizationDetailsForm->postForm();
+			
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
-			if ( stristr(wp_get_referer() , 'tableau-de-bord')  === FALSE) {
+			if ( stristr( wp_get_referer(), 'tableau-de-bord' ) === FALSE ) {
 				wp_redirect( home_url( '/mon-compte/#orga-parameters-' . $organization_id ) );
 			} else {
 				wp_redirect( wp_get_referer().'#organization' );
-			}			
+			}
 			exit();
 		}
 	}

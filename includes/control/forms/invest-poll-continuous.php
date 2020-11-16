@@ -42,29 +42,29 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 		$this->addField(
 			'checkboxes',
 			'',
-			__( "Je voudrais recevoir une notification&nbsp;:", 'yproject' ),
+			__( 'form.invest-poll-continuous.notifications.TITLE', 'yproject' ),
 			self::$field_group_poll_continuous,
 			FALSE,
 			FALSE,
 			[
-				'new-campaign'			=> __( "Lorsqu'il sera possible d'investir sur les prochains ", 'yproject' ) . $campaign->get_asset_name_plural(),
-				'new-subject'			=> __( "Lorsqu'il sera possible d'investir sur une nouvelle th&eacute;matique (apiculture, &eacute;nergie, mobilit&eacute;, logement...)", 'yproject' )
+				'new-campaign'			=> __( 'form.invest-poll-continuous.notifications.OPTION_NEXT', 'yproject' ) . ' ' . $campaign->get_asset_name_plural(),
+				'new-subject'			=> __( 'form.invest-poll-continuous.notifications.OPTION_NEW', 'yproject' )
 			]
 		);
 		
 		$this->addField(
 			'checkboxes',
 			'',
-			__( "Je souhaiterais investir sur les projets d'&eacute;pargne positive, de mani&egrave;re&nbsp;:", 'yproject' ),
+			__( 'form.invest-poll-continuous.invest-rythm.TITLE', 'yproject' ),
 			self::$field_group_poll_continuous,
 			FALSE,
 			FALSE,
 			[
-				'invest-ponctual'		=> __( "Ponctuelle", 'yproject' ),
-				'invest-monthly'		=> __( "R&eacute;guli&egrave;re : mensuelle", 'yproject' ),
-				'invest-quarterly'		=> __( "R&eacute;guli&egrave;re : trimestrielle", 'yproject' ),
-				'invest-campaign'		=> __( "Occasionnelle : &agrave; chaque fois qu'il est possible d'investir sur de nouveaux ", 'yproject' ) . $campaign->get_asset_name_plural(),
-				'invest-other'			=> __( "Autre", 'yproject' )
+				'invest-ponctual'		=> __( 'form.invest-poll-continuous.invest-rythm.OPTION_PONCTUAL', 'yproject' ),
+				'invest-monthly'		=> __( 'form.invest-poll-continuous.invest-rythm.OPTION_MONTHLY', 'yproject' ),
+				'invest-quarterly'		=> __( 'form.invest-poll-continuous.invest-rythm.OPTION_QUARTERLY', 'yproject' ),
+				'invest-campaign'		=> __( 'form.invest-poll-continuous.invest-rythm.OPTION_STOCK', 'yproject' ) . ' ' . $campaign->get_asset_name_plural(),
+				'invest-other'			=> __( 'form.invest-poll-continuous.invest-rythm.OPTION_OTHER', 'yproject' )
 			]
 		);
 		
@@ -79,14 +79,14 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 		$this->addField(
 			'checkboxes',
 			'',
-			__( "Comment avez-vous connu l'&eacute;pargne positive&nbsp;?", 'yproject' ),
+			__( 'form.invest-poll-continuous.known.TITLE', 'yproject' ),
 			self::$field_group_poll_continuous,
 			FALSE,
 			FALSE,
 			[
-				'known-by-wedogood'	=> __( "Par WE DO GOOD", 'yproject' ),
-				'known-by-project'	=> __( "Par ", 'yproject' ) . $campaign->get_partner_company_name(),
-				'known-by-other'	=> __( "Autre", 'yproject' )
+				'known-by-wedogood'	=> __( 'form.invest-poll-continuous.known.OPTION_WEDOGOOD', 'yproject' ),
+				'known-by-project'	=> __( 'form.invest-poll-continuous.known.OPTION_BY', 'yproject' ) . ' ' . $campaign->get_partner_company_name(),
+				'known-by-other'	=> __( 'form.invest-poll-continuous.known.OPTION_OTHER', 'yproject' )
 			]
 		);
 		
@@ -115,7 +115,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 		if ( !is_user_logged_in() ) {
 			$this->addPostError(
 				'user-not-logged-in',
-				__( "Vous n'&ecirc;tes pas identifi&eacute;.", 'yproject' ),
+				__( 'form.invest-input.error.NOT_LOGGED_IN', 'yproject' ),
 				'general'
 			);
 		
@@ -123,7 +123,7 @@ class WDG_Form_Invest_Poll_Continuous extends WDG_Form {
 		} else if ( $WDGUser->get_wpref() != $WDGUser_current->get_wpref() ) {
 			$this->addPostError(
 				'user-not-logged-in',
-				__( "Vous n'&ecirc;tes pas identifi&eacute;.", 'yproject' ),
+				__( 'form.invest-input.error.NOT_LOGGED_IN', 'yproject' ),
 				'general'
 			);
 		}

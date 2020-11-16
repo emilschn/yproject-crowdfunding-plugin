@@ -40,14 +40,14 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 		$this->addField(
 			'password',
 			'password_new',
-			__( "Nouveau mot de passe", 'yproject' ),
+			__( 'form.user-password.PASSWORD_NEW', 'yproject' ),
 			self::$field_group_password
 		);
 		
 		$this->addField(
 			'password',
 			'password_new_confirm',
-			__( "Confirmer le nouveau mot de passe", 'yproject' ),
+			__( 'form.user-password.PASSWORD_NEW_CONFIRM', 'yproject' ),
 			self::$field_group_password
 		);
 		
@@ -77,7 +77,7 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 			if ( empty( $password_new ) ) {
 				$error = array(
 					'code'		=> 'password_new',
-					'text'		=> __( "Le nouveau mot de passe ne peut pas &ecirc;tre vide.", 'yproject' ),
+					'text'		=> __( 'form.user-password.error.PASSWORD_EMPTY', 'yproject' ),
 					'element'	=> 'password_new'
 				);
 				array_push( $feedback_errors, $error );
@@ -85,7 +85,7 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 			if ( $password_new != $password_new_confirm ) {
 				$error = array(
 					'code'		=> 'password_new_confirm',
-					'text'		=> __( "Le mot de passe de confirmation ne correspond pas au nouveau mot de passe.", 'yproject' ),
+					'text'		=> __( 'form.user-password.error.PASSWORD_DOESNT_MATCH', 'yproject' ),
 					'element'	=> 'password_new_confirm'
 				);
 				array_push( $feedback_errors, $error );
@@ -101,7 +101,7 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 				
 				WDGWPREST_Entity_User::update( $WDGUser );
 			
-				array_push( $feedback_success, __( "Votre mot de passe a &eacute;t&eacute; modifi&eacute; avec succ&egrave;s." ) );
+				array_push( $feedback_success, __( 'form.user-password.PASSWORD_MODIFIED' ) );
 			}
 			
 		}

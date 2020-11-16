@@ -339,6 +339,9 @@ class WDGOrganization {
 			
 			update_user_meta( $this->wpref, 'lemonway_campaign_id', $db_lw_id );
 		}
+		if ($db_lw_id == 'ORGAWCAMPAIGN') {			
+			ypcf_debug_log( "WDGOrganization::get_campaign_lemonway_id > " .$this->api_id. " ; " . $this->wpref);
+		}
 		return $db_lw_id;
 	}
 	
@@ -899,7 +902,7 @@ class WDGOrganization {
 	}
 	
 	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0, $wallet_type = '' ) {
-		$buffer = __( "Erreur de montant.", 'yproject' );;
+		$buffer = __( 'account.transfert.AMOUNT_ERROR', 'yproject' );
 		
 		if ( !empty( $amount_without_commission ) ) {
 			$lemonway_id = ( $wallet_type == 'campaign ') ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();

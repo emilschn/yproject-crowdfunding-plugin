@@ -207,11 +207,13 @@ class WDGInvestment {
 		);
 		
 		if ( $new_investment_id ) {
-			// on change le statut du nouvel investissement
+			// on change le statut et la date du nouvel investissement
 			$WDGInvestment = new WDGInvestment( $new_investment_id );
 			$postdata = array(
 				'ID'			=> $new_investment_id,
-				'post_status'	=> 'publish'
+				'post_status'	=> 'publish',
+				'post_date'		=> $this->get_saved_date(), 
+				'post_date_gmt'	=> $this->get_saved_date_gmt()
 			);
 			wp_update_post( $postdata );
 			$WDGInvestment->save_to_api();
@@ -408,6 +410,10 @@ class WDGInvestment {
 		return $post_invest->post_date;
 	}
 	
+	public function get_saved_date_gmt() {
+		$post_invest = get_post( $this->id );
+		return $post_invest->post_date_gmt;
+	}
 	/**
 	 * Retourne le type d'utilisateur / id d'organisation stocké en session
 	 */
@@ -1016,9 +1022,14 @@ class WDGInvestment {
 		$transfer_funds_result = FALSE;
 		if ( $can_use_wallet ) {
 			$campaign_organization = $campaign->get_organization();
+			if ( !$campaign_organization ) {
+				ypcf_debug_log( 'WDGInvestment::try_payment_wallet > error -  get_organization ne renvoie rien pour '. $campaign->data->post_title. ' get_api_data("organsiation") '. $campaign->get_api_data( 'organisation' ) . '  get_api_id = ' . $campaign->get_api_id());
+			}
 			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-			$WDGOrganization_campaign->check_register_campaign_lemonway_wallet();
-			
+			if ( !$WDGOrganization_campaign->check_register_campaign_lemonway_wallet() ){
+				ypcf_debug_log( 'WDGInvestment::try_payment_wallet > error - check_register_campaign_lemonway_wallet  :: get_campaign_lemonway_id = '. $WDGOrganization_campaign->get_campaign_lemonway_id());
+			}
+
 			if ( $invest_type == 'user' ) { 
 				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $WDGUser_current->get_lemonway_id(), $WDGOrganization_campaign->get_campaign_lemonway_id(), $amount );
 			

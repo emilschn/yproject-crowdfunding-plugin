@@ -74,6 +74,7 @@ class WDGWPREST_Entity_User {
 			'email'				=> $user->get_email(),
 			'phone_number'		=> $user->get_phone_number(),
 			'contact_if_deceased'	=> $user->get_contact_if_deceased(),
+			'language'			=> $user->get_language(),
 			'bank_iban'			=> $user->get_bank_iban(),
 			'bank_bic'			=> $user->get_bank_bic(),
 			'bank_holdername'	=> $user->get_bank_holdername(),

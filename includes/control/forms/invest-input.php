@@ -110,7 +110,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		$this->addField(
 			'text-money',
 			'amount',
-			__( "Je souhaite investir", 'yproject' ),
+			__( 'form.invest-input.I_WISH_TO_INVEST', 'yproject' ),
 			WDG_Form_Invest_Input::$field_group_amount,
 			$this->input_value
 		);
@@ -123,7 +123,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		if ( !is_user_logged_in() ) {
 			$this->addPostError(
 				'user-not-logged-in',
-				__( "Vous n'&ecirc;tes pas identifi&eacute;.", 'yproject' ),
+				__( 'form.invest-input.error.NOT_LOGGED_IN', 'yproject' ),
 				'general'
 			);
 		}
@@ -132,7 +132,7 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		if ( !$campaign->is_investable() ) {
 			$this->addPostError(
 				'invest-not-possible',
-				__( "Il n'est pas possible d'investir.", 'yproject' ),
+				__( 'form.invest-input.error.INVESTMENT_NOT_POSSIBLE', 'yproject' ),
 				'general'
 			);
 		}
@@ -143,35 +143,35 @@ class WDG_Form_Invest_Input extends WDG_Form {
 		if ( empty( $invest_amount ) ) {
 			$this->addPostError(
 				'amount-empty',
-				__( "Vous n'avez pas saisi le montant que vous souhaitez investir.", 'yproject' ),
+				__( 'form.invest-input.error.AMOUNT_EMPTY', 'yproject' ),
 				'general'
 			);
 			
 		} elseif ( !is_numeric( $invest_amount ) || !ctype_digit( $invest_amount ) ) {
 			$this->addPostError(
 				'amount-not-numeric',
-				__( "Vous n'avez pas saisi un nombre correct.", 'yproject' ),
+				__( 'form.invest-input.error.AMOUNT_NOT_NUMERIC', 'yproject' ),
 				'general'
 			);
 			
 		} elseif ( intval( $invest_amount ) != $invest_amount ) {
 			$this->addPostError(
 				'amount-not-integer',
-				__( "Vous n'avez pas saisi un nombre entier.", 'yproject' ),
+				__( 'form.invest-input.error.AMOUNT_NOT_INTEGER', 'yproject' ),
 				'general'
 			);
 			
 		} elseif ( $invest_amount < $min_value ) {
 			$this->addPostError(
 				'amount-not-enough',
-				__( "Vous n'avez pas saisi un montant suffisant.", 'yproject' ),
+				__( 'form.invest-input.error.AMOUNT_NOT_ENOUGH', 'yproject' ),
 				'general'
 			);
 			
 		} elseif ( $invest_amount > $max_part_value ) {
 			$this->addPostError(
 				'amount-too-big',
-				__( "Vous ne pouvez pas investir autant.", 'yproject' ),
+				__( 'form.invest-input.error.AMOUNT_TOO_MUCH', 'yproject' ),
 				'general'
 			);
 			

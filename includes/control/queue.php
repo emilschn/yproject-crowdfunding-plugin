@@ -1343,7 +1343,16 @@ class WDGQueue {
 			}
 
 			// On vérifie qu'il y a toujours l'argent sur le wallet
-			if ( $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
+			$mandate_is_success = TRUE;
+			$payment_token = $roi_declaration->payment_token;
+			if ( !empty( $payment_token ) ) {
+				$payment_result = LemonwayLib::get_transaction_by_id( $payment_token, 'transactionId' );
+				if ( $payment_result->STATUS != '3' ) {
+					$mandate_is_success = FALSE;
+				}
+			}
+			
+			if ( $mandate_is_success && $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
 				self::add_royalties_auto_transfer_next( $declaration_id );
 
 			} else {
