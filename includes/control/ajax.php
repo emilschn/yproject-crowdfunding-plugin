@@ -3409,6 +3409,14 @@ class WDGAjaxActions {
 				$categories_id[] = $categorie->term_id;
 			}
 			$term_taxonomy_ids = wp_set_object_terms( $newcampaign_id, $categories_id, 'download_category', TRUE );
+
+			// Copier automatiquement les informations pour la facturation lors de la duplication d'une levée
+			$newcampaign->set_api_data( 'product_type', $campaign_ref->get_api_data( 'product_type' ) );
+			$newcampaign->set_api_data( 'acquisition', $campaign_ref->get_api_data( 'acquisition' ) );
+			// Copier automatiquement le pourcentage de Common Goods lors de la duplication de la campagne
+			$newcampaign->set_api_data( 'common_goods_turnover_percent', $campaign_ref->get_api_data( 'common_goods_turnover_percent' ) );
+
+			$newcampaign->update_api();
 		}
 		
 		exit('1' );
