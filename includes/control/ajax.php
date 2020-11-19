@@ -3392,23 +3392,7 @@ class WDGAjaxActions {
 		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign_ref = new ATCF_Campaign( $campaign_id ); // on utilise la campagne existante pour reprendre certains paramètres
 			$newcampaign_id = $campaign_ref->duplicate();
-			$newcampaign = atcf_get_campaign($newcampaign_id);							
 
-			// lier l'organization
-			$organization = $campaign_ref->get_organization();
-			$WDGOrganization = new WDGOrganization( $organization->wpref );
-			$orga_email = $WDGOrganization->get_email();
-			$newcampaign->link_organization( $WDGOrganization->get_api_id() );
-			// mettre à jour l'API
-			$newcampaign->update_api();
-
-			// Liaison aux catégories
-			$categories = get_the_terms($campaign_id,'download_category');
-			$categories_id = array();
-			foreach( $categories as $categorie ) {
-				$categories_id[] = $categorie->term_id;
-			}
-			$term_taxonomy_ids = wp_set_object_terms( $newcampaign_id, $categories_id, 'download_category', TRUE );
 		}
 		
 		exit('1' );
