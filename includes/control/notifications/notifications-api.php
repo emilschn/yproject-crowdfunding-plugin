@@ -1385,7 +1385,7 @@ class NotificationsAPI {
     //*******************************************************
     // NOTIFICATIONS DECLARATIONS APROUVEES
     //*******************************************************
-	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount, $tax_infos = '' ) {
+	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount, $tax_infos, $payment_certificate_url ) {
 		$id_template = '127';
 		$options = array(
 			'personal'				=> 1,
@@ -1395,6 +1395,9 @@ class NotificationsAPI {
 			'MONTANT_ROYALTIES'		=> $turnover_amount,
 			'INFOS_FISCALITE'		=> $tax_infos
 		);
+		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
+			$options[ 'url_attachment' ] = $payment_certificate_url;
+		}
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
