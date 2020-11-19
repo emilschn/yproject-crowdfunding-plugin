@@ -169,7 +169,40 @@ class WDGUserInvestments {
 		$pending_preinvestments = $this->get_pending_not_validated_investments();
 		return ( !empty( $pending_preinvestments ) );
 	}
-	
+
+	/**
+	 * Gestion des virements à 0€
+	 */
+	public function get_wire_investments_0() {
+		if ( empty( $this->wp_ref ) ) {
+			return array();
+		}
+
+		$query_options = array(
+			'numberposts' => -1,
+			'post_type' => 'edd_payment',
+			'post_status' => 'pending',
+			'meta_query' => array (
+				'relation' => 'AND',
+				array ( 'key' => '_edd_payment_user_id', 'value' => $this->wp_ref ),
+				array ( 'key' => '_edd_payment_total', 'value' => '0' ),
+				array ( 'key' => '_edd_payment_purchase_key', 'value' => 'wire_', 'compare' => 'LIKE' )
+			)
+		);
+		$wire_investments_0 = get_posts( $query_options );
+		ypcf_debug_log( 'user-investments.php :: get_wire_investments_0 nombre $wire_investments_0 '.count($wire_investments_0));
+
+		return $wire_investments_0;
+
+	}
+
+	public function has_wire_investments_0() {
+		$wire_investments_0 = $this->get_wire_investments_0();
+		return ( !empty( $wire_investments_0 ) );
+
+	}
+
+
 	/**
 	 * Gestion des pré-investissements
 	 */
