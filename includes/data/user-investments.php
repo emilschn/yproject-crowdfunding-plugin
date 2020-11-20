@@ -190,7 +190,6 @@ class WDGUserInvestments {
 			)
 		);
 		$wire_investments_0 = get_posts( $query_options );
-		ypcf_debug_log( 'user-investments.php :: get_wire_investments_0 nombre $wire_investments_0 '.count($wire_investments_0));
 
 		return $wire_investments_0;
 
