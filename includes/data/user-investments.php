@@ -173,7 +173,7 @@ class WDGUserInvestments {
 	/**
 	 * Gestion des virements à 0€
 	 */
-	public function get_wire_investments_0() {
+	public function get_pending_wire_investments() {
 		if ( empty( $this->wp_ref ) ) {
 			return array();
 		}
@@ -185,19 +185,18 @@ class WDGUserInvestments {
 			'meta_query' => array (
 				'relation' => 'AND',
 				array ( 'key' => '_edd_payment_user_id', 'value' => $this->wp_ref ),
-				array ( 'key' => '_edd_payment_total', 'value' => '0' ),
 				array ( 'key' => '_edd_payment_purchase_key', 'value' => 'wire_', 'compare' => 'LIKE' )
 			)
 		);
-		$wire_investments_0 = get_posts( $query_options );
+		$pending_wire_investments = get_posts( $query_options );
 
-		return $wire_investments_0;
+		return $pending_wire_investments;
 
 	}
 
-	public function has_wire_investments_0() {
-		$wire_investments_0 = $this->get_wire_investments_0();
-		return ( !empty( $wire_investments_0 ) );
+	public function has_pending_wire_investments() {
+		$pending_wire_investments = $this->get_pending_wire_investments();
+		return ( !empty( $pending_wire_investments ) );
 
 	}
 

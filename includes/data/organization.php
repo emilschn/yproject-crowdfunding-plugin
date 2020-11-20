@@ -1614,11 +1614,11 @@ class WDGOrganization {
 	public function has_pending_not_validated_investments() {
 		return $this->get_user_investments_object()->has_pending_not_validated_investments();
 	}
-	public function has_wire_investments_0() {
-		return $this->get_user_investments_object()->has_wire_investments_0();
+	public function has_pending_wire_investments() {
+		return $this->get_user_investments_object()->has_pending_wire_investments();
 	}
-	public function get_wire_investments_0() {
-		return $this->get_user_investments_object()->get_wire_investments_0();
+	public function get_pending_wire_investments() {
+		return $this->get_user_investments_object()->get_pending_wire_investments();
 	}
 	
 /*******************************************************************************
