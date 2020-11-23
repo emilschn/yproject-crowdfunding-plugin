@@ -16,6 +16,7 @@ class WDGUserInvestments {
 	
 	private static $posts_investments;
 	private $pending_preinvestments;
+	private $pending_wire_investments;
 	private $pending_not_validated_investments;
 	
 	public function __construct( $WDGInvestorEntity ) {
@@ -178,19 +179,21 @@ class WDGUserInvestments {
 			return array();
 		}
 
-		$query_options = array(
-			'numberposts' => -1,
-			'post_type' => 'edd_payment',
-			'post_status' => 'pending',
-			'meta_query' => array (
-				'relation' => 'AND',
-				array ( 'key' => '_edd_payment_user_id', 'value' => $this->wp_ref ),
-				array ( 'key' => '_edd_payment_purchase_key', 'value' => 'wire_', 'compare' => 'LIKE' )
-			)
-		);
-		$pending_wire_investments = get_posts( $query_options );
-
-		return $pending_wire_investments;
+        if (!isset($this->pending_wire_investments)) {
+            $this->pending_wire_investments = array();
+            $query_options = array(
+                'numberposts' => -1,
+                'post_type' => 'edd_payment',
+                'post_status' => 'pending',
+                'meta_query' => array(
+                    'relation' => 'AND',
+                    array( 'key' => '_edd_payment_user_id', 'value' => $this->wp_ref ),
+                    array( 'key' => '_edd_payment_purchase_key', 'value' => 'wire_', 'compare' => 'LIKE' )
+                )
+            );
+            $this->pending_wire_investments = get_posts($query_options);
+        }
+		return $this->pending_wire_investments;
 
 	}
 
