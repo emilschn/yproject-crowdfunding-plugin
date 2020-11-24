@@ -603,6 +603,17 @@ class WDGUser {
 		}
 		return '';
 	}
+	public function set_language( $new_language ) {
+		if ( is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
+			$active_languages = apply_filters( 'wpml_active_languages', NULL );
+			foreach ( $active_languages as $language_key => $language_item ) {
+				if ( $language_key == $new_language ) {
+					$this->language = $new_language;
+					break;
+				}
+			}
+		}
+	}
 		
 	public function get_birthplace() {
 		$buffer = $this->birthday_city;
@@ -1316,7 +1327,7 @@ class WDGUser {
 	 * @return string
 	 */
 	private function get_royalties_yearly_certificate_filename( $year ) {
-		$buffer = 'certificate-roi-' .$year. '-user-' .$this->wp_user->id. '.pdf';
+		$buffer = 'certificate-roi-' .$year. '-user-' .$this->wp_user->ID. '.pdf';
 		return $buffer;
 	}
 	

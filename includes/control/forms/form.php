@@ -135,6 +135,9 @@ class WDG_Form {
 
 		$nb_fields = count( $this->fields );
 		for( $i = 0; $i < $nb_fields; $i++ ) {
+			if ( empty( $this->fields[ $i ] ) ) {
+				continue;
+			}
 			$this_field = $this->fields[ $i ];
 			switch ( $this_field[ 'type' ] ) {
 				

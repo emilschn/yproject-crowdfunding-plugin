@@ -80,15 +80,21 @@ class WDGWPREST_Entity_User {
 			'bank_holdername'	=> $user->get_bank_holdername(),
 			'bank_address'		=> $user->get_bank_address(),
 			'bank_address2'		=> $user->get_bank_address2(),
-			'document_id'		=> $file_list_id[ 0 ]->file_name,
-			'document_home'		=> $file_list_idbis[ 0 ]->file_name,
-			'document_rib'		=> $file_list_rib[ 0 ]->file_name,
 			'authentification_mode'	=> $authentication_mode,
 			/* 'picture_url', 'website_url', 'twitter_url', 'facebook_url', 'linkedin_url', 'viadeo_url', 'activation_key', 'password' */
 			'signup_date'		=> $user->get_signup_date(),
 			'royalties_notifications'		=> $user->get_royalties_notifications(),
 			'gateway_list'		=> $user->get_encoded_gateway_list()
 		);
+		if ( !empty( $file_list_id[ 0 ]->file_name ) ) {
+			$parameters[ 'document_id' ] = $file_list_id[ 0 ]->file_name;
+		}
+		if ( !empty( $file_list_idbis[ 0 ]->file_name ) ) {
+			$parameters[ 'document_home' ] = $file_list_idbis[ 0 ]->file_name;
+		}
+		if ( !empty( $file_list_rib[ 0 ]->file_name ) ) {
+			$parameters[ 'document_rib' ] = $file_list_rib[ 0 ]->file_name;
+		}
 		return $parameters;
 	}
 	

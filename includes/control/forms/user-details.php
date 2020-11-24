@@ -458,7 +458,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			
 			$description = '';
 			$contact_if_deceased = '';
-			$language = 'fr';
+			$language = '';
 			if ( $user_details_type == WDG_Form_User_Details::$type_extended ) {
 				$description = $this->getInputText( 'description' );
 				$contact_if_deceased = $this->getInputText( 'contact_if_deceased' );

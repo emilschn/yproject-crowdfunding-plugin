@@ -25,6 +25,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'create_project_form' );
 		
 		WDGAjaxActions::add_action( 'get_current_user_info' );
+		WDGAjaxActions::add_action( 'save_user_language' );
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		WDGAjaxActions::add_action('get_searchable_projects_list');
 		
@@ -178,6 +179,16 @@ class WDGAjaxActions {
 		}
 		
 		echo $buffer;
+		exit();
+	}
+
+	public static function save_user_language() {
+		if ( is_user_logged_in() ) {
+			$input_language_key = filter_input( INPUT_POST, 'language_key' );
+			$WDGuser_current = WDGUser::current();
+			$WDGuser_current->set_language( $input_language_key );
+			$WDGuser_current->update_api();
+		}
 		exit();
 	}
 	

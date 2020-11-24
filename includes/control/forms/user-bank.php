@@ -89,7 +89,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$bic_value = ( $this->is_orga ) ? $WDGOrganization->get_bank_bic() : $WDGUser->get_bank_bic();
 		$bic_options = array();
 		if ( !empty( $bic_value ) && !WDGRESTAPI_Lib_Validator::is_bic( $bic_value ) ) {
-			$iban_error = __( 'form.user-bank.error.ISNT_BIC', 'yproject' );
+			$bic_error = __( 'form.user-bank.error.ISNT_BIC', 'yproject' );
 			$bic_options[ 'warning' ] = $bic_error;
 		}
 		$this->addField(
