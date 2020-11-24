@@ -28,8 +28,9 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'try_user_register' );
 
 		WDGAjaxActions::add_action( 'get_current_user_info' );
-		WDGAjaxActions::add_action( 'get_connect_to_facebook_url' );
-		WDGAjaxActions::add_action( 'get_searchable_projects_list' );
+		WDGAjaxActions::add_action( 'save_user_language' );
+		WDGAjaxActions::add_action('get_connect_to_facebook_url');
+		WDGAjaxActions::add_action('get_searchable_projects_list');
 		
 		WDGAjaxActions::add_action('display_roi_user_list');
 		WDGAjaxActions::add_action('show_project_money_flow');
@@ -257,6 +258,16 @@ class WDGAjaxActions {
 		}
 		
 		echo $buffer;
+		exit();
+	}
+
+	public static function save_user_language() {
+		if ( is_user_logged_in() ) {
+			$input_language_key = filter_input( INPUT_POST, 'language_key' );
+			$WDGuser_current = WDGUser::current();
+			$WDGuser_current->set_language( $input_language_key );
+			$WDGuser_current->update_api();
+		}
 		exit();
 	}
 	
@@ -3481,23 +3492,7 @@ class WDGAjaxActions {
 		if ( $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign_ref = new ATCF_Campaign( $campaign_id ); // on utilise la campagne existante pour reprendre certains paramètres
 			$newcampaign_id = $campaign_ref->duplicate();
-			$newcampaign = atcf_get_campaign($newcampaign_id);							
 
-			// lier l'organization
-			$organization = $campaign_ref->get_organization();
-			$WDGOrganization = new WDGOrganization( $organization->wpref );
-			$orga_email = $WDGOrganization->get_email();
-			$newcampaign->link_organization( $WDGOrganization->get_api_id() );
-			// mettre à jour l'API
-			$newcampaign->update_api();
-
-			// Liaison aux catégories
-			$categories = get_the_terms($campaign_id,'download_category');
-			$categories_id = array();
-			foreach( $categories as $categorie ) {
-				$categories_id[] = $categorie->term_id;
-			}
-			$term_taxonomy_ids = wp_set_object_terms( $newcampaign_id, $categories_id, 'download_category', TRUE );
 		}
 		
 		exit('1' );

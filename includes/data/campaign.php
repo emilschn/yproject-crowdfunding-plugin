@@ -254,6 +254,29 @@ class ATCF_Campaign {
 		delete_post_meta($newcampaign_id, 'campaign_backoffice_contract_agreement');
 		delete_post_meta($newcampaign_id, 'id_api');
 
+		$newcampaign = atcf_get_campaign($newcampaign_id);
+
+		// lier l'organization
+		$organization = $this->get_organization();
+		$WDGOrganization = new WDGOrganization( $organization->wpref );
+		$orga_email = $WDGOrganization->get_email();
+		$newcampaign->link_organization( $WDGOrganization->get_api_id() );
+		// Copier automatiquement les informations pour la facturation lors de la duplication d'une levée
+		$newcampaign->set_api_data( 'product_type', $this->get_api_data( 'product_type' ) );
+		$newcampaign->set_api_data( 'acquisition', $this->get_api_data( 'acquisition' ) );
+		// Copier automatiquement le pourcentage de Common Goods lors de la duplication de la campagne
+		$newcampaign->set_api_data( 'common_goods_turnover_percent', $this->get_api_data( 'common_goods_turnover_percent' ) );
+		
+		// mettre à jour l'API
+		$newcampaign->update_api();
+
+		// Liaison aux catégories
+		$categories = get_the_terms($this->ID,'download_category');
+		$categories_id = array();
+		foreach( $categories as $categorie ) {
+			$categories_id[] = $categorie->term_id;
+		}
+		$term_taxonomy_ids = wp_set_object_terms( $newcampaign_id, $categories_id, 'download_category', TRUE );
 
 		return $newcampaign_id;
 	}
