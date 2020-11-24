@@ -770,7 +770,8 @@ class WDGROIDeclaration {
 					$tax_infos .= "verront donc 30 % de leur plus-value prélevés à la source (Prélèvement Forfaitaire Unique - flat tax), sauf en cas de demande de dispense de leur part. ";
 					$tax_infos .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement">En savoir plus sur la fiscalité des investissements</a>.';
 				}
-				NotificationsAPI::declaration_done_with_turnover( $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment(), $tax_infos );
+				$this->make_payment_certificate();
+				NotificationsAPI::declaration_done_with_turnover( $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment(), $tax_infos, $this->get_payment_certificate_url() );
 			
 			} else {
 				NotificationsAPI::declaration_done_without_turnover( $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );

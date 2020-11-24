@@ -1470,11 +1470,18 @@ class WDGQueue {
 	public static function execute_notifications_dashboard_not_created( $draft_id, $queued_action_params, $queued_action_id ) {
 		if ( !empty( $draft_id ) ) {
 
-			// TODO : Test si pas encore créé
+			// Test si pas encore créé par l'utilisateur lié
 			$api_result = WDGWPREST_Entity_Project_Draft::get_by_id( $draft_id );
-			if ( true ) {
+			$has_created_project = false;
+			if ( !empty( $api_result->id_user ) ) {
+				$WDGUser = WDGUser::get_by_api_id( $api_result->id_user );
+				$project_list = $WDGUser->get_projects_list();
+				$has_created_project = !empty( $project_list );
+			}
+			
+			if ( !$has_created_project ) {
 				$metadata_decoded = json_decode( $api_result->metadata );
-				NotificationsAPI::prospect_setup_dashboard_not_created( $api_result->email, $metadata_decoded->user->name );
+				NotificationsAPI::prospect_setup_dashboard_not_created( $api_result->email, $metadata_decoded->user->name, $metadata_decoded->organization->name );
 			}
 			
 		}
