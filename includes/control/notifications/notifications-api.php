@@ -1808,11 +1808,12 @@ class NotificationsAPI {
 	//*******************************************************
 	// PAIEMENT PAR CARTE RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment ) {
+	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment, $orga_name ) {
 		$id_template = '2294';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'					=> $name,
+			'NOM_ENTREPRISE'			=> $orga_name,
 			'MONTANT'				=> $amount,
 			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
