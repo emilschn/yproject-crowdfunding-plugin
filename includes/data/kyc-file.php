@@ -93,6 +93,13 @@ class WDGKYCFile {
 	}
 	
 	/**
+	 * Retourne le hash md5 du tableau de bytes du fichier
+	 */
+	public function get_byte_array_md5() {
+		return md5( $this->get_byte_array() );
+	}
+	
+	/**
 	 * Retourne la date d'upload au format "Y-m-d"
 	 */
 	public function get_date_uploaded() {
