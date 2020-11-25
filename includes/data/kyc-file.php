@@ -88,15 +88,22 @@ class WDGKYCFile {
 	 * Retourne le tableau de bytes à envoyer à Lemonway
 	 */
 	public function get_byte_array() {
-		$byte_array = file_get_contents( __DIR__ . '/../kyc/' . $this->file_name );
-		return $byte_array;
+		if ( file_exists( __DIR__ . '/../kyc/' . $this->file_name ) ) {
+			$byte_array = file_get_contents( __DIR__ . '/../kyc/' . $this->file_name );
+			return $byte_array;
+		}
+		return FALSE;
 	}
 	
 	/**
 	 * Retourne le hash md5 du tableau de bytes du fichier
 	 */
 	public function get_byte_array_md5() {
-		return md5( $this->get_byte_array() );
+		$byte_array = $this->get_byte_array();
+		if ( !empty( $byte_array ) ) {
+			return md5( $byte_array );
+		}
+		return FALSE;
 	}
 	
 	/**
