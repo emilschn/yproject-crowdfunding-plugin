@@ -190,7 +190,7 @@ class WDG_Form_User_Details extends WDG_Form {
 				__( "D&eacute;partement de naissance", 'yproject' ),
 				WDG_Form_User_Details::$field_group_complete,
 				$WDGUser->get_birthplace_department(),
-				__( "Uniquement si la naissance a eu lieu en France", 'yproject' ),
+				__( "Uniquement si la naissance a eu lieu en France, sinon sélectionner &Eacute;tranger", 'yproject' ),
 				$french_departments
 			);
 			

@@ -120,7 +120,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 			__( "D&eacute;partement de naissance *", 'yproject' ),
 			self::$field_group_user_info,
 			'',
-			__( "Uniquement si la naissance a eu lieu en France", 'yproject' ),
+			__( "Uniquement si la naissance a eu lieu en France, sinon sélectionner &Eacute;tranger", 'yproject' ),
 			$french_departments
 		);
 
