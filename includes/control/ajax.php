@@ -3775,8 +3775,6 @@ class WDGAjaxActions {
 				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $organization_name, $draft_url ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
-
-				NotificationsEmails::prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded );
 			}
 		}
 		
@@ -3837,8 +3835,6 @@ class WDGAjaxActions {
 				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
-
-				NotificationsEmails::prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded );
 			}
 		}
 		
