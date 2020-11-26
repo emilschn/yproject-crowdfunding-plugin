@@ -368,7 +368,7 @@ class WDGUser {
 		return $buffer;
 	}
 	public function set_firstname($value) {
-		$value = mb_convert_case( $value , MB_CASE_TITLE );
+		$value = mb_strtoupper( mb_substr( $value, 0, 1 ) ).mb_substr( $value, 1 );
 		$this->first_name = $value;
 	}
 
@@ -380,7 +380,7 @@ class WDGUser {
 		return $buffer;
 	}
 	public function set_lastname($value) {
-		$value = mb_convert_case( $value , MB_CASE_TITLE );
+		$value = mb_strtoupper( mb_substr( $value, 0, 1 ) ).mb_substr( $value, 1 );
 		$this->last_name = $value;
 	}
 	
