@@ -778,6 +778,14 @@ class LemonwayLib {
 		$result_cached = $WDG_cache_plugin->get_cache( $url_called, 1 );
 		$result = unserialize( $result_cached );
 		
+		$pos = strpos($transaction_id, 'TRANSID');
+		if ( $pos !== FALSE ) {
+			// c'est une transaction avec une CB enregistrée, le fonctionnement est différent
+			$transaction_id = substr($transaction_id, $pos + 7);
+			if ( $type == 'moneyin' ) {
+				$type = 'transactionId';
+			}
+		}
 		if ($result_cached === FALSE || empty($result)) {
 			switch ($type) {
 				case 'payment':
