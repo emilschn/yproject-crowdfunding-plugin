@@ -391,10 +391,15 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$send_notification_validation = FALSE;
 				$WDGOrganization = new WDGOrganization( $user_id );
 				$file_suffix = '-orga-' . $WDGOrganization->get_wpref();
+				$was_registered = $WDGOrganization->has_lemonway_wallet();
 				if ( $WDGOrganization->can_register_lemonway() ) {
-					$WDGOrganization->register_lemonway();
+					$WDGOrganization->register_lemonway();						
+					// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
+					if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {
+						ypcf_debug_log( 'WDG_Form_User_Identity_Docs::postForm > $WDGOrganization->send_kyc();' );
+						$WDGOrganization->send_kyc();
+					}
 				}
-			
 				if ( isset( $_FILES[ 'identity' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity' .$file_suffix ][ 'tmp_name' ] ) ) {
 					$this->nb_file_sent++;
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'identity' .$file_suffix ] );
@@ -509,8 +514,14 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				}
 				
 			} else {
+				$was_registered = $WDGUser->has_lemonway_wallet();
 				if ( $WDGUser->can_register_lemonway() ) {
-					$WDGUser->register_lemonway();
+					$WDGUser->register_lemonway();						
+					// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
+					if ( !$was_registered && $WDGUser->has_lemonway_wallet() ) {
+						ypcf_debug_log( 'WDG_Form_User_Identity_Docs::postForm > $WDGUser->send_kyc();' );
+						$WDGUser->send_kyc();
+					}
 				}
 				
 				$send_notification_validation = FALSE;
