@@ -290,6 +290,13 @@ class NotificationsAsana {
 		$object = "Versement reçu - non automatisé";
 		return self::send( self::$notif_type_admin, $object, $message );
 	}
+	
+	public static function notification_api_failed( $data ) {
+		$object = "Erreur mail sendinblue";
+		$content = "Erreur de mail envoyé par SendInBlue :<br>";
+		$content .= print_r( $data, true );
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
 
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA D'ADMIN
