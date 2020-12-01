@@ -109,6 +109,7 @@ class WDG_Form_User_Password extends WDG_Form {
 					) );
 					
 					array_push( $feedback_success, __( "Votre mot de passe a &eacute;t&eacute; modifi&eacute; avec succ&egrave;s." ) );
+					NotificationsAPI::user_password_change( $WDGUser->get_email(),  $WDGUser->get_firstname() );
 				}
 				
 			} else {

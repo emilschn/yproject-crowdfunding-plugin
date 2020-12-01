@@ -10,6 +10,7 @@ class NotificationsAPI {
 		'184' => "Mail via liste de contacts",
 		'181' => "Inscription",
 		'932' => "Inscription sans investissement",
+		'2237'	=> "Mise à jour du mot de passe",
 		'311' => "KYC - RIB validé",
 		'322' => "KYC - Doc en cours de validation",
 		'749' => "KYC - Doc refusé",
@@ -226,6 +227,23 @@ class NotificationsAPI {
 	//*******************************************************
 	public static function user_registered_without_investment( $recipient, $name ) {
 		$id_template = '932';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+	}
+
+	//*******************************************************
+	// Modification du mot de passe
+	//*******************************************************
+	public static function user_password_change( $recipient, $name ) {
+		$id_template = '2237';
 		$options = array(
 			'NOM'				=> $name
 		);
