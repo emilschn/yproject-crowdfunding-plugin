@@ -1238,7 +1238,13 @@ class ATCF_Campaign {
 	public function roi_percent() {
 		$buffer = $this->__get( ATCF_Campaign::$key_roi_percent );
 		if ( empty( $buffer ) ) {
-			$buffer = 0;
+			if ( $this->goal( FALSE ) >= 0 ){
+				$buffer = round($this->roi_percent_estimated() * $this->current_amount( FALSE ) / $this->goal( FALSE ), 10) ;
+				update_post_meta( $this->ID, ATCF_Campaign::$key_roi_percent, $buffer );
+				$this->set_api_data( 'roi_percent', $buffer );
+			} else {
+				$buffer = 0;
+			}
 		}
 	    return $buffer;
 	}
