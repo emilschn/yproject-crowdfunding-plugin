@@ -1236,12 +1236,16 @@ class ATCF_Campaign {
 	 * Pourcentage de royalties engagé, en fonction du montant atteint
 	 */
 	public static $key_roi_percent = 'campaign_roi_percent';
+	private $roi_percent = 0;
 	public function roi_percent() {
-		$buffer = $this->__get( ATCF_Campaign::$key_roi_percent );
-		if ( empty( $buffer ) ) {
-			$buffer = 0;
+		if ( $this->roi_percent == 0 ) {
+			if ( $this->goal( FALSE ) >= 0 ){
+				$this->roi_percent = round($this->roi_percent_estimated() * $this->current_amount( FALSE ) / $this->goal( FALSE ), 10) ;
+				update_post_meta( $this->ID, ATCF_Campaign::$key_roi_percent, $this->roi_percent );
+				$this->set_api_data( 'roi_percent', $this->roi_percent );
+			} 
 		}
-	    return $buffer;
+	    return $this->roi_percent;
 	}
 	/**
 	 * Pourcentage de royalties restant (sur la liste des contrats en cours)
