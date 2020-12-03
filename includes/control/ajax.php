@@ -3956,6 +3956,8 @@ class WDGAjaxActions {
 				$new_step = 'project-complete';
 				$new_authorization = 'can-create-db';
 				$metadata_decoded->package->paymentDate = $today_datetime->format( 'Y-m-d H:i:s' );
+				$metadata_decoded->package->paymentTransferedOnAccount = TRUE;
+
 				$api_result->metadata = json_encode( $metadata_decoded );
 				WDGWPREST_Entity_Project_Draft::update( $guid, $api_result->id_user, $api_result->email, $new_status, $new_step, $new_authorization, $api_result->metadata );
 
