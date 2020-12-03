@@ -318,7 +318,7 @@ class WDGCronActions {
 		$buffer_rss .= '<title><![CDATA['.$campaign->data->post_title.']]></title>' . "\n";
 		$buffer_rss .= '<description><![CDATA['.html_entity_decode($campaign->summary()).']]></description>' . "\n";
 		$buffer_rss .= '<pubDate>'.$campaign->begin_collecte_date('Y-m-d').'</pubDate>' . "\n";
-		$buffer_rss .= '<link>'.get_permalink($campaign->ID).'</link>' . "\n";
+		$buffer_rss .= '<link>'.$campaign->get_public_url().'</link>' . "\n";
 		$buffer_rss .= '</item>' . "\n";
 		//*****************
 
