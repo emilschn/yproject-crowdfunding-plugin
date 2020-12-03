@@ -203,7 +203,7 @@ class ATCF_Campaign {
 		}
 		$title = $this->get_name().' '.$duplicata;
 		$author_ID = $this->post_author();
-
+		$current_date = new DateTime();
 
 		$args = array(
 			'post_type'   		 	=> 'download', //TODO ?
@@ -266,6 +266,7 @@ class ATCF_Campaign {
 		$newcampaign->set_api_data( 'acquisition', $this->get_api_data( 'acquisition' ) );
 		// Copier automatiquement le pourcentage de Common Goods lors de la duplication de la campagne
 		$newcampaign->set_api_data( 'common_goods_turnover_percent', $this->get_api_data( 'common_goods_turnover_percent' ) );
+		$newcampaign->set_end_date( $current_date );
 		
 		// mettre à jour l'API
 		$newcampaign->update_api();
