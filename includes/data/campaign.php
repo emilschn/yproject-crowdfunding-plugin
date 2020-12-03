@@ -1228,7 +1228,7 @@ class ATCF_Campaign {
 			$buffer = $this->__get( ATCF_Campaign::$key_roi_percent_estimated );
 		}
 		if ( empty( $buffer ) ) {
-			$buffer = $this->roi_percent();
+			$buffer = 0;
 		}
 		return $buffer;
 	}
