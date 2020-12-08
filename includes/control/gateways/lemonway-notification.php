@@ -565,7 +565,8 @@ class LemonwayNotification {
 
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
-			$name = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+			$WDGOrganization = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+			$name = $WDGOrganization->get_name();
 
 		} else {
 			$name = $WDGUser_wallet->get_firstname() . ' ' . $WDGUser_wallet->get_lastname();
