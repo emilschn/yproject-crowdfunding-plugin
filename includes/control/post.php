@@ -345,7 +345,9 @@ class WDGPostActions {
 							$campaign->copy_default_contract_if_empty();
 							NotificationsSlack::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
 							NotificationsAsana::send_new_project_status( $campaign_id, ATCF_Campaign::$campaign_status_vote );
-		
+							//Activation des conseils pour 3 jours après le passage en évaluation
+							WDGQueue::add_campaign_advice_notification( $campaign_id );
+
 							// Mise à jour cache
 							do_action('wdg_delete_cache', array(
 								'cache_campaign_' . $campaign_id
@@ -379,6 +381,8 @@ class WDGPostActions {
 							// Si on n'est pas passé par la phase d'évaluation, on met à jour la date de fin d'évaluation pour ne pas faire bugger les stats
 							if ( $status == ATCF_Campaign::$campaign_status_validated && $campaign->skip_vote() ) {
 								$campaign->set_end_vote_date( new DateTime() );
+								//Activation des conseils pour 3 jours après le passage en investissement si on n'est pas passé par l'évaluatio
+								WDGQueue::add_campaign_advice_notification( $campaign_id );
 							}
                             $campaign->set_begin_collecte_date(new DateTime());
                             $campaign->set_status(ATCF_Campaign::$campaign_status_collecte);
