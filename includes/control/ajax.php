@@ -2335,7 +2335,7 @@ class WDGAjaxActions {
 				
             } else if ($payment_key == 'check') {
 				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
-				if ( !empty( $check_file_url ) ) {
+				if ( parse_url($check_file_url, PHP_URL_SCHEME) != 'http' && parse_url($check_file_url, PHP_URL_SCHEME) != 'http' && !empty( $check_file_url ) ) {
 					$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
 				}
 				if ( !empty( $check_file_url ) && $current_wdg_user->is_admin() ) {
@@ -3324,6 +3324,8 @@ class WDGAjaxActions {
 			$investments_drafts_item_data->orga_email
 		);
 		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
+		//  ajouter post meta check_picture avec le lien vers l'image du check qui se trouve dans investment-draft/picture-check
+		add_post_meta( $investment_id, 'check_picture', $investments_drafts_item->check );
 		
 		// Valider le draft
 		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
