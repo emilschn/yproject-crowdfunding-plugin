@@ -2333,11 +2333,21 @@ class WDGAjaxActions {
             if (strpos($payment_key, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
 				
-            } else if ($payment_key == 'check') {
+            } else if ($payment_key == 'check') {				
 				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
 				if ( !empty( $check_file_url ) ) {
-					$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
-				}
+					if (parse_url($check_file_url, PHP_URL_SCHEME) != 'http' && parse_url($check_file_url, PHP_URL_SCHEME) != 'https') {
+						$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
+					}
+				} else {
+					$created_from_draft = get_post_meta( $item_invest[ 'ID' ], 'created-from-draft', TRUE );
+					if ( $created_from_draft ) {
+						// si c'est le cas, alors on récupère l'investment-draft
+						$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );		
+						$check_file_url = $investments_drafts_item->check;
+					}
+				}				
+				
 				if ( !empty( $check_file_url ) && $current_wdg_user->is_admin() ) {
 					$payment_type = '<a href="'.$check_file_url.'" target="_blank">Ch&egrave;que</a>';
 				} else {
@@ -3324,6 +3334,8 @@ class WDGAjaxActions {
 			$investments_drafts_item_data->orga_email
 		);
 		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
+		//  ajouter post meta check_picture avec le lien vers l'image du check qui se trouve dans investment-draft/picture-check
+		add_post_meta( $investment_id, 'check_picture', $investments_drafts_item->check );
 		
 		// Valider le draft
 		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
