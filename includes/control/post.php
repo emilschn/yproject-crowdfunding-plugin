@@ -381,7 +381,10 @@ class WDGPostActions {
 							// Si on n'est pas passé par la phase d'évaluation, on met à jour la date de fin d'évaluation pour ne pas faire bugger les stats
 							if ( $status == ATCF_Campaign::$campaign_status_validated && $campaign->skip_vote() ) {
 								$campaign->set_end_vote_date( new DateTime() );
-								//Activation des conseils pour 3 jours après le passage en investissement si on n'est pas passé par l'évaluatio
+							}
+							//Activation des conseils pour 3 jours après le passage en investissement si on n'est pas passé par l'évaluation, ou si les conseils d'évaluation se sont arrêtés
+							$queued_action_id = $campaign->has_planned_advice_notification();
+							if ( $queued_action_id == FALSE ) {
 								WDGQueue::add_campaign_advice_notification( $campaign_id );
 							}
                             $campaign->set_begin_collecte_date(new DateTime());

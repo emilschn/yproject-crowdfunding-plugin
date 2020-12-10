@@ -1055,7 +1055,8 @@ class WDGQueue {
 			
 			$campaign = new ATCF_Campaign( $campaign_id );
 			// Pour l'instant, on gère que les campagnes en collecte
-			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+			// ou les projets en statut "vote" mais dont la date n'est pas dépassée
+			if ( ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->end_vote_remaining() > 0 ) || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 				// Envoi des notifications
 				WDGCampaignInvestments::advice_notification( $campaign );
 				// On continue d'envoyer des notifications
