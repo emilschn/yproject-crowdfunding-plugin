@@ -2320,11 +2320,6 @@ class WDGAjaxActions {
 			$payment_investment = new WDGInvestment( $item_invest[ 'ID' ] );
 			$contract_status = $payment_investment->get_contract_status();
 			$post_invest_status = $payment_investment->get_saved_status();
-			$created_from_draft = get_post_meta( $item_invest[ 'ID' ], 'created-from-draft', TRUE );
-			if ( $created_from_draft ) {
-				// si c'est le cas, alors on récupère l'investment-draft
-				$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );		
-			}
 			
 			if ( !empty( $item_invest[ 'payment_key' ] ) ) {
 				$payment_key = $item_invest[ 'payment_key' ];
@@ -2338,15 +2333,20 @@ class WDGAjaxActions {
             if (strpos($payment_key, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
 				
-            } else if ($payment_key == 'check') {
-				if ( $created_from_draft ){
-					$check_file_url = $investments_drafts_item->check;
-				} else {
-					$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
-					if ( !empty( $check_file_url ) ) {
+            } else if ($payment_key == 'check') {				
+				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
+				if ( !empty( $check_file_url ) ) {
+					if (parse_url($check_file_url, PHP_URL_SCHEME) != 'http' && parse_url($check_file_url, PHP_URL_SCHEME) != 'https') {
 						$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
 					}
-				}
+				} else {
+					$created_from_draft = get_post_meta( $item_invest[ 'ID' ], 'created-from-draft', TRUE );
+					if ( $created_from_draft ) {
+						// si c'est le cas, alors on récupère l'investment-draft
+						$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );		
+						$check_file_url = $investments_drafts_item->check;
+					}
+				}				
 				
 				if ( !empty( $check_file_url ) && $current_wdg_user->is_admin() ) {
 					$payment_type = '<a href="'.$check_file_url.'" target="_blank">Ch&egrave;que</a>';
