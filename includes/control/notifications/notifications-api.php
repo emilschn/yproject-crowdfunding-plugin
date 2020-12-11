@@ -449,49 +449,49 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-draft-list' => array (
 			'fr-sib-id'		=> '1316',
 			'description'	=> "Test d'éligibilité - Récupération liste de tests",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-draft-started' => array (
 			'fr-sib-id'		=> '1374',
 			'description'	=> "Test d'éligibilité - Lien test démarré",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-draft-finished' => array (
 			'fr-sib-id'		=> '1373',
 			'description'	=> "Test d'éligibilité - Projet éligible",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-payment-method-select-wire' => array (
 			'fr-sib-id'		=> '2298',
 			'description'	=> "Test d'éligibilité - Paiement par virement bancaire choisi",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-payment-method-received-wire' => array (
 			'fr-sib-id'		=> '2299',
 			'description'	=> "Test d'éligibilité - Paiement par virement bancaire reçu",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-payment-method-received-card' => array (
 			'fr-sib-id'		=> '2294',
 			'description'	=> "Test d'éligibilité - Paiement par carte bancaire réussi",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-payment-method-error-card' => array (
 			'fr-sib-id'		=> '2295',
 			'description'	=> "Test d'éligibilité - Paiement par carte bancaire échoué",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'' => array (
+		'prospect-setup-dashboard-not-created' => array (
 			'fr-sib-id'		=> '2297',
 			'description'	=> "Test d'éligibilité - Tableau de bord pas encore créé",
 			'variables'		=> "",
@@ -2143,7 +2143,7 @@ class NotificationsAPI {
 	// LISTE DES TESTS DEMARRES
 	//*******************************************************
 	public static function prospect_setup_draft_list( $recipient, $name, $project_list_str ) {
-		$id_template = '1316';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-draft-list' );
 		$options = array(
 			'personal'			=> 1,
 			'NOM'				=> $name,
@@ -2164,7 +2164,7 @@ class NotificationsAPI {
 	//*******************************************************
 	public static function prospect_setup_draft_started( $recipient, $name, $organization_name, $draft_url_full ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
-		$id_template = '1374';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-draft-started' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'personal'		=> 1,
@@ -2188,7 +2188,7 @@ class NotificationsAPI {
 	//*******************************************************
 	public static function prospect_setup_draft_finished( $recipient, $name, $draft_url_full, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
-		$id_template = '1373';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-draft-finished' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'personal'		=> 1,
@@ -2214,7 +2214,7 @@ class NotificationsAPI {
 	// SELECTION DE VIREMENT
 	//*******************************************************
 	public static function prospect_setup_payment_method_select_wire( $recipient, $name, $amount, $iban, $subscription_reference ) {
-		$id_template = '2298';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-select-wire' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'						=> $name,
@@ -2236,7 +2236,7 @@ class NotificationsAPI {
 	// VIREMENT RECU
 	//*******************************************************
 	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $amount, $date_payment ) {
-		$id_template = '2299';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-received-wire' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'					=> $name,
@@ -2257,7 +2257,7 @@ class NotificationsAPI {
 	// PAIEMENT PAR CARTE RECU
 	//*******************************************************
 	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment, $orga_name ) {
-		$id_template = '2294';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-received-card' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'					=> $name,
@@ -2279,7 +2279,7 @@ class NotificationsAPI {
 	// PAIEMENT PAR CARTE ERREUR
 	//*******************************************************
 	public static function prospect_setup_payment_method_error_card( $recipient, $name, $draft_url ) {
-		$id_template = '2295';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-error-card' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'			=> $name,
@@ -2299,7 +2299,7 @@ class NotificationsAPI {
 	// TABLEAU DE BORD PAS ENCORE CREE
 	//*******************************************************
 	public static function prospect_setup_dashboard_not_created( $recipient, $name, $orga_name ) {
-		$id_template = '2297';
+		$id_template = self::get_id_fr_by_slug( 'prospect-setup-dashboard-not-created' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'			=> $name,
