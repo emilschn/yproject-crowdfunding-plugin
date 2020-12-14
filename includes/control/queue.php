@@ -392,7 +392,12 @@ class WDGQueue {
 					"template_id" => $ref_template_id
 				);
 				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				$mailin_report = $mailin->get_report( $data );
+				
+				try {
+					$mailin_report = $mailin->get_report( $data );
+				} catch ( Exception $e ) {
+					return;
+				}
 				if ( empty( $mailin_report[ 'data' ] ) ) {
 					return;
 				}
