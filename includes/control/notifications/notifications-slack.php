@@ -407,6 +407,11 @@ class NotificationsSlack {
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
 	}
+
+	public static function send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount ) {
+		$message = "Prélèvement bancaire annulé : " . $name . " (ID Wallet : " . $lemonway_posted_id_external . " ; Montant : " . $lemonway_posted_amount . ")";
+		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_royalties );
+	}
 	//*******************************************************
     // FIN DE NOTIFICATIONS SLACK DANS LE CANAL ROYALTIES-NOTIFICATIONS
     //*******************************************************

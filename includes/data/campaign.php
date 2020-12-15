@@ -203,7 +203,7 @@ class ATCF_Campaign {
 		}
 		$title = $this->get_name().' '.$duplicata;
 		$author_ID = $this->post_author();
-
+		$current_date = new DateTime();
 
 		$args = array(
 			'post_type'   		 	=> 'download', //TODO ?
@@ -266,6 +266,7 @@ class ATCF_Campaign {
 		$newcampaign->set_api_data( 'acquisition', $this->get_api_data( 'acquisition' ) );
 		// Copier automatiquement le pourcentage de Common Goods lors de la duplication de la campagne
 		$newcampaign->set_api_data( 'common_goods_turnover_percent', $this->get_api_data( 'common_goods_turnover_percent' ) );
+		$newcampaign->set_end_date( $current_date );
 		
 		// mettre à jour l'API
 		$newcampaign->update_api();
@@ -1227,7 +1228,7 @@ class ATCF_Campaign {
 			$buffer = $this->__get( ATCF_Campaign::$key_roi_percent_estimated );
 		}
 		if ( empty( $buffer ) ) {
-			$buffer = $this->roi_percent();
+			$buffer = 0;
 		}
 		return $buffer;
 	}
@@ -1235,12 +1236,16 @@ class ATCF_Campaign {
 	 * Pourcentage de royalties engagé, en fonction du montant atteint
 	 */
 	public static $key_roi_percent = 'campaign_roi_percent';
+	private $roi_percent = 0;
 	public function roi_percent() {
-		$buffer = $this->__get( ATCF_Campaign::$key_roi_percent );
-		if ( empty( $buffer ) ) {
-			$buffer = 0;
+		if ( $this->roi_percent == 0 ) {
+			if ( $this->goal( FALSE ) >= 0 ){
+				$this->roi_percent = round($this->roi_percent_estimated() * $this->current_amount( FALSE ) / $this->goal( FALSE ), 10) ;
+				update_post_meta( $this->ID, ATCF_Campaign::$key_roi_percent, $this->roi_percent );
+				$this->set_api_data( 'roi_percent', $this->roi_percent );
+			} 
 		}
-	    return $buffer;
+	    return $this->roi_percent;
 	}
 	/**
 	 * Pourcentage de royalties restant (sur la liste des contrats en cours)

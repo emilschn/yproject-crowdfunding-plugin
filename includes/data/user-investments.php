@@ -16,6 +16,7 @@ class WDGUserInvestments {
 	
 	private static $posts_investments;
 	private $pending_preinvestments;
+	private $pending_wire_investments;
 	private $pending_not_validated_investments;
 	
 	public function __construct( $WDGInvestorEntity ) {
@@ -169,7 +170,40 @@ class WDGUserInvestments {
 		$pending_preinvestments = $this->get_pending_not_validated_investments();
 		return ( !empty( $pending_preinvestments ) );
 	}
-	
+
+	/**
+	 * Gestion des virements à 0€
+	 */
+	public function get_pending_wire_investments() {
+		if ( empty( $this->wp_ref ) ) {
+			return array();
+		}
+
+        if (!isset($this->pending_wire_investments)) {
+            $this->pending_wire_investments = array();
+            $query_options = array(
+                'numberposts' => -1,
+                'post_type' => 'edd_payment',
+                'post_status' => 'pending',
+                'meta_query' => array(
+                    'relation' => 'AND',
+                    array( 'key' => '_edd_payment_user_id', 'value' => $this->wp_ref ),
+                    array( 'key' => '_edd_payment_purchase_key', 'value' => 'wire_', 'compare' => 'LIKE' )
+                )
+            );
+            $this->pending_wire_investments = get_posts($query_options);
+        }
+		return $this->pending_wire_investments;
+
+	}
+
+	public function has_pending_wire_investments() {
+		$pending_wire_investments = $this->get_pending_wire_investments();
+		return ( !empty( $pending_wire_investments ) );
+
+	}
+
+
 	/**
 	 * Gestion des pré-investissements
 	 */
