@@ -318,8 +318,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			}
 			if ( !empty( $current_file_home ) ) {
 				$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
-				$this->addToMD5Array( 'home_old', $current_file_home->get_byte_array_md5() );
 				$home_label = __( 'form.user-identitydocs.PROOF_ADDRESS', 'yproject' );
+				$this->addToMD5Array( 'home_old', $current_file_home->get_byte_array_md5() );
 				$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
 				if ( empty( $field_home_params[ 'message_instead_of_field' ] ) ) {
 					$field_home_params[ 'message_instead_of_field' ] = __( 'form.user-identitydocs.PROOF_ADDRESS_ALERT', 'yproject' );
