@@ -117,6 +117,7 @@ class WDGAjaxActions {
 			$WDGUserCurrent = WDGUser::current();
 			$firstname_WDGUserCurrent = $WDGUserCurrent->get_firstname();
 			$response[ 'userinfos' ] = array();
+			$response[ 'userinfos' ][ 'userid' ] = $WDGUserCurrent->get_wpref();
 			$response[ 'userinfos' ][ 'username' ] = ( !empty( $firstname_WDGUserCurrent ) ) ? $firstname_WDGUserCurrent : $WDGUserCurrent->get_login();
 			$response[ 'userinfos' ][ 'image_dom_element' ] = UIHelpers::get_user_avatar( $WDGUserCurrent->get_wpref(), 'icon' );
 			$response[ 'userinfos' ][ 'logout_url' ] = wp_logout_url(). '&page_id=' .get_the_ID();
@@ -2342,11 +2343,21 @@ class WDGAjaxActions {
             if (strpos($payment_key, 'wire_') !== FALSE) {
                 $payment_type = 'Virement';
 				
-            } else if ($payment_key == 'check') {
+            } else if ($payment_key == 'check') {				
 				$check_file_url = get_post_meta( $item_invest['ID'], 'check_picture', TRUE );
 				if ( !empty( $check_file_url ) ) {
-					$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
-				}
+					if (parse_url($check_file_url, PHP_URL_SCHEME) != 'http' && parse_url($check_file_url, PHP_URL_SCHEME) != 'https') {
+						$check_file_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $check_file_url;
+					}
+				} else {
+					$created_from_draft = get_post_meta( $item_invest[ 'ID' ], 'created-from-draft', TRUE );
+					if ( $created_from_draft ) {
+						// si c'est le cas, alors on récupère l'investment-draft
+						$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );		
+						$check_file_url = $investments_drafts_item->check;
+					}
+				}				
+				
 				if ( !empty( $check_file_url ) && $current_wdg_user->is_admin() ) {
 					$payment_type = '<a href="'.$check_file_url.'" target="_blank">Ch&egrave;que</a>';
 				} else {
@@ -3333,6 +3344,8 @@ class WDGAjaxActions {
 			$investments_drafts_item_data->orga_email
 		);
 		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
+		//  ajouter post meta check_picture avec le lien vers l'image du check qui se trouve dans investment-draft/picture-check
+		add_post_meta( $investment_id, 'check_picture', $investments_drafts_item->check );
 		
 		// Valider le draft
 		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
@@ -3784,8 +3797,6 @@ class WDGAjaxActions {
 				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $organization_name, $draft_url ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
-
-				NotificationsEmails::prospect_setup_draft_started_admin( $email, $recipient_name, $organization_name, $draft_url, $metadata_decoded );
 			}
 		}
 		
@@ -3846,8 +3857,6 @@ class WDGAjaxActions {
 				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
-
-				NotificationsEmails::prospect_setup_draft_finished_admin( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options, $metadata_decoded );
 			}
 		}
 		
@@ -3969,6 +3978,8 @@ class WDGAjaxActions {
 				$new_step = 'project-complete';
 				$new_authorization = 'can-create-db';
 				$metadata_decoded->package->paymentDate = $today_datetime->format( 'Y-m-d H:i:s' );
+				$metadata_decoded->package->paymentTransferedOnAccount = TRUE;
+
 				$api_result->metadata = json_encode( $metadata_decoded );
 				WDGWPREST_Entity_Project_Draft::update( $guid, $api_result->id_user, $api_result->email, $new_status, $new_step, $new_authorization, $api_result->metadata );
 

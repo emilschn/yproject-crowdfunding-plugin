@@ -10,6 +10,7 @@ class NotificationsAPI {
 		'184' => "Mail via liste de contacts",
 		'181' => "Inscription",
 		'932' => "Inscription sans investissement",
+		'2237'	=> "Mise à jour du mot de passe",
 		'311' => "KYC - RIB validé",
 		'322' => "KYC - Doc en cours de validation",
 		'749' => "KYC - Doc refusé",
@@ -84,6 +85,17 @@ class NotificationsAPI {
 		'2295' => "Test d'éligibilité - Paiement par carte bancaire échoué",
 		'2297' => "Test d'éligibilité - Tableau de bord pas encore créé"
 	);
+
+	/**
+	 * Méthode générique d'appel à l'API pour attrapper les erreurs
+	 */
+	private static function send( $parameters ) {
+		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		if ( empty( $result->result ) ) {
+			NotificationsAsana::notification_api_failed( $result );
+		}
+		return $result;
+	}
 	
 
 	//**************************************************************************
@@ -107,7 +119,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
     //*******************************************************
@@ -145,7 +157,7 @@ class NotificationsAPI {
 						'id_project'	=> $project_api_id,
 						'options'		=> json_encode( $options )
 					);
-					$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+					self::send( $parameters );
 					$recipients = '';
 					$index = 0;
 					
@@ -163,9 +175,8 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		$buffer = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		
-		return $buffer;
+		return self::send( $parameters );
 	}
     //*******************************************************
     // FIN ENVOI ACTUALITE DE PROJET
@@ -193,7 +204,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
     //*******************************************************
     // FIN ENVOI ACTUALITE DE PROJET
@@ -218,7 +229,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -226,6 +237,23 @@ class NotificationsAPI {
 	//*******************************************************
 	public static function user_registered_without_investment( $recipient, $name ) {
 		$id_template = '932';
+		$options = array(
+			'NOM'				=> $name
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $recipient,
+			'options'	=> json_encode( $options )
+		);
+		return self::send( $parameters );
+	}
+
+	//*******************************************************
+	// Modification du mot de passe
+	//*******************************************************
+	public static function user_password_change( $recipient, $name ) {
+		$id_template = '2237';
 		$options = array(
 			'NOM'				=> $name
 		);
@@ -252,7 +280,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -269,7 +297,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
     //*******************************************************
@@ -286,7 +314,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 
@@ -306,7 +334,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	//**************************************************************************
 	// Entrepreneurs
@@ -327,7 +355,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient_mail,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
     //*******************************************************
@@ -352,7 +380,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 
@@ -374,7 +402,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -392,7 +420,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -411,7 +439,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	public static function phone_kyc_refused( $recipient, $name ) {
@@ -421,7 +449,7 @@ class NotificationsAPI {
 			'template'	=> $param_content,
 			'recipient'	=> $recipient
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -439,7 +467,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	public static function phone_kyc_single_validated( $recipient, $name ) {
@@ -449,7 +477,7 @@ class NotificationsAPI {
 			'template'	=> $param_content,
 			'recipient'	=> $recipient
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -467,7 +495,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	public static function phone_kyc_authentified( $recipient, $name ) {
@@ -477,7 +505,7 @@ class NotificationsAPI {
 			'template'	=> $param_content,
 			'recipient'	=> $recipient
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -497,7 +525,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -517,7 +545,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 
@@ -548,7 +576,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -574,7 +602,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -601,7 +629,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_prelaunch_invest_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
@@ -624,7 +652,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_prelaunch_invest_follow( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
@@ -647,7 +675,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -667,7 +695,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -687,7 +715,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	public static function vote_end_canceled_campaign_refund( $recipient, $name, $project_name, $project_api_id ) {
@@ -704,7 +732,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -732,7 +760,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_investment_invest30_no_intention( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
@@ -756,7 +784,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_investment_invest30_follow( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
@@ -780,7 +808,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -805,7 +833,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_investment_invest100_investment_pending( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
@@ -828,7 +856,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_investment_invest100_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
@@ -855,7 +883,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_investment_invest100_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
@@ -881,7 +909,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_investment_invest100_follow( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
@@ -907,7 +935,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -936,7 +964,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function confirm_investment_invest2days_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
@@ -961,7 +989,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	//**************************************************************************
@@ -984,7 +1012,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1007,7 +1035,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	
@@ -1037,29 +1065,29 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT PAR VIREMENT - EN ATTENTE
 	//*******************************************************
 	public static function investment_pending_wire( $recipient, $name, $amount, $project_name, $user_lw_wallet_id, $project_api_id ) {
-			$id_template = '177';
-			$options = array(
-				'personal'				=> 1,
-				'NOM'					=> $name,
-				'MONTANT'				=> $amount,
-				'NOM_PROJET'			=> $project_name,
-				'ID_WALLET_LEMONWAY'	=> $user_lw_wallet_id,
-			);
-			$parameters = array(
-				'tool'			=> 'sendinblue',
-				'template'		=> $id_template,
-				'recipient'		=> $recipient,
-				'id_project'	=> $project_api_id,
-				'options'		=> json_encode( $options )
-			);
-			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		$id_template = '177';
+		$options = array(
+			'personal'				=> 1,
+			'NOM'					=> $name,
+			'MONTANT'				=> $amount,
+			'NOM_PROJET'			=> $project_name,
+			'ID_WALLET_LEMONWAY'	=> $user_lw_wallet_id,
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $recipient,
+			'id_project'	=> $project_api_id,
+			'options'		=> json_encode( $options )
+		);
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1088,7 +1116,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function investment_success_positive_savings( $recipient, $name, $amount, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
@@ -1113,7 +1141,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1136,7 +1164,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1156,7 +1184,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1176,7 +1204,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1196,7 +1224,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 
@@ -1221,7 +1249,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1242,7 +1270,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1262,7 +1290,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1282,7 +1310,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 
@@ -1308,7 +1336,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 
@@ -1346,7 +1374,7 @@ class NotificationsAPI {
 				'recipient'	=> $param_recipients,
 				'options'	=> json_encode( $options )
 			);
-			return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+			return self::send( $parameters );
 		}
 		
 		return FALSE;
@@ -1376,7 +1404,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
     //*******************************************************
     // FIN - NOTIFICATIONS DECLARATIONS ROI A FAIRE
@@ -1404,7 +1432,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function declaration_done_without_turnover( $recipient, $name, $project_name, $last_three_months ) {
@@ -1421,7 +1449,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
     //*******************************************************
     // FIN - NOTIFICATIONS DECLARATIONS APROUVEES
@@ -1445,7 +1473,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function declaration_extended_project_manager( $recipient, $name ) {
@@ -1460,7 +1488,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $project_api_id ) {
@@ -1484,7 +1512,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function declaration_finished_project_manager( $recipient, $name ) {
@@ -1499,7 +1527,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 	public static function declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $project_api_id ) {
@@ -1521,7 +1549,7 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
     //*******************************************************
     // NOTIFICATIONS PROLONGATION DECLARATIONS
@@ -1547,7 +1575,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1565,7 +1593,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1583,7 +1611,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1601,7 +1629,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1620,7 +1648,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1641,7 +1669,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1665,7 +1693,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
     //*******************************************************
@@ -1684,7 +1712,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 
@@ -1708,7 +1736,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -1732,7 +1760,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -1759,7 +1787,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -1781,7 +1809,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -1802,17 +1830,18 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// PAIEMENT PAR CARTE RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment ) {
+	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment, $orga_name ) {
 		$id_template = '2294';
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'					=> $name,
+			'NOM_ENTREPRISE'			=> $orga_name,
 			'MONTANT'				=> $amount,
 			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
@@ -1823,7 +1852,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -1843,7 +1872,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -1863,7 +1892,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 	
 }

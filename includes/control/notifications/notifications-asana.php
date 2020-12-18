@@ -290,6 +290,19 @@ class NotificationsAsana {
 		$object = "Versement reçu - non automatisé";
 		return self::send( self::$notif_type_admin, $object, $message );
 	}
+	
+	public static function notification_api_failed( $data ) {
+		$object = "Erreur mail sendinblue";
+		$content = "Erreur de mail envoyé par SendInBlue :<br>";
+		$content .= print_r( $data, true );
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+
+	public static function send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount ) {
+		$object = "Prélèvement bancaire annulé";
+		$content = "Infos : " . $name . " (ID Wallet : " . $lemonway_posted_id_external . " ; Montant : " . $lemonway_posted_amount . ")";
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
 
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA D'ADMIN

@@ -13,6 +13,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 	private $is_orga;
 	private $invest_campaign_id;
 	private $nb_file_sent;
+	private $files_by_md5;
+	private $duplicates;
 	
 	public function __construct( $user_id = FALSE, $is_orga = FALSE, $invest_campaign_id = FALSE ) {
 		parent::__construct( self::$name );
@@ -25,6 +27,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 	
 	protected function initFields() {
 		parent::initFields();
+		
+		$this->files_by_md5 = array();
 		
 		// $field_group_hidden
 		if ( !$this->is_orga || !empty( $this->invest_campaign_id ) ) {
@@ -64,6 +68,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$current_file_id = $current_filelist_id[0];
 			$id_file_path = ( empty( $current_file_id ) ) ? '' : $current_file_id->get_public_filepath();
 			$id_file_date_uploaded = $current_file_id->date_uploaded;
+			$this->addToMD5Array( 'identity', $current_file_id->get_byte_array_md5() );
 		}
 		$id_label = ( $this->is_orga ) ? __( 'form.user-identitydocs.ID_OF_PRESIDENT', 'yproject' ) : __( 'form.user-identitydocs.ID', 'yproject' );
 		$field_id_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id, $id_file_date_uploaded );
@@ -86,6 +91,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_home = $current_filelist_home[0];
 				$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
 				$home_file_date_uploaded = $current_file_home->date_uploaded;
+				$this->addToMD5Array( 'home', $current_file_home->get_byte_array_md5() );
 			}
 			$home_label = __( 'form.user-identitydocs.SECOND_ID_ORGA', 'yproject' );
 			$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis, $home_file_date_uploaded );
@@ -106,6 +112,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_kbis = $current_filelist_kbis[0];
 				$kbis_file_path = ( empty( $current_file_kbis ) ) ? '' : $current_file_kbis->get_public_filepath();
 				$kbis_file_date_uploaded = $current_file_kbis->date_uploaded;
+				$this->addToMD5Array( 'kbis', $current_file_kbis->get_byte_array_md5() );
 			}
 			$field_kbis_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_kbis, $kbis_file_date_uploaded );
 			$this->addField(
@@ -125,6 +132,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_status = $current_filelist_status[0];
 				$status_file_path = ( empty( $current_file_status ) ) ? '' : $current_file_status->get_public_filepath();
 				$status_file_date_uploaded = $current_file_status->date_uploaded;
+				$this->addToMD5Array( 'status', $current_file_status->get_byte_array_md5() );
 			}
 			$field_status_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_status, $status_file_date_uploaded );
 			$this->addField(
@@ -144,6 +152,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_capital_allocation = $current_filelist_capital_allocation[0];
 				$capital_allocation_file_path = ( empty( $current_file_capital_allocation ) ) ? '' : $current_file_capital_allocation->get_public_filepath();
 				$capital_allocation_file_date_uploaded = $current_file_capital_allocation->date_uploaded;
+				$this->addToMD5Array( 'capital_allocation', $current_file_capital_allocation->get_byte_array_md5() );
 			}
 			$field_status_capital_allocation = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_capital_allocation, $capital_allocation_file_date_uploaded );
 			$this->addField(
@@ -163,6 +172,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_id_2 = $current_filelist_id_2[0];
 				$id2_file_path = ( empty( $current_file_id_2 ) ) ? '' : $current_file_id_2->get_public_filepath();
 				$id2_file_date_uploaded = $current_file_id_2->date_uploaded;
+				$this->addToMD5Array( 'identity2', $current_file_id_2->get_byte_array_md5() );
 			}
 			$field_status_id_2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id2, $id2_file_date_uploaded );
 			$this->addField(
@@ -182,6 +192,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_home_2 = $current_filelist_home_2[0];
 				$home2_file_path = ( empty( $current_file_home_2 ) ) ? '' : $current_file_home_2->get_public_filepath();
 				$home2_file_date_uploaded = $current_file_home_2->date_uploaded;
+				$this->addToMD5Array( 'home2', $current_file_home_2->get_byte_array_md5() );
 			}
 			$field_status_home_2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis2, $home2_file_date_uploaded );
 			$this->addField(
@@ -201,6 +212,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_id_3 = $current_filelist_id_3[0];
 				$id3_file_path = ( empty( $current_file_id_3 ) ) ? '' : $current_file_id_3->get_public_filepath();
 				$id3_file_date_uploaded = $current_file_id_3->date_uploaded;
+				$this->addToMD5Array( 'identity3', $current_file_id_3->get_byte_array_md5() );
 			}
 			$field_status_id_3 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id3, $id3_file_date_uploaded );
 			$this->addField(
@@ -220,6 +232,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_home_3 = $current_filelist_home_3[0];
 				$home3_file_path = ( empty( $current_file_home_3 ) ) ? '' : $current_file_home_3->get_public_filepath();
 				$home3_file_date_uploaded = $current_file_home_3->date_uploaded;
+				$this->addToMD5Array( 'home3', $current_file_home_3->get_byte_array_md5() );
 			}
 			$field_status_home_3 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis3, $home3_file_date_uploaded );
 			$this->addField(
@@ -241,6 +254,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_id_back = $current_filelist_id_back[0];
 				$id_back_file_path = ( empty( $current_file_id_back ) ) ? '' : $current_file_id_back->get_public_filepath();
 				$id_back_file_date_uploaded = $current_file_id_back->date_uploaded;
+				$this->addToMD5Array( 'identity_back', $current_file_id_back->get_byte_array_md5() );
 			}
 			$id_back_label = __( 'form.user-identitydocs.ID_BACK', 'yproject' );
 			$field_id_back_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id_back, $id_back_file_date_uploaded, TRUE );
@@ -261,6 +275,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_id2 = $current_filelist_id2[0];
 				$id2_file_path = ( empty( $current_file_id2 ) ) ? '' : $current_file_id2->get_public_filepath();
 				$id2_file_date_uploaded = $current_file_id2->date_uploaded;
+				$this->addToMD5Array( 'identity2_user', $current_file_id2->get_byte_array_md5() );
 			}
 			$id2_label = __( 'form.user-identitydocs.SECOND_ID', 'yproject' );
 			$field_status_id2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis, $id2_file_date_uploaded );
@@ -283,6 +298,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$current_file_id2_back = $current_filelist_id2_back[0];
 				$id2_back_file_path = ( empty( $current_file_id2_back ) ) ? '' : $current_file_id2_back->get_public_filepath();
 				$id2_back_file_date_uploaded = $current_file_id2_back->date_uploaded;
+				$this->addToMD5Array( 'identity2_back', $current_file_id2_back->get_byte_array_md5() );
 			}
 			$id2_back_label = __( 'form.user-identitydocs.SECOND_ID_BACK', 'yproject' );
 			$field_status_id2_back = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis_back, $id2_back_file_date_uploaded, TRUE );
@@ -303,6 +319,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			if ( !empty( $current_file_home ) ) {
 				$home_file_path = ( empty( $current_file_home ) ) ? '' : $current_file_home->get_public_filepath();
 				$home_label = __( 'form.user-identitydocs.PROOF_ADDRESS', 'yproject' );
+				$this->addToMD5Array( 'home_old', $current_file_home->get_byte_array_md5() );
 				$field_home_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_home, $current_file_home->date_uploaded );
 				if ( empty( $field_home_params[ 'message_instead_of_field' ] ) ) {
 					$field_home_params[ 'message_instead_of_field' ] = __( 'form.user-identitydocs.PROOF_ADDRESS_ALERT', 'yproject' );
@@ -319,7 +336,6 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				);
 			}
 
-			
 			// Activation des notifications par téléphone
 			$WDGUser = new WDGUser( $this->user_id );
 			$values_has_checked_notification = $WDGUser->has_subscribed_authentication_notification();
@@ -346,6 +362,9 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$WDGUser->get_phone_number()
 			);
 		}
+
+		// Vérifications des doublons de fichiers
+		$this->initDuplicates();
 		
 	}
 	
@@ -372,10 +391,15 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$send_notification_validation = FALSE;
 				$WDGOrganization = new WDGOrganization( $user_id );
 				$file_suffix = '-orga-' . $WDGOrganization->get_wpref();
+				$was_registered = $WDGOrganization->has_lemonway_wallet();
 				if ( $WDGOrganization->can_register_lemonway() ) {
-					$WDGOrganization->register_lemonway();
+					$WDGOrganization->register_lemonway();						
+					// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
+					if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {
+						ypcf_debug_log( 'WDG_Form_User_Identity_Docs::postForm > $WDGOrganization->send_kyc();' );
+						$WDGOrganization->send_kyc();
+					}
 				}
-			
 				if ( isset( $_FILES[ 'identity' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity' .$file_suffix ][ 'tmp_name' ] ) ) {
 					$this->nb_file_sent++;
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_id, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'identity' .$file_suffix ] );
@@ -490,8 +514,14 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				}
 				
 			} else {
+				$was_registered = $WDGUser->has_lemonway_wallet();
 				if ( $WDGUser->can_register_lemonway() ) {
-					$WDGUser->register_lemonway();
+					$WDGUser->register_lemonway();						
+					// Si il n'était enregistré sur LW et qu'on vient de l'enregistrer, on envoie les documents si certains étaient déjà remplis
+					if ( !$was_registered && $WDGUser->has_lemonway_wallet() ) {
+						ypcf_debug_log( 'WDG_Form_User_Identity_Docs::postForm > $WDGUser->send_kyc();' );
+						$WDGUser->send_kyc();
+					}
 				}
 				
 				$send_notification_validation = FALSE;
@@ -583,6 +613,81 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 	public function getNbFileSent() {
 		return $this->nb_file_sent;
+	}
+
+	/**
+	 * Ajoute un type de fichier en correspondance à un md5
+	 */
+	private function addToMD5Array( $type, $md5 ) {
+		if ( !isset( $this->files_by_md5[ $md5 ] ) ) {
+			$this->files_by_md5[ $md5 ] = array();
+		}
+		array_push( $this->files_by_md5[ $md5 ], $type );
+	}
+
+	/**
+	 * Parcourt les données des fichiers pour déterminer les doublons
+	 */
+	private function initDuplicates() {
+		$this->duplicates = array();
+		foreach ( $this->files_by_md5 as $md5 => $type_list ) {
+			if ( count( $type_list ) > 1 ) {
+				$str_duplicate = '';
+				$nb = 0;
+				foreach ( $type_list as $doc_type ) {
+					if ( $nb > 0 ) {
+						$str_duplicate .= __( ' et ', 'yproject' );
+					}
+					switch ( $doc_type ) {
+						case 'identity':
+							$str_duplicate .= __( "justificatif d'identit&eacute;", 'yproject' );
+							break;
+						case 'identity_back':
+							$str_duplicate .= __( "verso du justificatif d'identit&eacute;", 'yproject' );
+							break;
+						case 'home':
+							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+							break;
+						case 'kbis':
+							$str_duplicate .= __( "KBIS", 'yproject' );
+							break;
+						case 'status':
+							$str_duplicate .= __( "statuts", 'yproject' );
+							break;
+						case 'capital_allocation':
+							$str_duplicate .= __( "attestation de r&eacute;partition du capital", 'yproject' );
+							break;
+						case 'identity2':
+							$str_duplicate .= __( "justificatif d'identit&eacute; de la deuxi&egrave;me personne", 'yproject' );
+							break;
+						case 'home2':
+							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute; de la deuxi&egrave;me personne", 'yproject' );
+							break;
+						case 'identity3':
+							$str_duplicate .= __( "justificatif d'identit&eacute; de la troisi&egrave;me personne", 'yproject' );
+							break;
+						case 'home3':
+							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute; de la troisi&egrave;me personne", 'yproject' );
+							break;
+						case 'identity2_user':
+							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+							break;
+						case 'identity2_back':
+							$str_duplicate .= __( "verso du deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+							break;
+						case 'home_old':
+							$str_duplicate .= __( "justificatif de domicile", 'yproject' );
+							break;
+					}
+					$nb++;
+				}
+				array_push( $this->duplicates, $str_duplicate );
+			}
+		}
+	}
+
+	public function getDuplicates() {
+		return $this->duplicates;
 	}
 	
 }

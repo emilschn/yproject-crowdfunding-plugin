@@ -392,7 +392,12 @@ class WDGQueue {
 					"template_id" => $ref_template_id
 				);
 				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				$mailin_report = $mailin->get_report( $data );
+				
+				try {
+					$mailin_report = $mailin->get_report( $data );
+				} catch ( Exception $e ) {
+					return;
+				}
 				if ( empty( $mailin_report[ 'data' ] ) ) {
 					return;
 				}
@@ -1055,7 +1060,8 @@ class WDGQueue {
 			
 			$campaign = new ATCF_Campaign( $campaign_id );
 			// Pour l'instant, on gère que les campagnes en collecte
-			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
+			// ou les projets en statut "vote" mais dont la date n'est pas dépassée
+			if ( ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote && $campaign->end_vote_remaining() > 0 ) || $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 				// Envoi des notifications
 				WDGCampaignInvestments::advice_notification( $campaign );
 				// On continue d'envoyer des notifications

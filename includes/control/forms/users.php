@@ -420,6 +420,38 @@ class WDGFormUsers {
 		
 		return $buffer;
 	}
+
+	
+	/**
+	 * 
+	 */
+	public static function change_wire_amount() {
+		$action = filter_input( INPUT_POST, 'action' );
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$orga_id = filter_input( INPUT_POST, 'orga_id' );
+		$investment_id = filter_input( INPUT_POST, 'investment_id' );
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+
+		$buffer = FALSE;
+		if ( ( empty( $user_id ) && empty( $orga_id ) ) || empty( $action ) || $action != 'change_wire_value' || empty($investment_id) || empty($campaign_id)) {
+			return $buffer;
+		}
+		$WDGUser_current = WDGUser::current();
+		if ( $WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin() ) {
+			return __( "Ce changement n'est pas autoris&eacute;.", 'yproject' );
+		}
+
+		$amount_to_wire = filter_input( INPUT_POST, 'amount_to_wire' );
+        if (!empty($amount_to_wire)) {
+            $amount = WDG_Form::clean_input_number($amount_to_wire);
+            $WDGInvestment = new WDGInvestment($investment_id);
+            $WDGInvestment->set_amount($amount);
+            $buffer = TRUE;
+        } 
+				
+		return $buffer;
+	}
+
 	
 	public static function register_rib() {
 		$action = filter_input( INPUT_POST, 'action' );

@@ -19,6 +19,7 @@ class LemonwayNotification {
 	private static $category_document_new_status = 9;
 	private static $category_moneyin_wire = 10;
 	private static $category_moneyin_mandate = 11;
+	private static $category_moneyin_mandate_canceled = 17;
 	
 	private $notification_category;
 	
@@ -44,6 +45,10 @@ class LemonwayNotification {
 			
 			case LemonwayNotification::$category_moneyin_mandate:
 				$this->process_moneyin_mandate();
+				break;
+			
+			case LemonwayNotification::$category_moneyin_mandate_canceled:
+				$this->process_moneyin_mandate_canceled();
 				break;
 		}
 	}
@@ -523,5 +528,53 @@ class LemonwayNotification {
 		}
 
 	}
-	
+
+	private function process_moneyin_mandate_canceled () {
+		/**
+		 * NotifDate : Date et heure de la creation de la notification. Heure de Paris. Format ISO8601
+		 * Ex : 2015-11-01T16:44:55.883
+		 */
+		$lemonway_posted_date = filter_input( INPUT_POST, 'NotifCategory' );
+		/**
+		 * IntId : Identifiant interne du wallet
+		 * Ex : 32
+		 */
+		$lemonway_posted_id_internal = filter_input( INPUT_POST, 'IntId' );
+		/**
+		 * ExtId : Identifiant externe du wallet
+		 * Ex : USERW3987
+		 */
+		$lemonway_posted_id_external = filter_input( INPUT_POST, 'ExtId' );
+		/**
+		 * IdTransaction : Identifiant de la transaction
+		 * Ex : 204
+		 */
+		$lemonway_posted_id_transaction = filter_input( INPUT_POST, 'IdTransaction' );
+		/**
+		 * Amount : Montant à créditer au wallet (total moins la commission)
+		 * Ex : 10.00
+		 */
+		$lemonway_posted_amount = filter_input( INPUT_POST, 'Amount' );
+		/**
+		 * Status : Statut de la transaction
+		 * Ex : 0
+		 */
+		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
+		
+		$name = '';
+
+		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
+		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
+			$WDGOrganization = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+			$name = $WDGOrganization->get_name();
+
+		} else {
+			$name = $WDGUser_wallet->get_firstname() . ' ' . $WDGUser_wallet->get_lastname();
+		}
+
+		if ( !empty( $name ) ) {
+			NotificationsSlack::send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount );
+			NotificationsAsana::send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount );
+		}
+	}
 }

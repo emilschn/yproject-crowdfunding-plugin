@@ -109,6 +109,7 @@ class WDG_Form_User_Password extends WDG_Form {
 					) );
 					
 					array_push( $feedback_success, __( 'form.user-password.PASSWORD_MODIFIED', 'yproject' ) );
+					NotificationsAPI::user_password_change( $WDGUser->get_email(),  $WDGUser->get_firstname() );
 				}
 				
 			} else {
