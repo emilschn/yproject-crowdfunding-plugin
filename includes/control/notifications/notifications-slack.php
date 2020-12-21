@@ -292,8 +292,10 @@ class NotificationsSlack {
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_mag, self::$notif_type_royalties );
 	}
 	
-	public static function send_declaration_filled( $project_name, $turnover_amount, $royalties_amount, $commission_amount ) {
-		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
+	public static function send_declaration_filled( $project_name, $turnover_amount, $turnover_details, $royalties_amount, $commission_amount ) {
+		$array_replace = array( '"', '{',  '}', '[', ']' );
+		$turnover_details_cleaned = str_replace( ',', ', ', str_replace( $array_replace, '', $turnover_details ) );
+		$message = "Le projet " .$project_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." € (" .$turnover_details_cleaned. "). Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_currency_exchange, self::$notif_type_royalties );
 	}
 	
