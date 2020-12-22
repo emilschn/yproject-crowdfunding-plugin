@@ -1446,6 +1446,16 @@ class WDGAjaxActions {
 			}
 			$success[ 'new_skip_in_stats' ] = 1;
 
+			// Procédure de recouvrement
+			$new_legal_procedure = sanitize_text_field(filter_input(INPUT_POST,'new_legal_procedure'));
+			if ( !empty( $new_legal_procedure ) ) {
+				if ( $new_legal_procedure == 'no' ){
+					$new_legal_procedure = '';
+				}
+				$campaign->set_api_data( 'legal_procedure', $new_legal_procedure );
+				$success[ "new_legal_procedure" ] = 1;
+			}
+
 			//Catégories du projet
 			$new_project_categories = array();
 			if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
