@@ -2322,7 +2322,7 @@ class WDGUser {
 		
 		//Si on est sur la page de connexion ou d'inscription,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
-		if ( $post->post_name == 'connexion' || $post->post_name == 'inscription' ) {
+		if ( $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'connexion' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) {
 			// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1', FALSE );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
@@ -2345,8 +2345,8 @@ class WDGUser {
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
 					// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b', FALSE );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
-					if ( strpos( $buffer, '/connexion/' ) !== FALSE || strpos( $buffer, '/inscription/' ) !== FALSE ) {
-						$buffer = home_url();
+					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE ) {
+						$buffer = home_url( '/mon-compte/' );
 					}
 					
 				} else {
@@ -2357,7 +2357,7 @@ class WDGUser {
 
 						//Si la page précédente était déjà la page connexion ou inscription,
 						// on tente de voir si la redirection était passée en paramètre
-						if ( strpos($referer_url, '/connexion/') !== FALSE || strpos($referer_url, '/inscription/') !== FALSE ) {
+						if ( strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'connexion' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'inscription' )) !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a', FALSE );

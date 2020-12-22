@@ -37,6 +37,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('check_invest_input');
 		WDGAjaxActions::add_action('save_user_docs');
 
+		WDGAjaxActions::add_action('init_sendinblue_templates');
+
 		// Mon compte
 		WDGAjaxActions::add_action( 'display_user_investments_optimized' );
 		WDGAjaxActions::add_action( 'get_transactions_table' );
@@ -478,6 +480,22 @@ class WDGAjaxActions {
 				exit();
 			}
 		}
+	}
+
+	public static function init_sendinblue_templates() {
+		$template_index = filter_input( INPUT_POST, 'template_index' );
+		$foreach_index = 0;
+		foreach ( NotificationsAPI::$description_str_by_template_id as $template_slug => $template_data ) {
+			if ( $template_index == $foreach_index ) {
+				WDGWPREST_Entity_SendinblueTemplate::update_template( $template_slug );
+				$foreach_index++;
+				break;
+			}
+			$foreach_index++;
+		}
+
+		echo $foreach_index;
+		exit();
 	}
 	
 	/**
