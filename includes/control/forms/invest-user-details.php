@@ -77,7 +77,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		);
 
 		$this->addField(
-			'text',
+			'not-editable',
 			'email',
 			__( "E-mail *", 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
@@ -596,23 +596,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 
 		// Analyse du formulaire
 		} else {
-			// Informations de base
-			$email = $this->getInputText( 'email' );
-			if ( !is_email( $email )  || !WDGRESTAPI_Lib_Validator::is_email( $email )) {
-				$this->addPostError(
-					'email',
-					__( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
-					'email'
-				);
-			}
-			// Si l'utilisateur change d'e-mail et que celui-ci est déjà utilisé, on bloque
-			if ( $WDGUser->get_email() != $email && email_exists( $email ) ) {
-				$this->addPostError(
-					'email',
-					__( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ),
-					'email'
-				);
-			}
+			// Informations de base			
+			$email = $WDGUser->get_email();
 			
 			$firstname = $this->getInputText( 'firstname' );
 			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
