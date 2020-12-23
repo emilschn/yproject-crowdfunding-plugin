@@ -662,6 +662,17 @@ class ATCF_Campaign {
         return $this->get_api_data( 'team_contacts' );
     }
 	
+	public static $key_legal_procedure = 'legal_procedure';
+	public static $legal_procedure_list = array(
+		'no'		=> 'Non',
+		'in_progress'	=> 'En cours',
+		'finished'	=> 'Termin&eacute;e'
+	);
+	public function get_legal_procedure() {
+		$buffer = $this->get_api_data( self::$key_legal_procedure );
+		if ( empty( $buffer ) ) { $buffer = 'no'; }
+		return $buffer;
+	}
 	
 /*******************************************************************************
  * FICHIERS
