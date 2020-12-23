@@ -3988,7 +3988,7 @@ class WDGAjaxActions {
 				$recipient_name = $metadata_decoded->user->name;
 				date_default_timezone_set("Europe/Paris");
 				$today_datetime = new DateTime();
-				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $amount, $today_datetime->format( 'd/m/Y H:i' ) ) ) {
+				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $amount, $today_datetime->format( 'd/m/Y H:i' ), $metadata_decoded->organization->name ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 
