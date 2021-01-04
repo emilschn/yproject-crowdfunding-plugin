@@ -1351,7 +1351,7 @@ class WDGQueue {
 			// On vérifie qu'il y a toujours l'argent sur le wallet
 			$mandate_is_success = TRUE;
 			$payment_token = $roi_declaration->payment_token;
-			if ( !empty( $payment_token ) ) {
+			if ( !empty( $payment_token ) && $roi_declaration->mean_payment == WDGROIDeclaration::$mean_payment_mandate ) {
 				$payment_result = LemonwayLib::get_transaction_by_id( $payment_token, 'transactionId' );
 				if ( $payment_result->STATUS != '3' ) {
 					$mandate_is_success = FALSE;
