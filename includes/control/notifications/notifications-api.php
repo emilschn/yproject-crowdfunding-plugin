@@ -329,7 +329,7 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-9days-without-mandate' => array (
+		'declaration-2days-without-mandate' => array (
 			'fr-sib-id'		=> '116',
 			'description'	=> "Déclarations - Rappel J-2 (sans prélèvement)",
 			'variables'		=> "",
