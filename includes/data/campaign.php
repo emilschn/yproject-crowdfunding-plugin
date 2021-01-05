@@ -1093,8 +1093,11 @@ class ATCF_Campaign {
 		$investments_list = $this->payments_data( TRUE );
 		$date_end = FALSE;
 		if ( !empty( $str_date_end ) ) {
-			$date_end = new DateTime( $str_date_end );
-			$date_end->setTime( 23, 59, 59 );
+			$date_valid = preg_match( '`(\d{4})-(\d{1,2})-(\d{1,2})`', $date_end );
+			if( $date_valid ){
+				$date_end = new DateTime( $str_date_end );
+				$date_end->setTime( 23, 59, 59 );
+			}
 		}
 		
 		$amount = 0;
