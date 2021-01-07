@@ -7,7 +7,8 @@ class WDG_Template_PDF_Form_Tax_Exemption {
 		$user_name,
 		$user_address,
 		$form_ip_address,
-		$form_date
+		$form_date,
+		$year
 			
 	) {
 		ob_start();
@@ -20,7 +21,7 @@ class WDG_Template_PDF_Form_Tax_Exemption {
 			<span style="font-weight: bold; font-size: 18pt;">ATTESTATION SUR L'HONNEUR</span>
 			<br><br>
 			Demande de dispense de prélèvement prévu au I de l'article 125 A du Code Général des Impôts<br>
-			relative à mes investissements sur la plateforme WE DO GOOD
+			relative à mes investissements sur la plateforme WE DO GOOD pour l'année <?php echo $year; ?>
 		</p>
 		
 		<p style="text-align: justify">

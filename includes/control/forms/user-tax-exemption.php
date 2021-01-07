@@ -81,24 +81,28 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 		} else {
 			
 			// Création et enregistrement en base du nom du fichier
-			$date_today = new DateTime();
-			
+			$date_today = new DateTime();			
+            if ($action_posted == 'create') {
+				$year = filter_input( INPUT_POST, 'year' );
+            } else{
+				$year = $date_today->format( 'Y' );
+			}
 			$filename = $WDGUser->get_wpref(). '-' .sanitize_title( $WDGUser->get_firstname() ). '-' .sanitize_title( $WDGUser->get_lastname() );
-			$filepath = __DIR__ . '/../../../files/tax-exemption/' .$date_today->format( 'Y' ). '/' . $filename;
+			$filepath = __DIR__ . '/../../../files/tax-exemption/' .$year. '/' . $filename;
 			$dirname = dirname( $filepath );
 			if ( !is_dir( $dirname ) ) {
 				mkdir( $dirname, 0755, true );
 			}
 
-			if ( $action_posted == 'create' ){
+			if ( $action_posted == 'create' ){				
 				$ext = 'pdf';				// Création du fichier PDF correspondant
 				$core = ATCF_CrowdFunding::instance();
 				$core->include_control( 'templates/pdf/form-tax-exemption' );
 				$user_name = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname();
 				$user_address = $WDGUser->get_full_address_str(). ' ' .$WDGUser->get_postal_code( TRUE ). ' ' .$WDGUser->get_city();
 				$form_ip_address = $_SERVER[ 'REMOTE_ADDR' ];
-				$form_date = $date_today->format( 'd/m/Y' );
-				$html_content = WDG_Template_PDF_Form_Tax_Exemption::get( $user_name, $user_address, $form_ip_address, $form_date );
+				$form_date = $date_today->format( 'd/m/Y' );// TODO à changer suivant l'année ?
+				$html_content = WDG_Template_PDF_Form_Tax_Exemption::get( $user_name, $user_address, $form_ip_address, $form_date, $year);
 			
 				$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
 				$html2pdf->WriteHTML( urldecode( $html_content ) );
@@ -142,7 +146,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 		
 			}
 			// enregistrement en base du nom du fichier
-			update_user_meta( $WDGUser->get_wpref(), 'tax_exemption_' .$date_today->format( 'Y' ), $filename.'.'.$ext );
+			update_user_meta( $WDGUser->get_wpref(), 'tax_exemption_' .$year, $filename.'.'.$ext );
 			
 		}
 		
