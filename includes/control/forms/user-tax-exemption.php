@@ -69,6 +69,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 		
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$action_posted = filter_input( INPUT_POST, 'real-action' );
+		$year = filter_input( INPUT_POST, 'year' );
 		$WDGUser = new WDGUser( $user_id );
 		$WDGUser_current = WDGUser::current();
 		// On s'en fout du feedback, ça ne devrait pas arriver
@@ -82,11 +83,6 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 			
 			// Création et enregistrement en base du nom du fichier
 			$date_today = new DateTime();			
-            if ($action_posted == 'create') {
-				$year = filter_input( INPUT_POST, 'year' );
-            } else{
-				$year = $date_today->format( 'Y' );
-			}
 			$filename = $WDGUser->get_wpref(). '-' .sanitize_title( $WDGUser->get_firstname() ). '-' .sanitize_title( $WDGUser->get_lastname() );
 			$filepath = __DIR__ . '/../../../files/tax-exemption/' .$year. '/' . $filename;
 			$dirname = dirname( $filepath );
