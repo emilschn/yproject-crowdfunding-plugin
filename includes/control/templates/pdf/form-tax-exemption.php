@@ -18,7 +18,7 @@ class WDG_Template_PDF_Form_Tax_Exemption {
 
 	<div style="margin-top: 20px;">
 		<p style="text-align: center;">
-			<span style="font-weight: bold; font-size: 18pt;">ATTESTATION SUR L'HONNEUR</span>
+			<span style="font-weight: bold; font-size: 18pt;">ATTESTATION SUR L'HONNEUR <?php echo $year; ?></span>
 			<br><br>
 			Demande de dispense de prélèvement prévu au I de l'article 125 A du Code Général des Impôts<br>
 			relative à mes investissements sur la plateforme WE DO GOOD pour l'année <?php echo $year; ?>
@@ -27,7 +27,7 @@ class WDG_Template_PDF_Form_Tax_Exemption {
 		<p style="text-align: justify">
 			Je soussigné, <?php echo $user_name; ?>,<br>
 			demeurant <?php echo $user_address; ?><br><br>
-			demande à être dispensé du prélèvement prévu au I de l'article 125 A du CGI
+			demande à être dispensé du prélèvement prévu au I de l'article 125 A du CGI pour l'année <?php echo $year; ?>
 			et atteste sur l'honneur que le revenu fiscal de référence de mon foyer fiscal figurant sur mon avis d'imposition 
 			établi au titre des revenus de l'avant-dernière année précédant le paiement des produits de placements à revenu fixe 
 			et gains assimilés mentionnés au I de l'article précité est inférieur à :<br>

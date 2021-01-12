@@ -4,7 +4,8 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 	public static $name = 'user-tax-exemption';
 	
 	public static $field_group_hidden = 'user-tax-exemption-hidden';
-	public static $field_group_upload = 'user-tax-exemption-upload';
+	public static $field_group_upload_inprogress = 'user-tax-exemption-upload_inprogress';
+	public static $field_group_upload_next = 'user-tax-exemption-upload_next';
 	public static $field_group_create = 'user-tax-exemption-create';
 	
 	private $user_id;
@@ -49,16 +50,30 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 			'hidden',
 			'real-action',
 			'',
-			self::$field_group_upload,
+			self::$field_group_upload_inprogress,
 			'upload'
 		);
 		$this->addField(
 			'file',
-			'tax-exemption-file',
+			'tax-exemption-file-inprogress',
 			'',
-			self::$field_group_upload
+			self::$field_group_upload_inprogress
 		);
 		
+		// $field_group_upload
+		$this->addField(
+			'hidden',
+			'real-action',
+			'',
+			self::$field_group_upload_next,
+			'upload'
+		);
+		$this->addField(
+			'file',
+			'tax-exemption-file-next',
+			'',
+			self::$field_group_upload_next
+		);
 	}
 	
 	public function postForm() {
