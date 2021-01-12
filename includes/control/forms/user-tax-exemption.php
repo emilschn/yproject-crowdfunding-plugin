@@ -3,9 +3,10 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 	
 	public static $name = 'user-tax-exemption';
 	
-	public static $field_group_hidden = 'user-tax-exemption-hidden';
-	public static $field_group_upload_inprogress = 'user-tax-exemption-upload_inprogress';
-	public static $field_group_upload_next = 'user-tax-exemption-upload_next';
+	public static $field_group_hidden_inprogress = 'user-tax-exemption-hidden-inprogress';
+	public static $field_group_hidden_next = 'user-tax-exemption-hidden-next';
+	public static $field_group_upload_inprogress = 'user-tax-exemption-upload-inprogress';
+	public static $field_group_upload_next = 'user-tax-exemption-upload-next';
 	public static $field_group_create = 'user-tax-exemption-create';
 	
 	private $user_id;
@@ -19,12 +20,16 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 	protected function initFields() {
 		parent::initFields();
 		
-		// $field_group_hidden
+		$date_today = new DateTime();
+		$inprogress_year = $date_today->format( 'Y' );
+		$next_year = $date_today->format( 'Y' )+1;
+
+		// $field_group_hidden_inprogress
 		$this->addField(
 			'hidden',
 			'action',
 			'',
-			self::$field_group_hidden,
+			self::$field_group_hidden_inprogress,
 			self::$name
 		);
 		
@@ -32,9 +37,44 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 			'hidden',
 			'user_id',
 			'',
-			self::$field_group_hidden,
+			self::$field_group_hidden_inprogress,
 			$this->user_id
 		);
+		
+		$this->addField(
+			'hidden',
+			'year_tax_exemption',
+			'',
+			self::$field_group_hidden_inprogress,
+			$inprogress_year
+		);
+
+
+		// $field_group_hidden_next
+		$this->addField(
+			'hidden',
+			'action',
+			'',
+			self::$field_group_hidden_next,
+			self::$name
+		);
+		
+		$this->addField(
+			'hidden',
+			'user_id',
+			'',
+			self::$field_group_hidden_next,
+			$this->user_id
+		);
+		
+		$this->addField(
+			'hidden',
+			'year_tax_exemption',
+			'',
+			self::$field_group_hidden_next,
+			$next_year
+		);
+
 
 		// $field_group_create
 		$this->addField(
@@ -84,7 +124,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 		
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$action_posted = filter_input( INPUT_POST, 'real-action' );
-		$year = filter_input( INPUT_POST, 'year' );
+		$year = filter_input( INPUT_POST, 'year_tax_exemption' );
 		$WDGUser = new WDGUser( $user_id );
 		$WDGUser_current = WDGUser::current();
 		// On s'en fout du feedback, ça ne devrait pas arriver
@@ -122,9 +162,19 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 			
 			if ( $action_posted == 'upload' ){
 				// renommage du fichier uploadé et déplacement dans le bon dossier
-				if ( isset( $_FILES[ 'tax-exemption-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'tax-exemption-file' ][ 'tmp_name' ] ) ) {					
+				$file_name = FALSE;
+				if ( isset( $_FILES[ 'tax-exemption-file-next' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'tax-exemption-file-next' ][ 'tmp_name' ] )){
+					$file_name = $_FILES[ 'tax-exemption-file-next' ]['name'];
+					$file_size = $_FILES[ 'tax-exemption-file-next' ]['size'];
+					$file_to_move = $_FILES[ 'tax-exemption-file-next' ][ 'tmp_name' ];
+				} elseif (isset( $_FILES[ 'tax-exemption-file-inprogress' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'tax-exemption-file-inprogress' ][ 'tmp_name' ] )){
+					$file_name = $_FILES[ 'tax-exemption-file-inprogress' ]['name'];
+					$file_size = $_FILES[ 'tax-exemption-file-inprogress' ]['size'];
+					$file_to_move = $_FILES[ 'tax-exemption-file-inprogress' ][ 'tmp_name' ];
+				}
 
-					$file_name = $_FILES[ 'tax-exemption-file' ]['name'];
+				if ( $file_name != FALSE ) {	
+					
 					$file_name_exploded = explode('.', $file_name);
 					$ext = $file_name_exploded[count($file_name_exploded) - 1];
 					
@@ -139,7 +189,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 						);
 						array_push( $feedback_errors, $error );
 					}
-					if ( ($_FILES[ 'tax-exemption-file' ]['size'] / 1024) / 1024 > 6 ) {
+					if ( ($file_size / 1024) / 1024 > 6 ) {
 						$good_file = FALSE;
 						$error = array(
 							'code'		=> 'size',
@@ -151,7 +201,7 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 		
 					if ( $good_file ) {
 						// si pas d'erreur, on renomme et déplace le fichier
-						move_uploaded_file( $_FILES[ 'tax-exemption-file' ][ 'tmp_name' ], $filepath.'.'.$ext  );
+						move_uploaded_file( $file_to_move, $filepath.'.'.$ext  );
 					}
 				}
 		
