@@ -96,7 +96,8 @@ class WDGWPREST_Entity_Project {
 			'minimum_goal_display'	=> $campaign->get_minimum_goal_display(),
 			'common_goods_turnover_percent'	=> $campaign->get_api_data( 'common_goods_turnover_percent' ),
 			'product_type'					=> $campaign->get_api_data( 'product_type' ),
-			'acquisition'					=> $campaign->get_api_data( 'acquisition' )
+			'acquisition'					=> $campaign->get_api_data( 'acquisition' ),
+			'legal_procedure'				=> $campaign->get_api_data( 'legal_procedure' )
 		);
 		return $parameters;
 	}

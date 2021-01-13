@@ -662,6 +662,17 @@ class ATCF_Campaign {
         return $this->get_api_data( 'team_contacts' );
     }
 	
+	public static $key_legal_procedure = 'legal_procedure';
+	public static $legal_procedure_list = array(
+		'no'		=> 'Non',
+		'in_progress'	=> 'En cours',
+		'finished'	=> 'Termin&eacute;e'
+	);
+	public function get_legal_procedure() {
+		$buffer = $this->get_api_data( self::$key_legal_procedure );
+		if ( empty( $buffer ) ) { $buffer = 'no'; }
+		return $buffer;
+	}
 	
 /*******************************************************************************
  * FICHIERS
@@ -1082,8 +1093,12 @@ class ATCF_Campaign {
 		$investments_list = $this->payments_data( TRUE );
 		$date_end = FALSE;
 		if ( !empty( $str_date_end ) ) {
-			$date_end = new DateTime( $str_date_end );
-			$date_end->setTime( 23, 59, 59 );
+			$re = '/(\d{4})-(\d{1,2})-(\d{1,2})/';
+			$date_valid = preg_match( $re , $str_date_end );
+			if( $date_valid ){
+				$date_end = new DateTime( $str_date_end );
+				$date_end->setTime( 23, 59, 59 );
+			}
 		}
 		
 		$amount = 0;

@@ -689,6 +689,9 @@ class WDGUser {
 *******************************************************************************/
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
+		if ( $WDG_cache_plugin == null ) {
+			$WDG_cache_plugin = new WDG_Cache_Plugin();
+		}
 		$cache_id = 'WDGUser::' .$this->get_wpref(). '::get_projects_list';
 		$cache_version = 1;
 		$result_cached = $WDG_cache_plugin->get_cache( $cache_id, $cache_version );

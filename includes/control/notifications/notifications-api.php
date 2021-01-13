@@ -329,7 +329,7 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-9days-without-mandate' => array (
+		'declaration-2days-without-mandate' => array (
 			'fr-sib-id'		=> '116',
 			'description'	=> "Déclarations - Rappel J-2 (sans prélèvement)",
 			'variables'		=> "",
@@ -2218,6 +2218,7 @@ class NotificationsAPI {
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'						=> $name,
+			'NOM_ENTREPRISE'			=> $subscription_reference,
 			'MONTANT'					=> $amount,
 			'IBAN_WDG'					=> $iban,
 			'REFERENCE_SOUSCRIPTION'	=> $subscription_reference,
@@ -2235,11 +2236,12 @@ class NotificationsAPI {
 	//*******************************************************
 	// VIREMENT RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $amount, $date_payment ) {
+	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $amount, $date_payment, $orga_name ) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-received-wire' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'					=> $name,
+			'NOM_ENTREPRISE'		=> $orga_name,
 			'MONTANT'				=> $amount,
 			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
@@ -2261,7 +2263,7 @@ class NotificationsAPI {
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'					=> $name,
-			'NOM_ENTREPRISE'			=> $orga_name,
+			'NOM_ENTREPRISE'		=> $orga_name,
 			'MONTANT'				=> $amount,
 			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
@@ -2278,11 +2280,12 @@ class NotificationsAPI {
 	//*******************************************************
 	// PAIEMENT PAR CARTE ERREUR
 	//*******************************************************
-	public static function prospect_setup_payment_method_error_card( $recipient, $name, $draft_url ) {
+	public static function prospect_setup_payment_method_error_card( $recipient, $name, $draft_url, $orga_name  ) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-error-card' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
 			'NOM'			=> $name,
+			'NOM_ENTREPRISE'		=> $orga_name,
 			'URL_DRAFT'		=> $draft_url,
 			'personal'		=> 1
 		);
