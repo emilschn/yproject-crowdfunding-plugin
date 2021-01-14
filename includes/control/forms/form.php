@@ -75,8 +75,8 @@ class WDG_Form {
 			'secondary'						=> $secondary
 		);
 		
-		$message_document_validated = __( "Document valid&eacute; par notre prestataire", 'yproject' );
-		$message_document_waiting = __( "Document en cours de validation par notre prestataire", 'yproject' );
+		$message_document_validated = __( 'forms.file.DOCUMENT_ACCEPTED_BY_PROVIDER', 'yproject' );
+		$message_document_waiting = __( 'forms.file.DOCUMENT_UNDER_VALIDATION', 'yproject' );
 		
 		$lw_document = new LemonwayDocument( $wallet_id, $document_type );
 		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted ) {

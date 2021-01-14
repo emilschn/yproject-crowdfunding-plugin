@@ -912,39 +912,39 @@ class WDGAjaxActions {
 				$buffer_investment_item[ 'status_str' ] = '';
 				if ( $result_investment_item->status == 'pending' ) {
 					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'En attente de paiement', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PENDING_PAYMENT', 'yproject' );
 					} else {
 						$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
 						if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'A valider', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.TO_BE_VALIDATED', 'yproject' );
 						}
 					}
 					
 				} elseif ( $result_investment_item->status == 'publish' ) {
 					if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_collecte ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Valid&eacute;', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.VALIDATED', 'yproject' );
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_closed ) {
 						$buffer_investment_item[ 'status' ] = 'canceled';
-						$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.ROYALTIES_FINISHED', 'yproject' );
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_archive ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Annul&eacute;', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.CANCELED', 'yproject' );
 						$date_end = new DateTime( $result_campaign_item->project_funding_end_date );
 						$date_end->add( new DateInterval( 'P15D' ) );
 						if ( $today_datetime < $date_end ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'En suspend', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.SUSPENDED', 'yproject' );
 						}
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Versements &agrave; venir', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.CONTRACT_GOING_TO_START', 'yproject' );
 						$first_payment_date = $result_campaign_item->project_first_payment_date;
 						if ( empty( $first_payment_date ) ) {
 							$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
 						}
 						$date_first_payement = new DateTime( $first_payment_date );
 						if ( $today_datetime > $date_first_payement ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'Versements en cours', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_STARTED', 'yproject' );
 						}
 					
 						$first_investment_contract_status = FALSE;
@@ -953,7 +953,7 @@ class WDGAjaxActions {
 						}
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
 							$buffer_investment_item[ 'status' ] = 'canceled';
-							$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_FINISHED', 'yproject' );
 						}
 					}
 				}
