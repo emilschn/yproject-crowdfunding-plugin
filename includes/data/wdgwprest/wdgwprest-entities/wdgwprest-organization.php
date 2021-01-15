@@ -152,6 +152,18 @@ class WDGWPREST_Entity_Organization {
 	}
 	
 	/**
+	 * Retourne le vIBAN lié à une organisation
+	 * @return array
+	 */
+	public static function get_viban( $organization_id ) {
+		$buffer = array();
+		if ( !empty( $organization_id ) ) {
+			$buffer = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/viban' );
+		}
+		return $buffer;
+	}
+	
+	/**
 	 * Retourne la liste des projets liés à une organisation
 	 * @param int $organization_id
 	 * @return array
