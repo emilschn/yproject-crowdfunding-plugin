@@ -1666,14 +1666,7 @@ class WDGOrganization {
 	 * 
 	 */
 	public function get_available_rois_amount() {
-		$buffer = 0;
-		if ( $this->get_lemonway_balance() > 0 ) {
-			$rois_amount = $this->get_rois_amount();
-			if ( $rois_amount > 0 ) {
-				$buffer = $this->get_rois_amount() - $this->get_transferred_amount();
-			}
-			$buffer = max( $buffer, 0 );
-		}
+		$buffer = $this->get_lemonway_balance();
 		return $buffer;
 	}
 	
