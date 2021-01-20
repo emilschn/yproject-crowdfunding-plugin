@@ -834,7 +834,8 @@ class WDGAjaxActions {
 				$buffer_investment_item[ 'date' ] = utf8_encode( $result_investment_item->invest_datetime );
 				$buffer_investment_item[ 'status' ] = utf8_encode( $result_investment_item->status );
 
-				
+				// Reinit de la date pour les tours de boucle
+				$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
 
 
 				// Création du tableau des prévisionnels par année
