@@ -1093,23 +1093,23 @@ class WDGUser {
 		$user_can_invest_errors = array();
 		
 		//Infos nÃ©cessaires pour tout type de financement
-		if ( $this->get_firstname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
-		if ( $this->get_lastname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre nom.', 'yproject')); }
-		if ( $this->get_email() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
-		if ( $this->get_nationality() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
-		if ( $this->get_birthday_day() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
-		if ( $this->get_birthday_month() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
-		if ( $this->get_birthday_year() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
+		if ( $this->get_firstname() == "" ) { array_push( $user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.FIRSTNAME', 'yproject' ) ); }
+		if ( $this->get_lastname() == "" ) { array_push( $user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.LASTNAME', 'yproject' ) ); }
+		if ( $this->get_email() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.EMAIL', 'yproject' ) ); }
+		if ( $this->get_nationality() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.NATIONALITY', 'yproject' ) ); }
+		if ( $this->get_birthday_day() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_DATE', 'yproject' ) ); }
+		if ( $this->get_birthday_month() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_DATE', 'yproject' ) ); }
+		if ( $this->get_birthday_year() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_DATE', 'yproject' ) ); }
 		
 		//Infos nÃ©cessaires pour l'investissement
 		if ( $campaign_funding_type != 'fundingdonation' ) {
-			if ( !$this->is_major() ) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
-			if ( $this->get_address() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
-			if ( $this->get_postal_code() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
-			if ( $this->get_city() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
-			if ( $this->get_country() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
-			if ( $this->get_birthplace() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
-			if ( $this->get_gender() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
+			if ( !$this->is_major() ) { array_push( $user_can_invest_errors, __( 'form.user-details.error.ONLY_MAJOR', 'yproject' ) ); }
+			if ( $this->get_address() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.ADDRESS', 'yproject' ) ); }
+			if ( $this->get_postal_code() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.ZIP_CODE', 'yproject' ) ); }
+			if ( $this->get_city() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.CITY', 'yproject' ) ); }
+			if ( $this->get_country() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.COUNTRY', 'yproject' ) ); }
+			if ( $this->get_birthplace() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_PLACE', 'yproject' ) ); }
+			if ( $this->get_gender() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.GENDER', 'yproject' ) ); }
 		}
 		
 		return (empty($user_can_invest_errors));

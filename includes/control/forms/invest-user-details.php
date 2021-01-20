@@ -51,7 +51,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'radio',
 			'user-type',
-			__( "Je souhaite investir *", 'yproject' ),
+			__( 'form.invest-input.I_WISH_TO_INVEST', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_type,
 			FALSE,
 			FALSE,
