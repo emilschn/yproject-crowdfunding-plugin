@@ -44,6 +44,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'save_image_url_video' );
 		WDGAjaxActions::add_action( 'send_project_notification' );
 		WDGAjaxActions::add_action( 'remove_project_cache' );
+		WDGAjaxActions::add_action( 'remove_project_lang' );
 
         // TBPP
 		WDGAjaxActions::add_action('remove_help_item');
@@ -1351,6 +1352,41 @@ class WDGAjaxActions {
 		WDGQueue::add_cache_post_as_html( $id_campaign, 'date', 'PT50M' );
 
 		exit( '1' );
+	}
+
+	public static function remove_project_lang() {
+		// Vérification que l'utilisateur peut supprimer la langue
+		$id_campaign = filter_input( INPUT_POST, 'id_campaign' );
+		$campaign = new ATCF_Campaign( $id_campaign );
+		if ( $campaign->current_user_can_edit() ) {
+
+			// Suppression de la langue dans la liste
+			$lang = filter_input( INPUT_POST, 'lang' );
+			$lang_list = $campaign->get_lang_list();
+			foreach ( $lang_list as $key => $lang_item_id ) {
+				if ( $lang == $lang_item_id ) {
+					array_splice( $lang_list, $key, 1 );
+					break;
+				}
+			}
+			update_post_meta( $id_campaign, ATCF_Campaign::$key_meta_lang, json_encode( $lang_list ) );
+
+			// Suppression des meta associées à la langue
+			delete_post_meta( $id_campaign, ATCF_Campaign::$key_google_doc . '_' . $lang );
+			delete_post_meta( $id_campaign, ATCF_Campaign::$key_logbook_google_doc . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_subtitle' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_summary' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_rewards' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_description' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_added_value' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_development_strategy' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_economic_model' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_measuring_impact' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_implementation' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_impact_area' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_societal_challenge' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_video' . '_' . $lang );
+		}
 	}
 
 	public static function remove_help_item() {
