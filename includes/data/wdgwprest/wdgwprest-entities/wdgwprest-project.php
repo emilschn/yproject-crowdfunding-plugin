@@ -68,7 +68,7 @@ class WDGWPREST_Entity_Project {
 			'goal_minimum'			=> $campaign->minimum_goal(),
 			'goal_maximum'			=> $campaign->goal( FALSE ),
 			'yield_for_investors'	=> '1', //TODO
-			'campaign_funding_type'		=> $campaign->funding_type(),
+			'funding_type'		=> $campaign->funding_type(),
 			'maximum_profit'		=> $campaign->maximum_profit(),
 			'maximum_profit_precision'	=> $campaign->maximum_profit_precision(),
 			'minimum_profit'		=> $campaign->minimum_profit(),
