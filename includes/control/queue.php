@@ -181,7 +181,7 @@ class WDGQueue {
 					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
 						$amount_royalties += $campaign_roi->amount;
 						// si il y a un montant taxé, on va prendre le montant du prélèvement social
-						if ( $campaign_roi->amount_taxed_in_cents > 0 ) {
+						if ( $campaign_roi->amount_taxed_in_cents > 0 && !empty( $WDGUser ) ) {
 							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
 						}
 						$has_declared = TRUE;
@@ -1351,7 +1351,7 @@ class WDGQueue {
 			// On vérifie qu'il y a toujours l'argent sur le wallet
 			$mandate_is_success = TRUE;
 			$payment_token = $roi_declaration->payment_token;
-			if ( !empty( $payment_token ) ) {
+			if ( !empty( $payment_token ) && $roi_declaration->mean_payment == WDGROIDeclaration::$mean_payment_mandate ) {
 				$payment_result = LemonwayLib::get_transaction_by_id( $payment_token, 'transactionId' );
 				if ( $payment_result->STATUS != '3' ) {
 					$mandate_is_success = FALSE;
@@ -1478,13 +1478,24 @@ class WDGQueue {
 
 			// Test si pas encore créé par l'utilisateur lié
 			$api_result = WDGWPREST_Entity_Project_Draft::get_by_id( $draft_id );
+			$WDGUser = false;
 			$has_created_project = false;
+			// Si un utilisateur était connecté, on récupère depuis l'id de connexion
 			if ( !empty( $api_result->id_user ) ) {
 				$WDGUser = WDGUser::get_by_api_id( $api_result->id_user );
+			
+			// Sinon, on récupère un utilisateur à partir de son email
+			} else if ( !empty( $api_result->email ) ) {
+				$wp_user = get_user_by( 'email', $api_result->email );
+				$WDGUser = new WDGUser( $wp_user->ID );
+			}
+			// Récupération de la liste des projets de l'utilisateur
+			if ( !empty( $WDGUser ) ) {
 				$project_list = $WDGUser->get_projects_list();
 				$has_created_project = !empty( $project_list );
 			}
 			
+			// Si aucun projet créé, on envoie la notif
 			if ( !$has_created_project ) {
 				$metadata_decoded = json_decode( $api_result->metadata );
 				NotificationsAPI::prospect_setup_dashboard_not_created( $api_result->email, $metadata_decoded->user->name, $metadata_decoded->organization->name );

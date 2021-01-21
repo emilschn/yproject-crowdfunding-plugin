@@ -47,6 +47,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'save_image_url_video' );
 		WDGAjaxActions::add_action( 'send_project_notification' );
 		WDGAjaxActions::add_action( 'remove_project_cache' );
+		WDGAjaxActions::add_action( 'remove_project_lang' );
 
         // TBPP
 		WDGAjaxActions::add_action('remove_help_item');
@@ -200,6 +201,7 @@ class WDGAjaxActions {
 			$response[ 'userinfos' ] = array();
 			$response[ 'userinfos' ][ 'userid' ] = $WDGUserCurrent->get_wpref();
 			$response[ 'userinfos' ][ 'username' ] = ( !empty( $firstname_WDGUserCurrent ) ) ? $firstname_WDGUserCurrent : $WDGUserCurrent->get_login();
+			$response[ 'userinfos' ][ 'my_account_txt' ] = __( 'common.MY_ACCOUNT', 'yproject' );
 			$response[ 'userinfos' ][ 'image_dom_element' ] = UIHelpers::get_user_avatar( $WDGUserCurrent->get_wpref(), 'icon' );
 			$response[ 'userinfos' ][ 'logout_url' ] = wp_logout_url(). '&page_id=' .get_the_ID();
 			
@@ -922,7 +924,8 @@ class WDGAjaxActions {
 				$buffer_investment_item[ 'date' ] = utf8_encode( $result_investment_item->invest_datetime );
 				$buffer_investment_item[ 'status' ] = utf8_encode( $result_investment_item->status );
 
-				
+				// Reinit de la date pour les tours de boucle
+				$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
 
 
 				// Création du tableau des prévisionnels par année
@@ -990,39 +993,39 @@ class WDGAjaxActions {
 				$buffer_investment_item[ 'status_str' ] = '';
 				if ( $result_investment_item->status == 'pending' ) {
 					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'En attente de paiement', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PENDING_PAYMENT', 'yproject' );
 					} else {
 						$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
 						if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'A valider', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.TO_BE_VALIDATED', 'yproject' );
 						}
 					}
 					
 				} elseif ( $result_investment_item->status == 'publish' ) {
 					if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_collecte ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Valid&eacute;', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.VALIDATED', 'yproject' );
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_closed ) {
 						$buffer_investment_item[ 'status' ] = 'canceled';
-						$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.ROYALTIES_FINISHED', 'yproject' );
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_archive ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Annul&eacute;', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.CANCELED', 'yproject' );
 						$date_end = new DateTime( $result_campaign_item->project_funding_end_date );
 						$date_end->add( new DateInterval( 'P15D' ) );
 						if ( $today_datetime < $date_end ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'En suspend', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.SUSPENDED', 'yproject' );
 						}
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Versements &agrave; venir', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.CONTRACT_GOING_TO_START', 'yproject' );
 						$first_payment_date = $result_campaign_item->project_first_payment_date;
 						if ( empty( $first_payment_date ) ) {
 							$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
 						}
 						$date_first_payement = new DateTime( $first_payment_date );
 						if ( $today_datetime > $date_first_payement ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'Versements en cours', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_STARTED', 'yproject' );
 						}
 					
 						$first_investment_contract_status = FALSE;
@@ -1031,7 +1034,7 @@ class WDGAjaxActions {
 						}
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
 							$buffer_investment_item[ 'status' ] = 'canceled';
-							$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_FINISHED', 'yproject' );
 						}
 					}
 				}
@@ -1431,6 +1434,41 @@ class WDGAjaxActions {
 		exit( '1' );
 	}
 
+	public static function remove_project_lang() {
+		// Vérification que l'utilisateur peut supprimer la langue
+		$id_campaign = filter_input( INPUT_POST, 'id_campaign' );
+		$campaign = new ATCF_Campaign( $id_campaign );
+		if ( $campaign->current_user_can_edit() ) {
+
+			// Suppression de la langue dans la liste
+			$lang = filter_input( INPUT_POST, 'lang' );
+			$lang_list = $campaign->get_lang_list();
+			foreach ( $lang_list as $key => $lang_item_id ) {
+				if ( $lang == $lang_item_id ) {
+					array_splice( $lang_list, $key, 1 );
+					break;
+				}
+			}
+			update_post_meta( $id_campaign, ATCF_Campaign::$key_meta_lang, json_encode( $lang_list ) );
+
+			// Suppression des meta associées à la langue
+			delete_post_meta( $id_campaign, ATCF_Campaign::$key_google_doc . '_' . $lang );
+			delete_post_meta( $id_campaign, ATCF_Campaign::$key_logbook_google_doc . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_subtitle' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_summary' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_rewards' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_description' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_added_value' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_development_strategy' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_economic_model' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_measuring_impact' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_implementation' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_impact_area' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_societal_challenge' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_video' . '_' . $lang );
+		}
+	}
+
 	public static function remove_help_item() {
 		$name = filter_input(INPUT_POST, 'name');
 		$version = filter_input(INPUT_POST, 'version');
@@ -1534,6 +1572,16 @@ class WDGAjaxActions {
 				delete_post_meta( $campaign_id, ATCF_Campaign::$key_skip_in_stats );
 			}
 			$success[ 'new_skip_in_stats' ] = 1;
+
+			// Procédure de recouvrement
+			$new_legal_procedure = sanitize_text_field(filter_input(INPUT_POST,'new_legal_procedure'));
+			if ( !empty( $new_legal_procedure ) ) {
+				if ( $new_legal_procedure == 'no' ){
+					$new_legal_procedure = '';
+				}
+				$campaign->set_api_data( 'legal_procedure', $new_legal_procedure );
+				$success[ "new_legal_procedure" ] = 1;
+			}
 
 			//Catégories du projet
 			$new_project_categories = array();
@@ -4085,7 +4133,7 @@ class WDGAjaxActions {
 				$recipient_name = $metadata_decoded->user->name;
 				date_default_timezone_set("Europe/Paris");
 				$today_datetime = new DateTime();
-				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $amount, $today_datetime->format( 'd/m/Y H:i' ) ) ) {
+				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $amount, $today_datetime->format( 'd/m/Y H:i' ), $metadata_decoded->organization->name ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 

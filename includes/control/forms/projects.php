@@ -208,11 +208,13 @@ class WDGFormProjects {
 					'post_status'    => 'inherit'
 				);
 
-				//Suppression dans la base de données de l'ancienne image
+				//Suppression dans la base de données des anciennes images
 				global $wpdb;
 				$table_posts = $wpdb->prefix . "posts";
-				$old_attachement_id = $wpdb->get_var( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_home'" );
-				wp_delete_attachment($old_attachement_id, true);
+				$old_attachement_id = $wpdb->get_results( "SELECT * FROM ".$table_posts." WHERE post_parent=".$campaign_id." and post_title='image_home'" );
+				foreach ($old_attachement_id as $item) {
+					wp_delete_attachment($item->ID, true);
+				}
 				
 				$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign_id );	
 
