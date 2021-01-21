@@ -525,7 +525,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 	$buffer = '';
 	
 	if ( $with_agreement ) {
-		$wdg_standard_contract_agreement = get_option( 'wdg_standard_contract_agreement' );
+		$standard_contract_agreement = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_contract_frame, 'wdg_standard_contract_agreement' );
 		$buffer .= '<page backbottom="15mm">';
 		$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $wdg_standard_contract_agreement );
 		$buffer .= '</page>';
@@ -654,6 +654,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 	$shortcode_organization_obj = $organization_obj;
 	$campaign_orga_linked_users = $shortcode_organization_obj->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 	$shortcode_organization_creator = $campaign_orga_linked_users[0];
+	$standard_contract = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_contract_full, 'standard_contract' );
 	
 	// Si le projet surcharge le contrat standard
 	$project_override_contract = $campaign_obj->override_contract();
@@ -665,11 +666,11 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 		}
 		
 	// Si il y a un contrat standard défini, on le prend directement
-	} else if ( !empty( $edd_settings[ 'standard_contract' ] ) ) {
+	} else if ( !empty( $standard_contract ) ) {
 		if ( $preview ) {
-			$buffer .= wpautop( $edd_settings[ 'standard_contract' ] );
+			$buffer .= wpautop( $standard_contract );
 		} else {
-			$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $edd_settings[ 'standard_contract' ] );
+			$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $standard_contract );
 		}
 		
 	

@@ -79,10 +79,11 @@ function atcf_get_campaign_post_by_payment_id($payment_id) {
 function atcf_create_campaign($author_ID, $title){
     global $edd_options;
 
+	$default_pitch = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_pitch, 'default_pitch' );
     $args = array(
         'post_type'   		 	=> 'download',
         'post_status'  		 	=> 'publish',
-        'post_content' 		 	=> $edd_options['default_pitch'] ,
+        'post_content' 		 	=> $default_pitch,
         'post_title'   		 	=> $title,
         'post_author'  			=> $author_ID,
 
@@ -107,10 +108,14 @@ function atcf_create_campaign($author_ID, $title){
     add_post_meta( $newcampaign_id, ATCF_Campaign::$key_end_collecte_date,  $default_date);
     add_post_meta( $newcampaign_id, ATCF_Campaign::$key_begin_collecte_date, $default_date);
 
-    add_post_meta( $newcampaign_id, 'campaign_societal_challenge', $edd_options['default_positive_impacts']);
-    add_post_meta( $newcampaign_id, 'campaign_added_value', $edd_options['default_strategy']);
-    add_post_meta( $newcampaign_id, 'campaign_economic_model', $edd_options['default_financiary']);
-    add_post_meta( $newcampaign_id, 'campaign_implementation', $edd_options['default_team']);
+	$default_positive_impacts = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_impacts, 'default_positive_impacts' );
+    add_post_meta( $newcampaign_id, 'campaign_societal_challenge', $default_positive_impacts );
+	$default_strategy = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_strategy, 'default_strategy' );
+    add_post_meta( $newcampaign_id, 'campaign_added_value', $default_strategy );
+	$default_finance = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_finance, 'default_finance' );
+    add_post_meta( $newcampaign_id, 'campaign_economic_model', $default_finance );
+	$default_team = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_team, 'default_team' );
+    add_post_meta( $newcampaign_id, 'campaign_implementation', $default_team );
 
     // EDD Stuff
     add_post_meta( $newcampaign_id, '_variable_pricing', 0 );
@@ -692,8 +697,8 @@ class ATCF_Campaign {
 	public function copy_default_contract_if_empty() {
 		$project_override_contract = $this->override_contract();
 		if ( empty( $project_override_contract ) ) {
-			$edd_settings = get_option( 'edd_settings' );
-			update_post_meta( $this->ID, self::$key_override_contract, $edd_settings[ 'standard_contract' ] );
+			$standard_contract = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_contract_full, 'standard_contract' );
+			update_post_meta( $this->ID, self::$key_override_contract, $standard_contract );
 		}
 	}
 
@@ -1079,8 +1084,7 @@ class ATCF_Campaign {
 		} else {
 			return;
 		}
-		$edd_settings = get_option( 'edd_settings' );
-		$fiscal_info = $edd_settings[ 'accounting_fiscal_info' ];
+		$fiscal_info = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_info_fiscal, 'accounting_fiscal_info' );
 		if ( empty( $fiscal_info ) ) {
 			return;
 		}

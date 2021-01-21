@@ -216,8 +216,8 @@ class WDGPostActions {
 
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
 				$newcampaign->set_forced_mandate( 1 );
-				$edd_settings = get_option( 'edd_settings' );
-				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $edd_settings[ 'contract_mandate' ] );
+				$contract_mandate = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_term_mandate, 'contract_mandate' );
+				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $contract_mandate );
 				$newcampaign->link_organization( $orga_api_id );
 				$newcampaign->update_api();
 			
