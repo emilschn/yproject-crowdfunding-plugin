@@ -674,6 +674,20 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 	
+	public static $key_organization_type = 'organization_type';
+	public static $organization_type_list = array(
+		'Acteur de l\'ESS'		=> 'Acteur de l\'ESS',
+		'Particulier'			=> 'Particulier',
+		'TPE / PME / ETI'		=> 'TPE / PME / ETI',
+		'Startup'				=> 'Startup',
+		'Collectivité'			=> 'Collectivité'
+	);
+	public function get_organization_type() {
+		$buffer = $this->get_api_data( self::$key_organization_type );
+		if ( empty( $buffer ) ) { $buffer = 'no'; }
+		return $buffer;
+	}
+	
 /*******************************************************************************
  * FICHIERS
  ******************************************************************************/
