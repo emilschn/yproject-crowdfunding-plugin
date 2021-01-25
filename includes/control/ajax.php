@@ -1504,6 +1504,13 @@ class WDGAjaxActions {
 				$success[ "new_legal_procedure" ] = 1;
 			}
 
+			// Type de structure
+			$new_organization_type = sanitize_text_field(filter_input(INPUT_POST,'new_organization_type'));
+			if ( !empty( $new_organization_type ) ) {
+				$campaign->set_api_data( 'organization_type', $new_organization_type );
+				$success[ "new_organization_type" ] = 1;
+			}
+
 			//Catégories du projet
 			$new_project_categories = array();
 			if ( isset( $_POST["new_project_categories"] ) ) $new_project_categories = $_POST["new_project_categories"];
