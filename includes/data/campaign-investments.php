@@ -467,7 +467,7 @@ class WDGCampaignInvestments {
 			$url_dashboard = home_url( '/tableau-de-bord/?campaign_id=' .$campaign->ID );
 			
 			$replyto_mail = 'support@wedogood.co';
-			NotificationsAPI::campaign_advice( 'communication@wedogood.co', $replyto_mail, $campaign->get_name(), $url_dashboard, 'WE DO GOOD', $greetings, $last_24h, $top_actions );
+			NotificationsAPI::campaign_advice( 'support@wedogood.co', $replyto_mail, $campaign->get_name(), $url_dashboard, 'WE DO GOOD', $greetings, $last_24h, $top_actions );
 			
 			$WDGUserAuthor = new WDGUser( $campaign->data->post_author );
 			NotificationsAPI::campaign_advice( $WDGUserAuthor->get_email(), $replyto_mail, $campaign->get_name(), $url_dashboard, $WDGUserAuthor->get_firstname(), $greetings, $last_24h, $top_actions );
