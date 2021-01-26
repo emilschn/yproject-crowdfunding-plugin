@@ -773,6 +773,23 @@ class WDGUser {
 		return ( !empty( $hasvoted_results[0]->id ) );
 	}
 	
+	public function has_orga_voted_on_campaign( $campaign_id ) {
+		$organizations_list = $this->get_organizations_list();
+		if (empty($organizations_list)) {
+			return FALSE;
+		}else{
+			global $wpdb;
+			$table_name = $wpdb->prefix . "ypcf_project_votes";
+
+			foreach ($organizations_list as $organization_item) {
+				$hasvoted_results = $wpdb->get_results('SELECT id FROM '.$table_name.' WHERE post_id = '.$campaign_id.' AND user_id = '.$organization_item->wpref);
+				if ( !empty( $hasvoted_results[0]->id ) ){
+					return TRUE;
+				}
+			}
+		}
+	}
+
 	public function get_amount_voted_on_campaign( $campaign_id ) {
 		global $wpdb;
 		$buffer = 0;
