@@ -101,7 +101,7 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 				
 				WDGWPREST_Entity_User::update( $WDGUser );
 			
-				array_push( $feedback_success, __( 'form.user-password.PASSWORD_MODIFIED' ) );
+				array_push( $feedback_success, __( 'form.user-password.PASSWORD_MODIFIED', 'yproject' ) );
 			}
 			
 		}
