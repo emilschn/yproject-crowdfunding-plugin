@@ -527,7 +527,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 	if ( $with_agreement ) {
 		$standard_contract_agreement = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_contract_frame, 'wdg_standard_contract_agreement' );
 		$buffer .= '<page backbottom="15mm">';
-		$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $wdg_standard_contract_agreement );
+		$buffer .= apply_filters( 'WDG_PDF_Generator_filter', $standard_contract_agreement );
 		$buffer .= '</page>';
 	}
 		
