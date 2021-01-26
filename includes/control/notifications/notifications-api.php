@@ -505,7 +505,7 @@ class NotificationsAPI {
 	private static function send( $parameters ) {
 		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		if ( empty( $result->result ) ) {
-			NotificationsAsana::notification_api_failed( $result );
+			NotificationsAsana::notification_api_failed( $parameters, $result );
 		}
 		return $result;
 	}
