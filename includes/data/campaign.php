@@ -1862,9 +1862,9 @@ class ATCF_Campaign {
 	public function is_investable() {
 		// Possible d'investir si le porteur de projet a bien rempli ses informations et que le montant max n'a pas été atteint
 		$buffer = ypcf_check_user_is_complete( $this->data->post_author ) && $this->percent_completed( false ) < 100;
-		// Si en évaluation, il faut que l'utilisateur ait évalué
+		// Si en évaluation, il faut que l'utilisateur ait évalué, ou son orga
 		$WDGUser_current = WDGUser::current();
-		$is_vote_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) && ( $WDGUser_current->has_voted_on_campaign( $this->ID ) );
+		$is_vote_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_vote ) && ( $WDGUser_current->has_voted_on_campaign( $this->ID ) || $WDGUser_current->has_orga_voted_on_campaign( $this->ID ) );
 		// Si en investissement et qu'il reste du temps
 		$is_collecte_investable = ( $this->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) && $this->is_remaining_time();
 		return $buffer && ( $is_vote_investable || $is_collecte_investable );
