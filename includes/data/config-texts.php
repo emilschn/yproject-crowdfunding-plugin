@@ -22,7 +22,7 @@ class WDGConfigTexts {
 	public static $type_investment_terms = 'modalites-dinvestissement';
 
 	public static $type_contract_frame = 'accord-cadre';
-	public static $type_contract_full = 'contract-dinvestissement';
+	public static $type_contract_full = 'contrat-dinvestissement';
 
 	public static $type_info_fiscal = 'informations-comptables-fiscales';
 	public static $type_info_lemonway = 'informations-lemonway';
