@@ -291,10 +291,13 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_admin, $object, $message );
 	}
 	
-	public static function notification_api_failed( $data ) {
+	public static function notification_api_failed( $parameters, $result ) {
 		$object = "Erreur mail sendinblue";
 		$content = "Erreur de mail envoyé par SendInBlue :<br>";
-		$content .= print_r( $data, true );
+		$content .= "Paramètres :<br>";
+		$content .= print_r( $parameters, true );
+		$content .= "Résultat :<br>";
+		$content .= print_r( $result, true );
 		return self::send( self::$notif_type_admin, $object, $content );
 	}
 
