@@ -962,7 +962,9 @@ class WDGAjaxActions {
 
 				$buffer_investment_item[ 'roi_amount' ] = 0;
 				foreach ( $result_investment_item->rois as $roi_item ) {
-					$buffer_investment_item[ 'roi_amount' ] += $roi_item->amount;
+					if($roi_item->status == 'transferred' ){
+						$buffer_investment_item[ 'roi_amount' ] += $roi_item->amount;
+					}
 				}
 				$buffer_investment_item[ 'roi_amount' ] = utf8_encode( $buffer_investment_item[ 'roi_amount' ] );
 				$buffer_investment_item[ 'roi_return' ] = utf8_encode( round( $buffer_investment_item[ 'roi_amount' ] / $result_investment_item->amount * 100 ) );
