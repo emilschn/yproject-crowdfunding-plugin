@@ -2345,7 +2345,11 @@ class ATCF_Campaign {
 	 * @return sting Campaign Video
 	 */
 	public function video() {
-		return $this->__get_translated_property( 'campaign_video' );
+		$buffer = $this->__get_translated_property( 'campaign_video' );	
+		if( empty($buffer) ){
+			$buffer =$this->__get( 'campaign_video_fr' );	
+		}
+		return $buffer;
 	}
 	
 	/**
