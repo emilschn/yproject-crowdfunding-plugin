@@ -962,7 +962,7 @@ class WDGAjaxActions {
 
 				$buffer_investment_item[ 'roi_amount' ] = 0;
 				foreach ( $result_investment_item->rois as $roi_item ) {
-					if($roi_item->status == 'transferred' ){
+					if($roi_item->status == WDGROI::$status_transferred ){
 						$buffer_investment_item[ 'roi_amount' ] += $roi_item->amount;
 					}
 				}
