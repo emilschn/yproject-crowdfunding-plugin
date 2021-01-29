@@ -10,7 +10,7 @@ class WDG_FiscalDocuments {
 	private static $wedogood_town_office = 'Nantes';
 	private static $wedogood_siret = '79751910500051';
 	private static $wedogood_previous_siret = '79751910500051';
-	private static $wedogood_legal_category = '5720'; // Anciennement 5710
+	private static $wedogood_legal_category = '5710';
 	
 	private static $wedogood_person_incharge_name = 'Schneider Emilien';
 	private static $wedogood_person_incharge_phone = '0972651589';
@@ -148,6 +148,7 @@ class WDG_FiscalDocuments {
 
 			$investment_user_rois_amount_total = 0;
 			$investment_user_rois_amount_year = 0;
+			$amount_tax_sampled_year = 0;
 			
 			foreach ( $investments_for_user as $investment_item ) {
 				$investment_amount += $investment_item[ 'amount' ];
@@ -160,7 +161,9 @@ class WDG_FiscalDocuments {
 						$investment_user_rois_amount_total += $roi_item->amount;
 						if ( $date_transfer->format( 'Y' ) == $fiscal_year ) {
 							$investment_user_rois_amount_year += $roi_item->amount;
-							// TODO : re-calculer la taxe à partir de la taxe effectivement prélevée avec la donnée spécifique de taxe
+							// Calcule de la taxe effectivement prélevée avec la donnée spécifique de taxe
+							$tax_item = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
+							$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
 						}
 					}
 				}
@@ -172,11 +175,10 @@ class WDG_FiscalDocuments {
 			if ( $amount_to_declare > 0 ) {
 				$ifu_entity_txt = self::add_ifu_entity( $investment_entity_id, $fiscal_year );
 				$amount_to_declare_round = round( $amount_to_declare );
-				$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
-				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
+				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_sampled_year );
 				if ( !empty( $ifu_entity_txt ) ) {
 					$ifu_txt .= $ifu_entity_txt;
-					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_round );
+					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_sampled_year );
 					$entity_index++;
 				}
 			}
