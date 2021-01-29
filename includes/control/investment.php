@@ -799,6 +799,7 @@ class WDGInvestment {
 		$save_display_name = $WDGUser_current->wp_user->display_name;
 		$invest_type = $this->get_session_user_type();
 		$lemonway_id = $WDGUser_current->get_lemonway_id();
+		$viban_item = FALSE;
 		if ( $invest_type != 'user' && !empty( $invest_type ) ) {
 			$WDGOrganization = new WDGOrganization( $invest_type );
 			if ( $WDGOrganization ) {
@@ -806,8 +807,22 @@ class WDGInvestment {
 				$save_user_id = $current_user_organization->ID;
 				$save_display_name = $WDGOrganization->get_name();
 				$lemonway_id = $WDGOrganization->get_lemonway_id();
+				$viban_item = $WDGOrganization->get_viban();
 			}
 		}
+		if ( empty( $viban_item ) ) {
+			$viban_item = $WDGUser_current->get_viban();
+		}
+
+		$viban_iban = '';
+		$viban_bic = '';
+		$viban_holder = '';
+		if ( !empty( $viban_item ) ) {
+			$viban_iban = $viban_item->DATA;
+			$viban_bic = $viban_item->SWIFT;
+			$viban_holder = $viban_item->HOLDER;
+		}
+
 		$amount = 0;
 		if ( $amount_param > 0 ) {
 			$amount = $amount_param;
@@ -926,7 +941,7 @@ class WDGInvestment {
 			NotificationsSlack::investment_pending_wire( $payment_id );
 			$buffer = NotificationsAsana::investment_pending_wire( $payment_id );
 
-			NotificationsAPI::investment_pending_wire( $WDGUser_current->get_email(), $save_display_name, $amount, $this->campaign->get_name(), $lemonway_id, $this->campaign->get_api_id() );
+			NotificationsAPI::investment_pending_wire( $WDGUser_current->get_email(), $save_display_name, $amount, $this->campaign->get_name(), $viban_iban, $viban_bic, $viban_holder, $this->campaign->get_api_id() );
 		}
 		
 		//Si un utilisateur investit, il croit au projet
