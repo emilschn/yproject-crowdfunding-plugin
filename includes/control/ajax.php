@@ -37,8 +37,10 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('init_sendinblue_templates');
 
 		// Mon compte
+		WDGAjaxActions::add_action( 'display_user_investments' ); // deprecated
 		WDGAjaxActions::add_action( 'display_user_investments_optimized' );
 		WDGAjaxActions::add_action( 'get_transactions_table' );
+		WDGAjaxActions::add_action( 'get_viban_info' );
 
 		// Page projet
 		WDGAjaxActions::add_action( 'save_image_url_video' );
@@ -1306,6 +1308,31 @@ class WDGAjaxActions {
 		}
 
 		exit( $html_table );
+	}
+
+
+	public static function get_viban_info() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$entity = FALSE;
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$entity = new WDGOrganization( $user_id );
+		} else {
+			$entity = new WDGUser( $user_id );
+		}
+		$iban_info = $entity->get_viban();
+
+		$result = array();
+		if ( !empty( $iban_info ) ) {
+			$result[ 'holder' ] = $iban_info->HOLDER;
+			$result[ 'iban' ] = $iban_info->DATA;
+			$result[ 'bic' ] = $iban_info->SWIFT;
+			
+		} else {
+			$result[ 'error' ] = 1;
+		}
+
+		echo json_encode( $result );
+		exit();
 	}
 	
 

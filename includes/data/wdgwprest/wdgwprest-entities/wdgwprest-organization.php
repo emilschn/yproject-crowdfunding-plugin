@@ -158,7 +158,7 @@ class WDGWPREST_Entity_Organization {
 	public static function get_viban( $organization_id ) {
 		$buffer = array();
 		if ( !empty( $organization_id ) ) {
-			$buffer = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/viban' );
+			$buffer = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/virtual-iban' );
 		}
 		return $buffer;
 	}

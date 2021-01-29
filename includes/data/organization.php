@@ -1551,7 +1551,7 @@ class WDGOrganization {
 	}
 	
 	public function get_viban() {
-		if ( !$this->is_lemonway_registered() ) {
+		if ( !$this->is_registered_lemonway_wallet() ) {
 			return FALSE;
 		}
 
