@@ -97,7 +97,9 @@ class WDGWPREST_Entity_Project {
 			'common_goods_turnover_percent'	=> $campaign->get_api_data( 'common_goods_turnover_percent' ),
 			'product_type'					=> $campaign->get_api_data( 'product_type' ),
 			'acquisition'					=> $campaign->get_api_data( 'acquisition' ),
-			'legal_procedure'				=> $campaign->get_api_data( 'legal_procedure' )
+			'legal_procedure'				=> $campaign->get_api_data( 'legal_procedure' ),
+			'funding_type'					=> $campaign->funding_type(),
+			'organization_type'				=> $campaign->get_api_data( 'organization_type' )
 		);
 		return $parameters;
 	}

@@ -49,7 +49,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$this->addField(
 			'text',
 			'bank-holdername',
-			__( "Nom du propri&eacute;taire du compte *", 'yproject' ),
+			__( 'form.user-bank.NAME_ACCOUNT_OWNER', 'yproject' ) . ' *',
 			WDG_Form_User_Bank::$field_group_iban,
 			( $this->is_orga ) ? $WDGOrganization->get_bank_owner() : $WDGUser->get_bank_holdername()
 		);
@@ -57,7 +57,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$this->addField(
 			'text',
 			'bank-address',
-			__( "Adresse du compte *", 'yproject' ),
+			__( 'form.user-bank.ADDRESS_ACCOUNT', 'yproject' ) . ' *',
 			WDG_Form_User_Bank::$field_group_iban,
 			( $this->is_orga ) ? $WDGOrganization->get_bank_address() : $WDGUser->get_bank_address()
 		);
@@ -65,7 +65,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$this->addField(
 			'text',
 			'bank-address2',
-			__( "Pays *", 'yproject' ),
+			__( 'form.user-bank.ADDRESS_ACCOUNT_2', 'yproject' ) . ' *',
 			WDG_Form_User_Bank::$field_group_iban,
 			( $this->is_orga ) ? $WDGOrganization->get_bank_address2() : $WDGUser->get_bank_address2()
 		);
@@ -73,13 +73,13 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$iban_value = ( $this->is_orga ) ? $WDGOrganization->get_bank_iban() : $WDGUser->get_bank_iban();
 		$iban_options = array();
 		if ( !empty( $iban_value ) && !WDGRESTAPI_Lib_Validator::is_iban( $iban_value ) ) {
-			$iban_error = __( "Cette valeur ne correspond pas &agrave; un IBAN.", 'yproject' );
+			$iban_error = __( 'form.user-bank.error.ISNT_IBAN', 'yproject' );
 			$iban_options[ 'warning' ] = $iban_error;
 		}
 		$this->addField(
 			'text',
 			'bank-iban',
-			__( "IBAN *", 'yproject' ),
+			__( 'form.user-bank.IBAN', 'yproject' ) . ' *',
 			WDG_Form_User_Bank::$field_group_iban,
 			$iban_value,
 			FALSE,
@@ -89,13 +89,13 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$bic_value = ( $this->is_orga ) ? $WDGOrganization->get_bank_bic() : $WDGUser->get_bank_bic();
 		$bic_options = array();
 		if ( !empty( $bic_value ) && !WDGRESTAPI_Lib_Validator::is_bic( $bic_value ) ) {
-			$bic_error = __( "Cette valeur ne correspond pas &agrave; un BIC.", 'yproject' );
+			$bic_error = __( 'form.user-bank.error.ISNT_BIC', 'yproject' );
 			$bic_options[ 'warning' ] = $bic_error;
 		}
 		$this->addField(
 			'text',
 			'bank-bic',
-			__( "BIC *", 'yproject' ),
+			__( 'form.user-bank.BIC', 'yproject' ) . ' *',
 			WDG_Form_User_Bank::$field_group_iban,
 			$bic_value,
 			FALSE,
@@ -118,7 +118,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		$this->addField(
 			'file',
 			'bank-file' .$suffix,
-			__( "RIB *", 'yproject' ),
+			__( 'form.user-bank.RIB', 'yproject' ) . ' *',
 			WDG_Form_User_Bank::$field_group_file,
 			$bank_file_path,
 			'',

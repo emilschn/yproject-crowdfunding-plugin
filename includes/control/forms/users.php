@@ -397,7 +397,7 @@ class WDGFormUsers {
 		}
 		$WDGUser_current = WDGUser::current();
 		if ( $WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin() ) {
-			return __( "Ce transfert n'est pas autoris&eacute;.", 'yproject' );
+			return __( 'account.transfert.TRANSFERT_NOT_AUTHORIZED', 'yproject' );
 		}
 
 		$amount_to_bank = filter_input( INPUT_POST, 'amount_to_bank' );

@@ -5,7 +5,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function ypcf_shortcode_agree_text() {
-    global $edd_options;
-    return wpautop( stripslashes( $edd_options['agree_text'] ) );
+    return wpautop( stripslashes( WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_term_particular, 'agree_text' ) ) );
 }
 add_shortcode('yproject_agree_text', 'ypcf_shortcode_agree_text');

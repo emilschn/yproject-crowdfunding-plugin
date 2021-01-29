@@ -41,6 +41,7 @@ class WDGUser {
 	private $email;
 	private $phone_number;
 	private $contact_if_deceased;
+	private $language;
 	private $bank_iban;
 	private $bank_bic;
 	private $bank_holdername;
@@ -106,6 +107,7 @@ class WDGUser {
 					$this->email = $this->api_data->email;
 					$this->phone_number = $this->api_data->phone_number;
 					$this->contact_if_deceased = $this->api_data->contact_if_deceased;
+					$this->language = $this->api_data->language;
 					$this->bank_iban = $this->api_data->bank_iban;
 					$this->bank_bic = $this->api_data->bank_bic;
 					$this->bank_holdername = $this->api_data->bank_holdername;
@@ -594,6 +596,24 @@ class WDGUser {
 		$buffer = $this->contact_if_deceased;
 		return $buffer;
 	}
+
+	public function get_language() {
+		if ( isset( $this->language ) ) {
+			return $this->language;
+		}
+		return '';
+	}
+	public function set_language( $new_language ) {
+		if ( is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
+			$active_languages = apply_filters( 'wpml_active_languages', NULL );
+			foreach ( $active_languages as $language_key => $language_item ) {
+				if ( $language_key == $new_language ) {
+					$this->language = $new_language;
+					break;
+				}
+			}
+		}
+	}
 		
 	public function get_birthplace() {
 		$buffer = $this->birthday_city;
@@ -753,6 +773,23 @@ class WDGUser {
 		return ( !empty( $hasvoted_results[0]->id ) );
 	}
 	
+	public function has_orga_voted_on_campaign( $campaign_id ) {
+		$organizations_list = $this->get_organizations_list();
+		if (empty($organizations_list)) {
+			return FALSE;
+		}else{
+			global $wpdb;
+			$table_name = $wpdb->prefix . "ypcf_project_votes";
+
+			foreach ($organizations_list as $organization_item) {
+				$hasvoted_results = $wpdb->get_results('SELECT id FROM '.$table_name.' WHERE post_id = '.$campaign_id.' AND user_id = '.$organization_item->wpref);
+				if ( !empty( $hasvoted_results[0]->id ) ){
+					return TRUE;
+				}
+			}
+		}
+	}
+
 	public function get_amount_voted_on_campaign( $campaign_id ) {
 		global $wpdb;
 		$buffer = 0;
@@ -840,7 +877,7 @@ class WDGUser {
 	/**
 	 * Enregistre les donnÃ©es nÃ©cessaires pour l'investissement
 	 */
-	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $contact_if_deceased = '' ) {
+	public function save_data( $email, $gender, $firstname, $lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, $phone_number, $contact_if_deceased = '', $language = '' ) {
 		if ( !empty( $email ) ) {
 			$this->email = $email;
 			$this->copy_sendinblue_params_to_new_email( $this->wp_user->user_email, $email );
@@ -928,6 +965,9 @@ class WDGUser {
 		}
 		if ( !empty( $contact_if_deceased ) ) {
 			$this->contact_if_deceased = $contact_if_deceased;
+		}
+		if ( !empty( $language ) ) {
+			$this->language = $language;
 		}
 		
 		$this->update_api();
@@ -1070,23 +1110,23 @@ class WDGUser {
 		$user_can_invest_errors = array();
 		
 		//Infos nÃ©cessaires pour tout type de financement
-		if ( $this->get_firstname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre pr&eacute;nom.', 'yproject')); }
-		if ( $this->get_lastname() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre nom.', 'yproject')); }
-		if ( $this->get_email() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre e-mail.', 'yproject')); }
-		if ( $this->get_nationality() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre nationalit&eacute;.', 'yproject')); }
-		if ( $this->get_birthday_day() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre jour de naissance.', 'yproject')); }
-		if ( $this->get_birthday_month() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre mois de naissance.', 'yproject')); }
-		if ( $this->get_birthday_year() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ann&eacute;e de naissance.', 'yproject')); }
+		if ( $this->get_firstname() == "" ) { array_push( $user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.FIRSTNAME', 'yproject' ) ); }
+		if ( $this->get_lastname() == "" ) { array_push( $user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.LASTNAME', 'yproject' ) ); }
+		if ( $this->get_email() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.EMAIL', 'yproject' ) ); }
+		if ( $this->get_nationality() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.NATIONALITY', 'yproject' ) ); }
+		if ( $this->get_birthday_day() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_DATE', 'yproject' ) ); }
+		if ( $this->get_birthday_month() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_DATE', 'yproject' ) ); }
+		if ( $this->get_birthday_year() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_DATE', 'yproject' ) ); }
 		
 		//Infos nÃ©cessaires pour l'investissement
 		if ( $campaign_funding_type != 'fundingdonation' ) {
-			if ( !$this->is_major() ) { array_push($user_can_invest_errors, __('Seules les personnes majeures peuvent investir.', 'yproject')); }
-			if ( $this->get_address() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre adresse pour investir.', 'yproject')); }
-			if ( $this->get_postal_code() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre code postal pour investir.', 'yproject')); }
-			if ( $this->get_city() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville pour investir.', 'yproject')); }
-			if ( $this->get_country() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre pays pour investir.', 'yproject')); }
-			if ( $this->get_birthplace() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre ville de naissance pour investir.', 'yproject')); }
-			if ( $this->get_gender() == "" ) { array_push($user_can_invest_errors, __('Vous devez renseigner votre sexe pour investir.', 'yproject')); }
+			if ( !$this->is_major() ) { array_push( $user_can_invest_errors, __( 'form.user-details.error.ONLY_MAJOR', 'yproject' ) ); }
+			if ( $this->get_address() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.ADDRESS', 'yproject' ) ); }
+			if ( $this->get_postal_code() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.ZIP_CODE', 'yproject' ) ); }
+			if ( $this->get_city() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.CITY', 'yproject' ) ); }
+			if ( $this->get_country() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.COUNTRY', 'yproject' ) ); }
+			if ( $this->get_birthplace() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.BIRTH_PLACE', 'yproject' ) ); }
+			if ( $this->get_gender() == "" ) { array_push($user_can_invest_errors, __( 'form.user-details.error.YOU_HAVE_TO_FILL_THE_FIELD', 'yproject' ) . ' ' . __( 'form.user-details.GENDER', 'yproject' ) ); }
 		}
 		
 		return (empty($user_can_invest_errors));
@@ -1313,7 +1353,7 @@ class WDGUser {
 	 * @return string
 	 */
 	private function get_royalties_yearly_certificate_filename( $year ) {
-		$buffer = 'certificate-roi-' .$year. '-user-' .$this->wp_user->id. '.pdf';
+		$buffer = 'certificate-roi-' .$year. '-user-' .$this->wp_user->ID. '.pdf';
 		return $buffer;
 	}
 	
@@ -1988,7 +2028,7 @@ class WDGUser {
 	 * Transfère l'argent du porte-monnaie utilisateur vers son compte bancaire
 	 */
 	public function transfer_wallet_to_bankaccount( $amount = FALSE ) {
-		$buffer = __( "Votre compte bancaire n'est pas encore valid&eacute;.", 'yproject' );
+		$buffer = __( 'account.transfert.BANK_ACCOUNT_NOT_VALIDATED', 'yproject' );
 		
 		//Il faut qu'un iban ait déjà été enregistré
 		if ($this->has_saved_iban()) {
@@ -2017,7 +2057,7 @@ class WDGUser {
 
 				} elseif( $amount > $wallet_details->BAL ) {
 					$amount = FALSE;
-					$buffer = __( "Montant non-autoris&eacute;", 'yproject' );
+					$buffer = __( 'account.transfert.AMOUNT_NOT_AUTHORIZED', 'yproject' );
 				}
 
 				if ( !empty( $amount ) ) {
@@ -2296,7 +2336,7 @@ class WDGUser {
 		
 		//Si on est sur la page de connexion ou d'inscription,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
-		if ( $post->post_name == 'connexion' || $post->post_name == 'inscription' ) {
+		if ( $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'connexion' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) {
 			// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1', FALSE );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
@@ -2319,8 +2359,8 @@ class WDGUser {
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
 					// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b', FALSE );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
-					if ( strpos( $buffer, '/connexion/' ) !== FALSE || strpos( $buffer, '/inscription/' ) !== FALSE ) {
-						$buffer = home_url();
+					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE ) {
+						$buffer = home_url( '/mon-compte/' );
 					}
 					
 				} else {
@@ -2331,7 +2371,7 @@ class WDGUser {
 
 						//Si la page précédente était déjà la page connexion ou inscription,
 						// on tente de voir si la redirection était passée en paramètre
-						if ( strpos($referer_url, '/connexion/') !== FALSE || strpos($referer_url, '/inscription/') !== FALSE ) {
+						if ( strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'connexion' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'inscription' )) !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a', FALSE );

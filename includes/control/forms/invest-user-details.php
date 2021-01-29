@@ -51,13 +51,13 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'radio',
 			'user-type',
-			__( "Je souhaite investir *", 'yproject' ),
+			__( 'form.invest-input.I_WISH_TO_INVEST', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_type,
 			FALSE,
 			FALSE,
 			[
-				'user'	=> __( "En mon nom (personne physique)", 'yproject' ),
-				'orga'	=> __( "En tant qu'organisation (personne morale)", 'yproject' )
+				'user'	=> __( 'form.invest-user-details.IN_MY_NAME', 'yproject' ),
+				'orga'	=> __( 'form.invest-user-details.AS_ORGANIZATION', 'yproject' )
 			]
 		);
 		
@@ -66,20 +66,20 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'gender',
-			__( "Vous &ecirc;tes *", 'yproject' ),
+			__( 'form.user-details.YOU_ARE', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_gender(),
 			FALSE,
 			[
-				'female'	=> __( "une femme", 'yproject' ),
-				'male'		=> __( "un homme", 'yproject' )
+				'female'	=> __( 'form.user-details.A_WOMAN', 'yproject' ),
+				'male'		=> __( 'form.user-details.A_MAN', 'yproject' )
 			]
 		);
 
 		$this->addField(
 			'not-editable',
 			'email',
-			__( "E-mail *", 'yproject' ),
+			__( 'form.user-details.EMAIL', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_email(),
 			FALSE,
@@ -89,7 +89,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'firstname',
-			__( "Pr&eacute;nom *", 'yproject' ),
+			__( 'form.user-details.FIRSTNAME', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_firstname()
 		);
@@ -97,7 +97,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'lastname',
-			__( "Nom *", 'yproject' ),
+			__( 'form.user-details.LASTNAME', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_lastname()
 		);
@@ -105,7 +105,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'use_lastname',
-			__( "Nom d'usage", 'yproject' ),
+			__( 'form.user-details.USENAME', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_use_lastname()
 		);
@@ -117,7 +117,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'date',
 			'birthday',
-			__( "Date de naissance *", 'yproject' ),
+			__( 'form.user-details.BIRTH_DATE', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$lemonway_birthdate
 		);
@@ -125,7 +125,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'birthplace',
-			__( "Ville de naissance *", 'yproject' ),
+			__( 'form.user-details.BIRTH_PLACE', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_birthplace()
 		);
@@ -138,10 +138,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'birthplace_district',
-			__( "Arrondissement dans la ville de naissance", 'yproject' ),
+			__( 'form.user-details.BIRTH_PLACE_DISTRICT', 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_birthplace_district(),
-			__( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ),
+			__( 'form.user-details.BIRTH_PLACE_DISTRICT_DESCRIPTION', 'yproject' ),
 			$district_list
 		);
 		
@@ -149,10 +149,10 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'birthplace_department',
-			__( "D&eacute;partement de naissance *", 'yproject' ),
+			__( 'form.user-details.BIRTH_PLACE_COUNTY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_birthplace_department(),
-			__( "Uniquement si la naissance a eu lieu en France, sinon sélectionner &Eacute;tranger", 'yproject' ),
+			__( 'form.user-details.BIRTH_PLACE_COUNTY_DESCRIPTION', 'yproject' ),
 			$french_departments
 		);
 
@@ -160,7 +160,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'birthplace_country',
-			__( "Pays de naissance *", 'yproject' ),
+			__( 'form.user-details.BIRTH_COUNTRY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_birthplace_country(),
 			FALSE,
@@ -170,7 +170,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'nationality',
-			__( "Nationalit&eacute; *", 'yproject' ),
+			__( 'form.user-details.NATIONALITY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_nationality(),
 			FALSE,
@@ -180,7 +180,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'address_number',
-			__( "Num&eacute;ro de rue", 'yproject' ),
+			__( 'form.user-details.ADDRESS_NUMBER', 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_address_number()
 		);
@@ -189,7 +189,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'address_number_complement',
-			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			__( 'form.user-details.ADDRESS_NUMBER_COMPLEMENT', 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_address_number_complement(),
 			FALSE,
@@ -199,7 +199,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'address',
-			__( "Adresse *", 'yproject' ),
+			__( 'form.user-details.ADDRESS', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_address()
 		);
@@ -207,7 +207,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'postal_code',
-			__( "Code postal *", 'yproject' ),
+			__( 'form.user-details.ZIP_CODE', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_postal_code()
 		);
@@ -215,7 +215,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'city',
-			__( "Ville *", 'yproject' ),
+			__( 'form.user-details.CITY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_city()
 		);
@@ -223,7 +223,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'country',
-			__( "Pays *", 'yproject' ),
+			__( 'form.user-details.COUNTRY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_country( 'iso2' ),
 			FALSE,
@@ -233,7 +233,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'tax_country',
-			__( "R&eacute;sidence fiscale *", 'yproject' ),
+			__( 'form.user-details.TAX_COUNTRY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_tax_country( 'iso2' ),
 			FALSE,
@@ -243,7 +243,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'phone_number',
-			__( "Num&eacute;ro de t&eacute;l&eacute;phone", 'yproject' ),
+			__( 'form.user-details.PHONE', 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_user_info,
 			$WDGUser->get_phone_number()
 		);
@@ -258,7 +258,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'confirm-info' => __( "Je d&eacute;clare que ces informations sont exactes" )
+				'confirm-info' => __( 'form.invest-user-details.CORRECT_INFORMATION', 'yproject' )
 			]
 		);
 		
@@ -266,7 +266,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		// Sélection de l'orga : $field_group_orga_select
 		$organization_list = array();
 		$organization_list[ '' ] = '';
-		$organization_list[ 'new-orga' ] = __( "Une nouvelle organisation", 'yproject' );
+		$organization_list[ 'new-orga' ] = __( 'form.invest-user-details.A_NEW_ORGANIZATION', 'yproject' );
 		$user_orga_list = $WDGUser->get_organizations_list();
 		array_unshift($user_orga_list, 'new-orga');
 		foreach ( $user_orga_list as $organization_item ) {
@@ -281,7 +281,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'orga-id',
-			__( "Au nom de", 'yproject' ),
+			__( 'form.invest-user-details.ORGANIZATION_SELECT', 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
 			$_SESSION[ 'orga_id' ],
 			FALSE,
@@ -293,23 +293,23 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'org_name',
-			__( "D&eacute;nomination sociale *", 'yproject' ),
+			__( 'form.organization-details.NAME', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
 		$this->addField(
 			'text',
 			'org_email',
-			__( "E-mail de contact *", 'yproject' ),
+			__( 'form.organization-details.EMAIL', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info,
 			FALSE,
-			__( "Cette adresse doit &ecirc;tre diff&eacute;rente de celle de votre compte.", 'yproject' )
+			__( 'form.organization-details.EMAIL_DESCRIPTION', 'yproject' )
 		);
 		
 		$this->addField(
 			'text',
 			'org_website',
-			__( "Site internet *", 'yproject' ),
+			__( 'form.organization-details.WEBSITE', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info,
 			FALSE
 		);
@@ -317,35 +317,35 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'org_legalform',
-			__( "Forme juridique *", 'yproject' ),
+			__( 'form.organization-details.LEGAL_FORM', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
 		$this->addField(
 			'text',
 			'org_idnumber',
-			__( "Num&eacute;ro SIRET *", 'yproject' ),
+			__( 'form.organization-details.ID_NUMBER', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
 		$this->addField(
 			'text',
 			'org_rcs',
-			__( "RCS (Ville) *", 'yproject' ),
+			__( 'form.organization-details.CITY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
 		$this->addField(
 			'text',
 			'org_capital',
-			__( "Capital social (en euros) *", 'yproject' ),
+			__( 'form.organization-details.SHARE_CAPITAL', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
 		$this->addField(
 			'text',
 			'org_address_number',
-			__( "Num&eacute;ro *", 'yproject' ),
+			__( 'form.user-details.ADDRESS_NUMBER', 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 
@@ -353,7 +353,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'org_address_number_comp',
-			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
+			__( 'form.user-details.ADDRESS_NUMBER_COMPLEMENT', 'yproject' ),
 			WDG_Form_Invest_User_Details::$field_group_orga_info,
 			'',
 			FALSE,
@@ -364,21 +364,21 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'text',
 			'org_address',
-			__( "Adresse *", 'yproject' ),
+			__( 'form.user-details.ADDRESS', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
 		$this->addField(
 			'text',
 			'org_postal_code',
-			__( "Code postal *", 'yproject' ),
+			__( 'form.user-details.ZIP_CODE', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 		
 		$this->addField(
 			'text',
 			'org_city',
-			__( "Ville *", 'yproject' ),
+			__( 'form.user-details.CITY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
 
@@ -386,7 +386,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$this->addField(
 			'select',
 			'org_nationality',
-			__( "Pays *", 'yproject' ),
+			__( 'form.user-details.COUNTRY', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info,
 			FALSE,
 			FALSE,
@@ -401,7 +401,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'org-capable' => __( "Je d&eacute;clare &ecirc;tre en capacit&eacute; de repr&eacute;senter cette organisation" )
+				'org-capable' => __( 'form.invest-user-details.CAPACITY_REPRESENT_ORGANIZATION', 'yproject' )
 			]
 		);
 		
@@ -596,20 +596,20 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 
 		// Analyse du formulaire
 		} else {
-			// Informations de base			
+			// Informations de base
 			$email = $WDGUser->get_email();
 			
 			$firstname = $this->getInputText( 'firstname' );
 			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
 				$this->addPostError(
 					'firstname',
-					__( "Votre pr&eacute;nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
+					__( 'form.user-details.FIRST_NAME_EMPTY', 'yproject' ),
 					'firstname'
 				);
 			} elseif ( strlen( $firstname ) < 2 ) {
 				$this->addPostError(
 					'firstname',
-					__( "Votre pr&eacute;nom doit faire au moins 2 caract&egrave;res.", 'yproject' ),
+					__( 'form.invest-user-details.error.FIRST_NAME_SIZE', 'yproject' ),
 					'firstname'
 				);
 			}
@@ -618,14 +618,14 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			if ( empty( $lastname ) || !WDGRESTAPI_Lib_Validator::is_name( $lastname ) ) {
 				$this->addPostError(
 					'lastname',
-					__( "Votre nom n'a pas &eacute;t&eacute; renseign&eacute;.", 'yproject' ),
+					__( 'form.user-details.LAST_NAME_EMPTY', 'yproject' ),
 					'lastname'
 				);
 				
 			} elseif ( strlen( $lastname ) < 2 ) {
 				$this->addPostError(
 					'lastname',
-					__( "Votre nom doit faire au moins 2 caract&egrave;res.", 'yproject' ),
+					__( 'form.invest-user-details.error.LAST_NAME_SIZE', 'yproject' ),
 					'lastname'
 				);
 			}
@@ -640,7 +640,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				if ( empty( $birthplace ) || !WDGRESTAPI_Lib_Validator::is_name( $birthplace ) ) {
 					$this->addPostError(
 						'birthplace',
-						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						__( 'form.user-details.BIRTH_PLACE_ERROR', 'yproject' ),
 						'birthplace'
 					);
 				}
@@ -654,7 +654,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
 					$this->addPostError(
 						'birthplace',
-						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						__( 'form.user-details.ADDRESS_ERROR', 'yproject' ),
 						'birthplace'
 					);
 				}
@@ -662,7 +662,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code, $country ) ) {
 					$this->addPostError(
 						'birthplace',
-						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						__( 'form.user-details.ZIP_CODE_ERROR', 'yproject' ),
 						'birthplace'
 					);
 				}
@@ -670,7 +670,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				if ( empty( $city ) || !WDGRESTAPI_Lib_Validator::is_name( $city ) ) {
 					$this->addPostError(
 						'birthplace',
-						__( "Votre lieu de naissance n'est pas correct.", 'yproject' ),
+						__( 'form.user-details.CITY_ERROR', 'yproject' ),
 						'birthplace'
 					);
 				}
@@ -711,7 +711,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			if ( !$confirm_info ) {
 				$this->addPostError(
 					'info-not-confirmed',
-					__( "Vous n'avez pas d&eacute;clar&eacute; vos informations comme exactes.", 'yproject' ),
+					__( 'form.invest-user-details.error.NOT_DECLARED_INFORMATION', 'yproject' ),
 					'confirm-info'
 				);
 			}
@@ -722,7 +722,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			if ( empty( $user_type ) ) {
 				$this->addPostError(
 					'user-type-select',
-					__( "Vous devez choisir en quel nom vous souhaitez investir.", 'yproject' ),
+					__( 'form.invest-user-details.error.CHOOSE_USER_TYPE', 'yproject' ),
 					'user-type'
 				);
 			}
@@ -748,7 +748,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		if ( empty( $orga_id ) ) {
 			$this->addPostError(
 				'orga-select',
-				__( "Vous n'avez pas choisi l'organisation au nom de laquelle vous souhaitez investir.", 'yproject' ),
+				__( 'form.invest-user-details.error.ORGANIZATION_SELECTION', 'yproject' ),
 				'orga-id'
 			);
 			
@@ -781,7 +781,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$needs_update_organization = TRUE;
 				$this->addPostError(
 					'orga-new-capable',
-					__( "Vous n'avez pas d&eacute;clar&eacute; &ecirc;tre en mesure de repr&eacute;senter l'organisation.", 'yproject' ),
+					__( 'form.invest-user-details.error.ORGANIZATION_REPRESENT', 'yproject' ),
 					'org-capable'
 				);
 			}
@@ -796,7 +796,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$buffer = FALSE;
 			$this->addPostError(
 				'orga-same-project',
-				__( "Vous ne pouvez pas investir avec l'organisation qui porte le projet.", 'yproject' ),
+				__( 'form.invest-user-details.error.SAME_ORGANIZATION_PROJECT', 'yproject' ),
 				'orga-id'
 			);
 		}
@@ -807,7 +807,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$buffer = FALSE;
 			$this->addPostError(
 				'org-name-empty',
-				__( "Le nom de l'organisation doit &ecirc;tre renseign&eacute;.", 'yproject' ),
+				__( 'form.organization-details.error.NAME', 'yproject' ),
 				'org_name'
 			);
 		}
@@ -818,7 +818,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$buffer = FALSE;
 			$this->addPostError(
 				'email',
-				__( "L'adresse e-mail de l'organisation n'est pas valide.", 'yproject' ),
+				__( 'form.invest-user-details.error.ORGANIZATION_EMAIL_NOT_OK', 'yproject' ),
 				'email'
 			);
 		}
@@ -829,7 +829,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$buffer = FALSE;
 			$this->addPostError(
 				'website-empty',
-				__( "Le site web de l'organisation n'est pas d&eacute;fini.", 'yproject' ),
+				__( 'form.invest-user-details.error.ORGANIZATION_WEBSITE_EMPTY', 'yproject' ),
 				'org_website'
 			);
 		}
@@ -839,7 +839,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$buffer = FALSE;
 			$this->addPostError(
 				'email',
-				__( "L'adresse e-mail de l'organisation est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ),
+				__( 'form.invest-user-details.error.ORGANIZATION_EMAIL_ALREADY_USED', 'yproject' ),
 				'email'
 			);
 		}
@@ -850,7 +850,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$needs_update_organization = TRUE;
 			$this->addPostError(
 				'capital-not-integer',
-				__( "Le capital de l'organisation doit &ecirc;tre un nombre entier.", 'yproject' ),
+				__( 'form.organization-details.error.CAPITAL', 'yproject' ),
 				'capital'
 			);
 		}
@@ -861,7 +861,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			$needs_update_organization = TRUE;
 			$this->addPostError(
 				'postalcode-not-integer',
-				__( "Le code postal de l'organisation doit &ecirc;tre un nombre entier.", 'yproject' ),
+				__( 'form.organization-details.error.ZIP_CODE', 'yproject' ),
 				'postal_code'
 			);
 		}
@@ -893,7 +893,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			if ( !is_email( $org_email ) || email_exists( $org_email ) ) {
 				$this->addPostError(
 					'org-invest-error',
-					__( "Cette adresse e-mail d'organisation n'est pas valide.", 'yproject' ),
+					__( 'form.invest-user-details.error.ORGANIZATION_EMAIL_NOT_OK', 'yproject' ),
 					'general'
 				);
 			} else {

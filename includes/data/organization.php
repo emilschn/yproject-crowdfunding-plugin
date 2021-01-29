@@ -902,7 +902,7 @@ class WDGOrganization {
 	}
 	
 	public function transfer_wallet_to_bankaccount( $amount_without_commission, $amount_commission = 0, $wallet_type = '' ) {
-		$buffer = __( "Erreur de montant.", 'yproject' );;
+		$buffer = __( 'account.transfert.AMOUNT_ERROR', 'yproject' );
 		
 		if ( !empty( $amount_without_commission ) ) {
 			$lemonway_id = ( $wallet_type == 'campaign ') ? $this->get_campaign_lemonway_id() : $this->get_lemonway_id();
@@ -1677,14 +1677,7 @@ class WDGOrganization {
 	 * 
 	 */
 	public function get_available_rois_amount() {
-		$buffer = 0;
-		if ( $this->get_lemonway_balance() > 0 ) {
-			$rois_amount = $this->get_rois_amount();
-			if ( $rois_amount > 0 ) {
-				$buffer = $this->get_rois_amount() - $this->get_transferred_amount();
-			}
-			$buffer = max( $buffer, 0 );
-		}
+		$buffer = $this->get_lemonway_balance();
 		return $buffer;
 	}
 	

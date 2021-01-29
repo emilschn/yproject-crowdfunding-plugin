@@ -24,9 +24,11 @@ class WDG_Admin_General {
 		'en_US' => 'Anglais'
 	);
 	private static $translation_properties = array(
-		'investment_generalities' => 'Explications g&eacute;n&eacute;rales sur l&apos;investissement',
-		'preinvest_warning' => 'Explications g&eacute;n&eacute;rales sur le pr&eacute;-investissement',
-		'standard_contract' => 'Contrat d&apos;investissement standard'
+		'investment_generalities'	=> 'Explications g&eacute;n&eacute;rales sur l&apos;investissement',
+		'preinvest_warning'			=> 'Explications g&eacute;n&eacute;rales sur le pr&eacute;-investissement',
+		'standard_contract'			=> 'Contrat d&apos;investissement standard',
+		'lemonway_generalities'		=> 'Informations sur Lemon Way (Mon compte)',
+		'investment_terms'			=> 'Modalités d&apos;investissement'
 	);
 
 	public static function add_actions() {
@@ -309,7 +311,7 @@ class WDG_Admin_General {
 	
 	public static function display_translations() {
 		?>
-		<h2>Traduction WE DO GOOD</h2>
+		<h2>Traductions de champs spécifiques WE DO GOOD</h2>
 		<?php foreach (WDG_Admin_General::$langs as $lang_key => $lang_name): ?>
 			<h3><?php echo $lang_name; ?></h3>
 

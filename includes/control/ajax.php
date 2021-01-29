@@ -25,6 +25,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'create_project_form' );
 		
 		WDGAjaxActions::add_action( 'get_current_user_info' );
+		WDGAjaxActions::add_action( 'save_user_language' );
 		WDGAjaxActions::add_action('get_connect_to_facebook_url');
 		WDGAjaxActions::add_action('get_searchable_projects_list');
 		
@@ -36,7 +37,6 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('init_sendinblue_templates');
 
 		// Mon compte
-		WDGAjaxActions::add_action( 'display_user_investments' );
 		WDGAjaxActions::add_action( 'display_user_investments_optimized' );
 		WDGAjaxActions::add_action( 'get_transactions_table' );
 
@@ -44,6 +44,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'save_image_url_video' );
 		WDGAjaxActions::add_action( 'send_project_notification' );
 		WDGAjaxActions::add_action( 'remove_project_cache' );
+		WDGAjaxActions::add_action( 'remove_project_lang' );
 
         // TBPP
 		WDGAjaxActions::add_action('remove_help_item');
@@ -121,6 +122,7 @@ class WDGAjaxActions {
 			$response[ 'userinfos' ] = array();
 			$response[ 'userinfos' ][ 'userid' ] = $WDGUserCurrent->get_wpref();
 			$response[ 'userinfos' ][ 'username' ] = ( !empty( $firstname_WDGUserCurrent ) ) ? $firstname_WDGUserCurrent : $WDGUserCurrent->get_login();
+			$response[ 'userinfos' ][ 'my_account_txt' ] = __( 'common.MY_ACCOUNT', 'yproject' );
 			$response[ 'userinfos' ][ 'image_dom_element' ] = UIHelpers::get_user_avatar( $WDGUserCurrent->get_wpref(), 'icon' );
 			$response[ 'userinfos' ][ 'logout_url' ] = wp_logout_url(). '&page_id=' .get_the_ID();
 			
@@ -182,6 +184,16 @@ class WDGAjaxActions {
 		}
 		
 		echo $buffer;
+		exit();
+	}
+
+	public static function save_user_language() {
+		if ( is_user_logged_in() ) {
+			$input_language_key = filter_input( INPUT_POST, 'language_key' );
+			$WDGuser_current = WDGUser::current();
+			$WDGuser_current->set_language( $input_language_key );
+			$WDGuser_current->update_api();
+		}
 		exit();
 	}
 	
@@ -833,7 +845,8 @@ class WDGAjaxActions {
 				$buffer_investment_item[ 'date' ] = utf8_encode( $result_investment_item->invest_datetime );
 				$buffer_investment_item[ 'status' ] = utf8_encode( $result_investment_item->status );
 
-				
+				// Reinit de la date pour les tours de boucle
+				$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
 
 
 				// Création du tableau des prévisionnels par année
@@ -901,39 +914,39 @@ class WDGAjaxActions {
 				$buffer_investment_item[ 'status_str' ] = '';
 				if ( $result_investment_item->status == 'pending' ) {
 					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'En attente de paiement', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PENDING_PAYMENT', 'yproject' );
 					} else {
 						$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
 						if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'A valider', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.TO_BE_VALIDATED', 'yproject' );
 						}
 					}
 					
 				} elseif ( $result_investment_item->status == 'publish' ) {
 					if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_collecte ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Valid&eacute;', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.VALIDATED', 'yproject' );
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_closed ) {
 						$buffer_investment_item[ 'status' ] = 'canceled';
-						$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.ROYALTIES_FINISHED', 'yproject' );
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_archive ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Annul&eacute;', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.CANCELED', 'yproject' );
 						$date_end = new DateTime( $result_campaign_item->project_funding_end_date );
 						$date_end->add( new DateInterval( 'P15D' ) );
 						if ( $today_datetime < $date_end ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'En suspend', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.SUSPENDED', 'yproject' );
 						}
 						
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'Versements &agrave; venir', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.CONTRACT_GOING_TO_START', 'yproject' );
 						$first_payment_date = $result_campaign_item->project_first_payment_date;
 						if ( empty( $first_payment_date ) ) {
 							$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
 						}
 						$date_first_payement = new DateTime( $first_payment_date );
 						if ( $today_datetime > $date_first_payement ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'Versements en cours', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_STARTED', 'yproject' );
 						}
 					
 						$first_investment_contract_status = FALSE;
@@ -942,7 +955,7 @@ class WDGAjaxActions {
 						}
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
 							$buffer_investment_item[ 'status' ] = 'canceled';
-							$buffer_investment_item[ 'status_str' ] = __( 'Versements termin&eacute;s', 'yproject' );
+							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_FINISHED', 'yproject' );
 						}
 					}
 				}
@@ -1147,22 +1160,22 @@ class WDGAjaxActions {
 		$userid = filter_input( INPUT_POST, 'user_id' );
 
 		if ( !$WDGUserCurrent->is_admin() && $WDGUserCurrent->get_wpref() != $userid ) {
-			exit( '<div class="align-center">' .__( "Aucune transaction", 'yproject' ). '</div>' );
+			exit( '<div class="align-center">' .__( 'account.wallet.transactions.NONE', 'yproject' ). '</div>' );
 		}
 
 		$WDGUser = new WDGUser( $userid );
 		$WDGUser_api_id = $WDGUser->get_api_id();
 		$transactions = $WDGUser->get_transactions();
 
-		$html_table = 'Aucune transaction';
+		$html_table = __( 'account.wallet.transactions.NONE', 'yproject' );
 		if ( !empty( $transactions ) ) {
 			$html_table = '<table class="user-transactions">';
 
 			$html_table .= '<thead>';
 			$html_table .= '<tr>';
-			$html_table .= '<td>' .__( "Date", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "Transaction", 'yproject' ). '</td>';
-			$html_table .= '<td>' .__( "Montant", 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( 'common.DATE', 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( 'common.TRANSACTION', 'yproject' ). '</td>';
+			$html_table .= '<td>' .__( 'common.AMOUNT', 'yproject' ). '</td>';
 			$html_table .= '</tr>';
 			$html_table .= '</thead>';
 			$excel_separator = '<div class="hidden"> - </div>';
@@ -1177,52 +1190,52 @@ class WDGAjaxActions {
 				// Affichage des investissements
 				if ( $transaction_item->wedogood_entity == 'investment' ) {
 					if ( !empty( $transaction_item->project_name ) ) {
-						$object .= __( "Investissement sur ", 'yproject' ) . $transaction_item->project_name;
+						$object .= __( 'account.wallet.transactions.INVESTMENT_ON', 'yproject' ) . ' ' . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ) . ' ' . $transaction_item->project_organization_name. '</div>';
 						}
 
 					} else {
-						$object .= __( "Investissement", 'yproject' );
+						$object .= __( 'common.INVESTMENT', 'yproject' );
 						$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 					}
 
 				// Affichage des versements de royalties
 				} else if ( $transaction_item->wedogood_entity == 'roi' ) {
 					if ( !empty( $transaction_item->project_name ) ) {
-						$object .= __( "Versement de royalties de ", 'yproject' ) . $transaction_item->project_name;
+						$object .= __( 'account.wallet.transactions.ROYALTIES_TRANSFER_FROM', 'yproject' ) . ' ' . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ) . ' ' . $transaction_item->project_organization_name. '</div>';
 						}
 					} else {
-						$object .= __( "Versement de royalties", 'yproject' );
+						$object .= __( 'account.wallet.transactions.ROYALTIES_TRANSFER', 'yproject' );
 						$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 					}
 
 				// Affichage des rechargements de compte bancaire
 				} else if ( $transaction_item->type == 'moneyin' ) {
-					$object .= __( "Rechargement depuis votre compte bancaire", 'yproject' );
+					$object .= __( 'account.wallet.transactions.TRANSFER_FROM_BANK_ACCOUNT', 'yproject' );
 
 				// Affichage des transferts vers compte bancaire
 				} else if ( $transaction_item->type == 'moneyout' ) {
 					if ( $transaction_item->recipient_wallet_type == 'society' ) {
-						$object .= __( "Remboursement d'investissement", 'yproject' );
+						$object .= __( 'account.wallet.transactions.REFUND_INVESTMENT', 'yproject' );
 					} else {
-						$object .= __( "Retrait vers votre compte bancaire", 'yproject' );
+						$object .= __( 'account.wallet.transactions.TRANSFER_TO_BANK_ACCOUNT', 'yproject' );
 					}
 
 				// Transfert vers le wallet de l'utilisateur
 				} else if ( $current_user_is_receiving ) {
-					$object = __( "Remboursement sur votre porte-monnaie", 'yproject' );
+					$object = __( 'account.wallet.transactions.REFUND_TO_WALLET_FROM', 'yproject' ) . ' ';
 					if ( $transaction_item->sender_id == 0 ) {
 						$object .= " de WE DO GOOD";
 					} else if ( !empty( $transaction_item->project_name ) ) {
 						$object .= " de " . $transaction_item->project_name;
 						if ( !empty( $transaction_item->project_organization_name ) ) {
 							$object .= $excel_separator;
-							$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+							$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ).' '.$transaction_item->project_organization_name. '</div>';
 						}
 
 					} else if ( !empty( $transaction_item->project_organization_name ) ) {
@@ -1234,23 +1247,23 @@ class WDGAjaxActions {
 
 				} else {
 					if ( $transaction_item->recipient_id == 0 ) {
-						$object .= __( "Correction d'erreur de versement", 'yproject' );
+						$object .= __( 'account.wallet.transactions.TRANSFER_CORRECTION', 'yproject' );
 					} else if ( $transaction_item->recipient_wallet_type == 'campaign' ) {
 						if ( !empty( $transaction_item->project_name ) ) {
-							$object .= __( "Investissement sur ", 'yproject' );
+							$object .= __( 'account.wallet.transactions.INVESTMENT_ON', 'yproject' ) . ' ';
 							$object .= $transaction_item->project_name;
 							if ( !empty( $transaction_item->project_organization_name ) ) {
 								$object .= $excel_separator;
-								$object .= '<div class="organization-name">' .__( "Projet port&eacute; par ", 'yproject' ).$transaction_item->project_organization_name. '</div>';
+								$object .= '<div class="organization-name">' .__( 'account.wallet.transactions.PROJECT_MANAGED_BY', 'yproject' ).' '.$transaction_item->project_organization_name. '</div>';
 							}
 
 						} else {
-							$object .= __( "Investissement", 'yproject' );
+							$object .= __( 'common.INVESTMENT', 'yproject' );
 							$object .= '<div class="hidden"> - ' . $transaction_item->recipient_id . ' (' .$transaction_item->recipient_wallet_type. ')</div>';
 						}
 
 					} else {
-						$object .= __( "D&eacute;bit ind&eacute;fini", 'yproject' );
+						$object .= __( 'account.wallet.transactions.UNDEFINED_DEBIT', 'yproject' );
 					}
 				}
 					
@@ -1260,18 +1273,18 @@ class WDGAjaxActions {
 					if ( !empty( $transaction_item->gateway_mean_payment ) ) {
 						switch ( $transaction_item->gateway_mean_payment ) {
 							case 'card':
-								$object .= __( "Carte bancaire : ", 'yproject' );
+								$object .= __( 'account.wallet.transactions.BANK_CARD', 'yproject' );
 								break;
 							case 'wire':
-								$object .= __( "Virement : ", 'yproject' );
+								$object .= __( 'account.wallet.transactions.BANK_TRANSFER', 'yproject' );
 								break;
 							case 'mandate':
-								$object .= __( "Pr&eacute;l&egrave;vement bancaire : ", 'yproject' );
+								$object .= __( 'account.wallet.transactions.BANK_DIRECT_DEBIT', 'yproject' );
 								break;
 						}
 					}
 					if ( !empty( $transaction_item->gateway_mean_payment_info ) ) {
-						$object .= $transaction_item->gateway_mean_payment_info;
+						$object .= ' ' . $transaction_item->gateway_mean_payment_info;
 					}
 					$object .= '</div>';
 				}
@@ -1340,6 +1353,41 @@ class WDGAjaxActions {
 		WDGQueue::add_cache_post_as_html( $id_campaign, 'date', 'PT50M' );
 
 		exit( '1' );
+	}
+
+	public static function remove_project_lang() {
+		// Vérification que l'utilisateur peut supprimer la langue
+		$id_campaign = filter_input( INPUT_POST, 'id_campaign' );
+		$campaign = new ATCF_Campaign( $id_campaign );
+		if ( $campaign->current_user_can_edit() ) {
+
+			// Suppression de la langue dans la liste
+			$lang = filter_input( INPUT_POST, 'lang' );
+			$lang_list = $campaign->get_lang_list();
+			foreach ( $lang_list as $key => $lang_item_id ) {
+				if ( $lang == $lang_item_id ) {
+					array_splice( $lang_list, $key, 1 );
+					break;
+				}
+			}
+			update_post_meta( $id_campaign, ATCF_Campaign::$key_meta_lang, json_encode( $lang_list ) );
+
+			// Suppression des meta associées à la langue
+			delete_post_meta( $id_campaign, ATCF_Campaign::$key_google_doc . '_' . $lang );
+			delete_post_meta( $id_campaign, ATCF_Campaign::$key_logbook_google_doc . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_subtitle' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_summary' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_rewards' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_description' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_added_value' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_development_strategy' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_economic_model' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_measuring_impact' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_implementation' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_impact_area' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_societal_challenge' . '_' . $lang );
+			delete_post_meta( $id_campaign, 'campaign_video' . '_' . $lang );
+		}
 	}
 
 	public static function remove_help_item() {
@@ -1454,6 +1502,13 @@ class WDGAjaxActions {
 				}
 				$campaign->set_api_data( 'legal_procedure', $new_legal_procedure );
 				$success[ "new_legal_procedure" ] = 1;
+			}
+
+			// Type de structure
+			$new_organization_type = sanitize_text_field(filter_input(INPUT_POST,'new_organization_type'));
+			if ( !empty( $new_organization_type ) ) {
+				$campaign->set_api_data( 'organization_type', $new_organization_type );
+				$success[ "new_organization_type" ] = 1;
 			}
 
 			//Catégories du projet
