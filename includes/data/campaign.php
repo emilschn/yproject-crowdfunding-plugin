@@ -3008,6 +3008,7 @@ class ATCF_Campaign {
 							'date'			=> $investment_item->invest_datetime,
 							'user_api_id'	=> $investment_item->user_id,
 							'status'		=> $investment_item->status,
+							'payment_key' 	=> $investment_item->payment_key,
 							'mangopay_contribution'	=> ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_mangopay ) ? $investment_item->payment_key : FALSE,
 							'lemonway_contribution' => ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_lemonway ) ? $investment_item->payment_key : FALSE,
 							'signsquid_status'		=> $investment_item->signature_status
@@ -3054,7 +3055,6 @@ class ATCF_Campaign {
 						}
 
 						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
-
 						if ($payment_status != 'failed') {
 							$this->payments_data[] = array(
 								'ID'			=> $payment->ID,
