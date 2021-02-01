@@ -94,11 +94,13 @@ class WDG_Form_User_Unlink_Facebook extends WDG_Form {
 			if ( empty( $feedback_errors ) ) {
 				wp_update_user( array (
 					'ID'		=> $WDGUser->get_wpref(),
-					'user_pass' => $password_new
+					'user_pass' => $password_new,
+					'user_url' 	=> ''
 				) );
 				
 				delete_user_meta( $WDGUser->get_wpref(), 'social_connect_facebook_id' );
-				
+				$WDGUser->set_authentification_mode(WDGUser::$key_authentication_account);
+
 				WDGWPREST_Entity_User::update( $WDGUser );
 			
 				array_push( $feedback_success, __( 'form.user-password.PASSWORD_MODIFIED', 'yproject' ) );
