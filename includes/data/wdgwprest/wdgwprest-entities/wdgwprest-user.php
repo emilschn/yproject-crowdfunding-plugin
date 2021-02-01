@@ -232,4 +232,16 @@ class WDGWPREST_Entity_User {
 		}
 		return $buffer;
 	}
+	
+	/**
+	 * Retourne le vIBAN lié à un utilisateur
+	 * @return array
+	 */
+	public static function get_viban( $user_id ) {
+		$buffer = array();
+		if ( !empty( $user_id ) ) {
+			$buffer = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/virtual-iban' );
+		}
+		return $buffer;
+	}
 }

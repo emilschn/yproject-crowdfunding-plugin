@@ -2151,6 +2151,17 @@ class WDGUser {
 		return WDGWPREST_Entity_User::get_transactions( $this->get_api_id() );
 	}
 	
+	public function get_viban() {
+		if ( !$this->is_lemonway_registered() ) {
+			return FALSE;
+		}
+
+		if ( empty( $this->api_data->gateway_list ) || empty( $this->api_data->gateway_list[ 'lemonway' ] ) ) {
+			$this->update_api();
+		}
+		return WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
+	}
+	
 /*******************************************************************************
  * Gestion Lemonway - KYC
 *******************************************************************************/

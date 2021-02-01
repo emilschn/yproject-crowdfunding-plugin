@@ -1549,6 +1549,17 @@ class WDGOrganization {
 		}
 		return WDGWPREST_Entity_Organization::get_transactions( $this->get_api_id() );
 	}
+	
+	public function get_viban() {
+		if ( !$this->is_registered_lemonway_wallet() ) {
+			return FALSE;
+		}
+
+		if ( empty( $this->api_data->gateway_list ) || empty( $this->api_data->gateway_list[ 'lemonway' ] ) ) {
+			$this->save();
+		}
+		return WDGWPREST_Entity_Organization::get_viban( $this->get_api_id() );
+	}
 
 	public function get_lemonway_iban() {
 		$buffer = FALSE;
