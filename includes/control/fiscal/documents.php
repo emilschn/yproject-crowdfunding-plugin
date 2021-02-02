@@ -599,8 +599,8 @@ class WDG_FiscalDocuments {
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
-		// R224 - 20 caractères : Produits attachés aux retraits en capital des PER
-		for ( $i = 0; $i < 20; $i++ ) {
+		// R224 - 10 caractères : Produits attachés aux retraits en capital des PER
+		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= ' ';
 		}
 		//**********************************************************************
