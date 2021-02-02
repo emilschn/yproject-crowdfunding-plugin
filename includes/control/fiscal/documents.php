@@ -162,8 +162,10 @@ class WDG_FiscalDocuments {
 						if ( $date_transfer->format( 'Y' ) == $fiscal_year ) {
 							$investment_user_rois_amount_year += $roi_item->amount;
 							// Calcule de la taxe effectivement prélevée avec la donnée spécifique de taxe
-							$tax_item = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
-							$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
+							$tax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
+							foreach ( $tax_items as $tax_item ) {
+								$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
+							}
 						}
 					}
 				}
@@ -220,7 +222,7 @@ class WDG_FiscalDocuments {
 		$buffer = "- " .$investor_name. " (" .$investor_type. "). " .$investor_fiscal_residence. "\n";
 		$buffer .= ">> Investissement : " .$investment_amount. " €\n";
 		$buffer .= ">> Somme à déclarer : " .$amount_to_declare. " €\n";
-		$buffer .= ">> Montant des impots : " .$amount_tax. " €\n\n";
+		$buffer .= ">> Montant du prélèvement : " .$amount_tax. " €\n\n";
 		
 		return $buffer;
 	}
