@@ -494,6 +494,7 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// ADRESSE DU BENEFICIAIRE
 		// R127 - 32 caractères : complément d'adresse
+		$investment_entity_address_complement = substr( $investment_entity_address, 26, 32 );
 		$buffer .= self::clean_size( $investment_entity_address_complement, 32, $investment_entity_id, 'comp adresse' );
 		// R128 - 4 caractères : numéro dans la voie
 		$buffer .= str_pad( $investment_entity_address_number, 4, '0', STR_PAD_LEFT );
@@ -869,7 +870,7 @@ class WDG_FiscalDocuments {
 	}
 	
 	public static function clean_name( $name ) {
-		$buffer = strtoupper( $name );
+		$buffer = strtoupper( trim( $name ) );
 		
 		// Caractères spéciaux
 		$search_replace = array(
@@ -917,7 +918,7 @@ class WDG_FiscalDocuments {
 	public static function clean_size( $input, $size, $error_entity_id, $error_field ) {
 		if ( strlen( $input ) > $size ) {
 			// Suppression des caractères qui dépassent
-			$buffer = chunk_split( $input, $size );
+			$buffer = substr( $input, 0, $size );
 			self::add_error( 'Problème taille pour le champs '. $error_field .' - ID USER ' . $error_entity_id . ' >> ' . $input );
 			
 		} else {
