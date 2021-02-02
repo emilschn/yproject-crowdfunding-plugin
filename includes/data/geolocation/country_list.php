@@ -528,6 +528,7 @@ $country_list_iso2_to_iso3 = array(
 global $country_list_insee;
 $country_list_insee = array(
 	"FR" => "00000",
+	"GB" => "99132",
 	"PT" => "99139",
 	"TN" => "99351"
 );

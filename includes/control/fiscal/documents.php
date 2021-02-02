@@ -494,7 +494,7 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// ADRESSE DU BENEFICIAIRE
 		// R127 - 32 caractères : complément d'adresse
-		$investment_entity_address_complement = substr( $investment_entity_address, 26, 32 );
+		$investment_entity_address_complement = substr( $investment_entity_address, 26 );
 		$buffer .= self::clean_size( $investment_entity_address_complement, 32, $investment_entity_id, 'comp adresse' );
 		// R128 - 4 caractères : numéro dans la voie
 		$buffer .= str_pad( $investment_entity_address_number, 4, '0', STR_PAD_LEFT );
@@ -503,6 +503,7 @@ class WDG_FiscalDocuments {
 		// R130 - 1 caractère : espace
 		$buffer .= ' ';
 		// R131 - 26 caractères : nature et nom de la voie
+		$investment_entity_address = substr( $investment_entity_address, 0, 26 );
 		$buffer .= self::clean_size( $investment_entity_address, 26, $investment_entity_id, 'adresse' );
 		// R132 - 5 caractères : code insee commune
 		$buffer .= $investment_entity_address_town_code;
