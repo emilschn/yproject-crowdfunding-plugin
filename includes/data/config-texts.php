@@ -4,6 +4,7 @@
  */
 class WDGConfigTexts {
 	private static $post_type_name = 'configtext';
+	private static $post_type_categories = 'configtexttypes';
 
 
 	// URLs utilisées pour accéder aux textes spécifiques
@@ -28,6 +29,11 @@ class WDGConfigTexts {
 	public static $type_info_lemonway = 'informations-lemonway';
 	public static $type_info_fiscal_royalties = 'informations-royalties-fiscales';
 
+	// Slugs utilisés pour les catégories spécifiques
+	public static $category_earnings_description = 'earnings_description';
+	public static $category_simple_info = 'simple_info';
+	public static $category_detailed_info = 'detailed_info';
+
 
 	/**
 	 * Register sur WordPress
@@ -37,6 +43,28 @@ class WDGConfigTexts {
 	}
 
 	public static function register_post_type() {
+		// Enregistrement des catégories de Custom Post Type
+		$labels_taxonomy = array(
+			'name'              => 'Types',
+			'singular_name'     => 'Type',
+			'search_items'      => 'Rechercher',
+			'all_items'         => 'Tous',
+			'parent_item'       => 'Parent',
+			'parent_item_colon' => 'Parent :',
+			'edit_item'         => 'Editer', 
+			'update_item'       => 'Mettre à jour',
+			'add_new_item'      => 'Ajouter nouveau',
+			'new_item_name'     => 'Nouveau',
+			'menu_name'         => 'Types',
+		);
+		$args_taxonomy = array(
+			'labels'		=> $labels_taxonomy,
+			'hierarchical'	=> true
+		);
+		register_taxonomy( WDGConfigTexts::$post_type_categories, WDGConfigTexts::$post_type_name, $args_taxonomy );
+
+
+		// Enregistrement du Custom Post Type
 		$labels = array(
 			'name'                => 'Textes de configuration',
 			'singular_name'       => 'Texte de configuration',
@@ -64,8 +92,8 @@ class WDGConfigTexts {
 			'label'               => self::$post_type_name,
 			'description'         => 'Configurations',
 			'labels'              => $labels,
-			'supports'            => array('title', 'editor', 'thumbnail', 'comments', 'revisions', 'custom-fields'),
-			'taxonomies'          => array(self::$post_type_name),
+			'supports'            => array( 'title', 'editor', 'thumbnail', 'comments', 'revisions', 'custom-fields' ),
+			'taxonomies'          => array( self::$post_type_categories ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
@@ -85,21 +113,17 @@ class WDGConfigTexts {
 		register_post_type( self::$post_type_name, $args );	
 	}
 
+	/**
+	 * Récupération d'un texte de configuration par son url
+	 */
 	public static function get_config_text_by_name( $name, $setting_name = FALSE ) {
-		global $locale;
-
 		// Si il y a bien un post_type qui correspond
 		$configpost = get_page_by_path( $name, OBJECT, self::$post_type_name );
 		if ( !empty( $configpost ) ) {
-			// Récupérer la page traduite si nécessaire
-			if ( $locale != 'fr' && $locale != 'fr_FR' ) {
-				$locale_substr = substr( $locale, 0, 2 );
-				$post_translated_id = apply_filters( 'wpml_object_id', $configpost->ID, self::$post_type_name, FALSE, $locale_substr );
-				if ( !empty( $post_translated_id ) ) {
-					$configpost = get_post( $post_translated_id );
-				}
+			$post_translated_id = self::get_translated_post_id( $configpost->ID );
+			if ( !empty( $post_translated_id ) ) {
+				$configpost = get_post( $post_translated_id );
 			}
-
 			return $configpost->post_content;
 		}
 
@@ -110,6 +134,47 @@ class WDGConfigTexts {
 		}
 
 		return get_option( $setting_name );
+	}
+
+	/**
+	 * Retourne le texte de configuration correspondant à la langue en cours, à partir
+	 */
+	public static function get_translated_post_id( $french_post_id ) {
+		$buffer = FALSE;
+
+		global $locale;
+		// Récupérer la page traduite si nécessaire
+		if ( $locale != 'fr' && $locale != 'fr_FR' ) {
+			$locale_substr = substr( $locale, 0, 2 );
+			$post_translated_id = apply_filters( 'wpml_object_id', $french_post_id, self::$post_type_name, FALSE, $locale_substr );
+			if ( !empty( $post_translated_id ) ) {
+				$buffer = $post_translated_id;
+			}
+		}
+
+		return $buffer;
+	}
+
+	/**
+	 * Récupération d'une liste de textes de configuration en fonction d'un slug de catégorie
+	 */
+	public static function get_config_text_list_by_category_slug( $category_slug ) {
+		$term_obj = get_term_by( 'slug', $category_slug, self::$post_type_categories );
+		$term_id = $term_obj->term_id;
+		if ( !empty( $term_id ) ) {
+			return get_posts( array(
+				'post_type'		=> self::$post_type_name,
+				'numberposts'	=> -1,
+				'tax_query' => array(
+					array(
+						'taxonomy'	=> self::$post_type_categories,
+						'field' 	=> 'term_id',
+						'terms' 	=> $term_id
+					)
+				)
+			) );
+		}
+		return FALSE;
 	}
 }
 
