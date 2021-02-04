@@ -82,8 +82,12 @@ class WDGCampaignVotes {
 				$investment_item = array();
 				$investment_item[ 'date' ] = get_post_field( 'post_date', $payment_investment->get_id() );
 				$investment_item[ 'sum' ] = $payment_investment->get_saved_amount();
-					
-				if ( $contract_status == WDGInvestment::$contract_status_investment_validated || $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
+				
+				// Un investissement en évaluation est validé si ce n'est pas un virement (à moins qu'il ne soit validé), et si le contrat a été validé
+				$payment_key = $payment_investment->get_saved_payment_key();
+				$is_wire_payment = ( strpos( $payment_key, 'wire' ) !== FALSE );
+				$wire_with_received_payments = get_post_meta( $payment_investment->get_id(), 'has_received_wire', TRUE );
+				if ( ( !$is_wire_payment || $wire_with_received_payments === '1' ) && ( $contract_status == WDGInvestment::$contract_status_investment_validated || $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) ) {
 					$buffer[ 'count_preinvestments' ]++;
 					$buffer[ 'amount_preinvestments' ] += $payment_investment->get_saved_amount();
 					array_push( $buffer[ 'list_preinvestments' ], $investment_item );
