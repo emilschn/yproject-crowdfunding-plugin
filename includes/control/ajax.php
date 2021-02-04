@@ -771,7 +771,7 @@ class WDGAjaxActions {
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
 										if ( $roi->amount_taxed_in_cents > 0 ) {
 											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
-											$roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
+											$roi_item[ 'roitax_item' ] = print_r( $roitax_items, true );
 											if ( !empty( $roitax_items[ 0 ] ) ) {
 												$roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
 											}
@@ -914,6 +914,11 @@ class WDGAjaxActions {
 
 
 				$buffer_investment_item[ 'status_str' ] = '';
+				$first_investment_contract_status = FALSE;
+				if ( !empty( $result_campaign_item->investments ) ) {
+					$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
+				}
+
 				if ( $result_investment_item->status == 'pending' ) {
 					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
 						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PENDING_PAYMENT', 'yproject' );
@@ -951,10 +956,6 @@ class WDGAjaxActions {
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_STARTED', 'yproject' );
 						}
 					
-						$first_investment_contract_status = FALSE;
-						if ( !empty( $result_campaign_item->investments ) ) {
-							$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
-						}
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
 							$buffer_investment_item[ 'status' ] = 'canceled';
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_FINISHED', 'yproject' );
@@ -989,7 +990,7 @@ class WDGAjaxActions {
 					$buffer_investment_item[ 'contract_file_name' ] = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '.' .$extension;
 				}
 				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
-				if ( $investment_item[ 'contract_file_path' ] == '' ){
+				if ( $buffer_investment_item[ 'contract_file_path' ] == '' ){
 					$contract_index = 0;
 					if ( isset( $buffer_item[ 'items' ] ) ) {
 						$contract_index = count( $buffer_item[ 'items' ] );
@@ -1081,14 +1082,14 @@ class WDGAjaxActions {
 								break;
 						}
 						
-						if ( $buffer_roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract ) || $first_investment_contract->status != 'canceled' ) {
+						if ( $buffer_roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract_status ) || $first_investment_contract_status != 'canceled' ) {
 							$has_found_roi = false;
 
 							// Si il y a eu un versement de royalties, on récupère les infos du versement
 							$roi_list = $result_investment_item->rois;
 							if ( $buffer_roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
 								foreach ( $roi_list as $roi ) {
-									if ( $roi->id_declaration == $roi_declaration->id && $roi->status != WDGROI::$status_canceled ) {
+									if ( $roi->id_declaration == $roi_declaration->id && $roi->status == WDGROI::$status_transferred ) {
 										$has_found_roi = true;
 
 										$turnover_list = json_decode( $roi_declaration->turnover );
@@ -1105,8 +1106,7 @@ class WDGAjaxActions {
 										}
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
-										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
-										
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';											
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$buffer_roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
