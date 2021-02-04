@@ -491,7 +491,10 @@ function fillPDFHTMLDefaultContent( $user_obj, $campaign_obj, $payment_data, $or
 }
 
 function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_data, $organization, $preview, $lang = '', $with_agreement = false ) {
+	global $locale;
+	$temp_locale = $locale;
 	if (empty($lang)) {
+		$locale = 'fr_FR';
 		setlocale( LC_CTYPE, 'fr_FR' );
 	}
 	$campaign_obj->set_current_lang($lang);
@@ -816,6 +819,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 	
     $buffer .= '</page>';
    
+	$locale = $temp_locale;
     
     return $buffer;
 }

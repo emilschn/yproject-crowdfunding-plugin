@@ -162,8 +162,10 @@ class WDG_FiscalDocuments {
 						if ( $date_transfer->format( 'Y' ) == $fiscal_year ) {
 							$investment_user_rois_amount_year += $roi_item->amount;
 							// Calcule de la taxe effectivement prélevée avec la donnée spécifique de taxe
-							$tax_item = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
-							$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
+							$tax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
+							foreach ( $tax_items as $tax_item ) {
+								$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
+							}
 						}
 					}
 				}
@@ -220,7 +222,7 @@ class WDG_FiscalDocuments {
 		$buffer = "- " .$investor_name. " (" .$investor_type. "). " .$investor_fiscal_residence. "\n";
 		$buffer .= ">> Investissement : " .$investment_amount. " €\n";
 		$buffer .= ">> Somme à déclarer : " .$amount_to_declare. " €\n";
-		$buffer .= ">> Montant des impots : " .$amount_tax. " €\n\n";
+		$buffer .= ">> Montant du prélèvement : " .$amount_tax. " €\n\n";
 		
 		return $buffer;
 	}
@@ -494,6 +496,7 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// ADRESSE DU BENEFICIAIRE
 		// R127 - 32 caractères : complément d'adresse
+		$investment_entity_address_complement = substr( $investment_entity_address, 26 );
 		$buffer .= self::clean_size( $investment_entity_address_complement, 32, $investment_entity_id, 'comp adresse' );
 		// R128 - 4 caractères : numéro dans la voie
 		$buffer .= str_pad( $investment_entity_address_number, 4, '0', STR_PAD_LEFT );
@@ -502,6 +505,7 @@ class WDG_FiscalDocuments {
 		// R130 - 1 caractère : espace
 		$buffer .= ' ';
 		// R131 - 26 caractères : nature et nom de la voie
+		$investment_entity_address = substr( $investment_entity_address, 0, 26 );
 		$buffer .= self::clean_size( $investment_entity_address, 26, $investment_entity_id, 'adresse' );
 		// R132 - 5 caractères : code insee commune
 		$buffer .= $investment_entity_address_town_code;
@@ -595,8 +599,8 @@ class WDG_FiscalDocuments {
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
-		// R224 - 20 caractères : Produits attachés aux retraits en capital des PER
-		for ( $i = 0; $i < 20; $i++ ) {
+		// R224 - 10 caractères : Produits attachés aux retraits en capital des PER
+		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= ' ';
 		}
 		//**********************************************************************
@@ -869,7 +873,7 @@ class WDG_FiscalDocuments {
 	}
 	
 	public static function clean_name( $name ) {
-		$buffer = strtoupper( $name );
+		$buffer = strtoupper( trim( $name ) );
 		
 		// Caractères spéciaux
 		$search_replace = array(
@@ -917,7 +921,7 @@ class WDG_FiscalDocuments {
 	public static function clean_size( $input, $size, $error_entity_id, $error_field ) {
 		if ( strlen( $input ) > $size ) {
 			// Suppression des caractères qui dépassent
-			$buffer = chunk_split( $input, $size );
+			$buffer = substr( $input, 0, $size );
 			self::add_error( 'Problème taille pour le champs '. $error_field .' - ID USER ' . $error_entity_id . ' >> ' . $input );
 			
 		} else {
