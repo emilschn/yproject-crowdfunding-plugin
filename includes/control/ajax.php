@@ -2479,8 +2479,11 @@ class WDGAjaxActions {
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			if ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
-					$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
-					$payment_status_span_class = 'error';
+					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
+					if ( $campaign->campaign_status() != 'vote' || $wire_with_received_payments !== '1' ) {
+						$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
+						$payment_status_span_class = 'error';
+					}
 				} else if ($payment_key == 'check') {
 					$payment_status = __( "En attente de validation par WE DO GOOD", 'yproject' );
 					$payment_status_span_class = 'error';
