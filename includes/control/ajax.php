@@ -914,6 +914,11 @@ class WDGAjaxActions {
 
 
 				$buffer_investment_item[ 'status_str' ] = '';
+				$first_investment_contract_status = FALSE;
+				if ( !empty( $result_campaign_item->investments ) ) {
+					$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
+				}
+
 				if ( $result_investment_item->status == 'pending' ) {
 					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
 						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PENDING_PAYMENT', 'yproject' );
@@ -951,10 +956,6 @@ class WDGAjaxActions {
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_STARTED', 'yproject' );
 						}
 					
-						$first_investment_contract_status = FALSE;
-						if ( !empty( $result_campaign_item->investments ) ) {
-							$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
-						}
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
 							$buffer_investment_item[ 'status' ] = 'canceled';
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_FINISHED', 'yproject' );
@@ -1081,7 +1082,7 @@ class WDGAjaxActions {
 								break;
 						}
 						
-						if ( $buffer_roi_item[ 'status' ] != 'upcoming' && $buffer_roi_item[ 'status' ] != 'canceled' ) {
+						if ( $buffer_roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract_status ) || $first_investment_contract_status != 'canceled' ) {
 							$has_found_roi = false;
 
 							// Si il y a eu un versement de royalties, on récupère les infos du versement
