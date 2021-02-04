@@ -740,26 +740,65 @@ class WDGPostActions {
 		if ( !empty( $new_project_agreement_bundle ) ) {
 			$campaign->__set( ATCF_Campaign::$key_agreement_bundle, $new_project_agreement_bundle );
 		}
-		
-		$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
-		if ( !empty( $new_project_contract_earnings_description ) ) {
-			$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
-			$campaign->set_api_data( 'earnings_description', $new_project_contract_earnings_description );
+
+		// Enregistrement description des revenus
+		// On commence par enregistrer l'id de référence si il y en a
+		$new_project_contract_earnings_description_configtext_post_id = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description_configtext_post_id' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_earnings_description_configtext_post_id, $new_project_contract_earnings_description_configtext_post_id );
+		// Si on a choisi un texte personnalisé (pour garder d'éventuelles anciennes versions), on prend le texte
+		if ( $new_project_contract_earnings_description_configtext_post_id == 'custom' ) {
+			$new_project_contract_earnings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_earnings_description' ) );
+			if ( !empty( $new_project_contract_earnings_description ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, $new_project_contract_earnings_description );
+				$campaign->set_api_data( 'earnings_description', $new_project_contract_earnings_description );
+			}
+		// Si on a choisi un texte de configuration, on enregistre le titre si jamais on y accède par ailleurs
+		} else {
+			$post_contract_earnings_description = get_post( $new_project_contract_earnings_description_configtext_post_id );
+			if ( !empty( $post_contract_earnings_description ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_earnings_description, 'config::' . $post_contract_earnings_description->post_title );
+				$campaign->set_api_data( 'earnings_description', 'config::' . $post_contract_earnings_description->post_title );
+			}
 		}
-		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
-		if ( !empty( $new_project_contract_spendings_description ) ) {
-			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
-			$campaign->set_api_data( 'spendings_description', $new_project_contract_spendings_description );
+
+		// Enregistrement informations simples
+		// On commence par enregistrer l'id de référence si il y en a
+		$new_project_contract_simple_info_configtext_post_id = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info_configtext_post_id' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_simple_info_configtext_post_id, $new_project_contract_simple_info_configtext_post_id );
+		// Si on a choisi un texte personnalisé (pour garder d'éventuelles anciennes versions), on prend le texte
+		if ( $new_project_contract_simple_info_configtext_post_id == 'custom' ) {
+			$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
+			if ( !empty( $new_project_contract_simple_info ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
+				$campaign->set_api_data( 'simple_info', $new_project_contract_simple_info );
+			}
+		// Si on a choisi un texte de configuration, on enregistre le titre si jamais on y accède par ailleurs
+		} else {
+			$post_contract_simple_info = get_post( $new_project_contract_simple_info_configtext_post_id );
+			if ( !empty( $post_contract_simple_info ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_simple_info, 'config::' . $post_contract_simple_info->post_title );
+				$campaign->set_api_data( 'simple_info', 'config::' . $post_contract_simple_info->post_title );
+			}
 		}
-		$new_project_contract_simple_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_simple_info' ) );
-		if ( !empty( $new_project_contract_simple_info ) ) {
-			$campaign->__set( ATCF_Campaign::$key_contract_simple_info, $new_project_contract_simple_info );
-			$campaign->set_api_data( 'simple_info', $new_project_contract_simple_info );
-		}
-		$new_project_contract_detailed_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
-		if ( !empty( $new_project_contract_detailed_info ) ) {
-			$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
-			$campaign->set_api_data( 'detailed_info', $new_project_contract_detailed_info );
+
+		// Enregistrement informations détaillées
+		// On commence par enregistrer l'id de référence si il y en a
+		$new_project_contract_detailed_info_configtext_post_id = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info_configtext_post_id' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_detailed_info_configtext_post_id, $new_project_contract_detailed_info_configtext_post_id );
+		// Si on a choisi un texte personnalisé (pour garder d'éventuelles anciennes versions), on prend le texte
+		if ( $new_project_contract_detailed_info_configtext_post_id == 'custom' ) {
+			$new_project_contract_detailed_info = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_detailed_info' ) );
+			if ( !empty( $new_project_contract_detailed_info ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, $new_project_contract_detailed_info );
+				$campaign->set_api_data( 'detailed_info', $new_project_contract_detailed_info );
+			}
+		// Si on a choisi un texte de configuration, on enregistre le titre si jamais on y accède par ailleurs
+		} else {
+			$post_contract_detailed_info = get_post( $new_project_contract_detailed_info_configtext_post_id );
+			if ( !empty( $post_contract_detailed_info ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_detailed_info, 'config::' . $post_contract_detailed_info->post_title );
+				$campaign->set_api_data( 'detailed_info', 'config::' . $post_contract_detailed_info->post_title );
+			}
 		}
 		
 		$new_contract_premium = filter_input( INPUT_POST, 'new_contract_premium' );
