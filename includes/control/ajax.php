@@ -3399,10 +3399,21 @@ class WDGAjaxActions {
 				'display_name'	=> $new_display_name,
 				'user_nicename' => sanitize_title( $new_display_name )
 			) );
-			$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
-			$birthday_date_day = $birthday_date->format( 'd' );
-			$birthday_date_month = $birthday_date->format( 'm' );
-			$birthday_date_year = $birthday_date->format( 'Y' );
+			
+            if (is_wp_error($id_linked_user)) {
+				exit( 'La validation du chèque a échoué car l\'utilisateur n\'a pas pu être ajouté' );
+            }
+
+			try {
+				$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
+				$birthday_date_day = $birthday_date->format( 'd' );
+				$birthday_date_month = $birthday_date->format( 'm' );
+				$birthday_date_year = $birthday_date->format( 'Y' );
+
+			} catch (Exception $e) {
+				exit( 'La validation du chèque a échoué car la date de naissance est invalide' );
+			}
+
 			$WDGUser_new = new WDGUser( $id_linked_user );
 			$WDGUser_new->save_data(
 				FALSE, $investments_drafts_item_data->gender, $investments_drafts_item_data->firstname, $investments_drafts_item_data->lastname, FALSE,
@@ -3458,12 +3469,10 @@ class WDGAjaxActions {
 			NotificationsEmails::new_purchase_team_members( $investment_id );
 			NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
 			
-			echo 'ok';
-			exit();
+			exit( '1' );
 
 		} else {
-			echo 'ko - ajout de l\'investissement';
-			exit();
+			exit( 'La validation du chèque a échoué car l\'investissement n\'a pas pu être ajouté' );
 		}
 	}
 	
