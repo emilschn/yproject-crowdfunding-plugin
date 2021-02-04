@@ -76,12 +76,18 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			]
 		);
 
+		// Le champ e-mail est masqué par défaut, sauf si l'e-mail de l'utilisateur est vide
+		$email_field_type = 'not-editable';
+		$email_field_init_value = $WDGUser->get_email();
+		if ( empty( $email_field_init_value ) ) {
+			$email_field_type = 'text';
+		}
 		$this->addField(
-			'not-editable',
+			$email_field_type,
 			'email',
 			__( 'form.user-details.EMAIL', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
-			$WDGUser->get_email(),
+			$email_field_init_value,
 			FALSE,
 			'email'
 		);
@@ -598,6 +604,25 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		} else {
 			// Informations de base
 			$email = $WDGUser->get_email();
+			// On ne prend l'enregistrement que si il était vide à la base
+			if ( empty( $email ) ) {
+				$email = $this->getInputText( 'email' );
+				if ( !is_email( $email )  || !WDGRESTAPI_Lib_Validator::is_email( $email )) {
+					$this->addPostError(
+						'email',
+						__( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
+						'email'
+					);
+				}
+				// Si l'utilisateur change d'e-mail et que celui-ci est déjà utilisé, on bloque
+				if ( $WDGUser->get_email() != $email && email_exists( $email ) ) {
+					$this->addPostError(
+						'email',
+						__( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ),
+						'email'
+					);
+				}
+			}
 			
 			$firstname = $this->getInputText( 'firstname' );
 			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
