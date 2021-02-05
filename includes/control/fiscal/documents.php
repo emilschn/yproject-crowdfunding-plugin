@@ -326,7 +326,13 @@ class WDG_FiscalDocuments {
 		// R107/R207 - 2 caractères : clé
 		// Mais nous pouvons les utiliser pour transmettre les identifiants de wallet sur LW
 		// Cela se transforme en une zone de 30 caractères
-		$buffer .= self::clean_size( $wallet_id, 30, $investment_entity_id, 'ID WALLET' );
+		for ( $i = 0; $i < 14; $i++ ) {
+			$buffer .= '0';
+		}
+		$buffer .= self::clean_size( $wallet_id, 14, $investment_entity_id, 'ID WALLET', 'left' );
+		for ( $i = 0; $i < 2; $i++ ) {
+			$buffer .= '0';
+		}
 		return $buffer;
 	}
 	
@@ -918,14 +924,18 @@ class WDG_FiscalDocuments {
 	 * @param string $error_field
 	 * @return string
 	 */
-	public static function clean_size( $input, $size, $error_entity_id, $error_field ) {
+	public static function clean_size( $input, $size, $error_entity_id, $error_field, $pad_side = 'right' ) {
 		if ( strlen( $input ) > $size ) {
 			// Suppression des caractères qui dépassent
 			$buffer = substr( $input, 0, $size );
 			self::add_error( 'Problème taille pour le champs '. $error_field .' - ID USER ' . $error_entity_id . ' >> ' . $input );
 			
 		} else {
-			$buffer = str_pad( $input, $size );
+			$pad_type = STR_PAD_RIGHT;
+			if ( $pad_side == 'left' ) {
+				$pad_type = STR_PAD_LEFT;
+			}
+			$buffer = str_pad( $input, $size, ' ', $pad_type );
 		}
 		
 		return $buffer;
