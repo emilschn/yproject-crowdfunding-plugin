@@ -3402,10 +3402,21 @@ class WDGAjaxActions {
 				'display_name'	=> $new_display_name,
 				'user_nicename' => sanitize_title( $new_display_name )
 			) );
-			$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
-			$birthday_date_day = $birthday_date->format( 'd' );
-			$birthday_date_month = $birthday_date->format( 'm' );
-			$birthday_date_year = $birthday_date->format( 'Y' );
+			
+            if (is_wp_error($id_linked_user)) {
+				exit( 'La validation du chèque a échoué car l\'utilisateur n\'a pas pu être ajouté' );
+            }
+
+			try {
+				$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
+				$birthday_date_day = $birthday_date->format( 'd' );
+				$birthday_date_month = $birthday_date->format( 'm' );
+				$birthday_date_year = $birthday_date->format( 'Y' );
+
+			} catch (Exception $e) {
+				exit( 'La validation du chèque a échoué car la date de naissance est invalide' );
+			}
+
 			$WDGUser_new = new WDGUser( $id_linked_user );
 			$WDGUser_new->save_data(
 				FALSE, $investments_drafts_item_data->gender, $investments_drafts_item_data->firstname, $investments_drafts_item_data->lastname, FALSE,
@@ -3448,20 +3459,24 @@ class WDGAjaxActions {
 			'', '', '', '', '', 
 			$investments_drafts_item_data->orga_email
 		);
-		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
-		//  ajouter post meta check_picture avec le lien vers l'image du check qui se trouve dans investment-draft/picture-check
-		add_post_meta( $investment_id, 'check_picture', $investments_drafts_item->check );
-		
-		// Valider le draft
-		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
+		if($investment_id !== FALSE) {
+			add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
+			//  ajouter post meta check_picture avec le lien vers l'image du check qui se trouve dans investment-draft/picture-check
+			add_post_meta( $investment_id, 'check_picture', $investments_drafts_item->check );
+			
+			// Valider le draft
+			WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
 
-		// Notifications de validation d'investissement
-		NotificationsEmails::new_purchase_user_success_check( $investment_id );
-		NotificationsEmails::new_purchase_team_members( $investment_id );
-		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
-		
-		echo 'ok';
-		exit();
+			// Notifications de validation d'investissement
+			NotificationsEmails::new_purchase_user_success_check( $investment_id );
+			NotificationsEmails::new_purchase_team_members( $investment_id );
+			NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
+			
+			exit( '1' );
+
+		} else {
+			exit( 'La validation du chèque a échoué car l\'investissement n\'a pas pu être ajouté' );
+		}
 	}
 	
 	/**
