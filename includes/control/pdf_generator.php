@@ -149,7 +149,7 @@ class WDG_PDF_Generator {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_creator;
 		if ( !empty ($shortcode_organization_creator) ) {
-			return ( $shortcode_organization_creator->get_gender() == 'male' ) ? 'M' : 'Mme';
+			return ( $shortcode_organization_creator->get_gender() == 'male' ) ? __( 'invest.contract.CIVILITY_MALE', 'yproject' ) : __( 'invest.contract.CIVILITY_FEMALE', 'yproject' );
 		} else {
 			return '';
 		}		
@@ -223,7 +223,20 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_declaration_periodicity( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = ATCF_Campaign::$declaration_periodicity_list[ $shortcode_campaign_obj->get_declaration_periodicity() ];
+		switch ( $shortcode_campaign_obj->get_declaration_periodicity() ) {
+			case 'month':
+				$buffer = __( 'invest.contract.PERIODICITY_MONTH', 'yproject' );
+				break;
+			case 'quarter':
+				$buffer = __( 'invest.contract.PERIODICITY_QUARTER', 'yproject' );
+				break;
+			case 'semester':
+				$buffer = __( 'invest.contract.PERIODICITY_SEMESTER', 'yproject' );
+				break;
+			case 'year':
+				$buffer = __( 'invest.contract.PERIODICITY_YEAR', 'yproject' );
+				break;
+		}
 		return $buffer;
 	}
 	
@@ -233,7 +246,20 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_declaration_period( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = ATCF_Campaign::$declaration_period_list[ $shortcode_campaign_obj->get_declaration_periodicity() ];
+		switch ( $shortcode_campaign_obj->get_declaration_periodicity() ) {
+			case 'month':
+				$buffer = __( 'invest.contract.PERIOD_MONTH', 'yproject' );
+				break;
+			case 'quarter':
+				$buffer = __( 'invest.contract.PERIOD_QUARTER', 'yproject' );
+				break;
+			case 'semester':
+				$buffer = __( 'invest.contract.PERIOD_SEMESTER', 'yproject' );
+				break;
+			case 'year':
+				$buffer = __( 'invest.contract.PERIOD_YEAR', 'yproject' );
+				break;
+		}
 		return $buffer;
 	}
 	
@@ -352,15 +378,15 @@ class WDG_PDF_Generator {
 		global $shortcode_campaign_obj;
 		$buffer = '';
 		if ( $shortcode_campaign_obj->quarter_earnings_estimation_type() == 'linear' ) {
-			$buffer = "- 25% pour le premier trimestre<br />";
-			$buffer .= "- 25% pour le deuxième trimestre<br />";
-			$buffer .= "- 25% pour le troisième trimestre<br />";
-			$buffer .= "- 25% pour le quatrième trimestre<br />";
+			$buffer = "- 25% " .__( 'invest.contract.FOR_FIRST_QUARTER', 'yproject' ). "<br />";
+			$buffer .= "- 25% " .__( 'invest.contract.FOR_SECOND_QUARTER', 'yproject' ). "<br />";
+			$buffer .= "- 25% " .__( 'invest.contract.FOR_THIRD_QUARTER', 'yproject' ). "<br />";
+			$buffer .= "- 25% " .__( 'invest.contract.FOR_FOURTH_QUARTER', 'yproject' ). "<br />";
 		} elseif ( $shortcode_campaign_obj->quarter_earnings_estimation_type() == 'progressive' ) {
-			$buffer = "- 10% pour le premier trimestre<br />";
-			$buffer .= "- 20% pour le deuxième trimestre<br />";
-			$buffer .= "- 30% pour le troisième trimestre<br />";
-			$buffer .= "- 40% pour le quatrième trimestre<br />";
+			$buffer = "- 10% " .__( 'invest.contract.FOR_FIRST_QUARTER', 'yproject' ). "<br />";
+			$buffer .= "- 20% " .__( 'invest.contract.FOR_SECOND_QUARTER', 'yproject' ). "<br />";
+			$buffer .= "- 30% " .__( 'invest.contract.FOR_THIRD_QUARTER', 'yproject' ). "<br />";
+			$buffer .= "- 40% " .__( 'invest.contract.FOR_FOURTH_QUARTER', 'yproject' ). "<br />";
 		}
 		return $buffer;
 	}

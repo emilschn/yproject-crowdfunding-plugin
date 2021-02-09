@@ -758,11 +758,7 @@ class ATCF_Campaign {
 	// Contrat : descriptions des dépenses
     public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
 	public function contract_spendings_description() {
-		$buffer = $this->get_api_data( 'spendings_description' );
-		if ( empty( $buffer ) ) {
-			$buffer = $this->__get( ATCF_Campaign::$key_contract_spendings_description );
-		}
-		return $buffer;
+		return $this->__get( ATCF_Campaign::$key_contract_spendings_description );
 	}
 
 
