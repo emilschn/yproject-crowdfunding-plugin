@@ -678,28 +678,30 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$address = $this->getInputText( 'address' );
 				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
 					$this->addPostError(
-						'birthplace',
+						'address',
 						__( 'form.user-details.ADDRESS_ERROR', 'yproject' ),
-						'birthplace'
+						'address'
 					);
 				}
+				$country = $this->getInputText( 'country' );
+				
 				$postal_code = $this->getInputText( 'postal_code' );
 				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code, $country ) ) {
 					$this->addPostError(
-						'birthplace',
+						'postal_code',
 						__( 'form.user-details.ZIP_CODE_ERROR', 'yproject' ),
-						'birthplace'
+						'postal_code'
 					);
 				}
 				$city = $this->getInputText( 'city' );
 				if ( empty( $city ) || !WDGRESTAPI_Lib_Validator::is_name( $city ) ) {
 					$this->addPostError(
-						'birthplace',
+						'city',
 						__( 'form.user-details.CITY_ERROR', 'yproject' ),
-						'birthplace'
+						'city'
 					);
 				}
-				$country = $this->getInputText( 'country' );
+				
 				$tax_country = $this->getInputText( 'tax_country' );
 				$phone_number = $this->getInputText( 'phone_number' );
 				$birthdate_day = FALSE;
@@ -880,9 +882,9 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			);
 		}
 		
+		$country = $this->getInputText( 'country' );
 		$org_postal_code = $this->getInputText( 'org_postal_code' );
-		$org_postal_code = filter_var( $org_postal_code, FILTER_VALIDATE_INT );
-		if ( $org_postal_code === FALSE ) {
+		if ( empty( $org_postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $org_postal_code, $country ) )  {
 			$needs_update_organization = TRUE;
 			$this->addPostError(
 				'postalcode-not-integer',
