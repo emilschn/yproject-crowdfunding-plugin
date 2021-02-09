@@ -320,20 +320,25 @@ class WDG_FiscalDocuments {
 			$WDGUser = new WDGUser( $investment_entity_id );
 			$wallet_id = $WDGUser->get_lemonway_id();
 		}
-		// Ces champs sont utilisés pour les versements sur comptes bancaires habituels 
-		// R104/R204 - 9 caractères : code établissement
-		// R105/R205 - 5 caractères : code guichet
-		// R106/R206 - 14 caractères : numéro de compte ou numéro de contrat
-		// R107/R207 - 2 caractères : clé
+
+
+		// Ces champs sont utilisés pour les versements sur comptes bancaires habituels
 		// Mais nous pouvons les utiliser pour transmettre les identifiants de wallet sur LW
 		// Cela se transforme en une zone de 30 caractères
+
+		// R104/R204 - 9 caractères : code établissement
+		// R105/R205 - 5 caractères : code guichet
 		for ( $i = 0; $i < 14; $i++ ) {
 			$buffer .= '0';
 		}
+		// R106/R206 - 14 caractères : numéro de compte ou numéro de contrat
 		$buffer .= self::clean_size( $wallet_id, 14, $investment_entity_id, 'ID WALLET', STR_PAD_LEFT );
+		// R107/R207 - 2 caractères : clé
 		for ( $i = 0; $i < 2; $i++ ) {
 			$buffer .= '0';
 		}
+
+
 		return $buffer;
 	}
 	
@@ -608,7 +613,7 @@ class WDG_FiscalDocuments {
 		}
 		// R224 - 10 caractères : Produits attachés aux retraits en capital des PER
 		for ( $i = 0; $i < 10; $i++ ) {
-			$buffer .= ' ';
+			$buffer .= '0';
 		}
 		//**********************************************************************
 		
