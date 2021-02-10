@@ -804,6 +804,7 @@ class WDGQueue {
 			
 			//On vérifie si il y'a une action en cours :
 			$pending_actions = array();
+			$campaign_name = '';
 			// - investissement en attente
 			if ( !empty( $WDGOrga_wallet ) ) {
 				$pending_investments = $WDGOrga_wallet->get_pending_investments();
@@ -819,6 +820,9 @@ class WDGQueue {
 							array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
 						}
 					}
+					if($campaign_name == ''){
+						$campaign_name = $campaign->get_name();
+					}
 				}
 			}
 			// - évaluation avec intention d'investissement
@@ -829,12 +833,14 @@ class WDGQueue {
 					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 						array_push( $pending_actions, 'Evaluation avec intention pour ' .$campaign->get_name(). ' (' .$vote->invest_sum. ' €)' );
 					}
+					if($campaign_name == ''){
+						$campaign_name = $campaign->get_name();
+					}
 				}
 			}
 			
 			if ( !empty( $pending_actions ) ) {
-				NotificationsEmails::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions );
-				NotificationsSlack::send_notification_kyc_refused_admin( $user_email, $user_name );
+				NotificationsAsana::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions, $campaign_name );
 			}
 		}
 		

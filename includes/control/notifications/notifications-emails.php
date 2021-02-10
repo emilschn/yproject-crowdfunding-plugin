@@ -434,31 +434,6 @@ class NotificationsEmails {
     //*******************************************************
 	
     //*******************************************************
-    // NOTIFICATIONS KYC
-    //*******************************************************
-    public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions ) {
-		ypcf_debug_log('NotificationsEmails::send_notification_kyc_refused_admin > ' . $user_email);
-		
-		$admin_email = 'investir@wedogood.co';
-		$object = "Investisseur à relancer !";
-		
-		$body_content = "Hello !<br>";
-		$body_content .= "Lemon Way a refusé des documents depuis quelques jours, et l'utilisateur a quelques actions en attente.<br>";
-		$body_content .= "Il s'agit de " .$user_name. ".<br>";
-		$body_content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
-		
-		$body_content .= "Voici ses actions sur le site :<br>";
-		foreach ( $pending_actions as $pending_action ) {
-			$body_content .= "- " .$pending_action. "<br>";
-		}
-
-		return NotificationsEmails::send_mail( $admin_email, $object, $body_content, TRUE );
-	}
-    //*******************************************************
-    // FIN NOTIFICATIONS KYC
-    //*******************************************************
-	
-    //*******************************************************
     // SUPPRESSION COMPTE UTILISATEUR
     //*******************************************************
     public static function send_wedogood_delete_order( $user_email ) {
