@@ -519,9 +519,14 @@ function fillPDFHTMLDefaultContent( $user_obj, $campaign_obj, $payment_data, $or
 function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_data, $organization, $preview, $lang = '', $with_agreement = false ) {
 	global $locale;
 	$temp_locale = $locale;
-	if (empty($lang)) {
+	if ( empty( $lang ) ) {
 		$locale = 'fr_FR';
-		setlocale( LC_CTYPE, 'fr_FR' );
+		setlocale( LC_CTYPE, $locale );
+
+		unload_textdomain( 'yproject' );
+		$path = get_template_directory();
+		$mofile = $locale . '.mo';
+		load_textdomain( 'yproject', $path . '/languages/' . $mofile );
 	}
 	$campaign_obj->set_current_lang($lang);
 	$campaign_orga = $campaign_obj->get_organization();
@@ -843,11 +848,19 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 		$buffer .= '</div>';
 	}
 	
-    $buffer .= '</page>';
-   
-	$locale = $temp_locale;
-    
-    return $buffer;
+	$buffer .= '</page>';
+
+	$buffer = do_shortcode( $buffer );
+
+	if ( $temp_locale != $locale ) {
+		$locale = $temp_locale;
+		unload_textdomain( 'yproject' );
+		$path = get_template_directory();
+		$mofile = $locale . '.mo';
+		load_textdomain( 'yproject', $path . '/languages/' . $mofile );
+	}
+
+	return $buffer;
 }
 
 /**
