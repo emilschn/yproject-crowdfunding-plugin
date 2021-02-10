@@ -306,8 +306,16 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			}
 			
 			$rcs = $this->getInputText( 'rcs' );
-			if ( !empty( $rcs ) ) {
+			if ( empty( $rcs ) || !WDGRESTAPI_Lib_Validator::is_rcs( $rcs ) ) {
 				$WDGOrganization->set_rcs( $rcs );
+			} else {
+				$error = array(
+					'code'		=> 'rcs',
+					'text'		=> __( 'form.organization-details.error.RCS', 'yproject' ),
+					'element'	=> 'rcs'
+				);
+				array_push( $feedback_errors, $error );
+
 			}
 			
 			$capital = $this->getInputTextMoney( 'capital' );
