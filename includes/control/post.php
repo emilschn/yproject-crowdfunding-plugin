@@ -50,6 +50,8 @@ class WDGPostActions {
         self::add_action( 'user_account_organization_identitydocs' );
         self::add_action( 'user_account_organization_bank' );
         self::add_action( 'remove_user_registered_card' );
+
+        self::add_action( 'view_kyc_file' );
     }
 
     /**
@@ -1336,5 +1338,35 @@ class WDGPostActions {
 	
 		wp_redirect( home_url( '/mon-compte/#bank' ) );
 		exit();
+	}
+
+	public static function view_kyc_file() {
+		$WDGUser_current = WDGUser::current();
+
+		$id_kyc = filter_input( INPUT_GET, 'id_kyc' );
+		$file_kyc = new WDGKYCFile( $id_kyc );
+
+		$id_user_kyc = FALSE;
+		if ( !empty( $file_kyc->user_id ) ) {
+			$id_user_kyc = $file_kyc->user_id;
+		}
+		$id_orga_kyc = FALSE;
+		if ( !empty( $file_kyc->orga_id ) ) {
+			$id_orga_kyc = $file_kyc->orga_id;
+		}
+
+		$can_see_file = $WDGUser_current->is_admin()
+							|| $id_user_kyc == $WDGUser_current->get_wpref()
+							|| $WDGUser_current->can_edit_organization( $id_orga_kyc );
+
+		if ( $can_see_file ) {
+			header( 'Content-Type: ' . $file_kyc->get_content_type() );
+			header( 'Content-Disposition: inline; filename="' .$file_kyc->file_name. '";' );
+			readfile( $file_kyc->get_public_filepath( false ) );
+			exit();
+
+		} else {
+			exit( 'Access denied' );
+		}
 	}
 }
