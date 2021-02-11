@@ -306,7 +306,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 			}
 
 			$rcs = $this->getInputText( 'rcs' );
-			if ( empty( $rcs ) || WDGRESTAPI_Lib_Validator::is_rcs( $rcs ) ) {
+			if ( !empty( $rcs ) || WDGRESTAPI_Lib_Validator::is_rcs( $rcs ) ) {
 				$WDGOrganization->set_rcs( $rcs );
 			} else {
 				$error = array(
