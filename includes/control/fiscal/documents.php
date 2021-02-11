@@ -402,10 +402,6 @@ class WDG_FiscalDocuments {
 		// Personne physique
 		} else {
 			$WDGUser = new WDGUser( $investment_entity_id );
-			// Si la résidence fiscale n'est pas en France, pas la peine de déclarer dans l'IFU
-			if ( $WDGUser->get_tax_country() != 'FR' ) {
-				return "";
-			}
 			
 			$orga_name = '';
 			$orga_idnumber = '';
