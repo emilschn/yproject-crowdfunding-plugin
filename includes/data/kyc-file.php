@@ -80,8 +80,12 @@ class WDGKYCFile {
 	/**
 	 * Retourne le chemin vers le fichier pour un téléchargement
 	 */
-	public function get_public_filepath() {
-		return home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/kyc/' . $this->file_name;
+	public function get_public_filepath( $with_id = TRUE ) {
+		if ( $with_id ) {
+			return admin_url( 'admin-post.php?action=view_kyc_file&id_kyc=' .$this->id );
+		} else {
+			return home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/kyc/' .$this->file_name );
+		}
 	}
 	
 	/**
@@ -111,6 +115,30 @@ class WDGKYCFile {
 	 */
 	public function get_date_uploaded() {
 		return $this->date_uploaded;
+	}
+
+	/**
+	 * Retourne le content-type lié au header http
+	 */
+	public function get_content_type() {
+		$file_name_exploded = explode( '.', $this->file_name );
+		$extension = end( $file_name_exploded );
+		switch ( $extension ) {
+			case 'pdf':
+				return 'application/' . $extension;
+				break;
+			case 'jpg':
+			case 'jpeg':
+				return 'image/jpeg';
+				break;
+			case 'bmp':
+			case 'gif':
+			case 'tif':
+			case 'tiff':
+			case 'png':
+				return 'image/' . $extension;
+				break;
+		}
 	}
 
 	/**
