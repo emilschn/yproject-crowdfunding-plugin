@@ -33,6 +33,8 @@ class WDGConfigTexts {
 	public static $category_earnings_description = 'earnings_description';
 	public static $category_simple_info = 'simple_info';
 	public static $category_detailed_info = 'detailed_info';
+	public static $category_premium = 'contract_premium';
+	public static $category_warranty = 'contract_warranty';
 
 
 	/**

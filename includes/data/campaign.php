@@ -758,12 +758,24 @@ class ATCF_Campaign {
 	// Contrat : descriptions des dépenses
     public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
 	public function contract_spendings_description() {
-		return $this->__get( ATCF_Campaign::$key_contract_spendings_description );
+		global $locale;
+		$buffer = '';
+
+		if ( $locale != 'fr' && $locale != 'fr_FR' ) {
+			$key = self::$key_contract_spendings_description . '_' . $locale;
+			$buffer = $this->__get( $key );
+		}
+
+		if ( empty( $buffer ) ) {
+			$buffer = $this->__get( self::$key_contract_spendings_description );
+		}
+
+		return $buffer;
 	}
 
 
 	// Contrat : description des revenus
-    public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
+	public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
 	public function contract_earnings_description() {
 		$configtext_post_id = $this->contract_earnings_description_configtext_post_id();
 
@@ -785,7 +797,7 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
-    public static $key_contract_earnings_description_configtext_post_id = 'campaign_contract_earnings_description_configtext_post_id';
+	public static $key_contract_earnings_description_configtext_post_id = 'campaign_contract_earnings_description_configtext_post_id';
 	public function contract_earnings_description_configtext_post_id() {
 		$buffer = $this->__get( ATCF_Campaign::$key_contract_earnings_description_configtext_post_id );
 
@@ -801,7 +813,7 @@ class ATCF_Campaign {
 	}
 
 	// Contrat : informations simples
-    public static $key_contract_simple_info = 'campaign_contract_simple_info';
+	public static $key_contract_simple_info = 'campaign_contract_simple_info';
 	public function contract_simple_info() {
 		$configtext_post_id = $this->contract_simple_info_configtext_post_id();
 
@@ -823,7 +835,7 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
-    public static $key_contract_simple_info_configtext_post_id = 'campaign_contract_simple_info_configtext_post_id';
+	public static $key_contract_simple_info_configtext_post_id = 'campaign_contract_simple_info_configtext_post_id';
 	public function contract_simple_info_configtext_post_id() {
 		$buffer = $this->__get( ATCF_Campaign::$key_contract_simple_info_configtext_post_id );
 
@@ -839,7 +851,7 @@ class ATCF_Campaign {
 	}
 
 	// Contrat : informations détaillées
-    public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
+	public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
 	public function contract_detailed_info() {
 		$configtext_post_id = $this->contract_detailed_info_configtext_post_id();
 
@@ -861,7 +873,7 @@ class ATCF_Campaign {
 		}
 		return $buffer;
 	}
-    public static $key_contract_detailed_info_configtext_post_id = 'campaign_contract_detailed_info_configtext_post_id';
+	public static $key_contract_detailed_info_configtext_post_id = 'campaign_contract_detailed_info_configtext_post_id';
 	public function contract_detailed_info_configtext_post_id() {
 		$buffer = $this->__get( ATCF_Campaign::$key_contract_detailed_info_configtext_post_id );
 
@@ -876,23 +888,79 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
-	// Contrat : prime et garantie
-    public static $key_contract_premium = 'campaign_contract_premium';
+	// Contrat : prime
+	public static $key_contract_premium = 'campaign_contract_premium';
 	public function contract_premium() {
-		$buffer = $this->__get( ATCF_Campaign::$key_contract_premium );
+		$configtext_post_id = $this->contract_premium_configtext_post_id();
+
+		if ( empty( $configtext_post_id ) || $configtext_post_id == 'custom' ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_contract_premium );
+
+		} else {
+			$post_contract_premium = get_post( $configtext_post_id );
+			if ( !empty( $post_contract_premium ) ) {
+				$buffer = $post_contract_premium->post_content;
+			}
+		}
+
 		if ( empty( $buffer ) ) {
 			$buffer = "Ce montant est égal au montant de la Souscription";
 		}
 		return $buffer;
 	}
-    public static $key_contract_warranty = 'campaign_contract_warranty';
+	public static $key_contract_premium_configtext_post_id = 'campaign_contract_premium_configtext_post_id';
+	public function contract_premium_configtext_post_id() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_premium_configtext_post_id );
+
+		if ( empty( $buffer ) ) {
+			$buffer = 'custom';
+		} else {
+			$post_translated_id = WDGConfigTexts::get_translated_post_id( $buffer );
+			if ( !empty( $post_translated_id ) ) {
+				$buffer = $post_translated_id;
+			}
+		}
+		return $buffer;
+	}
+
+	// Contrat : garantie
+	public static $key_contract_warranty = 'campaign_contract_warranty';
 	public function contract_warranty() {
-		$buffer = $this->__get( ATCF_Campaign::$key_contract_warranty );
+		$configtext_post_id = $this->contract_warranty_configtext_post_id();
+
+		if ( empty( $configtext_post_id ) || $configtext_post_id == 'custom' ) {
+			$buffer = $this->__get( ATCF_Campaign::$key_contract_warranty );
+
+		} else {
+			$post_contract_warranty = get_post( $configtext_post_id );
+			if ( !empty( $post_contract_warranty ) ) {
+				$buffer = $post_contract_warranty->post_content;
+			}
+		}
+
 		if ( empty( $buffer ) ) {
 			$buffer = "Dans le cas où à l’issue du contrat le montant total de la Redevance perçue par le Souscripteur serait inférieur au montant de la Souscription, le Porteur de Projet s'engage à continuer à s'acquitter de la Redevance, dans les mêmes conditions que définies aux termes des présentes, jusqu'à ce que le total de celle-ci atteigne le montant de la Souscription.";
 		}
 		return $buffer;
-	} 
+	}
+	public static $key_contract_warranty_configtext_post_id = 'campaign_contract_warranty_configtext_post_id';
+	public function contract_warranty_configtext_post_id() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_warranty_configtext_post_id );
+
+		if ( empty( $buffer ) ) {
+			$buffer = 'custom';
+		} else {
+			$post_translated_id = WDGConfigTexts::get_translated_post_id( $buffer );
+			if ( !empty( $post_translated_id ) ) {
+				$buffer = $post_translated_id;
+			}
+		}
+		return $buffer;
+	}
+
+
+
+
 	// Contrat : Type de budget
 	public static $key_contract_budget_type = 'contract_budget_type';
 	public static $contract_budget_types = array(

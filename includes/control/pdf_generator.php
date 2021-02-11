@@ -363,11 +363,16 @@ class WDG_PDF_Generator {
 	public static function shortcode_contract_budget_type( $atts, $content = '' ) {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_campaign_obj;
-		$buffer = '';
-		if ( isset( ATCF_Campaign::$contract_budget_types[ $shortcode_campaign_obj->contract_budget_type() ] ) ) {
-			$buffer = ATCF_Campaign::$contract_budget_types[ $shortcode_campaign_obj->contract_budget_type() ];
+		
+		switch ( $shortcode_campaign_obj->contract_budget_type() ) {
+			case 'maximum':
+				return __( 'invest.contract.MAXIMUM', 'yproject' );
+				break;
+			case 'collected_funds':
+				return __( 'invest.contract.COLLECTED_FUNDS', 'yproject' );
+				break;
 		}
-		return $buffer;
+		return '';
 	}
 	
 	/**
