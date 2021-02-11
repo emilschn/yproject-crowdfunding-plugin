@@ -229,7 +229,7 @@ class WDG_FiscalDocuments {
 	
 	/**
 	 * Retourne une chaine d'introduction pour le fichier IFU : la partie décrivant le déclarant
-	 * Doc 2018 : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_2018.pdf
+	 * Documentation de référence (2020) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_r20_v1.0.pdf
 	 * @param ATCF_Campaign $campaign
 	 * @param int $fiscal_year
 	 * @return string
@@ -456,7 +456,15 @@ class WDG_FiscalDocuments {
 				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
 				$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
 			} else {
-				self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
+				// Si résident à l'étranger, on change ces données
+				if ( $WDGUser->get_country() != 'FR' ) {
+					global $country_list_insee;
+					$investment_entity_address_town_code = $country_list_insee[ $WDGUser->get_country() ];
+					$investment_entity_address_town_office = $country_list_insee[ $WDGUser->get_country() ];
+				}
+				if ( empty( $investment_entity_address_town_code ) || empty( $investment_entity_address_town_office ) ) {
+					self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
+				}
 			}
 			$investment_entity_period = '1231';
 		}
