@@ -517,6 +517,7 @@ class LemonwayNotification {
 							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €';
 
 							$declaration->init_rois_and_tax();
+							break;
 						}
 					}
 				}

@@ -160,7 +160,7 @@ class WDGROI {
 
 				//Versement utilisateur personne physique vers projet
 				} else {
-					$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+					$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $this->amount_taxed_in_cents );
 					if ( $amount_tax_in_cents > 0 ) {
 						LemonwayLib::ask_transfer_funds( $organization_obj->get_tax_lemonway_id(), $organization_obj->get_royalties_lemonway_id(), $amount_tax_in_cents / 100 );
 					}
