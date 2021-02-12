@@ -3865,7 +3865,7 @@ class ATCF_Campaign {
 	public static function get_list_current_hidden( $type, $is_time_remaining = true ) {
 		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
-			'numberposts' => $nb,
+			'numberposts' => 0,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array (
