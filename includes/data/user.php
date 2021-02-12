@@ -291,14 +291,35 @@ class WDGUser {
 	 * Retourne true si l'utilisateur est identifiÃ© grÃ¢ce Ã  Facebook
 	 * @return boolean
 	 */
+	
+	public static $key_authentication_facebook = 'facebook';
+	public static $key_authentication_account = 'account';
 	public function is_logged_in_with_facebook() {
 		$authentication_mode = $this->authentification_mode;
 		if ( !empty( $authentication_mode ) ) {
-			return ( $authentication_mode == 'facebook' );
+			return ( $authentication_mode == WDGUser::$key_authentication_facebook );
 		} else {
 			$facebook_id = $this->get_facebook_id();
 			return ( !empty( $facebook_id ) );
 		}
+	}
+
+
+	public function get_authentification_mode() {
+		$buffer = $this->authentification_mode;
+		if ( empty( $buffer ) ) {			
+			$facebook_id = $this->get_facebook_id();
+            if (empty($facebook_id)) {
+				$buffer = WDGUser::$key_authentication_account;
+            }else{
+				$buffer = WDGUser::$key_authentication_facebook;
+			}
+			$this->authentification_mode = $buffer;
+		} 
+		return $buffer;
+	}
+	public function set_authentification_mode($value) {
+		$this->authentification_mode = $value;
 	}
 	
 /*******************************************************************************
@@ -2128,6 +2149,17 @@ class WDGUser {
 			$this->update_api();
 		}
 		return WDGWPREST_Entity_User::get_transactions( $this->get_api_id() );
+	}
+	
+	public function get_viban() {
+		if ( !$this->is_lemonway_registered() ) {
+			return FALSE;
+		}
+
+		if ( empty( $this->api_data->gateway_list ) || empty( $this->api_data->gateway_list[ 'lemonway' ] ) ) {
+			$this->update_api();
+		}
+		return WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
 	}
 	
 /*******************************************************************************

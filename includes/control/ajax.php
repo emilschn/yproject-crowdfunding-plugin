@@ -37,8 +37,10 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('init_sendinblue_templates');
 
 		// Mon compte
+		WDGAjaxActions::add_action( 'display_user_investments' ); // deprecated
 		WDGAjaxActions::add_action( 'display_user_investments_optimized' );
 		WDGAjaxActions::add_action( 'get_transactions_table' );
+		WDGAjaxActions::add_action( 'get_viban_info' );
 
 		// Page projet
 		WDGAjaxActions::add_action( 'save_image_url_video' );
@@ -769,7 +771,7 @@ class WDGAjaxActions {
 										$roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
 										if ( $roi->amount_taxed_in_cents > 0 ) {
 											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
-											$roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
+											$roi_item[ 'roitax_item' ] = print_r( $roitax_items, true );
 											if ( !empty( $roitax_items[ 0 ] ) ) {
 												$roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
 											}
@@ -912,6 +914,11 @@ class WDGAjaxActions {
 
 
 				$buffer_investment_item[ 'status_str' ] = '';
+				$first_investment_contract_status = FALSE;
+				if ( !empty( $result_campaign_item->investments ) ) {
+					$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
+				}
+
 				if ( $result_investment_item->status == 'pending' ) {
 					if ( $result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check' ) {
 						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PENDING_PAYMENT', 'yproject' );
@@ -949,10 +956,6 @@ class WDGAjaxActions {
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_STARTED', 'yproject' );
 						}
 					
-						$first_investment_contract_status = FALSE;
-						if ( !empty( $result_campaign_item->investments ) ) {
-							$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
-						}
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
 							$buffer_investment_item[ 'status' ] = 'canceled';
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_FINISHED', 'yproject' );
@@ -962,7 +965,9 @@ class WDGAjaxActions {
 
 				$buffer_investment_item[ 'roi_amount' ] = 0;
 				foreach ( $result_investment_item->rois as $roi_item ) {
-					$buffer_investment_item[ 'roi_amount' ] += $roi_item->amount;
+					if($roi_item->status == WDGROI::$status_transferred ){
+						$buffer_investment_item[ 'roi_amount' ] += $roi_item->amount;
+					}
 				}
 				$buffer_investment_item[ 'roi_amount' ] = utf8_encode( $buffer_investment_item[ 'roi_amount' ] );
 				$buffer_investment_item[ 'roi_return' ] = utf8_encode( round( $buffer_investment_item[ 'roi_amount' ] / $result_investment_item->amount * 100 ) );
@@ -985,7 +990,7 @@ class WDGAjaxActions {
 					$buffer_investment_item[ 'contract_file_name' ] = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '.' .$extension;
 				}
 				// sinon, on va récupérer le contrat en pdf tel qu'il a été généré
-				if ( $investment_item[ 'contract_file_path' ] == '' ){
+				if ( $buffer_investment_item[ 'contract_file_path' ] == '' ){
 					$contract_index = 0;
 					if ( isset( $buffer_item[ 'items' ] ) ) {
 						$contract_index = count( $buffer_item[ 'items' ] );
@@ -1077,14 +1082,14 @@ class WDGAjaxActions {
 								break;
 						}
 						
-						if ( $buffer_roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract ) || $first_investment_contract->status != 'canceled' ) {
+						if ( $buffer_roi_item[ 'status' ] != 'upcoming' || empty( $first_investment_contract_status ) || $first_investment_contract_status != 'canceled' ) {
 							$has_found_roi = false;
 
 							// Si il y a eu un versement de royalties, on récupère les infos du versement
 							$roi_list = $result_investment_item->rois;
 							if ( $buffer_roi_item[ 'status' ] != 'upcoming' && !empty( $roi_list ) ) {
 								foreach ( $roi_list as $roi ) {
-									if ( $roi->id_declaration == $roi_declaration->id && $roi->status != WDGROI::$status_canceled ) {
+									if ( $roi->id_declaration == $roi_declaration->id && $roi->status == WDGROI::$status_transferred ) {
 										$has_found_roi = true;
 
 										$turnover_list = json_decode( $roi_declaration->turnover );
@@ -1101,8 +1106,7 @@ class WDGAjaxActions {
 										}
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
-										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
-										
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';											
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
 										$buffer_roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
@@ -1306,6 +1310,31 @@ class WDGAjaxActions {
 		}
 
 		exit( $html_table );
+	}
+
+
+	public static function get_viban_info() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		$entity = FALSE;
+		if ( WDGOrganization::is_user_organization( $user_id ) ) {
+			$entity = new WDGOrganization( $user_id );
+		} else {
+			$entity = new WDGUser( $user_id );
+		}
+		$iban_info = $entity->get_viban();
+
+		$result = array();
+		if ( !empty( $iban_info ) ) {
+			$result[ 'holder' ] = $iban_info->HOLDER;
+			$result[ 'iban' ] = $iban_info->DATA;
+			$result[ 'bic' ] = $iban_info->SWIFT;
+			
+		} else {
+			$result[ 'error' ] = 1;
+		}
+
+		echo json_encode( $result );
+		exit();
 	}
 	
 
@@ -2450,8 +2479,11 @@ class WDGAjaxActions {
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			if ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
-					$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
-					$payment_status_span_class = 'error';
+					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
+					if ( $campaign->campaign_status() != 'vote' || $wire_with_received_payments !== '1' ) {
+						$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
+						$payment_status_span_class = 'error';
+					}
 				} else if ($payment_key == 'check') {
 					$payment_status = __( "En attente de validation par WE DO GOOD", 'yproject' );
 					$payment_status_span_class = 'error';
@@ -3370,10 +3402,21 @@ class WDGAjaxActions {
 				'display_name'	=> $new_display_name,
 				'user_nicename' => sanitize_title( $new_display_name )
 			) );
-			$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
-			$birthday_date_day = $birthday_date->format( 'd' );
-			$birthday_date_month = $birthday_date->format( 'm' );
-			$birthday_date_year = $birthday_date->format( 'Y' );
+			
+            if (is_wp_error($id_linked_user)) {
+				exit( 'La validation du chèque a échoué car l\'utilisateur n\'a pas pu être ajouté' );
+            }
+
+			try {
+				$birthday_date = DateTime::createFromFormat( 'd/m/Y', $investments_drafts_item_data->birthday );
+				$birthday_date_day = $birthday_date->format( 'd' );
+				$birthday_date_month = $birthday_date->format( 'm' );
+				$birthday_date_year = $birthday_date->format( 'Y' );
+
+			} catch (Exception $e) {
+				exit( 'La validation du chèque a échoué car la date de naissance est invalide' );
+			}
+
 			$WDGUser_new = new WDGUser( $id_linked_user );
 			$WDGUser_new->save_data(
 				FALSE, $investments_drafts_item_data->gender, $investments_drafts_item_data->firstname, $investments_drafts_item_data->lastname, FALSE,
@@ -3416,20 +3459,24 @@ class WDGAjaxActions {
 			'', '', '', '', '', 
 			$investments_drafts_item_data->orga_email
 		);
-		add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
-		//  ajouter post meta check_picture avec le lien vers l'image du check qui se trouve dans investment-draft/picture-check
-		add_post_meta( $investment_id, 'check_picture', $investments_drafts_item->check );
-		
-		// Valider le draft
-		WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
+		if($investment_id !== FALSE) {
+			add_post_meta( $investment_id, 'created-from-draft', $investments_drafts_item->id );
+			//  ajouter post meta check_picture avec le lien vers l'image du check qui se trouve dans investment-draft/picture-check
+			add_post_meta( $investment_id, 'check_picture', $investments_drafts_item->check );
+			
+			// Valider le draft
+			WDGWPREST_Entity_InvestmentDraft::edit( $investments_drafts_item->id, 'validated' );
 
-		// Notifications de validation d'investissement
-		NotificationsEmails::new_purchase_user_success_check( $investment_id );
-		NotificationsEmails::new_purchase_team_members( $investment_id );
-		NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
-		
-		echo 'ok';
-		exit();
+			// Notifications de validation d'investissement
+			NotificationsEmails::new_purchase_user_success_check( $investment_id );
+			NotificationsEmails::new_purchase_team_members( $investment_id );
+			NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
+			
+			exit( '1' );
+
+		} else {
+			exit( 'La validation du chèque a échoué car l\'investissement n\'a pas pu être ajouté' );
+		}
 	}
 	
 	/**

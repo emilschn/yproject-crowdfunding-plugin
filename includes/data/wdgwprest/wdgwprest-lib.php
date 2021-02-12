@@ -51,7 +51,7 @@ class WDGWPRESTLib {
 				);
 
 				if ( !is_wp_error($result) && isset( $result['response'] ) ) {
-					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $result[response] : ' . print_r( $result['response'], TRUE ) );
+					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $route : ' . $route.' --> $result[response] : ' . print_r( $result['response'], TRUE ) );
 				}
 				if ( !is_wp_error($result) && isset( $result['body'] ) ) {
 					$traced_body = json_decode( $result["body"] );
@@ -61,7 +61,7 @@ class WDGWPRESTLib {
 					if ( isset( $traced_body->bank_bic ) ) {
 						$traced_body->bank_bic = 'UNTRACKED';
 					}
-					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $body result : ' . json_encode( $traced_body ) );
+					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $route : ' . $route.' --> $body result : ' . json_encode( $traced_body ) );
 				}
 				
 				$result_save = serialize( $result );

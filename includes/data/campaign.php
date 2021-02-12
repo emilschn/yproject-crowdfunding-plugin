@@ -755,49 +755,127 @@ class ATCF_Campaign {
         return $this->__get( ATCF_Campaign::$key_agreement_bundle );
 	}
 	
-	// Contrat : descriptions des revenus, des dépenses
+	// Contrat : descriptions des dépenses
+    public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
+	public function contract_spendings_description() {
+		return $this->__get( ATCF_Campaign::$key_contract_spendings_description );
+	}
+
+
+	// Contrat : description des revenus
     public static $key_contract_earnings_description = 'campaign_contract_earnings_description';
 	public function contract_earnings_description() {
-		$buffer = $this->get_api_data( 'earnings_description' );
-		if ( empty( $buffer ) ) {
-			$buffer = $this->__get( ATCF_Campaign::$key_contract_earnings_description );
+		$configtext_post_id = $this->contract_earnings_description_configtext_post_id();
+
+		if ( empty( $configtext_post_id ) || $configtext_post_id == 'custom' ) {
+			$buffer = $this->get_api_data( 'earnings_description' );
+			if ( empty( $buffer ) ) {
+				$buffer = $this->__get( ATCF_Campaign::$key_contract_earnings_description );
+			}
+
+		} else {
+			$post_contract_earnings_description = get_post( $configtext_post_id );
+			if ( !empty( $post_contract_earnings_description ) ) {
+				$buffer = $post_contract_earnings_description->post_content;
+			}
 		}
+
 		if ( empty( $buffer ) ) {
 			$buffer = "le chiffre d’affaires net hors taxes du Porteur de Projet. En cas de non possibilité de publier ses comptes, les Revenus considérés seront ceux indiqués dans les déclarations transmises à l'administration fiscale";
 		}
 		return $buffer;
 	}
-    public static $key_contract_spendings_description = 'campaign_contract_spendings_description';
-	public function contract_spendings_description() {
-		$buffer = $this->get_api_data( 'spendings_description' );
+    public static $key_contract_earnings_description_configtext_post_id = 'campaign_contract_earnings_description_configtext_post_id';
+	public function contract_earnings_description_configtext_post_id() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_earnings_description_configtext_post_id );
+
 		if ( empty( $buffer ) ) {
-			$buffer = $this->__get( ATCF_Campaign::$key_contract_spendings_description );
+			$buffer = 'custom';
+		} else {
+			$post_translated_id = WDGConfigTexts::get_translated_post_id( $buffer );
+			if ( !empty( $post_translated_id ) ) {
+				$buffer = $post_translated_id;
+			}
 		}
 		return $buffer;
 	}
-	// Contrat : informations simples et détaillées
+
+	// Contrat : informations simples
     public static $key_contract_simple_info = 'campaign_contract_simple_info';
 	public function contract_simple_info() {
-		$buffer = $this->get_api_data( 'simple_info' );
-		if ( empty( $buffer ) ) {
-			$buffer = $this->__get( ATCF_Campaign::$key_contract_simple_info );
+		$configtext_post_id = $this->contract_simple_info_configtext_post_id();
+
+		if ( empty( $configtext_post_id ) || $configtext_post_id == 'custom' ) {
+			$buffer = $this->get_api_data( 'simple_info' );
+			if ( empty( $buffer ) ) {
+				$buffer = $this->__get( ATCF_Campaign::$key_contract_simple_info );
+			}
+
+		} else {
+			$post_contract_simple_info = get_post( $configtext_post_id );
+			if ( !empty( $post_contract_simple_info ) ) {
+				$buffer = $post_contract_simple_info->post_content;
+			}
 		}
+
 		if ( empty( $buffer ) ) {
 			$buffer = "les informations sur l'évolution de l'Activité du Porteur de Projet, communiquées par l'intermédiaire d'une newsletter, d'actualités publiées sur sa Page Projet sur le site www.wedogood.co, ou par tout autre moyen de communication";
 		}
 		return $buffer;
 	}
+    public static $key_contract_simple_info_configtext_post_id = 'campaign_contract_simple_info_configtext_post_id';
+	public function contract_simple_info_configtext_post_id() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_simple_info_configtext_post_id );
+
+		if ( empty( $buffer ) ) {
+			$buffer = 'custom';
+		} else {
+			$post_translated_id = WDGConfigTexts::get_translated_post_id( $buffer );
+			if ( !empty( $post_translated_id ) ) {
+				$buffer = $post_translated_id;
+			}
+		}
+		return $buffer;
+	}
+
+	// Contrat : informations détaillées
     public static $key_contract_detailed_info = 'campaign_contract_detailed_info';
 	public function contract_detailed_info() {
-		$buffer = $this->get_api_data( 'detailed_info' );
-		if ( empty( $buffer ) ) {
-			$buffer = $this->__get( ATCF_Campaign::$key_contract_detailed_info );
+		$configtext_post_id = $this->contract_detailed_info_configtext_post_id();
+
+		if ( empty( $configtext_post_id ) || $configtext_post_id == 'custom' ) {
+			$buffer = $this->get_api_data( 'detailed_info' );
+			if ( empty( $buffer ) ) {
+				$buffer = $this->__get( ATCF_Campaign::$key_contract_detailed_info );
+			}
+
+		} else {
+			$post_contract_detailed_info = get_post( $configtext_post_id );
+			if ( !empty( $post_contract_detailed_info ) ) {
+				$buffer = $post_contract_detailed_info->post_content;
+			}
 		}
+
 		if ( empty( $buffer ) ) {
 			$buffer = "les comptes certifiés conformes par le dirigeant éventuellement publiés du Porteur de Projet, les déclarations faites à l'administration fiscale, ainsi que l'attestation d'un expert-comptable ou commissaire aux comptes pour les périodes non couvertes par ces documents";
 		}
 		return $buffer;
 	}
+    public static $key_contract_detailed_info_configtext_post_id = 'campaign_contract_detailed_info_configtext_post_id';
+	public function contract_detailed_info_configtext_post_id() {
+		$buffer = $this->__get( ATCF_Campaign::$key_contract_detailed_info_configtext_post_id );
+
+		if ( empty( $buffer ) ) {
+			$buffer = 'custom';
+		} else {
+			$post_translated_id = WDGConfigTexts::get_translated_post_id( $buffer );
+			if ( !empty( $post_translated_id ) ) {
+				$buffer = $post_translated_id;
+			}
+		}
+		return $buffer;
+	}
+
 	// Contrat : prime et garantie
     public static $key_contract_premium = 'campaign_contract_premium';
 	public function contract_premium() {
@@ -2345,7 +2423,11 @@ class ATCF_Campaign {
 	 * @return sting Campaign Video
 	 */
 	public function video() {
-		return $this->__get_translated_property( 'campaign_video' );
+		$buffer = $this->__get_translated_property( 'campaign_video' );	
+		if( empty($buffer) ){
+			$buffer =$this->__get( 'campaign_video_fr' );	
+		}
+		return $buffer;
 	}
 	
 	/**

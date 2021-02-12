@@ -2,8 +2,8 @@
 class WDG_FiscalDocuments {
 	
 	private static $wedogood_name = 'WE DO GOOD';
-	private static $wedogood_street_number = '8';
-	private static $wedogood_street = 'rue Kervegan';
+	private static $wedogood_street_number = '38';
+	private static $wedogood_street = 'rue des Olivettes';
 	private static $wedogood_town_insee_number = '44109';
 	private static $wedogood_town_label = 'Nantes';
 	private static $wedogood_post_code = '44000';
@@ -17,7 +17,11 @@ class WDG_FiscalDocuments {
 	private static $wedogood_person_incharge_email = 'admin@wedogood.co';
 	
 	private static $tax_coef = 0.3;
-	
+	private static $declaration_type_init = 1;
+	private static $declaration_type_rectif = 2;
+
+	private static $geolocation_data_by_town;
+
 	private static $declaration_type = 1;
 	
 	
@@ -47,6 +51,9 @@ class WDG_FiscalDocuments {
 			
 			self::save_file( $file_path, $errors_file_content );
 		}
+
+		// Reinit du tableau d'erreurs
+		self::$errors = array();
 	}
 	/**************************************************************************/
 	
@@ -73,8 +80,6 @@ class WDG_FiscalDocuments {
 	}
 	/**************************************************************************/
 	
-	
-	private static $geolocation_data_by_town;
 
 	/**
 	 * Génère les fichiers de l'année précédente
@@ -82,13 +87,13 @@ class WDG_FiscalDocuments {
 	 */
 	public static function generate( $campaign_id, $fiscal_year = 0, $init = 1 ) {
 		// Récupération du type de déclarations (initiale ou rectificative)
-		if ( $init == 2 ) {
-			self::$declaration_type = 2;
+		if ( $init == self::$declaration_type_rectif ) {
+			self::$declaration_type = self::$declaration_type_rectif;
 		}
 		// On stocke d'un côté un résumé textuel lisible. TODO CSV ?
 		$resume_txt = '';
 		// On stocke d'un autre côté le fichier txt de déclaration des IFUs
-		// Documentation de référence (2018) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_2018.pdf
+		// Documentation de référence (2020) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_r20_v1.0.pdf
 		$ifu_txt = '';
 		
 		// Campagne analysée
@@ -126,9 +131,24 @@ class WDG_FiscalDocuments {
 		foreach ( $investments_items_by_user as $investment_user_id => $investments_for_user ) {
 			$investment_amount = 0;
 			$investment_entity_id = $investment_user_id;
-			$investment_entity = WDGOrganization::is_user_organization( $investment_entity_id ) ? new WDGOrganization( $investment_entity_id ) : new WDGUser( $investment_entity_id );
+			$investment_entity = FALSE;
+			$investment_entity_is_registered = FALSE;
+			if ( WDGOrganization::is_user_organization( $investment_entity_id ) ) {
+				$investment_entity = new WDGOrganization( $investment_entity_id );
+				$investment_entity_is_registered = $investment_entity->is_registered_lemonway_wallet();
+			} else {
+				$investment_entity = new WDGUser( $investment_entity_id );
+				$investment_entity_is_registered = $investment_entity->is_lemonway_registered();
+			}
+
+			// Si la personne n'est pas authentifiée, elle n'a pas reçu ses royalties pour l'instant
+			if ( !$investment_entity_is_registered ) {
+				continue;
+			}
+
 			$investment_user_rois_amount_total = 0;
 			$investment_user_rois_amount_year = 0;
+			$amount_tax_sampled_year = 0;
 			
 			foreach ( $investments_for_user as $investment_item ) {
 				$investment_amount += $investment_item[ 'amount' ];
@@ -141,22 +161,26 @@ class WDG_FiscalDocuments {
 						$investment_user_rois_amount_total += $roi_item->amount;
 						if ( $date_transfer->format( 'Y' ) == $fiscal_year ) {
 							$investment_user_rois_amount_year += $roi_item->amount;
+							// Calcule de la taxe effectivement prélevée avec la donnée spécifique de taxe
+							$tax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
+							foreach ( $tax_items as $tax_item ) {
+								$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
+							}
 						}
 					}
 				}
 			}
 
-			// Calcul de la somme à déclarer : on ne doit prendre que l'année en cours
+			// Calcul de la somme à déclarer : on ne doit prendre que la plus-value sur l'année en cours
 			$amount_to_declare = min( $investment_user_rois_amount_year, $investment_user_rois_amount_total - $investment_amount );
 			// Si la somme des royalties a dépassé l'investissement initial
 			if ( $amount_to_declare > 0 ) {
 				$ifu_entity_txt = self::add_ifu_entity( $investment_entity_id, $fiscal_year );
 				$amount_to_declare_round = round( $amount_to_declare );
-				$amount_tax_round = round( $amount_to_declare_round * self::$tax_coef );
-				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_round );
+				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_sampled_year );
 				if ( !empty( $ifu_entity_txt ) ) {
 					$ifu_txt .= $ifu_entity_txt;
-					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_round );
+					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_sampled_year );
 					$entity_index++;
 				}
 			}
@@ -164,9 +188,9 @@ class WDG_FiscalDocuments {
 		
 		$ifu_txt .= self::add_ifu_amount_total( $fiscal_year, $entity_index );
 		
+		self::save_errors_file( $campaign_id, $fiscal_year );
 		self::save_resume_file( $campaign_id, $fiscal_year, $resume_txt );
 		self::save_ifu_file( $campaign_id, $fiscal_year, $ifu_txt );
-		self::save_errors_file( $campaign_id, $fiscal_year );
 	}
 	
 	/**
@@ -198,14 +222,14 @@ class WDG_FiscalDocuments {
 		$buffer = "- " .$investor_name. " (" .$investor_type. "). " .$investor_fiscal_residence. "\n";
 		$buffer .= ">> Investissement : " .$investment_amount. " €\n";
 		$buffer .= ">> Somme à déclarer : " .$amount_to_declare. " €\n";
-		$buffer .= ">> Montant des impots : " .$amount_tax. " €\n\n";
+		$buffer .= ">> Montant du prélèvement : " .$amount_tax. " €\n\n";
 		
 		return $buffer;
 	}
 	
 	/**
 	 * Retourne une chaine d'introduction pour le fichier IFU : la partie décrivant le déclarant
-	 * Doc 2018 : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_2018.pdf
+	 * Documentation de référence (2020) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_r20_v1.0.pdf
 	 * @param ATCF_Campaign $campaign
 	 * @param int $fiscal_year
 	 * @return string
@@ -234,6 +258,7 @@ class WDG_FiscalDocuments {
 		$buffer .= self::$wedogood_legal_category;
 		//**********************************************************************
 		
+		// TODO : changer toutes les boucles qui ajoutent des espaces par des str_pad
 		
 		//**********************************************************************
 		// ADRESSE DU DECLARANT
@@ -295,14 +320,25 @@ class WDG_FiscalDocuments {
 			$WDGUser = new WDGUser( $investment_entity_id );
 			$wallet_id = $WDGUser->get_lemonway_id();
 		}
-		// Ces champs sont utilisés pour les versements sur comptes bancaires habituels 
-		// R104/R204 - 9 caractères : code établissement
-		// R105/R205 - 5 caractères : code guichet
-		// R106/R206 - 14 caractères : numéro de compte ou numéro de contrat
-		// R107/R207 - 2 caractères : clé
+
+
+		// Ces champs sont utilisés pour les versements sur comptes bancaires habituels
 		// Mais nous pouvons les utiliser pour transmettre les identifiants de wallet sur LW
 		// Cela se transforme en une zone de 30 caractères
-		$buffer .= self::clean_size( $wallet_id, 30, $investment_entity_id, 'ID WALLET' );
+
+		// R104/R204 - 9 caractères : code établissement
+		// R105/R205 - 5 caractères : code guichet
+		for ( $i = 0; $i < 14; $i++ ) {
+			$buffer .= '0';
+		}
+		// R106/R206 - 14 caractères : numéro de compte ou numéro de contrat
+		$buffer .= self::clean_size( $wallet_id, 14, $investment_entity_id, 'ID WALLET', STR_PAD_LEFT );
+		// R107/R207 - 2 caractères : clé
+		for ( $i = 0; $i < 2; $i++ ) {
+			$buffer .= '0';
+		}
+
+
 		return $buffer;
 	}
 	
@@ -366,10 +402,6 @@ class WDG_FiscalDocuments {
 		// Personne physique
 		} else {
 			$WDGUser = new WDGUser( $investment_entity_id );
-			// Si la résidence fiscale n'est pas en France, pas la peine de déclarer dans l'IFU
-			if ( $WDGUser->get_tax_country() != 'FR' ) {
-				return "";
-			}
 			
 			$orga_name = '';
 			$orga_idnumber = '';
@@ -424,7 +456,15 @@ class WDG_FiscalDocuments {
 				$investment_entity_address_town_code = $entity_geo_info[ 'town_insee_code' ];
 				$investment_entity_address_town_office = $entity_geo_info[ 'town_office' ];
 			} else {
-				self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
+				// Si résident à l'étranger, on change ces données
+				if ( $WDGUser->get_country() != 'FR' ) {
+					global $country_list_insee;
+					$investment_entity_address_town_code = $country_list_insee[ $WDGUser->get_country() ];
+					$investment_entity_address_town_office = $country_list_insee[ $WDGUser->get_country() ];
+				}
+				if ( empty( $investment_entity_address_town_code ) || empty( $investment_entity_address_town_office ) ) {
+					self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
+				}
 			}
 			$investment_entity_period = '1231';
 		}
@@ -472,6 +512,7 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// ADRESSE DU BENEFICIAIRE
 		// R127 - 32 caractères : complément d'adresse
+		$investment_entity_address_complement = substr( $investment_entity_address, 26 );
 		$buffer .= self::clean_size( $investment_entity_address_complement, 32, $investment_entity_id, 'comp adresse' );
 		// R128 - 4 caractères : numéro dans la voie
 		$buffer .= str_pad( $investment_entity_address_number, 4, '0', STR_PAD_LEFT );
@@ -480,6 +521,7 @@ class WDG_FiscalDocuments {
 		// R130 - 1 caractère : espace
 		$buffer .= ' ';
 		// R131 - 26 caractères : nature et nom de la voie
+		$investment_entity_address = substr( $investment_entity_address, 0, 26 );
 		$buffer .= self::clean_size( $investment_entity_address, 26, $investment_entity_id, 'adresse' );
 		// R132 - 5 caractères : code insee commune
 		$buffer .= $investment_entity_address_town_code;
@@ -517,7 +559,7 @@ class WDG_FiscalDocuments {
 		//**********************************************************************
 		// ZONE INDICATIF
 		$buffer .= self::add_ifu_entity_intro( $investment_entity_id, $fiscal_year );
-		// R108 - 2 caractères : code article
+		// R108/R208 - 2 caractères : code article
 		$buffer .= 'R2';
 		//**********************************************************************
 		
@@ -573,9 +615,9 @@ class WDG_FiscalDocuments {
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
-		// R224 - 20 caractères : espaces (zone réservée)
-		for ( $i = 0; $i < 20; $i++ ) {
-			$buffer .= ' ';
+		// R224 - 10 caractères : Produits attachés aux retraits en capital des PER
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
 		}
 		//**********************************************************************
 		
@@ -586,7 +628,7 @@ class WDG_FiscalDocuments {
 		$buffer .= str_pad( $amount_to_declare_received, 10, '0', STR_PAD_LEFT );
 		// R227 - 10 caractères : montant du prélèvement ou de la retenue à la source
 		$buffer .= str_pad( $amount_to_declare_tax, 10, '0', STR_PAD_LEFT );
-		// R230 - 10 caractères : montant du prélèvement ou de la retenue à la source
+		// R228 - 10 caractères : Etablissement financier européen : base de la retenue à la source
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
@@ -595,7 +637,11 @@ class WDG_FiscalDocuments {
 		
 		//**********************************************************************
 		// CESSION DE VALEURS MOBILIERES
-		// R231 - 10 caractères : montant total des cessions
+		// R230 - 10 caractères : Soultes reçues lors d'opérations d'échange ou d'apport de titres
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R231 - 10 caractères : montant total des cessions de valeurs mobilières
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
@@ -712,8 +758,12 @@ class WDG_FiscalDocuments {
 		for ( $i = 0; $i < 10; $i++ ) {
 			$buffer .= '0';
 		}
-		// R271 - 19 caractères : espaces (zone réservée)
-		for ( $i = 0; $i < 19; $i++ ) {
+		// R264 - 10 caractères : Produits   de   l'article   R2   soumis   au   seulprélèvement de solidarité
+		for ( $i = 0; $i < 10; $i++ ) {
+			$buffer .= '0';
+		}
+		// R271 - 9 caractères : espaces (zone réservée)
+		for ( $i = 0; $i < 9; $i++ ) {
 			$buffer .= ' ';
 		}
 		//**********************************************************************
@@ -839,7 +889,7 @@ class WDG_FiscalDocuments {
 	}
 	
 	public static function clean_name( $name ) {
-		$buffer = strtoupper( $name );
+		$buffer = strtoupper( trim( $name ) );
 		
 		// Caractères spéciaux
 		$search_replace = array(
@@ -884,14 +934,14 @@ class WDG_FiscalDocuments {
 	 * @param string $error_field
 	 * @return string
 	 */
-	public static function clean_size( $input, $size, $error_entity_id, $error_field ) {
+	public static function clean_size( $input, $size, $error_entity_id, $error_field, $pad_type = STR_PAD_RIGHT ) {
 		if ( strlen( $input ) > $size ) {
 			// Suppression des caractères qui dépassent
-			$buffer = chunk_split( $input, $size );
+			$buffer = substr( $input, 0, $size );
 			self::add_error( 'Problème taille pour le champs '. $error_field .' - ID USER ' . $error_entity_id . ' >> ' . $input );
 			
 		} else {
-			$buffer = str_pad( $input, $size );
+			$buffer = str_pad( $input, $size, ' ', $pad_type );
 		}
 		
 		return $buffer;

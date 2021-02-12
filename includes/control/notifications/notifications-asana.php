@@ -230,6 +230,37 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_support, $object, $content );
 	}
 
+    public static function send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions ) {
+		$object = "Wallet à vérifier - " . $user_email;
+		$content = "Hello !<br>";
+		$content .= "Lemon Way a validé tous les documents du wallet, mais le wallet n'est pas authentifié.<br>";
+		$content .= "Il s'agit de " .$user_name. ".<br>";
+		$content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
+		
+		$content .= "Voici ses actions sur le site :<br>";
+		foreach ( $pending_actions as $pending_action ) {
+			$content .= "- " .$pending_action. "<br>";
+		}
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
+	public static function send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions, $campaign_name ) {
+
+		$object = "Investisseur à relancer - " . $user_email . '///' .$campaign_name;
+		
+		$content = "Hello !<br>";
+		$content .= "Lemon Way a refusé des documents depuis quelques jours, et l'utilisateur a quelques actions en attente.<br>";
+		$content .= "Il s'agit de " .$user_name. ".<br>";
+		$content .= "Son adresse e-mail est la suivante : " .$user_email. "<br><br>";
+		
+		$content .= "Voici ses actions sur le site :<br>";
+		foreach ( $pending_actions as $pending_action ) {
+			$content .= "- " .$pending_action. "<br>";
+		}
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA DE SUPPORT
 	//*******************************************************
@@ -313,8 +344,6 @@ class NotificationsAsana {
     //*******************************************************
     // CREATION DE TACHES ASANA DE SUIVI CLIENT
     //*******************************************************
-
-	
     //*******************************************************
     // FIN DE CREATION DE TACHES ASANA DE SUIVI CLIENT
     //*******************************************************

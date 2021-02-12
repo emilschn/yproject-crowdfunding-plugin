@@ -1491,14 +1491,16 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT PAR VIREMENT - EN ATTENTE
 	//*******************************************************
-	public static function investment_pending_wire( $recipient, $name, $amount, $project_name, $user_lw_wallet_id, $project_api_id ) {
+	public static function investment_pending_wire( $recipient, $name, $amount, $project_name, $viban_iban, $viban_bic, $viban_holder, $project_api_id ) {
 		$id_template = self::get_id_fr_by_slug( 'investment-wire-pending' );
 		$options = array(
 			'personal'				=> 1,
 			'NOM'					=> $name,
 			'MONTANT'				=> $amount,
 			'NOM_PROJET'			=> $project_name,
-			'ID_WALLET_LEMONWAY'	=> $user_lw_wallet_id,
+			'IBAN'					=> $viban_iban,
+			'BIC'					=> $viban_bic,
+			'HOLDER'				=> $viban_holder,
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
