@@ -1948,6 +1948,7 @@ class WDGAjaxActions {
 		$campaign = new ATCF_Campaign($campaign_id);
 		$errors = array();
 		$success = array();
+		global $locale;
 
 		//Update required amount
 		$new_minimum_goal = WDG_Form::formatInputTextNumber( 'new_minimum_goal', TRUE );
@@ -1970,7 +1971,11 @@ class WDGAjaxActions {
 		
 		$new_project_contract_spendings_description = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_spendings_description' ) );
 		if ( !empty( $new_project_contract_spendings_description ) ) {
-			$campaign->__set( ATCF_Campaign::$key_contract_spendings_description, $new_project_contract_spendings_description );
+			$key = ATCF_Campaign::$key_contract_spendings_description;
+			if ( $locale != 'fr' && $locale != 'fr_FR' ) {
+				$key .= '_' . $locale;
+			}
+			$campaign->__set( $key, $new_project_contract_spendings_description );
 			$campaign->set_api_data( 'spendings_description', $new_project_contract_spendings_description );
 		}
 

@@ -802,12 +802,42 @@ class WDGPostActions {
 				$campaign->set_api_data( 'detailed_info', 'config::' . $post_contract_detailed_info->post_title );
 			}
 		}
-		
-		$new_contract_premium = filter_input( INPUT_POST, 'new_contract_premium' );
-		$campaign->__set( ATCF_Campaign::$key_contract_premium, $new_contract_premium );
-		
-		$new_contract_warranty = filter_input( INPUT_POST, 'new_contract_warranty' );
-		$campaign->__set( ATCF_Campaign::$key_contract_warranty, $new_contract_warranty );
+
+		// Enregistrement prime
+		// On commence par enregistrer l'id de référence si il y en a
+		$new_project_contract_premium_configtext_post_id = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_premium_configtext_post_id' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_premium_configtext_post_id, $new_project_contract_premium_configtext_post_id );
+		// Si on a choisi un texte personnalisé (pour garder d'éventuelles anciennes versions), on prend le texte
+		if ( $new_project_contract_premium_configtext_post_id == 'custom' ) {
+			$new_project_contract_premium = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_premium' ) );
+			if ( !empty( $new_project_contract_premium ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_premium, $new_project_contract_premium );
+			}
+		// Si on a choisi un texte de configuration, on enregistre le titre si jamais on y accède par ailleurs
+		} else {
+			$post_contract_premium = get_post( $new_project_contract_premium_configtext_post_id );
+			if ( !empty( $post_contract_premium ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_premium, 'config::' . $post_contract_premium->post_title );
+			}
+		}
+
+		// Enregistrement garantie
+		// On commence par enregistrer l'id de référence si il y en a
+		$new_project_contract_warranty_configtext_post_id = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_warranty_configtext_post_id' ) );
+		$campaign->__set( ATCF_Campaign::$key_contract_warranty_configtext_post_id, $new_project_contract_warranty_configtext_post_id );
+		// Si on a choisi un texte personnalisé (pour garder d'éventuelles anciennes versions), on prend le texte
+		if ( $new_project_contract_warranty_configtext_post_id == 'custom' ) {
+			$new_project_contract_warranty = sanitize_text_field( filter_input( INPUT_POST, 'new_project_contract_warranty' ) );
+			if ( !empty( $new_project_contract_warranty ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_warranty, $new_project_contract_warranty );
+			}
+		// Si on a choisi un texte de configuration, on enregistre le titre si jamais on y accède par ailleurs
+		} else {
+			$post_contract_warranty = get_post( $new_project_contract_warranty_configtext_post_id );
+			if ( !empty( $post_contract_warranty ) ) {
+				$campaign->__set( ATCF_Campaign::$key_contract_warranty, 'config::' . $post_contract_warranty->post_title );
+			}
+		}
 		
 		$new_contract_budget_type = filter_input( INPUT_POST, 'new_contract_budget_type' );
 		$campaign->__set( ATCF_Campaign::$key_contract_budget_type, $new_contract_budget_type );
