@@ -527,11 +527,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 	if ( empty( $lang ) ) {
 		$locale = 'fr_FR';
 		setlocale( LC_CTYPE, $locale );
-
-		unload_textdomain( 'yproject' );
-		$path = get_template_directory();
-		$mofile = $locale . '.mo';
-		load_textdomain( 'yproject', $path . '/languages/' . $mofile );
+		WDG_Languages_Helpers::reload_languages( $locale );
 	}
 	$campaign_obj->set_current_lang($lang);
 	$campaign_orga = $campaign_obj->get_organization();
@@ -859,10 +855,7 @@ function doFillPDFHTMLDefaultContentByLang( $user_obj, $campaign_obj, $payment_d
 
 	if ( $temp_locale != $locale ) {
 		$locale = $temp_locale;
-		unload_textdomain( 'yproject' );
-		$path = get_template_directory();
-		$mofile = $locale . '.mo';
-		load_textdomain( 'yproject', $path . '/languages/' . $mofile );
+		WDG_Languages_Helpers::reload_languages( $locale );
 	}
 
 	return $buffer;

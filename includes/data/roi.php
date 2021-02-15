@@ -106,7 +106,7 @@ class WDGROI {
 				$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $this->amount );
 
 				// Enregistrement des données de taxe
-				if ( $ROI->amount_taxed_in_cents > 0 ) {
+				if ( $this->amount_taxed_in_cents > 0 ) {
 					WDGROITax::insert( $this->id, $this->id_user, 'orga', $date_now->format( 'Y-m-d' ), $this->amount_taxed_in_cents, 0, 0, $WDGOrga->get_country(), '0' );
 				}
 
@@ -117,8 +117,8 @@ class WDGROI {
 
 				// Transfert sur le wallet de séquestre d'impots de l'organisation
 				$amount_tax_in_cents = 0;
-				if ( $ROI->amount_taxed_in_cents > 0 ) {
-					$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+				if ( $this->amount_taxed_in_cents > 0 ) {
+					$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $this->amount_taxed_in_cents );
 					if ( $amount_tax_in_cents > 0 ) {
 						$organization_obj->check_register_tax_lemonway_wallet();
 						LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $organization_obj->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
@@ -160,7 +160,7 @@ class WDGROI {
 
 				//Versement utilisateur personne physique vers projet
 				} else {
-					$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+					$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $this->amount_taxed_in_cents );
 					if ( $amount_tax_in_cents > 0 ) {
 						LemonwayLib::ask_transfer_funds( $organization_obj->get_tax_lemonway_id(), $organization_obj->get_royalties_lemonway_id(), $amount_tax_in_cents / 100 );
 					}
