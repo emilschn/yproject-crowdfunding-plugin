@@ -779,7 +779,7 @@ class WDGROIDeclaration {
 			}
 
 			$this->status = WDGROIDeclaration::$status_finished;
-			$this->date_transfer = $date_now_formatted;
+			$this->date_transfer = $date_now->format( 'Y-m-d' );
 
 			if ( $this->get_commission_to_pay() > 0 ) {
 				// Envoi de la facture
@@ -938,8 +938,8 @@ class WDGROIDeclaration {
 							if ( $ROI->amount_taxed_in_cents > 0 ) {
 								$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
 								if ( $amount_tax_in_cents > 0 ) {
-									$WDGOrganization_campaign->check_register_tax_lemonway_wallet();
-									LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrganization_campaign->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
+									$organization_obj->check_register_tax_lemonway_wallet();
+									LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $organization_obj->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
 									$percent_tax = $WDGUser->get_tax_percent();
 									WDGROITax::insert( $ROI->id, $ROI->id_user, 'user', $date_now->format( 'Y-m-d' ), $ROI->amount_taxed_in_cents, $amount_tax_in_cents, $percent_tax, $WDGUser->get_tax_country(), $WDGUser->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) );
 									WDGQueue::add_tax_monthly_summary( $this->id );
