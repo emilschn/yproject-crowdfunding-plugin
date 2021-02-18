@@ -30,6 +30,11 @@ class NotificationsAsana {
 			return FALSE;
 		}
 		
+		// On note les notifications provenant de nos tests en local
+		if ( $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
+			$task_name = 'TEST -- ' . $task_name;
+		}
+
 		$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
 		$headers .= "Content-Type: text/html; charset=utf-8\r\n";
 		return wp_mail( $asana_email, $task_name, $task_content, $headers );

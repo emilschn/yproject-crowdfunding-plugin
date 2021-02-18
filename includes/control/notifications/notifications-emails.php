@@ -14,6 +14,10 @@ class NotificationsEmails {
      * @return bool
      */
     public static function send_mail($to, $object, $content, $decorate = false, $attachments = array(), $from_data = array(), $bcc = array()) {
+		// On note les notifications provenant de nos tests en local
+		if ( $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
+			$object = 'TEST -- ' . $object;
+		}
 		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
 		if ( empty( $from_data ) ) {
 			$from_name = get_bloginfo('name');

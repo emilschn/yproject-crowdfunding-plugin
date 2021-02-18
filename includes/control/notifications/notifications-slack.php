@@ -28,6 +28,10 @@ class NotificationsSlack {
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 		$message = str_replace( '&', 'and', $message );
+		// On note les notifications provenant de nos tests en local
+		if ( $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
+			$message = 'TEST -- ' . $message;
+		}
 	    $data = "payload=" . json_encode(array(
 		    "channel"       =>  "#{$room}",
 		    "text"          =>  $message,
