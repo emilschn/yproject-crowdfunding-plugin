@@ -31,7 +31,7 @@ class NotificationsAsana {
 		}
 		
 		// On note les notifications provenant de nos tests en local
-		if ( $_SERVER['SERVER_NAME'] == 'wedogood.local' || $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
+		if ( $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
 			$task_name = 'TEST -- ' . $task_name;
 		}
 

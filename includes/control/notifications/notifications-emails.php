@@ -15,7 +15,7 @@ class NotificationsEmails {
      */
     public static function send_mail($to, $object, $content, $decorate = false, $attachments = array(), $from_data = array(), $bcc = array()) {
 		// On note les notifications provenant de nos tests en local
-		if ( $_SERVER['SERVER_NAME'] == 'wedogood.local' || $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
+		if ( $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
 			$object = 'TEST -- ' . $object;
 		}
 		ypcf_debug_log('NotificationsEmails::send_mail > ' . $to . ' > ' . $object);
