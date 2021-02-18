@@ -486,7 +486,10 @@ class WDGFormUsers {
 					$WDGFile = new WDGKYCFile( $file_id );
 					$WDGOrganization->register_lemonway();
 					if ( $WDGOrganization->can_register_lemonway() ) {
-						LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						$lw_id = LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						if ( !empty( $lw_id ) ) {
+							$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
+						}
 					}
 				}
 			}
@@ -510,7 +513,10 @@ class WDGFormUsers {
 					$WDGFile = new WDGKYCFile( $file_id );
 					$WDGUser->register_lemonway();
 					if ( $WDGUser->can_register_lemonway() ) {
-						LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						$lw_id = LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						if ( !empty( $lw_id ) ) {
+							$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
+						}
 					}
 				}
 			}

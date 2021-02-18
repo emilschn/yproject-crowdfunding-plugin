@@ -208,10 +208,34 @@ class LemonwayNotification {
 				// Seulement si c'est une personne physique
 				if ( empty( $WDGOrga_wallet ) ) {
 					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
-						// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
-						if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
-							WDGQueue::add_document_refused_user_notification( $WDGUser_wallet->get_wpref() );
-							WDGQueue::add_document_refused_admin_notification( $WDGUser_wallet->get_wpref(), $lemonway_posted_document_type, $lemonway_posted_document_status );
+
+						// Si l'utilisateur a envoyé un fichier du même type pendant que le premier était en cours d'analyse
+							// Lemon Way a refusé de l'uploader
+						// On peut donc vérifier si un autre fichier a été envoyé par l'utilisateur mais pas envoyé sur Lemon Way
+							// Et le renvoyer
+						$WDGFile = FALSE;
+						$kyc_type = LemonwayDocument::get_kyc_type_by_lw_type( $lemonway_posted_document_type );
+						$kyc_list = WDGKYCFile::get_list_by_owner_id( $WDGUser_wallet->get_wpref(), 'user', $kyc_type );
+						foreach ( $kyc_list as $kyc_item ) {
+							if ( empty( $kyc_item->gateway_id ) ) {
+								$WDGFile = $kyc_item;
+								break;
+							}
+						}
+						if ( !empty( $WDGFile ) ) {
+							$lw_id = LemonwayLib::wallet_upload_file( $WDGUser_wallet->get_lemonway_id(), $WDGFile->file_name, $lemonway_posted_document_type, $WDGFile->get_byte_array() );
+							if ( !empty( $lw_id ) ) {
+								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
+							}
+
+
+						// Si aucun fichier correspondant était en attente, on peut envoyer la notif
+						} else {
+							// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
+							if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
+								WDGQueue::add_document_refused_user_notification( $WDGUser_wallet->get_wpref() );
+								WDGQueue::add_document_refused_admin_notification( $WDGUser_wallet->get_wpref(), $lemonway_posted_document_type, $lemonway_posted_document_status );
+							}
 						}
 					}
 				}

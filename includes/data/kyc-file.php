@@ -25,6 +25,8 @@ class WDGKYCFile {
 	public static $status_sent = 'sent';
 	
 	public static $authorized_format_list = array('pdf', 'jpg', 'jpeg', 'bmp', 'gif', 'tif', 'tiff', 'png');
+
+	public static $gateway_lemonway = 'lemonway';
 	
 	public $id;
 	public $type;
@@ -33,6 +35,8 @@ class WDGKYCFile {
 	public $file_name;
 	public $status;
 	public $date_uploaded;
+	public $gateway;
+	public $gateway_id;
 	
 	
 	public function __construct( $kycfile_id ) {
@@ -48,6 +52,8 @@ class WDGKYCFile {
 			$this->file_name = $kycfile_item->file_name;
 			$this->status = $kycfile_item->status;
 			$this->date_uploaded = $kycfile_item->date_uploaded;
+			$this->gateway = $kycfile_item->gateway;
+			$this->gateway_id = $kycfile_item->gateway_id;
 		}
 	}
 	
@@ -67,6 +73,8 @@ class WDGKYCFile {
 				'file_name' => $this->file_name,
 				'status' => $this->status,
 				'date_uploaded' => $this->date_uploaded,
+				'gateway' => $this->gateway,
+				'gateway_id' => $this->gateway_id,
 			),
 			array(
 				'id' => $this->id
@@ -176,10 +184,21 @@ class WDGKYCFile {
 					'file_name' => $this->file_name,
 					'status' => $this->status,
 					'date_uploaded' => $this->date_uploaded,
+					'gateway' => $this->gateway,
+					'gateway_id' => $this->gateway_id,
 				)
 			);
 		}
 		return $result;
+	}
+
+	/**
+	 * Mise à jour de l'identifiant de gateway
+	 */
+	public function set_gateway_id( $gateway_name, $gateway_id ) {
+		$this->gateway = $gateway_name;
+		$this->gateway_id = $gateway_id;
+		$this->save();
 	}
 
 /*******************************************************************************
@@ -202,6 +221,8 @@ class WDGKYCFile {
 			file_name tinytext,
 			status text,
 			date_uploaded date DEFAULT '0000-00-00',
+			gateway tinytext,
+			gateway_id text,
 			UNIQUE KEY id (id)
 		) $charset_collate;";
 		$result = dbDelta( $sql );
@@ -264,7 +285,9 @@ class WDGKYCFile {
 						'user_id'		=> $user_id,
 						'file_name'		=> $random_filename, 
 						'status'		=> WDGKYCFile::$status_uploaded, 
-						'date_uploaded'	=> $date_now->format("Y-m-d")
+						'date_uploaded'	=> $date_now->format("Y-m-d"),
+						'gateway'		=> '',
+						'gateway_id'	=> ''
 					) 
 				);
 			}
@@ -277,7 +300,9 @@ class WDGKYCFile {
 					'user_id'		=> $user_id,
 					'file_name'		=> $random_filename, 
 					'status'		=> WDGKYCFile::$status_uploaded, 
-					'date_uploaded'	=> $date_now->format("Y-m-d")
+					'date_uploaded'	=> $date_now->format("Y-m-d"),
+					'gateway'		=> '',
+					'gateway_id'	=> ''
 				) 
 			);
 		}
