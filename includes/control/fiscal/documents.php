@@ -83,100 +83,135 @@ class WDG_FiscalDocuments {
 
 	/**
 	 * Génère les fichiers de l'année précédente
-	 * @param int $campaign_id
+	 * @param array $campaign_year
+	 * @param int $init
 	 */
-	public static function generate( $campaign_id, $fiscal_year = 0, $init = 1 ) {
+	public static function generate( $campaign_year, $init = 1 ) {
 		// Récupération du type de déclarations (initiale ou rectificative)
 		if ( $init == self::$declaration_type_rectif ) {
 			self::$declaration_type = self::$declaration_type_rectif;
 		}
-		// On stocke d'un côté un résumé textuel lisible. TODO CSV ?
-		$resume_txt = '';
-		// On stocke d'un autre côté le fichier txt de déclaration des IFUs
-		// Documentation de référence (2020) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_r20_v1.0.pdf
-		$ifu_txt = '';
-		
-		// Campagne analysée
-		$campaign = new ATCF_Campaign( $campaign_id );
-		$resume_txt .= "Information fiscales\n";
-		$resume_txt .= $campaign->get_name(). "\n";
-		
+
+		// Initialisation des parcours
+		$investments_items_by_user = array();
+		$amount_by_user = array();
+		$file_prefix = '';
+		$current_date = new DateTime();
+
 		// Ouverture fichier de geoloc
 		self::parse_geolocation_data();
-		
-		// Récupération de l'année en cours pour trouver l'année dernière
-		if ( empty( $fiscal_year ) ) {
-			$current_date = new DateTime();
-			$fiscal_year = $current_date->format( 'Y' ) - 1;
-		}
-		$resume_txt .= "Année " .$fiscal_year. "\n\n";
-		$ifu_txt .= self::add_ifu_declaring_info( $fiscal_year );
-		
-		// On récupère la liste des investissements de la campagne
-		// Premier parcours pour regrouper par utilisateur
-		$investments = $campaign->payments_data();
-		$investments_items_by_user = array();
-		foreach ( $investments as $investment_item ) {
-			if ( $investment_item[ 'status' ] == 'publish' ) {
-				$investment_entity_id = $investment_item[ 'user' ];
-				if ( !isset( $investments_items_by_user[ $investment_entity_id ] ) ) {
-					$investments_items_by_user[ $investment_entity_id ] = array();
-				}
-				array_push( $investments_items_by_user[ $investment_entity_id ], $investment_item );
-			}
-		}
-		
-		// Ensuite on parcourt par utilisateur pour regrouper les montants
-		$entity_index = 0;
-		foreach ( $investments_items_by_user as $investment_user_id => $investments_for_user ) {
-			$investment_amount = 0;
-			$investment_entity_id = $investment_user_id;
-			$investment_entity = FALSE;
-			$investment_entity_is_registered = FALSE;
-			if ( WDGOrganization::is_user_organization( $investment_entity_id ) ) {
-				$investment_entity = new WDGOrganization( $investment_entity_id );
-				$investment_entity_is_registered = $investment_entity->is_registered_lemonway_wallet();
-			} else {
-				$investment_entity = new WDGUser( $investment_entity_id );
-				$investment_entity_is_registered = $investment_entity->is_lemonway_registered();
-			}
 
-			// Si la personne n'est pas authentifiée, elle n'a pas reçu ses royalties pour l'instant
-			if ( !$investment_entity_is_registered ) {
-				continue;
-			}
+		// On stocke d'un côté un résumé textuel lisible. TODO CSV ?
+		$resume_txt = "Information fiscales\n\n";
+		// On stocke d'un autre côté le fichier txt de déclaration des IFUs
+		// Documentation de référence (2020) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_r20_v1.0.pdf
+		$ifu_txt = self::add_ifu_declaring_info( $current_date->format( 'Y' ) - 1 );
 
-			$investment_user_rois_amount_total = 0;
-			$investment_user_rois_amount_year = 0;
-			$amount_tax_sampled_year = 0;
+		// Année en cours (telle que sortie dans les noms de fichiers)
+		$file_year = $current_date->format( 'Y' );
+
+		// Parcours de chaque ID de campagne et de chaque année fiscale associée
+		// Cela nous permet de déterminer la liste des investisseurs qui ont bien perçu des plus-values dans l'année fiscale de référence
+		foreach ( $campaign_year as $campaign_id => $fiscal_year ) {
+			$file_prefix .= $campaign_id . '-';
+
+			// Campagne analysée
+			$campaign = new ATCF_Campaign( $campaign_id );
 			
-			foreach ( $investments_for_user as $investment_item ) {
-				$investment_amount += $investment_item[ 'amount' ];
-
-				// On récupère la liste des royalties reçues par investissement jusqu'à l'année précédente
-				$investment_user_rois = $investment_entity->get_royalties_by_investment_id( $investment_item[ 'ID' ] );
-				foreach ( $investment_user_rois as $roi_item ) {
-					$date_transfer = new DateTime( $roi_item->date_transfer );
-					if ( $date_transfer->format( 'Y' ) <= $fiscal_year ) {
-						$investment_user_rois_amount_total += $roi_item->amount;
-						if ( $date_transfer->format( 'Y' ) == $fiscal_year ) {
-							$investment_user_rois_amount_year += $roi_item->amount;
-							// Calcule de la taxe effectivement prélevée avec la donnée spécifique de taxe
-							$tax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
-							foreach ( $tax_items as $tax_item ) {
-								$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
+			// Récupération de l'année en cours pour trouver l'année dernière
+			if ( empty( $fiscal_year ) ) {
+				$fiscal_year = $file_year - 1;
+			}
+			
+			// On récupère la liste des investissements de la campagne
+			// Premier parcours pour regrouper par utilisateur
+			$investments = $campaign->payments_data();
+			foreach ( $investments as $investment_item ) {
+				if ( $investment_item[ 'status' ] == 'publish' ) {
+					$investment_entity_id = $investment_item[ 'user' ];
+					if ( !isset( $investments_items_by_user[ $investment_entity_id ] ) ) {
+						$investments_items_by_user[ $investment_entity_id ] = array();
+					}
+					array_push( $investments_items_by_user[ $investment_entity_id ], $investment_item );
+				}
+			}
+		
+			// Ensuite on parcourt par utilisateur pour regrouper les montants
+			$entity_index = 0;
+			foreach ( $investments_items_by_user as $investment_user_id => $investments_for_user ) {
+				$investment_amount = 0;
+				$investment_entity_id = $investment_user_id;
+				$investment_entity = FALSE;
+				$investment_entity_is_registered = FALSE;
+				if ( WDGOrganization::is_user_organization( $investment_entity_id ) ) {
+					$investment_entity = new WDGOrganization( $investment_entity_id );
+					$investment_entity_is_registered = $investment_entity->is_registered_lemonway_wallet();
+				} else {
+					$investment_entity = new WDGUser( $investment_entity_id );
+					$investment_entity_is_registered = $investment_entity->is_lemonway_registered();
+				}
+	
+				// Si la personne n'est pas authentifiée, elle n'a pas reçu ses royalties pour l'instant
+				if ( !$investment_entity_is_registered ) {
+					continue;
+				}
+	
+				$investment_user_rois_amount_total = 0;
+				$investment_user_rois_amount_year = 0;
+				$amount_tax_sampled_year = 0;
+				
+				foreach ( $investments_for_user as $investment_item ) {
+					$investment_amount += $investment_item[ 'amount' ];
+	
+					// On récupère la liste des royalties reçues par investissement jusqu'à l'année précédente
+					$investment_user_rois = $investment_entity->get_royalties_by_investment_id( $investment_item[ 'ID' ] );
+					foreach ( $investment_user_rois as $roi_item ) {
+						$date_transfer = new DateTime( $roi_item->date_transfer );
+						if ( $date_transfer->format( 'Y' ) <= $fiscal_year ) {
+							$investment_user_rois_amount_total += $roi_item->amount;
+							if ( $date_transfer->format( 'Y' ) == $fiscal_year ) {
+								$investment_user_rois_amount_year += $roi_item->amount;
+								// Calcule de la taxe effectivement prélevée avec la donnée spécifique de taxe
+								$tax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
+								foreach ( $tax_items as $tax_item ) {
+									$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
+								}
 							}
 						}
 					}
 				}
-			}
+	
+				// Calcul de la somme à déclarer : on ne doit prendre que la plus-value sur l'année en cours
+				$amount_to_declare = min( $investment_user_rois_amount_year, $investment_user_rois_amount_total - $investment_amount );
 
-			// Calcul de la somme à déclarer : on ne doit prendre que la plus-value sur l'année en cours
-			$amount_to_declare = min( $investment_user_rois_amount_year, $investment_user_rois_amount_total - $investment_amount );
+				if ( !isset( $amount_by_user[ $investment_entity_id ] ) ) {
+					$amount_by_user[ $investment_entity_id ] = array(
+						'investment_amount'			=> 0,
+						'amount_to_declare'			=> 0,
+						'amount_tax_sampled_year'	=> 0,
+						'project_year_str'			=> ''
+					);
+				}
+				$amount_by_user[ $investment_entity_id ][ 'investment_amount' ] += $investment_amount;
+				$amount_by_user[ $investment_entity_id ][ 'amount_to_declare' ] += $amount_to_declare;
+				$amount_by_user[ $investment_entity_id ][ 'amount_tax_sampled_year' ] += $amount_tax_sampled_year;
+				$amount_by_user[ $investment_entity_id ][ 'project_year_str' ] += ' - ' .$campaign->get_name(). ' (Année ' .$fiscal_year. ')';
+			}
+		}
+
+
+		// Parcours de la liste des investisseurs concernés pour éditer les fichiers
+		foreach ( $amount_by_user as $investment_entity_id => $declaration_item ) {
+			$investment_amount = $declaration_item[ 'investment_amount' ];
+			$amount_to_declare = $declaration_item[ 'amount_to_declare' ];
+			$amount_tax_sampled_year = $declaration_item[ 'amount_tax_sampled_year' ];
+			$project_year_str = $declaration_item[ 'project_year_str' ];
+
 			// Si la somme des royalties a dépassé l'investissement initial
 			if ( $amount_to_declare > 0 ) {
 				$ifu_entity_txt = self::add_ifu_entity( $investment_entity_id, $fiscal_year );
 				$amount_to_declare_round = round( $amount_to_declare );
+				$resume_txt .= $project_year_str . "\n";
 				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_sampled_year );
 				if ( !empty( $ifu_entity_txt ) ) {
 					$ifu_txt .= $ifu_entity_txt;
@@ -185,12 +220,14 @@ class WDG_FiscalDocuments {
 				}
 			}
 		}
-		
-		$ifu_txt .= self::add_ifu_amount_total( $fiscal_year, $entity_index );
-		
-		self::save_errors_file( $campaign_id, $fiscal_year );
-		self::save_resume_file( $campaign_id, $fiscal_year, $resume_txt );
-		self::save_ifu_file( $campaign_id, $fiscal_year, $ifu_txt );
+
+		// Fin du fichier IFU (nombre de déclarations)
+		$ifu_txt .= self::add_ifu_amount_total( $file_year - 1, $entity_index );
+
+		// Enregistrement des fichiers finaux
+		self::save_errors_file( $file_prefix, $file_year );
+		self::save_resume_file( $file_prefix, $file_year, $resume_txt );
+		self::save_ifu_file( $file_prefix, $file_year, $ifu_txt );
 	}
 	
 	/**

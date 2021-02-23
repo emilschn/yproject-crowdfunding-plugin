@@ -703,7 +703,10 @@ class WDGPostActions {
 			if ( empty( $init ) ) {
 				$init = 1;
 			}
-			WDG_FiscalDocuments::generate( $campaign_id, $fiscal_year, $init );
+			$campaign_year = array(
+				$campaign_id => $fiscal_year
+			);
+			WDG_FiscalDocuments::generate( $campaign_year, $init );
 			$url_return = wp_get_referer() . "#documents";
 			
 		} else {
