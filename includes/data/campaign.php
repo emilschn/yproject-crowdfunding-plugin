@@ -100,6 +100,9 @@ function atcf_create_campaign($author_ID, $title){
     // Extra Campaign Information
     add_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_status, ATCF_Campaign::$campaign_status_validated );
     add_post_meta( $newcampaign_id, ATCF_Campaign::$key_validation_next_status, 0);
+	
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_funding_duration, 5 );
+    add_post_meta( $newcampaign_id, ATCF_Campaign::$key_maximum_profit, 3 );
 
     add_post_meta( $newcampaign_id, 'campaign_part_value', 1 );
     add_post_meta( $newcampaign_id, 'campaign_funding_type', 'fundingproject' );
@@ -1069,7 +1072,7 @@ class ATCF_Campaign {
 		}
 		
 		if ( empty( $buffer ) ) {
-			$buffer = 2;
+			$buffer = 3;
 		}
 		return $buffer;
 	}
