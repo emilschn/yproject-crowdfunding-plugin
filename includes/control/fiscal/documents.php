@@ -171,7 +171,7 @@ class WDG_FiscalDocuments {
 							$investment_user_rois_amount_total += $roi_item->amount;
 							if ( $date_transfer->format( 'Y' ) == $fiscal_year ) {
 								$investment_user_rois_amount_year += $roi_item->amount;
-								// Calcule de la taxe effectivement prélevée avec la donnée spécifique de taxe
+								// Calcul de la taxe effectivement prélevée avec la donnée spécifique de taxe
 								$tax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi_item->id );
 								foreach ( $tax_items as $tax_item ) {
 									$amount_tax_sampled_year += $tax_item->amount_tax_in_cents / 100;
@@ -195,7 +195,7 @@ class WDG_FiscalDocuments {
 				$amount_by_user[ $investment_entity_id ][ 'investment_amount' ] += $investment_amount;
 				$amount_by_user[ $investment_entity_id ][ 'amount_to_declare' ] += $amount_to_declare;
 				$amount_by_user[ $investment_entity_id ][ 'amount_tax_sampled_year' ] += $amount_tax_sampled_year;
-				$amount_by_user[ $investment_entity_id ][ 'project_year_str' ] += ' - ' .$campaign->get_name(). ' (Année ' .$fiscal_year. ')';
+				$amount_by_user[ $investment_entity_id ][ 'project_year_str' ] .= ' - ' .$campaign->get_name(). ' (Année ' .$fiscal_year. ')';
 			}
 		}
 
@@ -223,6 +223,7 @@ class WDG_FiscalDocuments {
 
 		// Fin du fichier IFU (nombre de déclarations)
 		$ifu_txt .= self::add_ifu_amount_total( $file_year - 1, $entity_index );
+		$resume_txt .= "\nTotal : " .$entity_index;
 
 		// Enregistrement des fichiers finaux
 		self::save_errors_file( $file_prefix, $file_year );
