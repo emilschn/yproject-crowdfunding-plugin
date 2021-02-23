@@ -196,7 +196,7 @@ class NotificationsAsana {
 	public static function new_purchase_admin_error_contract($payment_id) {
 		$object = 'Problème de création de contrat';
 		$content = "Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id;
-		return self::send( self::$notif_type_support, $object, $content );
+		return self::send( self::$notif_type_admin, $object, $content );
 	}
 	
 
@@ -225,7 +225,7 @@ class NotificationsAsana {
 		$content .= "ID API investisseur : " .$investor_id. "<br>";
 		$content .= "ID WP investisseur : " .$investor_entity->get_wpref();	
 
-		return self::send( self::$notif_type_support, $object, $content );
+		return self::send( self::$notif_type_admin, $object, $content );
 	}
 	
 	public static function tax_summaries( $campaign_name, $total_tax_in_euros ) {

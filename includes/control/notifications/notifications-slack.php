@@ -25,6 +25,7 @@ class NotificationsSlack {
 	private static $icon_mag = ':mag:';
 	private static $icon_currency_exchange = ':currency_exchange:';
 	private static $icon_scroll = ':scroll:';
+	private static $icon_exclamation_red = ':exclamation:';
     
     public static function send($url, $room, $message, $icon = ':bell:') {
 		$message = str_replace( '&', 'and', $message );
@@ -109,6 +110,12 @@ class NotificationsSlack {
 	public static function send_new_wallet_status( $wallet_id, $wallet_url, $wallet_name, $status ) {
 		$message = 'Changement de statut pour porte-monnaie : ' . $wallet_id . ' ('.$wallet_name.' - ' .$wallet_url. ') => ' .$status;
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_wallet, self::$notif_type_investors );
+	}
+
+	public static function new_purchase_admin_error( $user_data, $project_title, $amount ) {		
+		$message = "Tentative d'investissement avec erreur ".$project_title ." : ".$amount. "euros (".$user_data->user_email.")";
+
+		self::send_to_notifications( $message, NotificationsSlack::$icon_exclamation_red, self::$notif_type_investors );
 	}
 	
 	public static function send_new_investment( $project_name, $amount, $investor_email ) {
@@ -254,12 +261,6 @@ class NotificationsSlack {
 	public static function investment_draft_created_admin( $campaign_name, $dashboard_url ) {		
 		$message = "Ajout de chèque dans TB par le PP pour le projet " .$campaign_name. " URL du TB : " .$dashboard_url;
 		
-		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
-	}
-
-	public static function new_purchase_admin_error( $user_data, $project_title, $amount ) {		
-		$message = "Tentative d'investissement avec erreur ".$project_title ." : ".$amount. "euros (".$user_data->user_email.")";
-
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
 
