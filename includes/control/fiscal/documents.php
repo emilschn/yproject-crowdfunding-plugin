@@ -93,7 +93,6 @@ class WDG_FiscalDocuments {
 		}
 
 		// Initialisation des parcours
-		$investments_items_by_user = array();
 		$amount_by_user = array();
 		$file_prefix = '';
 		$current_date = new DateTime();
@@ -125,6 +124,7 @@ class WDG_FiscalDocuments {
 			
 			// On récupère la liste des investissements de la campagne
 			// Premier parcours pour regrouper par utilisateur
+			$investments_items_by_user = array();
 			$investments = $campaign->payments_data();
 			foreach ( $investments as $investment_item ) {
 				if ( $investment_item[ 'status' ] == 'publish' ) {
@@ -195,7 +195,7 @@ class WDG_FiscalDocuments {
 				$amount_by_user[ $investment_entity_id ][ 'investment_amount' ] += $investment_amount;
 				$amount_by_user[ $investment_entity_id ][ 'amount_to_declare' ] += $amount_to_declare;
 				$amount_by_user[ $investment_entity_id ][ 'amount_tax_sampled_year' ] += $amount_tax_sampled_year;
-				$amount_by_user[ $investment_entity_id ][ 'project_year_str' ] .= ' - ' .$campaign->get_name(). ' (Année ' .$fiscal_year. ')';
+				$amount_by_user[ $investment_entity_id ][ 'project_year_str' ] .= '- ' .$campaign->get_name(). ' (Année ' .$fiscal_year. ') ';
 			}
 		}
 
