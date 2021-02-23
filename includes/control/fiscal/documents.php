@@ -42,7 +42,7 @@ class WDG_FiscalDocuments {
 	}
 	
 	private static function save_errors_file( $campaign_id, $fiscal_year ) {
-		$file_path = dirname( __FILE__ ) . '/../../../files/fiscal-documents/errors_' .$campaign_id. '_' .$fiscal_year. '.txt';
+		$file_path = dirname( __FILE__ ) . '/../../../files/fiscal-documents/errors__' .$campaign_id. '_' .$fiscal_year. '.txt';
 		$errors_file_content = '';
 		if ( !empty( self::$errors ) ) {
 			foreach ( self::$errors as $error ) {
@@ -70,12 +70,12 @@ class WDG_FiscalDocuments {
 	}
 	
 	private static function save_resume_file( $campaign_id, $fiscal_year, $resume_file_content ) {
-		$file_path = dirname( __FILE__ ) . '/../../../files/fiscal-documents/resume_' .$campaign_id. '_' .$fiscal_year. '.txt';
+		$file_path = dirname( __FILE__ ) . '/../../../files/fiscal-documents/resume__' .$campaign_id. '_' .$fiscal_year. '.txt';
 		self::save_file( $file_path, $resume_file_content );
 	}
 	
 	private static function save_ifu_file( $campaign_id, $fiscal_year, $ifu_file_content ) {
-		$file_path = dirname( __FILE__ ) . '/../../../files/fiscal-documents/ifu_' .$campaign_id. '_' .$fiscal_year. '.txt';
+		$file_path = dirname( __FILE__ ) . '/../../../files/fiscal-documents/ifu__' .$campaign_id. '_' .$fiscal_year. '.txt';
 		self::save_file( $file_path, $ifu_file_content );
 	}
 	/**************************************************************************/
@@ -113,7 +113,7 @@ class WDG_FiscalDocuments {
 		// Parcours de chaque ID de campagne et de chaque année fiscale associée
 		// Cela nous permet de déterminer la liste des investisseurs qui ont bien perçu des plus-values dans l'année fiscale de référence
 		foreach ( $campaign_year as $campaign_id => $fiscal_year ) {
-			$file_prefix .= $campaign_id . '-';
+			$file_prefix .= $campaign_id . '_';
 
 			// Campagne analysée
 			$campaign = new ATCF_Campaign( $campaign_id );
