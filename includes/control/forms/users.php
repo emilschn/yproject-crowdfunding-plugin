@@ -160,6 +160,8 @@ class WDGFormUsers {
 				return $user;
 			}
 		}
+
+		$password = stripslashes( $password );
 		
 		// Vérifie que des champs ont bien été remplis
 		if (empty($username) || empty($password)) {

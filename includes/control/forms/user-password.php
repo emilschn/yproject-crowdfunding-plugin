@@ -83,8 +83,8 @@ class WDG_Form_User_Password extends WDG_Form {
 			$password_current = $this->getInputText( 'password_current' );
 			if ( wp_check_password( $password_current, $WDGUser->wp_user->data->user_pass, $WDGUser->get_wpref() ) ) {
 				
-				$password_new = $this->getInputText( 'password_new' );
-				$password_new_confirm = $this->getInputText( 'password_new_confirm' );
+				$password_new = filter_input( INPUT_POST, 'password_new' );
+				$password_new_confirm = filter_input( INPUT_POST, 'password_new_confirm' );
 				if ( empty( $password_new ) ) {
 					$error = array(
 						'code'		=> 'password_new',
