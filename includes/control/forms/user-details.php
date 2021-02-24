@@ -506,11 +506,9 @@ class WDG_Form_User_Details extends WDG_Form {
 						$subscribe_newsletter = $this->getInputChecked( 'subscribe_newsletter' );
 						if ( empty( $subscribe_newsletter ) ) {
 							try {
-								$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-								$return = $mailin->create_update_user( array(
-									"email"		=> $email,
-									"listid_unlink"	=> array( 5, 6 )
-								) );
+								$sib_instance = SIBv3Helper::instance();
+								$sib_instance->removeContactFromList( $email, 5 );
+								$sib_instance->removeContactFromList( $email, 6 );
 							} catch ( Exception $e ) {
 								ypcf_debug_log( "postForm > erreur de désinscription à la NL -- " . print_r( $e, TRUE ) );
 							}
