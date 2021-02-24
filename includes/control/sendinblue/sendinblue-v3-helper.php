@@ -60,15 +60,34 @@ class SIBv3Helper {
  * Helpers d'accès à SendInBlue
  */
 	/**
+	 * Récupère les infos liées à un contact sur SendInBlue
+	 * @return SendinBlue\Client\Model\GetExtendedContactDetails
+	 */
+	public function getContactInfo( $email ) {
+		$api_contacts = self::getContactsApi();
+
+		try {
+			$result = $api_contacts->getContactInfo( $email );
+			return $result;
+
+		} catch (Exception $e) {
+			self::$last_error = $e->getMessage();
+			return FALSE;
+		}
+	}
+
+	/**
 	 * Ajoute un contact dans une mailing list sur SendInBlue, via son e-mail
 	 */
 	public function addContactToList( $email, $list_id ) {
 		$api_contacts = self::getContactsApi();
 		$contactEmails = new \SendinBlue\Client\Model\AddContactToList();
 		$contactEmails->setEmails( array( $email ) );
+
 		try {
 			$result = $api_contacts->addContactToList( $list_id, $contactEmails );
 			return $result;
+
 		} catch (Exception $e) {
 			self::$last_error = $e->getMessage();
 			return FALSE;
@@ -82,9 +101,11 @@ class SIBv3Helper {
 		$api_contacts = self::getContactsApi();
 		$contactEmails = new \SendinBlue\Client\Model\RemoveContactFromList();
 		$contactEmails->setEmails( array( $email ) );
+
 		try {
 			$result = $api_contacts->removeContactFromList( $list_id, $contactEmails );
 			return $result;
+
 		} catch (Exception $e) {
 			self::$last_error = $e->getMessage();
 			return FALSE;
