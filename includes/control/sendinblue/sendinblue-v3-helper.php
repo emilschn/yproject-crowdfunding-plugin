@@ -111,4 +111,23 @@ class SIBv3Helper {
 			return FALSE;
 		}
 	}
+
+	/**
+	 * Met à jour le numéro de téléphone d'un contact
+	 */
+	public function updateContactPhoneNumber( $email, $phone_number ) {
+		$api_contacts = self::getContactsApi();
+		$updateContact = new \SendinBlue\Client\Model\UpdateContact();
+		$attributes = array( 'SMS' => $phone_number );
+		$updateContact->setAttributes( json_decode( json_encode( $attributes ) ) );
+
+		try {
+			$result = $api_contacts->updateContact( $email, $updateContact );
+			return $result;
+
+		} catch (Exception $e) {
+			self::$last_error = $e->getMessage();
+			return FALSE;
+		}
+	}
 }

@@ -153,33 +153,15 @@ class WDG_Form_User_Notifications extends WDG_Form {
 		} else {
 			
 			// (Des)Inscription des NL WDG
-			$listid_link = array();
-			$listid_unlink = array();
+			$user_email = $WDGUser->get_email();
+			$sib_instance = SIBv3Helper::instance();
 			foreach ( self::$sendinblue_nl_list as $sib_id => $sib_label ) {
 				$subscribe_newsletter = $this->getInputChecked( 'subscribe_newsletter_' .$sib_id );
 				if ( empty( $subscribe_newsletter ) ) {
-					array_push( $listid_unlink, $sib_id );
+					$sib_instance->removeContactFromList( $user_email, $sib_id );
 				} else {
-					array_push( $listid_link, $sib_id );
+					$sib_instance->addContactToList( $user_email, $sib_id );
 				}
-			}
-			
-			try {
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				if ( !empty( $listid_unlink ) ) {
-					$return = $mailin->create_update_user( array(
-						"email"			=> $WDGUser->get_email(),
-						"listid_unlink"	=> $listid_unlink
-					) );
-				}
-				if ( !empty( $listid_link ) ) {
-					$return = $mailin->create_update_user( array(
-						"email"			=> $WDGUser->get_email(),
-						"listid"	=> $listid_link
-					) );
-				}
-			} catch ( Exception $e ) {
-				ypcf_debug_log( "WDG_Form_User_Notifications::postForm > erreur de connexion à SendInBlue -- " . print_r( $e, TRUE ) );
 			}
 			
 			// Suivi des projets
