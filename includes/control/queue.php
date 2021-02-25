@@ -387,32 +387,23 @@ class WDGQueue {
 				}
 				$message_id = $api_email_result[ 'data' ][ 'message-id' ];
 				
-				$data = array( 
-					"message_id" => $message_id,
-					"template_id" => $ref_template_id
-				);
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$sib_instance = SIBv3Helper::instance();
 				
 				try {
-					$mailin_report = $mailin->get_report( $data );
+					$events = $sib_instance->getTransactionalEmailReportEvents( $ref_template_id, $message_id );
+
 				} catch ( Exception $e ) {
-					return;
-				}
-				if ( empty( $mailin_report[ 'data' ] ) ) {
 					return;
 				}
 
 				$has_viewed = FALSE;
 				$has_clicked = FALSE;
-				$mailin_report_data = $mailin_report[ 'data' ];
-				foreach ( $mailin_report_data as $mail_event ) {
-					if ( !empty( $mail_event[ 'event' ] ) ) {
-						if ( $mail_event[ 'event' ] == 'views' ) {
-							$has_viewed = TRUE;
-						}
-						if ( $mail_event[ 'event' ] == 'clicks' ) {
-							$has_clicked = TRUE;
-						}
+				foreach ( $events as $event_item ) {
+					if ( $event_item->getEvent() == 'opened' ) {
+						$has_viewed = TRUE;
+					}
+					if ( $event_item->getEvent() == 'clicks' ) {
+						$has_clicked = TRUE;
 					}
 				}
 				
@@ -489,27 +480,23 @@ class WDGQueue {
 				}
 				$message_id = $api_email_result[ 'data' ][ 'message-id' ];
 				
-				$data = array( 
-					"message_id" => $message_id,
-					"template_id" => $ref_template_id
-				);
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				$mailin_report = $mailin->get_report( $data );
-				if ( empty( $mailin_report[ 'data' ] ) ) {
+				$sib_instance = SIBv3Helper::instance();
+				
+				try {
+					$events = $sib_instance->getTransactionalEmailReportEvents( $ref_template_id, $message_id );
+					
+				} catch ( Exception $e ) {
 					return;
 				}
 
 				$has_viewed = FALSE;
 				$has_clicked = FALSE;
-				$mailin_report_data = $mailin_report[ 'data' ];
-				foreach ( $mailin_report_data as $mail_event ) {
-					if ( !empty( $mail_event[ 'event' ] ) ) {
-						if ( $mail_event[ 'event' ] == 'views' ) {
-							$has_viewed = TRUE;
-						}
-						if ( $mail_event[ 'event' ] == 'clicks' ) {
-							$has_clicked = TRUE;
-						}
+				foreach ( $events as $event_item ) {
+					if ( $event_item->getEvent() == 'opened' ) {
+						$has_viewed = TRUE;
+					}
+					if ( $event_item->getEvent() == 'clicks' ) {
+						$has_clicked = TRUE;
 					}
 				}
 				

@@ -41,9 +41,11 @@ class SIBv3Helper {
 	 */
 	private static $sib_config;
 	private static $api_instance_contacts;
+	private static $api_instance_transactional_emails;
 
 	/**
 	 * Récupération de l'API de contacts en Singleton
+	 * @return SendinBlue\Client\Api\ContactsApi
 	 */
 	private static function getContactsApi() {
 		if ( !isset( self::$api_instance_contacts ) ) {
@@ -53,6 +55,20 @@ class SIBv3Helper {
 			);
 		}
 		return self::$api_instance_contacts;
+	}
+
+	/**
+	 * Récupération de l'API d'e-mails transactionnels en Singleton
+	 * @return SendinBlue\Client\Api\TransactionalEmailsApi
+	 */
+	private static function getTransactionalEmailsApi() {
+		if ( !isset( self::$api_instance_transactional_emails ) ) {
+			self::$api_instance_transactional_emails = new SendinBlue\Client\Api\TransactionalEmailsApi(
+				new GuzzleHttp\Client(),
+				self::$sib_config
+			);
+		}
+		return self::$api_instance_transactional_emails;
 	}
 
 
@@ -129,5 +145,46 @@ class SIBv3Helper {
 			self::$last_error = $e->getMessage();
 			return FALSE;
 		}
+	}
+
+	/**
+	 * Récupère le rapport liés à l'envoi d'un e-mail transactionnel
+	 * @return SendinBlue\Client\Model\GetEmailEventReport
+	 */
+	public function getTransactionalEmailReport( $template_id, $message_id ) {
+		$api_transactional_emails = self::getTransactionalEmailsApi();
+		$limit = 50;
+		$offset = 0;
+		$startDate = null;
+		$endDate = null;
+		$days = null;
+		$email = null;
+		$event = null;
+		$tags = null;
+		$messageId = $message_id;
+		$templateId = $template_id;
+		$sort = 'desc';
+
+		try {
+			$result = $api_transactional_emails->getEmailEventReport( $limit, $offset, $startDate, $endDate, $days, $email, $event, $tags, $messageId, $templateId, $sort );
+			return $result;
+
+		} catch (Exception $e) {
+			self::$last_error = $e->getMessage();
+			return FALSE;
+		}
+	}
+
+	/**
+	 * Récupère le rapport d'évènements liés à l'envoi d'un e-mail transactionnel
+	 * @return array
+	 */
+	public function getTransactionalEmailReportEvents( $template_id, $message_id ) {
+		$report = $this->getTransactionalEmailReport( $template_id, $message_id );
+		if ( !empty( $report ) ) {
+			$events = $report->getEvents();
+			return $events;
+		}
+		return FALSE;
 	}
 }
