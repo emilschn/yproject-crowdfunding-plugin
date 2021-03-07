@@ -878,10 +878,11 @@ class WDGAjaxActions {
 							if ( !empty( $result_campaign_item->project_roi_percent ) ) {
 								if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded || $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_closed ) {
 									$investor_proportion = $result_investment_item->amount / $result_campaign_item->project_amount;
+									$roi_percent_full = ( $result_campaign_item->project_roi_percent * $investor_proportion );
 								} else {
 									$investor_proportion = $result_investment_item->amount / $result_campaign_item->project_goal_maximum;
+									$roi_percent_full = ( $result_campaign_item->project_roi_percent_estimated * $investor_proportion );
 								}
-								$roi_percent_full = ( $result_campaign_item->project_roi_percent * $investor_proportion );
 								$estimated_rois = round( $turnover * $roi_percent_full / 100 );
 							} else {
 								$roi_percent_full_estimated = 0;
