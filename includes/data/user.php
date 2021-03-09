@@ -1016,8 +1016,14 @@ class WDGUser {
 			$this->tax_country = $tax_country;
 		}
 		if ( !empty( $phone_number ) ) {
+			// On doit mettre à jour la donnée sur SendInBlue si la personne a souscrit aux notifications ET que le numéro de téléphone a changé
+			$should_update_sib = ( $this->has_subscribed_authentication_notification() && $this->phone_number != $phone_number );
+
 			$this->phone_number = $phone_number;
 			$this->save_meta( 'user_mobile_phone', $phone_number );
+			if ( $should_update_sib ) {
+				$this->set_subscribe_authentication_notification( TRUE );
+			}
 		}
 		if ( !empty( $contact_if_deceased ) ) {
 			$this->contact_if_deceased = $contact_if_deceased;
@@ -1914,24 +1920,15 @@ class WDGUser {
 		}
 
 		try {
-			$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-			$return = $mailin->get_user( array(
-				"email"		=> $old_email
-			) );
+			$sib_instance = SIBv3Helper::instance();
+			$result = $sib_instance->getContactInfo( $old_email );
 
-			$lists_is_in = array();
-			if ( isset( $return[ 'code' ] ) && $return[ 'code' ] != 'failure' ) {
-				if ( isset( $return[ 'data' ] ) && isset( $return[ 'data' ][ 'listid' ] ) ) {
-					foreach ( $return[ 'data' ][ 'listid' ] as $list_id ) {
-						array_push( $lists_is_in, $list_id );
-					}
+			if ( !empty( $result ) ) {
+				$listIds = $result->getListIds();
+				foreach ( $listIds as $list_id ) {
+					$sib_instance->addContactToList( $new_email, $list_id );
 				}
 			}
-
-			$mailin->create_update_user( array(
-				"email"		=> $new_email,
-				"listid"	=> $lists_is_in
-			) );
 		} catch ( Exception $e ) {
 			ypcf_debug_log( "WDGUser::copy_sendinblue_params_to_new_email > erreur sendinblue" );
 		}
@@ -1945,13 +1942,8 @@ class WDGUser {
 			update_user_meta( $this->get_wpref(), 'subscribe_authentication_notification', '1' );
 
 			try {
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				$return = $mailin->create_update_user( array(
-					"email"			=> $this->get_email(),
-					"attributes"	=> array(
-						"SMS"	=> $this->get_lemonway_phone_number()
-					)
-				) );
+				$sib_instance = SIBv3Helper::instance();
+				$sib_instance->updateContactPhoneNumber( $this->get_email(), $this->get_lemonway_phone_number() );
 			} catch ( Exception $e ) {
 				ypcf_debug_log( "WDGUser::set_subscribe_authentication_notification > erreur sendinblue" );
 			}

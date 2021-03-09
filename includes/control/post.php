@@ -75,11 +75,9 @@ class WDGPostActions {
 			}
 
 			try {
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				$return = $mailin->create_update_user( array(
-					"email"		=> $email,
-					"listid"	=> array( 5, 6 )
-				) );
+				$sib_instance = SIBv3Helper::instance();
+				$sib_instance->addContactToList( $email, 5 );
+				$sib_instance->addContactToList( $email, 6 );
 				$_SESSION['subscribe_newsletter_sendinblue'] = true;
 			} catch ( Exception $e ) {
 				ypcf_debug_log( "subscribe_newsletter_sendinblue > erreur d'inscription à la NL" );
@@ -689,6 +687,10 @@ class WDGPostActions {
 
 	public static function generate_contract_files() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
+		$campaign_locale = filter_input(INPUT_POST, 'campaign_locale');
+		if ( !empty( $campaign_locale ) && $campaign_locale != 'fr' && $campaign_locale != 'fr_FR' ) {
+			WDG_Languages_Helpers::switch_to_temp_language( $campaign_locale );
+		}
 		$campaign = new ATCF_Campaign($campaign_id);
 		$campaign->generate_contract_pdf_blank_organization();
 		$url_return = wp_get_referer() . "#contracts";
