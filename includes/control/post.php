@@ -75,11 +75,9 @@ class WDGPostActions {
 			}
 
 			try {
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				$return = $mailin->create_update_user( array(
-					"email"		=> $email,
-					"listid"	=> array( 5, 6 )
-				) );
+				$sib_instance = SIBv3Helper::instance();
+				$sib_instance->addContactToList( $email, 5 );
+				$sib_instance->addContactToList( $email, 6 );
 				$_SESSION['subscribe_newsletter_sendinblue'] = true;
 			} catch ( Exception $e ) {
 				ypcf_debug_log( "subscribe_newsletter_sendinblue > erreur d'inscription à la NL" );
