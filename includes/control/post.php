@@ -996,7 +996,7 @@ class WDGPostActions {
 		}
 		$random_filename .= '.' . $ext;
 		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../files/investment-check/' . $random_filename );
-		$picture_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
+		$picture_url = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 
 		$campaign_organization = $campaign->get_organization();
 		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );

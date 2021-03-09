@@ -1467,7 +1467,7 @@ class WDGUser {
 	 */
 	public function get_royalties_certificate_per_year($year, $force = false) {
 		$filename = $this->get_royalties_yearly_certificate_filename( $year );
-		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-yearly-user/' . $filename;
+		$buffer = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-yearly-user/' . $filename;
 		$filepath = __DIR__ . '/../../files/certificate-roi-yearly-user/' . $filename;
 		if ( !$force && file_exists( $filepath ) ) {
 			return $buffer;
@@ -1571,7 +1571,7 @@ class WDGUser {
 		$buffer = FALSE;
 		$tax_exemption_filename = get_user_meta( $this->get_wpref(), 'tax_exemption_' .$year, TRUE );
 		if ( !empty( $tax_exemption_filename ) ) {
-			$buffer = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-exemption/' .$year. '/' .$tax_exemption_filename );
+			$buffer = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-exemption/' .$year. '/' .$tax_exemption_filename );
 		}
 
 		return $buffer;
@@ -1581,7 +1581,7 @@ class WDGUser {
 		$buffer = FALSE;
 		$tax_exemption_filename = get_user_meta( $this->get_wpref(), 'tax_document_' .$year, TRUE );
 		if ( !empty( $tax_exemption_filename ) ) {
-			$buffer = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-documents/' .$year. '/' .$tax_exemption_filename );
+			$buffer = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-documents/' .$year. '/' .$tax_exemption_filename );
 		}
 
 		return $buffer;
@@ -2424,7 +2424,7 @@ class WDGUser {
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
 			if ( !empty( $get_redirect_page ) ) {
 				// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2', FALSE );
-				$buffer = home_url( $get_redirect_page );
+				$buffer = WDG_Redirect_Engine::override_get_page_name( $get_redirect_page );
 				// on ajoute un éventuel id de campagne
 				$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
 				if ( !empty( $input_get_campaign_id ) ) {

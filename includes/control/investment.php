@@ -248,7 +248,7 @@ class WDGInvestment {
 			$new_investment_contract_pdf_file = getNewPdfToSign($new_investment_download_id, $new_investment_id, $user_id);
 			if ( !empty( $WDGNewInvestment ) && $WDGNewInvestment->has_token() ) {
 				$new_investment_contract_pdf_filename = basename( $new_investment_contract_pdf_file );
-				$new_investment_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_investment_contract_pdf_filename;
+				$new_investment_contract_pdf_url = site_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_investment_contract_pdf_filename;
 				$WDGNewInvestment->update_contract_url( $new_investment_contract_pdf_url );
 			}
 
@@ -263,7 +263,7 @@ class WDGInvestment {
 			$current_investment_contract_pdf_file = getNewPdfToSign($current_investment_download_id, $this->id, $user_id);
 			if ( !empty( $this ) && $this->has_token() ) {
 				$current_investment_contract_pdf_filename = basename( $current_investment_contract_pdf_file );
-				$current_investment_contract_pdf_url = home_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $current_investment_contract_pdf_filename;
+				$current_investment_contract_pdf_url = site_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $current_investment_contract_pdf_filename;
 				$this->update_contract_url( $current_investment_contract_pdf_url );
 			}
 		} else {

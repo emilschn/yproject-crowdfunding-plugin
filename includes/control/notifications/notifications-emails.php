@@ -196,7 +196,7 @@ class NotificationsEmails {
 
 		if ( !empty( $attachments ) ) {
 			$attachment_url_filename = basename( $attachments[ 0 ] );
-			$attachment_url = home_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $attachment_url_filename );
+			$attachment_url = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $attachment_url_filename );
 			$text_after = "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
 		}
 
