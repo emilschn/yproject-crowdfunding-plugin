@@ -2012,7 +2012,11 @@ class ATCF_Campaign {
 	}
 
 	public function is_positive_savings() {
-		return $this->has_category_slug( 'types', 'epargne-positive' );
+		WDG_Languages_Helpers::switch_to_french_temp();
+		$buffer = $this->has_category_slug( 'types', 'epargne-positive' );
+		WDG_Languages_Helpers::switch_back_to_display_language();
+
+		return $buffer;
 	}
 
 	/*******************************************************************************
