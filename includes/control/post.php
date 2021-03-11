@@ -227,7 +227,7 @@ class WDGPostActions {
 				NotificationsAsana::send_new_project( $newcampaign_id, $orga_name );
 
 				//Redirect then
-				$dashboard_url = home_url( '/tableau-de-bord/?campaign_id=' .$newcampaign_id );
+				$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$newcampaign_id;
 
 				//Mail pour le PP
 				$to = $WDGUser_current->get_email();
@@ -996,7 +996,7 @@ class WDGPostActions {
 		}
 		$random_filename .= '.' . $ext;
 		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../files/investment-check/' . $random_filename );
-		$picture_url = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
+		$picture_url = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 
 		$campaign_organization = $campaign->get_organization();
 		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
@@ -1020,9 +1020,9 @@ class WDGPostActions {
 
 		if ( $has_moved ) {
 			update_post_meta( $investment_id, 'check_picture', $random_filename );
-			wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_invest_check' );
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_invest_check' );
 		} else {
-			wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check&error-upload=1' );
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check&error-upload=1' );
 		}
 		exit();
 	}
@@ -1067,7 +1067,7 @@ class WDGPostActions {
 			}
 		}
 
-		wp_redirect( home_url( '/moyen-de-paiement/' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
+		wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'moyen-de-paiement' ) . '?campaign_id='.$campaign_id.'&meanofpayment=check&check-return=post_confirm_check' );
 	}
 
 	public static function declaration_auto_generate() {
@@ -1088,7 +1088,7 @@ class WDGPostActions {
 			$campaign->generate_missing_declarations( $month_count, $declarations_count );
 			$result = 'success';
 
-			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#royalties' );
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&result=' .$result. '#royalties' );
 			exit();
 		} else {
 			wp_redirect( home_url() );
@@ -1105,7 +1105,7 @@ class WDGPostActions {
 		$form_return = $form_document->postForm();
 
 		$success = ( $form_return != FALSE ) ? '1' : '100';
-		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_declaration_document_success=' .$success. '#royalties' );
+		wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&add_declaration_document_success=' .$success. '#royalties' );
 		exit();
 	}
 
@@ -1122,7 +1122,7 @@ class WDGPostActions {
 			$success = ( $form_return != FALSE ) ? '1' : '100';
 		}
 
-		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
+		wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
 		exit();
 	}
 
@@ -1141,7 +1141,7 @@ class WDGPostActions {
 			$success = ( $form_return != FALSE ) ? '1' : '100';
 		}
 
-		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
+		wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '&add_adjustement_success=' .$success. '#royalties' );
 		exit();
 	}
 
@@ -1154,7 +1154,7 @@ class WDGPostActions {
 			$roi_declaration = new WDGROIDeclaration( $roi_declaration_id );
 			$roi_declaration->mark_transfer_received();
 
-			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#royalties' );
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
 			exit();
 		} else {
 			wp_redirect( home_url() );
@@ -1174,7 +1174,7 @@ class WDGPostActions {
 			$campaign_bill->set_declaration( $roi_declaration );
 			$campaign_bill->generate();
 
-			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#royalties' );
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
 			exit();
 		} else {
 			wp_redirect( home_url() );
@@ -1207,7 +1207,7 @@ class WDGPostActions {
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
 			$campaign->refund();
-			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id );
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id );
 			exit();
 		} else {
 			wp_redirect( home_url() );
@@ -1251,7 +1251,7 @@ class WDGPostActions {
 			NotificationsAPI::mandate_to_send_to_bank( $WDGOrganization->get_email(), $user_name, $WDGOrganizationUpdated->get_mandate_file_url(), $campaign->get_api_id() );
 		}
 
-		wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' .$campaign_id. '#contracts' );
+		wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#contracts' );
 		exit();
 	}
 
@@ -1266,7 +1266,7 @@ class WDGPostActions {
 
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
 			if ( stristr( wp_get_referer(), 'tableau-de-bord' ) === FALSE ) {
-				wp_redirect( home_url( '/mon-compte/#orga-parameters-' . $organization_id ) );
+				wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-parameters-' . $organization_id );
 			} else {
 				wp_redirect( wp_get_referer().'#organization' );
 			}
@@ -1283,7 +1283,7 @@ class WDGPostActions {
 			$WDGFormIdentityDocs->postForm();
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
 			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE) {
-				wp_redirect( home_url( '/mon-compte/#orga-identitydocs-' . $organization_id ) );
+				wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-identitydocs-' . $organization_id );
 			} else {
 				wp_redirect( wp_get_referer().'#organization' );
 			}
@@ -1300,7 +1300,7 @@ class WDGPostActions {
 			$WDGFormBank->postForm();
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
 			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE) {
-				wp_redirect( home_url( '/mon-compte/#orga-bank-' . $organization_id ) );
+				wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-bank-' . $organization_id );
 			} else {
 				wp_redirect( wp_get_referer().'#organization' );
 			}
@@ -1326,12 +1326,12 @@ class WDGPostActions {
 					$WDGOrganization_displayed->unregister_card( $card_id );
 				}
 
-				wp_redirect( home_url( '/mon-compte/#orga-bank-' . $orga_id ) );
+				wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-bank-' . $orga_id );
 				exit();
 			}
 		}
 
-		wp_redirect( home_url( '/mon-compte/#bank' ) );
+		wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#bank' );
 		exit();
 	}
 

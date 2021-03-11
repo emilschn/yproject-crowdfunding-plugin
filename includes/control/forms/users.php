@@ -1,6 +1,5 @@
 <?php
 class WDGFormUsers {
-	
 	public static function login_facebook() {
 		$do_fb_login = FALSE;
 		$fbcallback = filter_input( INPUT_GET, 'fbcallback' );
@@ -14,12 +13,10 @@ class WDGFormUsers {
 
 				$helper = $fb->getRedirectLoginHelper();
 				$accessToken = $helper->getAccessToken();
-				
-			} catch(Facebook\Exceptions\FacebookResponseException $e) {
+			} catch (Facebook\Exceptions\FacebookResponseException $e) {
 				// When Graph returns an error
 				ypcf_debug_log( 'Graph returned an error: ' . $e->getMessage() );
-
-			} catch(Facebook\Exceptions\FacebookSDKException $e) {
+			} catch (Facebook\Exceptions\FacebookSDKException $e) {
 				// When validation fails or other local issues
 				ypcf_debug_log( 'Facebook SDK returned an error: ' . $e->getMessage() );
 			}
@@ -37,7 +34,6 @@ class WDGFormUsers {
 				}
 			}
 
-			
 			try {
 				// The OAuth 2.0 client handler helps us manage access tokens
 				$oAuth2Client = $fb->getOAuth2Client();
@@ -49,16 +45,13 @@ class WDGFormUsers {
 				global $wpdb;
 				$sql = "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '%s' AND meta_value = '%s'";
 				$user_id = $wpdb->get_var( $wpdb->prepare( $sql, $sc_provider_identity_key, $fbUserId ) );
-				
 			} catch ( Exception $e ) {
 				ypcf_debug_log( 'getOAuth2Client returned an error: ' . $e->getMessage() );
 			}
 
-
 			// On a trouvé l'utilisateur correspondant
 			if ( $user_id ) {
 				$user_id += 0; // Transformation en entier
-
 			} else {
 				// On va chercher les infos de l'utilisateur en cours
 				try {
@@ -108,11 +101,9 @@ class WDGFormUsers {
 							ypcf_debug_log( 'WDGFormUsers::login_facebook ' . print_r($user_id, true) );
 						}
 					}
-
-
-				} catch(Facebook\Exceptions\FacebookResponseException $e) {
+				} catch (Facebook\Exceptions\FacebookResponseException $e) {
 					ypcf_debug_log( 'Graph returned an error: ' . $e->getMessage() );
-				} catch(Facebook\Exceptions\FacebookSDKException $e) {
+				} catch (Facebook\Exceptions\FacebookSDKException $e) {
 					ypcf_debug_log( 'Facebook SDK returned an error: ' . $e->getMessage() );
 				}
 			}
@@ -122,31 +113,36 @@ class WDGFormUsers {
 				$do_fb_login = TRUE;
 			}
 		}
+
 		return $do_fb_login;
 	}
-    
+
 	/**
 	 * Tente de se connecter au site
 	 * @return boolean
 	 */
 	public static function login() {
 		//Pas la peine de tenter un login si l'utilisateur est déjà connecté
-		if (is_user_logged_in()) { return FALSE; }
+		if (is_user_logged_in()) {
+			return FALSE;
+		}
 		//Pas la peine de tenter un login si on ne l'a pas demandé
 		$posted_login_form = filter_input(INPUT_POST, 'login-form');
-		if (empty($posted_login_form)) { return FALSE; }
-		
+		if (empty($posted_login_form)) {
+			return FALSE;
+		}
+
 		remove_filter('authenticate', 'wp_authenticate_username_password', 20, 3);
 		add_filter('authenticate', 'WDGFormUsers::filter_login_email', 20, 3);
 		add_action('wp_login', 'WDGFormUsers::redirect_after_login');
-		add_action('wp_login_failed', 'WDGFormUsers::redirect_after_login_failed'); 
+		add_action('wp_login_failed', 'WDGFormUsers::redirect_after_login_failed');
 		global $signon_errors;
 		$signon_result = wp_signon('', is_ssl());
 		if (is_wp_error($signon_result) && !isset($signon_errors)) {
 			$signon_errors = $signon_result;
 		}
 	}
-	
+
 	/**
 	 * permet d'autoriser l'identification par email
 	 * @param type $user
@@ -154,7 +150,7 @@ class WDGFormUsers {
 	 * @param type $password
 	 * @return type
 	 */
-	public static function filter_login_email( $user, $username, $password ) {
+	public static function filter_login_email($user, $username, $password) {
 		if ( is_a( $user, 'WP_User' ) ) {
 			if ( !WDGOrganization::is_user_organization( $user->ID ) ) {
 				return $user;
@@ -162,7 +158,7 @@ class WDGFormUsers {
 		}
 
 		$password = stripslashes( $password );
-		
+
 		// Vérifie que des champs ont bien été remplis
 		if (empty($username) || empty($password)) {
 			global $signon_errors;
@@ -180,7 +176,7 @@ class WDGFormUsers {
 				$username = $user->user_login;
 			}
 		}
-		
+
 		if ( !empty( $username ) ) {
 			$user_by_login = get_user_by( 'login', $username );
 			if ( WDGOrganization::is_user_organization( $user_by_login->ID ) ) {
@@ -193,7 +189,7 @@ class WDGFormUsers {
 
 		return wp_authenticate_username_password( null, $username, $password );
 	}
-	
+
 	/**
 	 * Détecte et gère l'affichage des erreurs de login
 	 * @global type $signon_errors
@@ -215,18 +211,21 @@ class WDGFormUsers {
 					break;
 			}
 		}
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Retourne si il y a eu des erreurs pendant le login
 	 * @global type $signon_errors
 	 * @return type
 	 */
 	public static function has_login_errors() {
-		global $signon_errors; return is_wp_error($signon_errors);
+		global $signon_errors;
+
+		return is_wp_error($signon_errors);
 	}
-	
+
 	/**
 	 * Redirige après la connexion
 	 */
@@ -234,22 +233,24 @@ class WDGFormUsers {
 		//Récupération de la page de redirection à appliquer
 		$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 		//Si ce n'est pas défini, on retourne à l'accueil
-		if (empty($posted_redirect_page)) { wp_safe_redirect(home_url()); }
-		
+		if (empty($posted_redirect_page)) {
+			wp_safe_redirect(home_url());
+		}
+
 		//Vérification si l'url ne contient pas de liens vers l'admin
 		if (strpos($posted_redirect_page, 'wp-admin') !== FALSE) {
 			wp_safe_redirect(home_url());
 		} else {
 			wp_safe_redirect($posted_redirect_page);
 		}
-		
+
 		exit();
 	}
-	
+
 	/**
 	 * Redirige après une connexion échouée
 	 */
-	public static function redirect_after_login_failed( $reason ) {
+	public static function redirect_after_login_failed($reason) {
 		$posted_redirect_error_page = filter_input(INPUT_POST, 'redirect-error');
 		if (!empty($posted_redirect_error_page)) {
 			wp_safe_redirect($posted_redirect_error_page);
@@ -259,22 +260,25 @@ class WDGFormUsers {
 				$url_reason = '?error_reason=' .$reason;
 			}
 			ypcf_debug_log( 'WDGFormUsers::redirect_after_login_failed' );
-			wp_redirect( home_url( '/connexion/' ) . $url_reason );
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'connexion' ) . $url_reason );
 		}
 		exit();
 	}
-	
+
 	public static function register() {
-		if ( is_user_logged_in() ) { return FALSE; }
-			
+		if ( is_user_logged_in() ) {
+			return FALSE;
+		}
+
 		global $signup_errors, $signup_step;
 		$signup_errors = new WP_Error();
 		$signup_step = 'request-details';
-		
+
 		$register_form_posted = filter_input(INPUT_POST, 'signup_submit');
-		if ( empty( $register_form_posted ) ) { return FALSE; }
-		
-		
+		if ( empty( $register_form_posted ) ) {
+			return FALSE;
+		}
+
 		// Vérifications de l'e-mail
 		$user_email = rtrim( filter_input( INPUT_POST, 'signup_email' ) );
 		$user_name = $user_email;
@@ -290,12 +294,12 @@ class WDGFormUsers {
 
 		// Vérifications sur prénom et nom
 		$user_firstname = filter_input( INPUT_POST, 'signup_firstname' );
-		$user_firstname = mb_convert_case( $user_firstname , MB_CASE_TITLE );
+		$user_firstname = mb_convert_case( $user_firstname, MB_CASE_TITLE );
 		if ( empty( $user_firstname ) ) {
 			$signup_errors->add( 'user_firstname', __( 'signup.ERROR_FIRST_NAME_EMPTY', 'yproject' ) );
 		}
 		$user_lastname = filter_input( INPUT_POST, 'signup_lastname' );
-		$user_lastname = mb_convert_case( $user_lastname , MB_CASE_TITLE );
+		$user_lastname = mb_convert_case( $user_lastname, MB_CASE_TITLE );
 		if ( empty( $user_lastname ) ) {
 			$signup_errors->add( 'user_lastname', __( 'signup.ERROR_LAST_NAME_EMPTY', 'yproject' ) );
 		}
@@ -315,14 +319,11 @@ class WDGFormUsers {
 		if ( empty( $validate_terms_check ) ) {
 			$signup_errors->add( 'validate_terms_check', __( 'signup.ERROR_TERMS_NOT_CHECKED', 'yproject' ) );
 		}
-		
-		
+
 		// Si le formulaire d'inscription est rempli
 		if ( wp_verify_nonce( $_POST['_wpnonce'], 'register_form_posted' ) && WDGFormUsers::check_recaptcha($_POST['g-recaptcha-response']) ) {
-
 			$signup_error_message = $signup_errors->get_error_message();
 			if ( empty( $signup_error_message ) ) {
-
 				$display_name = $user_firstname. ' ' .substr( $user_lastname, 0, 1 ). '.';
 				$wp_user_id = wp_insert_user( array(
 					'user_login'	=> $user_name,
@@ -336,7 +337,6 @@ class WDGFormUsers {
 
 				if ( is_wp_error( $wp_user_id ) ) {
 					$signup_errors->add( 'user_insert', __( 'signup.ERROR_USER_CREATION', 'yproject' ) );
-					
 				} else {
 					global $wpdb, $edd_options;
 					$signup_step = 'completed-confirmation';
@@ -355,17 +355,19 @@ class WDGFormUsers {
 					exit();
 				}
 			}
-
 		} else {
 			$signup_errors->add( 'user_insert', __( 'signup.ERROR_ROBOT_CHECKBOX', 'yproject' ) );
-			
 		}
 	}
-	
-	public static function check_recaptcha( $code ) {
-		if (WP_IS_DEV_SITE){ return TRUE; }
 
-		if (empty($code)) { return false; }
+	public static function check_recaptcha($code) {
+		if (WP_IS_DEV_SITE) {
+			return TRUE;
+		}
+
+		if (empty($code)) {
+			return false;
+		}
 		$params = [
 			'secret'    => RECAPTCHA_SECRET,
 			'response'  => $code
@@ -383,12 +385,12 @@ class WDGFormUsers {
 		}
 
 		$json = json_decode($response);
+
 		return $json->success;
 	}
-	
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public static function wallet_to_bankaccount() {
 		$action = filter_input( INPUT_POST, 'action' );
@@ -407,25 +409,23 @@ class WDGFormUsers {
 		if ( !empty( $amount_to_bank ) ) {
 			$amount = WDG_Form::clean_input_number( $amount_to_bank );
 		}
-		
+
 		$buffer = __( "Votre compte bancaire n'est pas encore valid&eacute;.", 'yproject' );
 		if ( !empty( $orga_id ) ) {
 			$WDGOrganization = new WDGOrganization( $orga_id );
 			if ( $WDGOrganization->has_saved_iban() && $WDGOrganization->get_rois_amount() > 0 ) {
 				$buffer = $WDGOrganization->transfer_wallet_to_bankaccount( $WDGOrganization->get_available_rois_amount() );
 			}
-			
 		} else {
 			$WDGUser = new WDGUser( $user_id );
 			$buffer = $WDGUser->transfer_wallet_to_bankaccount( $amount );
 		}
-		
+
 		return $buffer;
 	}
 
-	
 	/**
-	 * 
+	 *
 	 */
 	public static function change_wire_amount() {
 		$action = filter_input( INPUT_POST, 'action' );
@@ -444,17 +444,16 @@ class WDGFormUsers {
 		}
 
 		$amount_to_wire = filter_input( INPUT_POST, 'amount_to_wire' );
-        if (!empty($amount_to_wire)) {
-            $amount = WDG_Form::clean_input_number($amount_to_wire);
-            $WDGInvestment = new WDGInvestment($investment_id);
-            $WDGInvestment->set_amount($amount);
-            $buffer = TRUE;
-        } 
-				
+		if (!empty($amount_to_wire)) {
+			$amount = WDG_Form::clean_input_number($amount_to_wire);
+			$WDGInvestment = new WDGInvestment($investment_id);
+			$WDGInvestment->set_amount($amount);
+			$buffer = TRUE;
+		}
+
 		return $buffer;
 	}
 
-	
 	public static function register_rib() {
 		$action = filter_input( INPUT_POST, 'action' );
 		$user_id = filter_input( INPUT_POST, 'user_id' );
@@ -466,7 +465,7 @@ class WDGFormUsers {
 		if ( $WDGUser_current->wp_user->ID != $user_id && !$WDGUser_current->is_admin() ) {
 			return FALSE;
 		}
-		
+
 		if ( !empty( $orga_id ) ) {
 			$WDGOrganization = new WDGOrganization( $orga_id );
 			$save_iban = filter_input( INPUT_POST, 'iban' );
@@ -480,10 +479,10 @@ class WDGFormUsers {
 				$WDGOrganization->set_bank_bic( $save_bic );
 				$WDGOrganization->save();
 			}
-			
+
 			if ( isset( $_FILES[ 'rib' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'rib' ][ 'tmp_name' ] ) ) {
 				$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $orga_id, WDGKYCFile::$owner_organization, $_FILES[ 'rib' ] );
-				
+
 				if ( is_int( $file_id ) ) {
 					$WDGFile = new WDGKYCFile( $file_id );
 					$WDGOrganization->register_lemonway();
@@ -495,7 +494,6 @@ class WDGFormUsers {
 					}
 				}
 			}
-			
 		} else {
 			$WDGUser = new WDGUser( $user_id );
 			$save_iban = filter_input( INPUT_POST, 'iban' );
@@ -510,7 +508,7 @@ class WDGFormUsers {
 
 			if ( isset( $_FILES[ 'rib' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'rib' ][ 'tmp_name' ] ) ) {
 				$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'rib' ] );
-				
+
 				if ( is_int( $file_id ) ) {
 					$WDGFile = new WDGKYCFile( $file_id );
 					$WDGUser->register_lemonway();
@@ -523,7 +521,7 @@ class WDGFormUsers {
 				}
 			}
 		}
-		
+
 		return TRUE;
 	}
 }

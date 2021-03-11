@@ -1848,7 +1848,7 @@ class WDGOrganization {
 	 */
 	public function get_royalties_certificate_per_year($year, $force = false) {
 		$filename = $this->get_royalties_yearly_certificate_filename( $year );
-		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-yearly-user/' . $filename;
+		$buffer = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-yearly-user/' . $filename;
 		$filepath = __DIR__ . '/../../files/certificate-roi-yearly-user/' . $filename;
 		if ( !$force && file_exists( $filepath ) ) {
 			return $buffer;
@@ -1944,7 +1944,7 @@ class WDGOrganization {
 		$buffer = FALSE;
 		$tax_exemption_filename = get_user_meta( $this->get_wpref(), 'tax_document_' .$year, TRUE );
 		if ( !empty( $tax_exemption_filename ) ) {
-			$buffer = home_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-documents/' .$year. '/' .$tax_exemption_filename );
+			$buffer = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/tax-documents/' .$year. '/' .$tax_exemption_filename );
 		}
 
 		return $buffer;

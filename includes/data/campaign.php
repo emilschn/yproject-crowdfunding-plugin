@@ -1258,7 +1258,7 @@ class ATCF_Campaign {
 
 	public function get_funded_certificate_url() {
 		$this->make_funded_certificate();
-		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/campaign-funded/';
+		$buffer = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/campaign-funded/';
 		$buffer .= $this->get_funded_certificate_filename();
 
 		return $buffer;
