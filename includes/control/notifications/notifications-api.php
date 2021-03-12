@@ -1,9 +1,10 @@
 <?php
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 class NotificationsAPI {
-	
 	public static $description_str_by_template_id = array(
 		'new-project' => array(
 			'fr-sib-id'		=> '1143',
@@ -35,19 +36,19 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'subscription-without-investment-not-open' => array (
+		'subscription-without-investment-not-open' => array(
 			'fr-sib-id'		=> '937',
 			'description'	=> "Inscription sans investissement - rappel mail pas ouvert",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'subscription-without-investment-not-clicked' => array (
+		'subscription-without-investment-not-clicked' => array(
 			'fr-sib-id'		=> '938',
 			'description'	=> "Inscription sans investissement - rappel mail pas cliqué",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'subscription-without-investment-not-invested' => array (
+		'subscription-without-investment-not-invested' => array(
 			'fr-sib-id'		=> '939',
 			'description'	=> "Inscription sans investissement - rappel",
 			'variables'		=> "",
@@ -149,349 +150,349 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-30percent-with-intention' => array (
+		'project-investment-30percent-with-intention' => array(
 			'fr-sib-id'		=> '579',
 			'description'	=> "Relance - Investissement 30 % - Avec intention",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-30percent-without-intention' => array (
+		'project-investment-30percent-without-intention' => array(
 			'fr-sib-id'		=> '580',
 			'description'	=> "Relance - Investissement 30 % - Sans intention",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-30percent-follow' => array (
+		'project-investment-30percent-follow' => array(
 			'fr-sib-id'		=> '650',
 			'description'	=> "Relance - Investissement 30 % - Suit le projet",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-success-with-investment' => array (
+		'project-investment-success-with-investment' => array(
 			'fr-sib-id'		=> '621',
 			'description'	=> "Relance - Investissement 100 % - Avec investissement",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-success-with-pending-investment' => array (
+		'project-investment-success-with-pending-investment' => array(
 			'fr-sib-id'		=> '652',
 			'description'	=> "Relance - Investissement 100 % - Avec investissement en attente",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-success-with-with-intention' => array (
+		'project-investment-success-with-with-intention' => array(
 			'fr-sib-id'		=> '622',
 			'description'	=> "Relance - Investissement 100 % - Avec intention",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-success-with-without-intention' => array (
+		'project-investment-success-with-without-intention' => array(
 			'fr-sib-id'		=> '623',
 			'description'	=> "Relance - Investissement 100 % - Sans intention",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-success-follow' => array (
+		'project-investment-success-follow' => array(
 			'fr-sib-id'		=> '651',
 			'description'	=> "Relance - Investissement 100 % - Suit le projet",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-2days-with-intention' => array (
+		'project-investment-2days-with-intention' => array(
 			'fr-sib-id'		=> '581',
 			'description'	=> "Relance - Investissement J-2 - Avec intention",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-2days-without-intention' => array (
+		'project-investment-2days-without-intention' => array(
 			'fr-sib-id'		=> '582',
 			'description'	=> "Relance - Investissement J-2 - Sans intention",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-vote-intention-authentication' => array (
+		'project-vote-intention-authentication' => array(
 			'fr-sib-id'		=> '632',
 			'description'	=> "Evaluation avec intention - Demande d'authentification",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-vote-intention-preinvestment' => array (
+		'project-vote-intention-preinvestment' => array(
 			'fr-sib-id'		=> '628',
 			'description'	=> "Evaluation avec intention - Demande de pré-investissement",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-authentication' => array (
+		'project-investment-authentication' => array(
 			'fr-sib-id'		=> '603',
 			'description'	=> "Investissement - Demande d'authentification",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-investment-authentication-reminder' => array (
+		'project-investment-authentication-reminder' => array(
 			'fr-sib-id'		=> '604',
 			'description'	=> "Investissement - Demande d'authentification - Rappel",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'kyc-authenticated-pending-investment' => array (
+		'kyc-authenticated-pending-investment' => array(
 			'fr-sib-id'		=> '605',
 			'description'	=> "KYC - Wallet validé et investissement en attente",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'kyc-authenticated-pending-investment-reminder' => array (
+		'kyc-authenticated-pending-investment-reminder' => array(
 			'fr-sib-id'		=> '606',
 			'description'	=> "KYC - Wallet validé et investissement en attente - Rappel",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investment-error' => array (
+		'investment-error' => array(
 			'fr-sib-id'		=> '175',
 			'description'	=> "Erreur d'investissement",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'received-wire-without-pending-investment' => array (
+		'received-wire-without-pending-investment' => array(
 			'fr-sib-id'		=> '780',
 			'description'	=> "Réception virement bancaire sans investissement en attente",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investment-check-pending' => array (
+		'investment-check-pending' => array(
 			'fr-sib-id'		=> '172',
 			'description'	=> "Investissement par chèque en attente",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investment-wire-pending' => array (
+		'investment-wire-pending' => array(
 			'fr-sib-id'		=> '177',
 			'description'	=> "Investissement par virement en attente",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investment-project-validated' => array (
+		'investment-project-validated' => array(
 			'fr-sib-id'		=> '687',
 			'description'	=> "Investissement sur projet validé",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investment-positive-savings-validated' => array (
+		'investment-positive-savings-validated' => array(
 			'fr-sib-id'		=> '688',
 			'description'	=> "Investissement sur épargne positive validé",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-validated-campaign-public' => array (
+		'project-validated-campaign-public' => array(
 			'fr-sib-id'		=> '178',
 			'description'	=> "Projet validé - campagne publique",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-validated-campaign-private' => array (
+		'project-validated-campaign-private' => array(
 			'fr-sib-id'		=> '629',
 			'description'	=> "Projet validé - campagne privée",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-pending-validation' => array (
+		'project-pending-validation' => array(
 			'fr-sib-id'		=> '699',
 			'description'	=> "Projet en attente d'atteinte du seuil de validation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'project-failed' => array (
+		'project-failed' => array(
 			'fr-sib-id'		=> '179',
 			'description'	=> "Projet échoué",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'mandate-to-send-to-bank' => array (
+		'mandate-to-send-to-bank' => array(
 			'fr-sib-id'		=> '1751',
 			'description'	=> "Envoi mandat de prélèvement",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-9days-with-mandate' => array (
+		'declaration-9days-with-mandate' => array(
 			'fr-sib-id'		=> '114',
 			'description'	=> "Déclarations - Rappel J-9 (avec prélèvement)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-9days-without-mandate' => array (
+		'declaration-9days-without-mandate' => array(
 			'fr-sib-id'		=> '115',
 			'description'	=> "Déclarations - Rappel J-9 (sans prélèvement)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-2days-with-mandate' => array (
+		'declaration-2days-with-mandate' => array(
 			'fr-sib-id'		=> '119',
 			'description'	=> "Déclarations - Rappel J-2 (avec prélèvement)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-2days-without-mandate' => array (
+		'declaration-2days-without-mandate' => array(
 			'fr-sib-id'		=> '116',
 			'description'	=> "Déclarations - Rappel J-2 (sans prélèvement)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-dday-with-mandate' => array (
+		'declaration-dday-with-mandate' => array(
 			'fr-sib-id'		=> '121',
 			'description'	=> "Déclarations - Rappel J (avec prélèvement)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-dday-without-mandate' => array (
+		'declaration-dday-without-mandate' => array(
 			'fr-sib-id'		=> '120',
 			'description'	=> "Déclarations - Rappel J (sans prélèvement)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-mandate-payment-warning' => array (
+		'declaration-mandate-payment-warning' => array(
 			'fr-sib-id'		=> '595',
 			'description'	=> "Déclarations - Avertissement prélèvement",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-done-with-turnover' => array (
+		'declaration-done-with-turnover' => array(
 			'fr-sib-id'		=> '127',
 			'description'	=> "Déclaration faite avec CA",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-done-without-turnover' => array (
+		'declaration-done-without-turnover' => array(
 			'fr-sib-id'		=> '150',
 			'description'	=> "Déclaration faite sans CA",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-extended-warning' => array (
+		'declaration-extended-warning' => array(
 			'fr-sib-id'		=> '692',
 			'description'	=> "Déclaration - Avertissement prolongation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-extended-project-manager' => array (
+		'declaration-extended-project-manager' => array(
 			'fr-sib-id'		=> '736',
 			'description'	=> "Déclaration - Prolongation (porteur de projet)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-extended-investors' => array (
+		'declaration-extended-investors' => array(
 			'fr-sib-id'		=> '694',
 			'description'	=> "Déclaration - Prolongation (investisseurs)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-end-project-manager' => array (
+		'declaration-end-project-manager' => array(
 			'fr-sib-id'		=> '735',
 			'description'	=> "Déclaration - Fin (porteur de projet)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'declaration-end-investors' => array (
+		'declaration-end-investors' => array(
 			'fr-sib-id'		=> '693',
 			'description'	=> "Déclaration - Fin (investisseurs)",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investor-royalties-daily-resume' => array (
+		'investor-royalties-daily-resume' => array(
 			'fr-sib-id'		=> '139',
 			'description'	=> "Versement de royalties - résumé quotidien",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investor-royalties-more-200euros' => array (
+		'investor-royalties-more-200euros' => array(
 			'fr-sib-id'		=> '1042',
 			'description'	=> "Versement de royalties - plus de 200 euros",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investor-royalties-more-200euros-reminder-not-open' => array (
+		'investor-royalties-more-200euros-reminder-not-open' => array(
 			'fr-sib-id'		=> '1044',
 			'description'	=> "Versement de royalties - plus de 200 euros - rappel pas ouvert",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investor-royalties-more-200euros-reminder-not-clicked' => array (
+		'investor-royalties-more-200euros-reminder-not-clicked' => array(
 			'fr-sib-id'		=> '1045',
 			'description'	=> "Versement de royalties - plus de 200 euros - rappel pas cliqué",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investors-royalties-more-200euros-project-manager-alert' => array (
+		'investors-royalties-more-200euros-project-manager-alert' => array(
 			'fr-sib-id'		=> '1268',
 			'description'	=> "Versement de royalties - plus de 200 euros - notif entrepreneur",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investor-royalties-with-message' => array (
+		'investor-royalties-with-message' => array(
 			'fr-sib-id'		=> '522',
 			'description'	=> "Versement de royalties - transfert avec message",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'investor-royalties-max-amount-reached' => array (
+		'investor-royalties-max-amount-reached' => array(
 			'fr-sib-id'		=> '691',
 			'description'	=> "Versement de royalties - montant maximum atteint",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'transfer-money-to-bank-account' => array (
+		'transfer-money-to-bank-account' => array(
 			'fr-sib-id'		=> '779',
 			'description'	=> "Versement sur compte bancaire - confirmation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'password-reset' => array (
+		'password-reset' => array(
 			'fr-sib-id'		=> '1075',
 			'description'	=> "Réinitialisation de mot de passe",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-draft-list' => array (
+		'prospect-setup-draft-list' => array(
 			'fr-sib-id'		=> '1316',
 			'description'	=> "Test d'éligibilité - Récupération liste de tests",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-draft-started' => array (
+		'prospect-setup-draft-started' => array(
 			'fr-sib-id'		=> '1374',
 			'description'	=> "Test d'éligibilité - Lien test démarré",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-draft-finished' => array (
+		'prospect-setup-draft-finished' => array(
 			'fr-sib-id'		=> '1373',
 			'description'	=> "Test d'éligibilité - Projet éligible",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-payment-method-select-wire' => array (
+		'prospect-setup-payment-method-select-wire' => array(
 			'fr-sib-id'		=> '2298',
 			'description'	=> "Test d'éligibilité - Paiement par virement bancaire choisi",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-payment-method-received-wire' => array (
+		'prospect-setup-payment-method-received-wire' => array(
 			'fr-sib-id'		=> '2299',
 			'description'	=> "Test d'éligibilité - Paiement par virement bancaire reçu",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-payment-method-received-card' => array (
+		'prospect-setup-payment-method-received-card' => array(
 			'fr-sib-id'		=> '2294',
 			'description'	=> "Test d'éligibilité - Paiement par carte bancaire réussi",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-payment-method-error-card' => array (
+		'prospect-setup-payment-method-error-card' => array(
 			'fr-sib-id'		=> '2295',
 			'description'	=> "Test d'éligibilité - Paiement par carte bancaire échoué",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'prospect-setup-dashboard-not-created' => array (
+		'prospect-setup-dashboard-not-created' => array(
 			'fr-sib-id'		=> '2297',
 			'description'	=> "Test d'éligibilité - Tableau de bord pas encore créé",
 			'variables'		=> "",
@@ -499,32 +500,59 @@ class NotificationsAPI {
 		)
 	);
 
+	private static $template_id_empty_v3_fr = 3065;
+
 	/**
 	 * Méthode générique d'appel à l'API pour attrapper les erreurs
 	 */
-	private static function send( $parameters ) {
+	private static function send($parameters) {
 		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		if ( empty( $result->result ) ) {
 			NotificationsAsana::notification_api_failed( $parameters, $result );
 		}
+
 		return $result;
 	}
 
-	private static function get_id_fr_by_slug( $slug ) {
+	/**
+	 * Méthode générique d'appel à l'API pour attrapper les erreurs
+	 */
+	public static function send_v3($object, $content, $parameters = array(), $skip_admin = FALSE) {
+		$parameters[ 'tool' ] = 'sendinblue-v3';
+		$parameters[ 'template' ] = self::$template_id_empty_v3_fr;
+
+		$options = array(
+			'object' 		=> $object,
+			'content' 		=> $content
+		);
+		if ( !empty( $skip_admin ) ) {
+			$options[ 'skip_admin' ] = 1;
+		}
+		$parameters[ 'options' ] = json_encode( $options );
+
+		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		if ( empty( $result->result ) ) {
+			NotificationsAsana::notification_api_failed( $parameters, $result );
+		}
+
+		return $result;
+	}
+
+	private static function get_id_fr_by_slug($slug) {
 		if ( !empty( self::$description_str_by_template_id[ $slug ] ) && !empty( self::$description_str_by_template_id[ $slug ][ 'fr-sib-id' ] ) ) {
 			return self::$description_str_by_template_id[ $slug ][ 'fr-sib-id' ];
 		}
+
 		return FALSE;
 	}
-	
 
 	//**************************************************************************
 	// Campagne
 	//**************************************************************************
-    //*******************************************************
-    // NOUVEAU PROJET PUBLIE
-    //*******************************************************
-	public static function new_project_published( $recipient, $name, $project_link, $project_api_id ) {
+	//*******************************************************
+	// NOUVEAU PROJET PUBLIE
+	//*******************************************************
+	public static function new_project_published($recipient, $name, $project_link, $project_api_id) {
 		ypcf_debug_log( 'NotificationsAPI::new_project_published > ' . $recipient );
 		$id_template = self::get_id_fr_by_slug( 'new-project' );
 		$project_link_clean = str_replace( 'https://', '', $project_link );
@@ -539,13 +567,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-    //*******************************************************
-    // ENVOI ACTUALITE DE PROJET
-    //*******************************************************
-	public static function new_project_news( $recipients, $replyto_mail, $project_name, $project_link, $project_api_id, $news_name, $news_content ) {
+	//*******************************************************
+	// ENVOI ACTUALITE DE PROJET
+	//*******************************************************
+	public static function new_project_news($recipients, $replyto_mail, $project_name, $project_link, $project_api_id, $news_name, $news_content) {
 		ypcf_debug_log( 'NotificationsAPI::new_project_news > ' . $recipients );
 		$id_template = self::get_id_fr_by_slug( 'new-project-news' );
 		$project_link_clean = str_replace( 'https://', '', $project_link );
@@ -557,7 +586,7 @@ class NotificationsAPI {
 			'OBJET_ACTU'			=> $news_name,
 			'CONTENU_ACTU'			=> $news_content_filtered
 		);
-		
+
 		// Le maximum de destinataire est de 99, il faut découper
 		$buffer = FALSE;
 		$recipients_array = explode( ',', $recipients );
@@ -580,13 +609,12 @@ class NotificationsAPI {
 					self::send( $parameters );
 					$recipients = '';
 					$index = 0;
-					
-				} elseif( $i < $recipients_array_count - 1 ) {
+				} elseif ( $i < $recipients_array_count - 1 ) {
 					$recipients .= ',';
 				}
 			}
 		}
-		
+
 		// On envoie de toute façon au restant des investisseurs à la fin
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -595,17 +623,17 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
-		
+
 		return self::send( $parameters );
 	}
-    //*******************************************************
-    // FIN ENVOI ACTUALITE DE PROJET
-    //*******************************************************
-	
-    //*******************************************************
-    // ENVOI ACTUALITE DE PROJET
-    //*******************************************************
-	public static function project_mail( $recipient, $replyto_mail, $user_name, $project_name, $project_link, $project_api_id, $news_name, $news_content ) {
+	//*******************************************************
+	// FIN ENVOI ACTUALITE DE PROJET
+	//*******************************************************
+
+	//*******************************************************
+	// ENVOI ACTUALITE DE PROJET
+	//*******************************************************
+	public static function project_mail($recipient, $replyto_mail, $user_name, $project_name, $project_link, $project_api_id, $news_name, $news_content) {
 		ypcf_debug_log( 'NotificationsAPI::project_mail > ' . $recipient );
 		$id_template = self::get_id_fr_by_slug( 'new-mail-contact-list' );
 		$project_link = str_replace( 'https://', '', $project_link );
@@ -624,12 +652,12 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-    //*******************************************************
-    // FIN ENVOI ACTUALITE DE PROJET
-    //*******************************************************
-
+	//*******************************************************
+	// FIN ENVOI ACTUALITE DE PROJET
+	//*******************************************************
 
 	//**************************************************************************
 	// Utilisateurs
@@ -637,7 +665,7 @@ class NotificationsAPI {
 	//*******************************************************
 	// Inscription
 	//*******************************************************
-	public static function user_registration( $recipient, $name ) {
+	public static function user_registration($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'subscription' );
 		$options = array(
 			'skip_admin'			=> 1,
@@ -649,13 +677,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// Inscription sans investissement
 	//*******************************************************
-	public static function user_registered_without_investment( $recipient, $name ) {
+	public static function user_registered_without_investment($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'subscription-without-investment' );
 		$options = array(
 			'NOM'				=> $name
@@ -666,13 +695,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// Inscription sans investissement - pas ouvert
 	//*******************************************************
-	public static function user_registered_without_investment_not_open( $recipient, $name ) {
+	public static function user_registered_without_investment_not_open($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'subscription-without-investment-not-open' );
 		$options = array(
 			'NOM'				=> $name
@@ -683,13 +713,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// Inscription sans investissement - pas cliqué
 	//*******************************************************
-	public static function user_registered_without_investment_not_clicked( $recipient, $name ) {
+	public static function user_registered_without_investment_not_clicked($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'subscription-without-investment-not-clicked' );
 		$options = array(
 			'NOM'				=> $name
@@ -700,13 +731,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-    //*******************************************************
-    // Inscription sans investissement - pas investi
-    //*******************************************************
-	public static function user_registered_without_investment_not_invested( $recipient, $name ) {
+	//*******************************************************
+	// Inscription sans investissement - pas investi
+	//*******************************************************
+	public static function user_registered_without_investment_not_invested($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'subscription-without-investment-not-invested' );
 		$options = array(
 			'NOM'				=> $name
@@ -717,13 +749,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// Modification du mot de passe
 	//*******************************************************
-	public static function user_password_change( $recipient, $name ) {
+	public static function user_password_change($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'password-changed' );
 		$options = array(
 			'NOM'				=> $name
@@ -734,14 +767,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 	}
 
-
-    //*******************************************************
-    // Réinitialisation de mot de passe
-    //*******************************************************
-	public static function password_reinit( $recipient, $name, $link ) {
+	//*******************************************************
+	// Réinitialisation de mot de passe
+	//*******************************************************
+	public static function password_reinit($recipient, $name, $link) {
 		$id_template = self::get_id_fr_by_slug( 'password-reset' );
 		$options = array(
 			'skip_admin'			=> 1,
@@ -754,15 +787,16 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 	//**************************************************************************
 	// Entrepreneurs
 	//**************************************************************************
-    //*******************************************************
-    // Demande de relecture
-    //*******************************************************
-	public static function proofreading_request_received( $recipient_name, $recipient_mail, $replyto_mail, $id_api ) {
+	//*******************************************************
+	// Demande de relecture
+	//*******************************************************
+	public static function proofreading_request_received($recipient_name, $recipient_mail, $replyto_mail, $id_api) {
 		$id_template = self::get_id_fr_by_slug( 'project-pitch-proofreading' );
 		$options = array(
 			'personal'					=> 1,
@@ -775,13 +809,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient_mail,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-    //*******************************************************
-    // Conseils quotidiens
-    //*******************************************************
-	public static function campaign_advice( $recipient, $replyto_mail, $campaign_name, $campaign_dashboard_url, $user_name, $greetings, $last_24h, $top_actions ) {
+	//*******************************************************
+	// Conseils quotidiens
+	//*******************************************************
+	public static function campaign_advice($recipient, $replyto_mail, $campaign_name, $campaign_dashboard_url, $user_name, $greetings, $last_24h, $top_actions) {
 		$id_template = self::get_id_fr_by_slug( 'project-campaign-advice' );
 		$campaign_dashboard_url_clean = str_replace( 'https://', '', $campaign_dashboard_url );
 		$options = array(
@@ -800,17 +835,17 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-
 
 	//**************************************************************************
 	// KYC
 	//**************************************************************************
-    //*******************************************************
-    // NOTIFICATIONS KYC - RIB VALIDE
-    //*******************************************************
-	public static function rib_authentified( $recipient, $name ) {
+	//*******************************************************
+	// NOTIFICATIONS KYC - RIB VALIDE
+	//*******************************************************
+	public static function rib_authentified($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-iban-validated' );
 		$options = array(
 			'personal'				=> 1,
@@ -822,13 +857,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS KYC - EN COURS DE VALIDATION
-    //*******************************************************
-	public static function kyc_waiting( $recipient, $name ) {
+
+	//*******************************************************
+	// NOTIFICATIONS KYC - EN COURS DE VALIDATION
+	//*******************************************************
+	public static function kyc_waiting($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-doc-waiting' );
 		$options = array(
 			'personal'				=> 1,
@@ -840,13 +876,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS KYC - REFUSES
-    //*******************************************************
-	public static function kyc_refused( $recipient, $name, $authentication_info ) {
+
+	//*******************************************************
+	// NOTIFICATIONS KYC - REFUSES
+	//*******************************************************
+	public static function kyc_refused($recipient, $name, $authentication_info) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-doc-refused' );
 		$options = array(
 			'personal'				=> 1,
@@ -859,23 +896,25 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-	public static function phone_kyc_refused( $recipient, $name ) {
+	public static function phone_kyc_refused($recipient, $name) {
 		$param_content = "Bonjour " .$name.", des documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
 			'recipient'	=> $recipient
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS KYC - UN SEUL DOC VALIDE
-    //*******************************************************
-	public static function kyc_single_validated( $recipient, $name ) {
+
+	//*******************************************************
+	// NOTIFICATIONS KYC - UN SEUL DOC VALIDE
+	//*******************************************************
+	public static function kyc_single_validated($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-doc-single-validation' );
 		$options = array(
 			'personal'				=> 1,
@@ -887,23 +926,25 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-	public static function phone_kyc_single_validated( $recipient, $name ) {
+	public static function phone_kyc_single_validated($recipient, $name) {
 		$param_content = "Bonjour " .$name.", un document a été validé sur WE DO GOOD ! Finalisez l'authentification de votre compte en y déposant le(s) document(s) manquant(s) : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
 			'recipient'	=> $recipient
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS KYC - VALIDES
-    //*******************************************************
-	public static function kyc_authentified( $recipient, $name ) {
+
+	//*******************************************************
+	// NOTIFICATIONS KYC - VALIDES
+	//*******************************************************
+	public static function kyc_authentified($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-authentified' );
 		$options = array(
 			'personal'				=> 1,
@@ -915,23 +956,25 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-	public static function phone_kyc_authentified( $recipient, $name ) {
+	public static function phone_kyc_authentified($recipient, $name) {
 		$param_content = "Bonjour " .$name.", nous avons le plaisir de vous annoncer que votre compte est désormais authentifié sur WE DO GOOD ! www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
 			'tool'		=> 'sms',
 			'template'	=> $param_content,
 			'recipient'	=> $recipient
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS KYC - VALIDES ET INVESTISSEMENT EN ATTENTE
-    //*******************************************************
-	public static function kyc_authentified_and_pending_investment( $recipient, $name, $project_name, $project_api_id ) {
+
+	//*******************************************************
+	// NOTIFICATIONS KYC - VALIDES ET INVESTISSEMENT EN ATTENTE
+	//*******************************************************
+	public static function kyc_authentified_and_pending_investment($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-authenticated-pending-investment' );
 		$options = array(
 			'personal'			=> 1,
@@ -945,13 +988,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS KYC - VALIDES ET INVESTISSEMENT EN ATTENTE - RAPPEL
-    //*******************************************************
-	public static function kyc_authentified_and_pending_investment_reminder( $recipient, $name, $project_name, $project_api_id ) {
+
+	//*******************************************************
+	// NOTIFICATIONS KYC - VALIDES ET INVESTISSEMENT EN ATTENTE - RAPPEL
+	//*******************************************************
+	public static function kyc_authentified_and_pending_investment_reminder($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-authenticated-pending-investment-reminder' );
 		$options = array(
 			'personal'			=> 1,
@@ -965,17 +1009,17 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-
 
 	//**************************************************************************
 	// Relances
 	//**************************************************************************
-    //*******************************************************
-    // RELANCE - EVALUATION - AVEC INTENTION
-    //*******************************************************
-	public static function confirm_vote_invest_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+	//*******************************************************
+	// RELANCE - EVALUATION - AVEC INTENTION
+	//*******************************************************
+	public static function confirm_vote_invest_intention($recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-confirm-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -996,13 +1040,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // RELANCE - EVALUATION - SANS INTENTION
-    //*******************************************************
-	public static function confirm_vote_invest_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	//*******************************************************
+	// RELANCE - EVALUATION - SANS INTENTION
+	//*******************************************************
+	public static function confirm_vote_invest_no_intention($recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-without-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1022,13 +1067,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // RELANCE - PRE-LANCEMENT - EVALUATION AVEC INTENTION
-    //*******************************************************
-	public static function confirm_prelaunch_invest_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	//*******************************************************
+	// RELANCE - PRE-LANCEMENT - EVALUATION AVEC INTENTION
+	//*******************************************************
+	public static function confirm_prelaunch_invest_intention($recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-prelaunch-vote-confirm-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1049,10 +1095,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_prelaunch_invest_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	public static function confirm_prelaunch_invest_no_intention($recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-prelaunch-vote-without-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1072,10 +1119,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_prelaunch_invest_follow( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	public static function confirm_prelaunch_invest_follow($recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-prelaunch-follow' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1095,13 +1143,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// FIN EVALUATION - EN ATTENTE
 	//*******************************************************
-	public static function vote_end_pending_campaign( $recipient, $name, $project_name, $project_api_id ) {
+	public static function vote_end_pending_campaign($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-end-vote-waiting' );
 		$options = array(
 			'personal'					=> 1,
@@ -1115,13 +1164,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// FIN EVALUATION - ANNULATION
 	//*******************************************************
-	public static function vote_end_canceled_campaign( $recipient, $name, $project_name, $project_api_id ) {
+	public static function vote_end_canceled_campaign($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-end-vote-canceled' );
 		$options = array(
 			'personal'					=> 1,
@@ -1135,10 +1185,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-	public static function vote_end_canceled_campaign_refund( $recipient, $name, $project_name, $project_api_id ) {
+	public static function vote_end_canceled_campaign_refund($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-end-vote-canceled-refund' );
 		$options = array(
 			'personal'					=> 1,
@@ -1152,13 +1203,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // RELANCE - INVESTISSEMENT - 30%
-    //*******************************************************
-	public static function confirm_investment_invest30_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	//*******************************************************
+	// RELANCE - INVESTISSEMENT - 30%
+	//*******************************************************
+	public static function confirm_investment_invest30_intention($recipient, $name, $intention_amount, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-30percent-with-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1180,10 +1232,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_investment_invest30_no_intention( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	public static function confirm_investment_invest30_no_intention($recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-30percent-without-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1204,10 +1257,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_investment_invest30_follow( $recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	public static function confirm_investment_invest30_follow($recipient, $name, $project_name, $project_url, $project_percent, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-30percent-follow' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1228,13 +1282,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // RELANCE - INVESTISSEMENT - 100%
-    //*******************************************************
-	public static function confirm_investment_invest100_invested( $recipient, $name, $project_name, $project_url, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+
+	//*******************************************************
+	// RELANCE - INVESTISSEMENT - 100%
+	//*******************************************************
+	public static function confirm_investment_invest100_invested($recipient, $name, $project_name, $project_url, $nb_remaining_days, $date_hour_end, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-investment' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1253,10 +1308,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_investment_invest100_investment_pending( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id ) {
+
+	public static function confirm_investment_invest100_investment_pending($recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-pending-investment' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1276,10 +1332,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_investment_invest100_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+
+	public static function confirm_investment_invest100_intention($recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-with-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1303,10 +1360,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_investment_invest100_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+
+	public static function confirm_investment_invest100_no_intention($recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-without-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1329,10 +1387,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_investment_invest100_follow( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+
+	public static function confirm_investment_invest100_follow($recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-follow' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1355,13 +1414,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // RELANCE - INVESTISSEMENT - J-2
-    //*******************************************************
-	public static function confirm_investment_invest2days_intention( $recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+
+	//*******************************************************
+	// RELANCE - INVESTISSEMENT - J-2
+	//*******************************************************
+	public static function confirm_investment_invest2days_intention($recipient, $name, $intention_amount, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-2days-with-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1384,10 +1444,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function confirm_investment_invest2days_no_intention( $recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id ) {
+
+	public static function confirm_investment_invest2days_no_intention($recipient, $name, $project_name, $project_url, $testimony, $image_url, $image_description, $nb_remaining_days, $date_hour_end, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-2days-without-intention' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$image_element = '<img src="' . $image_url . '" width="590">';
@@ -1409,16 +1470,17 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
+
 	//**************************************************************************
 	// Evaluation
 	//**************************************************************************
-    //*******************************************************
-    // NOTIFICATIONS EVALUATION - AVEC INTENTION - PAS AUTHENTIFIE
-    //*******************************************************
-	public static function vote_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
+	//*******************************************************
+	// NOTIFICATIONS EVALUATION - AVEC INTENTION - PAS AUTHENTIFIE
+	//*******************************************************
+	public static function vote_authentication_needed_reminder($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-intention-authentication' );
 		$options = array(
 			'personal'					=> 1,
@@ -1432,13 +1494,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS EVALUATION - AVEC INTENTION - AUTHENTIFIE
-    //*******************************************************
-	public static function vote_authenticated_reminder( $recipient, $name, $project_name, $project_url, $project_api_id, $intention_amount ) {
+
+	//*******************************************************
+	// NOTIFICATIONS EVALUATION - AVEC INTENTION - AUTHENTIFIE
+	//*******************************************************
+	public static function vote_authenticated_reminder($recipient, $name, $project_name, $project_url, $project_api_id, $intention_amount) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-intention-preinvestment' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1455,19 +1518,18 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	
 
 	//**************************************************************************
 	// Investissement
 	//**************************************************************************
-	
-    //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT PAR CHEQUE - EN ATTENTE
-    //*******************************************************
-	public static function investment_pending_check( $recipient, $name, $amount, $project_name, $percent_to_reach, $minimum_goal, $organization_name, $project_api_id ) {
+
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT PAR CHEQUE - EN ATTENTE
+	//*******************************************************
+	public static function investment_pending_check($recipient, $name, $amount, $project_name, $percent_to_reach, $minimum_goal, $organization_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'investment-check-pending' );
 		$options = array(
 			'personal'				=> 1,
@@ -1485,13 +1547,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
+
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT PAR VIREMENT - EN ATTENTE
 	//*******************************************************
-	public static function investment_pending_wire( $recipient, $name, $amount, $project_name, $viban_iban, $viban_bic, $viban_holder, $project_api_id ) {
+	public static function investment_pending_wire($recipient, $name, $amount, $project_name, $viban_iban, $viban_bic, $viban_holder, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'investment-wire-pending' );
 		$options = array(
 			'personal'				=> 1,
@@ -1509,13 +1572,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT - VALIDE
-    //*******************************************************
-	public static function investment_success_project( $recipient, $name, $amount, $project_name, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
+
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT - VALIDE
+	//*******************************************************
+	public static function investment_success_project($recipient, $name, $amount, $project_name, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'investment-project-validated' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1538,10 +1602,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function investment_success_positive_savings( $recipient, $name, $amount, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id ) {
+
+	public static function investment_success_positive_savings($recipient, $name, $amount, $project_url, $date, $text_before, $text_after, $attachment_url, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'investment-positive-savings-validated' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1563,13 +1628,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
-    //*******************************************************
-	public static function investment_error( $recipient, $name, $amount, $project_name, $project_api_id, $lemonway_reason, $investment_link ) {
+
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+	//*******************************************************
+	public static function investment_error($recipient, $name, $amount, $project_name, $project_api_id, $lemonway_reason, $investment_link) {
 		$id_template = self::get_id_fr_by_slug( 'investment-error' );
 		$options = array(
 			'personal'				=> 1,
@@ -1586,13 +1652,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
-    //*******************************************************
-	public static function wire_transfer_received( $recipient, $name, $amount ) {
+
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+	//*******************************************************
+	public static function wire_transfer_received($recipient, $name, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'received-wire-without-pending-investment' );
 		$options = array(
 			'personal'				=> 1,
@@ -1606,13 +1673,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION
-    //*******************************************************
-	public static function investment_authentication_needed( $recipient, $name, $project_name, $project_api_id ) {
+
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION
+	//*******************************************************
+	public static function investment_authentication_needed($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-authentication' );
 		$options = array(
 			'personal'			=> 1,
@@ -1626,13 +1694,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION - RAPPEL
-    //*******************************************************
-	public static function investment_authentication_needed_reminder( $recipient, $name, $project_name, $project_api_id ) {
+
+	//*******************************************************
+	// NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION - RAPPEL
+	//*******************************************************
+	public static function investment_authentication_needed_reminder($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-authentication-reminder' );
 		$options = array(
 			'personal'			=> 1,
@@ -1646,17 +1715,17 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-
 
 	//**************************************************************************
 	// Fin de campagne
 	//**************************************************************************
-    //*******************************************************
-    // NOTIFICATIONS SUCCES CAMPAGNE PUBLIQUE
 	//*******************************************************
-	public static function campaign_end_success_public( $recipient, $name, $project_name, $project_date_first_payment, $project_api_id ) {
+	// NOTIFICATIONS SUCCES CAMPAGNE PUBLIQUE
+	//*******************************************************
+	public static function campaign_end_success_public($recipient, $name, $project_name, $project_date_first_payment, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-validated-campaign-public' );
 		$options = array(
 			'personal'			=> 1,
@@ -1671,13 +1740,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS SUCCES CAMPAGNE PRIVEE
+
 	//*******************************************************
-	public static function campaign_end_success_private( $recipient, $name, $project_name, $project_date_first_payment, $project_api_id ) {
+	// NOTIFICATIONS SUCCES CAMPAGNE PRIVEE
+	//*******************************************************
+	public static function campaign_end_success_private($recipient, $name, $project_name, $project_date_first_payment, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-validated-campaign-private' );
 		$options = array(
 			'personal'			=> 1,
@@ -1692,13 +1762,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS EN ATTENTE DU SEUIL DE VALIDATION
+
 	//*******************************************************
-	public static function campaign_end_pending_goal( $recipient, $name, $project_name, $project_api_id ) {
+	// NOTIFICATIONS EN ATTENTE DU SEUIL DE VALIDATION
+	//*******************************************************
+	public static function campaign_end_pending_goal($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-pending-validation' );
 		$options = array(
 			'personal'			=> 1,
@@ -1712,13 +1783,14 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATIONS ECHEC CAMPAGNE
-    //*******************************************************
-	public static function campaign_end_failure( $recipient, $name, $project_name, $project_api_id ) {
+
+	//*******************************************************
+	// NOTIFICATIONS ECHEC CAMPAGNE
+	//*******************************************************
+	public static function campaign_end_failure($recipient, $name, $project_name, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'project-failed' );
 		$options = array(
 			'personal'			=> 1,
@@ -1732,17 +1804,17 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-
 
 	//**************************************************************************
 	// Déclarations
 	//**************************************************************************
-    //*******************************************************
-    // ENVOI MANDAT PRELEVEMENT
-    //*******************************************************
-	public static function mandate_to_send_to_bank( $recipients, $user_name, $attachment_url, $project_api_id ) {
+	//*******************************************************
+	// ENVOI MANDAT PRELEVEMENT
+	//*******************************************************
+	public static function mandate_to_send_to_bank($recipients, $user_name, $attachment_url, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'mandate-to-send-to-bank' );
 		$options = array(
 			'personal'		=> 1,
@@ -1758,13 +1830,13 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
-
-    //*******************************************************
-    // NOTIFICATIONS DECLARATIONS ROI A FAIRE
-    //*******************************************************
+	//*******************************************************
+	// NOTIFICATIONS DECLARATIONS ROI A FAIRE
+	//*******************************************************
 	/**
 	 * Envoie la notification de déclaration à faire aux porteurs de projet
 	 * @param string or array $recipients
@@ -1772,7 +1844,7 @@ class NotificationsAPI {
 	 * @param boolean $has_mandate
 	 * @return boolean
 	 */
-	public static function declaration_to_do( $recipients, $nb_remaining_days, $has_mandate, $options ) {
+	public static function declaration_to_do($recipients, $nb_remaining_days, $has_mandate, $options) {
 		$param_template_by_remaining_days = array(
 			'9-mandate'		=> self::get_id_fr_by_slug( 'declaration-9days-with-mandate' ),
 			'9-nomandate'	=> self::get_id_fr_by_slug( 'declaration-9days-without-mandate' ),
@@ -1796,13 +1868,14 @@ class NotificationsAPI {
 				'recipient'	=> $param_recipients,
 				'options'	=> json_encode( $options )
 			);
+
 			return self::send( $parameters );
 		}
-		
+
 		return FALSE;
 	}
-	
-	public static function declaration_to_do_warning( $recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date, $declaration_direct_url ) {
+
+	public static function declaration_to_do_warning($recipient, $user_name, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date, $declaration_direct_url) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-mandate-payment-warning' );
 		$declaration_direct_url = str_replace( 'https://', '', $declaration_direct_url );
 		$options = array(
@@ -1818,7 +1891,6 @@ class NotificationsAPI {
 			'MONTANT_TOTAL'						=> $amount_total,
 			'DATE_PRELEVEMENT'					=> $mandate_wire_date,
 			'DECLARATION_DIRECT_URL'			=> $declaration_direct_url
-								
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1826,16 +1898,17 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-    //*******************************************************
-    // FIN - NOTIFICATIONS DECLARATIONS ROI A FAIRE
-    //*******************************************************
-	
-    //*******************************************************
-    // NOTIFICATIONS DECLARATIONS APROUVEES
-    //*******************************************************
-	public static function declaration_done_with_turnover( $recipient, $name, $project_name, $last_three_months, $turnover_amount, $tax_infos, $payment_certificate_url ) {
+	//*******************************************************
+	// FIN - NOTIFICATIONS DECLARATIONS ROI A FAIRE
+	//*******************************************************
+
+	//*******************************************************
+	// NOTIFICATIONS DECLARATIONS APROUVEES
+	//*******************************************************
+	public static function declaration_done_with_turnover($recipient, $name, $project_name, $last_three_months, $turnover_amount, $tax_infos, $payment_certificate_url) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-with-turnover' );
 		$options = array(
 			'personal'				=> 1,
@@ -1854,10 +1927,11 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function declaration_done_without_turnover( $recipient, $name, $project_name, $last_three_months ) {
+
+	public static function declaration_done_without_turnover($recipient, $name, $project_name, $last_three_months) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-without-turnover' );
 		$options = array(
 			'personal'				=> 1,
@@ -1871,16 +1945,17 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-    //*******************************************************
-    // FIN - NOTIFICATIONS DECLARATIONS APROUVEES
-    //*******************************************************
-	
-    //*******************************************************
-    // NOTIFICATIONS PROLONGATION DECLARATIONS
-    //*******************************************************
-	public static function declaration_to_be_extended( $recipient, $name, $amount_transferred, $amount_minimum_royalties, $amount_remaining ) {
+	//*******************************************************
+	// FIN - NOTIFICATIONS DECLARATIONS APROUVEES
+	//*******************************************************
+
+	//*******************************************************
+	// NOTIFICATIONS PROLONGATION DECLARATIONS
+	//*******************************************************
+	public static function declaration_to_be_extended($recipient, $name, $amount_transferred, $amount_minimum_royalties, $amount_remaining) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-extended-warning' );
 		$options = array(
 			'personal'					=> 1,
@@ -1895,10 +1970,11 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function declaration_extended_project_manager( $recipient, $name ) {
+
+	public static function declaration_extended_project_manager($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-extended-project-manager' );
 		$options = array(
 			'personal'					=> 1,
@@ -1910,10 +1986,11 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $project_api_id ) {
+
+	public static function declaration_extended_investor($recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-extended-investors' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1934,10 +2011,11 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function declaration_finished_project_manager( $recipient, $name ) {
+
+	public static function declaration_finished_project_manager($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-end-project-manager' );
 		$options = array(
 			'personal'					=> 1,
@@ -1949,10 +2027,11 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-	public static function declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $project_api_id ) {
+
+	public static function declaration_finished_investor($recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-end-investors' );
 		$project_url = str_replace( 'https://', '', $project_url );
 		$options = array(
@@ -1971,20 +2050,20 @@ class NotificationsAPI {
 			'id_project'	=> $project_api_id,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-    //*******************************************************
-    // NOTIFICATIONS PROLONGATION DECLARATIONS
-    //*******************************************************
-	
-	
+	//*******************************************************
+	// NOTIFICATIONS PROLONGATION DECLARATIONS
+	//*******************************************************
+
 	//**************************************************************************
 	// Versements
 	//**************************************************************************
-    //*******************************************************
-    // NOTIFICATIONS VERSEMENT AVEC ROYALTIES PLUSIEURS PROJETS
-    //*******************************************************
-	public static function roi_transfer_daily_resume( $recipient, $name, $royalties_message ) {
+	//*******************************************************
+	// NOTIFICATIONS VERSEMENT AVEC ROYALTIES PLUSIEURS PROJETS
+	//*******************************************************
+	public static function roi_transfer_daily_resume($recipient, $name, $royalties_message) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-daily-resume' );
 		$options = array(
 			'personal'			=> 1,
@@ -1997,13 +2076,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // WALLET AVEC PLUS DE 200 EUROS
-    //*******************************************************
-	public static function wallet_with_more_than_200_euros( $recipient, $name ) {
+
+	//*******************************************************
+	// WALLET AVEC PLUS DE 200 EUROS
+	//*******************************************************
+	public static function wallet_with_more_than_200_euros($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-more-200euros' );
 		$options = array(
 			'personal'	=> 1,
@@ -2015,13 +2095,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS OUVERT
-    //*******************************************************
-	public static function wallet_with_more_than_200_euros_reminder_not_open( $recipient, $name ) {
+
+	//*******************************************************
+	// WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS OUVERT
+	//*******************************************************
+	public static function wallet_with_more_than_200_euros_reminder_not_open($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-more-200euros-reminder-not-open' );
 		$options = array(
 			'personal'	=> 1,
@@ -2033,13 +2114,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS CLIQUE
-    //*******************************************************
-	public static function wallet_with_more_than_200_euros_reminder_not_clicked( $recipient, $name ) {
+
+	//*******************************************************
+	// WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS CLIQUE
+	//*******************************************************
+	public static function wallet_with_more_than_200_euros_reminder_not_clicked($recipient, $name) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-more-200euros-reminder-not-clicked' );
 		$options = array(
 			'personal'	=> 1,
@@ -2051,13 +2133,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // WALLET AVEC PLUS DE 200 EUROS - NOTIF ENTREPRENEUR
-    //*******************************************************
-	public static function investors_with_wallet_with_more_than_200_euros( $recipient, $name, $investors_list_str ) {
+
+	//*******************************************************
+	// WALLET AVEC PLUS DE 200 EUROS - NOTIF ENTREPRENEUR
+	//*******************************************************
+	public static function investors_with_wallet_with_more_than_200_euros($recipient, $name, $investors_list_str) {
 		$id_template = self::get_id_fr_by_slug( 'investors-royalties-more-200euros-project-manager-alert' );
 		$options = array(
 			'personal'		=> 1,
@@ -2070,13 +2153,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // MESSAGE D'ENTREPRENEUR SUITE VERSEMENT ROYALTIES
-    //*******************************************************
-	public static function roi_transfer_message( $recipient, $name, $project_name, $declaration_message, $replyto_mail ) {
+
+	//*******************************************************
+	// MESSAGE D'ENTREPRENEUR SUITE VERSEMENT ROYALTIES
+	//*******************************************************
+	public static function roi_transfer_message($recipient, $name, $project_name, $declaration_message, $replyto_mail) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-with-message' );
 		$options = array(
 			'personal'			=> 1,
@@ -2091,13 +2175,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATION VERSEMENT AYANT ATTEINT LE MAXIMUM
-    //*******************************************************
-	public static function roi_transfer_with_max_reached( $recipient, $name, $project_name, $max_profit, $date_investment, $url_project, $amount_investment, $amount_royalties ) {
+
+	//*******************************************************
+	// NOTIFICATION VERSEMENT AYANT ATTEINT LE MAXIMUM
+	//*******************************************************
+	public static function roi_transfer_with_max_reached($recipient, $name, $project_name, $max_profit, $date_investment, $url_project, $amount_investment, $amount_royalties) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-max-amount-reached' );
 		$options = array(
 			'personal'			=> 1,
@@ -2115,13 +2200,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
-    //*******************************************************
-    // NOTIFICATION VERSEMENT SUR COMPTE BANCAIRE
-    //*******************************************************
-	public static function transfer_to_bank_account_confirmation( $recipient, $name, $amount ) {
+
+	//*******************************************************
+	// NOTIFICATION VERSEMENT SUR COMPTE BANCAIRE
+	//*******************************************************
+	public static function transfer_to_bank_account_confirmation($recipient, $name, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'transfer-money-to-bank-account' );
 		$options = array(
 			'personal'			=> 1,
@@ -2134,9 +2220,9 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
 
 	//**************************************************************************
 	// Interface prospect
@@ -2144,7 +2230,7 @@ class NotificationsAPI {
 	//*******************************************************
 	// LISTE DES TESTS DEMARRES
 	//*******************************************************
-	public static function prospect_setup_draft_list( $recipient, $name, $project_list_str ) {
+	public static function prospect_setup_draft_list($recipient, $name, $project_list_str) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-draft-list' );
 		$options = array(
 			'personal'			=> 1,
@@ -2158,13 +2244,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient,
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// DEMARRAGE DE TEST
 	//*******************************************************
-	public static function prospect_setup_draft_started( $recipient, $name, $organization_name, $draft_url_full ) {
+	public static function prospect_setup_draft_started($recipient, $name, $organization_name, $draft_url_full) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-draft-started' );
 		$options = array(
@@ -2182,13 +2269,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// FIN DE TEST
 	//*******************************************************
-	public static function prospect_setup_draft_finished( $recipient, $name, $draft_url_full, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) {
+	public static function prospect_setup_draft_finished($recipient, $name, $draft_url_full, $organization_name, $amount_needed, $royalties_percent, $formula, $options) {
 		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-draft-finished' );
 		$options = array(
@@ -2209,13 +2297,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// SELECTION DE VIREMENT
 	//*******************************************************
-	public static function prospect_setup_payment_method_select_wire( $recipient, $name, $amount, $iban, $subscription_reference ) {
+	public static function prospect_setup_payment_method_select_wire($recipient, $name, $amount, $iban, $subscription_reference) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-select-wire' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
@@ -2232,13 +2321,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// VIREMENT RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_wire( $recipient, $name, $amount, $date_payment, $orga_name ) {
+	public static function prospect_setup_payment_method_received_wire($recipient, $name, $amount, $date_payment, $orga_name) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-received-wire' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
@@ -2254,13 +2344,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// PAIEMENT PAR CARTE RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_card( $recipient, $name, $amount, $date_payment, $orga_name ) {
+	public static function prospect_setup_payment_method_received_card($recipient, $name, $amount, $date_payment, $orga_name) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-received-card' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
@@ -2276,13 +2367,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// PAIEMENT PAR CARTE ERREUR
 	//*******************************************************
-	public static function prospect_setup_payment_method_error_card( $recipient, $name, $draft_url, $orga_name  ) {
+	public static function prospect_setup_payment_method_error_card($recipient, $name, $draft_url, $orga_name) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-error-card' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
@@ -2297,13 +2389,14 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
 
 	//*******************************************************
 	// TABLEAU DE BORD PAS ENCORE CREE
 	//*******************************************************
-	public static function prospect_setup_dashboard_not_created( $recipient, $name, $orga_name ) {
+	public static function prospect_setup_dashboard_not_created($recipient, $name, $orga_name) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-dashboard-not-created' );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
@@ -2317,7 +2410,7 @@ class NotificationsAPI {
 			'recipient'	=> $recipient . ',projets@wedogood.co',
 			'options'	=> json_encode( $options )
 		);
+
 		return self::send( $parameters );
 	}
-	
 }
