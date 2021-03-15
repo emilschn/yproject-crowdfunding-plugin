@@ -276,6 +276,9 @@ class ATCF_Campaign {
 		// Copier automatiquement les informations pour la facturation lors de la duplication d'une levée
 		$newcampaign->set_api_data( 'product_type', $this->get_api_data( 'product_type' ) );
 		$newcampaign->set_api_data( 'acquisition', $this->get_api_data( 'acquisition' ) );
+		$newcampaign->set_api_data( 'legal_procedure', $this->get_api_data( 'legal_procedure' ) );
+		$newcampaign->set_api_data( 'funding_type', $this->get_api_data( 'funding_type' ) );
+		$newcampaign->set_api_data( 'organization_type', $this->get_api_data( 'organization_type' ) );
 		// Copier automatiquement le pourcentage de Common Goods lors de la duplication de la campagne
 		$newcampaign->set_api_data( 'common_goods_turnover_percent', $this->get_api_data( 'common_goods_turnover_percent' ) );
 		$newcampaign->set_end_date( $current_date );
