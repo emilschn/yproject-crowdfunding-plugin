@@ -500,7 +500,7 @@ class NotificationsAPI {
 		)
 	);
 
-	private static $template_id_empty_v3_fr = 3065;
+	private static $template_id_empty_v3_fr = 3126;
 
 	/**
 	 * Méthode générique d'appel à l'API pour attrapper les erreurs
