@@ -561,12 +561,12 @@ class WDGAjaxActions {
 							$investment_item[ 'status_str' ] = __( "En suspend", 'yproject' );
 						}
 					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
-						$investment_item[ 'status_str' ] = _e( 'account.investments.STARTED_CONTRACT', 'yproject' );
+						$investment_item[ 'status_str' ] = __( 'account.investments.STARTED_CONTRACT', 'yproject' );
 						$date_first_payement = new DateTime( $campaign->first_payment_date() );
 						if ( $today_datetime > $date_first_payement ) {
-							$investment_item[ 'payment_str' ] = _e( 'account.investments.NEXT_PAYMENT', 'yproject' );
+							$investment_item[ 'payment_str' ] = __( 'account.investments.NEXT_PAYMENT', 'yproject' );
 						} else {
-							$investment_item[ 'payment_str' ] = _e( 'account.investments.FIRST_PAYMENT', 'yproject' );						
+							$investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );						
 							$investment_item[ 'payment_date' ] = date_i18n( 'F Y', strtotime( $campaign->first_payment_date() ) );
 						}
 
