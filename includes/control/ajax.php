@@ -582,6 +582,12 @@ class WDGAjaxActions {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
 					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
 						$investment_item[ 'conclude-investment-url' ] = WDG_Redirect_Engine::override_get_page_url( 'investir' ) . '?init_with_id=' .$purchase_post->ID. '&campaign_id=' .$campaign_id;
+						
+						// On ne garde l'affichage de ces investissements en attente que si il est encore possible de les finaliser (on annule si ce n'est pas le cas)
+						if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte ) {
+							$WDGInvestment->cancel();
+							continue;
+						}
 					}
 				}
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
