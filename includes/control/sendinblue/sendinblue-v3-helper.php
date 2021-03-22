@@ -14,7 +14,7 @@ class SIBv3Helper {
 	 * @return SIBv3Helper
 	 */
 	public static function instance() {
-		if ( ! isset ( self::$instance ) ) {
+		if ( !isset( self::$instance ) ) {
 			// Initialisation de la classe du singleton
 			self::$instance = new SIBv3Helper();
 
@@ -49,11 +49,9 @@ class SIBv3Helper {
 	 */
 	private static function getContactsApi() {
 		if ( !isset( self::$api_instance_contacts ) ) {
-			self::$api_instance_contacts = new SendinBlue\Client\Api\ContactsApi(
-				new GuzzleHttp\Client(),
-				self::$sib_config
-			);
+			self::$api_instance_contacts = new SendinBlue\Client\Api\ContactsApi(new GuzzleHttp\Client(), self::$sib_config);
 		}
+
 		return self::$api_instance_contacts;
 	}
 
@@ -63,31 +61,29 @@ class SIBv3Helper {
 	 */
 	private static function getTransactionalEmailsApi() {
 		if ( !isset( self::$api_instance_transactional_emails ) ) {
-			self::$api_instance_transactional_emails = new SendinBlue\Client\Api\TransactionalEmailsApi(
-				new GuzzleHttp\Client(),
-				self::$sib_config
-			);
+			self::$api_instance_transactional_emails = new SendinBlue\Client\Api\TransactionalEmailsApi(new GuzzleHttp\Client(), self::$sib_config);
 		}
+
 		return self::$api_instance_transactional_emails;
 	}
 
-
-/**
- * Helpers d'accès à SendInBlue
- */
+	/**
+	 * Helpers d'accès à SendInBlue
+	 */
 	/**
 	 * Récupère les infos liées à un contact sur SendInBlue
 	 * @return SendinBlue\Client\Model\GetExtendedContactDetails
 	 */
-	public function getContactInfo( $email ) {
+	public function getContactInfo($email) {
 		$api_contacts = self::getContactsApi();
 
 		try {
 			$result = $api_contacts->getContactInfo( $email );
-			return $result;
 
+			return $result;
 		} catch (Exception $e) {
 			self::$last_error = $e->getMessage();
+
 			return FALSE;
 		}
 	}
@@ -95,17 +91,18 @@ class SIBv3Helper {
 	/**
 	 * Ajoute un contact dans une mailing list sur SendInBlue, via son e-mail
 	 */
-	public function addContactToList( $email, $list_id ) {
+	public function addContactToList($email, $list_id) {
 		$api_contacts = self::getContactsApi();
 		$contactEmails = new \SendinBlue\Client\Model\AddContactToList();
 		$contactEmails->setEmails( array( $email ) );
 
 		try {
 			$result = $api_contacts->addContactToList( $list_id, $contactEmails );
-			return $result;
 
+			return $result;
 		} catch (Exception $e) {
 			self::$last_error = $e->getMessage();
+
 			return FALSE;
 		}
 	}
@@ -113,17 +110,18 @@ class SIBv3Helper {
 	/**
 	 * Supprime un contact dans une mailing list sur SendInBlue, via son e-mail
 	 */
-	public function removeContactFromList( $email, $list_id ) {
+	public function removeContactFromList($email, $list_id) {
 		$api_contacts = self::getContactsApi();
 		$contactEmails = new \SendinBlue\Client\Model\RemoveContactFromList();
 		$contactEmails->setEmails( array( $email ) );
 
 		try {
 			$result = $api_contacts->removeContactFromList( $list_id, $contactEmails );
-			return $result;
 
+			return $result;
 		} catch (Exception $e) {
 			self::$last_error = $e->getMessage();
+
 			return FALSE;
 		}
 	}
@@ -131,7 +129,7 @@ class SIBv3Helper {
 	/**
 	 * Met à jour le numéro de téléphone d'un contact
 	 */
-	public function updateContactPhoneNumber( $email, $phone_number ) {
+	public function updateContactPhoneNumber($email, $phone_number) {
 		$api_contacts = self::getContactsApi();
 		$updateContact = new \SendinBlue\Client\Model\UpdateContact();
 		$attributes = array( 'SMS' => $phone_number );
@@ -139,10 +137,32 @@ class SIBv3Helper {
 
 		try {
 			$result = $api_contacts->updateContact( $email, $updateContact );
-			return $result;
 
+			return $result;
 		} catch (Exception $e) {
 			self::$last_error = $e->getMessage();
+
+			return FALSE;
+		}
+	}
+
+	/**
+	 * Récupère les informations liées à un template spécifique
+	 * @return \SendinBlue\Client\Model\GetSmtpTemplateOverview
+	 */
+	public function getTransactionalTemplateInformation($template_id) {
+		if ( empty( $template_id ) ) {
+			return FALSE;
+		}
+
+		$api_transactional_emails = self::getTransactionalEmailsApi();
+		try {
+			$result = $api_transactional_emails->getSmtpTemplate($template_id);
+
+			return $result;
+		} catch (Exception $e) {
+			self::$last_error = $e->getMessage();
+
 			return FALSE;
 		}
 	}
@@ -151,7 +171,7 @@ class SIBv3Helper {
 	 * Récupère le rapport liés à l'envoi d'un e-mail transactionnel
 	 * @return SendinBlue\Client\Model\GetEmailEventReport
 	 */
-	public function getTransactionalEmailReport( $template_id, $message_id ) {
+	public function getTransactionalEmailReport($template_id, $message_id) {
 		$api_transactional_emails = self::getTransactionalEmailsApi();
 		$limit = 50;
 		$offset = 0;
@@ -167,10 +187,11 @@ class SIBv3Helper {
 
 		try {
 			$result = $api_transactional_emails->getEmailEventReport( $limit, $offset, $startDate, $endDate, $days, $email, $event, $tags, $messageId, $templateId, $sort );
-			return $result;
 
+			return $result;
 		} catch (Exception $e) {
 			self::$last_error = $e->getMessage();
+
 			return FALSE;
 		}
 	}
@@ -179,12 +200,14 @@ class SIBv3Helper {
 	 * Récupère le rapport d'évènements liés à l'envoi d'un e-mail transactionnel
 	 * @return array
 	 */
-	public function getTransactionalEmailReportEvents( $template_id, $message_id ) {
+	public function getTransactionalEmailReportEvents($template_id, $message_id) {
 		$report = $this->getTransactionalEmailReport( $template_id, $message_id );
 		if ( !empty( $report ) ) {
 			$events = $report->getEvents();
+
 			return $events;
 		}
+
 		return FALSE;
 	}
 }

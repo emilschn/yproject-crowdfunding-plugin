@@ -403,12 +403,17 @@ class WDGAjaxActions {
 		}
 	}
 
+	/**
+	 * Récupère l'ensemble des infos de template SiB (fonction temporaire)
+	 */
 	public static function init_sendinblue_templates() {
 		$template_index = filter_input( INPUT_POST, 'template_index' );
 		$foreach_index = 0;
 		foreach ( NotificationsAPI::$description_str_by_template_id as $template_slug => $template_data ) {
 			if ( $template_index == $foreach_index ) {
-				WDGWPREST_Entity_SendinblueTemplate::update_template( $template_slug );
+				$SIBv3Helper = SIBv3Helper::instance();
+				$template_content = $SIBv3Helper->getTransactionalTemplateInformation( $template_data['fr-sib-id'] );
+				ypcf_debug_log( '$template_content : ' . $template_content );
 				$foreach_index++;
 				break;
 			}
