@@ -566,7 +566,7 @@ class WDGAjaxActions {
 						if ( $today_datetime > $date_first_payement ) {
 							$investment_item[ 'payment_str' ] = __( 'account.investments.NEXT_PAYMENT', 'yproject' );
 						} else {
-							$investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );						
+							$investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );
 							$investment_item[ 'payment_date' ] = date_i18n( 'F Y', strtotime( $campaign->first_payment_date() ) );
 						}
 
@@ -575,13 +575,19 @@ class WDGAjaxActions {
 							$investment_item[ 'status_str' ] = __( "Versements termin&eacute;s", 'yproject' );
 						}
 					}
-				}								
+				}
 
 				$investment_item[ 'conclude-investment-url' ] = '';
 				if ( $purchase_status == 'pending' && $is_authentified ) {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
 					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
 						$investment_item[ 'conclude-investment-url' ] = WDG_Redirect_Engine::override_get_page_url( 'investir' ) . '?init_with_id=' .$purchase_post->ID. '&campaign_id=' .$campaign_id;
+						
+						// On ne garde l'affichage de ces investissements en attente que si il est encore possible de les finaliser (on annule si ce n'est pas le cas)
+						if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte ) {
+							$WDGInvestment->cancel();
+							continue;
+						}
 					}
 				}
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
@@ -723,9 +729,9 @@ class WDGAjaxActions {
 								} else {
 									$roi_item[ 'status' ] = 'upcoming';
 									$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
-									if ( $investment_item[ 'payment_date' ]  == ''){
+									if ( $investment_item[ 'payment_date' ]  == '') {
 										$investment_item[ 'payment_date' ] = $roi_item[ 'date' ];
-									}	
+									}
 								}
 								break;
 							case WDGROIDeclaration::$status_finished:
@@ -737,9 +743,9 @@ class WDGAjaxActions {
 							default:
 								$roi_item[ 'status' ] = 'upcoming';
 								$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
-								if ( $investment_item[ 'payment_date' ]  == ''){
+								if ( $investment_item[ 'payment_date' ]  == '') {
 									$investment_item[ 'payment_date' ] = $roi_item[ 'date' ];
-								}	
+								}
 								break;
 						}
 
@@ -944,7 +950,7 @@ class WDGAjaxActions {
 						if ( $today_datetime > $date_first_payement ) {
 							$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.NEXT_PAYMENT', 'yproject' );
 						} else {
-							$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );							
+							$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );
 							$buffer_investment_item[ 'payment_date' ] = date_i18n( 'F Y', strtotime( $first_payment_date ) );
 						}
 
@@ -999,16 +1005,23 @@ class WDGAjaxActions {
 					}
 				}
 
+				$keep_pushing = TRUE;
 				$buffer_investment_item[ 'conclude-investment-url' ] = '';
 				if ( $buffer_investment_item[ 'status' ] == 'pending' && $is_authentified ) {
 					$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
 					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
 						$buffer_investment_item[ 'conclude-investment-url' ] = WDG_Redirect_Engine::override_get_page_url( 'investir' ) . '?init_with_id=' .$result_investment_item->wpref. '&campaign_id=' .$result_campaign_item->project_wpref;
+
+						// On ne garde l'affichage de ces investissements en attente que si il est encore possible de les finaliser (on annule si ce n'est pas le cas)
+						if ( $buffer_item[ 'status' ] != ATCF_Campaign::$campaign_status_vote && $buffer_item[ 'status' ] != ATCF_Campaign::$campaign_status_collecte ) {
+							$keep_pushing = FALSE;
+							$WDGInvestment->cancel();
+						}
 					}
 				}
 
 				// - Déclarations de royalties liées à la campagne
-				if ( !empty( $campaign_declarations_list ) ) {
+				if ( $keep_pushing && !empty( $campaign_declarations_list ) ) {
 					foreach ( $campaign_declarations_list as $roi_declaration ) {
 						// On détermine sur quelle année ça se situe
 						$current_year_index = 0;
@@ -1054,9 +1067,9 @@ class WDGAjaxActions {
 								} else {
 									$buffer_roi_item[ 'status' ] = 'upcoming';
 									$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
-									if ( $buffer_investment_item[ 'payment_date' ]  == ''){
+									if ( $buffer_investment_item[ 'payment_date' ]  == '') {
 										$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
-									}									
+									}
 								}
 								break;
 							case WDGROIDeclaration::$status_finished:
@@ -1068,9 +1081,9 @@ class WDGAjaxActions {
 							default:
 								$buffer_roi_item[ 'status' ] = 'upcoming';
 								$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
-								if ( $buffer_investment_item[ 'payment_date' ]  == ''){
+								if ( $buffer_investment_item[ 'payment_date' ]  == '') {
 									$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
-								}									
+								}
 								break;
 						}
 
@@ -1126,16 +1139,20 @@ class WDGAjaxActions {
 					}
 				}
 
-				foreach ( $buffer_investment_item[ 'rois_by_year' ] as $current_year_index => $year_item ) {
-					usort( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ($item1, $item2) {
-						$item1_date = new DateTime( $item1[ 'date_db' ] );
-						$item2_date = new DateTime( $item2[ 'date_db' ] );
+				if ( $keep_pushing ) {
+					foreach ( $buffer_investment_item[ 'rois_by_year' ] as $current_year_index => $year_item ) {
+						usort( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ($item1, $item2) {
+							$item1_date = new DateTime( $item1[ 'date_db' ] );
+							$item2_date = new DateTime( $item2[ 'date_db' ] );
 
-						return ( $item1_date > $item2_date );
-					} );
+							return ( $item1_date > $item2_date );
+						} );
+					}
 				}
 
-				array_push( $buffer_item[ 'items' ], $buffer_investment_item );
+				if ( $keep_pushing ) {
+					array_push( $buffer_item[ 'items' ], $buffer_investment_item );
+				}
 			}
 
 			$buffer[ $result_campaign_item->project_wpref ] = $buffer_item;
