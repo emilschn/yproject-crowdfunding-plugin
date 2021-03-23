@@ -76,6 +76,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'send_test_notifications' );
 
 		// Prospect setup - interface prospect
+		WDGAjaxActions::add_action( 'prospect_setup_error_catcher' );
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
 		WDGAjaxActions::add_action( 'prospect_setup_save_files' );
 		WDGAjaxActions::add_action( 'prospect_setup_get_by_guid' );
@@ -582,7 +583,7 @@ class WDGAjaxActions {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
 					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
 						$investment_item[ 'conclude-investment-url' ] = WDG_Redirect_Engine::override_get_page_url( 'investir' ) . '?init_with_id=' .$purchase_post->ID. '&campaign_id=' .$campaign_id;
-						
+
 						// On ne garde l'affichage de ces investissements en attente que si il est encore possible de les finaliser (on annule si ce n'est pas le cas)
 						if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte ) {
 							$WDGInvestment->cancel();
@@ -3703,6 +3704,15 @@ class WDGAjaxActions {
 
 		echo $result ? '1' : '0';
 		exit();
+	}
+
+	public static function prospect_setup_error_catcher() {
+		$guid = filter_input( INPUT_POST, 'guid' );
+		$message = filter_input( INPUT_POST, 'message' );
+
+		ypcf_debug_log( 'ajax::prospect_setup_error_catcher >> [guid::' .$guid. '] >> ' . $message, FALSE );
+
+		exit( '1' );
 	}
 
 	public static function prospect_setup_save() {
