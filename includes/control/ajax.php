@@ -75,6 +75,9 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('delete_lock_project_edition');
 		WDGAjaxActions::add_action( 'send_test_notifications' );
 
+		// Vuejs
+		WDGAjaxActions::add_action( 'vuejs_error_catcher' );
+
 		// Prospect setup - interface prospect
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
 		WDGAjaxActions::add_action( 'prospect_setup_save_files' );
@@ -3705,6 +3708,15 @@ class WDGAjaxActions {
 
 		echo $result ? '1' : '0';
 		exit();
+	}
+
+	public static function vuejs_error_catcher() {
+		$message = filter_input( INPUT_POST, 'message' );
+		$app = filter_input( INPUT_POST, 'app' );
+
+		ypcf_debug_log( 'ajax::vuejs_error_catcher >> [app::' .$app. '] >> ' . $message, FALSE );
+
+		exit( '1' );
 	}
 
 	public static function prospect_setup_save() {
