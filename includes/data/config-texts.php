@@ -6,7 +6,6 @@ class WDGConfigTexts {
 	private static $post_type_name = 'configtext';
 	private static $post_type_categories = 'configtexttypes';
 
-
 	// URLs utilisées pour accéder aux textes spécifiques
 	public static $type_term_extracts = 'cgu-extraits-pour-lightbox';
 	public static $type_term_particular = 'cgu-conditions-particulieres';
@@ -36,7 +35,6 @@ class WDGConfigTexts {
 	public static $category_premium = 'contract_premium';
 	public static $category_warranty = 'contract_warranty';
 
-
 	/**
 	 * Register sur WordPress
 	 */
@@ -53,7 +51,7 @@ class WDGConfigTexts {
 			'all_items'         => 'Tous',
 			'parent_item'       => 'Parent',
 			'parent_item_colon' => 'Parent :',
-			'edit_item'         => 'Editer', 
+			'edit_item'         => 'Editer',
 			'update_item'       => 'Mettre à jour',
 			'add_new_item'      => 'Ajouter nouveau',
 			'new_item_name'     => 'Nouveau',
@@ -64,7 +62,6 @@ class WDGConfigTexts {
 			'hierarchical'	=> true
 		);
 		register_taxonomy( WDGConfigTexts::$post_type_categories, WDGConfigTexts::$post_type_name, $args_taxonomy );
-
 
 		// Enregistrement du Custom Post Type
 		$labels = array(
@@ -112,13 +109,13 @@ class WDGConfigTexts {
 			'rewrite'             => $rewrite,
 			'capability_type'     => 'page',
 		);
-		register_post_type( self::$post_type_name, $args );	
+		register_post_type( self::$post_type_name, $args );
 	}
 
 	/**
 	 * Récupération d'un texte de configuration par son url
 	 */
-	public static function get_config_text_by_name( $name, $setting_name = FALSE ) {
+	public static function get_config_text_by_name($name, $setting_name = FALSE) {
 		// Si il y a bien un post_type qui correspond
 		$configpost = get_page_by_path( $name, OBJECT, self::$post_type_name );
 		if ( !empty( $configpost ) ) {
@@ -126,11 +123,13 @@ class WDGConfigTexts {
 			if ( !empty( $post_translated_id ) ) {
 				$configpost = get_post( $post_translated_id );
 			}
+
 			return $configpost->post_content;
 		}
 
 		// Sinon, on reprend l'ancienne propriété
-		$old_property_edd_settings_= ATCF_CrowdFunding::get_translated_setting( $setting_name, $locale );
+		global $locale;
+		$old_property_edd_settings = ATCF_CrowdFunding::get_translated_setting( $setting_name, $locale );
 		if ( !empty( $old_property_edd_settings ) ) {
 			return wpautop( $old_property_edd_settings );
 		}
@@ -141,12 +140,12 @@ class WDGConfigTexts {
 	/**
 	 * Retourne le texte de configuration correspondant à la langue en cours, à partir
 	 */
-	public static function get_translated_post_id( $french_post_id ) {
+	public static function get_translated_post_id($french_post_id) {
 		$buffer = FALSE;
 
 		global $locale;
 		// Récupérer la page traduite si nécessaire
-		if ( $locale != 'fr' && $locale != 'fr_FR' ) {
+		if ( !WDG_Languages_Helpers::is_french_displayed() ) {
 			$locale_substr = substr( $locale, 0, 2 );
 			$post_translated_id = apply_filters( 'wpml_object_id', $french_post_id, self::$post_type_name, FALSE, $locale_substr );
 			if ( !empty( $post_translated_id ) ) {
@@ -160,7 +159,7 @@ class WDGConfigTexts {
 	/**
 	 * Récupération d'une liste de textes de configuration en fonction d'un slug de catégorie
 	 */
-	public static function get_config_text_list_by_category_slug( $category_slug ) {
+	public static function get_config_text_list_by_category_slug($category_slug) {
 		$term_obj = get_term_by( 'slug', $category_slug, self::$post_type_categories );
 		$term_id = $term_obj->term_id;
 		if ( !empty( $term_id ) ) {
@@ -176,9 +175,9 @@ class WDGConfigTexts {
 				)
 			) );
 		}
+
 		return FALSE;
 	}
 }
-
 
 WDGConfigTexts::init_custom_post_type();
