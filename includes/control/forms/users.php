@@ -5,6 +5,8 @@ class WDGFormUsers {
 		$fbcallback = filter_input( INPUT_GET, 'fbcallback' );
 		if ( !empty( $fbcallback ) ) {
 			try {
+				$crowdfunding = ATCF_CrowdFunding::instance();
+				$crowdfunding->include_facebook();
 				$fb = new Facebook\Facebook([
 					'app_id' => YP_FB_APP_ID,
 					'app_secret' => YP_FB_SECRET,
