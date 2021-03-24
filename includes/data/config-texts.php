@@ -7,6 +7,8 @@ class WDGConfigTexts {
 	private static $post_type_categories = 'configtexttypes';
 
 	// URLs utilisées pour accéder aux textes spécifiques
+	public static $type_term_cookies_retracted = 'cgu-cookies-retracte';
+	public static $type_term_cookies_extended = 'cgu-cookies-etendu';
 	public static $type_term_extracts = 'cgu-extraits-pour-lightbox';
 	public static $type_term_particular = 'cgu-conditions-particulieres';
 	public static $type_term_mandate = 'cgu-conditions-contractuelles-prelevement';
