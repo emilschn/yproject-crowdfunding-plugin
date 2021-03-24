@@ -512,6 +512,8 @@ function generatePDF($html_content, $filename) {
 	$buffer = false;
 	if (isset($html_content) && isset($filename) && ($filename != "") && !file_exists($filename)) {
 		try {
+			$crowdfunding = ATCF_CrowdFunding::instance();
+			$crowdfunding->include_html2pdf();
 			$html2pdf = new HTML2PDF('P', 'A4', 'fr');
 			$html2pdf->WriteHTML(urldecode($html_content));
 			$html2pdf->Output($filename, 'F');

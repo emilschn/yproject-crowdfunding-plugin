@@ -207,6 +207,8 @@ class WDGAjaxActions {
 		$_SESSION[ 'login-fb-referer' ] = ( !empty( $posted_redirect ) ) ? $posted_redirect : wp_get_referer();
 //		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
 
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_facebook();
 		$fb = new Facebook\Facebook([
 			'app_id' => YP_FB_APP_ID,
 			'app_secret' => YP_FB_SECRET,
