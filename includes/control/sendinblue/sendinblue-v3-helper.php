@@ -168,6 +168,69 @@ class SIBv3Helper {
 	}
 
 	/**
+	 * Envoie un e-mail transactionnel
+	 */
+	public function sendTransactionalEmail($template_id, $list_recipients, $list_recipients_bcc, $list_recipients_cc, $replyto, $attachment_url, $attributes) {
+		$api_transactional_emails = self::getTransactionalEmailsApi();
+
+		$sendSmtpEmail = new \SendinBlue\Client\Model\SendSmtpEmail();
+		if ( !empty( $template_id ) ) {
+			$sendSmtpEmail->setTemplateId( (int)$template_id );
+		}
+		if ( !empty( $list_recipients ) ) {
+			$list_recipients_object = array();
+			foreach ( $list_recipients as $recipient_email ) {
+				$recipient_item = new \SendinBlue\Client\Model\SendSmtpEmailTo();
+				$recipient_item->setEmail( $recipient_email );
+				array_push( $list_recipients_object, $recipient_item );
+			}
+			$sendSmtpEmail->setTo( $list_recipients_object );
+		}
+		if ( !empty( $list_recipients_bcc ) ) {
+			$list_recipients_bcc_object = array();
+			foreach ( $list_recipients_bcc as $recipient_email ) {
+				$recipient_item = new \SendinBlue\Client\Model\SendSmtpEmailBcc();
+				$recipient_item->setEmail( $recipient_email );
+				array_push( $list_recipients_bcc_object, $recipient_item );
+			}
+			$sendSmtpEmail->setBcc( $list_recipients_bcc_object );
+		}
+		if ( !empty( $list_recipients_cc ) ) {
+			$list_recipients_cc_object = array();
+			foreach ( $list_recipients_cc as $recipient_email ) {
+				$recipient_item = new \SendinBlue\Client\Model\SendSmtpEmailCc();
+				$recipient_item->setEmail( $recipient_email );
+				array_push( $list_recipients_cc_object, $recipient_item );
+			}
+			$sendSmtpEmail->setCc( $list_recipients_cc_object );
+		}
+		if ( !empty( $replyto ) ) {
+			$list_recipients_reply_to_object = new \SendinBlue\Client\Model\SendSmtpEmailReplyTo();
+			$list_recipients_reply_to_object->setEmail( $replyto );
+			$sendSmtpEmail->setReplyTo( $list_recipients_reply_to_object );
+		}
+		if ( !empty( $attachment_url ) ) {
+			$attachment_url_object = new \SendinBlue\Client\Model\SendSmtpEmailAttachment();
+			$attachment_url_object->setUrl( $attachment_url );
+			$sendSmtpEmail->setAttachment( $attachment_url_object );
+		}
+		if ( !empty( $attributes ) ) {
+			$sendSmtpEmail[ 'params' ] = $attributes;
+		}
+
+		try {
+			ypcf_debug_log( print_r( $sendSmtpEmail, true ) );
+			$result = $api_transactional_emails->sendTransacEmail( $sendSmtpEmail );
+
+			return $result->getMessageId();
+		} catch (Exception $e) {
+			self::$last_error = $e->getMessage();
+
+			return FALSE;
+		}
+	}
+
+	/**
 	 * Récupère le rapport liés à l'envoi d'un e-mail transactionnel
 	 * @return SendinBlue\Client\Model\GetEmailEventReport
 	 */
