@@ -75,6 +75,9 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action('delete_lock_project_edition');
 		WDGAjaxActions::add_action( 'send_test_notifications' );
 
+		// Vuejs
+		WDGAjaxActions::add_action( 'vuejs_error_catcher' );
+
 		// Prospect setup - interface prospect
 		WDGAjaxActions::add_action( 'prospect_setup_save' );
 		WDGAjaxActions::add_action( 'prospect_setup_save_files' );
@@ -206,6 +209,8 @@ class WDGAjaxActions {
 		$_SESSION[ 'login-fb-referer' ] = ( !empty( $posted_redirect ) ) ? $posted_redirect : wp_get_referer();
 //		ypcf_debug_log( 'AJAX::get_connect_to_facebook_url > login-fb-referer : ' . $_SESSION[ 'login-fb-referer' ] );
 
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_facebook();
 		$fb = new Facebook\Facebook([
 			'app_id' => YP_FB_APP_ID,
 			'app_secret' => YP_FB_SECRET,
@@ -487,7 +492,7 @@ class WDGAjaxActions {
 					continue;
 				}
 				$payment_amount = edd_get_payment_amount( $purchase_id );
-				$purchase_date = date_i18n( get_option('date_format'), strtotime( get_post_field( 'post_date', $purchase_id ) ) );
+				$purchase_date = get_post_field( 'post_date', $purchase_id );
 
 				if ( !empty( $investment_contracts ) ) {
 					foreach ( $investment_contracts as $investment_contract ) {
@@ -512,7 +517,7 @@ class WDGAjaxActions {
 					$buffer[ $campaign_id ][ 'start_date' ] = '';
 					if ( $campaign->contract_start_date_is_undefined() != '1' ) {
 						$contract_start_date = new DateTime( $campaign->contract_start_date() );
-						$buffer[ $campaign_id ][ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+						$buffer[ $campaign_id ][ 'start_date' ] = date_i18n( 'F Y', strtotime( $campaign->contract_start_date() ) );
 					}
 					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
 					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
@@ -536,10 +541,13 @@ class WDGAjaxActions {
 				}
 
 				$investment_item = array();
-				$investment_item[ 'date' ] = $purchase_date;
+				$investment_item[ 'date' ] = date_i18n( 'j F Y', strtotime( $purchase_date ) );
+				$investment_item[ 'hour' ] = date_i18n( 'H\hi', strtotime( $purchase_date ) );
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
 				$investment_item[ 'status' ] = utf8_encode( $purchase_status );
 				$investment_item[ 'status_str' ] = '-';
+				$investment_item[ 'payment_str' ] = '';
+				$investment_item[ 'payment_date' ] = '';
 
 				if ( $purchase_status == 'pending' ) {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
@@ -563,10 +571,13 @@ class WDGAjaxActions {
 							$investment_item[ 'status_str' ] = __( "En suspend", 'yproject' );
 						}
 					} elseif ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
-						$investment_item[ 'status_str' ] = __( "Versements &agrave; venir", 'yproject' );
+						$investment_item[ 'status_str' ] = __( 'account.investments.STARTED_CONTRACT', 'yproject' );
 						$date_first_payement = new DateTime( $campaign->first_payment_date() );
 						if ( $today_datetime > $date_first_payement ) {
-							$investment_item[ 'status_str' ] = __( "Versements en cours", 'yproject' );
+							$investment_item[ 'payment_str' ] = __( 'account.investments.NEXT_PAYMENT', 'yproject' );
+						} else {
+							$investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );
+							$investment_item[ 'payment_date' ] = date_i18n( 'F Y', strtotime( $campaign->first_payment_date() ) );
 						}
 
 						if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
@@ -581,11 +592,17 @@ class WDGAjaxActions {
 					$WDGInvestment = new WDGInvestment( $purchase_post->ID );
 					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
 						$investment_item[ 'conclude-investment-url' ] = WDG_Redirect_Engine::override_get_page_url( 'investir' ) . '?init_with_id=' .$purchase_post->ID. '&campaign_id=' .$campaign_id;
+
+						// On ne garde l'affichage de ces investissements en attente que si il est encore possible de les finaliser (on annule si ce n'est pas le cas)
+						if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte ) {
+							$WDGInvestment->cancel();
+							continue;
+						}
 					}
 				}
 				$investment_item[ 'roi_percent' ] = utf8_encode( $roi_percent_display );
 				$investment_item[ 'roi_amount' ] = utf8_encode( round( $roi_amount, 2 ) );
-				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) );
+				$investment_item[ 'roi_return' ] = utf8_encode( round( $investment_item[ 'roi_amount' ] / $payment_amount * 100 ) / 100 );
 
 				$investment_item[ 'contract_file_path' ] = '';
 				$investment_item[ 'contract_file_name' ] = '';
@@ -722,6 +739,9 @@ class WDGAjaxActions {
 								} else {
 									$roi_item[ 'status' ] = 'upcoming';
 									$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
+									if ( $investment_item[ 'payment_date' ]  == '') {
+										$investment_item[ 'payment_date' ] = $roi_item[ 'date' ];
+									}
 								}
 								break;
 							case WDGROIDeclaration::$status_finished:
@@ -733,6 +753,9 @@ class WDGAjaxActions {
 							default:
 								$roi_item[ 'status' ] = 'upcoming';
 								$roi_item[ 'status_str' ] = __( "A venir", 'yproject' );
+								if ( $investment_item[ 'payment_date' ]  == '') {
+									$investment_item[ 'payment_date' ] = $roi_item[ 'date' ];
+								}
 								break;
 						}
 
@@ -820,7 +843,7 @@ class WDGAjaxActions {
 			$buffer_item[ 'status' ] = utf8_encode( $result_campaign_item->project_status );
 			$buffer_item[ 'funding_duration' ] = utf8_encode( $result_campaign_item->project_funding_duration );
 			$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
-			$buffer_item[ 'start_date' ] = utf8_encode( $contract_start_date->format( 'd/m/Y' ) );
+			$buffer_item[ 'start_date' ] = date_i18n( 'F Y', strtotime( $result_campaign_item->project_contract_start_date ) );
 
 			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 			$exp = dirname( __FILE__ ). '/../pdf_files/' .$result_campaign_item->project_wpref. '_' .$user_id. '_*.pdf';
@@ -830,7 +853,8 @@ class WDGAjaxActions {
 			foreach ( $result_campaign_item->investments as $result_investment_item ) {
 				$buffer_investment_item = array();
 				$buffer_investment_item[ 'amount' ] = utf8_encode( $result_investment_item->amount );
-				$buffer_investment_item[ 'date' ] = utf8_encode( $result_investment_item->invest_datetime );
+				$buffer_investment_item[ 'date' ] = date_i18n( 'j F Y', strtotime( $result_investment_item->invest_datetime ) );
+				$buffer_investment_item[ 'hour' ] = date_i18n( 'H\hi', strtotime( $result_investment_item->invest_datetime ) );
 				$buffer_investment_item[ 'status' ] = utf8_encode( $result_investment_item->status );
 
 				// Reinit de la date pour les tours de boucle
@@ -897,6 +921,8 @@ class WDGAjaxActions {
 				}
 
 				$buffer_investment_item[ 'status_str' ] = '';
+				$buffer_investment_item[ 'payment_str' ] = '';
+				$buffer_investment_item[ 'payment_date' ] = '';
 				$first_investment_contract_status = FALSE;
 				if ( !empty( $result_campaign_item->investments ) ) {
 					$first_investment_contract_status = $result_campaign_item->investments[ 0 ]->contract_status;
@@ -925,14 +951,17 @@ class WDGAjaxActions {
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.SUSPENDED', 'yproject' );
 						}
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded ) {
-						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.CONTRACT_GOING_TO_START', 'yproject' );
+						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.STARTED_CONTRACT', 'yproject' );
 						$first_payment_date = $result_campaign_item->project_first_payment_date;
 						if ( empty( $first_payment_date ) ) {
 							$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
 						}
 						$date_first_payement = new DateTime( $first_payment_date );
 						if ( $today_datetime > $date_first_payement ) {
-							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_STARTED', 'yproject' );
+							$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.NEXT_PAYMENT', 'yproject' );
+						} else {
+							$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );
+							$buffer_investment_item[ 'payment_date' ] = date_i18n( 'F Y', strtotime( $first_payment_date ) );
 						}
 
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
@@ -949,7 +978,7 @@ class WDGAjaxActions {
 					}
 				}
 				$buffer_investment_item[ 'roi_amount' ] = utf8_encode( $buffer_investment_item[ 'roi_amount' ] );
-				$buffer_investment_item[ 'roi_return' ] = utf8_encode( round( $buffer_investment_item[ 'roi_amount' ] / $result_investment_item->amount * 100 ) );
+				$buffer_investment_item[ 'roi_return' ] = utf8_encode( round( $buffer_investment_item[ 'roi_amount' ] / $result_investment_item->amount * 100 ) / 100 );
 
 				// Fichier de contrat
 				$buffer_investment_item[ 'contract_file_path' ] = '';
@@ -986,16 +1015,23 @@ class WDGAjaxActions {
 					}
 				}
 
+				$keep_pushing = TRUE;
 				$buffer_investment_item[ 'conclude-investment-url' ] = '';
 				if ( $buffer_investment_item[ 'status' ] == 'pending' && $is_authentified ) {
 					$WDGInvestment = new WDGInvestment( $result_investment_item->wpref );
 					if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_not_validated ) {
 						$buffer_investment_item[ 'conclude-investment-url' ] = WDG_Redirect_Engine::override_get_page_url( 'investir' ) . '?init_with_id=' .$result_investment_item->wpref. '&campaign_id=' .$result_campaign_item->project_wpref;
+
+						// On ne garde l'affichage de ces investissements en attente que si il est encore possible de les finaliser (on annule si ce n'est pas le cas)
+						if ( $buffer_item[ 'status' ] != ATCF_Campaign::$campaign_status_vote && $buffer_item[ 'status' ] != ATCF_Campaign::$campaign_status_collecte ) {
+							$keep_pushing = FALSE;
+							$WDGInvestment->cancel();
+						}
 					}
 				}
 
 				// - Déclarations de royalties liées à la campagne
-				if ( !empty( $campaign_declarations_list ) ) {
+				if ( $keep_pushing && !empty( $campaign_declarations_list ) ) {
 					foreach ( $campaign_declarations_list as $roi_declaration ) {
 						// On détermine sur quelle année ça se situe
 						$current_year_index = 0;
@@ -1041,6 +1077,9 @@ class WDGAjaxActions {
 								} else {
 									$buffer_roi_item[ 'status' ] = 'upcoming';
 									$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
+									if ( $buffer_investment_item[ 'payment_date' ]  == '') {
+										$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
+									}
 								}
 								break;
 							case WDGROIDeclaration::$status_finished:
@@ -1052,6 +1091,9 @@ class WDGAjaxActions {
 							default:
 								$buffer_roi_item[ 'status' ] = 'upcoming';
 								$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
+								if ( $buffer_investment_item[ 'payment_date' ]  == '') {
+									$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
+								}
 								break;
 						}
 
@@ -1107,16 +1149,20 @@ class WDGAjaxActions {
 					}
 				}
 
-				foreach ( $buffer_investment_item[ 'rois_by_year' ] as $current_year_index => $year_item ) {
-					usort( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ($item1, $item2) {
-						$item1_date = new DateTime( $item1[ 'date_db' ] );
-						$item2_date = new DateTime( $item2[ 'date_db' ] );
+				if ( $keep_pushing ) {
+					foreach ( $buffer_investment_item[ 'rois_by_year' ] as $current_year_index => $year_item ) {
+						usort( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'roi_items' ], function ($item1, $item2) {
+							$item1_date = new DateTime( $item1[ 'date_db' ] );
+							$item2_date = new DateTime( $item2[ 'date_db' ] );
 
-						return ( $item1_date > $item2_date );
-					} );
+							return ( $item1_date > $item2_date );
+						} );
+					}
 				}
 
-				array_push( $buffer_item[ 'items' ], $buffer_investment_item );
+				if ( $keep_pushing ) {
+					array_push( $buffer_item[ 'items' ], $buffer_investment_item );
+				}
 			}
 
 			$buffer[ $result_campaign_item->project_wpref ] = $buffer_item;
@@ -3667,6 +3713,15 @@ class WDGAjaxActions {
 
 		echo $result ? '1' : '0';
 		exit();
+	}
+
+	public static function vuejs_error_catcher() {
+		$message = filter_input( INPUT_POST, 'message' );
+		$app = filter_input( INPUT_POST, 'app' );
+
+		ypcf_debug_log( 'ajax::vuejs_error_catcher >> [app::' .$app. '] >> ' . $message, FALSE );
+
+		exit( '1' );
 	}
 
 	public static function prospect_setup_save() {

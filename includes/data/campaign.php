@@ -1344,6 +1344,8 @@ class ATCF_Campaign {
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
 		$html_content = WDG_Template_PDF_Campaign_Funded::get($WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(), $WDGUser->get_email(), $WDGOrganization->get_name(), $WDGOrganization->get_full_address_str(), $WDGOrganization->get_postal_code(), $WDGOrganization->get_city(), $free_field, $today_date->format( 'd/m/Y' ), $this->backers_count(), UIHelpers::format_number( $amount ), UIHelpers::format_number( $platform_commission ), UIHelpers::format_number( $platform_commission_amount ), UIHelpers::format_number( $platform_commission_below_100000 ), UIHelpers::format_number( $platform_commission_below_100000_amount ), UIHelpers::format_number( $platform_commission_above_100000 ), UIHelpers::format_number( $platform_commission_above_100000_amount ), UIHelpers::format_number( $amount - $platform_commission_amount ), $start_datetime->format( 'd/m/Y' ), $this->funding_duration(), UIHelpers::format_number( $this->roi_percent(), 10 ), $fiscal_info, $project_investors_list);
 
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_html2pdf();
 		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
 		$html2pdf->WriteHTML( urldecode( $html_content ) );
 		$html2pdf->Output( $filepath, 'F' );
