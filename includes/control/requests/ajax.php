@@ -11,6 +11,7 @@ class WDGAjaxActions {
 	private static $class_name_project_dashboard = 'WDGAjaxActionsProjectDashboard';
 	private static $class_name_vuejs = 'WDGAjaxActionsVue';
 	private static $class_name_prospect_setup = 'WDGAjaxActionsProspectSetup';
+	private static $class_name_account_signin = 'WDGAjaxActionsAccountSignin';
 
 	private static $class_to_filename = array(
 		'WDG_Form_Vote'			=> 'vote',
@@ -89,6 +90,9 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_ask_card_payment' );
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_select_wire' );
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_received_wire' );
+
+		// Account signin - Interface de connexion / inscription
+		WDGAjaxActions::add_action_account_signin( 'account_signin_get_email_info' );
 	}
 
 	/**
@@ -284,5 +288,24 @@ class WDGAjaxActions {
 		$crowdfunding->include_control( 'requests/ajax/prospect-setup' );
 		$action = filter_input( INPUT_POST, 'action' );
 		call_user_func( self::$class_name_prospect_setup . '::' . $action );
+	}
+
+	/**********************************************/
+	/**
+	 * Référence les actions liées à l'interface de connexion / inscription
+	 */
+	private static function add_action_account_signin($action_name) {
+		add_action( 'wp_ajax_' . $action_name, self::$class_name . '::account_signin_actions' );
+		add_action( 'wp_ajax_nopriv_' . $action_name, self::$class_name . '::account_signin_actions' );
+	}
+
+	/**
+	 * Exécute les actions liées à l'interface de connexion / inscription
+	 */
+	public static function account_signin_actions() {
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_control( 'requests/ajax/account-signin' );
+		$action = filter_input( INPUT_POST, 'action' );
+		call_user_func( self::$class_name_account_signin . '::' . $action );
 	}
 }
