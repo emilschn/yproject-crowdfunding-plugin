@@ -483,11 +483,11 @@ class WDGPostActions {
 		for ( $i = 0; $i < 15; $i++ ) {
 			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 		}
-		while ( file_exists( __DIR__ . '/../kyc/' . $random_filename . '.' . $ext ) ) {
+		while ( file_exists( __DIR__ . '/../../kyc/' . $random_filename . '.' . $ext ) ) {
 			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 		}
 		$random_filename .= '.' . $ext;
-		move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../kyc/' . $random_filename );
+		move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../kyc/' . $random_filename );
 
 		$campaign->__set( ATCF_Campaign::$key_backoffice_businessplan, $random_filename );
 
@@ -549,7 +549,7 @@ class WDGPostActions {
 					$meta_payment_amendment_file = get_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_file ) ) {
 						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_file : ' . $meta_payment_amendment_file );
-						$buffer = __DIR__. '/../pdf_files/tmp';
+						$buffer = __DIR__. '/../../pdf_files/tmp';
 						if ( !is_dir( $buffer ) ) {
 							mkdir( $buffer, 0777, true );
 						}
@@ -665,19 +665,25 @@ class WDGPostActions {
 		}
 
 		$zip = new ZipArchive;
-		$zip_path = dirname( __FILE__ ). '/../../files/contracts/' .$campaign_id. '-' .$campaign->data->post_name. '.zip';
+		$zip_path = dirname( __FILE__ ). '/../../../files/contracts/' .$campaign_id. '-' .$campaign->data->post_name. '.zip';
 		if ( file_exists( $zip_path ) ) {
 			unlink( $zip_path );
 		}
-		if ( $zip->open( $zip_path, ZipArchive::CREATE ) === TRUE ) {
-			$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_*.pdf';
+		$res = $zip->open( $zip_path, ZipArchive::CREATE );
+		if ( $res === TRUE ) {
+			$exp = dirname( __FILE__ ). '/../../pdf_files/' .$campaign_id. '_*.pdf';
 			$files = glob( $exp );
 			foreach ( $files as $file ) {
 				$file_path_exploded = explode( '/', $file );
 				$contract_filename = $file_path_exploded[ count( $file_path_exploded ) - 1 ];
-				$zip->addFile( $file, $contract_filename );
+				$res_addFile = $zip->addFile( $file, $contract_filename );
+				if ( $res_addFile !== TRUE ){
+					ypcf_debug_log( 'post.php :: generate_campaign_contracts_archive > Error: Unable to add file '.$file.' $contract_filename = '.$contract_filename);
+				}
 			}
 			$zip->close();
+		} else {
+			ypcf_debug_log( 'post.php :: generate_campaign_contracts_archive > Error: Unable to create zip file '.$zip_path.' $res = '.$res);
 		}
 
 		$url_return = wp_get_referer() . "#documents";
@@ -737,11 +743,11 @@ class WDGPostActions {
 			for ( $i = 0; $i < 15; $i++ ) {
 				$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 			}
-			while ( file_exists( __DIR__ . '/../contracts/' . $random_filename . '.' . $ext ) ) {
+			while ( file_exists( __DIR__ . '/../../contracts/' . $random_filename . '.' . $ext ) ) {
 				$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 			}
 			$random_filename .= '.' . $ext;
-			move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../contracts/' . $random_filename );
+			move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../contracts/' . $random_filename );
 			$campaign->__set( ATCF_Campaign::$key_backoffice_contract_orga, $random_filename );
 		}
 
@@ -991,11 +997,11 @@ class WDGPostActions {
 		for ( $i = 0; $i < 15; $i++ ) {
 			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 		}
-		while ( file_exists( __DIR__ . '/../../files/investment-check/' . $random_filename . '.' . $ext ) ) {
+		while ( file_exists( __DIR__ . '/../../../files/investment-check/' . $random_filename . '.' . $ext ) ) {
 			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 		}
 		$random_filename .= '.' . $ext;
-		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../files/investment-check/' . $random_filename );
+		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../../files/investment-check/' . $random_filename );
 		$picture_url = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 
 		$campaign_organization = $campaign->get_organization();
