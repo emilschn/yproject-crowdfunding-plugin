@@ -136,8 +136,6 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-queued-action.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-sendinblue-template.php';
 
-		require $this->includes_dir . 'control/ajax.php';
-		require $this->includes_dir . 'control/post.php';
 		require $this->includes_dir . 'control/cron.php';
 		require $this->includes_dir . 'control/settings.php';
 		require $this->includes_dir . 'control/emails.php';
@@ -149,11 +147,6 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'control/invest-lib.php';
 		require $this->includes_dir . 'control/investment.php';
 		require $this->includes_dir . 'control/pdf_generator.php';
-		require $this->includes_dir . 'control/notifications/notifications-emails.php';
-		require $this->includes_dir . 'control/notifications/notifications-api.php';
-		require $this->includes_dir . 'control/notifications/notifications-slack.php';
-		require $this->includes_dir . 'control/notifications/notifications-asana.php';
-		require $this->includes_dir . 'control/notifications/notifications-zapier.php';
 		require $this->includes_dir . 'control/forms/form.php';
 		require $this->includes_dir . 'control/forms/projects.php';
 		require $this->includes_dir . 'control/forms/users.php';
@@ -164,6 +157,13 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'control/gateways/lemonway-document.php';
 		require $this->includes_dir . 'control/gateways/lemonway-notification.php';
 		require $this->includes_dir . 'control/lib/validator.php';
+		require $this->includes_dir . 'control/notifications/notifications-emails.php';
+		require $this->includes_dir . 'control/notifications/notifications-api.php';
+		require $this->includes_dir . 'control/notifications/notifications-slack.php';
+		require $this->includes_dir . 'control/notifications/notifications-asana.php';
+		require $this->includes_dir . 'control/notifications/notifications-zapier.php';
+		require $this->includes_dir . 'control/requests/ajax.php';
+		require $this->includes_dir . 'control/requests/post.php';
 		require $this->includes_dir . 'control/sendinblue/sendinblue-v3-helper.php';
 
 		require $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php';
