@@ -2,7 +2,8 @@
 /**
  * Lib de gestion des utilisateurs
  */
-class WDGUser {
+class WDGUser
+{
 	public static $key_validated_general_terms_version = 'validated_general_terms_version';
 	public static $key_lemonway_status = 'lemonway_status';
 	public static $edd_general_terms_version = 'terms_general_version';
@@ -376,6 +377,11 @@ class WDGUser {
 
 	public function set_email($email) {
 		$this->email = $email;
+	}
+
+	public function is_email_validated() {
+		// TODO
+		return FALSE;
 	}
 
 	public function get_gender() {

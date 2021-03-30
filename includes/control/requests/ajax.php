@@ -3,7 +3,8 @@
  * Classe de gestion des appels Ajax
  * TODO : centraliser ici
  */
-class WDGAjaxActions {
+class WDGAjaxActions
+{
 	private static $class_name = 'WDGAjaxActions';
 	private static $class_name_user_login = 'WDGAjaxActionsUserLogin';
 	private static $class_name_user_account = 'WDGAjaxActionsUserAccount';
@@ -93,6 +94,7 @@ class WDGAjaxActions {
 
 		// Account signin - Interface de connexion / inscription
 		WDGAjaxActions::add_action_account_signin( 'account_signin_get_email_info' );
+		WDGAjaxActions::add_action_account_signin( 'account_signin_check_password' );
 	}
 
 	/**
