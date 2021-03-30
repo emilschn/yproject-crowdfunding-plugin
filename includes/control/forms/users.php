@@ -201,7 +201,7 @@ class WDGFormUsers
 			'status'			=> '',
 			'firstname'			=> '',
 			'lastname'			=> '',
-			'validated'			=> '',
+			'url_redirect'		=> '',
 			'organizationname'	=> ''
 		);
 
@@ -234,11 +234,11 @@ class WDGFormUsers
 			if ( !empty( $list_linked_users ) ) {
 				foreach ( $list_linked_users as $WDGUser_linked ) {
 					$user_item = array(
-						'email'		=> $WDGUser_linked->get_email(),
-						'firstname'	=> $WDGUser_linked->get_firstname(),
-						'lastname'	=> $WDGUser_linked->get_lastname(),
-						'validated'	=> $WDGUser_linked->is_email_validated() ? '1' : '0',
-						'status'	=> $WDGUser_linked->is_logged_in_with_facebook() ? 'facebook-account' : 'existing-account'
+						'email'			=> $WDGUser_linked->get_email(),
+						'firstname'		=> $WDGUser_linked->get_firstname(),
+						'lastname'		=> $WDGUser_linked->get_lastname(),
+						'url_redirect'	=> $WDGUser_linked->is_email_validated() ? wp_unslash( WDGUser::get_login_redirect_page() ) : 'email-validation',
+						'status'		=> $WDGUser_linked->is_logged_in_with_facebook() ? 'facebook-account' : 'existing-account'
 					);
 					array_push( $result[ 'team_members' ], $user_item );
 				}
@@ -251,7 +251,7 @@ class WDGFormUsers
 		$WDGUser = new WDGUser( $user_by_email->ID );
 		$result[ 'firstname' ] = $WDGUser->get_firstname();
 		$result[ 'lastname' ] = $WDGUser->get_lastname();
-		$result[ 'validated' ] = $WDGUser->is_email_validated() ? '1' : '0';
+		$result[ 'url_redirect' ] = $WDGUser->is_email_validated() ? wp_unslash( WDGUser::get_login_redirect_page() ) : 'email-validation';
 
 		// L'adresse mail transmise correspond à un compte connecté avec Facebook
 		if ( $WDGUser->is_logged_in_with_facebook() ) {
