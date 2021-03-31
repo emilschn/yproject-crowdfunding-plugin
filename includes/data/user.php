@@ -2044,7 +2044,8 @@ class WDGUser {
 			if ( is_array( $wallet_details->IBANS->IBAN ) ) {
 				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
 				// Si le premier IBAN est désactivé, on va chercher dans la suite
-				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected ) ) {
+				// de même si cet iban a LEMON WAY comme holder (viban)
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected || $buffer->HOLDER == self::$iban_holder_lw) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
 						if ( $iban_item->S == self::$iban_status_validated || $iban_item->S == self::$iban_status_waiting ) {
 							$buffer = $iban_item;
@@ -2063,6 +2064,7 @@ class WDGUser {
 	public static $iban_status_validated = 5;
 	public static $iban_status_disabled = 8;
 	public static $iban_status_rejected = 9;
+	public static $iban_holder_lw = 'LEMON WAY';
 	public function get_lemonway_iban_status() {
 		$first_iban = $this->get_lemonway_iban();
 		if ( !empty( $first_iban ) ) {

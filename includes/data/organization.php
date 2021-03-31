@@ -1593,7 +1593,8 @@ class WDGOrganization {
 			if ( is_array( $wallet_details->IBANS->IBAN ) ) {
 				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
 				// Si le premier IBAN est désactivé, on va chercher dans la suite
-				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected ) ) {
+				// de même si cet iban a LEMON WAY comme holder (viban)
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected || $buffer->HOLDER == WDGUser::$iban_holder_lw ) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
 						if ( $iban_item->S == WDGUser::$iban_status_validated ) {
 							$buffer = $iban_item;
