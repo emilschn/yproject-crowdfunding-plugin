@@ -208,20 +208,23 @@ class WDGFormUsers
 		// La chaine transmise est vide
 		if ( empty( $input_email ) ) {
 			$result[ 'status' ] = 'empty-email';
-			exit( json_encode( $result ) );
+
+			return $result;
 		}
 
 		// La chaine transmise n'est pas une adresse mail
 		if ( !WDGRESTAPI_Lib_Validator::is_email( $input_email ) ) {
 			$result[ 'status' ] = 'bad-email';
-			exit( json_encode( $result ) );
+
+			return $result;
 		}
 
 		// L'adresse mail transmise n'existe pas sur la plateforme
 		$user_by_email = get_user_by( 'email', $input_email );
 		if ( empty( $user_by_email ) ) {
 			$result[ 'status' ] = 'not-existing-account';
-			exit( json_encode( $result ) );
+
+			return $result;
 		}
 
 		// L'adresse mail transmise correspond à une organisation
@@ -244,7 +247,7 @@ class WDGFormUsers
 				}
 			}
 			// Récupérer prénom, nom, email et méthode de connexion
-			exit( json_encode( $result ) );
+			return $result;
 		}
 
 		// Si on arrive ici, c'est un compte de personne physique

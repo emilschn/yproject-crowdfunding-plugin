@@ -95,6 +95,7 @@ class WDGAjaxActions
 		// Account signin - Interface de connexion / inscription
 		WDGAjaxActions::add_action_account_signin( 'account_signin_get_email_info' );
 		WDGAjaxActions::add_action_account_signin( 'account_signin_check_password' );
+		WDGAjaxActions::add_action_account_signin( 'account_signin_create_account' );
 	}
 
 	/**
