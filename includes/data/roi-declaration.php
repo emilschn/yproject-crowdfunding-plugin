@@ -214,7 +214,7 @@ class WDGROIDeclaration {
 
 	/**
 	 * Retourne le montant additionnÃ© l'ajustement
-	 * @return number
+	 * @return float
 	 */
 	public function get_amount_with_adjustment() {
 		return max( 0, $this->get_amount_royalties() + $this->get_adjustment_value() );
@@ -222,7 +222,7 @@ class WDGROIDeclaration {
 
 	/**
 	 * Retourne le montant additionnÃ© avec la commission
-	 * @return number
+	 * @return float
 	 */
 	public function get_amount_with_commission() {
 		return ( $this->get_amount_with_adjustment() + $this->get_commission_to_pay() );
@@ -247,7 +247,7 @@ class WDGROIDeclaration {
 
 	/**
 	 * Retourne la commission TTC que doit payer le porteur de projet au moment de reverser les fonds
-	 * @return number
+	 * @return float
 	 */
 	public function get_commission_to_pay() {
 		$buffer = 0;
@@ -274,7 +274,7 @@ class WDGROIDeclaration {
 
 	/**
 	 * Retourne la commission HT que doit payer le porteur de projet au moment de reverser les fonds
-	 * @return number
+	 * @return float
 	 */
 	public function get_commission_to_pay_without_tax($force_new_method = FALSE) {
 		// Ancienne méthode avec erreur : si percent_commission est défini, on calcule à partir du TTC
@@ -1217,7 +1217,7 @@ class WDGROIDeclaration {
 
 	/**
 	 * Détermine la valeur de l'ajustement
-	 * @return number
+	 * @return float
 	 */
 	public function get_adjustment_value() {
 		$buffer = 0;
@@ -1464,6 +1464,16 @@ class WDGROIDeclaration {
 
 		return $buffer;
 	}
+	
+	private $is_first_declaration_to_pay = false;
+	public function set_is_first_declaration_to_pay() {
+		$this->is_first_declaration_to_pay = true;
+	}
+
+	public function is_first_declaration_to_pay() {
+		return $this->is_first_declaration_to_pay;
+	}
+
 
 	/**
 	 * Retourne une dÃ©claration ROI par son token de paiement
