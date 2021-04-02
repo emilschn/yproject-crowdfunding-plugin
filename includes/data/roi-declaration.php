@@ -1465,13 +1465,13 @@ class WDGROIDeclaration {
 		return $buffer;
 	}
 	
-	private $is_first_declaration_to_pay = false;
-	public function set_is_first_declaration_to_pay() {
-		$this->is_first_declaration_to_pay = true;
+	private $is_payable = FALSE;
+	public function set_is_payable ( $value ) {
+		$this->is_payable = $value;
 	}
 
-	public function is_first_declaration_to_pay() {
-		return $this->is_first_declaration_to_pay;
+	public function is_payable() {
+		return $this->is_payable;
 	}
 
 
