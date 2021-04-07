@@ -131,7 +131,6 @@ class WDGAjaxActions {
 				$index++;
 				$cache_projects_searchable = $WDG_cache_plugin->get_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, 3 );
 			}
-			$buffer = json_encode( $projects_searchable );
 		} else {
 			$projects_searchable = ATCF_Campaign::list_projects_searchable();
 			$count_projects_searchable = count( $projects_searchable );
@@ -148,11 +147,11 @@ class WDGAjaxActions {
 			}
 			// Sauvegarde des restants
 			$projects_searchable_encoded = json_encode( $list_to_cache );
-			$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h
-			$buffer = json_encode( $projects_searchable );
+			$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h			
 		}
-
-		echo $buffer;
+		$buffer = array('home_url' => esc_url( home_url( '/' ) ) , 'projects' => $projects_searchable);
+		$buffer_json = json_encode( $buffer );
+		echo $buffer_json;
 		exit();
 	}
 
