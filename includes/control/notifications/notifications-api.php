@@ -5,6 +5,10 @@ if ( !defined( 'ABSPATH' ) ) {
 }
 
 class NotificationsAPI {
+	private static $custom_field_reply_to = 'email_reply_to';
+	private static $custom_field_sender_name = 'email_sender_name';
+	private static $custom_field_sender_email = 'email_sender_email';
+
 	public static $description_str_by_template_id = array(
 		'new-project' => array(
 			'fr-sib-id'		=> '1143',
@@ -506,6 +510,46 @@ class NotificationsAPI {
 	 * Méthode générique d'appel à l'API pour attrapper les erreurs
 	 */
 	private static function send($parameters) {
+		// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
+		$template_slug = self::get_slug_by_id_template_sib_v2( $parameters['template'] );
+		if ( !empty( $template_slug ) ) {
+			$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug);
+			if ( !empty( $template_post ) ) {
+				$recipient = $parameters[ 'recipient' ];
+				$object = $template_post->post_title;
+				$content = $template_post->post_content;
+				$template_post_name = $template_slug;
+				$parameters = $parameters;
+				$options_encoded = $parameters[ 'options' ];
+				$options_decoded = json_decode( $options_encoded );
+
+				// Vérification si un reply_to a été défini en back-office
+				$post_reply_to = get_post_meta( $template_post->ID, self::$custom_field_reply_to, TRUE );
+				if ( !empty( $post_reply_to ) ) {
+					$options_decoded->replyto = $post_reply_to;
+				}
+
+				// Vérification si un sender_name a été défini en back-office
+				$post_sender_name = get_post_meta( $template_post->ID, self::$custom_field_sender_name, TRUE );
+				if ( !empty( $post_sender_name ) ) {
+					$options_decoded->sender_name = $post_sender_name;
+				}
+
+				// Vérification si un sender_email a été défini en back-office
+				$post_sender_email = get_post_meta( $template_post->ID, self::$custom_field_sender_email, TRUE );
+				if ( !empty( $post_sender_email ) ) {
+					$options_decoded->sender_email = $post_sender_email;
+				}
+
+				$parameters[ 'options' ] = json_encode( $options_decoded );
+
+				$result = self::send_v3( $recipient, $object, $content, $template_post_name, $parameters );
+
+				return $result;
+			}
+		}
+
+		// Sinon, on envoie encore avec la v2 temporairement
 		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		if ( empty( $result->result ) ) {
 			NotificationsAsana::notification_api_failed( $parameters, $result );
@@ -517,18 +561,24 @@ class NotificationsAPI {
 	/**
 	 * Méthode générique d'appel à l'API pour attrapper les erreurs
 	 */
-	public static function send_v3($object, $content, $parameters = array(), $skip_admin = FALSE) {
+	public static function send_v3($recipient, $object, $content, $template_post_name, $parameters = array()) {
 		$parameters[ 'tool' ] = 'sendinblue-v3';
-		$parameters[ 'template' ] = self::$template_id_empty_v3_fr;
+		$parameters[ 'template' ] = $template_post_name;
+		$parameters[ 'recipient' ] = $recipient;
 
-		$options = array(
-			'object' 		=> $object,
-			'content' 		=> $content
-		);
-		if ( !empty( $skip_admin ) ) {
-			$options[ 'skip_admin' ] = 1;
-		}
-		$parameters[ 'options' ] = json_encode( $options );
+		$css = '<style type="text/css">';
+		$css .= ".has-text-align-right { text-align: right; }";
+		$css .= ".has-text-align-center { text-align: center; }";
+		$css .= ".has-rouge-color { color: red; }";
+		$css .= "figcaption { font-size: 90%; }";
+		$css .= '</style>';
+		$content_html = '<html><head>' . $css . '</head><body>' . $content . '</body></html>';
+
+		$options_encoded = $parameters[ 'options' ];
+		$options_decoded = json_decode( $options_encoded );
+		$options_decoded->object = $object;
+		$options_decoded->content = $content_html;
+		$parameters[ 'options' ] = json_encode( $options_decoded );
 
 		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		if ( empty( $result->result ) ) {
@@ -541,6 +591,16 @@ class NotificationsAPI {
 	private static function get_id_fr_by_slug($slug) {
 		if ( !empty( self::$description_str_by_template_id[ $slug ] ) && !empty( self::$description_str_by_template_id[ $slug ][ 'fr-sib-id' ] ) ) {
 			return self::$description_str_by_template_id[ $slug ][ 'fr-sib-id' ];
+		}
+
+		return FALSE;
+	}
+
+	private static function get_slug_by_id_template_sib_v2($id_template_sib_v2) {
+		foreach ( self::$description_str_by_template_id as $template_slug => $template_object ) {
+			if ( $template_object[ 'fr-sib-id' ] == $id_template_sib_v2 ) {
+				return $template_slug;
+			}
 		}
 
 		return FALSE;
