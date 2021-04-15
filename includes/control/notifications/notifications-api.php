@@ -566,12 +566,9 @@ class NotificationsAPI {
 		$parameters[ 'template' ] = $template_post_name;
 		$parameters[ 'recipient' ] = $recipient;
 
-		$css = '<style type="text/css">';
-		$css .= ".has-text-align-right { text-align: right; }";
-		$css .= ".has-text-align-center { text-align: center; }";
-		$css .= ".has-rouge-color { color: red; }";
-		$css .= "figcaption { font-size: 90%; }";
-		$css .= '</style>';
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_control('notifications/notifications-api-css');
+		$css = NotificationsAPICSS::get();
 		$content_html = '<html><head>' . $css . '</head><body>' . $content . '</body></html>';
 
 		$options_encoded = $parameters[ 'options' ];
