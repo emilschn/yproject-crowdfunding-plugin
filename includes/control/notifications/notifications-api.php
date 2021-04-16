@@ -609,6 +609,17 @@ class NotificationsAPI {
 		return FALSE;
 	}
 
+	public static function get_description_by_template_id($id_template) {
+		$template_slug = $id_template;
+		if ( is_numeric( $id_template ) ) {
+			$template_slug = self::get_slug_by_id_template_sib_v2( $id_template );
+		}
+		if ( !empty( $template_slug ) ) {
+			return self::$description_str_by_template_id[ $template_slug ][ 'description' ];
+		}
+		return '';
+	}
+
 	//**************************************************************************
 	// Campagne
 	//**************************************************************************
