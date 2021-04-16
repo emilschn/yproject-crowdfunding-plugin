@@ -516,12 +516,18 @@ class NotificationsAPI {
 			$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug);
 			if ( !empty( $template_post ) ) {
 				$recipient = $parameters[ 'recipient' ];
-				$object = $template_post->post_title;
-				$content = $template_post->post_content;
 				$template_post_name = $template_slug;
 				$parameters = $parameters;
 				$options_encoded = $parameters[ 'options' ];
 				$options_decoded = json_decode( $options_encoded );
+
+				// Application des shortcodes à l'objet et au corps du mail
+				add_filter( 'wdg_email_content_filter', 'wptexturize' );
+				add_filter( 'wdg_email_content_filter', 'wpautop' );
+				add_filter( 'wdg_email_content_filter', 'shortcode_unautop' );
+				add_filter( 'wdg_email_content_filter', 'do_shortcode' );
+				$object = apply_filters( 'wdg_email_content_filter', $template_post->post_title );
+				$content = apply_filters( 'wdg_email_content_filter', $template_post->post_content );
 
 				// Vérification si un reply_to a été défini en back-office
 				$post_reply_to = get_post_meta( $template_post->ID, self::$custom_field_reply_to, TRUE );
