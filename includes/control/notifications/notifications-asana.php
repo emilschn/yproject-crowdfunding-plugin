@@ -30,6 +30,11 @@ class NotificationsAsana {
 			return FALSE;
 		}
 		
+		// On note les notifications provenant de nos tests en local
+		if ( $_SERVER['SERVER_NAME'] != 'www.wedogood.co' ) {
+			$task_name = 'TEST -- ' . $task_name;
+		}
+
 		$headers = "From: " . stripslashes_deep( html_entity_decode( $from_name, ENT_COMPAT, 'UTF-8' ) ) . " <$from_email>\r\n";
 		$headers .= "Content-Type: text/html; charset=utf-8\r\n";
 		return wp_mail( $asana_email, $task_name, $task_content, $headers );
@@ -191,7 +196,7 @@ class NotificationsAsana {
 	public static function new_purchase_admin_error_contract($payment_id) {
 		$object = 'Problème de création de contrat';
 		$content = "Il y a eu un problème durant la génération du contrat. Id du paiement : ".$payment_id;
-		return self::send( self::$notif_type_support, $object, $content );
+		return self::send( self::$notif_type_admin, $object, $content );
 	}
 	
 
@@ -220,7 +225,7 @@ class NotificationsAsana {
 		$content .= "ID API investisseur : " .$investor_id. "<br>";
 		$content .= "ID WP investisseur : " .$investor_entity->get_wpref();	
 
-		return self::send( self::$notif_type_support, $object, $content );
+		return self::send( self::$notif_type_admin, $object, $content );
 	}
 	
 	public static function tax_summaries( $campaign_name, $total_tax_in_euros ) {

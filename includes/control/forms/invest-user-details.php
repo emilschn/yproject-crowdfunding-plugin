@@ -871,6 +871,15 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			);
 		}
 
+		$org_rcs = $this->getInputText( 'org_rcs' );
+		if ( empty( $org_rcs ) || !WDGRESTAPI_Lib_Validator::is_rcs( $org_rcs ) ) {
+					$this->addPostError(
+						'org_rcs',
+						__( 'form.organization-details.error.RCS', 'yproject' ),
+						'org_rcs'
+					);
+				}
+
 		$org_capital = $this->getInputTextMoney( 'org_capital' );
 		$org_capital = filter_var( $org_capital, FILTER_VALIDATE_INT );
 		if ( $org_capital === FALSE ) {

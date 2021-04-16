@@ -1,18 +1,20 @@
 <?php
 
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Se charge de tester les redirections à effectuer
  */
 function ypcf_check_redirections() {
-    global $post;
-    if (isset($post)) {
+	global $post;
+	if (isset($post)) {
 		$page_name = get_post($post)->post_name;
 
 		switch ($page_name) {
-			case 'connexion' :
+			case 'connexion':
 				//Modification très crade temporaire pour gérer une partie de l'API
 				new WDGAPICalls();
 				//Redirection vers la page d'investissement après login, si on venait de l'investissement
@@ -23,7 +25,7 @@ function ypcf_check_redirections() {
 				WDGRoutes::redirect_invest_if_not_logged_in();
 			break;
 		}
-    }
+	}
 }
 add_action( 'template_redirect', 'ypcf_check_redirections' );
 
@@ -39,7 +41,7 @@ class WDGRoutes {
 			exit();
 		}
 	}
-	
+
 	/**
 	 * Redirige vers la page de connexion si utilisateur pas connecté
 	 */
@@ -58,7 +60,7 @@ class WDGRoutes {
 			exit();
 		}
 	}
-	
+
 	/**
 	 * Redirige si il n'est plus possible d'investir sur le projet
 	 */
@@ -67,12 +69,12 @@ class WDGRoutes {
 		if ( $wdginvestment->get_campaign() && !$wdginvestment->get_campaign()->is_investable() ) {
 			wp_redirect( get_permalink( $wdginvestment->get_campaign()->ID ) );
 			exit();
-		} elseif( !$wdginvestment->get_campaign() ){
-			wp_redirect( home_url( '/les-projets/' ) );
+		} elseif ( !$wdginvestment->get_campaign() ) {
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'les-projets' ) );
 			exit();
 		}
 	}
-	
+
 	/**
 	 * Redirige au début de l'investissement si il n'y a pas d'informations de session
 	 */
@@ -82,10 +84,11 @@ class WDGRoutes {
 		$session_user_type = $current_investment->get_session_user_type();
 		if ( empty( $session_amount ) || empty( $session_user_type ) ) {
 			$current_campaign = atcf_get_current_campaign();
-			return home_url( '/investir/' ). '?campaign_id=' .$current_campaign->ID. '&invest_start=1';
+
+			return WDG_Redirect_Engine::override_get_page_url( 'investir' ). '?campaign_id=' .$current_campaign->ID. '&invest_start=1';
 		}
 	}
-	
+
 	/**
 	 * Redirige si il n'est plus possible d'investir sur le projet
 	 */
@@ -97,5 +100,4 @@ class WDGRoutes {
 			exit();
 		}
 	}
-	
 }

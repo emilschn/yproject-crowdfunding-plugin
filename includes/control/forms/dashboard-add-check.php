@@ -1,364 +1,142 @@
 <?php
 class WDG_Form_Dashboard_Add_Check extends WDG_Form {
-	
 	public static $name = 'dashboard-add-check';
-	
+
 	public static $field_group_hidden = 'dashboard-add-check-hidden';
 	public static $field_group_user_email = 'dashboard-add-check-user-email';
 	public static $field_group_user_info = 'dashboard-add-check-user-info';
 	public static $field_group_orga_select = 'dashboard-add-check-orga-select';
 	public static $field_group_orga_info = 'dashboard-add-check-orga-info';
 	public static $field_group_invest_files = 'dashboard-add-check-invest-files';
-	
+
 	private $campaign_id;
-	
-	public function __construct( $campaign_id = FALSE ) {
+
+	public function __construct($campaign_id = FALSE) {
 		parent::__construct( self::$name );
 		$this->campaign_id = $campaign_id;
 		$this->initFields();
 	}
-	
+
 	protected function initFields() {
 		parent::initFields();
-		
+
 		//**********************************************************************
 		// Champs masqués : $field_group_hidden
-		$this->addField(
-			'hidden',
-			'action',
-			'',
-			self::$field_group_hidden,
-			self::$name
-		);
-		
-		$this->addField(
-			'hidden',
-			'campaign-id',
-			'',
-			self::$field_group_hidden,
-			$this->campaign_id
-		);
-		
+		$this->addField('hidden', 'action', '', self::$field_group_hidden, self::$name);
+
+		$this->addField('hidden', 'campaign-id', '', self::$field_group_hidden, $this->campaign_id);
+
 		//**********************************************************************
 		// Données de l'investisseur : $field_group_user_type
-		$this->addField(
-			'text',
-			'invest-amount',
-			__( "Montant de l'investissement *", 'yproject' ),
-			self::$field_group_user_email
-		);
-		
-		$this->addField(
-			'text',
-			'user-email',
-			__( "E-mail de l'investisseur *", 'yproject' ),
-			self::$field_group_user_email
-		);
-		
+		$this->addField('text', 'invest-amount', __( "Montant de l'investissement *", 'yproject' ), self::$field_group_user_email);
+
+		$this->addField('text', 'user-email', __( "E-mail de l'investisseur *", 'yproject' ), self::$field_group_user_email);
+
 		//**********************************************************************
 		// Données de l'investisseur : $field_group_user_info
-		$this->addField(
-			'select',
-			'gender',
-			__( "Sexe *", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			FALSE,
-			[
+		$this->addField('select', 'gender', __( "Sexe *", 'yproject' ), self::$field_group_user_info, '', FALSE, [
 				'female'	=> __( "une femme", 'yproject' ),
 				'male'		=> __( "un homme", 'yproject' )
-			]
-		);
-		
-		$this->addField(
-			'text',
-			'firstname',
-			__( "Pr&eacute;nom *", 'yproject' ),
-			self::$field_group_user_info
-		);
-		
-		$this->addField(
-			'text',
-			'lastname',
-			__( "Nom *", 'yproject' ),
-			self::$field_group_user_info
-		);
+			]);
 
-		$this->addField(
-			'date',
-			'birthday',
-			__( "Date de naissance *", 'yproject' ),
-			self::$field_group_user_info
-		);
+		$this->addField('text', 'firstname', __( "Pr&eacute;nom *", 'yproject' ), self::$field_group_user_info);
 
-		$this->addField(
-			'text',
-			'birthplace',
-			__( "Ville de naissance *", 'yproject' ),
-			self::$field_group_user_info
-		);
+		$this->addField('text', 'lastname', __( "Nom *", 'yproject' ), self::$field_group_user_info);
+
+		$this->addField('date', 'birthday', __( "Date de naissance *", 'yproject' ), self::$field_group_user_info);
+
+		$this->addField('text', 'birthplace', __( "Ville de naissance *", 'yproject' ), self::$field_group_user_info);
 
 		$district_list = array();
 		$district_list[ 0 ] = '-';
 		for ( $i = 1; $i <= 20; $i++ ) {
 			$district_list[ $i ] = $i;
 		}
-		$this->addField(
-			'select',
-			'birthplace_district',
-			__( "Arrondissement dans la ville de naissance", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			__( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ),
-			$district_list
-		);
-		
+		$this->addField('select', 'birthplace_district', __( "Arrondissement dans la ville de naissance", 'yproject' ), self::$field_group_user_info, '', __( "Uniquement si la naissance a eu lieu &agrave; Paris, Marseille ou Lyon", 'yproject' ), $district_list);
+
 		global $french_departments;
-		$this->addField(
-			'select',
-			'birthplace_department',
-			__( "D&eacute;partement de naissance *", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			__( "Uniquement si la naissance a eu lieu en France, sinon sélectionner &Eacute;tranger", 'yproject' ),
-			$french_departments
-		);
+		$this->addField('select', 'birthplace_department', __( "D&eacute;partement de naissance *", 'yproject' ), self::$field_group_user_info, '', __( "Uniquement si la naissance a eu lieu en France, sinon sélectionner &Eacute;tranger", 'yproject' ), $french_departments);
 
 		global $country_list;
-		$this->addField(
-			'select',
-			'birthplace_country',
-			__( "Pays de naissance *", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			FALSE,
-			$country_list
-		);
+		$this->addField('select', 'birthplace_country', __( "Pays de naissance *", 'yproject' ), self::$field_group_user_info, '', FALSE, $country_list);
 
 		global $country_list;
-		$this->addField(
-			'select',
-			'nationality',
-			__( "Nationalit&eacute; *", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			FALSE,
-			$country_list
-		);
-			
-		$this->addField(
-			'text',
-			'address_number',
-			__( "Num&eacute;ro de rue", 'yproject' ),
-			self::$field_group_user_info
-		);
+		$this->addField('select', 'nationality', __( "Nationalit&eacute; *", 'yproject' ), self::$field_group_user_info, '', FALSE, $country_list);
+
+		$this->addField('text', 'address_number', __( "Num&eacute;ro de rue", 'yproject' ), self::$field_group_user_info);
 
 		global $address_number_complements;
-		$this->addField(
-			'select',
-			'address_number_complement',
-			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			FALSE,
-			$address_number_complements
-		);
+		$this->addField('select', 'address_number_complement', __( "Compl&eacute;ment de num&eacute;ro", 'yproject' ), self::$field_group_user_info, '', FALSE, $address_number_complements);
 
-		$this->addField(
-			'text',
-			'address',
-			__( "Adresse *", 'yproject' ),
-			self::$field_group_user_info
-		);
+		$this->addField('text', 'address', __( "Adresse *", 'yproject' ), self::$field_group_user_info);
 
-		$this->addField(
-			'text',
-			'postal_code',
-			__( "Code postal *", 'yproject' ),
-			self::$field_group_user_info
-		);
+		$this->addField('text', 'postal_code', __( "Code postal *", 'yproject' ), self::$field_group_user_info);
 
-		$this->addField(
-			'text',
-			'city',
-			__( "Ville *", 'yproject' ),
-			self::$field_group_user_info
-		);
+		$this->addField('text', 'city', __( "Ville *", 'yproject' ), self::$field_group_user_info);
 
-		$this->addField(
-			'select',
-			'country',
-			__( "Pays *", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			FALSE,
-			$country_list
-		);
-		
-		$this->addField(
-			'select',
-			'user_type',
-			__( "Souhaite investir... *", 'yproject' ),
-			self::$field_group_user_info,
-			'',
-			FALSE,
-			[
+		$this->addField('select', 'country', __( "Pays *", 'yproject' ), self::$field_group_user_info, '', FALSE, $country_list);
+
+		$this->addField('select', 'user_type', __( "Souhaite investir... *", 'yproject' ), self::$field_group_user_info, '', FALSE, [
 				''		=> "",
 				'user'	=> __( "En son nom (personne physique)", 'yproject' ),
 				'orga'	=> __( "En tant qu'organisation (personne morale)", 'yproject' )
-			]
-		);
-		
+			]);
+
 		//**********************************************************************
 		// Sélection de l'organisation : $field_group_orga_select
-		$this->addField(
-			'select',
-			'orga_id',
-			__( "Au nom de", 'yproject' ),
-			self::$field_group_orga_select,
-			'',
-			FALSE,
-			[
+		$this->addField('select', 'orga_id', __( "Au nom de", 'yproject' ), self::$field_group_orga_select, '', FALSE, [
 				''			=> "",
 				'new-orga'	=> __( "Nouvelle organisation", 'yproject' )
-			]
-		);
-		
+			]);
+
 		//**********************************************************************
 		// Informations de l'orga : $field_group_orga_info
-		$this->addField(
-			'text',
-			'org_name',
-			__( "D&eacute;nomination sociale *", 'yproject' ),
-			self::$field_group_orga_info
-		);
-		
-		$this->addField(
-			'text',
-			'org_email',
-			__( "E-mail de contact *", 'yproject' ),
-			self::$field_group_orga_info,
-			FALSE,
-			__( "Cette adresse doit &ecirc;tre diff&eacute;rente de celle de la personne physique rattach&eacute;e &agrave; l'organisation.", 'yproject' )
-		);
-		
-		$this->addField(
-			'text',
-			'org_website',
-			__( "Site internet *", 'yproject' ),
-			self::$field_group_orga_info,
-			FALSE,
-			__( "Si la structure n'a pas de site internet, indiquez l'url de sa page societe.com.", 'yproject' )
-		);
-		
-		$this->addField(
-			'text',
-			'org_legalform',
-			__( "Forme juridique *", 'yproject' ),
-			self::$field_group_orga_info
-		);
-		
-		$this->addField(
-			'text',
-			'org_idnumber',
-			__( "Num&eacute;ro SIRET *", 'yproject' ),
-			self::$field_group_orga_info
-		);
-		
-		$this->addField(
-			'text',
-			'org_rcs',
-			__( "RCS (Ville) *", 'yproject' ),
-			self::$field_group_orga_info
-		);
-		
-		$this->addField(
-			'text',
-			'org_capital',
-			__( "Capital social (en euros) *", 'yproject' ),
-			self::$field_group_orga_info
-		);
-		
-		$this->addField(
-			'text',
-			'org_address_number',
-			__( "Num&eacute;ro de rue *", 'yproject' ),
-			self::$field_group_orga_info
-		);
+		$this->addField('text', 'org_name', __( "D&eacute;nomination sociale *", 'yproject' ), self::$field_group_orga_info);
+
+		$this->addField('text', 'org_email', __( "E-mail de contact *", 'yproject' ), self::$field_group_orga_info, FALSE, __( "Cette adresse doit &ecirc;tre diff&eacute;rente de celle de la personne physique rattach&eacute;e &agrave; l'organisation.", 'yproject' ));
+
+		$this->addField('text', 'org_website', __( "Site internet *", 'yproject' ), self::$field_group_orga_info, FALSE, __( "Si la structure n'a pas de site internet, indiquez l'url de sa page societe.com.", 'yproject' ));
+
+		$this->addField('text', 'org_legalform', __( "Forme juridique *", 'yproject' ), self::$field_group_orga_info);
+
+		$this->addField('text', 'org_idnumber', __( "Num&eacute;ro SIRET *", 'yproject' ), self::$field_group_orga_info);
+
+		$this->addField('text', 'org_rcs', __( "RCS (Ville) *", 'yproject' ), self::$field_group_orga_info);
+
+		$this->addField('text', 'org_capital', __( "Capital social (en euros) *", 'yproject' ), self::$field_group_orga_info);
+
+		$this->addField('text', 'org_address_number', __( "Num&eacute;ro de rue *", 'yproject' ), self::$field_group_orga_info);
 
 		global $address_number_complements;
-		$this->addField(
-			'select',
-			'org_address_number_comp',
-			__( "Compl&eacute;ment de num&eacute;ro", 'yproject' ),
-			self::$field_group_orga_info,
-			'',
-			FALSE,
-			$address_number_complements
-		);
-			
-		
-		$this->addField(
-			'text',
-			'org_address',
-			__( "Adresse *", 'yproject' ),
-			self::$field_group_orga_info
-		);
-		
-		$this->addField(
-			'text',
-			'org_postal_code',
-			__( "Code postal *", 'yproject' ),
-			self::$field_group_orga_info
-		);
-		
-		$this->addField(
-			'text',
-			'org_city',
-			__( "Ville *", 'yproject' ),
-			self::$field_group_orga_info
-		);
+		$this->addField('select', 'org_address_number_comp', __( "Compl&eacute;ment de num&eacute;ro", 'yproject' ), self::$field_group_orga_info, '', FALSE, $address_number_complements);
+
+		$this->addField('text', 'org_address', __( "Adresse *", 'yproject' ), self::$field_group_orga_info);
+
+		$this->addField('text', 'org_postal_code', __( "Code postal *", 'yproject' ), self::$field_group_orga_info);
+
+		$this->addField('text', 'org_city', __( "Ville *", 'yproject' ), self::$field_group_orga_info);
 
 		global $country_list;
-		$this->addField(
-			'select',
-			'org_nationality',
-			__( "Pays *", 'yproject' ),
-			self::$field_group_orga_info,
-			FALSE,
-			FALSE,
-			$country_list
-		);
-		
+		$this->addField('select', 'org_nationality', __( "Pays *", 'yproject' ), self::$field_group_orga_info, FALSE, FALSE, $country_list);
+
 		//**********************************************************************
 		// Fichiers de l'investissement : $field_group_invest_files
-		$this->addField(
-			'file',
-			'picture-check',
-			__( "Photo du ch&egrave;que *", 'yproject' ),
-			self::$field_group_invest_files
-		);
-		
-		$this->addField(
-			'file',
-			'picture-contract',
-			__( "Photos du contrat (toutes les pages paraph&eacute;es et la derni&egrave;re sign&eacute;e) *", 'yproject' ),
-			self::$field_group_invest_files
-		);
-		
+		$this->addField('file', 'picture-check', __( "Photo du ch&egrave;que *", 'yproject' ), self::$field_group_invest_files);
+
+		$this->addField('file', 'picture-contract', __( "Photos du contrat (toutes les pages paraph&eacute;es et la derni&egrave;re sign&eacute;e) *", 'yproject' ), self::$field_group_invest_files);
 	}
-	
+
 	public function postFormAjax() {
 		parent::postForm();
-		
+
 		$data_to_save = array();
 		$feedback_errors = array();
-		
+
 		if ( empty( $this->campaign_id ) ) {
 			$this->campaign_id = $this->getInputText( 'campaign-id' );
 		}
 		$campaign = new ATCF_Campaign( $this->campaign_id );
-		
+
 		// On s'en fout du feedback, ça ne devrait pas arriver
 		if ( !$campaign->current_user_can_edit() ) {
 			$error = array(
@@ -367,7 +145,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				'cant-edit'
 			);
 			array_push( $feedback_errors, $error );
-			
+
 		// Analyse du formulaire
 		} else {
 			// Informations de base
@@ -381,7 +159,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				);
 				array_push( $feedback_errors, $error );
 			}
-			
+
 			$invest_amount = $this->getInputTextMoney( 'invest-amount' );
 			$data_to_save[ 'invest_amount' ] = $invest_amount;
 			if ( $invest_amount < 10 ) {
@@ -417,7 +195,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				);
 				array_push( $feedback_errors, $error );
 			}
-			
+
 			$gender = $this->getInputText( 'gender' );
 			$data_to_save[ 'gender' ] = $gender;
 			if ( empty( $gender ) ) {
@@ -544,7 +322,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				);
 				array_push( $feedback_errors, $error );
 			}
-			
+
 			$user_type = $this->getInputText( 'user_type' );
 			$data_to_save[ 'user_type' ] = $user_type;
 			if ( $user_type == 'orga' ) {
@@ -560,7 +338,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					);
 					array_push( $feedback_errors, $error );
 				}
-				
+
 				$orga_email = $this->getInputText( 'org_email' );
 				$data_to_save[ 'orga_email' ] = $orga_email;
 				if ( empty( $orga_email ) || !is_email( $orga_email ) ) {
@@ -591,7 +369,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 						array_push( $feedback_errors, $error );
 					}
 				}
-				
+
 				$orga_website = $this->getInputText( 'org_website' );
 				$data_to_save[ 'orga_website' ] = $orga_website;
 				if ( empty( $orga_website ) ) {
@@ -687,7 +465,7 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 					array_push( $feedback_errors, $error );
 				}
 			}
-			
+
 			$file_picture_check = $this->getInputFile( 'picture-check' );
 			if ( empty( $file_picture_check ) ) {
 				$error = array(
@@ -707,31 +485,31 @@ class WDG_Form_Dashboard_Add_Check extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 		}
-		
+
 		$feedback_success = '0';
 		if ( empty( $feedback_errors ) ) {
 			$feedback_success = '1';
 			$investment_draft_item = WDGWPREST_Entity_InvestmentDraft::create( 'draft', $campaign->get_api_id(), $data_to_save );
-			
+
 			// photo du chèque
 			$file_name = $file_picture_check[ 'name' ];
 			$file_name_exploded = explode( '.', $file_name );
 			$ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
 			$byte_array = file_get_contents( $file_picture_check[ 'tmp_name' ] );
 			$file_picture_check = WDGWPREST_Entity_File::create( $investment_draft_item->id, 'investment-draft', 'picture-check', $ext, base64_encode( $byte_array ) );
-			
+
 			// photo du contrat
 			$file_name = $file_picture_contract[ 'name' ];
 			$file_name_exploded = explode( '.', $file_name );
 			$ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
 			$byte_array = file_get_contents( $file_picture_contract[ 'tmp_name' ] );
 			$file_picture_contract = WDGWPREST_Entity_File::create( $investment_draft_item->id, 'investment-draft', 'picture-contract', $ext, base64_encode( $byte_array ) );
-			
-			$dashboard_url = home_url( '/tableau-de-bord/?campaign_id=' . $campaign->ID );
+
+			$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' . $campaign->ID;
 			NotificationsSlack::investment_draft_created_admin( $campaign->get_name(), $dashboard_url );
 			NotificationsAsana::investment_draft_created_admin( $campaign->get_name(), $dashboard_url );
 		}
-			
+
 		$buffer = array(
 			'success'	=> $feedback_success,
 			'errors'	=> $feedback_errors

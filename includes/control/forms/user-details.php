@@ -103,25 +103,22 @@ class WDG_Form_User_Details extends WDG_Form {
 			$is_subscribed_to_newsletter = FALSE;
 			$user_email = $WDGUser->get_email();
 			if ( !empty( $user_email ) ) {
-				$return = FALSE;
+				$result = FALSE;
 				try {
-					$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-					$return = $mailin->get_user( array(
-						"email"		=> $user_email
-					) );
+					$sib_instance = SIBv3Helper::instance();
+					$result = $sib_instance->getContactInfo( $user_email );
 				} catch ( Exception $e ) {
 					ypcf_debug_log( "WDGUser::set_subscribe_authentication_notification > erreur sendinblue" );
 				}
 
-				if ( isset( $return[ 'code' ] ) && $return[ 'code' ] != 'failure' ) {
-					if ( isset( $return[ 'data' ] ) && isset( $return[ 'data' ][ 'listid' ] ) ) {
-						$lists_is_in = array();
-						foreach( $return[ 'data' ][ 'listid' ] as $list_id ) {
-							$lists_is_in[ $list_id ] = TRUE;
-						}
-						if ( !empty( $lists_is_in[ 5 ] ) && !empty( $lists_is_in[ 6 ] ) ) {
-							$is_subscribed_to_newsletter = TRUE;
-						}
+				if ( !empty( $result ) ) {
+					$listIds = $result->getListIds();
+					$lists_is_in = array();
+					foreach( $listIds as $list_id ) {
+						$lists_is_in[ $list_id ] = TRUE;
+					}
+					if ( !empty( $lists_is_in[ 5 ] ) && !empty( $lists_is_in[ 6 ] ) ) {
+						$is_subscribed_to_newsletter = TRUE;
 					}
 				}
 			}
@@ -506,11 +503,9 @@ class WDG_Form_User_Details extends WDG_Form {
 						$subscribe_newsletter = $this->getInputChecked( 'subscribe_newsletter' );
 						if ( empty( $subscribe_newsletter ) ) {
 							try {
-								$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-								$return = $mailin->create_update_user( array(
-									"email"		=> $email,
-									"listid_unlink"	=> array( 5, 6 )
-								) );
+								$sib_instance = SIBv3Helper::instance();
+								$sib_instance->removeContactFromList( $email, 5 );
+								$sib_instance->removeContactFromList( $email, 6 );
 							} catch ( Exception $e ) {
 								ypcf_debug_log( "postForm > erreur de désinscription à la NL -- " . print_r( $e, TRUE ) );
 							}

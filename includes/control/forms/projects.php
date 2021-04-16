@@ -11,21 +11,21 @@ class WDGFormProjects {
 		}
 		$campaign->add_lang($posted_lang);
 	}
-	
+
 	/**
 	 * Gère le formulaire d'ajout d'actualité
 	 */
 	public static function form_validate_news_add($campaign_id) {
 		$post_campaign = get_post($campaign_id);
 		$campaign = atcf_get_campaign($post_campaign);
-		if (!$campaign->current_user_can_edit() 
+		if (!$campaign->current_user_can_edit()
 				|| !isset($_POST['action'])
 				|| $_POST['action'] != 'ypcf-campaign-add-news') {
 			return FALSE;
 		}
 
 		$current_user = wp_get_current_user();
-		
+
 		$post_title = filter_input( INPUT_POST, 'posttitle' );
 		if ( empty( $post_title ) ) {
 			$date = new DateTime();
@@ -52,7 +52,7 @@ class WDGFormProjects {
 		));
 		$file_cacher = WDG_File_Cacher::current();
 		$file_cacher->delete( $campaign->data->post_name );
-                
+
 		//Envoi de notifications mails
 		$send_mail = filter_input( INPUT_POST, 'send_mail' );
 		if ( $send_mail == 'on' ) {
@@ -67,7 +67,7 @@ class WDGFormProjects {
 				array_push( $recipients, get_userdata( $item->user_id )->user_email );
 			}
 			$recipients_string = implode( ',', $recipients );
-			
+
 			$content = $_POST[ 'postcontent' ];
 
 			// Algo pour supprimer les liens qui mènent vers WDG et qui sont automatiquement appliqués aux images par WP
@@ -92,11 +92,11 @@ class WDGFormProjects {
 				}
 			}
 			$content_without_links = implode( 'href="', $content_exploded_by_href );
-			
+
 			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $_POST[ 'posttitle' ], $content_without_links );
 		}
 	}
-	
+
 	/**
 	 * Check si on veut valider un paiement
 	 */
@@ -107,68 +107,67 @@ class WDGFormProjects {
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
 		if ( !empty( $approve_payment_id ) && !empty( $campaign_id ) && $current_wdg_user->is_admin() ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			
+
 			$WDGInvestment = new WDGInvestment( $approve_payment_id );
 			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
 				ypcf_get_updated_payment_status( $WDGInvestment->get_id() );
-				
-			} else if ( $WDGInvestment->get_saved_status() != 'publish' ) {
-				$postdata = array(
+			} else {
+				if ( $WDGInvestment->get_saved_status() != 'publish' ) {
+					$postdata = array(
 					'ID'			=> $approve_payment_id,
 					'post_status'	=> 'publish',
 					'edit_date'		=> current_time( 'mysql' )
 				);
-				wp_update_post($postdata);
+					wp_update_post($postdata);
 
-				// - Créer le contrat pdf
-				// - Envoyer validation d'investissement par mail
-				$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
-				$amount = edd_get_payment_amount( $approve_payment_id );
-				$contribution_id = edd_get_payment_key($approve_payment_id);
-				$is_only_wallet = FALSE;
-				if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
-					$is_only_wallet = TRUE;
-				}
-
-				if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
-					$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
-					$contract_id = $WDGInvestmentSignature->create_eversign();
-					if ( !empty( $contract_id ) ) {
-						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-
-					} else {
-						global $contract_errors;
-						$contract_errors = 'contract_failed';
-						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-						NotificationsAsana::new_purchase_admin_error_contract( $approve_payment_id );
+					// - Créer le contrat pdf
+					// - Envoyer validation d'investissement par mail
+					$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
+					$amount = edd_get_payment_amount( $approve_payment_id );
+					$contribution_id = edd_get_payment_key($approve_payment_id);
+					$is_only_wallet = FALSE;
+					if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
+						$is_only_wallet = TRUE;
 					}
 
-				} else {
-					ypcf_debug_log( 'form_approve_payment > getNewPdfToSign' );
-					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
-					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-				}
+					if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
+						$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
+						$contract_id = $WDGInvestmentSignature->create_eversign();
+						if ( !empty( $contract_id ) ) {
+							NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
+						} else {
+							global $contract_errors;
+							$contract_errors = 'contract_failed';
+							NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
+							NotificationsAsana::new_purchase_admin_error_contract( $approve_payment_id );
+						}
+					} else {
+						ypcf_debug_log( 'form_approve_payment > getNewPdfToSign' );
+						$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
+						NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
+					}
 
-				NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
-				$WDGInvestment = new WDGInvestment( $approve_payment_id );
-				$WDGInvestment->save_to_api();
+					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
+					$WDGInvestment = new WDGInvestment( $approve_payment_id );
+					$WDGInvestment->save_to_api();
+				}
 			}
-			
+
 			do_action('wdg_delete_cache', array(
 				'home-projects',
 				'projectlist-projects-current',
 				'cache_campaign_' . $campaign_id,
 				'API::wdg/v1/project/' . $campaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1 ?'
-			));			
+			));
 			$file_cacher = WDG_File_Cacher::current();
 			$file_cacher->build_campaign_page_cache( $campaign_id );
-			
-			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' . $campaign_id . '&success_msg=approvepayment' );
+
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' . $campaign_id . '&success_msg=approvepayment' );
 			exit();
 		}
 	}
-	
+
 	/**
 	 * Check si on veut annuler un paiement
 	 */
@@ -181,19 +180,19 @@ class WDGFormProjects {
 			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_refused );
 			}
-			
+
 			if ( $WDGInvestment->get_saved_status() != 'pending' || $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$WDGInvestment->refund();
 			}
-			
+
 			$WDGInvestment->cancel();
-			
-			wp_redirect( home_url( '/tableau-de-bord/' ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
+
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' . $campaign_id . '&success_msg=cancelpayment#contacts' );
 			exit();
 		}
 	}
 
-	public static function edit_image_url_video( $image, $post_video, $campaign_id ) {
+	public static function edit_image_url_video($image, $post_video, $campaign_id) {
 		$buffer = '';
 		//ajout de l'image
 		if (!empty($image)) {
@@ -201,7 +200,7 @@ class WDGFormProjects {
 			$upload = wp_handle_upload( $image, $upload_overrides );
 			if (isset($upload[ 'url' ])) {
 				$attachment = array(
-					'guid'           => $upload[ 'url' ], 
+					'guid'           => $upload[ 'url' ],
 					'post_mime_type' => $upload[ 'type' ],
 					'post_title'     => 'image_home',
 					'post_content'   => '',
@@ -215,13 +214,10 @@ class WDGFormProjects {
 				foreach ($old_attachement_id as $item) {
 					wp_delete_attachment($item->ID, true);
 				}
-				
-				$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign_id );	
 
-				wp_update_attachment_metadata( 
-					$attach_id, 
-					wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ) 
-				);
+				$attach_id = wp_insert_attachment( $attachment, $upload[ 'file' ], $campaign_id );
+
+				wp_update_attachment_metadata($attach_id, wp_generate_attachment_metadata( $attach_id, $upload[ 'file' ] ));
 				$buffer .= $upload[ 'url' ] . '|';
 
 				$file = get_attached_file( $attach_id );
@@ -236,22 +232,28 @@ class WDGFormProjects {
 		//ajout de l'url de la vidéo
 		if (isset($post_video)) {
 			$current_lang = get_locale();
-			if ($current_lang == 'fr_FR') { $current_lang = ''; }
-			else { $current_lang = '_' . $current_lang; }
-			
+			if ($current_lang == 'fr_FR') {
+				$current_lang = '';
+			} else {
+				$current_lang = '_' . $current_lang;
+			}
+
 			update_post_meta( $campaign_id, 'campaign_video' .$current_lang, esc_url( $post_video ) );
 			$buffer .= $post_video . '|';
 		}
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Gère les fichiers de comptes annuels
 	 */
 	public static function form_submit_account_files() {
-		if (!isset($_GET["campaign_id"])) { return FALSE; }
+		if (!isset($_GET["campaign_id"])) {
+			return FALSE;
+		}
 		$campaign_id = filter_input(INPUT_GET, 'campaign_id');
-		
+
 		$declaration_list = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
 		foreach ( $declaration_list as $declaration ) {
 			$file = $_FILES[ 'accounts_file_' .$declaration->id ];
@@ -261,96 +263,94 @@ class WDGFormProjects {
 			}
 		}
 	}
-	
+
 	public static function return_lemonway_card() {
 		$buffer = FALSE;
-		
+
 		$wk_token = filter_input( INPUT_GET, 'response_wkToken' );
 		if ( !empty( $wk_token ) && $wk_token != 'error' ) {
 			$declaration = WDGROIDeclaration::get_by_payment_token( $wk_token );
 			if ($declaration->status == WDGROIDeclaration::$status_payment) {
-
 				//Si le paiement est réussi
 				$transaction_result = LemonwayLib::get_transaction_by_id( $wk_token );
 				if ( $transaction_result->STATUS == 3 ) {
-						$date_now = new DateTime();
-						$declaration->date_paid = $date_now->format( 'Y-m-d' );
-						$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
-						$declaration->status = WDGROIDeclaration::$status_transfer;
-						$declaration->save();
-						NotificationsSlack::send_notification_roi_payment_success_admin( $declaration->id );
-						NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
-						
-						$campaign = atcf_get_current_campaign();
-						$current_organization = $campaign->get_organization();
-						$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
-						$organization->check_register_royalties_lemonway_wallet();
-						LemonwayLib::ask_transfer_funds( $organization->get_lemonway_id(), $organization->get_royalties_lemonway_id(), $declaration->get_amount_with_adjustment() );
-						$buffer = TRUE;
+					$date_now = new DateTime();
+					$declaration->date_paid = $date_now->format( 'Y-m-d' );
+					$declaration->mean_payment = WDGROIDeclaration::$mean_payment_card;
+					$declaration->status = WDGROIDeclaration::$status_transfer;
+					$declaration->save();
+					NotificationsSlack::send_notification_roi_payment_success_admin( $declaration->id );
+					NotificationsEmails::send_notification_roi_payment_success_user( $declaration->id );
 
+					$campaign = atcf_get_current_campaign();
+					$current_organization = $campaign->get_organization();
+					$organization = new WDGOrganization( $current_organization->wpref, $current_organization );
+					$organization->check_register_royalties_lemonway_wallet();
+					LemonwayLib::ask_transfer_funds( $organization->get_lemonway_id(), $organization->get_royalties_lemonway_id(), $declaration->get_amount_with_adjustment() );
+					$buffer = TRUE;
 				} else {
 					NotificationsSlack::send_notification_roi_payment_error_admin( $declaration->id );
 					$buffer = $transaction_result->INT_MSG;
-
 				}
 			}
 		}
-		
+
 		return $buffer;
 	}
 
-    /**
-     * Crée le contenu du mail envoyé via le dashboard
-     * @param $initial_content Texte brut entré par l'utilisateur
-     * @param $mail_title Titre brut
-     * @param $campaign_id
-     * @param array $variables Données pour remplacer les éléments de texte
-     *          ['investwish'] Valeur pour remplacer %investwish%
-     *          ['username'] Valeur pour remplacer %username%
-     * @return array
-     *          ['title'] Titre transformé
-     *          ['body'] Contenu du mail transformé
-     */
-    public static function build_mail_text($initial_content, $mail_title, $campaign_id, $variables = array()){
-        $post_campaign = get_post($campaign_id);
+	/**
+	 * Crée le contenu du mail envoyé via le dashboard
+	 * @param $initial_content Texte brut entré par l'utilisateur
+	 * @param $mail_title Titre brut
+	 * @param $campaign_id
+	 * @param array $variables Données pour remplacer les éléments de texte
+	 *          ['investwish'] Valeur pour remplacer %investwish%
+	 *          ['username'] Valeur pour remplacer %username%
+	 * @return array
+	 *          ['title'] Titre transformé
+	 *          ['body'] Contenu du mail transformé
+	 */
+	public static function build_mail_text($initial_content, $mail_title, $campaign_id, $variables = array()) {
+		$post_campaign = get_post($campaign_id);
 
-        $author = get_userdata($post_campaign->post_author);
-        $campaign_author_str = $author->first_name . ' ' . $author->last_name;
-        if (empty($campaign_author_str)) { $campaign_author_str = $author->user_login; }
+		$author = get_userdata($post_campaign->post_author);
+		$campaign_author_str = $author->first_name . ' ' . $author->last_name;
+		if (empty($campaign_author_str)) {
+			$campaign_author_str = $author->user_login;
+		}
 
-        $userfirstname = $variables[ 'userfirstname' ];
-        if ( empty( $userfirstname ) ){
-            $userfirstname = "<i>(Nom du destinataire)</i>";
-        }
-        $userlastname = $variables[ 'userlastname' ];
-        if ( empty( $userlastname ) ){
-            $userlastname = "<i>(Nom du destinataire)</i>";
-        }
+		$userfirstname = $variables[ 'userfirstname' ];
+		if ( empty( $userfirstname ) ) {
+			$userfirstname = "<i>(Nom du destinataire)</i>";
+		}
+		$userlastname = $variables[ 'userlastname' ];
+		if ( empty( $userlastname ) ) {
+			$userlastname = "<i>(Nom du destinataire)</i>";
+		}
 
-        $investwish = $variables['investwish'];
-        if(empty($investwish)){
-            $investwish = "<i>(Intention d'investissement)</i>";
-        }
+		$investwish = $variables['investwish'];
+		if (empty($investwish)) {
+			$investwish = "<i>(Intention d'investissement)</i>";
+		}
 
+		$body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">';
 
-        $body_content = '<div style="font-family: sans-serif; padding: 10px 5%;">';
+		$body_content .= $initial_content.'<br />';
 
-        $body_content .= $initial_content.'<br />';
+		$body_content .= '</div>';
 
-        $body_content .= '</div>';
+		$body_content = str_replace('%userfirstname%', $userfirstname, $body_content);
+		$body_content = str_replace('%userlastname%', $userlastname, $body_content);
+		$body_content = str_replace('%investwish%', $investwish, $body_content);
 
-        $body_content = str_replace('%userfirstname%', $userfirstname, $body_content);
-        $body_content = str_replace('%userlastname%', $userlastname, $body_content);
-        $body_content = str_replace('%investwish%', $investwish, $body_content);
+		$transformed_title = $post_campaign->post_title.' : '.$mail_title;
+		$transformed_title = str_replace('%userfirstname%', $userfirstname, $transformed_title);
+		$transformed_title = str_replace('%userlastname%', $userlastname, $transformed_title);
+		$transformed_title = str_replace('%investwish%', $investwish, $transformed_title);
 
-        $transformed_title = $post_campaign->post_title.' : '.$mail_title;
-        $transformed_title = str_replace('%userfirstname%', $userfirstname, $transformed_title);
-        $transformed_title = str_replace('%userlastname%', $userlastname, $transformed_title);
-        $transformed_title = str_replace('%investwish%', $investwish, $transformed_title);
-
-        return array(
+		return array(
             'title'=>$transformed_title,
             'body'=>$body_content
         );
-    }
+	}
 }
