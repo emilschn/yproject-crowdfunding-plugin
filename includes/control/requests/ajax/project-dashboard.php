@@ -1028,7 +1028,7 @@ class WDGAjaxActionsProjectDashboard {
 			$array_contacts[$u_id]["vote"]=1;
 			$array_contacts[$u_id]["vote_date"]=$item_vote->date;
 			$array_contacts[$u_id]["invest_id"] = 0;
-			$array_contacts[$u_id]["vote_invest_sum"]=$item_vote->invest_sum;
+			$array_contacts[$u_id]["vote_invest_sum"]=$item_vote->invest_sum.' €';
 
 			$array_contacts[$u_id]["vote_advice"]= ( !empty( $item_vote->advice ) ) ? '<i class="infobutton fa fa-comment" aria-hidden="true"></i><div class="tooltiptext">'.$item_vote->advice.'</div>' : '';
 			$array_contacts[$u_id]["vote_rate"] = $item_vote->rate_project;
@@ -1187,18 +1187,6 @@ class WDGAjaxActionsProjectDashboard {
 							if ( $wdg_contract->status == 'validated' ) {
 								$wdg_contract_status = 'Contrat signé';
 							} else {
-								/*
-								$signsquid_contract = new SignsquidContract( FALSE, $wdg_contract->partner_id );
-								$signsquid_status = $signsquid_contract->get_status_code();
-								if ( $signsquid_status == 'Agreed' ) {
-									WDGWPREST_Entity_Contract::edit( $wdg_contract_id, 'validated' );
-								}
-								$wdg_contract_status = $signsquid_contract->get_status_str();
-								if ( $signsquid_status == 'WaitingForSignatoryAction' && $current_wdg_user->is_admin() ) {
-									$wdg_contract_status .= ' - code (admin) : ' . $signsquid_contract->get_signing_code();
-								}
-								 *
-								 */
 								$wdg_contract_status = 'Signsquid désactivé';
 							}
 						}
@@ -1215,7 +1203,7 @@ class WDGAjaxActionsProjectDashboard {
 				$more_invest = array();
 				$more_invest["invest_payment_type"] = $payment_type;
 				$more_invest["invest_payment_status"] = $payment_status;
-				$more_invest["invest_amount"] = $invest_amount;
+				$more_invest["invest_amount"] = $invest_amount.' €';
 				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
 				$datetime->add( new DateInterval( 'PT1H' ) );
 				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
@@ -1224,10 +1212,11 @@ class WDGAjaxActionsProjectDashboard {
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 			} else {
 				$array_contacts[$u_id]["invest"] = 1;
+				$array_contacts[$u_id]["invest_status"] = ( $post_invest_status == 'publish' ? 'success' : 'error' );
 				$array_contacts[$u_id]["more_invest"] = array();
 				$array_contacts[$u_id]["invest_payment_type"] = $payment_type;
 				$array_contacts[$u_id]["invest_payment_status"] = $payment_status;
-				$array_contacts[$u_id]["invest_amount"] = $invest_amount;
+				$array_contacts[$u_id]["invest_amount"] = $invest_amount.' €';
 				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
 				$datetime->add( new DateInterval( 'PT1H' ) );
 				$array_contacts[$u_id]["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
@@ -1487,46 +1476,45 @@ class WDGAjaxActionsProjectDashboard {
 			$display_vote_infos = false;
 		}
 
-		$imggood = '<img src="'.get_stylesheet_directory_uri().'/images/good.png" alt="suit" title="Suit le projet" width="30px" class="infobutton" style="margin-left:0px;"/>';
-		$imggoodvote = '<img src="'.get_stylesheet_directory_uri().'/images/goodvote.png" alt="vote" title="A évalué" width="30px" class="infobutton" style="margin-left:0px;"/>';
-		$imggoodmains = '<img src="'.get_stylesheet_directory_uri().'/images/goodmains.png" alt="investi" title="A investi" width="30px" class="infobutton" style="margin-left:0px;"/>';
+
 
 		$array_columns = array(
 			new ContactColumn('checkbox', '', true, 0, "none"),
-			new ContactColumn('user_first_name', 'Prénom', true, 1),
-            new ContactColumn('user_last_name', 'Nom', true, 2),
+			new ContactColumn('user_first_name', 'PRÉNOM', true, 1),
+            new ContactColumn('user_last_name', 'NOM', true, 2),
 
-			new ContactColumn('follow', $imggood.'<span class="badge-notif">'.count($list_user_follow).'</div>', true, 3, "check", "N'afficher que les contacts suivant le projet"),
-			new ContactColumn('vote', $imggoodvote.'<span class="badge-notif">'.count($list_user_voters).'</div>', true, 4, "check", "N'afficher que les contacts ayant évalué"),
-            new ContactColumn('invest', $imggoodmains.'<span class="badge-notif">'.$count_distinct_investors.'</div>', true, 5, "check", "N'afficher que les contacts ayant investi"),
-			new ContactColumn('vote_invest_sum', 'Intention d\'inv.', true, 6),
+			new ContactColumn('vote', 'A ÉVALUÉ', true, 3, "check", "N'afficher que les contacts ayant évalué"),
+			new ContactColumn('vote_invest_sum', 'INTENTION D\'INV.', true, 4),
 
-			new ContactColumn('vote_rate', "Note d'éval.", $display_vote_infos, ($display_vote_infos ? 7 : 25)),
-            new ContactColumn('vote_date', "Date d'éval.", $display_vote_infos, ($display_vote_infos ? 8 : 26)),
-			new ContactColumn('vote_advice', 'Conseil', $display_vote_infos, ($display_vote_infos ? 9 : 27)),
-			new ContactColumn( 'vote_more_info', '+ infos sur', $display_vote_infos, ($display_vote_infos ? 10 : 28) ),
+			new ContactColumn('vote_rate', "NOTE D'ÉVAL.", $display_vote_infos, ($display_vote_infos ? 5 : 23)),
+            new ContactColumn('vote_date', "DATE D'ÉVAL.", $display_vote_infos, ($display_vote_infos ? 6 : 24)),
+			new ContactColumn('vote_advice', 'CONSEIL', $display_vote_infos, ($display_vote_infos ? 7 : 25)),
+			new ContactColumn( 'vote_more_info', '+ INFOS SUR', $display_vote_infos, ($display_vote_infos ? 8 : 26) ),
 
-            new ContactColumn('user_link', 'Utilisateur', true, ($display_vote_infos ? 11 : 12)),
+            new ContactColumn('user_link', 'UTILISATEUR', true, ($display_vote_infos ? 9 : 10)),
 
-			new ContactColumn('invest_amount', 'Montant investi', true, ($display_vote_infos ? 12 : 7)),
-            new ContactColumn('invest_date', 'Date d\'inv.', true, ($display_vote_infos ? 13 : 8)),
-            new ContactColumn('invest_payment_type', 'Moyen de paiement', true, ($display_vote_infos ? 14 : 9) ),
-            new ContactColumn('user_authentication', 'Authentification', true, ($display_vote_infos ? 15 : 10) ),
-			new ContactColumn('invest_payment_status', 'Paiement', true, ($display_vote_infos ? 16 : 11) ),
+			new ContactColumn('invest_amount', 'MONTANT INVESTI', true, ($display_vote_infos ? 10 : 5)),
+            new ContactColumn('invest_date', 'DATE D\'INV.', true, ($display_vote_infos ? 11 : 6)),
+            new ContactColumn('invest_payment_type', 'MOYEN DE PAIEMENT', true, ($display_vote_infos ? 12 : 7) ),
+            new ContactColumn('user_authentication', 'AUTHENTIFICATION', true, ($display_vote_infos ? 13 : 8) ),
+			new ContactColumn('invest_payment_status', 'PAIEMENT', true, ($display_vote_infos ? 14 : 9) ),
 
-			new ContactColumn('invest_sign', 'Signature', $display_vote_infos, ($display_vote_infos ? 17 : 24) ),
+			new ContactColumn('invest_sign', 'SIGNATURE', $display_vote_infos, ($display_vote_infos ? 15 : 22) ),
 
-			new ContactColumn( 'source-how-known', 'Src. (connu)', true, ($display_vote_infos ? 18 : 13)),
-			new ContactColumn( 'source-where-from', 'Src. (arrivée)', true, ($display_vote_infos ? 19 : 14) ),
-			new ContactColumn('user_mobile_phone', 'Téléphone', true, ($display_vote_infos ? 20 : 15)),
-            new ContactColumn('user_address', 'Adresse', false, ($display_vote_infos ? 21 : 16)),
-            new ContactColumn('user_postal_code', 'Code postal', false, ($display_vote_infos ? 22 : 17)),
-            new ContactColumn('user_city', 'Ville', false, ($display_vote_infos ? 23 : 18)),
-            new ContactColumn('user_country', 'Pays', false, ($display_vote_infos ? 24 : 19)),
-            new ContactColumn('user_gender', 'Genre', false, ($display_vote_infos ? 25 : 20)),
-            new ContactColumn('user_birthday', 'Date de naissance', false, ($display_vote_infos ? 26 : 21)),
-            new ContactColumn('user_birthplace', 'Ville de naissance', false, ($display_vote_infos ? 27 : 22)),
-			new ContactColumn('user_nationality', 'Nationalité', false, ($display_vote_infos ? 28 : 23)),
+			new ContactColumn( 'source-how-known', 'SRC. (CONNU)', true, ($display_vote_infos ? 16 : 11)),
+			new ContactColumn( 'source-where-from', 'SRC. (ARRIVÉE)', true, ($display_vote_infos ? 17 : 12) ),
+			new ContactColumn('user_mobile_phone', 'TÉLÉPHONE', true, ($display_vote_infos ? 18 : 13)),
+            new ContactColumn('user_address', 'ADRESSE', false, ($display_vote_infos ? 19 : 14)),
+            new ContactColumn('user_postal_code', 'CODE POSTAL', false, ($display_vote_infos ? 20 : 15)),
+            new ContactColumn('user_city', 'VILLE', false, ($display_vote_infos ? 21 : 16)),
+            new ContactColumn('user_country', 'PAYS', false, ($display_vote_infos ? 22 : 17)),
+            new ContactColumn('user_gender', 'GENRE', false, ($display_vote_infos ? 23 : 18)),
+            new ContactColumn('user_birthday', 'DATE DE NAISSANCE', false, ($display_vote_infos ? 24 : 19)),
+            new ContactColumn('user_birthplace', 'VILLE DE NAISSANCE', false, ($display_vote_infos ? 25 : 20)),
+			new ContactColumn('user_nationality', 'NATIONALITÉ', false, ($display_vote_infos ? 26 : 21)),
+
+			new ContactColumn('follow', 'SUIT LE PROJET', false, 27, "check", "N'afficher que les contacts suivant le projet"),
+            new ContactColumn('invest', 'A INVESTI', false, 28, "check", "N'afficher que les contacts ayant investi"),
 
 			new ContactColumn('user_id', '', false, 30), // cette colonne est cachée, mais sert à l'envoi des mails
         );
@@ -1534,13 +1522,18 @@ class WDGAjaxActionsProjectDashboard {
 		if ( $contracts_to_add ) {
 			$contract_model_index = 1;
 			foreach ( $contracts_to_add as $contract_model ) {
-				array_push( $array_columns, new ContactColumn('invest_contract_' .$contract_model_index, 'Contrat ' .$contract_model_index, $display_invest_infos, 29) );
+				array_push( $array_columns, new ContactColumn('invest_contract_' .$contract_model_index, 'CONTRAT ' .$contract_model_index, $display_invest_infos, 29) );
 				$contract_model_index++;
 			}
 		}
 
 		// on trie le tableau des colonnes suivant l'ordre de priorité déclaré
-		usort($array_columns, array("ContactColumn", "cmp_obj")); ?>
+		usort($array_columns, array("ContactColumn", "cmp_obj")); 
+		
+		$imgcheck_follow = '<img src="'.get_stylesheet_directory_uri().'/images/check.png" alt="investi" title="A investi" width="25px" style="margin-left:0px;"/>';
+		$imgcheck_vote = '<img src="'.get_stylesheet_directory_uri().'/images/check.png" alt="vote" title="A évalué" width="25px" style="margin-left:0px;"/>';
+		$imgcheck_invest = '<img src="'.get_stylesheet_directory_uri().'/images/check.png" alt="investi" title="A investi" width="25px" style="margin-left:0px;"/>';
+		?>
         <div class="wdg-datatable" >
         <table id="contacts-table" class="display" cellspacing="0">
             <?php //Ecriture des nom des colonnes en haut?>
@@ -1564,15 +1557,17 @@ class WDGAjaxActionsProjectDashboard {
                 	<td>
 					<?php if ( $column->columnData == "follow" && $data_contact[$column->columnData]==1 ): ?>
 						<div class="dirty-hide">1</div>
-						<?php echo $imggood; ?>
+						<?php echo $imgcheck_follow; ?>
 
 					<?php elseif ( $column->columnData == "vote" && $data_contact[$column->columnData]==1 ): ?>
 						<div class="dirty-hide">1</div>
-						<?php echo $imggoodvote; ?>
+						<?php echo $imgcheck_vote; ?>
 
 					<?php elseif ( $column->columnData == "invest" && $data_contact[$column->columnData]==1 ): ?>
-						<div class="dirty-hide">1</div>
-						<?php echo $imggoodmains; ?>
+						<?php if ( $data_contact["invest_status"] == "success" ): ?>
+							<div class="dirty-hide">1</div>
+							<?php echo $imgcheck_invest; ?>
+						<?php endif; ?>
 						
 					<?php else: ?>
 						<?php echo $data_contact[$column->columnData]; ?>
@@ -1588,15 +1583,17 @@ class WDGAjaxActionsProjectDashboard {
                 	<td>
 					<?php if ( $column->columnData == "follow" && $data_contact[$column->columnData]==1 ): ?>
 						<div class="dirty-hide">1</div>
-						<?php echo $imggood; ?>
+						<?php echo $imgcheck_follow; ?>
 
 					<?php elseif ( $column->columnData == "vote" && $data_contact[$column->columnData]==1 ): ?>
 						<div class="dirty-hide">1</div>
-						<?php echo $imggoodvote; ?>
+						<?php echo $imgcheck_vote; ?>
 
 					<?php elseif ( $column->columnData == "invest" && $data_contact[$column->columnData]==1 ): ?>
-						<div class="dirty-hide">1</div>
-						<?php echo $imggoodmains; ?>
+						<?php if ( $data_contact["invest_status"] == "success" ): ?>
+							<div class="dirty-hide">1</div>
+							<?php echo $imgcheck_invest; ?>
+						<?php endif; ?>
 						
 					<?php elseif ( $column->columnData == "invest_payment_type"
 										|| $column->columnData == "invest_payment_status"
@@ -1671,7 +1668,7 @@ class WDGAjaxActionsProjectDashboard {
             'default_sort' => $default_sort,
             'array_hidden' => $array_hidden,
             'id_column_user_id' => 30,
-			'id_column_index' => 4
+			'id_column_index' => 3
         ); ?>
         <script type="text/javascript">
             var result_contacts_table = <?php echo(json_encode($result)); ?>
