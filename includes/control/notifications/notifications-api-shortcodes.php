@@ -305,6 +305,90 @@ class NotificationsAPIShortcodes {
 	public static function set_amount_wire_transfer($amount_wire_transfer) {
 		self::$amount_wire_transfer = $amount_wire_transfer;
 	}
+
+	/**
+	 * @var WDGROIDeclaration
+	 */
+	private static $declaration;
+	/**
+	 * Définit la déclaration dont on va utiliser les données
+	 * @param WDGROIDeclaration
+	 */
+	public static function set_declaration($declaration) {
+		self::$declaration = $declaration;
+	}
+
+	/**
+	 * @var Array
+	 */
+	private static $declaration_estimation_data;
+	/**
+	 * Définit les données de prévisionnel d'une déclaration
+	 * @param Array
+	 */
+	public static function set_declaration_estimation_data($declaration_estimation_data) {
+		self::$declaration_estimation_data = $declaration_estimation_data;
+	}
+
+	/**
+	 * @var String
+	 */
+	private static $user_royalties_details;
+	/**
+	 * Définit le texte du résumé des royalties
+	 * @param String
+	 */
+	public static function set_user_royalties_details($user_royalties_details) {
+		self::$user_royalties_details = $user_royalties_details;
+	}
+
+	/**
+	 * @var String
+	 */
+	private static $project_royalties_message;
+	/**
+	 * Définit le texte du message d'un projet pendant le versement de royalties
+	 * @param String
+	 */
+	public static function set_project_royalties_message($project_royalties_message) {
+		self::$project_royalties_message = $project_royalties_message;
+	}
+
+	/**
+	 * @var Object
+	 */
+	private static $prospect_setup_draft;
+	/**
+	 * Définit les données d'un test d'interface prospect
+	 * @param Object
+	 */
+	public static function set_prospect_setup_draft($prospect_setup_draft) {
+		self::$prospect_setup_draft = $prospect_setup_draft;
+	}
+
+	/**
+	 * @var String
+	 */
+	private static $prospect_setup_draft_list;
+	/**
+	 * Définit la liste des tests d'éligibilité d'un utilisateur
+	 * @param String
+	 */
+	public static function set_prospect_setup_draft_list($prospect_setup_draft_list) {
+		self::$prospect_setup_draft_list = $prospect_setup_draft_list;
+	}
+
+	/**
+	 * @var String
+	 */
+	private static $prospect_setup_draft_payment_amount;
+	/**
+	 * Définit le montant du paiement d'un test d'éligibilité
+	 * @param String
+	 */
+	public static function set_prospect_setup_draft_payment_amount($prospect_setup_draft_payment_amount) {
+		self::$prospect_setup_draft_payment_amount = $prospect_setup_draft_payment_amount;
+	}
 	//*************************************
 
 	//*************************************
@@ -690,6 +774,333 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function wire_transfer_amount($atts, $content = '') {
 		return self::$amount_wire_transfer;
+	}
+
+	/**
+	 * Déclaration de CA
+	 * URL directe
+	 */
+	public static function declaration_url($atts, $content = '') {
+		$declaration_direct_url = WDG_Redirect_Engine::override_get_page_url( 'declarer-chiffre-daffaires' ) . '?campaign_id='.self::$campaign->ID.'&declaration_id='.self::$declaration->id;
+
+		return $declaration_direct_url;
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Trois derniers mois en texte
+	 */
+	public static function declaration_last_three_months($atts, $content = '') {
+		$date_due_previous_day = new DateTime( self::$declaration->date_due );
+		$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
+		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
+		$nb_fields = self::$campaign->get_turnover_per_declaration();
+		$date_last_months = new DateTime( self::$declaration->date_due );
+		$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
+		$last_months_str = '';
+		for ( $i = 0; $i < $nb_fields; $i++ ) {
+			$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
+			if ( $i < $nb_fields - 2 ) {
+				$last_months_str .= ', ';
+			}
+			if ( $i == $nb_fields - 2 ) {
+				$last_months_str .= ' et ';
+			}
+			$date_last_months->add( new DateInterval( 'P1M' ) );
+		}
+		$date_due = new DateTime( self::$declaration->date_due );
+		$year = $date_due->format( 'Y' );
+		if ( $date_due->format( 'n' ) < 4 ) {
+			$year--;
+		}
+		$last_months_str .= ' ' . $year;
+
+		return $last_months_str;
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Jour prévu pour la déclaration
+	 */
+	public static function declaration_due_date($atts, $content = '') {
+		$date_due = new DateTime( self::$declaration->date_due );
+
+		return $date_due->format( 'd/m/Y' );
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Veille du jour prévu pour la déclaration
+	 */
+	public static function declaration_due_date_previous_day($atts, $content = '') {
+		$date_due_previous_day = new DateTime( self::$declaration->date_due );
+		$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
+
+		return $date_due_previous_day->format( 'd/m/Y' );
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Montant du CA
+	 */
+	public static function declaration_revenues_amount($atts, $content = '') {
+		return self::$declaration->get_amount_with_adjustment();
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Informations fiscales
+	 */
+	public static function declaration_tax_info($atts, $content = '') {
+		$tax_infos = '';
+		if (self::$declaration->has_paid_gain() ) {
+			$tax_infos = "<br><br>Vos investisseurs ont réalisé une plus-value sur leur investissement.";
+			$tax_infos .= "Ceux et celles dont le foyer fiscal est en France et qui sont soumis à l’impôt sur le revenu ";
+			$tax_infos .= "verront donc 30 % de leur plus-value prélevés à la source (Prélèvement Forfaitaire Unique - flat tax), sauf en cas de demande de dispense de leur part. ";
+			$tax_infos .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement">En savoir plus sur la fiscalité des investissements</a>.';
+		}
+
+		return $tax_infos;
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Numéro du trimestre en cours
+	 */
+	public static function declaration_quarter_count($atts, $content = '') {
+		return self::$declaration_estimation_data[ 'quarter_count' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Montant prévisionnel de l'année
+	 */
+	public static function declaration_estimation_year_amount($atts, $content = '') {
+		return self::$declaration_estimation_data[ 'year_amount' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Pourcent prévisionnel de cette partie de l'année
+	 */
+	public static function declaration_estimation_percent($atts, $content = '') {
+		return self::$declaration_estimation_data[ 'percent' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Montant prévisionnel du trimestre
+	 */
+	public static function declaration_estimation_quarter_amount($atts, $content = '') {
+		return self::$declaration_estimation_data[ 'quarter_amount' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Montant prévisionnel des royalties
+	 */
+	public static function declaration_estimation_amount_royalties($atts, $content = '') {
+		return self::$declaration_estimation_data[ 'amount_royalties' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Montant prévisionnel des frais de gestion des royalties
+	 */
+	public static function declaration_estimation_amount_fees($atts, $content = '') {
+		return self::$declaration_estimation_data[ 'amount_fees' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Montant prévisionnel total
+	 */
+	public static function declaration_estimation_amount_total($atts, $content = '') {
+		return self::$declaration_estimation_data[ 'amount_total' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Date de prélèvement prévue
+	 */
+	public static function declaration_mandate_date($atts, $content = '') {
+		$date_in_5_days = new DateTime();
+		$date_in_5_days->add( new DateInterval('P5D') );
+		$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
+
+		return $mandate_wire_date;
+	}
+
+	/**
+	 * Relevé de royalties
+	 * Description automatique
+	 */
+	public static function royalties_description($atts, $content = '') {
+		return self::$user_royalties_details;
+	}
+
+	/**
+	 * Message de versement individuel
+	 * Message du projet
+	 */
+	public static function royalties_project_message($atts, $content = '') {
+		return self::$project_royalties_message;
+	}
+
+	/**
+	 * Interface prospect
+	 * E-mail du destinataire
+	 */
+	public static function prospect_setup_recipient_email($atts, $content = '') {
+		return self::$prospect_setup_draft->email;
+	}
+
+	/**
+	 * Interface prospect
+	 * Prénom du destinataire
+	 */
+	public static function prospect_setup_recipient_first_name($atts, $content = '') {
+		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
+		$recipient_name = '';
+		if ( !empty( $metadata_decoded->user->name ) ) {
+			$recipient_name = $metadata_decoded->user->name;
+		}
+
+		return $recipient_name;
+	}
+
+	/**
+	 * Interface prospect
+	 * Liste des tests démarrés
+	 */
+	public static function prospect_setup_draft_list($atts, $content = '') {
+		return self::$prospect_setup_draft_list;
+	}
+
+	/**
+	 * Interface prospect
+	 * 	URL du test
+	 */
+	public static function prospect_setup_draft_url($atts, $content = '') {
+		$draft_url = WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ) . '?guid=' . self::$prospect_setup_draft->guid;
+		$draft_url = str_replace( 'https://', '', $draft_url );
+
+		return $draft_url;
+	}
+
+	/**
+	 * Interface prospect
+	 * URL complète du test
+	 */
+	public static function prospect_setup_draft_url_full($atts, $content = '') {
+		$draft_url = WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ) . '?guid=' . self::$prospect_setup_draft->guid;
+
+		return $draft_url;
+	}
+
+	/**
+	 * Interface prospect
+	 * Nom de l'organisation
+	 */
+	public static function prospect_setup_draft_organization_name($atts, $content = '') {
+		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
+
+		return $metadata_decoded->organization->name;
+	}
+
+	/**
+	 * Interface prospect
+	 * Montant recherché
+	 */
+	public static function prospect_setup_draft_amount_needed($atts, $content = '') {
+		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
+
+		return $metadata_decoded->project->amountNeeded * 1000;
+	}
+
+	/**
+	 * Interface prospect
+	 * Pourcent de royalties proposé
+	 */
+	public static function prospect_setup_draft_royalties_percent($atts, $content = '') {
+		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
+
+		return $metadata_decoded->project->royaltiesAmount;
+	}
+
+	/**
+	 * Interface prospect
+	 * 	Formule sélectionnée
+	 */
+	public static function prospect_setup_draft_formula($atts, $content = '') {
+		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
+		$formula = '';
+		switch ( $metadata_decoded->project->circlesToCommunicate ) {
+			case 'lovemoney':
+				$formula = 'Formule Love Money';
+				break;
+			case 'private':
+				$formula = 'Formule Réseau privé';
+				break;
+			case 'public':
+				$formula = 'Formule Crowdfunding';
+				break;
+		}
+
+		return $formula;
+	}
+
+	/**
+	 * Interface prospect
+	 * Option sélectionnée
+	 */
+	public static function prospect_setup_draft_option($atts, $content = '') {
+		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
+		$options = '';
+		if ( $metadata_decoded->project->needCommunicationAdvice ) {
+			$options = 'Accompagnement Intégral';
+		} elseif ( $metadata_decoded->project->circlesToCommunicate != 'lovemoney' && !$metadata_decoded->project->alreadydonecrowdfunding ) {
+			$options = 'Accompagnement Intégral';
+		} else {
+			$options = 'Accompagnement Essentiel';
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Interface prospect
+	 * Montant du paiement
+	 */
+	public static function prospect_setup_draft_payment_amount($atts, $content = '') {
+		return self::$prospect_setup_draft_payment_amount;
+	}
+
+	/**
+	 * Interface prospect
+	 * IBAN pour le paiement par virement
+	 */
+	public static function prospect_setup_draft_payment_iban($atts, $content = '') {
+		return WDG_IBAN;
+	}
+
+	/**
+	 * Interface prospect
+	 * Référence du paiement
+	 */
+	public static function prospect_setup_draft_payment_reference($atts, $content = '') {
+		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
+
+		return $metadata_decoded->organization->name;
+	}
+
+	/**
+	 * Interface prospect
+	 * Date du paiement
+	 */
+	public static function prospect_setup_draft_payment_date($atts, $content = '') {
+		$today_datetime = new DateTime();
+		return $today_datetime->format( 'd/m/Y H:i' );
 	}
 	//*************************************
 }
