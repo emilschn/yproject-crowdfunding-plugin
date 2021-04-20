@@ -520,14 +520,8 @@ class NotificationsAPI {
 				$parameters = $parameters;
 				$options_encoded = $parameters[ 'options' ];
 				$options_decoded = json_decode( $options_encoded );
-
-				// Application des shortcodes à l'objet et au corps du mail
-				add_filter( 'wdg_email_content_filter', 'wptexturize' );
-				add_filter( 'wdg_email_content_filter', 'wpautop' );
-				add_filter( 'wdg_email_content_filter', 'shortcode_unautop' );
-				add_filter( 'wdg_email_content_filter', 'do_shortcode' );
-				$object = apply_filters( 'wdg_email_content_filter', $template_post->post_title );
-				$content = apply_filters( 'wdg_email_content_filter', $template_post->post_content );
+				$object = $template_post->post_title;
+				$content = $template_post->post_content;
 
 				// Vérification si un reply_to a été défini en back-office
 				$post_reply_to = get_post_meta( $template_post->ID, self::$custom_field_reply_to, TRUE );
@@ -573,6 +567,17 @@ class NotificationsAPI {
 		$parameters[ 'recipient' ] = $recipient;
 
 		$crowdfunding = ATCF_CrowdFunding::instance();
+
+		// Gestion des shortcodes inclus dans les mails
+		NotificationsAPIShortcodes::instance();
+		add_filter( 'wdg_email_content_filter', 'do_shortcode' );
+		$object = apply_filters( 'wdg_email_content_filter', $object );
+		add_filter( 'wdg_email_content_filter', 'wptexturize' );
+		add_filter( 'wdg_email_content_filter', 'wpautop' );
+		add_filter( 'wdg_email_content_filter', 'shortcode_unautop' );
+		$content = apply_filters( 'wdg_email_content_filter', $content );
+
+		// Gestion CSS
 		$crowdfunding->include_control('notifications/notifications-api-css');
 		$css = NotificationsAPICSS::get();
 		$content_html = '<html><head>' . $css . '</head><body>' . $content . '</body></html>';
@@ -617,6 +622,7 @@ class NotificationsAPI {
 		if ( !empty( $template_slug ) ) {
 			return self::$description_str_by_template_id[ $template_slug ][ 'description' ];
 		}
+
 		return '';
 	}
 
@@ -739,16 +745,17 @@ class NotificationsAPI {
 	//*******************************************************
 	// Inscription
 	//*******************************************************
-	public static function user_registration($recipient, $name) {
+	public static function user_registration($WDGUser) {
 		$id_template = self::get_id_fr_by_slug( 'subscription' );
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		$options = array(
 			'skip_admin'			=> 1,
-			'PRENOM'				=> $name
+			'PRENOM'				=> $WDGUser->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $recipient,
+			'recipient'	=> $WDGUser->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
@@ -1744,7 +1751,6 @@ class NotificationsAPI {
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
 			'recipient'		=> $recipient,
-			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
 

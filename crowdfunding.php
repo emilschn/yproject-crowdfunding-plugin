@@ -159,6 +159,7 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'control/gateways/lemonway-notification.php';
 		require $this->includes_dir . 'control/lib/validator.php';
 		require $this->includes_dir . 'control/notifications/notifications-emails.php';
+		require $this->includes_dir . 'control/notifications/notifications-api-shortcodes.php';
 		require $this->includes_dir . 'control/notifications/notifications-api.php';
 		require $this->includes_dir . 'control/notifications/notifications-slack.php';
 		require $this->includes_dir . 'control/notifications/notifications-asana.php';
