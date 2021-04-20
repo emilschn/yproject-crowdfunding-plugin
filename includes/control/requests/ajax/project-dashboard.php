@@ -105,8 +105,10 @@ class WDGAjaxActionsProjectDashboard {
 				'name' => $new_name,
 				'post_type' => array( 'post', 'page', 'download' )
 			) );
-			if ( $posts ) {
-				$errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
+            if ($posts) {
+                $errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
+            } elseif ( sanitize_title( $new_name ) != $new_name ) {
+                $errors[ 'new_project_url' ] .= "URL non valide.";
 			} else {
 				$old_name = $campaign->data->post_name;
 				$campaign->set_api_data( 'url', $new_name );
