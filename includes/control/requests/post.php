@@ -110,6 +110,7 @@ class WDGPostActions {
 			if ( is_numeric( $id_user ) ) {
 				//TODO : Re-vérifier si l'utilisateur peut bien envoyer à la personne (vérifier si dans la liste des suiveurs/votants/investisseurs)
 				$user = get_userdata( intval( $id_user ) );
+				$WDGUser = new WDGUser($id_user);
 				$to = $user->user_email;
 				$user_data = array(
 					'userfirstname'	=> $user->first_name,
@@ -122,7 +123,7 @@ class WDGPostActions {
 
 				$this_mail_content = WDGFormProjects::build_mail_text( $mail_content, $mail_title, $campaign_id, $user_data );
 
-				NotificationsAPI::project_mail( $to, $author_user->user_email, $user->first_name, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
+				NotificationsAPI::project_mail( $to, $author_user->user_email, $WDGUser, $user->first_name, $campaign, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
 			}
 		}
 
@@ -232,7 +233,7 @@ class WDGPostActions {
 				//Mail pour le PP
 				$to = $WDGUser_current->get_email();
 				$to_name = $WDGUser_current->get_firstname();
-				NotificationsAPI::new_project_published( $to, $to_name, $dashboard_url, $newcampaign->get_api_id() );
+				NotificationsAPI::new_project_published( $WDGUser_current, $newcampaign, $to, $to_name, $dashboard_url, $newcampaign->get_api_id() );
 
 				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
 				$test_campaign = new ATCF_Campaign( $newcampaign_id );
@@ -677,7 +678,7 @@ class WDGPostActions {
 				$file_path_exploded = explode( '/', $file );
 				$contract_filename = $file_path_exploded[ count( $file_path_exploded ) - 1 ];
 				$res_addFile = $zip->addFile( $file, $contract_filename );
-				if ( $res_addFile !== TRUE ){
+				if ( $res_addFile !== TRUE ) {
 					ypcf_debug_log( 'post.php :: generate_campaign_contracts_archive > Error: Unable to add file '.$file.' $contract_filename = '.$contract_filename);
 				}
 			}

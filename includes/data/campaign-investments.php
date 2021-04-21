@@ -113,12 +113,12 @@ class WDGCampaignInvestments {
 		$amount_transfered = 0;
 		foreach ( $payments_data as $payment_data ) {
 			// on ne transfère que les investissements validés
-			if ( $payment_data[ 'status' ] == 'publish' ) { 
+			if ( $payment_data[ 'status' ] == 'publish' ) {
 				if ( $amount_transfered + $payment_data[ 'amount' ] <= $amount_to_reach ) {
 					// on n'a pas atteint la somme, on continue de transférer les investissements
 					$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
 					$WDGInvestment->transfer($to_campaign);
-					$amount_transfered = $amount_transfered + $payment_data[ 'amount' ];						
+					$amount_transfered = $amount_transfered + $payment_data[ 'amount' ];
 					if ( $amount_transfered == $amount_to_reach ) {
 						// on a transféré la totalité de la somme du nouveau projet
 						break;
@@ -460,19 +460,18 @@ class WDGCampaignInvestments {
 		}
 
 		if ( $send_mail ) {
-			$url_dashboard = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign->ID;
-
 			$replyto_mail = 'support@wedogood.co';
-			NotificationsAPI::campaign_advice( 'support@wedogood.co', $replyto_mail, $campaign->get_name(), $url_dashboard, 'WE DO GOOD', $greetings, $last_24h, $top_actions );
+			$WDGUserWDG = new WDGUser(1);
+			NotificationsAPI::campaign_advice( 'support@wedogood.co', $replyto_mail, $campaign, $WDGUserWDG, $greetings, $last_24h, $top_actions );
 
 			$WDGUserAuthor = new WDGUser( $campaign->data->post_author );
-			NotificationsAPI::campaign_advice( $WDGUserAuthor->get_email(), $replyto_mail, $campaign->get_name(), $url_dashboard, $WDGUserAuthor->get_firstname(), $greetings, $last_24h, $top_actions );
+			NotificationsAPI::campaign_advice( $WDGUserAuthor->get_email(), $replyto_mail, $campaign, $WDGUserAuthor, $greetings, $last_24h, $top_actions );
 
 			$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 			if ( count( $team_member_list ) > 0 ) {
 				foreach ( $team_member_list as $team_member ) {
 					$WDGUserTeam = new WDGUser( $team_member->wpref );
-					NotificationsAPI::campaign_advice( $WDGUserTeam->get_email(), $replyto_mail, $campaign->get_name(), $url_dashboard, $WDGUserTeam->get_firstname(), $greetings, $last_24h, $top_actions );
+					NotificationsAPI::campaign_advice( $WDGUserTeam->get_email(), $replyto_mail, $campaign, $WDGUserTeam, $greetings, $last_24h, $top_actions );
 				}
 			}
 		}

@@ -108,12 +108,12 @@ class NotificationsAPIShortcodes {
 	// Données utilisées par les shortcodes
 	//*************************************
 	/**
-	 * @var WDGUser
+	 * @var WDGUser|WDGOrganization
 	 */
 	private static $recipient;
 	/**
 	 * Définit les infos utilisateurs du destinataire
-	 * @param WDGUser
+	 * @param WDGUser|WDGOrganization
 	 */
 	public static function set_recipient($obj_user) {
 		self::$recipient = $obj_user;
@@ -399,7 +399,7 @@ class NotificationsAPIShortcodes {
 	 * Prénom
 	 */
 	public static function recipient_first_name($atts, $content = '') {
-		return self::$recipient->get_firstname();
+		return WDGOrganization::is_user_organization( self::$recipient ) ? self::$recipient->get_name() : self::$recipient->get_firstname();
 	}
 
 	/**
@@ -1100,6 +1100,7 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function prospect_setup_draft_payment_date($atts, $content = '') {
 		$today_datetime = new DateTime();
+
 		return $today_datetime->format( 'd/m/Y H:i' );
 	}
 	//*************************************
