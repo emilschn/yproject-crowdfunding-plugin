@@ -304,20 +304,21 @@ class WDGEmails {
 		$project_date_first_payment_month_str = $month_str . ' ' . $date_first_payment->format( 'Y' );
 
 		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
+			$WDGUserOrOrganization = new WDGUser( 60 );
 			$recipient_email = 'communication@wedogood.co';
 			$recipient_name = 'Anna';
 			switch ( $mail_type ) {
 				case 'end-success-public':
-					NotificationsAPI::campaign_end_success_public( $recipient_email, $recipient_name, $project_name, $project_date_first_payment_month_str, $project_api_id );
+					NotificationsAPI::campaign_end_success_public( $WDGUserOrOrganization, $campaign, $project_api_id );
 					break;
 				case 'end-success-private':
-					NotificationsAPI::campaign_end_success_private( $recipient_email, $recipient_name, $project_name, $project_date_first_payment_month_str, $project_api_id );
+					NotificationsAPI::campaign_end_success_private( $WDGUserOrOrganization, $campaign, $project_api_id );
 					break;
 				case 'end-pending-goal':
-					NotificationsAPI::campaign_end_pending_goal( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					NotificationsAPI::campaign_end_pending_goal( $WDGUserOrOrganization, $campaign, $project_api_id );
 					break;
 				case 'end-failure':
-					NotificationsAPI::campaign_end_failure( $recipient_email, $recipient_name, $project_name, $project_api_id );
+					NotificationsAPI::campaign_end_failure( $WDGUserOrOrganization, $campaign, $project_api_id );
 					break;
 			}
 
@@ -334,10 +335,12 @@ class WDGEmails {
 
 				if ( WDGOrganization::is_user_organization( $user_id ) ) {
 					$WDGOrganization = new WDGOrganization( $user_id );
+					$WDGUserOrOrganization = $WDGOrganization;
 					$recipient_email = $WDGOrganization->get_email();
 					$recipient_name = $WDGOrganization->get_name();
 				} else {
 					$WDGUser = new WDGUser( $user_id );
+					$WDGUserOrOrganization = $WDGUser;
 					$recipient_email = $WDGUser->get_email();
 					$recipient_name = $WDGUser->get_firstname();
 				}
@@ -345,16 +348,16 @@ class WDGEmails {
 				if ( !empty( $recipient_email ) && !empty( $recipient_name ) ) {
 					switch ( $mail_type ) {
 						case 'end-success-public':
-							NotificationsAPI::campaign_end_success_public( $recipient_email, $recipient_name, $project_name, $project_date_first_payment, $project_api_id );
+							NotificationsAPI::campaign_end_success_public( $WDGUserOrOrganization, $campaign, $project_api_id );
 							break;
 						case 'end-success-private':
-							NotificationsAPI::campaign_end_success_private( $recipient_email, $recipient_name, $project_name, $project_date_first_payment, $project_api_id );
+							NotificationsAPI::campaign_end_success_private( $WDGUserOrOrganization, $campaign, $project_api_id );
 							break;
 						case 'end-pending-goal':
-							NotificationsAPI::campaign_end_pending_goal( $recipient_email, $recipient_name, $project_name, $project_api_id );
+							NotificationsAPI::campaign_end_pending_goal( $WDGUserOrOrganization, $campaign, $project_api_id );
 							break;
 						case 'end-failure':
-							NotificationsAPI::campaign_end_failure( $recipient_email, $recipient_name, $project_name, $project_api_id );
+							NotificationsAPI::campaign_end_failure( $WDGUserOrOrganization, $campaign, $project_api_id );
 							break;
 					}
 				}

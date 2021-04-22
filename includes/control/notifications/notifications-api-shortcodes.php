@@ -283,6 +283,30 @@ class NotificationsAPIShortcodes {
 	}
 
 	/**
+	 * @var Object
+	 */
+	private static $investment_contract;
+	/**
+	 * Définit les données de contrat d'investissement
+	 * @param Object
+	 */
+	public static function set_investment_contract($investment_contract) {
+		self::$investment_contract = $investment_contract;
+	}
+
+	/**
+	 * @var Number
+	 */
+	private static $investment_amount_received;
+	/**
+	 * Définit le montant des royalties déjà perçues sur un investissement
+	 * @param Number
+	 */
+	public static function set_investment_amount_received($investment_amount_received) {
+		self::$investment_amount_received = $investment_amount_received;
+	}
+
+	/**
 	 * @var Number
 	 */
 	private static $amount_wire_received;
@@ -717,7 +741,11 @@ class NotificationsAPIShortcodes {
 	 * Montant
 	 */
 	public static function investment_amount($atts, $content = '') {
-		return self::$investment->get_session_amount();
+		if ( !empty( self::$investment_contract ) ) {
+			return self::$investment_contract->subscription_amount;
+		} else {
+			return self::$investment->get_session_amount();
+		}
 	}
 
 	/**
@@ -725,7 +753,11 @@ class NotificationsAPIShortcodes {
 	 * Date
 	 */
 	public static function investment_date($atts, $content = '') {
-		return self::$investment->get_saved_date_gmt();
+		if ( !empty( self::$investment_contract ) ) {
+			return self::$investment_contract->subscription_date;
+		} else {
+			return self::$investment->get_saved_date_gmt();
+		}
 	}
 
 	/**
@@ -742,6 +774,34 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function investment_description_text_after($atts, $content = '') {
 		return self::$investment_success_data[ 'text_after' ];
+	}
+
+	/**
+	 * Investissement
+	 * Royalties perçues
+	 */
+	public static function investment_royalties_received($atts, $content = '') {
+		if ( !empty( self::$investment_amount_received ) ) {
+			return self::$investment_amount_received;
+		} else {
+			if ( !empty( self::$investment_contract ) ) {
+				return self::$investment_contract->amount_received;
+			} else {
+				return 0;
+			}
+		}
+	}
+
+	/**
+	 * Investissement
+	 * Royalties restantes
+	 */
+	public static function investment_royalties_remaining($atts, $content = '') {
+		if ( !empty( self::$investment_contract ) ) {
+			return self::$investment_contract->subscription_amount - self::$investment_contract->amount_received;
+		} else {
+			return 0;
+		}
 	}
 
 	/**
@@ -983,7 +1043,6 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function prospect_setup_draft_url($atts, $content = '') {
 		$draft_url = WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ) . '?guid=' . self::$prospect_setup_draft->guid;
-		$draft_url = str_replace( 'https://', '', $draft_url );
 
 		return $draft_url;
 	}

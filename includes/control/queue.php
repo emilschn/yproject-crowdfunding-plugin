@@ -134,6 +134,7 @@ class WDGQueue {
 
 		$WDGOrganization = WDGOrganization::is_user_organization( $user_id ) ? new WDGOrganization( $user_id ) : FALSE;
 		$WDGUser = empty( $WDGOrganization ) ? new WDGUser( $user_id ) : FALSE;
+		$WDGUserOrOrganization = empty( $WDGOrganization ) ? $WDGUser : $WDGOrganization;
 		$recipient_email = empty( $WDGOrganization ) ? $WDGUser->get_email() : $WDGOrganization->get_email();
 		$recipient_name = empty( $WDGOrganization ) ? $WDGUser->get_firstname() : $WDGOrganization->get_name();
 		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
@@ -287,7 +288,7 @@ class WDGQueue {
 			}
 
 			if (!$cancel_notification ) {
-				NotificationsAPI::roi_transfer_daily_resume( $recipient_email, $recipient_name, $message );
+				NotificationsAPI::roi_transfer_daily_resume( $WDGUserOrOrganization, $message );
 			}
 		}
 	}
@@ -430,7 +431,7 @@ class WDGQueue {
 	public static function execute_wallet_more_200_euros($user_id, $queued_action_params, $queued_action_id) {
 		$WDGUser = new WDGUser( $user_id );
 		if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
-			NotificationsAPI::wallet_with_more_than_200_euros( $WDGUser->get_email(), $WDGUser->get_firstname() );
+			NotificationsAPI::wallet_with_more_than_200_euros( $WDGUser );
 			self::add_notification_wallet_more_200_euros_reminder( $user_id );
 		}
 	}
@@ -491,10 +492,10 @@ class WDGQueue {
 			}
 
 			if ( !$has_viewed ) {
-				NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_open( $WDGUser->get_email(), $WDGUser->get_firstname() );
+				NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_open( $WDGUser );
 			} else {
 				if ( !$has_clicked ) {
-					NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_clicked( $WDGUser->get_email(), $WDGUser->get_firstname() );
+					NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_clicked( $WDGUser );
 				}
 			}
 		}
@@ -543,7 +544,7 @@ class WDGQueue {
 		}
 
 		if ( !empty( $investors_list_str ) ) {
-			NotificationsAPI::investors_with_wallet_with_more_than_200_euros( $WDGUser_author->get_email(), $WDGUser_author->get_firstname(), $investors_list_str );
+			NotificationsAPI::investors_with_wallet_with_more_than_200_euros( $WDGUser_author, $investors_list_str );
 		}
 	}
 
@@ -567,31 +568,20 @@ class WDGQueue {
 		$current_organization = $campaign->get_organization();
 		$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		$wdguser_author = new WDGUser( $campaign->data->post_author );
-		NotificationsAPI::declaration_extended_project_manager( $organization_obj->get_email(), $wdguser_author->get_firstname() );
+		NotificationsAPI::declaration_extended_project_manager( $organization_obj, $wdguser_author );
 
 		// Envoi de la notification aux investisseurs
-		$project_name = $campaign->get_name();
-		$funding_duration = $campaign->funding_duration();
-		$project_url = $campaign->get_public_url();
 		$investment_contracts = WDGInvestmentContract::get_list( $campaign_id );
 		foreach ( $investment_contracts as $investment_contract ) {
 			if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
-				$recipient = '';
-				$name = '';
 				if ( $investment_contract->investor_type == 'user' ) {
 					$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
-					$recipient = $WDGUser->get_email();
-					$name = $WDGUser->get_firstname();
+					$WDGUserOrOrganization = $WDGUser;
 				} else {
 					$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
-					$recipient = $WDGOrganization->get_email();
-					$name = $WDGOrganization->get_name();
+					$WDGUserOrOrganization = $WDGOrganization;
 				}
-				$date = $investment_contract->subscription_date;
-				$amount_investment = $investment_contract->subscription_amount;
-				$amount_royalties = $investment_contract->amount_received;
-				$amount_remaining = $investment_contract->subscription_amount - $investment_contract->amount_received;
-				NotificationsAPI::declaration_extended_investor( $recipient, $name, $project_name, $funding_duration, $date, $project_url, $amount_investment, $amount_royalties, $amount_remaining, $campaign->get_api_id() );
+				NotificationsAPI::declaration_extended_investor( $WDGUserOrOrganization, $campaign, $investment_contract, $campaign->get_api_id() );
 			}
 		}
 	}
@@ -616,29 +606,20 @@ class WDGQueue {
 		$current_organization = $campaign->get_organization();
 		$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		$wdguser_author = new WDGUser( $campaign->data->post_author );
-		NotificationsAPI::declaration_finished_project_manager( $organization_obj->get_email(), $wdguser_author->get_firstname() );
+		NotificationsAPI::declaration_finished_project_manager( $organization_obj, $wdguser_author );
 
 		// Envoi de la notification aux investisseurs
-		$project_name = $campaign->get_name();
-		$project_url = $campaign->get_public_url();
 		$investment_contracts = WDGInvestmentContract::get_list( $campaign_id );
 		foreach ( $investment_contracts as $investment_contract ) {
 			if ( $investment_contract->status == WDGInvestmentContract::$status_active ) {
-				$recipient = '';
-				$name = '';
 				if ( $investment_contract->investor_type == 'user' ) {
 					$WDGUser = WDGUser::get_by_api_id( $investment_contract->investor_id );
-					$recipient = $WDGUser->get_email();
-					$name = $WDGUser->get_firstname();
+					$WDGUserOrOrganization = $WDGUser;
 				} else {
 					$WDGOrganization = WDGOrganization::get_by_api_id( $investment_contract->investor_id );
-					$recipient = $WDGOrganization->get_email();
-					$name = $WDGOrganization->get_name();
+					$WDGUserOrOrganization = $WDGOrganization;
 				}
-				$date = $investment_contract->subscription_date;
-				$amount_investment = $investment_contract->subscription_amount;
-				$amount_royalties = $investment_contract->amount_received;
-				NotificationsAPI::declaration_finished_investor( $recipient, $name, $project_name, $date, $project_url, $amount_investment, $amount_royalties, $campaign->get_api_id() );
+				NotificationsAPI::declaration_finished_investor( $WDGUserOrOrganization, $campaign, $investment_contract, $campaign->get_api_id() );
 			}
 		}
 	}
@@ -1091,7 +1072,8 @@ class WDGQueue {
 			// On vérifie que les documents n'ont toujours pas été envoyés
 			if ( !$WDGEntity->has_sent_all_documents() && !$is_user_authenticated ) {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
-				NotificationsAPI::vote_authentication_needed_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_api_id );
+				$campaign = new ATCF_Campaign( FALSE, $queued_action_param->campaign_api_id );
+				NotificationsAPI::vote_authentication_needed_reminder( $WDGEntity, $campaign, $queued_action_param->campaign_api_id );
 			}
 		}
 	}
@@ -1130,7 +1112,8 @@ class WDGQueue {
 				$user_name = $WDGEntity->get_firstname();
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
 				if ( !$WDGEntity->has_invested_on_campaign( $queued_action_param->campaign_id ) ) {
-					NotificationsAPI::vote_authenticated_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_url, $queued_action_param->campaign_api_id, $queued_action_param->vote_amount );
+					$campaign = new ATCF_Campaign( FALSE, $queued_action_param->campaign_api_id );
+					NotificationsAPI::vote_authenticated_reminder( $WDGEntity, $campaign, $queued_action_param->campaign_api_id, $queued_action_param->vote_amount );
 				}
 			}
 		}
@@ -1222,7 +1205,8 @@ class WDGQueue {
 			// On vérifie que les documents n'ont toujours pas été envoyés
 			if ( !$WDGEntity->has_sent_all_documents() && !$LW_registered ) {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
-				NotificationsAPI::investment_authentication_needed_reminder( $user_email, $user_name, $queued_action_param->campaign_name, $queued_action_param->campaign_api_id );
+				$campaign = new ATCF_Campaign( FALSE, $queued_action_param->campaign_api_id );
+				NotificationsAPI::investment_authentication_needed_reminder( $WDGEntity, $campaign, $queued_action_param->campaign_api_id );
 			}
 		}
 	}
@@ -1439,7 +1423,7 @@ class WDGQueue {
 			// Si aucun projet créé, on envoie la notif
 			if ( !$has_created_project ) {
 				$metadata_decoded = json_decode( $api_result->metadata );
-				NotificationsAPI::prospect_setup_dashboard_not_created( $api_result->email, $metadata_decoded->user->name, $metadata_decoded->organization->name );
+				NotificationsAPI::prospect_setup_dashboard_not_created( $api_result );
 			}
 		}
 	}

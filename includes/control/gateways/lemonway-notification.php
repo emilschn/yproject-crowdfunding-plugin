@@ -447,11 +447,9 @@ class LemonwayNotification {
 				}
 			} else {
 				if ( empty( $WDGOrga_invest_author ) ) {
-					$recipient_email = $WDGUser_invest_author->get_email();
-					$recipient_name = $WDGUser_invest_author->get_firstname();
 					$wallet_details = $WDGUser_invest_author->get_wallet_details();
 					$amount = $wallet_details->BAL;
-					NotificationsAPI::wire_transfer_received( $recipient_email, $recipient_name, $amount );
+					NotificationsAPI::wire_transfer_received( $WDGUser_invest_author, $amount );
 				} else {
 					NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
 					NotificationsAsana::wire_payment_received_not_attributed( $content );

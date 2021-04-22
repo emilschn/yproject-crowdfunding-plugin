@@ -161,10 +161,11 @@ class NotificationsEmails {
 		$campaign = atcf_get_campaign($post_campaign);
 
 		$payment_data = edd_get_payment_meta( $payment_id );
+		$WDGInvestment = new WDGInvestment($payment_id);
 		$payment_amount = edd_get_payment_amount( $payment_id );
-		$user_info = maybe_unserialize( $payment_data['user_info'] );
 		$email = $payment_data['email'];
 		$user_data = get_user_by('email', $email);
+		$WDGUser = new WDGUser($user_data->ID);
 		$payment_key = edd_get_payment_key( $payment_id );
 
 		$attachment_url = '';
@@ -201,9 +202,9 @@ class NotificationsEmails {
 		}
 
 		if ( $campaign->is_positive_savings() ) {
-			NotificationsAPI::investment_success_positive_savings( $email, $user_data->first_name, $payment_amount, $campaign->get_public_url(), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_positive_savings( $WDGUser, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
 		} else {
-			NotificationsAPI::investment_success_project( $email, $user_data->first_name, $payment_amount, $post_campaign->post_title, $campaign->get_public_url(), get_post_field( 'post_date', $payment_id ), $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_project( $WDGUser, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
 		}
 	}
 
