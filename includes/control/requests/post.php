@@ -231,9 +231,7 @@ class WDGPostActions {
 				$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$newcampaign_id;
 
 				//Mail pour le PP
-				$to = $WDGUser_current->get_email();
-				$to_name = $WDGUser_current->get_firstname();
-				NotificationsAPI::new_project_published( $WDGUser_current, $newcampaign, $to, $to_name, $dashboard_url, $newcampaign->get_api_id() );
+				NotificationsAPI::new_project_published( $WDGUser_current, $newcampaign );
 
 				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
 				$test_campaign = new ATCF_Campaign( $newcampaign_id );
@@ -1008,7 +1006,7 @@ class WDGPostActions {
 		$picture_url = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 
 		$WDGInvestment = new WDGInvestment( $investment_id );
-		NotificationsAPI::investment_pending_check( $WDGUserOrOrganization, $WDGInvestment, $campaign, $campaign->get_api_id() );
+		NotificationsAPI::investment_pending_check( $WDGUserOrOrganization, $WDGInvestment, $campaign );
 		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, $picture_url );
 		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, $picture_url );
 
@@ -1061,7 +1059,7 @@ class WDGPostActions {
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 
 		$WDGInvestment = new WDGInvestment( $investment_id );
-		NotificationsAPI::investment_pending_check( $WDGUserOrOrganization, $WDGInvestment, $campaign, $campaign->get_api_id() );
+		NotificationsAPI::investment_pending_check( $WDGUserOrOrganization, $WDGInvestment, $campaign );
 		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, FALSE );
 		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, FALSE );
 

@@ -132,7 +132,7 @@ class LemonwayNotification {
 			if ( $lemonway_posted_wallet_status == 6 ) {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, 'Validé' );
 				if ( !empty( $pending_not_validated_investment_campaign_name ) ) {
-					NotificationsAPI::kyc_authentified_and_pending_investment( $WDGUserOrOrganization, $pending_not_validated_investment_campaign, $pending_not_validated_investment->get_saved_campaign()->get_api_id() );
+					NotificationsAPI::kyc_authentified_and_pending_investment( $WDGUserOrOrganization, $pending_not_validated_investment_campaign );
 					WDGQueue::add_investment_authentified_reminder( $WDGUser_wallet->get_wpref(), $user_email, $user_name, $pending_not_validated_investment_campaign->get_name(), $pending_not_validated_investment->get_saved_campaign()->get_api_id() );
 				} else {
 					NotificationsAPI::kyc_authentified( $WDGUserOrOrganization );

@@ -462,16 +462,17 @@ class WDGCampaignInvestments {
 		if ( $send_mail ) {
 			$replyto_mail = 'support@wedogood.co';
 			$WDGUserWDG = new WDGUser(1);
-			NotificationsAPI::campaign_advice( 'support@wedogood.co', $replyto_mail, $campaign, $WDGUserWDG, $greetings, $last_24h, $top_actions );
+			$WDGUserWDG->set_email($replyto_mail);
+			NotificationsAPI::campaign_advice( $replyto_mail, $campaign, $WDGUserWDG, $greetings, $last_24h, $top_actions );
 
 			$WDGUserAuthor = new WDGUser( $campaign->data->post_author );
-			NotificationsAPI::campaign_advice( $WDGUserAuthor->get_email(), $replyto_mail, $campaign, $WDGUserAuthor, $greetings, $last_24h, $top_actions );
+			NotificationsAPI::campaign_advice( $replyto_mail, $campaign, $WDGUserAuthor, $greetings, $last_24h, $top_actions );
 
 			$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 			if ( count( $team_member_list ) > 0 ) {
 				foreach ( $team_member_list as $team_member ) {
 					$WDGUserTeam = new WDGUser( $team_member->wpref );
-					NotificationsAPI::campaign_advice( $WDGUserTeam->get_email(), $replyto_mail, $campaign, $WDGUserTeam, $greetings, $last_24h, $top_actions );
+					NotificationsAPI::campaign_advice( $replyto_mail, $campaign, $WDGUserTeam, $greetings, $last_24h, $top_actions );
 				}
 			}
 		}

@@ -754,12 +754,11 @@ class WDGROIDeclaration {
 				}
 				$campaign_author = $campaign->post_author();
 				$WDGUser_author = new WDGUser( $campaign_author );
-				$recipient_name = $WDGUser_author->get_firstname();
 				$replyto_mail = $WDGUser_author->get_email();
 				$declaration_message_decoded = '(vous êtes en copie de ce message en tant que porteur de projet)';
 				$declaration_message_decoded .= '<br><br>';
 				$declaration_message_decoded .= $declaration_message;
-				NotificationsAPI::roi_transfer_message( $replyto_mail, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+				NotificationsAPI::roi_transfer_message( $WDGUser_author, $campaign, $declaration_message_decoded, $replyto_mail );
 			}
 
 			$wdguser_author = new WDGUser( $campaign->data->post_author );

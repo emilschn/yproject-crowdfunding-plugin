@@ -202,9 +202,9 @@ class NotificationsEmails {
 		}
 
 		if ( $campaign->is_positive_savings() ) {
-			NotificationsAPI::investment_success_positive_savings( $WDGUser, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_positive_savings( $WDGUser, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url );
 		} else {
-			NotificationsAPI::investment_success_project( $WDGUser, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url, $campaign->get_api_id() );
+			NotificationsAPI::investment_success_project( $WDGUser, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url );
 		}
 	}
 
