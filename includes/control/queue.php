@@ -387,32 +387,23 @@ class WDGQueue {
 				}
 				$message_id = $api_email_result[ 'data' ][ 'message-id' ];
 				
-				$data = array( 
-					"message_id" => $message_id,
-					"template_id" => $ref_template_id
-				);
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
+				$sib_instance = SIBv3Helper::instance();
 				
 				try {
-					$mailin_report = $mailin->get_report( $data );
+					$events = $sib_instance->getTransactionalEmailReportEvents( $ref_template_id, $message_id );
+
 				} catch ( Exception $e ) {
-					return;
-				}
-				if ( empty( $mailin_report[ 'data' ] ) ) {
 					return;
 				}
 
 				$has_viewed = FALSE;
 				$has_clicked = FALSE;
-				$mailin_report_data = $mailin_report[ 'data' ];
-				foreach ( $mailin_report_data as $mail_event ) {
-					if ( !empty( $mail_event[ 'event' ] ) ) {
-						if ( $mail_event[ 'event' ] == 'views' ) {
-							$has_viewed = TRUE;
-						}
-						if ( $mail_event[ 'event' ] == 'clicks' ) {
-							$has_clicked = TRUE;
-						}
+				foreach ( $events as $event_item ) {
+					if ( $event_item->getEvent() == 'opened' ) {
+						$has_viewed = TRUE;
+					}
+					if ( $event_item->getEvent() == 'clicks' ) {
+						$has_clicked = TRUE;
 					}
 				}
 				
@@ -489,27 +480,23 @@ class WDGQueue {
 				}
 				$message_id = $api_email_result[ 'data' ][ 'message-id' ];
 				
-				$data = array( 
-					"message_id" => $message_id,
-					"template_id" => $ref_template_id
-				);
-				$mailin = new Mailin( 'https://api.sendinblue.com/v2.0', WDG_SENDINBLUE_API_KEY, 15000 );
-				$mailin_report = $mailin->get_report( $data );
-				if ( empty( $mailin_report[ 'data' ] ) ) {
+				$sib_instance = SIBv3Helper::instance();
+				
+				try {
+					$events = $sib_instance->getTransactionalEmailReportEvents( $ref_template_id, $message_id );
+					
+				} catch ( Exception $e ) {
 					return;
 				}
 
 				$has_viewed = FALSE;
 				$has_clicked = FALSE;
-				$mailin_report_data = $mailin_report[ 'data' ];
-				foreach ( $mailin_report_data as $mail_event ) {
-					if ( !empty( $mail_event[ 'event' ] ) ) {
-						if ( $mail_event[ 'event' ] == 'views' ) {
-							$has_viewed = TRUE;
-						}
-						if ( $mail_event[ 'event' ] == 'clicks' ) {
-							$has_clicked = TRUE;
-						}
+				foreach ( $events as $event_item ) {
+					if ( $event_item->getEvent() == 'opened' ) {
+						$has_viewed = TRUE;
+					}
+					if ( $event_item->getEvent() == 'clicks' ) {
+						$has_clicked = TRUE;
 					}
 				}
 				
@@ -804,6 +791,7 @@ class WDGQueue {
 			
 			//On vérifie si il y'a une action en cours :
 			$pending_actions = array();
+			$campaign_name = '';
 			// - investissement en attente
 			if ( !empty( $WDGOrga_wallet ) ) {
 				$pending_investments = $WDGOrga_wallet->get_pending_investments();
@@ -819,6 +807,9 @@ class WDGQueue {
 							array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
 						}
 					}
+					if($campaign_name == ''){
+						$campaign_name = $campaign->get_name();
+					}
 				}
 			}
 			// - évaluation avec intention d'investissement
@@ -829,12 +820,14 @@ class WDGQueue {
 					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 						array_push( $pending_actions, 'Evaluation avec intention pour ' .$campaign->get_name(). ' (' .$vote->invest_sum. ' €)' );
 					}
+					if($campaign_name == ''){
+						$campaign_name = $campaign->get_name();
+					}
 				}
 			}
 			
 			if ( !empty( $pending_actions ) ) {
-				NotificationsEmails::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions );
-				NotificationsSlack::send_notification_kyc_refused_admin( $user_email, $user_name );
+				NotificationsAsana::send_notification_kyc_refused_admin( $user_email, $user_name, $pending_actions, $campaign_name );
 			}
 		}
 		
@@ -1027,8 +1020,7 @@ class WDGQueue {
 				}
 				
 				if ( !empty( $pending_actions ) ) {
-					NotificationsEmails::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions );
-					NotificationsSlack::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name );
+					NotificationsAsana::send_notification_kyc_validated_but_not_wallet_admin( $user_email, $user_name, $pending_actions );
 				}
 			}
 		}

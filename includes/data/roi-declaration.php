@@ -5,23 +5,24 @@
 class WDGROIDeclaration {
 	public static $table_name = 'ypcf_roideclaration';
 	protected static $collection_by_id;
-	
+
 	public static $status_declaration = 'declaration';
 	public static $status_payment = 'payment';
 	public static $status_waiting_transfer = 'waiting_transfer';
+	public static $status_initializing = 'initializing';
 	public static $status_transfer = 'transfer';
 	public static $status_finished = 'finished';
 	public static $status_failed = 'failed';
-	
+
 	public static $mean_payment_card = 'card';
 	public static $mean_payment_wire = 'wire';
 	public static $mean_payment_mandate = 'mandate';
-	
+
 	public static $min_amount_for_wire_payment = 1000;
 	public static $tax_without_exemption = 30;
 	public static $tax_with_exemption = 17.2;
 	public static $default_transfer_delay = 10;
-	
+
 	public $id;
 	public $id_campaign;
 	public $date_due;
@@ -41,21 +42,20 @@ class WDGROIDeclaration {
 	public $adjustment;
 	public $adjustments;
 	public $transfered_previous_remaining_amount;
-	
+
 	public $employees_number;
 	public $other_fundings;
 	public $transfer_delay;
 	public $declared_by;
-	
+
 	public $on_api;
 	private $campaign_object;
 
 	public $api_data_adjustments;
 	public $api_data_rois;
 	public $api_data_files;
-	
-	
-	public function __construct( $declaration_id = FALSE, $data = FALSE ) {
+
+	public function __construct($declaration_id = FALSE, $data = FALSE) {
 		if ( !empty( $declaration_id ) ) {
 			// Si déjà chargé précédemment
 			if ( isset( self::$collection_by_id[ $declaration_id ] ) || $data !== FALSE ) {
@@ -90,12 +90,10 @@ class WDGROIDeclaration {
 				$this->api_data_adjustments = isset( self::$collection_by_id[ $declaration_id ] ) ? $collection_item->api_data_adjustments : $collection_item->adjustments;
 				$this->api_data_rois = isset( self::$collection_by_id[ $declaration_id ] ) ? $collection_item->api_data_rois : $collection_item->rois;
 				$this->api_data_files = isset( self::$collection_by_id[ $declaration_id ] ) ? $collection_item->api_data_files : $collection_item->files;
-
 			} else {
 				// Récupération depuis l'API
 				$declaration_api_item = WDGWPREST_Entity_Declaration::get( $declaration_id );
 				if ( $declaration_api_item != FALSE ) {
-
 					$this->id = $declaration_id;
 					$this->id_campaign = $declaration_api_item->id_project;
 					$this->date_due = $declaration_api_item->date_due;
@@ -150,9 +148,7 @@ class WDGROIDeclaration {
 						$this->status = WDGROIDeclaration::$status_transfer;
 						$this->save();
 					}
-
 				}
-
 			}
 
 			if ( !isset( self::$collection_by_id[ $declaration_id ] ) ) {
@@ -160,7 +156,7 @@ class WDGROIDeclaration {
 			}
 		}
 	}
-	
+
 	/**
 	 * Sauvegarde les donnÃ©es dans l'API
 	 */
@@ -168,7 +164,7 @@ class WDGROIDeclaration {
 		WDGWPREST_Entity_Declaration::update( $this );
 		self::$collection_by_id[ $this->id ] = $this;
 	}
-	
+
 	/**
 	 * Sauvegarde dans l'API
 	 * @deprecated
@@ -182,10 +178,11 @@ class WDGROIDeclaration {
 		if ( !isset( $this->campaign_object ) ) {
 			$this->campaign_object = new ATCF_Campaign( FALSE, $this->id_campaign );
 		}
+
 		return $this->campaign_object;
 	}
-	
-	public function get_formatted_date( $type = 'due' ) {
+
+	public function get_formatted_date($type = 'due') {
 		$buffer = '';
 		$temp_date = '';
 		switch ($type) {
@@ -203,28 +200,29 @@ class WDGROIDeclaration {
 			$exploded_date = explode('-', $temp_date);
 			$buffer = $exploded_date[2] .'/'. $exploded_date[1] .'/'. $exploded_date[0];
 		}
+
 		return $buffer;
 	}
-	
+
 	public function get_status() {
 		return $this->status;
 	}
-	
+
 	public function get_amount_royalties() {
 		return $this->amount;
 	}
-	
+
 	/**
 	 * Retourne le montant additionnÃ© l'ajustement
-	 * @return number
+	 * @return float
 	 */
 	public function get_amount_with_adjustment() {
 		return max( 0, $this->get_amount_royalties() + $this->get_adjustment_value() );
 	}
-	
+
 	/**
 	 * Retourne le montant additionnÃ© avec la commission
-	 * @return number
+	 * @return float
 	 */
 	public function get_amount_with_commission() {
 		return ( $this->get_amount_with_adjustment() + $this->get_commission_to_pay() );
@@ -236,52 +234,53 @@ class WDGROIDeclaration {
 	public function get_percent_commission_without_tax() {
 		if ( !empty( $this->percent_commission_without_tax ) ) {
 			return $this->percent_commission_without_tax;
-
-		} else if ( !empty( $this->percent_commission ) ) {
-			return $this->percent_commission / 1.2;
-			
 		} else {
-			$campaign = $this->get_campaign_object();
-			return $campaign->get_costs_to_organization() / 1.2;
+			if ( !empty( $this->percent_commission ) ) {
+				return $this->percent_commission / 1.2;
+			} else {
+				$campaign = $this->get_campaign_object();
+
+				return $campaign->get_costs_to_organization() / 1.2;
+			}
 		}
 	}
-	
+
 	/**
 	 * Retourne la commission TTC que doit payer le porteur de projet au moment de reverser les fonds
-	 * @return number
+	 * @return float
 	 */
 	public function get_commission_to_pay() {
 		$buffer = 0;
-		
+
 		// Ancienne méthode avec erreur : si percent_commission est défini, on calcule directement en TTC
 		if ( !empty( $this->percent_commission ) && $this->status == WDGROIDeclaration::$status_finished ) {
 			$cost_with_tax = $this->percent_commission;
 			$buffer = round( ( $this->get_amount_with_adjustment() * $cost_with_tax / 100 ) * 100 ) / 100;
-		
+
 			// Si il y a un coût minimal par déclaration
 			$campaign = $this->get_campaign_object();
 			$minimum_costs = $campaign->get_minimum_costs_to_organization();
 			if ( $minimum_costs > 0 ) {
 				$buffer = max( $buffer, $minimum_costs );
 			}
-			
-		// Nouvelle méthode : on calcule à partir du HT
+
+			// Nouvelle méthode : on calcule à partir du HT
 		} else {
 			$buffer = round( ( $this->get_commission_to_pay_without_tax() * 1.2) * 100 ) / 100;
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Retourne la commission HT que doit payer le porteur de projet au moment de reverser les fonds
-	 * @return number
+	 * @return float
 	 */
-	public function get_commission_to_pay_without_tax( $force_new_method = FALSE ) {
+	public function get_commission_to_pay_without_tax($force_new_method = FALSE) {
 		// Ancienne méthode avec erreur : si percent_commission est défini, on calcule à partir du TTC
 		if ( !$force_new_method && !empty( $this->percent_commission ) && $this->status == WDGROIDeclaration::$status_finished ) {
 			$buffer = round( $this->get_commission_to_pay() / 1.2, 2 );
-			
+
 		// Nouvelle méthode : on calcule directement depuis les données HT
 		} else {
 			$cost_without_tax = $this->get_percent_commission_without_tax();
@@ -294,10 +293,10 @@ class WDGROIDeclaration {
 				$buffer = max( $buffer, $minimum_costs );
 			}
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	public function get_commission_tax() {
 		return $this->get_commission_to_pay() - $this->get_commission_to_pay_without_tax();
 	}
@@ -313,22 +312,23 @@ class WDGROIDeclaration {
 				return TRUE;
 			}
 		}
+
 		return FALSE;
 	}
-	
+
 	/**
 	 * Traite un fichier uploadé qui doit être ajouté à la liste
 	 * @param array $file_uploaded_data
 	 */
-	public function add_file( $file_uploaded_data, $file_description ) {
+	public function add_file($file_uploaded_data, $file_description) {
 		$file_name = $file_uploaded_data['name'];
 		$file_name_exploded = explode('.', $file_name);
 		$ext = $file_name_exploded[count($file_name_exploded) - 1];
-		
+
 		$random_filename = '';
 		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		$size = strlen( $chars );
-		for( $i = 0; $i < 15; $i++ ) {
+		for ( $i = 0; $i < 15; $i++ ) {
 			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 		}
 		while ( file_exists( __DIR__ . '/../accounts/' . $random_filename . '.' . $ext ) ) {
@@ -336,20 +336,20 @@ class WDGROIDeclaration {
 		}
 		$random_filename = $random_filename . '.' . $ext;
 		move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../accounts/' . $random_filename );
-		
+
 		$file_item = array(
 			'file'	=> $random_filename,
 			'text'	=> $file_description
 		);
 		$file_list = $this->get_file_list();
 		array_push( $file_list, $file_item );
-		
+
 		$this->file_list = json_encode( $file_list );
-		
+
 		NotificationsEmails::turnover_declaration_adjustment_file_sent( $this->id );
 		$this->update();
 	}
-	
+
 	/**
 	 * Renvoie la liste des fichiers avec leur bonne url
 	 * @return array
@@ -359,15 +359,16 @@ class WDGROIDeclaration {
 		if ( !empty( $this->file_list ) ) {
 			$buffer = json_decode( $this->file_list );
 		}
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Renvoie le chemin de fichier pour les comptes
 	 * @return string
 	 */
 	public function get_file_path() {
-		return home_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/accounts/';
+		return site_url() . '/wp-content/plugins/appthemer-crowdfunding/includes/accounts/';
 	}
 
 	public function get_bill_file() {
@@ -377,13 +378,14 @@ class WDGROIDeclaration {
 			return $this->api_data_files;
 		}
 	}
-	
+
 	/**
 	 * Retourne le CA sous forme de tableau
 	 * @return array
 	 */
 	public function get_turnover() {
 		$buffer = json_decode($this->turnover);
+
 		return $buffer;
 	}
 	/**
@@ -406,9 +408,10 @@ class WDGROIDeclaration {
 				$buffer += $turnover_amount;
 			}
 		}
+
 		return $buffer;
 	}
-	
+
 	private $estimated_turnover;
 	public function get_estimated_turnover() {
 		if ( !isset( $this->estimated_turnover ) ) {
@@ -427,7 +430,6 @@ class WDGROIDeclaration {
 
 				if ( $date_declaration->format( 'm' ) == $declaration_date_due->format( 'm' ) && $date_declaration->format( 'Y' ) == $declaration_date_due->format( 'Y' ) ) {
 					break;
-
 				} else {
 					$nb_quarter++;
 					if ( $nb_quarter >= $campaign->get_declararations_count_per_year() ) {
@@ -452,42 +454,43 @@ class WDGROIDeclaration {
 			$percent_estimation = $quarter_percent_list[ $nb_quarter ];
 			$this->estimated_turnover = $amount_estimation_year * $percent_estimation / 100;
 		}
+
 		return $this->estimated_turnover;
 	}
-	
+
 	public function get_estimated_amount() {
 		$campaign = $this->get_campaign_object();
-		
+
 		$estimated_turnover = $this->get_estimated_turnover();
 		$amount_royalties = $estimated_turnover * $campaign->roi_percent_remaining() / 100;
 		$amount_with_adjustment = $amount_royalties + $this->get_adjustment_value();
 		$buffer = $amount_with_adjustment;
-		
+
 		$cost = $campaign->get_costs_to_organization();
 		if ( $cost > 0 ) {
 			$buffer += ( round( ( $amount_with_adjustment * $cost / 100 ) * 100) / 100 );
 		}
-		
+
 		// Si il y a un coût minimal par déclaration
 		$minimum_costs = $campaign->get_minimum_costs_to_organization();
 		if ( $minimum_costs > 0 ) {
 			$buffer = max( $buffer, $minimum_costs );
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	public function get_message() {
 		return html_entity_decode( nl2br( $this->message, ENT_HTML5 ), ENT_QUOTES | ENT_HTML401 );
 	}
-	public function set_message( $message ) {
+	public function set_message($message) {
 		$this->message = htmlentities( $message );
 	}
 
 	public function get_is_message_rich() {
 		return ( $this->message_rich == '1' );
 	}
-	public function set_is_message_rich( $is_message_rich ) {
+	public function set_is_message_rich($is_message_rich) {
 		$this->message_rich = $is_message_rich ? '1' : '0';
 	}
 	public function get_message_rich_decoded() {
@@ -519,11 +522,11 @@ class WDGROIDeclaration {
 
 		return $content_without_links;
 	}
-	
+
 	public function get_other_fundings() {
 		return nl2br( $this->other_fundings, ENT_HTML5 );
 	}
-	public function set_other_fundings( $other_fundings ) {
+	public function set_other_fundings($other_fundings) {
 		$this->other_fundings = htmlentities( $other_fundings );
 	}
 
@@ -531,9 +534,10 @@ class WDGROIDeclaration {
 		if ( empty( $this->transfer_delay ) ) {
 			return self::$default_transfer_delay;
 		}
+
 		return nl2br( $this->transfer_delay, ENT_HTML5 );
 	}
-	public function set_transfer_delay( $transfer_delay ) {
+	public function set_transfer_delay($transfer_delay) {
 		if ( is_numeric( $transfer_delay ) ) {
 			$this->transfer_delay = htmlentities( $transfer_delay );
 		} else {
@@ -568,11 +572,11 @@ class WDGROIDeclaration {
 
 		return $date_of_royalties_transfer;
 	}
-	
+
 	public function get_declared_by() {
 		return json_decode( $this->declared_by );
 	}
-	public function set_declared_by( $declared_by_apiid, $declared_by_name, $declared_by_email, $declared_by_status ) {
+	public function set_declared_by($declared_by_apiid, $declared_by_name, $declared_by_email, $declared_by_status) {
 		$declared_by_data = array(
 			'apiid'		=> $declared_by_apiid,
 			'name'		=> $declared_by_name,
@@ -581,7 +585,7 @@ class WDGROIDeclaration {
 		);
 		$this->declared_by = json_encode( $declared_by_data );
 	}
-	
+
 	/**
 	 * Transfert de tous les ROIs qui ont été préparés dans la fonction d'initialisation
 	 */
@@ -592,7 +596,7 @@ class WDGROIDeclaration {
 		if ( !empty( $campaign_organization ) ) {
 			$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		}
-		
+
 		// Nombre arbitraire de versements avant de faire un retour au site
 		$max_transfer_per_try = 20;
 		// On différencie $count et $count_done
@@ -635,18 +639,16 @@ class WDGROIDeclaration {
 							if ( $ROI->amount_taxed_in_cents > 0 ) {
 								WDGROITax::insert( $ROI->id, $ROI->id_user, 'orga', $date_now->format( 'Y-m-d' ), $ROI->amount_taxed_in_cents, 0, 0, $WDGOrga->get_country(), '0' );
 							}
-	
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
 						}
 						$this->update_investment_contract_amount_received( $investment_contracts, $ROI->id_investment, $ROI->amount );
-
 					} else {
 						$transfer = TRUE;
 						$status = WDGROI::$status_transferred;
 					}
 
-				//Versement vers utilisateur personne physique
+					//Versement vers utilisateur personne physique
 				} else {
 					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
 					$wdguser_wpref = $WDGUser->get_wpref();
@@ -670,17 +672,15 @@ class WDGROIDeclaration {
 
 							$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount - $amount_tax_in_cents / 100 );
 							$status = WDGROI::$status_transferred;
-							
+
 							if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
 								WDGQueue::add_notification_wallet_more_200_euros( $wdguser_wpref );
 								WDGQueue::add_notification_investors_with_more_200_euros( $campaign->ID, $wdguser_wpref );
 							}
-
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
 						}
 						$this->update_investment_contract_amount_received( $investment_contracts, $ROI->id_investment, $ROI->amount );
-
 					} else {
 						$transfer = TRUE;
 						$status = WDGROI::$status_transferred;
@@ -702,7 +702,6 @@ class WDGROIDeclaration {
 				}
 				$ROI->update();
 
-				
 				$cancel_notification = FALSE;
 				if ( $WDGUser ) {
 					$recipient_notification = $WDGUser->get_royalties_notifications();
@@ -717,7 +716,7 @@ class WDGROIDeclaration {
 					if ( !empty( $wdguser_wpref ) ) {
 						WDGQueue::add_notification_royalties( $wdguser_wpref );
 					}
-					
+
 					$declaration_message = $this->get_message();
 					if ( !empty( $declaration_message ) ) {
 						$declaration_message_decoded = $declaration_message;
@@ -739,10 +738,9 @@ class WDGROIDeclaration {
 
 		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
 
-		
 		// En retour, on veut le pourcentage d'avancement
 		$buffer = $count / count( $roi_list ) * 100;
-		
+
 		// Si on a terminé, on finalise la déclaration
 		if ( $buffer == 100 ) {
 			// On envoie le message en copie au PP
@@ -772,13 +770,12 @@ class WDGROIDeclaration {
 				}
 				$this->make_payment_certificate();
 				NotificationsAPI::declaration_done_with_turnover( $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment(), $tax_infos, $this->get_payment_certificate_url() );
-			
 			} else {
 				NotificationsAPI::declaration_done_without_turnover( $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
 			}
 
 			$this->status = WDGROIDeclaration::$status_finished;
-			$this->date_transfer = $date_now_formatted;
+			$this->date_transfer = $date_now->format( 'Y-m-d' );
 
 			if ( $this->get_commission_to_pay() > 0 ) {
 				// Envoi de la facture
@@ -788,17 +785,16 @@ class WDGROIDeclaration {
 					// Transfert vers le compte bancaire de WDG
 					$transfer_message = 'ROYALTIES ' . $WDGOrganization_campaign->get_name() . ' - D' . $this->id;
 					LemonwayLib::ask_transfer_to_iban( 'SC', $this->get_commission_to_pay(), 0, 0, $transfer_message );
-
 				} else {
 					NotificationsSlack::declaration_bill_failed( $campaign->data->post_title );
 					NotificationsAsana::declaration_bill_failed( $campaign->data->post_title );
 				}
 			}
 		}
-		
+
 		// On met à jour de toute façon pour mettre à jour le reliquat
 		$this->update();
-		
+
 		// A la toute fin, on vérifie les notifications à envoyer
 		if ( $buffer == 100 ) {
 			$this->check_notifications( $campaign, $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname() );
@@ -806,19 +802,19 @@ class WDGROIDeclaration {
 
 		return $buffer;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param ATCF_campaign $campaign
 	 * @param string $recipient
 	 * @param string $name
 	 */
-	private function check_notifications( $campaign, $recipient, $name ) {
+	private function check_notifications($campaign, $recipient, $name) {
 		// **************
 		// NOTIFICATION 1
 		// Doit-on envoyer une notification au PP pour dire que la prochaine déclaration est la dernière ?
 		$send_notification_extend = FALSE;
-		
+
 		// La notification ne sera envoyée que si il reste une seule déclaration à venir
 		$nb_declarations_waiting = 0;
 		$amount_transferred = 0;
@@ -833,7 +829,7 @@ class WDGROIDeclaration {
 		if ( $nb_declarations_waiting == 1 ) {
 			$send_notification_extend = TRUE;
 		}
-		
+
 		// La notification ne sera envoyée que si le montant minimum de versement n'a pas été atteint
 		if ( $send_notification_extend && $campaign->funding_duration() > 0 ) {
 			$amount_minimum_royalties = $campaign->current_amount( FALSE ) * $campaign->minimum_profit();
@@ -841,17 +837,16 @@ class WDGROIDeclaration {
 				$send_notification_extend = FALSE;
 			}
 		}
-			
+
 		if ( $send_notification_extend ) {
 			$amount_remaining = $amount_minimum_royalties - $amount_transferred;
-			
+
 			$amount_transferred_str = UIHelpers::format_number( $amount_transferred );
 			$amount_minimum_royalties_str = UIHelpers::format_number( $amount_minimum_royalties );
 			$amount_remaining_str = UIHelpers::format_number( $amount_remaining );
 			NotificationsAPI::declaration_to_be_extended( $recipient, $name, $amount_transferred_str, $amount_minimum_royalties_str, $amount_remaining_str );
 		}
-		
-		
+
 		// **************
 		// NOTIFICATION 2
 		// Si on approche du maximum à verser pour un projet, on prévient le service administratif
@@ -859,8 +854,7 @@ class WDGROIDeclaration {
 			$ratio = floor( $amount_transferred / $campaign->maximum_profit_amount() * 100 );
 			NotificationsSlack::declarations_close_to_maximum_profit( $campaign->get_name(), $ratio );
 		}
-		
-		
+
 		// **************
 		// NOTIFICATION 3
 		// Doit-on envoyer une notification au porteur de projet et aux investisseurs pour dire que c'était le dernier versement ?
@@ -871,14 +865,12 @@ class WDGROIDeclaration {
 			&& count( $existing_roi_declarations ) >= $campaign->funding_duration() * $campaign->get_declararations_count_per_year()
 			// Si le minimum à reverser a été atteint
 			&& $amount_transferred >= $amount_minimum_royalties ) {
-				
-				// Alors c'est la première fois qu'on va ajouter une déclaration, donc on notifie tout le monde
-				WDGQueue::add_contract_finished_notifications( $campaign->ID );
+			// Alors c'est la première fois qu'on va ajouter une déclaration, donc on notifie tout le monde
+			WDGQueue::add_contract_finished_notifications( $campaign->ID );
 		}
-		
 	}
-	
-	private function update_investment_contract_amount_received( $investment_contracts, $investment_id, $roi_amount ) {
+
+	private function update_investment_contract_amount_received($investment_contracts, $investment_id, $roi_amount) {
 		if ( !empty( $investment_contracts ) ) {
 			foreach ( $investment_contracts as $investment_contract_item ) {
 				if ( $investment_contract_item->subscription_id == $investment_id ) {
@@ -891,7 +883,7 @@ class WDGROIDeclaration {
 			}
 		}
 	}
-	
+
 	/**
 	 * Répare un versement qui n'a pas eu lieu vers un utilisateur
 	 */
@@ -902,7 +894,7 @@ class WDGROIDeclaration {
 			$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		}
 		$date_now = new DateTime();
-		
+
 		$roi_list = $this->get_rois();
 		foreach ( $roi_list as $roi_item ) {
 			if ( $roi_item->amount > 0 && $roi_item->id_transfer == 0 && ( $roi_item->status == WDGROI::$status_transferred || $roi_item->status == WDGROI::$status_error ) ) {
@@ -922,12 +914,11 @@ class WDGROIDeclaration {
 							if ( $ROI->amount_taxed_in_cents > 0 ) {
 								WDGROITax::insert( $ROI->id, $ROI->id_user, 'orga', $date_now->format( 'Y-m-d' ), $ROI->amount_taxed_in_cents, 0, 0, $WDGOrga->get_country(), '0' );
 							}
-
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
 						}
 
-					//Versement vers utilisateur personne physique
+						//Versement vers utilisateur personne physique
 					} else {
 						$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
 						$WDGUser->register_lemonway();
@@ -937,8 +928,8 @@ class WDGROIDeclaration {
 							if ( $ROI->amount_taxed_in_cents > 0 ) {
 								$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
 								if ( $amount_tax_in_cents > 0 ) {
-									$WDGOrganization_campaign->check_register_tax_lemonway_wallet();
-									LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrganization_campaign->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
+									$organization_obj->check_register_tax_lemonway_wallet();
+									LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $organization_obj->get_tax_lemonway_id(), $amount_tax_in_cents / 100 );
 									$percent_tax = $WDGUser->get_tax_percent();
 									WDGROITax::insert( $ROI->id, $ROI->id_user, 'user', $date_now->format( 'Y-m-d' ), $ROI->amount_taxed_in_cents, $amount_tax_in_cents, $percent_tax, $WDGUser->get_tax_country(), $WDGUser->has_tax_exemption_for_year( $date_now->format( 'Y' ) ) );
 									WDGQueue::add_tax_monthly_summary( $this->id );
@@ -947,7 +938,6 @@ class WDGROIDeclaration {
 
 							$transfer = LemonwayLib::ask_transfer_funds( $organization_obj->get_royalties_lemonway_id(), $WDGUser->get_lemonway_id(), $ROI->amount - $amount_tax_in_cents / 100 );
 							$status = WDGROI::$status_transferred;
-
 						} else {
 							$status = WDGROI::$status_waiting_authentication;
 						}
@@ -961,11 +951,10 @@ class WDGROIDeclaration {
 				}
 			}
 		}
-			
+
 		WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$this->id. '/rois' );
-		
 	}
-	
+
 	/**
 	 * Si la dÃ©claration Ã©tait en attente de virement, on valide que le virement a Ã©tÃ© reÃ§u
 	 */
@@ -975,30 +964,31 @@ class WDGROIDeclaration {
 			$this->update();
 		}
 	}
-	
+
 	/**
 	 * DÃ©termine le nom du fichier d'attestation qui va Ãªtre crÃ©Ã©
 	 * @return string
 	 */
 	private function get_payment_certificate_filename() {
 		$buffer = 'roi-declaration-' .$this->id_campaign. '-' .$this->id. '.pdf';
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Crée le fichier pdf d'attestation
 	 * @param boolean $force Si $force est à true, on crée même si le fichier existe déjà
 	 */
-	public function make_payment_certificate( $force = false ) {
+	public function make_payment_certificate($force = false) {
 		$filename = $this->get_payment_certificate_filename();
 		$filepath = __DIR__ . '/../../files/certificate-roi-payment/' . $filename;
 		if ( !$force && file_exists( $filepath ) ) {
 			return;
 		}
-		
+
 		$date_due = new DateTime( $this->date_due );
 		$certificate_date = $date_due->format( 'd/m/Y' );
-		
+
 		$campaign = $this->get_campaign_object();
 		$current_organization = $campaign->get_organization();
 		if ( !empty( $current_organization ) ) {
@@ -1051,51 +1041,32 @@ class WDGROIDeclaration {
 		$declaration_amount_and_commission = $this->get_amount_with_commission();
 		$declaration_adjustment_value = $this->get_adjustment_value();
 		$declaration_remaining_amount_transfered = $this->transfered_previous_remaining_amount;
-		
-		
+
 		require_once __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
-		$html_content = WDG_Template_PDF_Certificate_ROI_Payment::get(
-			$certificate_date,
-			$project_roi_percent,
-			$project_amount_collected,
-			$project_roi_start_date,
-			$project_investors_list,
-			$project_roi_nb_years,
-			$organization_name,
-			$organization_address,
-			$organization_postalcode,
-			$organization_city,
-			$declaration_date,
-			$declaration_trimester,
-			$declaration_year,
-			$declaration_declared_turnover,
-			$declaration_amount,
-			$declaration_percent_commission,
-			$declaration_amount_commission,
-			$declaration_amount_and_commission,
-			$declaration_adjustment_value,
-			$declaration_remaining_amount_transfered
-		);
-		
+		$html_content = WDG_Template_PDF_Certificate_ROI_Payment::get($certificate_date, $project_roi_percent, $project_amount_collected, $project_roi_start_date, $project_investors_list, $project_roi_nb_years, $organization_name, $organization_address, $organization_postalcode, $organization_city, $declaration_date, $declaration_trimester, $declaration_year, $declaration_declared_turnover, $declaration_amount, $declaration_percent_commission, $declaration_amount_commission, $declaration_amount_and_commission, $declaration_adjustment_value, $declaration_remaining_amount_transfered);
+
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_html2pdf();
 		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
 		$html2pdf->WriteHTML( urldecode( $html_content ) );
 		$html2pdf->Output( $filepath, 'F' );
 	}
-	
+
 	/**
 	 * DÃ©termine l'URL oÃ¹ le fichier d'attestation peut Ãªtre tÃ©lÃ©chargÃ©
 	 * @return string
 	 */
 	public function get_payment_certificate_url() {
-		$buffer = home_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-payment/';
+		$buffer = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/certificate-roi-payment/';
 		$buffer .= $this->get_payment_certificate_filename();
+
 		return $buffer;
 	}
 
 	/**
-	 * Se charge 
+	 * Se charge
 	 * - de vérifier si des investisseurs vont toucher une plus-value
-	 * - de vérifier si ils vont devoir payer des impots dessus et à quel taux 
+	 * - de vérifier si ils vont devoir payer des impots dessus et à quel taux
 	 * (personne physique, dont la résidence fiscale est en France, dispense ou non)
 	 * - d'envoyer le résumé par mail à admin si il y a des infos à transmettre
 	 */
@@ -1136,7 +1107,7 @@ class WDGROIDeclaration {
 					$WDGUser = new WDGUser( $investment_item[ 'user' ] );
 					$recipient_api_id = $WDGUser->get_api_id();
 				}
-				
+
 				// Contrôle sur les taxes pour enregistrer la part des royalties qui serait taxée
 				$user_taxed_amount_in_cents = 0;
 				if ( $investment_item[ 'roi_amount' ] > 0 && isset( $investment_contracts[ $investment_item['ID'] ] ) ) {
@@ -1168,7 +1139,7 @@ class WDGROIDeclaration {
 			// On met à jour de toute façon
 			$this->status = WDGROIDeclaration::$status_transfer;
 			$this->update();
-		
+
 			// Calcul de la date à laquelle on fera le versement auto (on décale si c'est un prélèvement)
 			$date_of_royalties_transfer = FALSE;
 			if ( $this->mean_payment === WDGROIDeclaration::$mean_payment_mandate ) {
@@ -1180,11 +1151,12 @@ class WDGROIDeclaration {
 
 		// Pas fini, on continue l'initialisation
 		} else {
+			$this->status = self::$status_initializing;
 			$this->update();
 			WDGQueue::add_init_declaration_rois( $this->id );
 		}
 	}
-	
+
 	/**
 	 * Renvoie true si la dÃ©claration de ROI peut Ãªtre payÃ©e via virement
 	 * @return boolean
@@ -1192,14 +1164,14 @@ class WDGROIDeclaration {
 	public function can_pay_with_wire() {
 		return ($this->get_amount_with_commission() >= WDGROIDeclaration::$min_amount_for_wire_payment);
 	}
-	
+
 	/**
 	 * Renvoie la liste des mois concernÃ©s par une dÃ©claration
 	 * @return array
 	 */
 	public function get_month_list() {
 		$buffer = array();
-		
+
 		$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
 		$campaign = atcf_get_campaign( $this->id_campaign );
 		$nb_fields = $campaign->get_turnover_per_declaration();
@@ -1208,14 +1180,14 @@ class WDGROIDeclaration {
 		$declaration_year = $date_due->format( 'Y' );
 		$date_due->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
 		// Si l'annÃ©e de dÃ©claration est diffÃ©rente de la premiÃ¨re date de dÃ©claration,
-			// on recule d'une annÃ©e
+		// on recule d'une annÃ©e
 		if ( $declaration_year > $date_due->format( 'Y' ) ) {
 			$declaration_year--;
 		}
-		
+
 		for ($i = 0; $i < $nb_fields; $i++) {
 			// Si on est en janvier, et que ce n'est pas la premiÃ¨re dÃ©claration,
-				// on avance d'une annÃ©e
+			// on avance d'une annÃ©e
 			if ( $i > 0 && $date_due->format( 'n' ) == 1 ) {
 				$declaration_year++;
 			}
@@ -1225,7 +1197,7 @@ class WDGROIDeclaration {
 
 		return $buffer;
 	}
-	
+
 	public function get_month_list_str() {
 		$buffer = '';
 		$month_list = $this->get_month_list();
@@ -1239,18 +1211,19 @@ class WDGROIDeclaration {
 				$buffer .= ' et ';
 			}
 		}
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Détermine la valeur de l'ajustement
-	 * @return number
+	 * @return float
 	 */
 	public function get_adjustment_value() {
 		$buffer = 0;
-		
+
 		$adjustments = $this->get_adjustments();
-		
+
 		if ( empty( $adjustments ) ) {
 			if ( !empty( $this->adjustment ) ) {
 				$temp = json_decode( $this->adjustment );
@@ -1258,20 +1231,19 @@ class WDGROIDeclaration {
 				if ( is_numeric( $temp_value ) ) {
 					$buffer = $temp_value;
 				}
-				
+
 				$this->move_adjustment_to_api();
 			}
-			
 		} else {
 			$buffer = $this->get_adjustments_amount();
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	public function move_adjustment_to_api() {
 		$adjustments = $this->get_adjustments();
-		
+
 		if ( !empty( $this->adjustment ) && empty( $adjustments ) ) {
 			$temp = json_decode( $this->adjustment );
 			if ( !isset( $temp->on_api ) ) {
@@ -1298,7 +1270,7 @@ class WDGROIDeclaration {
 			}
 		}
 	}
-	
+
 	/**
 	 * Retourne la liste des ajustements qui s'appliquent sur cette déclaration
 	 * @return array
@@ -1311,9 +1283,10 @@ class WDGROIDeclaration {
 				$this->adjustments = $this->api_data_adjustments;
 			}
 		}
+
 		return $this->adjustments;
 	}
-	
+
 	/**
 	 * Retourne le montant des ajustements liés à une déclaration
 	 * @return float
@@ -1326,6 +1299,7 @@ class WDGROIDeclaration {
 				$buffer += $adjustment_item->amount;
 			}
 		}
+
 		return $buffer;
 	}
 
@@ -1339,25 +1313,26 @@ class WDGROIDeclaration {
 		}
 		$campaign_object = $this->get_campaign_object();
 		$buffer *= 100 / $campaign_object->roi_percent();
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Retourne vrai si un ajustement concernait cette déclaration
 	 */
 	public function is_checked_by_adjustments() {
 		$buffer = FALSE;
-		
+
 		if ( $this->status == WDGROIDeclaration::$status_finished ) {
 			$linked_adjustments = WDGWPREST_Entity_Adjustment::get_list_linked_to_declaration_id( $this->id );
 			if ( !empty( $linked_adjustments ) ) {
 				$buffer = TRUE;
 			}
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Enregistre le reliquat (utile surtout pour les anciennes dÃ©clarations Ã  mettre Ã  jour)
 	 */
@@ -1374,13 +1349,13 @@ class WDGROIDeclaration {
 			$this->update();
 		}
 	}
-	
+
 	/**
 	 * Retourne la liste des dÃ©clarations qui prÃ©cÃ¨dent celles-ci
 	 */
 	public function get_previous_declarations() {
 		$buffer = array();
-		
+
 		$declarations = WDGROIDeclaration::get_list_by_campaign_id( $this->id_campaign );
 		foreach ( $declarations as $declaration_item ) {
 			$declaration_date_due = new DateTime( $declaration_item->date_due );
@@ -1389,25 +1364,25 @@ class WDGROIDeclaration {
 				array_push( $buffer, $declaration_item );
 			}
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Retourne la valeur des reliquats qui n'ont pas été versés aux investisseurs sur les déclarations précédentes
 	 */
 	public function get_previous_remaining_amount() {
 		$buffer = 0;
-		
+
 		$previous_declarations = $this->get_previous_declarations();
 		foreach ( $previous_declarations as $declaration_item ) {
 			$buffer += $declaration_item->remaining_amount;
 			$buffer -= $declaration_item->transfered_previous_remaining_amount;
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Récupère la liste de tous les ROIs liés à cette déclaration
 	 */
@@ -1420,16 +1395,17 @@ class WDGROIDeclaration {
 				$this->roi_list = $this->api_data_rois;
 			}
 		}
+
 		return $this->roi_list;
 	}
-	
+
 	/**
 	 * Récupère le ROI qui concerne cette déclaration et un id d'investissement
 	 * @param int $investment_id
 	 */
-	public function get_roi_by_investment( $investment_id ) {
+	public function get_roi_by_investment($investment_id) {
 		$buffer = array();
-		
+
 		$roi_list = $this->get_rois();
 		foreach ( $roi_list as $roi_item ) {
 			if ( $roi_item->id_investment == $investment_id ) {
@@ -1437,31 +1413,30 @@ class WDGROIDeclaration {
 				array_push($buffer, $ROI);
 			}
 		}
-		
+
 		return $buffer;
 	}
-	
-	
-/*******************************************************************************
- * REQUETES STATIQUES
- ******************************************************************************/
+
+	/*******************************************************************************
+	 * REQUETES STATIQUES
+	 ******************************************************************************/
 	/**
 	 * Ajout d'une nouvelle dÃ©claration
 	 */
-	public static function insert( $id_campaign, $date_due ) {
+	public static function insert($id_campaign, $date_due) {
 		$declaration = new WDGROIDeclaration();
 		$declaration->id_campaign = $id_campaign;
 		$declaration->date_due = $date_due;
 		$declaration->status = WDGROIDeclaration::$status_declaration;
 		WDGWPREST_Entity_Declaration::create( $declaration );
 	}
-	
+
 	/**
 	 * Liste des dÃ©clarations ROI pour un projet
 	 */
-	public static function get_list_by_campaign_id( $idwp_campaign, $status = '', $with_links = TRUE ) {
+	public static function get_list_by_campaign_id($idwp_campaign, $status = '', $with_links = TRUE) {
 		$buffer = array();
-		
+
 		$campaign = new ATCF_Campaign( $idwp_campaign );
 		$declarations = WDGWPREST_Entity_Project::get_declarations( $campaign->get_api_id(), $with_links );
 		if ( !empty( $declarations ) ) {
@@ -1473,7 +1448,6 @@ class WDGROIDeclaration {
 						if ( $declaration_item->status != WDGROIDeclaration::$status_declaration && !empty( $declaration_item->status ) ) {
 							$add = FALSE;
 						}
-
 					} else {
 						if ( $declaration_item->status != $status ) {
 							$add = FALSE;
@@ -1487,23 +1461,33 @@ class WDGROIDeclaration {
 				}
 			}
 		}
-		
+
 		return $buffer;
 	}
 	
+	private $is_payable = FALSE;
+	public function set_is_payable ( $value ) {
+		$this->is_payable = $value;
+	}
+
+	public function is_payable() {
+		return $this->is_payable;
+	}
+
+
 	/**
 	 * Retourne une dÃ©claration ROI par son token de paiement
 	 * @param string $token
 	 * @return WDGROIDeclaration
 	 */
-	public static function get_by_payment_token( $token ) {
+	public static function get_by_payment_token($token) {
 		$buffer = FALSE;
-		
+
 		$declaration = WDGWPREST_Entity_Declaration::get_by_payment_token( $token );
 		if ( $declaration ) {
 			$buffer = new WDGROIDeclaration( $declaration->id );
 		}
-		
+
 		return $buffer;
 	}
 }

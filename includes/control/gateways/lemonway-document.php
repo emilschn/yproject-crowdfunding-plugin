@@ -345,6 +345,17 @@ class LemonwayDocument {
 		return $documents_type_list[ $kyc_type ];
 	}
 
+	public static function get_kyc_type_by_lw_type( $input_lw_type ) {
+		$documents_type_list = self::get_list_sorted_by_kyc_type();
+		foreach ( $documents_type_list as $item_kyc_type => $item_lw_type ) {
+			if ( $input_lw_type == $item_lw_type ) {
+				return $item_kyc_type;
+				break;
+			}
+		}
+		return FALSE;
+	}
+
 	public static function has_only_first_doc_validated( $wallet_details ) {
 		$has_all_documents_validated = TRUE;
 		// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB

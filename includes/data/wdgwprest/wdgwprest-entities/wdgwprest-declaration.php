@@ -81,6 +81,8 @@ class WDGWPREST_Entity_Declaration {
 			$result_obj = WDGWPRESTLib::call_post_wdg( 'declaration/' . $declaration->id, $parameters );
 			WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$declaration->id );
 			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$declaration->id_campaign. '/declarations' );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$declaration->id_campaign. '/declarations?data_restricted_to_entity=1' );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$declaration->id_campaign. '/declarations?data_restricted_to_entity=1&with_links=1' );
 			if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 			return $result_obj;
 		} else {

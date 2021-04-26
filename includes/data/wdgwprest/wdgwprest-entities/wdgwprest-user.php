@@ -50,7 +50,6 @@ class WDGWPREST_Entity_User {
 		$file_list_id = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_id );
 		$file_list_idbis = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_idbis );
 		$file_list_rib = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
-		$authentication_mode = $user->is_logged_in_with_facebook() ? 'facebook' : 'account';
 		$parameters = array(
 			'wpref'				=> $user->get_wpref(),
 			'gender'			=> $user->get_gender(),
@@ -80,7 +79,7 @@ class WDGWPREST_Entity_User {
 			'bank_holdername'	=> $user->get_bank_holdername(),
 			'bank_address'		=> $user->get_bank_address(),
 			'bank_address2'		=> $user->get_bank_address2(),
-			'authentification_mode'	=> $authentication_mode,
+			'authentification_mode'	=> $user->get_authentification_mode(),
 			/* 'picture_url', 'website_url', 'twitter_url', 'facebook_url', 'linkedin_url', 'viadeo_url', 'activation_key', 'password' */
 			'signup_date'		=> $user->get_signup_date(),
 			'royalties_notifications'		=> $user->get_royalties_notifications(),
@@ -230,6 +229,18 @@ class WDGWPREST_Entity_User {
 		$buffer = array();
 		if ( !empty( $user_id ) ) {
 			$buffer = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/transactions' );
+		}
+		return $buffer;
+	}
+	
+	/**
+	 * Retourne le vIBAN lié à un utilisateur
+	 * @return array
+	 */
+	public static function get_viban( $user_id ) {
+		$buffer = array();
+		if ( !empty( $user_id ) ) {
+			$buffer = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/virtual-iban' );
 		}
 		return $buffer;
 	}

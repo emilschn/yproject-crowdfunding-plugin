@@ -442,6 +442,15 @@ class WDGRESTAPI_Lib_Validator {
 		}
 		return ( $input_country != 'FR' || preg_match( '#^[0-9]{5}$#', $input ) );
 	}
+
+	/**
+	 * Vérifie si la variable est un RCS
+	 * @param string $input
+	 * @return boolean
+	 */
+	public static function is_rcs( $input ) {
+		return preg_match( '/^[-a-zA-Z\s\D]+$/', $input );
+	}
 	
 	/**
 	 * Vérifie si le montant est supérieur à 10

@@ -78,12 +78,18 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			]
 		);
 
+		// Le champ e-mail est masqué par défaut, sauf si l'e-mail de l'utilisateur est vide
+		$email_field_type = 'not-editable';
+		$email_field_init_value = $WDGUser->get_email();
+		if ( empty( $email_field_init_value ) ) {
+			$email_field_type = 'text';
+		}
 		$this->addField(
-			'not-editable',
+			$email_field_type,
 			'email',
 			__( 'form.user-details.EMAIL', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_user_info,
-			$WDGUser->get_email(),
+			$email_field_init_value,
 			FALSE,
 			'email'
 		);
@@ -600,6 +606,25 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		} else {
 			// Informations de base
 			$email = $WDGUser->get_email();
+			// On ne prend l'enregistrement que si il était vide à la base
+			if ( empty( $email ) ) {
+				$email = $this->getInputText( 'email' );
+				if ( !is_email( $email )  || !WDGRESTAPI_Lib_Validator::is_email( $email )) {
+					$this->addPostError(
+						'email',
+						__( "Cette adresse e-mail n'est pas valide.", 'yproject' ),
+						'email'
+					);
+				}
+				// Si l'utilisateur change d'e-mail et que celui-ci est déjà utilisé, on bloque
+				if ( $WDGUser->get_email() != $email && email_exists( $email ) ) {
+					$this->addPostError(
+						'email',
+						__( "Cette adresse e-mail est d&eacute;j&agrave; utilis&eacute;e.", 'yproject' ),
+						'email'
+					);
+				}
+			}
 			
 			$firstname = $this->getInputText( 'firstname' );
 			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
@@ -655,28 +680,30 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$address = $this->getInputText( 'address' );
 				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
 					$this->addPostError(
-						'birthplace',
+						'address',
 						__( 'form.user-details.ADDRESS_ERROR', 'yproject' ),
-						'birthplace'
+						'address'
 					);
 				}
+				$country = $this->getInputText( 'country' );
+				
 				$postal_code = $this->getInputText( 'postal_code' );
 				if ( empty( $postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $postal_code, $country ) ) {
 					$this->addPostError(
-						'birthplace',
+						'postal_code',
 						__( 'form.user-details.ZIP_CODE_ERROR', 'yproject' ),
-						'birthplace'
+						'postal_code'
 					);
 				}
 				$city = $this->getInputText( 'city' );
 				if ( empty( $city ) || !WDGRESTAPI_Lib_Validator::is_name( $city ) ) {
 					$this->addPostError(
-						'birthplace',
+						'city',
 						__( 'form.user-details.CITY_ERROR', 'yproject' ),
-						'birthplace'
+						'city'
 					);
 				}
-				$country = $this->getInputText( 'country' );
+				
 				$tax_country = $this->getInputText( 'tax_country' );
 				$phone_number = $this->getInputText( 'phone_number' );
 				$birthdate_day = FALSE;
@@ -854,6 +881,15 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			);
 		}
 
+		$org_rcs = $this->getInputText( 'org_rcs' );
+		if ( empty( $org_rcs ) || !WDGRESTAPI_Lib_Validator::is_rcs( $org_rcs ) ) {
+					$this->addPostError(
+						'org_rcs',
+						__( 'form.organization-details.error.RCS', 'yproject' ),
+						'org_rcs'
+					);
+				}
+
 		$org_capital = $this->getInputTextMoney( 'org_capital' );
 		$org_capital = filter_var( $org_capital, FILTER_VALIDATE_INT );
 		if ( $org_capital === FALSE ) {
@@ -865,9 +901,9 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			);
 		}
 		
+		$country = $this->getInputText( 'country' );
 		$org_postal_code = $this->getInputText( 'org_postal_code' );
-		$org_postal_code = filter_var( $org_postal_code, FILTER_VALIDATE_INT );
-		if ( $org_postal_code === FALSE ) {
+		if ( empty( $org_postal_code ) || !WDGRESTAPI_Lib_Validator::is_postalcode( $org_postal_code, $country ) )  {
 			$needs_update_organization = TRUE;
 			$this->addPostError(
 				'postalcode-not-integer',
