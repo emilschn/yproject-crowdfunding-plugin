@@ -307,7 +307,9 @@ final class ATCF_CrowdFunding {
 		if ( !empty( $lang_code ) ) {
 			global $locale;
 			$locale = $lang_code;
-			setcookie( 'locale', $lang_code, time() + 10 * DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+			if ( !headers_sent() ) {
+				setcookie( 'locale', $lang_code, time() + 10 * DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
+			}
 		}
 	}
 

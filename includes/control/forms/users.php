@@ -96,6 +96,8 @@ class WDGFormUsers {
 						$user_id = wp_insert_user( $userdata );
 
 						if ( $user_id && is_integer( $user_id ) ) {
+							ypcf_session_start();
+							$_SESSION['send_creation_event'] = 1;
 							$WDGUser = new WDGUser($user_id);
 							NotificationsAPI::user_registration( $WDGUser );
 							WDGQueue::add_notification_registered_without_investment( $user_id );
@@ -341,6 +343,8 @@ class WDGFormUsers {
 				if ( is_wp_error( $wp_user_id ) ) {
 					$signup_errors->add( 'user_insert', __( 'signup.ERROR_USER_CREATION', 'yproject' ) );
 				} else {
+					ypcf_session_start();
+					$_SESSION['send_creation_event'] = 1;
 					global $wpdb, $edd_options;
 					$signup_step = 'completed-confirmation';
 					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
