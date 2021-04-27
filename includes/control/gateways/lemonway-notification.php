@@ -1,6 +1,8 @@
 <?php
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Classe de gestion des notifications envoyées par Lemon Way
@@ -20,39 +22,39 @@ class LemonwayNotification {
 	private static $category_moneyin_wire = 10;
 	private static $category_moneyin_mandate = 11;
 	private static $category_moneyin_mandate_canceled = 17;
-	
+
 	private $notification_category;
-	
+
 	/**
 	 * Le constructeur se charge de diriger la bonne exécution de notification
 	 * @param int $notification_category
 	 */
-	public function __construct( $notification_category ) {
+	public function __construct($notification_category) {
 		$this->notification_category = $notification_category;
-		
+
 		switch ( $this->notification_category ) {
 			case LemonwayNotification::$category_wallet_new_status:
 				$this->process_wallet_new_status();
 				break;
-			
+
 			case LemonwayNotification::$category_document_new_status:
 				$this->process_document_new_status();
 				break;
-			
+
 			case LemonwayNotification::$category_moneyin_wire:
 				$this->process_moneyin_wire();
 				break;
-			
+
 			case LemonwayNotification::$category_moneyin_mandate:
 				$this->process_moneyin_mandate();
 				break;
-			
+
 			case LemonwayNotification::$category_moneyin_mandate_canceled:
 				$this->process_moneyin_mandate_canceled();
 				break;
 		}
 	}
-	
+
 	/**
 	 * Exécution de la notification en cours
 	 */
@@ -62,9 +64,10 @@ class LemonwayNotification {
 		if ( !empty( $notification_category ) ) {
 			return new self( $notification_category );
 		}
+
 		return FALSE;
 	}
-	
+
 	/**
 	 * Changement de statut d'un wallet
 	 */
@@ -89,7 +92,7 @@ class LemonwayNotification {
 		 * Ex : 2
 		 */
 		$lemonway_posted_wallet_status = filter_input( INPUT_POST, 'Status' );
-		
+
 		// Trouver l'utilisateur à partir de son identifiant externe
 		$WDGOrga_wallet = FALSE;
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
@@ -97,10 +100,9 @@ class LemonwayNotification {
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
-			
 			$pending_not_validated_investment_campaign_name = FALSE;
 			$WDGUserInvestments = FALSE;
-			
+
 			if ( !empty( $WDGOrga_wallet ) ) {
 				$user_name = $WDGOrga_wallet->get_name();
 				$user_fullname = $WDGOrga_wallet->get_name();
@@ -108,7 +110,6 @@ class LemonwayNotification {
 				if ( $lemonway_posted_wallet_status == 6 ) {
 					$WDGUserInvestments = new WDGUserInvestments( $WDGOrga_wallet );
 				}
-				
 			} else {
 				$user_name = $WDGUser_wallet->get_firstname();
 				$user_fullname = $WDGUser_wallet->get_firstname(). ' ' .$WDGUser_wallet->get_lastname();
@@ -117,7 +118,7 @@ class LemonwayNotification {
 					$WDGUserInvestments = new WDGUserInvestments( $WDGUser_wallet );
 				}
 			}
-			
+
 			if ( !empty( $WDGUserInvestments ) ) {
 				$WDGUserInvestments->try_transfer_waiting_roi_to_wallet();
 				if ( $WDGUserInvestments->has_pending_not_validated_investments() ) {
@@ -125,8 +126,7 @@ class LemonwayNotification {
 					$pending_not_validated_investment_campaign_name = $pending_not_validated_investment->get_saved_campaign()->data->post_title;
 				}
 			}
-			
-			
+
 			if ( $lemonway_posted_wallet_status == 6 ) {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, 'Validé' );
 				if ( !empty( $pending_not_validated_investment_campaign_name ) ) {
@@ -139,14 +139,12 @@ class LemonwayNotification {
 				if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
 					WDGQueue::add_document_user_phone_notification( $WDGUser_wallet->get_wpref(), 'authentified' );
 				}
-				
 			} else {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, $lemonway_posted_wallet_status );
 			}
-			
 		}
 	}
-	
+
 	/**
 	 * Changement de statut d'un document
 	 */
@@ -181,9 +179,9 @@ class LemonwayNotification {
 		 * Ex : 2
 		 */
 		$lemonway_posted_document_status = filter_input( INPUT_POST, 'Status' );
-		
+
 		$notification_sent = FALSE;
-		
+
 		// Trouver l'utilisateur à partir de son identifiant externe
 		$asana_content = FALSE;
 		$orga_has_campaigns = FALSE;
@@ -201,18 +199,17 @@ class LemonwayNotification {
 				$user_email = $WDGUser_wallet->get_email();
 				$user_firstname = $WDGUser_wallet->get_firstname();
 			}
-			
+
 			// Notifications pour indiquer les documents non-validés
 			// Si le document n'est ni validé, ni en attente
 			if ( $lemonway_posted_document_status > 2 ) {
 				// Seulement si c'est une personne physique
 				if ( empty( $WDGOrga_wallet ) ) {
 					if ( !$WDGUser_wallet->is_lemonway_registered() ) {
-
 						// Si l'utilisateur a envoyé un fichier du même type pendant que le premier était en cours d'analyse
-							// Lemon Way a refusé de l'uploader
+						// Lemon Way a refusé de l'uploader
 						// On peut donc vérifier si un autre fichier a été envoyé par l'utilisateur mais pas envoyé sur Lemon Way
-							// Et le renvoyer
+						// Et le renvoyer
 						$WDGFile = FALSE;
 						$kyc_type = LemonwayDocument::get_kyc_type_by_lw_type( $lemonway_posted_document_type );
 						$kyc_list = WDGKYCFile::get_list_by_owner_id( $WDGUser_wallet->get_wpref(), 'user', $kyc_type );
@@ -228,8 +225,7 @@ class LemonwayNotification {
 								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 							}
 
-
-						// Si aucun fichier correspondant était en attente, on peut envoyer la notif
+							// Si aucun fichier correspondant était en attente, on peut envoyer la notif
 						} else {
 							// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
 							if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
@@ -239,65 +235,68 @@ class LemonwayNotification {
 						}
 					}
 				}
-			
-			// Notifications pour indiquer que les documents sont validés mais que le wallet ne l'est pas
-			} else if ( $lemonway_posted_document_status == 2 ) {
-				$wallet_details = FALSE;
-				$user_wpref = FALSE;
 
-				// Si c'est une organisation pas authentifiée
-				if ( !empty( $WDGOrga_wallet ) && !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
-					$wallet_details = $WDGOrga_wallet->get_wallet_details();
-					$user_wpref = $WDGOrga_wallet->get_wpref();
+				// Notifications pour indiquer que les documents sont validés mais que le wallet ne l'est pas
+			} else {
+				if ( $lemonway_posted_document_status == 2 ) {
+					$wallet_details = FALSE;
+					$user_wpref = FALSE;
 
-				// Si c'est une personne physique pas authentifiée
-				} else if ( empty( $WDGOrga_wallet ) && !$WDGUser_wallet->is_lemonway_registered() ) {
-					$wallet_details = $WDGUser_wallet->get_wallet_details();
-					$user_wpref = $WDGUser_wallet->get_wpref();
-				}
+					// Si c'est une organisation pas authentifiée
+					if ( !empty( $WDGOrga_wallet ) && !$WDGOrga_wallet->is_registered_lemonway_wallet() ) {
+						$wallet_details = $WDGOrga_wallet->get_wallet_details();
+						$user_wpref = $WDGOrga_wallet->get_wpref();
 
-				$has_all_documents_validated = TRUE;
-				// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
-				// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
-				$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
-
-				// On vérifie si tous les documents sont validés
-				if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
-					foreach ( $wallet_details->DOCS->DOC as $document_object ) {
-						if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
-							$has_all_documents_validated = FALSE;
+					// Si c'est une personne physique pas authentifiée
+					} else {
+						if ( empty( $WDGOrga_wallet ) && !$WDGUser_wallet->is_lemonway_registered() ) {
+							$wallet_details = $WDGUser_wallet->get_wallet_details();
+							$user_wpref = $WDGUser_wallet->get_wpref();
 						}
-						// Si le document est validé et que ce n'est pas la première pièce ou le RIB, on n'envoie pas de notif à ce sujet
-						if ( $document_object->S == 2 
+					}
+
+					$has_all_documents_validated = TRUE;
+					// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
+					// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
+					$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
+
+					// On vérifie si tous les documents sont validés
+					if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
+						foreach ( $wallet_details->DOCS->DOC as $document_object ) {
+							if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
+								$has_all_documents_validated = FALSE;
+							}
+							// Si le document est validé et que ce n'est pas la première pièce ou le RIB, on n'envoie pas de notif à ce sujet
+							if ( $document_object->S == 2
 									&& $document_object->TYPE != LemonwayDocument::$document_type_id
 									&& $document_object->TYPE != LemonwayDocument::$document_type_id_back
 									&& $document_object->TYPE != LemonwayDocument::$document_type_bank ) {
-							$only_first_document = FALSE;
+								$only_first_document = FALSE;
+							}
 						}
 					}
-				}
-				
-				// Si ils sont tous validés, on enverra une notification plus tard
-				if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
-					if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
-						NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
-						if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
-							WDGQueue::add_document_user_phone_notification( $user_wpref, 'one_doc' );
+
+					// Si ils sont tous validés, on enverra une notification plus tard
+					if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
+						if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
+							NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
+							if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
+								WDGQueue::add_document_user_phone_notification( $user_wpref, 'one_doc' );
+							}
+						} else {
+							WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
 						}
-						
-					} else {
-						WDGQueue::add_document_validated_but_not_wallet_admin_notification( $user_wpref );
 					}
 				}
 			}
-		
+
 			// On prévient l'équipe par Slack
 			if ( $orga_has_campaigns && !empty( $asana_content ) && $lemonway_posted_document_status != 2 ) {
 				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
 				$document_status = LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
 				NotificationsAsana::send_new_project_document_status( $asana_content, $document_type, $document_status );
 			}
-			
+
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
 			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == LemonwayDocument::$document_type_bank && empty( $WDGOrga_wallet ) ) {
 				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
@@ -305,7 +304,7 @@ class LemonwayNotification {
 			}
 		}
 	}
-	
+
 	/**
 	 * Arrivée d'un nouveau virement
 	 */
@@ -341,7 +340,6 @@ class LemonwayNotification {
 		 */
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
 
-	
 		$content = 'Virement reçu : ' . $lemonway_posted_date . "\n";
 		$content .= 'ID :' .$lemonway_posted_id_internal . "\n";
 		$content .= 'ID WDG :' .$lemonway_posted_id_external . "\n";
@@ -351,7 +349,7 @@ class LemonwayNotification {
 		if ( $lemonway_posted_id_external == 'society' ) {
 			return;
 		}
-		
+
 		// - Trouver l'utilisateur à partir de son identifiant externe
 		$WDGUser_invest_author = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		$WDGOrga_invest_author = false;
@@ -371,7 +369,7 @@ class LemonwayNotification {
 			} else {
 				$investments_by_campaign = $WDGUser_invest_author->get_pending_investments();
 			}
-			
+
 			$trace = '';
 			foreach ( $investments_by_campaign as $campaign_id => $campaign_investments ) {
 				$trace .= 'A';
@@ -391,7 +389,7 @@ class LemonwayNotification {
 			}
 			ypcf_debug_log( 'PROCESS -> $trace = ' . $trace, FALSE );
 			ypcf_debug_log( 'PROCESS -> $investment_id = ' . $investment_id .  ' ; $investment_campaign_id = ' . $investment_campaign_id, FALSE );
-			
+
 			if ( $investment_id != FALSE && $investment_campaign_id != FALSE ) {
 				// - Faire le transfert vers le porte-monnaie du porteur de projet
 				$post_campaign = get_post( $investment_campaign_id );
@@ -409,7 +407,7 @@ class LemonwayNotification {
 				}
 				$organization_obj->check_register_campaign_lemonway_wallet();
 				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_campaign_lemonway_id(), $lemonway_posted_amount );
-				
+
 				// Si la campagne n'est pas en cours d'évaluation, on peut valider l'investissement
 				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
 					$postdata = array(
@@ -418,11 +416,10 @@ class LemonwayNotification {
 						'edit_date'		=> current_time( 'mysql' )
 					);
 					wp_update_post($postdata);
-
 				} else {
 					add_post_meta( $investment_id, 'has_received_wire', '1' );
 				}
-				
+
 				// - Créer le contrat pdf
 				// - Envoyer validation d'investissement par mail
 				if ( $lemonway_posted_amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
@@ -430,26 +427,23 @@ class LemonwayNotification {
 					$contract_id = $WDGInvestmentSignature->create_eversign();
 					if ( !empty( $contract_id ) ) {
 						NotificationsEmails::new_purchase_user_success( $investment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						
 					} else {
 						global $contract_errors;
 						$contract_errors = 'contract_failed';
 						NotificationsEmails::new_purchase_user_error_contract( $investment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 						NotificationsAsana::new_purchase_admin_error_contract( $investment_id );
 					}
-					
 				} else {
 					$new_contract_pdf_file = getNewPdfToSign( $investment_campaign_id, $investment_id, $WDGUser_invest_author->wp_user->ID );
 					NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 				}
-				
+
 				NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
 				NotificationsEmails::new_purchase_team_members( $investment_id );
 				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
 					$WDGInvestment = new WDGInvestment( $investment_id );
 					$WDGInvestment->save_to_api();
 				}
-
 			} else {
 				if ( empty( $WDGOrga_invest_author ) ) {
 					$recipient_email = $WDGUser_invest_author->get_email();
@@ -467,7 +461,7 @@ class LemonwayNotification {
 			NotificationsAsana::wire_payment_received_not_attributed( $content );
 		}
 	}
-	
+
 	private function process_moneyin_mandate() {
 		/**
 		 * NotifDate : Date et heure de la creation de la notification. Heure de Paris. Format ISO8601
@@ -506,12 +500,11 @@ class LemonwayNotification {
 		$content .= 'ID WDG : ' .$lemonway_posted_id_external. "\n";
 		$content .= 'Montant : ' .$lemonway_posted_amount;
 		NotificationsSlack::mandate_payment_received( $content );
-		
+
 		$content_mail_auto_royalties = '';
 
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
-			
 			// Transfert vers le wallet de séquestre de royalties
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
 			$WDGOrga_wallet->check_register_royalties_lemonway_wallet();
@@ -526,13 +519,13 @@ class LemonwayNotification {
 					$campaign = new ATCF_Campaign( $project->wpref );
 					$list_declarations_campaign = WDGROIDeclaration::get_list_by_campaign_id( $project->wpref, WDGROIDeclaration::$status_waiting_transfer );
 					if ( !empty( $list_declarations_campaign ) ) {
-						foreach( $list_declarations_campaign as $declaration ) {
+						foreach ( $list_declarations_campaign as $declaration ) {
 							$list_investments = $campaign->roi_payments_data( $declaration );
 							$total_roi = 0;
 							foreach ($list_investments as $investment_item) {
 								$total_roi += $investment_item[ 'roi_amount' ];
 							}
-							
+
 							$date_of_royalties_transfer = $declaration->get_transfer_date();
 							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . "\n";
 							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . "\n";
@@ -540,6 +533,8 @@ class LemonwayNotification {
 							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . " €\n";
 							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €';
 
+							$declaration->status = WDGROIDeclaration::$status_initializing;
+							$declaration->update();
 							$declaration->init_rois_and_tax();
 							break;
 						}
@@ -551,10 +546,9 @@ class LemonwayNotification {
 		if ( !empty( $content_mail_auto_royalties ) ) {
 			NotificationsSlack::send_notification_roi_transfer_to_come( $content_mail_auto_royalties );
 		}
-
 	}
 
-	private function process_moneyin_mandate_canceled () {
+	private function process_moneyin_mandate_canceled() {
 		/**
 		 * NotifDate : Date et heure de la creation de la notification. Heure de Paris. Format ISO8601
 		 * Ex : 2015-11-01T16:44:55.883
@@ -585,14 +579,13 @@ class LemonwayNotification {
 		 * Ex : 0
 		 */
 		$lemonway_posted_status = filter_input( INPUT_POST, 'Status' );
-		
+
 		$name = '';
 
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrganization = new WDGOrganization( $WDGUser_wallet->get_wpref() );
 			$name = $WDGOrganization->get_name();
-
 		} else {
 			$name = $WDGUser_wallet->get_firstname() . ' ' . $WDGUser_wallet->get_lastname();
 		}
