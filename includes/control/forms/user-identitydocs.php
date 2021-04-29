@@ -392,7 +392,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 						}
 					}
 					if ( $send_notification_validation && $WDGOrganization->is_registered_lemonway_wallet() ) {
-						NotificationsAPI::kyc_waiting( $WDGOrganization->get_email(), $WDGOrganization->get_name() );
+						NotificationsAPI::kyc_waiting( $WDGOrganization );
 					}
 
 					if ( $this->nb_file_sent > 0 ) {
@@ -494,7 +494,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					}
 
 					if ( $send_notification_validation && $WDGUser->is_lemonway_registered() ) {
-						NotificationsAPI::kyc_waiting( $WDGUser->get_email(), $WDGUser->get_firstname() );
+						NotificationsAPI::kyc_waiting( $WDGUser );
 					}
 
 					$subscribe_authentication_notification = $this->getInputChecked( 'phone-notification' );

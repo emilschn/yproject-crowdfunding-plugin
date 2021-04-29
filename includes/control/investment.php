@@ -932,7 +932,7 @@ class WDGInvestment {
 			NotificationsSlack::investment_pending_wire( $payment_id );
 			$buffer = NotificationsAsana::investment_pending_wire( $payment_id );
 
-			NotificationsAPI::investment_pending_wire( $WDGUser_current->get_email(), $save_display_name, $amount, $this->campaign->get_name(), $viban_iban, $viban_bic, $viban_holder, $this->campaign->get_api_id() );
+			NotificationsAPI::investment_pending_wire( $WDGUser_current, $this, $this->campaign, $viban_iban, $viban_bic, $viban_holder );
 		}
 
 		//Si un utilisateur investit, il croit au projet
@@ -1174,7 +1174,7 @@ class WDGInvestment {
 
 					$investment_link = WDG_Redirect_Engine::override_get_page_url( 'investir' ) . '?campaign_id=' . $this->campaign->ID . '&invest_start=1&init_invest=' . $this->get_session_amount();
 					$investment_link = '<a href="'.$investment_link.'" target="_blank">'.$investment_link.'</a>';
-					NotificationsAPI::investment_error( $WDGUser_current->wp_user->user_email, $WDGUser_current->wp_user->user_firstname, $this->get_session_amount(), $this->campaign->data->post_title, $this->campaign->get_api_id(), $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
+					NotificationsAPI::investment_error( $WDGUser_current, $this, $this->campaign, $this->error_item->get_error_message( FALSE, FALSE ), $investment_link );
 				}
 			}
 

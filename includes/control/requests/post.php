@@ -110,6 +110,7 @@ class WDGPostActions {
 			if ( is_numeric( $id_user ) ) {
 				//TODO : Re-vérifier si l'utilisateur peut bien envoyer à la personne (vérifier si dans la liste des suiveurs/votants/investisseurs)
 				$user = get_userdata( intval( $id_user ) );
+				$WDGUser = new WDGUser($id_user);
 				$to = $user->user_email;
 				$user_data = array(
 					'userfirstname'	=> $user->first_name,
@@ -122,7 +123,7 @@ class WDGPostActions {
 
 				$this_mail_content = WDGFormProjects::build_mail_text( $mail_content, $mail_title, $campaign_id, $user_data );
 
-				NotificationsAPI::project_mail( $to, $author_user->user_email, $user->first_name, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
+				NotificationsAPI::project_mail( $to, $author_user->user_email, $WDGUser, $user->first_name, $campaign, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
 			}
 		}
 
@@ -230,9 +231,7 @@ class WDGPostActions {
 				$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$newcampaign_id;
 
 				//Mail pour le PP
-				$to = $WDGUser_current->get_email();
-				$to_name = $WDGUser_current->get_firstname();
-				NotificationsAPI::new_project_published( $to, $to_name, $dashboard_url, $newcampaign->get_api_id() );
+				NotificationsAPI::new_project_published( $WDGUser_current, $newcampaign );
 
 				WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$newcampaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
 				$test_campaign = new ATCF_Campaign( $newcampaign_id );
@@ -677,7 +676,7 @@ class WDGPostActions {
 				$file_path_exploded = explode( '/', $file );
 				$contract_filename = $file_path_exploded[ count( $file_path_exploded ) - 1 ];
 				$res_addFile = $zip->addFile( $file, $contract_filename );
-				if ( $res_addFile !== TRUE ){
+				if ( $res_addFile !== TRUE ) {
 					ypcf_debug_log( 'post.php :: generate_campaign_contracts_archive > Error: Unable to add file '.$file.' $contract_filename = '.$contract_filename);
 				}
 			}
@@ -974,6 +973,7 @@ class WDGPostActions {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$user_type_session = $WDGInvestment->get_session_user_type();
 		$WDGUser_current = WDGUser::current();
+		$WDGUserOrOrganization = $WDGUser_current;
 		$invest_email = $WDGUser_current->get_email();
 		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
 			$orga_creator = get_user_by( 'id', $user_type_session );
@@ -981,6 +981,7 @@ class WDGPostActions {
 			$investment_id = $campaign->add_investment('check', $invest_email, $amount_total, 'pending', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', $orga_email);
 			$WDGOrganization = new WDGOrganization( $user_type_session );
 			$mail_name = $WDGUser_current->get_firstname();
+			$WDGUserOrOrganization = $WDGOrganization;
 		} else {
 			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
 			$mail_name = $WDGUser_current->get_firstname();
@@ -1004,10 +1005,8 @@ class WDGPostActions {
 		$has_moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../../../files/investment-check/' . $random_filename );
 		$picture_url = site_url() . '/wp-content/plugins/appthemer-crowdfunding/files/investment-check/' . $random_filename;
 
-		$campaign_organization = $campaign->get_organization();
-		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
-		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
+		$WDGInvestment = new WDGInvestment( $investment_id );
+		NotificationsAPI::investment_pending_check( $WDGUserOrOrganization, $WDGInvestment, $campaign );
 		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, $picture_url );
 		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, $picture_url );
 
@@ -1040,12 +1039,14 @@ class WDGPostActions {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$user_type_session = $WDGInvestment->get_session_user_type();
 		$WDGUser_current = WDGUser::current();
+		$WDGUserOrOrganization = $WDGUser_current;
 		$invest_email = $WDGUser_current->get_email();
 		if ( !empty( $user_type_session ) && $user_type_session != 'user' ) {
 			$orga_creator = get_user_by( 'id', $user_type_session );
 			$orga_email = $orga_creator->user_email;
 			$investment_id = $campaign->add_investment('check', $invest_email, $amount_total, 'pending', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', $orga_email);
 			$WDGOrganization = new WDGOrganization( $user_type_session );
+			$WDGUserOrOrganization = $WDGOrganization;
 			$mail_name = $WDGUser_current->get_firstname();
 		} else {
 			$investment_id = $campaign->add_investment( 'check', $invest_email, $amount_total, 'pending' );
@@ -1056,7 +1057,9 @@ class WDGPostActions {
 		$campaign_organization = $campaign->get_organization();
 		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
-		NotificationsAPI::investment_pending_check( $invest_email, $mail_name, $amount_total, $campaign->get_name(), $percent_to_reach, $campaign->minimum_goal( FALSE ), $organization_obj->get_name(), $campaign->get_api_id() );
+
+		$WDGInvestment = new WDGInvestment( $investment_id );
+		NotificationsAPI::investment_pending_check( $WDGUserOrOrganization, $WDGInvestment, $campaign );
 		NotificationsSlack::new_purchase_pending_check_admin( $investment_id, FALSE );
 		NotificationsAsana::new_purchase_pending_check_admin( $investment_id, FALSE );
 
@@ -1254,7 +1257,7 @@ class WDGPostActions {
 			//Suppression cache organisation pour récupérer nouvelle version
 			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$WDGOrganization->get_api_id() );
 			$WDGOrganizationUpdated = new WDGOrganization( $organization_id );
-			NotificationsAPI::mandate_to_send_to_bank( $WDGOrganization->get_email(), $user_name, $WDGOrganizationUpdated->get_mandate_file_url(), $campaign->get_api_id() );
+			NotificationsAPI::mandate_to_send_to_bank( $WDGOrganization, $WDGOrganizationUpdated->get_mandate_file_url(), $campaign->get_api_id() );
 		}
 
 		wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#contracts' );
