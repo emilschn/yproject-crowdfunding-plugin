@@ -4,6 +4,8 @@
  */
 class NotificationsAPIShortcodes {
 	private static $shortcode_list = array(
+		'email_config_text',
+
 		'recipient_first_name',
 
 		'password_reinit_link',
@@ -418,6 +420,24 @@ class NotificationsAPIShortcodes {
 	//*************************************
 	// Shortcodes
 	//*************************************
+	/**
+	 * Texte de configuration
+	 * Contenu
+	 */
+	public static function email_config_text($atts, $content = '') {
+		$atts = shortcode_atts( array(
+			'url'		=> ''
+		), $atts );
+
+		if ( empty( $atts[ 'url' ] ) ) {
+			return '';
+		}
+
+		$config_text_content = WDGConfigTexts::get_config_text_by_name( $atts[ 'url' ] );
+
+		return $config_text_content;
+	}
+
 	/**
 	 * Destinataire
 	 * Prénom
