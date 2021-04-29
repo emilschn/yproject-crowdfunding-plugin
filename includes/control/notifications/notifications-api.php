@@ -580,7 +580,7 @@ class NotificationsAPI {
 		// Gestion CSS
 		$crowdfunding->include_control('notifications/notifications-api-css');
 		$css = NotificationsAPICSS::get();
-		$content_html = '<html><head>' . $css . '</head><body>' . $content . '</body></html>';
+		$content_html = '<html><head>' . $css . '</head><body><div class="wdg-email">' . $content . '</div></body></html>';
 
 		$options_encoded = $parameters[ 'options' ];
 		$options_decoded = json_decode( $options_encoded );
