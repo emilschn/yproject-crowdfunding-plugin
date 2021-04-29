@@ -24,89 +24,84 @@ class NotificationsAPICSS {
 	}
 	figcaption { font-size: 90%; }
 
+	.has-background a {
+		text-decoration: none;
+	}
+	p.has-background {
+		padding: 20px 38px;
+	}
+
 	.has-rouge-background-color {
 		background-color: #EA4F51 !important;
 	}
-	.has-rouge-color, .has-rouge-color a {
+	.has-rouge-color, .has-rouge-color a, a {
 		color: #EA4F51 !important;
-		text-decoration: none;
 	}
 	.has-bleu-background-color {
 		background-color: #00879B !important;
 	}
 	.has-bleu-color, .has-bleu-color a {
 		color: #00879B !important;
-		text-decoration: none;
 	}
 	.has-bleu-clair-background-color {
 		background-color: #B3DAE1 !important;
 	}
 	.has-bleu-clair-color, .has-bleu-clair-color a {
 		color: #B3DAE1 !important;
-		text-decoration: none;
 	}
 	.has-jaune-background-color {
 		background-color: #EBCE67 !important;
 	}
 	.has-jaune-color, .has-jaune-color a {
 		color: #EBCE67 !important;
-		text-decoration: none;
 	}
 	.has-jaune-clair-background-color {
 		background-color: #F9F0D1 !important;
 	}
 	.has-jaune-clair-color, .has-jaune-clair-color a {
 		color: #F9F0D1 !important;
-		text-decoration: none;
 	}
 	.has-vert-background-color {
 		background-color: #5EB82C !important;
 	}
 	.has-vert-color, .has-vert-color a {
 		color: #5EB82C !important;
-		text-decoration: none;
 	}
 	.has-vert-clair-background-color {
 		background-color: #CEE9C0 !important;
 	}
 	.has-vert-clair-color, .has-vert-clair-color a {
 		color: #CEE9C0 !important;
-		text-decoration: none;
 	}
 	.has-rose-background-color {
 		background-color: #F8CACA !important;
 	}
 	.has-rose-color, .has-rose-color a {
 		color: #F8CACA !important;
-		text-decoration: none;
 	}
 	.has-noir-background-color {
 		background-color: #333333 !important;
 	}
 	.has-noir-color, .has-noir-color a {
 		color: #333333 !important;
-		text-decoration: none;
 	}
 	.has-gris-background-color {
 		background-color: #C2C2C2 !important;
 	}
 	.has-gris-color, .has-gris-color a {
 		color: #C2C2C2 !important;
-		text-decoration: none;
 	}
 	.has-gris-clair-background-color {
 		background-color: #EBEBEB !important;
 	}
 	.has-gris-clair-color, .has-gris-clair-color a {
 		color: #EBEBEB !important;
-		text-decoration: none;
 	}
 	.has-blanc-background-color {
 		background-color: #ffffff !important;
 	}
 	.has-blanc-color, .has-blanc-color a {
 		color: #ffffff !important;
-		text-decoration: none;
 	}
 </style>
 
