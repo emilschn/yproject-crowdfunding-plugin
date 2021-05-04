@@ -125,6 +125,9 @@ class WDGAjaxActionsUserAccount {
 				}
 
 				$investment_item = array();
+				if ( $WDGUser_current->is_admin() ) {
+					$investment_item[ 'can_edit' ] = $purchase_post->ID;
+				}
 				$investment_item[ 'date' ] = date_i18n( 'j F Y', strtotime( $purchase_date ) );
 				$investment_item[ 'hour' ] = date_i18n( 'H\hi', strtotime( $purchase_date ) );
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
@@ -203,7 +206,6 @@ class WDGAjaxActionsUserAccount {
 				if ($created_from_draft) {
 					// si c'est le cas, alors on récupère l'investment-draft, et on vérifie s'il y a une photo de contrat associé
 					$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );
-					$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
 					$investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;
 					$path_parts = pathinfo($investments_drafts_item->contract);
 					$extension = $path_parts['extension'];
@@ -446,6 +448,9 @@ class WDGAjaxActionsUserAccount {
 			$buffer_item[ 'items' ] = array();
 			foreach ( $result_campaign_item->investments as $result_investment_item ) {
 				$buffer_investment_item = array();
+				if ( $WDGUser_current->is_admin() ) {
+					$buffer_investment_item[ 'can_edit' ] = $result_investment_item->wpref;
+				}
 				$buffer_investment_item[ 'amount' ] = utf8_encode( $result_investment_item->amount );
 				$buffer_investment_item[ 'date' ] = date_i18n( 'j F Y', strtotime( $result_investment_item->invest_datetime ) );
 				$buffer_investment_item[ 'hour' ] = date_i18n( 'H\hi', strtotime( $result_investment_item->invest_datetime ) );
@@ -584,7 +589,6 @@ class WDGAjaxActionsUserAccount {
 				if ( $created_from_draft ) {
 					// si c'est le cas, alors on récupère l'investment-draft, et on vérifie s'il y a une photo de contrat associé
 					$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );
-					$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
 					$buffer_investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;
 					$path_parts = pathinfo( $investments_drafts_item->contract );
 					$extension = $path_parts[ 'extension' ];
