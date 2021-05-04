@@ -11,14 +11,24 @@ class WDGAjaxActionsUserAccount {
 
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$user_type = filter_input( INPUT_POST, 'user_type' );
+
+		$WDGUser_current = WDGUser::current();
+		$can_access = FALSE;
 		$is_authentified = FALSE;
 		if ( $user_type == 'user' ) {
 			$WDGUserEntity = new WDGUser( $user_id );
 			$is_authentified = $WDGUserEntity->is_lemonway_registered();
+			$can_access = ( $WDGUser_current->get_wpref() == $WDGUserEntity->get_wpref() ) || ( $WDGUser_current->is_admin() );
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
+			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity );
 		}
+
+		if ( !$can_access ) {
+			exit( '' );
+		}
+
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $WDGUserEntity->get_api_id() );
 
 		$today_datetime = new DateTime();
@@ -400,14 +410,24 @@ class WDGAjaxActionsUserAccount {
 		$today_datetime = new DateTime();
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$user_type = filter_input( INPUT_POST, 'user_type' );
+
+		$WDGUser_current = WDGUser::current();
+		$can_access = FALSE;
 		$is_authentified = FALSE;
 		if ( $user_type == 'user' ) {
 			$WDGUserEntity = new WDGUser( $user_id );
 			$is_authentified = $WDGUserEntity->is_lemonway_registered();
+			$can_access = ( $WDGUser_current->get_wpref() == $WDGUserEntity->get_wpref() ) || ( $WDGUser_current->is_admin() );
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
+			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity );
 		}
+
+		if ( !$can_access ) {
+			exit( '' );
+		}
+
 		$result = WDGWPREST_Entity_User::get_investments( $WDGUserEntity->get_api_id(), 'project' );
 
 		$buffer = array();
@@ -695,15 +715,15 @@ class WDGAjaxActionsUserAccount {
 										}
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
-										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = UIHelpers::format_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] ) . ' &euro;';
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
-										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
-										$buffer_roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = UIHelpers::format_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
+										$buffer_roi_item[ 'amount' ] = UIHelpers::format_number( $roi->amount, TRUE ) . ' &euro;';
 										if ( $roi->amount_taxed_in_cents > 0 ) {
 											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
-											$buffer_roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
 											if ( !empty( $roitax_items[ 0 ] ) ) {
-												$buffer_roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
+												$buffer_roi_item[ 'roitax_item' ] = print_r( $roitax_items[ 0 ], true );
+												$buffer_roi_item[ 'amount' ] .= ' (dont ' .UIHelpers::format_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
 											}
 										}
 									}
