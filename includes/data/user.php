@@ -50,6 +50,7 @@ class WDGUser
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	private $email_is_validated;
 
 	protected static $_current = null;
 
@@ -116,6 +117,7 @@ class WDGUser
 					$this->authentification_mode = $this->api_data->authentification_mode;
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
+					$this->email_is_validated = $this->api_data->email_is_validated;
 				}
 			}
 		}
@@ -380,8 +382,19 @@ class WDGUser
 	}
 
 	public function is_email_validated() {
-		// TODO
-		return FALSE;
+		$buffer = FALSE;
+        if (!empty($this->email_is_validated) && $this->email_is_validated == TRUE ) {
+			$buffer = TRUE;
+        }
+		return $buffer;
+	}
+
+	public function set_email_is_validated($value = '1') {
+		$this->email_is_validated = $value;
+	}
+
+	public function get_email_is_validated() {
+		return $this->email_is_validated;
 	}
 
 	public function get_gender() {
