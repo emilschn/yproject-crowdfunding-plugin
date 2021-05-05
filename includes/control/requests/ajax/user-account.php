@@ -601,9 +601,9 @@ class WDGAjaxActionsUserAccount {
 						$contract_index = count( $buffer_item[ 'items' ] );
 					}
 					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .($contract_index + 1). '.pdf';
-					$test_file_name = dirname( __FILE__ ). '/../../../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf';
+					$test_file_name = dirname( __FILE__ ). '/../../../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_investment_item->wpref. '.pdf';
 					if ( file_exists( $test_file_name ) ) {
-						$buffer_investment_item[ 'contract_file_path' ] = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf' );
+						$buffer_investment_item[ 'contract_file_path' ] = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_investment_item->wpref. '.pdf' );
 						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;
 					} elseif ( count( $files ) ) {
 						$filelist_extract = explode( '/', $files[ $contract_index ] );

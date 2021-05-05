@@ -1,26 +1,27 @@
 <?php
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Gestion des contrats d'investissement côté WDGWPREST
  */
 class WDGWPREST_Entity_InvestmentContract {
-	
 	/**
 	 * Retourne un contrat d'investissement à partir d'un id
 	 * @param string $id
 	 * @return object
 	 */
-	public static function get( $id ) {
+	public static function get($id) {
 		return WDGWPRESTLib::call_get_wdg( 'investment-contract/' . $id );
 	}
-	
+
 	/**
 	 * Détermine les données à envoyer à l'API
 	 * @param WDGInvestmentContract $investment_contract
 	 */
-	public static function set_post_parameters( $investment_contract ) {
+	public static function set_post_parameters($investment_contract) {
 		$parameters = array(
 			'investor_id'			=> $investment_contract->investor_id,
 			'investor_type'			=> $investment_contract->investor_type,
@@ -39,39 +40,52 @@ class WDGWPREST_Entity_InvestmentContract {
 			'minimum_to_receive'	=> $investment_contract->minimum_to_receive,
 			'maximum_to_receive'	=> $investment_contract->maximum_to_receive
 		);
+
 		return $parameters;
 	}
-	
+
 	/**
 	 * Crée une ligne de données sur l'API
 	 * @param WDGInvestmentContract $investment_contract
 	 */
-	public static function create( $investment_contract) {
+	public static function create($investment_contract) {
 		$buffer = FALSE;
-		
+
 		$parameters = WDGWPREST_Entity_InvestmentContract::set_post_parameters( $investment_contract );
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment-contract', $parameters );
-			if ( isset( $buffer->code ) && $buffer->code == 400 ) { $buffer = FALSE; }
+			if ( isset( $buffer->code ) && $buffer->code == 400 ) {
+				$buffer = FALSE;
+			}
 		}
-		
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Edite un contrat d'investissement
 	 * @param int $investment_contract_id
 	 * @param float $amount_received
 	 * @return object
 	 */
-	public static function edit( $investment_contract_id, $amount_received ) {
+	public static function edit($investment_contract_id, $amount_received) {
 		$parameters = array(
 			'amount_received'	=> $amount_received
 		);
+
 		return WDGWPRESTLib::call_post_wdg( 'investment-contract/' .$investment_contract_id, $parameters );
 	}
-	
-	public static function get_list_by_subscription_id( $id_investment ) {
+
+	/**
+	 * Met à jour un contrat d'investissement
+	 */
+	public static function update($investment_contract_id, $investment_contract) {
+		$parameters = WDGWPREST_Entity_InvestmentContract::set_post_parameters( $investment_contract );
+
+		return WDGWPRESTLib::call_post_wdg( 'investment-contract/' .$investment_contract_id, $parameters );
+	}
+
+	public static function get_list_by_subscription_id($id_investment) {
 		return WDGWPRESTLib::call_get_wdg( 'investment-contracts/?id_subscription=' . $id_investment );
 	}
 }
