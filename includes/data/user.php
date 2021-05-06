@@ -389,8 +389,11 @@ class WDGUser
 		return $buffer;
 	}
 
-	public function set_email_is_validated($value = '1') {
-		$this->email_is_validated = $value;
+	public function set_email_is_validated($value = '1') {		
+		if ($this->email_is_validated != $value) {
+			$this->email_is_validated = $value;
+			$this->update_api();
+		}
 	}
 
 	public function get_email_is_validated() {
@@ -2044,7 +2047,7 @@ class WDGUser
 
 	/**
 	 * Retourne le montant actuel sur le compte bancaire
-	 * @return number
+	 * @return float
 	 */
 	public function get_lemonway_wallet_amount() {
 		$wallet_details = $this->get_wallet_details();

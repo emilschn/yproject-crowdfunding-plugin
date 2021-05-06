@@ -125,4 +125,59 @@ class WDGAjaxActionsAccountSignin
 
 		exit( json_encode( $result ) );
 	}
+
+	/**
+	 * Envoie un mail de réinitialisation de mot de passe
+	 */
+	public static function send_reinit_pass() {
+        $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
+		$page_forgot_password = WDG_Redirect_Engine::override_get_page_url( 'mot-de-passe-oublie' );
+		$result[ 'status' ] = '';
+		global $wpdb;
+		// Normalement, on ne passe pas ici
+		if ( empty( $input_email ) ) {
+			$result[ 'status' ] = 'empty';
+		} else {
+			$user = get_user_by( 'email', trim( $input_email ) );
+			if ( empty( $user ) ){
+				// normalement on n'arrive pas ici
+				$result[ 'status' ] = 'not-existing-account';
+			}
+		} 
+	
+		do_action('lostpassword_post');
+        if (!$user) {
+			$result[ 'status' ] = 'not-existing-account';
+        } else {
+            $user_login = $user->user_login;
+            $user_email = $user->user_email;
+            $facebook_meta = $user->get('social_connect_facebook_id');
+            if (!isset($facebook_meta) || $facebook_meta == "") {
+                $user_login = $user->user_login;
+                $user_email = $user->user_email;
+                $user_firstname = $user->user_firstname;
+                $key = $wpdb->get_var($wpdb->prepare("SELECT user_activation_key FROM $wpdb->users WHERE user_login = %s", $user_login));
+                if (empty($key)) {
+                    $key = wp_generate_password(20, false);
+                    do_action('retrieve_password_key', $user_login, $key);
+                    $wpdb->update($wpdb->users, array('user_activation_key' => $key), array('user_login' => $user_login));
+                }
+                $link = get_permalink($page_forgot_password->ID) . "?action=rp&key=$key&login=" . rawurlencode($user_login);
+    
+                if (false == NotificationsAPI::password_reinit($user_email, $user_firstname, $link)) {
+					$result[ 'status' ] = 'email-not-sent';
+                    // array_push($error, "Problème d'envoi : l'e-mail de réinitialisation n'a pas été envoyé.");
+                } else {
+					$result[ 'status' ] = 'email-sent';
+                	// $feedback = "Un message a &eacute;t&eacute; envoy&eacute; &agrave; votre adresse e-mail.";
+				}
+            } else {
+				$result[ 'status' ] = 'facebook-account';
+                // array_push($error, "Cet utilisateur est lié par son compte Facebook et nous ne pouvons donc pas renouveler son mot de passe. Merci de nous contacter par e-mail, &agrave; l'adresse investir@wedogood.co, si vous souhaitez d&eacute;lier le compte Facebook.");
+            }
+        }
+
+		ypcf_debug_log( 'send_reinit_pass >> ' . print_r($result, true), false );
+		exit( json_encode( $result ) );
+    }
 }
