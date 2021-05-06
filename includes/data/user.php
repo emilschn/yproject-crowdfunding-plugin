@@ -1517,8 +1517,11 @@ class WDGUser {
 				$invest_item['tax_for_year'] = 0;
 				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
 				foreach ( $investment_royalties as $investment_roi ) {
-					$invest_item['roi_total'] += $investment_roi->amount;
 					$date_transfer = new DateTime( $investment_roi->date_transfer );
+					// On ne compte dans le total de royalties perçues que si ça a été versé lors d'une année écoulée
+					if ( $date_transfer->format( 'Y' ) <= $year ) {
+						$invest_item['roi_total'] += $investment_roi->amount;
+					}
 					if ( $date_transfer->format( 'Y' ) == $year ) {
 						$roi_item = array();
 						$roi_item[ 'trimester_months' ] = '';
@@ -2045,9 +2048,9 @@ class WDGUser {
 				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
 				// Si le premier IBAN est désactivé, on va chercher dans la suite
 				// de même si cet iban a LEMON WAY comme holder (viban)
-				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected || strtolower ( str_replace(' ', '', $buffer->HOLDER) ) == self::$iban_holder_lw ) ) {
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected || strtolower( str_replace(' ', '', $buffer->HOLDER) ) == self::$iban_holder_lw ) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
-						if ( ( $iban_item->S == self::$iban_status_validated || $iban_item->S == self::$iban_status_waiting ) && strtolower ( str_replace(' ', '', $iban_item->HOLDER) ) != self::$iban_holder_lw ) {
+						if ( ( $iban_item->S == self::$iban_status_validated || $iban_item->S == self::$iban_status_waiting ) && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != self::$iban_holder_lw ) {
 							$buffer = $iban_item;
 						}
 					}
