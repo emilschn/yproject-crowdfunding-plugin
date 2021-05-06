@@ -110,9 +110,31 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				'post_author'	=> $user_by_email->ID
 			);
 			wp_update_post( $postdata );
+			// post_author du post de log
+			$log_post_items = get_posts(array(
+				'post_type'		=> 'edd_log',
+				'meta_key'		=> '_edd_log_payment_id',
+				'meta_value'	=> $investid
+			));
+			foreach ( $log_post_items as $log_post_item ) {
+				$postdata = array(
+					'ID'			=> $log_post_item->ID,
+					'post_author'	=> $user_by_email->ID
+				);
+				wp_update_post($postdata);
+			}
 
 			// Metas edd_payment id et email
+			edd_update_payment_meta( $investid, '_edd_payment_customer_id', $user_by_email->ID );
+			edd_update_payment_meta( $investid, '_edd_payment_user_id', $user_by_email->ID );
+			edd_update_payment_meta( $investid, 'customer_id', $user_by_email->ID );
 			edd_update_payment_meta( $investid, 'user_id', $user_by_email->ID );
+			$current_meta = get_post_meta( $investid, '_edd_payment_meta', TRUE );
+			if ( is_array( $current_meta ) ){
+				$current_meta['user_info']['id']  = $user_by_email->ID;
+				update_post_meta( $investid, '_edd_payment_meta', $current_meta );
+			}
+			edd_update_payment_meta( $investid, '_edd_payment_user_email', $email );
 			edd_update_payment_meta( $investid, 'user_email', $email );
 			edd_update_payment_meta( $investid, 'email', $email );
 
@@ -150,13 +172,17 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				// On ne fait rien si ils sont dans cette structure
 				$id_campaign = $campaign->ID;
 				$url_campaign = $campaign->get_url();
-				$great_file_name = dirname( __FILE__ ). '/../../../files/contracts/campaigns/' .$id_campaign. '-' .$url_campaign. '/' .$investid. '.pdf';
+				$great_file_path = dirname( __FILE__ ). '/../../../files/contracts/campaigns/' .$id_campaign. '-' .$url_campaign. '/';
+				$great_file_name = $great_file_path . $investid. '.pdf';
 
 				if ( !file_exists( $great_file_name ) ) {
 					$exp = dirname( __FILE__ ). '/../../pdf_files/' .$id_campaign. '_' .$id_user_sender. '_*.pdf';
 					$files = glob( $exp );
 					if ( count( $files ) ) {
 						foreach ( $files as $single_file ) {
+							if ( !is_dir( $great_file_path ) ) {
+								mkdir( $great_file_path, 0755, TRUE );
+							}
 							// Renommage dans la structure de fichiers idéale
 							$log_report .= '$single_file : ' . $single_file . ' --- ';
 							$log_report .= '$great_file_name : ' . $great_file_name . ' --- ';
@@ -192,6 +218,8 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				// En attendant, on crée une tâche Asana
 				// Log de la situation
 				//*****
+				$log_report .= 'Pas de transfert --- ';
+				NotificationsAsana::change_investment_owner_error( $investid, $id_api_sender, $new_user_api_id );
 			}
 
 			// Suppression des caches de l'API

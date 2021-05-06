@@ -1333,7 +1333,7 @@ class WDGInvestment {
 		}
 
 		if ( !empty( $payment ) ) {
-			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment );
+			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id() );
 		}
 	}
 }
