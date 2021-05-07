@@ -24,8 +24,22 @@ class NotificationsAPICSS {
 	}
 	figcaption { font-size: 90%; }
 
-	.has-background a {
+	hr {
+		color: #c2c2c2;
+	}
+
+	p.has-background a:only-child::parent {
+		position: relative;
+		display: inline-block;
+		max-width: 320px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+	p.has-background a:only-child {
+		display: inline-block;
+		padding: 20px 38px;
 		text-decoration: none;
+		text-transform: uppercase;
 	}
 	p.has-background {
 		padding: 20px 38px;

@@ -1517,8 +1517,11 @@ class WDGUser {
 				$invest_item['tax_for_year'] = 0;
 				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
 				foreach ( $investment_royalties as $investment_roi ) {
-					$invest_item['roi_total'] += $investment_roi->amount;
 					$date_transfer = new DateTime( $investment_roi->date_transfer );
+					// On ne compte dans le total de royalties perçues que si ça a été versé lors d'une année écoulée
+					if ( $date_transfer->format( 'Y' ) <= $year ) {
+						$invest_item['roi_total'] += $investment_roi->amount;
+					}
 					if ( $date_transfer->format( 'Y' ) == $year ) {
 						$roi_item = array();
 						$roi_item[ 'trimester_months' ] = '';
