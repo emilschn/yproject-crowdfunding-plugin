@@ -162,19 +162,17 @@ class WDGAjaxActionsAccountSignin
                     do_action('retrieve_password_key', $user_login, $key);
                     $wpdb->update($wpdb->users, array('user_activation_key' => $key), array('user_login' => $user_login));
                 }
-                $link = get_permalink($page_forgot_password->ID) . "?action=rp&key=$key&login=" . rawurlencode($user_login);
+                $link = $page_forgot_password . "?action=rp&key=$key&login=" . rawurlencode($user_login);
     
-                if (false == NotificationsAPI::password_reinit($user_email, $user_firstname, $link)) {
+				$mail_sent = NotificationsAPI::password_reinit($user_email, $user_firstname, $link);
+                if ( $mail_sent === FALSE ) {
 					$result[ 'status' ] = 'email-not-sent';
-                    // array_push($error, "Problème d'envoi : l'e-mail de réinitialisation n'a pas été envoyé.");
                 } else {
 					$result[ 'status' ] = 'email-sent';
-                	// $feedback = "Un message a &eacute;t&eacute; envoy&eacute; &agrave; votre adresse e-mail.";
 				}
             } else {
 				$result[ 'status' ] = 'facebook-account';
-                // array_push($error, "Cet utilisateur est lié par son compte Facebook et nous ne pouvons donc pas renouveler son mot de passe. Merci de nous contacter par e-mail, &agrave; l'adresse investir@wedogood.co, si vous souhaitez d&eacute;lier le compte Facebook.");
-            }
+           }
         }
 
 		ypcf_debug_log( 'send_reinit_pass >> ' . print_r($result, true), false );
