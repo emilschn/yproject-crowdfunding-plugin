@@ -1540,7 +1540,14 @@ class WDGUser {
 
 						// Calcul de la part imposable
 						if ( $invest_item['roi_total'] > $invest_item_amount ) {
-							$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Certains vieux roi ne sont pas définis sur le montant imposable
+							// Si c'est défini, on reprend le montant déjà calculé
+							if ( $investment_roi->amount_taxed_in_cents > 0 ) {
+								$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Sinon, on prend le minimum entre le montant reçu sur ce versement ET la différence entre le montant reçu au total et le montant investi
+							} else {
+								$investment_roi_taxed = min( $investment_roi->amount, $invest_item['roi_total'] - $invest_item_amount );
+							}
 							$invest_item['taxed_for_year'] += $investment_roi_taxed;
 							$taxed_total += $investment_roi_taxed;
 						}
