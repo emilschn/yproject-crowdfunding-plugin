@@ -29,11 +29,10 @@ class NotificationsAPICSS {
 	}
 
 	.wp-block-button {
-		position: relative;
-		display: inline-block;
+		display: block;
 		max-width: 320px;
-		left: 50%;
-		transform: translateX(-50%);
+		text-align: center;
+		margin: auto;
 	}
 	.wp-block-button .wp-block-button__link {
 		display: inline-block;
