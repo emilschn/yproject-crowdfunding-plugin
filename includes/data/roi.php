@@ -239,18 +239,15 @@ class WDGROI {
 	 */
 	public static function check_has_reached_maximum_royalties_amount( $id_investment, $id_api_campaign, $id_user, $recipient_type ) {
 		$rois = array();
-		$recipient_mail = '';
-		$recipient_name = '';
+		$WDGUserOrOrganization = FALSE;
 		if ( $recipient_type == 'user' ) {
 			$WDGUser = new WDGUser( $id_user );
-			$recipient_mail = $WDGUser->get_email();
-			$recipient_name = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname();
+			$WDGUserOrOrganization = $WDGUser;
 			$rois = $WDGUser->get_royalties_by_investment_id( $id_investment );
 			
 		} else {
 			$WDGOrganization = new WDGOrganization( $id_user );
-			$recipient_mail = $WDGOrganization->get_email();
-			$recipient_name = $WDGOrganization->get_name();
+			$WDGUserOrOrganization = $WDGOrganization;
 			$rois = $WDGOrganization->get_royalties_by_investment_id( $id_investment );
 		}
 		
@@ -262,31 +259,21 @@ class WDGROI {
 			}
 		}
 		
-		$project_name = '';
-		$max_profit_str = '';
-		$date_investment = '';
-		$url_project = '';
 		$amount_investment = 0;
 		if ( $amount_received > 0 ) {
 			$WDGInvestment = new WDGInvestment( $id_investment );
 			$amount_investment = $WDGInvestment->get_saved_amount();
-			$date_investment = $WDGInvestment->get_saved_date();
 			if ( $amount_received > $amount_investment ) {
 				// Test en deux fois pour éviter trop de requêtes
 				$campaign = new ATCF_Campaign( FALSE, $id_api_campaign );
 				if ( $amount_received >= $amount_investment * $campaign->maximum_profit_complete() ) {
 					$is_max_profit_reached = TRUE;
-					$project_name = $campaign->get_name();
-					$max_profit_str = $campaign->maximum_profit_str();
-					$url_project = $campaign->get_public_url();
 				}
 			}
 		}
 		
 		if ( $is_max_profit_reached ) {
-			$amount_investment_str = UIHelpers::format_number( $amount_investment );
-			$amount_royalties_str = UIHelpers::format_number( $amount_received );
-			NotificationsAPI::roi_transfer_with_max_reached( $recipient_mail, $recipient_name, $project_name, $max_profit_str, $date_investment, $url_project, $amount_investment_str, $amount_royalties_str );
+			NotificationsAPI::roi_transfer_with_max_reached( $WDGUserOrOrganization, $campaign, $WDGInvestment, $amount_received );
 		}
 	}
 }
