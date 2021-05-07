@@ -252,6 +252,7 @@ class WDGFormUsers
 
 		// Si on arrive ici, c'est un compte de personne physique
 		$WDGUser = new WDGUser( $user_by_email->ID );
+		$WDGUser->construct_with_api_data();
 		$result[ 'firstname' ] = $WDGUser->get_firstname();
 		$result[ 'lastname' ] = $WDGUser->get_lastname();
 		$result[ 'url_redirect' ] = $WDGUser->is_email_validated() ? wp_unslash( WDGUser::get_login_redirect_page() ) : 'email-validation';
