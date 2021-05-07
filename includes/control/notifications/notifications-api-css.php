@@ -28,21 +28,18 @@ class NotificationsAPICSS {
 		color: #c2c2c2;
 	}
 
-	p.has-background a:only-child::parent {
+	.wp-block-button {
 		position: relative;
 		display: inline-block;
 		max-width: 320px;
 		left: 50%;
 		transform: translateX(-50%);
 	}
-	p.has-background a:only-child {
+	.wp-block-button .wp-block-button__link {
 		display: inline-block;
 		padding: 20px 38px;
 		text-decoration: none;
 		text-transform: uppercase;
-	}
-	p.has-background {
-		padding: 20px 38px;
 	}
 
 	.has-rouge-background-color {
