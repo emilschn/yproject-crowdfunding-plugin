@@ -22,7 +22,7 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			return FALSE;
 		}
 
-		$user_by_email = FALSE;
+		$wpuser_recipient_by_email = FALSE;
 		$email = filter_input( INPUT_POST, 'e-mail' );
 		if ( empty( $email ) ) {
 			$error = array(
@@ -32,8 +32,8 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			);
 			array_push( $feedback_errors, $error );
 		} else {
-			$user_by_email = get_user_by( 'email', $email );
-			if ( empty( $user_by_email ) ) {
+			$wpuser_recipient_by_email = get_user_by( 'email', $email );
+			if ( empty( $wpuser_recipient_by_email ) ) {
 				$error = array(
 					'code'		=> 'new_account_email_not_existing',
 					'text'		=> 'Aucun compte ne correspond à cette adresse',
@@ -56,7 +56,7 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			$id_user_sender = $WDGInvestment->get_saved_user_id();
 			$id_api_sender = 0;
 			$amount_on_sender_wallet = 0;
-			$lwid_sender = '';
+			$id_lw_sender = '';
 			$list_rois = array();
 			if ( WDGOrganization::is_user_organization( $id_user_sender ) ) {
 				$WDGOrganization_sender = new WDGOrganization( $id_user_sender );
@@ -65,7 +65,7 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				$list_investment_contracts_user_sender = WDGWPREST_Entity_Organization::get_investment_contracts( $id_api_sender );
 				$amount_on_sender_wallet = $WDGOrganization_sender->get_available_rois_amount();
 				$list_rois = WDGWPREST_Entity_Organization::get_rois( $id_api_sender );
-				$lwid_sender = $WDGOrganization_sender->get_lemonway_id();
+				$id_lw_sender = $WDGOrganization_sender->get_lemonway_id();
 			} else {
 				$WDGUser_sender = new WDGUser( $id_user_sender );
 				$id_api_sender = $WDGUser_sender->get_api_id();
@@ -73,7 +73,7 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				$list_investment_contracts_user_sender = WDGWPREST_Entity_User::get_investment_contracts( $id_api_sender );
 				$amount_on_sender_wallet = $WDGUser_sender->get_lemonway_wallet_amount();
 				$list_rois = WDGWPREST_Entity_User::get_rois( $id_api_sender );
-				$lwid_sender = $WDGUser_sender->get_lemonway_id();
+				$id_lw_sender = $WDGUser_sender->get_lemonway_id();
 			}
 			$amount_royalties_received = 0;
 			foreach ( $list_rois as $roi_item ) {
@@ -84,30 +84,30 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			$log_report .= '$id_user_sender : ' . $id_user_sender . ' --- ';
 			$log_report .= '$id_api_sender : ' . $id_api_sender . ' --- ';
 			$log_report .= '$amount_on_sender_wallet : ' . $amount_on_sender_wallet . ' --- ';
-			$log_report .= '$lwid_sender : ' . $lwid_sender . ' --- ';
+			$log_report .= '$id_lw_sender : ' . $id_lw_sender . ' --- ';
 			$log_report .= '$amount_royalties_received : ' . $amount_royalties_received . ' --- ';
 
 			// Récupération du type du nouvel investisseur (orga / user)
-			$new_user_api_id = 0;
-			$new_user_type = WDGOrganization::is_user_organization( $user_by_email->ID ) ? 'orga' : 'user';
-			$lwid_new = '';
-			if ( $new_user_type == 'user' ) {
-				$WDGUser = new WDGUser( $user_by_email->ID );
-				$new_user_api_id = $WDGUser->get_api_id();
-				$lwid_new = $WDGUser->get_lemonway_id();
+			$id_api_recipient = 0;
+			$user_type_recipient = WDGOrganization::is_user_organization( $wpuser_recipient_by_email->ID ) ? 'orga' : 'user';
+			$id_lw_recipient = '';
+			if ( $user_type_recipient == 'user' ) {
+				$WDGUser = new WDGUser( $wpuser_recipient_by_email->ID );
+				$id_api_recipient = $WDGUser->get_api_id();
+				$id_lw_recipient = $WDGUser->get_lemonway_id();
 			} else {
-				$WDGOrganization = new WDGOrganization( $user_by_email->ID );
-				$new_user_api_id = $WDGOrganization->get_api_id();
-				$lwid_new = $WDGOrganization->get_lemonway_id();
+				$WDGOrganization = new WDGOrganization( $wpuser_recipient_by_email->ID );
+				$id_api_recipient = $WDGOrganization->get_api_id();
+				$id_lw_recipient = $WDGOrganization->get_lemonway_id();
 			}
-			$log_report .= '$new_user_api_id : ' . $new_user_api_id . ' --- ';
-			$log_report .= '$lwid_new : ' . $lwid_new . ' --- ';
+			$log_report .= '$id_api_recipient : ' . $id_api_recipient . ' --- ';
+			$log_report .= '$id_lw_recipient : ' . $id_lw_recipient . ' --- ';
 
 			// Changement d'id investisseur sur la donnée d'investissement sur le site
 			// post_author
 			$postdata = array(
 				'ID'			=> $investid,
-				'post_author'	=> $user_by_email->ID
+				'post_author'	=> $wpuser_recipient_by_email->ID
 			);
 			wp_update_post( $postdata );
 			// post_author du post de log
@@ -119,19 +119,19 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			foreach ( $log_post_items as $log_post_item ) {
 				$postdata = array(
 					'ID'			=> $log_post_item->ID,
-					'post_author'	=> $user_by_email->ID
+					'post_author'	=> $wpuser_recipient_by_email->ID
 				);
 				wp_update_post($postdata);
 			}
 
 			// Metas edd_payment id et email
-			edd_update_payment_meta( $investid, '_edd_payment_customer_id', $user_by_email->ID );
-			edd_update_payment_meta( $investid, '_edd_payment_user_id', $user_by_email->ID );
-			edd_update_payment_meta( $investid, 'customer_id', $user_by_email->ID );
-			edd_update_payment_meta( $investid, 'user_id', $user_by_email->ID );
+			edd_update_payment_meta( $investid, '_edd_payment_customer_id', $wpuser_recipient_by_email->ID );
+			edd_update_payment_meta( $investid, '_edd_payment_user_id', $wpuser_recipient_by_email->ID );
+			edd_update_payment_meta( $investid, 'customer_id', $wpuser_recipient_by_email->ID );
+			edd_update_payment_meta( $investid, 'user_id', $wpuser_recipient_by_email->ID );
 			$current_meta = get_post_meta( $investid, '_edd_payment_meta', TRUE );
-			if ( is_array( $current_meta ) ){
-				$current_meta['user_info']['id']  = $user_by_email->ID;
+			if ( is_array( $current_meta ) ) {
+				$current_meta['user_info']['id']  = $wpuser_recipient_by_email->ID;
 				update_post_meta( $investid, '_edd_payment_meta', $current_meta );
 			}
 			edd_update_payment_meta( $investid, '_edd_payment_user_email', $email );
@@ -139,14 +139,13 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			edd_update_payment_meta( $investid, 'email', $email );
 
 			// Changement d'id investisseur sur la donnée d'investissement sur l'API
-			// TODO : vérifier que save_to_api suffit pour MAJ id, email, prénom et nom
 			$WDGInvestment->save_to_api();
 
 			// Si il y a une donnée "contrat d'investissement" liée à cet investissement, on change l'investisseur
 			foreach ( $list_investment_contracts_user_sender as $investment_contract_item ) {
 				if ( $investment_contract_item->subscription_id == $investid ) {
-					$investment_contract_item->investor_id = $new_user_api_id;
-					$investment_contract_item->investor_type = $new_user_type;
+					$investment_contract_item->investor_id = $id_api_recipient;
+					$investment_contract_item->investor_type = $user_type_recipient;
 					$log_report .= '$investment_contract_item->id : ' . $investment_contract_item->id . ' --- ';
 					WDGWPREST_Entity_InvestmentContract::update( $investment_contract_item->id, $investment_contract_item );
 
@@ -154,7 +153,7 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 					$date = new DateTime();
 					$data_modified = 'user_id';
 					$old_value = $id_api_sender;
-					$new_value = $new_user_api_id;
+					$new_value = $id_api_recipient;
 					$list_new_contracts = '';
 					$comment = 'Cession contrat';
 					WDGWPREST_Entity_InvestmentContractHistory::create($investment_contract_item->id, $date->format('Y-m-d H:i:s'), $data_modified, $old_value, $new_value, $list_new_contracts, $comment );
@@ -200,13 +199,13 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				foreach ( $list_rois as $roi_item ) {
 					$log_report .= '$roi_item->id : ' . $roi_item->id . ' --- ';
 					$WDGRoi = new WDGROI( $roi_item->id );
-					$WDGRoi->id_user = $new_user_api_id;
-					$WDGRoi->recipient_type = $new_user_type;
+					$WDGRoi->id_user = $id_api_recipient;
+					$WDGRoi->recipient_type = $user_type_recipient;
 					$WDGRoi->save();
 				}
 
 				// Transfert de l'argent entre les wallets
-				LemonwayLib::ask_transfer_funds( $lwid_sender, $lwid_new, $amount_on_sender_wallet );
+				LemonwayLib::ask_transfer_funds( $id_lw_sender, $id_lw_recipient, $amount_on_sender_wallet );
 			} else {
 				//*****
 				// A voir plus tard parce que touchy :
@@ -219,7 +218,7 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				// Log de la situation
 				//*****
 				$log_report .= 'Pas de transfert --- ';
-				NotificationsAsana::change_investment_owner_error( $investid, $id_api_sender, $new_user_api_id );
+				NotificationsAsana::change_investment_owner_error( $investid, $id_api_sender, $id_api_recipient );
 			}
 
 			// Suppression des caches de l'API
@@ -227,10 +226,10 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$id_api_sender. '/rois' );
 			WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$id_api_sender. '?with_links=1' );
 			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$id_api_sender );
-			WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$new_user_api_id. '/rois' );
-			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$new_user_api_id. '/rois' );
-			WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$new_user_api_id. '?with_links=1' );
-			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$new_user_api_id );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$id_api_recipient. '/rois' );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$id_api_recipient. '/rois' );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$id_api_recipient. '?with_links=1' );
+			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$id_api_recipient );
 			WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$campaign->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
 		}
 
