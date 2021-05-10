@@ -923,8 +923,9 @@ class WDGInvestment {
 
 		// Notifications
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
+			$buffer = 'pending';
 			NotificationsSlack::investment_pending_wire( $payment_id );
-			$buffer = NotificationsAsana::investment_pending_wire( $payment_id );
+			NotificationsAsana::investment_pending_wire( $payment_id );
 
 			NotificationsAPI::investment_pending_wire( $WDGUser_current->get_email(), $save_display_name, $amount, $this->campaign->get_name(), $viban_iban, $viban_bic, $viban_holder, $this->campaign->get_api_id() );
 		}
