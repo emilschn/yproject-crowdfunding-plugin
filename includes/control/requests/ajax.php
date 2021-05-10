@@ -97,6 +97,7 @@ class WDGAjaxActions
 		WDGAjaxActions::add_action_account_signin( 'account_signin_check_password' );
 		WDGAjaxActions::add_action_account_signin( 'account_signin_create_account' );
 		WDGAjaxActions::add_action_account_signin( 'send_reinit_pass' );
+		WDGAjaxActions::add_action_account_signin( 'send_validation_email' );
 	}
 
 	/**

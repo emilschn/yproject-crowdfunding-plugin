@@ -907,6 +907,30 @@ class NotificationsAPI {
 
 		return self::send( $parameters );
 	}
+	
+	//*******************************************************
+	// Validation de l'adresse mail
+	//*******************************************************
+	public static function validation_email($WDGUser, $link) {
+		$id_template = self::get_id_fr_by_slug( 'validation-email' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_validation_email_link($link);
+
+		$options = array(
+			'skip_admin'		=> 1,
+			'NOM'				=> $WDGUser->get_firstname(),
+			'LIEN'				=> $link
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGUser->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters );
+	}
 	//**************************************************************************
 	// Entrepreneurs
 	//**************************************************************************

@@ -9,6 +9,7 @@ class NotificationsAPIShortcodes {
 		'recipient_first_name',
 
 		'password_reinit_link',
+		'validation_email_link',
 
 		'kyc_refused_info',
 
@@ -136,9 +137,21 @@ class NotificationsAPIShortcodes {
 	/**
 	 * @var String
 	 */
+	private static $validation_email_link;
+	/**
+	 * Définit l'URL de validation d'email
+	 * @param String
+	 */
+	public static function set_validation_email_link($link_validation_email) {
+		self::$validation_email_link = $link_validation_email;
+	}
+
+	/**
+	 * @var String
+	 */
 	private static $kyc_refused_info;
 	/**
-	 * Définit l'URL de réinitialisation de mot de passe
+	 * Définit les détails du refus de KYCs
 	 * @param String
 	 */
 	public static function set_kyc_refused_info($kyc_refused_info) {
@@ -424,7 +437,7 @@ class NotificationsAPIShortcodes {
 	 * Texte de configuration
 	 * Contenu
 	 */
-	public static function email_config_text($atts, $content = '') {
+	public static function email_config_text($atts) {
 		$atts = shortcode_atts( array(
 			'url'		=> ''
 		), $atts );
@@ -442,7 +455,7 @@ class NotificationsAPIShortcodes {
 	 * Destinataire
 	 * Prénom
 	 */
-	public static function recipient_first_name($atts, $content = '') {
+	public static function recipient_first_name() {
 		return WDGOrganization::is_user_organization( self::$recipient ) ? self::$recipient->get_name() : self::$recipient->get_firstname();
 	}
 
@@ -450,15 +463,22 @@ class NotificationsAPIShortcodes {
 	 * Mail de réinitialisation de mot de passe
 	 * Lien pour réinitialiser
 	 */
-	public static function password_reinit_link($atts, $content = '') {
+	public static function password_reinit_link() {
 		return self::$password_reinit_link;
 	}
 
 	/**
+	 * Mail de validation de compte
+	 * Lien pour valider le compte
+	 */
+	public static function validation_email_link() {
+		return self::$validation_email_link;
+	}
+	/**
 	 * Mail de KYCs refusés
 	 * Détails du refus
 	 */
-	public static function kyc_refused_info($atts, $content = '') {
+	public static function kyc_refused_info() {
 		return self::$kyc_refused_info;
 	}
 
@@ -466,7 +486,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nom
 	 */
-	public static function project_name($atts, $content = '') {
+	public static function project_name() {
 		return self::$campaign->get_name();
 	}
 
@@ -474,7 +494,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nom de l'organisation
 	 */
-	public static function project_organization_name($atts, $content = '') {
+	public static function project_organization_name() {
 		$organization = self::$campaign->get_organization();
 		$WDGOrganization = new WDGOrganization( $organization->wpref );
 
@@ -485,7 +505,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * URL
 	 */
-	public static function project_url($atts, $content = '') {
+	public static function project_url() {
 		return self::$campaign->get_public_url();
 	}
 
@@ -493,7 +513,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * URL du TBPP
 	 */
-	public static function project_dashboard_url($atts, $content = '') {
+	public static function project_dashboard_url() {
 		$campaign_id = self::$campaign->ID;
 		$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id;
 
@@ -504,7 +524,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Durée du financement
 	 */
-	public static function project_funding_duration($atts, $content = '') {
+	public static function project_funding_duration() {
 		return self::$campaign->funding_duration();
 	}
 
@@ -512,7 +532,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Objectif minimum
 	 */
-	public static function project_amount_minimum_goal($atts, $content = '') {
+	public static function project_amount_minimum_goal() {
 		return self::$campaign->minimum_goal( FALSE );
 	}
 
@@ -520,7 +540,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Pourcentage atteint
 	 */
-	public static function project_percent_reached($atts, $content = '') {
+	public static function project_percent_reached() {
 		return self::$campaign->percent_minimum_completed( FALSE );
 	}
 
@@ -528,7 +548,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Rendement maximum (chaine complète)
 	 */
-	public static function project_max_profit_string($atts, $content = '') {
+	public static function project_max_profit_string() {
 		return self::$campaign->maximum_profit_str();
 	}
 
@@ -536,7 +556,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Date de premier paiement
 	 */
-	public static function project_date_first_payment($atts, $content = '') {
+	public static function project_date_first_payment() {
 		$project_date_first_payment = self::$campaign->first_payment_date();
 		$date_first_payment = new DateTime( $project_date_first_payment );
 		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
@@ -550,7 +570,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Pourcent de royalties
 	 */
-	public static function project_royalties_percent($atts, $content = '') {
+	public static function project_royalties_percent() {
 		return self::$campaign->roi_percent();
 	}
 
@@ -558,7 +578,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Montant de royalties déjà versées
 	 */
-	public static function project_royalties_transfered_amount($atts, $content = '') {
+	public static function project_royalties_transfered_amount() {
 		$amount_transferred = 0;
 		$existing_roi_declarations = self::$campaign->get_roi_declarations();
 		foreach ( $existing_roi_declarations as $declaration_object ) {
@@ -575,7 +595,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Montant minimum à verser
 	 */
-	public static function project_royalties_minimum_amount($atts, $content = '') {
+	public static function project_royalties_minimum_amount() {
 		$amount_minimum_royalties = self::$campaign->current_amount( FALSE ) * self::$campaign->minimum_profit();
 		$amount_minimum_royalties_str = UIHelpers::format_number( $amount_minimum_royalties );
 
@@ -586,7 +606,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Montant minimum restant à verser
 	 */
-	public static function project_royalties_remaining_amount_to_minimum($atts, $content = '') {
+	public static function project_royalties_remaining_amount_to_minimum() {
 		$amount_minimum_royalties = self::$campaign->current_amount( FALSE ) * self::$campaign->minimum_profit();
 		$amount_transferred = 0;
 		$existing_roi_declarations = self::$campaign->get_roi_declarations();
@@ -605,7 +625,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Liste des investisseurs qui ont +200 euros sur leur wallet
 	 */
-	public static function project_investors_list_with_more_than_200_euros($atts, $content = '') {
+	public static function project_investors_list_with_more_than_200_euros() {
 		return self::$investors_list_with_more_than_200_euros_str;
 	}
 
@@ -613,7 +633,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nombre de jours restants
 	 */
-	public static function project_days_remaining_count($atts, $content = '') {
+	public static function project_days_remaining_count() {
 		return self::$campaign->days_remaining();
 	}
 
@@ -621,7 +641,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nombre de jours restants (texte complet)
 	 */
-	public static function project_days_string($atts, $content = '') {
+	public static function project_days_string() {
 		$nb_days_remaining = self::$campaign->days_remaining();
 		$str_days = ($nb_days_remaining > 1) ? __( 'jours', 'yproject' ) : __( 'jour', 'yproject' );
 
@@ -632,7 +652,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Date et jour de fin de la levée de fonds
 	 */
-	public static function project_end_date_hour($atts, $content = '') {
+	public static function project_end_date_hour() {
 		return self::$campaign->end_date( 'd/m/Y h:i' );
 	}
 
