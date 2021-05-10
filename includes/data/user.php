@@ -1514,7 +1514,7 @@ class WDGUser {
 				$invest_item['roi_list'] = array();
 				$invest_item['roi_total'] = 0;
 				$invest_item['roi_for_year'] = 0;
-				$invest_item['tax_for_year'] = 0;
+				$invest_item['taxed_for_year'] = 0;
 				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
 				foreach ( $investment_royalties as $investment_roi ) {
 					$date_transfer = new DateTime( $investment_roi->date_transfer );
