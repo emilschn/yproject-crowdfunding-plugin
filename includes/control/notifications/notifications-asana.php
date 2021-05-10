@@ -356,6 +356,15 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_admin, $object, $content );
 	}
 
+	public static function change_investment_owner_error($investid, $id_api_sender, $new_user_api_id) {
+		$object = "Changement investisseur - Pas de transfert de royalties";
+		$content = "Lors du transfert d'investisseur pour l'investissement " . $investid . ", les données de royalties et les montants de porte-monnaie n'ont pas été transférés<br>";
+		$content .= '$id_api_sender : ' .$id_api_sender. '<br>';
+		$content .= '$new_user_api_id : ' .$new_user_api_id. '<br>';
+
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+
 	//*******************************************************
     // FIN DE CREATION DE TACHES ASANA D'ADMIN
     //*******************************************************
