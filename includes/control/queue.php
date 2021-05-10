@@ -179,7 +179,7 @@ class WDGQueue {
 						$amount_royalties += $campaign_roi->amount;
 						// si il y a un montant taxé, on va prendre le montant du prélèvement social
 						if ( $campaign_roi->amount_taxed_in_cents > 0 && !empty( $WDGUser ) ) {
-							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $campaign_roi->amount_taxed_in_cents );
 						}
 						$has_declared = TRUE;
 					}
@@ -310,10 +310,17 @@ class WDGQueue {
 
 		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
 	}
+<<<<<<< HEAD
 
 	public static function execute_registered_without_investment($user_id, $queued_action_params, $queued_action_id) {
 		$WDGUser = new WDGUser( $user_id );
 
+=======
+
+	public static function execute_registered_without_investment($user_id, $queued_action_params, $queued_action_id) {
+		$WDGUser = new WDGUser( $user_id );
+
+>>>>>>> master
 		// Recherche si l'utilisateur a fait une activité (éval, investissement, authentification)
 		$list_organizations = $WDGUser->get_organizations_list();
 		$list_campaigns_followed = $WDGUser->get_campaigns_followed();
@@ -326,7 +333,11 @@ class WDGQueue {
 
 		// Si pas d'action : envoi rappel + programmation 2eme rappel
 		if ( !$has_actions ) {
+<<<<<<< HEAD
 			NotificationsAPI::user_registered_without_investment( $WDGUser );
+=======
+			NotificationsAPI::user_registered_without_investment( $WDGUser->get_email(), $WDGUser->get_firstname() );
+>>>>>>> master
 			self::add_notification_registered_without_investment_reminder( $user_id );
 		}
 	}
@@ -345,10 +356,17 @@ class WDGQueue {
 		$date_next_dispatch->setTime( 9, 0 );
 		$date_next_dispatch->add( new DateInterval( 'P7D' ) );
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+<<<<<<< HEAD
 
 		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
 	}
 
+=======
+
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+
+>>>>>>> master
 	public static function execute_registered_without_investment_reminder($user_id, $queued_action_params, $queued_action_id) {
 		$WDGUser = new WDGUser( $user_id );
 
@@ -371,6 +389,7 @@ class WDGQueue {
 			if ( count( $api_email_list ) == 0 ) {
 				return;
 			}
+<<<<<<< HEAD
 
 			$api_email = $api_email_list[ 0 ];
 			$api_email_result = json_decode( $api_email->result, TRUE );
@@ -379,6 +398,16 @@ class WDGQueue {
 			}
 			$message_id = $api_email_result[ 'data' ][ 'message-id' ];
 
+=======
+
+			$api_email = $api_email_list[ 0 ];
+			$api_email_result = json_decode( $api_email->result, TRUE );
+			if ( empty( $api_email_result[ 'data' ] ) || empty( $api_email_result[ 'data' ][ 'message-id' ] ) ) {
+				return;
+			}
+			$message_id = $api_email_result[ 'data' ][ 'message-id' ];
+
+>>>>>>> master
 			$sib_instance = SIBv3Helper::instance();
 
 			try {
@@ -399,10 +428,17 @@ class WDGQueue {
 			}
 
 			if ( !$has_viewed ) {
+<<<<<<< HEAD
 				NotificationsAPI::user_registered_without_investment_not_open( $WDGUser );
 			} else {
 				if ( !$has_clicked ) {
 					NotificationsAPI::user_registered_without_investment_not_clicked( $WDGUser );
+=======
+				NotificationsAPI::user_registered_without_investment_not_open( $WDGUser->get_email(), $WDGUser->get_firstname() );
+			} else {
+				if ( !$has_clicked ) {
+					NotificationsAPI::user_registered_without_investment_not_clicked( $WDGUser->get_email(), $WDGUser->get_firstname() );
+>>>>>>> master
 				} else {
 					NotificationsAPI::user_registered_without_investment_not_invested( $WDGUser );
 				}
@@ -431,7 +467,11 @@ class WDGQueue {
 	public static function execute_wallet_more_200_euros($user_id, $queued_action_params, $queued_action_id) {
 		$WDGUser = new WDGUser( $user_id );
 		if ( $WDGUser->get_lemonway_wallet_amount() >= 200 ) {
+<<<<<<< HEAD
 			NotificationsAPI::wallet_with_more_than_200_euros( $WDGUser );
+=======
+			NotificationsAPI::wallet_with_more_than_200_euros( $WDGUser->get_email(), $WDGUser->get_firstname() );
+>>>>>>> master
 			self::add_notification_wallet_more_200_euros_reminder( $user_id );
 		}
 	}
@@ -464,6 +504,7 @@ class WDGQueue {
 			if ( count( $api_email_list ) == 0 ) {
 				return;
 			}
+<<<<<<< HEAD
 
 			$api_email = $api_email_list[ 0 ];
 			$api_email_result = json_decode( $api_email->result, TRUE );
@@ -474,6 +515,18 @@ class WDGQueue {
 
 			$sib_instance = SIBv3Helper::instance();
 
+=======
+
+			$api_email = $api_email_list[ 0 ];
+			$api_email_result = json_decode( $api_email->result, TRUE );
+			if ( empty( $api_email_result[ 'data' ] ) || empty( $api_email_result[ 'data' ][ 'message-id' ] ) ) {
+				return;
+			}
+			$message_id = $api_email_result[ 'data' ][ 'message-id' ];
+
+			$sib_instance = SIBv3Helper::instance();
+
+>>>>>>> master
 			try {
 				$events = $sib_instance->getTransactionalEmailReportEvents( $ref_template_id, $message_id );
 			} catch ( Exception $e ) {
@@ -492,10 +545,17 @@ class WDGQueue {
 			}
 
 			if ( !$has_viewed ) {
+<<<<<<< HEAD
 				NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_open( $WDGUser );
 			} else {
 				if ( !$has_clicked ) {
 					NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_clicked( $WDGUser );
+=======
+				NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_open( $WDGUser->get_email(), $WDGUser->get_firstname() );
+			} else {
+				if ( !$has_clicked ) {
+					NotificationsAPI::wallet_with_more_than_200_euros_reminder_not_clicked( $WDGUser->get_email(), $WDGUser->get_firstname() );
+>>>>>>> master
 				}
 			}
 		}
@@ -535,6 +595,7 @@ class WDGQueue {
 		foreach ( $queued_action_params as $single_param ) {
 			$queued_action_param = json_decode( $single_param );
 			array_push( $investors_list, $queued_action_param->user_id );
+<<<<<<< HEAD
 		}
 
 		$investors_list_unique = array_unique( $investors_list );
@@ -545,6 +606,18 @@ class WDGQueue {
 
 		if ( !empty( $investors_list_str ) ) {
 			NotificationsAPI::investors_with_wallet_with_more_than_200_euros( $WDGUser_author, $investors_list_str );
+=======
+		}
+
+		$investors_list_unique = array_unique( $investors_list );
+		foreach ( $investors_list_unique as $investor_id ) {
+			$WDGUser = new WDGUser( $investor_id );
+			$investors_list_str .= '- ' .$WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname(). '<br>';
+		}
+
+		if ( !empty( $investors_list_str ) ) {
+			NotificationsAPI::investors_with_wallet_with_more_than_200_euros( $WDGUser_author->get_email(), $WDGUser_author->get_firstname(), $investors_list_str );
+>>>>>>> master
 		}
 	}
 
@@ -568,7 +641,11 @@ class WDGQueue {
 		$current_organization = $campaign->get_organization();
 		$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		$wdguser_author = new WDGUser( $campaign->data->post_author );
+<<<<<<< HEAD
 		NotificationsAPI::declaration_extended_project_manager( $organization_obj, $wdguser_author );
+=======
+		NotificationsAPI::declaration_extended_project_manager( $organization_obj->get_email(), $wdguser_author->get_firstname() );
+>>>>>>> master
 
 		// Envoi de la notification aux investisseurs
 		$investment_contracts = WDGInvestmentContract::get_list( $campaign_id );
@@ -606,7 +683,11 @@ class WDGQueue {
 		$current_organization = $campaign->get_organization();
 		$organization_obj = new WDGOrganization( $current_organization->wpref, $current_organization );
 		$wdguser_author = new WDGUser( $campaign->data->post_author );
+<<<<<<< HEAD
 		NotificationsAPI::declaration_finished_project_manager( $organization_obj, $wdguser_author );
+=======
+		NotificationsAPI::declaration_finished_project_manager( $organization_obj->get_email(), $wdguser_author->get_firstname() );
+>>>>>>> master
 
 		// Envoi de la notification aux investisseurs
 		$investment_contracts = WDGInvestmentContract::get_list( $campaign_id );

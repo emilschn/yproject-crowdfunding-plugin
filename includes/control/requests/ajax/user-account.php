@@ -11,14 +11,24 @@ class WDGAjaxActionsUserAccount {
 
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$user_type = filter_input( INPUT_POST, 'user_type' );
+
+		$WDGUser_current = WDGUser::current();
+		$can_access = FALSE;
 		$is_authentified = FALSE;
 		if ( $user_type == 'user' ) {
 			$WDGUserEntity = new WDGUser( $user_id );
 			$is_authentified = $WDGUserEntity->is_lemonway_registered();
+			$can_access = ( $WDGUser_current->get_wpref() == $WDGUserEntity->get_wpref() ) || ( $WDGUser_current->is_admin() );
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
+			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity );
 		}
+
+		if ( !$can_access ) {
+			exit( '' );
+		}
+
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $WDGUserEntity->get_api_id() );
 
 		$today_datetime = new DateTime();
@@ -115,6 +125,9 @@ class WDGAjaxActionsUserAccount {
 				}
 
 				$investment_item = array();
+				if ( $WDGUser_current->is_admin() ) {
+					$investment_item[ 'can_edit' ] = $purchase_post->ID;
+				}
 				$investment_item[ 'date' ] = date_i18n( 'j F Y', strtotime( $purchase_date ) );
 				$investment_item[ 'hour' ] = date_i18n( 'H\hi', strtotime( $purchase_date ) );
 				$investment_item[ 'amount' ] = utf8_encode( $payment_amount );
@@ -193,7 +206,6 @@ class WDGAjaxActionsUserAccount {
 				if ($created_from_draft) {
 					// si c'est le cas, alors on récupère l'investment-draft, et on vérifie s'il y a une photo de contrat associé
 					$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );
-					$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
 					$investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;
 					$path_parts = pathinfo($investments_drafts_item->contract);
 					$extension = $path_parts['extension'];
@@ -400,14 +412,24 @@ class WDGAjaxActionsUserAccount {
 		$today_datetime = new DateTime();
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$user_type = filter_input( INPUT_POST, 'user_type' );
+
+		$WDGUser_current = WDGUser::current();
+		$can_access = FALSE;
 		$is_authentified = FALSE;
 		if ( $user_type == 'user' ) {
 			$WDGUserEntity = new WDGUser( $user_id );
 			$is_authentified = $WDGUserEntity->is_lemonway_registered();
+			$can_access = ( $WDGUser_current->get_wpref() == $WDGUserEntity->get_wpref() ) || ( $WDGUser_current->is_admin() );
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
+			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity );
 		}
+
+		if ( !$can_access ) {
+			exit( '' );
+		}
+
 		$result = WDGWPREST_Entity_User::get_investments( $WDGUserEntity->get_api_id(), 'project' );
 
 		$buffer = array();
@@ -426,6 +448,9 @@ class WDGAjaxActionsUserAccount {
 			$buffer_item[ 'items' ] = array();
 			foreach ( $result_campaign_item->investments as $result_investment_item ) {
 				$buffer_investment_item = array();
+				if ( $WDGUser_current->is_admin() ) {
+					$buffer_investment_item[ 'can_edit' ] = $result_investment_item->wpref;
+				}
 				$buffer_investment_item[ 'amount' ] = utf8_encode( $result_investment_item->amount );
 				$buffer_investment_item[ 'date' ] = date_i18n( 'j F Y', strtotime( $result_investment_item->invest_datetime ) );
 				$buffer_investment_item[ 'hour' ] = date_i18n( 'H\hi', strtotime( $result_investment_item->invest_datetime ) );
@@ -564,7 +589,6 @@ class WDGAjaxActionsUserAccount {
 				if ( $created_from_draft ) {
 					// si c'est le cas, alors on récupère l'investment-draft, et on vérifie s'il y a une photo de contrat associé
 					$investments_drafts_item = WDGWPREST_Entity_InvestmentDraft::get( $created_from_draft );
-					$investments_drafts_item_data = json_decode( $investments_drafts_item->data );
 					$buffer_investment_item[ 'contract_file_path' ] = $investments_drafts_item->contract;
 					$path_parts = pathinfo( $investments_drafts_item->contract );
 					$extension = $path_parts[ 'extension' ];
@@ -577,9 +601,9 @@ class WDGAjaxActionsUserAccount {
 						$contract_index = count( $buffer_item[ 'items' ] );
 					}
 					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .($contract_index + 1). '.pdf';
-					$test_file_name = dirname( __FILE__ ). '/../../../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf';
+					$test_file_name = dirname( __FILE__ ). '/../../../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_investment_item->wpref. '.pdf';
 					if ( file_exists( $test_file_name ) ) {
-						$buffer_investment_item[ 'contract_file_path' ] = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_campaign_item->project_wpref. '.pdf' );
+						$buffer_investment_item[ 'contract_file_path' ] = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_investment_item->wpref. '.pdf' );
 						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;
 					} elseif ( count( $files ) ) {
 						$filelist_extract = explode( '/', $files[ $contract_index ] );
@@ -695,15 +719,15 @@ class WDGAjaxActionsUserAccount {
 										}
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $adjustment_value_as_turnover;
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
-										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ], TRUE ) . ' &euro;';
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = UIHelpers::format_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] ) . ' &euro;';
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
-										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = YPUIHelpers::display_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
-										$buffer_roi_item[ 'amount' ] = YPUIHelpers::display_number( $roi->amount, TRUE ) . ' &euro;';
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = UIHelpers::format_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
+										$buffer_roi_item[ 'amount' ] = UIHelpers::format_number( $roi->amount, TRUE ) . ' &euro;';
 										if ( $roi->amount_taxed_in_cents > 0 ) {
 											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
-											$buffer_roi_item[ 'roitax_item' ] = print_r( $roitax_item, true );
 											if ( !empty( $roitax_items[ 0 ] ) ) {
-												$buffer_roi_item[ 'amount' ] .= ' (dont ' .YPUIHelpers::display_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
+												$buffer_roi_item[ 'roitax_item' ] = print_r( $roitax_items[ 0 ], true );
+												$buffer_roi_item[ 'amount' ] .= ' (dont ' .UIHelpers::format_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
 											}
 										}
 									}
