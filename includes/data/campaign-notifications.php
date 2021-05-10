@@ -9,14 +9,14 @@ class WDGCampaignNotifications {
 	/**
 	 * Récupération meta
 	 */
-	private static function get_meta( $id_wp_campaign ) {
+	private static function get_meta($id_wp_campaign) {
 		return get_post_meta( $id_wp_campaign, WDGCampaignNotifications::$meta_key, TRUE );
 	}
 
 	/**
 	 * Mise à jour meta
 	 */
-	private static function update_meta( $id_wp_campaign ) {
+	private static function update_meta($id_wp_campaign) {
 		$date_time = new DateTime();
 		update_post_meta( $id_wp_campaign, WDGCampaignNotifications::$meta_key, $date_time->format( 'Y-m-d H:i:s' ) );
 	}
@@ -24,15 +24,14 @@ class WDGCampaignNotifications {
 	/**
 	 * Suppression meta
 	 */
-	private static function delete_meta( $id_wp_campaign ) {
+	private static function delete_meta($id_wp_campaign) {
 		delete_post_meta( $id_wp_campaign, WDGCampaignNotifications::$meta_key );
 	}
-
 
 	/**
 	 * Retourne vrai si le PP peut demander une relecture
 	 */
-	public static function can_ask_proofreading( $id_wp_campaign ) {
+	public static function can_ask_proofreading($id_wp_campaign) {
 		$meta = self::get_meta( $id_wp_campaign );
 
 		// Si la meta n'existe pas, on peut
@@ -55,16 +54,17 @@ class WDGCampaignNotifications {
 	/**
 	 * Envoi la demande de relecture
 	 */
-	public static function ask_proofreading( $id_wp_campaign ) {
+	public static function ask_proofreading($id_wp_campaign) {
 		if ( self::can_ask_proofreading( $id_wp_campaign ) ) {
 			self::update_meta( $id_wp_campaign );
 
 			$campaign = new ATCF_Campaign( $id_wp_campaign );
 			$replyto_mail = 'support@wedogood.co';
 			$WDGUserAuthor = new WDGUser( $campaign->data->post_author );
-			NotificationsAPI::proofreading_request_received( $WDGUserAuthor->get_firstname(), $WDGUserAuthor->get_email(), $replyto_mail, $campaign->get_api_id() );
+			NotificationsAPI::proofreading_request_received( $WDGUserAuthor, $replyto_mail, $campaign->get_api_id() );
 
 			NotificationsSlack::read_project_page( $id_wp_campaign );
+
 			return NotificationsAsana::read_project_page( $id_wp_campaign );
 		}
 
@@ -74,8 +74,9 @@ class WDGCampaignNotifications {
 	/**
 	 * Confirme au PP que la relecture a été faite
 	 */
-	public static function send_has_finished_proofreading( $id_wp_campaign ) {
+	public static function send_has_finished_proofreading($id_wp_campaign) {
 		self::delete_meta( $id_wp_campaign );
+
 		return NotificationsEmails::send_project_description_notification_to_project( $id_wp_campaign );
 	}
 }

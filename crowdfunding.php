@@ -103,6 +103,7 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'data/campaign-bill.php';
 		require $this->includes_dir . 'data/campaign-notifications.php';
 		require $this->includes_dir . 'data/config-texts.php';
+		require $this->includes_dir . 'data/config-texts-emails.php';
 		require $this->includes_dir . 'data/roi-declaration.php';
 		require $this->includes_dir . 'data/adjustment.php';
 		require $this->includes_dir . 'data/roi.php';
@@ -159,6 +160,7 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'control/gateways/lemonway-notification.php';
 		require $this->includes_dir . 'control/lib/validator.php';
 		require $this->includes_dir . 'control/notifications/notifications-emails.php';
+		require $this->includes_dir . 'control/notifications/notifications-api-shortcodes.php';
 		require $this->includes_dir . 'control/notifications/notifications-api.php';
 		require $this->includes_dir . 'control/notifications/notifications-slack.php';
 		require $this->includes_dir . 'control/notifications/notifications-asana.php';

@@ -96,11 +96,13 @@ class LemonwayNotification {
 		// Trouver l'utilisateur à partir de son identifiant externe
 		$WDGOrga_wallet = FALSE;
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
+		$WDGUserOrOrganization = $WDGUser_wallet;
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
+			$WDGUserOrOrganization = $WDGOrga_wallet;
 		}
 		if ( $WDGUser_wallet !== FALSE ) {
-			$pending_not_validated_investment_campaign_name = FALSE;
+			$pending_not_validated_investment_campaign = FALSE;
 			$WDGUserInvestments = FALSE;
 
 			if ( !empty( $WDGOrga_wallet ) ) {
@@ -123,17 +125,17 @@ class LemonwayNotification {
 				$WDGUserInvestments->try_transfer_waiting_roi_to_wallet();
 				if ( $WDGUserInvestments->has_pending_not_validated_investments() ) {
 					$pending_not_validated_investment = $WDGUserInvestments->get_first_pending_not_validated_investment();
-					$pending_not_validated_investment_campaign_name = $pending_not_validated_investment->get_saved_campaign()->data->post_title;
+					$pending_not_validated_investment_campaign = $pending_not_validated_investment->get_saved_campaign();
 				}
 			}
 
 			if ( $lemonway_posted_wallet_status == 6 ) {
 				NotificationsSlack::send_new_wallet_status( $lemonway_posted_id_external, "https://backoffice.lemonway.fr/wedogood/user-" .$lemonway_posted_id_internal, $user_fullname, 'Validé' );
-				if ( !empty( $pending_not_validated_investment_campaign_name ) ) {
-					NotificationsAPI::kyc_authentified_and_pending_investment( $user_email, $user_name, $pending_not_validated_investment_campaign_name, $pending_not_validated_investment->get_saved_campaign()->get_api_id() );
-					WDGQueue::add_investment_authentified_reminder( $WDGUser_wallet->get_wpref(), $user_email, $user_name, $pending_not_validated_investment_campaign_name, $pending_not_validated_investment->get_saved_campaign()->get_api_id() );
+				if ( !empty( $pending_not_validated_investment_campaign ) ) {
+					NotificationsAPI::kyc_authentified_and_pending_investment( $WDGUserOrOrganization, $pending_not_validated_investment_campaign );
+					WDGQueue::add_investment_authentified_reminder( $WDGUser_wallet->get_wpref(), $user_email, $user_name, $pending_not_validated_investment_campaign->get_name(), $pending_not_validated_investment->get_saved_campaign()->get_api_id() );
 				} else {
-					NotificationsAPI::kyc_authentified( $user_email, $user_name );
+					NotificationsAPI::kyc_authentified( $WDGUserOrOrganization );
 				}
 
 				if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
@@ -279,7 +281,7 @@ class LemonwayNotification {
 					// Si ils sont tous validés, on enverra une notification plus tard
 					if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
 						if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
-							NotificationsAPI::kyc_single_validated( $user_email, $user_firstname );
+							NotificationsAPI::kyc_single_validated( $WDGUser_wallet );
 							if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
 								WDGQueue::add_document_user_phone_notification( $user_wpref, 'one_doc' );
 							}
@@ -299,8 +301,7 @@ class LemonwayNotification {
 
 			// Si le document est validé et qu'il s'agit du RIB et uniquement pour les personnes physiques, on prévient l'utilisateur
 			if ( $lemonway_posted_document_status == 2 && $lemonway_posted_document_type == LemonwayDocument::$document_type_bank && empty( $WDGOrga_wallet ) ) {
-				NotificationsAPI::rib_authentified( $user_email, $user_firstname );
-				$notification_sent = TRUE;
+				NotificationsAPI::rib_authentified( $WDGUser_wallet );
 			}
 		}
 	}
@@ -446,11 +447,9 @@ class LemonwayNotification {
 				}
 			} else {
 				if ( empty( $WDGOrga_invest_author ) ) {
-					$recipient_email = $WDGUser_invest_author->get_email();
-					$recipient_name = $WDGUser_invest_author->get_firstname();
 					$wallet_details = $WDGUser_invest_author->get_wallet_details();
 					$amount = $wallet_details->BAL;
-					NotificationsAPI::wire_transfer_received( $recipient_email, $recipient_name, $amount );
+					NotificationsAPI::wire_transfer_received( $WDGUser_invest_author, $amount );
 				} else {
 					NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
 					NotificationsAsana::wire_payment_received_not_attributed( $content );

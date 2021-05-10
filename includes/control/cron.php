@@ -66,6 +66,8 @@ class WDGCronActions {
 								$declaration_direct_url = WDG_Redirect_Engine::override_get_page_url( 'declarer-chiffre-daffaires' ) . '?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id;
 								$declaration_direct_url = str_replace( 'https://', '', $declaration_direct_url );
 
+								NotificationsAPIShortcodes::set_recipient($wdguser_author);
+								NotificationsAPIShortcodes::set_declaration($declaration_data);
 								$options = array(
 									'NOM'					=> $wdguser_author->get_firstname(),
 									'TROIS_DERNIERS_MOIS'	=> $last_months_str,
@@ -146,10 +148,8 @@ class WDGCronActions {
 							$amount_royalties = round( $amount_estimation_quarter * $campaign->roi_percent() / 100, 2 );
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
 							$amount_total = $amount_royalties + $amount_fees;
-							$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
-							$declaration_direct_url = home_url( '/declarer-chiffre-daffaires/?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id );
 
-							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author->get_firstname(), $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total, $mandate_wire_date, $declaration_direct_url );
+							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author, $declaration_data, $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total );
 						}
 					}
 				}

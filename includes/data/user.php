@@ -2159,7 +2159,7 @@ class WDGUser {
 					);
 					wp_insert_post( $withdrawal_post );
 					$WDGUser = new WDGUser( $this->wp_user->ID );
-					NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser->get_email(), $WDGUser->get_firstname(), $amount );
+					NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser, $amount );
 				}
 			}
 		}
