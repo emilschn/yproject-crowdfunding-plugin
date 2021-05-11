@@ -840,12 +840,49 @@ class WDGOrganization {
 	 */
 	public function send_kyc() {
 		if ( $this->has_lemonway_wallet() ) {
+			$this->sync_creator_kyc();
 			$documents_type_list = LemonwayDocument::get_list_sorted_by_kyc_type();
 			foreach ( $documents_type_list as $document_type => $lemonway_type ) {
 				$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
 				if ( count( $document_filelist ) > 0 ) {
 					$current_document = $document_filelist[0];
 					LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Récupération des documents du créateur si jamais les documents ne sont pas remplis
+	 */
+	public function sync_creator_kyc() {
+		// Récupération du créateur de l'organisation
+		$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+		if ( empty( $linked_users_creator ) ) {
+			return;
+		}
+		$WDGUser_creator = $linked_users_creator[ 0 ];
+
+		// Récupération de la liste des fichiers liés à ce créateur
+		$kyc_list_by_owner_id = WDGKYCFile::get_list_by_owner_id( $WDGUser_creator->get_wpref(), WDGKYCFile::$owner_user );
+		if ( count( $kyc_list_by_owner_id ) == 0 ) {
+			return;
+		}
+
+		// Pour chacun des documents du créateur
+		// Si l'organisation n'est pas définie
+		// Et qu'il s'agit d'un document d'identité
+		// On lie l'organisation au même document
+		foreach ( $kyc_list_by_owner_id as $kyc_document ) {
+			if ( $kyc_document->orga_id == 0 ) {
+				switch ( $kyc_document->type ) {
+					case WDGKYCFile::$type_id:
+					case WDGKYCFile::$type_id_back:
+					case WDGKYCFile::$type_id_2:
+					case WDGKYCFile::$type_id_2_back:
+						$kyc_document->orga_id = $this->get_wpref();
+						$kyc_document->save();
+						break;
 				}
 			}
 		}
@@ -1594,9 +1631,9 @@ class WDGOrganization {
 				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
 				// Si le premier IBAN est désactivé, on va chercher dans la suite
 				// de même si cet iban a LEMON WAY comme holder (viban)
-				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected || strtolower ( str_replace(' ', '', $buffer->HOLDER) ) == WDGUser::$iban_holder_lw ) ) {
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected || strtolower( str_replace(' ', '', $buffer->HOLDER) ) == WDGUser::$iban_holder_lw ) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
-						if ( $iban_item->S == WDGUser::$iban_status_validated  && strtolower ( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
+						if ( $iban_item->S == WDGUser::$iban_status_validated  && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
 							$buffer = $iban_item;
 						}
 					}
@@ -1858,6 +1895,7 @@ class WDGOrganization {
 		global $country_list;
 		$invest_list = array();
 		$roi_total = 0;
+		$taxed_total = 0;
 
 		// Récupération d'abord de la liste des royalties de l'année pour ne faire un récapitulatif que pour ceux-là
 		$royalties_list = $this->get_royalties_for_year( $year );
@@ -1895,11 +1933,14 @@ class WDGOrganization {
 				$invest_item['roi_list'] = array();
 				$invest_item['roi_total'] = 0;
 				$invest_item['roi_for_year'] = 0;
-				$invest_item['tax_for_year'] = 0;
+				$invest_item['taxed_for_year'] = 0;
 				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
 				foreach ( $investment_royalties as $investment_roi ) {
-					$invest_item['roi_total'] += $investment_roi->amount;
 					$date_transfer = new DateTime( $investment_roi->date_transfer );
+					// On ne compte dans le total de royalties perçues que si ça a été versé lors d'une année écoulée
+					if ( $date_transfer->format( 'Y' ) <= $year ) {
+						$invest_item['roi_total'] += $investment_roi->amount;
+					}
 					if ( $date_transfer->format( 'Y' ) == $year ) {
 						$roi_item = array();
 						$roi_item[ 'trimester_months' ] = '';
@@ -1916,6 +1957,20 @@ class WDGOrganization {
 						$invest_item['roi_for_year'] += $investment_roi->amount;
 						$roi_total += $investment_roi->amount;
 
+						// Calcul de la part imposable
+						if ( $invest_item['roi_total'] > $invest_item_amount ) {
+							// Certains vieux roi ne sont pas définis sur le montant imposable
+							// Si c'est défini, on reprend le montant déjà calculé
+							if ( $investment_roi->amount_taxed_in_cents > 0 ) {
+								$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Sinon, on prend le minimum entre le montant reçu sur ce versement ET la différence entre le montant reçu au total et le montant investi
+							} else {
+								$investment_roi_taxed = min( $investment_roi->amount, $invest_item['roi_total'] - $invest_item_amount );
+							}
+							$invest_item['taxed_for_year'] += $investment_roi_taxed;
+							$taxed_total += $investment_roi_taxed;
+						}
+
 						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
 						array_push( $invest_item['roi_list'], $roi_item );
 					}
@@ -1924,7 +1979,7 @@ class WDGOrganization {
 				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
 				$invest_item['roi_total'] = UIHelpers::format_number( $invest_item['roi_total'] ) . ' &euro;';
 				$invest_item['roi_for_year'] = UIHelpers::format_number( $invest_item['roi_for_year'] ) . ' &euro;';
-				$invest_item['tax_for_year'] = UIHelpers::format_number( $invest_item['tax_for_year'] ) . ' &euro;';
+				$invest_item['taxed_for_year'] = UIHelpers::format_number( $invest_item['taxed_for_year'] ) . ' &euro;';
 				array_push( $investment_list, $invest_item );
 			}
 		}
@@ -1932,7 +1987,7 @@ class WDGOrganization {
 		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
 
 		require_once __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
-		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get($this->get_name(), $this->get_idnumber(), $this->get_vat(), '', $this->get_email(), $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), '01/01/'.($year + 1), $year, $investment_list, UIHelpers::format_number( $roi_total ). ' &euro;', UIHelpers::format_number( 0 ). ' &euro;', $info_yearly_certificate);
+		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get($this->get_name(), $this->get_idnumber(), $this->get_vat(), '', $this->get_email(), $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), '01/01/'.($year + 1), $year, $investment_list, UIHelpers::format_number( $roi_total ). ' &euro;', UIHelpers::format_number( $taxed_total ). ' &euro;', $info_yearly_certificate);
 
 		$crowdfunding = ATCF_CrowdFunding::instance();
 		$crowdfunding->include_html2pdf();

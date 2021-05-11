@@ -24,11 +24,21 @@ class NotificationsAPICSS {
 	}
 	figcaption { font-size: 90%; }
 
-	.has-background a {
-		text-decoration: none;
+	hr {
+		color: #c2c2c2;
 	}
-	p.has-background {
+
+	.wp-block-button {
+		display: block;
+		max-width: 320px;
+		text-align: center;
+		margin: auto;
+	}
+	.wp-block-button .wp-block-button__link {
+		display: inline-block;
 		padding: 20px 38px;
+		text-decoration: none;
+		text-transform: uppercase;
 	}
 
 	.has-rouge-background-color {

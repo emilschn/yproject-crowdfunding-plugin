@@ -179,7 +179,7 @@ class WDGQueue {
 						$amount_royalties += $campaign_roi->amount;
 						// si il y a un montant taxé, on va prendre le montant du prélèvement social
 						if ( $campaign_roi->amount_taxed_in_cents > 0 && !empty( $WDGUser ) ) {
-							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $campaign_roi->amount_taxed_in_cents );
 						}
 						$has_declared = TRUE;
 					}

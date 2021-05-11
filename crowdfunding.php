@@ -125,6 +125,7 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment-draft.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment-contract.php';
+		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-investment-contract-history.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-declaration.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-adjustment.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-roi.php';

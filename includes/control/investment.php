@@ -923,8 +923,9 @@ class WDGInvestment {
 
 		// Notifications
 		if ( $mean_of_payment == WDGInvestment::$meanofpayment_wire ) {
+			$buffer = 'pending';
 			NotificationsSlack::investment_pending_wire( $payment_id );
-			$buffer = NotificationsAsana::investment_pending_wire( $payment_id );
+			NotificationsAsana::investment_pending_wire( $payment_id );
 
 			NotificationsAPI::investment_pending_wire( $WDGUser_current, $this, $this->campaign, $viban_iban, $viban_bic, $viban_holder );
 		}
@@ -1333,7 +1334,7 @@ class WDGInvestment {
 		}
 
 		if ( !empty( $payment ) ) {
-			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment );
+			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id() );
 		}
 	}
 }
