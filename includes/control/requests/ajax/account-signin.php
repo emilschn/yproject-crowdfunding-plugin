@@ -155,8 +155,6 @@ class WDGAjaxActionsAccountSignin
             $facebook_meta = $user->get('social_connect_facebook_id');
             if (!isset($facebook_meta) || $facebook_meta == "") {
                 $user_login = $user->user_login;
-                $user_email = $user->user_email;
-                $user_firstname = $user->user_firstname;
                 $key = $wpdb->get_var($wpdb->prepare("SELECT user_activation_key FROM $wpdb->users WHERE user_login = %s", $user_login));
                 if (empty($key)) {
                     $key = wp_generate_password(20, false);
@@ -164,8 +162,8 @@ class WDGAjaxActionsAccountSignin
                     $wpdb->update($wpdb->users, array('user_activation_key' => $key), array('user_login' => $user_login));
                 }
                 $link = $page_forgot_password . "?action=rp&key=$key&login=" . rawurlencode($user_login);
-    
-				$mail_sent = NotificationsAPI::password_reinit($user_email, $user_firstname, $link);
+				$WDGUser = new WDGUser( $user->ID );
+				$mail_sent = NotificationsAPI::password_reinit($WDGUser, $link);
                 if ( $mail_sent === FALSE ) {
 					$result[ 'status' ] = 'email-not-sent';
                 } else {
@@ -186,6 +184,8 @@ class WDGAjaxActionsAccountSignin
 	 */
 	public static function send_validation_email() {
         $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
+        $is_new_account = filter_input(INPUT_POST, 'is-new-account');
+
 		$page_validation_email = WDG_Redirect_Engine::override_get_page_url( 'validation-email' );
 		$result[ 'status' ] = '';
 		if ( empty( $input_email ) ) {
@@ -204,27 +204,24 @@ class WDGAjaxActionsAccountSignin
 			$result[ 'status' ] = 'not-existing-account';
         } else {
             $user_login = $user->user_login;
-            $user_email = $user->user_email;
-            // $facebook_meta = $user->get('social_connect_facebook_id');
-            // if (!isset($facebook_meta) || $facebook_meta == "") {
-                $user_login = $user->user_login;
-                $user_email = $user->user_email;
-                $user_firstname = $user->user_firstname;
-				$redirect_page = 'test';
-                $link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
-    
-				$mail_sent = NotificationsAPI::validation_email($user_email, $user_firstname, $link);
-                if ( $mail_sent === FALSE ) {
-					$result[ 'status' ] = 'email-not-sent';
-                } else {
-					$result[ 'status' ] = 'email-sent';
-				}
-        //     } else {
-		// 		$result[ 'status' ] = 'facebook-account';
-        //    }
+			$user_login = $user->user_login;
+			$redirect_page = 'test';
+			$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
+
+			$WDGUser = new WDGUser( $user->ID );			
+			if ($is_new_account === 'false') {
+				$mail_sent = NotificationsAPI::validation_email($WDGUser, $link);
+			} else{
+				$mail_sent = NotificationsAPI::activation_email($WDGUser, $link);
+			}
+			
+			if ( $mail_sent === FALSE ) {
+				$result[ 'status' ] = 'email-not-sent';
+			} else {
+				$result[ 'status' ] = 'email-sent';
+			}
         }
 
-		ypcf_debug_log( 'send_validation_email >> ' . print_r($result, true), false );
 		exit( json_encode( $result ) );
     }
 	
