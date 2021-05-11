@@ -45,6 +45,9 @@ class WDGOrganization {
 	private $bank_address2;
 	private $bank_iban;
 	private $bank_bic;
+	private $accountant_name;
+	private $accountant_email;
+	private $accountant_address;
 	private $id_quickbooks;
 	private $mandate_info;
 	private $mandate_file_url;
@@ -146,6 +149,17 @@ class WDGOrganization {
 				if ( count( $geolocation ) > 1 ) {
 					$this->latitude = $geolocation[0];
 					$this->longitude = $geolocation[1];
+				}
+
+				$accountant_info = json_decode( $this->bopp_object->accountant );
+				if ( !empty( $accountant_info->name ) ) {
+					$this->accountant_name = $accountant_info->name;
+				}
+				if ( !empty( $accountant_info->email ) ) {
+					$this->accountant_email = $accountant_info->email;
+				}
+				if ( !empty( $accountant_info->address ) ) {
+					$this->accountant_address = $accountant_info->address;
 				}
 
 				$this->bank_owner = $this->bopp_object->bank_owner;
@@ -679,6 +693,25 @@ class WDGOrganization {
 	}
 	public function set_bank_bic($value) {
 		$this->bank_bic = $value;
+	}
+
+	public function get_accountant_name() {
+		return $this->accountant_name;
+	}
+	public function set_accountant_name($value) {
+		$this->accountant_name = $value;
+	}
+	public function get_accountant_email() {
+		return $this->accountant_email;
+	}
+	public function set_accountant_email($value) {
+		$this->accountant_email = $value;
+	}
+	public function get_accountant_address() {
+		return $this->accountant_address;
+	}
+	public function set_accountant_address($value) {
+		$this->accountant_address = $value;
 	}
 
 	public function get_id_quickbooks() {
