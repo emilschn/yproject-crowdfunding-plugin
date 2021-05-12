@@ -25,6 +25,11 @@ class WDGWPREST_Entity_Organization {
 	 * @return array
 	 */
 	public static function set_post_parameters(WDGOrganization $organization) {
+		$accountant_info = array(
+			'name'		=> $organization->get_accountant_name(),
+			'email'		=> $organization->get_accountant_email(),
+			'address'	=> $organization->get_accountant_address()
+		);
 		$parameters = array(
 			'wpref'						=> $organization->get_wpref(),
 			'name'						=> $organization->get_name(),
@@ -48,6 +53,7 @@ class WDGWPREST_Entity_Organization {
 			'postalcode'				=> $organization->get_postal_code(),
 			'city'						=> $organization->get_city(),
 			'country'					=> $organization->get_nationality(),
+			'accountant'				=> json_encode( $accountant_info ),
 			'bank_owner'				=> $organization->get_bank_owner(),
 			'bank_address'				=> $organization->get_bank_address(),
 			'bank_address2'				=> $organization->get_bank_address2(),
