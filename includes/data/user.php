@@ -50,6 +50,7 @@ class WDGUser
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	private $email_is_validated;
 
 	protected static $_current = null;
 
@@ -116,6 +117,7 @@ class WDGUser
 					$this->authentification_mode = $this->api_data->authentification_mode;
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
+					$this->email_is_validated = $this->api_data->email_is_validated;
 				}
 			}
 		}
@@ -380,8 +382,22 @@ class WDGUser
 	}
 
 	public function is_email_validated() {
-		// TODO
-		return FALSE;
+		$buffer = FALSE;
+        if (!empty($this->email_is_validated) && $this->email_is_validated == TRUE ) {
+			$buffer = TRUE;
+        }
+		return $buffer;
+	}
+
+	public function set_email_is_validated($value = '1') {		
+		if ($this->email_is_validated != $value) {
+			$this->email_is_validated = $value;
+			$this->update_api();
+		}
+	}
+
+	public function get_email_is_validated() {
+		return $this->email_is_validated;
 	}
 
 	public function get_gender() {
@@ -1520,11 +1536,14 @@ class WDGUser
 				$invest_item['roi_list'] = array();
 				$invest_item['roi_total'] = 0;
 				$invest_item['roi_for_year'] = 0;
-				$invest_item['tax_for_year'] = 0;
+				$invest_item['taxed_for_year'] = 0;
 				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
 				foreach ( $investment_royalties as $investment_roi ) {
-					$invest_item['roi_total'] += $investment_roi->amount;
 					$date_transfer = new DateTime( $investment_roi->date_transfer );
+					// On ne compte dans le total de royalties perçues que si ça a été versé lors d'une année écoulée
+					if ( $date_transfer->format( 'Y' ) <= $year ) {
+						$invest_item['roi_total'] += $investment_roi->amount;
+					}
 					if ( $date_transfer->format( 'Y' ) == $year ) {
 						$roi_item = array();
 						$roi_item[ 'trimester_months' ] = '';
@@ -1543,7 +1562,14 @@ class WDGUser
 
 						// Calcul de la part imposable
 						if ( $invest_item['roi_total'] > $invest_item_amount ) {
-							$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Certains vieux roi ne sont pas définis sur le montant imposable
+							// Si c'est défini, on reprend le montant déjà calculé
+							if ( $investment_roi->amount_taxed_in_cents > 0 ) {
+								$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Sinon, on prend le minimum entre le montant reçu sur ce versement ET la différence entre le montant reçu au total et le montant investi
+							} else {
+								$investment_roi_taxed = min( $investment_roi->amount, $invest_item['roi_total'] - $invest_item_amount );
+							}
 							$invest_item['taxed_for_year'] += $investment_roi_taxed;
 							$taxed_total += $investment_roi_taxed;
 						}
@@ -2031,7 +2057,7 @@ class WDGUser
 
 	/**
 	 * Retourne le montant actuel sur le compte bancaire
-	 * @return number
+	 * @return float
 	 */
 	public function get_lemonway_wallet_amount() {
 		$wallet_details = $this->get_wallet_details();
@@ -2051,9 +2077,9 @@ class WDGUser
 				$buffer = $wallet_details->IBANS->IBAN[ 0 ];
 				// Si le premier IBAN est désactivé, on va chercher dans la suite
 				// de même si cet iban a LEMON WAY comme holder (viban)
-				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected || strtolower ( str_replace(' ', '', $buffer->HOLDER) ) == self::$iban_holder_lw ) ) {
+				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == self::$iban_status_disabled || $buffer->S == self::$iban_status_rejected || strtolower( str_replace(' ', '', $buffer->HOLDER) ) == self::$iban_holder_lw ) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
-						if ( ( $iban_item->S == self::$iban_status_validated || $iban_item->S == self::$iban_status_waiting ) && strtolower ( str_replace(' ', '', $iban_item->HOLDER) ) != self::$iban_holder_lw ) {
+						if ( ( $iban_item->S == self::$iban_status_validated || $iban_item->S == self::$iban_status_waiting ) && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != self::$iban_holder_lw ) {
 							$buffer = $iban_item;
 						}
 					}
@@ -2155,7 +2181,7 @@ class WDGUser
 					);
 					wp_insert_post( $withdrawal_post );
 					$WDGUser = new WDGUser( $this->wp_user->ID );
-					NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser->get_email(), $WDGUser->get_firstname(), $amount );
+					NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser, $amount );
 				}
 			}
 		}

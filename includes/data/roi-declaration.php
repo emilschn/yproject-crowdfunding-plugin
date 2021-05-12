@@ -619,6 +619,7 @@ class WDGROIDeclaration {
 				}
 
 				$transfer = FALSE;
+				$WDGUserOrOrganization = FALSE;
 				$recipient_name = '';
 				$recipient_email = '';
 				$wdguser_wpref = 0;
@@ -626,6 +627,7 @@ class WDGROIDeclaration {
 				//Gestion versement vers organisation
 				if ( $ROI->recipient_type == 'orga' ) {
 					$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
+					$WDGUserOrOrganization = $WDGOrga;
 					$wdguser_wpref = $WDGOrga->get_wpref();
 					$WDGOrga->register_lemonway();
 					$recipient_name = $WDGOrga->get_name();
@@ -651,6 +653,7 @@ class WDGROIDeclaration {
 					//Versement vers utilisateur personne physique
 				} else {
 					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+					$WDGUserOrOrganization = $WDGUser;
 					$wdguser_wpref = $WDGUser->get_wpref();
 					$WDGUser->register_lemonway();
 					$recipient_name = $WDGUser->get_firstname();
@@ -726,7 +729,7 @@ class WDGROIDeclaration {
 						$campaign_author = $campaign->post_author();
 						$author_user = get_user_by( 'ID', $campaign_author );
 						$replyto_mail = $author_user->user_email;
-						NotificationsAPI::roi_transfer_message( $recipient_email, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+						NotificationsAPI::roi_transfer_message( $WDGUserOrOrganization, $campaign, $declaration_message_decoded, $replyto_mail );
 					}
 				}
 
@@ -751,12 +754,11 @@ class WDGROIDeclaration {
 				}
 				$campaign_author = $campaign->post_author();
 				$WDGUser_author = new WDGUser( $campaign_author );
-				$recipient_name = $WDGUser_author->get_firstname();
 				$replyto_mail = $WDGUser_author->get_email();
 				$declaration_message_decoded = '(vous êtes en copie de ce message en tant que porteur de projet)';
 				$declaration_message_decoded .= '<br><br>';
 				$declaration_message_decoded .= $declaration_message;
-				NotificationsAPI::roi_transfer_message( $replyto_mail, $recipient_name, $campaign->data->post_title, $declaration_message_decoded, $replyto_mail );
+				NotificationsAPI::roi_transfer_message( $WDGUser_author, $campaign, $declaration_message_decoded, $replyto_mail );
 			}
 
 			$wdguser_author = new WDGUser( $campaign->data->post_author );
@@ -769,9 +771,9 @@ class WDGROIDeclaration {
 					$tax_infos .= '<a href="https://support.wedogood.co/investir-et-suivre-mes-investissements/fiscalit%C3%A9-et-comptabilit%C3%A9/quelle-est-la-comptabilit%C3%A9-et-la-fiscalit%C3%A9-de-mon-investissement">En savoir plus sur la fiscalité des investissements</a>.';
 				}
 				$this->make_payment_certificate();
-				NotificationsAPI::declaration_done_with_turnover( $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str(), $this->get_amount_with_adjustment(), $tax_infos, $this->get_payment_certificate_url() );
+				NotificationsAPI::declaration_done_with_turnover( $WDGOrganization_campaign, $wdguser_author, $campaign, $this, $tax_infos, $this->get_payment_certificate_url() );
 			} else {
-				NotificationsAPI::declaration_done_without_turnover( $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname(), $campaign->data->post_title, $this->get_month_list_str() );
+				NotificationsAPI::declaration_done_without_turnover( $WDGOrganization_campaign, $wdguser_author, $campaign, $this );
 			}
 
 			$this->status = WDGROIDeclaration::$status_finished;
@@ -797,7 +799,7 @@ class WDGROIDeclaration {
 
 		// A la toute fin, on vérifie les notifications à envoyer
 		if ( $buffer == 100 ) {
-			$this->check_notifications( $campaign, $WDGOrganization_campaign->get_email(), $wdguser_author->get_firstname() );
+			$this->check_notifications( $campaign, $WDGOrganization_campaign, $wdguser_author );
 		}
 
 		return $buffer;
@@ -809,7 +811,7 @@ class WDGROIDeclaration {
 	 * @param string $recipient
 	 * @param string $name
 	 */
-	private function check_notifications($campaign, $recipient, $name) {
+	private function check_notifications($campaign, $WDGOrganization, $WDGUserProjectManager) {
 		// **************
 		// NOTIFICATION 1
 		// Doit-on envoyer une notification au PP pour dire que la prochaine déclaration est la dernière ?
@@ -844,7 +846,7 @@ class WDGROIDeclaration {
 			$amount_transferred_str = UIHelpers::format_number( $amount_transferred );
 			$amount_minimum_royalties_str = UIHelpers::format_number( $amount_minimum_royalties );
 			$amount_remaining_str = UIHelpers::format_number( $amount_remaining );
-			NotificationsAPI::declaration_to_be_extended( $recipient, $name, $amount_transferred_str, $amount_minimum_royalties_str, $amount_remaining_str );
+			NotificationsAPI::declaration_to_be_extended( $WDGOrganization, $WDGUserProjectManager, $campaign, $amount_transferred_str, $amount_minimum_royalties_str, $amount_remaining_str );
 		}
 
 		// **************
@@ -1464,16 +1466,15 @@ class WDGROIDeclaration {
 
 		return $buffer;
 	}
-	
+
 	private $is_payable = FALSE;
-	public function set_is_payable ( $value ) {
+	public function set_is_payable($value) {
 		$this->is_payable = $value;
 	}
 
 	public function is_payable() {
 		return $this->is_payable;
 	}
-
 
 	/**
 	 * Retourne une dÃ©claration ROI par son token de paiement

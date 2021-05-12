@@ -125,4 +125,151 @@ class WDGAjaxActionsAccountSignin
 
 		exit( json_encode( $result ) );
 	}
+
+	/**
+	 * Envoie un mail de réinitialisation de mot de passe
+	 */
+	public static function account_signin_send_reinit_pass() {
+        $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
+		$page_forgot_password = WDG_Redirect_Engine::override_get_page_url( 'mot-de-passe-oublie' );
+		$result[ 'status' ] = '';
+		global $wpdb;
+		if ( empty( $input_email ) ) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'empty';
+		} else {
+			$user = get_user_by( 'email', trim( $input_email ) );
+			if ( empty( $user ) ){
+				// normalement on n'arrive pas ici
+				$result[ 'status' ] = 'not-existing-account';
+			}
+		} 
+	
+		do_action('lostpassword_post');
+        if (!$user) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'not-existing-account';
+        } else {
+            $user_login = $user->user_login;
+            $user_email = $user->user_email;
+            $facebook_meta = $user->get('social_connect_facebook_id');
+            if (!isset($facebook_meta) || $facebook_meta == "") {
+                $user_login = $user->user_login;
+                $key = $wpdb->get_var($wpdb->prepare("SELECT user_activation_key FROM $wpdb->users WHERE user_login = %s", $user_login));
+                if (empty($key)) {
+                    $key = wp_generate_password(20, false);
+                    do_action('retrieve_password_key', $user_login, $key);
+                    $wpdb->update($wpdb->users, array('user_activation_key' => $key), array('user_login' => $user_login));
+                }
+                $link = $page_forgot_password . "?action=rp&key=$key&login=" . rawurlencode($user_login);
+				$WDGUser = new WDGUser( $user->ID );
+				$mail_sent = NotificationsAPI::password_reinit($WDGUser, $link);
+                if ( $mail_sent === FALSE ) {
+					$result[ 'status' ] = 'email-not-sent';
+                } else {
+					$result[ 'status' ] = 'email-sent';
+				}
+            } else {
+				$result[ 'status' ] = 'facebook-account';
+           }
+        }
+
+		ypcf_debug_log( 'send_reinit_pass >> ' . print_r($result, true), false );
+		exit( json_encode( $result ) );
+    }
+
+	
+	/**
+	 * Envoie un mail de validation de compte
+	 */
+	public static function account_signin_send_validation_email() {
+        $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
+        $is_new_account = filter_input(INPUT_POST, 'is-new-account');
+
+		$page_validation_email = WDG_Redirect_Engine::override_get_page_url( 'validation-email' );
+		$result[ 'status' ] = '';
+		if ( empty( $input_email ) ) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'empty';
+		} else {
+			$user = get_user_by( 'email', trim( $input_email ) );
+			if ( empty( $user ) ){
+				// normalement on n'arrive pas ici
+				$result[ 'status' ] = 'not-existing-account';
+			}
+		} 
+	
+        if (!$user) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'not-existing-account';
+        } else {
+            $user_login = $user->user_login;
+			$redirect_page = 'test';
+			$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
+
+			$WDGUser = new WDGUser( $user->ID );			
+			if ($is_new_account === 'false') {
+				$mail_sent = NotificationsAPI::validation_email($WDGUser, $link);
+			} else{
+				$mail_sent = NotificationsAPI::activation_email($WDGUser, $link);
+			}
+			
+			if ( $mail_sent === FALSE ) {
+				$result[ 'status' ] = 'email-not-sent';
+			} else {
+				$result[ 'status' ] = 'email-sent';
+			}
+        }
+
+		exit( json_encode( $result ) );
+    }
+
+	/**
+	 * Change l'adresse mail d'un compte existant
+	 */
+	public static function account_signin_change_account_email() {
+        $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
+        $input_new_email = sanitize_text_field( filter_input(INPUT_POST, 'new-email-address'));
+
+		$result[ 'status' ] = '';
+		if ( empty( $input_email ) || empty( $input_new_email ) ) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'empty';
+		} else {
+			$user = get_user_by( 'email', trim( $input_email ) );
+			if ( empty( $user ) ){
+				// normalement on n'arrive pas ici
+				$result[ 'status' ] = 'not-existing-account';
+			}
+		} 
+	
+        if (!$user) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'not-existing-account';
+        } else {
+			if ( !is_email( $input_new_email ) || !WDGRESTAPI_Lib_Validator::is_email( $input_new_email )  ) {
+				// Normalement, on ne passe pas ici
+				$result[ 'status' ] = 'email-adress-not-ok';
+			} else {
+				$WDGUser = new WDGUser( $user->ID, FALSE );
+				$WDGUser->save_data( $input_new_email, $WDGUser->get_gender(), $WDGUser->get_firstname(), $WDGUser->get_lastname(), $WDGUser->get_use_lastname(), $WDGUser->get_birthday_day(), $WDGUser->get_birthday_month(), $WDGUser->get_birthday_year(), $WDGUser->get_birthplace(), $WDGUser->get_birthplace_district(), $WDGUser->get_birthplace_department(), $WDGUser->get_birthplace_country(), $WDGUser->get_nationality(), $WDGUser->get_address_number(), $WDGUser->get_address_number_complement(), $WDGUser->get_address(), $WDGUser->get_postal_code(), $WDGUser->get_city(), $WDGUser->get_country(), $WDGUser->get_tax_country(), $WDGUser->get_phone_number(), $WDGUser->get_contact_if_deceased(), $WDGUser->get_language() );
+
+				// on envoie alors un mail de validation à cette nouvelle adresse mail		
+				$page_validation_email = WDG_Redirect_Engine::override_get_page_url( 'validation-email' );	
+				$user_login = $user->user_login;	
+				$redirect_page = 'test';
+				$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
+				$mail_sent = NotificationsAPI::validation_email($WDGUser, $link);
+
+				if ( $mail_sent === FALSE ) {
+					$result[ 'status' ] = 'email-not-sent';
+				} else {
+					$result[ 'status' ] = 'email-changed';
+				}
+			}
+        }
+
+		exit( json_encode( $result ) );
+	}
+	
 }

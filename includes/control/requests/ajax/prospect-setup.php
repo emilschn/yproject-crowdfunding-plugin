@@ -169,7 +169,7 @@ class WDGAjaxActionsProspectSetup {
 					$project_list .= '<li><a href="' .WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ). '?guid=' .$project_draft_item->guid. '">' .$project_name. '</a></li>';
 				}
 				$project_list .= '</ul>';
-				if ( NotificationsAPI::prospect_setup_draft_list( $email, $recipient_name, $project_list ) ) {
+				if ( NotificationsAPI::prospect_setup_draft_list( $project_draft_item, $project_list ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}
@@ -203,11 +203,7 @@ class WDGAjaxActionsProspectSetup {
 
 			if ( empty( $return[ 'error_str' ] ) ) {
 				$metadata_decoded = json_decode( $api_result->metadata );
-				$email = $api_result->email;
-				$recipient_name = $metadata_decoded->user->name;
-				$organization_name = $metadata_decoded->organization->name;
-				$draft_url = WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ) . '?guid=' . $api_result->guid;
-				if ( NotificationsAPI::prospect_setup_draft_started( $email, $recipient_name, $organization_name, $draft_url ) ) {
+				if ( NotificationsAPI::prospect_setup_draft_started( $api_result ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}
@@ -240,35 +236,7 @@ class WDGAjaxActionsProspectSetup {
 			}
 
 			if ( empty( $return[ 'error_str' ] ) ) {
-				$metadata_decoded = json_decode( $api_result->metadata );
-				$email = $api_result->email;
-				$recipient_name = $metadata_decoded->user->name;
-				$draft_url = WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ) . '?guid=' . $api_result->guid;
-				$organization_name = $metadata_decoded->organization->name;
-				$amount_needed = $metadata_decoded->project->amountNeeded * 1000;
-				$royalties_percent = $metadata_decoded->project->royaltiesAmount;
-				$formula = '';
-				switch ( $metadata_decoded->project->circlesToCommunicate ) {
-					case 'lovemoney':
-						$formula = 'Formule Love Money';
-						break;
-					case 'private':
-						$formula = 'Formule Réseau privé';
-						break;
-					case 'public':
-						$formula = 'Formule Crowdfunding';
-						break;
-				}
-				$options = '';
-				if ( $metadata_decoded->project->needCommunicationAdvice ) {
-					$options = 'Accompagnement Intégral';
-				} elseif ( $metadata_decoded->project->circlesToCommunicate != 'lovemoney' && !$metadata_decoded->project->alreadydonecrowdfunding ) {
-					$options = 'Accompagnement Intégral';
-				} else {
-					$options = 'Accompagnement Essentiel';
-				}
-
-				if ( NotificationsAPI::prospect_setup_draft_finished( $email, $recipient_name, $draft_url, $organization_name, $amount_needed, $royalties_percent, $formula, $options ) ) {
+				if ( NotificationsAPI::prospect_setup_draft_finished( $api_result ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}
@@ -352,11 +320,7 @@ class WDGAjaxActionsProspectSetup {
 			}
 
 			if ( empty( $return[ 'error_str' ] ) ) {
-				$email = $api_result->email;
-				$recipient_name = $metadata_decoded->user->name;
-				$iban = WDG_IBAN;
-				$subscription_reference = $metadata_decoded->organization->name;
-				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $email, $recipient_name, $amount, $iban, $subscription_reference ) ) {
+				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $api_result ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}
@@ -388,11 +352,9 @@ class WDGAjaxActionsProspectSetup {
 
 			if ( empty( $return[ 'error_str' ] ) ) {
 				$metadata_decoded = json_decode( $api_result->metadata );
-				$email = $api_result->email;
-				$recipient_name = $metadata_decoded->user->name;
 				date_default_timezone_set("Europe/Paris");
 				$today_datetime = new DateTime();
-				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $email, $recipient_name, $amount, $today_datetime->format( 'd/m/Y H:i' ), $metadata_decoded->organization->name ) ) {
+				if ( NotificationsAPI::prospect_setup_payment_method_received_wire( $api_result ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 

@@ -93,7 +93,7 @@ class WDGFormProjects {
 			}
 			$content_without_links = implode( 'href="', $content_exploded_by_href );
 
-			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $_POST[ 'posttitle' ], $content_without_links );
+			NotificationsAPI::new_project_news( $recipients_string, $replyto_mail, $campaign, $_POST[ 'posttitle' ], $content_without_links );
 		}
 	}
 

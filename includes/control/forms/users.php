@@ -97,7 +97,10 @@ class WDGFormUsers
 						$user_id = wp_insert_user( $userdata );
 
 						if ( $user_id && is_integer( $user_id ) ) {
-							NotificationsAPI::user_registration( $user_email, $user_first_name );
+							ypcf_session_start();
+							$_SESSION['send_creation_event'] = 1;
+							$WDGUser = new WDGUser($user_id);
+							NotificationsAPI::user_registration( $WDGUser );
 							WDGQueue::add_notification_registered_without_investment( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );
 						} else {
@@ -252,6 +255,7 @@ class WDGFormUsers
 
 		// Si on arrive ici, c'est un compte de personne physique
 		$WDGUser = new WDGUser( $user_by_email->ID );
+		$WDGUser->construct_with_api_data();
 		$result[ 'firstname' ] = $WDGUser->get_firstname();
 		$result[ 'lastname' ] = $WDGUser->get_lastname();
 		$result[ 'url_redirect' ] = $WDGUser->is_email_validated() ? wp_unslash( WDGUser::get_login_redirect_page() ) : 'email-validation';
@@ -424,11 +428,14 @@ class WDGFormUsers
 				if ( is_wp_error( $wp_user_id ) ) {
 					$signup_errors->add( 'user_insert', __( 'signup.ERROR_USER_CREATION', 'yproject' ) );
 				} else {
+					ypcf_session_start();
+					$_SESSION['send_creation_event'] = 1;
 					global $wpdb, $edd_options;
 					$signup_step = 'completed-confirmation';
 					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 					update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
-					NotificationsAPI::user_registration( $user_email, $user_firstname );
+					$WDGUser = new WDGUser($wp_user_id);
+					NotificationsAPI::user_registration( $WDGUser );
 					WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 					if (isset($_POST['redirect-home'])) {

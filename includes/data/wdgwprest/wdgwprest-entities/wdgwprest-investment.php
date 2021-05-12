@@ -1,34 +1,34 @@
 <?php
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) { exit; }
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Gestion des investissements côté WDGWPREST
  */
 class WDGWPREST_Entity_Investment {
-	
 	/**
 	 * Retourne un investissement à partir d'un id
 	 * @param string $id
 	 * @return object
 	 */
-	public static function get( $id ) {
+	public static function get($id) {
 		return WDGWPRESTLib::call_get_external( 'investment/' . $id );
 	}
-	
+
 	/**
 	 * Crée une ligne de donnée sur l'API
 	 * @param ATCF_Campaign $campaign
 	 * @param object $edd_payment_item
 	 */
-	public static function set_post_parameters( $campaign, $edd_payment_item ) {
-		$user_info = edd_get_payment_meta_user_info( $edd_payment_item->ID );
+	public static function set_post_parameters($campaign, $edd_payment_item, $user_wpref) {
 		$payment_date = $edd_payment_item->post_date;
 		if ( empty( $payment_date ) ) {
 			$date_now = new DateTime();
 			$payment_date = $date_now->format( 'Y-m-d H:i:s' );
 		}
-		
+
 		$WDGUser = FALSE;
 		$WDGOrganization = FALSE;
 		$info_user_api_id = FALSE;
@@ -47,20 +47,19 @@ class WDGWPREST_Entity_Investment {
 		$info_city = '';
 		$info_country = '';
 		$info_phone = '';
-		if ( !empty( $user_info['id'] ) ) {
-			if ( WDGOrganization::is_user_organization( $user_info['id'] ) ) {
-				$WDGOrganization = new WDGOrganization( $user_info['id'] );
+		if ( !empty( $user_wpref ) ) {
+			if ( WDGOrganization::is_user_organization( $user_wpref ) ) {
+				$WDGOrganization = new WDGOrganization( $user_wpref );
 				$info_user_api_id = $WDGOrganization->get_api_id();
 				$info_email = $WDGOrganization->get_email();
 				$linked_users = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 				$WDGUser = $linked_users[ 0 ];
-				
 			} else {
-				$WDGUser = new WDGUser( $user_info['id'] );
+				$WDGUser = new WDGUser( $user_wpref );
 				$info_user_api_id = $WDGUser->get_api_id();
 				$info_email = $WDGUser->get_email();
 			}
-			if( isset( $WDGUser)) {
+			if ( isset( $WDGUser)) {
 				$info_gender = $WDGUser->get_gender();
 				$info_firstname = $WDGUser->get_firstname();
 				$info_lastname = $WDGUser->get_lastname();
@@ -80,45 +79,50 @@ class WDGWPREST_Entity_Investment {
 				$info_country = $WDGUser->get_country( 'iso2' );
 				$info_phone = $WDGUser->get_phone_number();
 			}
-			
 		} else {
 			return FALSE;
 		}
-		
+
 		$amount = edd_get_payment_amount( $edd_payment_item->ID );
 		$amount_with_royalties_in_cents = 0;
 		$WDGInvestment = new WDGInvestment( $edd_payment_item->ID );
 		$payment_status = $WDGInvestment->get_saved_status();
 		$contract_status = get_post_meta( $edd_payment_item->ID, WDGInvestment::$contract_status_meta, TRUE );
-		
+
 		$payment_key = edd_get_payment_key( $edd_payment_item->ID );
 		$mean_of_payment = 'card';
 		if ( strpos( $payment_key, 'wire_' ) !== FALSE) {
 			$mean_of_payment = 'wire';
-		} else if ( strpos( $payment_key, '_wallet_' ) !== FALSE) {
-			$payment_key_exploded = explode( '_wallet_', $payment_key );
-			$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key_exploded[ 1 ], 'payment' );
-			$amount_with_royalties_in_cents = $lw_transaction_result->DEB * 100;
-			$mean_of_payment = 'card_wallet';
-		} else if ( strpos( $payment_key, 'wallet_' ) !== FALSE) {
-			$amount_with_royalties_in_cents = $amount * 100;
-			$mean_of_payment = 'wallet';
-		} else if ( $payment_key == 'check' ) {
-			$mean_of_payment = 'check';
+		} else {
+			if ( strpos( $payment_key, '_wallet_' ) !== FALSE) {
+				$payment_key_exploded = explode( '_wallet_', $payment_key );
+				$lw_transaction_result = LemonwayLib::get_transaction_by_id( $payment_key_exploded[ 1 ], 'payment' );
+				$amount_with_royalties_in_cents = $lw_transaction_result->DEB * 100;
+				$mean_of_payment = 'card_wallet';
+			} else {
+				if ( strpos( $payment_key, 'wallet_' ) !== FALSE) {
+					$amount_with_royalties_in_cents = $amount * 100;
+					$mean_of_payment = 'wallet';
+				} else {
+					if ( $payment_key == 'check' ) {
+						$mean_of_payment = 'check';
+					}
+				}
+			}
 		}
 		$payment_provider = $campaign->get_payment_provider();
-		
+
 		$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
 		$signature_status = $WDGInvestmentSignature->get_status();
 		$signature_id = $WDGInvestmentSignature->get_external_id();
-		
+
 		$parameters = array(
 			'wpref'				=> $edd_payment_item->ID,
 			'redirect_url_ok'	=> 'https://www.wedogood.co',
 			'redirect_url_nok'	=> 'https://www.wedogood.co',
 			'notification_url'	=> 'https://www.wedogood.co',
 			'user_id'			=> $info_user_api_id,
-			'user_wpref'		=> $user_info['id'],
+			'user_wpref'		=> $user_wpref,
 			'email'				=> $info_email,
 			'gender'			=> $info_gender,
 			'firstname'			=> $info_firstname,
@@ -164,25 +168,26 @@ class WDGWPREST_Entity_Investment {
 			$parameters[ 'legal_entity_city' ] = $WDGOrganization->get_city();
 			$parameters[ 'legal_entity_nationality' ] = $WDGOrganization->get_nationality();
 		}
+
 		return $parameters;
 	}
-	
+
 	/**
 	 * Crée une ligne de donnée sur l'API
 	 * @param ATCF_Campaign $campaign
 	 * @param object $edd_payment_item
 	 */
-	public static function create_or_update( $campaign, $edd_payment_item ) {
+	public static function create_or_update($campaign, $edd_payment_item, $user_wpref) {
 		$buffer = FALSE;
-		
-		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item );
+
+		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item, $user_wpref );
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
 			if ( $buffer === FALSE ) {
 				NotificationsAsana::investment_to_api_error_admin( $edd_payment_item );
 			}
 		}
-		
+
 		return $buffer;
 	}
 }
