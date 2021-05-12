@@ -129,7 +129,7 @@ class WDGAjaxActionsAccountSignin
 	/**
 	 * Envoie un mail de réinitialisation de mot de passe
 	 */
-	public static function send_reinit_pass() {
+	public static function account_signin_send_reinit_pass() {
         $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
 		$page_forgot_password = WDG_Redirect_Engine::override_get_page_url( 'mot-de-passe-oublie' );
 		$result[ 'status' ] = '';
@@ -182,7 +182,7 @@ class WDGAjaxActionsAccountSignin
 	/**
 	 * Envoie un mail de validation de compte
 	 */
-	public static function send_validation_email() {
+	public static function account_signin_send_validation_email() {
         $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
         $is_new_account = filter_input(INPUT_POST, 'is-new-account');
 
@@ -204,7 +204,6 @@ class WDGAjaxActionsAccountSignin
 			$result[ 'status' ] = 'not-existing-account';
         } else {
             $user_login = $user->user_login;
-			$user_login = $user->user_login;
 			$redirect_page = 'test';
 			$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
 
@@ -224,5 +223,53 @@ class WDGAjaxActionsAccountSignin
 
 		exit( json_encode( $result ) );
     }
+
+	/**
+	 * Change l'adresse mail d'un compte existant
+	 */
+	public static function account_signin_change_account_email() {
+        $input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
+        $input_new_email = sanitize_text_field( filter_input(INPUT_POST, 'new-email-address'));
+
+		$result[ 'status' ] = '';
+		if ( empty( $input_email ) || empty( $input_new_email ) ) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'empty';
+		} else {
+			$user = get_user_by( 'email', trim( $input_email ) );
+			if ( empty( $user ) ){
+				// normalement on n'arrive pas ici
+				$result[ 'status' ] = 'not-existing-account';
+			}
+		} 
+	
+        if (!$user) {
+			// Normalement, on ne passe pas ici
+			$result[ 'status' ] = 'not-existing-account';
+        } else {
+			if ( !is_email( $input_new_email ) || !WDGRESTAPI_Lib_Validator::is_email( $input_new_email )  ) {
+				// Normalement, on ne passe pas ici
+				$result[ 'status' ] = 'email-adress-not-ok';
+			} else {
+				$WDGUser = new WDGUser( $user->ID, FALSE );
+				$WDGUser->save_data( $input_new_email, $WDGUser->get_gender(), $WDGUser->get_firstname(), $WDGUser->get_lastname(), $WDGUser->get_use_lastname(), $WDGUser->get_birthday_day(), $WDGUser->get_birthday_month(), $WDGUser->get_birthday_year(), $WDGUser->get_birthplace(), $WDGUser->get_birthplace_district(), $WDGUser->get_birthplace_department(), $WDGUser->get_birthplace_country(), $WDGUser->get_nationality(), $WDGUser->get_address_number(), $WDGUser->get_address_number_complement(), $WDGUser->get_address(), $WDGUser->get_postal_code(), $WDGUser->get_city(), $WDGUser->get_country(), $WDGUser->get_tax_country(), $WDGUser->get_phone_number(), $WDGUser->get_contact_if_deceased(), $WDGUser->get_language() );
+
+				// on envoie alors un mail de validation à cette nouvelle adresse mail		
+				$page_validation_email = WDG_Redirect_Engine::override_get_page_url( 'validation-email' );	
+				$user_login = $user->user_login;	
+				$redirect_page = 'test';
+				$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
+				$mail_sent = NotificationsAPI::validation_email($WDGUser, $link);
+
+				if ( $mail_sent === FALSE ) {
+					$result[ 'status' ] = 'email-not-sent';
+				} else {
+					$result[ 'status' ] = 'email-changed';
+				}
+			}
+        }
+
+		exit( json_encode( $result ) );
+	}
 	
 }
