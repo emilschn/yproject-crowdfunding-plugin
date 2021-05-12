@@ -3,8 +3,7 @@
  * Classe de gestion des appels Ajax
  * TODO : centraliser ici
  */
-class WDGAjaxActions
-{
+class WDGAjaxActions {
 	private static $class_name = 'WDGAjaxActions';
 	private static $class_name_user_login = 'WDGAjaxActionsUserLogin';
 	private static $class_name_user_account = 'WDGAjaxActionsUserAccount';
@@ -157,7 +156,7 @@ class WDGAjaxActions
 			}
 			// Sauvegarde des restants
 			$projects_searchable_encoded = json_encode( $list_to_cache );
-			$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h			
+			$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h
 		}
 		$buffer = array('home_url' => esc_url( home_url( '/' ) ) , 'projects' => $projects_searchable);
 		$buffer_json = json_encode( $buffer );
@@ -310,7 +309,10 @@ class WDGAjaxActions
 	public static function account_signin_actions() {
 		$crowdfunding = ATCF_CrowdFunding::instance();
 		$crowdfunding->include_control( 'requests/ajax/account-signin' );
+		$crowdfunding->include_control( 'amplitude/api-calls' );
 		$action = filter_input( INPUT_POST, 'action' );
+		$sessionUID = filter_input( INPUT_POST, 'sessionUID' );
+		WDGAmplitude::logEvent( $action, $sessionUID );
 		call_user_func( self::$class_name_account_signin . '::' . $action );
 	}
 }
