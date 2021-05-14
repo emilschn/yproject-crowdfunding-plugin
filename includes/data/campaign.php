@@ -1711,9 +1711,18 @@ class ATCF_Campaign {
 			// Si il faut ajouter des déclarations
 			if ( !empty( $declarations_limit ) ) {
 				while ( $count_added_declaration < $declarations_limit ) {
-					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
+					// On ne l'ajoute que si elle n'existe pas déjà
+					$add_date = TRUE;
+					foreach ( $existing_roi_declarations as $declaration_object ) {
+						if ( $current_date->format( 'Y-m-d' ) == $declaration_object[ 'date_due' ] ) {
+							$add_date = FALSE;
+						}
+					}
+					if ( $add_date ) {
+						WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
+						$count_added_declaration++;
+					}
 					$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
-					$count_added_declaration++;
 				}
 			}
 		}
