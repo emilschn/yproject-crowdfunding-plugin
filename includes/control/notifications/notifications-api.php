@@ -502,20 +502,13 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'validation-email' => array(
-			'fr-sib-id'		=> 'validation-email',
-			'description'	=> "Validez votre compte WE DO GOOD !",
-			'variables'		=> "",
-			'wdg-mail'		=> ""
-		),
-		'activation-email' => array(
-			'fr-sib-id'		=> 'activation-email',
-			'description'	=> "Activez votre compte WE DO GOOD !",
+		'user-account-email-validation' => array(
+			'fr-sib-id'		=> 'user-account-email-validation',
+			'description'	=> "Activation de l'e-mail du compte",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		)
 	);
-
 
 	/**
 	 * Méthode générique d'envoi de mail via l'API
@@ -605,7 +598,7 @@ class NotificationsAPI {
 		} else {
 			$result_decoded = json_decode( $result->result );
 			// on traite les result avec codes d'erreur exemple :     [result] => [401] Client error: `POST https://api.sendinblue.com/v3/smtp/email` resulted in a `401 Unauthorized` response: {"message":"Key not found","code":"unauthorized"}
-			if ( $result_decoded->code != 'success' ){
+			if ( $result_decoded->code != 'success' ) {
 				NotificationsAsana::notification_api_failed( $parameters, $result );
 			}
 		}
@@ -924,36 +917,13 @@ class NotificationsAPI {
 
 		return self::send( $parameters );
 	}
-	
+
 	//*******************************************************
 	// Validation de l'adresse mail
 	//*******************************************************
-	public static function validation_email($WDGUser, $link) {
-		$id_template = self::get_id_fr_by_slug( 'validation-email' );
-
-		NotificationsAPIShortcodes::set_recipient($WDGUser);
-		NotificationsAPIShortcodes::set_validation_email_link($link);
-
-		$options = array(
-			'skip_admin'		=> 1,
-			'NOM'				=> $WDGUser->get_firstname(),
-			'LIEN'				=> $link
-		);
-		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
-		);
-
-		return self::send( $parameters );
-	}
-	//*******************************************************
-	// Activation de l'adresse mail
-	//*******************************************************
-	public static function activation_email($WDGUser, $link) {
-		$id_template = self::get_id_fr_by_slug( 'activation-email' );
-
+	public static function user_account_email_validation($WDGUser, $link, $is_new_account) {
+		$id_template = self::get_id_fr_by_slug( 'user-account-email-validation' );
+		// $is_new_account === 'false'
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		NotificationsAPIShortcodes::set_validation_email_link($link);
 
