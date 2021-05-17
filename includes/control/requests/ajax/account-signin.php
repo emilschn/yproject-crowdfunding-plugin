@@ -206,7 +206,7 @@ class WDGAjaxActionsAccountSignin {
 			$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
 
 			$WDGUser = new WDGUser( $user->ID );
-			$mail_sent = NotificationsAPI::user_account_email_validation($WDGUser, $link, $is_new_account);
+			$mail_sent = NotificationsAPI::user_account_email_validation($WDGUser, $link, ( $is_new_account !== 'false') );
 
 			if ( $mail_sent === FALSE ) {
 				$result[ 'status' ] = 'email-not-sent';

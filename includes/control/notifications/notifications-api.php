@@ -923,7 +923,18 @@ class NotificationsAPI {
 	//*******************************************************
 	public static function user_account_email_validation($WDGUser, $link, $is_new_account) {
 		$id_template = self::get_id_fr_by_slug( 'user-account-email-validation' );
-		// $is_new_account === 'false'
+		ypcf_debug_log('user_account_email_validation !', false);
+
+		$activation_mail_intro = '';
+		if ( $is_new_account ) {
+			$activation_mail_intro = WDGConfigTexts::get_config_text_by_name( 'account-activation-email-intro-new' );
+			ypcf_debug_log('user_account_email_validation > new', false);
+		} else {
+			$activation_mail_intro = WDGConfigTexts::get_config_text_by_name( 'account-activation-email-intro-old' );
+			ypcf_debug_log('user_account_email_validation > old', false);
+		}
+		NotificationsAPIShortcodes::set_account_activation_email_intro( $activation_mail_intro );
+
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		NotificationsAPIShortcodes::set_validation_email_link($link);
 
