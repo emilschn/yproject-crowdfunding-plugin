@@ -26,6 +26,7 @@ class NotificationsAPICSS {
 
 	hr {
 		color: #c2c2c2;
+		margin: 25px 0px;
 	}
 
 	.wp-block-button, .tb-button {
