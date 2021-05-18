@@ -881,7 +881,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
