@@ -572,6 +572,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::instance();
 		add_filter( 'wdg_email_content_filter', 'do_shortcode' );
 		$object = apply_filters( 'wdg_email_content_filter', $object );
+		$tags = array( '<p>', '</p>' );
+		$object = str_replace( $tags, '', $object );
 		add_filter( 'wdg_email_content_filter', 'wptexturize' );
 		add_filter( 'wdg_email_content_filter', 'wpautop' );
 		add_filter( 'wdg_email_content_filter', 'shortcode_unautop' );
