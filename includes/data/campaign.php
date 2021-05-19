@@ -1673,25 +1673,40 @@ class ATCF_Campaign {
 		update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
 
-	public function generate_missing_declarations($month_count = 3, $declarations_limit = FALSE) {
+	/**
+	 * $nb_month_between_declarations : nombre de mois entre 2 déclarations
+	 * $declarations_limit : permet de définir un nombre maximal de déclarations à ajouter
+	 * -> FALSE par défaut : ne prend pas en compte ce paramètre (et utilise le nombre de déclarations initialement prévu)
+	 * -> x (entier) permet de définir une limite
+	 */
+	public function generate_missing_declarations($nb_months_between_declarations = 3, $nb_declarations_limit = FALSE) {
 		// Calcul du nombre de déclarations que devra faire le projet
-		$nb_in_a_year = 12 / $month_count;
+		$nb_declarations_in_a_year = 12 / $nb_months_between_declarations;
 		$funding_duration = $this->funding_duration();
 		if ( $funding_duration == 0 ) {
 			$funding_duration = 1;
 		}
-		$nb_declarations = $funding_duration * $nb_in_a_year;
+		// Le nombre de déclarations initialement prévues pour le projet
+		$nb_declarations_initial = $funding_duration * $nb_declarations_in_a_year;
 
-		// Permet de rajouter des déclarations si nécessaires
+		// Permet de ne rajouter des déclarations si nécessaires
 		$count_added_declaration = 0;
 
-		if ( ( isset( $nb_declarations ) && $nb_declarations > 0 ) || !empty( $declarations_limit ) ) {
-			// Récupération des déclarations existantes
-			$existing_roi_declarations = $this->get_roi_declarations();
+		// Récupération des déclarations existantes
+		$existing_roi_declarations = $this->get_roi_declarations();
+
+		// Si on n'a pas défini de limite et qu'il n'y a pas encore le nombre de déclarations initialement prévues
+		if ( empty( $nb_declarations_limit ) && ( count( $existing_roi_declarations ) < $nb_declarations_initial ) ) {
+			$nb_declarations_limit = $nb_declarations_initial - count( $existing_roi_declarations );
+		}
+
+		// Si il y a bien des déclarations à ajouter
+		if ( !empty( $nb_declarations_limit ) && $nb_declarations_limit > 0 ) {
 			// On part de la date de début de versement
 			$current_date = new DateTime( $this->first_payment_date() );
-			for ( $i = 0; $i < $nb_declarations; $i++ ) {
-				// On ne l'ajoute que si elle n'existe pas déjà
+
+			while ( $count_added_declaration < $nb_declarations_limit ) {
+				// On ne l'ajoute que si elle n'existe pas encore
 				$add_date = TRUE;
 				foreach ( $existing_roi_declarations as $declaration_object ) {
 					if ( $current_date->format( 'Y-m-d' ) == $declaration_object[ 'date_due' ] ) {
@@ -1702,19 +1717,7 @@ class ATCF_Campaign {
 					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
 					$count_added_declaration++;
 				}
-				if ( !empty( $declarations_limit ) && $count_added_declaration >= $declarations_limit ) {
-					break;
-				}
-				$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
-			}
-
-			// Si il faut ajouter des déclarations
-			if ( !empty( $declarations_limit ) ) {
-				while ( $count_added_declaration < $declarations_limit ) {
-					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
-					$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
-					$count_added_declaration++;
-				}
+				$current_date->add( new DateInterval( 'P'.$nb_months_between_declarations.'M' ) );
 			}
 		}
 	}
