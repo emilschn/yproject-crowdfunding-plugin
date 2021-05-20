@@ -53,6 +53,7 @@ class NotificationsAPIShortcodes {
 		'investment_description_text_before',
 		'investment_description_text_after',
 		'investment_royalties_received',
+		'investment_royalties_remaining',
 
 		'investment_error_reason',
 		'investment_error_link',
