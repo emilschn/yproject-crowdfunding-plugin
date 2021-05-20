@@ -79,7 +79,7 @@ class WDGCronActions {
 								$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
 								$recipients .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
-								NotificationsAPI::declaration_to_do( $recipients, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+								NotificationsAPI::declaration_to_do( $wdguser_author, $recipients, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
 							}
 						}
 					}

@@ -2268,7 +2268,7 @@ class NotificationsAPI {
 	 * @param boolean $has_mandate
 	 * @return boolean
 	 */
-	public static function declaration_to_do($recipients, $nb_remaining_days, $has_mandate, $options) {
+	public static function declaration_to_do($WDGUser, $recipients, $nb_remaining_days, $has_mandate, $options) {
 		$param_template_by_remaining_days = array(
 			'9-mandate'		=> self::get_id_fr_by_slug( 'declaration-9days-with-mandate' ),
 			'9-nomandate'	=> self::get_id_fr_by_slug( 'declaration-9days-without-mandate' ),
@@ -2285,6 +2285,7 @@ class NotificationsAPI {
 		}
 		$param_template = isset( $param_template_by_remaining_days[ $index ] ) ? $param_template_by_remaining_days[ $index ] : FALSE;
 		if ( !empty( $param_template ) ) {
+			NotificationsAPIShortcodes::set_recipient($WDGUser);
 			$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
 			$parameters = array(
 				'tool'		=> 'sendinblue',
