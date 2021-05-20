@@ -2236,6 +2236,7 @@ class WDGAjaxActionsProjectDashboard {
 			// Etat du paiement
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
+			$post_invest_status_span_class = $post_invest_status;
 			if ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
@@ -2253,8 +2254,9 @@ class WDGAjaxActionsProjectDashboard {
 						}
 					} else {
 						if ( $contract_status == WDGInvestment::$contract_status_not_validated ) {
-							$payment_status = __( "Pas effectu&eacute;", 'yproject' );
+							$payment_status = __( "Paiement échoué", 'yproject' );
 							$payment_status_span_class = 'error';
+							$post_invest_status_span_class = 'failed';
 							if ( $current_wdg_user->is_admin() && empty( $contract_status ) ) {
 								$payment_status .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&try_pending_card='.$item_invest['ID'].'" style="font-size: 10pt;">[Retenter]</a>';
 							}
@@ -2318,7 +2320,7 @@ class WDGAjaxActionsProjectDashboard {
 				}
 			}
 
-			$invest_amount = '<span class="payment-status-' .( $post_invest_status == 'publish' ? 'success' : 'error' ). '">' .$item_invest['amount']. '</span>';
+			$invest_amount = '<span class="payment-status-' . $post_invest_status_span_class . '">' .$item_invest['amount']. '</span>';
 			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
 			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
 				$more_invest = array();
