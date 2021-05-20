@@ -2299,10 +2299,11 @@ class NotificationsAPI {
 		return FALSE;
 	}
 
-	public static function declaration_to_do_warning($recipient, $WDGUser, $declaration, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total) {
+	public static function declaration_to_do_warning($recipient, $WDGUser, $campaign, $declaration, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-mandate-payment-warning' );
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_declaration($declaration);
 		$declaration_estimation = array(
 			'quarter_count'		=> $nb_quarter,

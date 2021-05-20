@@ -149,7 +149,7 @@ class WDGCronActions {
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
 							$amount_total = $amount_royalties + $amount_fees;
 
-							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author, $declaration_data, $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total );
+							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author, $campaign, $declaration_data, $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total );
 						}
 					}
 				}
