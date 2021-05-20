@@ -69,9 +69,9 @@ class NotificationsAPIShortcodes {
 		'declaration_estimation_percent',
 		'declaration_estimation_year_amount',
 		'declaration_estimation_quarter_amount',
-		'declaration_amount_royalties',
-		'declaration_amount_fees',
-		'declaration_amount_total',
+		'declaration_estimation_amount_royalties',
+		'declaration_estimation_amount_fees',
+		'declaration_estimation_amount_total',
 		'declaration_mandate_date',
 
 		'royalties_description',
