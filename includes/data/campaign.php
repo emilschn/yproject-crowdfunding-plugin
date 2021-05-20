@@ -1279,16 +1279,19 @@ class ATCF_Campaign {
 		}
 
 		if ( $this->platform_commission() == '' ) {
+			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $this->platform_commission() empty ');
 			return;
 		}
 		$data_contract_start_date = $this->contract_start_date();
 		if ( !empty( $data_contract_start_date ) ) {
 			$start_datetime = new DateTime( $data_contract_start_date );
 		} else {
+			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $data_contract_start_date  empty ');
 			return;
 		}
 		$fiscal_info = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_info_fiscal, 'accounting_fiscal_info' );
 		if ( empty( $fiscal_info ) ) {
+			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $fiscal_info  empty ');
 			return;
 		}
 
