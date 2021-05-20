@@ -147,7 +147,9 @@ class WDGInvestment {
 			}
 
 			if ( !empty( $payment ) ) {
-				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment );
+				$user_info = edd_get_payment_meta_user_info( $payment->ID );
+				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment, $user_id );
 			}
 
 			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
@@ -1311,8 +1313,10 @@ class WDGInvestment {
 			) );
 
 			if ( $payments ) {
-				foreach ( $payments as $payment ) {
-					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment );
+				foreach ( $payments as $payment ) {					
+					$user_info = edd_get_payment_meta_user_info( $payment->ID );
+					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment, $user_id );
 				}
 			}
 		}

@@ -103,6 +103,7 @@ class WDGCampaignInvestments {
 	 * @return array
 	 */
 	public static function transfer_investments($from_campaign_id, $to_campaign_id) {
+		ypcf_debug_log( 'Campaign-investments::transfer_investments $from_campaign_id = ' . $from_campaign_id . ' $to_campaign_id = ' . $to_campaign_id );	
 		$from_campaign = new ATCF_Campaign( $from_campaign_id );
 		$to_campaign = new ATCF_Campaign( $to_campaign_id );
 		// on récupère la liste des investissements du plus ancien au plus récent
