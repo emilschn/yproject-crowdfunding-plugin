@@ -63,6 +63,8 @@ class NotificationsAPIShortcodes {
 
 		'declaration_url',
 		'declaration_last_three_months',
+		'declaration_due_date',
+		'declaration_due_date_previous_day',
 		'declaration_revenues_amount',
 		'declaration_tax_info',
 		'declaration_quarter_count',
