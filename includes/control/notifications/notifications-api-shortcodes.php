@@ -52,6 +52,7 @@ class NotificationsAPIShortcodes {
 		'investment_date',
 		'investment_description_text_before',
 		'investment_description_text_after',
+		'investment_royalties_received',
 
 		'investment_error_reason',
 		'investment_error_link',
