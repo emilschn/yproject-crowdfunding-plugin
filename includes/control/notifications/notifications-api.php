@@ -1007,7 +1007,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'		=> 1,
-			'PRENOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'PRENOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1029,7 +1029,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'				=> 1,
-			'PRENOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'PRECISIONS'			=> $authentication_info
 		);
 		$parameters = array(
@@ -1098,7 +1098,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1133,7 +1133,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -1158,7 +1158,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -1194,7 +1194,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1232,7 +1232,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1269,7 +1269,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1304,7 +1304,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1338,7 +1338,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1367,7 +1367,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -1392,7 +1392,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -1414,7 +1414,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -1447,7 +1447,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1483,7 +1483,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'URL_PROJET'			=> $project_url,
 			'POURCENT'				=> $campaign->percent_minimum_completed( FALSE ),
@@ -1519,7 +1519,7 @@ class NotificationsAPI {
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'URL_PROJET'			=> $project_url,
 			'POURCENT'				=> $campaign->percent_minimum_completed( FALSE ),
@@ -1552,7 +1552,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
@@ -1586,7 +1586,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1622,7 +1622,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1662,7 +1662,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1701,7 +1701,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1743,7 +1743,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1782,7 +1782,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1816,7 +1816,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -1843,7 +1843,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount
@@ -1879,7 +1879,7 @@ class NotificationsAPI {
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'POURCENT_ATTEINT'		=> $percent_to_reach,
@@ -1916,7 +1916,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'IBAN'					=> $viban_iban,
@@ -1953,7 +1953,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'URL_PROJET'			=> $project_url,
@@ -1991,7 +1991,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'URL_PROJET'			=> $project_url,
 			'DATE'					=> $WDGInvestment->get_saved_date_gmt(),
@@ -2030,7 +2030,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'RAISON_LEMONWAY'		=> $lemonway_reason,
@@ -2058,7 +2058,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'MONTANT'				=> $amount
 		);
 		$parameters = array(
@@ -2082,7 +2082,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -2107,7 +2107,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -2136,7 +2136,7 @@ class NotificationsAPI {
 		$project_date_first_payment_month_str = NotificationsAPIShortcodes::project_date_first_payment( FALSE, FALSE );
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment_month_str
 		);
@@ -2163,7 +2163,7 @@ class NotificationsAPI {
 		$project_date_first_payment_month_str = NotificationsAPIShortcodes::project_date_first_payment( FALSE, FALSE );
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment_month_str
 		);
@@ -2189,7 +2189,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -2214,7 +2214,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
@@ -2242,7 +2242,7 @@ class NotificationsAPI {
 		ypcf_debug_log( 'notifications-api::mandate_to_send_to_bank $WDGUserOrOrganization->get_wpref()  = ' . $WDGUserOrOrganization->get_wpref() );
 		$options = array(
 			'personal'		=> 1,
-			'NOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 		);
 		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
 			$options[ 'url_attachment' ] = $attachment_url;
@@ -2255,7 +2255,7 @@ class NotificationsAPI {
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		// return self::send( $parameters );
 	}
 
 	//*******************************************************
@@ -2468,7 +2468,7 @@ class NotificationsAPI {
 		$amount_remaining = NotificationsAPIShortcodes::investment_royalties_remaining( FALSE, FALSE );
 		$options = array(
 			'personal'					=> 1,
-			'NOM'						=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'						=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'DUREE_FINANCEMENT'			=> $funding_duration,
 			'DATE'						=> $date,
@@ -2520,7 +2520,7 @@ class NotificationsAPI {
 		$amount_royalties = $investment_contract->amount_received;
 		$options = array(
 			'personal'					=> 1,
-			'NOM'						=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'						=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'DATE'						=> $date,
 			'URL_PROJET'				=> $project_url,
@@ -2555,7 +2555,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'RESUME_ROYALTIES'	=> $royalties_message,
 		);
 		$parameters = array(
@@ -2578,7 +2578,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'	=> 1,
-			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2600,7 +2600,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'	=> 1,
-			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2622,7 +2622,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'	=> 1,
-			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2645,7 +2645,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'		=> 1,
-			'PRENOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'INVESTISSEURS'	=> $investors_list_str
 		);
 		$parameters = array(
@@ -2671,7 +2671,7 @@ class NotificationsAPI {
 		$options = array(
 			'personal'			=> 1,
 			'replyto'			=> $replyto_mail,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'CONTENU_MESSAGE'	=> $declaration_message,
 		);
@@ -2705,7 +2705,7 @@ class NotificationsAPI {
 		$amount_royalties_str = UIHelpers::format_number( $amount_royalties );
 		$options = array(
 			'personal'			=> 1,
-			'NOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'RETOUR_MAXIMUM'	=> $max_profit,
 			'DATE'				=> $date_investment,
@@ -2734,7 +2734,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
 			'MONTANT'			=> $amount
 		);
 		$parameters = array(
