@@ -574,10 +574,16 @@ class NotificationsAPI {
 		$object = apply_filters( 'wdg_email_content_filter', $object );
 		$tags = array( '<p>', '</p>' );
 		$object = str_replace( $tags, '', $object );
+
 		add_filter( 'wdg_email_content_filter', 'wptexturize' );
 		add_filter( 'wdg_email_content_filter', 'wpautop' );
 		add_filter( 'wdg_email_content_filter', 'shortcode_unautop' );
 		$content = apply_filters( 'wdg_email_content_filter', $content );
+		// Ajout de règles inline pour les boutons (nécessaires pour les cas spécifiques, par exemple Hubspot)
+		$inline_div_button_container_style = 'text-align: center;';
+		$content = str_replace( '<div class="wp-block-button"', '<div style="' .$inline_div_button_container_style. '" class="wp-block-button"', $content );
+		$inline_button_style = 'display: inline-block; color: white; background: #EA4F51; padding: 20px 38px; font-size: 18px; line-height: 18px; margin: auto; text-transform: uppercase;';
+		$content = str_replace( '<a class="wp-block-button__link', '<a style="' .$inline_button_style. '" class="wp-block-button__link', $content );
 
 		// Gestion CSS
 		$crowdfunding->include_control('notifications/notifications-api-css');
