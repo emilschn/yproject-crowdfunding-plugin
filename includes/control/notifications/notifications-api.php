@@ -2245,7 +2245,6 @@ class NotificationsAPI {
 
 		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
 
-		ypcf_debug_log( 'notifications-api::mandate_to_send_to_bank $WDGUserOrOrganization->get_wpref()  = ' . $WDGUserOrOrganization->get_wpref() );
 		$options = array(
 			'personal'		=> 1,
 			'NOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization->get_wpref() ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
@@ -2261,7 +2260,7 @@ class NotificationsAPI {
 			'options'		=> json_encode( $options )
 		);
 
-		// return self::send( $parameters );
+		return self::send( $parameters );
 	}
 
 	//*******************************************************
