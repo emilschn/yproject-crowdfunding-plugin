@@ -1257,7 +1257,6 @@ class WDGPostActions {
 			//Suppression cache organisation pour récupérer nouvelle version
 			WDGWPRESTLib::unset_cache( 'wdg/v1/organization/' .$WDGOrganization->get_api_id() );
 			$WDGOrganizationUpdated = new WDGOrganization( $organization_id );
-			ypcf_debug_log( 'WDGPostActions::mandate_b2b_admin_update WDGOrganization::is_user_organization( $WDGOrganization )   = ' . var_export(WDGOrganization::is_user_organization( $WDGOrganization ), true)  );
 			NotificationsAPI::mandate_to_send_to_bank( $WDGOrganization, $WDGOrganizationUpdated->get_mandate_file_url(), $campaign->get_api_id() );
 		}
 
