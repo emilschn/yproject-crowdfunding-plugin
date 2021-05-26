@@ -153,7 +153,7 @@ class WDGAjaxActionsProjectDashboard {
 			if ( $template_index == $foreach_index ) {
 				$SIBv3Helper = SIBv3Helper::instance();
 				$template_content = $SIBv3Helper->getTransactionalTemplateInformation( $template_data['fr-sib-id'] );
-				ypcf_debug_log( '$template_content : ' . $template_content );
+				ypcf_debug_log( 'WDGAjaxActions::action_project_dashboard::init_sendinblue_templates $template_content : ' . $template_content );
 				$foreach_index++;
 				break;
 			}
@@ -3281,6 +3281,7 @@ class WDGAjaxActionsProjectDashboard {
 
 			exit('1' );
 		}
+		ypcf_debug_log( 'WDGAjaxActions::action_project_dashboard::campaign_transfer_investments campagne de départ not funded ' );		
 		exit('0' );
 	}
 	/**

@@ -54,6 +54,8 @@ class NotificationsAPIShortcodes {
 		'investment_date',
 		'investment_description_text_before',
 		'investment_description_text_after',
+		'investment_royalties_received',
+		'investment_royalties_remaining',
 
 		'investment_error_reason',
 		'investment_error_link',
@@ -63,15 +65,17 @@ class NotificationsAPIShortcodes {
 
 		'declaration_url',
 		'declaration_last_three_months',
+		'declaration_due_date',
+		'declaration_due_date_previous_day',
 		'declaration_revenues_amount',
 		'declaration_tax_info',
 		'declaration_quarter_count',
 		'declaration_estimation_percent',
 		'declaration_estimation_year_amount',
 		'declaration_estimation_quarter_amount',
-		'declaration_amount_royalties',
-		'declaration_amount_fees',
-		'declaration_amount_total',
+		'declaration_estimation_amount_royalties',
+		'declaration_estimation_amount_fees',
+		'declaration_estimation_amount_total',
 		'declaration_mandate_date',
 
 		'royalties_description',
@@ -468,8 +472,8 @@ class NotificationsAPIShortcodes {
 	 * Destinataire
 	 * Prénom
 	 */
-	public static function recipient_first_name() {
-		return WDGOrganization::is_user_organization( self::$recipient ) ? self::$recipient->get_name() : self::$recipient->get_firstname();
+	public static function recipient_first_name($atts, $content = '') {
+		return WDGOrganization::is_user_organization( self::$recipient->get_wpref() ) ? self::$recipient->get_name() : self::$recipient->get_firstname();
 	}
 
 	/**
