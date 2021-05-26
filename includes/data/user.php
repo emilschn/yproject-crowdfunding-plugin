@@ -2,8 +2,7 @@
 /**
  * Lib de gestion des utilisateurs
  */
-class WDGUser
-{
+class WDGUser {
 	public static $key_validated_general_terms_version = 'validated_general_terms_version';
 	public static $key_lemonway_status = 'lemonway_status';
 	public static $edd_general_terms_version = 'terms_general_version';
@@ -382,14 +381,18 @@ class WDGUser
 	}
 
 	public function is_email_validated() {
-		$buffer = FALSE;
-        if (!empty($this->email_is_validated) && $this->email_is_validated == TRUE ) {
-			$buffer = TRUE;
-        }
-		return $buffer;
+		return ( !empty( $this->email_is_validated ) && $this->email_is_validated === '1' );
 	}
 
-	public function set_email_is_validated($value = '1') {		
+	public function get_email_validation_code() {
+		if ( wp_is_uuid( $this->email_is_validated ) ) {
+			return $this->email_is_validated;
+		}
+
+		return FALSE;
+	}
+
+	public function set_email_is_validated($value = '1') {
 		if ($this->email_is_validated != $value) {
 			$this->email_is_validated = $value;
 			$this->update_api();

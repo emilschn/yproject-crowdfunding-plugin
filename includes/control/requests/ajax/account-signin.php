@@ -201,11 +201,10 @@ class WDGAjaxActionsAccountSignin {
 			// Normalement, on ne passe pas ici
 			$result[ 'status' ] = 'not-existing-account';
 		} else {
-			$user_login = $user->user_login;
-			$redirect_page = 'test';
-			$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
-
 			$WDGUser = new WDGUser( $user->ID );
+			$redirect_page = 'test';
+			$link = $page_validation_email . "?action=validate&redirect-page=".$redirect_page."&validation-code=" . $WDGUser->get_email_validation_code();
+
 			$mail_sent = NotificationsAPI::user_account_email_validation($WDGUser, $link, ( $is_new_account !== 'false') );
 
 			if ( $mail_sent === FALSE ) {
@@ -253,7 +252,7 @@ class WDGAjaxActionsAccountSignin {
 				$user_login = $user->user_login;
 				$redirect_page = 'test';
 				$link = $page_validation_email . "?action=rp&redirect-page=".$redirect_page."&login=" . rawurlencode($user_login);
-				$mail_sent = NotificationsAPI::validation_email($WDGUser, $link);
+				$mail_sent = NotificationsAPI::user_account_email_validation($WDGUser, $link);
 
 				if ( $mail_sent === FALSE ) {
 					$result[ 'status' ] = 'email-not-sent';
