@@ -49,6 +49,12 @@ class WDGUser {
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	/**
+	 * Peut prendre 3 valeurs :
+	 * - vide/NULL si pas défini (vieux comptes)
+	 * - uuid si défini en attente de validation
+	 * - '1' si compte validé
+	 */
 	private $email_is_validated;
 
 	protected static $_current = null;
@@ -385,9 +391,10 @@ class WDGUser {
 	}
 
 	public function get_email_validation_code() {
-		if ( wp_is_uuid( $this->email_is_validated ) ) {
-			return $this->email_is_validated;
-		}
+		ypcf_debug_log('WDGUser::get_email_validation_code > email_is_validated : ' . print_r($this->email_is_validated, true), false);
+		//if ( wp_is_uuid( $this->email_is_validated, 4 ) ) {
+		return $this->email_is_validated;
+		//}
 
 		return FALSE;
 	}
@@ -2455,9 +2462,9 @@ class WDGUser {
 		global $post;
 		$buffer = home_url();
 
-		//Si on est sur la page de connexion ou d'inscription,
+		// Si on est sur la page de connexion ou d'inscription,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
-		if ( $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'connexion' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) {
+		if ( $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'connexion' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'inscription' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'activer-compte' ) ) {
 			// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1', FALSE );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
@@ -2480,7 +2487,7 @@ class WDGUser {
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
 					// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b', FALSE );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
-					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE ) {
+					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'activer-compte' ) ) !== FALSE ) {
 						$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
 					}
 				} else {
@@ -2490,7 +2497,7 @@ class WDGUser {
 					if (strpos($referer_url, $buffer) !== FALSE) {
 						//Si la page précédente était déjà la page connexion ou inscription,
 						// on tente de voir si la redirection était passée en paramètre
-						if ( strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'connexion' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'inscription' )) !== FALSE ) {
+						if ( strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'connexion' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'inscription' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'activer-compte' )) !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a', FALSE );

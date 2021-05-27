@@ -201,9 +201,14 @@ class WDGAjaxActionsAccountSignin {
 			// Normalement, on ne passe pas ici
 			$result[ 'status' ] = 'not-existing-account';
 		} else {
+			// Récupération informations utilisateur courant
+			WDGUser::current();
 			$WDGUser = new WDGUser( $user->ID );
-			$redirect_page = 'test';
-			$link = $page_validation_email . "?action=validate&redirect-page=".$redirect_page."&validation-code=" . $WDGUser->get_email_validation_code();
+			$is_new_account_param = ( $is_new_account !== 'false') ? '1' : '0';
+			// TODO : Récupération dernière page visitée (pour essayer de rediriger au mieux)
+			// Problème : on est en Ajax, difficile de savoir d'où on vient, le referer (wp_get_referer) ne fonctionne pas
+			// Il faudrait trouver un autre moyen
+			$link = $page_validation_email . "?action=validate&is-new-account=".$is_new_account_param."&validation-code=" . $WDGUser->get_email_validation_code();
 
 			$mail_sent = NotificationsAPI::user_account_email_validation($WDGUser, $link, ( $is_new_account !== 'false') );
 
