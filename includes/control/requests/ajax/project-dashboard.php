@@ -2254,16 +2254,24 @@ class WDGAjaxActionsProjectDashboard {
 						}
 					} else {
 						if ( $contract_status == WDGInvestment::$contract_status_not_validated ) {
-							$payment_status = __( "Paiement échoué", 'yproject' );
+							$payment_status = __( "Pas effectu&eacute;", 'yproject' );
 							$payment_status_span_class = 'error';
-							$post_invest_status_span_class = 'failed';
+							// $post_invest_status_span_class = 'failed';
 							if ( $current_wdg_user->is_admin() && empty( $contract_status ) ) {
 								$payment_status .= '<br><br><a href="' .get_permalink($page_dashboard->ID) . $campaign_id_param. '&try_pending_card='.$item_invest['ID'].'" style="font-size: 10pt;">[Retenter]</a>';
 							}
 						}
 					}
 				}
+			} else if ( $post_invest_status == 'failed' ) {
+				$payment_status = __( "Paiement &eacute;chou&eacute;", 'yproject' );
+				$payment_status_span_class = 'error';
+				$post_invest_status_span_class = 'failed';
+
 			}
+
+			// TODO : retirer l'investissement qui est "failed" si cet investisseur a un investissement "pending" ou "publish" d'une date plus récente et d'un montant supérieur
+
 			$payment_status = '<span class="payment-status-' .$payment_status_span_class. '">' .$payment_status. '</span>';
 
 			// Etat de la signature
