@@ -548,18 +548,18 @@ class NotificationsAPI {
 				$parameters[ 'options' ] = json_encode( $options_decoded );
 
 				$result = self::send_v3( $recipient, $object, $content, $template_post_name, $parameters );
+				if ( empty( $result->result ) ) {
+					NotificationsAsana::notification_api_failed( $parameters, $result );
+				}
 
 				return $result;
 			}
 		}
 
-		// Sinon, on envoie encore avec la v2 temporairement
-		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-		if ( empty( $result->result ) ) {
-			NotificationsAsana::notification_api_failed( $parameters, $result );
-		}
+		// Sinon, on envoie une alerte Asana
+		NotificationsAsana::notification_api_v2_failed( $parameters );
 
-		return $result;
+		return FALSE;
 	}
 
 	/**
