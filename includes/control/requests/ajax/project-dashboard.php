@@ -1699,6 +1699,7 @@ class WDGAjaxActionsProjectDashboard {
 	public static function save_project_funding() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
+		$current_wdg_user = WDGUser::current();
 		$errors = array();
 		$success = array();
 		global $locale;
@@ -1746,47 +1747,49 @@ class WDGAjaxActionsProjectDashboard {
 			$errors[ 'new_funding_duration' ] = "Erreur de valeur";
 		}
 
-		$new_platform_commission = WDG_Form::formatInputTextNumber( 'new_platform_commission' );
-		if ( $new_platform_commission >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
-			$success['new_platform_commission'] = 1;
-		} else {
-			$errors['new_platform_commission'] = "Le pourcentage doit &ecirc;tre positif";
-		}
+		if ( $current_wdg_user->is_admin() ) {
+			$new_platform_commission = WDG_Form::formatInputTextNumber( 'new_platform_commission' );
+			if ( $new_platform_commission >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
+				$success['new_platform_commission'] = 1;
+			} else {
+				$errors['new_platform_commission'] = "Le pourcentage doit &ecirc;tre positif";
+			}
 
-		$new_platform_commission_above_100000 = WDG_Form::formatInputTextNumber( 'new_platform_commission_above_100000' );
-		if ( $new_platform_commission_above_100000 >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission_above_100000, $new_platform_commission_above_100000 );
-			$success['new_platform_commission_above_100000'] = 1;
-		} else {
-			$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
-		}
+			$new_platform_commission_above_100000 = WDG_Form::formatInputTextNumber( 'new_platform_commission_above_100000' );
+			if ( $new_platform_commission_above_100000 >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission_above_100000, $new_platform_commission_above_100000 );
+				$success['new_platform_commission_above_100000'] = 1;
+			} else {
+				$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
+			}
 
-		$new_common_goods_turnover_percent = WDG_Form::formatInputTextNumber( 'new_common_goods_turnover_percent' );
-		if ( $new_common_goods_turnover_percent >= 0 ) {
-			$campaign->set_api_data( 'common_goods_turnover_percent', $new_common_goods_turnover_percent );
-			$success['new_common_goods_turnover_percent'] = 1;
-		} else {
-			$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
-		}
+			$new_common_goods_turnover_percent = WDG_Form::formatInputTextNumber( 'new_common_goods_turnover_percent' );
+			if ( $new_common_goods_turnover_percent >= 0 ) {
+				$campaign->set_api_data( 'common_goods_turnover_percent', $new_common_goods_turnover_percent );
+				$success['new_common_goods_turnover_percent'] = 1;
+			} else {
+				$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
+			}
 
-		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
-		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
-		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
-			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
-			$success[ 'new_maximum_profit' ] = 1;
-		} else {
-			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
-		}
+			$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
+			$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
+			if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
+				$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
+				$success[ 'new_maximum_profit' ] = 1;
+			} else {
+				$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
+			}
 
-		$new_maximum_profit_precision = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit_precision' ) );
-		if ( is_numeric( $new_maximum_profit_precision ) ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
-			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
-			$success[ 'new_maximum_profit_precision' ] = 1;
-		} else {
-			$errors[ 'new_maximum_profit_precision' ] = "La précision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
+			$new_maximum_profit_precision = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit_precision' ) );
+			if ( is_numeric( $new_maximum_profit_precision ) ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+				$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+				$success[ 'new_maximum_profit_precision' ] = 1;
+			} else {
+				$errors[ 'new_maximum_profit_precision' ] = "La précision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
+			}
 		}
 
 		//Update roi_percent_estimated
@@ -1823,90 +1826,92 @@ class WDGAjaxActionsProjectDashboard {
 			}
 		}
 
-		$new_contract_start_date_is_undefined = filter_input(INPUT_POST, 'new_contract_start_date_is_undefined');
-		if ( empty( $new_contract_start_date_is_undefined ) ) {
-			$new_contract_start_date_is_undefined = '0';
-		}
-		try {
-			$campaign->set_api_data( 'contract_start_date_is_undefined', $new_contract_start_date_is_undefined );
-			$success[ 'new_contract_start_date_is_undefined']  = 1;
-		} catch (Exception $e) {
-			$errors[ 'new_contract_start_date_is_undefined' ] = "Erreur pour date de début indéfinie";
-		}
+		if ( $current_wdg_user->is_admin() ) {
+			$new_contract_start_date_is_undefined = filter_input(INPUT_POST, 'new_contract_start_date_is_undefined');
+			if ( empty( $new_contract_start_date_is_undefined ) ) {
+				$new_contract_start_date_is_undefined = '0';
+			}
+			try {
+				$campaign->set_api_data( 'contract_start_date_is_undefined', $new_contract_start_date_is_undefined );
+				$success[ 'new_contract_start_date_is_undefined']  = 1;
+			} catch (Exception $e) {
+				$errors[ 'new_contract_start_date_is_undefined' ] = "Erreur pour date de début indéfinie";
+			}
 
-		$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );
-		if ( $new_turnover_per_declaration >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_turnover_per_declaration, $new_turnover_per_declaration );
-			$success['new_turnover_per_declaration'] = 1;
-		} else {
-			$errors['new_turnover_per_declaration'] = "Nombre non valide";
-		}
-
-		$new_declaration_periodicity = sanitize_text_field( filter_input( INPUT_POST, 'new_declaration_periodicity') );
-		if ( !empty( $new_declaration_periodicity ) ) {
-			$campaign->set_api_data( ATCF_Campaign::$key_declaration_periodicity, $new_declaration_periodicity );
-			$success['new_declaration_periodicity'] = 1;
-		} else {
-			$errors['new_declaration_periodicity'] = "S&eacute;lection non valide";
-		}
-
-		$new_minimum_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_minimum_costs_to_organization', TRUE );
-		if ( $new_minimum_costs_to_organization >= 0 ) {
-			$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );
-			$success['new_minimum_costs_to_organization'] = 1;
-		} else {
-			$errors['new_minimum_costs_to_organization'] = "Nombre non valide";
-		}
-
-		$new_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_costs_to_organization' );
-		if ( $new_costs_to_organization >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
-			$campaign->set_api_data( 'costs_to_organization', $new_costs_to_organization );
-			$success['new_costs_to_organization'] = 1;
-		} else {
-			$errors['new_costs_to_organization'] = "Nombre non valide";
-		}
-
-		$new_costs_to_investors = WDG_Form::formatInputTextNumber( 'new_costs_to_investors' );
-		if ( $new_costs_to_investors >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
-			$campaign->set_api_data( 'costs_to_investors', $new_costs_to_investors );
-			$success['new_costs_to_investors'] = 1;
-		} else {
-			$errors['new_costs_to_investors'] = "Nombre non valide";
-		}
-
-		//Update first_payment_date
-		$old_first_payment_date = $campaign->first_payment_date();
-		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
-		if ( empty( $old_first_payment_date ) && empty( $new_first_payment_date ) && !empty( $new_contract_start_date ) ) {
-			// Si non défini, on chope le 10 du trimestre suivant le début de contrat pour automatiser un peu !
-			$contract_start_date_time = new DateTime( $new_contract_start_date );
-			$contract_start_date_time->add( new DateInterval( 'P9D' ) );
-			$contract_start_date_time->add( new DateInterval( 'P3M' ) );
-			$campaign->set_api_data( 'declarations_start_date', $contract_start_date_time->format( 'Y-m-d' ) );
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_first_payment_date, date_format( $contract_start_date_time, 'Y-m-d H:i:s' ) );
-		} else {
-			if (empty($new_first_payment_date)) {
-				$errors['new_first_payment']= "La date est invalide";
+			$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );
+			if ( $new_turnover_per_declaration >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_turnover_per_declaration, $new_turnover_per_declaration );
+				$success['new_turnover_per_declaration'] = 1;
 			} else {
-				try {
-					$new_first_payment_date = DateTime::createFromFormat( 'd/m/Y', filter_input( INPUT_POST, 'new_first_payment' ) );
-					$campaign->set_api_data( 'declarations_start_date', $new_first_payment_date->format( 'Y-m-d' ) );
-					update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
-					$success['new_first_payment'] = 1;
-				} catch (Exception $e) {
-					$errors['new_first_payment'] = "La date est invalide";
+				$errors['new_turnover_per_declaration'] = "Nombre non valide";
+			}
+
+			$new_declaration_periodicity = sanitize_text_field( filter_input( INPUT_POST, 'new_declaration_periodicity') );
+			if ( !empty( $new_declaration_periodicity ) ) {
+				$campaign->set_api_data( ATCF_Campaign::$key_declaration_periodicity, $new_declaration_periodicity );
+				$success['new_declaration_periodicity'] = 1;
+			} else {
+				$errors['new_declaration_periodicity'] = "S&eacute;lection non valide";
+			}
+
+			$new_minimum_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_minimum_costs_to_organization', TRUE );
+			if ( $new_minimum_costs_to_organization >= 0 ) {
+				$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );
+				$success['new_minimum_costs_to_organization'] = 1;
+			} else {
+				$errors['new_minimum_costs_to_organization'] = "Nombre non valide";
+			}
+
+			$new_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_costs_to_organization' );
+			if ( $new_costs_to_organization >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
+				$campaign->set_api_data( 'costs_to_organization', $new_costs_to_organization );
+				$success['new_costs_to_organization'] = 1;
+			} else {
+				$errors['new_costs_to_organization'] = "Nombre non valide";
+			}
+
+			$new_costs_to_investors = WDG_Form::formatInputTextNumber( 'new_costs_to_investors' );
+			if ( $new_costs_to_investors >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
+				$campaign->set_api_data( 'costs_to_investors', $new_costs_to_investors );
+				$success['new_costs_to_investors'] = 1;
+			} else {
+				$errors['new_costs_to_investors'] = "Nombre non valide";
+			}
+
+			//Update first_payment_date
+			$old_first_payment_date = $campaign->first_payment_date();
+			$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
+			if ( empty( $old_first_payment_date ) && empty( $new_first_payment_date ) && !empty( $new_contract_start_date ) ) {
+				// Si non défini, on chope le 10 du trimestre suivant le début de contrat pour automatiser un peu !
+				$contract_start_date_time = new DateTime( $new_contract_start_date );
+				$contract_start_date_time->add( new DateInterval( 'P9D' ) );
+				$contract_start_date_time->add( new DateInterval( 'P3M' ) );
+				$campaign->set_api_data( 'declarations_start_date', $contract_start_date_time->format( 'Y-m-d' ) );
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_first_payment_date, date_format( $contract_start_date_time, 'Y-m-d H:i:s' ) );
+			} else {
+				if (empty($new_first_payment_date)) {
+					$errors['new_first_payment']= "La date est invalide";
+				} else {
+					try {
+						$new_first_payment_date = DateTime::createFromFormat( 'd/m/Y', filter_input( INPUT_POST, 'new_first_payment' ) );
+						$campaign->set_api_data( 'declarations_start_date', $new_first_payment_date->format( 'Y-m-d' ) );
+						update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
+						$success['new_first_payment'] = 1;
+					} catch (Exception $e) {
+						$errors['new_first_payment'] = "La date est invalide";
+					}
 				}
 			}
-		}
 
-		$new_estimated_turnover_unit = sanitize_text_field( filter_input( INPUT_POST, 'new_estimated_turnover_unit') );
-		if ( $new_estimated_turnover_unit == 'euro' || $new_estimated_turnover_unit == 'percent' ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_estimated_turnover_unit, $new_estimated_turnover_unit );
-			$success['new_estimated_turnover_unit'] = 1;
-		} else {
-			$errors['new_estimated_turnover_unit'] = "Valeur non valide";
+			$new_estimated_turnover_unit = sanitize_text_field( filter_input( INPUT_POST, 'new_estimated_turnover_unit') );
+			if ( $new_estimated_turnover_unit == 'euro' || $new_estimated_turnover_unit == 'percent' ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_estimated_turnover_unit, $new_estimated_turnover_unit );
+				$success['new_estimated_turnover_unit'] = 1;
+			} else {
+				$errors['new_estimated_turnover_unit'] = "Valeur non valide";
+			}
 		}
 
 		//Update list of estimated turnover
