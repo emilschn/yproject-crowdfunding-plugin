@@ -767,9 +767,20 @@ class NotificationsAPIShortcodes {
 	public static function investment_amount($atts, $content = '') {
 		if ( !empty( self::$investment_contract ) ) {
 			return self::$investment_contract->subscription_amount;
-		} else {
-			return self::$investment->get_session_amount();
 		}
+
+		if ( !empty( self::$investment ) ) {
+			$amount = self::$investment->get_session_amount();
+			if ( empty( $amount ) ) {
+				$amount = self::$investment->get_saved_amount();
+			}
+
+			if ( !empty( $amount ) ) {
+				return $amount;
+			}
+		}
+
+		return 0;
 	}
 
 	/**
