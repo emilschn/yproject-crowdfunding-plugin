@@ -1649,7 +1649,6 @@ class WDGAjaxActionsProjectDashboard {
 		if ( empty( $organization_id ) ) {
 			$errors['organization_id'] = __("Probl&egrave;me interne", 'yproject');
 		}
-//		ypcf_debug_log( 'pay_with_mandate : ' .$amount_for_organization. ' + ' .$amount_for_commission. ' for ' .$organization_id );
 
 		if ( empty( $errors ) ) {
 			$organization_obj = new WDGOrganization( $organization_id );
@@ -2241,6 +2240,7 @@ class WDGAjaxActionsProjectDashboard {
 			// Etat du paiement
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
+			$post_invest_status_span_class = $post_invest_status;
 			if ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
@@ -2266,7 +2266,13 @@ class WDGAjaxActionsProjectDashboard {
 						}
 					}
 				}
+			} else if ( $post_invest_status == 'failed' ) {
+				$payment_status = __( "Paiement &eacute;chou&eacute;", 'yproject' );
+				$payment_status_span_class = 'error';
+				$post_invest_status_span_class = 'failed';
+
 			}
+
 			$payment_status = '<span class="payment-status-' .$payment_status_span_class. '">' .$payment_status. '</span>';
 
 			// Etat de la signature
@@ -2323,22 +2329,25 @@ class WDGAjaxActionsProjectDashboard {
 				}
 			}
 
-			$invest_amount = '<span class="payment-status-' .( $post_invest_status == 'publish' ? 'success' : 'error' ). '">' .$item_invest['amount']. '</span>';
+			$invest_amount = '<span class="payment-status-' . $post_invest_status_span_class . '">' .$item_invest['amount']. '</span>';
 			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
 			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
 				$more_invest = array();
 				$more_invest["invest_payment_type"] = $payment_type;
 				$more_invest["invest_payment_status"] = $payment_status;
+				$more_invest["post_invest_status"] = $post_invest_status;
 				$more_invest["invest_amount"] = $invest_amount.' €';
 				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
 				$datetime->add( new DateInterval( 'PT1H' ) );
 				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
 				$more_invest["invest_sign"] = $invest_sign_state;
 				$more_invest["invest_id"] = $item_invest['ID'];
+				$more_invest["invest_item"] = $item_invest;
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 			} else {
 				$array_contacts[$u_id]["invest"] = 1;
 				$array_contacts[$u_id]["invest_status"] = ( $post_invest_status == 'publish' ? 'success' : 'error' );
+				$array_contacts[$u_id]["post_invest_status"] = $post_invest_status;
 				$array_contacts[$u_id]["more_invest"] = array();
 				$array_contacts[$u_id]["invest_payment_type"] = $payment_type;
 				$array_contacts[$u_id]["invest_payment_status"] = $payment_status;
@@ -2653,6 +2662,8 @@ class WDGAjaxActionsProjectDashboard {
 			}
 		}
 
+		$array_contacts = self::clean_failed_investments($array_contacts);
+
 		// on trie le tableau des colonnes suivant l'ordre de priorité déclaré
 		usort($array_columns, array("ContactColumn", "cmp_obj")); 
 		
@@ -2674,10 +2685,11 @@ class WDGAjaxActionsProjectDashboard {
             <tbody>
             <?php foreach ($array_contacts as $id_contact => $data_contact): ?>
 				<?php
-				$has_more = array();
-		if ( $data_contact["more_invest"] ) {
-			$has_more = $data_contact["more_invest"];
-		} ?>
+					$has_more = array();
+					if ( $data_contact["more_invest"] ) {
+						$has_more = $data_contact["more_invest"];
+					} 
+				?>
 				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $data_contact["invest_id"]; ?>">
 					<?php foreach ($array_columns as $column): ?>
                 	<td>
@@ -2801,6 +2813,60 @@ class WDGAjaxActionsProjectDashboard {
         </script>
         <?php
         exit();
+	}
+
+	private static function clean_failed_investments( $array_contacts ) {
+		// on retire l'investissement qui est "failed" si cet investisseur a des investissements plus récents "pending" ou "publish" dont le montant total est supérieur à l'investissement "failed"
+		foreach ($array_contacts as $id_contact => &$data_contact) {
+			// pour chaque investisseur on regarde s'il y a plusieurs investissements
+            if ($data_contact["more_invest"] && !empty($data_contact["more_invest"])) {
+				// on trie le tableau des investissements en partant du plus ancien
+				usort( $data_contact["more_invest"], function ($item1, $item2) {
+					$item1_date = new DateTime( $item1[ 'invest_date' ] );
+					$item2_date = new DateTime( $item2[ 'invest_date' ] );
+					return ( $item1_date > $item2_date );
+				} );
+
+                $has_more = $data_contact["more_invest"];
+				// s'il y a plusieurs investissements
+				$amount_last_failed_investment = FALSE;
+				$last_failed_investment_id = array();
+				$failed_investments_to_delete = array();
+                foreach ($has_more as $has_more_item) {
+					// on regarde si un des investissements est failed
+					if ( $has_more_item["post_invest_status"] == 'failed' ){
+						// on réinitialise le compteur
+						$amount_last_failed_investment = $has_more_item["invest_item"]["amount"] ;
+						// on mémorise l'id de cet investissement
+						$last_failed_investment_id[] = $has_more_item["invest_id"];
+					} else {
+						if ( $amount_last_failed_investment ) {
+							// on diminue le compteur du montant de cet investissement
+							$amount_last_failed_investment = $amount_last_failed_investment  - $has_more_item["invest_item"]["amount"] ;
+							// si le compteur est égal ou inférieur à 0
+                            if ($amount_last_failed_investment <= 0) {
+								// alors on peut supprimer les derniers investissements failed
+								$failed_investments_to_delete = array_merge($failed_investments_to_delete, $last_failed_investment_id);
+								// et réinitialiser les variables
+								$amount_last_failed_investment = FALSE;
+								$last_failed_investment_id = array();
+                            }
+						}
+					}
+                }
+
+				// on supprime les investissements failed à supprimer
+				if ( !empty($failed_investments_to_delete) ){
+					foreach ($failed_investments_to_delete as $failed_investment_id ){
+						$key = array_search($failed_investment_id, array_column($data_contact["more_invest"], 'invest_id'));
+						if ($key !== FALSE ){
+							array_splice($data_contact["more_invest"], $key, 1);
+						}
+					}
+				}
+            }
+        }
+		return $array_contacts;
 	}
 
 	/**
