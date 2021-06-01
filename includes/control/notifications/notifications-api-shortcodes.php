@@ -554,7 +554,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Pourcent de royalties
 	 */
-	public static function project_royalties_percent($atts, $content = '') {
+	public static function project_royalties_percent() {
 		if ( !empty( self::$campaign ) ) {
 			return self::$campaign->roi_percent();
 		}
