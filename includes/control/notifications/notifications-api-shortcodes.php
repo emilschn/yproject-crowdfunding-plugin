@@ -446,7 +446,7 @@ class NotificationsAPIShortcodes {
 	 * Destinataire
 	 * Prénom
 	 */
-	public static function recipient_first_name($atts, $content = '') {
+	public static function recipient_first_name() {
 		if ( get_class( self::$recipient ) == 'WDGUser' ) {
 			return self::$recipient->get_firstname();
 		}
