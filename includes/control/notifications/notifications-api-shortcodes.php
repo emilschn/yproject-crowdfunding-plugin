@@ -446,8 +446,12 @@ class NotificationsAPIShortcodes {
 	 * Destinataire
 	 * Prénom
 	 */
-	public static function recipient_first_name($atts, $content = '') {
-		return WDGOrganization::is_user_organization( self::$recipient->get_wpref() ) ? self::$recipient->get_name() : self::$recipient->get_firstname();
+	public static function recipient_first_name() {
+		if ( get_class( self::$recipient ) == 'WDGUser' ) {
+			return self::$recipient->get_firstname();
+		}
+
+		return WDGOrganization::is_user_organization( self::$recipient->get_wpref() ) ? self::$recipient->get_name() : '';
 	}
 
 	/**
