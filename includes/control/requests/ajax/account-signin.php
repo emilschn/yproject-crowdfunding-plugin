@@ -150,26 +150,19 @@ class WDGAjaxActionsAccountSignin {
 			$result[ 'status' ] = 'not-existing-account';
 		} else {
 			$user_login = $user->user_login;
-			$user_email = $user->user_email;
-			$facebook_meta = $user->get('social_connect_facebook_id');
-			if (!isset($facebook_meta) || $facebook_meta == "") {
-				$user_login = $user->user_login;
-				$key = $wpdb->get_var($wpdb->prepare("SELECT user_activation_key FROM $wpdb->users WHERE user_login = %s", $user_login));
-				if (empty($key)) {
-					$key = wp_generate_password(20, false);
-					do_action('retrieve_password_key', $user_login, $key);
-					$wpdb->update($wpdb->users, array('user_activation_key' => $key), array('user_login' => $user_login));
-				}
-				$link = $page_forgot_password . "?action=rp&key=$key&login=" . rawurlencode($user_login);
-				$WDGUser = new WDGUser( $user->ID );
-				$mail_sent = NotificationsAPI::password_reinit($WDGUser, $link);
-				if ( $mail_sent === FALSE ) {
-					$result[ 'status' ] = 'email-not-sent';
-				} else {
-					$result[ 'status' ] = 'email-sent';
-				}
+			$key = $wpdb->get_var($wpdb->prepare("SELECT user_activation_key FROM $wpdb->users WHERE user_login = %s", $user_login));
+			if (empty($key)) {
+				$key = wp_generate_password(20, false);
+				do_action('retrieve_password_key', $user_login, $key);
+				$wpdb->update($wpdb->users, array('user_activation_key' => $key), array('user_login' => $user_login));
+			}
+			$link = $page_forgot_password . "?action=rp&key=$key&user_login=" . rawurlencode($user_login);
+			$WDGUser = new WDGUser( $user->ID );
+			$mail_sent = NotificationsAPI::password_reinit($WDGUser, $link);
+			if ( $mail_sent === FALSE ) {
+				$result[ 'status' ] = 'email-not-sent';
 			} else {
-				$result[ 'status' ] = 'facebook-account';
+				$result[ 'status' ] = 'email-sent';
 			}
 		}
 
