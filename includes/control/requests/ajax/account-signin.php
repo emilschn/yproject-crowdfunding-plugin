@@ -96,7 +96,8 @@ class WDGAjaxActionsAccountSignin {
 				global $wpdb, $edd_options;
 				$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 				update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
-				// NotificationsAPI::user_registration( $user_email, $user_firstname );
+				$WDGUser = new WDGUser( $wp_user_id );
+				$WDGUser->update_last_details_confirmation();
 				WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 				wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 			}
