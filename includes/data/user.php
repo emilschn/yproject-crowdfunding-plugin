@@ -2524,6 +2524,9 @@ class WDGUser {
 							$buffer = $referer_url;
 						}
 					} else {
+						if ( empty( $referer_url ) ) {
+							$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
+						}
 						// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A5 ' . $referer_url, FALSE );
 					}
 				}
