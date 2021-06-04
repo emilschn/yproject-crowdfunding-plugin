@@ -2487,6 +2487,7 @@ class WDGUser {
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
 					// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b', FALSE );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
+					$_SESSION[ 'login-fb-referer' ] = '';
 					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'activer-compte' ) ) !== FALSE ) {
 						$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
 					}
