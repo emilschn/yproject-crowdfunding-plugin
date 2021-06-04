@@ -31,6 +31,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action( 'init_sendinblue_templates' );
 
 		// Login
+		WDGAjaxActions::add_action_user_login( 'get_current_user_id' );
 		WDGAjaxActions::add_action_user_login( 'get_current_user_info' );
 		WDGAjaxActions::add_action_user_login( 'save_user_language' );
 		WDGAjaxActions::add_action_user_login( 'get_connect_to_facebook_url' );
@@ -46,6 +47,7 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_project_page( 'send_project_notification' );
 		WDGAjaxActions::add_action_project_page( 'remove_project_cache' );
 		WDGAjaxActions::add_action_project_page( 'remove_project_lang' );
+		WDGAjaxActions::add_action_project_page( 'get_current_project_infos' );
 
 		// TBPP
 		WDGAjaxActions::add_action_project_dashboard( 'display_roi_user_list' );
