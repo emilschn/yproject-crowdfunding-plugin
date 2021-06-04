@@ -8,9 +8,9 @@ class WDGCampaignInvestments {
 	 * @param int $camp_id
 	 * @return array
 	 */
-	public static function get_list($camp_id, $include_pending = FALSE) {
+	public static function get_list($camp_id, $include_pending = FALSE, $include_failed = FALSE) {
 		$campaign = new ATCF_Campaign( $camp_id );
-		$payments_data = $campaign->payments_data();
+		$payments_data = $campaign->payments_data( FALSE, FALSE, TRUE);
 
 		$buffer = array(
 			'campaign' => $campaign,
@@ -36,8 +36,8 @@ class WDGCampaignInvestments {
 			'investors_string' => ''
 		);
 		foreach ( $payments_data as $item ) {
-			//Prend en compte ou pas dans les stats les paiements non validés
-			if ($item['status'] == 'publish' || ($include_pending && $item['status'] == 'pending')) {
+			//Prend en compte ou pas dans les stats les paiements non validés et les paiements échoués
+			if ($item['status'] == 'publish' || ($include_pending && $item['status'] == 'pending') || ($include_failed && $item['status'] == 'failed')) {
 				if (!isset($buffer['investors_list'][$item['user']])) {
 					$buffer['count_validate_investors']++;
 					$buffer['investors_list'][$item['user']] = $item['user'];

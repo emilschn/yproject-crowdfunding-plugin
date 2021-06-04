@@ -513,51 +513,59 @@ class NotificationsAPI {
 	/**
 	 * Méthode générique d'envoi de mail via l'API
 	 */
-	private static function send($parameters) {
-		// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
-		$template_slug = self::get_slug_by_id_template_sib_v2( $parameters['template'] );
-		if ( !empty( $template_slug ) ) {
-			$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug);
-			if ( !empty( $template_post ) ) {
-				$recipient = $parameters[ 'recipient' ];
-				$template_post_name = $template_slug;
-				$parameters = $parameters;
-				$options_encoded = $parameters[ 'options' ];
-				$options_decoded = json_decode( $options_encoded );
-				$object = $template_post->post_title;
-				$content = $template_post->post_content;
-
-				// Vérification si un reply_to a été défini en back-office
-				$post_reply_to = get_post_meta( $template_post->ID, self::$custom_field_reply_to, TRUE );
-				if ( !empty( $post_reply_to ) ) {
-					$options_decoded->replyto = $post_reply_to;
-				}
-
-				// Vérification si un sender_name a été défini en back-office
-				$post_sender_name = get_post_meta( $template_post->ID, self::$custom_field_sender_name, TRUE );
-				if ( !empty( $post_sender_name ) ) {
-					$options_decoded->sender_name = $post_sender_name;
-				}
-
-				// Vérification si un sender_email a été défini en back-office
-				$post_sender_email = get_post_meta( $template_post->ID, self::$custom_field_sender_email, TRUE );
-				if ( !empty( $post_sender_email ) ) {
-					$options_decoded->sender_email = $post_sender_email;
-				}
-
-				$parameters[ 'options' ] = json_encode( $options_decoded );
-
-				$result = self::send_v3( $recipient, $object, $content, $template_post_name, $parameters );
-				if ( empty( $result->result ) ) {
-					NotificationsAsana::notification_api_failed( $parameters, $result );
-				}
-
-				return $result;
+	private static function send($parameters) {		
+		if ( $parameters[ 'tool' ] == 'sms' ){
+			// c'est un sms qu'on essaie d'envoyer
+			$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+			if ( empty( $result->result ) ) {
+				NotificationsAsana::notification_api_failed( $parameters, $result );
 			}
-		}
+			return $result;
+		} else {
+			// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
+			$template_slug = self::get_slug_by_id_template_sib_v2( $parameters['template'] );
+			if ( !empty( $template_slug ) ) {
+				$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug);
+				if ( !empty( $template_post ) ) {
+					$recipient = $parameters[ 'recipient' ];
+					$template_post_name = $template_slug;
+					$parameters = $parameters;
+					$options_encoded = $parameters[ 'options' ];
+					$options_decoded = json_decode( $options_encoded );
+					$object = $template_post->post_title;
+					$content = $template_post->post_content;
 
-		// Sinon, on envoie une alerte Asana
-		NotificationsAsana::notification_api_v2_failed( $parameters );
+					// Vérification si un reply_to a été défini en back-office
+					$post_reply_to = get_post_meta( $template_post->ID, self::$custom_field_reply_to, TRUE );
+					if ( !empty( $post_reply_to ) ) {
+						$options_decoded->replyto = $post_reply_to;
+					}
+
+					// Vérification si un sender_name a été défini en back-office
+					$post_sender_name = get_post_meta( $template_post->ID, self::$custom_field_sender_name, TRUE );
+					if ( !empty( $post_sender_name ) ) {
+						$options_decoded->sender_name = $post_sender_name;
+					}
+
+					// Vérification si un sender_email a été défini en back-office
+					$post_sender_email = get_post_meta( $template_post->ID, self::$custom_field_sender_email, TRUE );
+					if ( !empty( $post_sender_email ) ) {
+						$options_decoded->sender_email = $post_sender_email;
+					}
+
+					$parameters[ 'options' ] = json_encode( $options_decoded );
+
+					$result = self::send_v3( $recipient, $object, $content, $template_post_name, $parameters );
+					if ( empty( $result->result ) ) {
+						NotificationsAsana::notification_api_failed( $parameters, $result );
+					}
+
+					return $result;
+				}
+			}
+			// Sinon, on envoie une alerte Asana
+			NotificationsAsana::notification_api_v2_failed( $parameters );
+		}
 
 		return FALSE;
 	}

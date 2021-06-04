@@ -472,8 +472,12 @@ class NotificationsAPIShortcodes {
 	 * Destinataire
 	 * Prénom
 	 */
-	public static function recipient_first_name($atts, $content = '') {
-		return WDGOrganization::is_user_organization( self::$recipient->get_wpref() ) ? self::$recipient->get_name() : self::$recipient->get_firstname();
+	public static function recipient_first_name() {
+		if ( get_class( self::$recipient ) == 'WDGUser' ) {
+			return self::$recipient->get_firstname();
+		}
+
+		return WDGOrganization::is_user_organization( self::$recipient->get_wpref() ) ? self::$recipient->get_name() : '';
 	}
 
 	/**
@@ -597,7 +601,11 @@ class NotificationsAPIShortcodes {
 	 * Pourcent de royalties
 	 */
 	public static function project_royalties_percent() {
-		return self::$campaign->roi_percent();
+		if ( !empty( self::$campaign ) ) {
+			return self::$campaign->roi_percent();
+		}
+
+		return '0';
 	}
 
 	/**
@@ -806,19 +814,30 @@ class NotificationsAPIShortcodes {
 	 * Investissement
 	 * Montant
 	 */
-	public static function investment_amount($atts, $content = '') {
+	public static function investment_amount() {
 		if ( !empty( self::$investment_contract ) ) {
 			return self::$investment_contract->subscription_amount;
-		} else {
-			return self::$investment->get_session_amount();
 		}
+
+		if ( !empty( self::$investment ) ) {
+			$amount = self::$investment->get_session_amount();
+			if ( empty( $amount ) ) {
+				$amount = self::$investment->get_saved_amount();
+			}
+
+			if ( !empty( $amount ) ) {
+				return $amount;
+			}
+		}
+
+		return 0;
 	}
 
 	/**
 	 * Investissement
 	 * Date
 	 */
-	public static function investment_date($atts, $content = '') {
+	public static function investment_date() {
 		if ( !empty( self::$investment_contract ) ) {
 			return self::$investment_contract->subscription_date;
 		} else {
@@ -830,7 +849,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement
 	 * Contenu 1
 	 */
-	public static function investment_description_text_before($atts, $content = '') {
+	public static function investment_description_text_before() {
 		return self::$investment_success_data[ 'text_before' ];
 	}
 
@@ -838,7 +857,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement
 	 * Contenu 2
 	 */
-	public static function investment_description_text_after($atts, $content = '') {
+	public static function investment_description_text_after() {
 		return self::$investment_success_data[ 'text_after' ];
 	}
 
@@ -846,7 +865,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement
 	 * Royalties perçues
 	 */
-	public static function investment_royalties_received($atts, $content = '') {
+	public static function investment_royalties_received() {
 		if ( !empty( self::$investment_amount_received ) ) {
 			return self::$investment_amount_received;
 		} else {
@@ -862,7 +881,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement
 	 * Royalties restantes
 	 */
-	public static function investment_royalties_remaining($atts, $content = '') {
+	public static function investment_royalties_remaining() {
 		if ( !empty( self::$investment_contract ) ) {
 			return self::$investment_contract->subscription_amount - self::$investment_contract->amount_received;
 		} else {
@@ -874,7 +893,7 @@ class NotificationsAPIShortcodes {
 	 * Erreur d'investissement
 	 * Raison
 	 */
-	public static function investment_error_reason($atts, $content = '') {
+	public static function investment_error_reason() {
 		return self::$investment_error_data[ 'reason' ];
 	}
 
@@ -882,7 +901,7 @@ class NotificationsAPIShortcodes {
 	 * Erreur d'investissement
 	 * Lien de reprise
 	 */
-	public static function investment_error_link($atts, $content = '') {
+	public static function investment_error_link() {
 		return self::$investment_error_data[ 'link' ];
 	}
 

@@ -1649,7 +1649,6 @@ class WDGAjaxActionsProjectDashboard {
 		if ( empty( $organization_id ) ) {
 			$errors['organization_id'] = __("Probl&egrave;me interne", 'yproject');
 		}
-//		ypcf_debug_log( 'pay_with_mandate : ' .$amount_for_organization. ' + ' .$amount_for_commission. ' for ' .$organization_id );
 
 		if ( empty( $errors ) ) {
 			$organization_obj = new WDGOrganization( $organization_id );
@@ -1699,6 +1698,7 @@ class WDGAjaxActionsProjectDashboard {
 	public static function save_project_funding() {
 		$campaign_id = filter_input(INPUT_POST, 'campaign_id');
 		$campaign = new ATCF_Campaign($campaign_id);
+		$current_wdg_user = WDGUser::current();
 		$errors = array();
 		$success = array();
 		global $locale;
@@ -1746,47 +1746,49 @@ class WDGAjaxActionsProjectDashboard {
 			$errors[ 'new_funding_duration' ] = "Erreur de valeur";
 		}
 
-		$new_platform_commission = WDG_Form::formatInputTextNumber( 'new_platform_commission' );
-		if ( $new_platform_commission >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
-			$success['new_platform_commission'] = 1;
-		} else {
-			$errors['new_platform_commission'] = "Le pourcentage doit &ecirc;tre positif";
-		}
+		if ( $current_wdg_user->is_admin() ) {
+			$new_platform_commission = WDG_Form::formatInputTextNumber( 'new_platform_commission' );
+			if ( $new_platform_commission >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
+				$success['new_platform_commission'] = 1;
+			} else {
+				$errors['new_platform_commission'] = "Le pourcentage doit &ecirc;tre positif";
+			}
 
-		$new_platform_commission_above_100000 = WDG_Form::formatInputTextNumber( 'new_platform_commission_above_100000' );
-		if ( $new_platform_commission_above_100000 >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission_above_100000, $new_platform_commission_above_100000 );
-			$success['new_platform_commission_above_100000'] = 1;
-		} else {
-			$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
-		}
+			$new_platform_commission_above_100000 = WDG_Form::formatInputTextNumber( 'new_platform_commission_above_100000' );
+			if ( $new_platform_commission_above_100000 >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission_above_100000, $new_platform_commission_above_100000 );
+				$success['new_platform_commission_above_100000'] = 1;
+			} else {
+				$errors['new_platform_commission_above_100000'] = "Le pourcentage doit &ecirc;tre positif";
+			}
 
-		$new_common_goods_turnover_percent = WDG_Form::formatInputTextNumber( 'new_common_goods_turnover_percent' );
-		if ( $new_common_goods_turnover_percent >= 0 ) {
-			$campaign->set_api_data( 'common_goods_turnover_percent', $new_common_goods_turnover_percent );
-			$success['new_common_goods_turnover_percent'] = 1;
-		} else {
-			$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
-		}
+			$new_common_goods_turnover_percent = WDG_Form::formatInputTextNumber( 'new_common_goods_turnover_percent' );
+			if ( $new_common_goods_turnover_percent >= 0 ) {
+				$campaign->set_api_data( 'common_goods_turnover_percent', $new_common_goods_turnover_percent );
+				$success['new_common_goods_turnover_percent'] = 1;
+			} else {
+				$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
+			}
 
-		$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
-		$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
-		if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
-			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
-			$success[ 'new_maximum_profit' ] = 1;
-		} else {
-			$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
-		}
+			$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
+			$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
+			if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
+				$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit, $new_maximum_profit );
+				$success[ 'new_maximum_profit' ] = 1;
+			} else {
+				$errors[ 'new_maximum_profit' ] = "Le gain maximum n'est pas correct (".$new_maximum_profit.")";
+			}
 
-		$new_maximum_profit_precision = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit_precision' ) );
-		if ( is_numeric( $new_maximum_profit_precision ) ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
-			$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
-			$success[ 'new_maximum_profit_precision' ] = 1;
-		} else {
-			$errors[ 'new_maximum_profit_precision' ] = "La précision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
+			$new_maximum_profit_precision = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit_precision' ) );
+			if ( is_numeric( $new_maximum_profit_precision ) ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+				$campaign->set_api_data( ATCF_Campaign::$key_maximum_profit_precision, $new_maximum_profit_precision );
+				$success[ 'new_maximum_profit_precision' ] = 1;
+			} else {
+				$errors[ 'new_maximum_profit_precision' ] = "La précision de gain maximum n'est pas correcte (".$new_maximum_profit.")";
+			}
 		}
 
 		//Update roi_percent_estimated
@@ -1823,90 +1825,92 @@ class WDGAjaxActionsProjectDashboard {
 			}
 		}
 
-		$new_contract_start_date_is_undefined = filter_input(INPUT_POST, 'new_contract_start_date_is_undefined');
-		if ( empty( $new_contract_start_date_is_undefined ) ) {
-			$new_contract_start_date_is_undefined = '0';
-		}
-		try {
-			$campaign->set_api_data( 'contract_start_date_is_undefined', $new_contract_start_date_is_undefined );
-			$success[ 'new_contract_start_date_is_undefined']  = 1;
-		} catch (Exception $e) {
-			$errors[ 'new_contract_start_date_is_undefined' ] = "Erreur pour date de début indéfinie";
-		}
+		if ( $current_wdg_user->is_admin() ) {
+			$new_contract_start_date_is_undefined = filter_input(INPUT_POST, 'new_contract_start_date_is_undefined');
+			if ( empty( $new_contract_start_date_is_undefined ) ) {
+				$new_contract_start_date_is_undefined = '0';
+			}
+			try {
+				$campaign->set_api_data( 'contract_start_date_is_undefined', $new_contract_start_date_is_undefined );
+				$success[ 'new_contract_start_date_is_undefined']  = 1;
+			} catch (Exception $e) {
+				$errors[ 'new_contract_start_date_is_undefined' ] = "Erreur pour date de début indéfinie";
+			}
 
-		$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );
-		if ( $new_turnover_per_declaration >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_turnover_per_declaration, $new_turnover_per_declaration );
-			$success['new_turnover_per_declaration'] = 1;
-		} else {
-			$errors['new_turnover_per_declaration'] = "Nombre non valide";
-		}
-
-		$new_declaration_periodicity = sanitize_text_field( filter_input( INPUT_POST, 'new_declaration_periodicity') );
-		if ( !empty( $new_declaration_periodicity ) ) {
-			$campaign->set_api_data( ATCF_Campaign::$key_declaration_periodicity, $new_declaration_periodicity );
-			$success['new_declaration_periodicity'] = 1;
-		} else {
-			$errors['new_declaration_periodicity'] = "S&eacute;lection non valide";
-		}
-
-		$new_minimum_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_minimum_costs_to_organization', TRUE );
-		if ( $new_minimum_costs_to_organization >= 0 ) {
-			$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );
-			$success['new_minimum_costs_to_organization'] = 1;
-		} else {
-			$errors['new_minimum_costs_to_organization'] = "Nombre non valide";
-		}
-
-		$new_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_costs_to_organization' );
-		if ( $new_costs_to_organization >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
-			$campaign->set_api_data( 'costs_to_organization', $new_costs_to_organization );
-			$success['new_costs_to_organization'] = 1;
-		} else {
-			$errors['new_costs_to_organization'] = "Nombre non valide";
-		}
-
-		$new_costs_to_investors = WDG_Form::formatInputTextNumber( 'new_costs_to_investors' );
-		if ( $new_costs_to_investors >= 0 ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
-			$campaign->set_api_data( 'costs_to_investors', $new_costs_to_investors );
-			$success['new_costs_to_investors'] = 1;
-		} else {
-			$errors['new_costs_to_investors'] = "Nombre non valide";
-		}
-
-		//Update first_payment_date
-		$old_first_payment_date = $campaign->first_payment_date();
-		$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
-		if ( empty( $old_first_payment_date ) && empty( $new_first_payment_date ) && !empty( $new_contract_start_date ) ) {
-			// Si non défini, on chope le 10 du trimestre suivant le début de contrat pour automatiser un peu !
-			$contract_start_date_time = new DateTime( $new_contract_start_date );
-			$contract_start_date_time->add( new DateInterval( 'P9D' ) );
-			$contract_start_date_time->add( new DateInterval( 'P3M' ) );
-			$campaign->set_api_data( 'declarations_start_date', $contract_start_date_time->format( 'Y-m-d' ) );
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_first_payment_date, date_format( $contract_start_date_time, 'Y-m-d H:i:s' ) );
-		} else {
-			if (empty($new_first_payment_date)) {
-				$errors['new_first_payment']= "La date est invalide";
+			$new_turnover_per_declaration = intval( sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_per_declaration') ) );
+			if ( $new_turnover_per_declaration >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_turnover_per_declaration, $new_turnover_per_declaration );
+				$success['new_turnover_per_declaration'] = 1;
 			} else {
-				try {
-					$new_first_payment_date = DateTime::createFromFormat( 'd/m/Y', filter_input( INPUT_POST, 'new_first_payment' ) );
-					$campaign->set_api_data( 'declarations_start_date', $new_first_payment_date->format( 'Y-m-d' ) );
-					update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
-					$success['new_first_payment'] = 1;
-				} catch (Exception $e) {
-					$errors['new_first_payment'] = "La date est invalide";
+				$errors['new_turnover_per_declaration'] = "Nombre non valide";
+			}
+
+			$new_declaration_periodicity = sanitize_text_field( filter_input( INPUT_POST, 'new_declaration_periodicity') );
+			if ( !empty( $new_declaration_periodicity ) ) {
+				$campaign->set_api_data( ATCF_Campaign::$key_declaration_periodicity, $new_declaration_periodicity );
+				$success['new_declaration_periodicity'] = 1;
+			} else {
+				$errors['new_declaration_periodicity'] = "S&eacute;lection non valide";
+			}
+
+			$new_minimum_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_minimum_costs_to_organization', TRUE );
+			if ( $new_minimum_costs_to_organization >= 0 ) {
+				$campaign->set_api_data( 'minimum_costs_to_organization', $new_minimum_costs_to_organization );
+				$success['new_minimum_costs_to_organization'] = 1;
+			} else {
+				$errors['new_minimum_costs_to_organization'] = "Nombre non valide";
+			}
+
+			$new_costs_to_organization = WDG_Form::formatInputTextNumber( 'new_costs_to_organization' );
+			if ( $new_costs_to_organization >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_organization, $new_costs_to_organization );
+				$campaign->set_api_data( 'costs_to_organization', $new_costs_to_organization );
+				$success['new_costs_to_organization'] = 1;
+			} else {
+				$errors['new_costs_to_organization'] = "Nombre non valide";
+			}
+
+			$new_costs_to_investors = WDG_Form::formatInputTextNumber( 'new_costs_to_investors' );
+			if ( $new_costs_to_investors >= 0 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_costs_to_investors, $new_costs_to_investors );
+				$campaign->set_api_data( 'costs_to_investors', $new_costs_to_investors );
+				$success['new_costs_to_investors'] = 1;
+			} else {
+				$errors['new_costs_to_investors'] = "Nombre non valide";
+			}
+
+			//Update first_payment_date
+			$old_first_payment_date = $campaign->first_payment_date();
+			$new_first_payment_date = filter_input(INPUT_POST, 'new_first_payment');
+			if ( empty( $old_first_payment_date ) && empty( $new_first_payment_date ) && !empty( $new_contract_start_date ) ) {
+				// Si non défini, on chope le 10 du trimestre suivant le début de contrat pour automatiser un peu !
+				$contract_start_date_time = new DateTime( $new_contract_start_date );
+				$contract_start_date_time->add( new DateInterval( 'P9D' ) );
+				$contract_start_date_time->add( new DateInterval( 'P3M' ) );
+				$campaign->set_api_data( 'declarations_start_date', $contract_start_date_time->format( 'Y-m-d' ) );
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_first_payment_date, date_format( $contract_start_date_time, 'Y-m-d H:i:s' ) );
+			} else {
+				if (empty($new_first_payment_date)) {
+					$errors['new_first_payment']= "La date est invalide";
+				} else {
+					try {
+						$new_first_payment_date = DateTime::createFromFormat( 'd/m/Y', filter_input( INPUT_POST, 'new_first_payment' ) );
+						$campaign->set_api_data( 'declarations_start_date', $new_first_payment_date->format( 'Y-m-d' ) );
+						update_post_meta($campaign_id, ATCF_Campaign::$key_first_payment_date, date_format($new_first_payment_date, 'Y-m-d H:i:s'));
+						$success['new_first_payment'] = 1;
+					} catch (Exception $e) {
+						$errors['new_first_payment'] = "La date est invalide";
+					}
 				}
 			}
-		}
 
-		$new_estimated_turnover_unit = sanitize_text_field( filter_input( INPUT_POST, 'new_estimated_turnover_unit') );
-		if ( $new_estimated_turnover_unit == 'euro' || $new_estimated_turnover_unit == 'percent' ) {
-			update_post_meta( $campaign_id, ATCF_Campaign::$key_estimated_turnover_unit, $new_estimated_turnover_unit );
-			$success['new_estimated_turnover_unit'] = 1;
-		} else {
-			$errors['new_estimated_turnover_unit'] = "Valeur non valide";
+			$new_estimated_turnover_unit = sanitize_text_field( filter_input( INPUT_POST, 'new_estimated_turnover_unit') );
+			if ( $new_estimated_turnover_unit == 'euro' || $new_estimated_turnover_unit == 'percent' ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_estimated_turnover_unit, $new_estimated_turnover_unit );
+				$success['new_estimated_turnover_unit'] = 1;
+			} else {
+				$errors['new_estimated_turnover_unit'] = "Valeur non valide";
+			}
 		}
 
 		//Update list of estimated turnover
@@ -2236,6 +2240,7 @@ class WDGAjaxActionsProjectDashboard {
 			// Etat du paiement
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
+			$post_invest_status_span_class = $post_invest_status;
 			if ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
@@ -2261,7 +2266,13 @@ class WDGAjaxActionsProjectDashboard {
 						}
 					}
 				}
+			} else if ( $post_invest_status == 'failed' ) {
+				$payment_status = __( "Paiement &eacute;chou&eacute;", 'yproject' );
+				$payment_status_span_class = 'error';
+				$post_invest_status_span_class = 'failed';
+
 			}
+
 			$payment_status = '<span class="payment-status-' .$payment_status_span_class. '">' .$payment_status. '</span>';
 
 			// Etat de la signature
@@ -2318,22 +2329,25 @@ class WDGAjaxActionsProjectDashboard {
 				}
 			}
 
-			$invest_amount = '<span class="payment-status-' .( $post_invest_status == 'publish' ? 'success' : 'error' ). '">' .$item_invest['amount']. '</span>';
+			$invest_amount = '<span class="payment-status-' . $post_invest_status_span_class . '">' .$item_invest['amount']. '</span>';
 			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
 			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
 				$more_invest = array();
 				$more_invest["invest_payment_type"] = $payment_type;
 				$more_invest["invest_payment_status"] = $payment_status;
+				$more_invest["post_invest_status"] = $post_invest_status;
 				$more_invest["invest_amount"] = $invest_amount.' €';
 				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
 				$datetime->add( new DateInterval( 'PT1H' ) );
 				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
 				$more_invest["invest_sign"] = $invest_sign_state;
 				$more_invest["invest_id"] = $item_invest['ID'];
+				$more_invest["invest_item"] = $item_invest;
 				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 			} else {
 				$array_contacts[$u_id]["invest"] = 1;
 				$array_contacts[$u_id]["invest_status"] = ( $post_invest_status == 'publish' ? 'success' : 'error' );
+				$array_contacts[$u_id]["post_invest_status"] = $post_invest_status;
 				$array_contacts[$u_id]["more_invest"] = array();
 				$array_contacts[$u_id]["invest_payment_type"] = $payment_type;
 				$array_contacts[$u_id]["invest_payment_status"] = $payment_status;
@@ -2648,6 +2662,8 @@ class WDGAjaxActionsProjectDashboard {
 			}
 		}
 
+		$array_contacts = self::clean_failed_investments($array_contacts);
+
 		// on trie le tableau des colonnes suivant l'ordre de priorité déclaré
 		usort($array_columns, array("ContactColumn", "cmp_obj")); 
 		
@@ -2669,10 +2685,11 @@ class WDGAjaxActionsProjectDashboard {
             <tbody>
             <?php foreach ($array_contacts as $id_contact => $data_contact): ?>
 				<?php
-				$has_more = array();
-		if ( $data_contact["more_invest"] ) {
-			$has_more = $data_contact["more_invest"];
-		} ?>
+					$has_more = array();
+					if ( $data_contact["more_invest"] ) {
+						$has_more = $data_contact["more_invest"];
+					} 
+				?>
 				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $data_contact["invest_id"]; ?>">
 					<?php foreach ($array_columns as $column): ?>
                 	<td>
@@ -2796,6 +2813,60 @@ class WDGAjaxActionsProjectDashboard {
         </script>
         <?php
         exit();
+	}
+
+	private static function clean_failed_investments( $array_contacts ) {
+		// on retire l'investissement qui est "failed" si cet investisseur a des investissements plus récents "pending" ou "publish" dont le montant total est supérieur à l'investissement "failed"
+		foreach ($array_contacts as $id_contact => &$data_contact) {
+			// pour chaque investisseur on regarde s'il y a plusieurs investissements
+            if ($data_contact["more_invest"] && !empty($data_contact["more_invest"])) {
+				// on trie le tableau des investissements en partant du plus ancien
+				usort( $data_contact["more_invest"], function ($item1, $item2) {
+					$item1_date = new DateTime( $item1[ 'invest_date' ] );
+					$item2_date = new DateTime( $item2[ 'invest_date' ] );
+					return ( $item1_date > $item2_date );
+				} );
+
+                $has_more = $data_contact["more_invest"];
+				// s'il y a plusieurs investissements
+				$amount_last_failed_investment = FALSE;
+				$last_failed_investment_id = array();
+				$failed_investments_to_delete = array();
+                foreach ($has_more as $has_more_item) {
+					// on regarde si un des investissements est failed
+					if ( $has_more_item["post_invest_status"] == 'failed' ){
+						// on réinitialise le compteur
+						$amount_last_failed_investment = $has_more_item["invest_item"]["amount"] ;
+						// on mémorise l'id de cet investissement
+						$last_failed_investment_id[] = $has_more_item["invest_id"];
+					} else {
+						if ( $amount_last_failed_investment ) {
+							// on diminue le compteur du montant de cet investissement
+							$amount_last_failed_investment = $amount_last_failed_investment  - $has_more_item["invest_item"]["amount"] ;
+							// si le compteur est égal ou inférieur à 0
+                            if ($amount_last_failed_investment <= 0) {
+								// alors on peut supprimer les derniers investissements failed
+								$failed_investments_to_delete = array_merge($failed_investments_to_delete, $last_failed_investment_id);
+								// et réinitialiser les variables
+								$amount_last_failed_investment = FALSE;
+								$last_failed_investment_id = array();
+                            }
+						}
+					}
+                }
+
+				// on supprime les investissements failed à supprimer
+				if ( !empty($failed_investments_to_delete) ){
+					foreach ($failed_investments_to_delete as $failed_investment_id ){
+						$key = array_search($failed_investment_id, array_column($data_contact["more_invest"], 'invest_id'));
+						if ($key !== FALSE ){
+							array_splice($data_contact["more_invest"], $key, 1);
+						}
+					}
+				}
+            }
+        }
+		return $array_contacts;
 	}
 
 	/**

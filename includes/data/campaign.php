@@ -3251,13 +3251,13 @@ class ATCF_Campaign {
 	 * @return array
 	 */
 	private $payments_data;
-	public function payments_data($skip_apis = FALSE, $order_by_older = FALSE) {
+	public function payments_data($skip_apis = FALSE, $order_by_older = FALSE, $show_failed = FALSE) {
 		if ( !isset( $this->payments_data ) ) {
 			$this->payments_data = array();
 
 			if ( $this->has_investments_in_api() ) {
 				foreach ( $this->api_data->investments as $investment_item ) {
-					if ( $investment_item->status != 'failed' ) {
+					if ( $investment_item->status != 'failed' || $show_failed ) {
 						// Récupération simple des paiements dans l'API
 						// On dégage 'products' et 'signsquid_status_text' pas très utile
 						// On simplifie 'mangopay_contribution' et 'lemonway_contribution' pour avoir les infos au cas où, mais pas les chercher de suite, car normalement pas besoin
@@ -3315,7 +3315,7 @@ class ATCF_Campaign {
 
 						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
 
-						if ($payment_status != 'failed') {
+						if ($payment_status != 'failed' || $show_failed) {
 							$this->payments_data[] = array(
 								'ID'			=> $payment->ID,
 								'email'			=> edd_get_payment_user_email( $payment->ID ),
