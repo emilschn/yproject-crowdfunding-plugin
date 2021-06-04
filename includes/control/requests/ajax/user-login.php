@@ -3,26 +3,6 @@
  * Gestion des appels Ajax liés à l'utilisateur en cours
  */
 class WDGAjaxActionsUserLogin {
-	public static function get_current_user_id() {
-        $buffer = '0';
-
-        if (is_user_logged_in()) {
-			$response = array();
-
-			$WDGUserCurrent = WDGUser::current();
-			$response[ 'userinfos' ] = array();
-			$response[ 'userinfos' ][ 'userid' ] = $WDGUserCurrent->get_wpref();
-			$response[ 'userinfos' ][ 'username' ] = ( !empty( $firstname_WDGUserCurrent ) ) ? $firstname_WDGUserCurrent : $WDGUserCurrent->get_login();
-			$response[ 'userinfos' ][ 'my_account_txt' ] = __( 'common.MY_ACCOUNT', 'yproject' );
-			// TODO : il faudrait que display_need_authentication prenne en compte l'état d'authentification des projets de l'utilisateur le cas échéant, mais je trouve que ça ralentirait cette fonction
-			$response[ 'userinfos' ][ 'display_need_authentication' ] =  !$WDGUserCurrent->is_lemonway_registered()  ? '1' : '0';
-			$buffer = json_encode( $response );
-
-        }
-		echo $buffer;
-		exit();
-    }
-	
 	public static function get_current_user_info() {
 		$buffer = '0';
 
@@ -32,9 +12,10 @@ class WDGAjaxActionsUserLogin {
 			$WDGUserCurrent = WDGUser::current();
 			$firstname_WDGUserCurrent = $WDGUserCurrent->get_firstname();
 			$response[ 'userinfos' ] = array();
+			$response[ 'userinfos' ][ 'userid' ] = $WDGUserCurrent->get_wpref();
 			$response[ 'userinfos' ][ 'username' ] = ( !empty( $firstname_WDGUserCurrent ) ) ? $firstname_WDGUserCurrent : $WDGUserCurrent->get_login();
 			$response[ 'userinfos' ][ 'my_account_txt' ] = __( 'common.MY_ACCOUNT', 'yproject' );
-			$response[ 'userinfos' ][ 'image_dom_element' ] = UIHelpers::get_user_avatar( $WDGUserCurrent->get_wpref(), 'icon' );
+			// $response[ 'userinfos' ][ 'image_dom_element' ] = UIHelpers::get_user_avatar( $WDGUserCurrent->get_wpref(), 'icon' );
 			$response[ 'userinfos' ][ 'logout_url' ] = wp_logout_url(). '&page_id=' .get_the_ID();
 
 			$is_project_needing_authentication = FALSE;
@@ -75,6 +56,18 @@ class WDGAjaxActionsUserLogin {
 			}
 
 			$response[ 'userinfos' ][ 'display_need_authentication' ] = ( !$is_project_needing_authentication && !$WDGUserCurrent->is_lemonway_registered() ) ? '1' : '0';
+
+			$response[ 'scripts' ] = array();
+			$response[ 'context' ] = array();
+			$input_pageinfo = filter_input( INPUT_POST, 'pageinfo' );
+			if ( !empty( $input_pageinfo ) ) {
+				$current_campaign = new ATCF_Campaign( $input_pageinfo );
+				if ( $current_campaign->current_user_can_edit() ) {
+					$project_editor_script_url = dirname( get_bloginfo('stylesheet_url') ). '/_inc/js/wdg-project-editor.js?d=' .time();
+					array_push( $response[ 'scripts' ], $project_editor_script_url );
+					$response[ 'context' ][ 'dashboard_url' ] = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' . $current_campaign->ID;
+				}
+			}
 
 			$buffer = json_encode( $response );
 		}

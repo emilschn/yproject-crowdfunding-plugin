@@ -81,29 +81,4 @@ class WDGAjaxActionsProjectPage {
 			delete_post_meta( $id_campaign, 'campaign_video' . '_' . $lang );
 		}
 	}
-	
-	public static function get_current_project_infos() {
-		$buffer = '0';
-
-		if ( is_user_logged_in() ) {
-			$response = array();
-
-			$response[ 'scripts' ] = array();
-			$response[ 'context' ] = array();
-			$input_pageinfo = filter_input( INPUT_POST, 'pageinfo' );
-			if ( !empty( $input_pageinfo ) ) {
-				$current_campaign = new ATCF_Campaign( $input_pageinfo );
-				if ( $current_campaign->current_user_can_edit() ) {
-					$project_editor_script_url = dirname( get_bloginfo('stylesheet_url') ). '/_inc/js/wdg-project-editor.js?d=' .time();
-					array_push( $response[ 'scripts' ], $project_editor_script_url );
-					$response[ 'context' ][ 'dashboard_url' ] = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' . $current_campaign->ID;
-				}
-			}
-
-			$buffer = json_encode( $response );
-		}
-
-		echo $buffer;
-		exit();
-	}
 }
