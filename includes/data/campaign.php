@@ -1938,6 +1938,14 @@ class ATCF_Campaign {
 
 		return $buffer;
 	}
+	public function has_impact($str_impact) {
+		$categories = $this->get_categories();
+		foreach ($categories as $category) {
+			if ( $category->slug == $str_impact ) {
+				return TRUE;
+			}
+		}
+	}
 
 	/**
 	 *
