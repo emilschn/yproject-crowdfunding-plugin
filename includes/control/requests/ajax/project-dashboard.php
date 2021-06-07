@@ -1224,10 +1224,10 @@ class WDGAjaxActionsProjectDashboard {
 				'name' => $new_name,
 				'post_type' => array( 'post', 'page', 'download' )
 			) );
-            if ($posts) {
-                $errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
-            } elseif ( sanitize_title( $new_name ) != $new_name ) {
-                $errors[ 'new_project_url' ] .= "URL non valide.";
+			if ($posts) {
+				$errors[ 'new_project_url' ] .= "L'URL est déjà utilisée.";
+			} elseif ( sanitize_title( $new_name ) != $new_name ) {
+				$errors[ 'new_project_url' ] .= "URL non valide.";
 			} else {
 				$old_name = $campaign->data->post_name;
 				$campaign->set_api_data( 'url', $new_name );
@@ -2266,11 +2266,12 @@ class WDGAjaxActionsProjectDashboard {
 						}
 					}
 				}
-			} else if ( $post_invest_status == 'failed' ) {
-				$payment_status = __( "Paiement &eacute;chou&eacute;", 'yproject' );
-				$payment_status_span_class = 'error';
-				$post_invest_status_span_class = 'failed';
-
+			} else {
+				if ( $post_invest_status == 'failed' ) {
+					$payment_status = __( "Paiement &eacute;chou&eacute;", 'yproject' );
+					$payment_status_span_class = 'error';
+					$post_invest_status_span_class = 'failed';
+				}
 			}
 
 			$payment_status = '<span class="payment-status-' .$payment_status_span_class. '">' .$payment_status. '</span>';
@@ -2306,7 +2307,6 @@ class WDGAjaxActionsProjectDashboard {
 
 			// Contrats complémentaires
 			if ( $post_invest_status == 'publish' ) {
-				$more_invest["invest_contracts"] = array();
 				$contract_model_index = 1;
 				foreach ( $contracts_to_add as $contract_model ) {
 					$wdg_contract_id = get_post_meta( $item_invest[ 'ID' ], 'amendment_contract_' . $contract_model->id, TRUE );
@@ -2330,25 +2330,12 @@ class WDGAjaxActionsProjectDashboard {
 			}
 
 			$invest_amount = '<span class="payment-status-' . $post_invest_status_span_class . '">' .$item_invest['amount']. '</span>';
-			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
-			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
-				$more_invest = array();
-				$more_invest["invest_payment_type"] = $payment_type;
-				$more_invest["invest_payment_status"] = $payment_status;
-				$more_invest["post_invest_status"] = $post_invest_status;
-				$more_invest["invest_amount"] = $invest_amount.' €';
-				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
-				$datetime->add( new DateInterval( 'PT1H' ) );
-				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
-				$more_invest["invest_sign"] = $invest_sign_state;
-				$more_invest["invest_id"] = $item_invest['ID'];
-				$more_invest["invest_item"] = $item_invest;
-				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
-			} else {
+
+			//Si il n'y a pas encore d'info de l'utilisateur pour un investissement, on rajoute une ligne
+			if ( !isset($array_contacts[$u_id]) || !isset($array_contacts[$u_id]["invest"]) || $array_contacts[$u_id]["invest"] != 1 ) {
 				$array_contacts[$u_id]["invest"] = 1;
 				$array_contacts[$u_id]["invest_status"] = ( $post_invest_status == 'publish' ? 'success' : 'error' );
 				$array_contacts[$u_id]["post_invest_status"] = $post_invest_status;
-				$array_contacts[$u_id]["more_invest"] = array();
 				$array_contacts[$u_id]["invest_payment_type"] = $payment_type;
 				$array_contacts[$u_id]["invest_payment_status"] = $payment_status;
 				$array_contacts[$u_id]["invest_amount"] = $invest_amount.' €';
@@ -2358,7 +2345,22 @@ class WDGAjaxActionsProjectDashboard {
 				$array_contacts[$u_id]["invest_sign"] = $invest_sign_state;
 				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
 				$array_contacts[$u_id]["invest_item"] = $item_invest;
+				$array_contacts[$u_id]["more_invest"] = array();
 			}
+
+			// Ajout directement dans la liste des investissements
+			$more_invest = array();
+			$more_invest["invest_payment_type"] = $payment_type;
+			$more_invest["invest_payment_status"] = $payment_status;
+			$more_invest["post_invest_status"] = $post_invest_status;
+			$more_invest["invest_amount"] = $invest_amount.' €';
+			$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
+			$datetime->add( new DateInterval( 'PT1H' ) );
+			$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
+			$more_invest["invest_sign"] = $invest_sign_state;
+			$more_invest["invest_id"] = $item_invest['ID'];
+			$more_invest["invest_item"] = $item_invest;
+			array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 		}
 
 		//Extraction infos utilisateur
@@ -2611,8 +2613,6 @@ class WDGAjaxActionsProjectDashboard {
 			$display_vote_infos = false;
 		}
 
-
-
 		$array_columns = array(
 			new ContactColumn('checkbox', '', true, 0, "none"),
 			new ContactColumn('user_first_name', 'PRÉNOM', true, 1),
@@ -2665,12 +2665,11 @@ class WDGAjaxActionsProjectDashboard {
 		$array_contacts = self::clean_failed_investments($array_contacts);
 
 		// on trie le tableau des colonnes suivant l'ordre de priorité déclaré
-		usort($array_columns, array("ContactColumn", "cmp_obj")); 
-		
+		usort($array_columns, array("ContactColumn", "cmp_obj"));
+
 		$imgcheck_follow = '<img src="'.get_stylesheet_directory_uri().'/images/check.png" alt="investi" title="A investi" width="25px" style="margin-left:0px;"/>';
 		$imgcheck_vote = '<img src="'.get_stylesheet_directory_uri().'/images/check.png" alt="vote" title="A évalué" width="25px" style="margin-left:0px;"/>';
-		$imgcheck_invest = '<img src="'.get_stylesheet_directory_uri().'/images/check.png" alt="investi" title="A investi" width="25px" style="margin-left:0px;"/>';
-		?>
+		$imgcheck_invest = '<img src="'.get_stylesheet_directory_uri().'/images/check.png" alt="investi" title="A investi" width="25px" style="margin-left:0px;"/>'; ?>
         <div class="wdg-datatable" >
         <table id="contacts-table" class="display" cellspacing="0">
             <?php //Ecriture des nom des colonnes en haut?>
@@ -2685,11 +2684,12 @@ class WDGAjaxActionsProjectDashboard {
             <tbody>
             <?php foreach ($array_contacts as $id_contact => $data_contact): ?>
 				<?php
-					$has_more = array();
-					if ( $data_contact["more_invest"] ) {
-						$has_more = $data_contact["more_invest"];
-					} 
-				?>
+				$has_more = array();
+		if ( $data_contact["more_invest"] ) {
+			$has_more = $data_contact["more_invest"];
+		} ?>
+
+				<?php if ( empty( $has_more ) ): ?>
 				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $data_contact["invest_id"]; ?>">
 					<?php foreach ($array_columns as $column): ?>
                 	<td>
@@ -2706,7 +2706,7 @@ class WDGAjaxActionsProjectDashboard {
 							<div class="dirty-hide">1</div>
 							<?php echo $imgcheck_invest; ?>
 						<?php endif; ?>
-						
+
 					<?php else: ?>
 						<?php echo $data_contact[$column->columnData]; ?>
 					<?php endif; ?>
@@ -2714,6 +2714,7 @@ class WDGAjaxActionsProjectDashboard {
 					<?php endforeach; ?>
 				</tr>
 				
+				<?php else: ?>
 				<?php //Gestion de plusieurs investissements par la mÃªme personne
 				foreach ($has_more as $has_more_item): ?>
 				<tr data-DT_RowId="<?php echo $id_contact; ?>" data-investid="<?php echo $has_more_item["invest_id"]; ?>">
@@ -2747,6 +2748,7 @@ class WDGAjaxActionsProjectDashboard {
 					<?php endforeach; ?>
 				</tr>
 				<?php endforeach; ?>
+				<?php endif; ?>
 				
 			<?php endforeach; ?>
             </tbody>
@@ -2815,57 +2817,59 @@ class WDGAjaxActionsProjectDashboard {
         exit();
 	}
 
-	private static function clean_failed_investments( $array_contacts ) {
+	private static function clean_failed_investments($array_contacts) {
 		// on retire l'investissement qui est "failed" si cet investisseur a des investissements plus récents "pending" ou "publish" dont le montant total est supérieur à l'investissement "failed"
 		foreach ($array_contacts as $id_contact => &$data_contact) {
 			// pour chaque investisseur on regarde s'il y a plusieurs investissements
-            if ($data_contact["more_invest"] && !empty($data_contact["more_invest"])) {
+			if ($data_contact["more_invest"] && !empty($data_contact["more_invest"])) {
 				// on trie le tableau des investissements en partant du plus ancien
 				usort( $data_contact["more_invest"], function ($item1, $item2) {
 					$item1_date = new DateTime( $item1[ 'invest_date' ] );
 					$item2_date = new DateTime( $item2[ 'invest_date' ] );
-					return ( $item1_date > $item2_date );
+
+					return ( $item1_date > $item2_date ) || ( $item1_date == $item2_date && $item1[ 'invest_id' ] > $item2[ 'invest_id' ] );
 				} );
 
-                $has_more = $data_contact["more_invest"];
+				$has_more = $data_contact["more_invest"];
 				// s'il y a plusieurs investissements
 				$amount_last_failed_investment = FALSE;
 				$last_failed_investment_id = array();
 				$failed_investments_to_delete = array();
-                foreach ($has_more as $has_more_item) {
+				foreach ($has_more as $has_more_item) {
 					// on regarde si un des investissements est failed
-					if ( $has_more_item["post_invest_status"] == 'failed' ){
+					if ( $has_more_item["post_invest_status"] == 'failed' ) {
 						// on réinitialise le compteur
-						$amount_last_failed_investment = $has_more_item["invest_item"]["amount"] ;
+						$amount_last_failed_investment = $has_more_item["invest_item"]["amount"];
 						// on mémorise l'id de cet investissement
 						$last_failed_investment_id[] = $has_more_item["invest_id"];
 					} else {
 						if ( $amount_last_failed_investment ) {
 							// on diminue le compteur du montant de cet investissement
-							$amount_last_failed_investment = $amount_last_failed_investment  - $has_more_item["invest_item"]["amount"] ;
+							$amount_last_failed_investment = $amount_last_failed_investment  - $has_more_item["invest_item"]["amount"];
 							// si le compteur est égal ou inférieur à 0
-                            if ($amount_last_failed_investment <= 0) {
+							if ($amount_last_failed_investment <= 0) {
 								// alors on peut supprimer les derniers investissements failed
 								$failed_investments_to_delete = array_merge($failed_investments_to_delete, $last_failed_investment_id);
 								// et réinitialiser les variables
 								$amount_last_failed_investment = FALSE;
 								$last_failed_investment_id = array();
-                            }
+							}
 						}
 					}
-                }
+				}
 
 				// on supprime les investissements failed à supprimer
-				if ( !empty($failed_investments_to_delete) ){
-					foreach ($failed_investments_to_delete as $failed_investment_id ){
+				if ( !empty($failed_investments_to_delete) ) {
+					foreach ($failed_investments_to_delete as $failed_investment_id ) {
 						$key = array_search($failed_investment_id, array_column($data_contact["more_invest"], 'invest_id'));
-						if ($key !== FALSE ){
+						if ($key !== FALSE ) {
 							array_splice($data_contact["more_invest"], $key, 1);
 						}
 					}
 				}
-            }
-        }
+			}
+		}
+
 		return $array_contacts;
 	}
 
@@ -3352,7 +3356,7 @@ class WDGAjaxActionsProjectDashboard {
 
 			exit('1' );
 		}
-		ypcf_debug_log( 'WDGAjaxActions::action_project_dashboard::campaign_transfer_investments campagne de départ not funded ' );		
+		ypcf_debug_log( 'WDGAjaxActions::action_project_dashboard::campaign_transfer_investments campagne de départ not funded ' );
 		exit('0' );
 	}
 	/**
