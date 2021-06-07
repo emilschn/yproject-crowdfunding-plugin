@@ -2330,25 +2330,12 @@ class WDGAjaxActionsProjectDashboard {
 			}
 
 			$invest_amount = '<span class="payment-status-' . $post_invest_status_span_class . '">' .$item_invest['amount']. '</span>';
-			//Si il y a déjà une ligne pour l'investissement, on rajoute une ligne
-			if ( isset($array_contacts[$u_id]) && isset($array_contacts[$u_id]["invest"]) && $array_contacts[$u_id]["invest"] == 1 ) {
-				$more_invest = array();
-				$more_invest["invest_payment_type"] = $payment_type;
-				$more_invest["invest_payment_status"] = $payment_status;
-				$more_invest["post_invest_status"] = $post_invest_status;
-				$more_invest["invest_amount"] = $invest_amount.' €';
-				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
-				$datetime->add( new DateInterval( 'PT1H' ) );
-				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
-				$more_invest["invest_sign"] = $invest_sign_state;
-				$more_invest["invest_id"] = $item_invest['ID'];
-				$more_invest["invest_item"] = $item_invest;
-				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
-			} else {
+
+			//Si il n'y a pas encore d'info de l'utilisateur pour un investissement, on rajoute une ligne
+			if ( !isset($array_contacts[$u_id]) || !isset($array_contacts[$u_id]["invest"]) || $array_contacts[$u_id]["invest"] != 1 ) {
 				$array_contacts[$u_id]["invest"] = 1;
 				$array_contacts[$u_id]["invest_status"] = ( $post_invest_status == 'publish' ? 'success' : 'error' );
 				$array_contacts[$u_id]["post_invest_status"] = $post_invest_status;
-				$array_contacts[$u_id]["more_invest"] = array();
 				$array_contacts[$u_id]["invest_payment_type"] = $payment_type;
 				$array_contacts[$u_id]["invest_payment_status"] = $payment_status;
 				$array_contacts[$u_id]["invest_amount"] = $invest_amount.' €';
@@ -2358,21 +2345,22 @@ class WDGAjaxActionsProjectDashboard {
 				$array_contacts[$u_id]["invest_sign"] = $invest_sign_state;
 				$array_contacts[$u_id]["invest_id"] = $item_invest['ID'];
 				$array_contacts[$u_id]["invest_item"] = $item_invest;
-
-				// Ajout directement dans la liste complémentaire
-				$more_invest = array();
-				$more_invest["invest_payment_type"] = $payment_type;
-				$more_invest["invest_payment_status"] = $payment_status;
-				$more_invest["post_invest_status"] = $post_invest_status;
-				$more_invest["invest_amount"] = $invest_amount.' €';
-				$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
-				$datetime->add( new DateInterval( 'PT1H' ) );
-				$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
-				$more_invest["invest_sign"] = $invest_sign_state;
-				$more_invest["invest_id"] = $item_invest['ID'];
-				$more_invest["invest_item"] = $item_invest;
-				array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
+				$array_contacts[$u_id]["more_invest"] = array();
 			}
+
+			// Ajout directement dans la liste des investissements
+			$more_invest = array();
+			$more_invest["invest_payment_type"] = $payment_type;
+			$more_invest["invest_payment_status"] = $payment_status;
+			$more_invest["post_invest_status"] = $post_invest_status;
+			$more_invest["invest_amount"] = $invest_amount.' €';
+			$datetime = new DateTime( get_post_field( 'post_date', $item_invest['ID'] ) );
+			$datetime->add( new DateInterval( 'PT1H' ) );
+			$more_invest["invest_date"] = $datetime->format( 'Y-m-d H:i:s' );
+			$more_invest["invest_sign"] = $invest_sign_state;
+			$more_invest["invest_id"] = $item_invest['ID'];
+			$more_invest["invest_item"] = $item_invest;
+			array_push( $array_contacts[$u_id]["more_invest"], $more_invest );
 		}
 
 		//Extraction infos utilisateur
@@ -2830,7 +2818,6 @@ class WDGAjaxActionsProjectDashboard {
 	}
 
 	private static function clean_failed_investments($array_contacts) {
-		ypcf_debug_log( 'clean_failed_investments before :: ' . print_r($array_contacts, true) );
 		// on retire l'investissement qui est "failed" si cet investisseur a des investissements plus récents "pending" ou "publish" dont le montant total est supérieur à l'investissement "failed"
 		foreach ($array_contacts as $id_contact => &$data_contact) {
 			// pour chaque investisseur on regarde s'il y a plusieurs investissements
@@ -2882,7 +2869,6 @@ class WDGAjaxActionsProjectDashboard {
 				}
 			}
 		}
-		ypcf_debug_log( 'clean_failed_investments after :: ' . print_r($array_contacts, true) );
 
 		return $array_contacts;
 	}
