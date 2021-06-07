@@ -1945,6 +1945,8 @@ class ATCF_Campaign {
 				return TRUE;
 			}
 		}
+
+		return FALSE;
 	}
 
 	/**
