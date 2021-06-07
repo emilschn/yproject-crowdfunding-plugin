@@ -2824,10 +2824,7 @@ class WDGAjaxActionsProjectDashboard {
 			if ($data_contact["more_invest"] && !empty($data_contact["more_invest"])) {
 				// on trie le tableau des investissements en partant du plus ancien
 				usort( $data_contact["more_invest"], function ($item1, $item2) {
-					$item1_date = new DateTime( $item1[ 'invest_date' ] );
-					$item2_date = new DateTime( $item2[ 'invest_date' ] );
-
-					return ( $item1_date > $item2_date ) || ( $item1[ 'invest_id' ] > $item2[ 'invest_id' ] );
+					return ( $item1[ 'invest_id' ] > $item2[ 'invest_id' ] );
 				} );
 
 				$has_more = $data_contact["more_invest"];
