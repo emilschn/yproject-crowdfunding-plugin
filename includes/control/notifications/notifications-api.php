@@ -507,13 +507,14 @@ class NotificationsAPI {
 	/**
 	 * Méthode générique d'envoi de mail via l'API
 	 */
-	private static function send($parameters) {		
-		if ( $parameters[ 'tool' ] == 'sms' ){
+	private static function send($parameters) {
+		if ( $parameters[ 'tool' ] == 'sms' ) {
 			// c'est un sms qu'on essaie d'envoyer
 			$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 			if ( empty( $result->result ) ) {
 				NotificationsAsana::notification_api_failed( $parameters, $result );
 			}
+
 			return $result;
 		} else {
 			// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
@@ -2558,7 +2559,7 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS VERSEMENT AVEC ROYALTIES PLUSIEURS PROJETS
 	//*******************************************************
-	public static function roi_transfer_daily_resume($WDGUserOrOrganization, $royalties_message) {
+	public static function roi_transfer_daily_resume($WDGUserOrOrganization, $royalties_message, $recipient_email) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-daily-resume' );
 
 		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
@@ -2572,7 +2573,7 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $recipient_email,
 			'options'	=> json_encode( $options )
 		);
 
