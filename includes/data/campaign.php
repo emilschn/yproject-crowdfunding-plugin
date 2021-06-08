@@ -3915,6 +3915,7 @@ class ATCF_Campaign {
 	}
 
 	public static function get_list_positive_savings($nb = 0, $random = TRUE) {
+		WDG_Languages_Helpers::switch_to_french_temp();
 		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
 		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
 		$query_options = array(
@@ -3940,7 +3941,11 @@ class ATCF_Campaign {
 			$query_options[ 'order' ] = 'asc';
 		}
 
-		return get_posts( $query_options );
+		$buffer = get_posts( $query_options );
+
+		WDG_Languages_Helpers::switch_back_to_display_language();
+
+		return $buffer;
 	}
 
 	public static function get_list_funded($nb = 0, $client = '', $include_current = false, $skip_hidden = true) {
