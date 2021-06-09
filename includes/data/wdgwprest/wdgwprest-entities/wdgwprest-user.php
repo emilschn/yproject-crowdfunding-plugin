@@ -83,7 +83,8 @@ class WDGWPREST_Entity_User {
 			/* 'picture_url', 'website_url', 'twitter_url', 'facebook_url', 'linkedin_url', 'viadeo_url', 'activation_key', 'password' */
 			'signup_date'		=> $user->get_signup_date(),
 			'royalties_notifications'		=> $user->get_royalties_notifications(),
-			'gateway_list'		=> $user->get_encoded_gateway_list()
+			'gateway_list'		=> $user->get_encoded_gateway_list(),
+			'email_is_validated'		=> $user->get_email_is_validated()
 		);
 		if ( !empty( $file_list_id[ 0 ]->file_name ) ) {
 			$parameters[ 'document_id' ] = $file_list_id[ 0 ]->file_name;
