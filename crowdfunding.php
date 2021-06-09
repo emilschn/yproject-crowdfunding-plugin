@@ -110,6 +110,7 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'data/roi-tax.php';
 		require $this->includes_dir . 'data/kyc-file.php';
 		require $this->includes_dir . 'data/rewards.php';
+		require $this->includes_dir . 'data/user-interface.php';
 		require $this->includes_dir . 'data/organization.php';
 		require $this->includes_dir . 'data/user.php';
 		require $this->includes_dir . 'data/user-investments.php';
