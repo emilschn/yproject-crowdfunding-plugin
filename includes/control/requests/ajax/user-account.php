@@ -254,6 +254,8 @@ class WDGAjaxActionsUserAccount {
 					$contract_start_date = new DateTime( $campaign->contract_start_date() );
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
 
+					$maximum_profit = $campaign->maximum_profit();
+					$estimated_rois_total = $maximum_profit * $payment_amount;
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$estimated_rois = 0;
 						if ( $estimated_turnover_unit == 'percent' ) {
@@ -266,6 +268,9 @@ class WDGAjaxActionsUserAccount {
 								$estimated_rois = round( $turnover * $roi_percent_full_estimated / 100 );
 							}
 						}
+						$estimated_rois = min( $estimated_rois, $estimated_rois_total );
+						$estimated_rois_total -= $estimated_rois;
+
 						$year_item = array(
 							'amount_turnover_nb'=> 0,
 							'amount_turnover'	=> '0 &euro;',
@@ -486,6 +491,8 @@ class WDGAjaxActionsUserAccount {
 					// On démarre de la date de démarrage du contrat
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
 
+					$maximum_profit = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_maximum_profit, TRUE );
+					$estimated_rois_total = $maximum_profit * $result_investment_item->amount;
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$estimated_rois = 0;
 						if ( $estimated_turnover_unit == 'percent' ) {
@@ -509,6 +516,8 @@ class WDGAjaxActionsUserAccount {
 								$estimated_rois = round( $turnover * $roi_percent_full_estimated / 100 );
 							}
 						}
+						$estimated_rois = min( $estimated_rois, $estimated_rois_total );
+						$estimated_rois_total -= $estimated_rois;
 
 						$buffer_year_item = array();
 						$buffer_year_item[ 'amount_turnover_nb' ] = 0;
@@ -544,16 +553,16 @@ class WDGAjaxActionsUserAccount {
 						if ( $today_datetime < $date_end ) {
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.SUSPENDED', 'yproject' );
 						}
-					} else{
-                        if ($result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check') {
-                            $buffer_investment_item[ 'status_str' ] = __('account.investments.status.PENDING_PAYMENT', 'yproject');
-                        } else {
-                            $WDGInvestment = new WDGInvestment($result_investment_item->wpref);
-                            if ($WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated) {
-                                $buffer_investment_item[ 'status_str' ] = __('account.investments.status.TO_BE_VALIDATED', 'yproject');
-                            }
-                        }
-                    }
+					} else {
+						if ($result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check') {
+							$buffer_investment_item[ 'status_str' ] = __('account.investments.status.PENDING_PAYMENT', 'yproject');
+						} else {
+							$WDGInvestment = new WDGInvestment($result_investment_item->wpref);
+							if ($WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated) {
+								$buffer_investment_item[ 'status_str' ] = __('account.investments.status.TO_BE_VALIDATED', 'yproject');
+							}
+						}
+					}
 				} elseif ( $result_investment_item->status == 'publish' ) {
 					if ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_collecte ) {
 						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.VALIDATED', 'yproject' );
