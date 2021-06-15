@@ -501,6 +501,12 @@ class NotificationsAPI {
 			'description'	=> "Test d'éligibilité - Tableau de bord pas encore créé",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
+		),
+		'user-account-email-validation' => array(
+			'fr-sib-id'		=> 'user-account-email-validation',
+			'description'	=> "Activation de l'e-mail du compte",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
 		)
 	);
 
@@ -606,6 +612,12 @@ class NotificationsAPI {
 		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		if ( empty( $result->result ) ) {
 			NotificationsAsana::notification_api_failed( $parameters, $result );
+		} else {
+			$result_decoded = json_decode( $result->result );
+			// on traite les result avec codes d'erreur exemple :     [result] => [401] Client error: `POST https://api.sendinblue.com/v3/smtp/email` resulted in a `401 Unauthorized` response: {"message":"Key not found","code":"unauthorized"}
+			if ( $result_decoded->code != 'success' ) {
+				NotificationsAsana::notification_api_failed( $parameters, $result );
+			}
 		}
 
 		return $result;
@@ -922,6 +934,41 @@ class NotificationsAPI {
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	//*******************************************************
+	// Validation de l'adresse mail
+	//*******************************************************
+	public static function user_account_email_validation($WDGUser, $link, $is_new_account) {
+		$id_template = self::get_id_fr_by_slug( 'user-account-email-validation' );
+		ypcf_debug_log('user_account_email_validation !', false);
+
+		$activation_mail_intro = '';
+		if ( $is_new_account ) {
+			$activation_mail_intro = WDGConfigTexts::get_config_text_by_name( 'account-activation-email-intro-new' );
+			ypcf_debug_log('user_account_email_validation > new', false);
+		} else {
+			$activation_mail_intro = WDGConfigTexts::get_config_text_by_name( 'account-activation-email-intro-old' );
+			ypcf_debug_log('user_account_email_validation > old', false);
+		}
+		NotificationsAPIShortcodes::set_account_activation_email_intro( $activation_mail_intro );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_validation_email_link($link);
+
+		$options = array(
+			'skip_admin'		=> 1,
+			'NOM'				=> $WDGUser->get_firstname(),
+			'LIEN'				=> $link
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGUser->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters );
 	}
 	//**************************************************************************
 	// Entrepreneurs

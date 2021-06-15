@@ -1,5 +1,6 @@
 <?php
-class WDGFormUsers {
+class WDGFormUsers
+{
 	public static function login_facebook() {
 		$do_fb_login = FALSE;
 		$fbcallback = filter_input( INPUT_GET, 'fbcallback' );
@@ -193,6 +194,90 @@ class WDGFormUsers {
 		}
 
 		return wp_authenticate_username_password( null, $username, $password );
+	}
+
+	/**
+	 * Retourne les informations de compte utilisateur en fonction d'une adresse e-mail
+	 */
+	public static function get_user_type_by_email_address($input_email) {
+		$result = array(
+			'status'			=> '',
+			'firstname'			=> '',
+			'lastname'			=> '',
+			'url_redirect'		=> '',
+			'organizationname'	=> ''
+		);
+
+		// La chaine transmise est vide
+		if ( empty( $input_email ) ) {
+			$result[ 'status' ] = 'empty-email';
+
+			return $result;
+		}
+
+		// La chaine transmise n'est pas une adresse mail
+		if ( !WDGRESTAPI_Lib_Validator::is_email( $input_email ) ) {
+			$result[ 'status' ] = 'bad-email';
+
+			return $result;
+		}
+
+		// L'adresse mail transmise n'existe pas sur la plateforme
+		$user_by_email = get_user_by( 'email', $input_email );
+		if ( empty( $user_by_email ) ) {
+			$result[ 'status' ] = 'not-existing-account';
+
+			return $result;
+		}
+
+		// L'adresse mail transmise correspond à une organisation
+		if ( WDGOrganization::is_user_organization( $user_by_email->ID ) ) {
+			$WDGOrganization = new WDGOrganization( $user_by_email->ID );
+			$result[ 'status' ] = 'orga-account';
+			$result[ 'organizationname' ] = $WDGOrganization->get_name();
+			$result[ 'team_members' ] = array();
+			$list_linked_users = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $list_linked_users ) ) {
+				foreach ( $list_linked_users as $WDGUser_linked ) {
+					$user_item = array(
+						'email'			=> $WDGUser_linked->get_email(),
+						'firstname'		=> $WDGUser_linked->get_firstname(),
+						'lastname'		=> $WDGUser_linked->get_lastname(),
+						'url_redirect'	=> $WDGUser_linked->is_email_validated() ? wp_unslash( WDGUser::get_login_redirect_page() ) : 'email-validation',
+						'status'		=> $WDGUser_linked->is_logged_in_with_facebook() ? 'facebook-account' : 'existing-account'
+					);
+					array_push( $result[ 'team_members' ], $user_item );
+				}
+			}
+			// Récupérer prénom, nom, email et méthode de connexion
+			return $result;
+		}
+
+		// Si on arrive ici, c'est un compte de personne physique
+		$WDGUser = new WDGUser( $user_by_email->ID );
+		$WDGUser->construct_with_api_data();
+		$result[ 'firstname' ] = $WDGUser->get_firstname();
+		$result[ 'lastname' ] = $WDGUser->get_lastname();
+		$result[ 'url_redirect' ] = $WDGUser->is_email_validated() ? wp_unslash( WDGUser::get_login_redirect_page() ) : 'email-validation';
+
+		// L'adresse mail transmise correspond à un compte connecté avec Facebook
+		if ( $WDGUser->is_logged_in_with_facebook() ) {
+			$result[ 'status' ] = 'facebook-account';
+		} else {
+			$result[ 'status' ] = 'existing-account';
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Vérifie la correspondance entre adresse e-mail et mot de passe
+	 */
+	public static function get_signin_return($input_email, $input_password) {
+		$user_by_email = get_user_by( 'email', $input_email );
+		$username = $user_by_email->user_login;
+
+		return wp_authenticate_username_password( null, $username, $input_password );
 	}
 
 	/**

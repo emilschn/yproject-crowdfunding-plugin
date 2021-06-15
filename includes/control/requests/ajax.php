@@ -11,6 +11,7 @@ class WDGAjaxActions {
 	private static $class_name_project_dashboard = 'WDGAjaxActionsProjectDashboard';
 	private static $class_name_vuejs = 'WDGAjaxActionsVue';
 	private static $class_name_prospect_setup = 'WDGAjaxActionsProspectSetup';
+	private static $class_name_account_signin = 'WDGAjaxActionsAccountSignin';
 
 	private static $class_to_filename = array(
 		'WDG_Form_Vote'			=> 'vote',
@@ -89,6 +90,14 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_ask_card_payment' );
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_select_wire' );
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_received_wire' );
+
+		// Account signin - Interface de connexion / inscription
+		WDGAjaxActions::add_action_account_signin( 'account_signin_get_email_info' );
+		WDGAjaxActions::add_action_account_signin( 'account_signin_check_password' );
+		WDGAjaxActions::add_action_account_signin( 'account_signin_create_account' );
+		WDGAjaxActions::add_action_account_signin( 'account_signin_send_reinit_pass' );
+		WDGAjaxActions::add_action_account_signin( 'account_signin_send_validation_email' );
+		WDGAjaxActions::add_action_account_signin( 'account_signin_change_account_email' );
 	}
 
 	/**
@@ -147,7 +156,7 @@ class WDGAjaxActions {
 			}
 			// Sauvegarde des restants
 			$projects_searchable_encoded = json_encode( $list_to_cache );
-			$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h			
+			$WDG_cache_plugin->set_cache( 'ATCF_Campaign::list_projects_searchable_' .$index, $projects_searchable_encoded, 60 * 60 * 3, 3 ); //MAJ 3h
 		}
 		$buffer = array('home_url' => esc_url( home_url( '/' ) ) , 'projects' => $projects_searchable);
 		$buffer_json = json_encode( $buffer );
@@ -283,5 +292,27 @@ class WDGAjaxActions {
 		$crowdfunding->include_control( 'requests/ajax/prospect-setup' );
 		$action = filter_input( INPUT_POST, 'action' );
 		call_user_func( self::$class_name_prospect_setup . '::' . $action );
+	}
+
+	/**********************************************/
+	/**
+	 * Référence les actions liées à l'interface de connexion / inscription
+	 */
+	private static function add_action_account_signin($action_name) {
+		add_action( 'wp_ajax_' . $action_name, self::$class_name . '::account_signin_actions' );
+		add_action( 'wp_ajax_nopriv_' . $action_name, self::$class_name . '::account_signin_actions' );
+	}
+
+	/**
+	 * Exécute les actions liées à l'interface de connexion / inscription
+	 */
+	public static function account_signin_actions() {
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_control( 'requests/ajax/account-signin' );
+		$crowdfunding->include_control( 'amplitude/api-calls' );
+		$action = filter_input( INPUT_POST, 'action' );
+		$sessionUID = filter_input( INPUT_POST, 'sessionUID' );
+		WDGAmplitude::logEvent( $action, $sessionUID );
+		call_user_func( self::$class_name_account_signin . '::' . $action );
 	}
 }
