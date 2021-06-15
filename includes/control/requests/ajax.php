@@ -12,6 +12,7 @@ class WDGAjaxActions {
 	private static $class_name_vuejs = 'WDGAjaxActionsVue';
 	private static $class_name_prospect_setup = 'WDGAjaxActionsProspectSetup';
 	private static $class_name_account_signin = 'WDGAjaxActionsAccountSignin';
+	private static $class_name_account_authentication = 'WDGAjaxActionsAccountAuthentication';
 
 	private static $class_to_filename = array(
 		'WDG_Form_Vote'			=> 'vote',
@@ -98,6 +99,9 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_account_signin( 'account_signin_send_reinit_pass' );
 		WDGAjaxActions::add_action_account_signin( 'account_signin_send_validation_email' );
 		WDGAjaxActions::add_action_account_signin( 'account_signin_change_account_email' );
+
+		// Account authentication - Interface d'authentification
+		WDGAjaxActions::add_action_account_authentication( 'account_authentication_search_address' );
 	}
 
 	/**
@@ -314,5 +318,27 @@ class WDGAjaxActions {
 		$sessionUID = filter_input( INPUT_POST, 'sessionUID' );
 		WDGAmplitude::logEvent( $action, $sessionUID );
 		call_user_func( self::$class_name_account_signin . '::' . $action );
+	}
+
+	/**********************************************/
+	/**
+	 * Référence les actions liées à l'interface d'authentification
+	 */
+	private static function add_action_account_authentication($action_name) {
+		add_action( 'wp_ajax_' . $action_name, self::$class_name . '::account_authentication_actions' );
+		add_action( 'wp_ajax_nopriv_' . $action_name, self::$class_name . '::account_authentication_actions' );
+	}
+
+	/**
+	 * Exécute les actions liées à l'interface de connexion / inscription
+	 */
+	public static function account_authentication_actions() {
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_control( 'requests/ajax/account-authentication' );
+		$crowdfunding->include_control( 'amplitude/api-calls' );
+		$action = filter_input( INPUT_POST, 'action' );
+		$sessionUID = filter_input( INPUT_POST, 'sessionUID' );
+		WDGAmplitude::logEvent( $action, $sessionUID );
+		call_user_func( self::$class_name_account_authentication . '::' . $action );
 	}
 }
