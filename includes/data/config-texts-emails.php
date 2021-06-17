@@ -91,11 +91,17 @@ class WDGConfigTextsEmails {
 		// Si il y a bien un post_type qui correspond
 		$configpost = get_page_by_path( $name, OBJECT, self::$post_type_name );
 		if ( !empty( $configpost ) ) {
-			if ( !empty( $language_to_translate_to ) ) {
-				$post_translated_id = self::get_translated_post_id( $configpost->ID, $language_to_translate_to );
-				if ( !empty( $post_translated_id ) ) {
-					$configpost = get_post( $post_translated_id );
-				}
+			// Il y a possiblement des doublons de slug entre fr et en
+			// Si la langue de traduction n'est pas définie, on va chercher du fr
+			// Pour ne pas récupérer la langue anglaise par défaut
+			if ( empty( $language_to_translate_to ) ) {
+				$language_to_translate_to = 'fr';
+			}
+
+			// On récupère le post dans la bonne langue
+			$post_translated_id = self::get_translated_post_id( $configpost->ID, $language_to_translate_to );
+			if ( !empty( $post_translated_id ) ) {
+				$configpost = get_post( $post_translated_id );
 			}
 
 			return $configpost;
@@ -111,12 +117,10 @@ class WDGConfigTextsEmails {
 		$buffer = FALSE;
 
 		// Récupérer la page traduite si nécessaire
-		if ( !WDG_Languages_Helpers::is_french_displayed() ) {
-			$locale_substr = substr( $language_to_translate_to, 0, 2 );
-			$post_translated_id = apply_filters( 'wpml_object_id', $french_post_id, self::$post_type_name, FALSE, $locale_substr );
-			if ( !empty( $post_translated_id ) ) {
-				$buffer = $post_translated_id;
-			}
+		$locale_substr = substr( $language_to_translate_to, 0, 2 );
+		$post_translated_id = apply_filters( 'wpml_object_id', $french_post_id, self::$post_type_name, FALSE, $locale_substr );
+		if ( !empty( $post_translated_id ) ) {
+			$buffer = $post_translated_id;
 		}
 
 		return $buffer;
