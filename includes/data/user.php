@@ -2,7 +2,7 @@
 /**
  * Lib de gestion des utilisateurs
  */
-class WDGUser {
+class WDGUser implements WDGUserInterface {
 	public static $key_validated_general_terms_version = 'validated_general_terms_version';
 	public static $key_lemonway_status = 'lemonway_status';
 	public static $edd_general_terms_version = 'terms_general_version';

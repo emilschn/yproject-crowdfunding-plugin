@@ -1280,6 +1280,7 @@ class ATCF_Campaign {
 
 		if ( $this->platform_commission() == '' ) {
 			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $this->platform_commission() empty ');
+
 			return;
 		}
 		$data_contract_start_date = $this->contract_start_date();
@@ -1287,11 +1288,13 @@ class ATCF_Campaign {
 			$start_datetime = new DateTime( $data_contract_start_date );
 		} else {
 			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $data_contract_start_date  empty ');
+
 			return;
 		}
 		$fiscal_info = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_info_fiscal, 'accounting_fiscal_info' );
 		if ( empty( $fiscal_info ) ) {
 			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $fiscal_info  empty ');
+
 			return;
 		}
 
@@ -1934,6 +1937,16 @@ class ATCF_Campaign {
 		}
 
 		return $buffer;
+	}
+	public function has_impact($str_impact) {
+		$categories = $this->get_categories();
+		foreach ($categories as $category) {
+			if ( $category->slug == $str_impact ) {
+				return TRUE;
+			}
+		}
+
+		return FALSE;
 	}
 
 	/**
@@ -2586,7 +2599,7 @@ class ATCF_Campaign {
 	 *
 	 * @since Appthemer CrowdFunding 0.1-alpha
 	 *
-	 * @return sting Campaign Video
+	 * @return string Campaign Video
 	 */
 	public function video() {
 		$buffer = $this->__get_translated_property( 'campaign_video' );
@@ -3912,6 +3925,7 @@ class ATCF_Campaign {
 	}
 
 	public static function get_list_positive_savings($nb = 0, $random = TRUE) {
+		WDG_Languages_Helpers::switch_to_french_temp();
 		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
 		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
 		$query_options = array(
@@ -3937,7 +3951,11 @@ class ATCF_Campaign {
 			$query_options[ 'order' ] = 'asc';
 		}
 
-		return get_posts( $query_options );
+		$buffer = get_posts( $query_options );
+
+		WDG_Languages_Helpers::switch_back_to_display_language();
+
+		return $buffer;
 	}
 
 	public static function get_list_funded($nb = 0, $client = '', $include_current = false, $skip_hidden = true) {
