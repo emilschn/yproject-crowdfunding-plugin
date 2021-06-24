@@ -1,6 +1,5 @@
 <?php
-class WDGFormUsers
-{
+class WDGFormUsers {
 	public static function login_facebook() {
 		$do_fb_login = FALSE;
 		$fbcallback = filter_input( INPUT_GET, 'fbcallback' );
