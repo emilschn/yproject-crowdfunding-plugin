@@ -19,6 +19,22 @@ class WDGAjaxActions {
 		'WDG_Form_Dashboard_Add_Check' => 'dashboard-add-check'
 	);
 
+	public static function do_action() {
+		if ( defined( 'WP_IS_DEV_SITE' ) && WP_IS_DEV_SITE ) {
+			header('Access-Control-Allow-Origin: *');
+		}
+
+		$input_action = filter_input( INPUT_POST, 'action' );
+		$action = esc_attr( trim( $input_action ) );
+		if ( !empty( $action ) ) {
+			if ( is_user_logged_in() ) {
+				do_action( 'wp_ajax_' . $action );
+			} else {
+				do_action( 'wp_ajax_nopriv_' . $action );
+			}
+		}
+	}
+
 	/**
 	 * Initialise la liste des actions ajax
 	 */
