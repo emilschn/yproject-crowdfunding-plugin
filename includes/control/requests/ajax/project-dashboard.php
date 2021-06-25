@@ -2241,7 +2241,10 @@ class WDGAjaxActionsProjectDashboard {
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			$post_invest_status_span_class = $post_invest_status;
-			if ( $post_invest_status == 'pending' ) {
+			
+            if ($contract_status == WDGInvestment::$contract_status_preinvestment_validated) {
+				$post_invest_status_span_class = 'waiting';
+            } elseif ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
 					if ( $campaign->campaign_status() != 'vote' || $wire_with_received_payments !== '1' ) {
@@ -2281,8 +2284,8 @@ class WDGAjaxActionsProjectDashboard {
 			$invest_sign_state = __( "Valid&eacute;", 'yproject' );
 			$invest_sign_state_span_class = 'confirm';
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
-				$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
-				$invest_sign_state_span_class = 'error';
+				$invest_sign_state = __( "En attente du passage en phase d'investissement", 'yproject' );
+				$invest_sign_state_span_class = 'waiting';
 				if ( $current_wdg_user->is_admin() ) {
 					$action = '<br><a href="' .WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ). $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
 					$action .= '<br><br><a href="' .WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ). $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
