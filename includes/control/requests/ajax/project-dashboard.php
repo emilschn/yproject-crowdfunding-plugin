@@ -2120,7 +2120,7 @@ class WDGAjaxActionsProjectDashboard {
 			return '<div class="wdg-datatable">Erreur de paramètre</div>';
 		}
 
-		$campaign = new ATCF_Campaign($campaign_id);
+		$campaign = new  ($campaign_id);
 		$campaign_poll_answers = $campaign->get_api_data( 'poll_answers' );
 
 		$current_wdg_user = WDGUser::current();
@@ -2242,7 +2242,7 @@ class WDGAjaxActionsProjectDashboard {
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			$post_invest_status_span_class = $post_invest_status;
 			
-            if ($contract_status == WDGInvestment::$contract_status_preinvestment_validated) {
+            if ($contract_status == WDGInvestment::$contract_status_preinvestment_validated && $campaign->campaign_status() == 'vote') {
 				$post_invest_status_span_class = 'waiting';
             } elseif ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
@@ -2284,8 +2284,13 @@ class WDGAjaxActionsProjectDashboard {
 			$invest_sign_state = __( "Valid&eacute;", 'yproject' );
 			$invest_sign_state_span_class = 'confirm';
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
-				$invest_sign_state = __( "En attente du passage en phase d'investissement", 'yproject' );
-				$invest_sign_state_span_class = 'waiting';
+				if ( $campaign->campaign_status() == 'vote' ){
+					$invest_sign_state = __( "En attente du passage en phase d'investissement", 'yproject' );
+					$invest_sign_state_span_class = 'waiting';
+				}else{
+					$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
+					$invest_sign_state_span_class = 'error';
+				}
 				if ( $current_wdg_user->is_admin() ) {
 					$action = '<br><a href="' .WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ). $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
 					$action .= '<br><br><a href="' .WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ). $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
