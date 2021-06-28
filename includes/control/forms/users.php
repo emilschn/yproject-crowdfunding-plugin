@@ -350,6 +350,8 @@ class WDGFormUsers {
 					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 					update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
 					$WDGUser = new WDGUser($wp_user_id);
+					$WDGUser->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+					$WDGUser->update_api();
 					NotificationsAPI::user_registration( $WDGUser );
 					WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
