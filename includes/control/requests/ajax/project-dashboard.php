@@ -2120,7 +2120,7 @@ class WDGAjaxActionsProjectDashboard {
 			return '<div class="wdg-datatable">Erreur de paramètre</div>';
 		}
 
-		$campaign = new  ($campaign_id);
+		$campaign = new ATCF_Campaign ($campaign_id);
 		$campaign_poll_answers = $campaign->get_api_data( 'poll_answers' );
 
 		$current_wdg_user = WDGUser::current();
