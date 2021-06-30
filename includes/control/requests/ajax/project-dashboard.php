@@ -3237,6 +3237,8 @@ class WDGAjaxActionsProjectDashboard {
 			}
 
 			$WDGUser_new = new WDGUser( $id_linked_user );
+			$WDGUser_new->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+			$WDGUser_new->update_api();
 			$WDGUser_new->save_data(FALSE, $investments_drafts_item_data->gender, $investments_drafts_item_data->firstname, $investments_drafts_item_data->lastname, FALSE, $birthday_date_day, $birthday_date_month, $birthday_date_year, $investments_drafts_item_data->birthplace, $investments_drafts_item_data->birthplace_district, $investments_drafts_item_data->birthplace_department, $investments_drafts_item_data->birthplace_country, $investments_drafts_item_data->nationality, $investments_drafts_item_data->address_number, $investments_drafts_item_data->address_number_complement, $investments_drafts_item_data->address, $investments_drafts_item_data->postal_code, $investments_drafts_item_data->city, $investments_drafts_item_data->country, FALSE, FALSE, FALSE);
 
 			// Notification de création de compte
