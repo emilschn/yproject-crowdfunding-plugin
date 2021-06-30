@@ -703,7 +703,7 @@ class WDGAjaxActionsUserAccount {
 								} else {
 									$buffer_roi_item[ 'status' ] = 'upcoming';
 									$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
-									if ( $buffer_investment_item[ 'payment_date' ]  == '') {
+									if ( $buffer_investment_item[ 'payment_date' ]  == '' && $buffer_investment_item[ 'status' ] != 'canceled') {
 										$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
 									}
 								}
@@ -717,7 +717,7 @@ class WDGAjaxActionsUserAccount {
 							default:
 								$buffer_roi_item[ 'status' ] = 'upcoming';
 								$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
-								if ( $buffer_investment_item[ 'payment_date' ]  == '') {
+								if ( $buffer_investment_item[ 'payment_date' ]  == '' && $buffer_investment_item[ 'status' ] != 'canceled') {
 									$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
 								}
 								break;
