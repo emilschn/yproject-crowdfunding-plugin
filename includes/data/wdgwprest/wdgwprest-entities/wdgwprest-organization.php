@@ -15,8 +15,8 @@ class WDGWPREST_Entity_Organization {
 	 * @param string $id
 	 * @return object
 	 */
-	public static function get($id) {
-		return WDGWPRESTLib::call_get_wdg( 'organization/' . $id );
+	public static function get( $id, $shortcut_call = FALSE ) {
+		return WDGWPRESTLib::call_get_wdg( 'organization/' . $id, $shortcut_call );
 	}
 
 	/**
@@ -131,8 +131,8 @@ class WDGWPREST_Entity_Organization {
 	 *
 	 * @param type $organization_id
 	 */
-	public static function get_linked_users($organization_id) {
-		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/users' );
+	public static function get_linked_users( $organization_id, $shortcut_call = FALSE ) {
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'organization/' .$organization_id. '/users', $shortcut_call );
 
 		return $result_obj;
 	}

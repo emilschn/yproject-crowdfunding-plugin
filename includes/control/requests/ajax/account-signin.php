@@ -1,24 +1,18 @@
 <?php
+require_once '/account-signin/account-signin.autoload.php';
+
 /**
  * Gestion des appels Ajax liés à l'appli vuejs de connexion / inscription
  */
 class WDGAjaxActionsAccountSignin {
-	/**
-	 * Donne les informations à Account Signin en fonction de l'adresse e-mail
-	 */
-	public static function account_signin_get_email_info() {
-		$input_email = filter_input( INPUT_POST, 'email-address' );
-		$result = WDGFormUsers::get_user_type_by_email_address( $input_email );
-		exit( json_encode( $result ) );
-	}
-
 	/**
 	 * Vérifie si l'identification fonctionne entre une adresse e-mail et un mot de passe
 	 */
 	public static function account_signin_check_password() {
 		$input_email = filter_input( INPUT_POST, 'email-address' );
 		// On re-vérifie le type d'adresse en fonction de la saisie
-		$result = WDGFormUsers::get_user_type_by_email_address( $input_email );
+		$result = AccountSigninHelper::get_user_type_by_email_address( $input_email );
+		$result[ 'url_redirect' ] = ( $result[ 'url_redirect' ] == 'redirect' ) ? wp_unslash( WDGUser::get_login_redirect_page() ) : $result[ 'url_redirect' ];
 
 		// Si c'est bien un utilisateur existant (et pas lié à Facebook)
 		if ( $result[ 'status' ] == 'existing-account' ) {
@@ -59,7 +53,8 @@ class WDGAjaxActionsAccountSignin {
 		} else {
 			// On le fait par sécurité :
 			// On re-vérifie le type d'adresse en fonction de la saisie
-			$result = WDGFormUsers::get_user_type_by_email_address( $input_email );
+			$result = AccountSigninHelper::get_user_type_by_email_address( $input_email );
+			$result[ 'url_redirect' ] = ( $result[ 'url_redirect' ] == 'redirect' ) ? wp_unslash( WDGUser::get_login_redirect_page() ) : $result[ 'url_redirect' ];
 		}
 		ypcf_debug_log( 'account_signin_create_account >> ' . print_r($result, true), false );
 

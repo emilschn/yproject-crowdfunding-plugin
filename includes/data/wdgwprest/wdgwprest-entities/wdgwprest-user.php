@@ -12,11 +12,11 @@ class WDGWPREST_Entity_User {
 	 * @param string $id
 	 * @return object
 	 */
-	public static function get( $id ) {
+	public static function get( $id, $shortcut_call = FALSE ) {
 		if ( empty( $id ) ) {
 			return FALSE;
 		}
-		return WDGWPRESTLib::call_get_wdg( 'user/' .$id. '?with_links=1' );
+		return WDGWPRESTLib::call_get_wdg( 'user/' .$id. '?with_links=1', $shortcut_call );
 	}
 	
 	/**

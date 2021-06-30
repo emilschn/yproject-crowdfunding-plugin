@@ -95,7 +95,6 @@ class WDGAjaxActions {
 	}
 
 	public static $account_signin_actions = array(
-		'account_signin_get_email_info',
 		'account_signin_check_password',
 		'account_signin_create_account',
 		'account_signin_send_reinit_pass',
