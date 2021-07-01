@@ -1,5 +1,5 @@
 <?php
-require_once '/account-signin/account-signin.autoload.php';
+require_once dirname(__FILE__) . '/account-signin/account-signin-autoload.php';
 
 /**
  * Gestion des appels Ajax liés à l'appli vuejs de connexion / inscription
@@ -12,7 +12,6 @@ class WDGAjaxActionsAccountSignin {
 		$input_email = filter_input( INPUT_POST, 'email-address' );
 		// On re-vérifie le type d'adresse en fonction de la saisie
 		$result = AccountSigninHelper::get_user_type_by_email_address( $input_email );
-		$result[ 'url_redirect' ] = ( $result[ 'url_redirect' ] == 'redirect' ) ? wp_unslash( WDGUser::get_login_redirect_page() ) : $result[ 'url_redirect' ];
 
 		// Si c'est bien un utilisateur existant (et pas lié à Facebook)
 		if ( $result[ 'status' ] == 'existing-account' ) {
@@ -54,9 +53,7 @@ class WDGAjaxActionsAccountSignin {
 			// On le fait par sécurité :
 			// On re-vérifie le type d'adresse en fonction de la saisie
 			$result = AccountSigninHelper::get_user_type_by_email_address( $input_email );
-			$result[ 'url_redirect' ] = ( $result[ 'url_redirect' ] == 'redirect' ) ? wp_unslash( WDGUser::get_login_redirect_page() ) : $result[ 'url_redirect' ];
 		}
-		ypcf_debug_log( 'account_signin_create_account >> ' . print_r($result, true), false );
 
 		// Cas normal
 		// Si le compte n'existe pas
