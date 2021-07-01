@@ -99,6 +99,8 @@ class WDGFormUsers {
 							ypcf_session_start();
 							$_SESSION['send_creation_event'] = 1;
 							$WDGUser = new WDGUser($user_id);
+							$WDGUser->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+							$WDGUser->update_api();
 							NotificationsAPI::user_registration( $WDGUser );
 							WDGQueue::add_notification_registered_without_investment( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );

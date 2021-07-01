@@ -578,21 +578,22 @@ class WDGAjaxActionsUserAccount {
 						}
 					} elseif ( $result_campaign_item->project_status == ATCF_Campaign::$campaign_status_funded ) {
 						$buffer_investment_item[ 'status_str' ] = __( 'account.investments.STARTED_CONTRACT', 'yproject' );
-						$first_payment_date = $result_campaign_item->project_first_payment_date;
-						if ( empty( $first_payment_date ) ) {
-							$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
-						}
-						$date_first_payement = new DateTime( $first_payment_date );
-						if ( $today_datetime > $date_first_payement ) {
-							$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.NEXT_PAYMENT', 'yproject' );
-						} else {
-							$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );
-							$buffer_investment_item[ 'payment_date' ] = date_i18n( 'F Y', strtotime( $first_payment_date ) );
-						}
 
 						if ( !empty( $first_investment_contract_status ) && $first_investment_contract_status == 'canceled' ) {
 							$buffer_investment_item[ 'status' ] = 'canceled';
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.PAYMENTS_FINISHED', 'yproject' );
+						} else {
+							$first_payment_date = $result_campaign_item->project_first_payment_date;
+							if ( empty( $first_payment_date ) ) {
+								$first_payment_date = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_first_payment_date, TRUE );
+							}
+							$date_first_payement = new DateTime( $first_payment_date );
+							if ( $today_datetime > $date_first_payement ) {
+								$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.NEXT_PAYMENT', 'yproject' );
+							} else {
+								$buffer_investment_item[ 'payment_str' ] = __( 'account.investments.FIRST_PAYMENT', 'yproject' );
+								$buffer_investment_item[ 'payment_date' ] = date_i18n( 'F Y', strtotime( $first_payment_date ) );
+							}
 						}
 					}
 				}
@@ -702,7 +703,7 @@ class WDGAjaxActionsUserAccount {
 								} else {
 									$buffer_roi_item[ 'status' ] = 'upcoming';
 									$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
-									if ( $buffer_investment_item[ 'payment_date' ]  == '') {
+									if ( $buffer_investment_item[ 'payment_date' ]  == '' && $buffer_investment_item[ 'status' ] != 'canceled') {
 										$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
 									}
 								}
@@ -716,7 +717,7 @@ class WDGAjaxActionsUserAccount {
 							default:
 								$buffer_roi_item[ 'status' ] = 'upcoming';
 								$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
-								if ( $buffer_investment_item[ 'payment_date' ]  == '') {
+								if ( $buffer_investment_item[ 'payment_date' ]  == '' && $buffer_investment_item[ 'status' ] != 'canceled') {
 									$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
 								}
 								break;
