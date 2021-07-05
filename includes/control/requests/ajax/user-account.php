@@ -491,7 +491,12 @@ class WDGAjaxActionsUserAccount {
 					// On démarre de la date de démarrage du contrat
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
 
+					// On utilise le gain maximum pour être sûr de ne pas le dépasser dans l'affichage du prévisionnel
 					$maximum_profit = get_post_meta( $result_campaign_item->project_wpref, ATCF_Campaign::$key_maximum_profit, TRUE );
+					// Si le gain maximum est infini, on met un nombre arbitraire à 100 pour avoir un calcul fonctionnel tout de même
+					if ( $maximum_profit == 0 ) {
+						$maximum_profit = 100;
+					}
 					$estimated_rois_total = $maximum_profit * $result_investment_item->amount;
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$estimated_rois = 0;
