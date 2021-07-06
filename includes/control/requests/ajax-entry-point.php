@@ -5,7 +5,7 @@ $list_optimized_actions = array(
 $action_posted = filter_input( INPUT_POST, 'action' );
 
 if ( empty( $action_posted ) || !in_array( $action_posted, $list_optimized_actions ) ) {
-	require_once '../../../../../../wp-admin/admin-ajax.php';
+	require_once dirname(__FILE__) . '/../../../../../../wp-admin/admin-ajax.php';
 	exit('');
 }
 
@@ -15,7 +15,7 @@ ini_set('html_errors', 0);
 define('SHORTINIT', true);
 
 // Chargement des fichiers WordPress nécessaires
-require_once '../../../../../../wp-load.php';
+require_once dirname(__FILE__) . '/../../../../../../wp-load.php';
 
 // Si site de dev en local, on autorise les appels cross-origin
 if ( defined( 'WP_IS_DEV_SITE' ) && WP_IS_DEV_SITE ) {
@@ -41,5 +41,5 @@ if ( strpos( $action_posted, 'account_signin' ) === 0 ) {
 	$domain_folder = 'account-signin';
 }
 $action_posted = str_replace( '_', '-', $action_posted );
-require_once '/ajax/' .$domain_folder. '/' .$domain_folder. '-autoload.php';
-require_once '/ajax/' .$domain_folder. '/' .$action_posted. '.php';
+require_once dirname(__FILE__) . '/ajax/' .$domain_folder. '/' .$domain_folder. '-autoload.php';
+require_once dirname(__FILE__) . '/ajax/' .$domain_folder. '/' .$action_posted. '.php';
