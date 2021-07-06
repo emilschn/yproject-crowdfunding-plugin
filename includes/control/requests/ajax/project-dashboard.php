@@ -3248,6 +3248,9 @@ class WDGAjaxActionsProjectDashboard {
 		// Création compte organisation si non-existant
 		if ( $investments_drafts_item_data->user_type == 'orga' && empty( $id_linked_organization ) ) {
 			$WDGOrganization = WDGOrganization::createSimpleOrganization( $id_linked_user, $investments_drafts_item_data->orga_name, $investments_drafts_item_data->orga_email );
+			if ( empty( $WDGOrganization ) ) {
+				exit( 'La validation du chèque a échoué car la création de l\'organisation a échoué' );
+			}
 			$WDGOrganization->set_name( $investments_drafts_item_data->orga_name );
 			$WDGOrganization->set_email( $investments_drafts_item_data->orga_email );
 			$WDGOrganization->set_website( $investments_drafts_item_data->orga_website );
