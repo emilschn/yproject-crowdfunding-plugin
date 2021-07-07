@@ -2242,9 +2242,16 @@ class WDGAjaxActionsProjectDashboard {
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			$post_invest_status_span_class = $post_invest_status;
 			
-            if ($contract_status == WDGInvestment::$contract_status_preinvestment_validated && $campaign->campaign_status() == 'vote') {
+			if ($contract_status == WDGInvestment::$contract_status_preinvestment_validated && $campaign->campaign_status() == 'vote') {
 				$post_invest_status_span_class = 'waiting';
-            } elseif ( $post_invest_status == 'pending' ) {
+				if ( strpos($payment_key, 'wire_') !== FALSE ) {
+					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
+					if ( $wire_with_received_payments !== '1' ) {
+						$payment_status = __( "En attente de r&eacute;ception par Lemon Way", 'yproject' );
+						$payment_status_span_class = 'error';
+					}
+				}
+			} elseif ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
 					if ( $campaign->campaign_status() != 'vote' || $wire_with_received_payments !== '1' ) {
