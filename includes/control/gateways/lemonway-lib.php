@@ -1,6 +1,8 @@
 <?php
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( !defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 global $lemonway_lib;
 $lemonway_lib = new LemonwayLib();
@@ -18,7 +20,7 @@ class LemonwayLib {
 	public static $limit_kyc1_p2p_out_year_nb = 0;
 	public static $limit_kyc1_p2p_in_year_amount = 0;
 	public static $limit_kyc1_p2p_out_year_amount = 0;
-	
+
 	public static $limit_kyc2_moneyin_day_nb = 1000;
 	public static $limit_kyc2_moneyin_day_amount = 500000;
 	public static $limit_kyc2_moneyin_month_amount = 1000000;
@@ -32,9 +34,9 @@ class LemonwayLib {
 	public static $limit_kyc2_p2p_out_month_amount = 1000000;
 
 	public static $cache_wallet_details;
-	
+
 	public $soap_client, $params, $last_error;
-    
+
 	/**
 	 * Initialise les données à envoyer à Lemonway
 	 */
@@ -51,7 +53,7 @@ class LemonwayLib {
 		);
 		$this->last_error = FALSE;
 	}
-	
+
 	/**
 	 * Requête au serveur
 	 * @global LemonwayLib $lemonway_lib
@@ -64,7 +66,7 @@ class LemonwayLib {
 		if ( defined( 'YP_LW_SKIP' ) && YP_LW_SKIP ) {
 			return FALSE;
 		}
-		
+
 		// Trace de la requete en supprimant des données trop lourds ou sensibles
 		$trace_params = $params;
 		if ( isset( $trace_params[ 'iban' ] ) ) {
@@ -77,7 +79,7 @@ class LemonwayLib {
 			$trace_params[ 'buffer' ] = 'UNTRACKED';
 		}
 		ypcf_debug_log('LemonwayLib::call METHOD : ' .$method_name. ' ; FROM : ['.$_SERVER["REMOTE_ADDR"].','.$_SERVER['SERVER_ADDR'].'] ; $trace_params : ' .print_r($trace_params, true));
-		
+
 		global $lemonway_lib;
 		//Récupération de tous les paramètres à envoyer
 		$lw_params = $lemonway_lib->params;
@@ -90,13 +92,16 @@ class LemonwayLib {
 		//Appel de la fonction avec les paramètres complets
 		try {
 			LemonwayLib::set_error('', '');
-			if (!isset($lemonway_lib->soap_client)) $lemonway_lib->soap_client = @new SoapClient(YP_LW_URL);
+			if (!isset($lemonway_lib->soap_client)) {
+				$lemonway_lib->soap_client = @new SoapClient(YP_LW_URL);
+			}
 		} catch (SoapFault $E) {
 			LemonwayLib::set_error('SOAPCLIENTINIT', $E->faultstring);
 			ypcf_debug_log('LemonwayLib::call ERROR : ' . $E->faultstring);
+
 			return FALSE;
 		}
-		
+
 		$soap_client = $lemonway_lib->soap_client;
 		if ( !isset( $params[ 'buffer' ] ) ) {
 			$params = json_decode( json_encode( $params ), FALSE );
@@ -106,6 +111,7 @@ class LemonwayLib {
 		} catch (SoapFault $E) {
 			LemonwayLib::set_error('SOAPCLIENTINIT', $E->faultstring);
 			ypcf_debug_log('LemonwayLib::call ERROR : ' . $E->faultstring);
+
 			return FALSE;
 		}
 		ypcf_debug_log('LemonwayLib::call RESULT : ' .print_r($call_result, true));
@@ -121,7 +127,7 @@ class LemonwayLib {
 			return $result_obj;
 		}
 	}
-	
+
 	/**
 	 * Parse le retour pour déterminer si il y a des erreurs et les enregistrer si c'est le cas
 	 * @param type $result_obj
@@ -135,9 +141,10 @@ class LemonwayLib {
 			$lemonway_lib->last_error['Msg'] = $result_obj->E->Msg;
 			$buffer = true;
 		}
+
 		return $buffer;
 	}
-	
+
 	public static function set_error($code, $msg) {
 		global $lemonway_lib;
 		$lemonway_lib->last_error['Code'] = $code;
@@ -150,6 +157,7 @@ class LemonwayLib {
 		if (isset($lemonway_lib->last_error['Code'])) {
 			$buffer = $lemonway_lib->last_error['Code'];
 		}
+
 		return $buffer;
 	}
 
@@ -159,27 +167,27 @@ class LemonwayLib {
 		if (isset($lemonway_lib->last_error['Msg'])) {
 			$buffer = $lemonway_lib->last_error['Msg'];
 		}
+
 		return $buffer;
 	}
 
-	public static function get_cached_data( $wallet_id ) {
+	public static function get_cached_data($wallet_id) {
 		if ( isset( self::$cache_wallet_details[ $wallet_id ] ) ) {
 			return self::$cache_wallet_details[ $wallet_id ];
 		}
+
 		return FALSE;
 	}
 
-	public static function set_cached_data( $wallet_id, $wallet_data ) {
+	public static function set_cached_data($wallet_id, $wallet_data) {
 		self::$cache_wallet_details[ $wallet_id ] = $wallet_data;
 	}
 
-	public static function remove_cached_data( $wallet_id ) {
+	public static function remove_cached_data($wallet_id) {
 		unset( self::$cache_wallet_details[ $wallet_id ] );
 	}
 
-
-	
-/*********************** HELPERS ***********************/
+	/*********************** HELPERS ***********************/
 	public static function check_amount($amount) {
 		if (strpos($amount, '.') === FALSE) {
 			$amount .= '.00';
@@ -194,10 +202,11 @@ class LemonwayLib {
 				$amount .= '.00';
 			}
 		}
+
 		return $amount;
 	}
-	
-	public static function check_phone_number( $phone_number ) {
+
+	public static function check_phone_number($phone_number) {
 		// Si ça commence par un "+" on peut estimer que la personne a déjà fait attention, donc on ne formattera pas au style français
 		$skip_french_format = false;
 		if ( substr( $phone_number, 0, 1 ) == '+' ) {
@@ -208,33 +217,33 @@ class LemonwayLib {
 			$buffer = substr( $buffer, -9 );
 			$buffer = '33' . $buffer;
 		}
+
 		return $buffer;
 	}
-	
+
 	public static function make_token($invest_id = '', $roi_id = '') {
 		$buffer = FALSE;
 		$random = rand(10000, 99999);
 		if ( !empty( $invest_id ) ) {
 			$buffer = 'INV' . $invest_id . 'TS' . $random;
-			
-		} else if ( !empty( $roi_id ) ) {
-			$buffer = 'ROI' . $roi_id . 'TS' . $random;
-			
+		} else {
+			if ( !empty( $roi_id ) ) {
+				$buffer = 'ROI' . $roi_id . 'TS' . $random;
+			}
 		}
+
 		return $buffer;
 	}
 
-
-
-/*********************** WALLETS ***********************/
+	/*********************** WALLETS ***********************/
 	public static $wallet_type_payer = '1';
 	public static $wallet_type_beneficiary = '2';
-	
+
 	/**
 	 * Création d'un porte-monnaie
 	 * @param type $new_wallet_id : Identifiant du porte-monnaie sur la plateforme
 	 * @param type $client_mail
-	 * @param type $client_title : Civilité (1 char) 
+	 * @param type $client_title : Civilité (1 char)
 	 * @param type $client_first_name
 	 * @param type $client_last_name
 	 * @param type $country : Pays au format ISO-3
@@ -244,7 +253,7 @@ class LemonwayLib {
 	 * @param type $payer_or_beneficiary : Statut payer/beneficiary
 	 * @return type
 	 */
-	public static function wallet_register( $new_wallet_id, $client_mail, $client_title, $client_first_name, $client_last_name, $country = '', $phone_number = '', $birthdate = '', $nationality = '', $payer_or_beneficiary = '' ) {
+	public static function wallet_register($new_wallet_id, $client_mail, $client_title, $client_first_name, $client_last_name, $country = '', $phone_number = '', $birthdate = '', $nationality = '', $payer_or_beneficiary = '') {
 		$param_list = array(
 			'wallet'			=> $new_wallet_id,
 			'clientMail'		=> $client_mail,
@@ -265,9 +274,10 @@ class LemonwayLib {
 		if ($result !== FALSE) {
 			$result = $result->WALLET->LWID;
 		}
+
 		return $result;
 	}
-	
+
 	/**
 	 * Création d'un wallet pour entité morale
 	 * @param type $new_wallet_id
@@ -284,7 +294,7 @@ class LemonwayLib {
 	 * @param type $payer_or_beneficiary
 	 * @return type
 	 */
-	public static function wallet_company_register( $new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '', $payer_or_beneficiary = '', $is_tech_wallet = '' ) {
+	public static function wallet_company_register($new_wallet_id, $client_mail, $client_first_name, $client_last_name, $company_name, $company_description, $company_website = '', $country = '', $birthdate = '', $phone_number = '', $company_idnumber = '', $payer_or_beneficiary = '', $is_tech_wallet = '') {
 		$param_list = array(
 			'wallet'						=> $new_wallet_id,
 			'clientMail'					=> $client_mail,
@@ -308,14 +318,15 @@ class LemonwayLib {
 		if ($result !== FALSE) {
 			$result = $result->WALLET->LWID;
 		}
+
 		return $result;
 	}
-	
+
 	/**
 	 * Mise à jour d'un porte-monnaie
 	 * @param type $wallet_id : Identifiant du porte-monnaie sur la plateforme
 	 * @param type $client_mail
-	 * @param type $client_title : Civilité (1 char) 
+	 * @param type $client_title : Civilité (1 char)
 	 * @param type $client_first_name
 	 * @param type $client_last_name
 	 * @param type $country : Pays au format ISO-3
@@ -325,11 +336,11 @@ class LemonwayLib {
 	 * @param type $company_website
 	 * @return type
 	 */
-	public static function wallet_update( $wallet_id, $client_mail = '', $client_title = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $nationality = '', $company_website = '' ) {
+	public static function wallet_update($wallet_id, $client_mail = '', $client_title = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $nationality = '', $company_website = '') {
 		if ( empty( $wallet_id ) ) {
 			return FALSE;
 		}
-		
+
 		$param_list = array( 'wallet' => $wallet_id );
 		if ( !empty( $client_mail ) ) {
 			$param_list['newEmail'] = $client_mail;
@@ -358,14 +369,13 @@ class LemonwayLib {
 		if ( !empty( $company_website ) ) {
 			$param_list['newCompanyWebsite'] = $company_website;
 		}
-		
-		
+
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		return $result;
 	}
-	
+
 	/**
 	 * Mise à jour d'un porte-monnaie d'entité morale
 	 * @param type $wallet_id : Identifiant du porte-monnaie sur la plateforme
@@ -381,11 +391,11 @@ class LemonwayLib {
 	 * @param type $company_idnumber
 	 * @return type
 	 */
-	public static function wallet_company_update( $wallet_id, $client_mail = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $company_name = '', $company_description = '', $company_website = '', $company_idnumber = '' ) {
+	public static function wallet_company_update($wallet_id, $client_mail = '', $client_first_name = '', $client_last_name = '', $country = '', $phone_number = '', $birthdate = '', $company_name = '', $company_description = '', $company_website = '', $company_idnumber = '') {
 		if ( empty( $wallet_id ) ) {
 			return FALSE;
 		}
-		
+
 		$param_list = array( 'wallet' => $wallet_id );
 		if ( !empty( $client_mail ) ) {
 			$param_list['newEmail'] = $client_mail;
@@ -417,37 +427,36 @@ class LemonwayLib {
 		if ( !empty( $company_idnumber ) ) {
 			$param_list['newCompanyIdentificationNumber'] = $company_idnumber;
 		}
-		
-		
+
 		$result = LemonwayLib::call('UpdateWalletDetails', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		return $result;
 	}
-	
+
 	/**
 	 * Données d'un porte-monnaie
 	 * @param type $wallet_id
 	 * @return boolean or object
 	 */
-	public static function wallet_get_details( $wallet_id = FALSE, $wallet_email = FALSE ) {
-		if ( empty( $wallet_id ) && empty( $wallet_email ) ) return FALSE;
-		
+	public static function wallet_get_details($wallet_id = FALSE, $wallet_email = FALSE) {
+		if ( empty( $wallet_id ) && empty( $wallet_email ) ) {
+			return FALSE;
+		}
+
 		$result = FALSE;
 
 		if ( !empty( $wallet_id ) ) {
 			$param_list = array( 'wallet' => $wallet_id );
 			$result = self::get_cached_data( $wallet_id );
-			
 		} elseif ( !empty( $wallet_email ) ) {
 			$param_list = array( 'email' => $wallet_email );
-		
 		}
-		
+
 		if ( empty( $result ) ) {
 			$result = LemonwayLib::call('GetWalletDetails', $param_list);
 		}
-		
+
 		/**
 		 * Retourne les éléments suivants :
 		 * ID (identifiant) ; BAL (solde) ; NAME ; EMAIL ; DOCS (liste de documents dont le statut a changé) ; IBANS (liste des IBANs) ; S (statut)
@@ -456,39 +465,41 @@ class LemonwayLib {
 			if ( !empty( $wallet_id ) ) {
 				self::set_cached_data( $wallet_id, $result );
 			}
+
 			return $result->WALLET;
 		}
+
 		return FALSE;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param int $wallet_id
 	 * @param int $date_start Secondes UTC
 	 * @param int $date_end Secondes UTC
 	 * @return type
 	 */
-	public static function wallet_get_transactions_between( $wallet_id, $date_start = FALSE, $date_end = FALSE ) {
+	public static function wallet_get_transactions_between($wallet_id, $date_start = FALSE, $date_end = FALSE) {
 		if ( empty( $wallet_id ) ) {
 			return array();
 		}
-		
+
 		$param_list = array(
 			'wallet'	=> $wallet_id
 		);
 		if ( !empty( $date_start ) ) {
 			$param_list[ 'startDate' ] = $date_start;
-			
+
 			if ( !empty( $date_end ) ) {
 				$param_list[ 'endDate' ] = $date_end;
 			}
 		}
-		
+
 		$result = LemonwayLib::call( 'GetWalletTransHistory', $param_list );
-		
+
 		return $result;
 	}
-	
+
 	public static $status_blocked = 'blocked';
 	public static $status_ready = 'ready';
 	public static $status_waiting = 'waiting';
@@ -501,20 +512,21 @@ class LemonwayLib {
 	 * @return boolean or object
 	 */
 	public static function wallet_get_kyc_status_since($update_date) {
-		if (!isset($update_date)) return FALSE;
-		
+		if (!isset($update_date)) {
+			return FALSE;
+		}
+
 		$param_list = array( 'updateDate' => $update_date );
-		
+
 		$result = LemonwayLib::call('GetKycStatus', $param_list);
-		
+
 		/**
 		 * Retourne une liste de wallets
 		 * ID (identifiant) ; S (statut) ; DATE ; DOCS ; IBANS
 		 */
 		return $result;
-		
 	}
-	
+
 	/**
 	 * Envoi d'un justificatif de porte-monnaie
 	 * @param type $wallet_id
@@ -524,15 +536,17 @@ class LemonwayLib {
 	 * @return boolean or string
 	 */
 	public static function wallet_upload_file($wallet_id, $filename, $doctype, $bytearray) {
-		if (!isset($wallet_id)) return FALSE;
-		
-		$param_list = array( 
-			'wallet' => $wallet_id, 
-			'fileName' => $filename, 
-			'type' => $doctype, 
-			'buffer' => $bytearray 
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+
+		$param_list = array(
+			'wallet' => $wallet_id,
+			'fileName' => $filename,
+			'type' => $doctype,
+			'buffer' => $bytearray
 		);
-		
+
 		$result = LemonwayLib::call('UploadFile', $param_list);
 		if ($result !== FALSE) {
 			if (isset($result->E)) {
@@ -542,9 +556,10 @@ class LemonwayLib {
 				$result = $result->UPLOAD->ID;
 			}
 		}
+
 		return $result;
 	}
-	
+
 	/**
 	 * Enregistre un RIB associé à un porte-monnaie
 	 * @param int $wallet_id
@@ -556,18 +571,28 @@ class LemonwayLib {
 	 * @return boolean or string
 	 */
 	public static function wallet_register_iban($wallet_id, $holder_name, $iban, $bic, $dom1, $dom2 = '') {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($holder_name)) return FALSE;
-		if (!isset($bic)) return FALSE;
-		if (!isset($iban)) return FALSE;
-		if (!isset($dom1)) return FALSE;
-		
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($holder_name)) {
+			return FALSE;
+		}
+		if (!isset($bic)) {
+			return FALSE;
+		}
+		if (!isset($iban)) {
+			return FALSE;
+		}
+		if (!isset($dom1)) {
+			return FALSE;
+		}
+
 		$holder_name_decoded = html_entity_decode( $holder_name );
 		$clean_iban = str_replace( ' ', '', $iban );
 		$clean_bic = str_replace( ' ', '', $bic );
 		$dom1_decoded = html_entity_decode( $dom1 );
 		$dom2_decoded = html_entity_decode( $dom2 );
-		
+
 		//wallet ; holder; bic ; iban ; dom1 ; dom2
 		$param_list = array(
 			'wallet'	=> $wallet_id,
@@ -577,53 +602,64 @@ class LemonwayLib {
 			'dom1'		=> $dom1_decoded,
 			'dom2'		=> $dom2_decoded
 		);
-		
+
 		$result = LemonwayLib::call('RegisterIBAN', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
+
 		return $result;
 	}
-	
-	public static function wallet_unregister_iban( $wallet_id, $iban_id ) {
-		if ( empty( $wallet_id ) ) return FALSE;
-		if ( empty( $iban_id ) ) return FALSE;
-		
+
+	public static function wallet_unregister_iban($wallet_id, $iban_id) {
+		if ( empty( $wallet_id ) ) {
+			return FALSE;
+		}
+		if ( empty( $iban_id ) ) {
+			return FALSE;
+		}
+
 		//wallet ; ibanId
 		$param_list = array(
 			'wallet'	=> $wallet_id,
 			'ibanId'	=> $iban_id
 		);
-		
+
 		$result = LemonwayLib::call( 'UnregisterIBAN', $param_list );
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
+
 		return $result;
 	}
 
-	public static function unregister_card( $wallet_id, $id_card ) {
-		if ( empty( $wallet_id ) ) return FALSE;
-		if ( empty( $id_card ) ) return FALSE;
+	public static function unregister_card($wallet_id, $id_card) {
+		if ( empty( $wallet_id ) ) {
+			return FALSE;
+		}
+		if ( empty( $id_card ) ) {
+			return FALSE;
+		}
 
 		$param_list = array(
 			'wallet'	=> $wallet_id,
 			'cardId'	=> $id_card
 		);
-		
+
 		$result = LemonwayLib::call( 'UnregisterCard', $param_list );
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne : CARD > ID
 		}
+
 		return $result;
 	}
-	
+
 	/**
 	 * Enregistre un mandat de prélévement automatique lié à un wallet
 	 * @param int $wallet_id
@@ -639,12 +675,20 @@ class LemonwayLib {
 	 * @param string $language
 	 * @return boolean or string
 	 */
-	public static function wallet_register_mandate( $wallet_id, $holder_name, $iban, $bic, $is_recurring, $is_b2b, $street, $post_code, $city, $country, $language = 'fr' ) {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($holder_name)) return FALSE;
-		if (!isset($bic)) return FALSE;
-		if (!isset($iban)) return FALSE;
-		
+	public static function wallet_register_mandate($wallet_id, $holder_name, $iban, $bic, $is_recurring, $is_b2b, $street, $post_code, $city, $country, $language = 'fr') {
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($holder_name)) {
+			return FALSE;
+		}
+		if (!isset($bic)) {
+			return FALSE;
+		}
+		if (!isset($iban)) {
+			return FALSE;
+		}
+
 		//wallet ; holder ; iban ; bic ; isRecurring (1/0) ; isB2B (1/0) ; street ; postCode ; city ; country (FRANCE) ; mandateLanguage(fr/en/es/de)
 		$param_list = array(
 			'wallet'		=> $wallet_id,
@@ -659,35 +703,37 @@ class LemonwayLib {
 			'country'		=> $country,
 			'mandateLanguage'	=> $language,
 		);
-		
+
 		$result = LemonwayLib::call('RegisterSddMandate', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
+
 		return $result;
 	}
-	
-	public static function wallet_unregister_mandate( $wallet_id, $mandate_id ) {
-		if ( empty ( $wallet_id ) || empty ( $mandate_id ) ) {
+
+	public static function wallet_unregister_mandate($wallet_id, $mandate_id) {
+		if ( empty( $wallet_id ) || empty( $mandate_id ) ) {
 			return FALSE;
 		}
-		
+
 		$param_list = array(
 			'wallet'		=> $wallet_id,
 			'sddMandateId'	=> $mandate_id
 		);
-		
+
 		$result = LemonwayLib::call( 'UnregisterSddMandate', $param_list );
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne : ID ; S (status)
 		}
+
 		return $result;
 	}
-	
+
 	/**
 	 * Démarre la signature d'un mandat
 	 * @param int $wallet_id
@@ -698,15 +744,25 @@ class LemonwayLib {
 	 * @param int $document_type (21)
 	 * @return boolean or int
 	 */
-	public static function wallet_sign_mandate_init( $wallet_id, $mobile_number, $document_id, $url_return, $url_error, $document_type = 21 ) {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($mobile_number)) return FALSE;
-		if (!isset($document_id)) return FALSE;
-		if (!isset($url_return)) return FALSE;
-		if (!isset($url_error)) return FALSE;
-		
+	public static function wallet_sign_mandate_init($wallet_id, $mobile_number, $document_id, $url_return, $url_error, $document_type = 21) {
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($mobile_number)) {
+			return FALSE;
+		}
+		if (!isset($document_id)) {
+			return FALSE;
+		}
+		if (!isset($url_return)) {
+			return FALSE;
+		}
+		if (!isset($url_error)) {
+			return FALSE;
+		}
+
 		$phone_number = LemonwayLib::check_phone_number( $mobile_number );
-		
+
 		//wallet ; mobileNumber ; documentId ; documentType (21 pour SDD) ; returnUrl ; errorUrl
 		$param_list = array(
 			'wallet'		=> $wallet_id,
@@ -716,16 +772,17 @@ class LemonwayLib {
 			'returnUrl'		=> $url_return,
 			'errorUrl'		=> $url_error
 		);
-		
+
 		$result = LemonwayLib::call('SignDocumentInit', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne : TOKEN
 		}
+
 		return $result;
 	}
-			
+
 	/**
 	 * Retourne un statut correspondant à un KYC
 	 * @param object $document_object
@@ -745,12 +802,13 @@ class LemonwayLib {
 		} else {
 			$buffer = __('Ce document n&apos;a pas encore &eacute;t&eacute; envoy&eacute;.', 'yproject');
 		}
+
 		return $buffer;
 	}
-	
-/*********************** FIN WALLETS ***********************/
-	
-/*********************** PAIEMENTS ***********************/
+
+	/*********************** FIN WALLETS ***********************/
+
+	/*********************** PAIEMENTS ***********************/
 	/**
 	 * Différents cas :
 	 * - Page web saisie de carte sur site partenaire (Payline ou Atos) MoneyInWebInit
@@ -760,16 +818,17 @@ class LemonwayLib {
 	 * - Entre wallets SendPayment
 	 * - Enregistrement de carte pour utilisation ultérieure RegisterCard ; MoneyInWithCardId
 	 */
-	
+
 	/**
-	 * 
+	 *
 	 * @param type $transaction_id
 	 * @return boolean or string
 	 */
 	public static function get_transaction_by_id($transaction_id, $type = 'moneyin') {
-		if (!isset($transaction_id)) return FALSE;
-		
-		
+		if (!isset($transaction_id)) {
+			return FALSE;
+		}
+
 		global $WDG_cache_plugin;
 		if ($WDG_cache_plugin == null) {
 			$WDG_cache_plugin = new WDG_Cache_Plugin();
@@ -777,7 +836,7 @@ class LemonwayLib {
 		$url_called = 'transaction::'.$type.'::'.$transaction_id;
 		$result_cached = $WDG_cache_plugin->get_cache( $url_called, 1 );
 		$result = unserialize( $result_cached );
-		
+
 		$pos = strpos($transaction_id, 'TRANSID');
 		if ( $pos !== FALSE ) {
 			// c'est une transaction avec une CB enregistrée, le fonctionnement est différent
@@ -789,64 +848,68 @@ class LemonwayLib {
 		if ($result_cached === FALSE || empty($result)) {
 			switch ($type) {
 				case 'payment':
-					$param_list = array( 
+					$param_list = array(
 						'transactionId' => $transaction_id
 					);
 					$result = LemonwayLib::call('GetPaymentDetails', $param_list);
 					break;
 
 				case 'transactionId':
-					$param_list = array( 
+					$param_list = array(
 						'transactionId' => $transaction_id
 					);
 					$result = LemonwayLib::call('GetMoneyInTransDetails', $param_list);
 					break;
-				
+
 				case 'moneyin':
 				default:
-					$param_list = array( 
+					$param_list = array(
 						'transactionMerchantToken' => $transaction_id
 					);
 					$result = LemonwayLib::call('GetMoneyInTransDetails', $param_list);
 					break;
 			}
-			
+
 			$result_save = serialize($result);
 			if (!empty($result_save)) {
 				$WDG_cache_plugin->set_cache($url_called, $result_save, 60*60*5, 1);
 			}
 		}
-		
+
 		if ($result !== FALSE) {
 			//Retourne : ID ; DATE ; CRED (montant) ; COM (commission) ; STATUS : 3 (terminé) ou 4 (erreur)
 			$result = $result->TRANS->HPAY;
 		}
+
 		return $result;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param type $date
 	 * @return boolean
 	 */
 	public static function get_transactions_wire_since($date) {
-		if (!isset($date)) return FALSE;
-		
+		if (!isset($date)) {
+			return FALSE;
+		}
+
 		$param_list = array(
 			'updateDate' => $date
 		);
-		
+
 		$result = LemonwayLib::call('GetMoneyInIBANDetails', $param_list);
-		
+
 		if ($result !== FALSE) {
 			//Retourne : HPAY -> ID ; DATE ; REC (wallet) ; CRED (montant) ; COM (commission) ; STATUS : 3 (terminé) ou 4 (erreur)
 			$result = $result;
 		}
+
 		return $result;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param type $wallet_id
 	 * @param type $card_type
 	 * @param type $card_number
@@ -855,20 +918,30 @@ class LemonwayLib {
 	 * @return boolean
 	 */
 	public static function save_card($wallet_id, $card_type, $card_number, $card_crypto, $card_date) {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($card_type)) return FALSE;
-		if (!isset($card_number)) return FALSE;
-		if (!isset($card_crypto)) return FALSE;
-		if (!isset($card_date)) return FALSE;
-		
-		$param_list = array( 
-			'wallet' => $wallet_id, 
-			'cardType' => $card_type, 
-			'cardNumber' => $card_number, 
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($card_type)) {
+			return FALSE;
+		}
+		if (!isset($card_number)) {
+			return FALSE;
+		}
+		if (!isset($card_crypto)) {
+			return FALSE;
+		}
+		if (!isset($card_date)) {
+			return FALSE;
+		}
+
+		$param_list = array(
+			'wallet' => $wallet_id,
+			'cardType' => $card_type,
+			'cardNumber' => $card_number,
 			'cardCode' => $card_crypto,
 			'cardDate' => $card_date,
 		);
-		
+
 		$result = LemonwayLib::call('RegisterCard', $param_list);
 		self::remove_cached_data( $wallet_id );
 
@@ -876,56 +949,79 @@ class LemonwayLib {
 			//Retourne : ID
 			$result = $result->ID->__toString();
 		}
+
 		return $result;
 	}
-	
+
 	public static function ask_payment_webkit($wallet_id, $amount, $amount_com, $wk_token, $return_url, $error_url, $cancel_url, $register_card = 0, $comment = '', $auto_commission = 0) {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($amount)) return FALSE;
-		if (!isset($amount_com)) return FALSE;
-		if (!isset($wk_token)) return FALSE;
-		if (!isset($return_url)) return FALSE;
-		if (!isset($error_url)) return FALSE;
-		if (!isset($cancel_url)) return FALSE;
-		
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($amount)) {
+			return FALSE;
+		}
+		if (!isset($amount_com)) {
+			return FALSE;
+		}
+		if (!isset($wk_token)) {
+			return FALSE;
+		}
+		if (!isset($return_url)) {
+			return FALSE;
+		}
+		if (!isset($error_url)) {
+			return FALSE;
+		}
+		if (!isset($cancel_url)) {
+			return FALSE;
+		}
+
 		$amount = LemonwayLib::check_amount($amount);
 		$amount_com = LemonwayLib::check_amount($amount_com);
-		
-		$param_list = array( 
-			'wallet' => $wallet_id, 
-			'amountTot' => $amount, 
+
+		$param_list = array(
+			'wallet' => $wallet_id,
+			'amountTot' => $amount,
 			'amountCom' => $amount_com,
 			'comment' => $comment,
 			'registerCard' => $register_card,
-		    
+
 			'wkToken' => $wk_token,
-		    
+
 			'autoCommission' => $auto_commission,
-		    
-			'returnUrl' => $return_url, 
-			'errorUrl' => $error_url, 
-			'cancelUrl' => $cancel_url 
+
+			'returnUrl' => $return_url,
+			'errorUrl' => $error_url,
+			'cancelUrl' => $cancel_url
 		);
-		
+
 		$result = LemonwayLib::call('MoneyInWebInit', $param_list);
 		if ($result !== FALSE && isset( $result->MONEYINWEB->TOKEN ) ) {
-			//Retourne : 
+			//Retourne :
 			//  - MONEYINWEB => TOKEN
 			$url_css = esc_url( home_url( '/' ) ).'wp-content/themes/yproject/_inc/css/lemonway.css';
 			$url_css_encoded = urlencode( $url_css );
-			return YP_LW_WEBKIT_URL . '?moneyInToken=' . $result->MONEYINWEB->TOKEN . '&lang=fr&p=' . $url_css_encoded;
+
+			return YP_LW_WEBKIT_URL . '?moneyInToken=' . $result->MONEYINWEB->TOKEN . '&lang=fr&tpl=wedogood&p=' . $url_css_encoded;
 		}
+
 		return $result;
 	}
-	
+
 	public static function ask_payment_registered_card($wallet_id, $card_id, $amount, $amount_com = 0, $message = '', $auto_commission = 0) {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($card_id)) return FALSE;
-		if (!isset($amount)) return FALSE;
-		
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($card_id)) {
+			return FALSE;
+		}
+		if (!isset($amount)) {
+			return FALSE;
+		}
+
 		$amount = LemonwayLib::check_amount($amount);
 		$amount_com = LemonwayLib::check_amount($amount_com);
-		
+
 		$param_list = array(
 			'wallet' => $wallet_id,
 			'cardId' => $card_id,
@@ -934,50 +1030,62 @@ class LemonwayLib {
 			'message' => $message,
 			'autoCommission' => $auto_commission
 		);
-		
+
 		$result = LemonwayLib::call('MoneyInWithCardId', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
-			//Retourne : 
+			//Retourne :
 			//  - TRANS->HPAY => ID ; MLABEL ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
 		}
+
 		return $result;
 	}
-	
+
 	public static function ask_transfer_funds($debit_wallet_id, $credit_wallet_id, $amount, $message = '') {
-		if (!isset($debit_wallet_id)) return FALSE;
-		if (!isset($credit_wallet_id)) return FALSE;
-		if (!isset($amount)) return FALSE;
-		
+		if (!isset($debit_wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($credit_wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($amount)) {
+			return FALSE;
+		}
+
 		$amount = LemonwayLib::check_amount($amount);
-		
+
 		$param_list = array(
 			'debitWallet' => $debit_wallet_id,
 			'creditWallet' => $credit_wallet_id,
 			'amount' => $amount,
 			'message' => $message
 		);
-		
+
 		$result = LemonwayLib::call('SendPayment', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
-			//Retourne : 
+			//Retourne :
 			//  - TRANS->HPAY => ID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
 			$result = $result->TRANS->HPAY;
 		}
+
 		return $result;
 	}
-	
+
 	public static function ask_transfer_to_iban($wallet_id, $amount, $iban_id = 0, $amount_com = 0, $message = '', $auto_commission = 0) {
-		if (!isset($wallet_id)) return FALSE;
-		if (!isset($amount)) return FALSE;
-		
+		if (!isset($wallet_id)) {
+			return FALSE;
+		}
+		if (!isset($amount)) {
+			return FALSE;
+		}
+
 		$amount = LemonwayLib::check_amount($amount);
 		$amount_com = LemonwayLib::check_amount($amount_com);
 		$message = substr( $message, 0, 140 );
-		
+
 		$param_list = array(
 			'wallet' => $wallet_id,
 			'amountTot' => $amount,
@@ -988,25 +1096,26 @@ class LemonwayLib {
 		if ($iban_id > 0) {
 			$param_list['ibanId'] = $iban_id;
 		}
-		
+
 		$result = LemonwayLib::call('MoneyOut', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
-			//Retourne : 
+			//Retourne :
 			//  - TRANS->HPAY => ID ; MLABEL ; MID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS
 		}
+
 		return $result;
 	}
-	
-	public static function ask_payment_with_mandate( $wallet_id, $amount, $mandate_id, $amount_com = 0, $comment = '', $auto_commission = 0, $date = '' ) {
+
+	public static function ask_payment_with_mandate($wallet_id, $amount, $mandate_id, $amount_com = 0, $comment = '', $auto_commission = 0, $date = '') {
 		if ( !isset( $wallet_id ) || !isset( $amount ) || !isset( $mandate_id ) ) {
 			return FALSE;
 		}
-		
+
 		$amount = LemonwayLib::check_amount($amount);
 		$amount_com = LemonwayLib::check_amount($amount_com);
-		
+
 		$param_list = array(
 			'wallet' => $wallet_id,
 			'amountTot' => $amount,
@@ -1015,43 +1124,46 @@ class LemonwayLib {
 			'autoCommission' => $auto_commission,
 			'sddMandateId' => $mandate_id
 		);
-		
+
 		if ( !empty( $date ) ) {
 			$param_list['collectionDate'] = $date;
 		}
-		
+
 		$result = LemonwayLib::call('MoneyInSddInit', $param_list);
 		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
-			//Retourne : 
+			//Retourne :
 			//  - TRANS->HPAY => ID ; MLABEL ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; MSG ; STATUS ; REFUND
 		}
+
 		return $result;
-		
 	}
-	
+
 	public static function ask_refund($transaction_id, $amount = 0) {
-		if (!isset($transaction_id)) return FALSE;
-		
+		if (!isset($transaction_id)) {
+			return FALSE;
+		}
+
 		$param_list = array(
 			'transactionId' => $transaction_id
 		);
-		
+
 		$amount = LemonwayLib::check_amount($amount);
 		if ($amount > 0) {
 			$param_list['amountToRefund'] = $amount;
 		}
-		
+
 		$result = LemonwayLib::call('RefundMoneyIn', $param_list);
 		self::remove_cached_data( $wallet_id );
-		
+
 		if ($result !== FALSE) {
-			//Retourne : 
+			//Retourne :
 			//  - TRANS->HPAY => ID ; DATE ; SEN ; REC ; DEB ; CRED ; COM ; STATUS
 		}
+
 		return $result;
 	}
-	
-/*********************** FIN PAIEMENTS ***********************/
+
+	/*********************** FIN PAIEMENTS ***********************/
 }

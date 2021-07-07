@@ -713,6 +713,8 @@ class WDGInvestment {
 		$address_number_complement = '';
 		$tax_country = '';
 		$wdg_current_user->save_data($this->token_info->email, $this->token_info->gender, $this->token_info->firstname, $this->token_info->lastname, $use_lastname, $this->token_info->birthday_day, $this->token_info->birthday_month, $this->token_info->birthday_year, $this->token_info->birthday_city, $birthplace_district, $birthplace_department, $birthplace_country, $this->token_info->nationality, $address_number, $address_number_complement, $this->token_info->address, $this->token_info->postalcode, $this->token_info->city, $this->token_info->country, $tax_country, '');
+		$wdg_current_user->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+		$wdg_current_user->update_api();
 		// On vérifie les informations de l'utilisateur
 		if ( !$wdg_current_user->has_filled_invest_infos( $campaign->funding_type() ) ) {
 			global $user_can_invest_errors;

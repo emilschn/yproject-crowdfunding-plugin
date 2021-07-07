@@ -2120,7 +2120,7 @@ class WDGAjaxActionsProjectDashboard {
 			return '<div class="wdg-datatable">Erreur de paramètre</div>';
 		}
 
-		$campaign = new ATCF_Campaign($campaign_id);
+		$campaign = new ATCF_Campaign ($campaign_id);
 		$campaign_poll_answers = $campaign->get_api_data( 'poll_answers' );
 
 		$current_wdg_user = WDGUser::current();
@@ -2241,7 +2241,10 @@ class WDGAjaxActionsProjectDashboard {
 			$payment_status_span_class = 'confirm';
 			$payment_status = __( "Valid&eacute;", 'yproject' );
 			$post_invest_status_span_class = $post_invest_status;
-			if ( $post_invest_status == 'pending' ) {
+			
+            if ($contract_status == WDGInvestment::$contract_status_preinvestment_validated && $campaign->campaign_status() == 'vote') {
+				$post_invest_status_span_class = 'waiting';
+            } elseif ( $post_invest_status == 'pending' ) {
 				if ( strpos($payment_key, 'wire_') !== FALSE ) {
 					$wire_with_received_payments = get_post_meta( $item_invest['ID'], 'has_received_wire', TRUE );
 					if ( $campaign->campaign_status() != 'vote' || $wire_with_received_payments !== '1' ) {
@@ -2281,8 +2284,13 @@ class WDGAjaxActionsProjectDashboard {
 			$invest_sign_state = __( "Valid&eacute;", 'yproject' );
 			$invest_sign_state_span_class = 'confirm';
 			if ( $contract_status == WDGInvestment::$contract_status_preinvestment_validated ) {
-				$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
-				$invest_sign_state_span_class = 'error';
+				if ( $campaign->campaign_status() == 'vote' ){
+					$invest_sign_state = __( "En attente du passage en phase d'investissement", 'yproject' );
+					$invest_sign_state_span_class = 'waiting';
+				}else{
+					$invest_sign_state = __( "En attente de validation du pr&eacute;-investissement", 'yproject' );
+					$invest_sign_state_span_class = 'error';
+				}
 				if ( $current_wdg_user->is_admin() ) {
 					$action = '<br><a href="' .WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ). $campaign_id_param. '&approve_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Confirmer]</a>';
 					$action .= '<br><br><a href="' .WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ). $campaign_id_param. '&cancel_payment='.$item_invest['ID'].'" style="font-size: 10pt;">[Annuler]</a>';
@@ -3229,6 +3237,8 @@ class WDGAjaxActionsProjectDashboard {
 			}
 
 			$WDGUser_new = new WDGUser( $id_linked_user );
+			$WDGUser_new->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+			$WDGUser_new->update_api();
 			$WDGUser_new->save_data(FALSE, $investments_drafts_item_data->gender, $investments_drafts_item_data->firstname, $investments_drafts_item_data->lastname, FALSE, $birthday_date_day, $birthday_date_month, $birthday_date_year, $investments_drafts_item_data->birthplace, $investments_drafts_item_data->birthplace_district, $investments_drafts_item_data->birthplace_department, $investments_drafts_item_data->birthplace_country, $investments_drafts_item_data->nationality, $investments_drafts_item_data->address_number, $investments_drafts_item_data->address_number_complement, $investments_drafts_item_data->address, $investments_drafts_item_data->postal_code, $investments_drafts_item_data->city, $investments_drafts_item_data->country, FALSE, FALSE, FALSE);
 
 			// Notification de création de compte
@@ -3238,6 +3248,9 @@ class WDGAjaxActionsProjectDashboard {
 		// Création compte organisation si non-existant
 		if ( $investments_drafts_item_data->user_type == 'orga' && empty( $id_linked_organization ) ) {
 			$WDGOrganization = WDGOrganization::createSimpleOrganization( $id_linked_user, $investments_drafts_item_data->orga_name, $investments_drafts_item_data->orga_email );
+			if ( empty( $WDGOrganization ) ) {
+				exit( 'La validation du chèque a échoué car la création de l\'organisation a échoué' );
+			}
 			$WDGOrganization->set_name( $investments_drafts_item_data->orga_name );
 			$WDGOrganization->set_email( $investments_drafts_item_data->orga_email );
 			$WDGOrganization->set_website( $investments_drafts_item_data->orga_website );

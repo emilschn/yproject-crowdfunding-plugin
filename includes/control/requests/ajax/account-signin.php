@@ -1,24 +1,17 @@
 <?php
+require_once dirname(__FILE__) . '/account-signin/account-signin-autoload.php';
+
 /**
  * Gestion des appels Ajax liés à l'appli vuejs de connexion / inscription
  */
 class WDGAjaxActionsAccountSignin {
-	/**
-	 * Donne les informations à Account Signin en fonction de l'adresse e-mail
-	 */
-	public static function account_signin_get_email_info() {
-		$input_email = filter_input( INPUT_POST, 'email-address' );
-		$result = WDGFormUsers::get_user_type_by_email_address( $input_email );
-		exit( json_encode( $result ) );
-	}
-
 	/**
 	 * Vérifie si l'identification fonctionne entre une adresse e-mail et un mot de passe
 	 */
 	public static function account_signin_check_password() {
 		$input_email = filter_input( INPUT_POST, 'email-address' );
 		// On re-vérifie le type d'adresse en fonction de la saisie
-		$result = WDGFormUsers::get_user_type_by_email_address( $input_email );
+		$result = AccountSigninHelper::get_user_type_by_email_address( $input_email );
 
 		// Si c'est bien un utilisateur existant (et pas lié à Facebook)
 		if ( $result[ 'status' ] == 'existing-account' ) {
@@ -51,6 +44,7 @@ class WDGAjaxActionsAccountSignin {
 		$input_password = filter_input( INPUT_POST, 'password' );
 		$input_firstname = filter_input( INPUT_POST, 'first-name' );
 		$input_lastname = filter_input( INPUT_POST, 'last-name' );
+		$input_language = filter_input( INPUT_POST, 'language' );
 
 		$result[ 'status' ] = '';
 		// Normalement, on ne passe pas ici
@@ -59,9 +53,8 @@ class WDGAjaxActionsAccountSignin {
 		} else {
 			// On le fait par sécurité :
 			// On re-vérifie le type d'adresse en fonction de la saisie
-			$result = WDGFormUsers::get_user_type_by_email_address( $input_email );
+			$result = AccountSigninHelper::get_user_type_by_email_address( $input_email );
 		}
-		ypcf_debug_log( 'account_signin_create_account >> ' . print_r($result, true), false );
 
 		// Cas normal
 		// Si le compte n'existe pas
@@ -98,6 +91,8 @@ class WDGAjaxActionsAccountSignin {
 				update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
 				$WDGUser = new WDGUser( $wp_user_id );
 				$WDGUser->update_last_details_confirmation();
+				$WDGUser->set_language($input_language);
+				$WDGUser->update_api();
 				WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 				wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 			}
