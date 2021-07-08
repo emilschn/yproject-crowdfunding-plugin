@@ -101,12 +101,11 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_user_error_contract($payment_id, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_error_contract > ' . $payment_id);
-		$particular_content = "<span style=\"color: red;\">Il y a eu un problème durant la génération du contrat. Notre équipe en a été informée.</span>";
+		$particular_content = '<span style="color: red;">' . __( 'invest.email.THERE_WAS_A_PROBLEM_WITH_CONTRACT_GENERATION', 'yproject' ) . '</span>';
 
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $preinvestment, $is_only_wallet_contribution );
 	}
 
-	private static $alert_lemonway_card = "Sur votre relevé de compte bancaire, vous verrez apparaître le libellé «Lemon Way », le nom de notre prestataire de paiement, dans le détail des opérations.<br>";
 	/**
 	 * Mail pour l'investisseur lors d'un achat avec création de contrat réussie
 	 * @param int $payment_id
@@ -117,11 +116,12 @@ class NotificationsEmails {
 
 		$particular_content = "";
 		if ( $is_card_contribution && !$is_only_wallet_contribution ) {
-			$particular_content .= self::$alert_lemonway_card;
+			$particular_content .= __( 'invest.email.BANK_ACCOUNT_SUMMARY_LEMONWAY', 'yproject' );
 		}
 
-		$particular_content .= "Il vous reste encore à signer le contrat que vous devriez recevoir de la part de notre partenaire Eversign ";
-		$particular_content .= "(<strong>Pensez à vérifier votre courrier indésirable</strong>).<br />";
+		$particular_content .= __( 'invest.email.YOU_NEED_TO_SIGN_THE_CONTRACT', 'yproject' );
+		$particular_content .= ' ';
+		$particular_content .= '(<strong>' .__( 'invest.email.CHECK_SPAM', 'yproject' ). '</strong>).<br />';
 		$attachments = FALSE;
 
 		return NotificationsEmails::new_purchase_user( $payment_id, $particular_content, $attachments, $preinvestment, $is_only_wallet_contribution );
@@ -137,7 +137,7 @@ class NotificationsEmails {
 
 		$particular_content = "";
 		if ( $is_card_contribution && !$is_only_wallet_contribution) {
-			$particular_content .= self::$alert_lemonway_card;
+			$particular_content .= __( 'invest.email.BANK_ACCOUNT_SUMMARY_LEMONWAY', 'yproject' );
 		}
 
 		$attachments = array($new_contract_pdf_file);
@@ -174,14 +174,14 @@ class NotificationsEmails {
 
 		if ( $payment_key != 'check' && !$is_only_wallet_contribution ) {
 			if ( strpos( $payment_key, 'TRANSID' ) !== FALSE ) {
-				$text_before .= 'Le compte bancaire de votre carte enregistrée a été débité.<br>';
+				$text_before .= __( 'invest.email.ACCOUNT_REGISTERED_DEBIT', 'yproject' ) . '<br>';
 			} else {
-				$text_before .= 'Votre compte a été débité.<br>';
+				$text_before .= __( 'invest.email.ACCOUNT_DEBIT', 'yproject' ) . '<br>';
 			}
 		}
 
 		if ( !$campaign->is_funded() ) {
-			$text_before .= "L'investissement ne sera définitivement validé que si le projet atteint son seuil minimal de financement.<br>";
+			$text_before .= __( 'invest.email.INVESTMENT_VALIDATED_WHEN_GOAL_REACHED', 'yproject' ) . '<br>';
 		}
 
 		if ( !empty( $particular_content ) ) {
@@ -189,16 +189,15 @@ class NotificationsEmails {
 		}
 
 		if ( !empty( $preinvestment ) ) {
-			$text_before .= "<br>Nous vous rappelons que les conditions que vous avez accept&eacute;es sont "
-						. "susceptibles d'&ecirc;tre modifi&eacutes;es &agrave; l'issue de la phase d'&eacute;valuation.<br>"
-						. "Si aucun changement ne survient, votre investissement sera valid&eacute; automatiquement.<br>"
-						. "Si un changement devait survenir, vous devrez confirmer ou infirmer votre investissement.<br>";
+			$text_before .= '<br>' . __( 'invest.email.PREINVESTMENT_CONDITIONS_1', 'yproject' ) . '<br>'
+						. __( 'invest.email.PREINVESTMENT_CONDITIONS_2', 'yproject' ) . '<br>'
+						. __( 'invest.email.PREINVESTMENT_CONDITIONS_3', 'yproject' ) . '<br>';
 		}
 
 		if ( !empty( $attachments ) ) {
 			$attachment_url_filename = basename( $attachments[ 0 ] );
 			$attachment_url = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $attachment_url_filename );
-			$text_after = "Vous trouverez votre contrat d'investissement en pi&egrave;ce jointe et pouvez suivre vos versements de royalties en vous connectant sur votre <a href=\"". home_url( '/mon-compte/' ) ."\">compte personnel</a>.<br><br>";
+			$text_after = __( 'invest.email.WHERE_TO_FIND_CONTRACT', 'yproject' ) . " <a href=\"". home_url( '/mon-compte/' ) ."\">" . __( 'invest.email.PERSONAL_ACCOUNT', 'yproject' ) . "</a>.<br><br>";
 		}
 
 		if ( $campaign->is_positive_savings() ) {
