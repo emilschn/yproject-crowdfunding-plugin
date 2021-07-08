@@ -319,16 +319,16 @@ class WDG_PDF_Generator {
 		$buffer_in_words = $nbwd_class->toWords( $roi_percent_estimated, $language_id );
 		if ( !is_int( $roi_percent_estimated ) ) {
 			$number_exploded = explode( '.', $roi_percent_estimated );
-			$buffer_in_words .= ' ' . __( 'invest.contract.COMMA.upper', 'yproject' ) . ' ';
+			$buffer_in_words .= ' ' . strtoupper( __( 'invest.contract.COMMA', 'yproject' ) ) . ' ';
 			$index_of_zero = 0;
 			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) === '0' ) {
-				$buffer_in_words .= __( 'invest.contract.ZERO.upper', 'yproject' ) . ' ';
+				$buffer_in_words .= strtoupper( __( 'invest.contract.ZERO', 'yproject' ) ) . ' ';
 				$index_of_zero++;
 			}
 			$buffer_in_words .= $nbwd_class->toWords( $number_exploded[ 1 ], $language_id );
 		}
 
-		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' ' .__( 'invest.contract.PERCENT.upper', 'yproject' ). ')';
+		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' ' . strtoupper( __( 'invest.contract.PERCENT', 'yproject' ) ). ')';
 
 		return $buffer;
 	}
