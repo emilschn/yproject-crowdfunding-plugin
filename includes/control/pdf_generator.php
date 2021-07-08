@@ -309,21 +309,26 @@ class WDG_PDF_Generator {
 		global $shortcode_campaign_obj;
 		$roi_percent_estimated = $shortcode_campaign_obj->roi_percent_estimated();
 
-		require_once 'number-words/Numbers/Words.php';
-		$nbwd_class = new Numbers_Words();
-		$buffer_in_words = $nbwd_class->toWords( $roi_percent_estimated, 'fr' );
-		if ( !is_int( $roi_percent_estimated ) ) {
-			$number_exploded = explode( '.', $roi_percent_estimated );
-			$buffer_in_words .= " VIRGULE ";
-			$index_of_zero = 0;
-			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) === '0' ) {
-				$buffer_in_words .= "ZERO ";
-				$index_of_zero++;
-			}
-			$buffer_in_words .= $nbwd_class->toWords( $number_exploded[ 1 ], 'fr' );
+		$language_id = WDG_Languages_Helpers::get_current_locale_id();
+		if ( empty( $language_id ) ) {
+			$language_id = 'fr';
 		}
 
-		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' POURCENTS)';
+		require_once 'number-words/Numbers/Words.php';
+		$nbwd_class = new Numbers_Words();
+		$buffer_in_words = $nbwd_class->toWords( $roi_percent_estimated, $language_id );
+		if ( !is_int( $roi_percent_estimated ) ) {
+			$number_exploded = explode( '.', $roi_percent_estimated );
+			$buffer_in_words .= ' ' . __( 'invest.contract.COMMA.upper', 'yproject' ) . ' ';
+			$index_of_zero = 0;
+			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) === '0' ) {
+				$buffer_in_words .= __( 'invest.contract.ZERO.upper', 'yproject' ) . ' ';
+				$index_of_zero++;
+			}
+			$buffer_in_words .= $nbwd_class->toWords( $number_exploded[ 1 ], $language_id );
+		}
+
+		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' ' .__( 'invest.contract.PERCENT.upper', 'yproject' ). ')';
 
 		return $buffer;
 	}
@@ -336,9 +341,9 @@ class WDG_PDF_Generator {
 		global $shortcode_campaign_obj;
 		$funding_duration = $shortcode_campaign_obj->funding_duration();
 		if ( $funding_duration > 0 ) {
-			$buffer = $funding_duration . __( " ans", 'yproject' );
+			$buffer = $funding_duration . ' ' . __( "ans", 'yproject' );
 		} else {
-			$buffer = __( "dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
+			$buffer = __( 'invest.input.UNDEFINED_DURATION', 'yproject' );
 		}
 
 		return $buffer;
