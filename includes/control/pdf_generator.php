@@ -309,8 +309,8 @@ class WDG_PDF_Generator {
 		global $shortcode_campaign_obj;
 		$roi_percent_estimated = $shortcode_campaign_obj->roi_percent_estimated();
 
-		$language_id = WDG_Languages_Helpers::get_current_locale_id();
-		if ( empty( $language_id ) ) {
+		$language_id = 'en_US';
+		if ( WDG_Languages_Helpers::get_current_locale_id() == 'fr' ) {
 			$language_id = 'fr';
 		}
 
