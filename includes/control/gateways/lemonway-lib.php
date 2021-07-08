@@ -1002,7 +1002,12 @@ class LemonwayLib {
 			$url_css = esc_url( home_url( '/' ) ).'wp-content/themes/yproject/_inc/css/lemonway.css';
 			$url_css_encoded = urlencode( $url_css );
 
-			return YP_LW_WEBKIT_URL . '?moneyInToken=' . $result->MONEYINWEB->TOKEN . '&lang=fr&tpl=wedogood&p=' . $url_css_encoded;
+			$language = 'en';
+			if ( WDG_Languages_Helpers::get_current_locale_id() == 'fr' ) {
+				$language = 'fr';
+			} 
+
+			return YP_LW_WEBKIT_URL . '?moneyInToken=' . $result->MONEYINWEB->TOKEN . '&lang=' .$language. '&tpl=wedogood&p=' . $url_css_encoded;
 		}
 
 		return $result;
