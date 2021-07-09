@@ -2063,7 +2063,10 @@ class WDGUser implements WDGUserInterface {
 					}
 				}
 			} else {
-				$buffer = $wallet_details->IBANS->IBAN;
+				$iban_item = $wallet_details->IBANS->IBAN;
+				if ( ( $iban_item->S == self::$iban_status_validated || $iban_item->S == self::$iban_status_waiting ) && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != self::$iban_holder_lw ) {
+					$buffer = $iban_item;
+				}
 			}
 		}
 
