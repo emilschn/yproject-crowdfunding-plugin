@@ -2117,54 +2117,51 @@ class WDGUser implements WDGUserInterface {
 	public function transfer_wallet_to_bankaccount($amount = FALSE) {
 		$buffer = __( 'account.transfert.BANK_ACCOUNT_NOT_VALIDATED', 'yproject' );
 
-		//Il faut qu'un iban ait déjà été enregistré
-		if ($this->has_saved_iban()) {
-			//Vérification que des IBANS existent
-			$wallet_details = $this->get_wallet_details();
-			$first_iban = $wallet_details->IBANS->IBAN;
-			$save_transfer = TRUE;
-			//Sinon on l'enregistre auprès de Lemonway
-			if (empty($first_iban)) {
-				$saved_holdername = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, TRUE );
-				$saved_iban = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, TRUE );
-				$saved_bic = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, TRUE );
-				$saved_dom1 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, TRUE );
-				$saved_dom2 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address2, TRUE );
-				$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
-				if ($result_iban == FALSE) {
-					$buffer .= ' ' . LemonwayLib::get_last_error_message();
-					$save_transfer = FALSE;
-				}
+		//Vérification que des IBANS existent
+		$first_iban = $this->get_lemonway_iban();
+		//Sinon on l'enregistre auprès de Lemonway
+		if ( empty( $first_iban ) && $this->has_saved_iban() ) {
+			$saved_holdername = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_holdername, TRUE );
+			$saved_iban = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_iban, TRUE );
+			$saved_bic = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_bic, TRUE );
+			$saved_dom1 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address1, TRUE );
+			$saved_dom2 = get_user_meta( $this->wp_user->ID, WDGUser::$key_bank_address2, TRUE );
+			$result_iban = LemonwayLib::wallet_register_iban( $this->get_lemonway_id(), $saved_holdername, $saved_iban, $saved_bic, $saved_dom1, $saved_dom2 );
+			if ( $result_iban == FALSE ) {
+				$buffer .= ' ' . LemonwayLib::get_last_error_message();
 			}
 
-			if ( $save_transfer ) {
-				//Exécution du transfert vers le compte du montant du solde
-				if ( empty( $amount ) ) {
-					$amount = $wallet_details->BAL;
-				} elseif ( $amount > $wallet_details->BAL ) {
-					$amount = FALSE;
-					$buffer = __( 'account.transfert.AMOUNT_NOT_AUTHORIZED', 'yproject' );
-				}
+			return $buffer;
+		}
 
-				if ( !empty( $amount ) ) {
-					$message = 'WE DO GOOD';
-					$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount, 0, 0, $message );
-					$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
-				}
 
-				if ( $buffer === TRUE ) {
-					$withdrawal_post = array(
-						'post_author'   => $this->wp_user->ID,
-						'post_title'    => $amount,
-						'post_content'  => print_r( $result_transfer, TRUE ),
-						'post_status'   => 'publish',
-						'post_type'	    => 'withdrawal_order_lw'
-					);
-					wp_insert_post( $withdrawal_post );
-					$WDGUser = new WDGUser( $this->wp_user->ID );
-					NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser, $amount );
-				}
-			}
+		// Si on arrive ici, c'est qu'un IBAN a déjà été enregistré
+		$wallet_details = $this->get_wallet_details();
+		// Exécution du transfert vers le compte du montant du solde
+		if ( empty( $amount ) ) {
+			$amount = $wallet_details->BAL;
+		} elseif ( $amount > $wallet_details->BAL ) {
+			$amount = FALSE;
+			$buffer = __( 'account.transfert.AMOUNT_NOT_AUTHORIZED', 'yproject' );
+		}
+
+		if ( !empty( $amount ) ) {
+			$message = 'WE DO GOOD';
+			$result_transfer = LemonwayLib::ask_transfer_to_iban( $this->get_lemonway_id(), $amount, 0, 0, $message );
+			$buffer = ($result_transfer->TRANS->HPAY->ID) ? TRUE : $result_transfer->TRANS->HPAY->MSG;
+		}
+
+		if ( $buffer === TRUE ) {
+			$withdrawal_post = array(
+				'post_author'   => $this->wp_user->ID,
+				'post_title'    => $amount,
+				'post_content'  => print_r( $result_transfer, TRUE ),
+				'post_status'   => 'publish',
+				'post_type'	    => 'withdrawal_order_lw'
+			);
+			wp_insert_post( $withdrawal_post );
+			$WDGUser = new WDGUser( $this->wp_user->ID );
+			NotificationsAPI::transfer_to_bank_account_confirmation( $WDGUser, $amount );
 		}
 
 		return $buffer;
