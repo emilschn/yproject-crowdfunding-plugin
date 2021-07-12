@@ -231,11 +231,11 @@ class WDGQueue {
 		- Twiza (3,50 €)
 		 */
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
-			$message .= "<b>Ces entreprises vous ont versé des royalties :</b><br>";
+			$message .= "<b>" . __( 'email.royalties.COMPANIES_TRANSFERED_ROYALTIES', 'yproject' ) . "</b><br>";
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
 				$message .= "- " .$campaign_params[ 'campaign_name' ]. " : " .YPUIHelpers::display_number( $campaign_params[ 'amount_royalties' ] ). " €";
 				if ( $campaign_params[ 'amount_tax_in_cents' ] > 0 ) {
-					$message .= " (dont prélèvement " .YPUIHelpers::display_number( $campaign_params['amount_tax_in_cents'] ). " €)";
+					$message .= " (" .__( 'email.royalties.COMPANIES_TRANSFERED_ROYALTIES_SAMPLE', 'yproject' ). " " .YPUIHelpers::display_number( $campaign_params['amount_tax_in_cents'] ). " €)";
 				}
 				$message .= "<br>";
 			}
@@ -244,26 +244,12 @@ class WDGQueue {
 
 		/**
 		 *
-		Ces entreprises ne vous ont pas versé de royalties :
-		- DKodes
-		- Wattsplan
-		if ( !empty( $message_categories[ 'without_royalties' ] ) ) {
-			$message .= "<b>Ces entreprises ne vous ont pas versé de royalties :</b><br>";
-			foreach ( $message_categories[ 'without_royalties' ] as $campaign_name ) {
-				$message .= "- " .$campaign_name. "<br>";
-			}
-			$message .= "<br>";
-		}
-		 */
-
-		/**
-		 *
 		Les versements de ces entreprises sont en attente :
 		- Nkita
 		- Listo
 		 */
 		if ( !empty( $message_categories[ 'not_transfered' ] ) ) {
-			$message .= "<b>Les versements de ces entreprises sont en attente :</b><br>";
+			$message .= "<b>" . __( 'email.royalties.COMPANIES_PENDING_TRANSFER', 'yproject' ) . "</b><br>";
 			foreach ( $message_categories[ 'not_transfered' ] as $campaign_name ) {
 				$message .= "- " .$campaign_name. "<br>";
 			}
@@ -276,7 +262,7 @@ class WDGQueue {
 		- La charette (démarre le 10/04/2019)
 		 */
 		if ( !empty( $message_categories[ 'not_started' ] ) ) {
-			$message .= "<b>Ces entreprises ne sont pas encore entrées dans la phase de déclaration :</b><br>";
+			$message .= "<b>" . __( 'email.royalties.COMPANIES_NOT_YET_TRANSFERING', 'yproject' ) . "</b><br>";
 			foreach ( $message_categories[ 'not_started' ] as $campaign_params ) {
 				$message .= "- " .$campaign_params['campaign_name']. " (démarre le " .$campaign_params['date_start']. ")<br>";
 			}
