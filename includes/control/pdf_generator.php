@@ -751,7 +751,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	$standard_contract = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_contract_full, 'standard_contract' );
 
 	// Si le projet surcharge le contrat standard
-	$project_override_contract = $campaign_obj->override_contract();
+	$project_override_contract = $campaign_obj->override_contract( $lang );
 	if ( !empty( $project_override_contract ) ) {
 		if ( $preview ) {
 			$buffer .= wpautop( $project_override_contract );
@@ -769,42 +769,42 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			}
 		} else {
 			switch ($campaign_obj->funding_type()) {
-			case 'fundingproject':
-			break;
-			case 'fundingdevelopment':
-			default:
-			$buffer .= '<p>';
-			if ($lang == 'en_US') {
-				$buffer .= '<h2>DECLARES</h2>';
-			} else {
-				$buffer .= '<h2>DECLARE</h2>';
+				case 'fundingproject':
+					break;
+				case 'fundingdevelopment':
+				default:
+					$buffer .= '<p>';
+					if ($lang == 'en_US') {
+						$buffer .= '<h2>DECLARES</h2>';
+					} else {
+						$buffer .= '<h2>DECLARE</h2>';
+					}
+					$buffer .= '</p>';
+					break;
 			}
-			$buffer .= '</p>';
-			break;
-		}
 
 			$buffer .= '<p>';
 			switch ($campaign_obj->funding_type()) {
-			case 'fundingproject':
-			break;
-			case 'fundingdevelopment':
-			default:
-			if ( !empty( $payment_data ) ) {
-				$plurial = '';
-				if ($lang == 'en_US') {
-					if ($payment_data["amount_part"] > 1) {
-						$plurial = 's';
+				case 'fundingproject':
+					break;
+				case 'fundingdevelopment':
+				default:
+					if ( !empty( $payment_data ) ) {
+						$plurial = '';
+						if ($lang == 'en_US') {
+							if ($payment_data["amount_part"] > 1) {
+								$plurial = 's';
+							}
+							$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following:<br />';
+						} else {
+							if ($payment_data["amount_part"] > 1) {
+								$plurial = 's';
+							}
+							$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
+						}
 					}
-					$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following:<br />';
-				} else {
-					if ($payment_data["amount_part"] > 1) {
-						$plurial = 's';
-					}
-					$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
-				}
+					break;
 			}
-			break;
-		}
 
 			$buffer .= html_entity_decode($campaign_obj->subscription_params());
 			$buffer .= '</p>';
