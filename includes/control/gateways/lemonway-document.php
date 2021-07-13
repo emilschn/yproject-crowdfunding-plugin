@@ -242,49 +242,49 @@ class LemonwayDocument {
 				if ( !empty( $document_object->TYPE ) ) {
 					switch ( $document_object->TYPE ) {
 						case LemonwayDocument::$document_type_id:
-							$document_type = "La pièce d'identité principale";
+							$document_type = __( 'lemonway.document.details_MAIN_ID', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_home:
-							$document_type = "Le justificatif de domicile";
+							$document_type = __( 'lemonway.document.type.PROOF_ADDRESS', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_bank:
 							// Rien, le RIB ne bloque pas l'authentification
 							break;
 						case LemonwayDocument::$document_type_idbis:
-							$document_type = "La deuxième pièce d'identité";
+							$document_type = __( 'lemonway.email.error.SECOND_ID', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_id_back:
-							$document_type = "Le verso de la pièce d'identité principale";
+							$document_type = __( 'lemonway.email.error.MAIN_ID_BACK', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_residence_permit:
-							$document_type = "Le permis de résidence";
+							$document_type = __( 'lemonway.document.type.RESIDENCY_PERMIT', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_kbis:
-							$document_type = "Le KBIS de l'organisation";
+							$document_type = __( 'lemonway.email.error.ORGA_KBIS', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_status:
-							$document_type = "Les statuts de l'organisation";
+							$document_type = __( 'lemonway.email.error.ORGA_STATUS', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_idbis_back:
-							$document_type = "Le verso de la deuxième pièce d'identité";
+							$document_type = __( 'lemonway.email.error.SECOND_ID_BACK', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_selfie:
-							$document_type = "Le selfie (Type 13)";
+							$document_type = __( 'lemonway.email.error.SELFIE', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_id2:
-							$document_type = "La pièce d'identité de la deuxième personne (Type 16)";
+							$document_type = __( 'lemonway.email.error.ID_SECOND_PERSON', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_idbis2:
-							$document_type = "La deuxième pièce d'identité de la deuxième personne (Type 17)";
+							$document_type = __( 'lemonway.email.error.ID_SECOND_PERSON_2', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_id3:
-							$document_type = "La pièce d'identité de la troisième personne (Type 18)";
+							$document_type = __( 'lemonway.email.error.ID_THIRD_PERSON', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_idbis3:
-							$document_type = "La deuxième pièce d'identité de la troisième personne (Type 19)";
+							$document_type = __( 'lemonway.email.error.ID_THIRD_PERSON_2', 'yproject' );
 							break;
 						case LemonwayDocument::$document_type_capital_allocation:
-							$document_type = "Le document de répartition du capital (Type 20)";
+							$document_type = __( 'lemonway.email.error.CAPITAL_ALLOCATION', 'yproject' );
 							break;
 					}
 				}
@@ -294,27 +294,28 @@ class LemonwayDocument {
 				if ( !empty( $document_object->S ) && $document_object->S > 2 ) {
 					switch ( $document_object->S ) {
 						case LemonwayDocument::$document_status_refused:
-							$document_status = "refusé";
+							$document_status = __( 'lemonway.email.error.action.REFUSED', 'yproject' );
 							break;
 						case LemonwayDocument::$document_status_refused_unreadable:
-							$document_status = "considéré illisible";
+							$document_status = __( 'lemonway.email.error.action.UNREADABLE', 'yproject' );
 							break;
 						case LemonwayDocument::$document_status_refused_expired:
-							$document_status = "considéré expiré";
+							$document_status = __( 'lemonway.email.error.action.EXPIRED', 'yproject' );
 							break;
 						case LemonwayDocument::$document_status_refused_wrong_type:
-							$document_status = "considéré du mauvais type";
+							$document_status = __( 'lemonway.email.error.action.WRONG_TYPE', 'yproject' );
 							break;
 						case LemonwayDocument::$document_status_refused_wrong_person:
-							$document_status = "considéré comme lié à une personne qui ne correspond pas";
+							$document_status = __( 'lemonway.email.error.action.WRONG_PERSON', 'yproject' );
 							break;
 					}
 				}
 
 				if ( !empty( $document_type ) && !empty( $document_status ) ) {
-					$return_by_document_type[ $document_object->TYPE ] = $document_type. " bloque l'authentification. Le document a été " .$document_status. ".";
+					$return_by_document_type[ $document_object->TYPE ] = $document_type. " " .__( 'lemonway.email.error.message.BLOCK_AUTHENTICATION', 'yproject' );
+					$return_by_document_type[ $document_object->TYPE ] .= " " .__( 'lemonway.email.error.message.DOCUMENT_HAS_BEEN', 'yproject' ). " " .$document_status. ".";
 					if ( !empty( $document_object->C ) ) {
-						$return_by_document_type[ $document_object->TYPE ] .= " Commentaire complémentaire de Lemon Way : \"" .$document_object->C. "\"";
+						$return_by_document_type[ $document_object->TYPE ] .= " " .__( 'lemonway.email.error.message.LEMONWAY_COMMENT', 'yproject' ). " \"" .$document_object->C. "\"";
 					}
 				}
 			}
