@@ -22,7 +22,7 @@ class WDGAjaxActionsUserAccount {
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
-			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity );
+			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity->get_wpref() );
 		}
 
 		if ( !$can_access ) {
