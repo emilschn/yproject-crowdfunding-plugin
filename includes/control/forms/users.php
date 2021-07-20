@@ -144,6 +144,7 @@ class WDGFormUsers {
 		add_action('wp_login', 'WDGFormUsers::redirect_after_login');
 		add_action('wp_login_failed', 'WDGFormUsers::redirect_after_login_failed');
 		global $signon_errors;
+		// wp_signon n'initie pas l'utilisateur, on doit donc le faire dans redirect_after_login
 		$signon_result = wp_signon('', is_ssl());
 		if (is_wp_error($signon_result) && !isset($signon_errors)) {
 			$signon_errors = $signon_result;
@@ -236,19 +237,34 @@ class WDGFormUsers {
 	/**
 	 * Redirige après la connexion
 	 */
-	public static function redirect_after_login() {
+	public static function redirect_after_login($user_login) {
 		//Récupération de la page de redirection à appliquer
 		$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
+		$user = get_user_by( 'login', $user_login ); 
+		if ($user) {
+			wp_set_current_user($user->id, $user_login);
+		}		
+		$wdg_current_user = new WDGUser( $user->id );
+		$wdg_current_user->construct_with_api_data();
+		$language = $wdg_current_user->get_language();
+		// on change la langue du site en fonction de celle de l'utilisateur
+		WDG_Languages_Helpers::set_current_locale_id($language);
+		// On récupère l'ID du post grâce à l'adresse de la page sur laquelle on doit rediriger
+		$posted_redirect_page_id = url_to_postid( $posted_redirect_page );
+		// on récupère la page de redirection dans la langue de l'utilisateur
+		$posted_redirect_page_localized = apply_filters( 'wpml_permalink', get_permalink( $posted_redirect_page_id ), $language );
 		//Si ce n'est pas défini, on retourne à l'accueil
-		if (empty($posted_redirect_page)) {
-			wp_safe_redirect(home_url());
+		if (empty($posted_redirect_page_localized)) {
+			$home_url_localized = apply_filters( 'wpml_home_url', get_option( 'home' ) );
+			wp_safe_redirect( $home_url_localized );
 		}
 
 		//Vérification si l'url ne contient pas de liens vers l'admin
 		if (strpos($posted_redirect_page, 'wp-admin') !== FALSE) {
-			wp_safe_redirect(home_url());
+			$home_url_localized = apply_filters( 'wpml_home_url', get_option( 'home' ) );
+			wp_safe_redirect( $home_url_localized );
 		} else {
-			wp_safe_redirect($posted_redirect_page);
+			wp_safe_redirect($posted_redirect_page_localized);
 		}
 
 		exit();
@@ -266,7 +282,7 @@ class WDGFormUsers {
 			if ( !empty( $reason ) ) {
 				$url_reason = '?error_reason=' .$reason;
 			}
-			ypcf_debug_log( 'WDGFormUsers::redirect_after_login_failed' );
+			ypcf_debug_log( 'WDGFormUsers::redirect_after_login_failed' , FALSE);
 			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'connexion' ) . $url_reason );
 		}
 		exit();
