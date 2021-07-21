@@ -135,6 +135,8 @@ class WDGQueue {
 		$WDGOrganization = WDGOrganization::is_user_organization( $user_id ) ? new WDGOrganization( $user_id ) : FALSE;
 		$WDGUser = empty( $WDGOrganization ) ? new WDGUser( $user_id ) : FALSE;
 		$WDGUserOrOrganization = empty( $WDGOrganization ) ? $WDGUser : $WDGOrganization;
+		// on récupère la langue du destinataire 
+		WDG_Languages_Helpers::set_current_locale_id( $WDGUserOrOrganization->get_language() );
 		$recipient_email = '';
 		if ( !empty( $WDGOrganization ) ) {
 			$recipient_email = $WDGOrganization->get_email();
@@ -171,7 +173,7 @@ class WDGQueue {
 			$campaign_organization = $campaign->get_organization();
 			if ( !empty( $campaign_organization ) ) {
 				$campaign_organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-				$campaign_name = $campaign_organization_obj->get_name() . ' (Levée de fonds "' .$campaign->get_name(). '")';
+				$campaign_name = $campaign_organization_obj->get_name() . ' ( ' . __( 'email.royalties.FUNDRAISING', 'yproject' ) . ' ' . $campaign->get_name() . '")';
 			} else {
 				$campaign_name = $campaign->get_name();
 			}
