@@ -365,7 +365,7 @@ class WDGQueue {
 
 			// Récupération mail le plus récent
 			$api_email_list = WDGWPRESTLib::call_get_wdg( 'emails?id_template=' .$ref_template_id. '&recipient_email=' .$WDGUser->get_email() );
-			if ( count( $api_email_list ) == 0 ) {
+			if ( empty( $api_email_list ) || count( $api_email_list ) == 0 ) {
 				return;
 			}
 
