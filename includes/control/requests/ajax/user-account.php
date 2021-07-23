@@ -255,7 +255,7 @@ class WDGAjaxActionsUserAccount {
 					$contract_start_date->setDate( $contract_start_date->format( 'Y' ), $contract_start_date->format( 'm' ), 21 );
 
 					$maximum_profit = $campaign->maximum_profit();
-					$estimated_rois_total = $maximum_profit * $payment_amount;
+					$estimated_rois_total = intval( $maximum_profit ) * intval( $payment_amount );
 					foreach ( $estimated_turnover_list as $key => $turnover ) {
 						$estimated_rois = 0;
 						if ( $estimated_turnover_unit == 'percent' ) {

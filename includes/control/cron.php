@@ -155,6 +155,30 @@ class WDGCronActions {
 				}
 			}
 		}
+
+		// on récupère la liste de toutes les déclarations au status "payment"
+		$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_status( 'payment' );
+		if ( $declaration_list ) {
+			foreach ($declaration_list as $declaration_data) {
+				// envoi d'une notification après 3J quand déclaré mais pas de paiement enclenché
+				$date_declaration = new DateTime( $declaration_data->date_declaration );
+				$date_declaration->setTime( 0, 0, 1 );
+				// on calcule la différence entre aujourd'hui et la date de déclaration
+				$interval = $date_declaration->diff($current_date);
+				// si cela fait 3 jours que la déclaration a été faite, mais pas payée (car on est au status payment)
+				if ( $interval->days == 3 ) {
+					// on envoie une notification au porteur de projet
+					$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
+					$organization = $campaign->get_organization();
+					$wdgorganization = new WDGOrganization( $organization->wpref, $organization );
+					$wdguser_author = new WDGUser( $campaign->data->post_author );
+					$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
+					$recipients .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+
+					NotificationsAPI::declaration_done_not_paid( $recipients, $wdguser_author, $campaign, $declaration_data );
+				}
+            }
+		}
 	}
 
 	public static function make_projects_rss($funding_project = TRUE) {

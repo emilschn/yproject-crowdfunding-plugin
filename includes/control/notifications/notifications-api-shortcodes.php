@@ -497,7 +497,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * URL du TBPP
 	 */
-	public static function project_dashboard_url($atts, $content = '') {
+	public static function project_dashboard_url() {
 		$campaign_id = self::$campaign->ID;
 		$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id;
 
@@ -889,7 +889,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Trois derniers mois en texte
 	 */
-	public static function declaration_last_three_months($atts, $content = '') {
+	public static function declaration_last_three_months() {
 		$date_due_previous_day = new DateTime( self::$declaration->date_due );
 		$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
 		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );

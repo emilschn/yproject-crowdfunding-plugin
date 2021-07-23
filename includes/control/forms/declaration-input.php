@@ -201,8 +201,12 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 					}
 				}
 			}
-			$roideclaration->employees_number = $employees_number;
+			// on met à jour date de déclaration
+			$date_now = new DateTime();
+			$roideclaration->date_declaration = $date_now->format( 'Y-m-d' );
 
+			$roideclaration->employees_number = $employees_number;
+			
 			$other_fundings = $this->getInputText( 'other_fundings' );
 			$roideclaration->set_other_fundings( $other_fundings );
 

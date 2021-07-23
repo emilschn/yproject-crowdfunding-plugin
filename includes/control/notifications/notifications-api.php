@@ -501,6 +501,12 @@ class NotificationsAPI {
 			'description'	=> "Test d'éligibilité - Tableau de bord pas encore créé",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
+		),
+		'declaration-done-not-paid' => array(
+			'fr-sib-id'		=> 'declaration-done-not-paid',
+			'description'	=> "Votre déclaration est en attente de paiement !",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
 		)
 	);
 
@@ -527,8 +533,12 @@ class NotificationsAPI {
 					$recipient = $parameters[ 'recipient' ];
 					$template_post_name = $template_slug;
 					$parameters = $parameters;
-					$options_encoded = $parameters[ 'options' ];
-					$options_decoded = json_decode( $options_encoded );
+					if (!isset($parameters[ 'options' ])){
+						$options_decoded = array( 'personal' => 1);
+					} else {
+						$options_encoded = $parameters[ 'options' ];
+						$options_decoded = json_decode( $options_encoded );
+					}
 					$object = $template_post->post_title;
 					$content = $template_post->post_content;
 
@@ -2316,6 +2326,32 @@ class NotificationsAPI {
 		}
 
 		return FALSE;
+	}
+
+		/**
+	 * Envoie la notification de déclaration à faire aux porteurs de projet
+	 * @param string or array $recipients
+	 * @param int $nb_remaining_days
+	 * @param boolean $has_mandate
+	 * @return boolean
+	 */
+	public static function declaration_done_not_paid($recipients, $WDGUser, $campaign, $declaration) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-done-not-paid' );
+		
+		NotificationsAPIShortcodes::set_recipient($WDGUser);		
+		NotificationsAPIShortcodes::set_campaign( $campaign );
+		NotificationsAPIShortcodes::set_declaration( $declaration );
+
+		$dashboard_url = NotificationsAPIShortcodes::project_dashboard_url();
+		$last_three_months = NotificationsAPIShortcodes::declaration_last_three_months();
+
+		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $param_recipients
+		);
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	public static function declaration_to_do_warning($recipient, $WDGUser, $campaign, $declaration, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total) {
