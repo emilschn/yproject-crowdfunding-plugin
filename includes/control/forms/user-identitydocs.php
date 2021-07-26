@@ -109,7 +109,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$this->addToMD5Array( 'capital_allocation', $current_file_capital_allocation->get_byte_array_md5() );
 			}
 			$field_status_capital_allocation = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_capital_allocation, $capital_allocation_file_date_uploaded );
-			$this->addField('file', 'capital_allocation' .$suffix, __( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $capital_allocation_file_path, __( 'form.user-identitydocs.CAPITAL_ALLOCATION_DESCRIPTION', 'yproject' ), $field_status_capital_allocation);
+			$this->addField('file', 'capital_allocation' .$suffix, __( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $capital_allocation_file_path, __( 'form.user-identitydocs.CAPITAL_ALLOCATION_DESCRIPTION', 'yproject' ), $field_status_capital_allocation);
 
 			$current_filelist_id_2 = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_id_2 );
 			$id2_file_path = '';
@@ -121,7 +121,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$this->addToMD5Array( 'identity2', $current_file_id_2->get_byte_array_md5() );
 			}
 			$field_status_id_2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id2, $id2_file_date_uploaded );
-			$this->addField('file', 'identity2' .$suffix, __( 'form.user-identitydocs.ID_SECOND_PERSON', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $id2_file_path, __( 'form.user-identitydocs.ID_SECOND_PERSON_DESCRIPTION', 'yproject' ), $field_status_id_2);
+			$this->addField('file', 'identity2' .$suffix, __( 'form.user-identitydocs.ID_SECOND_PERSON', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $id2_file_path, __( 'form.user-identitydocs.ID_SECOND_PERSON_DESCRIPTION', 'yproject' ), $field_status_id_2);
 
 			$current_filelist_home_2 = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_idbis_2 );
 			$home2_file_path = '';
@@ -133,7 +133,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$this->addToMD5Array( 'home2', $current_file_home_2->get_byte_array_md5() );
 			}
 			$field_status_home_2 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis2, $home2_file_date_uploaded );
-			$this->addField('file', 'home2' .$suffix, __( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $home2_file_path, __( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON_DESCRIPTION', 'yproject' ), $field_status_home_2);
+			$this->addField('file', 'home2' .$suffix, __( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $home2_file_path, __( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON_DESCRIPTION', 'yproject' ), $field_status_home_2);
 
 			$current_filelist_id_3 = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_id_3 );
 			$id3_file_path = '';
@@ -145,7 +145,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$this->addToMD5Array( 'identity3', $current_file_id_3->get_byte_array_md5() );
 			}
 			$field_status_id_3 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_id3, $id3_file_date_uploaded );
-			$this->addField('file', 'identity3' .$suffix, __( 'form.user-identitydocs.ID_THIRD_PERSON', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $id3_file_path, __( 'form.user-identitydocs.ID_THIRD_PERSON_DESCRIPTION', 'yproject' ), $field_status_id_3);
+			$this->addField('file', 'identity3' .$suffix, __( 'form.user-identitydocs.ID_THIRD_PERSON', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $id3_file_path, __( 'form.user-identitydocs.ID_THIRD_PERSON_DESCRIPTION', 'yproject' ), $field_status_id_3);
 
 			$current_filelist_home_3 = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_idbis_3 );
 			$home3_file_path = '';
@@ -157,7 +157,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$this->addToMD5Array( 'home3', $current_file_home_3->get_byte_array_md5() );
 			}
 			$field_status_home_3 = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_idbis3, $home3_file_date_uploaded );
-			$this->addField('file', 'home3' .$suffix, __( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $home3_file_path, __( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON_DESCRIPTION', 'yproject' ), $field_status_home_3);
+			$this->addField('file', 'home3' .$suffix, __( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $home3_file_path, __( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON_DESCRIPTION', 'yproject' ), $field_status_home_3);
 		} else {
 			$current_filelist_id_back = WDGKYCFile::get_list_by_owner_id( $this->user_id, ( $this->is_orga ) ? WDGKYCFile::$owner_organization : WDGKYCFile::$owner_user, WDGKYCFile::$type_id_back );
 			$id_back_file_path = '';
@@ -552,43 +552,43 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					}
 					switch ( $doc_type ) {
 						case 'identity':
-							$str_duplicate .= __( "justificatif d'identit&eacute;", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID', 'yproject' ));
 							break;
 						case 'identity_back':
-							$str_duplicate .= __( "verso du justificatif d'identit&eacute;", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID_BACK', 'yproject' ));
 							break;
 						case 'home':
-							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID', 'yproject' ));
 							break;
 						case 'kbis':
-							$str_duplicate .= __( "KBIS", 'yproject' );
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.KBIS', 'yproject' ));
 							break;
 						case 'status':
-							$str_duplicate .= __( "statuts", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.STATUS_SHORT', 'yproject' ));
 							break;
 						case 'capital_allocation':
-							$str_duplicate .= __( "attestation de r&eacute;partition du capital", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ));
 							break;
 						case 'identity2':
-							$str_duplicate .= __( "justificatif d'identit&eacute; de la deuxi&egrave;me personne", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID_SECOND_PERSON', 'yproject' ));
 							break;
 						case 'home2':
-							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute; de la deuxi&egrave;me personne", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON', 'yproject' ));
 							break;
 						case 'identity3':
-							$str_duplicate .= __( "justificatif d'identit&eacute; de la troisi&egrave;me personne", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID_THIRD_PERSON', 'yproject' ));
 							break;
 						case 'home3':
-							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute; de la troisi&egrave;me personne", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON', 'yproject' ));
 							break;
 						case 'identity2_user':
-							$str_duplicate .= __( "deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID', 'yproject' ));
 							break;
 						case 'identity2_back':
-							$str_duplicate .= __( "verso du deuxi&egrave;me justificatif d'identit&eacute;", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID_BACK', 'yproject' ));
 							break;
 						case 'home_old':
-							$str_duplicate .= __( "justificatif de domicile", 'yproject' );
+							$str_duplicate .= strtolower(__( 'form.user-identitydocs.PROOF_ADDRESS', 'yproject' ));
 							break;
 					}
 					$nb++;
