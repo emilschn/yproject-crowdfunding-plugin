@@ -1570,11 +1570,8 @@ class WDGUser implements WDGUserInterface {
 		require_once __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get('', '', '', $this->get_firstname(). ' ' .$this->get_lastname(), $this->get_email(), $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), '01/01/'.($year + 1), $year, $investment_list, UIHelpers::format_number( $roi_total ). ' &euro;', UIHelpers::format_number( $taxed_total ). ' &euro;', $info_yearly_certificate);
 
-		$crowdfunding = ATCF_CrowdFunding::instance();
-		$crowdfunding->include_html2pdf();
-		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
-		$html2pdf->WriteHTML( urldecode( $html_content ) );
-		$html2pdf->Output( $filepath, 'F' );
+		$h2p_instance = HTML2PDFv5Helper::instance();
+		$h2p_instance->writePDF( $html_content, $filepath );
 
 		return $buffer;
 	}
