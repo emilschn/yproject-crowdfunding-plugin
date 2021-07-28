@@ -3,6 +3,7 @@ class WDG_Form_Subscription extends WDG_Form {
 	public static $name = 'user-subscription';
 
     public static $field_group_basics = 'subscription-basics';
+	public static $field_group_hidden = 'subscription-hidden';
     
     public function __construct( $user_id = FALSE ) {
 		parent::__construct(self::$name);
@@ -14,6 +15,14 @@ class WDG_Form_Subscription extends WDG_Form {
 		parent::initFields();
 
         $WDGUser = new WDGUser( $this->user_id );
+
+		$this->addField(
+			'hidden',
+			'user_id',
+			'',
+			WDG_Form_Subscription::$field_group_hidden,
+			$this->user_id
+		);
 
         $this->addField(
             'select',
@@ -67,9 +76,30 @@ class WDG_Form_Subscription extends WDG_Form {
 		if ( !is_user_logged_in() ) {
 		
 		// Sécurité, ne devrait pas arriver non plus
-		} else if ( $WDGUser->get_wpref() != $WDGUser_current->get_wpref() && !$WDGUser_current->is_admin() ) {
+        } else if ( !$this->is_orga && $WDGUser->get_wpref() != $WDGUser_current->get_wpref() && !$WDGUser_current->is_admin() ) {
 
 		
-	    }
+	    // Analyse du formulaire
+		} else {
+
+        // $amount = $this->getInputTextMoney( 'amount', FALSE );
+		// if ( !is_numeric( $amount ) ) {
+		// 	$this->addPostError(
+		// 		'amount',
+		// 		__( "Erreur de saisie du montant (ne peut pas &ecirc;tre &eacute;gal &agrave; zero).", 'yproject' ),
+		// 		'general'
+		// 	);
+		// }
+            
+        }
+
+        $buffer = array(
+			'success'	=> $feedback_success,
+			'errors'	=> $feedback_errors
+		);
+		
+		$this->initFields(); // Reinit pour avoir les bonnes valeurs
+		
+		return $buffer;
     }
 }
