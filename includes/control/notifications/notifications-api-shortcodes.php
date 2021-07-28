@@ -114,12 +114,12 @@ class NotificationsAPIShortcodes {
 	// Données utilisées par les shortcodes
 	//*************************************
 	/**
-	 * @var WDGUser|WDGOrganization
+	 * @var WDGUserInterface
 	 */
 	private static $recipient;
 	/**
 	 * Définit les infos utilisateurs du destinataire
-	 * @param WDGUser|WDGOrganization
+	 * @param WDGUserInterface
 	 */
 	public static function set_recipient($obj_user) {
 		self::$recipient = $obj_user;
@@ -447,11 +447,7 @@ class NotificationsAPIShortcodes {
 	 * Prénom
 	 */
 	public static function recipient_first_name() {
-		if ( get_class( self::$recipient ) == 'WDGUser' ) {
-			return self::$recipient->get_firstname();
-		}
-
-		return WDGOrganization::is_user_organization( self::$recipient->get_wpref() ) ? self::$recipient->get_name() : '';
+		return self::$recipient->get_firstname();
 	}
 
 	/**

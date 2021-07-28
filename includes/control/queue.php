@@ -135,8 +135,19 @@ class WDGQueue {
 		$WDGOrganization = WDGOrganization::is_user_organization( $user_id ) ? new WDGOrganization( $user_id ) : FALSE;
 		$WDGUser = empty( $WDGOrganization ) ? new WDGUser( $user_id ) : FALSE;
 		$WDGUserOrOrganization = empty( $WDGOrganization ) ? $WDGUser : $WDGOrganization;
-		$recipient_email = empty( $WDGOrganization ) ? $WDGUser->get_email() : $WDGOrganization->get_email();
-		$recipient_name = empty( $WDGOrganization ) ? $WDGUser->get_firstname() : $WDGOrganization->get_name();
+		// on récupère la langue du destinataire 
+		WDG_Languages_Helpers::set_current_locale_id( $WDGUserOrOrganization->get_language() );
+		$recipient_email = '';
+		if ( !empty( $WDGOrganization ) ) {
+			$recipient_email = $WDGOrganization->get_email();
+			$linked_users_creator = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+				$recipient_email .= ',' . $WDGUser_creator->get_email();
+			}
+		} else {
+			$recipient_email = $WDGUser->get_email();
+		}
 		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
 		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
@@ -162,7 +173,7 @@ class WDGQueue {
 			$campaign_organization = $campaign->get_organization();
 			if ( !empty( $campaign_organization ) ) {
 				$campaign_organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-				$campaign_name = $campaign_organization_obj->get_name() . ' (Levée de fonds "' .$campaign->get_name(). '")';
+				$campaign_name = $campaign_organization_obj->get_name() . ' ( ' . __( 'email.royalties.FUNDRAISING', 'yproject' ) . ' ' . $campaign->get_name() . '")';
 			} else {
 				$campaign_name = $campaign->get_name();
 			}
@@ -222,11 +233,11 @@ class WDGQueue {
 		- Twiza (3,50 €)
 		 */
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
-			$message .= "<b>Ces entreprises vous ont versé des royalties :</b><br>";
+			$message .= "<b>" . __( 'email.royalties.COMPANIES_TRANSFERED_ROYALTIES', 'yproject' ) . "</b><br>";
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
 				$message .= "- " .$campaign_params[ 'campaign_name' ]. " : " .YPUIHelpers::display_number( $campaign_params[ 'amount_royalties' ] ). " €";
 				if ( $campaign_params[ 'amount_tax_in_cents' ] > 0 ) {
-					$message .= " (dont prélèvement " .YPUIHelpers::display_number( $campaign_params['amount_tax_in_cents'] ). " €)";
+					$message .= " (" .__( 'email.royalties.COMPANIES_TRANSFERED_ROYALTIES_SAMPLE', 'yproject' ). " " .YPUIHelpers::display_number( $campaign_params['amount_tax_in_cents'] ). " €)";
 				}
 				$message .= "<br>";
 			}
@@ -235,26 +246,12 @@ class WDGQueue {
 
 		/**
 		 *
-		Ces entreprises ne vous ont pas versé de royalties :
-		- DKodes
-		- Wattsplan
-		if ( !empty( $message_categories[ 'without_royalties' ] ) ) {
-			$message .= "<b>Ces entreprises ne vous ont pas versé de royalties :</b><br>";
-			foreach ( $message_categories[ 'without_royalties' ] as $campaign_name ) {
-				$message .= "- " .$campaign_name. "<br>";
-			}
-			$message .= "<br>";
-		}
-		 */
-
-		/**
-		 *
 		Les versements de ces entreprises sont en attente :
 		- Nkita
 		- Listo
 		 */
 		if ( !empty( $message_categories[ 'not_transfered' ] ) ) {
-			$message .= "<b>Les versements de ces entreprises sont en attente :</b><br>";
+			$message .= "<b>" . __( 'email.royalties.COMPANIES_PENDING_TRANSFER', 'yproject' ) . "</b><br>";
 			foreach ( $message_categories[ 'not_transfered' ] as $campaign_name ) {
 				$message .= "- " .$campaign_name. "<br>";
 			}
@@ -267,7 +264,7 @@ class WDGQueue {
 		- La charette (démarre le 10/04/2019)
 		 */
 		if ( !empty( $message_categories[ 'not_started' ] ) ) {
-			$message .= "<b>Ces entreprises ne sont pas encore entrées dans la phase de déclaration :</b><br>";
+			$message .= "<b>" . __( 'email.royalties.COMPANIES_NOT_YET_TRANSFERING', 'yproject' ) . "</b><br>";
 			foreach ( $message_categories[ 'not_started' ] as $campaign_params ) {
 				$message .= "- " .$campaign_params['campaign_name']. " (démarre le " .$campaign_params['date_start']. ")<br>";
 			}
@@ -288,7 +285,7 @@ class WDGQueue {
 			}
 
 			if (!$cancel_notification ) {
-				NotificationsAPI::roi_transfer_daily_resume( $WDGUserOrOrganization, $message );
+				NotificationsAPI::roi_transfer_daily_resume( $WDGUserOrOrganization, $message, $recipient_email );
 			}
 		}
 	}
@@ -368,7 +365,7 @@ class WDGQueue {
 
 			// Récupération mail le plus récent
 			$api_email_list = WDGWPRESTLib::call_get_wdg( 'emails?id_template=' .$ref_template_id. '&recipient_email=' .$WDGUser->get_email() );
-			if ( count( $api_email_list ) == 0 ) {
+			if ( empty( $api_email_list ) || count( $api_email_list ) == 0 ) {
 				return;
 			}
 

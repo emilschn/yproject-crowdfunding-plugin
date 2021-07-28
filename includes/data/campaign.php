@@ -1035,8 +1035,12 @@ class ATCF_Campaign {
 	}
 	// Contrat : Rédaction surchargeant le contrat standard
 	public static $key_override_contract = 'campaign_override_contract';
-	public function override_contract() {
-		return $this->__get( ATCF_Campaign::$key_override_contract );
+	public function override_contract( $lang = 'fr' ) {
+		$key = ATCF_Campaign::$key_override_contract;
+		if ( $lang != 'fr' && $lang != 'fr_FR' ) {
+			$key .= '_' . $lang;
+		}
+		return $this->__get( $key );
 	}
 
 	//Ajouts contrat
@@ -1280,6 +1284,7 @@ class ATCF_Campaign {
 
 		if ( $this->platform_commission() == '' ) {
 			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $this->platform_commission() empty ');
+
 			return;
 		}
 		$data_contract_start_date = $this->contract_start_date();
@@ -1287,11 +1292,13 @@ class ATCF_Campaign {
 			$start_datetime = new DateTime( $data_contract_start_date );
 		} else {
 			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $data_contract_start_date  empty ');
+
 			return;
 		}
 		$fiscal_info = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_info_fiscal, 'accounting_fiscal_info' );
 		if ( empty( $fiscal_info ) ) {
 			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $fiscal_info  empty ');
+
 			return;
 		}
 
@@ -1934,6 +1941,16 @@ class ATCF_Campaign {
 		}
 
 		return $buffer;
+	}
+	public function has_impact($str_impact) {
+		$categories = $this->get_categories();
+		foreach ($categories as $category) {
+			if ( $category->slug == $str_impact ) {
+				return TRUE;
+			}
+		}
+
+		return FALSE;
 	}
 
 	/**
@@ -2586,7 +2603,7 @@ class ATCF_Campaign {
 	 *
 	 * @since Appthemer CrowdFunding 0.1-alpha
 	 *
-	 * @return sting Campaign Video
+	 * @return string Campaign Video
 	 */
 	public function video() {
 		$buffer = $this->__get_translated_property( 'campaign_video' );
@@ -3405,6 +3422,8 @@ class ATCF_Campaign {
 			if (!empty($new_username) && !empty($new_password)) {
 				$user_id = wp_create_user($new_username, $new_password, $email);
 				$wdg_user = new WDGUser( $user_id );
+				$wdg_user->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+				$wdg_user->update_api();
 				$use_lastname = '';
 				$birthplace_department = '';
 				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, '');
@@ -3912,6 +3931,7 @@ class ATCF_Campaign {
 	}
 
 	public static function get_list_positive_savings($nb = 0, $random = TRUE) {
+		WDG_Languages_Helpers::switch_to_french_temp();
 		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
 		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
 		$query_options = array(
@@ -3937,7 +3957,11 @@ class ATCF_Campaign {
 			$query_options[ 'order' ] = 'asc';
 		}
 
-		return get_posts( $query_options );
+		$buffer = get_posts( $query_options );
+
+		WDG_Languages_Helpers::switch_back_to_display_language();
+
+		return $buffer;
 	}
 
 	public static function get_list_funded($nb = 0, $client = '', $include_current = false, $skip_hidden = true) {

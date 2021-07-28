@@ -1275,10 +1275,10 @@ class WDGPostActions {
 			$_SESSION[ 'account_organization_form_feedback_' . $organization_id ] = $WDGOrganizationDetailsForm->postForm();
 
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
-			if ( stristr( wp_get_referer(), 'tableau-de-bord' ) === FALSE ) {
-				wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-parameters-' . $organization_id );
+			if ( stristr( wp_get_referer(), 'tableau-de-bord' ) === FALSE && stristr(wp_get_referer(), 'dashboard')  === FALSE ) {
+				wp_redirect( wp_get_referer() . '#orga-parameters-' . $organization_id );
 			} else {
-				wp_redirect( wp_get_referer().'#organization' );
+				wp_redirect( wp_get_referer() . '#organization' );
 			}
 			exit();
 		}
@@ -1292,10 +1292,10 @@ class WDGPostActions {
 			$WDGFormIdentityDocs = new WDG_Form_User_Identity_Docs( $organization_id, TRUE );
 			$WDGFormIdentityDocs->postForm();
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
-			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE) {
-				wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-identitydocs-' . $organization_id );
+			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE && stristr(wp_get_referer(), 'dashboard')  === FALSE ) {
+				wp_redirect( wp_get_referer() . '#orga-identitydocs-' . $organization_id );
 			} else {
-				wp_redirect( wp_get_referer().'#organization' );
+				wp_redirect( wp_get_referer() . '#organization' );
 			}
 			exit();
 		}
@@ -1309,10 +1309,10 @@ class WDGPostActions {
 			$WDGFormBank = new WDG_Form_User_Bank( $organization_id, TRUE );
 			$WDGFormBank->postForm();
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
-			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE) {
-				wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-bank-' . $organization_id );
+			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE && stristr(wp_get_referer(), 'dashboard')  === FALSE) {
+				wp_redirect( wp_get_referer() . '#orga-bank-' . $organization_id );
 			} else {
-				wp_redirect( wp_get_referer().'#organization' );
+				wp_redirect( wp_get_referer() . '#organization' );
 			}
 			exit();
 		}

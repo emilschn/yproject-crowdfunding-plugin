@@ -2,7 +2,7 @@
 /**
  * Classe de gestion des organisations
  */
-class WDGOrganization {
+class WDGOrganization implements WDGUserInterface {
 	/**
 	 * Clés d'accès à l'api BOPP
 	 */
@@ -462,6 +462,9 @@ class WDGOrganization {
 		$this->wpref = $value;
 	}
 
+	public function get_firstname() {
+		return $this->get_name();
+	}
 	public function get_name() {
 		return $this->name;
 	}
@@ -721,6 +724,18 @@ class WDGOrganization {
 		if ( !empty( $value ) ) {
 			$this->id_quickbooks = $value;
 		}
+	}
+
+	public function get_language() {
+		return $this->get_owner_language();
+	}
+	private function get_owner_language() {
+		$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+		if ( empty( $linked_users_creator ) ) {
+			return;
+		}
+		$WDGUser_creator = $linked_users_creator[ 0 ];
+		$WDGUser_creator->get_language();
 	}
 
 	/**
@@ -1666,13 +1681,16 @@ class WDGOrganization {
 				// de même si cet iban a LEMON WAY comme holder (viban)
 				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected || strtolower( str_replace(' ', '', $buffer->HOLDER) ) == WDGUser::$iban_holder_lw ) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
-						if ( $iban_item->S == WDGUser::$iban_status_validated  && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
+						if ( ( $iban_item->S == WDGUser::$iban_status_validated || $iban_item->S == WDGUser::$iban_status_waiting ) && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
 							$buffer = $iban_item;
 						}
 					}
 				}
 			} else {
-				$buffer = $wallet_details->IBANS->IBAN;
+				$iban_item = $wallet_details->IBANS->IBAN;
+				if ( ( $iban_item->S == WDGUser::$iban_status_validated || $iban_item->S == WDGUser::$iban_status_waiting ) && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
+					$buffer = $iban_item;
+				}
 			}
 		}
 
