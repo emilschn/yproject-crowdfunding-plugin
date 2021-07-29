@@ -4,6 +4,7 @@ class WDG_Form_Subscription extends WDG_Form {
 
     public static $field_group_basics = 'subscription-basics';
 	public static $field_group_hidden = 'subscription-hidden';
+	public static $field_group_amount = 'subscription-amount';
     
     public function __construct( $user_id = FALSE ) {
 		parent::__construct(self::$name);
@@ -41,7 +42,7 @@ class WDG_Form_Subscription extends WDG_Form {
 			'text-money',
 			'amount',
 			__( 'account.subscriptions.AMOUNT', 'yproject' ),
-			WDG_Form_Subscription::$field_group_basics,
+			WDG_Form_Subscription::$field_group_amount,
 			( !empty( $adjustment ) ) ? $adjustment->amount : ''
 		);
 		
@@ -82,15 +83,17 @@ class WDG_Form_Subscription extends WDG_Form {
 	    // Analyse du formulaire
 		} else {
 
-        // $amount = $this->getInputTextMoney( 'amount', FALSE );
-		// if ( !is_numeric( $amount ) ) {
-		// 	$this->addPostError(
-		// 		'amount',
-		// 		__( "Erreur de saisie du montant (ne peut pas &ecirc;tre &eacute;gal &agrave; zero).", 'yproject' ),
-		// 		'general'
-		// 	);
-		// }
-            
+		$amount = $this->getInputTextMoney ( 'amount' );
+		if ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount )  ) {
+			$this->addPostError(
+				'amount-empty',
+				__( 'form.invest-input.error.AMOUNT_EMPTY', 'yproject' ),
+				'general'
+			);
+		}
+
+		if ( empty( $feedback_errors ) ) {
+			array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
         }
 
         $buffer = array(
@@ -102,4 +105,5 @@ class WDG_Form_Subscription extends WDG_Form {
 		
 		return $buffer;
     }
+}
 }
