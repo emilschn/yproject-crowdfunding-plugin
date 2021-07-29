@@ -172,6 +172,7 @@ class NotificationsEmails {
 		$text_before = '';
 		$text_after = '';
 
+		WDG_Languages_Helpers::set_current_locale_id( $WDGUser->get_language() );
 		if ( $payment_key != 'check' && !$is_only_wallet_contribution ) {
 			if ( strpos( $payment_key, 'TRANSID' ) !== FALSE ) {
 				$text_before .= __( 'invest.email.ACCOUNT_REGISTERED_DEBIT', 'yproject' ) . '<br>';
