@@ -1325,7 +1325,7 @@ class WDGPostActions {
 			$core->include_form( 'user-subscription' );
 			$WDGFormSubscription = new WDG_Form_Subscription( $user_id, TRUE );
 			ypcf_session_start();
-			$_SESSION[ 'account_organization_form_feedback_' . $user_id ] = $WDGFormSubscription->postForm();
+			$_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ] = $WDGFormSubscription->postForm();
 			wp_redirect( wp_get_referer().'#subscription' );
 			exit();
 		}
