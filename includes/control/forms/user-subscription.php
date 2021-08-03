@@ -4,7 +4,7 @@ class WDG_Form_Subscription extends WDG_Form {
 
     public static $field_group_basics = 'subscription-basics';
 	public static $field_group_hidden = 'subscription-hidden';
-	public static $field_group_amount = 'subscription-amount';
+
     
     public function __construct( $user_id = FALSE ) {
 		parent::__construct(self::$name);
@@ -42,25 +42,27 @@ class WDG_Form_Subscription extends WDG_Form {
 			'text-money',
 			'amount',
 			__( 'account.subscriptions.AMOUNT', 'yproject' ),
-			WDG_Form_Subscription::$field_group_amount,
+			WDG_Form_Subscription::$field_group_basics,
 			( !empty( $adjustment ) ) ? $adjustment->amount : ''
 		);
 		
+		// $this->positive_savings_projects_list = ATCF_Campaign::get_list_positive_savings( 0 );
+		// Récupération de la liste, parcours de la liste, je récupère l'identifiant que j'assossie avec son nom
+		$projects = ['projet 1' => 'Solaire Rural', 'projet 2' => 'Zéro Pesticide'];
+
+
 		$this->addField(
             'select',
             'project',
             __( 'account.subscriptions.PROJECT', 'yproject' ),
             WDG_Form_Subscription::$field_group_basics,
-            $projects = ['projet 1' => 'Solaire Rural', 'projet 2' => 'Zéro Pesticide'],
-            
+            $projects,
             FALSE,
             [
                 $projects['projet 1'],
                 $projects['projet 2'],
             ]
         );
-		
-
     }
 
     public function postForm() {
@@ -82,16 +84,20 @@ class WDG_Form_Subscription extends WDG_Form {
 		
 	    // Analyse du formulaire
 		} else {
+		// Si le montant ne rentré ne dépasse pas 10€ alors message d'erreur
+		$amount = $this->getInputTextMoney( 'amount' );				
+				if ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount ) ) {
+					$error = array(
+						'code'		=> 'amount',
+						'text'		=> __( 'form.subscription.error.AMOUNT_MINIMUM', 'yproject' ),
+						'element'	=> 'general'
+					);
+					array_push( $feedback_errors, $error );
+				}
+		
+				
 
-		$amount = $this->getInputTextMoney ( 'amount' );
-		if ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount )  ) {
-			$this->addPostError(
-				'amount-empty',
-				__( 'form.invest-input.error.AMOUNT_EMPTY', 'yproject' ),
-				'general'
-			);
-		}
-
+		// Si il n'y a pas d'erreur alors message succès
 		if ( empty( $feedback_errors ) ) {
 			array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
         }
@@ -102,7 +108,7 @@ class WDG_Form_Subscription extends WDG_Form {
 		);
 		
 		$this->initFields(); // Reinit pour avoir les bonnes valeurs
-		
+		var_dump($buffer);
 		return $buffer;
     }
 }
