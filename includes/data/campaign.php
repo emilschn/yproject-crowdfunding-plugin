@@ -1035,8 +1035,12 @@ class ATCF_Campaign {
 	}
 	// Contrat : Rédaction surchargeant le contrat standard
 	public static $key_override_contract = 'campaign_override_contract';
-	public function override_contract() {
-		return $this->__get( ATCF_Campaign::$key_override_contract );
+	public function override_contract( $lang = 'fr' ) {
+		$key = ATCF_Campaign::$key_override_contract;
+		if ( $lang != 'fr' && $lang != 'fr_FR' ) {
+			$key .= '_' . $lang;
+		}
+		return $this->__get( $key );
 	}
 
 	//Ajouts contrat
@@ -3418,6 +3422,8 @@ class ATCF_Campaign {
 			if (!empty($new_username) && !empty($new_password)) {
 				$user_id = wp_create_user($new_username, $new_password, $email);
 				$wdg_user = new WDGUser( $user_id );
+				$wdg_user->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+				$wdg_user->update_api();
 				$use_lastname = '';
 				$birthplace_department = '';
 				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, '');

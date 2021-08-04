@@ -145,10 +145,16 @@ class WDGConfigTexts {
 	public static function get_translated_post_id($french_post_id) {
 		$buffer = FALSE;
 
-		global $locale;
-		// Récupérer la page traduite si nécessaire
-		if ( !WDG_Languages_Helpers::is_french_displayed() ) {
+		global $locale, $force_language_to_translate_to;
+		$locale_substr = FALSE;
+		if ( !WDG_Languages_Helpers::is_french_displayed() && $locale != 'fr' && $locale != ' fr_FR') {
 			$locale_substr = substr( $locale, 0, 2 );
+		} else if ( !empty( $force_language_to_translate_to ) && $force_language_to_translate_to != 'fr' ) {
+			$locale_substr = $force_language_to_translate_to;
+		}
+
+		// Récupérer la page traduite si nécessaire
+		if ( !empty( $locale_substr ) ) {
 			$post_translated_id = apply_filters( 'wpml_object_id', $french_post_id, self::$post_type_name, FALSE, $locale_substr );
 			if ( !empty( $post_translated_id ) ) {
 				$buffer = $post_translated_id;

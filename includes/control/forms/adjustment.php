@@ -126,7 +126,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 		$declaration_list_by_id_past = array();
 		foreach ( $declaration_list as $WDGROIDeclaration ) {
 			$date_due = new DateTime( $WDGROIDeclaration->date_due );
-			if ( $date_today > $date_due ) {
+			if ( $date_today > $date_due && !$WDGROIDeclaration->is_checked_by_adjustments()) {
 				$declaration_list_by_id_past[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
 			}
 		}

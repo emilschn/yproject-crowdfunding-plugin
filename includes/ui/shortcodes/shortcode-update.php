@@ -37,6 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		wp_update_post($post_update);
 		
 		update_post_meta($campaign->ID, 'campaign_video', esc_url($_POST['video']));
+		update_post_meta($campaign->ID, 'campaign_video_fr', esc_url($_POST['video']));
 		update_post_meta($campaign->ID, 'campaign_summary', $_POST['summary']);
 		update_post_meta($campaign->ID, 'campaign_subtitle', $_POST['subtitle']);
 		update_post_meta($campaign->ID, 'campaign_added_value', $_POST['added_value']);
