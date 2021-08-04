@@ -44,6 +44,7 @@ class WDGAjaxActionsAccountSignin {
 		$input_password = filter_input( INPUT_POST, 'password' );
 		$input_firstname = filter_input( INPUT_POST, 'first-name' );
 		$input_lastname = filter_input( INPUT_POST, 'last-name' );
+		$input_language = filter_input( INPUT_POST, 'language' );
 
 		$result[ 'status' ] = '';
 		// Normalement, on ne passe pas ici
@@ -90,6 +91,8 @@ class WDGAjaxActionsAccountSignin {
 				update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
 				$WDGUser = new WDGUser( $wp_user_id );
 				$WDGUser->update_last_details_confirmation();
+				$WDGUser->set_language($input_language);
+				$WDGUser->update_api();
 				WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 				wp_set_auth_cookie( $wp_user_id, false, is_ssl() );
 			}
