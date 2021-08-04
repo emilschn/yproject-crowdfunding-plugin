@@ -94,13 +94,22 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_select_wire' );
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_received_wire' );
 
+		self::init_actions_account_signin();
+	}
+
+	public static $account_signin_actions = array(
+		'account_signin_get_email_info',
+		'account_signin_check_password',
+		'account_signin_create_account',
+		'account_signin_send_reinit_pass',
+		'account_signin_send_validation_email',
+		'account_signin_change_account_email'
+	);
+	public static function init_actions_account_signin() {
 		// Account signin - Interface de connexion / inscription
-		WDGAjaxActions::add_action_account_signin( 'account_signin_get_email_info' );
-		WDGAjaxActions::add_action_account_signin( 'account_signin_check_password' );
-		WDGAjaxActions::add_action_account_signin( 'account_signin_create_account' );
-		WDGAjaxActions::add_action_account_signin( 'account_signin_send_reinit_pass' );
-		WDGAjaxActions::add_action_account_signin( 'account_signin_send_validation_email' );
-		WDGAjaxActions::add_action_account_signin( 'account_signin_change_account_email' );
+		foreach ( self::$account_signin_actions as $single_action ) {
+			WDGAjaxActions::add_action_account_signin( $single_action );
+		}
 
 		// Account authentication - Interface d'authentification
 		WDGAjaxActions::add_action_account_authentication( 'account_authentication_search_address' );
