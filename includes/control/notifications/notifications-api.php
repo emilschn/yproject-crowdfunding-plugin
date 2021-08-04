@@ -526,6 +526,8 @@ class NotificationsAPI {
 			// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
 			$template_slug = self::get_slug_by_id_template_sib_v2( $parameters['template'] );
 			if ( !empty( $template_slug ) ) {
+				global $force_language_to_translate_to;
+				$force_language_to_translate_to = $language_to_translate_to;
 				$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug, $language_to_translate_to);
 				if ( !empty( $template_post ) ) {
 					$recipient = $parameters[ 'recipient' ];
@@ -2813,6 +2815,15 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Interface prospect
 	//**************************************************************************
+	private static function get_prospect_setup_language( $prospect_setup_draft ) {
+		$metadata_decoded = json_decode( $prospect_setup_draft->metadata );
+		$language = 'fr';
+		if ( !empty( $metadata_decoded->language ) ) {
+			$language = $metadata_decoded->language;
+		}
+		return $language;
+	}
+
 	//*******************************************************
 	// LISTE DES TESTS DEMARRES
 	//*******************************************************
@@ -2837,8 +2848,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2870,8 +2881,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2910,8 +2921,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2943,8 +2954,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2975,8 +2986,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -3007,8 +3018,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -3037,8 +3048,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -3065,7 +3076,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		// TODO : traduire en fonction de la langue de l'IP
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 }

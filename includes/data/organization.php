@@ -1681,13 +1681,16 @@ class WDGOrganization implements WDGUserInterface {
 				// de même si cet iban a LEMON WAY comme holder (viban)
 				if ( count( $wallet_details->IBANS->IBAN ) > 1 && ( $buffer->S == WDGUser::$iban_status_disabled || $buffer->S == WDGUser::$iban_status_rejected || strtolower( str_replace(' ', '', $buffer->HOLDER) ) == WDGUser::$iban_holder_lw ) ) {
 					foreach ( $wallet_details->IBANS->IBAN as $iban_item ) {
-						if ( $iban_item->S == WDGUser::$iban_status_validated  && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
+						if ( ( $iban_item->S == WDGUser::$iban_status_validated || $iban_item->S == WDGUser::$iban_status_waiting ) && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
 							$buffer = $iban_item;
 						}
 					}
 				}
 			} else {
-				$buffer = $wallet_details->IBANS->IBAN;
+				$iban_item = $wallet_details->IBANS->IBAN;
+				if ( ( $iban_item->S == WDGUser::$iban_status_validated || $iban_item->S == WDGUser::$iban_status_waiting ) && strtolower( str_replace(' ', '', $iban_item->HOLDER) ) != WDGUser::$iban_holder_lw ) {
+					$buffer = $iban_item;
+				}
 			}
 		}
 

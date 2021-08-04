@@ -133,37 +133,29 @@ class WDG_Form {
 			}
 		}	
 
-		$nb_fields = count( $this->fields );
-		for( $i = 0; $i < $nb_fields; $i++ ) {
-			if ( empty( $this->fields[ $i ] ) ) {
-				continue;
-			}
-			$this_field = $this->fields[ $i ];
-			switch ( $this_field[ 'type' ] ) {
-				
+		
+        if (is_array($this->fields)) {
+            $nb_fields = count($this->fields);
+			for ($i = 0; $i < $nb_fields; $i++) {
+				if (empty($this->fields[ $i ])) {
+					continue;
+				}
+				$this_field = $this->fields[ $i ];
+				switch ($this_field[ 'type' ]) {				
 				case 'text':
 				case 'textarea':
-					
-					break;
-				
+					break;				
 				case 'text-money':
-					break;
-				
+					break;				
 				case 'rate':
-					
-					break;
-				
+					break;				
 				case 'radio':
-					
-					break;
-				
+					break;				
 				case 'checkboxes':
-					
-					break;
-				
+					break;				
+				}
 			}
-		}
-		
+		}		
 	}
 	
 	public function getPostErrors() {

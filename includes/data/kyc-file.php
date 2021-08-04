@@ -233,10 +233,13 @@ class WDGKYCFile {
 		$ext = $file_name_exploded[count($file_name_exploded) - 1];
 
 		if ( !in_array( strtolower( $ext ), WDGKYCFile::$authorized_format_list ) ) {
-			return 'ext';
+			return 'EXT';
 		}
-		if ( ($file_uploaded_data['size'] / 1024) / 1024 > 6 ) {
-			return 'size';
+		if ( intval( $file_uploaded_data['size'] ) < 10 ) {
+			return 'UPLOAD';
+		}
+		if ( ( intval( $file_uploaded_data['size'] ) / 1024) / 1024 > 6 ) {
+			return 'SIZE';
 		}
 
 		$random_filename = '';
@@ -249,7 +252,16 @@ class WDGKYCFile {
 			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
 		}
 		$random_filename = $random_filename . '.' . $ext;
-		move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../kyc/' . $random_filename );
+		$moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../kyc/' . $random_filename );
+		if (!$moved ){
+			return 'SERVER';
+		}
+		if ( intval( filesize( __DIR__ . '/../kyc/' . $random_filename ) ) < 10   ){
+			return 'UPLOAD';
+		}
+		if ( ( filesize( __DIR__ . '/../kyc/' . $random_filename ) / 1024) / 1024 > 6  ){
+			return 'SIZE';
+		}
 
 		global $wpdb;
 		$date_now = new DateTime();
