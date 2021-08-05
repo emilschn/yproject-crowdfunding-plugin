@@ -100,6 +100,7 @@ class LemonwayLibErrors {
 		if ( !isset( $this->error_message ) || !$use_cache ) {
 			
 			$buffer = '';
+			WDG_Languages_Helpers::load_languages();
 			
 			// Si le code complet est listé dans les erreurs génériques
 			if ( in_array( $this->error_code, LemonwayLibErrors::$generic_errors ) ) {
