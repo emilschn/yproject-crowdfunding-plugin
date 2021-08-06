@@ -1323,6 +1323,7 @@ class WDGPostActions {
 		if ( !empty( $user_id ) ) {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_form( 'user-subscription' );
+			WDG_Languages_Helpers::load_languages();
 			$WDGFormSubscription = new WDG_Form_Subscription( $user_id, TRUE );
 			ypcf_session_start();
 			$_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ] = $WDGFormSubscription->postForm();

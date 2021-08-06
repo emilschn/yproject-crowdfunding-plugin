@@ -5,6 +5,9 @@ class WDG_Form_Subscription extends WDG_Form {
     public static $field_group_basics = 'subscription-basics';
 	public static $field_group_hidden = 'subscription-hidden';
 
+	private $positive_savings_projects = [];
+	private $modalities = [];
+
     
     public function __construct( $user_id = FALSE ) {
 		parent::__construct(self::$name);
@@ -15,8 +18,6 @@ class WDG_Form_Subscription extends WDG_Form {
     protected function initFields() {
 		parent::initFields();
 
-        $WDGUser = new WDGUser( $this->user_id );
-
 		$this->addField(
 			'hidden',
 			'user_id',
@@ -25,43 +26,42 @@ class WDG_Form_Subscription extends WDG_Form {
 			$this->user_id
 		);
 
+		$this->modalities = ['all_royalties'	=> __( 'form.subscriptions.MODALITY_FIRST_CHOICE', 'yproject' ),'part_royalties' => __( 'form.subscriptions.MODALITY_SECOND_CHOICE', 'yproject' )];
         $this->addField(
             'select',
             'modality',
-            __( 'account.subscriptions.MODALITY', 'yproject' ),
+            __( 'form.subscriptions.MODALITY', 'yproject' ),
             WDG_Form_Subscription::$field_group_basics,
-            $WDGUser->get_gender(),
+			FALSE,
             FALSE,
-            [
-                'all_royalties'	=> __( 'account.subscriptions.MODALITY_FIRST_CHOICE', 'yproject' ),
-                'part_royalties' => __( 'account.subscriptions.MODALITY_SECOND_CHOICE', 'yproject' )
-            ]
+            $this->modalities
         );
 
 		$this->addField(
 			'text-money',
 			'amount',
-			__( 'account.subscriptions.AMOUNT', 'yproject' ),
+			__( 'form.subscriptions.AMOUNT', 'yproject' ),
 			WDG_Form_Subscription::$field_group_basics,
-			( !empty( $adjustment ) ) ? $adjustment->amount : ''
+			( !empty( $amount ) ) ? $amount->amount : '0',
+			'Le montant doit être un nombre entier supérieur à 10€.'
 		);
-		
-		// $this->positive_savings_projects_list = ATCF_Campaign::get_list_positive_savings( 0 );
-		// Récupération de la liste, parcours de la liste, je récupère l'identifiant que j'assossie avec son nom
-		$projects = ['projet 1' => 'Solaire Rural', 'projet 2' => 'Zéro Pesticide'];
 
+		$positive_savings_projects_lists = ATCF_Campaign::get_list_positive_savings( 0 ); 
+
+		$this->positive_savings_projects = [];
+
+		foreach ($positive_savings_projects_lists as $positive_savings_projects_list) {
+			$this->positive_savings_projects[$positive_savings_projects_list->ID] = $positive_savings_projects_list->post_title;
+		}
 
 		$this->addField(
             'select',
             'project',
-            __( 'account.subscriptions.PROJECT', 'yproject' ),
+            __( 'form.subscriptions.PROJECT', 'yproject' ),
             WDG_Form_Subscription::$field_group_basics,
-            $projects,
             FALSE,
-            [
-                $projects['projet 1'],
-                $projects['projet 2'],
-            ]
+			FALSE,
+			$this->positive_savings_projects,
         );
     }
 
@@ -71,6 +71,7 @@ class WDG_Form_Subscription extends WDG_Form {
 		$feedback_success = array();
 		$feedback_errors = array();
 		
+		$modality = $this->modalities;
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$WDGUser = new WDGUser( $user_id );
 		$WDGUser_current = WDGUser::current();
@@ -84,19 +85,51 @@ class WDG_Form_Subscription extends WDG_Form {
 		
 	    // Analyse du formulaire
 		} else {
-		// Si le montant ne rentré ne dépasse pas 10€ alors message d'erreur
+
+		$modality = $this->getInputText( 'modality' );
+
+		// Si le montant ne rentré ne dépasse pas 10€ 
 		$amount = $this->getInputTextMoney( 'amount' );				
-				if ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount ) ) {
+				if ( $modality == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount ) ) ) {
 					$error = array(
 						'code'		=> 'amount',
 						'text'		=> __( 'form.subscription.error.AMOUNT_MINIMUM', 'yproject' ),
+						'element'	=> 'amount'
+					);
+					array_push( $feedback_errors, $error );
+				}
+
+		// Si le montant ne rentré n'est pas un entier
+				if ( $modality == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_number_positive_integer( $amount ) ) ) {
+					$error = array(
+						'code'		=> 'amount',
+						'text'		=> __( 'form.subscription.error.AMOUNT_INTEGER', 'yproject' ),
 						'element'	=> 'general'
 					);
 					array_push( $feedback_errors, $error );
 				}
-		
-				
 
+		// Si il manque un élément dans le select de modalité
+		if ( empty( $modality ) || empty( $this->modalities[$modality] ) ) {
+			$error = array(
+				'code'		=> 'modality',
+				'text'		=> __( 'form.user-details.MODALITY_EMPTY', 'yproject' ),
+				'element'	=> 'modality'
+			);
+			array_push( $feedback_errors, $error );
+		}
+
+		// Si il manque un élément dans le select des projets
+		$project = $this->getInputText( 'project' );
+		if ( empty( $project ) || empty( $this->positive_savings_projects[$project] ) ) {
+			$error = array(
+				'code'		=> 'project',
+				'text'		=> __( 'form.user-details.PROJECT_EMPTY', 'yproject' ),
+				'element'	=> 'project'
+			);
+			array_push( $feedback_errors, $error );
+		}
+		
 		// Si il n'y a pas d'erreur alors message succès
 		if ( empty( $feedback_errors ) ) {
 			array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
