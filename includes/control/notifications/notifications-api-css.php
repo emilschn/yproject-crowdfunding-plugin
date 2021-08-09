@@ -26,15 +26,16 @@ class NotificationsAPICSS {
 
 	hr {
 		color: #c2c2c2;
+		margin: 25px 0px;
 	}
 
-	.wp-block-button {
+	.wp-block-button, .tb-button {
 		display: block;
 		max-width: 320px;
 		text-align: center;
 		margin: auto;
 	}
-	.wp-block-button .wp-block-button__link {
+	.wp-block-button .wp-block-button__link, .tb-button .tb-button__link {
 		display: inline-block;
 		padding: 20px 38px;
 		text-decoration: none;

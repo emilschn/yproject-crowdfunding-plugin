@@ -407,55 +407,66 @@ class LemonwayNotification {
 					$lemonway_id = $WDGOrga_invest_author->get_lemonway_id();
 				}
 				$organization_obj->check_register_campaign_lemonway_wallet();
-				LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_campaign_lemonway_id(), $lemonway_posted_amount );
+				$transfer_funds_result = LemonwayLib::ask_transfer_funds( $lemonway_id, $organization_obj->get_campaign_lemonway_id(), $lemonway_posted_amount );
 
-				// Si la campagne n'est pas en cours d'évaluation, on peut valider l'investissement
-				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
-					$postdata = array(
-						'ID'			=> $investment_id,
-						'post_status'	=> 'publish',
-						'edit_date'		=> current_time( 'mysql' )
-					);
-					wp_update_post($postdata);
-				} else {
-					add_post_meta( $investment_id, 'has_received_wire', '1' );
-				}
-
-				// - Créer le contrat pdf
-				// - Envoyer validation d'investissement par mail
-				if ( $lemonway_posted_amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
-					$WDGInvestmentSignature = new WDGInvestmentSignature( $investment_id );
-					$contract_id = $WDGInvestmentSignature->create_eversign();
-					if ( !empty( $contract_id ) ) {
-						NotificationsEmails::new_purchase_user_success( $investment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+				// si le transfert des fonds a réussi
+				if ( !empty( $transfer_funds_result ) && isset( $transfer_funds_result->ID ) ) {
+					// Si la campagne n'est pas en cours d'évaluation, on peut valider l'investissement
+					if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
+						$postdata = array(
+							'ID'			=> $investment_id,
+							'post_status'	=> 'publish',
+							'edit_date'		=> current_time( 'mysql' )
+						);
+						wp_update_post($postdata);
 					} else {
-						global $contract_errors;
-						$contract_errors = 'contract_failed';
-						NotificationsEmails::new_purchase_user_error_contract( $investment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
-						NotificationsAsana::new_purchase_admin_error_contract( $investment_id );
+						add_post_meta( $investment_id, 'has_received_wire', '1' );
+					}
+
+					// - Créer le contrat pdf
+					// - Envoyer validation d'investissement par mail
+					if ( $lemonway_posted_amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
+						$WDGInvestmentSignature = new WDGInvestmentSignature( $investment_id );
+						$contract_id = $WDGInvestmentSignature->create_eversign();
+						if ( !empty( $contract_id ) ) {
+							NotificationsEmails::new_purchase_user_success( $investment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+						} else {
+							global $contract_errors;
+							$contract_errors = 'contract_failed';
+							NotificationsEmails::new_purchase_user_error_contract( $investment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+							NotificationsAsana::new_purchase_admin_error_contract( $investment_id );
+						}
+					} else {
+						$new_contract_pdf_file = getNewPdfToSign( $investment_campaign_id, $investment_id, $WDGUser_invest_author->wp_user->ID );
+						NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+					}
+
+					NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
+					NotificationsEmails::new_purchase_team_members( $investment_id );
+					if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
+						$WDGInvestment = new WDGInvestment( $investment_id );
+						$WDGInvestment->save_to_api();
 					}
 				} else {
-					$new_contract_pdf_file = getNewPdfToSign( $investment_campaign_id, $investment_id, $WDGUser_invest_author->wp_user->ID );
-					NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
+					// sinon, il faut investiguer
+					$content .= "\n Problème de transfert de fond vers le wallet d'orga";
+					NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
+					NotificationsAsana::wire_payment_received_not_attributed( $content );
 				}
-
-				NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
-				NotificationsEmails::new_purchase_team_members( $investment_id );
-				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
-					$WDGInvestment = new WDGInvestment( $investment_id );
-					$WDGInvestment->save_to_api();
-				}
+		
 			} else {
 				if ( empty( $WDGOrga_invest_author ) ) {
 					$wallet_details = $WDGUser_invest_author->get_wallet_details();
 					$amount = $wallet_details->BAL;
 					NotificationsAPI::wire_transfer_received( $WDGUser_invest_author, $amount );
 				} else {
+					$content .= "\n Investissement non identifié";
 					NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
 					NotificationsAsana::wire_payment_received_not_attributed( $content );
 				}
 			}
 		} else {
+			$content .= "\n Investisseur non identifié";
 			NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
 			NotificationsAsana::wire_payment_received_not_attributed( $content );
 		}

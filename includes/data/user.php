@@ -2,7 +2,7 @@
 /**
  * Lib de gestion des utilisateurs
  */
-class WDGUser {
+class WDGUser implements WDGUserInterface {
 	public static $key_validated_general_terms_version = 'validated_general_terms_version';
 	public static $key_lemonway_status = 'lemonway_status';
 	public static $edd_general_terms_version = 'terms_general_version';
@@ -49,6 +49,13 @@ class WDGUser {
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	/**
+	 * Peut prendre 3 valeurs :
+	 * - vide/NULL si pas défini (vieux comptes)
+	 * - uuid si défini en attente de validation
+	 * - '1' si compte validé
+	 */
+	private $email_is_validated;
 
 	protected static $_current = null;
 
@@ -115,6 +122,7 @@ class WDGUser {
 					$this->authentification_mode = $this->api_data->authentification_mode;
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
+					$this->email_is_validated = $this->api_data->email_is_validated;
 				}
 			}
 		}
@@ -376,6 +384,30 @@ class WDGUser {
 
 	public function set_email($email) {
 		$this->email = $email;
+	}
+
+	public function is_email_validated() {
+		return ( !empty( $this->email_is_validated ) && $this->email_is_validated === '1' );
+	}
+
+	public function get_email_validation_code() {
+		ypcf_debug_log('WDGUser::get_email_validation_code > email_is_validated : ' . print_r($this->email_is_validated, true), false);
+		//if ( wp_is_uuid( $this->email_is_validated, 4 ) ) {
+		return $this->email_is_validated;
+		//}
+
+		return FALSE;
+	}
+
+	public function set_email_is_validated($value = '1') {
+		if ($this->email_is_validated != $value) {
+			$this->email_is_validated = $value;
+			$this->update_api();
+		}
+	}
+
+	public function get_email_is_validated() {
+		return $this->email_is_validated;
 	}
 
 	public function get_gender() {
@@ -1514,7 +1546,7 @@ class WDGUser {
 				$invest_item['roi_list'] = array();
 				$invest_item['roi_total'] = 0;
 				$invest_item['roi_for_year'] = 0;
-				$invest_item['tax_for_year'] = 0;
+				$invest_item['taxed_for_year'] = 0;
 				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
 				foreach ( $investment_royalties as $investment_roi ) {
 					$date_transfer = new DateTime( $investment_roi->date_transfer );
@@ -1540,7 +1572,14 @@ class WDGUser {
 
 						// Calcul de la part imposable
 						if ( $invest_item['roi_total'] > $invest_item_amount ) {
-							$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Certains vieux roi ne sont pas définis sur le montant imposable
+							// Si c'est défini, on reprend le montant déjà calculé
+							if ( $investment_roi->amount_taxed_in_cents > 0 ) {
+								$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Sinon, on prend le minimum entre le montant reçu sur ce versement ET la différence entre le montant reçu au total et le montant investi
+							} else {
+								$investment_roi_taxed = min( $investment_roi->amount, $invest_item['roi_total'] - $invest_item_amount );
+							}
 							$invest_item['taxed_for_year'] += $investment_roi_taxed;
 							$taxed_total += $investment_roi_taxed;
 						}
@@ -2028,7 +2067,7 @@ class WDGUser {
 
 	/**
 	 * Retourne le montant actuel sur le compte bancaire
-	 * @return number
+	 * @return float
 	 */
 	public function get_lemonway_wallet_amount() {
 		$wallet_details = $this->get_wallet_details();
@@ -2423,9 +2462,9 @@ class WDGUser {
 		global $post;
 		$buffer = home_url();
 
-		//Si on est sur la page de connexion ou d'inscription,
+		// Si on est sur la page de connexion ou d'inscription,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
-		if ( $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'connexion' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) {
+		if ( $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'connexion' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'inscription' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'activer-compte' ) ) {
 			// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1', FALSE );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
@@ -2448,7 +2487,8 @@ class WDGUser {
 				if ( !empty( $_SESSION[ 'login-fb-referer' ] ) ) {
 					// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b', FALSE );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
-					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE ) {
+					$_SESSION[ 'login-fb-referer' ] = '';
+					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'activer-compte' ) ) !== FALSE ) {
 						$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
 					}
 				} else {
@@ -2458,7 +2498,7 @@ class WDGUser {
 					if (strpos($referer_url, $buffer) !== FALSE) {
 						//Si la page précédente était déjà la page connexion ou inscription,
 						// on tente de voir si la redirection était passée en paramètre
-						if ( strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'connexion' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'inscription' )) !== FALSE ) {
+						if ( strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'connexion' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'inscription' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'activer-compte' )) !== FALSE ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a', FALSE );
@@ -2484,6 +2524,9 @@ class WDGUser {
 							$buffer = $referer_url;
 						}
 					} else {
+						if ( empty( $referer_url ) ) {
+							$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
+						}
 						// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A5 ' . $referer_url, FALSE );
 					}
 				}

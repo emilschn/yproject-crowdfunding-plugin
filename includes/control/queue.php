@@ -135,8 +135,17 @@ class WDGQueue {
 		$WDGOrganization = WDGOrganization::is_user_organization( $user_id ) ? new WDGOrganization( $user_id ) : FALSE;
 		$WDGUser = empty( $WDGOrganization ) ? new WDGUser( $user_id ) : FALSE;
 		$WDGUserOrOrganization = empty( $WDGOrganization ) ? $WDGUser : $WDGOrganization;
-		$recipient_email = empty( $WDGOrganization ) ? $WDGUser->get_email() : $WDGOrganization->get_email();
-		$recipient_name = empty( $WDGOrganization ) ? $WDGUser->get_firstname() : $WDGOrganization->get_name();
+		$recipient_email = '';
+		if ( !empty( $WDGOrganization ) ) {
+			$recipient_email = $WDGOrganization->get_email();
+			$linked_users_creator = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_creator = $linked_users_creator[ 0 ];
+				$recipient_email .= ',' . $WDGUser_creator->get_email();
+			}
+		} else {
+			$recipient_email = $WDGUser->get_email();
+		}
 		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
 		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
@@ -179,7 +188,7 @@ class WDGQueue {
 						$amount_royalties += $campaign_roi->amount;
 						// si il y a un montant taxé, on va prendre le montant du prélèvement social
 						if ( $campaign_roi->amount_taxed_in_cents > 0 && !empty( $WDGUser ) ) {
-							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $ROI->amount_taxed_in_cents );
+							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $campaign_roi->amount_taxed_in_cents );
 						}
 						$has_declared = TRUE;
 					}
@@ -288,7 +297,7 @@ class WDGQueue {
 			}
 
 			if (!$cancel_notification ) {
-				NotificationsAPI::roi_transfer_daily_resume( $WDGUserOrOrganization, $message );
+				NotificationsAPI::roi_transfer_daily_resume( $WDGUserOrOrganization, $message, $recipient_email );
 			}
 		}
 	}

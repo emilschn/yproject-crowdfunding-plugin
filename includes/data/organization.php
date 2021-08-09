@@ -2,7 +2,7 @@
 /**
  * Classe de gestion des organisations
  */
-class WDGOrganization {
+class WDGOrganization implements WDGUserInterface {
 	/**
 	 * Clés d'accès à l'api BOPP
 	 */
@@ -45,6 +45,9 @@ class WDGOrganization {
 	private $bank_address2;
 	private $bank_iban;
 	private $bank_bic;
+	private $accountant_name;
+	private $accountant_email;
+	private $accountant_address;
 	private $id_quickbooks;
 	private $mandate_info;
 	private $mandate_file_url;
@@ -146,6 +149,17 @@ class WDGOrganization {
 				if ( count( $geolocation ) > 1 ) {
 					$this->latitude = $geolocation[0];
 					$this->longitude = $geolocation[1];
+				}
+
+				$accountant_info = json_decode( $this->bopp_object->accountant );
+				if ( !empty( $accountant_info->name ) ) {
+					$this->accountant_name = $accountant_info->name;
+				}
+				if ( !empty( $accountant_info->email ) ) {
+					$this->accountant_email = $accountant_info->email;
+				}
+				if ( !empty( $accountant_info->address ) ) {
+					$this->accountant_address = $accountant_info->address;
 				}
 
 				$this->bank_owner = $this->bopp_object->bank_owner;
@@ -448,6 +462,9 @@ class WDGOrganization {
 		$this->wpref = $value;
 	}
 
+	public function get_firstname() {
+		return $this->get_name();
+	}
 	public function get_name() {
 		return $this->name;
 	}
@@ -681,6 +698,25 @@ class WDGOrganization {
 		$this->bank_bic = $value;
 	}
 
+	public function get_accountant_name() {
+		return $this->accountant_name;
+	}
+	public function set_accountant_name($value) {
+		$this->accountant_name = $value;
+	}
+	public function get_accountant_email() {
+		return $this->accountant_email;
+	}
+	public function set_accountant_email($value) {
+		$this->accountant_email = $value;
+	}
+	public function get_accountant_address() {
+		return $this->accountant_address;
+	}
+	public function set_accountant_address($value) {
+		$this->accountant_address = $value;
+	}
+
 	public function get_id_quickbooks() {
 		return $this->id_quickbooks;
 	}
@@ -688,6 +724,18 @@ class WDGOrganization {
 		if ( !empty( $value ) ) {
 			$this->id_quickbooks = $value;
 		}
+	}
+
+	public function get_language() {
+		return $this->get_owner_language();
+	}
+	private function get_owner_language() {
+		$linked_users_creator = $this->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+		if ( empty( $linked_users_creator ) ) {
+			return;
+		}
+		$WDGUser_creator = $linked_users_creator[ 0 ];
+		$WDGUser_creator->get_language();
 	}
 
 	/**
@@ -1895,6 +1943,7 @@ class WDGOrganization {
 		global $country_list;
 		$invest_list = array();
 		$roi_total = 0;
+		$taxed_total = 0;
 
 		// Récupération d'abord de la liste des royalties de l'année pour ne faire un récapitulatif que pour ceux-là
 		$royalties_list = $this->get_royalties_for_year( $year );
@@ -1932,7 +1981,7 @@ class WDGOrganization {
 				$invest_item['roi_list'] = array();
 				$invest_item['roi_total'] = 0;
 				$invest_item['roi_for_year'] = 0;
-				$invest_item['tax_for_year'] = 0;
+				$invest_item['taxed_for_year'] = 0;
 				$investment_royalties = $this->get_royalties_by_investment_id( $invest_id );
 				foreach ( $investment_royalties as $investment_roi ) {
 					$date_transfer = new DateTime( $investment_roi->date_transfer );
@@ -1956,6 +2005,20 @@ class WDGOrganization {
 						$invest_item['roi_for_year'] += $investment_roi->amount;
 						$roi_total += $investment_roi->amount;
 
+						// Calcul de la part imposable
+						if ( $invest_item['roi_total'] > $invest_item_amount ) {
+							// Certains vieux roi ne sont pas définis sur le montant imposable
+							// Si c'est défini, on reprend le montant déjà calculé
+							if ( $investment_roi->amount_taxed_in_cents > 0 ) {
+								$investment_roi_taxed = $investment_roi->amount_taxed_in_cents / 100;
+							// Sinon, on prend le minimum entre le montant reçu sur ce versement ET la différence entre le montant reçu au total et le montant investi
+							} else {
+								$investment_roi_taxed = min( $investment_roi->amount, $invest_item['roi_total'] - $invest_item_amount );
+							}
+							$invest_item['taxed_for_year'] += $investment_roi_taxed;
+							$taxed_total += $investment_roi_taxed;
+						}
+
 						$roi_item[ 'amount' ] = UIHelpers::format_number( $investment_roi->amount ) . ' &euro;';
 						array_push( $invest_item['roi_list'], $roi_item );
 					}
@@ -1964,7 +2027,7 @@ class WDGOrganization {
 				$invest_item['amount'] = UIHelpers::format_number( $invest_item_amount ) . ' &euro;';
 				$invest_item['roi_total'] = UIHelpers::format_number( $invest_item['roi_total'] ) . ' &euro;';
 				$invest_item['roi_for_year'] = UIHelpers::format_number( $invest_item['roi_for_year'] ) . ' &euro;';
-				$invest_item['tax_for_year'] = UIHelpers::format_number( $invest_item['tax_for_year'] ) . ' &euro;';
+				$invest_item['taxed_for_year'] = UIHelpers::format_number( $invest_item['taxed_for_year'] ) . ' &euro;';
 				array_push( $investment_list, $invest_item );
 			}
 		}
@@ -1972,7 +2035,7 @@ class WDGOrganization {
 		$info_yearly_certificate = apply_filters( 'the_content', WDGROI::get_parameter( 'info_yearly_certificate' ) );
 
 		require_once __DIR__. '/../control/templates/pdf/certificate-roi-yearly-user.php';
-		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get($this->get_name(), $this->get_idnumber(), $this->get_vat(), '', $this->get_email(), $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), '01/01/'.($year + 1), $year, $investment_list, UIHelpers::format_number( $roi_total ). ' &euro;', UIHelpers::format_number( 0 ). ' &euro;', $info_yearly_certificate);
+		$html_content = WDG_Template_PDF_Certificate_ROI_Yearly_User::get($this->get_name(), $this->get_idnumber(), $this->get_vat(), '', $this->get_email(), $this->get_full_address_str(), $this->get_postal_code(), $this->get_city(), '01/01/'.($year + 1), $year, $investment_list, UIHelpers::format_number( $roi_total ). ' &euro;', UIHelpers::format_number( $taxed_total ). ' &euro;', $info_yearly_certificate);
 
 		$crowdfunding = ATCF_CrowdFunding::instance();
 		$crowdfunding->include_html2pdf();

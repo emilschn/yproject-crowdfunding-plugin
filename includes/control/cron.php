@@ -79,7 +79,7 @@ class WDGCronActions {
 								$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
 								$recipients .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
-								NotificationsAPI::declaration_to_do( $recipients, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+								NotificationsAPI::declaration_to_do( $wdguser_author, $recipients, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
 							}
 						}
 					}
@@ -149,7 +149,7 @@ class WDGCronActions {
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
 							$amount_total = $amount_royalties + $amount_fees;
 
-							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author, $declaration_data, $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total );
+							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author, $campaign, $declaration_data, $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total );
 						}
 					}
 				}

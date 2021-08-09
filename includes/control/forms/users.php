@@ -99,6 +99,8 @@ class WDGFormUsers {
 							ypcf_session_start();
 							$_SESSION['send_creation_event'] = 1;
 							$WDGUser = new WDGUser($user_id);
+							$WDGUser->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+							$WDGUser->update_api();
 							NotificationsAPI::user_registration( $WDGUser );
 							WDGQueue::add_notification_registered_without_investment( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );
@@ -193,6 +195,16 @@ class WDGFormUsers {
 		}
 
 		return wp_authenticate_username_password( null, $username, $password );
+	}
+
+	/**
+	 * Vérifie la correspondance entre adresse e-mail et mot de passe
+	 */
+	public static function get_signin_return($input_email, $input_password) {
+		$user_by_email = get_user_by( 'email', $input_email );
+		$username = $user_by_email->user_login;
+
+		return wp_authenticate_username_password( null, $username, $input_password );
 	}
 
 	/**
@@ -358,6 +370,8 @@ class WDGFormUsers {
 					$wpdb->update( $wpdb->users, array( sanitize_key( 'user_status' ) => 0 ), array( 'ID' => $wp_user_id ) );
 					update_user_meta($wp_user_id, WDGUser::$key_validated_general_terms_version, $edd_options[WDGUser::$edd_general_terms_version]);
 					$WDGUser = new WDGUser($wp_user_id);
+					$WDGUser->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+					$WDGUser->update_api();
 					NotificationsAPI::user_registration( $WDGUser );
 					WDGQueue::add_notification_registered_without_investment( $wp_user_id );
 					wp_set_auth_cookie( $wp_user_id, false, is_ssl() );

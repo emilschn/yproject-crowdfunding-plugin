@@ -149,7 +149,9 @@ class WDGInvestment {
 			}
 
 			if ( !empty( $payment ) ) {
-				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment );
+				$user_info = edd_get_payment_meta_user_info( $payment->ID );
+				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment, $user_id );
 			}
 
 			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
@@ -714,6 +716,8 @@ class WDGInvestment {
 		$address_number_complement = '';
 		$tax_country = '';
 		$wdg_current_user->save_data($this->token_info->email, $this->token_info->gender, $this->token_info->firstname, $this->token_info->lastname, $use_lastname, $this->token_info->birthday_day, $this->token_info->birthday_month, $this->token_info->birthday_year, $this->token_info->birthday_city, $birthplace_district, $birthplace_department, $birthplace_country, $this->token_info->nationality, $address_number, $address_number_complement, $this->token_info->address, $this->token_info->postalcode, $this->token_info->city, $this->token_info->country, $tax_country, '');
+		$wdg_current_user->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+		$wdg_current_user->update_api();
 		// On vérifie les informations de l'utilisateur
 		if ( !$wdg_current_user->has_filled_invest_infos( $campaign->funding_type() ) ) {
 			global $user_can_invest_errors;
@@ -1317,8 +1321,10 @@ class WDGInvestment {
 			) );
 
 			if ( $payments ) {
-				foreach ( $payments as $payment ) {
-					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment );
+				foreach ( $payments as $payment ) {					
+					$user_info = edd_get_payment_meta_user_info( $payment->ID );
+					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment, $user_id );
 				}
 			}
 		}
@@ -1340,7 +1346,7 @@ class WDGInvestment {
 		}
 
 		if ( !empty( $payment ) ) {
-			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment );
+			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id() );
 		}
 	}
 }

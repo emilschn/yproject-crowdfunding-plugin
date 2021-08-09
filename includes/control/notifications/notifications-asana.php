@@ -349,9 +349,27 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_admin, $object, $content );
 	}
 
+	public static function notification_api_v2_failed($parameters) {
+		$object = "Tentative d'envoi par la v2 de SendInBlue";
+		$content = "On a tenté d'envoyer un mail, mais le template n'a pas été trouvé.<br>";
+		$content .= "Paramètres :<br>";
+		$content .= print_r( $parameters, true );
+
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+
 	public static function send_notification_mandate_canceled($name, $lemonway_posted_id_external, $lemonway_posted_amount) {
 		$object = "Prélèvement bancaire annulé";
 		$content = "Infos : " . $name . " (ID Wallet : " . $lemonway_posted_id_external . " ; Montant : " . $lemonway_posted_amount . ")";
+
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+
+	public static function change_investment_owner_error($investid, $id_api_sender, $new_user_api_id) {
+		$object = "Changement investisseur - Pas de transfert de royalties";
+		$content = "Lors du transfert d'investisseur pour l'investissement " . $investid . ", les données de royalties et les montants de porte-monnaie n'ont pas été transférés<br>";
+		$content .= '$id_api_sender : ' .$id_api_sender. '<br>';
+		$content .= '$new_user_api_id : ' .$new_user_api_id. '<br>';
 
 		return self::send( self::$notif_type_admin, $object, $content );
 	}

@@ -501,61 +501,74 @@ class NotificationsAPI {
 			'description'	=> "Test d'éligibilité - Tableau de bord pas encore créé",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
+		),
+		'user-account-email-validation' => array(
+			'fr-sib-id'		=> 'user-account-email-validation',
+			'description'	=> "Activation de l'e-mail du compte",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
 		)
 	);
-
-	private static $template_id_empty_v3_fr = 3126;
 
 	/**
 	 * Méthode générique d'envoi de mail via l'API
 	 */
-	private static function send($parameters) {
-		// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
-		$template_slug = self::get_slug_by_id_template_sib_v2( $parameters['template'] );
-		if ( !empty( $template_slug ) ) {
-			$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug);
-			if ( !empty( $template_post ) ) {
-				$recipient = $parameters[ 'recipient' ];
-				$template_post_name = $template_slug;
-				$parameters = $parameters;
-				$options_encoded = $parameters[ 'options' ];
-				$options_decoded = json_decode( $options_encoded );
-				$object = $template_post->post_title;
-				$content = $template_post->post_content;
-
-				// Vérification si un reply_to a été défini en back-office
-				$post_reply_to = get_post_meta( $template_post->ID, self::$custom_field_reply_to, TRUE );
-				if ( !empty( $post_reply_to ) ) {
-					$options_decoded->replyto = $post_reply_to;
-				}
-
-				// Vérification si un sender_name a été défini en back-office
-				$post_sender_name = get_post_meta( $template_post->ID, self::$custom_field_sender_name, TRUE );
-				if ( !empty( $post_sender_name ) ) {
-					$options_decoded->sender_name = $post_sender_name;
-				}
-
-				// Vérification si un sender_email a été défini en back-office
-				$post_sender_email = get_post_meta( $template_post->ID, self::$custom_field_sender_email, TRUE );
-				if ( !empty( $post_sender_email ) ) {
-					$options_decoded->sender_email = $post_sender_email;
-				}
-
-				$parameters[ 'options' ] = json_encode( $options_decoded );
-
-				$result = self::send_v3( $recipient, $object, $content, $template_post_name, $parameters );
-
-				return $result;
+	private static function send($parameters, $language_to_translate_to = '') {
+		if ( $parameters[ 'tool' ] == 'sms' ) {
+			// c'est un sms qu'on essaie d'envoyer
+			$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+			if ( empty( $result->result ) ) {
+				NotificationsAsana::notification_api_failed( $parameters, $result );
 			}
+
+			return $result;
+		} else {
+			// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
+			$template_slug = self::get_slug_by_id_template_sib_v2( $parameters['template'] );
+			if ( !empty( $template_slug ) ) {
+				$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug, $language_to_translate_to);
+				if ( !empty( $template_post ) ) {
+					$recipient = $parameters[ 'recipient' ];
+					$template_post_name = $template_slug;
+					$parameters = $parameters;
+					$options_encoded = $parameters[ 'options' ];
+					$options_decoded = json_decode( $options_encoded );
+					$object = $template_post->post_title;
+					$content = $template_post->post_content;
+
+					// Vérification si un reply_to a été défini en back-office
+					$post_reply_to = get_post_meta( $template_post->ID, self::$custom_field_reply_to, TRUE );
+					if ( !empty( $post_reply_to ) ) {
+						$options_decoded->replyto = $post_reply_to;
+					}
+
+					// Vérification si un sender_name a été défini en back-office
+					$post_sender_name = get_post_meta( $template_post->ID, self::$custom_field_sender_name, TRUE );
+					if ( !empty( $post_sender_name ) ) {
+						$options_decoded->sender_name = $post_sender_name;
+					}
+
+					// Vérification si un sender_email a été défini en back-office
+					$post_sender_email = get_post_meta( $template_post->ID, self::$custom_field_sender_email, TRUE );
+					if ( !empty( $post_sender_email ) ) {
+						$options_decoded->sender_email = $post_sender_email;
+					}
+
+					$parameters[ 'options' ] = json_encode( $options_decoded );
+
+					$result = self::send_v3( $recipient, $object, $content, $template_post_name, $parameters );
+					if ( empty( $result->result ) ) {
+						NotificationsAsana::notification_api_failed( $parameters, $result );
+					}
+
+					return $result;
+				}
+			}
+			// Sinon, on envoie une alerte Asana
+			NotificationsAsana::notification_api_v2_failed( $parameters );
 		}
 
-		// Sinon, on envoie encore avec la v2 temporairement
-		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
-		if ( empty( $result->result ) ) {
-			NotificationsAsana::notification_api_failed( $parameters, $result );
-		}
-
-		return $result;
+		return FALSE;
 	}
 
 	/**
@@ -570,12 +583,20 @@ class NotificationsAPI {
 
 		// Gestion des shortcodes inclus dans les mails
 		NotificationsAPIShortcodes::instance();
+		add_filter( 'wdg_email_object_filter', 'do_shortcode' );
+		$object = apply_filters( 'wdg_email_object_filter', $object );
+		$tags = array( '<p>', '</p>' );
+		$object = str_replace( $tags, '', $object );
 		add_filter( 'wdg_email_content_filter', 'do_shortcode' );
-		$object = apply_filters( 'wdg_email_content_filter', $object );
 		add_filter( 'wdg_email_content_filter', 'wptexturize' );
 		add_filter( 'wdg_email_content_filter', 'wpautop' );
 		add_filter( 'wdg_email_content_filter', 'shortcode_unautop' );
 		$content = apply_filters( 'wdg_email_content_filter', $content );
+		// Ajout de règles inline pour les boutons (nécessaires pour les cas spécifiques, par exemple Hubspot)
+		$inline_div_button_container_style = 'text-align: center;';
+		$content = str_replace( '<div class="wp-block-button"', '<div style="' .$inline_div_button_container_style. '" class="wp-block-button"', $content );
+		$inline_button_style = 'display: inline-block; color: white; background: #EA4F51; padding: 20px 38px; font-size: 18px; line-height: 18px; margin: auto; text-transform: uppercase;';
+		$content = str_replace( '<a class="wp-block-button__link', '<a style="' .$inline_button_style. '" class="wp-block-button__link', $content );
 
 		// Gestion CSS
 		$crowdfunding->include_control('notifications/notifications-api-css');
@@ -591,6 +612,12 @@ class NotificationsAPI {
 		$result = WDGWPRESTLib::call_post_wdg( 'email', $parameters );
 		if ( empty( $result->result ) ) {
 			NotificationsAsana::notification_api_failed( $parameters, $result );
+		} else {
+			$result_decoded = json_decode( $result->result );
+			// on traite les result avec codes d'erreur exemple :     [result] => [401] Client error: `POST https://api.sendinblue.com/v3/smtp/email` resulted in a `401 Unauthorized` response: {"message":"Key not found","code":"unauthorized"}
+			if ( $result_decoded->code != 'success' ) {
+				NotificationsAsana::notification_api_failed( $parameters, $result );
+			}
 		}
 
 		return $result;
@@ -653,7 +680,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -713,6 +740,7 @@ class NotificationsAPI {
 			'options'		=> json_encode( $options )
 		);
 
+		// TODO : découper par langue les utilisateurs
 		return self::send( $parameters );
 	}
 	//*******************************************************
@@ -748,7 +776,7 @@ class NotificationsAPI {
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 	//*******************************************************
 	// FIN ENVOI ACTUALITE DE PROJET
@@ -776,7 +804,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -797,7 +825,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -818,7 +846,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -839,7 +867,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -860,7 +888,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -881,7 +909,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return WDGWPRESTLib::call_post_wdg( 'email', $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -905,7 +933,41 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	//*******************************************************
+	// Validation de l'adresse mail
+	//*******************************************************
+	public static function user_account_email_validation($WDGUser, $link, $is_new_account) {
+		$id_template = self::get_id_fr_by_slug( 'user-account-email-validation' );
+
+		$activation_mail_intro = '';
+		if ( $is_new_account ) {
+			$activation_mail_intro = WDGConfigTexts::get_config_text_by_name( 'account-activation-email-intro-new' );
+			ypcf_debug_log('user_account_email_validation > new '.$WDGUser->get_email(), false);
+		} else {
+			$activation_mail_intro = WDGConfigTexts::get_config_text_by_name( 'account-activation-email-intro-old' );
+			ypcf_debug_log('user_account_email_validation > old '.$WDGUser->get_email(), false);
+		}
+		NotificationsAPIShortcodes::set_account_activation_email_intro( $activation_mail_intro );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_validation_email_link($link);
+
+		$options = array(
+			'skip_admin'		=> 1,
+			'NOM'				=> $WDGUser->get_firstname(),
+			'LIEN'				=> $link
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGUser->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUser->get_language()  );
 	}
 	//**************************************************************************
 	// Entrepreneurs
@@ -931,7 +993,7 @@ class NotificationsAPI {
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
@@ -967,7 +1029,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//**************************************************************************
@@ -992,55 +1054,56 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS KYC - EN COURS DE VALIDATION
 	//*******************************************************
-	public static function kyc_waiting($WDGUserOrOrganization) {
+	public static function kyc_waiting($WDGUserInterface) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-doc-waiting' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
 			'personal'		=> 1,
-			'PRENOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'PRENOM'		=> $WDGUserInterface->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS KYC - REFUSES
 	//*******************************************************
-	public static function kyc_refused($WDGUserOrOrganization, $authentication_info) {
+	public static function kyc_refused($WDGUserInterface, $authentication_info) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-doc-refused' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
 			'personal'				=> 1,
-			'PRENOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'				=> $WDGUserInterface->get_firstname(),
 			'PRECISIONS'			=> $authentication_info
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	public static function phone_kyc_refused($WDGUser) {
+		// TODO : traduire les SMS
 		$name = $WDGUser->get_firstname();
 		$param_content = "Bonjour " .$name. ", des documents ont été refusés sur votre compte WE DO GOOD, qui n'a pas pu être authentifié. Afin d'en savoir plus : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
@@ -1071,10 +1134,11 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	public static function phone_kyc_single_validated($WDGUser) {
+		// TODO : traduire les SMS
 		$name = $WDGUser->get_firstname();
 		$param_content = "Bonjour " .$name.", un document a été validé sur WE DO GOOD ! Finalisez l'authentification de votre compte en y déposant le(s) document(s) manquant(s) : www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
@@ -1089,26 +1153,27 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS KYC - VALIDES
 	//*******************************************************
-	public static function kyc_authentified($WDGUserOrOrganization) {
+	public static function kyc_authentified($WDGUserInterface) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-authentified' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'PRENOM'			=> $WDGUserInterface->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	public static function phone_kyc_authentified($WDGUser) {
+		// TODO : traduire les SMS
 		$name = $WDGUser->get_firstname();
 		$param_content = "Bonjour " .$name.", nous avons le plaisir de vous annoncer que votre compte est désormais authentifié sur WE DO GOOD ! www.wedogood.co/mon-compte - [STOP_CODE]";
 		$parameters = array(
@@ -1123,51 +1188,51 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS KYC - VALIDES ET INVESTISSEMENT EN ATTENTE
 	//*******************************************************
-	public static function kyc_authentified_and_pending_investment($WDGUserOrOrganization, $campaign) {
+	public static function kyc_authentified_and_pending_investment($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-authenticated-pending-investment' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS KYC - VALIDES ET INVESTISSEMENT EN ATTENTE - RAPPEL
 	//*******************************************************
-	public static function kyc_authentified_and_pending_investment_reminder($WDGUserOrOrganization, $campaign) {
+	public static function kyc_authentified_and_pending_investment_reminder($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'kyc-authenticated-pending-investment-reminder' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//**************************************************************************
@@ -1176,10 +1241,10 @@ class NotificationsAPI {
 	//*******************************************************
 	// RELANCE - EVALUATION - AVEC INTENTION
 	//*******************************************************
-	public static function confirm_vote_invest_intention($WDGUserOrOrganization, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_vote_invest_intention($WDGUserInterface, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-confirm-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = $intention_amount;
@@ -1192,7 +1257,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1203,21 +1268,21 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// RELANCE - EVALUATION - SANS INTENTION
 	//*******************************************************
-	public static function confirm_vote_invest_no_intention($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_vote_invest_no_intention($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-without-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1230,7 +1295,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1240,21 +1305,21 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// RELANCE - PRE-LANCEMENT - EVALUATION AVEC INTENTION
 	//*******************************************************
-	public static function confirm_prelaunch_invest_intention($WDGUserOrOrganization, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_prelaunch_invest_intention($WDGUserInterface, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-prelaunch-vote-confirm-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = $intention_amount;
@@ -1267,7 +1332,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1278,18 +1343,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_prelaunch_invest_no_intention($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_prelaunch_invest_no_intention($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-prelaunch-vote-without-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1302,7 +1367,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1312,18 +1377,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_prelaunch_invest_follow($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_prelaunch_invest_follow($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-prelaunch-follow' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1336,7 +1401,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1346,93 +1411,93 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// FIN EVALUATION - EN ATTENTE
 	//*******************************************************
-	public static function vote_end_pending_campaign($WDGUserOrOrganization, $campaign) {
+	public static function vote_end_pending_campaign($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-end-vote-waiting' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// FIN EVALUATION - ANNULATION
 	//*******************************************************
-	public static function vote_end_canceled_campaign($WDGUserOrOrganization, $campaign) {
+	public static function vote_end_canceled_campaign($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-end-vote-canceled' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function vote_end_canceled_campaign_refund($WDGUserOrOrganization, $campaign) {
+	public static function vote_end_canceled_campaign_refund($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-end-vote-canceled-refund' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'PRENOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// RELANCE - INVESTISSEMENT - 30%
 	//*******************************************************
-	public static function confirm_investment_invest30_intention($WDGUserOrOrganization, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest30_intention($WDGUserInterface, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-30percent-with-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = $intention_amount;
@@ -1445,7 +1510,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1457,18 +1522,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_investment_invest30_no_intention($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest30_no_intention($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-30percent-without-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1481,7 +1546,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'URL_PROJET'			=> $project_url,
 			'POURCENT'				=> $campaign->percent_minimum_completed( FALSE ),
@@ -1492,18 +1557,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_investment_invest30_follow($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest30_follow($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-30percent-follow' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1517,7 +1582,7 @@ class NotificationsAPI {
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'URL_PROJET'			=> $project_url,
 			'POURCENT'				=> $campaign->percent_minimum_completed( FALSE ),
@@ -1528,21 +1593,21 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// RELANCE - INVESTISSEMENT - 100%
 	//*******************************************************
-	public static function confirm_investment_invest100_invested($WDGUserOrOrganization, $campaign) {
+	public static function confirm_investment_invest100_invested($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-investment' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$nb_remaining_days = $campaign->days_remaining();
@@ -1550,7 +1615,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
@@ -1560,18 +1625,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_investment_invest100_investment_pending($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest100_investment_pending($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-pending-investment' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1584,7 +1649,7 @@ class NotificationsAPI {
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1594,18 +1659,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_investment_invest100_intention($WDGUserOrOrganization, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest100_intention($WDGUserInterface, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-with-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = $intention_amount;
@@ -1620,7 +1685,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1634,18 +1699,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_investment_invest100_no_intention($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest100_no_intention($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-with-without-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1660,7 +1725,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1673,18 +1738,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_investment_invest100_follow($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest100_follow($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-success-follow' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1699,7 +1764,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1712,21 +1777,21 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// RELANCE - INVESTISSEMENT - J-2
 	//*******************************************************
-	public static function confirm_investment_invest2days_intention($WDGUserOrOrganization, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest2days_intention($WDGUserInterface, $intention_amount, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-2days-with-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = $intention_amount;
@@ -1741,7 +1806,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
@@ -1754,18 +1819,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function confirm_investment_invest2days_no_intention($WDGUserOrOrganization, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_invest2days_no_intention($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-2days-without-intention' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
@@ -1780,7 +1845,7 @@ class NotificationsAPI {
 		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'TEMOIGNAGES'				=> $testimony,
@@ -1792,12 +1857,12 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//**************************************************************************
@@ -1806,42 +1871,42 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS EVALUATION - AVEC INTENTION - PAS AUTHENTIFIE
 	//*******************************************************
-	public static function vote_authentication_needed_reminder($WDGUserOrOrganization, $campaign) {
+	public static function vote_authentication_needed_reminder($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-intention-authentication' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS EVALUATION - AVEC INTENTION - AUTHENTIFIE
 	//*******************************************************
-	public static function vote_authenticated_reminder($WDGUserOrOrganization, $campaign, $intention_amount) {
+	public static function vote_authenticated_reminder($WDGUserInterface, $campaign, $intention_amount) {
 		$id_template = self::get_id_fr_by_slug( 'project-vote-intention-preinvestment' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_reminder_data_amount($intention_amount);
 
 		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
 			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'URL_PROJET'				=> $project_url,
 			'INTENTION_INVESTISSEMENT'	=> $intention_amount
@@ -1849,12 +1914,12 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//**************************************************************************
@@ -1864,10 +1929,10 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT PAR CHEQUE - EN ATTENTE
 	//*******************************************************
-	public static function investment_pending_check($WDGUserOrOrganization, $WDGInvestment, $campaign) {
+	public static function investment_pending_check($WDGUserInterface, $WDGInvestment, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'investment-check-pending' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment_pending($WDGInvestment);
 
@@ -1877,7 +1942,7 @@ class NotificationsAPI {
 		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> $WDGUserInterface->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'POURCENT_ATTEINT'		=> $percent_to_reach,
@@ -1887,21 +1952,21 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT PAR VIREMENT - EN ATTENTE
 	//*******************************************************
-	public static function investment_pending_wire($WDGUserOrOrganization, $WDGInvestment, $campaign, $viban_iban, $viban_bic, $viban_holder) {
+	public static function investment_pending_wire($WDGUserInterface, $WDGInvestment, $campaign, $viban_iban, $viban_bic, $viban_holder) {
 		$id_template = self::get_id_fr_by_slug( 'investment-wire-pending' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment_pending($WDGInvestment);
 		$investment_pending_data = array(
@@ -1914,7 +1979,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> $WDGUserInterface->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'IBAN'					=> $viban_iban,
@@ -1924,21 +1989,21 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT - VALIDE
 	//*******************************************************
-	public static function investment_success_project($WDGUserOrOrganization, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url) {
+	public static function investment_success_project($WDGUserInterface, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url) {
 		$id_template = self::get_id_fr_by_slug( 'investment-project-validated' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment($WDGInvestment);
 		$investment_data = array(
@@ -1951,7 +2016,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'URL_PROJET'			=> $project_url,
@@ -1965,18 +2030,18 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
-	public static function investment_success_positive_savings($WDGUserOrOrganization, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url) {
+	public static function investment_success_positive_savings($WDGUserInterface, $WDGInvestment, $campaign, $text_before, $text_after, $attachment_url) {
 		$id_template = self::get_id_fr_by_slug( 'investment-positive-savings-validated' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment($WDGInvestment);
 		$investment_data = array(
@@ -1989,7 +2054,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'URL_PROJET'			=> $project_url,
 			'DATE'					=> $WDGInvestment->get_saved_date_gmt(),
@@ -2002,21 +2067,21 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
 	//*******************************************************
-	public static function investment_error($WDGUserOrOrganization, $WDGInvestment, $campaign, $lemonway_reason, $investment_link) {
+	public static function investment_error($WDGUserInterface, $WDGInvestment, $campaign, $lemonway_reason, $investment_link) {
 		$id_template = self::get_id_fr_by_slug( 'investment-error' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment($WDGInvestment);
 		$investment_error_data = array(
@@ -2028,7 +2093,7 @@ class NotificationsAPI {
 		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> $WDGUserInterface->get_firstname(),
 			'MONTANT'				=> $amount_total,
 			'NOM_PROJET'			=> $campaign->get_name(),
 			'RAISON_LEMONWAY'		=> $lemonway_reason,
@@ -2037,86 +2102,86 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
 	//*******************************************************
-	public static function wire_transfer_received($WDGUserOrOrganization, $amount) {
+	public static function wire_transfer_received($WDGUserInterface, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'received-wire-without-pending-investment' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_amount_wire_received($amount);
 
 		$options = array(
 			'personal'				=> 1,
-			'NOM'					=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'					=> $WDGUserInterface->get_firstname(),
 			'MONTANT'				=> $amount
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION
 	//*******************************************************
-	public static function investment_authentication_needed($WDGUserOrOrganization, $campaign) {
+	public static function investment_authentication_needed($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-authentication' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT - DEMANDE AUTHENTIFICATION - RAPPEL
 	//*******************************************************
-	public static function investment_authentication_needed_reminder($WDGUserOrOrganization, $campaign) {
+	public static function investment_authentication_needed_reminder($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-authentication-reminder' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//**************************************************************************
@@ -2125,105 +2190,105 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS SUCCES CAMPAGNE PUBLIQUE
 	//*******************************************************
-	public static function campaign_end_success_public($WDGUserOrOrganization, $campaign) {
+	public static function campaign_end_success_public($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-validated-campaign-public' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$project_date_first_payment_month_str = NotificationsAPIShortcodes::project_date_first_payment( FALSE, FALSE );
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment_month_str
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS SUCCES CAMPAGNE PRIVEE
 	//*******************************************************
-	public static function campaign_end_success_private($WDGUserOrOrganization, $campaign) {
+	public static function campaign_end_success_private($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-validated-campaign-private' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$project_date_first_payment_month_str = NotificationsAPIShortcodes::project_date_first_payment( FALSE, FALSE );
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment_month_str
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS EN ATTENTE DU SEUIL DE VALIDATION
 	//*******************************************************
-	public static function campaign_end_pending_goal($WDGUserOrOrganization, $campaign) {
+	public static function campaign_end_pending_goal($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-pending-validation' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATIONS ECHEC CAMPAGNE
 	//*******************************************************
-	public static function campaign_end_failure($WDGUserOrOrganization, $campaign) {
+	public static function campaign_end_failure($WDGUserInterface, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'project-failed' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name()
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//**************************************************************************
@@ -2232,14 +2297,14 @@ class NotificationsAPI {
 	//*******************************************************
 	// ENVOI MANDAT PRELEVEMENT
 	//*******************************************************
-	public static function mandate_to_send_to_bank($WDGUserOrOrganization, $attachment_url, $project_api_id) {
+	public static function mandate_to_send_to_bank($WDGUserInterface, $attachment_url, $project_api_id) {
 		$id_template = self::get_id_fr_by_slug( 'mandate-to-send-to-bank' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
 			'personal'		=> 1,
-			'NOM'			=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'			=> $WDGUserInterface->get_firstname(),
 		);
 		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
 			$options[ 'url_attachment' ] = $attachment_url;
@@ -2247,12 +2312,12 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'			=> 'sendinblue',
 			'template'		=> $id_template,
-			'recipient'		=> $WDGUserOrOrganization->get_email(),
+			'recipient'		=> $WDGUserInterface->get_email(),
 			'id_project'	=> $project_api_id,
 			'options'		=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
@@ -2265,7 +2330,7 @@ class NotificationsAPI {
 	 * @param boolean $has_mandate
 	 * @return boolean
 	 */
-	public static function declaration_to_do($recipients, $nb_remaining_days, $has_mandate, $options) {
+	public static function declaration_to_do($WDGUser, $recipients, $nb_remaining_days, $has_mandate, $options) {
 		$param_template_by_remaining_days = array(
 			'9-mandate'		=> self::get_id_fr_by_slug( 'declaration-9days-with-mandate' ),
 			'9-nomandate'	=> self::get_id_fr_by_slug( 'declaration-9days-without-mandate' ),
@@ -2282,6 +2347,7 @@ class NotificationsAPI {
 		}
 		$param_template = isset( $param_template_by_remaining_days[ $index ] ) ? $param_template_by_remaining_days[ $index ] : FALSE;
 		if ( !empty( $param_template ) ) {
+			NotificationsAPIShortcodes::set_recipient($WDGUser);
 			$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
 			$parameters = array(
 				'tool'		=> 'sendinblue',
@@ -2290,16 +2356,17 @@ class NotificationsAPI {
 				'options'	=> json_encode( $options )
 			);
 
-			return self::send( $parameters );
+			return self::send( $parameters, $WDGUser->get_language() );
 		}
 
 		return FALSE;
 	}
 
-	public static function declaration_to_do_warning($recipient, $WDGUser, $declaration, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total) {
+	public static function declaration_to_do_warning($recipient, $WDGUser, $campaign, $declaration, $nb_quarter, $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-mandate-payment-warning' );
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_declaration($declaration);
 		$declaration_estimation = array(
 			'quarter_count'		=> $nb_quarter,
@@ -2336,7 +2403,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 	//*******************************************************
 	// FIN - NOTIFICATIONS DECLARATIONS ROI A FAIRE
@@ -2373,7 +2440,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	public static function declaration_done_without_turnover($WDGOrganization, $WDGUser, $campaign, $declaration) {
@@ -2397,7 +2464,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 	//*******************************************************
 	// FIN - NOTIFICATIONS DECLARATIONS APROUVEES
@@ -2426,7 +2493,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
 	public static function declaration_extended_project_manager($WDGOrganization, $WDGUser) {
@@ -2445,13 +2512,13 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
-	public static function declaration_extended_investor($WDGUserOrOrganization, $campaign, $investment_contract) {
+	public static function declaration_extended_investor($WDGUserInterface, $campaign, $investment_contract) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-extended-investors' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment_contract($investment_contract);
 
@@ -2463,7 +2530,7 @@ class NotificationsAPI {
 		$amount_remaining = NotificationsAPIShortcodes::investment_royalties_remaining( FALSE, FALSE );
 		$options = array(
 			'personal'					=> 1,
-			'NOM'						=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'						=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'DUREE_FINANCEMENT'			=> $funding_duration,
 			'DATE'						=> $date,
@@ -2475,12 +2542,12 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	public static function declaration_finished_project_manager($WDGOrganization, $WDGUser) {
@@ -2499,13 +2566,13 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
-	public static function declaration_finished_investor($WDGUserOrOrganization, $campaign, $investment_contract) {
+	public static function declaration_finished_investor($WDGUserInterface, $campaign, $investment_contract) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-end-investors' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment_contract($investment_contract);
 
@@ -2515,7 +2582,7 @@ class NotificationsAPI {
 		$amount_royalties = $investment_contract->amount_received;
 		$options = array(
 			'personal'					=> 1,
-			'NOM'						=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'						=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'				=> $campaign->get_name(),
 			'DATE'						=> $date,
 			'URL_PROJET'				=> $project_url,
@@ -2525,12 +2592,12 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'id_project'	=> $campaign->get_api_id(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 	//*******************************************************
 	// NOTIFICATIONS PROLONGATION DECLARATIONS
@@ -2542,151 +2609,151 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS VERSEMENT AVEC ROYALTIES PLUSIEURS PROJETS
 	//*******************************************************
-	public static function roi_transfer_daily_resume($WDGUserOrOrganization, $royalties_message) {
+	public static function roi_transfer_daily_resume($WDGUserInterface, $royalties_message, $recipient_email) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-daily-resume' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_user_royalties_details($royalties_message);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'RESUME_ROYALTIES'	=> $royalties_message,
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $recipient_email,
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// WALLET AVEC PLUS DE 200 EUROS
 	//*******************************************************
-	public static function wallet_with_more_than_200_euros($WDGUserOrOrganization) {
+	public static function wallet_with_more_than_200_euros($WDGUserInterface) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-more-200euros' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
 			'personal'	=> 1,
-			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'NOM'		=> $WDGUserInterface->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS OUVERT
 	//*******************************************************
-	public static function wallet_with_more_than_200_euros_reminder_not_open($WDGUserOrOrganization) {
+	public static function wallet_with_more_than_200_euros_reminder_not_open($WDGUserInterface) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-more-200euros-reminder-not-open' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
 			'personal'	=> 1,
-			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'NOM'		=> $WDGUserInterface->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// WALLET AVEC PLUS DE 200 EUROS - RAPPEL MAIL PAS CLIQUE
 	//*******************************************************
-	public static function wallet_with_more_than_200_euros_reminder_not_clicked($WDGUserOrOrganization) {
+	public static function wallet_with_more_than_200_euros_reminder_not_clicked($WDGUserInterface) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-more-200euros-reminder-not-clicked' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
 			'personal'	=> 1,
-			'NOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname()
+			'NOM'		=> $WDGUserInterface->get_firstname()
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// WALLET AVEC PLUS DE 200 EUROS - NOTIF ENTREPRENEUR
 	//*******************************************************
-	public static function investors_with_wallet_with_more_than_200_euros($WDGUserOrOrganization, $investors_list_str) {
+	public static function investors_with_wallet_with_more_than_200_euros($WDGUserInterface, $investors_list_str) {
 		$id_template = self::get_id_fr_by_slug( 'investors-royalties-more-200euros-project-manager-alert' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_investors_list_with_more_than_200_euros_str($investors_list_str);
 
 		$options = array(
 			'personal'		=> 1,
-			'PRENOM'		=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'PRENOM'		=> $WDGUserInterface->get_firstname(),
 			'INVESTISSEURS'	=> $investors_list_str
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// MESSAGE D'ENTREPRENEUR SUITE VERSEMENT ROYALTIES
 	//*******************************************************
-	public static function roi_transfer_message($WDGUserOrOrganization, $campaign, $declaration_message, $replyto_mail) {
+	public static function roi_transfer_message($WDGUserInterface, $campaign, $declaration_message, $replyto_mail) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-with-message' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_project_royalties_message($declaration_message);
 
 		$options = array(
 			'personal'			=> 1,
 			'replyto'			=> $replyto_mail,
-			'NOM_UTILISATEUR'	=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'CONTENU_MESSAGE'	=> $declaration_message,
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATION VERSEMENT AYANT ATTEINT LE MAXIMUM
 	//*******************************************************
-	public static function roi_transfer_with_max_reached($WDGUserOrOrganization, $campaign, $WDGInvestment, $amount_received) {
+	public static function roi_transfer_with_max_reached($WDGUserInterface, $campaign, $WDGInvestment, $amount_received) {
 		$id_template = self::get_id_fr_by_slug( 'investor-royalties-max-amount-reached' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment($WDGInvestment);
 		NotificationsAPIShortcodes::set_investment_amount_received($amount_received);
@@ -2700,7 +2767,7 @@ class NotificationsAPI {
 		$amount_royalties_str = UIHelpers::format_number( $amount_royalties );
 		$options = array(
 			'personal'			=> 1,
-			'NOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'				=> $WDGUserInterface->get_firstname(),
 			'NOM_PROJET'		=> $campaign->get_name(),
 			'RETOUR_MAXIMUM'	=> $max_profit,
 			'DATE'				=> $date_investment,
@@ -2711,40 +2778,49 @@ class NotificationsAPI {
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//*******************************************************
 	// NOTIFICATION VERSEMENT SUR COMPTE BANCAIRE
 	//*******************************************************
-	public static function transfer_to_bank_account_confirmation($WDGUserOrOrganization, $amount) {
+	public static function transfer_to_bank_account_confirmation($WDGUserInterface, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'transfer-money-to-bank-account' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUserOrOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_amount_wire_transfer($amount);
 
 		$options = array(
 			'personal'			=> 1,
-			'NOM'				=> WDGOrganization::is_user_organization( $WDGUserOrOrganization ) ? $WDGUserOrOrganization->get_name() : $WDGUserOrOrganization->get_firstname(),
+			'NOM'				=> $WDGUserInterface->get_firstname(),
 			'MONTANT'			=> $amount
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUserOrOrganization->get_email(),
+			'recipient'	=> $WDGUserInterface->get_email(),
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	//**************************************************************************
 	// Interface prospect
 	//**************************************************************************
+	private static function get_prospect_setup_language( $prospect_setup_draft ) {
+		$metadata_decoded = json_decode( $prospect_setup_draft->metadata );
+		$language = 'fr';
+		if ( !empty( $metadata_decoded->language ) ) {
+			$language = $metadata_decoded->language;
+		}
+		return $language;
+	}
+
 	//*******************************************************
 	// LISTE DES TESTS DEMARRES
 	//*******************************************************
@@ -2769,7 +2845,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2801,7 +2878,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2840,7 +2918,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2872,7 +2951,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2903,7 +2983,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2934,7 +3015,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2963,7 +3045,8 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 
 	//*******************************************************
@@ -2990,6 +3073,7 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters );
+		$language = self::get_prospect_setup_language( $prospect_setup_draft );
+		return self::send( $parameters, $language );
 	}
 }

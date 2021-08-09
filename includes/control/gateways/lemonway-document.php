@@ -121,12 +121,15 @@ class LemonwayDocument {
 					$this->lw_comment = $document_object->C;
 					$this->error_str = $this->init_error_str();
 				} else if ( isset( $document_object->DOCS->DOC->TYPE ) && $document_object->DOCS->DOC->TYPE == $this->document_type ) {
-					$this->status = $this->wallet_details->DOCS->DOC->S;
-					$this->lw_comment = $this->wallet_details->DOCS->DOC->C;
+					$this->status = $document_object->DOCS->DOC->S;
+					$this->lw_comment = $document_object->DOCS->DOC->C;
 					$this->error_str = $this->init_error_str();
 				}
+				// on arrête de parcourir le tableau quand on a un document du bon type au status validé
+				if( !empty( $this->status ) && $this->status == LemonwayDocument::$document_status_accepted ){
+					break;
+				}
 			}
-			
 			if ( empty( $this->status ) && $this->wallet_details->DOCS->DOC->TYPE == $this->document_type ) {
 				$this->status = $this->wallet_details->DOCS->DOC->S;
 				$this->lw_comment = $this->wallet_details->DOCS->DOC->C;

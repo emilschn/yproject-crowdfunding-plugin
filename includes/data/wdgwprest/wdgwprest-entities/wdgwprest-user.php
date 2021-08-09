@@ -12,11 +12,11 @@ class WDGWPREST_Entity_User {
 	 * @param string $id
 	 * @return object
 	 */
-	public static function get( $id ) {
+	public static function get( $id, $shortcut_call = FALSE ) {
 		if ( empty( $id ) ) {
 			return FALSE;
 		}
-		return WDGWPRESTLib::call_get_wdg( 'user/' .$id. '?with_links=1' );
+		return WDGWPRESTLib::call_get_wdg( 'user/' .$id. '?with_links=1', $shortcut_call );
 	}
 	
 	/**
@@ -47,9 +47,15 @@ class WDGWPREST_Entity_User {
 	 * @return array
 	 */
 	public static function set_post_parameters( WDGUser $user ) {
-		$file_list_id = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_id );
-		$file_list_idbis = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_idbis );
-		$file_list_rib = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
+		// Si la langue d'affichage de l'utilisateur n'est pas définie et que c'est bien l'utilisateur en cours qui se met à jour
+		if ( $user->get_language() == '' ) {
+			$WDGUser_current = WDGUser::current();
+			if ( $user->get_wpref() == $WDGUser_current->get_wpref() ) {
+				$user->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+			}
+		}
+
+		// Initialisation des paramètres à envoyer
 		$parameters = array(
 			'wpref'				=> $user->get_wpref(),
 			'gender'			=> $user->get_gender(),
@@ -83,8 +89,14 @@ class WDGWPREST_Entity_User {
 			/* 'picture_url', 'website_url', 'twitter_url', 'facebook_url', 'linkedin_url', 'viadeo_url', 'activation_key', 'password' */
 			'signup_date'		=> $user->get_signup_date(),
 			'royalties_notifications'		=> $user->get_royalties_notifications(),
-			'gateway_list'		=> $user->get_encoded_gateway_list()
+			'gateway_list'		=> $user->get_encoded_gateway_list(),
+			'email_is_validated'		=> $user->get_email_is_validated()
 		);
+
+		// Ajout facultatif des documents
+		$file_list_id = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_id );
+		$file_list_idbis = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_idbis );
+		$file_list_rib = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
 		if ( !empty( $file_list_id[ 0 ]->file_name ) ) {
 			$parameters[ 'document_id' ] = $file_list_id[ 0 ]->file_name;
 		}
@@ -94,6 +106,7 @@ class WDGWPREST_Entity_User {
 		if ( !empty( $file_list_rib[ 0 ]->file_name ) ) {
 			$parameters[ 'document_rib' ] = $file_list_rib[ 0 ]->file_name;
 		}
+
 		return $parameters;
 	}
 	

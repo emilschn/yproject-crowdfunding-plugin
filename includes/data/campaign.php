@@ -1279,16 +1279,22 @@ class ATCF_Campaign {
 		}
 
 		if ( $this->platform_commission() == '' ) {
+			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $this->platform_commission() empty ');
+
 			return;
 		}
 		$data_contract_start_date = $this->contract_start_date();
 		if ( !empty( $data_contract_start_date ) ) {
 			$start_datetime = new DateTime( $data_contract_start_date );
 		} else {
+			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $data_contract_start_date  empty ');
+
 			return;
 		}
 		$fiscal_info = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_info_fiscal, 'accounting_fiscal_info' );
 		if ( empty( $fiscal_info ) ) {
+			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $fiscal_info  empty ');
+
 			return;
 		}
 
@@ -1673,25 +1679,40 @@ class ATCF_Campaign {
 		update_post_meta($this->ID, 'campaign_payment_list_status', json_encode($payment_list_status));
 	}
 
-	public function generate_missing_declarations($month_count = 3, $declarations_limit = FALSE) {
+	/**
+	 * $nb_month_between_declarations : nombre de mois entre 2 déclarations
+	 * $declarations_limit : permet de définir un nombre maximal de déclarations à ajouter
+	 * -> FALSE par défaut : ne prend pas en compte ce paramètre (et utilise le nombre de déclarations initialement prévu)
+	 * -> x (entier) permet de définir une limite
+	 */
+	public function generate_missing_declarations($nb_months_between_declarations = 3, $nb_declarations_limit = FALSE) {
 		// Calcul du nombre de déclarations que devra faire le projet
-		$nb_in_a_year = 12 / $month_count;
+		$nb_declarations_in_a_year = 12 / $nb_months_between_declarations;
 		$funding_duration = $this->funding_duration();
 		if ( $funding_duration == 0 ) {
 			$funding_duration = 1;
 		}
-		$nb_declarations = $funding_duration * $nb_in_a_year;
+		// Le nombre de déclarations initialement prévues pour le projet
+		$nb_declarations_initial = $funding_duration * $nb_declarations_in_a_year;
 
-		// Permet de rajouter des déclarations si nécessaires
+		// Permet de ne rajouter des déclarations si nécessaires
 		$count_added_declaration = 0;
 
-		if ( ( isset( $nb_declarations ) && $nb_declarations > 0 ) || !empty( $declarations_limit ) ) {
-			// Récupération des déclarations existantes
-			$existing_roi_declarations = $this->get_roi_declarations();
+		// Récupération des déclarations existantes
+		$existing_roi_declarations = $this->get_roi_declarations();
+
+		// Si on n'a pas défini de limite et qu'il n'y a pas encore le nombre de déclarations initialement prévues
+		if ( empty( $nb_declarations_limit ) && ( count( $existing_roi_declarations ) < $nb_declarations_initial ) ) {
+			$nb_declarations_limit = $nb_declarations_initial - count( $existing_roi_declarations );
+		}
+
+		// Si il y a bien des déclarations à ajouter
+		if ( !empty( $nb_declarations_limit ) && $nb_declarations_limit > 0 ) {
 			// On part de la date de début de versement
 			$current_date = new DateTime( $this->first_payment_date() );
-			for ( $i = 0; $i < $nb_declarations; $i++ ) {
-				// On ne l'ajoute que si elle n'existe pas déjà
+
+			while ( $count_added_declaration < $nb_declarations_limit ) {
+				// On ne l'ajoute que si elle n'existe pas encore
 				$add_date = TRUE;
 				foreach ( $existing_roi_declarations as $declaration_object ) {
 					if ( $current_date->format( 'Y-m-d' ) == $declaration_object[ 'date_due' ] ) {
@@ -1702,19 +1723,7 @@ class ATCF_Campaign {
 					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
 					$count_added_declaration++;
 				}
-				if ( !empty( $declarations_limit ) && $count_added_declaration >= $declarations_limit ) {
-					break;
-				}
-				$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
-			}
-
-			// Si il faut ajouter des déclarations
-			if ( !empty( $declarations_limit ) ) {
-				while ( $count_added_declaration < $declarations_limit ) {
-					WDGROIDeclaration::insert( $this->get_api_id(), $current_date->format( 'Y-m-d' ) );
-					$current_date->add( new DateInterval( 'P'.$month_count.'M' ) );
-					$count_added_declaration++;
-				}
+				$current_date->add( new DateInterval( 'P'.$nb_months_between_declarations.'M' ) );
 			}
 		}
 	}
@@ -1928,6 +1937,16 @@ class ATCF_Campaign {
 		}
 
 		return $buffer;
+	}
+	public function has_impact($str_impact) {
+		$categories = $this->get_categories();
+		foreach ($categories as $category) {
+			if ( $category->slug == $str_impact ) {
+				return TRUE;
+			}
+		}
+
+		return FALSE;
 	}
 
 	/**
@@ -2580,7 +2599,7 @@ class ATCF_Campaign {
 	 *
 	 * @since Appthemer CrowdFunding 0.1-alpha
 	 *
-	 * @return sting Campaign Video
+	 * @return string Campaign Video
 	 */
 	public function video() {
 		$buffer = $this->__get_translated_property( 'campaign_video' );
@@ -3245,13 +3264,13 @@ class ATCF_Campaign {
 	 * @return array
 	 */
 	private $payments_data;
-	public function payments_data($skip_apis = FALSE, $order_by_older = FALSE) {
+	public function payments_data($skip_apis = FALSE, $order_by_older = FALSE, $show_failed = FALSE) {
 		if ( !isset( $this->payments_data ) ) {
 			$this->payments_data = array();
 
 			if ( $this->has_investments_in_api() ) {
 				foreach ( $this->api_data->investments as $investment_item ) {
-					if ( $investment_item->status != 'failed' ) {
+					if ( $investment_item->status != 'failed' || $show_failed ) {
 						// Récupération simple des paiements dans l'API
 						// On dégage 'products' et 'signsquid_status_text' pas très utile
 						// On simplifie 'mangopay_contribution' et 'lemonway_contribution' pour avoir les infos au cas où, mais pas les chercher de suite, car normalement pas besoin
@@ -3309,7 +3328,7 @@ class ATCF_Campaign {
 
 						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
 
-						if ($payment_status != 'failed') {
+						if ($payment_status != 'failed' || $show_failed) {
 							$this->payments_data[] = array(
 								'ID'			=> $payment->ID,
 								'email'			=> edd_get_payment_user_email( $payment->ID ),
@@ -3399,6 +3418,8 @@ class ATCF_Campaign {
 			if (!empty($new_username) && !empty($new_password)) {
 				$user_id = wp_create_user($new_username, $new_password, $email);
 				$wdg_user = new WDGUser( $user_id );
+				$wdg_user->set_language( WDG_Languages_Helpers::get_current_locale_id() );
+				$wdg_user->update_api();
 				$use_lastname = '';
 				$birthplace_department = '';
 				$wdg_user->save_data($email, $new_gender, $new_firstname, $new_lastname, $use_lastname, $birthday_day, $birthday_month, $birthday_year, $birthplace, $birthplace_district, $birthplace_department, $birthplace_country, $nationality, $address_number, $address_number_complement, $address, $postal_code, $city, $country, $tax_country, '');
@@ -3907,6 +3928,7 @@ class ATCF_Campaign {
 	}
 
 	public static function get_list_positive_savings($nb = 0, $random = TRUE) {
+		WDG_Languages_Helpers::switch_to_french_temp();
 		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
 		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
 		$query_options = array(
@@ -3932,7 +3954,11 @@ class ATCF_Campaign {
 			$query_options[ 'order' ] = 'asc';
 		}
 
-		return get_posts( $query_options );
+		$buffer = get_posts( $query_options );
+
+		WDG_Languages_Helpers::switch_back_to_display_language();
+
+		return $buffer;
 	}
 
 	public static function get_list_funded($nb = 0, $client = '', $include_current = false, $skip_hidden = true) {
