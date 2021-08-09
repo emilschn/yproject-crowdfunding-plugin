@@ -26,7 +26,7 @@ class WDGWPREST_Entity_Subscription {
 		$parameters = array(
 			'id_subscriber'			    => $subscription->id_subscriber,
 			'id_activator'	            => $subscription->id_activator,
-            'id_type_subscriber'		=> $subscription->id_type_subscriber,
+            'type_subscriber'			=> $subscription->type_subscriber,
 			'id_project'			    => $subscription->id_campaign,
 			'amount_type'				=> $subscription->amount_type,
 			'amount'		            => $subscription->amount,

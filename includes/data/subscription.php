@@ -25,7 +25,7 @@ class WDGSUBSCRIPTION {
 			if ( empty( $subscription_api_item ) ) {
 				$subscription_api_item = WDGWPREST_Entity_Subscription::get( $subscription_id );
 			}
-			
+			// Récupération depuis l'API
 			if ( $subscription_api_item != FALSE ) {
 				$this->id = $subscription_id;
 				$this->id_subscriber = $subscription_api_item->id_subscriber;
@@ -57,19 +57,22 @@ class WDGSUBSCRIPTION {
 	/**
 	 * Ajout d'un nouveau Abonnement
 	 */
-	public static function insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $start_date, $status, $end_date) {
+	public static function insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $status) {
         $subscribtion = new WDGSUBSCRIPTION();
-        $subscribtion->id_subscriber = $id_subscriber;
-        $subscribtion->id_activator = $id_activator;
-        $subscribtion->type_subscriber = $type_subscriber;
-        $subscribtion->id_campaign = $id_campaign;
-        $subscribtion->amount_type = $amount_type;
-        $subscribtion->amount = $amount;
-        $subscribtion->payment_method = $payment_method;
-        $subscribtion->modality = $modality;
-        $subscribtion->start_date = $start_date;
+        $subscribtion->id_subscriber = $id_subscriber; 		//user_id du compte
+        $subscribtion->id_activator = $id_activator; 		//user_id du compte qui est connecté
+        $subscribtion->type_subscriber = $type_subscriber; 	//user ou organization
+        $subscribtion->id_campaign = $id_campaign; 			// ID du projet
+        $subscribtion->amount_type = $amount_type; 			// modalité
+        $subscribtion->amount = $amount; 					// montant
+        $subscribtion->payment_method = $payment_method;	// Wallet du compte utilisateur
+        $subscribtion->modality = $modality;				// Trimestrielle
+		$start_date = new DateTime();
+        $subscribtion->start_date = $start_date->format("Y-m-d H:i:s");			// Date de la souscription
         $subscribtion->status = $status;
-        $subscribtion->end_date = $end_date;
+		// var_dump ($type_subscriber); 
+		// exit('');					// Active ou End 
         WDGWPREST_Entity_Subscription::create( $subscribtion );
 	}
+	
 }
