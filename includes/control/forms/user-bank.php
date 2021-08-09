@@ -173,7 +173,6 @@ class WDG_Form_User_Bank extends WDG_Form {
 
 				if ( isset( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' .$bank_file_suffix ] );
-					
 					if ( is_int( $file_id ) ) {
 						$WDGFile = new WDGKYCFile( $file_id );
 						if ( $WDGOrganization->can_register_lemonway() ) {
@@ -191,6 +190,14 @@ class WDG_Form_User_Bank extends WDG_Form {
 								NotificationsAsana::organization_bank_file_changed_admin( $WDGOrganization->get_name() );
 							}
 						}
+					} else {
+						// il y a eu un pb à l'upload
+						$error = array(
+							'code'		=> $file_id,
+							'text'		=> __( 'forms.file.ERROR_'.$file_id, 'yproject' ),
+							'element'	=> 'bank-file'
+						);
+						array_push( $feedback_errors, $error );
 					}
 					
 				} elseif ( $test_kyc ) {
@@ -234,6 +241,14 @@ class WDG_Form_User_Bank extends WDG_Form {
 								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 							}
 						}
+					} else {
+						// il y a eu un pb à l'upload
+						$error = array(
+							'code'		=> $file_id,
+							'text'		=> __( 'forms.file.ERROR_'.$file_id, 'yproject' ),
+							'element'	=> 'bank-file'
+						);
+						array_push( $feedback_errors, $error );
 					}
 					
 				} elseif ( $test_kyc ) {

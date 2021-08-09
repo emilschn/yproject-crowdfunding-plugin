@@ -526,6 +526,8 @@ class NotificationsAPI {
 			// On commence par vérifier si un template WordPress a déjà été créé pour remplacer le template existant
 			$template_slug = self::get_slug_by_id_template_sib_v2( $parameters['template'] );
 			if ( !empty( $template_slug ) ) {
+				global $force_language_to_translate_to;
+				$force_language_to_translate_to = $language_to_translate_to;
 				$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug, $language_to_translate_to);
 				if ( !empty( $template_post ) ) {
 					$recipient = $parameters[ 'recipient' ];

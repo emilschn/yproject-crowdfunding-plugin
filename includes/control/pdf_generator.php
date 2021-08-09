@@ -309,21 +309,26 @@ class WDG_PDF_Generator {
 		global $shortcode_campaign_obj;
 		$roi_percent_estimated = $shortcode_campaign_obj->roi_percent_estimated();
 
-		require_once 'number-words/Numbers/Words.php';
-		$nbwd_class = new Numbers_Words();
-		$buffer_in_words = $nbwd_class->toWords( $roi_percent_estimated, 'fr' );
-		if ( !is_int( $roi_percent_estimated ) ) {
-			$number_exploded = explode( '.', $roi_percent_estimated );
-			$buffer_in_words .= " VIRGULE ";
-			$index_of_zero = 0;
-			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) === '0' ) {
-				$buffer_in_words .= "ZERO ";
-				$index_of_zero++;
-			}
-			$buffer_in_words .= $nbwd_class->toWords( $number_exploded[ 1 ], 'fr' );
+		$language_id = 'en_US';
+		if ( WDG_Languages_Helpers::get_current_locale_id() == 'fr' ) {
+			$language_id = 'fr';
 		}
 
-		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' POURCENTS)';
+		require_once 'number-words/Numbers/Words.php';
+		$nbwd_class = new Numbers_Words();
+		$buffer_in_words = $nbwd_class->toWords( $roi_percent_estimated, $language_id );
+		if ( !is_int( $roi_percent_estimated ) ) {
+			$number_exploded = explode( '.', $roi_percent_estimated );
+			$buffer_in_words .= ' ' . strtoupper( __( 'invest.contract.COMMA', 'yproject' ) ) . ' ';
+			$index_of_zero = 0;
+			while ( substr( $number_exploded[ 1 ], $index_of_zero, 1 ) === '0' ) {
+				$buffer_in_words .= strtoupper( __( 'invest.contract.ZERO', 'yproject' ) ) . ' ';
+				$index_of_zero++;
+			}
+			$buffer_in_words .= $nbwd_class->toWords( $number_exploded[ 1 ], $language_id );
+		}
+
+		$buffer = YPUIHelpers::display_number( $roi_percent_estimated ). '% (' . strtoupper( $buffer_in_words ) . ' ' . strtoupper( __( 'invest.contract.PERCENT', 'yproject' ) ). ')';
 
 		return $buffer;
 	}
@@ -336,9 +341,9 @@ class WDG_PDF_Generator {
 		global $shortcode_campaign_obj;
 		$funding_duration = $shortcode_campaign_obj->funding_duration();
 		if ( $funding_duration > 0 ) {
-			$buffer = $funding_duration . __( " ans", 'yproject' );
+			$buffer = $funding_duration . ' ' . __( "ans", 'yproject' );
 		} else {
-			$buffer = __( "dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
+			$buffer = __( 'invest.input.UNDEFINED_DURATION', 'yproject' );
 		}
 
 		return $buffer;
@@ -746,7 +751,7 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	$standard_contract = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_contract_full, 'standard_contract' );
 
 	// Si le projet surcharge le contrat standard
-	$project_override_contract = $campaign_obj->override_contract();
+	$project_override_contract = $campaign_obj->override_contract( $lang );
 	if ( !empty( $project_override_contract ) ) {
 		if ( $preview ) {
 			$buffer .= wpautop( $project_override_contract );
@@ -764,42 +769,42 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 			}
 		} else {
 			switch ($campaign_obj->funding_type()) {
-			case 'fundingproject':
-			break;
-			case 'fundingdevelopment':
-			default:
-			$buffer .= '<p>';
-			if ($lang == 'en_US') {
-				$buffer .= '<h2>DECLARES</h2>';
-			} else {
-				$buffer .= '<h2>DECLARE</h2>';
+				case 'fundingproject':
+					break;
+				case 'fundingdevelopment':
+				default:
+					$buffer .= '<p>';
+					if ($lang == 'en_US') {
+						$buffer .= '<h2>DECLARES</h2>';
+					} else {
+						$buffer .= '<h2>DECLARE</h2>';
+					}
+					$buffer .= '</p>';
+					break;
 			}
-			$buffer .= '</p>';
-			break;
-		}
 
 			$buffer .= '<p>';
 			switch ($campaign_obj->funding_type()) {
-			case 'fundingproject':
-			break;
-			case 'fundingdevelopment':
-			default:
-			if ( !empty( $payment_data ) ) {
-				$plurial = '';
-				if ($lang == 'en_US') {
-					if ($payment_data["amount_part"] > 1) {
-						$plurial = 's';
+				case 'fundingproject':
+					break;
+				case 'fundingdevelopment':
+				default:
+					if ( !empty( $payment_data ) ) {
+						$plurial = '';
+						if ($lang == 'en_US') {
+							if ($payment_data["amount_part"] > 1) {
+								$plurial = 's';
+							}
+							$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following:<br />';
+						} else {
+							if ($payment_data["amount_part"] > 1) {
+								$plurial = 's';
+							}
+							$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
+						}
 					}
-					$buffer .= '- Subscribe ' . $payment_data["amount_part"] . ' part'.$plurial.' of the company which main characteristics are the following:<br />';
-				} else {
-					if ($payment_data["amount_part"] > 1) {
-						$plurial = 's';
-					}
-					$buffer .= '- Souscrire ' . $payment_data["amount_part"] . ' part'.$plurial.' de la société dont les principales caractéristiques sont les suivantes :<br />';
-				}
+					break;
 			}
-			break;
-		}
 
 			$buffer .= html_entity_decode($campaign_obj->subscription_params());
 			$buffer .= '</p>';

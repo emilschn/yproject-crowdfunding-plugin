@@ -49,6 +49,8 @@ class WDGAjaxActions {
 
 		// TBPP
 		WDGAjaxActions::add_action_project_dashboard( 'display_roi_user_list' );
+		WDGAjaxActions::add_action_project_dashboard( 'show_project_money_flow' );
+		WDGAjaxActions::add_action_project_dashboard( 'check_invest_input' );
 		WDGAjaxActions::add_action_project_dashboard( 'remove_help_item' );
 		WDGAjaxActions::add_action_project_dashboard( 'save_project_infos' );
 		WDGAjaxActions::add_action_project_dashboard( 'save_project_funding' );

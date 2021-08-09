@@ -1035,8 +1035,12 @@ class ATCF_Campaign {
 	}
 	// Contrat : Rédaction surchargeant le contrat standard
 	public static $key_override_contract = 'campaign_override_contract';
-	public function override_contract() {
-		return $this->__get( ATCF_Campaign::$key_override_contract );
+	public function override_contract( $lang = 'fr' ) {
+		$key = ATCF_Campaign::$key_override_contract;
+		if ( $lang != 'fr' && $lang != 'fr_FR' ) {
+			$key .= '_' . $lang;
+		}
+		return $this->__get( $key );
 	}
 
 	//Ajouts contrat

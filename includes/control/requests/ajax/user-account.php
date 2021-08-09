@@ -22,7 +22,7 @@ class WDGAjaxActionsUserAccount {
 		} else {
 			$WDGUserEntity = new WDGOrganization( $user_id );
 			$is_authentified = $WDGUserEntity->is_registered_lemonway_wallet();
-			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity );
+			$can_access = $WDGUser_current->can_edit_organization( $WDGUserEntity->get_wpref() );
 		}
 
 		if ( !$can_access ) {
@@ -739,8 +739,10 @@ class WDGAjaxActionsUserAccount {
 										$has_found_roi = true;
 
 										$turnover_list = json_decode( $roi_declaration->turnover );
-										foreach ( $turnover_list as $turnover_item ) {
-											$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $turnover_item;
+										if (!empty($turnover_list)) {
+											foreach ($turnover_list as $turnover_item) {
+												$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] += $turnover_item;
+											}
 										}
 										$adjustment_value = 0;
 										$adjustment_value_as_turnover = 0;
