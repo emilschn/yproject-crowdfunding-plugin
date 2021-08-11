@@ -1327,7 +1327,7 @@ class WDGPostActions {
 			$WDGFormSubscription = new WDG_Form_Subscription( $user_id, TRUE );
 			ypcf_session_start();
 			$_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ] = $WDGFormSubscription->postForm();
-			wp_redirect( wp_get_referer().'#subscription' );
+			wp_redirect( home_url('contrat-abonnement') );
 			exit();
 		}
 

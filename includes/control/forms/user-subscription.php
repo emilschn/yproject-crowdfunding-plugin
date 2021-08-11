@@ -154,7 +154,6 @@ class WDG_Form_Subscription extends WDG_Form {
 
 			// Quand la méthode de suppression sera créée, on pourra alors gérer la partie "END" dans la BDD
 			$status = "active";
-
 			WDGSUBSCRIPTION::insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $status);
         }
 
@@ -164,7 +163,6 @@ class WDG_Form_Subscription extends WDG_Form {
 		);
 		
 		$this->initFields(); // Reinit pour avoir les bonnes valeurs
-		var_dump($buffer);
 		return $buffer;
     }
 }
