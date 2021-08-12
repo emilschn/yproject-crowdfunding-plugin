@@ -27,7 +27,7 @@ class WDGWPREST_Entity_Subscription {
 			'id_subscriber'			    => $subscription->id_subscriber,
 			'id_activator'	            => $subscription->id_activator,
             'type_subscriber'			=> $subscription->type_subscriber,
-			'id_project'			    => $subscription->id_campaign,
+			'id_project'			    => $subscription->id_project,
 			'amount_type'				=> $subscription->amount_type,
 			'amount'		            => $subscription->amount,
 			'payment_method'		    => $subscription->payment_method,

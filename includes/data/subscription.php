@@ -8,7 +8,7 @@ class WDGSUBSCRIPTION {
 	public $id_subscriber;
 	public $id_activator;
     public $type_subscriber;
-	public $id_campaign;
+	public $id_project;
 	public $amount_type;
 	public $amount;
 	public $payment_method;
@@ -25,13 +25,14 @@ class WDGSUBSCRIPTION {
 			if ( empty( $subscription_api_item ) ) {
 				$subscription_api_item = WDGWPREST_Entity_Subscription::get( $subscription_id );
 			}
+
 			// Récupération depuis l'API
 			if ( $subscription_api_item != FALSE ) {
 				$this->id = $subscription_id;
 				$this->id_subscriber = $subscription_api_item->id_subscriber;
 				$this->id_activator = $subscription_api_item->id_activator;
 				$this->type_subscriber = $subscription_api_item->type_subscriber;
-				$this->id_campaign = $subscription_api_item->id_campaign;
+				$this->id_project = $subscription_api_item->id_project;
 				$this->amount_type = $subscription_api_item->amount_type;
 				$this->amount = $subscription_api_item->amount;
 				$this->payment_method = $subscription_api_item->payment_method;
@@ -57,12 +58,12 @@ class WDGSUBSCRIPTION {
 	/**
 	 * Ajout d'un nouveau Abonnement
 	 */
-	public static function insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $status) {
+	public static function insert($id_subscriber, $id_activator, $type_subscriber, $id_project, $amount_type, $amount, $payment_method, $modality, $status) {
         $subscribtion = new WDGSUBSCRIPTION();
         $subscribtion->id_subscriber = $id_subscriber; 		
         $subscribtion->id_activator = $id_activator; 		
         $subscribtion->type_subscriber = $type_subscriber; 	
-        $subscribtion->id_campaign = $id_campaign; 			
+        $subscribtion->id_project = $id_project; 			
         $subscribtion->amount_type = $amount_type; 			
         $subscribtion->amount = $amount; 					
         $subscribtion->payment_method = $payment_method;	
