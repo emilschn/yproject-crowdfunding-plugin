@@ -147,6 +147,10 @@ class WDGCronActions {
 							$percent_royalties = $campaign->roi_percent();
 							$amount_royalties = round( $amount_estimation_quarter * $campaign->roi_percent() / 100, 2 );
 							$amount_fees = round( $amount_royalties * $campaign->get_costs_to_organization() / 100, 2 );
+							$minimum_costs = $campaign->get_minimum_costs_to_organization();
+							if ( $minimum_costs > 0 ) {
+								$amount_fees = max( $amount_fees, $minimum_costs );
+							}
 							$amount_total = $amount_royalties + $amount_fees;
 
 							NotificationsAPI::declaration_to_do_warning( $recipients, $wdguser_author, $campaign, $declaration_data, $quarter_str_list[ $nb_quarter ], $percent_estimation, $amount_estimation_year, $amount_estimation_quarter, $percent_royalties, $amount_royalties, $amount_fees, $amount_total );
