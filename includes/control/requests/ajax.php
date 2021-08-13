@@ -341,7 +341,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Exécute les actions liées à l'interface de connexion / inscription
+	 * Exécute les actions liées à l'interface d'authentification
 	 */
 	public static function account_authentication_actions() {
 		$crowdfunding = ATCF_CrowdFunding::instance();
