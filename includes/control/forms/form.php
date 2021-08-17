@@ -208,7 +208,7 @@ class WDG_Form {
 		$input_result = filter_input( INPUT_POST, $name );
 
 		if ( !empty( $input_result ) ) {
-			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );		
+			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
 		}
 		return $buffer;
 	}

@@ -18,7 +18,7 @@ function account_autenthication_get_current_user_info() {
 	$current_user_id = get_current_user_id();
 
 	// Normalement ça ne devrait pas arriver, mais controle de sécurité :
-	// L'adresse mail transmise correspond à une organisation
+	// L'identifiant de l'utilisateur en cours correspond à une organisation
 	global $wpdb;
 	$db_meta_user_organization_id = $wpdb->get_row(
 		$wpdb->prepare(

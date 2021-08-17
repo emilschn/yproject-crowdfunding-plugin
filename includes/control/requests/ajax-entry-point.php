@@ -2,6 +2,7 @@
 $list_optimized_actions = array(
 	'account_signin_get_email_info',
 	'account_authentication_get_current_user_info',
+	'account_authentication_save_current_user_info',
 	'account_authentication_search_address'
 );
 $action_posted = filter_input( INPUT_POST, 'action' );
@@ -36,6 +37,9 @@ $headers = array(
 foreach ( $headers as $name => $field_value ) {
 	header( "{$name}: {$field_value}" );
 }
+
+// Chargement des helpers communs
+require_once dirname(__FILE__) . '/ajax/common/ajax-common-helper.php';
 
 // Chargement du fichier correspondant à l'action
 $domains_accepted = array( 'account_signin', 'account_authentication' );

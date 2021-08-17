@@ -141,6 +141,13 @@ class WDGWPREST_Entity_User {
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
+
+	/**
+	 * Mise à jour de l'utilisateur sur l'API à partir de données transmises dans un tableau
+	 */
+	public static function update_from_array( $user_api_id, $user_data ) {
+		return WDGWPRESTLib::call_post_wdg( 'user/' . $user_api_id, $user_data, TRUE );
+	}
 	
 	/**
 	 * Retourne la liste des organisations d'un utilisateur
