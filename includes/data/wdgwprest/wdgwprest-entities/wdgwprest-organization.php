@@ -78,7 +78,22 @@ class WDGWPREST_Entity_Organization {
 		$parameters['creation_date'] = $date->format('Y') .'-'. $date->format('m') .'-'. $date->format('d');
 
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization', $parameters );
-		if (isset($result_obj->code) && $result_obj->code == 400) {
+		if ( isset( $result_obj->code ) && $result_obj->code == 400) {
+			$result_obj = '';
+		}
+
+		return $result_obj;
+	}
+
+	/**
+	 * Crée une organisation sur l'API à partir de données transmises dans un tableau
+	 */
+	public static function create_from_array( $organization_data ) {
+		$date = new DateTime();
+		$organization_data['creation_date'] = $date->format('Y') .'-'. $date->format('m') .'-'. $date->format('d');
+
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization', $organization_data, TRUE );
+		if ( isset( $result_obj->code ) && $result_obj->code == 400) {
 			$result_obj = '';
 		}
 
@@ -110,18 +125,25 @@ class WDGWPREST_Entity_Organization {
 	}
 
 	/**
+	 * Mise à jour de l'organisation sur l'API à partir de données transmises dans un tableau
+	 */
+	public static function update_from_array( $organization_api_id, $organization_data ) {
+		return WDGWPRESTLib::call_post_wdg( 'organization/' . $organization_api_id, $organization_data, TRUE );
+	}
+
+	/**
 	 * Lie un utilisateur à une organisation en définissant son rôle
 	 * @param int $organization_id
 	 * @param int $user_id
 	 * @param string $role_slug
 	 * @return object
 	 */
-	public static function link_user($organization_id, $user_id, $role_slug) {
+	public static function link_user( $organization_id, $user_id, $role_slug, $shortcut_call = FALSE ) {
 		$request_params = array(
 			'id_user' => $user_id,
 			'type' => $role_slug
 		);
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' .$organization_id. '/users', $request_params );
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'organization/' .$organization_id. '/users', $request_params, $shortcut_call );
 		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user_id. '?with_links=1' );
 
 		return $result_obj;

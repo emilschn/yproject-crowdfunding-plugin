@@ -7,39 +7,16 @@ $result = array(
 );
 
 // L'utilisateur n'est pas connecté
-if ( !is_user_logged_in() ) {
-	$result[ 'status' ] = 'not-logged-in';
+AjaxCommonHelper::exit_if_not_logged_in();
 
-	exit( json_encode( $result ) );
-}
+// Récupération de l'ID de l'utilisateur en cours
 $current_user_id = get_current_user_id();
 
-// Normalement ça ne devrait pas arriver, mais controle de sécurité :
-// L'identifiant utilisateur correspond à une organisation
-global $wpdb;
-$db_meta_user_organization_id = $wpdb->get_row(
-	$wpdb->prepare(
-		"SELECT meta_value FROM $wpdb->usermeta WHERE user_id = %s AND meta_key = 'organisation_bopp_id' LIMIT 1",
-		$current_user_id
-	)
-);
-$user_organization_api_id = empty( $db_meta_user_organization_id ) ? FALSE : $db_meta_user_organization_id->meta_value;
-$is_user_organization = !empty( $user_organization_api_id );
-if ( $is_user_organization ) {
-	$result[ 'status' ] = 'is-user-organization';
+// Normalement ça ne devrait pas arriver, mais controle de sécurité si l'utilisateur correspond à une organisation
+AjaxCommonHelper::exit_if_current_user_is_organization( $current_user_id );
 
-	exit( json_encode( $result ) );
-}
-
-// Si on arrive ici, c'est un compte de personne physique
-// On récupère son ID API
-$db_meta_user_api_id = $wpdb->get_row(
-	$wpdb->prepare(
-		"SELECT meta_value FROM $wpdb->usermeta WHERE user_id = %s AND meta_key = 'id_api' LIMIT 1",
-		$current_user_id
-	)
-);
-$user_api_id = empty( $db_meta_user_api_id ) ? FALSE : $db_meta_user_api_id->meta_value;
+// Si on arrive ici, c'est un compte de personne physique dont on récupère l'ID API
+$user_api_id = AjaxCommonHelper::get_user_api_id_by_wpref( $current_user_id );
 
 // update
 // Récupération des informations de l'utilisateur sur l'API
