@@ -26,7 +26,12 @@ if ( !empty( $user_api_id ) ) {
 	$birthday_day = AjaxCommonHelper::get_input_post( 'birthday_day' );
 	$birthday_month = AjaxCommonHelper::get_input_post( 'birthday_month' );
 	$birthday_year = AjaxCommonHelper::get_input_post( 'birthday_year' );
-	$user_to_update[ 'birthday_date' ] = $birthday_year . '-' . $birthday_month . '-' . $birthday_day;
+	$birthday_date = $birthday_year . '-' . $birthday_month . '-' . $birthday_day;
+	if ( DateTime::createFromFormat( 'Y-m-d', $birthday_date ) === FALSE ) {
+		$result[ 'status' ] = 'wrong-birthday-date';
+		exit( json_encode( $result ) );
+	}
+	$user_to_update[ 'birthday_date' ] = $birthday_date;
 	$user_to_update[ 'birthday_city' ] = AjaxCommonHelper::get_input_post( 'birthday_city' );
 	$user_to_update[ 'birthday_district' ] = AjaxCommonHelper::get_input_post( 'birthday_district' );
 	$user_to_update[ 'birthday_department' ] = AjaxCommonHelper::get_input_post( 'birthday_department' );

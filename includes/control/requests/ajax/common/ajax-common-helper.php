@@ -30,6 +30,7 @@ class AjaxCommonHelper {
 		if ( !is_user_logged_in() ) {
 			$result = array();
 			$result[ 'status' ] = 'not-logged-in';
+			$result[ 'redirectUrl' ] = home_url( '/connexion/' );
 			exit( json_encode( $result ) );
 		}
 	}
