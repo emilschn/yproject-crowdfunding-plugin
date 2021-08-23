@@ -1047,6 +1047,8 @@ class WDGROIDeclaration {
 		require_once __DIR__. '/../control/templates/pdf/certificate-roi-payment.php';
 		$html_content = WDG_Template_PDF_Certificate_ROI_Payment::get($certificate_date, $project_roi_percent, $project_amount_collected, $project_roi_start_date, $project_investors_list, $project_roi_nb_years, $organization_name, $organization_address, $organization_postalcode, $organization_city, $declaration_date, $declaration_trimester, $declaration_year, $declaration_declared_turnover, $declaration_amount, $declaration_percent_commission, $declaration_amount_commission, $declaration_amount_and_commission, $declaration_adjustment_value, $declaration_remaining_amount_transfered);
 
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_html2pdf();
 		$h2p_instance = HTML2PDFv5Helper::instance();
 		$h2p_instance->writePDF( $html_content, $filepath );
 	}

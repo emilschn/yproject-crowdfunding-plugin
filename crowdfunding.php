@@ -169,7 +169,6 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'control/requests/ajax.php';
 		require $this->includes_dir . 'control/requests/post.php';
 		require $this->includes_dir . 'control/sendinblue/sendinblue-v3-helper.php';
-		require $this->includes_dir . 'control/html2pdf/html2pdf-v5-helper.php';
 
 		require $this->includes_dir . 'ui/shortcodes/shortcodes-lib.php';
 		require $this->includes_dir . 'ui/shortcodes/shortcode-edit-news.php';
@@ -196,6 +195,9 @@ final class ATCF_CrowdFunding {
 		$this->include_control( 'social/FacebookApp/autoload' );
 	}
 
+	public function include_html2pdf() {
+		$this->include_control( 'html2pdf/html2pdf-v5-helper' );
+    }
 
 	public function include_form($form_name) {
 		require_once $this->includes_dir . 'control/forms/'.$form_name.'.php';
