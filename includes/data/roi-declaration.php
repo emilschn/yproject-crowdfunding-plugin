@@ -28,6 +28,7 @@ class WDGROIDeclaration {
 	public $date_due;
 	public $date_paid;
 	public $date_transfer;
+	public $date_declaration;
 	public $amount;
 	public $remaining_amount;
 	public $percent_commission_without_tax;
@@ -63,6 +64,7 @@ class WDGROIDeclaration {
 				$this->id = $collection_item->id;
 				$this->id_campaign = isset( $collection_item->id_campaign ) ? $collection_item->id_campaign : $collection_item->id_project;
 				$this->date_due = $collection_item->date_due;
+				$this->date_declaration = $collection_item->date_declaration;
 				$this->date_paid = $collection_item->date_paid;
 				$this->date_transfer = $collection_item->date_transfer;
 				$this->amount = $collection_item->amount;
@@ -97,6 +99,7 @@ class WDGROIDeclaration {
 					$this->id = $declaration_id;
 					$this->id_campaign = $declaration_api_item->id_project;
 					$this->date_due = $declaration_api_item->date_due;
+					$this->date_declaration = $declaration_api_item->date_declaration;
 					$this->date_paid = $declaration_api_item->date_paid;
 					$this->date_transfer = $declaration_api_item->date_transfer;
 					$this->amount = $declaration_api_item->amount;
@@ -194,6 +197,9 @@ class WDGROIDeclaration {
 				break;
 			case 'transfer':
 				$temp_date = $this->date_transfer;
+				break;
+			case 'declaration':
+				$temp_date = $this->date_declaration;
 				break;
 		}
 		if ( !empty($temp_date) ) {
