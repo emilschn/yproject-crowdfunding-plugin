@@ -534,7 +534,7 @@ class NotificationsAPI {
 					$template_post_name = $template_slug;
 					$parameters = $parameters;
 					if (!isset($parameters[ 'options' ])){
-						$options_decoded = array( 'personal' => 1);
+						$options_decoded = new stdClass();
 					} else {
 						$options_encoded = $parameters[ 'options' ];
 						$options_decoded = json_decode( $options_encoded );
@@ -609,8 +609,12 @@ class NotificationsAPI {
 		$css = NotificationsAPICSS::get();
 		$content_html = '<html><head>' . $css . '</head><body><div class="wdg-email">' . $content . '</div></body></html>';
 
-		$options_encoded = $parameters[ 'options' ];
-		$options_decoded = json_decode( $options_encoded );
+		if (!isset($parameters[ 'options' ])){
+			$options_decoded = new stdClass();
+		} else {
+            $options_encoded = $parameters[ 'options' ];
+            $options_decoded = json_decode($options_encoded);
+        }
 		$options_decoded->object = $object;
 		$options_decoded->content = $content_html;
 		$parameters[ 'options' ] = json_encode( $options_decoded );
@@ -666,11 +670,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient( $WDGUser );
 		NotificationsAPIShortcodes::set_campaign( $campaign );
 
-		$project_link_clean = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'				=> 1,
-			'PRENOM'				=> $WDGUser->get_firstname(),
-			'DASHBOARD_URL'			=> $project_link_clean
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -695,13 +696,8 @@ class NotificationsAPI {
 		$news_content_filtered = apply_filters( 'the_excerpt', $news_content );
 		NotificationsAPIShortcodes::set_campaign_news_content( $news_content );
 
-		$project_link_clean = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'replyto'				=> $replyto_mail,
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'LIEN_PROJET'			=> $project_link_clean,
-			'OBJET_ACTU'			=> $news_name,
-			'CONTENU_ACTU'			=> $news_content_filtered
+			'replyto'				=> $replyto_mail
 		);
 
 		// Le maximum de destinataire est de 99, il faut découper
@@ -761,12 +757,7 @@ class NotificationsAPI {
 
 		$project_link = str_replace( 'https://', '', $project_link );
 		$options = array(
-			'replyto'				=> $replyto_mail,
-			'NOM_UTILISATEUR'		=> $user_name,
-			'NOM_PROJET'			=> $project_name,
-			'LIEN_PROJET'			=> $project_link,
-			'OBJET_ACTU'			=> $news_name,
-			'CONTENU_ACTU'			=> $news_content
+			'replyto'				=> $replyto_mail
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -794,8 +785,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
 		$options = array(
-			'skip_admin'			=> 1,
-			'PRENOM'				=> $WDGUser->get_firstname()
+			'skip_admin'			=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -815,14 +805,10 @@ class NotificationsAPI {
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
-		$options = array(
-			'NOM'				=> $WDGUser->get_firstname()
-		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
+			'recipient'	=> $WDGUser->get_email()
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
@@ -836,14 +822,10 @@ class NotificationsAPI {
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
-		$options = array(
-			'NOM'				=> $WDGUser->get_firstname()
-		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
+			'recipient'	=> $WDGUser->get_email()
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
@@ -857,14 +839,10 @@ class NotificationsAPI {
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
-		$options = array(
-			'NOM'				=> $WDGUser->get_firstname()
-		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
+			'recipient'	=> $WDGUser->get_email()
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
@@ -878,14 +856,10 @@ class NotificationsAPI {
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
-		$options = array(
-			'NOM'				=> $WDGUser->get_firstname()
-		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
+			'recipient'	=> $WDGUser->get_email()
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
@@ -899,14 +873,10 @@ class NotificationsAPI {
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
-		$options = array(
-			'NOM'				=> $WDGUser->get_firstname()
-		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
+			'recipient'	=> $WDGUser->get_email()
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
@@ -922,9 +892,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_password_reinit_link($link);
 
 		$options = array(
-			'skip_admin'		=> 1,
-			'NOM'				=> $WDGUser->get_firstname(),
-			'LIEN'				=> $link
+			'skip_admin'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -947,9 +915,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
 		$options = array(
-			'personal'		=> 1,
-			'replyto'		=> $replyto_mail,
-			'NOM'			=> $WDGUser->get_firstname()
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -976,17 +942,9 @@ class NotificationsAPI {
 		$advice_data[ 'priority_actions' ] = $top_actions;
 		NotificationsAPIShortcodes::set_campaign_advice( $advice_data );
 
-		$campaign_dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign->ID;
-		$campaign_dashboard_url_clean = str_replace( 'https://', '', $campaign_dashboard_url );
 		$options = array(
 			'personal'					=> 1,
-			'replyto'					=> $replyto_mail,
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_TB'					=> $campaign_dashboard_url_clean,
-			'NOM_UTILISATEUR'			=> $WDGUser->get_firstname(),
-			'SALUTATIONS'				=> $greetings,
-			'RESUME_24H'				=> $last_24h,
-			'ACTIONS_PRIORITAIRES'		=> $top_actions
+			'replyto'					=> $replyto_mail
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1010,8 +968,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
 		$options = array(
-			'personal'		=> 1,
-			'PRENOM'		=> $WDGUser->get_firstname()
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1032,8 +989,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
-			'personal'		=> 1,
-			'PRENOM'		=> $WDGUserInterface->get_firstname()
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1054,9 +1010,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
-			'personal'				=> 1,
-			'PRENOM'				=> $WDGUserInterface->get_firstname(),
-			'PRECISIONS'			=> $authentication_info
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1090,8 +1044,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
 		$options = array(
-			'personal'				=> 1,
-			'PRENOM'				=> $WDGUser->get_firstname()
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1125,8 +1078,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
-			'personal'			=> 1,
-			'PRENOM'			=> $WDGUserInterface->get_firstname()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -1161,9 +1113,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1186,9 +1136,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1220,16 +1168,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1258,15 +1198,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1295,16 +1228,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1330,15 +1255,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1364,15 +1282,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1395,9 +1306,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'PRENOM'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1420,9 +1329,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'PRENOM'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1442,9 +1349,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'PRENOM'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1473,17 +1378,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'POURCENT'					=> $campaign->percent_minimum_completed( FALSE ),
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1509,16 +1405,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'URL_PROJET'			=> $project_url,
-			'POURCENT'				=> $campaign->percent_minimum_completed( FALSE ),
-			'TEMOIGNAGES'			=> $testimony,
-			'IMAGE'					=> $image_element,
-			'DESCRIPTION_PROJET'	=> $image_description
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1544,17 +1432,9 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$options = array(
-			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'URL_PROJET'			=> $project_url,
-			'POURCENT'				=> $campaign->percent_minimum_completed( FALSE ),
-			'TEMOIGNAGES'			=> $testimony,
-			'IMAGE'					=> $image_element,
-			'DESCRIPTION_PROJET'	=> $image_description
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1576,17 +1456,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
-		$nb_remaining_days = $campaign->days_remaining();
-		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
-			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
-			'DATE_HEURE_FIN'			=> $date_hour_end
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1612,15 +1483,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1646,21 +1510,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$nb_remaining_days = $campaign->days_remaining();
-		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description,
-			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
-			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
-			'DATE_HEURE_FIN'			=> $date_hour_end
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1686,20 +1537,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$nb_remaining_days = $campaign->days_remaining();
-		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description,
-			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
-			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
-			'DATE_HEURE_FIN'			=> $date_hour_end
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1725,20 +1564,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$nb_remaining_days = $campaign->days_remaining();
-		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description,
-			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
-			'PLURIEL_JOURS_RESTANTS'	=> ( $nb_remaining_days > 1 ) ? 's' : '',
-			'DATE_HEURE_FIN'			=> $date_hour_end
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1767,20 +1594,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$nb_remaining_days = $campaign->days_remaining();
-		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'INTENTION_INVESTISSEMENT'	=> $intention_amount,
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description,
-			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
-			'DATE_HEURE_FIN'			=> $date_hour_end
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1806,19 +1621,8 @@ class NotificationsAPI {
 		$reminder_data[ 'description' ] = $image_description;
 		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$nb_remaining_days = $campaign->days_remaining();
-		$date_hour_end = $campaign->end_date( 'd/m/Y h:i' );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'TEMOIGNAGES'				=> $testimony,
-			'IMAGE'						=> $image_element,
-			'DESCRIPTION_PROJET'		=> $image_description,
-			'NB_JOURS_RESTANTS'			=> $nb_remaining_days,
-			'DATE_HEURE_FIN'			=> $date_hour_end
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1844,9 +1648,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name()
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1869,13 +1671,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_reminder_data_amount($intention_amount);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
 		$options = array(
-			'personal'					=> 1,
-			'NOM_UTILISATEUR'			=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'URL_PROJET'				=> $project_url,
-			'INTENTION_INVESTISSEMENT'	=> $intention_amount
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1902,18 +1699,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment_pending($WDGInvestment);
 
-		$amount_total = $WDGInvestment->get_session_amount();
-		$campaign_organization = $campaign->get_organization();
-		$organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-		$percent_to_reach = round( ( $campaign->current_amount( FALSE ) +  $amount_total ) / $campaign->minimum_goal( FALSE ) * 100 );
 		$options = array(
-			'personal'				=> 1,
-			'NOM'					=> $WDGUserInterface->get_firstname(),
-			'MONTANT'				=> $amount_total,
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'POURCENT_ATTEINT'		=> $percent_to_reach,
-			'OBJECTIF'				=> $campaign->minimum_goal( FALSE ),
-			'NOM_ORGANISATION'		=> $organization_obj->get_name()
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1942,15 +1729,8 @@ class NotificationsAPI {
 		);
 		NotificationsAPIShortcodes::set_investment_pending_data($investment_pending_data);
 
-		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
-			'personal'				=> 1,
-			'NOM'					=> $WDGUserInterface->get_firstname(),
-			'MONTANT'				=> $amount_total,
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'IBAN'					=> $viban_iban,
-			'BIC'					=> $viban_bic,
-			'HOLDER'				=> $viban_holder,
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -1978,17 +1758,8 @@ class NotificationsAPI {
 		);
 		NotificationsAPIShortcodes::set_investment_success_data($investment_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
-			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
-			'MONTANT'				=> $amount_total,
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'URL_PROJET'			=> $project_url,
-			'DATE'					=> $WDGInvestment->get_saved_date_gmt(),
-			'TEXTE_AVANT'			=> $text_before,
-			'TEXTE_APRES'			=> $text_after,
+			'personal'				=> 1
 		);
 		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
 			$options[ 'url_attachment' ] = $attachment_url;
@@ -2016,16 +1787,8 @@ class NotificationsAPI {
 		);
 		NotificationsAPIShortcodes::set_investment_success_data($investment_data);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
-			'personal'				=> 1,
-			'NOM_UTILISATEUR'		=> $WDGUserInterface->get_firstname(),
-			'MONTANT'				=> $amount_total,
-			'URL_PROJET'			=> $project_url,
-			'DATE'					=> $WDGInvestment->get_saved_date_gmt(),
-			'TEXTE_AVANT'			=> $text_before,
-			'TEXTE_APRES'			=> $text_after,
+			'personal'				=> 1
 		);
 		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE ) {
 			$options[ 'url_attachment' ] = $attachment_url;
@@ -2056,14 +1819,8 @@ class NotificationsAPI {
 		);
 		NotificationsAPIShortcodes::set_investment_error_data($investment_error_data);
 
-		$amount_total = $WDGInvestment->get_session_amount();
 		$options = array(
-			'personal'				=> 1,
-			'NOM'					=> $WDGUserInterface->get_firstname(),
-			'MONTANT'				=> $amount_total,
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'RAISON_LEMONWAY'		=> $lemonway_reason,
-			'LIEN_INVESTISSEMENT'	=> $investment_link,
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2086,9 +1843,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_amount_wire_received($amount);
 
 		$options = array(
-			'personal'				=> 1,
-			'NOM'					=> $WDGUserInterface->get_firstname(),
-			'MONTANT'				=> $amount
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2110,9 +1865,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2135,9 +1888,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2162,12 +1913,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
-		$project_date_first_payment_month_str = NotificationsAPIShortcodes::project_date_first_payment( FALSE, FALSE );
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name(),
-			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment_month_str
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2189,12 +1936,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
-		$project_date_first_payment_month_str = NotificationsAPIShortcodes::project_date_first_payment( FALSE, FALSE );
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name(),
-			'MOIS_ANNEE_DEMARRAGE'		=> $project_date_first_payment_month_str
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2217,9 +1960,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2242,9 +1983,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name()
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
@@ -2269,8 +2008,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
-			'personal'		=> 1,
-			'NOM'			=> $WDGUserInterface->get_firstname(),
+			'personal'		=> 1
 		);
 		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
 			$options[ 'url_attachment' ] = $attachment_url;
@@ -2296,7 +2034,7 @@ class NotificationsAPI {
 	 * @param boolean $has_mandate
 	 * @return boolean
 	 */
-	public static function declaration_to_do($WDGUser, $recipients, $nb_remaining_days, $has_mandate, $options) {
+	public static function declaration_to_do($WDGUser, $recipients, $nb_remaining_days, $has_mandate) {
 		$param_template_by_remaining_days = array(
 			'9-mandate'		=> self::get_id_fr_by_slug( 'declaration-9days-with-mandate' ),
 			'9-nomandate'	=> self::get_id_fr_by_slug( 'declaration-9days-without-mandate' ),
@@ -2318,8 +2056,7 @@ class NotificationsAPI {
 			$parameters = array(
 				'tool'		=> 'sendinblue',
 				'template'	=> $param_template,
-				'recipient'	=> $param_recipients,
-				'options'	=> json_encode( $options )
+				'recipient'	=> $param_recipients
 			);
 
 			return self::send( $parameters, $WDGUser->get_language() );
@@ -2341,10 +2078,6 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);		
 		NotificationsAPIShortcodes::set_campaign( $campaign );
 		NotificationsAPIShortcodes::set_declaration( $declaration );
-
-		$dashboard_url = NotificationsAPIShortcodes::project_dashboard_url();
-		$last_three_months = NotificationsAPIShortcodes::declaration_last_three_months();
-
 		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2370,23 +2103,8 @@ class NotificationsAPI {
 			'amount_total'		=> $amount_total
 		);
 		NotificationsAPIShortcodes::set_declaration_estimation_data($declaration_estimation);
-		$mandate_wire_date = NotificationsAPIShortcodes::declaration_mandate_date(FALSE, FALSE);
-		$declaration_direct_url = NotificationsAPIShortcodes::declaration_url(FALSE, FALSE);
-
-		$declaration_direct_url = str_replace( 'https://', '', $declaration_direct_url );
 		$options = array(
-			'personal'							=> 1,
-			'NOM_UTILISATEUR'					=> $WDGUser->get_firstname(),
-			'NB_TRIMESTRE'						=> $nb_quarter,
-			'POURCENT_PREVISIONNEL'				=> $percent_estimation,
-			'MONTANT_PREVISIONNEL_ANNEE'		=> $amount_estimation_year,
-			'MONTANT_PREVISIONNEL_TRIMESTRE'	=> $amount_estimation_quarter,
-			'POURCENT_ROYALTIES'				=> $percent_royalties,
-			'MONTANT_ROYALTIES'					=> $amount_royalties,
-			'MONTANT_COMMISSION'				=> $amount_fees,
-			'MONTANT_TOTAL'						=> $amount_total,
-			'DATE_PRELEVEMENT'					=> $mandate_wire_date,
-			'DECLARATION_DIRECT_URL'			=> $declaration_direct_url
+			'personal'							=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2411,16 +2129,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_declaration($declaration);
 
-		$last_three_months = $declaration->get_month_list_str();
-		$turnover_amount = $declaration->get_amount_with_adjustment();
-
 		$options = array(
-			'personal'				=> 1,
-			'NOM'					=> $WDGUser->get_firstname(),
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'TROIS_DERNIERS_MOIS'	=> $last_three_months,
-			'MONTANT_ROYALTIES'		=> $turnover_amount,
-			'INFOS_FISCALITE'		=> $tax_infos
+			'personal'				=> 1
 		);
 		if ( !empty( $attachment_url ) && WP_DEBUG != TRUE) {
 			$options[ 'url_attachment' ] = $payment_certificate_url;
@@ -2442,12 +2152,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_declaration($declaration);
 
-		$last_three_months = $declaration->get_month_list_str();
 		$options = array(
-			'personal'				=> 1,
-			'NOM'					=> $WDGUser->get_firstname(),
-			'NOM_PROJET'			=> $campaign->get_name(),
-			'TROIS_DERNIERS_MOIS'	=> $last_three_months
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2472,11 +2178,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 
 		$options = array(
-			'personal'					=> 1,
-			'NOM'						=> $WDGUser->get_firstname(),
-			'MONTANT_DEJA_VERSE'		=> $amount_transferred,
-			'MONTANT_MINIMUM_A_VERSER'	=> $amount_minimum_royalties,
-			'MONTANT_RESTANT_A_VERSER'	=> $amount_remaining
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2494,8 +2196,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
 		$options = array(
-			'personal'		=> 1,
-			'NOM'			=> $WDGUser->get_firstname()
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2514,22 +2215,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment_contract($investment_contract);
 
-		$funding_duration = $campaign->funding_duration();
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$date = NotificationsAPIShortcodes::investment_date( FALSE, FALSE );
-		$amount_investment = NotificationsAPIShortcodes::investment_amount( FALSE, FALSE );
-		$amount_royalties = NotificationsAPIShortcodes::investment_royalties_received( FALSE, FALSE );
-		$amount_remaining = NotificationsAPIShortcodes::investment_royalties_remaining( FALSE, FALSE );
 		$options = array(
-			'personal'					=> 1,
-			'NOM'						=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'DUREE_FINANCEMENT'			=> $funding_duration,
-			'DATE'						=> $date,
-			'URL_PROJET'				=> $project_url,
-			'MONTANT_INVESTI'			=> $amount_investment,
-			'MONTANT_ROYALTIES'			=> $amount_royalties,
-			'MONTANT_RESTANT'			=> $amount_remaining
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2548,8 +2235,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 
 		$options = array(
-			'personal'		=> 1,
-			'NOM'			=> $WDGUser->get_firstname()
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2568,18 +2254,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_investment_contract($investment_contract);
 
-		$project_url = str_replace( 'https://', '', $campaign->get_public_url() );
-		$date = $investment_contract->subscription_date;
-		$amount_investment = $investment_contract->subscription_amount;
-		$amount_royalties = $investment_contract->amount_received;
 		$options = array(
-			'personal'					=> 1,
-			'NOM'						=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'				=> $campaign->get_name(),
-			'DATE'						=> $date,
-			'URL_PROJET'				=> $project_url,
-			'MONTANT_INVESTI'			=> $amount_investment,
-			'MONTANT_ROYALTIES'			=> $amount_royalties
+			'personal'					=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2608,9 +2284,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_user_royalties_details($royalties_message);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'RESUME_ROYALTIES'	=> $royalties_message,
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2631,8 +2305,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
-			'personal'	=> 1,
-			'NOM'		=> $WDGUserInterface->get_firstname()
+			'personal'	=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2653,8 +2326,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
-			'personal'	=> 1,
-			'NOM'		=> $WDGUserInterface->get_firstname()
+			'personal'	=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2675,8 +2347,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 
 		$options = array(
-			'personal'	=> 1,
-			'NOM'		=> $WDGUserInterface->get_firstname()
+			'personal'	=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2698,9 +2369,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_investors_list_with_more_than_200_euros_str($investors_list_str);
 
 		$options = array(
-			'personal'		=> 1,
-			'PRENOM'		=> $WDGUserInterface->get_firstname(),
-			'INVESTISSEURS'	=> $investors_list_str
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2724,10 +2393,7 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'			=> 1,
-			'replyto'			=> $replyto_mail,
-			'NOM_UTILISATEUR'	=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name(),
-			'CONTENU_MESSAGE'	=> $declaration_message,
+			'replyto'			=> $replyto_mail
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2750,22 +2416,8 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_investment($WDGInvestment);
 		NotificationsAPIShortcodes::set_investment_amount_received($amount_received);
 
-		$max_profit = $campaign->maximum_profit_str();
-		$url_project = $campaign->get_public_url();
-		$date_investment = $WDGInvestment->get_saved_date();
-		$amount_investment = NotificationsAPIShortcodes::investment_amount( FALSE, FALSE );
-		$amount_investment_str = UIHelpers::format_number( $amount_investment );
-		$amount_royalties = NotificationsAPIShortcodes::investment_royalties_received( FALSE, FALSE );
-		$amount_royalties_str = UIHelpers::format_number( $amount_royalties );
 		$options = array(
-			'personal'			=> 1,
-			'NOM'				=> $WDGUserInterface->get_firstname(),
-			'NOM_PROJET'		=> $campaign->get_name(),
-			'RETOUR_MAXIMUM'	=> $max_profit,
-			'DATE'				=> $date_investment,
-			'URL_PROJET'		=> $url_project,
-			'MONTANT_INVESTI'	=> $amount_investment_str,
-			'MONTANT_ROYALTIES'	=> $amount_royalties_str
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2787,9 +2439,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_amount_wire_transfer($amount);
 
 		$options = array(
-			'personal'			=> 1,
-			'NOM'				=> $WDGUserInterface->get_firstname(),
-			'MONTANT'			=> $amount
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2825,10 +2475,7 @@ class NotificationsAPI {
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
 		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
 		$options = array(
-			'personal'			=> 1,
-			'NOM'				=> $name,
-			'EMAIL'				=> $recipient,
-			'LISTE_PROJETS'		=> $project_list_str
+			'personal'			=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2850,18 +2497,10 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
-		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
-		$organization_name = NotificationsAPIShortcodes::prospect_setup_draft_organization_name(FALSE, FALSE);
-		$draft_url_full = NotificationsAPIShortcodes::prospect_setup_draft_url(FALSE, FALSE);
-		$draft_url = str_replace( 'https://', '', $draft_url_full );
+
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
-			'personal'		=> 1,
-			'NOM'			=> $name,
-			'EMAIL'			=> $recipient,
-			'NOM_ENTREPRISE'	=> $organization_name,
-			'URL_DRAFT'		=> $draft_url,
-			'URL_DRAFT_FULL'=> $draft_url_full
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2883,25 +2522,9 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
-		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
-		$organization_name = NotificationsAPIShortcodes::prospect_setup_draft_organization_name(FALSE, FALSE);
-		$amount_needed = NotificationsAPIShortcodes::prospect_setup_draft_amount_needed(FALSE, FALSE);
-		$royalties_percent = NotificationsAPIShortcodes::prospect_setup_draft_royalties_percent(FALSE, FALSE);
-		$formula = NotificationsAPIShortcodes::prospect_setup_draft_formula(FALSE, FALSE);
-		$options = NotificationsAPIShortcodes::prospect_setup_draft_option(FALSE, FALSE);
-		$draft_url_full = NotificationsAPIShortcodes::prospect_setup_draft_url(FALSE, FALSE);
-		$draft_url = str_replace( 'https://', '', $draft_url_full );
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
-			'personal'		=> 1,
-			'NOM'			=> $name,
-			'EMAIL'			=> $recipient,
-			'URL_DRAFT'		=> $draft_url,
-			'NOM_ENTREPRISE'		=> $organization_name,
-			'MONTANT_RECHERCHE'		=> $amount_needed,
-			'POURCENT_ROYALTIES'	=> $royalties_percent,
-			'FORMULE'		=> $formula,
-			'OPTION'		=> $options
+			'personal'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -2923,17 +2546,9 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
-		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
-		$subscription_reference = NotificationsAPIShortcodes::prospect_setup_draft_payment_reference(FALSE, FALSE);
-		$amount = NotificationsAPIShortcodes::prospect_setup_draft_payment_amount(FALSE, FALSE);
-		$iban = NotificationsAPIShortcodes::prospect_setup_draft_payment_iban(FALSE, FALSE);
+		
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
-			'NOM'						=> $name,
-			'NOM_ENTREPRISE'			=> $subscription_reference,
-			'MONTANT'					=> $amount,
-			'IBAN_WDG'					=> $iban,
-			'REFERENCE_SOUSCRIPTION'	=> $subscription_reference,
 			'personal'		=> 1
 		);
 		$parameters = array(
@@ -2956,16 +2571,9 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
-		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
-		$amount = NotificationsAPIShortcodes::prospect_setup_draft_payment_amount(FALSE, FALSE);
-		$organization_name = NotificationsAPIShortcodes::prospect_setup_draft_organization_name(FALSE, FALSE);
-		$date_payment = NotificationsAPIShortcodes::prospect_setup_draft_payment_date(FALSE, FALSE);
+		
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
-			'NOM'					=> $name,
-			'NOM_ENTREPRISE'		=> $organization_name,
-			'MONTANT'				=> $amount,
-			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
 		);
 		$parameters = array(
@@ -2988,16 +2596,9 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
-		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
-		$amount = NotificationsAPIShortcodes::prospect_setup_draft_payment_amount(FALSE, FALSE);
-		$organization_name = NotificationsAPIShortcodes::prospect_setup_draft_organization_name(FALSE, FALSE);
-		$date_payment = NotificationsAPIShortcodes::prospect_setup_draft_payment_date(FALSE, FALSE);
+		
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
-			'NOM'					=> $name,
-			'NOM_ENTREPRISE'		=> $organization_name,
-			'MONTANT'				=> $amount,
-			'DATE_PAIEMENT_RECU'	=> $date_payment,
 			'personal'		=> 1
 		);
 		$parameters = array(
@@ -3020,14 +2621,9 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
-		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
-		$organization_name = NotificationsAPIShortcodes::prospect_setup_draft_organization_name(FALSE, FALSE);
-		$draft_url = NotificationsAPIShortcodes::prospect_setup_draft_url(FALSE, FALSE);
+		
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
-			'NOM'			=> $name,
-			'NOM_ENTREPRISE'	=> $organization_name,
-			'URL_DRAFT'		=> $draft_url,
 			'personal'		=> 1
 		);
 		$parameters = array(
@@ -3050,12 +2646,9 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
-		$name = NotificationsAPIShortcodes::prospect_setup_recipient_first_name(FALSE, FALSE);
-		$organization_name = NotificationsAPIShortcodes::prospect_setup_draft_organization_name(FALSE, FALSE);
+		
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
-			'NOM'			=> $name,
-			'NOM_PROJET'	=> $organization_name,
 			'personal'		=> 1
 		);
 		$parameters = array(

@@ -40,46 +40,13 @@ class WDGCronActions {
 								$wdguser_author = new WDGUser( $campaign->data->post_author );
 
 								// Données qui seront transmises à SiB
-								$date_due_previous_day = new DateTime( $declaration_data->date_due );
-								$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
-								$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
-								$nb_fields = $campaign->get_turnover_per_declaration();
-								$date_last_months =  new DateTime( $declaration_data->date_due );
-								$date_last_months->sub( new DateInterval( 'P'.$nb_fields.'M' ) );
-								$last_months_str = '';
-								for ( $i = 0; $i < $nb_fields; $i++ ) {
-									$last_months_str .= __( $months[ $date_last_months->format('m') - 1 ] );
-									if ( $i < $nb_fields - 2 ) {
-										$last_months_str .= ', ';
-									}
-									if ( $i == $nb_fields - 2 ) {
-										$last_months_str .= ' et ';
-									}
-									$date_last_months->add( new DateInterval( 'P1M' ) );
-								}
-								$year = $date_due->format( 'Y' );
-								if ( $date_due->format( 'n' ) < 4 ) {
-									$year--;
-								}
-								$last_months_str .= ' ' . $year;
-
-								$declaration_direct_url = WDG_Redirect_Engine::override_get_page_url( 'declarer-chiffre-daffaires' ) . '?campaign_id='.$campaign->ID.'&declaration_id='.$declaration_data->id;
-								$declaration_direct_url = str_replace( 'https://', '', $declaration_direct_url );
-
 								NotificationsAPIShortcodes::set_recipient($wdguser_author);
 								NotificationsAPIShortcodes::set_declaration($declaration_data);
-								$options = array(
-									'NOM'					=> $wdguser_author->get_firstname(),
-									'TROIS_DERNIERS_MOIS'	=> $last_months_str,
-									'DATE_DUE'				=> $date_due->format( 'd/m/Y' ),
-									'VEILLE_DATE_DUE'		=> $date_due_previous_day->format( 'd/m/Y' ),
-									'DECLARATION_DIRECT_URL'=> $declaration_direct_url
-								);
 
 								$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
 								$recipients .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
-								NotificationsAPI::declaration_to_do( $wdguser_author, $recipients, $nb_days_diff, $wdgorganization->has_signed_mandate(), $options );
+								NotificationsAPI::declaration_to_do( $wdguser_author, $recipients, $nb_days_diff, $wdgorganization->has_signed_mandate() );
 							}
 						}
 					}
