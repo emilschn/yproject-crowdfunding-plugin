@@ -87,9 +87,8 @@ class WDG_Form_User_Tax_Exemption extends WDG_Form {
 
 				$crowdfunding = ATCF_CrowdFunding::instance();
 				$crowdfunding->include_html2pdf();
-				$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
-				$html2pdf->WriteHTML( urldecode( $html_content ) );
-				$html2pdf->Output( $filepath.'.'.$ext, 'F' );
+				$h2p_instance = HTML2PDFv5Helper::instance();
+				$h2p_instance->writePDF( $html_content, $filepath.'.'.$ext );
 			}
 
 			if ( $action_posted == 'upload' ) {
