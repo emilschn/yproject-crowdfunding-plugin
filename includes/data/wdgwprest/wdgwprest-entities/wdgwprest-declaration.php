@@ -50,7 +50,8 @@ class WDGWPREST_Entity_Declaration {
 			'employees_number'		=> $declaration->employees_number,
 			'other_fundings'		=> $declaration->other_fundings,
 			'transfer_delay'		=> $declaration->transfer_delay,
-			'declared_by'			=> $declaration->declared_by
+			'declared_by'			=> $declaration->declared_by,
+			'date_declaration'		=> $declaration->date_declaration
 		);
 		return $parameters;
 	}
@@ -99,6 +100,13 @@ class WDGWPREST_Entity_Declaration {
 		return WDGWPRESTLib::call_get_wdg( 'declarations?type=' .$type. '&start_date=' .$date_start. '&end_date=' .$date_end );
 	}
 	
+	/**
+	 * Retourne des déclarations en fonction d'un status
+	 */
+	public static function get_list_by_status( $status = 'payment' ) {
+		return WDGWPRESTLib::call_get_wdg( 'declarations?status=' .$status  );
+	}
+
 	/**
 	 * Retourne la liste des ROIs liés à une déclaration
 	 * @param int $declaration_id
