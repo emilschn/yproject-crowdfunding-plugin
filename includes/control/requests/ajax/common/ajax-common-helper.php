@@ -24,6 +24,68 @@ class AjaxCommonHelper {
 	}
 
 	/**
+	 * Récupère une meta d'un utilisateur via son ID WP
+	 */
+	public static function get_user_meta_by_wpref( $wpref, $meta_key ) {
+		if ( !isset( $meta_key ) ) {
+			return FALSE;
+		}
+		global $wpdb;
+		$db_meta_user_value = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT meta_value FROM $wpdb->usermeta WHERE user_id = %s AND meta_key =  %s LIMIT 1",
+				$wpref,
+				$meta_key
+			)
+		);
+		$user_meta_value = empty( $db_meta_user_value ) ? FALSE : $db_meta_user_value->meta_value;
+		return $user_meta_value;
+	}
+	
+	/**
+	 * Insère ou modifie une meta d'un utilisateur via son ID WP
+	 */
+	public static function set_user_meta_by_wpref( $wpref, $meta_key, $meta_value ) {
+		if ( !isset( $meta_key ) ) {
+			return FALSE;
+		}
+		global $wpdb;
+		$existing_meta = self::get_user_meta_by_wpref($wpref, $meta_key);
+		if ( !$existing_meta ){
+			$wpdb->insert($wpdb->usermeta, array(
+				'user_id'	=> $wpref,
+				'meta_key'   => $meta_key,
+				'meta_value'   => $meta_value
+			));
+		} else {
+			$wpdb->update( $wpdb->usermeta, 
+			array( 'meta_value' => $meta_value ), 
+			array( 'user_id' => $wpref, 'meta_key' => $meta_key  ) );
+		}
+
+		$my_id = $wpdb->insert_id;
+		ypcf_debug_log( 'account-authentication.php :: set_user_meta_by_wpref  $my_id = '.var_export($my_id, TRUE), FALSE);
+		return $my_id;
+	}
+
+	/**
+	 * Supprime une meta d'un utilisateur via son ID WP
+	 */
+	public static function delete_user_meta_by_wpref( $wpref, $meta_key ) {
+		if ( !isset( $meta_key ) ) {
+			return FALSE;
+		}
+		global $wpdb;
+		$existing_meta = self::get_user_meta_by_wpref($wpref, $meta_key);
+		if ( !$existing_meta ){
+			return FALSE;
+		} else {
+			return $wpdb->delete( $wpdb->usermeta, 
+			array( 'user_id' => $wpref, 'meta_key' => $meta_key  ) );
+		}
+	}
+
+	/**
 	 * Arrête l'exécution et retourne une erreur si l'utilisateur n'est pas connecté
 	 */
 	public static function exit_if_not_logged_in() {
