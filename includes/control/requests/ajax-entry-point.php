@@ -4,7 +4,8 @@ $list_optimized_actions = array(
 	'account_authentication_get_current_user_info',
 	'account_authentication_save_current_user_info',
 	'account_authentication_save_organization_info',
-	'account_authentication_search_address'
+	'account_authentication_search_address',
+	'account_authentication_upload_file'
 );
 $action_posted = filter_input( INPUT_POST, 'action' );
 
