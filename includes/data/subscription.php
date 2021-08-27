@@ -71,7 +71,9 @@ class WDGSUBSCRIPTION {
 		$start_date = new DateTime();
         $subscribtion->start_date = $start_date->format("Y-m-d H:i:s");			
         $subscribtion->status = $status;
-        WDGWPREST_Entity_Subscription::create( $subscribtion );
+		
+    	return WDGWPREST_Entity_Subscription::create( $subscribtion );
+		
 	}
 	
 }

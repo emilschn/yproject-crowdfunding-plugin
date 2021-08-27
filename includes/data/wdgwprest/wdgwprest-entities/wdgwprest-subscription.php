@@ -40,7 +40,7 @@ class WDGWPREST_Entity_Subscription {
 	}
 
 	/**
-	 * Crée un abonnement sur l'API
+	 * Créer un abonnement sur l'API
 	 * @param WDGSUBSCRIPTION $subscription
 	 * @return object
 	 */
@@ -53,13 +53,13 @@ class WDGWPREST_Entity_Subscription {
 	}
 	
 	/**
-	 * Edite un abonnement
+	 * Editer un abonnement
 	 * @param WDGSUBSCRIPTION $subscription
 	 * @return object
 	 */
 	public static function update(WDGSUBSCRIPTION $subscription) {
-        $parameters = WDGWPREST_Entity_Subscription::set_post_parameters( $subscription );
 		
+        $parameters = WDGWPREST_Entity_Subscription::set_post_parameters( $subscription );
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'subscription/' . $subscription->id, $parameters );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;

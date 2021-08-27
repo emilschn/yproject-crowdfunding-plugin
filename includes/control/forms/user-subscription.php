@@ -86,84 +86,87 @@ class WDG_Form_Subscription extends WDG_Form {
 	    // Analyse du formulaire
 		} else {
 
-		$amount_type = $this->getInputText( 'amount_type' );
+			$amount_type = $this->getInputText( 'amount_type' );
 
-		// Si le montant ne rentré ne dépasse pas 10€ 
-		$amount = $this->getInputTextMoney( 'amount' );				
-				if ( $amount_type == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount ) ) ) {
-					$error = array(
-						'code'		=> 'amount',
-						'text'		=> __( 'form.subscription.error.AMOUNT_MINIMUM', 'yproject' ),
-						'element'	=> 'amount'
-					);
-					array_push( $feedback_errors, $error );
-				}
+			// Si le montant ne rentré ne dépasse pas 10€ 
+			$amount = $this->getInputTextMoney( 'amount' );				
+			if ( $amount_type == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount ) ) ) {
+				$error = array(
+					'code'		=> 'amount',
+					'text'		=> __( 'form.subscription.error.AMOUNT_MINIMUM', 'yproject' ),
+					'element'	=> 'amount'
+				);
+				array_push( $feedback_errors, $error );
+			}
 
-		// Si le montant ne rentré n'est pas un entier
-				if ( $amount_type == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_number_positive_integer( $amount ) ) ) {
-					$error = array(
-						'code'		=> 'amount',
-						'text'		=> __( 'form.subscription.error.AMOUNT_INTEGER', 'yproject' ),
-						'element'	=> 'general'
-					);
-					array_push( $feedback_errors, $error );
-				}
+			// Si le montant ne rentré n'est pas un entier
+			if ( $amount_type == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_number_positive_integer( $amount ) ) ) {
+				$error = array(
+					'code'		=> 'amount',
+					'text'		=> __( 'form.subscription.error.AMOUNT_INTEGER', 'yproject' ),
+					'element'	=> 'general'
+				);
+				array_push( $feedback_errors, $error );
+			}
 
-		// Si il manque un élément dans le select de modalité
-		if ( empty( $amount_type ) || empty( $this->amount_types[$amount_type] ) ) {
-			$error = array(
-				'code'		=> 'amount_type',
-				'text'		=> __( 'form.user-details.MODALITY_EMPTY', 'yproject' ),
-				'element'	=> 'amount_type'
-			);
-			array_push( $feedback_errors, $error );
-		}
+			// Si il manque un élément dans le select de modalité
+			if ( empty( $amount_type ) || empty( $this->amount_types[$amount_type] ) ) {
+				$error = array(
+					'code'		=> 'amount_type',
+					'text'		=> __( 'form.user-details.MODALITY_EMPTY', 'yproject' ),
+					'element'	=> 'amount_type'
+				);
+				array_push( $feedback_errors, $error );
+			}
 
-		// Si il manque un élément dans le select des projets
-		$project = $this->getInputText( 'project' );
-		if ( empty( $project ) || empty( $this->positive_savings_projects[$project] ) ) {
-			$error = array(
-				'code'		=> 'project',
-				'text'		=> __( 'form.user-details.PROJECT_EMPTY', 'yproject' ),
-				'element'	=> 'project'
-			);
-			array_push( $feedback_errors, $error );
-		}
+			// Si il manque un élément dans le select des projets
+			$project = $this->getInputText( 'project' );
+			if ( empty( $project ) || empty( $this->positive_savings_projects[$project] ) ) {
+				$error = array(
+					'code'		=> 'project',
+					'text'		=> __( 'form.user-details.PROJECT_EMPTY', 'yproject' ),
+					'element'	=> 'project'
+				);
+				array_push( $feedback_errors, $error );
+			}
 		
-		// Si il n'y a pas d'erreur alors message succès + enregistrement
-		if ( empty( $feedback_errors ) ) {
-			array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
+			// Si il n'y a pas d'erreur alors message succès + enregistrement
+			$id_subcription = FALSE;
+			if ( empty( $feedback_errors ) ) {
+				array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
 			
-			
-			$WDGUser_subscriber = new WDGUser( $this->user_id );
-			$id_subscriber = $WDGUser_subscriber ->get_api_id();
-			$WDGActivator_subscriber = new WDGUser( get_current_user_id() );
-			$id_activator = $WDGActivator_subscriber->get_api_id();
+				$WDGUser_subscriber = new WDGUser( $this->user_id );
+				$id_subscriber = $WDGUser_subscriber -> get_api_id();
+				$WDGActivator_subscriber = new WDGUser( get_current_user_id() );
+				$id_activator = $WDGActivator_subscriber-> get_api_id();
 
-			if ( WDGOrganization::is_user_organization( $this->user_id ) ) {
+				if ( WDGOrganization::is_user_organization( $this->user_id ) ) {
 				$type_subscriber = "organization";
-			}
-			else {
-				$type_subscriber = "user";
-			}
+				}
+				else {
+					$type_subscriber = "user";
+				}
 
-			$WDGCampaing_subscriber = new ATCF_Campaign( $project );
-			$id_campaign = $WDGCampaing_subscriber->get_api_id();
-			$payment_method = "wallet";
-			$modality = "quarter";
+				$WDGCampaing_subscriber = new ATCF_Campaign( $project );
+				$id_campaign = $WDGCampaing_subscriber->get_api_id();
+				$payment_method = "wallet";
+				$modality = "quarter";
 
-			// Quand la méthode de suppression sera créée, on pourra alors gérer la partie "END" dans la BDD
-			$status = "active";
-			WDGSUBSCRIPTION::insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $status);
-        }
+				// Quand la méthode de suppression sera créée, on pourra alors gérer la partie "END" dans la BDD
+				$status = "waiting";
 
+				$subscription = WDGSUBSCRIPTION::insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $status);
+				$id_subcription = $subscription->id;
+        	}
+		}
         $buffer = array(
 			'success'	=> $feedback_success,
-			'errors'	=> $feedback_errors
+			'errors'	=> $feedback_errors,
+			'id_subscription' => $id_subcription
 		);
 		
 		$this->initFields(); // Reinit pour avoir les bonnes valeurs
 		return $buffer;
-    }
-}
+		
+	}
 }
