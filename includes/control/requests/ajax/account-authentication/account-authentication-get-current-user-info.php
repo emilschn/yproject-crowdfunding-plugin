@@ -43,6 +43,7 @@ if ( !empty( $user_api_id ) ) {
 		$result[ 'address_city' ] = $api_data->city;
 		$result[ 'address_country' ] = $api_data->country;
 		$result[ 'tax_country' ] = $api_data->tax_country;
+		$result[ 'language' ] = $api_data->language;
 	}
 }
 exit( json_encode( $result ) );
