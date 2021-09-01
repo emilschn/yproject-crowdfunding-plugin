@@ -199,6 +199,16 @@ class WDGFormUsers {
 	}
 
 	/**
+	 * Vérifie la correspondance entre adresse e-mail et mot de passe
+	 */
+	public static function get_signin_return($input_email, $input_password) {
+		$user_by_email = get_user_by( 'email', $input_email );
+		$username = $user_by_email->user_login;
+
+		return wp_authenticate_username_password( null, $username, $input_password );
+	}
+
+	/**
 	 * Détecte et gère l'affichage des erreurs de login
 	 * @global type $signon_errors
 	 * @return type

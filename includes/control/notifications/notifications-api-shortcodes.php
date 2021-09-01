@@ -9,6 +9,8 @@ class NotificationsAPIShortcodes {
 		'recipient_first_name',
 
 		'password_reinit_link',
+		'validation_email_link',
+		'account_activation_email_intro',
 
 		'kyc_refused_info',
 
@@ -140,9 +142,33 @@ class NotificationsAPIShortcodes {
 	/**
 	 * @var String
 	 */
+	private static $validation_email_link;
+	/**
+	 * Définit l'URL de validation d'email
+	 * @param String
+	 */
+	public static function set_validation_email_link($link_validation_email) {
+		self::$validation_email_link = $link_validation_email;
+	}
+
+	/**
+	 * @var String
+	 */
+	private static $account_activation_email_intro;
+	/**
+	 * Définit l'intro du mail de validation de compte
+	 * @param String
+	 */
+	public static function set_account_activation_email_intro($account_activation_email_intro) {
+		self::$account_activation_email_intro = $account_activation_email_intro;
+	}
+
+	/**
+	 * @var String
+	 */
 	private static $kyc_refused_info;
 	/**
-	 * Définit l'URL de réinitialisation de mot de passe
+	 * Définit les détails du refus de KYCs
 	 * @param String
 	 */
 	public static function set_kyc_refused_info($kyc_refused_info) {
@@ -456,6 +482,22 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function password_reinit_link() {
 		return self::$password_reinit_link;
+	}
+
+	/**
+	 * Mail de validation de compte
+	 * Lien pour valider le compte
+	 */
+	public static function validation_email_link() {
+		return self::$validation_email_link;
+	}
+
+	/**
+	 * Mail de validation de compte
+	 * Introduction du mail selon qu'il s'agisse d'un ancien ou d'un nouvel utilisateur
+	 */
+	public static function account_activation_email_intro() {
+		return self::$account_activation_email_intro;
 	}
 
 	/**
