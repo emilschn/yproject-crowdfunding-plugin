@@ -196,8 +196,8 @@ final class ATCF_CrowdFunding {
 	}
 
 	public function include_html2pdf() {
-		$this->include_control( 'html2pdf/html2pdf.class' );
-	}
+		$this->include_control( 'html2pdf/html2pdf-v5-helper' );
+    }
 
 	public function include_form($form_name) {
 		require_once $this->includes_dir . 'control/forms/'.$form_name.'.php';

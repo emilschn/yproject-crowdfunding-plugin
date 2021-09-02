@@ -444,6 +444,11 @@ class ATCF_Campaign {
 					$this->api_id = $api_project_return->id;
 					ypcf_debug_log('ATCF_Campaign::get_api_id > ' . $this->api_id);
 					update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $this->api_id );
+					// lors de la création d'un projet, on ajoute automatiquement le compte support@wedogood.co en suivi
+					$wpuser_by_email = get_user_by( 'email', 'support@wedogood.co' );
+					if ( !empty( $wpuser_by_email ) ) {
+						$this->add_follower_jycrois( $wpuser_by_email->ID );
+					}
 				}
 			}
 		}
@@ -1356,9 +1361,8 @@ class ATCF_Campaign {
 
 		$crowdfunding = ATCF_CrowdFunding::instance();
 		$crowdfunding->include_html2pdf();
-		$html2pdf = new HTML2PDF( 'P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8) );
-		$html2pdf->WriteHTML( urldecode( $html_content ) );
-		$html2pdf->Output( $filepath, 'F' );
+		$h2p_instance = HTML2PDFv5Helper::instance();
+		$h2p_instance->writePDF( $html_content, $filepath );
 	}
 
 	/*******************************************************************************
@@ -3661,6 +3665,21 @@ class ATCF_Campaign {
 		}
 
 		return $buffer;
+	}
+
+	public function add_follower_jycrois($user_id = FALSE) {
+		global $wpdb;
+		$table_jcrois = $wpdb->prefix . "jycrois";
+		$users = $wpdb->get_results("SELECT * FROM $table_jcrois WHERE campaign_id = ".$this->ID." AND user_id=".$user_id);
+		if (empty($users[0]->ID)) {
+			$wpdb->insert(
+				$table_jcrois,
+				array(
+				'user_id'		=> $user_id,
+				'campaign_id'   => $this->ID
+			)
+			);
+		}
 	}
 
 	public function manage_jycrois($user_id = FALSE) {

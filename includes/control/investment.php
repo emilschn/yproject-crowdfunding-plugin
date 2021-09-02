@@ -826,9 +826,7 @@ class WDGInvestment {
 		}
 
 		// GESTION DU PAIEMENT COTE EDD
-		if ( !$this->needs_signature() ) {
-			WDGInvestment::unset_session();
-		}
+		WDGInvestment::unset_session();
 
 		//Création d'un paiement pour edd
 		$user_info = array(
