@@ -446,9 +446,8 @@ class ATCF_Campaign {
 					update_post_meta( $this->data->ID, ATCF_Campaign::$key_api_id, $this->api_id );
 					// lors de la création d'un projet, on ajoute automatiquement le compte support@wedogood.co en suivi
 					$wpuser_by_email = get_user_by( 'email', 'support@wedogood.co' );
-					if (!empty($wpuser_by_email)) {
-						$supportUser = new WDGUser($wpuser_by_email->ID);
-						$this->add_follower_jycrois($supportUser);
+					if ( !empty( $wpuser_by_email ) ) {
+						$this->add_follower_jycrois( $wpuser_by_email->ID );
 					}
 				}
 			}
