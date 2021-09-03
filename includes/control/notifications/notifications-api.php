@@ -28,12 +28,6 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'subscription' => array(
-			'fr-sib-id'		=> '181',
-			'description'	=> "Inscription",
-			'variables'		=> "",
-			'wdg-mail'		=> ""
-		),
 		'subscription-without-investment' => array(
 			'fr-sib-id'		=> '932',
 			'description'	=> "Inscription sans investissement",
@@ -788,26 +782,6 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Utilisateurs
 	//**************************************************************************
-	//*******************************************************
-	// Inscription
-	//*******************************************************
-	public static function user_registration($WDGUser) {
-		$id_template = self::get_id_fr_by_slug( 'subscription' );
-
-		NotificationsAPIShortcodes::set_recipient($WDGUser);
-
-		$options = array(
-			'skip_admin'			=> 1
-		);
-		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
-		);
-
-		return self::send( $parameters, $WDGUser->get_language() );
-	}
 
 	//*******************************************************
 	// Inscription sans investissement
