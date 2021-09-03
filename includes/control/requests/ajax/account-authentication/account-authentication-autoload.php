@@ -39,6 +39,7 @@ require_once dirname(__FILE__) . '/../../../cache/db-cacher.php';
 require_once dirname(__FILE__) . '/../../../../data/wdgwprest/wdgwprest-lib.php';
 require_once dirname(__FILE__) . '/../../../../data/wdgwprest/wdgwprest-entities/wdgwprest-organization.php';
 require_once dirname(__FILE__) . '/../../../../data/wdgwprest/wdgwprest-entities/wdgwprest-user.php';
+require_once dirname(__FILE__) . '/../../../../data/wdgwprest/wdgwprest-entities/wdgwprest-file-kyc.php';
 
 /*class AccountAuthenticationHelper {
 }*/

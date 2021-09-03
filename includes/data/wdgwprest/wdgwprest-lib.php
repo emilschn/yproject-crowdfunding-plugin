@@ -9,6 +9,8 @@ class WDGWPRESTLib {
 	public static $wp_route_standard = 'wp/v2/';
 	public static $wp_route_wdg = 'wdg/v1/';
 	public static $wp_route_external = 'external/v1/';
+
+	private static $last_result;
 	
 	private static $cache_by_route;
 	
@@ -119,6 +121,7 @@ class WDGWPRESTLib {
 				'body'		=> $parameters
 			) 
 		);
+		self::$last_result = $result;
 		
 		if ( !$shortcut_call ) {
 			if ( !is_wp_error( $result ) && isset( $result["response"] ) ) {
@@ -235,5 +238,12 @@ class WDGWPRESTLib {
 		}
 		
 		return $result;
+	}
+	
+/*******************************************************************************
+ * Récupération données appel
+ ******************************************************************************/
+	public static function get_last_result() {
+		return self::$last_result;
 	}
 }

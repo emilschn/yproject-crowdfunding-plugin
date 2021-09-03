@@ -3,9 +3,22 @@ class AjaxCommonHelper {
 	/**
 	 * Récupère une donnée de formulaire de type POST en faisant les transformations adéquates
 	 */
-	public static function get_input_post( $label ) {
-		$input_result = filter_input( INPUT_POST, $label );
+	public static function get_input_post( $name ) {
+		$input_result = filter_input( INPUT_POST, $name );
 		return stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
+	}
+
+	/**
+	 * Récupère une donnée de formulaire de type FILE en faisant les transformations adéquates
+	 */
+	public static function get_input_file( $name ) {
+		$buffer = false;
+		
+		if ( isset( $_FILES[ $name ][ 'tmp_name' ] ) && !empty( $_FILES[ $name ][ 'tmp_name' ] ) ) {
+			$buffer = $_FILES[ $name ];
+		}
+		
+		return $buffer;
 	}
 
 	/**
