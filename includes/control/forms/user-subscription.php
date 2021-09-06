@@ -8,7 +8,6 @@ class WDG_Form_Subscription extends WDG_Form {
 	private $positive_savings_projects = [];
 	private $amount_types = [];
 
-    
     public function __construct( $user_id = FALSE ) {
 		parent::__construct(self::$name);
         $this->user_id = $user_id;
@@ -47,7 +46,6 @@ class WDG_Form_Subscription extends WDG_Form {
 		);
 
 		$positive_savings_projects_lists = ATCF_Campaign::get_list_positive_savings( 0 ); 
-
 		$this->positive_savings_projects = [];
 
 		foreach ($positive_savings_projects_lists as $positive_savings_projects_list) {
@@ -72,6 +70,7 @@ class WDG_Form_Subscription extends WDG_Form {
 		$feedback_errors = array();
 		
 		$amount_type = $this->amount_types;
+
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$WDGUser = new WDGUser( $user_id );
 		$WDGUser_current = WDGUser::current();
@@ -82,12 +81,10 @@ class WDG_Form_Subscription extends WDG_Form {
 		// Sécurité, ne devrait pas arriver non plus
         } else if ( !$this->is_orga && $WDGUser->get_wpref() != $WDGUser_current->get_wpref() && !$WDGUser_current->is_admin() ) {
 
-		
 	    // Analyse du formulaire
 		} else {
 
 			$amount_type = $this->getInputText( 'amount_type' );
-
 			// Si le montant ne rentré ne dépasse pas 10€ 
 			$amount = $this->getInputTextMoney( 'amount' );				
 			if ( $amount_type == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount ) ) ) {
@@ -140,7 +137,7 @@ class WDG_Form_Subscription extends WDG_Form {
 				$id_activator = $WDGActivator_subscriber-> get_api_id();
 
 				if ( WDGOrganization::is_user_organization( $this->user_id ) ) {
-				$type_subscriber = "organization";
+					$type_subscriber = "organization";
 				}
 				else {
 					$type_subscriber = "user";
@@ -158,6 +155,7 @@ class WDG_Form_Subscription extends WDG_Form {
 				$id_subcription = $subscription->id;
         	}
 		}
+		
         $buffer = array(
 			'success'	=> $feedback_success,
 			'errors'	=> $feedback_errors,

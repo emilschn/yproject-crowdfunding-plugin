@@ -40,7 +40,6 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
     public function postForm() {
 		parent::postForm();
 
-		
 		$feedback_success = array();
 		$feedback_errors = array();
 		$subscription_cancelled = array();
@@ -55,7 +54,6 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
         // Sécurité, ne devrait pas arriver non plus
         } else if ( !$this->is_orga && $WDGUser->get_wpref() != $WDGUser_current->get_wpref() && !$WDGUser_current->is_admin() ) {
     
-            
         // Analyse du formulaire
         } else {
 
@@ -101,11 +99,10 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 				array_push( $subscription_cancelled, $error );
 			}
 
-
             // Si il n'y a pas d'erreur alors message succès + enregistrement
 		    if ( empty( $feedback_errors ) && empty( $subscription_cancelled ) ) {
-				var_dump('test');die();
 			    array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
+				
                 $this->subscription->status = "active";
                 WDGWPREST_Entity_Subscription::update( $this->subscription );
         	}
