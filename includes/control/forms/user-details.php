@@ -487,6 +487,16 @@ class WDG_Form_User_Details extends WDG_Form {
 						if ( !$was_registered && $WDGUser->has_lemonway_wallet( TRUE ) ) {
 							ypcf_debug_log( 'WDG_Form_User_Details::postForm > $WDGUser->send_kyc();' );
 							$WDGUser->send_kyc();
+
+							// Si des infos bancaires avaient déjà été enregistrées, on les envoie à LW
+							if ( $WDGUser->has_saved_iban() ) {
+								$bank_holdername = $WDGUser->get_bank_holdername();
+								$bank_iban = $WDGUser->get_bank_iban();
+								$bank_bic = $WDGUser->get_bank_bic();
+								$bank_address = $WDGUser->get_bank_address();
+								$bank_address2 = $WDGUser->get_bank_address2();
+								LemonwayLib::wallet_register_iban( $WDGUser->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+							}
 						}
 					}
 					

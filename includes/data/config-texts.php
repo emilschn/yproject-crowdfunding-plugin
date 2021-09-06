@@ -150,7 +150,8 @@ class WDGConfigTexts {
 		$locale_substr = FALSE;
 		if ( !WDG_Languages_Helpers::is_french_displayed() && $locale != 'fr' && $locale != ' fr_FR') {
 			$locale_substr = substr( $locale, 0, 2 );
-		} else if ( !empty( $force_language_to_translate_to ) && $force_language_to_translate_to != 'fr' ) {
+		} 
+		if ( !empty( $force_language_to_translate_to ) && $force_language_to_translate_to != 'fr' ) {
 			$locale_substr = $force_language_to_translate_to;
 		}
 

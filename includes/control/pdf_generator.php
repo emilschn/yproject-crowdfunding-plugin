@@ -557,8 +557,8 @@ class WDG_PDF_Generator {
 
 /**
  * Creates a pdf file with the content
- * @param type $html_content
- * @param type $filename
+ * @param string $html_content
+ * @param string $filename
  * @return boolean
  */
 function generatePDF($html_content, $filename) {
@@ -568,9 +568,9 @@ function generatePDF($html_content, $filename) {
 		try {
 			$crowdfunding = ATCF_CrowdFunding::instance();
 			$crowdfunding->include_html2pdf();
-			$html2pdf = new HTML2PDF('P', 'A4', 'fr');
-			$html2pdf->WriteHTML(urldecode($html_content));
-			$html2pdf->Output($filename, 'F');
+			$h2p_instance = HTML2PDFv5Helper::instance();
+			$h2p_instance->writePDF( $html_content, $filename );
+
 			$buffer = true;
 		} catch ( Exception $ex ) {
 			$WDGUser_current = WDGUser::current();

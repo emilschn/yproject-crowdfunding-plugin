@@ -9,6 +9,8 @@ class NotificationsAPIShortcodes {
 		'recipient_first_name',
 
 		'password_reinit_link',
+		'validation_email_link',
+		'account_activation_email_intro',
 
 		'kyc_refused_info',
 
@@ -140,9 +142,33 @@ class NotificationsAPIShortcodes {
 	/**
 	 * @var String
 	 */
+	private static $validation_email_link;
+	/**
+	 * Définit l'URL de validation d'email
+	 * @param String
+	 */
+	public static function set_validation_email_link($link_validation_email) {
+		self::$validation_email_link = $link_validation_email;
+	}
+
+	/**
+	 * @var String
+	 */
+	private static $account_activation_email_intro;
+	/**
+	 * Définit l'intro du mail de validation de compte
+	 * @param String
+	 */
+	public static function set_account_activation_email_intro($account_activation_email_intro) {
+		self::$account_activation_email_intro = $account_activation_email_intro;
+	}
+
+	/**
+	 * @var String
+	 */
 	private static $kyc_refused_info;
 	/**
-	 * Définit l'URL de réinitialisation de mot de passe
+	 * Définit les détails du refus de KYCs
 	 * @param String
 	 */
 	public static function set_kyc_refused_info($kyc_refused_info) {
@@ -428,7 +454,7 @@ class NotificationsAPIShortcodes {
 	 * Texte de configuration
 	 * Contenu
 	 */
-	public static function email_config_text($atts, $content = '') {
+	public static function email_config_text($atts) {
 		$atts = shortcode_atts( array(
 			'url'		=> ''
 		), $atts );
@@ -454,15 +480,31 @@ class NotificationsAPIShortcodes {
 	 * Mail de réinitialisation de mot de passe
 	 * Lien pour réinitialiser
 	 */
-	public static function password_reinit_link($atts, $content = '') {
+	public static function password_reinit_link() {
 		return self::$password_reinit_link;
+	}
+
+	/**
+	 * Mail de validation de compte
+	 * Lien pour valider le compte
+	 */
+	public static function validation_email_link() {
+		return self::$validation_email_link;
+	}
+
+	/**
+	 * Mail de validation de compte
+	 * Introduction du mail selon qu'il s'agisse d'un ancien ou d'un nouvel utilisateur
+	 */
+	public static function account_activation_email_intro() {
+		return self::$account_activation_email_intro;
 	}
 
 	/**
 	 * Mail de KYCs refusés
 	 * Détails du refus
 	 */
-	public static function kyc_refused_info($atts, $content = '') {
+	public static function kyc_refused_info() {
 		return self::$kyc_refused_info;
 	}
 
@@ -470,7 +512,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nom
 	 */
-	public static function project_name($atts, $content = '') {
+	public static function project_name() {
 		return self::$campaign->get_name();
 	}
 
@@ -478,7 +520,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nom de l'organisation
 	 */
-	public static function project_organization_name($atts, $content = '') {
+	public static function project_organization_name() {
 		$organization = self::$campaign->get_organization();
 		$WDGOrganization = new WDGOrganization( $organization->wpref );
 
@@ -489,7 +531,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * URL
 	 */
-	public static function project_url($atts, $content = '') {
+	public static function project_url() {
 		return self::$campaign->get_public_url();
 	}
 
@@ -497,7 +539,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * URL du TBPP
 	 */
-	public static function project_dashboard_url($atts, $content = '') {
+	public static function project_dashboard_url() {
 		$campaign_id = self::$campaign->ID;
 		$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id;
 
@@ -508,7 +550,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Durée du financement
 	 */
-	public static function project_funding_duration($atts, $content = '') {
+	public static function project_funding_duration() {
 		return self::$campaign->funding_duration();
 	}
 
@@ -516,7 +558,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Objectif minimum
 	 */
-	public static function project_amount_minimum_goal($atts, $content = '') {
+	public static function project_amount_minimum_goal() {
 		return self::$campaign->minimum_goal( FALSE );
 	}
 
@@ -524,7 +566,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Pourcentage atteint
 	 */
-	public static function project_percent_reached($atts, $content = '') {
+	public static function project_percent_reached() {
 		return self::$campaign->percent_minimum_completed( FALSE );
 	}
 
@@ -532,7 +574,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Rendement maximum (chaine complète)
 	 */
-	public static function project_max_profit_string($atts, $content = '') {
+	public static function project_max_profit_string() {
 		return self::$campaign->maximum_profit_str();
 	}
 
@@ -540,7 +582,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Date de premier paiement
 	 */
-	public static function project_date_first_payment($atts, $content = '') {
+	public static function project_date_first_payment() {
 		$project_date_first_payment = self::$campaign->first_payment_date();
 		$date_first_payment = new DateTime( $project_date_first_payment );
 		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
@@ -566,7 +608,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Montant de royalties déjà versées
 	 */
-	public static function project_royalties_transfered_amount($atts, $content = '') {
+	public static function project_royalties_transfered_amount() {
 		$amount_transferred = 0;
 		$existing_roi_declarations = self::$campaign->get_roi_declarations();
 		foreach ( $existing_roi_declarations as $declaration_object ) {
@@ -583,7 +625,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Montant minimum à verser
 	 */
-	public static function project_royalties_minimum_amount($atts, $content = '') {
+	public static function project_royalties_minimum_amount() {
 		$amount_minimum_royalties = self::$campaign->current_amount( FALSE ) * self::$campaign->minimum_profit();
 		$amount_minimum_royalties_str = UIHelpers::format_number( $amount_minimum_royalties );
 
@@ -594,7 +636,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Montant minimum restant à verser
 	 */
-	public static function project_royalties_remaining_amount_to_minimum($atts, $content = '') {
+	public static function project_royalties_remaining_amount_to_minimum() {
 		$amount_minimum_royalties = self::$campaign->current_amount( FALSE ) * self::$campaign->minimum_profit();
 		$amount_transferred = 0;
 		$existing_roi_declarations = self::$campaign->get_roi_declarations();
@@ -613,7 +655,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Liste des investisseurs qui ont +200 euros sur leur wallet
 	 */
-	public static function project_investors_list_with_more_than_200_euros($atts, $content = '') {
+	public static function project_investors_list_with_more_than_200_euros() {
 		return self::$investors_list_with_more_than_200_euros_str;
 	}
 
@@ -621,7 +663,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nombre de jours restants
 	 */
-	public static function project_days_remaining_count($atts, $content = '') {
+	public static function project_days_remaining_count() {
 		return self::$campaign->days_remaining();
 	}
 
@@ -629,7 +671,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Nombre de jours restants (texte complet)
 	 */
-	public static function project_days_string($atts, $content = '') {
+	public static function project_days_string() {
 		$nb_days_remaining = self::$campaign->days_remaining();
 		$str_days = ($nb_days_remaining > 1) ? __( 'jours', 'yproject' ) : __( 'jour', 'yproject' );
 
@@ -640,7 +682,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds
 	 * Date et jour de fin de la levée de fonds
 	 */
-	public static function project_end_date_hour($atts, $content = '') {
+	public static function project_end_date_hour() {
 		return self::$campaign->end_date( 'd/m/Y h:i' );
 	}
 
@@ -648,7 +690,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds - Actualité
 	 * Titre
 	 */
-	public static function project_news_title($atts, $content = '') {
+	public static function project_news_title() {
 		return self::$campaign_news_title;
 	}
 
@@ -656,7 +698,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds - Actualité
 	 * Contenu
 	 */
-	public static function project_news_content($atts, $content = '') {
+	public static function project_news_content() {
 		return self::$campaign_news_content;
 	}
 
@@ -664,7 +706,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds - Conseils
 	 * Introduction aléatoire de bienvenue
 	 */
-	public static function project_advice_greetings($atts, $content = '') {
+	public static function project_advice_greetings() {
 		return self::$campaign_advice[ 'greetings' ];
 	}
 
@@ -672,7 +714,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds - Conseils
 	 * Contenu
 	 */
-	public static function project_advice_content($atts, $content = '') {
+	public static function project_advice_content() {
 		return self::$campaign_advice[ 'content' ];
 	}
 
@@ -680,7 +722,7 @@ class NotificationsAPIShortcodes {
 	 * Levée de fonds - Conseils
 	 * Actions prioritaires
 	 */
-	public static function project_advice_priority_actions($atts, $content = '') {
+	public static function project_advice_priority_actions() {
 		return self::$campaign_advice[ 'priority_actions' ];
 	}
 
@@ -688,7 +730,7 @@ class NotificationsAPIShortcodes {
 	 * Rappel
 	 * Montant intention d'investissement
 	 */
-	public static function reminder_invest_intention_amount($atts, $content = '') {
+	public static function reminder_invest_intention_amount() {
 		$reminder_data_amount = self::$reminder_data[ 'amount' ];
 		$reminder_data_amount_str = UIHelpers::format_number( $reminder_data_amount );
 
@@ -699,7 +741,7 @@ class NotificationsAPIShortcodes {
 	 * Rappel
 	 * Témoignage projet
 	 */
-	public static function reminder_project_testimony($atts, $content = '') {
+	public static function reminder_project_testimony() {
 		return self::$reminder_data[ 'testimony' ];
 	}
 
@@ -707,7 +749,7 @@ class NotificationsAPIShortcodes {
 	 * Rappel
 	 * Image d'illustration
 	 */
-	public static function reminder_project_image($atts, $content = '') {
+	public static function reminder_project_image() {
 		return self::$reminder_data[ 'image' ];
 	}
 
@@ -715,7 +757,7 @@ class NotificationsAPIShortcodes {
 	 * Rappel
 	 * Description du projet
 	 */
-	public static function reminder_project_description($atts, $content = '') {
+	public static function reminder_project_description() {
 		return self::$reminder_data[ 'description' ];
 	}
 
@@ -723,7 +765,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement en attente
 	 * Montant
 	 */
-	public static function investment_pending_amount($atts, $content = '') {
+	public static function investment_pending_amount() {
 		$amount_total = self::$investment_pending->get_session_amount();
 		$amount_total_str = UIHelpers::format_number( $amount_total );
 
@@ -734,7 +776,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement en attente
 	 * Pourcentage que ça permettra d'atteindre
 	 */
-	public static function investment_pending_percent_to_reach($atts, $content = '') {
+	public static function investment_pending_percent_to_reach() {
 		$percent_to_reach = round( ( self::$campaign->current_amount( FALSE ) +  self::$investment_pending->get_session_amount() ) / self::$campaign->minimum_goal( FALSE ) * 100 );
 
 		return $percent_to_reach;
@@ -744,7 +786,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement en attente
 	 * Compte bancaire de destination - IBAN
 	 */
-	public static function investment_pending_viban_iban($atts, $content = '') {
+	public static function investment_pending_viban_iban() {
 		return self::$investment_pending_data[ 'viban_iban' ];
 	}
 
@@ -752,7 +794,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement en attente
 	 * Compte bancaire de destination - BIC
 	 */
-	public static function investment_pending_viban_bic($atts, $content = '') {
+	public static function investment_pending_viban_bic() {
 		return self::$investment_pending_data[ 'viban_bic' ];
 	}
 
@@ -760,7 +802,7 @@ class NotificationsAPIShortcodes {
 	 * Investissement en attente
 	 * Compte bancaire de destination - Propriétaire du compte
 	 */
-	public static function investment_pending_viban_holder($atts, $content = '') {
+	public static function investment_pending_viban_holder() {
 		return self::$investment_pending_data[ 'viban_holder' ];
 	}
 
@@ -863,7 +905,7 @@ class NotificationsAPIShortcodes {
 	 * Virement reçu
 	 * Montant
 	 */
-	public static function wire_received_amount($atts, $content = '') {
+	public static function wire_received_amount() {
 		return self::$amount_wire_received;
 	}
 
@@ -871,7 +913,7 @@ class NotificationsAPIShortcodes {
 	 * Virement vers compte bancaire
 	 * Montant
 	 */
-	public static function wire_transfer_amount($atts, $content = '') {
+	public static function wire_transfer_amount() {
 		return self::$amount_wire_transfer;
 	}
 
@@ -879,7 +921,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * URL directe
 	 */
-	public static function declaration_url($atts, $content = '') {
+	public static function declaration_url() {
 		$declaration_direct_url = WDG_Redirect_Engine::override_get_page_url( 'declarer-chiffre-daffaires' ) . '?campaign_id='.self::$campaign->ID.'&declaration_id='.self::$declaration->id;
 
 		return $declaration_direct_url;
@@ -889,7 +931,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Trois derniers mois en texte
 	 */
-	public static function declaration_last_three_months($atts, $content = '') {
+	public static function declaration_last_three_months() {
 		$date_due_previous_day = new DateTime( self::$declaration->date_due );
 		$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
 		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
@@ -921,7 +963,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Jour prévu pour la déclaration
 	 */
-	public static function declaration_due_date($atts, $content = '') {
+	public static function declaration_due_date() {
 		$date_due = new DateTime( self::$declaration->date_due );
 
 		return $date_due->format( 'd/m/Y' );
@@ -931,7 +973,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Veille du jour prévu pour la déclaration
 	 */
-	public static function declaration_due_date_previous_day($atts, $content = '') {
+	public static function declaration_due_date_previous_day() {
 		$date_due_previous_day = new DateTime( self::$declaration->date_due );
 		$date_due_previous_day->sub( new DateInterval( 'P1D' ) );
 
@@ -942,7 +984,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Montant du CA
 	 */
-	public static function declaration_revenues_amount($atts, $content = '') {
+	public static function declaration_revenues_amount() {
 		return self::$declaration->get_amount_with_adjustment();
 	}
 
@@ -950,7 +992,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Informations fiscales
 	 */
-	public static function declaration_tax_info($atts, $content = '') {
+	public static function declaration_tax_info() {
 		$tax_infos = '';
 		if (self::$declaration->has_paid_gain() ) {
 			$tax_infos = "<br><br>Vos investisseurs ont réalisé une plus-value sur leur investissement.";
@@ -966,7 +1008,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Numéro du trimestre en cours
 	 */
-	public static function declaration_quarter_count($atts, $content = '') {
+	public static function declaration_quarter_count() {
 		return self::$declaration_estimation_data[ 'quarter_count' ];
 	}
 
@@ -974,7 +1016,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Montant prévisionnel de l'année
 	 */
-	public static function declaration_estimation_year_amount($atts, $content = '') {
+	public static function declaration_estimation_year_amount() {
 		return self::$declaration_estimation_data[ 'year_amount' ];
 	}
 
@@ -982,7 +1024,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Pourcent prévisionnel de cette partie de l'année
 	 */
-	public static function declaration_estimation_percent($atts, $content = '') {
+	public static function declaration_estimation_percent() {
 		return self::$declaration_estimation_data[ 'percent' ];
 	}
 
@@ -990,7 +1032,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Montant prévisionnel du trimestre
 	 */
-	public static function declaration_estimation_quarter_amount($atts, $content = '') {
+	public static function declaration_estimation_quarter_amount() {
 		return self::$declaration_estimation_data[ 'quarter_amount' ];
 	}
 
@@ -998,7 +1040,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Montant prévisionnel des royalties
 	 */
-	public static function declaration_estimation_amount_royalties($atts, $content = '') {
+	public static function declaration_estimation_amount_royalties() {
 		return self::$declaration_estimation_data[ 'amount_royalties' ];
 	}
 
@@ -1006,7 +1048,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Montant prévisionnel des frais de gestion des royalties
 	 */
-	public static function declaration_estimation_amount_fees($atts, $content = '') {
+	public static function declaration_estimation_amount_fees() {
 		return self::$declaration_estimation_data[ 'amount_fees' ];
 	}
 
@@ -1014,7 +1056,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Montant prévisionnel total
 	 */
-	public static function declaration_estimation_amount_total($atts, $content = '') {
+	public static function declaration_estimation_amount_total() {
 		return self::$declaration_estimation_data[ 'amount_total' ];
 	}
 
@@ -1022,7 +1064,7 @@ class NotificationsAPIShortcodes {
 	 * Déclaration de CA
 	 * Date de prélèvement prévue
 	 */
-	public static function declaration_mandate_date($atts, $content = '') {
+	public static function declaration_mandate_date() {
 		$date_in_5_days = new DateTime();
 		$date_in_5_days->add( new DateInterval('P5D') );
 		$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
@@ -1034,7 +1076,7 @@ class NotificationsAPIShortcodes {
 	 * Relevé de royalties
 	 * Description automatique
 	 */
-	public static function royalties_description($atts, $content = '') {
+	public static function royalties_description() {
 		return self::$user_royalties_details;
 	}
 
@@ -1042,7 +1084,7 @@ class NotificationsAPIShortcodes {
 	 * Message de versement individuel
 	 * Message du projet
 	 */
-	public static function royalties_project_message($atts, $content = '') {
+	public static function royalties_project_message() {
 		return self::$project_royalties_message;
 	}
 
@@ -1050,7 +1092,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * E-mail du destinataire
 	 */
-	public static function prospect_setup_recipient_email($atts, $content = '') {
+	public static function prospect_setup_recipient_email() {
 		return self::$prospect_setup_draft->email;
 	}
 
@@ -1058,7 +1100,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Prénom du destinataire
 	 */
-	public static function prospect_setup_recipient_first_name($atts, $content = '') {
+	public static function prospect_setup_recipient_first_name() {
 		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
 		$recipient_name = '';
 		if ( !empty( $metadata_decoded->user->name ) ) {
@@ -1072,7 +1114,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Liste des tests démarrés
 	 */
-	public static function prospect_setup_draft_list($atts, $content = '') {
+	public static function prospect_setup_draft_list() {
 		return self::$prospect_setup_draft_list;
 	}
 
@@ -1080,7 +1122,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * 	URL du test
 	 */
-	public static function prospect_setup_draft_url($atts, $content = '') {
+	public static function prospect_setup_draft_url() {
 		$draft_url = WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ) . '?guid=' . self::$prospect_setup_draft->guid;
 
 		return $draft_url;
@@ -1090,7 +1132,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * URL complète du test
 	 */
-	public static function prospect_setup_draft_url_full($atts, $content = '') {
+	public static function prospect_setup_draft_url_full() {
 		$draft_url = WDG_Redirect_Engine::override_get_page_url( 'financement/eligibilite' ) . '?guid=' . self::$prospect_setup_draft->guid;
 
 		return $draft_url;
@@ -1100,7 +1142,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Nom de l'organisation
 	 */
-	public static function prospect_setup_draft_organization_name($atts, $content = '') {
+	public static function prospect_setup_draft_organization_name() {
 		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
 
 		return $metadata_decoded->organization->name;
@@ -1110,7 +1152,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Montant recherché
 	 */
-	public static function prospect_setup_draft_amount_needed($atts, $content = '') {
+	public static function prospect_setup_draft_amount_needed() {
 		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
 
 		return $metadata_decoded->project->amountNeeded * 1000;
@@ -1120,7 +1162,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Pourcent de royalties proposé
 	 */
-	public static function prospect_setup_draft_royalties_percent($atts, $content = '') {
+	public static function prospect_setup_draft_royalties_percent() {
 		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
 
 		return $metadata_decoded->project->royaltiesAmount;
@@ -1130,7 +1172,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * 	Formule sélectionnée
 	 */
-	public static function prospect_setup_draft_formula($atts, $content = '') {
+	public static function prospect_setup_draft_formula() {
 		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
 		$formula = '';
 		switch ( $metadata_decoded->project->circlesToCommunicate ) {
@@ -1152,7 +1194,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Option sélectionnée
 	 */
-	public static function prospect_setup_draft_option($atts, $content = '') {
+	public static function prospect_setup_draft_option() {
 		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
 		$options = '';
 		if ( $metadata_decoded->project->needCommunicationAdvice ) {
@@ -1170,7 +1212,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Montant du paiement
 	 */
-	public static function prospect_setup_draft_payment_amount($atts, $content = '') {
+	public static function prospect_setup_draft_payment_amount() {
 		return self::$prospect_setup_draft_payment_amount;
 	}
 
@@ -1178,7 +1220,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * IBAN pour le paiement par virement
 	 */
-	public static function prospect_setup_draft_payment_iban($atts, $content = '') {
+	public static function prospect_setup_draft_payment_iban() {
 		return WDG_IBAN;
 	}
 
@@ -1186,7 +1228,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Référence du paiement
 	 */
-	public static function prospect_setup_draft_payment_reference($atts, $content = '') {
+	public static function prospect_setup_draft_payment_reference() {
 		$metadata_decoded = json_decode( self::$prospect_setup_draft->metadata );
 
 		return $metadata_decoded->organization->name;
@@ -1196,7 +1238,7 @@ class NotificationsAPIShortcodes {
 	 * Interface prospect
 	 * Date du paiement
 	 */
-	public static function prospect_setup_draft_payment_date($atts, $content = '') {
+	public static function prospect_setup_draft_payment_date() {
 		$today_datetime = new DateTime();
 
 		return $today_datetime->format( 'd/m/Y H:i' );

@@ -295,6 +295,16 @@ class WDG_Form_Organization_Details extends WDG_Form {
 						if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {
 							ypcf_debug_log( 'WDG_Form_Organization_Details::postForm > $WDGOrganization->send_kyc();' );
 							$WDGOrganization->send_kyc();
+
+							// Si des infos bancaires avaient déjà été enregistrées, on les envoie à LW
+							if ( $WDGOrganization->has_saved_iban() ) {
+								$bank_holdername = $WDGOrganization->get_bank_owner();
+								$bank_iban = $WDGOrganization->get_bank_iban();
+								$bank_bic = $WDGOrganization->get_bank_bic();
+								$bank_address = $WDGOrganization->get_bank_address();
+								$bank_address2 = $WDGOrganization->get_bank_address2();
+								LemonwayLib::wallet_register_iban( $WDGOrganization->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+							}
 						}
 					}
 				}
