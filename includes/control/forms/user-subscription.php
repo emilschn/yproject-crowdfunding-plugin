@@ -133,7 +133,6 @@ class WDG_Form_Subscription extends WDG_Form {
 			// Si il n'y a pas d'erreur alors message succès + enregistrement
 			$id_subcription = FALSE;
 			if ( empty( $feedback_errors ) ) {
-				array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
 			
 				$WDGUser_subscriber = new WDGUser( $this->user_id );
 				$id_subscriber = $WDGUser_subscriber -> get_api_id();

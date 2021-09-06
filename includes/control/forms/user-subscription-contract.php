@@ -43,6 +43,7 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 		
 		$feedback_success = array();
 		$feedback_errors = array();
+		$subscription_cancelled = array();
 
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$WDGUser = new WDGUser( $user_id );
@@ -80,6 +81,7 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 
 			// Si Aucun des deux boutons ont été appuyés
 			$button_action = filter_input( INPUT_POST, 'contract-action' );
+			
 			if( $button_action != "validate-contract-subscription" && $button_action != "previous-contract-subscription"){
 				$error = array(
 					'code'		=> 'subscription',
@@ -90,22 +92,19 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 			}
 
 			// Si l'utilisateur clique sur le bouton precedent alors passer le status de l'abonnement en annulé et retour sur son compte
-			if( $button_action = "previous-contract-subscription"){
-				$error = array(
-					'code'		=> 'subscription',
-					'text'		=> __( 'form.user-contract-subscription.SUBSCRIPTION_CANCEL', 'yproject' ),
-					'element'	=> 'subscription'
-				);
-				array_push( $feedback_errors, $error );
+			if( $button_action == 'previous-contract-subscription'){
+				
 				$this->subscription->status = "cancelled";
                 WDGWPREST_Entity_Subscription::update( $this->subscription );
 				WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ). '#subscription';
+
+				array_push( $subscription_cancelled, $error );
 			}
 
 
             // Si il n'y a pas d'erreur alors message succès + enregistrement
-		    if ( empty( $feedback_errors ) ) {
-				
+		    if ( empty( $feedback_errors ) && empty( $subscription_cancelled ) ) {
+				var_dump('test');die();
 			    array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) ); 
                 $this->subscription->status = "active";
                 WDGWPREST_Entity_Subscription::update( $this->subscription );
