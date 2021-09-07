@@ -985,6 +985,14 @@ class WDGQueue {
 	}
 
 	/******************************************************************************/
+	/* ENVOI DECALE DES DOCUMENTS A LEMONWAY */
+	/******************************************************************************/
+	// L'ajout se fait sur l'API uniquement
+	public static function execute_document_kyc_send_to_lemonway( $file_kyc_id ) {
+		WDGWPREST_Entity_FileKYC::send_to_lemonway( $file_kyc_id );
+	}
+
+	/******************************************************************************/
 	/* NOTIFICATIONS CONSEILS PRIORITAIRES CAMPAGNE */
 	/******************************************************************************/
 	public static function add_campaign_advice_notification($campaign_id) {

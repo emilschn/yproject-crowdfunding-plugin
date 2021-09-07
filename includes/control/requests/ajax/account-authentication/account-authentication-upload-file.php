@@ -14,6 +14,7 @@ $current_user_id = get_current_user_id();
 
 // Normalement ça ne devrait pas arriver, mais controle de sécurité si l'utilisateur correspond à une organisation
 AjaxCommonHelper::exit_if_current_user_is_organization( $current_user_id );*/
+// TODO : à remettre
 $current_user_id = 1;
 
 // Si on arrive ici, c'est un compte de personne physique dont on récupère l'ID API
