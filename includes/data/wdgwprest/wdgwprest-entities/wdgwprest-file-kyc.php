@@ -30,5 +30,12 @@ class WDGWPREST_Entity_FileKYC {
 		);
 		return WDGWPRESTLib::call_post_wdg( 'file-kyc', $parameters, TRUE );
 	}
+
+	/**
+	 * Demande à l'API d'envoyer le fichier à LW
+	 */
+	public static function send_to_lemonway( $file_kyc_id ) {
+		return WDGWPRESTLib::call_get_wdg( 'file-kyc/' . $file_kyc_id . '/send-to-lemonway' );
+	}
 	
 }
