@@ -68,7 +68,7 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 			}
 
 			// Si l'utilisateur actuel ne correspond pas à l'utilisateur qui a validé le formulaire			
-			if ( $this->subscription->id_subscriber != $WDGUser_current-> get_api_id() || !$WDGUser_current->is_admin() ) {
+			if ( $this->subscription->id_subscriber != $WDGUser_current-> get_api_id() && !$WDGUser_current->is_admin() ) {
 				$error = array(
 					'code'		=> 'subscription',
 					'text'		=> __( 'form.user-contract-subscription.SUBSCRIPTION_ERROR', 'yproject' ),
