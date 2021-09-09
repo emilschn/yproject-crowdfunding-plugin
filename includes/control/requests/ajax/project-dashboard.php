@@ -1400,6 +1400,9 @@ class WDGAjaxActionsProjectDashboard {
 							case '13':
 							default:
 								$orga_authentication = __( "En attente de documents", 'yproject' );
+								if ( $orga->has_sent_orga_documents() ) {
+									$orga_authentication = __( "En attente d'étude des documents", 'yproject' );
+								}
 								break;
 						}
 
@@ -1482,6 +1485,9 @@ class WDGAjaxActionsProjectDashboard {
 								case '13':
 								default:
 									$user_authentication = __( "En attente de documents", 'yproject' );
+									if ( $WDGUser->has_sent_all_documents() ) {
+										$user_authentication = __( "En attente d'étude des documents", 'yproject' );
+									}
 									break;
 							}
 
