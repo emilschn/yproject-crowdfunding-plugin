@@ -38,4 +38,21 @@ class WDGWPREST_Entity_FileKYC {
 		return WDGWPRESTLib::call_get_wdg( 'file-kyc/' . $file_kyc_id . '/send-to-lemonway' );
 	}
 	
+	/**
+	 * Met à jour le statut d'un document
+	 * Pour supprimer un document, passer en statut 'removed'
+	 */
+	public static function update_status( $filekyc_api_id, $status ) {
+		$parameters = array(
+			'status'	=> $status
+		);
+		return WDGWPRESTLib::call_post_wdg( 'file-kyc/' . $filekyc_api_id, $parameters, TRUE );
+	}
+
+	/**
+	 * Retourne la liste des fichiers en fonction d'un type d'entité et de son identifiant
+	 */
+	public static function get_list_by_entity_id( $entity_type, $user_id, $organization_id ) {
+		return WDGWPRESTLib::call_get_wdg( 'files-kyc/?entity_type=' . $entity_type . '&user_id=' . $user_id . '&organization_id=' . $organization_id );
+	}
 }

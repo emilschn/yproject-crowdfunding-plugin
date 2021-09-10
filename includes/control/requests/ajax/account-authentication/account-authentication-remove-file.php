@@ -1,6 +1,6 @@
 <?php
 /**
- * Gestion de l'upload d'un fichier transmis par Account Authentication
+ * Gestion de la suppression d'un fichier demandée par Account Authentication
  */
 $result = array(
 	'status' => ''
@@ -36,17 +36,23 @@ if ( empty( $organization_id ) ) {
 	$organization_id = 0;
 }
 
-// Récupération du fichier
-$file_document = AjaxCommonHelper::get_input_file( 'document' );
-$file_name = $file_document[ 'name' ];
-$file_name_exploded = explode( '.', $file_name );
-$ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
-$byte_array = file_get_contents( $file_document[ 'tmp_name' ] );
+// Récupération de l'identifiant API du fichier existant
+$filekyc_api_id = FALSE;
+$file_list = WDGWPREST_Entity_FileKYC::get_list_by_entity_id( $user_type, $user_id, $organization_id );
+// Parcourir la liste, vérifier le type et l'index de documents, et si le statut n'est pas déjà "removed"
+foreach ( $file_list as $file_item ) {
+	if ( $file_item->doc_type == $doc_type && $file_item->doc_index == $doc_index && $file_item->status != 'removed' ) {
+		$filekyc_api_id = $file_item->id;
+		break;
+	}
+}
 
-// Envoi du fichier à l'API
-$create_feedback = WDGWPREST_Entity_FileKYC::create( $user_id, $organization_id, $doc_type, $doc_index, $ext, base64_encode( $byte_array ) );
-
-// TODO
-$result[ 'status' ] = 'success';
+if ( !empty( $filekyc_api_id ) ) {
+	// Envoi de la demande de suppression à l'API
+	$create_feedback = WDGWPREST_Entity_FileKYC::update_status( $filekyc_api_id, 'removed' );
+	
+	// TODO
+	$result[ 'status' ] = 'success';
+}
 
 exit( json_encode( $result ) );
