@@ -172,6 +172,7 @@ class WDGAjaxActionsAccountSignin {
 	public static function account_signin_send_validation_email() {
 		$input_email = sanitize_text_field( filter_input(INPUT_POST, 'email-address'));
 		$is_new_account = filter_input(INPUT_POST, 'is-new-account');
+		$redirect_url_after_validation = filter_input(INPUT_POST, 'redirect-url-after-validation');
 
 		$page_validation_email = WDG_Redirect_Engine::override_get_page_url( 'activer-compte' );
 		$result[ 'status' ] = '';
@@ -193,10 +194,8 @@ class WDGAjaxActionsAccountSignin {
 			// Récupération informations utilisateur courant
 			WDGUser::current();
 			$WDGUser = new WDGUser( $user->ID );
+			update_user_meta( $WDGUser->get_wpref(), 'redirect_url_after_validation', $redirect_url_after_validation );
 			$is_new_account_param = ( $is_new_account !== 'false') ? '1' : '0';
-			// TODO : Récupération dernière page visitée (pour essayer de rediriger au mieux)
-			// Problème : on est en Ajax, difficile de savoir d'où on vient, le referer (wp_get_referer) ne fonctionne pas
-			// Il faudrait trouver un autre moyen
 			$link = $page_validation_email . "?action=validate&is-new-account=".$is_new_account_param."&validation-code=" . $WDGUser->get_email_validation_code();
 
 			$mail_sent = NotificationsAPI::user_account_email_validation($WDGUser, $link, ( $is_new_account !== 'false') );
