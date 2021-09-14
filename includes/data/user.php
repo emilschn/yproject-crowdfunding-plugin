@@ -2452,6 +2452,26 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	/**
+	 * Retourne des paramètres GET complémentaires selon la page de redirection
+	 */
+	public static function get_redirect_page_params( $redirect_page_uri ) {
+		$buffer = '';
+
+		// Si on redirige vers la page d'activation du compte, on transmet le code de validation
+		if ( $redirect_page_uri == 'activer-compte' ) {
+			$input_code = filter_input( INPUT_GET, 'validation-code' );
+			$input_is_new_account = filter_input( INPUT_GET, 'is-new-account' );
+			if ( !empty( $input_code ) ) {
+				$buffer = '?validation-code=' . $input_code;
+				$buffer .= '&action=validate';
+				$buffer .= '&is-new-account=' . $input_is_new_account;
+			}
+		}
+
+		return $buffer;
+	}
+
+	/**
 	 * DÃ©finit la page vers laquelle il faudrait rediriger l'utilisateur lors de sa connexion
 	 * @global type $post
 	 * @return type
@@ -2470,6 +2490,7 @@ class WDGUser implements WDGUserInterface {
 			if ( !empty( $get_redirect_page ) ) {
 				// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2', FALSE );
 				$buffer = WDG_Redirect_Engine::override_get_page_name( $get_redirect_page );
+				$buffer .= self::get_redirect_page_params( $get_redirect_page );
 				// on ajoute un éventuel id de campagne
 				$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
 				if ( !empty( $input_get_campaign_id ) ) {
@@ -2502,6 +2523,7 @@ class WDGUser implements WDGUserInterface {
 							if (!empty($posted_redirect_page)) {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a', FALSE );
 								$buffer = $posted_redirect_page;
+								$buffer .= self::get_redirect_page_params( $posted_redirect_page );
 							} else {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b', FALSE );
 								$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
@@ -2539,6 +2561,7 @@ class WDGUser implements WDGUserInterface {
 			if (!empty($posted_redirect_page)) {
 				// ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2', FALSE );
 				$buffer = $posted_redirect_page;
+				$buffer .= self::get_redirect_page_params( $posted_redirect_page );
 
 			//Sinon, on rÃ©cupÃ¨re simplement la page en cours
 			} else {
