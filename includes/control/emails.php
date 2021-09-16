@@ -12,32 +12,36 @@ class WDGEmails {
 		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
 			$WDGUserOrOrganization = new WDGUser( 60 );
 			$intention_amount = 100;
-			switch ( $mail_type ) {
-				case 'preinvestment':
-					NotificationsAPI::confirm_vote_invest_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_vote_invest_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					break;
-				case 'prelaunch':
-					NotificationsAPI::confirm_prelaunch_invest_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_prelaunch_invest_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_prelaunch_invest_follow( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					break;
-				case 'investment-30':
-					NotificationsAPI::confirm_investment_invest30_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_investment_invest30_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_investment_invest30_follow( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					break;
-				case 'investment-100':
-					NotificationsAPI::confirm_investment_invest100_invested( $WDGUserOrOrganization, $campaign );
-					NotificationsAPI::confirm_investment_invest100_investment_pending( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_investment_invest100_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_investment_invest100_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_investment_invest100_follow( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					break;
-				case 'investment-2days':
-					NotificationsAPI::confirm_investment_invest2days_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					NotificationsAPI::confirm_investment_invest2days_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
-					break;
+			$list_language = array( 'fr', 'en' );
+			foreach ( $list_language as $language ) {
+				$WDGUserOrOrganization->set_language( $language );
+				switch ( $mail_type ) {
+					case 'preinvestment':
+						NotificationsAPI::confirm_vote_invest_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_vote_invest_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						break;
+					case 'prelaunch':
+						NotificationsAPI::confirm_prelaunch_invest_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_prelaunch_invest_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_prelaunch_invest_follow( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						break;
+					case 'investment-30':
+						NotificationsAPI::confirm_investment_invest30_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_investment_invest30_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_investment_invest30_follow( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						break;
+					case 'investment-100':
+						NotificationsAPI::confirm_investment_invest100_invested( $WDGUserOrOrganization, $campaign );
+						NotificationsAPI::confirm_investment_invest100_investment_pending( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_investment_invest100_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_investment_invest100_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_investment_invest100_follow( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						break;
+					case 'investment-2days':
+						NotificationsAPI::confirm_investment_invest2days_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						NotificationsAPI::confirm_investment_invest2days_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						break;
+				}
 			}
 
 			return true;
@@ -188,14 +192,18 @@ class WDGEmails {
 
 		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
 			$WDGUserOrOrganization = new WDGUser( 60 );
-			switch ( $mail_type ) {
-				case 'vote-end-pending-campaign':
-					NotificationsAPI::vote_end_pending_campaign( $WDGUserOrOrganization, $campaign );
-					break;
-				case 'vote-end-canceled-campaign':
-					NotificationsAPI::vote_end_canceled_campaign( $WDGUserOrOrganization, $campaign );
-					NotificationsAPI::vote_end_canceled_campaign_refund( $WDGUserOrOrganization, $campaign );
-					break;
+			$list_language = array( 'fr', 'en' );
+			foreach ( $list_language as $language ) {
+				$WDGUserOrOrganization->set_language( $language );
+				switch ( $mail_type ) {
+					case 'vote-end-pending-campaign':
+						NotificationsAPI::vote_end_pending_campaign( $WDGUserOrOrganization, $campaign );
+						break;
+					case 'vote-end-canceled-campaign':
+						NotificationsAPI::vote_end_canceled_campaign( $WDGUserOrOrganization, $campaign );
+						NotificationsAPI::vote_end_canceled_campaign_refund( $WDGUserOrOrganization, $campaign );
+						break;
+				}
 			}
 
 			return true;
@@ -280,19 +288,23 @@ class WDGEmails {
 
 		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
 			$WDGUserOrOrganization = new WDGUser( 60 );
-			switch ( $mail_type ) {
-				case 'end-success-public':
-					NotificationsAPI::campaign_end_success_public( $WDGUserOrOrganization, $campaign );
-					break;
-				case 'end-success-private':
-					NotificationsAPI::campaign_end_success_private( $WDGUserOrOrganization, $campaign );
-					break;
-				case 'end-pending-goal':
-					NotificationsAPI::campaign_end_pending_goal( $WDGUserOrOrganization, $campaign );
-					break;
-				case 'end-failure':
-					NotificationsAPI::campaign_end_failure( $WDGUserOrOrganization, $campaign );
-					break;
+			$list_language = array( 'fr', 'en' );
+			foreach ( $list_language as $language ) {
+				$WDGUserOrOrganization->set_language( $language );
+				switch ( $mail_type ) {
+					case 'end-success-public':
+						NotificationsAPI::campaign_end_success_public( $WDGUserOrOrganization, $campaign );
+						break;
+					case 'end-success-private':
+						NotificationsAPI::campaign_end_success_private( $WDGUserOrOrganization, $campaign );
+						break;
+					case 'end-pending-goal':
+						NotificationsAPI::campaign_end_pending_goal( $WDGUserOrOrganization, $campaign );
+						break;
+					case 'end-failure':
+						NotificationsAPI::campaign_end_failure( $WDGUserOrOrganization, $campaign );
+						break;
+				}
 			}
 
 			return true;
