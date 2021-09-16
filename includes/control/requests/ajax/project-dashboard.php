@@ -1249,6 +1249,9 @@ class WDGAjaxActionsProjectDashboard {
 			} else {
 				if ( $post_invest_status == 'failed' ) {
 					$payment_status = __( "Paiement &eacute;chou&eacute;", 'yproject' );
+					if ( $item_invest[ 'payment_status' ] == 'canceled' ) {
+						$payment_status = __( "Annul&eacute;", 'yproject' );
+					}
 					$payment_status_span_class = 'error';
 					$post_invest_status_span_class = 'failed';
 				}
