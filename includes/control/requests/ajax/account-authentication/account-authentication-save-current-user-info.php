@@ -45,8 +45,13 @@ if ( !empty( $user_api_id ) ) {
 	$user_to_update[ 'country' ] = AjaxCommonHelper::get_input_post( 'address_country' );
 	$user_to_update[ 'tax_country' ] = AjaxCommonHelper::get_input_post( 'tax_country' );
 	// TODO : $user_to_update[ 'language' ]
-	$result_obj = WDGWPREST_Entity_User::update_from_array( $user_api_id, $user_to_update );
+	$result_obj = WDGWPREST_Entity_User::update_from_array( $user_api_id, $user_to_update ); // false s'il y a un pb, l'objet utilisateur si non
 	// TODO : on retourne à VueJS s'il y a une erreur ou si c'est ok
-	$result[ 'status' ] = 'saved';
+	if ( $result_obj !== FALSE ){
+		$result[ 'status' ] = 'saved';
+	}else{
+		$result[ 'status' ] = 'error';
+	}
+	$result[ 'result_obj' ] = $result_obj;// àODO : à supprimer
 }
 exit( json_encode( $result ) );
