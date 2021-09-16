@@ -1503,6 +1503,17 @@ class WDGAjaxActionsProjectDashboard {
 
 					$count_distinct_investors++;
 					if ( !empty( $user_item[ 'invest_item' ][ 'item' ] ) ) {
+						// ***
+						// Ce test ne devrait plus être utile un jour
+						// Pour certains vieux investisseurs, les données étaient stockées juste sur le site
+						// Or, quand on se retrouve dans le cas ci-dessous, on va chercher uniquement les données de l'API
+						// On se retrouve donc avec des données vides
+						// Ce test permet de mettre à jour l'API si les données n'y figurent pas (et n'est donc plus nécessaire à l'affichage suivant)
+						if ( empty( $user_item[ 'invest_item' ][ 'item' ][ 'lastname' ] ) ) {
+							$WDGUser = new WDGUser( $user_id );
+							$WDGUser->update_api();
+						}
+						// ***
 						$array_contacts[$user_id]["user_link"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
 						$array_contacts[$user_id]["user_email"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
 						$array_contacts[$user_id]["user_last_name"] = $user_item[ 'invest_item' ][ 'item' ][ 'lastname' ];
