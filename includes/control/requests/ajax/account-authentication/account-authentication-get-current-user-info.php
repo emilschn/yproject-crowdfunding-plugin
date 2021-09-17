@@ -40,7 +40,7 @@ if ( !empty( $user_api_id ) ) {
 		$result[ 'address_number_comp' ] = $api_data->address_number_comp;
 		$result[ 'address_street' ] = html_entity_decode( $api_data->address, ENT_QUOTES | ENT_HTML401 );
 		$result[ 'address_postalcode' ] = $api_data->postalcode;
-		$result[ 'address_city' ] = $api_data->city;
+		$result[ 'address_city' ] = html_entity_decode( $api_data->city );
 		$result[ 'address_country' ] = $api_data->country;
 		$result[ 'tax_country' ] = $api_data->tax_country;
 		$result[ 'language' ] = $api_data->language;
