@@ -53,6 +53,6 @@ class WDGWPREST_Entity_FileKYC {
 	 * Retourne la liste des fichiers en fonction d'un type d'entité et de son identifiant
 	 */
 	public static function get_list_by_entity_id( $entity_type, $user_id, $organization_id ) {
-		return WDGWPRESTLib::call_get_wdg( 'files-kyc/?entity_type=' . $entity_type . '&user_id=' . $user_id . '&organization_id=' . $organization_id );
+		return WDGWPRESTLib::call_get_wdg( 'files-kyc/?entity_type=' . $entity_type . '&user_id=' . $user_id . '&organization_id=' . $organization_id, TRUE );
 	}
 }
