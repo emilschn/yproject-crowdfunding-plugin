@@ -22,7 +22,7 @@ class WDGWPREST_Entity_Investment {
 	 * @param ATCF_Campaign $campaign
 	 * @param object $edd_payment_item
 	 */
-	public static function set_post_parameters($campaign, $edd_payment_item, $user_wpref) {
+	public static function set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status ) {
 		$payment_date = $edd_payment_item->post_date;
 		if ( empty( $payment_date ) ) {
 			$date_now = new DateTime();
@@ -86,7 +86,10 @@ class WDGWPREST_Entity_Investment {
 		$amount = edd_get_payment_amount( $edd_payment_item->ID );
 		$amount_with_royalties_in_cents = 0;
 		$WDGInvestment = new WDGInvestment( $edd_payment_item->ID );
-		$payment_status = $WDGInvestment->get_saved_status();
+		$status = $WDGInvestment->get_saved_status();
+		if ( empty( $payment_status ) ) {
+			$payment_status = $WDGInvestment->get_payment_status();
+		}
 		$contract_status = get_post_meta( $edd_payment_item->ID, WDGInvestment::$contract_status_meta, TRUE );
 
 		$payment_key = edd_get_payment_key( $edd_payment_item->ID );
@@ -147,7 +150,7 @@ class WDGWPREST_Entity_Investment {
 			'is_preinvestment'			=> !empty( $contract_status ),
 			'mean_payment'				=> $mean_of_payment,
 			'payment_provider'			=> $payment_provider,
-			'status'					=> $payment_status,
+			'status'					=> $status,
 			'payment_key'				=> $payment_key,
 			'payment_status'			=> $payment_status,
 			'signature_key'				=> $signature_id,
@@ -177,10 +180,10 @@ class WDGWPREST_Entity_Investment {
 	 * @param ATCF_Campaign $campaign
 	 * @param object $edd_payment_item
 	 */
-	public static function create_or_update($campaign, $edd_payment_item, $user_wpref) {
+	public static function create_or_update( $campaign, $edd_payment_item, $user_wpref, $payment_status ) {
 		$buffer = FALSE;
 
-		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item, $user_wpref );
+		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status );
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
 			if ( $buffer === FALSE ) {
