@@ -709,14 +709,14 @@ class NotificationsAPI {
 		// Le maximum de destinataire est de 99, il faut découper
 		$recipients_array = explode( ',', $recipients );
 		$recipients_array_count = count( $recipients_array );
-		if ( $recipients_array_count > 90 ) {
+		if ( $recipients_array_count > 50 ) {
 			// On envoie par troupeaux de 99 investisseurs
 			$recipients = '';
 			$index = 0;
 			for ( $i = 0; $i < $recipients_array_count; $i++ ) {
 				$recipients .= $recipients_array[ $i ];
 				$index++;
-				if ( $index == 90 ) {
+				if ( $index == 50 ) {
 					$parameters = array(
 						'tool'			=> 'sendinblue',
 						'template'		=> $id_template,
