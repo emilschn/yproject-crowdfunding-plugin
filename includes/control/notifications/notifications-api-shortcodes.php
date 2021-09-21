@@ -583,11 +583,19 @@ class NotificationsAPIShortcodes {
 	 * Date de premier paiement
 	 */
 	public static function project_date_first_payment() {
+		global $force_language_to_translate_to;
+		if ( !empty( $force_language_to_translate_to ) ) {
+			WDG_Languages_Helpers::switch_to_temp_language( $force_language_to_translate_to );
+		}
 		$project_date_first_payment = self::$campaign->first_payment_date();
 		$date_first_payment = new DateTime( $project_date_first_payment );
 		$months = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
 		$month_str = __( $months[ $date_first_payment->format('m') - 1 ] );
 		$project_date_first_payment_month_str = $month_str . ' ' . $date_first_payment->format( 'Y' );
+		
+		if ( !empty( $force_language_to_translate_to ) ) {
+			WDG_Languages_Helpers::switch_back_to_display_language();
+		}
 
 		return $project_date_first_payment_month_str;
 	}
