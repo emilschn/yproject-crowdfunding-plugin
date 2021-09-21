@@ -100,4 +100,16 @@ class WDGRoutes {
 			exit();
 		}
 	}
+
+	/**
+	 * Si l'investisseur n'a pas envoyé ses documents
+	 * Redirige vers mon-compte/authentification
+	 */
+	public static function redirect_invest_if_user_has_not_send_documents() {
+		$WDGUser = WDGUser::current();
+		if ( !$WDGUser->has_sent_all_documents() ) {
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte/authentification' ) );
+			exit();
+		}
+	}
 }
