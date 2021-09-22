@@ -1426,6 +1426,15 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
+	public function funding_duration_infinite_estimation() {
+		$buffer = $this->get_api_data( 'funding_duration_infinite_estimation' );
+		if ( empty( $buffer ) && $buffer != 0 ) {
+			$buffer = 5;
+		}
+
+		return $buffer;
+	}
+
 	public function is_beyond_funding_duration() {
 		$today_date = new DateTime();
 		$str_date_contract_start = $this->contract_start_date();

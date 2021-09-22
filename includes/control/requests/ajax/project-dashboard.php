@@ -717,6 +717,14 @@ class WDGAjaxActionsProjectDashboard {
 		}
 
 		if ( $current_wdg_user->is_admin() ) {
+			$new_funding_duration_infinite_estimation = WDG_Form::formatInputTextNumber( 'new_funding_duration_infinite_estimation' );
+			if ( $new_funding_duration_infinite_estimation >= 0 ) {
+				$campaign->set_api_data( 'funding_duration_infinite_estimation', $new_funding_duration_infinite_estimation );
+				$success['new_funding_duration_infinite_estimation'] = 1;
+			} else {
+				$errors['new_funding_duration_infinite_estimation'] = "La durée doit être positive";
+			}
+
 			$new_platform_commission = WDG_Form::formatInputTextNumber( 'new_platform_commission' );
 			if ( $new_platform_commission >= 0 ) {
 				update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
@@ -889,6 +897,10 @@ class WDGAjaxActionsProjectDashboard {
 		$funding_duration = $campaign->funding_duration();
 		if ( $funding_duration == 0 ) {
 			$funding_duration = 5;
+			$funding_duration_infinite_estimation = $campaign->funding_duration_infinite_estimation();
+			if ( !empty( $funding_duration_infinite_estimation ) && $funding_duration_infinite_estimation > 0 ) {
+				$funding_duration = $funding_duration_infinite_estimation;
+			}
 		}
 		while ( filter_input( INPUT_POST, 'new_estimated_turnover_' . $i ) != '' && ( $i + 1 <= $funding_duration ) ) {
 			$current_val = WDG_Form::formatInputTextNumber( 'new_estimated_turnover_' .$i );
