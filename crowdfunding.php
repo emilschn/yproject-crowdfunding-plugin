@@ -216,7 +216,6 @@ final class ATCF_CrowdFunding {
 		WDGPostActions::init_actions();
 
 		if (get_option('wdg_version') != $this->version) {
-			WDGKYCFile::upgrade_db();
 			WDG_Cache_Plugin::upgrade_db();
 			WDGCampaignVotes::upgrade_db();
 			update_option('wdg_version', $this->version);

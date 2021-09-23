@@ -887,14 +887,25 @@ class WDGOrganization implements WDGUserInterface {
 	 * Upload des KYC vers Lemonway si possible
 	 */
 	public function send_kyc() {
-		if ( $this->has_lemonway_wallet() ) {
+		if ($this->has_lemonway_wallet()) {
 			$this->sync_creator_kyc();
-			$documents_type_list = LemonwayDocument::get_list_sorted_by_kyc_type();
-			foreach ( $documents_type_list as $document_type => $lemonway_type ) {
-				$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
-				if ( count( $document_filelist ) > 0 ) {
-					$current_document = $document_filelist[0];
-					LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+			// on récupère tous les kyc de l'organisation
+			$document_filelist = WDGKYCFile::get_list_by_owner_id($this->wpref, WDGKYCFile::$owner_organization);
+			// on les parcourt
+			foreach ($document_filelist as $kyc_document) {
+				// on récupère le type LW selon le type "maison" et l'index
+				$lemonway_type = LemonwayDocument::get_lw_document_id_from_document_type($kyc_document->type, $kyc_document->doc_index);
+				$document_status = $this->get_document_lemonway_status($lemonway_type);
+				//on vérifie le status du fichier, et on renvoie vers LW, si ce n'est pas un statut d'attente ou de validation
+				if ($document_status != LemonwayDocument::$document_status_waiting_verification &&  $document_status != LemonwayDocument::$document_status_waiting &&  $document_status != LemonwayDocument::$document_status_accepted) {
+					// si ce fichier a besoin d'être uploadé vers LW et qu'il n'était pas sur l'API
+					if (!$kyc_document->is_api_file) {
+						// on le transfère sur l'API ce qui forcera son upload vers LW
+						WDGKYCFile::transfer_file_to_api($kyc_document, WDGKYCFile::$owner_organization);
+					} else {
+						// n'arrive pas normalement ?
+						WDGWPREST_Entity_FileKYC::send_to_lemonway($kyc_document->id);
+					}
 				}
 			}
 		}

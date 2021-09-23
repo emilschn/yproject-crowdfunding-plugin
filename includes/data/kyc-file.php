@@ -11,15 +11,29 @@ class WDGKYCFile {
 	public static $type_bank = 'bank';
 	public static $type_id = 'id';
 	public static $type_id_back = 'id_back';
-	public static $type_idbis = 'idbis';
-	public static $type_kbis = 'kbis';
-	public static $type_status = 'status';
-	public static $type_capital_allocation = 'capital_allocation';
 	public static $type_id_2 = 'id_2';
 	public static $type_id_2_back = 'id_2_back';
+
+	public static $type_kbis = 'kbis';
+	public static $type_status = 'status';
+	public static $type_capital_allocation = 'capital_allocation';// TODO : normalement c'est capital-allocation ?
+	public static $type_idbis = 'idbis';
 	public static $type_idbis_2 = 'idbis_2';
 	public static $type_id_3 = 'id_3';
 	public static $type_idbis_3 = 'idbis_3';
+
+	// nouveaux types présents sur l'API
+	public static $type_passport = 'passport';
+	public static $type_tax = 'tax';
+	public static $type_welfare = 'welfare';
+	public static $type_family = 'family';
+	public static $type_birth = 'birth';
+	public static $type_driving = 'driving';
+
+	public static $type_person2_doc1 = 'person2-doc1';
+	public static $type_person2_doc2 = 'person2-doc2';
+	public static $type_person3_doc1 = 'person3-doc1';
+	public static $type_person3_doc2 = 'person3-doc2';
 
 	public static $status_uploaded = 'uploaded';
 	public static $status_sent = 'sent';
@@ -30,29 +44,59 @@ class WDGKYCFile {
 
 	public $id;
 	public $type;
+	public $doc_index = 1;// par défaut à 1, car n'existait pas avat
 	public $orga_id;
 	public $user_id;
+	public $file_extension;
 	public $file_name;
+	public $file_signature;
 	public $status;
 	public $date_uploaded;
 	public $gateway;
 	public $gateway_id;
+	public $metadata;
+	public $url;
+
+	public $is_api_file;
 
 	public function __construct($kycfile_id) {
-		global $wpdb;
-		$table_name = $wpdb->prefix . WDGKYCFile::$table_name;
-		$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$kycfile_id;
-		$kycfile_item = $wpdb->get_row( $query );
-		if ( $kycfile_item ) {
+		// on cherche d'abord dans l'API s'il existe un kycfile avec cet id
+		$kycfile_item = WDGWPREST_Entity_FileKYC::get( $kycfile_id );
+		if( isset($kycfile_item)) {
 			$this->id = $kycfile_item->id;
-			$this->type = $kycfile_item->type;
-			$this->orga_id = $kycfile_item->orga_id;
 			$this->user_id = $kycfile_item->user_id;
+			$this->orga_id = $kycfile_item->organization_id;
+			$this->type = $kycfile_item->doc_type;
+			$this->doc_index = $kycfile_item->doc_index;
+			$this->file_extension = $kycfile_item->file_extension;
 			$this->file_name = $kycfile_item->file_name;
+			$this->file_signature = $kycfile_item->file_signature;
+			$this->date_uploaded = $kycfile_item->update_date;
 			$this->status = $kycfile_item->status;
-			$this->date_uploaded = $kycfile_item->date_uploaded;
 			$this->gateway = $kycfile_item->gateway;
 			$this->gateway_id = $kycfile_item->gateway_id;
+			$this->metadata = $kycfile_item->metadata;
+			$this->url = $kycfile_item->url;
+			$this->is_api_file = TRUE;
+		}else{
+			// TODO : à supprimer après transfert de tous les kyc sur l'API
+			// sinon on cherche sur le site
+			global $wpdb;
+			$table_name = $wpdb->prefix . WDGKYCFile::$table_name;
+			$query = 'SELECT * FROM ' .$table_name. ' WHERE id=' .$kycfile_id;
+			$kycfile_item = $wpdb->get_row( $query );
+			if ( $kycfile_item ) {
+				$this->id = $kycfile_item->id;
+				$this->type = $kycfile_item->type;
+				$this->orga_id = $kycfile_item->orga_id;
+				$this->user_id = $kycfile_item->user_id;
+				$this->file_name = $kycfile_item->file_name;
+				$this->status = $kycfile_item->status;
+				$this->date_uploaded = $kycfile_item->date_uploaded;
+				$this->gateway = $kycfile_item->gateway;
+				$this->gateway_id = $kycfile_item->gateway_id;
+				$this->is_api_file = FALSE;
+			}
 		}
 	}
 
@@ -61,22 +105,27 @@ class WDGKYCFile {
 	 * @return int
 	 */
 	public function save() {
-		global $wpdb;
-		$table_name = $wpdb->prefix . WDGKYCFile::$table_name;
-		$result = $wpdb->update($table_name, array(
-				'type' => $this->type,
-				'orga_id' => $this->orga_id,
-				'user_id' => $this->user_id,
-				'file_name' => $this->file_name,
-				'status' => $this->status,
-				'date_uploaded' => $this->date_uploaded,
-				'gateway' => $this->gateway,
-				'gateway_id' => $this->gateway_id,
-			), array(
-				'id' => $this->id
-			));
-		if ($result !== FALSE) {
-			return $this->id;
+		if ($this->is_api_file ){
+			WDGWPREST_Entity_FileKYC::update( $this );
+		} else {
+			// TODO : à supprimer après transfert de tous les kyc sur l'API
+			global $wpdb;
+			$table_name = $wpdb->prefix . WDGKYCFile::$table_name;
+			$result = $wpdb->update($table_name, array(
+					'type' => $this->type,
+					'orga_id' => $this->orga_id,
+					'user_id' => $this->user_id,
+					'file_name' => $this->file_name,
+					'status' => $this->status,
+					'date_uploaded' => $this->date_uploaded,
+					'gateway' => $this->gateway,
+					'gateway_id' => $this->gateway_id,
+				), array(
+					'id' => $this->id
+				));
+			if ($result !== FALSE) {
+				return $this->id;
+			}
 		}
 	}
 
@@ -84,10 +133,17 @@ class WDGKYCFile {
 	 * Retourne le chemin vers le fichier pour un téléchargement
 	 */
 	public function get_public_filepath($with_id = TRUE) {
-		if ( $with_id ) {
-			return admin_url( 'admin-post.php?action=view_kyc_file&id_kyc=' .$this->id );
+		if ($this->is_api_file ){
+			// url sur l'api : 
+			//home_url( '/wp-content/plugins/wdgrestapi/' .$this->get_path(). '/' .$this->loaded_data->file_name );
+			return $this->url;
 		} else {
-			return site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/kyc/' .$this->file_name );
+			// TODO : à supprimer après transfert de tous les kyc sur l'API
+			if ($with_id) {
+				return admin_url('admin-post.php?action=view_kyc_file&id_kyc=' .$this->id);
+			} else {
+				return site_url('/wp-content/plugins/appthemer-crowdfunding/includes/kyc/' .$this->file_name);
+			}
 		}
 	}
 
@@ -95,6 +151,7 @@ class WDGKYCFile {
 	 * Retourne le tableau de bytes à envoyer à Lemonway
 	 */
 	public function get_byte_array() {
+		// TODO : à supprimer après transfert de tous les kyc sur l'API
 		if ( file_exists( __DIR__ . '/../kyc/' . $this->file_name ) ) {
 			$byte_array = file_get_contents( __DIR__ . '/../kyc/' . $this->file_name );
 
@@ -200,118 +257,182 @@ class WDGKYCFile {
 	/*******************************************************************************
 	 * REQUETES STATIQUES
 	 ******************************************************************************/
-	/**
-	 * Mise à jour base de données
-	 */
-	public static function upgrade_db() {
+	public static function get_list_kyc_type() {
+		return array( 
+			WDGKYCFile::$type_bank,
+			WDGKYCFile::$type_id,
+			WDGKYCFile::$type_id_back,
+			WDGKYCFile::$type_id_2,
+			WDGKYCFile::$type_id_2_back,
+			WDGKYCFile::$type_kbis,
+			WDGKYCFile::$type_status,
+			WDGKYCFile::$type_capital_allocation,
+			WDGKYCFile::$type_idbis,
+			WDGKYCFile::$type_idbis_2,
+			WDGKYCFile::$type_id_3,
+			WDGKYCFile::$type_idbis_3,
+			WDGKYCFile::$type_passport,
+			WDGKYCFile::$type_tax,
+			WDGKYCFile::$type_welfare,
+			WDGKYCFile::$type_family,
+			WDGKYCFile::$type_birth,
+			WDGKYCFile::$type_driving,
+			WDGKYCFile::$type_person2_doc1,
+			WDGKYCFile::$type_person2_doc2,
+			WDGKYCFile::$type_person3_doc1,
+			WDGKYCFile::$type_person3_doc2
+		);
+	}
+	public static function get_by_gateway_id( $gateway_id ) {
+		$buffer = FALSE;
+		// TODO : à supprimer après transfert de tous les kyc sur l'API
+		// On cherche d'abord sur le site
 		global $wpdb;
-		$charset_collate = $wpdb->get_charset_collate();
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-
 		$table_name = $wpdb->prefix . WDGKYCFile::$table_name;
-		$sql = "CREATE TABLE " .$table_name. " (
-			id mediumint(9) NOT NULL AUTO_INCREMENT,
-			type tinytext,
-			orga_id mediumint(9) NOT NULL,
-			user_id mediumint(9) NOT NULL,
-			file_name tinytext,
-			status text,
-			date_uploaded date DEFAULT '0000-00-00',
-			gateway tinytext,
-			gateway_id text,
-			UNIQUE KEY id (id)
-		) $charset_collate;";
-		$result = dbDelta( $sql );
+		$query = 'SELECT * FROM ' .$table_name. ' WHERE gateway_id=' .$gateway_id;
+		$kycfile_item = $wpdb->get_row( $query );
+		if( !isset($kycfile_item)) {				
+			// si on ne trouve pas on cherche sur l'API
+			$kycfile_item = WDGWPREST_Entity_FileKYC::get_by_gateway_id( $gateway_id );
+		}
+
+		if( isset($kycfile_item)) {
+			// TODO : cette façon de faire (identique à WDGROIDeclaration::get_by_payment_token provque un appel inutile à l'API, à améliorer)
+			$buffer = new WDGKYCFile( $kycfile_item->id );
+		}
+		return $buffer;
+
 	}
 
 	/**
-	 * Ajoute un nouveau fichier
+	 * Transfert d'un fichier présent sur le site vers l'API
+	 *
+	 * @param WDGKYCFile $file
+	 * @param [type] $type_owner (user ou organization)
+	 * @return void
 	 */
-	public static function add_file($type, $id_owner, $type_owner, $file_uploaded_data) {
-		$file_name = $file_uploaded_data['name'];
-		$file_name_exploded = explode('.', $file_name);
-		$ext = $file_name_exploded[count($file_name_exploded) - 1];
-
-		if ( !in_array( strtolower( $ext ), WDGKYCFile::$authorized_format_list ) ) {
-			return 'EXT';
-		}
-		if ( intval( $file_uploaded_data['size'] ) < 10 ) {
-			return 'UPLOAD';
-		}
-		if ( ( intval( $file_uploaded_data['size'] ) / 1024) / 1024 > 6 ) {
-			return 'SIZE';
-		}
-
-		$random_filename = '';
-		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		$size = strlen( $chars );
-		for ( $i = 0; $i < 15; $i++ ) {
-			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
-		}
-		while ( file_exists( __DIR__ . '/../kyc/' . $random_filename . '.' . $ext ) ) {
-			$random_filename .= $chars[ rand( 0, $size - 1 ) ];
-		}
-		$random_filename = $random_filename . '.' . $ext;
-		$moved = move_uploaded_file( $file_uploaded_data['tmp_name'], __DIR__ . '/../kyc/' . $random_filename );
-		if (!$moved ){
-			return 'SERVER';
-		}
-		if ( intval( filesize( __DIR__ . '/../kyc/' . $random_filename ) ) < 10   ){
-			return 'UPLOAD';
-		}
-		if ( ( filesize( __DIR__ . '/../kyc/' . $random_filename ) / 1024) / 1024 > 6  ){
-			return 'SIZE';
-		}
-
-		global $wpdb;
-		$date_now = new DateTime();
-		$more_orga = false;
-
-		if ( $type_owner == WDGKYCFile::$owner_user ) {
-			$user_id = $id_owner;
-			$WDGUser = new WDGUser( $id_owner );
-			$orga_id = 0;
-			$orga_list = $WDGUser->get_organizations_list();
-
-			if ( is_array($orga_list) && count($orga_list) == 1 ) {
-				$orga_id = $orga_list[0]->wpref;
-			} elseif ( is_array($orga_list) && count($orga_list) > 1 ) {
-				$more_orga = true;
+	public static function transfer_file_to_api(WDGKYCFile $file, $type_owner) {
+		
+		// on met à jour les  types si on a d'anciens types
+		$doc_type = $file->type;
+		$doc_index = 1;
+		if ($type_owner === 'organization') {
+			if ( $doc_type == self::$type_idbis){
+				$doc_type = self::$type_person2_doc1;
 			}
-		} elseif ($type_owner == WDGKYCFile::$owner_organization) {
-			$orga_id = $id_owner;
-			$user_id = 0;
-		}
-
-		if ( $more_orga ) {
-			foreach ( $orga_list as $orga ) {
-				$result = $wpdb->insert($wpdb->prefix . WDGKYCFile::$table_name, array(
-						'type'			=> $type,
-						'orga_id'		=> $orga->wpref,
-						'user_id'		=> $user_id,
-						'file_name'		=> $random_filename,
-						'status'		=> WDGKYCFile::$status_uploaded,
-						'date_uploaded'	=> $date_now->format("Y-m-d"),
-						'gateway'		=> '',
-						'gateway_id'	=> ''
-					));
+			if ( $doc_type == self::$type_idbis_2){
+				$doc_type = self::$type_person2_doc2;
+			}
+			if ( $doc_type == self::$type_id_3){
+				$doc_type = self::$type_person3_doc1;
+			}
+			if ( $doc_type == self::$type_idbis_3){
+				$doc_type = self::$type_person3_doc2;
+			}
+			if ( $doc_type == self::$type_id_2){
+				$doc_type = self::$type_person2_doc1;
 			}
 		} else {
-			$result = $wpdb->insert($wpdb->prefix . WDGKYCFile::$table_name, array(
-					'type'			=> $type,
-					'orga_id'		=> $orga_id,
-					'user_id'		=> $user_id,
-					'file_name'		=> $random_filename,
-					'status'		=> WDGKYCFile::$status_uploaded,
-					'date_uploaded'	=> $date_now->format("Y-m-d"),
-					'gateway'		=> '',
-					'gateway_id'	=> ''
-				));
+			if ( $doc_type == self::$type_id_back){
+				$doc_type = self::$type_id;
+				$doc_index = 2;
+			}
+			if ( $doc_type == self::$type_id_2){
+				$doc_type = self::$type_passport;
+			}
+			if ( $doc_type == self::$type_id_2_back){
+				$doc_type = self::$type_passport;
+				$doc_index = 2;
+			}
+		}
+		
+		$file_name = $file->file_name;
+		$file_name_exploded = explode('.', $file_name);
+		$ext = $file_name_exploded[ count($file_name_exploded) - 1 ];
+		$byte_array = $file->get_byte_array();
+		// Envoi du fichier à l'API
+		ypcf_debug_log( 'WDGKYCFile::transfer_file_to_api > $file->type = ' . $file->type . ' $file->user_id = ' . $file->user_id . ' $type_owner = ' . $type_owner . ' $file->organization_id = ' . $file->organization_id . ' $doc_type = ' . $doc_type . ' $doc_index = ' . $doc_index, FALSE);
+		$create_feedback = WDGWPREST_Entity_FileKYC::create($file->user_id, $file->organization_id, $doc_type, $doc_index, $ext, base64_encode($byte_array));
+
+		// supprimer le fichier actuel sur le site
+		$file->delete();
+
+	}
+	/**
+	 * Ajoute un nouveau fichier
+	 */
+	// TODO : à supprimer après transfert de tous les kyc sur l'API ?
+	public static function add_file($doc_type, $id_owner, $type_owner, $file_uploaded_data, $doc_index = '') {
+		ypcf_debug_log( 'WDGKYCFile::add_file > $doc_type = ' . $doc_type . ' $id_owner = ' . $id_owner . ' $type_owner = ' . $type_owner . ' $doc_index = ' . $doc_index, FALSE);
+		// Mapping : https://docs.google.com/spreadsheets/d/19i6O3s7f2-MHHXiFuhtG6v0UrBn6KdmzReD0URe_QAI/edit?usp=sharing
+		
+
+		if (!empty($id_owner)) {
+			// on défini le doc_index à 1 par défaut s'il n'est pas défini
+			if( $doc_index == '' ){
+				$doc_index = 1;
+			}
+			// on met à jour les  types si on a d'anciens types
+			if ($type_owner === 'organization') {
+				$user_id = 0;
+				if ( $doc_type == self::$type_idbis){
+					$doc_type = self::$type_person2_doc1;
+				}
+				if ( $doc_type == self::$type_idbis_2){
+					$doc_type = self::$type_person2_doc2;
+				}
+				if ( $doc_type == self::$type_id_3){
+					$doc_type = self::$type_person3_doc1;
+				}
+				if ( $doc_type == self::$type_idbis_3){
+					$doc_type = self::$type_person3_doc2;
+				}
+				if ( $doc_type == self::$type_id_2){
+					$doc_type = self::$type_person2_doc1;
+				}
+			} else {
+				$organization_id = 0;
+				if ( $doc_type == self::$type_id_back){
+					$doc_type = self::$type_id;
+					$doc_index = 2;
+				}
+				if ( $doc_type == self::$type_id_2){
+					$doc_type = self::$type_passport;
+				}
+				if ( $doc_type == self::$type_id_2_back){
+					$doc_type = self::$type_passport;
+					$doc_index = 2;
+				}
+			}
+			// on commence par récupérer les éventuels kyc présents dans l'API
+			//*******************
+			// On commence par changer le statut de l'existant en "supprimé"
+
+			// Récupération de l'identifiant API du fichier existant
+			$file_list = self::get_list_by_owner_id($id_owner, $type_owner, $doc_type);
+			// Parcourir la liste, vérifier le type et l'index de documents, et si le statut n'est pas déjà "removed"
+			foreach ($file_list as $file_item) {
+				if ($file_item->doc_type == $doc_type && $file_item->doc_index == $doc_index && $file_item->status != 'removed') {
+					// Envoi de la demande de suppression à l'API
+					WDGWPREST_Entity_FileKYC::update_status($file_item->id, 'removed');
+				}
+			}
+			//*******************
+
+
+			//*******************
+			// On envoie le nouveau document
+
+			// Récupération du fichier
+			$file_name = $file_uploaded_data[ 'name' ];
+			$file_name_exploded = explode('.', $file_name);
+			$ext = $file_name_exploded[ count($file_name_exploded) - 1 ];
+			$byte_array = file_get_contents($file_uploaded_data[ 'tmp_name' ]);
+
+			// Envoi du fichier à l'API
+			$create_feedback = WDGWPREST_Entity_FileKYC::create($user_id, $organization_id, $doc_type, $doc_index, $ext, base64_encode($byte_array));
 		}
 
-		if ($result !== FALSE) {
-			return $wpdb->insert_id;
-		}
 	}
 
 	/**
@@ -321,6 +442,48 @@ class WDGKYCFile {
 		$buffer = array();
 
 		if ( !empty( $id_owner ) ) {
+			// on commence par récupérer les éventuels kyc présents dans l'API
+			// on met à jour les types si on a d'anciens types
+			if ($type_owner === 'organization') {
+				$user_id = 0;
+				if ( $type == self::$type_idbis){
+					$type_api = self::$type_person2_doc1;
+				}
+				if ( $type == self::$type_idbis_2){
+					$type_api = self::$type_person2_doc2;
+				}
+				if ( $type == self::$type_id_3){
+					$type_api = self::$type_person3_doc1;
+				}
+				if ( $type == self::$type_idbis_3){
+					$type_api = self::$type_person3_doc2;
+				}
+				if ( $type == self::$type_id_2){
+					$type_api = self::$type_person2_doc1;
+				}
+			} else {
+				$organization_id = 0;
+				if ( $type == self::$type_id_back){
+					$type_api = self::$type_id;
+				}
+				if ( $type == self::$type_id_2){
+					$type_api = self::$type_passport;
+				}
+				if ( $type == self::$type_id_2_back){
+					$type_api = self::$type_passport;
+				}
+			}
+			$file_api_list = WDGWPREST_Entity_FileKYC::get_list_by_entity_id( $type_owner, $user_id, $organization_id );
+			foreach ( $file_api_list as $kycfile_item ) {
+				// Parcourir la liste, vérifier le type s'il est précisé
+				if ( $type == '' || $kycfile_item->doc_type == $type_api ) {
+					$KYCfile = new WDGKYCFile( $file_api_list->id );
+					array_push($buffer, $KYCfile);
+				}
+			}
+
+			// puis on ajoute les fichiers trouvés sur le site
+			// TODO : à supprimer après transfert de tous les kyc sur l'API
 			global $wpdb;
 			$query = "SELECT id FROM " .$wpdb->prefix . WDGKYCFile::$table_name;
 			if ($type_owner == WDGKYCFile::$owner_organization) {

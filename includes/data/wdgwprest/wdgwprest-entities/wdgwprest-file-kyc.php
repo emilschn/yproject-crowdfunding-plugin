@@ -32,6 +32,43 @@ class WDGWPREST_Entity_FileKYC {
 	}
 
 	/**
+	 * Retourne un fichier en fonction de son id
+	 */
+	public static function get( $file_kyc_id ) {
+		return WDGWPRESTLib::call_get_wdg( 'file-kyc/' . $file_kyc_id, TRUE );
+	}
+
+	/**
+	 * Retourne un fichier en fonction de son gateway_id
+	 */
+	public static function get_by_gateway_id( $gateway_id ) {
+		return WDGWPRESTLib::call_get_wdg( 'file-kyc/gateway_id/' . $gateway_id, TRUE );
+	}
+	/**
+	 * Mise à jour du kycfile sur l'API à partir d'un id
+	 * @param WDGUser $user
+	 * @return object
+	 */
+	public static function update( WDGKYCFile $filekyc ) {
+		$parameters = array(
+			'id'				=> $filekyc->id,
+			'user_id'			=> $filekyc->user_id,
+			'orga_id'			=> $filekyc->orga_id,
+			'type'				=> $filekyc->type,
+			'doc_index'			=> $filekyc->doc_index,
+			'file_extension'	=> $filekyc->file_extension,
+			'file_name'			=> $filekyc->file_name,
+			'file_signature'	=> $filekyc->file_signature,
+			'date_uploaded'		=> $filekyc->date_uploaded,
+			'status'			=> $filekyc->status,
+			'gateway'			=> $filekyc->gateway,
+			'gateway_id'		=> $filekyc->gateway_id,
+			'metadata'			=> $filekyc->metadata
+		);
+		return WDGWPRESTLib::call_post_wdg( 'file-kyc/' . $filekyc->id, $parameters, TRUE );
+	}
+
+	/**
 	 * Demande à l'API d'envoyer le fichier à LW
 	 */
 	public static function send_to_lemonway( $file_kyc_id ) {

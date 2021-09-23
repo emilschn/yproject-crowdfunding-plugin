@@ -2291,28 +2291,27 @@ class WDGUser implements WDGUserInterface {
 	 */
 	public function send_kyc($force_upload = TRUE) {
 		if ($this->can_register_lemonway()) {
-			if ( $this->register_lemonway() ) {
-				$documents_type_list = array(
-					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
-					WDGKYCFile::$type_id_back	=> LemonwayDocument::$document_type_id_back,
-					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_idbis,
-					WDGKYCFile::$type_id_2_back	=> LemonwayDocument::$document_type_idbis_back
-				);
-				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
-					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
-					if ( !empty( $document_filelist ) ) {
-						$current_document = $document_filelist[0];
-						if ( !empty( $current_document ) ) {
-							$do_upload = TRUE;
-							if ( !$force_upload ) {
-								$document_status = $this->get_document_lemonway_status( $lemonway_type );
-								if ( $document_status !== FALSE ) {
-									$do_upload = FALSE;
-								}
-							}
-							if ( $do_upload ) {
-								LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
-							}
+			if ($this->register_lemonway()) {
+				// on récupère tous les kyc de cet utilisateur
+				$document_filelist = WDGKYCFile::get_list_by_owner_id($this->wp_user->ID, WDGKYCFile::$owner_user);
+				foreach ($document_filelist as $current_document) {
+					$do_upload = true;
+					if (!$force_upload) {
+						$lemonway_type = LemonwayDocument::get_lw_document_id_from_document_type($current_document->type, $current_document->doc_index);
+						$document_status = $this->get_document_lemonway_status($lemonway_type);
+						//on vérifie le status du fichier, et on renvoie vers LW, si ce n'est pas un statut d'attente ou de validation
+						if ($document_status == LemonwayDocument::$document_status_waiting_verification ||  $document_status == LemonwayDocument::$document_status_waiting ||  $document_status == LemonwayDocument::$document_status_accepted) {
+							$do_upload = false;
+						}
+					}
+					if ($do_upload) {
+						// si ce fichier a besoin d'être uploadé vers LW et qu'il n'était pas sur l'API
+						if (!$current_document->is_api_file) {
+							// on le transfère sur l'API ce qui forcera son upload vers LW
+							WDGKYCFile::transfer_file_to_api($current_document, WDGKYCFile::$owner_user);
+						} else {
+							// n'arrive pas normalement ?
+							WDGWPREST_Entity_FileKYC::send_to_lemonway($current_document->id);
 						}
 					}
 				}

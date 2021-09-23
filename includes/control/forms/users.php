@@ -526,14 +526,7 @@ class WDGFormUsers {
 				$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $orga_id, WDGKYCFile::$owner_organization, $_FILES[ 'rib' ] );
 
 				if ( is_int( $file_id ) ) {
-					$WDGFile = new WDGKYCFile( $file_id );
 					$WDGOrganization->register_lemonway();
-					if ( $WDGOrganization->can_register_lemonway() ) {
-						$lw_id = LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
-						if ( !empty( $lw_id ) ) {
-							$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
-						}
-					}
 				}
 			}
 		} else {
@@ -552,14 +545,7 @@ class WDGFormUsers {
 				$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'rib' ] );
 
 				if ( is_int( $file_id ) ) {
-					$WDGFile = new WDGKYCFile( $file_id );
 					$WDGUser->register_lemonway();
-					if ( $WDGUser->can_register_lemonway() ) {
-						$lw_id = LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
-						if ( !empty( $lw_id ) ) {
-							$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
-						}
-					}
 				}
 			}
 		}

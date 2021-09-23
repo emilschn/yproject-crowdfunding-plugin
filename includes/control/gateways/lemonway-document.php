@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class LemonwayDocument {
 	
 	/**
-	 * Types de documents :
+	 * ANciens Types de documents :
 		0: Carte d'identité de la Communauté Euro 
 		1: Justificatif de domicile (fournisseurs d'énergie, tel fixe, feuille d'imposition) 
 		2: Scan ou copie d'un RIB 
@@ -20,6 +20,22 @@ class LemonwayDocument {
 		12 : Inversion avec 11 = Verso de la deuxième pièce d'identité (Statuts entreprise sur LW)
 		13 : Selfie ?
 		14 à 20 : documents divers
+	 */
+	/**
+	 * Nouveaux types de documents  sur API WDGRESTAPI_Lib_Lemonway
+	0	Identity Card (both sides in one file)
+	1	Proof of address
+	2	Proof of Bank Information (IBAN or other)
+	3	Passport (European Community)
+	4	Passport (outside the European Community) 
+	5	Residence permit (both sides in one file)
+	7	Official company registration document (Kbis extract or equivalent)
+	8-10 N'existent pas !
+	11	Driving licence (both sides in one file)
+	12	Status
+	13	Selfie
+	21	SDD mandate
+	Espaces libres : 6, 14-20
 	 */
 	public static $document_type_id = 0;
 	public static $document_type_home = 1;
@@ -36,6 +52,17 @@ class LemonwayDocument {
 	public static $document_type_id3 = 18;
 	public static $document_type_idbis3 = 19;
 	public static $document_type_capital_allocation = 20;
+
+	// public static $document_type_id = 0;
+	public static $document_type_proof_address = 1;
+	public static $document_type_iban = 2;
+	public static $document_type_passport_europe_community = 3;
+	public static $document_type_passport_out_europe = 4;
+	// public static $document_type_residence_permit = 5;
+	public static $document_type_company_official_document = 7;
+	public static $document_type_driving_licence = 11;
+	public static $document_type_company_status = 12;
+	// public static $document_type_selfie = 13;
 	
 	/**
 	 * Statuts de documents :
@@ -57,7 +84,6 @@ class LemonwayDocument {
 	public static $document_status_refused_wrong_type = 6;
 	public static $document_status_refused_wrong_person = 7;
 	
-	private static $documents_list;
 
 	private $wallet_id;
 	private $document_type;
@@ -85,6 +111,76 @@ class LemonwayDocument {
 		$this->init();
 	}
 	
+
+	/**
+	 * Récupère le type de doc LW à partir d'une chaine interne
+	 * Liste des chaines internes : 'id', 'passport', 'tax', 'welfare', 'family', 'birth', 'driving', 'kbis', 'status', 'capital-allocation', 'person2-doc1', 'person2-doc2', 'person3-doc1', 'person3-doc2'
+	 */
+	// cf sur API WDGRESTAPI_Lib_Lemonway::get_lw_document_id_from_document_type
+	public static function get_lw_document_id_from_document_type ( $document_type, $index ) {
+		switch ( $document_type ) {
+			case 'id':
+				if ( $index == 1 ) {
+					return self::$document_type_id;
+				} else {
+					return self::$document_type_proof_address;
+				}
+				break;
+			case 'passport':
+				if ( $index == 1 ) {
+					return self::$document_type_passport_europe_community;
+				} else {
+					return self::$document_type_passport_out_europe;
+				}
+				break;
+			case 'tax':
+			case 'welfare':
+			case 'family':
+			case 'birth':
+				if ( $index == 1 ) {
+					return 6; // Espace libre
+				} else {
+					return self::$document_type_selfie;
+				}
+				break;
+			case 'driving':
+				if ( $index == 1 ) {
+					return self::$document_type_driving_licence;
+				} else {
+					return self::$document_type_selfie;
+				}
+				break;
+			case 'kbis':
+				return self::$document_type_company_official_document;
+				break;
+			case 'status':
+				return self::$document_type_company_status;
+				break;
+			case 'capital-allocation':
+				return 14; // Espace libre
+				break;
+			case 'person2-doc1':
+				return 15; // Espace libre
+				break;
+			case 'person2-doc2':
+				return 16; // Espace libre
+				break;
+			case 'person3-doc1':
+				return 17; // Espace libre
+				break;
+			case 'person3-doc2':
+				return 18; // Espace libre
+				break;
+			case 'person4-doc1':
+				return 19; // Espace libre
+				break;
+			case 'person4-doc2':
+				return 20; // Espace libre
+				break;
+		}
+		return 20;
+	}
+
 	public static function get_by_id_and_type( $wallet_id, $document_type, $wallet_details = FALSE ) {
 		$buffer = FALSE;
 		if ( !isset( LemonwayDocument::$documents_list ) ) {
@@ -188,6 +284,7 @@ class LemonwayDocument {
 		return $buffer;
 	}
 	
+	// TODO : faire évoluer
 	public static function get_document_type_str_by_type_id( $type_id ) {
 		$document_type_str = array(
 			0	=> 'lemonway.document.type.ID',
@@ -230,6 +327,7 @@ class LemonwayDocument {
 	/**
 	 * Construit une chaine avec les infos d'erreurs sur les documents
 	 */
+	// TODO : faire évoluer en fonctions es vrais types
 	public static function build_error_str_from_wallet_details( $wallet_details ) {
 		// Lemon Way renvoie l'historique de chaque document
 		// Pour éviter les doublons, construction d'un tableau indexé par type de document
@@ -327,37 +425,6 @@ class LemonwayDocument {
 		}
 
 		return $buffer;
-	}
-
-	public static function get_list_sorted_by_kyc_type() {
-		return array( 
-			WDGKYCFile::$type_bank		=> LemonwayDocument::$document_type_bank,
-			WDGKYCFile::$type_kbis		=> LemonwayDocument::$document_type_kbis,
-			WDGKYCFile::$type_status	=> LemonwayDocument::$document_type_status,
-			WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
-			WDGKYCFile::$type_idbis		=> LemonwayDocument::$document_type_idbis,
-			WDGKYCFile::$type_capital_allocation		=> LemonwayDocument::$document_type_capital_allocation,
-			WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_id2,
-			WDGKYCFile::$type_idbis_2	=> LemonwayDocument::$document_type_idbis2,
-			WDGKYCFile::$type_id_3		=> LemonwayDocument::$document_type_id3,
-			WDGKYCFile::$type_idbis_3	=> LemonwayDocument::$document_type_idbis3
-		);
-	}
-
-	public static function get_type_by_kyc_type( $kyc_type ) {
-		$documents_type_list = self::get_list_sorted_by_kyc_type();
-		return $documents_type_list[ $kyc_type ];
-	}
-
-	public static function get_kyc_type_by_lw_type( $input_lw_type ) {
-		$documents_type_list = self::get_list_sorted_by_kyc_type();
-		foreach ( $documents_type_list as $item_kyc_type => $item_lw_type ) {
-			if ( $input_lw_type == $item_lw_type ) {
-				return $item_kyc_type;
-				break;
-			}
-		}
-		return FALSE;
 	}
 
 	public static function has_only_first_doc_validated( $wallet_details ) {

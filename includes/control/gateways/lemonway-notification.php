@@ -212,19 +212,11 @@ class LemonwayNotification {
 						// Lemon Way a refusé de l'uploader
 						// On peut donc vérifier si un autre fichier a été envoyé par l'utilisateur mais pas envoyé sur Lemon Way
 						// Et le renvoyer
-						$WDGFile = FALSE;
-						$kyc_type = LemonwayDocument::get_kyc_type_by_lw_type( $lemonway_posted_document_type );
-						$kyc_list = WDGKYCFile::get_list_by_owner_id( $WDGUser_wallet->get_wpref(), 'user', $kyc_type );
-						foreach ( $kyc_list as $kyc_item ) {
-							if ( empty( $kyc_item->gateway_id ) ) {
-								$WDGFile = $kyc_item;
-								break;
-							}
-						}
+						$WDGFile = WDGKYCFile::get_by_gateway_id( $lemonway_posted_document_id );
+
 						if ( !empty( $WDGFile ) ) {
-							$lw_id = LemonwayLib::wallet_upload_file( $WDGUser_wallet->get_lemonway_id(), $WDGFile->file_name, $lemonway_posted_document_type, $WDGFile->get_byte_array() );
-							if ( !empty( $lw_id ) ) {
-								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
+							if ( !$WDGFile->is_api_file ){
+								WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_user);
 							}
 
 							// Si aucun fichier correspondant était en attente, on peut envoyer la notif

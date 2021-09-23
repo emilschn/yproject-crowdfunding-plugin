@@ -528,39 +528,6 @@ class LemonwayLib {
 	}
 
 	/**
-	 * Envoi d'un justificatif de porte-monnaie
-	 * @param type $wallet_id
-	 * @param type $filename
-	 * @param type $doctype : 0 (carte id communauté euro) ; 1 (justificatif de domicile) ; 2 (rib) ; 7 (kbis) ; 11,12,13 (docs divers)
-	 * @param type $bytearray
-	 * @return boolean or string
-	 */
-	public static function wallet_upload_file($wallet_id, $filename, $doctype, $bytearray) {
-		if (!isset($wallet_id)) {
-			return FALSE;
-		}
-
-		$param_list = array(
-			'wallet' => $wallet_id,
-			'fileName' => $filename,
-			'type' => $doctype,
-			'buffer' => $bytearray
-		);
-
-		$result = LemonwayLib::call('UploadFile', $param_list);
-		if ($result !== FALSE) {
-			if (isset($result->E)) {
-				$result = FALSE;
-			} else {
-				self::remove_cached_data( $wallet_id );
-				$result = $result->UPLOAD->ID;
-			}
-		}
-
-		return $result;
-	}
-
-	/**
 	 * Enregistre un RIB associé à un porte-monnaie
 	 * @param int $wallet_id
 	 * @param string $holder_name
