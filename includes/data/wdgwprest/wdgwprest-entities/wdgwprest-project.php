@@ -66,6 +66,7 @@ class WDGWPREST_Entity_Project {
 			'roi_percent'			=> $campaign->roi_percent(),
 			'estimated_budget_file'	=> $file_name_bp,
 			'funding_duration'		=> $campaign->funding_duration(),
+			'funding_duration_infinite_estimation'		=> $campaign->funding_duration_infinite_estimation(),
 			'declaration_periodicity'	=> $campaign->get_declaration_periodicity(),
 			'goal_minimum'			=> $campaign->minimum_goal(),
 			'goal_maximum'			=> $campaign->goal( FALSE ),
