@@ -1428,7 +1428,7 @@ class ATCF_Campaign {
 
 	public function funding_duration_infinite_estimation() {
 		$buffer = $this->get_api_data( 'funding_duration_infinite_estimation' );
-		if ( empty( $buffer ) && $buffer != 0 ) {
+		if ( empty( $buffer ) || $buffer == 0 ) {
 			$buffer = 5;
 		}
 
