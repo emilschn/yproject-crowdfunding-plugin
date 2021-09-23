@@ -41,5 +41,10 @@ require_once dirname(__FILE__) . '/../../../../data/wdgwprest/wdgwprest-entities
 require_once dirname(__FILE__) . '/../../../../data/wdgwprest/wdgwprest-entities/wdgwprest-user.php';
 require_once dirname(__FILE__) . '/../../../../data/wdgwprest/wdgwprest-entities/wdgwprest-file-kyc.php';
 
-/*class AccountAuthenticationHelper {
-}*/
+// Log de l'appel vers Amplitude
+$action = filter_input( INPUT_POST, 'action' );
+if ( !empty( $action ) ) {
+	require_once dirname(__FILE__) . '/../../../amplitude/api-calls.php';
+	$sessionUID = filter_input( INPUT_POST, 'sessionUID' );
+	WDGAmplitude::logEvent( $action, $sessionUID );
+}

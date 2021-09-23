@@ -2266,7 +2266,7 @@ class WDGUser implements WDGUserInterface {
 	 * Gestion Lemonway - KYC
 	*******************************************************************************/
 	/**
-	 * DÃ©termine si l'organisation a envoyÃ© tous ses documents en local sur WDG
+	 * DÃ©termine si l'utilisateur a envoyé au moins un document, avec au moins celui d'identité
 	 */
 	public function has_sent_all_documents() {
 		$is_id_doc_sent = FALSE;
