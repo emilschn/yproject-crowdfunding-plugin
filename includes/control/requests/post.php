@@ -49,6 +49,8 @@ class WDGPostActions {
 		self::add_action( 'user_account_organization_details' );
 		self::add_action( 'user_account_organization_identitydocs' );
 		self::add_action( 'user_account_organization_bank' );
+		self::add_action( 'user_account_organization_subscription' );
+		self::add_action( 'user_account_organization_contract_subscription' );
 		self::add_action( 'remove_user_registered_card' );
 
 		self::add_action( 'view_kyc_file' );
@@ -1315,6 +1317,36 @@ class WDGPostActions {
 			}
 			exit();
 		}
+	}
+
+	public static function user_account_organization_subscription() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		if ( !empty( $user_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'user-subscription' );
+			WDG_Languages_Helpers::load_languages();
+			$WDGFormSubscription = new WDG_Form_Subscription( $user_id, TRUE );
+			ypcf_session_start();
+			$_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ] = $WDGFormSubscription->postForm();
+			wp_redirect( home_url('contrat-abonnement'.'?id_subscription='. $_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ]['id_subscription']) );
+			exit();
+		}
+
+	}
+
+	public static function user_account_organization_contract_subscription() {
+		$user_id = filter_input( INPUT_POST, 'user_id' );
+		if ( !empty( $user_id ) ) {
+			$core = ATCF_CrowdFunding::instance();
+			$core->include_form( 'user-subscription-contract' );
+			WDG_Languages_Helpers::load_languages();
+			$WDGFormSubscriptionContract = new WDG_Form_Subscription_Contract( $user_id, TRUE );
+			ypcf_session_start();
+			$_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ] = $WDGFormSubscriptionContract->postForm();
+			wp_redirect( home_url('mon-compte'). '#subscription' );
+			exit();
+		}
+
 	}
 
 	public static function remove_user_registered_card() {
