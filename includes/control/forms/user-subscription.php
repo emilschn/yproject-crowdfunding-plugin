@@ -58,7 +58,7 @@ class WDG_Form_Subscription extends WDG_Form {
 			WDG_Form_Subscription::$field_group_basics,
 			FALSE,
 			FALSE,
-			$this->positive_savings_projects,
+			$this->positive_savings_projects
 		);
     }
 

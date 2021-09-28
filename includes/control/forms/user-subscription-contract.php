@@ -41,7 +41,6 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 
 		$feedback_success = array();
 		$feedback_errors = array();
-		$subscription_cancelled = array();
 
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		$WDGUser = new WDGUser( $user_id );
@@ -82,9 +81,7 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 				case 'previous-contract-subscription':
 					// On passe le statut de l'abonnement en "annulé" et retour sur son compte
 					$this->subscription->status = "cancelled";
-					WDGWPREST_Entity_Subscription::update( $this->subscription );
-					WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ). '#subscription';
-					array_push( $subscription_cancelled, $error );
+					$this->subscription->update();
 					break;
 
 				// L'utilisateur clique sur "Valider"
@@ -92,7 +89,7 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 					// On passe le statut de l'abonnement en "actif"
 					array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) );
 					$this->subscription->status = "active";
-					WDGWPREST_Entity_Subscription::update( $this->subscription );
+					$this->subscription->update();
 					// TODO : envoyer un mail de confirmation
 					break;
 
@@ -107,13 +104,12 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 					break;
 			}
 		}
-
+		
 		$buffer = array(
 			'success'	=> $feedback_success,
 			'errors'	=> $feedback_errors,
 		);
 
-		$this->initFields();  // Reinit pour avoir les bonnes valeurs
 		return $buffer;
 	}
 }
