@@ -504,7 +504,13 @@ class NotificationsAPI {
 		),
 		'declaration-done-not-paid' => array(
 			'fr-sib-id'		=> 'declaration-done-not-paid',
-			'description'	=> "Votre déclaration est en attente de paiement !",
+			'description'	=> "Déclaration est en attente de paiement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'subscription-validation' => array(
+			'fr-sib-id'		=> 'subscription-validation',
+			'description'	=> "Abonnement - Confirmation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		)
@@ -923,8 +929,32 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters, $WDGUser->get_language()  );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
+
+	//*******************************************************
+	// Abonnement - activation
+	//*******************************************************
+	public static function subscription_validation( $subscription ) {
+		$id_template = self::get_id_fr_by_slug( 'subscription-validation' );
+
+		$WDGUser = WDGUser::get_by_api_id( $subscription->id_subscriber );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		
+		$options = array(
+			'NOM'		=> $WDGUser->get_firstname()
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGUser->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
 	//**************************************************************************
 	// Entrepreneurs
 	//**************************************************************************

@@ -90,7 +90,8 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 					array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) );
 					$this->subscription->status = "active";
 					$this->subscription->update();
-					// TODO : envoyer un mail de confirmation
+					// Envoi d'un mail de confirmation
+					NotificationsAPI::subscription_validation( $this->subscription );
 					break;
 
 				// Controle de sécurité : aucune action n'a été déclenchée
