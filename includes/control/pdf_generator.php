@@ -37,7 +37,7 @@ class WDG_PDF_Generator {
 		add_shortcode( 'wdg_campaign_contract_detailed_info', 'WDG_PDF_Generator::shortcode_contract_detailed_info' );
 		add_shortcode( 'wdg_campaign_contract_estimated_turnover_per_year', 'WDG_PDF_Generator::shortcode_contract_estimated_turnover_per_year' );
 		add_shortcode( 'wdg_campaign_custom_field', 'WDG_PDF_Generator::shortcode_custom_field' );
-		add_shortcode( 'wdg_subscription_amount', 'WDG_PDF_Generator::shortcode__subscription_amount' );
+		add_shortcode( 'wdg_subscription_amount', 'WDG_PDF_Generator::shortcode_subscription_amount' );
 		add_shortcode( 'wdg_subscription_start_date', 'WDG_PDF_Generator::shortcode_subscription_start_date' );
 		add_shortcode( 'wdg_subscription_modality', 'WDG_PDF_Generator::shortcode_subscription_modality' );
 		add_shortcode( 'wdg_subscription_campaign_name', 'WDG_PDF_Generator::shortcode_subscription_campaign_name' );
@@ -510,7 +510,7 @@ class WDG_PDF_Generator {
 	}
 
 	
-	public static function shortcode__subscription_amount($atts, $content = '') {
+	public static function shortcode_subscription_amount($atts, $content = '') {
 		$atts = shortcode_atts( array( ), $atts );
 		global $WDGSubscription;
 		// If soit afficher montant soit totalité royalties
@@ -518,7 +518,7 @@ class WDG_PDF_Generator {
 			$buffer = __( 'form.user-contract-subscription.ALL_ROYALTIES', 'yproject' );
 		} 
 		else {
-			$buffer = $WDGSubscription->amount.__( 'form.user-contract-subscription.PART_ROYALTIES', 'yproject' );
+			$buffer = sprintf( __( 'form.user-contract-subscription.PART_ROYALTIES', 'yproject' ), $WDGSubscription->amount );
 		}
 
 		return $buffer;

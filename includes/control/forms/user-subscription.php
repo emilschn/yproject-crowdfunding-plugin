@@ -8,13 +8,13 @@ class WDG_Form_Subscription extends WDG_Form {
 	private $positive_savings_projects = [];
 	private $amount_types = [];
 
-    public function __construct( $user_id = FALSE ) {
+	public function __construct( $user_id = FALSE ) {
 		parent::__construct(self::$name);
-        $this->user_id = $user_id;
+		$this->user_id = $user_id;
 		$this->initFields();
 	}
 
-    protected function initFields() {
+	protected function initFields() {
 		parent::initFields();
 
 		$this->addField(
@@ -25,24 +25,24 @@ class WDG_Form_Subscription extends WDG_Form {
 			$this->user_id
 		);
 
-		$this->amount_types = ['all_royalties'	=> __( 'form.subscriptions.MODALITY_FIRST_CHOICE', 'yproject' ),'part_royalties' => __( 'form.subscriptions.MODALITY_SECOND_CHOICE', 'yproject' )];
-        $this->addField(
-            'select',
-            'amount_type',
-            __( 'form.subscriptions.MODALITY', 'yproject' ),
-            WDG_Form_Subscription::$field_group_basics,
+		$this->amount_types = ['all_royalties'	=> __( 'form.subscription.MODALITY_FIRST_CHOICE', 'yproject' ),'part_royalties' => __( 'form.subscription.MODALITY_SECOND_CHOICE', 'yproject' )];
+		$this->addField(
+			'select',
+			'amount_type',
+			__( 'form.subscription.MODALITY', 'yproject' ),
+			WDG_Form_Subscription::$field_group_basics,
 			FALSE,
-            FALSE,
-            $this->amount_types
-        );
+			FALSE,
+			$this->amount_types
+		);
 
 		$this->addField(
 			'text-money',
 			'amount',
-			__( 'form.subscriptions.AMOUNT', 'yproject' ),
+			__( 'form.subscription.AMOUNT', 'yproject' ),
 			WDG_Form_Subscription::$field_group_basics,
 			( !empty( $amount ) ) ? $amount->amount : '0',
-			'Le montant doit être un nombre entier supérieur à 10€.'
+			__( 'form.subscription.AMOUNT_DESCRIPTION', 'yproject' )
 		);
 
 		$positive_savings_projects_lists = ATCF_Campaign::get_list_positive_savings( 0 ); 
@@ -53,15 +53,15 @@ class WDG_Form_Subscription extends WDG_Form {
 		}
 
 		$this->addField(
-            'select',
-            'project',
-            __( 'form.subscriptions.PROJECT', 'yproject' ),
-            WDG_Form_Subscription::$field_group_basics,
-            FALSE,
+			'select',
+			'project',
+			__( 'form.subscription.PROJECT', 'yproject' ),
+			WDG_Form_Subscription::$field_group_basics,
 			FALSE,
-			$this->positive_savings_projects,
-        );
-    }
+			FALSE,
+			$this->positive_savings_projects
+		);
+	}
 
     public function postForm() {
 		parent::postForm();
@@ -79,9 +79,9 @@ class WDG_Form_Subscription extends WDG_Form {
 		if ( !is_user_logged_in() ) {
 		
 		// Sécurité, ne devrait pas arriver non plus
-        } else if ( !$this->is_orga && $WDGUser->get_wpref() != $WDGUser_current->get_wpref() && !$WDGUser_current->is_admin() ) {
+		} else if ( !$this->is_orga && $WDGUser->get_wpref() != $WDGUser_current->get_wpref() && !$WDGUser_current->is_admin() ) {
 
-	    // Analyse du formulaire
+		// Analyse du formulaire
 		} else {
 
 			$amount_type = $this->getInputText( 'amount_type' );
