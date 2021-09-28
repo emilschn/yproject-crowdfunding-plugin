@@ -25,11 +25,11 @@ class WDG_Form_Subscription extends WDG_Form {
 			$this->user_id
 		);
 
-		$this->amount_types = ['all_royalties'	=> __( 'form.subscription.MODALITY_FIRST_CHOICE', 'yproject' ),'part_royalties' => __( 'form.subscription.MODALITY_SECOND_CHOICE', 'yproject' )];
+		$this->amount_types = ['all_royalties'	=> __( 'form.subscriptions.MODALITY_FIRST_CHOICE', 'yproject' ),'part_royalties' => __( 'form.subscriptions.MODALITY_SECOND_CHOICE', 'yproject' )];
 		$this->addField(
 			'select',
 			'amount_type',
-			__( 'form.subscription.MODALITY', 'yproject' ),
+			__( 'form.subscriptions.MODALITY', 'yproject' ),
 			WDG_Form_Subscription::$field_group_basics,
 			FALSE,
 			FALSE,
@@ -47,7 +47,6 @@ class WDG_Form_Subscription extends WDG_Form {
 
 		$positive_savings_projects_lists = ATCF_Campaign::get_list_positive_savings( 0 ); 
 		$this->positive_savings_projects = [];
-
 		foreach ($positive_savings_projects_lists as $positive_savings_projects_list) {
 			$this->positive_savings_projects[$positive_savings_projects_list->ID] = $positive_savings_projects_list->post_title;
 		}
@@ -55,13 +54,13 @@ class WDG_Form_Subscription extends WDG_Form {
 		$this->addField(
 			'select',
 			'project',
-			__( 'form.subscription.PROJECT', 'yproject' ),
+			__( 'form.subscriptions.PROJECT', 'yproject' ),
 			WDG_Form_Subscription::$field_group_basics,
 			FALSE,
 			FALSE,
-			$this->positive_savings_projects
+			$this->positive_savings_projects,
 		);
-	}
+    }
 
     public function postForm() {
 		parent::postForm();
@@ -153,10 +152,10 @@ class WDG_Form_Subscription extends WDG_Form {
 
 				$subscription = WDGSUBSCRIPTION::insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $status);
 				$id_subcription = $subscription->id;
-        	}
+			}
 		}
 		
-        $buffer = array(
+		$buffer = array(
 			'success'	=> $feedback_success,
 			'errors'	=> $feedback_errors,
 			'id_subscription' => $id_subcription
