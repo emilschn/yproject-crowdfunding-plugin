@@ -1042,10 +1042,11 @@ class ATCF_Campaign {
 	public static $key_override_contract = 'campaign_override_contract';
 	public function override_contract( $lang = 'fr' ) {
 		$key = ATCF_Campaign::$key_override_contract;
-		if ( $lang != 'fr' && $lang != 'fr_FR' ) {
+		if ( !empty($lang) && $lang != 'fr' && $lang != 'fr_FR' ) {
 			$key .= '_' . $lang;
 		}
-		return $this->__get( $key );
+		$buffer = get_post_meta( $this->ID, $key, TRUE );
+		return $buffer;
 	}
 
 	//Ajouts contrat
@@ -1421,6 +1422,15 @@ class ATCF_Campaign {
 		$buffer = $this->funding_duration() . __( " ans", 'yproject' );
 		if ( $this->funding_duration() == 0 ) {
 			$buffer = __( "une dur&eacute;e ind&eacute;termin&eacute;e", 'yproject' );
+		}
+
+		return $buffer;
+	}
+
+	public function funding_duration_infinite_estimation() {
+		$buffer = $this->get_api_data( 'funding_duration_infinite_estimation' );
+		if ( empty( $buffer ) || $buffer == 0 ) {
+			$buffer = 5;
 		}
 
 		return $buffer;
