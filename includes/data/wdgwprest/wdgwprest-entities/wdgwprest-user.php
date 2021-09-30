@@ -93,20 +93,6 @@ class WDGWPREST_Entity_User {
 			'email_is_validated'		=> $user->get_email_is_validated()
 		);
 
-		// Ajout facultatif des documents
-		$file_list_id = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_id );
-		$file_list_idbis = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_idbis );
-		$file_list_rib = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
-		if ( !empty( $file_list_id[ 0 ]->file_name ) ) {
-			$parameters[ 'document_id' ] = $file_list_id[ 0 ]->file_name;
-		}
-		if ( !empty( $file_list_idbis[ 0 ]->file_name ) ) {
-			$parameters[ 'document_home' ] = $file_list_idbis[ 0 ]->file_name;
-		}
-		if ( !empty( $file_list_rib[ 0 ]->file_name ) ) {
-			$parameters[ 'document_rib' ] = $file_list_rib[ 0 ]->file_name;
-		}
-
 		return $parameters;
 	}
 	

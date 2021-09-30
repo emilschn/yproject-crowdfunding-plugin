@@ -64,6 +64,7 @@ $ext = $file_name_exploded[ count( $file_name_exploded ) - 1 ];
 $byte_array = file_get_contents( $file_document[ 'tmp_name' ] );
 
 // Envoi du fichier à l'API
+// TODO : gérer les retours d'erreur
 $create_feedback = WDGWPREST_Entity_FileKYC::create( $user_id, $organization_id, $doc_type, $doc_index, $ext, base64_encode( $byte_array ) );
 //*******************
 

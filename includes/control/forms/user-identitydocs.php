@@ -493,45 +493,46 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					if ( $nb > 0 ) {
 						$str_duplicate .= __( ' et ', 'yproject' );
 					}
+					// TODO : ajouter les nouveaux types
 					switch ( $doc_type ) {
 						case 'identity':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.ID', 'yproject' ));
 							break;
 						case 'identity_back':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID_BACK', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.ID_BACK', 'yproject' ));
 							break;
 						case 'home':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.SECOND_ID', 'yproject' ));
 							break;
 						case 'kbis':
 							$str_duplicate .= strtolower(__( 'lemonway.document.type.KBIS', 'yproject' ));
 							break;
 						case 'status':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.STATUS_SHORT', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.ORGA_STATUS', 'yproject' ));
 							break;
 						case 'capital_allocation':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.CAPITAL_ALLOCATION', 'yproject' ));
 							break;
 						case 'identity2':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID_SECOND_PERSON', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.ID_SECOND_PERSON', 'yproject' ));
 							break;
 						case 'home2':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID_SECOND_PERSON', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.SECOND_ID_SECOND_PERSON', 'yproject' ));
 							break;
 						case 'identity3':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.ID_THIRD_PERSON', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.ID_THIRD_PERSON', 'yproject' ));
 							break;
 						case 'home3':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.SECOND_ID_THIRD_PERSON', 'yproject' ));
 							break;
 						case 'identity2_user':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.SECOND_ID', 'yproject' ));
 							break;
 						case 'identity2_back':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.SECOND_ID_BACK', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.SECOND_ID_BACK', 'yproject' ));
 							break;
 						case 'home_old':
-							$str_duplicate .= strtolower(__( 'form.user-identitydocs.PROOF_ADDRESS', 'yproject' ));
+							$str_duplicate .= strtolower(__( 'lemonway.document.type.PROOF_ADDRESS', 'yproject' ));
 							break;
 					}
 					$nb++;

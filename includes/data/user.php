@@ -2266,18 +2266,18 @@ class WDGUser implements WDGUserInterface {
 	 * Gestion Lemonway - KYC
 	*******************************************************************************/
 	/**
-	 * DÃ©termine si l'utilisateur a envoyé au moins un document, avec au moins celui d'identité
+	 * DÃ©termine si l'utilisateur a envoyé au moins un document, avec au moins celui d'identité ou de passeport
 	 */
 	public function has_sent_all_documents() {
 		$is_id_doc_sent = FALSE;
 		$nb_docs_sent = 0;
-		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_idbis );
+		$documents_type_list = array( WDGKYCFile::$type_id, WDGKYCFile::$type_id_2, WDGKYCFile::$type_passport, WDGKYCFile::$type_tax , WDGKYCFile::$type_welfare , WDGKYCFile::$type_family , WDGKYCFile::$type_birth , WDGKYCFile::$type_driving  );
 		foreach ( $documents_type_list as $document_type ) {
 			$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
 			$current_document = $document_filelist[0];
 			if ( isset($current_document) ) {
 				$nb_docs_sent++;
-				if ( $document_type == WDGKYCFile::$type_id ) {
+				if ( $document_type == WDGKYCFile::$type_id || $document_type == WDGKYCFile::$type_passport ) {
 					$is_id_doc_sent = true;
 				}
 			}
@@ -2309,8 +2309,7 @@ class WDGUser implements WDGUserInterface {
 						if (!$current_document->is_api_file) {
 							// on le transfère sur l'API ce qui forcera son upload vers LW
 							WDGKYCFile::transfer_file_to_api($current_document, WDGKYCFile::$owner_user);
-						} else {
-							// n'arrive pas normalement ?
+					} else if ( !isset($current_document->gateway_user_id) && !isset($current_document->gateway_organization_id) ) {
 							WDGWPREST_Entity_FileKYC::send_to_lemonway($current_document->id);
 						}
 					}

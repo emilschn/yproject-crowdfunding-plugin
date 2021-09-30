@@ -249,30 +249,9 @@ class LemonwayNotification {
 						}
 					}
 
-					$has_all_documents_validated = TRUE;
-					// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
-					// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
-					$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
-
-					// On vérifie si tous les documents sont validés
-					if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
-						foreach ( $wallet_details->DOCS->DOC as $document_object ) {
-							if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
-								$has_all_documents_validated = FALSE;
-							}
-							// Si le document est validé et que ce n'est pas la première pièce ou le RIB, on n'envoie pas de notif à ce sujet
-							if ( $document_object->S == 2
-									&& $document_object->TYPE != LemonwayDocument::$document_type_id
-									&& $document_object->TYPE != LemonwayDocument::$document_type_id_back
-									&& $document_object->TYPE != LemonwayDocument::$document_type_bank ) {
-								$only_first_document = FALSE;
-							}
-						}
-					}
-
+					if ( LemonwayDocument::all_doc_validated_but_wallet_not_authentified( $wallet_details ) && !empty( $user_wpref ) ){
 					// Si ils sont tous validés, on enverra une notification plus tard
-					if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
-						if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
+						if ( empty( $WDGOrga_wallet ) ) {
 							NotificationsAPI::kyc_single_validated( $WDGUser_wallet );
 							if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
 								WDGQueue::add_document_user_phone_notification( $user_wpref, 'one_doc' );
@@ -286,7 +265,7 @@ class LemonwayNotification {
 
 			// On prévient l'équipe par Slack
 			if ( $orga_has_campaigns && !empty( $asana_content ) && $lemonway_posted_document_status != 2 ) {
-				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
+				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type, $lemonway_posted_document_id );
 				$document_status = LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
 				NotificationsAsana::send_new_project_document_status( $asana_content, $document_type, $document_status );
 			}

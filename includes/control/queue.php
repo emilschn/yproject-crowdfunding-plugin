@@ -882,7 +882,8 @@ class WDGQueue {
 					break;
 				case 'one_doc':
 					// Si ils sont tous validés, on enverra une notification plus tard
-					if ( LemonwayDocument::has_only_first_doc_validated( $wallet_details ) ) {
+					// on revérifie si on est toujours dans ce cas-là pour replanifier une notif
+					if ( LemonwayDocument::all_doc_validated_but_wallet_not_authentified( $wallet_details ) ) {
 						NotificationsAPI::phone_kyc_single_validated( $WDGUser_wallet );
 					}
 					break;
@@ -1243,7 +1244,7 @@ class WDGQueue {
 		$priority = self::$priority_high;
 		$params = array();
 
-		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+		self::create_or_replace_action( $action, $entity_id, $priority, $params );
 	}
 
 	public static function execute_init_declaration_rois($declaration_id, $queued_action_params, $queued_action_id) {

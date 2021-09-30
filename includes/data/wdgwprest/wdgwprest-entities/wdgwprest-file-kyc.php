@@ -19,6 +19,16 @@ class WDGWPREST_Entity_FileKYC {
 	 * @return object
 	 */
 	public static function create( $user_id, $organization_id, $doc_type, $doc_index, $file_extension, $file_base64_content, $metadata= '' ) {
+		if ( !in_array( strtolower( $file_extension ), WDGKYCFile::$authorized_format_list ) ) {
+			return 'EXT';
+		}
+		if ( strlen( base64_decode( $file_base64_content ) ) < 10 ) {
+			return 'UPLOAD';
+		}
+		if ( ( strlen( base64_decode( $file_base64_content ) ) / 1024) / 1024 > 6 ) {
+			return 'SIZE';
+		}
+
 		$parameters = array(
 			'user_id'			=> $user_id,
 			'organization_id'	=> $organization_id,
@@ -50,6 +60,16 @@ class WDGWPREST_Entity_FileKYC {
 	 * @return object
 	 */
 	public static function update( WDGKYCFile $filekyc ) {
+		if ( !in_array( strtolower( $filekyc->file_extension ), WDGKYCFile::$authorized_format_list ) ) {
+			return 'EXT';
+		}
+		if ( strlen( base64_decode( $filekyc->data ) ) < 10 ) {
+			return 'UPLOAD';
+		}
+		if ( ( strlen( base64_decode( $filekyc->data ) ) / 1024) / 1024 > 6 ) {
+			return 'SIZE';
+		}
+
 		$parameters = array(
 			'id'				=> $filekyc->id,
 			'user_id'			=> $filekyc->user_id,
@@ -62,7 +82,8 @@ class WDGWPREST_Entity_FileKYC {
 			'date_uploaded'		=> $filekyc->date_uploaded,
 			'status'			=> $filekyc->status,
 			'gateway'			=> $filekyc->gateway,
-			'gateway_id'		=> $filekyc->gateway_id,
+			'gateway_user_id'	=> $filekyc->gateway_user_id,
+			'gateway_organization_id'=> $filekyc->gateway_organization_id,
 			'metadata'			=> $filekyc->metadata
 		);
 		return WDGWPRESTLib::call_post_wdg( 'file-kyc/' . $filekyc->id, $parameters, TRUE );

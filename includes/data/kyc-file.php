@@ -34,6 +34,8 @@ class WDGKYCFile {
 	public static $type_person2_doc2 = 'person2-doc2';
 	public static $type_person3_doc1 = 'person3-doc1';
 	public static $type_person3_doc2 = 'person3-doc2';
+	public static $type_person4_doc1 = 'person4-doc1';
+	public static $type_person4_doc2 = 'person4-doc2';
 
 	public static $status_uploaded = 'uploaded';
 	public static $status_sent = 'sent';
@@ -54,6 +56,8 @@ class WDGKYCFile {
 	public $date_uploaded;
 	public $gateway;
 	public $gateway_id;
+	public $gateway_user_id;
+	public $gateway_organization_id;
 	public $metadata;
 	public $url;
 
@@ -74,7 +78,9 @@ class WDGKYCFile {
 			$this->date_uploaded = $kycfile_item->update_date;
 			$this->status = $kycfile_item->status;
 			$this->gateway = $kycfile_item->gateway;
-			$this->gateway_id = $kycfile_item->gateway_id;
+			$this->gateway_user_id = $kycfile_item->gateway_user_id;
+			$this->gateway_organization_id = $kycfile_item->gateway_organization_id;
+			// TODO : affecter gateway_id en fonction de user_id ou orga_id ?
 			$this->metadata = $kycfile_item->metadata;
 			$this->url = $kycfile_item->url;
 			$this->is_api_file = TRUE;
@@ -106,6 +112,7 @@ class WDGKYCFile {
 	 */
 	public function save() {
 		if ($this->is_api_file ){
+			// TODO : gérer les retours d'erreur
 			WDGWPREST_Entity_FileKYC::update( $this );
 		} else {
 			// TODO : à supprimer après transfert de tous les kyc sur l'API
@@ -245,15 +252,6 @@ class WDGKYCFile {
 		return $result;
 	}
 
-	/**
-	 * Mise à jour de l'identifiant de gateway
-	 */
-	public function set_gateway_id($gateway_name, $gateway_id) {
-		$this->gateway = $gateway_name;
-		$this->gateway_id = $gateway_id;
-		$this->save();
-	}
-
 	/*******************************************************************************
 	 * REQUETES STATIQUES
 	 ******************************************************************************/
@@ -280,7 +278,9 @@ class WDGKYCFile {
 			WDGKYCFile::$type_person2_doc1,
 			WDGKYCFile::$type_person2_doc2,
 			WDGKYCFile::$type_person3_doc1,
-			WDGKYCFile::$type_person3_doc2
+			WDGKYCFile::$type_person3_doc2,
+			WDGKYCFile::$type_person4_doc1,
+			WDGKYCFile::$type_person4_doc2
 		);
 	}
 	public static function get_by_gateway_id( $gateway_id ) {
@@ -352,6 +352,7 @@ class WDGKYCFile {
 		$byte_array = $file->get_byte_array();
 		// Envoi du fichier à l'API
 		ypcf_debug_log( 'WDGKYCFile::transfer_file_to_api > $file->type = ' . $file->type . ' $file->user_id = ' . $file->user_id . ' $type_owner = ' . $type_owner . ' $file->organization_id = ' . $file->organization_id . ' $doc_type = ' . $doc_type . ' $doc_index = ' . $doc_index, FALSE);
+		// TODO : gérer les retours d'erreur
 		$create_feedback = WDGWPREST_Entity_FileKYC::create($file->user_id, $file->organization_id, $doc_type, $doc_index, $ext, base64_encode($byte_array));
 
 		// supprimer le fichier actuel sur le site
@@ -430,6 +431,7 @@ class WDGKYCFile {
 			$byte_array = file_get_contents($file_uploaded_data[ 'tmp_name' ]);
 
 			// Envoi du fichier à l'API
+			// TODO : gérer les retours d'erreur
 			$create_feedback = WDGWPREST_Entity_FileKYC::create($user_id, $organization_id, $doc_type, $doc_index, $ext, base64_encode($byte_array));
 		}
 

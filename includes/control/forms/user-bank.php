@@ -200,9 +200,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 					$WDGFile = $existing_bank_kyc_list[0];
 					// si le fichier existe et n'est pas sur l'API
 					if ( !empty( $WDGFile ) && !$WDGFile->is_api_file ) {
-						if ( !$WDGFile->is_api_file ){
-							WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_organization, LemonwayDocument::$document_type_bank);
-						}
+						WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_organization, LemonwayDocument::$document_type_bank);
 					}
 				}
 				if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {

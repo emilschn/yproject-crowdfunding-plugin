@@ -902,8 +902,7 @@ class WDGOrganization implements WDGUserInterface {
 					if (!$kyc_document->is_api_file) {
 						// on le transfère sur l'API ce qui forcera son upload vers LW
 						WDGKYCFile::transfer_file_to_api($kyc_document, WDGKYCFile::$owner_organization);
-					} else {
-						// n'arrive pas normalement ?
+					} else if ( !isset($kyc_document->gateway_organization_id) && !isset($kyc_document->gateway_user_id) ) {
 						WDGWPREST_Entity_FileKYC::send_to_lemonway($kyc_document->id);
 					}
 				}
@@ -939,6 +938,12 @@ class WDGOrganization implements WDGUserInterface {
 					case WDGKYCFile::$type_id_back:
 					case WDGKYCFile::$type_id_2:
 					case WDGKYCFile::$type_id_2_back:
+					case WDGKYCFile::$type_passport:
+					case WDGKYCFile::$type_tax:
+					case WDGKYCFile::$type_welfare:
+					case WDGKYCFile::$type_family:
+					case WDGKYCFile::$type_birth:
+					case WDGKYCFile::$type_driving:
 						$kyc_document->orga_id = $this->get_wpref();
 						$kyc_document->save();
 						break;
