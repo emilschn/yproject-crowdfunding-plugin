@@ -17,6 +17,8 @@ class WDGSUBSCRIPTION {
 	public $status;
     public $end_date;
 
+	private $campaign_name;
+
 
     public function __construct($subscription_id = FALSE, $data = FALSE) {
         if ( !empty( $subscription_id ) ) {
@@ -50,11 +52,65 @@ class WDGSUBSCRIPTION {
 	public function update() {
         WDGWPREST_Entity_Subscription::update( $this );
 	}
+
+	/**
+	 * Renvoie le nom de la campagne / thématique auquel l'abonnement est rattaché
+	 */
+	public function get_campaign_name() {
+		if ( empty( $this->campaign_name ) ) {
+			$campaign = new ATCF_Campaign( FALSE, $this->id_project );
+			$this->campaign_name = $campaign->get_name();
+		}
+		return $this->campaign_name;
+	}
+
+	/**
+	 * Renvoie la modalité d'investissement sous forme textuelle
+	 */
+	public function get_modality_str() {
+		switch ( $this->modality ) {
+			case 'quarter':
+				return __( 'account.subscriptions.item.MODALITY_QUARTER', 'yproject' );
+				break;
+		}
+	}
+
+	/**
+	 * Renvoie la date du prochain paiement sous forme textuelle
+	 */
+	public function get_next_payment_date_str() {
+		if ( $this->status != 'active' ) {
+			return __( 'account.subscriptions.item.INACTIVE_STATUS', 'yproject' );
+		}
+
+		$date_time = new DateTime();
+		switch ( $date_time->format( 'm' ) ) {
+			case 11:
+			case 12:
+			case 1:
+				return __( 'account.subscriptions.item.FEBRUARY_1ST', 'yproject' );
+				break;
+			case 2:
+			case 3:
+			case 4:
+				return __( 'account.subscriptions.item.MAY_1ST', 'yproject' );
+				break;
+			case 5:
+			case 6:
+			case 7:
+				return __( 'account.subscriptions.item.AUGUST_1ST', 'yproject' );
+				break;
+			case 8:
+			case 9:
+			case 10:
+				return __( 'account.subscriptions.item.NOVEMBER_1ST', 'yproject' );
+				break;
+		}
+	}
 	
 /*******************************************************************************
  * REQUETES STATIQUES
  ******************************************************************************/
-
 	/**
 	 * Ajout d'un nouveau Abonnement
 	 */

@@ -49,6 +49,8 @@ class WDGUser implements WDGUserInterface {
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	private $subscriptions;
+
 	/**
 	 * Peut prendre 3 valeurs :
 	 * - vide/NULL si pas défini (vieux comptes)
@@ -123,6 +125,7 @@ class WDGUser implements WDGUserInterface {
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
 					$this->email_is_validated = $this->api_data->email_is_validated;
+					$this->subscriptions = $this->api_data->subscriptions;
 				}
 			}
 		}
@@ -1294,6 +1297,24 @@ class WDGUser implements WDGUserInterface {
 	public function update_last_details_confirmation() {
 		$current_date = new DateTime();
 		update_user_meta( $this->get_wpref(), 'last_details_confirmation', $current_date->format( 'Y-m-d' ) );
+	}
+
+	/*******************************************************************************
+	 * Gestion abonnements
+	*******************************************************************************/
+	public function get_subscriptions( $status = '' ) {
+		$buffer = array();
+		foreach ( $this->subscriptions as $subscription_api_item ) {
+			$WDGSubscription = new WDGSUBSCRIPTION( $subscription_api_item->id, $subscription_api_item );
+			if ( !empty( $status ) && $WDGSubscription->status == $status ) {
+				array_push( $buffer, $WDGSubscription );
+			}
+		}
+		return $buffer;
+	}
+
+	public function get_active_subscriptions() {
+		return $this->get_subscriptions( 'active' );
 	}
 
 	/*******************************************************************************
