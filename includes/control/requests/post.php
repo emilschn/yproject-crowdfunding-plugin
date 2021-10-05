@@ -1343,7 +1343,7 @@ class WDGPostActions {
 			$WDGFormSubscriptionContract = new WDG_Form_Subscription_Contract( $user_id );
 			ypcf_session_start();
 			$_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ] = $WDGFormSubscriptionContract->postForm();
-			$url_redirect = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ). '#subscription';
+			$url_redirect = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ). '#subscriptions';
 			wp_redirect( $url_redirect );
 			exit();
 		}

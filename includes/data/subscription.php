@@ -18,6 +18,7 @@ class WDGSUBSCRIPTION {
     public $end_date;
 
 	private $campaign_name;
+	private $model_contract_url;
 
 
     public function __construct($subscription_id = FALSE, $data = FALSE) {
@@ -62,6 +63,17 @@ class WDGSUBSCRIPTION {
 			$this->campaign_name = $campaign->get_name();
 		}
 		return $this->campaign_name;
+	}
+
+	/**
+	 * Retourne l'URL du contrat type
+	 */
+	public function get_model_contract_url() {
+		if ( empty( $this->model_contract_url ) ) {
+			$campaign = new ATCF_Campaign( FALSE, $this->id_project );
+			$this->model_contract_url = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/contracts/' . $campaign->backoffice_contract_orga() );
+		}
+		return $this->model_contract_url;
 	}
 
 	/**

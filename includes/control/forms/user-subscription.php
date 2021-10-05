@@ -25,11 +25,11 @@ class WDG_Form_Subscription extends WDG_Form {
 			$this->user_id
 		);
 
-		$this->amount_types = ['all_royalties'	=> __( 'form.subscriptions.MODALITY_FIRST_CHOICE', 'yproject' ),'part_royalties' => __( 'form.subscriptions.MODALITY_SECOND_CHOICE', 'yproject' )];
+		$this->amount_types = ['all_royalties'	=> __( 'form.subscription.MODALITY_ALL_ROYALTIES', 'yproject' ),'part_royalties' => __( 'form.subscription.MODALITY_FIXED_AMOUNT', 'yproject' )];
 		$this->addField(
 			'select',
 			'amount_type',
-			__( 'form.subscriptions.MODALITY', 'yproject' ),
+			__( 'form.subscription.MODALITY', 'yproject' ),
 			WDG_Form_Subscription::$field_group_basics,
 			FALSE,
 			FALSE,
@@ -54,7 +54,7 @@ class WDG_Form_Subscription extends WDG_Form {
 		$this->addField(
 			'select',
 			'project',
-			__( 'form.subscriptions.PROJECT', 'yproject' ),
+			__( 'form.subscription.PROJECT', 'yproject' ),
 			WDG_Form_Subscription::$field_group_basics,
 			FALSE,
 			FALSE,
