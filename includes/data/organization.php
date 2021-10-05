@@ -1449,6 +1449,10 @@ class WDGOrganization implements WDGUserInterface {
 		return $buffer;
 	}
 
+	public function get_lemonway_wallet_amount() {
+		return $this->get_lemonway_balance();
+	}
+
 	public function register_lemonway_iban() {
 		$saved_holdername = $this->get_bank_owner();
 		$saved_iban = $this->get_bank_iban();

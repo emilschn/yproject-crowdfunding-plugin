@@ -16,6 +16,9 @@ class WDGSUBSCRIPTION {
 	public $status;
 	public $end_date;
 
+	private $subscriber;
+	private $subscriber_lemonway_amount;
+	private $campaign;
 	private $campaign_name;
 	private $model_contract_url;
 
@@ -59,11 +62,43 @@ class WDGSUBSCRIPTION {
 	}
 
 	/**
+	 * Retourne l'entité qui a souscrit à l'abonnement
+	 */
+	public function get_entity_subscriber() {
+		if ( empty( $this->subscriber ) ) {
+			if ( $this->type_subscriber == 'user' ) {
+				$this->subscriber = WDGUser::get_by_api_id( $this->subscriber );
+			} else {
+				$this->subscriber = WDGOrganization::get_by_api_id( $this->subscriber );
+			}
+		}
+		return $this->subscriber;
+	}
+
+	public function get_entity_subscriber_lemonway_amount() {
+		if ( empty( $this->subscriber_lemonway_amount ) ) {
+			$subscriber = $this->get_entity_subscriber();
+			$this->subscriber_lemonway_amount = $subscriber->get_lemonway_wallet_amount();
+		}
+		return $this->subscriber_lemonway_amount;
+	}
+
+	/**
+	 * Renvoie l'objet de campagne associé
+	 */
+	public function get_campaign() {
+		if ( empty( $this->campaign ) ) {
+			$this->campaign = new ATCF_Campaign( FALSE, $this->id_project );
+		}
+		return $this->campaign;
+	}
+
+	/**
 	 * Renvoie le nom de la campagne / thématique auquel l'abonnement est rattaché
 	 */
 	public function get_campaign_name() {
 		if ( empty( $this->campaign_name ) ) {
-			$campaign = new ATCF_Campaign( FALSE, $this->id_project );
+			$campaign = $this->get_campaign();
 			$this->campaign_name = $campaign->get_name();
 		}
 		return $this->campaign_name;
@@ -74,7 +109,7 @@ class WDGSUBSCRIPTION {
 	 */
 	public function get_model_contract_url() {
 		if ( empty( $this->model_contract_url ) ) {
-			$campaign = new ATCF_Campaign( FALSE, $this->id_project );
+			$campaign = $this->get_campaign();
 			$this->model_contract_url = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/contracts/' . $campaign->backoffice_contract_orga() );
 		}
 		return $this->model_contract_url;

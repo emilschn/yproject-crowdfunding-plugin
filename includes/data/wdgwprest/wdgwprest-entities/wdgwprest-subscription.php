@@ -16,6 +16,15 @@ class WDGWPREST_Entity_Subscription {
 		return WDGWPRESTLib::call_get_wdg( 'subscription/' .$subscription_id );
 	}
 	
+	/**
+	 * Retourne la liste des investissements filtrée par le statut
+	 * @param string $status
+	 * @return object
+	 */
+	public static function get_list( $status ) {
+		return WDGWPRESTLib::call_get_wdg( 'subscriptions/?status=' .$status );
+	}
+	
 
 /**
 	 * Définit les paramètres en fonction de ce qu'on sait sur le site
