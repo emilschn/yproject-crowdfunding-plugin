@@ -157,7 +157,7 @@ class WDG_Cache_Plugin {
 		$projects_list = array();
 
 		// On prend d'abord les projets en cours de financement
-		$campaignlist_funding = ATCF_Campaign::get_list_funding( 10 );
+		$campaignlist_funding = ATCF_Campaign::get_list_funding( WDG_Cache_Plugin::$projects_nb_to_show, '', TRUE );
 		$campaignlist_funding_sorted = WDG_Cache_Plugin::sort_project_list( $campaignlist_funding );
 		$count_campaignlist = count( $campaignlist_funding_sorted );
 		foreach ( $campaignlist_funding_sorted as $campaign ) {
@@ -167,7 +167,7 @@ class WDG_Cache_Plugin {
 		// Si il n'y a pas assez de projet en cours de financement
 		// On prend les projets en cours d'évaluation
 		if ( $count_campaignlist < WDG_Cache_Plugin::$projects_nb_to_show ) {
-			$campaignlist_vote = ATCF_Campaign::get_list_vote( 10 );
+			$campaignlist_vote = ATCF_Campaign::get_list_vote( WDG_Cache_Plugin::$projects_nb_to_show, '', TRUE );
 			$campaignlist_vote_sorted = WDG_Cache_Plugin::sort_project_list( $campaignlist_vote );
 			$count_campaignlist += count( $campaignlist_vote_sorted );
 			foreach ( $campaignlist_vote_sorted as $campaign_post ) {
@@ -176,6 +176,17 @@ class WDG_Cache_Plugin {
 				if ( $campaign->end_vote_remaining() > 0 ) {
 					array_push( $projects_list, $campaign_post->ID );
 				}
+			}
+		}
+
+		// Si il n'y a pas assez de projet en cours de financement + en évaluation
+		// On prend les projets en post-cloture
+		if ( $count_campaignlist < WDG_Cache_Plugin::$projects_nb_to_show ) {
+			$campaignlist_post_funding = ATCF_Campaign::get_list_funding( WDG_Cache_Plugin::$projects_nb_to_show, '', TRUE, FALSE );
+			$campaignlist_post_funding_sorted = WDG_Cache_Plugin::sort_project_list( $campaignlist_post_funding );
+			$count_campaignlist += count( $campaignlist_post_funding_sorted );
+			foreach ( $campaignlist_post_funding_sorted as $campaign_post ) {
+				array_push( $projects_list, $campaign_post->ID );
 			}
 		}
 
