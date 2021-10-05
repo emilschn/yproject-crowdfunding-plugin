@@ -789,7 +789,8 @@ class WDGOrganization implements WDGUserInterface {
 		    'post_type'		=> 'withdrawal_order',
 		    'post_status'	=> 'any',
 		    'orderby'		=> 'post_date',
-		    'order'			=>  'ASC'
+		    'order'			=>  'ASC',
+		    'numberposts'	=>  -1
 		);
 		$this->transfers = get_posts($args);
 
