@@ -3,26 +3,30 @@
  * Classe de gestion des abonnements
  */
 class WDGSUBSCRIPTION {
-
-    public $id;
+	public $id;
 	public $id_subscriber;
 	public $id_activator;
-    public $type_subscriber;
+	public $type_subscriber;
 	public $id_project;
 	public $amount_type;
 	public $amount;
 	public $payment_method;
 	public $modality;
-    public $start_date;
+	public $start_date;
 	public $status;
-    public $end_date;
+	public $end_date;
 
 	private $campaign_name;
 	private $model_contract_url;
 
+	public static $type_active = 'active';
+	public static $type_waiting = 'waiting';
+	public static $type_cancelled = 'cancelled';
+	public static $type_end = 'end';
 
-    public function __construct($subscription_id = FALSE, $data = FALSE) {
-        if ( !empty( $subscription_id ) ) {
+
+	public function __construct($subscription_id = FALSE, $data = FALSE) {
+		if ( !empty( $subscription_id ) ) {
 			// Récupération en priorité depuis l'API
 			$subscription_api_item = ( $data !== FALSE ) ? $data : FALSE;
 			if ( empty( $subscription_api_item ) ) {
@@ -41,17 +45,17 @@ class WDGSUBSCRIPTION {
 				$this->payment_method = $subscription_api_item->payment_method;
 				$this->modality = $subscription_api_item->modality;
 				$this->start_date = $subscription_api_item->start_date;
-                $this->status = $subscription_api_item->status;
-                $this->end_date = $subscription_api_item->end_date;
+				$this->status = $subscription_api_item->status;
+				$this->end_date = $subscription_api_item->end_date;
 			}
 		}	
 	}
 
-    /**
+	/**
 	 * Sauvegarde les données dans l'API
 	 */
 	public function update() {
-        WDGWPREST_Entity_Subscription::update( $this );
+		WDGWPREST_Entity_Subscription::update( $this );
 	}
 
 	/**
@@ -127,21 +131,20 @@ class WDGSUBSCRIPTION {
 	 * Ajout d'un nouveau Abonnement
 	 */
 	public static function insert($id_subscriber, $id_activator, $type_subscriber, $id_project, $amount_type, $amount, $payment_method, $modality, $status) {
-        $subscribtion = new WDGSUBSCRIPTION();
-        $subscribtion->id_subscriber = $id_subscriber; 		
-        $subscribtion->id_activator = $id_activator; 		
-        $subscribtion->type_subscriber = $type_subscriber; 	
-        $subscribtion->id_project = $id_project; 			
-        $subscribtion->amount_type = $amount_type; 			
-        $subscribtion->amount = $amount; 					
-        $subscribtion->payment_method = $payment_method;	
-        $subscribtion->modality = $modality;				
+		$subscribtion = new WDGSUBSCRIPTION();
+		$subscribtion->id_subscriber = $id_subscriber; 		
+		$subscribtion->id_activator = $id_activator; 		
+		$subscribtion->type_subscriber = $type_subscriber; 	
+		$subscribtion->id_project = $id_project; 			
+		$subscribtion->amount_type = $amount_type; 			
+		$subscribtion->amount = $amount; 					
+		$subscribtion->payment_method = $payment_method;	
+		$subscribtion->modality = $modality;				
 		$start_date = new DateTime();
-        $subscribtion->start_date = $start_date->format("Y-m-d H:i:s");			
-        $subscribtion->status = $status;
+		$subscribtion->start_date = $start_date->format("Y-m-d H:i:s");			
+		$subscribtion->status = $status;
 		
-    	return WDGWPREST_Entity_Subscription::create( $subscribtion );
+		return WDGWPREST_Entity_Subscription::create( $subscribtion );
 		
 	}
-	
 }

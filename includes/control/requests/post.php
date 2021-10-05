@@ -49,8 +49,9 @@ class WDGPostActions {
 		self::add_action( 'user_account_organization_details' );
 		self::add_action( 'user_account_organization_identitydocs' );
 		self::add_action( 'user_account_organization_bank' );
-		self::add_action( 'user_account_organization_subscription' );
-		self::add_action( 'user_account_organization_contract_subscription' );
+		self::add_action( 'user_account_add_subscription' );
+		self::add_action( 'user_account_validate_contract_subscription' );
+		self::add_action( 'user_account_end_subscription' );
 		self::add_action( 'remove_user_registered_card' );
 
 		self::add_action( 'view_kyc_file' );
@@ -1319,7 +1320,7 @@ class WDGPostActions {
 		}
 	}
 
-	public static function user_account_organization_subscription() {
+	public static function user_account_add_subscription() {
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		if ( !empty( $user_id ) ) {
 			$core = ATCF_CrowdFunding::instance();
@@ -1331,10 +1332,9 @@ class WDGPostActions {
 			wp_redirect( home_url('contrat-abonnement'.'?id_subscription='. $_SESSION[ 'account_organization_form_subscription_feedback_' . $user_id ]['id_subscription']) );
 			exit();
 		}
-
 	}
 
-	public static function user_account_organization_contract_subscription() {
+	public static function user_account_validate_contract_subscription() {
 		$user_id = filter_input( INPUT_POST, 'user_id' );
 		if ( !empty( $user_id ) ) {
 			$core = ATCF_CrowdFunding::instance();
@@ -1347,7 +1347,26 @@ class WDGPostActions {
 			wp_redirect( $url_redirect );
 			exit();
 		}
+	}
 
+	public static function user_account_end_subscription() {
+		$id_subscription = filter_input( INPUT_GET, 'id_subscription' );
+		if ( !empty( $id_subscription ) ) {
+			$subscription = new WDGSUBSCRIPTION( $id_subscription );
+			// Vérification de la personne connectée : a-t-elle le droit ?
+			$WDGUser_current = WDGUser::current();
+			if ( $WDGUser_current->is_admin() || $subscription->id_subscriber == $WDGUser_current->is_admin() ) {
+				// Si ok, on passe la souscription en annulée
+				$subscription->status = WDGSUBSCRIPTION::$type_end;
+				$date_today = new DateTime();
+				$subscription->end_date = $date_today->format( 'Y-m-d H:i:s' );
+				$subscription->update();
+			}
+		}
+
+		$url_redirect = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ). '#subscriptions';
+		wp_redirect( $url_redirect );
+		exit();
 	}
 
 	public static function remove_user_registered_card() {

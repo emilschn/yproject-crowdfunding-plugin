@@ -148,7 +148,7 @@ class WDG_Form_Subscription extends WDG_Form {
 				$modality = "quarter";
 
 				// Quand la méthode de suppression sera créée, on pourra alors gérer la partie "END" dans la BDD
-				$status = "waiting";
+				$status = WDGSUBSCRIPTION::$type_waiting;
 
 				$subscription = WDGSUBSCRIPTION::insert($id_subscriber, $id_activator, $type_subscriber, $id_campaign, $amount_type, $amount, $payment_method, $modality, $status);
 				$id_subcription = $subscription->id;

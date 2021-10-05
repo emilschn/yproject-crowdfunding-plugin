@@ -80,7 +80,7 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 				// L'utilisateur clique sur "Précédent"
 				case 'previous-contract-subscription':
 					// On passe le statut de l'abonnement en "annulé" et retour sur son compte
-					$this->subscription->status = "cancelled";
+					$this->subscription->status = WDGSUBSCRIPTION::$type_cancelled;
 					$this->subscription->update();
 					break;
 
@@ -88,7 +88,7 @@ class WDG_Form_Subscription_Contract extends WDG_Form {
 				case 'validate-contract-subscription':
 					// On passe le statut de l'abonnement en "actif"
 					array_push( $feedback_success, __( 'form.user-details.SAVE_SUCCESS', 'yproject' ) );
-					$this->subscription->status = "active";
+					$this->subscription->status = WDGSUBSCRIPTION::$type_active;
 					$this->subscription->update();
 					// Envoi d'un mail de confirmation
 					NotificationsAPI::subscription_validation( $this->subscription );
