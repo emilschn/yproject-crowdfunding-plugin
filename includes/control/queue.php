@@ -1434,21 +1434,7 @@ class WDGQueue {
 				if ( !empty( $list_subscriptions[ 0 ] ) ) {
 					$subscription_id = $list_subscriptions[ 0 ];
 					$subscription = new WDGSUBSCRIPTION( $subscription_id );
-					
-					// Vérifier que la campagne est encore en cours
-					$campaign = $subscription->get_campaign();
-					if ( !$campaign->is_investable() ) {
-						continue;
-					}
-	
-					// Vérifier que la personne a assez sur son wallet
-					$wallet_amount = $subscription->get_entity_subscriber_lemonway_amount();
-					if ( $wallet_amount < $subscription->amount ) {
-						continue;
-					}
-
-					// Déclencher l'investissement
-					// TODO !
+					$subscription->trigger();
 
 					// Supprimer de la liste
 					array_splice( $list_subscriptions, 0, 1 );

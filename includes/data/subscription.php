@@ -27,6 +27,9 @@ class WDGSUBSCRIPTION {
 	public static $type_cancelled = 'cancelled';
 	public static $type_end = 'end';
 
+	public static $amount_type_all_royalties = 'all_royalties';
+	public static $amount_type_part_royalties = 'part_royalties';
+
 
 	public function __construct($subscription_id = FALSE, $data = FALSE) {
 		if ( !empty( $subscription_id ) ) {
@@ -62,19 +65,63 @@ class WDGSUBSCRIPTION {
 	}
 
 	/**
+	 * Déclenchement de l'investissement correspondant à l'abonnement
+	 */
+	public function trigger() {
+		// Si l'abonnement est toujours en cours
+		if ( $this->status != self::$type_active ) {
+			return FALSE;
+		}
+
+		// Vérifier que la campagne est encore en cours
+		$campaign = $this->get_campaign();
+		if ( !$campaign->is_investable() ) {
+			return FALSE;
+		}
+
+		// Vérifier que la personne a assez sur son wallet
+		$wallet_amount = $this->get_entity_subscriber_lemonway_amount();
+		$amount_to_invest = $this->amount;
+		$min_amount_needed = $this->amount;
+		if ( $this->amount_type == WDGSUBSCRIPTION::$amount_type_all_royalties ) {
+			$amount_to_invest = floor( $wallet_amount );
+			$min_amount_needed = 10;
+		}
+		if ( $wallet_amount < $min_amount_needed ) {
+			return FALSE;
+		}
+
+		// Définir les données de l'investissement
+		$investment = new WDGInvestment();
+		$entity_subscriber = $this->get_entity_subscriber();
+		$investment->init_with_subscription_data( $this->id, $entity_subscriber->get_wpref(), $campaign, $amount_to_invest );
+
+		// Déclencher l'investissement
+		return $investment->try_payment( WDGInvestment::$meanofpayment_wallet );
+	}
+
+
+/*******************************************************************************
+ * RECUPERATION DONNEES
+ ******************************************************************************/
+	/**
 	 * Retourne l'entité qui a souscrit à l'abonnement
+	 * @return WDGUserInterface
 	 */
 	public function get_entity_subscriber() {
 		if ( empty( $this->subscriber ) ) {
 			if ( $this->type_subscriber == 'user' ) {
-				$this->subscriber = WDGUser::get_by_api_id( $this->subscriber );
+				$this->subscriber = WDGUser::get_by_api_id( $this->id_subscriber );
 			} else {
-				$this->subscriber = WDGOrganization::get_by_api_id( $this->subscriber );
+				$this->subscriber = WDGOrganization::get_by_api_id( $this->id_subscriber );
 			}
 		}
 		return $this->subscriber;
 	}
 
+	/**
+	 * Retourne le montant disponible dans le wallet de l'investisseur
+	 */
 	public function get_entity_subscriber_lemonway_amount() {
 		if ( empty( $this->subscriber_lemonway_amount ) ) {
 			$subscriber = $this->get_entity_subscriber();
@@ -158,7 +205,7 @@ class WDGSUBSCRIPTION {
 				break;
 		}
 	}
-	
+
 /*******************************************************************************
  * REQUETES STATIQUES
  ******************************************************************************/
