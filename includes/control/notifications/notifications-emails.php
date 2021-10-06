@@ -100,6 +100,12 @@ class NotificationsEmails {
 	 * @return bool
 	 */
 	public static function new_purchase_user_error_contract($payment_id, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);
+		$WDGUser = new WDGUser($user_data->ID);
+		WDG_Languages_Helpers::set_current_locale_id( $WDGUser->get_language() );
+		
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_error_contract > ' . $payment_id);
 		$particular_content = '<span style="color: red;">' . __( 'invest.email.THERE_WAS_A_PROBLEM_WITH_CONTRACT_GENERATION', 'yproject' ) . '</span>';
 
@@ -113,6 +119,12 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_user_success($payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
+
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by('email', $email);
+		$WDGUser = new WDGUser($user_data->ID);
+		WDG_Languages_Helpers::set_current_locale_id( $WDGUser->get_language() );
 
 		$particular_content = "";
 		if ( $is_card_contribution && !$is_only_wallet_contribution ) {
@@ -137,6 +149,11 @@ class NotificationsEmails {
 
 		$particular_content = "";
 		if ( $is_card_contribution && !$is_only_wallet_contribution) {
+			$payment_data = edd_get_payment_meta( $payment_id );
+			$email = $payment_data['email'];
+			$user_data = get_user_by('email', $email);
+			$WDGUser = new WDGUser($user_data->ID);
+			WDG_Languages_Helpers::set_current_locale_id( $WDGUser->get_language() );
 			$particular_content .= __( 'invest.email.BANK_ACCOUNT_SUMMARY_LEMONWAY', 'yproject' );
 		}
 
