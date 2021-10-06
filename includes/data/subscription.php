@@ -163,6 +163,21 @@ class WDGSUBSCRIPTION {
 	}
 
 	/**
+	 * Renvoie le montant à investir en fonction du type choisi
+	 */
+	public function get_amount_str() {
+		switch ($this->amount_type) {
+			case WDGSUBSCRIPTION::$amount_type_all_royalties:
+				return __( 'form.user-contract-subscription.ALL_ROYALTIES', 'yproject' );
+				break;
+
+			default:
+				return sprintf( __( 'form.user-contract-subscription.PART_ROYALTIES', 'yproject' ), $this->amount );
+				break;
+		}
+	}
+
+	/**
 	 * Renvoie la modalité d'investissement sous forme textuelle
 	 */
 	public function get_modality_str() {

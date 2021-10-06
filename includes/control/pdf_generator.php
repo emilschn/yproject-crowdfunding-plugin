@@ -513,11 +513,9 @@ class WDG_PDF_Generator {
 	public static function shortcode_subscription_amount($atts, $content = '') {
 		$atts = shortcode_atts( array( ), $atts );
 		global $WDGSubscription;
-		// If soit afficher montant soit totalité royalties
 		if ($WDGSubscription->amount_type == "all_royalties" ){
 			$buffer = __( 'form.user-contract-subscription.ALL_ROYALTIES', 'yproject' );
-		} 
-		else {
+		} else {
 			$buffer = sprintf( __( 'form.user-contract-subscription.PART_ROYALTIES', 'yproject' ), $WDGSubscription->amount );
 		}
 

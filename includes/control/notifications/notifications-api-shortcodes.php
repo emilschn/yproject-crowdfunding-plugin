@@ -94,7 +94,11 @@ class NotificationsAPIShortcodes {
 		'prospect_setup_draft_payment_amount',
 		'prospect_setup_draft_payment_iban',
 		'prospect_setup_draft_payment_reference',
-		'prospect_setup_draft_payment_date'
+		'prospect_setup_draft_payment_date',
+
+		'subscription_amount',
+		'subscription_project',
+		'subscription_start_date'
 	);
 
 	private static $instance;
@@ -444,6 +448,18 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function set_prospect_setup_draft_payment_amount($prospect_setup_draft_payment_amount) {
 		self::$prospect_setup_draft_payment_amount = $prospect_setup_draft_payment_amount;
+	}
+
+	/**
+	 * @var WDGSUBSCRIPTION
+	 */
+	private static $subscription;
+	/**
+	 * Définit un objet décrivant un abonnement
+	 * @param WDGSUBSCRIPTION
+	 */
+	public static function set_subscription( $subscription ) {
+		self::$subscription = $subscription;
 	}
 	//*************************************
 
@@ -1250,6 +1266,38 @@ class NotificationsAPIShortcodes {
 		$today_datetime = new DateTime();
 
 		return $today_datetime->format( 'd/m/Y H:i' );
+	}
+
+	/**
+	 * Abonnement
+	 * Montant de l'abonnement
+	 */
+	public static function subscription_amount() {
+		switch (self::$subscription->amount_type) {
+			case WDGSUBSCRIPTION::$amount_type_all_royalties:
+				return __( 'form.user-contract-subscription.notification.ALL_ROYALTIES', 'yproject' );
+				break;
+
+			default:
+				return sprintf( __( 'form.user-contract-subscription.notification.PART_ROYALTIES', 'yproject' ), self::$subscription->amount );
+				break;
+		}
+	}
+
+	/**
+	 * Abonnement
+	 * Nom du projet de l'abonnement
+	 */
+	public static function subscription_project() {
+		return self::$subscription->get_campaign_name();
+	}
+
+	/**
+	 * Abonnement
+	 * Date de premier investissement de l'abonnement
+	 */
+	public static function subscription_start_date() {
+		return self::$subscription->get_next_payment_date_str();
 	}
 	//*************************************
 }

@@ -941,6 +941,7 @@ class NotificationsAPI {
 		$WDGUser = WDGUser::get_by_api_id( $subscription->id_subscriber );
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_subscription($subscription);
 		
 		$options = array(
 			'NOM'		=> $WDGUser->get_firstname()
