@@ -2275,7 +2275,24 @@ class WDGUser implements WDGUserInterface {
 			$this->update_api();
 		}
 
-		return WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
+		$iban_info = WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
+
+		$buffer = array();
+		if ( empty( $result ) ) {
+			$buffer[ 'error' ] = '1';
+			$buffer[ 'holder' ] = 'LEMON WAY';
+			$buffer[ 'iban' ] = 'FR76 3000 4025 1100 0111 8625 268';
+			$buffer[ 'bic' ] = 'BNPAFRPPIFE';
+			$buffer[ 'backup' ] = array();
+			$buffer[ 'backup' ][ 'lemonway_id' ] = 'wedogood-' . $this->get_lemonway_id();
+
+		} else {
+			$buffer[ 'holder' ] = $iban_info->HOLDER;
+			$buffer[ 'iban' ] = $iban_info->DATA;
+			$buffer[ 'bic' ] = $iban_info->SWIFT;
+		}
+
+		return $buffer;
 	}
 
 	/*******************************************************************************

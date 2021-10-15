@@ -1669,7 +1669,24 @@ class WDGOrganization implements WDGUserInterface {
 			$this->save();
 		}
 
-		return WDGWPREST_Entity_Organization::get_viban( $this->get_api_id() );
+		$iban_info = WDGWPREST_Entity_Organization::get_viban( $this->get_api_id() );
+
+		$buffer = array();
+		if ( empty( $result ) ) {
+			$buffer[ 'error' ] = '1';
+			$buffer[ 'backup' ] = array();
+			$buffer[ 'backup' ][ 'holder' ] = 'LEMON WAY';
+			$buffer[ 'backup' ][ 'iban' ] = 'FR76 3000 4025 1100 0111 8625 268';
+			$buffer[ 'backup' ][ 'bic' ] = 'BNPAFRPPIFE';
+			$buffer[ 'backup' ][ 'lemonway_id' ] = 'wedogood-' . $this->get_lemonway_id();
+
+		} else {
+			$buffer[ 'holder' ] = $iban_info->HOLDER;
+			$buffer[ 'iban' ] = $iban_info->DATA;
+			$buffer[ 'bic' ] = $iban_info->SWIFT;
+		}
+
+		return $buffer;
 	}
 
 	public function get_lemonway_iban() {
