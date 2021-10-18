@@ -2280,11 +2280,11 @@ class WDGUser implements WDGUserInterface {
 		$buffer = array();
 		if ( empty( $result ) ) {
 			$buffer[ 'error' ] = '1';
-			$buffer[ 'holder' ] = 'LEMON WAY';
-			$buffer[ 'iban' ] = 'FR76 3000 4025 1100 0111 8625 268';
-			$buffer[ 'bic' ] = 'BNPAFRPPIFE';
+			$buffer[ 'holder' ] = LemonwayLib::$lw_wire_holder;
+			$buffer[ 'iban' ] = LemonwayLib::$lw_wire_iban;
+			$buffer[ 'bic' ] = LemonwayLib::$lw_wire_bic;
 			$buffer[ 'backup' ] = array();
-			$buffer[ 'backup' ][ 'lemonway_id' ] = 'wedogood-' . $this->get_lemonway_id();
+			$buffer[ 'backup' ][ 'lemonway_id' ] = LemonwayLib::$lw_wire_id_prefix . $this->get_lemonway_id();
 
 		} else {
 			$buffer[ 'holder' ] = $iban_info->HOLDER;

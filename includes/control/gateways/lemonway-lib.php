@@ -33,6 +33,11 @@ class LemonwayLib {
 	public static $limit_kyc2_p2p_in_month_amount = 1000000;
 	public static $limit_kyc2_p2p_out_month_amount = 1000000;
 
+	public static $lw_wire_holder = 'LEMON WAY';
+	public static $lw_wire_iban = 'FR76 3000 4025 1100 0111 8625 268';
+	public static $lw_wire_bic = 'BNPAFRPPIFE';
+	public static $lw_wire_id_prefix = 'wedogood-';
+
 	public static $cache_wallet_details;
 
 	public $soap_client, $params, $last_error;
