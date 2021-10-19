@@ -982,9 +982,7 @@ class WDGAjaxActionsUserAccount {
 
 		$result = array();
 		if ( !empty( $iban_info ) ) {
-			$result[ 'holder' ] = $iban_info->HOLDER;
-			$result[ 'iban' ] = $iban_info->DATA;
-			$result[ 'bic' ] = $iban_info->SWIFT;
+			$result = $iban_info;
 		} else {
 			$result[ 'error' ] = 1;
 		}
