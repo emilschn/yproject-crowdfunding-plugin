@@ -225,7 +225,7 @@ class WDGSUBSCRIPTION {
  * REQUETES STATIQUES
  ******************************************************************************/
 	/**
-	 * Ajout d'un nouveau Abonnement
+	 * Ajout d'un nouvel Abonnement
 	 */
 	public static function insert($id_subscriber, $id_activator, $type_subscriber, $id_project, $amount_type, $amount, $payment_method, $modality, $status) {
 		$subscribtion = new WDGSUBSCRIPTION();

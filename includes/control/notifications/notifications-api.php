@@ -918,9 +918,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_validation_email_link($link);
 
 		$options = array(
-			'skip_admin'		=> 1,
-			'NOM'				=> $WDGUser->get_firstname(),
-			'LIEN'				=> $link
+			'skip_admin'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -943,14 +941,10 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		NotificationsAPIShortcodes::set_subscription($subscription);
 		
-		$options = array(
-			'NOM'		=> $WDGUser->get_firstname()
-		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
 			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
+			'recipient'	=> $WDGUser->get_email()
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );

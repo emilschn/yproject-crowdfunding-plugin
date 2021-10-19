@@ -879,7 +879,8 @@ class WDGInvestment {
 		);
 		$payment_id = edd_insert_payment( $payment_data );
 
-		// MAJ de l'id de author avec le vrai investisseur
+		// L'utilisateur en cours (utilisé par défaut) peut être faux si une autre personne valide un investissement (ou si fait par une tache cron)
+		// Donc MAJ de l'id de author avec le vrai investisseur
 		wp_update_post( array(
 			'ID'			=> $payment_id,
 			'post_author'	=> $save_user_id
