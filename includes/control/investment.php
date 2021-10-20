@@ -11,6 +11,8 @@ class WDGInvestment {
 	 * @var ATCF_Campaign
 	 */
 	private $campaign;
+	private $id_user_subscription;
+	private $id_subscription;
 	private $session_amount;
 	private $session_user_type;
 	private $payment_key;
@@ -372,6 +374,15 @@ class WDGInvestment {
 		}
 
 		return $buffer;
+	}
+
+	/**
+	 * Définit la valeur de l'investissement en session
+	 * A utiliser avec attention
+	 */
+	public function set_session_amount( $amount ) {
+		$_SESSION[ 'invest_amount' ] = $amount;
+		$this->session_amount = $amount;
 	}
 
 	/**
@@ -798,32 +809,24 @@ class WDGInvestment {
 
 		//Récupération des bonnes informations utilisateur
 		$WDGUser_current = WDGUser::current();
-		$save_user_id = $WDGUser_current->get_wpref();
-		$save_display_name = $WDGUser_current->wp_user->display_name;
 		$invest_type = $this->get_session_user_type();
-		$lemonway_id = $WDGUser_current->get_lemonway_id();
+		if ( !empty( $this->id_user_subscription ) ) {
+			$WDGUser_current = new WDGUser( $this->id_user_subscription );
+			$invest_type = WDGOrganization::is_user_organization( $this->id_user_subscription ) ? $this->id_user_subscription : 'user';
+		}
+		
+		$save_user_id = $WDGUser_current->get_wpref();
 		$viban_item = FALSE;
 		if ( $invest_type != 'user' && !empty( $invest_type ) ) {
 			$WDGOrganization = new WDGOrganization( $invest_type );
 			if ( $WDGOrganization ) {
 				$current_user_organization = $WDGOrganization->get_creator();
 				$save_user_id = $current_user_organization->ID;
-				$save_display_name = $WDGOrganization->get_name();
-				$lemonway_id = $WDGOrganization->get_lemonway_id();
 				$viban_item = $WDGOrganization->get_viban();
 			}
 		}
 		if ( empty( $viban_item ) ) {
 			$viban_item = $WDGUser_current->get_viban();
-		}
-
-		$viban_iban = '';
-		$viban_bic = '';
-		$viban_holder = '';
-		if ( !empty( $viban_item ) ) {
-			$viban_iban = $viban_item->DATA;
-			$viban_bic = $viban_item->SWIFT;
-			$viban_holder = $viban_item->HOLDER;
 		}
 
 		$amount = 0;
@@ -878,6 +881,15 @@ class WDGInvestment {
 			'status'		=> 'pending'
 		);
 		$payment_id = edd_insert_payment( $payment_data );
+
+		// L'utilisateur en cours (utilisé par défaut) peut être faux si une autre personne valide un investissement (ou si fait par une tache cron)
+		// Donc MAJ de l'id de author avec le vrai investisseur
+		wp_update_post( array(
+			'ID'			=> $payment_id,
+			'post_author'	=> $save_user_id
+		) );
+
+		// Ajustements des meta gérées automatiquement
 		update_post_meta( $payment_id, '_edd_payment_total', $amount );
 		$this->id = $payment_id;
 		$_SESSION[ 'investment_id' ] = $payment_id;
@@ -886,12 +898,18 @@ class WDGInvestment {
 			update_post_meta( $payment_id, 'amount_with_wallet', $this->get_session_amount() - $amount_by_card );
 			update_post_meta( $payment_id, 'amount_with_card', $amount_by_card );
 		}
-
 		edd_record_sale_in_log( $this->campaign->ID, $payment_id );
+		$log_id = $payment_id + 1; // Pas propre du tout, mais je ne vois pas d'autre moyen
 		delete_post_meta( $payment_id, '_edd_payment_customer_id' );
 		update_post_meta( $payment_id, '_edd_payment_user_id', $save_user_id );
-		$this->save_to_api();
+		// MAJ de l'id de author avec le vrai investisseur dans le log
+		wp_update_post( array(
+			'ID'			=> $log_id,
+			'post_author'	=> $save_user_id
+		) );
 		// FIN GESTION DU PAIEMENT COTE EDD
+
+		$this->save_to_api();
 
 		// Si on sait déjà que ça a échoué, pas la peine de tester
 		if ( $is_failed ) {
@@ -943,6 +961,14 @@ class WDGInvestment {
 			NotificationsSlack::investment_pending_wire( $payment_id );
 			NotificationsAsana::investment_pending_wire( $payment_id );
 
+			$viban_iban = '';
+			$viban_bic = '';
+			$viban_holder = '';
+			if ( !empty( $viban_item ) ) {
+				$viban_iban = $viban_item->DATA;
+				$viban_bic = $viban_item->SWIFT;
+				$viban_holder = $viban_item->HOLDER;
+			}
 			NotificationsAPI::investment_pending_wire( $WDGUser_current, $this, $this->campaign, $viban_iban, $viban_bic, $viban_holder );
 		}
 
@@ -954,7 +980,8 @@ class WDGInvestment {
 			$wpdb->insert( $table_jcrois, array(
 					'user_id'		=> $WDGUser_current->get_wpref(),
 					'campaign_id'	=> $this->campaign->ID
-				));
+				)
+			);
 		}
 
 		if ( $buffer == 'publish' ) {
@@ -988,12 +1015,24 @@ class WDGInvestment {
 		return $buffer;
 	}
 
+	/**
+	 * Initialise les données qui serviront pour l'investissement à partir des données présentes dans un object d'abonnement
+	 */
+	public function init_with_subscription_data( $subscription_id, $user_id, $campaign, $amount ) {
+		$this->id_subscription = $subscription_id;
+		$this->id_user_subscription = $user_id;
+		$this->campaign = $campaign;
+		$this->set_session_amount( $amount );
+	}
+
 	public function try_payment($meanofpayment, $save_card = FALSE, $card_type = FALSE) {
 		$payment_key = FALSE;
 		switch ( $meanofpayment ) {
 			case WDGInvestment::$meanofpayment_wallet:
 				$payment_key = $this->try_payment_wallet( $this->get_session_amount() );
-				$buffer = $this->save_payment( $payment_key, $meanofpayment );
+				if ( !empty( $payment_key ) ) {
+					$buffer = $this->save_payment( $payment_key, $meanofpayment );
+				}
 				break;
 			case WDGInvestment::$meanofpayment_cardwallet:
 				$buffer = $this->try_payment_card( TRUE, $save_card, $card_type );
@@ -1006,16 +1045,17 @@ class WDGInvestment {
 		return $buffer;
 	}
 
-	public function try_payment_wallet($amount, $current = TRUE, $amount_by_card = FALSE) {
+	public function try_payment_wallet($amount, $amount_by_card = FALSE) {
 		$buffer = FALSE;
-		if ( $current ) {
+
+		if ( !empty( $this->id_user_subscription ) ) {
+			$WDGUser_current = new WDGUser( $this->id_user_subscription );
+			$invest_type = WDGOrganization::is_user_organization( $this->id_user_subscription ) ? $this->id_user_subscription : 'user';
+			$campaign = $this->get_campaign();
+		} else {
 			$WDGUser_current = WDGUser::current();
 			$invest_type = $this->get_session_user_type();
 			$campaign = $this->campaign;
-		} else {
-			$WDGUser_current = new WDGUser( $this->get_saved_user_id() );
-			$invest_type = WDGOrganization::is_user_organization( $this->get_saved_user_id() ) ? $this->get_saved_user_id() : 'user';
-			$campaign = $this->get_saved_campaign();
 		}
 
 		// Vérifications de sécurité
@@ -1166,7 +1206,7 @@ class WDGInvestment {
 					}
 
 					// Compléter par wallet
-					$wallet_payment_key = $this->try_payment_wallet( $amount, TRUE, $amount_by_card );
+					$wallet_payment_key = $this->try_payment_wallet( $amount, $amount_by_card );
 					if ( !empty( $wallet_payment_key ) ) {
 						$payment_key .= '_' . $wallet_payment_key;
 					} else {
@@ -1355,7 +1395,7 @@ class WDGInvestment {
 		}
 
 		if ( !empty( $payment ) ) {
-			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id(), $this->payment_status );
+			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id(), $this->payment_status, $this->id_subscription );
 		}
 	}
 }

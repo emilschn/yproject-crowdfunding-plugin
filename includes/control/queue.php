@@ -1415,4 +1415,35 @@ class WDGQueue {
 			}
 		}
 	}
+
+	/******************************************************************************/
+	/* DECLENCHEMENT DES INVESTISSEMENTS PAR ABONNEMENT */
+	/******************************************************************************/
+	public static function add_make_investments_from_subscriptions_list( $list_subscriptions ) {
+		$action = 'make_investments_from_subscriptions_list';
+		$entity_id = 0;
+		$priority = self::$priority_high;
+		self::create_or_replace_action( $action, $entity_id, $priority, $list_subscriptions );
+	}
+
+	public static function execute_make_investments_from_subscriptions_list( $entity_id, $queued_action_params, $queued_action_id ) {
+		$list_subscriptions = json_decode( $queued_action_params[ 0 ] );
+		if ( !empty( $list_subscriptions ) ) {
+			$nb_max_try = 5;
+			for ( $i = 0; $i < $nb_max_try; $i++ ) {
+				if ( !empty( $list_subscriptions[ 0 ] ) ) {
+					$subscription_id = $list_subscriptions[ 0 ];
+					$subscription = new WDGSUBSCRIPTION( $subscription_id );
+					$subscription->trigger();
+
+					// Supprimer de la liste
+					array_splice( $list_subscriptions, 0, 1 );
+				}
+			}
+
+			if ( count( $list_subscriptions ) > 0 ) {
+				self::add_make_investments_from_subscriptions_list( $list_subscriptions );
+			}
+		}
+	}
 }
