@@ -153,7 +153,7 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	/**
-	 * Retourne un utilisateurs en dÃ©coupant l'id de l'API
+	 * Retourne un utilisateur en dÃ©coupant l'id de l'API
 	 * @param int $api_id
 	 */
 	public static function get_by_api_id($api_id) {
@@ -169,7 +169,7 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	/**
-	 * Retourne un utilisateurs en dÃ©coupant l'id transmis par LW
+	 * Retourne un utilisateur en dÃ©coupant l'id transmis par LW
 	 * @param int $lemonway_id
 	 */
 	public static function get_by_lemonway_id($lemonway_id) {
@@ -183,6 +183,22 @@ class WDGUser implements WDGUserInterface {
 			$buffer = new WDGUser( $wp_user_id );
 		}
 
+		return $buffer;
+	}
+
+	/**
+	 * Retourne un utilisateur en fonction d'un identifiant de paiement
+	 * @return WDGUser
+	 */
+	public static function get_by_payment_id( $payment_id ) {
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by( 'email', $email );
+
+		$buffer = false;
+		if ( isset( $user_data->ID ) ) {
+			$buffer = new WDGUser( $user_data->ID );
+		}
 		return $buffer;
 	}
 
@@ -2259,7 +2275,24 @@ class WDGUser implements WDGUserInterface {
 			$this->update_api();
 		}
 
-		return WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
+		$iban_info = WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
+
+		$buffer = array();
+		if ( empty( $result ) ) {
+			$buffer[ 'error' ] = '1';
+			$buffer[ 'holder' ] = LemonwayLib::$lw_wire_holder;
+			$buffer[ 'iban' ] = LemonwayLib::$lw_wire_iban;
+			$buffer[ 'bic' ] = LemonwayLib::$lw_wire_bic;
+			$buffer[ 'backup' ] = array();
+			$buffer[ 'backup' ][ 'lemonway_id' ] = LemonwayLib::$lw_wire_id_prefix . $this->get_lemonway_id();
+
+		} else {
+			$buffer[ 'holder' ] = $iban_info->HOLDER;
+			$buffer[ 'iban' ] = $iban_info->DATA;
+			$buffer[ 'bic' ] = $iban_info->SWIFT;
+		}
+
+		return $buffer;
 	}
 
 	/*******************************************************************************
@@ -2452,6 +2485,26 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	/**
+	 * Retourne des paramètres GET complémentaires selon la page de redirection
+	 */
+	public static function get_redirect_page_params( $redirect_page_uri ) {
+		$buffer = '';
+
+		// Si on redirige vers la page d'activation du compte, on transmet le code de validation
+		if ( $redirect_page_uri == 'activer-compte' ) {
+			$input_code = filter_input( INPUT_GET, 'validation-code' );
+			$input_is_new_account = filter_input( INPUT_GET, 'is-new-account' );
+			if ( !empty( $input_code ) ) {
+				$buffer = '?validation-code=' . $input_code;
+				$buffer .= '&action=validate';
+				$buffer .= '&is-new-account=' . $input_is_new_account;
+			}
+		}
+
+		return $buffer;
+	}
+
+	/**
 	 * DÃ©finit la page vers laquelle il faudrait rediriger l'utilisateur lors de sa connexion
 	 * @global type $post
 	 * @return type
@@ -2470,6 +2523,7 @@ class WDGUser implements WDGUserInterface {
 			if ( !empty( $get_redirect_page ) ) {
 				// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2', FALSE );
 				$buffer = WDG_Redirect_Engine::override_get_page_name( $get_redirect_page );
+				$buffer .= self::get_redirect_page_params( $get_redirect_page );
 				// on ajoute un éventuel id de campagne
 				$input_get_campaign_id = filter_input( INPUT_GET, 'campaign_id' );
 				if ( !empty( $input_get_campaign_id ) ) {
@@ -2502,6 +2556,7 @@ class WDGUser implements WDGUserInterface {
 							if (!empty($posted_redirect_page)) {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a', FALSE );
 								$buffer = $posted_redirect_page;
+								$buffer .= self::get_redirect_page_params( $posted_redirect_page );
 							} else {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3b', FALSE );
 								$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
@@ -2539,6 +2594,7 @@ class WDGUser implements WDGUserInterface {
 			if (!empty($posted_redirect_page)) {
 				// ypcf_debug_log( 'WDGUser::get_login_redirect_page > B2', FALSE );
 				$buffer = $posted_redirect_page;
+				$buffer .= self::get_redirect_page_params( $posted_redirect_page );
 
 			//Sinon, on rÃ©cupÃ¨re simplement la page en cours
 			} else {

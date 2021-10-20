@@ -28,6 +28,7 @@ class AccountSigninHelper {
 			'status'			=> '',
 			'firstname'			=> '',
 			'lastname'			=> '',
+			'language'			=> '',
 			'url_redirect'		=> '',
 			'organizationname'	=> ''
 		);
@@ -124,6 +125,7 @@ class AccountSigninHelper {
 			if ( !empty( $api_data ) ) {
 				$result[ 'firstname' ] = $api_data->name;
 				$result[ 'lastname' ] = $api_data->surname;
+				$result[ 'language' ] = $api_data->language;
 				$is_email_validated = ( !empty( $api_data->email_is_validated ) && $api_data->email_is_validated === '1' );
 				$result[ 'url_redirect' ] = $is_email_validated ? 'redirect' : 'email-validation';
 				$is_logged_in_with_facebook = ( $api_data->authentification_mode == 'facebook' );

@@ -14,6 +14,7 @@ class WDGInvestment {
 	private $session_amount;
 	private $session_user_type;
 	private $payment_key;
+	private $payment_status;
 	/**
 	 * @var LemonwayLibErrors
 	 */
@@ -451,6 +452,13 @@ class WDGInvestment {
 		$post_invest = get_post( $this->get_id() );
 
 		return $post_invest->post_status;
+	}
+
+	public function get_payment_status() {
+		if ( !empty( $this->payment_status ) ) {
+			return $this->payment_status;
+		}
+		return $this->get_saved_status();
 	}
 
 	public function get_saved_payment_key() {
@@ -1282,7 +1290,7 @@ class WDGInvestment {
 		}
 	}
 
-	public function cancel() {
+	public function cancel( $payment_status = '' ) {
 		$payment_id = $this->get_id();
 		if ( !empty( $payment_id ) ) {
 			$postdata = array(
@@ -1290,6 +1298,9 @@ class WDGInvestment {
 				'post_status'	=> 'failed'
 			);
 			wp_update_post($postdata);
+			if ( !empty( $payment_status ) ) {
+				$this->payment_status = $payment_status;
+			}
 			$this->save_to_api();
 
 			$log_post_items = get_posts(array(
@@ -1344,7 +1355,7 @@ class WDGInvestment {
 		}
 
 		if ( !empty( $payment ) ) {
-			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id() );
+			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id(), $this->payment_status );
 		}
 	}
 }

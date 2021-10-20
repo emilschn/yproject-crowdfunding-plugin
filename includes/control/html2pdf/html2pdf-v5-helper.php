@@ -49,12 +49,7 @@ class HTML2PDFv5Helper {
 	 * @return Html2Pdf
 	 */
 	public static function getHtml2PdfApi() {
-		if ( !isset( self::$api_Html2Pdf ) ) {
-			// TODO : pouvoir modifier les propriétés d'un appel à un autre
-			// TODO : pouvoir choisir le langage
-			self::$api_Html2Pdf= new Html2Pdf('P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8));
-		}
-
+		self::$api_Html2Pdf = new Html2Pdf('P', 'A4', 'fr', true, 'UTF-8', array(12, 5, 15, 8));
 		return self::$api_Html2Pdf;
 	}
 
@@ -71,7 +66,6 @@ class HTML2PDFv5Helper {
 	 * @return Boolean
 	 */
 	public function writePDF($html_content, $filepath) {
-
 		try {
 			$html2pdf = self::getHtml2PdfApi();
 			$html2pdf->WriteHTML( urldecode( $html_content ) );

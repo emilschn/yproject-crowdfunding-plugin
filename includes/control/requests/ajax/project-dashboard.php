@@ -717,6 +717,14 @@ class WDGAjaxActionsProjectDashboard {
 		}
 
 		if ( $current_wdg_user->is_admin() ) {
+			$new_funding_duration_infinite_estimation = WDG_Form::formatInputTextNumber( 'new_funding_duration_infinite_estimation' );
+			if ( $new_funding_duration_infinite_estimation >= 0 ) {
+				$campaign->set_api_data( 'funding_duration_infinite_estimation', $new_funding_duration_infinite_estimation );
+				$success['new_funding_duration_infinite_estimation'] = 1;
+			} else {
+				$errors['new_funding_duration_infinite_estimation'] = "La durée doit être positive";
+			}
+
 			$new_platform_commission = WDG_Form::formatInputTextNumber( 'new_platform_commission' );
 			if ( $new_platform_commission >= 0 ) {
 				update_post_meta( $campaign_id, ATCF_Campaign::$key_platform_commission, $new_platform_commission );
@@ -889,6 +897,10 @@ class WDGAjaxActionsProjectDashboard {
 		$funding_duration = $campaign->funding_duration();
 		if ( $funding_duration == 0 ) {
 			$funding_duration = 5;
+			$funding_duration_infinite_estimation = $campaign->funding_duration_infinite_estimation();
+			if ( !empty( $funding_duration_infinite_estimation ) && $funding_duration_infinite_estimation > 0 ) {
+				$funding_duration = $funding_duration_infinite_estimation;
+			}
 		}
 		while ( filter_input( INPUT_POST, 'new_estimated_turnover_' . $i ) != '' && ( $i + 1 <= $funding_duration ) ) {
 			$current_val = WDG_Form::formatInputTextNumber( 'new_estimated_turnover_' .$i );
@@ -1249,6 +1261,9 @@ class WDGAjaxActionsProjectDashboard {
 			} else {
 				if ( $post_invest_status == 'failed' ) {
 					$payment_status = __( "Paiement &eacute;chou&eacute;", 'yproject' );
+					if ( $item_invest[ 'payment_status' ] == 'canceled' ) {
+						$payment_status = __( "Annul&eacute;", 'yproject' );
+					}
 					$payment_status_span_class = 'error';
 					$post_invest_status_span_class = 'failed';
 				}
@@ -1400,6 +1415,9 @@ class WDGAjaxActionsProjectDashboard {
 							case '13':
 							default:
 								$orga_authentication = __( "En attente de documents", 'yproject' );
+								if ( $orga->has_sent_orga_documents() ) {
+									$orga_authentication = __( "En attente d'étude des documents", 'yproject' );
+								}
 								break;
 						}
 
@@ -1482,6 +1500,9 @@ class WDGAjaxActionsProjectDashboard {
 								case '13':
 								default:
 									$user_authentication = __( "En attente de documents", 'yproject' );
+									if ( $WDGUser->has_sent_all_documents() ) {
+										$user_authentication = __( "En attente d'étude des documents", 'yproject' );
+									}
 									break;
 							}
 
@@ -1497,6 +1518,17 @@ class WDGAjaxActionsProjectDashboard {
 
 					$count_distinct_investors++;
 					if ( !empty( $user_item[ 'invest_item' ][ 'item' ] ) ) {
+						// ***
+						// Ce test ne devrait plus être utile un jour
+						// Pour certains vieux investisseurs, les données étaient stockées juste sur le site
+						// Or, quand on se retrouve dans le cas ci-dessous, on va chercher uniquement les données de l'API
+						// On se retrouve donc avec des données vides
+						// Ce test permet de mettre à jour l'API si les données n'y figurent pas (et n'est donc plus nécessaire à l'affichage suivant)
+						if ( empty( $user_item[ 'invest_item' ][ 'item' ][ 'lastname' ] ) ) {
+							$WDGUser = new WDGUser( $user_id );
+							$WDGUser->update_api();
+						}
+						// ***
 						$array_contacts[$user_id]["user_link"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
 						$array_contacts[$user_id]["user_email"] = $user_item[ 'invest_item' ][ 'item' ][ 'email' ];
 						$array_contacts[$user_id]["user_last_name"] = $user_item[ 'invest_item' ][ 'item' ][ 'lastname' ];

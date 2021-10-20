@@ -95,11 +95,22 @@ class NotificationsEmails {
 	// ACHATS
 	//*******************************************************
 	/**
+	 * Mise à jour de la langue en cours en fonction de l'identifiant de paiement
+	 */
+	public static function set_current_locale_id_by_payment_id( $payment_id ) {
+		$WDGUser = WDGUser::get_by_payment_id( $payment_id );
+		if ( !empty( $WDGUser ) ) {
+			WDG_Languages_Helpers::set_current_locale_id( $WDGUser->get_language() );
+		}
+	}
+
+	/**
 	 * Mail pour l'investisseur lors d'un achat avec erreur de création de contrat
 	 * @param int $payment_id
 	 * @return bool
 	 */
 	public static function new_purchase_user_error_contract($payment_id, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
+		self::set_current_locale_id_by_payment_id( $payment_id );
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_error_contract > ' . $payment_id);
 		$particular_content = '<span style="color: red;">' . __( 'invest.email.THERE_WAS_A_PROBLEM_WITH_CONTRACT_GENERATION', 'yproject' ) . '</span>';
 
@@ -113,6 +124,8 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_user_success($payment_id, $is_card_contribution = TRUE, $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user_success > ' . $payment_id);
+
+		self::set_current_locale_id_by_payment_id( $payment_id );
 
 		$particular_content = "";
 		if ( $is_card_contribution && !$is_only_wallet_contribution ) {
@@ -137,6 +150,7 @@ class NotificationsEmails {
 
 		$particular_content = "";
 		if ( $is_card_contribution && !$is_only_wallet_contribution) {
+			self::set_current_locale_id_by_payment_id( $payment_id );
 			$particular_content .= __( 'invest.email.BANK_ACCOUNT_SUMMARY_LEMONWAY', 'yproject' );
 		}
 
@@ -162,7 +176,6 @@ class NotificationsEmails {
 
 		$payment_data = edd_get_payment_meta( $payment_id );
 		$WDGInvestment = new WDGInvestment($payment_id);
-		$payment_amount = edd_get_payment_amount( $payment_id );
 		$email = $payment_data['email'];
 		$user_data = get_user_by('email', $email);
 		$WDGUser = new WDGUser($user_data->ID);
@@ -172,7 +185,7 @@ class NotificationsEmails {
 		$text_before = '';
 		$text_after = '';
 
-		WDG_Languages_Helpers::set_current_locale_id( $WDGUser->get_language() );
+		self::set_current_locale_id_by_payment_id( $payment_id );
 		if ( $payment_key != 'check' && !$is_only_wallet_contribution ) {
 			if ( strpos( $payment_key, 'TRANSID' ) !== FALSE ) {
 				$text_before .= __( 'invest.email.ACCOUNT_REGISTERED_DEBIT', 'yproject' ) . '<br>';

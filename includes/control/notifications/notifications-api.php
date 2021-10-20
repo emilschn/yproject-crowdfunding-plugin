@@ -28,12 +28,6 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
-		'subscription' => array(
-			'fr-sib-id'		=> '181',
-			'description'	=> "Inscription",
-			'variables'		=> "",
-			'wdg-mail'		=> ""
-		),
 		'subscription-without-investment' => array(
 			'fr-sib-id'		=> '932',
 			'description'	=> "Inscription sans investissement",
@@ -712,17 +706,19 @@ class NotificationsAPI {
 			'replyto'				=> $replyto_mail
 		);
 
-		// Le maximum de destinataire est de 99, il faut découper
+		// Le maximum de destinataire est (arbitrairement) de 50,
+		// on découpe pour ne pas avoir une chaine trop longue
+		$max_recipients = 50;
 		$recipients_array = explode( ',', $recipients );
 		$recipients_array_count = count( $recipients_array );
-		if ( $recipients_array_count > 90 ) {
-			// On envoie par troupeaux de 99 investisseurs
+		if ( $recipients_array_count > $max_recipients ) {
+			// On envoie par troupeaux de 50 investisseurs
 			$recipients = '';
 			$index = 0;
 			for ( $i = 0; $i < $recipients_array_count; $i++ ) {
 				$recipients .= $recipients_array[ $i ];
 				$index++;
-				if ( $index == 90 ) {
+				if ( $index == $max_recipients ) {
 					$parameters = array(
 						'tool'			=> 'sendinblue',
 						'template'		=> $id_template,
@@ -788,26 +784,6 @@ class NotificationsAPI {
 	//**************************************************************************
 	// Utilisateurs
 	//**************************************************************************
-	//*******************************************************
-	// Inscription
-	//*******************************************************
-	public static function user_registration($WDGUser) {
-		$id_template = self::get_id_fr_by_slug( 'subscription' );
-
-		NotificationsAPIShortcodes::set_recipient($WDGUser);
-
-		$options = array(
-			'skip_admin'			=> 1
-		);
-		$parameters = array(
-			'tool'		=> 'sendinblue',
-			'template'	=> $id_template,
-			'recipient'	=> $WDGUser->get_email(),
-			'options'	=> json_encode( $options )
-		);
-
-		return self::send( $parameters, $WDGUser->get_language() );
-	}
 
 	//*******************************************************
 	// Inscription sans investissement
