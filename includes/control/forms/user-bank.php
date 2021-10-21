@@ -112,7 +112,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		}
 		$current_file_bank = ( empty( $current_filelist_bank ) ) ? FALSE : $current_filelist_bank[0];
 		$bank_file_path = ( empty( $current_file_bank ) ) ? '' : $current_file_bank->get_public_filepath();
-		$field_bank_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_bank, ( empty( $current_file_bank ) ) ? '' : $current_file_bank->date_uploaded );
+		$field_bank_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_bank, ( empty( $current_file_bank ) ) ? '' : $current_file_bank->date_uploaded, WDGKYCFile::$type_bank, $this->is_orga );
 		unset( $field_bank_params[ 'message_instead_of_field' ] );
 		$suffix = ( $this->is_orga ) ? '-orga-' . $WDGOrganization->get_wpref() : '';
 		$this->addField(

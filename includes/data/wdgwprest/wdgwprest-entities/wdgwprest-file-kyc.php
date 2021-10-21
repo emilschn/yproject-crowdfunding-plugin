@@ -22,10 +22,11 @@ class WDGWPREST_Entity_FileKYC {
 		if ( !in_array( strtolower( $file_extension ), WDGKYCFile::$authorized_format_list ) ) {
 			return 'EXT';
 		}
-		if ( strlen( base64_decode( $file_base64_content ) ) < 10 ) {
+		$file_size = strlen( base64_decode( $file_base64_content ) );
+		if ( $file_size < 10 ) {
 			return 'UPLOAD';
 		}
-		if ( ( strlen( base64_decode( $file_base64_content ) ) / 1024) / 1024 > 6 ) {
+		if ( ( $file_size / 1024) / 1024 > 6 ) {
 			return 'SIZE';
 		}
 
@@ -60,26 +61,17 @@ class WDGWPREST_Entity_FileKYC {
 	 * @return object
 	 */
 	public static function update( WDGKYCFile $filekyc ) {
-		if ( !in_array( strtolower( $filekyc->file_extension ), WDGKYCFile::$authorized_format_list ) ) {
-			return 'EXT';
-		}
-		if ( strlen( base64_decode( $filekyc->data ) ) < 10 ) {
-			return 'UPLOAD';
-		}
-		if ( ( strlen( base64_decode( $filekyc->data ) ) / 1024) / 1024 > 6 ) {
-			return 'SIZE';
-		}
-
 		$parameters = array(
 			'id'				=> $filekyc->id,
 			'user_id'			=> $filekyc->user_id,
 			'orga_id'			=> $filekyc->orga_id,
 			'type'				=> $filekyc->type,
 			'doc_index'			=> $filekyc->doc_index,
+			'doc_type'			=> $filekyc->type,
 			'file_extension'	=> $filekyc->file_extension,
 			'file_name'			=> $filekyc->file_name,
 			'file_signature'	=> $filekyc->file_signature,
-			'date_uploaded'		=> $filekyc->date_uploaded,
+			'update_date'		=> $filekyc->date_uploaded,
 			'status'			=> $filekyc->status,
 			'gateway'			=> $filekyc->gateway,
 			'gateway_user_id'	=> $filekyc->gateway_user_id,
