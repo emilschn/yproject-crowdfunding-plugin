@@ -14,7 +14,7 @@ class WDGWPRESTLib {
 	
 	private static $cache_by_route;
 	
-	private static $http_request_timeout = 10;
+	private static $http_request_timeout = 30;
 	
 /*******************************************************************************
  * Appels génériques en GET

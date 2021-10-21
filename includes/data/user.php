@@ -153,7 +153,7 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	/**
-	 * Retourne un utilisateurs en dÃ©coupant l'id de l'API
+	 * Retourne un utilisateur en dÃ©coupant l'id de l'API
 	 * @param int $api_id
 	 */
 	public static function get_by_api_id($api_id) {
@@ -169,7 +169,7 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	/**
-	 * Retourne un utilisateurs en dÃ©coupant l'id transmis par LW
+	 * Retourne un utilisateur en dÃ©coupant l'id transmis par LW
 	 * @param int $lemonway_id
 	 */
 	public static function get_by_lemonway_id($lemonway_id) {
@@ -183,6 +183,22 @@ class WDGUser implements WDGUserInterface {
 			$buffer = new WDGUser( $wp_user_id );
 		}
 
+		return $buffer;
+	}
+
+	/**
+	 * Retourne un utilisateur en fonction d'un identifiant de paiement
+	 * @return WDGUser
+	 */
+	public static function get_by_payment_id( $payment_id ) {
+		$payment_data = edd_get_payment_meta( $payment_id );
+		$email = $payment_data['email'];
+		$user_data = get_user_by( 'email', $email );
+
+		$buffer = false;
+		if ( isset( $user_data->ID ) ) {
+			$buffer = new WDGUser( $user_data->ID );
+		}
 		return $buffer;
 	}
 
@@ -2259,7 +2275,24 @@ class WDGUser implements WDGUserInterface {
 			$this->update_api();
 		}
 
-		return WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
+		$iban_info = WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
+
+		$buffer = array();
+		if ( empty( $result ) ) {
+			$buffer[ 'error' ] = '1';
+			$buffer[ 'holder' ] = LemonwayLib::$lw_wire_holder;
+			$buffer[ 'iban' ] = LemonwayLib::$lw_wire_iban;
+			$buffer[ 'bic' ] = LemonwayLib::$lw_wire_bic;
+			$buffer[ 'backup' ] = array();
+			$buffer[ 'backup' ][ 'lemonway_id' ] = LemonwayLib::$lw_wire_id_prefix . $this->get_lemonway_id();
+
+		} else {
+			$buffer[ 'holder' ] = $iban_info->HOLDER;
+			$buffer[ 'iban' ] = $iban_info->DATA;
+			$buffer[ 'bic' ] = $iban_info->SWIFT;
+		}
+
+		return $buffer;
 	}
 
 	/*******************************************************************************
