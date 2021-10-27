@@ -756,13 +756,13 @@ class WDGAjaxActionsUserAccount {
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] = max( 0, $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] );
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover' ] = UIHelpers::format_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_turnover_nb' ] ) . ' &euro;';
 										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] += $roi->amount;
-										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = UIHelpers::format_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ], TRUE ) . ' &euro;';
-										$buffer_roi_item[ 'amount' ] = UIHelpers::format_number( $roi->amount, TRUE ) . ' &euro;';
+										$buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois' ] = UIHelpers::format_number( $buffer_investment_item[ 'rois_by_year' ][ $current_year_index ][ 'amount_rois_nb' ] ) . ' &euro;';
+										$buffer_roi_item[ 'amount' ] = UIHelpers::format_number( $roi->amount ) . ' &euro;';
 										if ( $roi->amount_taxed_in_cents > 0 ) {
 											$roitax_items = WDGWPREST_Entity_ROITax::get_by_id_roi( $roi->id );
 											if ( !empty( $roitax_items[ 0 ] ) ) {
 												$buffer_roi_item[ 'roitax_item' ] = print_r( $roitax_items[ 0 ], true );
-												$buffer_roi_item[ 'amount' ] .= ' (dont ' .UIHelpers::format_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100, TRUE ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
+												$buffer_roi_item[ 'amount' ] .= ' (dont ' .UIHelpers::format_number( $roitax_items[ 0 ]->amount_tax_in_cents / 100 ). ' &euro; de pr&eacute;l&egrave;vements sociaux et imp&ocirc;ts)';
 											}
 										}
 									}

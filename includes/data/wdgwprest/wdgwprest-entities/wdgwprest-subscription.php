@@ -67,13 +67,10 @@ class WDGWPREST_Entity_Subscription {
 	 * @return object
 	 */
 	public static function update(WDGSUBSCRIPTION $subscription) {
-		
-        $parameters = WDGWPREST_Entity_Subscription::set_post_parameters( $subscription );
+		$parameters = WDGWPREST_Entity_Subscription::set_post_parameters( $subscription );
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'subscription/' . $subscription->id, $parameters );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$subscription->id_subscriber. '?with_links=1' );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
-
-
 	}
-	
 }

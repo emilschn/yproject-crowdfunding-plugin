@@ -1355,7 +1355,7 @@ class WDGPostActions {
 			$subscription = new WDGSUBSCRIPTION( $id_subscription );
 			// Vérification de la personne connectée : a-t-elle le droit ?
 			$WDGUser_current = WDGUser::current();
-			if ( $WDGUser_current->is_admin() || $subscription->id_subscriber == $WDGUser_current->is_admin() ) {
+			if ( $WDGUser_current->is_admin() || $subscription->id_subscriber == $WDGUser_current->get_api_id() ) {
 				// Si ok, on passe la souscription en annulée
 				$subscription->status = WDGSUBSCRIPTION::$type_end;
 				$date_today = new DateTime();
