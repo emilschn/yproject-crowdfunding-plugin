@@ -1148,40 +1148,8 @@ class WDGOrganization implements WDGUserInterface {
 	}
 
 	public function get_lemonway_registered_cards() {
-		$buffer = array();
 		$wallet_details = $this->get_wallet_details();
-		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
-			if ( is_array( $wallet_details->CARDS->CARD ) ) {
-				foreach ( $wallet_details->CARDS->CARD as $card_object ) {
-					if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
-						$card_item = array();
-						$card_item[ 'id' ] = $card_object->ID;
-						if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
-							$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
-						}
-						if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
-							$card_item[ 'number' ] = $card_object->EXTRA->NUM;
-						}
-						array_push( $buffer, $card_item );
-					}
-				}
-			} elseif ( isset( $wallet_details->CARDS->CARD ) ) {
-				$card_object = $wallet_details->CARDS->CARD;
-				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
-					$card_item = array();
-					$card_item[ 'id' ] = $card_object->ID;
-					if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
-						$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
-					}
-					if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
-						$card_item[ 'number' ] = $card_object->EXTRA->NUM;
-					}
-					array_push( $buffer, $card_item );
-				}
-			}
-		}
-
-		return $buffer;
+		return LemonwayLib::wallet_get_registered_cards_from_wallet_details( $wallet_details );
 	}
 
 	public function unregister_card($id_card) {
