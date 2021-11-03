@@ -1640,7 +1640,7 @@ class WDGOrganization implements WDGUserInterface {
 		$iban_info = WDGWPREST_Entity_Organization::get_viban( $this->get_api_id() );
 
 		$buffer = array();
-		if ( empty( $result ) ) {
+		if ( empty( $iban_info ) ) {
 			$buffer[ 'error' ] = '1';
 			$buffer[ 'holder' ] = LemonwayLib::$lw_wire_holder;
 			$buffer[ 'iban' ] = LemonwayLib::$lw_wire_iban;
