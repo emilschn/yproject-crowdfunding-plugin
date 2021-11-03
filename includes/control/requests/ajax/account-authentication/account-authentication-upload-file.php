@@ -68,7 +68,10 @@ $byte_array = file_get_contents( $file_document[ 'tmp_name' ] );
 $create_feedback = WDGWPREST_Entity_FileKYC::create( $user_id, $organization_id, $doc_type, $doc_index, $ext, base64_encode( $byte_array ) );
 //*******************
 
-// TODO
-$result[ 'status' ] = 'success';
+if ( $create_feedback != '' ){
+	$result[ 'status' ] = 'success';
+}else{
+	$result[ 'status' ] = 'error';
+}
 
 exit( json_encode( $result ) );

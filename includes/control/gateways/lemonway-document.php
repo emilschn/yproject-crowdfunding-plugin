@@ -443,7 +443,7 @@ class LemonwayDocument {
 		// Pour éviter les doublons, construction d'un tableau indexé par type de document
 		$return_by_document_type = array();
 
-		// TODO : il faut savoir si c'est un fichier sur l'API (ayant le nouveau classement de type) pour avoir le bon message
+		// TODO : A vérifier, est-ce que cela fonctionne bien pour les fichiers sur l'API (ayant le nouveau classement de type) ??? pour avoir le bon message
 		if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
 			foreach ( $wallet_details->DOCS->DOC as $document_object ) {
 				// Type de document au format écrit pour l'utilisateur

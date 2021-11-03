@@ -39,7 +39,12 @@ class WDGWPREST_Entity_FileKYC {
 			'data'				=> $file_base64_content,
 			'metadata'			=> $metadata
 		);
-		return WDGWPRESTLib::call_post_wdg( 'file-kyc', $parameters, TRUE );
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'file-kyc', $parameters, TRUE );
+		if (isset($result_obj->code) && $result_obj->code == 400) { 
+			ypcf_debug_log( 'wdgwprest-file-kyc.php :: create PB de création de file-kyc $result_obj = '.var_export($result_obj, TRUE ));
+			$result_obj = ''; 
+		}
+		return $result_obj;
 	}
 
 	/**
