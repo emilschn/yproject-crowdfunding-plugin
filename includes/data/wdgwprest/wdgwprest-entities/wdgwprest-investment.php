@@ -22,7 +22,7 @@ class WDGWPREST_Entity_Investment {
 	 * @param ATCF_Campaign $campaign
 	 * @param object $edd_payment_item
 	 */
-	public static function set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status ) {
+	public static function set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status, $id_subscription = FALSE ) {
 		$payment_date = $edd_payment_item->post_date;
 		if ( empty( $payment_date ) ) {
 			$date_now = new DateTime();
@@ -171,6 +171,9 @@ class WDGWPREST_Entity_Investment {
 			$parameters[ 'legal_entity_city' ] = $WDGOrganization->get_city();
 			$parameters[ 'legal_entity_nationality' ] = $WDGOrganization->get_nationality();
 		}
+		if ( !empty( $id_subscription ) ) {
+			$parameters[ 'id_subscription' ] = $id_subscription;
+		}
 
 		return $parameters;
 	}
@@ -180,10 +183,10 @@ class WDGWPREST_Entity_Investment {
 	 * @param ATCF_Campaign $campaign
 	 * @param object $edd_payment_item
 	 */
-	public static function create_or_update( $campaign, $edd_payment_item, $user_wpref, $payment_status ) {
+	public static function create_or_update( $campaign, $edd_payment_item, $user_wpref, $payment_status, $id_subscription = FALSE ) {
 		$buffer = FALSE;
 
-		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status );
+		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status, $id_subscription );
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
 			if ( $buffer === FALSE ) {

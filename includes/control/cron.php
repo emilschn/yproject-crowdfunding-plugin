@@ -473,4 +473,15 @@ class WDGCronActions {
 
 		return $buffer;
 	}
+
+	public static function init_quarterly_subscriptions() {
+		$list_subscriptions = array();
+		$list_active_subscriptions = WDGWPREST_Entity_Subscription::get_list( 'active' );
+		if ( !empty( $list_active_subscriptions ) ) {
+			foreach ( $list_active_subscriptions as $subscription_item ) {
+				array_push( $list_subscriptions, $subscription_item->id );
+			}
+			WDGQueue::add_make_investments_from_subscriptions_list( $list_subscriptions );
+		}
+	}
 }
