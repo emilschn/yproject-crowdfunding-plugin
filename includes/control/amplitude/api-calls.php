@@ -21,11 +21,15 @@ class WDGAmplitude {
 			'events'	=> array(
 				array(
 					'event_type'	=> $event,
-					'user_id'		=> $amplitude_user_id,
 					'device_id'		=> $amplitude_device_id
 				)
 			)
 		);
+		if ( !empty( $amplitude_user_id ) ) {
+			$amplitude_user_id = str_pad( $amplitude_user_id, 5, 0, STR_PAD_LEFT );
+			$parameters[ 'events' ][ 0 ][ 'user_id' ] = $amplitude_user_id;
+		}
+		
 		$body = json_encode( $parameters );
 		$data_to_post = array(
 			'body'		=> $body
@@ -39,7 +43,12 @@ class WDGAmplitude {
 	 */
 	private static function getAmplitudeUserId() {
 		global $current_user;
-
-		return $current_user->ID;
+		if ( empty( $current_user ) ) {
+			$current_user = wp_get_current_user();
+		}
+		if ( !empty( $current_user ) ) {
+			return $current_user->ID;
+		}
+		return FALSE;
 	}
 }

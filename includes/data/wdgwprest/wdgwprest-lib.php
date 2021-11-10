@@ -9,6 +9,8 @@ class WDGWPRESTLib {
 	public static $wp_route_standard = 'wp/v2/';
 	public static $wp_route_wdg = 'wdg/v1/';
 	public static $wp_route_external = 'external/v1/';
+
+	private static $last_result;
 	
 	private static $cache_by_route;
 	
@@ -98,7 +100,7 @@ class WDGWPRESTLib {
 /*******************************************************************************
  * Appels génériques en POST
  ******************************************************************************/
-	private static function call_post( $route, $parameters ) {
+	private static function call_post( $route, $parameters, $shortcut_call = FALSE ) {
 		$traced_parameters = $parameters;
 		if ( isset( $traced_parameters[ 'bank_iban' ] ) ) {
 			$traced_parameters[ 'bank_iban' ] = 'UNTRACKED';
@@ -106,7 +108,9 @@ class WDGWPRESTLib {
 		if ( isset( $traced_parameters[ 'bank_bic' ] ) ) {
 			$traced_parameters[ 'bank_bic' ] = 'UNTRACKED';
 		}
-		ypcf_debug_log( 'WDGWPRESTLib::call_post -- $route : ' . $route . ' --- ' . print_r( $traced_parameters, TRUE ) );
+		if ( !$shortcut_call ) {
+			ypcf_debug_log( 'WDGWPRESTLib::call_post -- $route : ' . $route . ' --- ' . print_r( $traced_parameters, TRUE ) );
+		}
 		
 		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
 		$result = wp_remote_post( 
@@ -117,11 +121,14 @@ class WDGWPRESTLib {
 				'body'		=> $parameters
 			) 
 		);
+		self::$last_result = $result;
 		
-		if ( !is_wp_error( $result ) && isset( $result["response"] ) ) {
-			ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result["response"], TRUE ) );
-		} else {
-			ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result, TRUE ) );
+		if ( !$shortcut_call ) {
+			if ( !is_wp_error( $result ) && isset( $result["response"] ) ) {
+				ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result["response"], TRUE ) );
+			} else {
+				ypcf_debug_log( 'WDGWPRESTLib::call_post ----> $result[response] : ' . print_r( $result, TRUE ) );
+			}
 		}
 		
 		
@@ -143,8 +150,8 @@ class WDGWPRESTLib {
 		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_standard . $route, $parameters );
 	}
 	
-	public static function call_post_wdg( $route, $parameters ) {
-		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_wdg . $route, $parameters );
+	public static function call_post_wdg( $route, $parameters, $shortcut_call = FALSE ) {
+		return WDGWPRESTLib::call_post( WDGWPRESTLib::$wp_route_wdg . $route, $parameters, $shortcut_call );
 	}
 	
 	public static function call_post_external( $route, $parameters ) {
@@ -231,5 +238,12 @@ class WDGWPRESTLib {
 		}
 		
 		return $result;
+	}
+	
+/*******************************************************************************
+ * Récupération données appel
+ ******************************************************************************/
+	public static function get_last_result() {
+		return self::$last_result;
 	}
 }

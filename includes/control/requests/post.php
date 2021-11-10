@@ -1400,7 +1400,13 @@ class WDGPostActions {
 		$WDGUser_current = WDGUser::current();
 
 		$id_kyc = filter_input( INPUT_GET, 'id_kyc' );
-		$file_kyc = new WDGKYCFile( $id_kyc );
+		$api_kyc = filter_input( INPUT_GET, 'api_kyc' );
+		if ($api_kyc == 0 || $api_kyc == '0'){
+			$api_kyc = FALSE;
+		}else{
+			$api_kyc = TRUE;
+		}
+		$file_kyc = new WDGKYCFile( $id_kyc, $api_kyc );
 
 		$id_user_kyc = FALSE;
 		if ( !empty( $file_kyc->user_id ) ) {

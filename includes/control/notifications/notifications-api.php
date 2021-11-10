@@ -2637,12 +2637,13 @@ class NotificationsAPI {
 	//*******************************************************
 	// PAIEMENT PAR CARTE RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_card($prospect_setup_draft) {
+	public static function prospect_setup_payment_method_received_card($prospect_setup_draft, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-received-card' );
 
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
+		NotificationsAPIShortcodes::set_prospect_setup_draft_payment_amount( $amount );
 		
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',

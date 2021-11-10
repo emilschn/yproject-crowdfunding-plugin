@@ -67,7 +67,7 @@ class LemonwayLib {
 	 * @param type $method_name
 	 * @param type $params
 	 * @param type $params_override
-	 * @return boolean
+	 * @return mixed
 	 */
 	public static function call($method_name, $params, $params_override = array()) {
 		if ( defined( 'YP_LW_SKIP' ) && YP_LW_SKIP ) {
@@ -444,7 +444,7 @@ class LemonwayLib {
 	/**
 	 * Données d'un porte-monnaie
 	 * @param type $wallet_id
-	 * @return boolean or object
+	 * @return mixed
 	 */
 	public static function wallet_get_details($wallet_id = FALSE, $wallet_email = FALSE) {
 		if ( empty( $wallet_id ) && empty( $wallet_email ) ) {
@@ -566,39 +566,6 @@ class LemonwayLib {
 		 * Retourne une liste de wallets
 		 * ID (identifiant) ; S (statut) ; DATE ; DOCS ; IBANS
 		 */
-		return $result;
-	}
-
-	/**
-	 * Envoi d'un justificatif de porte-monnaie
-	 * @param type $wallet_id
-	 * @param type $filename
-	 * @param type $doctype : 0 (carte id communauté euro) ; 1 (justificatif de domicile) ; 2 (rib) ; 7 (kbis) ; 11,12,13 (docs divers)
-	 * @param type $bytearray
-	 * @return boolean or string
-	 */
-	public static function wallet_upload_file($wallet_id, $filename, $doctype, $bytearray) {
-		if (!isset($wallet_id)) {
-			return FALSE;
-		}
-
-		$param_list = array(
-			'wallet' => $wallet_id,
-			'fileName' => $filename,
-			'type' => $doctype,
-			'buffer' => $bytearray
-		);
-
-		$result = LemonwayLib::call('UploadFile', $param_list);
-		if ($result !== FALSE) {
-			if (isset($result->E)) {
-				$result = FALSE;
-			} else {
-				self::remove_cached_data( $wallet_id );
-				$result = $result->UPLOAD->ID;
-			}
-		}
-
 		return $result;
 	}
 
@@ -863,10 +830,10 @@ class LemonwayLib {
 
 	/**
 	 *
-	 * @param type $transaction_id
-	 * @return boolean or string
+	 * @param mixed $transaction_id
+	 * @return mixed
 	 */
-	public static function get_transaction_by_id($transaction_id, $type = 'moneyin') {
+	public static function get_transaction_by_id( $transaction_id, $type = 'moneyin') {
 		if (!isset($transaction_id)) {
 			return FALSE;
 		}
@@ -1110,7 +1077,8 @@ class LemonwayLib {
 		);
 
 		$result = LemonwayLib::call('SendPayment', $param_list);
-		self::remove_cached_data( $wallet_id );
+		self::remove_cached_data( $debit_wallet_id );
+		self::remove_cached_data( $credit_wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne :
@@ -1120,7 +1088,17 @@ class LemonwayLib {
 
 		return $result;
 	}
-
+	/**
+	 * Undocumented function
+	 *
+	 * @param [type] $wallet_id
+	 * @param [type] $amount
+	 * @param integer $iban_id
+	 * @param integer $amount_com
+	 * @param string $message
+	 * @param integer $auto_commission
+	 * @return mixed
+	 */
 	public static function ask_transfer_to_iban($wallet_id, $amount, $iban_id = 0, $amount_com = 0, $message = '', $auto_commission = 0) {
 		if (!isset($wallet_id)) {
 			return FALSE;
@@ -1202,7 +1180,6 @@ class LemonwayLib {
 		}
 
 		$result = LemonwayLib::call('RefundMoneyIn', $param_list);
-		self::remove_cached_data( $wallet_id );
 
 		if ($result !== FALSE) {
 			//Retourne :
