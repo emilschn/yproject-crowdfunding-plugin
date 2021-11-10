@@ -516,7 +516,7 @@ class LemonwayNotification {
 
 							$declaration->status = WDGROIDeclaration::$status_initializing;
 							$declaration->update();
-							$declaration->init_rois_and_tax();
+							WDGQueue::add_init_declaration_rois( $declaration->id );
 							break;
 						}
 					}

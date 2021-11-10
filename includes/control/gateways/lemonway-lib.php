@@ -38,6 +38,8 @@ class LemonwayLib {
 	public static $lw_wire_bic = 'BNPAFRPPIFE';
 	public static $lw_wire_id_prefix = 'wedogood-';
 
+	public static $lw_registered_card_atos_v1_max_id = 494;
+
 	public static $cache_wallet_details;
 
 	public $soap_client, $params, $last_error;
@@ -475,6 +477,41 @@ class LemonwayLib {
 		}
 
 		return FALSE;
+	}
+
+	public static function wallet_get_registered_cards_from_wallet_details( $wallet_details ) {
+		$buffer = array();
+		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
+			if ( is_array( $wallet_details->CARDS->CARD ) ) {
+				foreach ( $wallet_details->CARDS->CARD as $card_object ) {
+					if ( isset( $card_object->ID ) && $card_object->ID !== FALSE && $card_object->ID > self::$lw_registered_card_atos_v1_max_id ) {
+						$card_item = array();
+						$card_item[ 'id' ] = $card_object->ID;
+						if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+							$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
+						}
+						if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
+							$card_item[ 'number' ] = $card_object->EXTRA->NUM;
+						}
+						array_push( $buffer, $card_item );
+					}
+				}
+			} elseif ( isset( $wallet_details->CARDS->CARD ) ) {
+				$card_object = $wallet_details->CARDS->CARD;
+				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE && $card_object->ID > self::$lw_registered_card_atos_v1_max_id ) {
+					$card_item = array();
+					$card_item[ 'id' ] = $card_object->ID;
+					if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
+						$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
+					}
+					if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
+						$card_item[ 'number' ] = $card_object->EXTRA->NUM;
+					}
+					array_push( $buffer, $card_item );
+				}
+			}
+		}
+		return $buffer;
 	}
 
 	/**

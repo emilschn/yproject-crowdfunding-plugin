@@ -49,6 +49,8 @@ class WDGUser implements WDGUserInterface {
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	private $subscriptions;
+
 	/**
 	 * Peut prendre 3 valeurs :
 	 * - vide/NULL si pas défini (vieux comptes)
@@ -123,6 +125,7 @@ class WDGUser implements WDGUserInterface {
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
 					$this->email_is_validated = $this->api_data->email_is_validated;
+					$this->subscriptions = $this->api_data->subscriptions;
 				}
 			}
 		}
@@ -1313,6 +1316,24 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	/*******************************************************************************
+	 * Gestion abonnements
+	*******************************************************************************/
+	public function get_subscriptions( $status = '' ) {
+		$buffer = array();
+		foreach ( $this->subscriptions as $subscription_api_item ) {
+			$WDGSubscription = new WDGSUBSCRIPTION( $subscription_api_item->id, $subscription_api_item );
+			if ( !empty( $status ) && $WDGSubscription->status == $status ) {
+				array_push( $buffer, $WDGSubscription );
+			}
+		}
+		return $buffer;
+	}
+
+	public function get_active_subscriptions() {
+		return $this->get_subscriptions( 'active' );
+	}
+
+	/*******************************************************************************
 	 * Gestion investissements
 	*******************************************************************************/
 	private $user_investments;
@@ -1895,40 +1916,8 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	public function get_lemonway_registered_cards() {
-		$buffer = array();
 		$wallet_details = $this->get_wallet_details();
-		if ( !empty( $wallet_details->CARDS ) && !empty( $wallet_details->CARDS->CARD ) ) {
-			if ( is_array( $wallet_details->CARDS->CARD ) ) {
-				foreach ( $wallet_details->CARDS->CARD as $card_object ) {
-					if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
-						$card_item = array();
-						$card_item[ 'id' ] = $card_object->ID;
-						if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
-							$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
-						}
-						if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
-							$card_item[ 'number' ] = $card_object->EXTRA->NUM;
-						}
-						array_push( $buffer, $card_item );
-					}
-				}
-			} elseif ( isset( $wallet_details->CARDS->CARD ) ) {
-				$card_object = $wallet_details->CARDS->CARD;
-				if ( isset( $card_object->ID ) && $card_object->ID !== FALSE ) {
-					$card_item = array();
-					$card_item[ 'id' ] = $card_object->ID;
-					if ( isset( $card_object->EXTRA->EXP ) && $card_object->EXTRA->EXP !== FALSE ) {
-						$card_item[ 'expiration' ] = $card_object->EXTRA->EXP;
-					}
-					if ( isset( $card_object->EXTRA->NUM ) && $card_object->EXTRA->NUM !== FALSE ) {
-						$card_item[ 'number' ] = $card_object->EXTRA->NUM;
-					}
-					array_push( $buffer, $card_item );
-				}
-			}
-		}
-
-		return $buffer;
+		return LemonwayLib::wallet_get_registered_cards_from_wallet_details( $wallet_details );
 	}
 
 	public function unregister_card($id_card) {
@@ -2278,7 +2267,7 @@ class WDGUser implements WDGUserInterface {
 		$iban_info = WDGWPREST_Entity_User::get_viban( $this->get_api_id() );
 
 		$buffer = array();
-		if ( empty( $result ) ) {
+		if ( empty( $iban_info ) ) {
 			$buffer[ 'error' ] = '1';
 			$buffer[ 'holder' ] = LemonwayLib::$lw_wire_holder;
 			$buffer[ 'iban' ] = LemonwayLib::$lw_wire_iban;

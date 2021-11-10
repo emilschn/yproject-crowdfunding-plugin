@@ -504,7 +504,13 @@ class NotificationsAPI {
 		),
 		'declaration-done-not-paid' => array(
 			'fr-sib-id'		=> 'declaration-done-not-paid',
-			'description'	=> "Votre déclaration est en attente de paiement !",
+			'description'	=> "Déclaration est en attente de paiement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'subscription-validation' => array(
+			'fr-sib-id'		=> 'subscription-validation',
+			'description'	=> "Abonnement - Confirmation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		)
@@ -912,9 +918,7 @@ class NotificationsAPI {
 		NotificationsAPIShortcodes::set_validation_email_link($link);
 
 		$options = array(
-			'skip_admin'		=> 1,
-			'NOM'				=> $WDGUser->get_firstname(),
-			'LIEN'				=> $link
+			'skip_admin'		=> 1
 		);
 		$parameters = array(
 			'tool'		=> 'sendinblue',
@@ -923,8 +927,29 @@ class NotificationsAPI {
 			'options'	=> json_encode( $options )
 		);
 
-		return self::send( $parameters, $WDGUser->get_language()  );
+		return self::send( $parameters, $WDGUser->get_language() );
 	}
+
+	//*******************************************************
+	// Abonnement - activation
+	//*******************************************************
+	public static function subscription_validation( $subscription ) {
+		$id_template = self::get_id_fr_by_slug( 'subscription-validation' );
+
+		$WDGUser = WDGUser::get_by_api_id( $subscription->id_subscriber );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_subscription($subscription);
+		
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGUser->get_email()
+		);
+
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
 	//**************************************************************************
 	// Entrepreneurs
 	//**************************************************************************
@@ -2612,12 +2637,13 @@ class NotificationsAPI {
 	//*******************************************************
 	// PAIEMENT PAR CARTE RECU
 	//*******************************************************
-	public static function prospect_setup_payment_method_received_card($prospect_setup_draft) {
+	public static function prospect_setup_payment_method_received_card($prospect_setup_draft, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-received-card' );
 
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
+		NotificationsAPIShortcodes::set_prospect_setup_draft_payment_amount( $amount );
 		
 		$options = array(
 			'replyto'		=> 'projets@wedogood.co',
