@@ -109,16 +109,23 @@ class WDGFormProjects {
 			$campaign = new ATCF_Campaign( $campaign_id );
 
 			$WDGInvestment = new WDGInvestment( $approve_payment_id );
+			// Si c'est un pré-investissement qu'on valide
 			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
+				// Si le statut est déjà 'publish'
+				// Alors on crée le fichier du contrat, car sinon il ne sera jamais créé
+				if ( $WDGInvestment->get_saved_status() == 'publish' ) {
+					$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
+					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
+				}
 				ypcf_get_updated_payment_status( $WDGInvestment->get_id() );
 			} else {
 				if ( $WDGInvestment->get_saved_status() != 'publish' ) {
 					$postdata = array(
-					'ID'			=> $approve_payment_id,
-					'post_status'	=> 'publish',
-					'edit_date'		=> current_time( 'mysql' )
-				);
+						'ID'			=> $approve_payment_id,
+						'post_status'	=> 'publish',
+						'edit_date'		=> current_time( 'mysql' )
+					);
 					wp_update_post($postdata);
 
 					// - Créer le contrat pdf
