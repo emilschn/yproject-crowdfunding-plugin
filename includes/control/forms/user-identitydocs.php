@@ -276,6 +276,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 								}
 								$send_notification_validation = TRUE;
 							}
+						} else {
+							$this->addError( $file_id, 'identity' );
 						}
 					}
 					if ( isset( $_FILES[ 'home' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -291,6 +293,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 								}
 								$send_notification_validation = TRUE;
 							}
+						} else {
+							$this->addError( $file_id, 'home' );
 						}
 					}
 					if ( isset( $_FILES[ 'status' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'status' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -306,6 +310,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 								}
 								$send_notification_validation = TRUE;
 							}
+						} else {
+							$this->addError( $file_id, 'status' );
 						}
 					}
 					if ( isset( $_FILES[ 'kbis' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'kbis' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -321,6 +327,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 								}
 								$send_notification_validation = TRUE;
 							}
+						} else {
+							$this->addError( $file_id, 'kbis' );
 						}
 					}
 					if ( isset( $_FILES[ 'capital_allocation' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'capital_allocation' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -333,6 +341,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 							if ( !empty( $lw_id ) ) {
 								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 							}
+						} else {
+							$this->addError( $file_id, 'capital_allocation' );
 						}
 					}
 					if ( isset( $_FILES[ 'identity2' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity2' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -347,6 +357,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 									$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 								}
 							}
+						} else {
+							$this->addError( $file_id, 'identity2' );
 						}
 					}
 					if ( isset( $_FILES[ 'home2' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home2' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -361,6 +373,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 									$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 								}
 							}
+						} else {
+							$this->addError( $file_id, 'home2' );
 						}
 					}
 					if ( isset( $_FILES[ 'identity3' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity3' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -375,6 +389,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 									$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 								}
 							}
+						} else {
+							$this->addError( $file_id, 'identity3' );
 						}
 					}
 					if ( isset( $_FILES[ 'home3' .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home3' .$file_suffix ][ 'tmp_name' ] ) ) {
@@ -389,6 +405,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 									$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 								}
 							}
+						} else {
+							$this->addError( $file_id, 'home3' );
 						}
 					}
 					if ( $send_notification_validation && $WDGOrganization->is_registered_lemonway_wallet() ) {
@@ -426,6 +444,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 								}
 								$send_notification_validation = TRUE;
 							}
+						} else {
+							$this->addError( $file_id, 'identity' );
 						}
 					}
 					if ( isset( $_FILES[ 'identity_back' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity_back' ][ 'tmp_name' ] ) ) {
@@ -440,6 +460,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 								}
 								$send_notification_validation = TRUE;
 							}
+						} else {
+							$this->addError( $file_id_back, 'identity_back' );
 						}
 					}
 					if ( isset( $_FILES[ 'identity2' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity2' ][ 'tmp_name' ] ) ) {
@@ -453,6 +475,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 									$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 								}
 							}
+						} else {
+							$this->addError( $file_id2, 'identity2' );
 						}
 					}
 					if ( isset( $_FILES[ 'identity2_back' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'identity2_back' ][ 'tmp_name' ] ) ) {
@@ -466,6 +490,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 									$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 								}
 							}
+						} else {
+							$this->addError( $file_id2_back, 'identity2_back' );
 						}
 					}
 					if ( isset( $_FILES[ 'home' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'home' ][ 'tmp_name' ] ) ) {
@@ -480,6 +506,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 								}
 								$send_notification_validation = TRUE;
 							}
+						} else {
+							$this->addError( $file_home, 'home' );
 						}
 					}
 
@@ -600,5 +628,22 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 	public function getDuplicates() {
 		return $this->duplicates;
+	}
+
+	private function addError( $result, $element ) {
+		switch ( $result ) {
+			case 'EXT':
+				$this->addPostError( 'EXT', __( 'forms.file.ERROR_EXT', 'yproject' ), $element );
+				break;
+			case 'SERVER':
+				$this->addPostError( 'SERVER', __( 'forms.file.ERROR_SERVER', 'yproject' ), $element );
+				break;
+			case 'UPLOAD':
+				$this->addPostError( 'UPLOAD', __( 'forms.file.ERROR_UPLOAD', 'yproject' ), $element );
+				break;
+			case 'SIZE':
+				$this->addPostError( 'SIZE', __( 'forms.file.ERROR_SIZE', 'yproject' ), $element );
+				break;
+		}
 	}
 }
