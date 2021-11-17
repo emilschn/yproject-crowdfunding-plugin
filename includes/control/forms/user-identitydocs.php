@@ -543,7 +543,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 		$buffer = array(
 			'success'	=> $feedback_success,
-			'errors'	=> $feedback_errors
+			'errors'	=> $this->getPostErrors()
 		);
 
 		$this->initFields(); // Reinit pour avoir les bonnes valeurs
@@ -633,16 +633,16 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 	private function addError( $result, $element ) {
 		switch ( $result ) {
 			case 'EXT':
-				$this->addPostError( 'EXT', __( 'forms.file.ERROR_EXT', 'yproject' ), $element );
+				$this->addPostError( 'forms.file.ERROR_EXT', __( 'forms.file.ERROR_EXT', 'yproject' ), $element );
 				break;
 			case 'SERVER':
-				$this->addPostError( 'SERVER', __( 'forms.file.ERROR_SERVER', 'yproject' ), $element );
+				$this->addPostError( 'forms.file.ERROR_SERVER', __( 'forms.file.ERROR_SERVER', 'yproject' ), $element );
 				break;
 			case 'UPLOAD':
-				$this->addPostError( 'UPLOAD', __( 'forms.file.ERROR_UPLOAD', 'yproject' ), $element );
+				$this->addPostError( 'forms.file.ERROR_UPLOAD', __( 'forms.file.ERROR_UPLOAD', 'yproject' ), $element );
 				break;
 			case 'SIZE':
-				$this->addPostError( 'SIZE', __( 'forms.file.ERROR_SIZE', 'yproject' ), $element );
+				$this->addPostError( 'forms.file.ERROR_SIZE', __( 'forms.file.ERROR_SIZE', 'yproject' ), $element );
 				break;
 		}
 	}
