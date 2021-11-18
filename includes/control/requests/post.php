@@ -1273,6 +1273,7 @@ class WDGPostActions {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_form( 'organization-details' );
 			$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
+			
 			ypcf_session_start();
 			$_SESSION[ 'account_organization_form_feedback_' . $organization_id ] = $WDGOrganizationDetailsForm->postForm();
 
@@ -1291,8 +1292,12 @@ class WDGPostActions {
 		if ( !empty( $organization_id ) ) {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_form( 'user-identitydocs' );
+			WDG_Languages_Helpers::load_languages();
 			$WDGFormIdentityDocs = new WDG_Form_User_Identity_Docs( $organization_id, TRUE );
-			$WDGFormIdentityDocs->postForm();
+
+			ypcf_session_start();
+			$_SESSION[ 'account_organization_identitydocs_form_feedback_' . $organization_id ] = $WDGFormIdentityDocs->postForm();
+
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
 			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE && stristr(wp_get_referer(), 'dashboard')  === FALSE ) {
 				wp_redirect( wp_get_referer() . '#orga-identitydocs-' . $organization_id );
