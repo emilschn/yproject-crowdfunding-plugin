@@ -109,48 +109,61 @@ class WDGFormProjects {
 			$campaign = new ATCF_Campaign( $campaign_id );
 
 			$WDGInvestment = new WDGInvestment( $approve_payment_id );
+			$create_pdf_file = false;
+			// Si c'est un pré-investissement qu'on valide
 			if ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
 				$WDGInvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
+				// Si le statut est déjà 'publish'
+				// Alors on crée le fichier du contrat, car sinon il ne sera jamais créé
+				if ( $WDGInvestment->get_saved_status() == 'publish' ) {
+					$create_pdf_file = true;
+				}
 				ypcf_get_updated_payment_status( $WDGInvestment->get_id() );
 			} else {
 				if ( $WDGInvestment->get_saved_status() != 'publish' ) {
 					$postdata = array(
-					'ID'			=> $approve_payment_id,
-					'post_status'	=> 'publish',
-					'edit_date'		=> current_time( 'mysql' )
-				);
+						'ID'			=> $approve_payment_id,
+						'post_status'	=> 'publish',
+						'edit_date'		=> current_time( 'mysql' )
+					);
 					wp_update_post($postdata);
+					
+					$create_pdf_file = true;
 
-					// - Créer le contrat pdf
-					// - Envoyer validation d'investissement par mail
 					$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
 					$amount = edd_get_payment_amount( $approve_payment_id );
-					$contribution_id = edd_get_payment_key($approve_payment_id);
-					$is_only_wallet = FALSE;
-					if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
-						$is_only_wallet = TRUE;
-					}
-
-					if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
-						$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
-						$contract_id = $WDGInvestmentSignature->create_eversign();
-						if ( !empty( $contract_id ) ) {
-							NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-						} else {
-							global $contract_errors;
-							$contract_errors = 'contract_failed';
-							NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-							NotificationsAsana::new_purchase_admin_error_contract( $approve_payment_id );
-						}
-					} else {
-						ypcf_debug_log( 'form_approve_payment > getNewPdfToSign' );
-						$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
-						NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
-					}
-
 					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $user_info['email'] );
 					$WDGInvestment = new WDGInvestment( $approve_payment_id );
 					$WDGInvestment->save_to_api();
+				}
+			}
+
+			if ( $create_pdf_file ) {
+				// - Créer le contrat pdf
+				// - Envoyer validation d'investissement par mail
+				$user_info = edd_get_payment_meta_user_info( $approve_payment_id );
+				$amount = edd_get_payment_amount( $approve_payment_id );
+				$contribution_id = edd_get_payment_key($approve_payment_id);
+				$is_only_wallet = FALSE;
+				if (strpos($contribution_id, 'wallet_') !== FALSE && strpos($contribution_id, '_wallet_') === FALSE) {
+					$is_only_wallet = TRUE;
+				}
+
+				if ( $amount >= WDGInvestmentSignature::$investment_amount_signature_needed_minimum ) {
+					$WDGInvestmentSignature = new WDGInvestmentSignature( $approve_payment_id );
+					$contract_id = $WDGInvestmentSignature->create_eversign();
+					if ( !empty( $contract_id ) ) {
+						NotificationsEmails::new_purchase_user_success( $approve_payment_id, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
+					} else {
+						global $contract_errors;
+						$contract_errors = 'contract_failed';
+						NotificationsEmails::new_purchase_user_error_contract( $approve_payment_id, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
+						NotificationsAsana::new_purchase_admin_error_contract( $approve_payment_id );
+					}
+				} else {
+					ypcf_debug_log( 'form_approve_payment > getNewPdfToSign' );
+					$new_contract_pdf_file = getNewPdfToSign( $campaign_id, $approve_payment_id, $user_info['id'] );
+					NotificationsEmails::new_purchase_user_success_nocontract( $approve_payment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 				}
 			}
 
