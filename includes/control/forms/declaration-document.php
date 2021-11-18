@@ -68,6 +68,13 @@ class WDG_Form_Declaration_Document extends WDG_Form {
 		);
 		
 		$this->addField(
+			'text',
+			'amount',
+			__( "Montant du chiffre d'affaires", 'yproject' ),
+			self::$field_group_document
+		);
+		
+		$this->addField(
 			'textarea',
 			'details',
 			__( "D&eacute;tails du document", 'yproject' ),
@@ -115,12 +122,14 @@ class WDG_Form_Declaration_Document extends WDG_Form {
 			$document_name = $this->getInputText( 'name' );
 			$document_first_declaration = $this->getInputText( 'first_declaration' );
 			$document_last_declaration = $this->getInputText( 'last_declaration' );
+			$document_amount = $this->getInputText( 'amount' );
 			$document_details = $this->getInputText( 'details' );
 			$metadata = array(
 				'name'				=> $document_name,
 				'first_declaration'	=> $document_first_declaration,
 				'last_declaration'	=> $document_last_declaration,
-				'details'			=> $document_details,
+				'amount'			=> $document_amount,
+				'details'			=> $document_details
 			);
 			$metadata_encoded = json_encode( $metadata );
 			
