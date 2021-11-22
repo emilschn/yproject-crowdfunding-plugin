@@ -479,12 +479,14 @@ class WDGQueue {
 
 			$has_viewed = FALSE;
 			$has_clicked = FALSE;
-			foreach ( $events as $event_item ) {
-				if ( $event_item->getEvent() == 'opened' ) {
-					$has_viewed = TRUE;
-				}
-				if ( $event_item->getEvent() == 'clicks' ) {
-					$has_clicked = TRUE;
+			if ($events){
+				foreach ( $events as $event_item ) {
+					if ( $event_item->getEvent() == 'opened' ) {
+						$has_viewed = TRUE;
+					}
+					if ( $event_item->getEvent() == 'clicks' ) {
+						$has_clicked = TRUE;
+					}
 				}
 			}
 
