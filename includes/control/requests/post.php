@@ -100,10 +100,16 @@ class WDGPostActions {
 		$campaign_id = sanitize_text_field( filter_input( INPUT_POST, 'campaign_id' ) );
 		$post_campaign = get_post( $campaign_id );
 		$campaign = new ATCF_Campaign( $campaign_id );
-		$author_user = get_user_by( 'ID', $post_campaign->post_author );
 		$mail_title = sanitize_text_field( filter_input( INPUT_POST, 'mail_title' ) );
 		$mail_content = nl2br( filter_input( INPUT_POST, 'mail_content' ) );
 		$mail_recipients = explode( ',', filter_input( INPUT_POST, 'mail_recipients' ) );
+
+		$author_user = get_user_by( 'ID', $post_campaign->post_author );
+		$reply_to_email = $author_user->user_email;
+		$current_user = WDGUser::current();
+		if ( $current_user->is_admin() ) {
+			$reply_to_email = 'bonjour@wedogood.co';
+		}
 
 		global $wpdb;
 		$table_vote = $wpdb->prefix . "ypcf_project_votes";
@@ -126,7 +132,7 @@ class WDGPostActions {
 
 				$this_mail_content = WDGFormProjects::build_mail_text( $mail_content, $mail_title, $campaign_id, $user_data );
 
-				NotificationsAPI::project_mail( $to, $author_user->user_email, $WDGUser, $user->first_name, $campaign, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
+				NotificationsAPI::project_mail( $to, $reply_to_email, $WDGUser, $user->first_name, $campaign, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
 			}
 		}
 
