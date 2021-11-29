@@ -55,6 +55,17 @@ class WDGAjaxActionsUserLogin {
 				}
 			}
 
+			$response[ 'organizationlist' ] = array();
+			$organizations_list = $WDGUserCurrent->get_organizations_list();
+			if ($organizations_list) {
+				foreach ($organizations_list as $organization_query_item) {
+					$organization_item = array();
+					$organization_item[ 'wpref' ] = $organization_query_item->wpref;
+					$organization_item[ 'name' ] = $organization_query_item->name;
+					array_push( $response[ 'organizationlist' ], $organization_item );
+				}
+			}
+
 			$response[ 'userinfos' ][ 'display_need_authentication' ] = ( !$is_project_needing_authentication && !$WDGUserCurrent->is_lemonway_registered() ) ? '1' : '0';
 
 			$response[ 'scripts' ] = array();
