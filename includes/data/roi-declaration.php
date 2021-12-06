@@ -974,6 +974,16 @@ class WDGROIDeclaration {
 	}
 
 	/**
+	 * Si la dÃ©claration Ã©tait en attente de virement/prélèvement et que celui-ci a échoué, on retourne au status payment pour que le PP puisse payer par carte
+	 */
+	public function roi_cancel_transfer() {
+		if ( $this->status == WDGROIDeclaration::$status_waiting_transfer ) {
+			$this->status = WDGROIDeclaration::$status_payment;
+			$this->update();
+		}
+	}	
+
+	/**
 	 * DÃ©termine le nom du fichier d'attestation qui va Ãªtre crÃ©Ã©
 	 * @return string
 	 */
