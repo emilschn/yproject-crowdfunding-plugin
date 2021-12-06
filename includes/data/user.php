@@ -49,6 +49,7 @@ class WDGUser implements WDGUserInterface {
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	private $source;
 	private $subscriptions;
 
 	/**
@@ -125,6 +126,7 @@ class WDGUser implements WDGUserInterface {
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
 					$this->email_is_validated = $this->api_data->email_is_validated;
+					$this->source = $this->api_data->source;
 					$this->subscriptions = $this->api_data->subscriptions;
 				}
 			}
@@ -752,6 +754,18 @@ class WDGUser implements WDGUserInterface {
 			$this->royalties_notifications = $value;
 			$this->update_api();
 		}
+	}
+
+	public function get_source() {
+		// Si pas de source définie, on vérifie si il y a des investissements déjà faits
+		// Si c'est le cas, on met "wedogood"
+		if ( empty( $this->source ) ) {
+			$list_investments = $this->get_investments( 'publish' );
+			if ( !empty( $list_investments ) ) {
+				$this->source = 'wedogood';
+			}
+		}
+		return $this->source;
 	}
 
 	/*******************************************************************************
