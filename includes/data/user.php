@@ -49,7 +49,7 @@ class WDGUser implements WDGUserInterface {
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
-	private $source;
+	public $source;
 	private $subscriptions;
 
 	/**
