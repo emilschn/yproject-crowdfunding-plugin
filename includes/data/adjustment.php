@@ -27,6 +27,7 @@ class WDGAdjustment {
 	public $id_declaration;
 	public $date_created;
 	public $type;
+	public $turnover_checked;
 	public $turnover_difference;
 	public $amount;
 	public $message_organization;
@@ -55,6 +56,7 @@ class WDGAdjustment {
 				$this->id_declaration = $collection_item->id_declaration;
 				$this->date_created = $collection_item->date_created;
 				$this->type = $collection_item->type;
+				$this->turnover_checked = $collection_item->turnover_checked;
 				$this->turnover_difference = $collection_item->turnover_difference;
 				$this->amount = $collection_item->amount;
 				$this->message_organization = $collection_item->message_organization;
@@ -72,6 +74,7 @@ class WDGAdjustment {
 					$this->id_declaration = $adjustment_api_item->id_declaration;
 					$this->date_created = $adjustment_api_item->date_created;
 					$this->type = $adjustment_api_item->type;
+					$this->turnover_checked = $adjustment_api_item->turnover_checked;
 					$this->turnover_difference = $adjustment_api_item->turnover_difference;
 					$this->amount = $adjustment_api_item->amount;
 					$this->message_organization = $adjustment_api_item->message_organization;

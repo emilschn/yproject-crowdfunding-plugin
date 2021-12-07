@@ -83,20 +83,29 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$adjustment_type_str_by_id
 		);
 		
+		$date_today = new DateTime();
+		$declaration_list_by_id_past = array();
+		foreach ( $declaration_list as $WDGROIDeclaration ) {
+			$date_due = new DateTime( $WDGROIDeclaration->date_due );
+			if ( $date_today > $date_due && !$WDGROIDeclaration->is_checked_by_adjustments()) {
+				$declaration_list_by_id_past[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
+			}
+		}
+		$declaration_checked_values = array();
+		if ( !empty( $adjustment ) ) {
+			$temp_declarations_checked = $adjustment->get_declarations_checked();
+			foreach ( $temp_declarations_checked as $declaration_item ) {
+				array_push( $declaration_checked_values, 'declaration-' . $declaration_item->id );
+			}
+		}
 		$this->addField(
-			'text-money',
-			'turnover_difference',
-			__( "Diff&eacute;rentiel de CA", 'yproject' ),
+			'select-multiple',
+			'declarations_checked',
+			__( "Versements &agrave; marquer comme v&eacute;rifi&eacute;s", 'yproject' ),
 			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->turnover_difference : ''
-		);
-		
-		$this->addField(
-			'text-money',
-			'amount',
-			__( "Montant de l'ajustement *", 'yproject' ),
-			self::$field_group_adjustment,
-			( !empty( $adjustment ) ) ? $adjustment->amount : ''
+			$declaration_checked_values,
+			FALSE,
+			$declaration_list_by_id_past
 		);
 		
 		$files = WDGWPREST_Entity_Project::get_files( $campaign->get_api_id(), 'project_document' );
@@ -122,29 +131,28 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$documents_by_id
 		);
 		
-		$date_today = new DateTime();
-		$declaration_list_by_id_past = array();
-		foreach ( $declaration_list as $WDGROIDeclaration ) {
-			$date_due = new DateTime( $WDGROIDeclaration->date_due );
-			if ( $date_today > $date_due && !$WDGROIDeclaration->is_checked_by_adjustments()) {
-				$declaration_list_by_id_past[ 'declaration-' . $WDGROIDeclaration->id ] = $WDGROIDeclaration->date_due;
-			}
-		}
-		$declaration_checked_values = array();
-		if ( !empty( $adjustment ) ) {
-			$temp_declarations_checked = $adjustment->get_declarations_checked();
-			foreach ( $temp_declarations_checked as $declaration_item ) {
-				array_push( $declaration_checked_values, 'declaration-' . $declaration_item->id );
-			}
-		}
 		$this->addField(
-			'select-multiple',
-			'declarations_checked',
-			__( "Versements &agrave; marquer comme v&eacute;rifi&eacute;s", 'yproject' ),
+			'text-money',
+			'turnover_checked',
+			__( "Montant du CA vérifié", 'yproject' ),
 			self::$field_group_adjustment,
-			$declaration_checked_values,
-			FALSE,
-			$declaration_list_by_id_past
+			( !empty( $adjustment ) ) ? $adjustment->turnover_checked : ''
+		);
+		
+		$this->addField(
+			'text-money',
+			'turnover_difference',
+			__( "Diff&eacute;rentiel de CA", 'yproject' ),
+			self::$field_group_adjustment,
+			( !empty( $adjustment ) ) ? $adjustment->turnover_difference : ''
+		);
+		
+		$this->addField(
+			'text-money',
+			'amount',
+			__( "Montant de l'ajustement *", 'yproject' ),
+			self::$field_group_adjustment,
+			( !empty( $adjustment ) ) ? $adjustment->amount : ''
 		);
 		
 		$message_organization_default = "Nous avons procédé à l'ajustement annuel des comptes en prenant en compte le différentiel de chiffre d'affaires entre les chiffres indiqués tout au long de l'année et ce que vous nous avez transmis, qui représente XXX €. Vous aurez donc un montant supplémentaire à verser à vos investisseurs de XXX €. / Vous aurez donc un solde qui se déduira de votre prochain paiement de XXX €";
@@ -217,6 +225,18 @@ class WDG_Form_Adjustement extends WDG_Form {
 			);
 		}
 		
+		$turnover_checked = $this->getInputTextMoney( 'turnover_checked', FALSE );
+		if ( empty( $turnover_checked ) ) {
+			$turnover_checked = 0;
+		}
+		if ( !is_numeric( $turnover_checked ) ) {
+			$this->addPostError(
+				'turnover_checked',
+				__( "Erreur de saisie du CA vérifié.", 'yproject' ),
+				'general'
+			);
+		}
+		
 		$turnover_difference = $this->getInputTextMoney( 'turnover_difference', FALSE );
 		if ( empty( $turnover_difference ) ) {
 			$turnover_difference = 0;
@@ -270,6 +290,7 @@ class WDG_Form_Adjustement extends WDG_Form {
 			$adjustment->id_api_campaign = $campaign->get_api_id();
 			$adjustment->id_declaration = substr( $declaration, strlen( 'declaration-' ) );
 			$adjustment->type = $type;
+			$adjustment->turnover_checked = $turnover_checked;
 			$adjustment->turnover_difference = $turnover_difference;
 			$adjustment->amount = $amount;
 			$adjustment->documents = $documents;
