@@ -1468,7 +1468,7 @@ class ATCF_Campaign {
 	public function roi_percent() {
 		if ( $this->roi_percent == 0 ) {
 			$max_goal = $this->goal( FALSE );
-			if ( $max_goal >= 0 ) {
+			if ( $max_goal > 0 ) {
 				$this->roi_percent = round($this->roi_percent_estimated() * $this->current_amount( FALSE ) / $max_goal, 10);
 				update_post_meta( $this->ID, ATCF_Campaign::$key_roi_percent, $this->roi_percent );
 				$this->set_api_data( 'roi_percent', $this->roi_percent );
