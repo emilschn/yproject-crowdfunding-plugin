@@ -90,7 +90,8 @@ class WDGWPREST_Entity_User {
 			'signup_date'		=> $user->get_signup_date(),
 			'royalties_notifications'		=> $user->get_royalties_notifications(),
 			'gateway_list'		=> $user->get_encoded_gateway_list(),
-			'email_is_validated'		=> $user->get_email_is_validated()
+			'email_is_validated'		=> $user->get_email_is_validated(),
+			'source'					=> $user->get_source()
 		);
 
 		// Ajout facultatif des documents
