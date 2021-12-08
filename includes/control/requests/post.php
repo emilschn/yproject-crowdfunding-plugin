@@ -640,9 +640,13 @@ class WDGPostActions {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$date_end = filter_input( INPUT_POST, 'date_end' );
 		$free_field = filter_input( INPUT_POST, 'free_field' );
+		$additionnal_fees = filter_input( INPUT_POST, 'additionnal_fees' );
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$campaign->make_funded_certificate( TRUE, $date_end, $free_field );
+			if ( empty( $additionnal_fees ) ) {
+				$additionnal_fees = 0;
+			}
+			$campaign->make_funded_certificate( TRUE, $date_end, $free_field, $additionnal_fees );
 		}
 
 		$url_return = wp_get_referer() . "#documents";
