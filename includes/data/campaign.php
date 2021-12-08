@@ -4026,6 +4026,11 @@ class ATCF_Campaign {
 	}
 
 	public static function get_list_current($nb, $type, $order, $client, $is_time_remaining = true) {
+		
+		WDG_Languages_Helpers::switch_to_french_temp();
+		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
+		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
+
 		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
 			'numberposts' => $nb,
@@ -4045,12 +4050,20 @@ class ATCF_Campaign {
 			$query_options[ 'order' ] = $order;
 		}
 
+		// on exclue les projets d'EP qui seraient publics
+		$query_options['tax_query'] = array( 
+			array(
+				'taxonomy'	=> 'download_category',
+				'operator' 	=> 'NOT IN',
+				'terms'		=> array($id_cat_positive_savings)
+			)
+		);
 		if (!empty($client)) {
-			$query_options['tax_query'] = array( array(
+			$query_options['tax_query'][] = array(
 				'taxonomy' => 'download_tag',
 				'field' => 'slug',
 				'terms' => array($client)
-			) );
+			);
 		}
 
 		return get_posts( $query_options );
