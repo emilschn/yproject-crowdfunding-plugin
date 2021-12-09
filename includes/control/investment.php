@@ -960,12 +960,17 @@ class WDGInvestment {
 			$viban_iban = '';
 			$viban_bic = '';
 			$viban_holder = '';
+			$viban_code = '';
 			if ( !empty( $viban_item ) ) {
-				$viban_iban = $viban_item->DATA;
-				$viban_bic = $viban_item->SWIFT;
-				$viban_holder = $viban_item->HOLDER;
+				$viban_iban = $viban_item[ 'iban' ];
+				$viban_bic = $viban_item[ 'bic' ];
+				$viban_holder = $viban_item[ 'holder' ];
+				//  si c'est l'iban LX par défaut, on envoie le code backup
+				if ( !empty( $viban_item[ 'backup' ] ) && !empty( $viban_item[ 'backup' ][ 'lemonway_id' ] ) ){
+					$viban_code = $viban_item[ 'backup' ][ 'lemonway_id' ]; 
+				}
 			}
-			NotificationsAPI::investment_pending_wire( $WDGUser_current, $this, $this->campaign, $viban_iban, $viban_bic, $viban_holder );
+			NotificationsAPI::investment_pending_wire( $WDGUser_current, $this, $this->campaign, $viban_iban, $viban_bic, $viban_holder, $viban_code );
 		}
 
 		//Si un utilisateur investit, il croit au projet

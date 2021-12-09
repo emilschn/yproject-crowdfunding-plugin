@@ -1763,7 +1763,7 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS INVESTISSEMENT PAR VIREMENT - EN ATTENTE
 	//*******************************************************
-	public static function investment_pending_wire($WDGUserInterface, $WDGInvestment, $campaign, $viban_iban, $viban_bic, $viban_holder) {
+	public static function investment_pending_wire($WDGUserInterface, $WDGInvestment, $campaign, $viban_iban, $viban_bic, $viban_holder, $viban_code = '') {
 		$id_template = self::get_id_fr_by_slug( 'investment-wire-pending' );
 
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
@@ -1772,7 +1772,8 @@ class NotificationsAPI {
 		$investment_pending_data = array(
 			'viban_iban'	=> $viban_iban,
 			'viban_bic'		=> $viban_bic,
-			'viban_holder'	=> $viban_holder
+			'viban_holder'	=> $viban_holder,
+			'viban_code'	=> $viban_code
 		);
 		NotificationsAPIShortcodes::set_investment_pending_data($investment_pending_data);
 
