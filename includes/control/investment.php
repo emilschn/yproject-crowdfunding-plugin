@@ -960,6 +960,7 @@ class WDGInvestment {
 			$viban_iban = '';
 			$viban_bic = '';
 			$viban_holder = '';
+			$viban_code = '';
 			if ( !empty( $viban_item ) ) {
 				$viban_iban = $viban_item[ 'iban' ];
 				$viban_bic = $viban_item[ 'bic' ];
