@@ -82,6 +82,9 @@ class WDGAjaxActionsUserLogin {
 				}
 				
 				if ( !empty( $input_source ) ) {
+					if ( $input_source == 'sendinblue' ) {
+						$input_source = 'wedogood';
+					}
 					$WDGUserCurrent->source = $input_source;
 					$WDGUserCurrent->update_api();
 				}
