@@ -674,7 +674,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 				$birthplace_country = $this->getInputText( 'birthplace_country' );
 				$nationality = $this->getInputText( 'nationality' );
 				$address_number = $this->getInputText( 'address_number' );
-				$address_number_comp = $this->getInputText( 'address_number_comp' );
+				$address_number_comp = $this->getInputText( 'address_number_complement' );
 				$address = $this->getInputText( 'address' );
 				if ( empty( $address ) || !WDGRESTAPI_Lib_Validator::is_name( $address ) ) {
 					$this->addPostError(
