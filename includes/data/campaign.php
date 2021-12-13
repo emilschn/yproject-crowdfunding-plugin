@@ -1201,6 +1201,14 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
+	public static $key_display_automatic_economic_model = 'display_automatic_economic_model';
+	public function get_display_automatic_economic_model() {
+		$metadata_value = $this->__get( ATCF_Campaign::$key_display_automatic_economic_model );
+		$buffer = ( $metadata_value == '1' );
+
+		return $buffer;
+	}
+
 	public static $key_show_comments_for_everyone = 'show_comments_for_everyone';
 	public function get_show_comments_for_everyone() {
 		$metadata_value = $this->__get( ATCF_Campaign::$key_show_comments_for_everyone );
@@ -1555,6 +1563,30 @@ class ATCF_Campaign {
 			$buffer = 0;
 		}
 
+		return $buffer;
+	}
+
+	public function total_previous_funding() {
+		$buffer = $this->get_api_data( 'total_previous_funding' );
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
+		return $buffer;
+	}
+
+	public function total_previous_funding_description() {
+		$buffer = $this->get_api_data( 'total_previous_funding_description' );
+		if ( empty( $buffer ) ) {
+			$buffer = '';
+		}
+		return $buffer;
+	}
+
+	public function turnover_previous_year() {
+		$buffer = $this->get_api_data( 'turnover_previous_year' );
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
 		return $buffer;
 	}
 

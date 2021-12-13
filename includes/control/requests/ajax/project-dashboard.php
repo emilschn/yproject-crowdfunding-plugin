@@ -358,6 +358,13 @@ class WDGAjaxActionsProjectDashboard {
 			$new_advice_notifications_frequency = sanitize_text_field( filter_input( INPUT_POST, 'new_advice_notifications_frequency' ) );
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_advice_notifications_frequency, $new_advice_notifications_frequency );
 
+			$new_display_automatic_economic_model = sanitize_text_field( filter_input( INPUT_POST, 'new_display_automatic_economic_model' ) );
+			if ( $new_display_automatic_economic_model === true || $new_display_automatic_economic_model === "true" || $new_display_automatic_economic_model === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_display_automatic_economic_model, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_display_automatic_economic_model );
+			}
+
 			$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
 			if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
 				update_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone, '1' );
@@ -889,6 +896,26 @@ class WDGAjaxActionsProjectDashboard {
 			} else {
 				$errors['new_estimated_turnover_unit'] = "Valeur non valide";
 			}
+		}
+
+		$new_total_previous_funding = sanitize_text_field( filter_input( INPUT_POST, 'new_total_previous_funding') );
+		if ( $new_total_previous_funding >= 0 ) {
+			$campaign->set_api_data( 'total_previous_funding', $new_total_previous_funding );
+			$success['new_total_previous_funding'] = 1;
+		} else {
+			$errors['new_total_previous_funding'] = "Nombre non valide";
+		}
+
+		$new_total_previous_funding_description = sanitize_text_field( filter_input( INPUT_POST, 'new_total_previous_funding_description') );
+		$campaign->set_api_data( 'total_previous_funding_description', $new_total_previous_funding_description );
+		$success['new_total_previous_funding_description'] = 1;
+
+		$new_turnover_previous_year = sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_previous_year') );
+		if ( $new_turnover_previous_year >= 0 ) {
+			$campaign->set_api_data( 'turnover_previous_year', $new_turnover_previous_year );
+			$success['new_turnover_previous_year'] = 1;
+		} else {
+			$errors['new_turnover_previous_year'] = "Nombre non valide";
 		}
 
 		//Update list of estimated turnover
