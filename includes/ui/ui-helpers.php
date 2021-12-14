@@ -111,6 +111,11 @@ class UIHelpers {
 	}
 	
 	public static function format_number( $input, $decimals = 2 ) {
-		return number_format( $input, $decimals, ',', ' ' );
+		if(is_numeric($input)){
+			return number_format( $input, $decimals, ',', ' ' );
+		}else{
+			return $input;
+		}
+		
 	}
 }

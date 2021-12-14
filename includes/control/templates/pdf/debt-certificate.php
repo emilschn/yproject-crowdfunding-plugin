@@ -75,7 +75,7 @@ immatriculée sous le numéro de SIREN <?php echo $organization_siren; ?> au RCS
 représentée par son <?php echo $organization_representative_function; ?>, <?php echo $orga_creator_gender; ?> <?php echo $orga_creator_firstname; ?> <?php echo $orga_creator_lastname; ?>,
 
 		</div>
-		<div style="margin-top: 30px;">a effectué une levée de fonds en échange de royalties (redevance trimestrielle indexée sur son chiffre d’affaires) en <?php echo $date_campaign_end; ?> pour un montant total de <?php echo $amount_funded; ?> € auprès de <?php echo $number_investors; ?> souscripteurs et s’est engagé à verser à ses souscripteurs <?php echo $percent_turnover; ?> % de son chiffre d’affaires réalisé entre le <?php echo $date_contract_start; ?> et le <?php echo $date_contract_end; ?>.
+		<div style="margin-top: 30px;">a effectué une levée de fonds en échange de royalties (redevance trimestrielle indexée sur son chiffre d’affaires) le <?php echo $date_campaign_end; ?> pour un montant total de <?php echo $amount_funded; ?> auprès de <?php echo $number_investors; ?> souscripteurs et s’est engagé à verser à ses souscripteurs <?php echo $percent_turnover; ?> % de son chiffre d’affaires réalisé entre le <?php echo $date_contract_start; ?> et le <?php echo $date_contract_end; ?>.
 		</div>
 		<div style="margin-top: 30px;">
 Cet engagement était assorti d’une obligation de remboursement des investisseurs aux mêmes conditions après le <?php echo $date_contract_end; ?> si ces derniers n’avaient pas été remboursés à ce stade.
