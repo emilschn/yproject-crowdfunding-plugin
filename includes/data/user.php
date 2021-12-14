@@ -1058,7 +1058,7 @@ class WDGUser implements WDGUserInterface {
 		if ( !empty( $address_number  ) ) {
 			$this->address_number = $address_number;
 		}
-		if ( !empty( $address_number_complement ) ) {
+		if ( isset( $address_number_complement ) ) {
 			$this->address_number_complement = $address_number_complement;
 		}
 		if ( !empty( $address ) ) {
