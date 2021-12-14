@@ -222,6 +222,14 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_support, $object, $content );
 	}
 
+	public static function adjustment_needed_30_days($campaign_name, $campaign_contract_start_date) {
+		$object = $campaign_name . ' /// Ajustement nécessaire';
+		$content = "Le projet " .$campaign_name. " n'a pas fait d'ajustement depuis plus d'un an. Un mail de rappel a été envoyé il y a 23 jours, et un autre vient d'être envoyé à l'instant.";
+		$content .= "Date de début de contrat : " .$campaign_contract_start_date. "<br>";
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
 	public static function roi_received_exceed_maximum($investor_id, $investor_type, $project_id) {
 		$campaign = new ATCF_Campaign( FALSE, $project_id );
 		$investor_entity = ( $investor_type == 'orga' ) ? WDGOrganization::get_by_api_id( $investor_id ) : WDGUser::get_by_api_id( $investor_id );

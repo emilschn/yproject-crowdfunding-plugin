@@ -1373,6 +1373,55 @@ class WDGQueue {
 			}
 		}
 	}
+	
+
+	/******************************************************************************/
+	/* ENVOI RELANCE AJUSTEMENT */
+	/******************************************************************************/
+	public static function add_adjustment_needed($campaign_id, $date_interval = 'P7D', $nb_relance = 1) {
+		$action = 'adjustment_needed';
+		$entity_id = $campaign_id;
+		$priority = self::$priority_date;
+		$date_next_dispatch = new DateTime();
+		$date_next_dispatch->add( new DateInterval( $date_interval ) );
+		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
+		
+		$params = array(
+			'nb_relance'	=> $nb_relance
+		);
+		self::create_or_replace_action( $action, $entity_id, $priority, $params, $date_priority );
+	}
+
+	public static function execute_adjustment_needed($campaign_id, $queued_action_params, $queued_action_id) {
+
+		if ( !empty( $campaign_id ) ) {
+			
+			$campaign = new ATCF_Campaign( $campaign_id );
+			if ($campaign->is_adjustment_needed()){
+				// récupération des infos nécessaires de la campagne
+				$organization = $campaign->get_organization();
+				$wdgorganization = new WDGOrganization( $organization->wpref, $organization );
+				$wdguser_author = new WDGUser( $campaign->data->post_author );
+				$recipients = $wdgorganization->get_email(). ',' .$wdguser_author->get_email();
+				$recipients .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
+
+				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
+
+				if ( $queued_action_param->nb_relance == 1 ){
+					// création d'un autre rappel à J+30
+					self::add_adjustment_needed($campaign_id, 'P30D', 2);
+					//on envoie un mail automatique 
+					NotificationsAPI::adjustment_needed_7_days( $recipients, $wdguser_author, $campaign );
+				}else{
+					// on envoie un 2è mail auto 
+					NotificationsAPI::adjustment_needed_30_days( $recipients, $wdguser_author, $campaign );
+					// et créé une tâche Asana avec les infos
+					//Je veux avoir toutes les infos dont j'ai besoin dans une tâche Asana (date de clôture des comptes,  date prévisionnelle du 1er ajustement, info sur dernier ajustement si c’est le cas)
+					NotificationsAsana::adjustment_needed_30_days( $campaign->get_name(), $campaign->contract_start_date() );
+				}
+			}
+		}
+	}
 
 	/******************************************************************************/
 	/* ENVOI NOTIF TB PAS CREE PLUSIEURS JOURS APRES AVOIR PAYE */
