@@ -411,7 +411,9 @@ class WDGROIDeclaration {
 		$turnover_array = $this->get_turnover();
 		if ( is_array( $turnover_array ) ) {
 			foreach ($turnover_array as $turnover_amount) {
-				$buffer += $turnover_amount;
+				if(is_numeric($turnover_amount)){
+					$buffer += $turnover_amount;
+				}
 			}
 		}
 
