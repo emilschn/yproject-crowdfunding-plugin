@@ -364,6 +364,15 @@ class WDG_Form_User_Details extends WDG_Form {
 				);
 				array_push( $feedback_errors, $error );
 			}
+			// Si l'utilisateur change d'e-mail et que celui-ci est déjà utilisé, on bloque
+			if ( $WDGUser->get_email() != $email && email_exists( $email ) ) {
+				$error = array(
+					'code'		=> 'email',
+					'text'		=> __( 'form.user-details.EMAIL_ADDRESS_NOT_OK', 'yproject' ),
+					'element'	=> 'email'
+				);
+				array_push( $feedback_errors, $error );
+			}
 			
 			$firstname = $this->getInputText( 'firstname' );
 			if ( empty( $firstname ) || !WDGRESTAPI_Lib_Validator::is_name( $firstname )  ) {
