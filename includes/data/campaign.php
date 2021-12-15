@@ -1590,6 +1590,27 @@ class ATCF_Campaign {
 		return $buffer;
 	}
 
+	public function has_sufficient_working_capital() {
+		$buffer = $this->get_api_data( 'working_capital_sufficient' );
+		return ( $buffer == '1' );
+	}
+
+	public function working_capital_subsequent() {
+		$buffer = $this->get_api_data( 'working_capital_subsequent' );
+		if ( empty( $buffer ) ) {
+			$buffer = '';
+		}
+		return $buffer;
+	}
+
+	public function financial_risks_others() {
+		$buffer = $this->get_api_data( 'financial_risks_others' );
+		if ( empty( $buffer ) ) {
+			$buffer = '';
+		}
+		return $buffer;
+	}
+
 	public static $key_estimated_turnover_unit = 'campaign_estimated_turnover_unit';
 	public function estimated_turnover_unit() {
 		$buffer = $this->get_api_data( 'estimated_turnover_unit' );

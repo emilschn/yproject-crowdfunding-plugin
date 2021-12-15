@@ -906,7 +906,7 @@ class WDGAjaxActionsProjectDashboard {
 			$errors['new_total_previous_funding'] = "Nombre non valide";
 		}
 
-		$new_total_previous_funding_description = sanitize_text_field( filter_input( INPUT_POST, 'new_total_previous_funding_description') );
+		$new_total_previous_funding_description = htmlentities( filter_input( INPUT_POST, 'new_total_previous_funding_description') );
 		$campaign->set_api_data( 'total_previous_funding_description', $new_total_previous_funding_description );
 		$success['new_total_previous_funding_description'] = 1;
 
@@ -917,6 +917,22 @@ class WDGAjaxActionsProjectDashboard {
 		} else {
 			$errors['new_turnover_previous_year'] = "Nombre non valide";
 		}
+
+		$new_working_capital_sufficient = sanitize_text_field( filter_input( INPUT_POST, 'new_working_capital_sufficient' ) );
+		if ( $new_working_capital_sufficient === true || $new_working_capital_sufficient === "true" || $new_working_capital_sufficient === 1 ) {
+			$campaign->set_api_data( 'working_capital_sufficient', '1' );
+		} else {
+			$campaign->set_api_data( 'working_capital_sufficient', '0' );
+		}
+		$success['new_working_capital_sufficient'] = 1;
+
+		$new_working_capital_subsequent = htmlentities( filter_input( INPUT_POST, 'new_working_capital_subsequent') );
+		$campaign->set_api_data( 'working_capital_subsequent', $new_working_capital_subsequent );
+		$success['new_working_capital_subsequent'] = 1;
+
+		$new_financial_risks_others = htmlentities( filter_input( INPUT_POST, 'new_financial_risks_others') );
+		$campaign->set_api_data( 'financial_risks_others', $new_financial_risks_others );
+		$success['new_financial_risks_others'] = 1;
 
 		//Update list of estimated turnover
 		$i = 0;
