@@ -1634,6 +1634,15 @@ class ATCF_Campaign {
 		return json_decode($buffer, TRUE);
 	}
 
+	public function estimated_sales() {
+		$buffer = $this->get_api_data( 'estimated_sales' );
+		if ( empty( $buffer ) ) {
+			return array();
+		} else {
+			return json_decode( $buffer, TRUE );
+		}
+	}
+
 	public function yield_for_investors() {
 		$estimated_turnover_list = $this->estimated_turnover();
 		$estimated_turnover_total = 0;

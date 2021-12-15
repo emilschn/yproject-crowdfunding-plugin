@@ -937,6 +937,7 @@ class WDGAjaxActionsProjectDashboard {
 		//Update list of estimated turnover
 		$i = 0;
 		$sanitized_list = array();
+		$sanitized_list_sales = array();
 		$funding_duration = $campaign->funding_duration();
 		if ( $funding_duration == 0 ) {
 			$funding_duration = 5;
@@ -947,24 +948,29 @@ class WDGAjaxActionsProjectDashboard {
 		}
 		while ( filter_input( INPUT_POST, 'new_estimated_turnover_' . $i ) != '' && ( $i + 1 <= $funding_duration ) ) {
 			$current_val = WDG_Form::formatInputTextNumber( 'new_estimated_turnover_' .$i );
+			$current_val_sales = WDG_Form::formatInputTextNumber( 'new_estimated_sales_' .$i );
 
 			if ( is_numeric( $current_val ) ) {
 				if ( $current_val >= 0 ) {
 					$sanitized_list[ $i + 1 ] = $current_val;
+					$sanitized_list_sales[ $i + 1 ] = $current_val_sales;
 					$success[ 'new_estimated_turnover_' . $i ] = 1;
 				} else {
 					$errors[ 'new_estimated_turnover_' . $i ] = "La valeur doit &ecirc;tre positive";
 					$sanitized_list[ $i + 1 ] = 0;
+					$sanitized_list_sales[ $i + 1 ] = 0;
 				}
 			} else {
 				$errors[ 'new_estimated_turnover_' . $i ] = "Valeur invalide";
 				$sanitized_list[ $i + 1 ] = 0;
+				$sanitized_list_sales[ $i + 1 ] = 0;
 			}
 
 			$i++;
 		}
 		$campaign->__set( ATCF_Campaign::$key_estimated_turnover, json_encode( $sanitized_list ) );
 		$campaign->set_api_data( 'estimated_turnover', json_encode( $sanitized_list ) );
+		$campaign->set_api_data( 'estimated_sales', json_encode( $sanitized_list_sales ) );
 		$campaign->update_api();
 
 		$return_values = array(
