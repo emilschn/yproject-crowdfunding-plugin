@@ -1106,7 +1106,7 @@ class WDGROIDeclaration {
 		// si un ajustement est nécessaire 
 		if ($campaign->is_adjustment_needed()){
 			// Ajout test dans 7 jours pour vérifier si un ajustement est nécessaire
-			WDGQueue::add_adjustment_needed( $campaign->id, 'P7D', 1 );
+			WDGQueue::add_adjustment_needed( $campaign->ID, 'P7D', 1 );
 		}
 
 		$investments_list = $campaign->roi_payments_data( $this );

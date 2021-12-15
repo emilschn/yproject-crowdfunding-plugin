@@ -1393,11 +1393,13 @@ class WDGQueue {
 	}
 
 	public static function execute_adjustment_needed($campaign_id, $queued_action_params, $queued_action_id) {
-
 		if ( !empty( $campaign_id ) ) {
 			
 			$campaign = new ATCF_Campaign( $campaign_id );
-			if ($campaign->is_adjustment_needed()){
+			if ($campaign->is_adjustment_needed()){				
+				// Exceptionnellement, on déclare l'action faite au début, pour pouvoir créer une 2è actions différente si besoin
+				WDGWPREST_Entity_QueuedAction::edit( $queued_action_id, self::$status_complete );
+
 				// récupération des infos nécessaires de la campagne
 				$organization = $campaign->get_organization();
 				$wdgorganization = new WDGOrganization( $organization->wpref, $organization );
@@ -1408,10 +1410,10 @@ class WDGQueue {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
 
 				if ( $queued_action_param->nb_relance == 1 ){
-					// création d'un autre rappel à J+30
-					self::add_adjustment_needed($campaign_id, 'P30D', 2);
 					//on envoie un mail automatique 
 					NotificationsAPI::adjustment_needed_7_days( $recipients, $wdguser_author, $campaign );
+					// création d'un autre rappel à J+30
+					self::add_adjustment_needed($campaign_id, 'P30D', 2);
 				}else{
 					// on envoie un 2è mail auto 
 					NotificationsAPI::adjustment_needed_30_days( $recipients, $wdguser_author, $campaign );
