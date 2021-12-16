@@ -513,6 +513,12 @@ class NotificationsAPI {
 			'description'	=> "Abonnement - Confirmation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
+		),
+		'project-investment-3days-post-cloture' => array(
+			'fr-sib-id'		=> 'project-investment-3days-post-cloture',
+			'description'	=> "Relance - Investissement J-3 - Post Cloture",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
 		)
 	);
 
@@ -1657,6 +1663,36 @@ class NotificationsAPI {
 
 	public static function confirm_investment_invest2days_no_intention($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-2days-without-intention' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+		$reminder_data = array();
+		$reminder_data[ 'amount' ] = 0;
+		$reminder_data[ 'testimony' ] = $testimony;
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$reminder_data[ 'image' ] = $image_element;
+		$reminder_data[ 'description' ] = $image_description;
+		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
+
+		$options = array(
+			'personal'					=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+		
+	//*******************************************************
+	// RELANCE - INVESTISSEMENT - J-3 post-cloture
+	//*******************************************************
+	public static function confirm_investment_3days_post_cloture($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
+		$id_template = self::get_id_fr_by_slug( 'project-investment-3days-post-cloture' );
 
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);

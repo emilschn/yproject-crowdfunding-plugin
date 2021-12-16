@@ -10,7 +10,7 @@ class WDGEmails {
 
 		// Si on teste, on biaise les données et on arrête de suite
 		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
-			$WDGUserOrOrganization = new WDGUser( 60 );
+			$WDGUserOrOrganization = new WDGUser( 68 );
 			$intention_amount = 100;
 			$list_language = array( 'fr', 'en' );
 			foreach ( $list_language as $language ) {
@@ -40,6 +40,9 @@ class WDGEmails {
 					case 'investment-2days':
 						NotificationsAPI::confirm_investment_invest2days_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
 						NotificationsAPI::confirm_investment_invest2days_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						break;
+					case 'investment-3days-post-cloture':
+						NotificationsAPI::confirm_investment_3days_post_cloture( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
 						break;
 				}
 			}
