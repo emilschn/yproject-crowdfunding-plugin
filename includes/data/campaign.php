@@ -132,6 +132,7 @@ function atcf_create_campaign($author_ID, $title) {
 	add_post_meta( $newcampaign_id, 'campaign_added_value', $default_strategy );
 	$default_finance = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_finance, 'default_finance' );
 	add_post_meta( $newcampaign_id, 'campaign_economic_model', $default_finance );
+	add_post_meta( $newcampaign_id, ATCF_Campaign::$key_display_automatic_economic_model, '1' );
 	$default_team = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_team, 'default_team' );
 	add_post_meta( $newcampaign_id, 'campaign_implementation', $default_team );
 
@@ -259,6 +260,7 @@ class ATCF_Campaign {
 		if ( !add_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal'), true) ) {
 			update_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal') );
 		}
+		update_post_meta( $newcampaign_id, ATCF_Campaign::$key_display_automatic_economic_model, $this->__get( ATCF_Campaign::$key_display_automatic_economic_model ) );
 		// on vide la liste des campagnes dupliquées
 		delete_post_meta($newcampaign_id, 'duplicated_campaigns');
 		delete_post_meta($newcampaign_id, 'campaign_duplicata');
@@ -304,7 +306,6 @@ class ATCF_Campaign {
 		$api_id = $this->get_api_id();
 		if ( !isset( $this->api_data ) && !empty( $api_id ) ) {
 			$this->api_data = WDGWPREST_Entity_Project::get( $api_id );
-//			$this->update_from_api();
 		}
 	}
 
@@ -344,48 +345,6 @@ class ATCF_Campaign {
 
 	public function update_api() {
 		WDGWPREST_Entity_Project::update( $this );
-	}
-
-	/**
-	 * Mise à jour des données WP en fonction des données présentes sur l'API
-	 */
-	private function update_from_api() {
-		/*// Mise à jour du titre du post
-		$api_data_name = $this->get_api_data( 'name' );
-		if ( !empty( $api_data_name ) && $api_data_name != $this->data->post_title ) {
-			wp_update_post(array(
-				'ID'			=> $this->ID,
-				'post_title'	=> $api_data_name
-			));
-		}
-
-		// Mise à jour de l'url du post
-		$api_data_url = $this->get_api_data( 'url' );
-		if ( !empty( $api_data_url ) && $api_data_url != $this->data->post_name ) {
-			$posts = get_posts( array(
-				'name'		=> $api_data_url,
-				'post_type' => array( 'post', 'page', 'download' )
-			) );
-			if ( $posts ) {
-				wp_update_post(array(
-					'ID'		=> $this->ID,
-					'post_name'	=> $api_data_url
-				));
-			}
-		}*/
-
-		// Liaison aux catégories
-		/*$api_data_type = json_decode( $this->get_api_data( 'type' ) );
-		$api_data_category = json_decode( $this->get_api_data( 'category' ) );
-		$api_data_impacts = json_decode( $this->get_api_data( 'impacts' ) );
-		$api_data_partners = json_decode( $this->get_api_data( 'partners' ) );
-		$api_data_tousnosprojets = json_decode( $this->get_api_data( 'tousnosprojets' ) );
-		$cat_ids = array_merge( $api_data_type, $api_data_category, $api_data_impacts, $api_data_partners, $api_data_tousnosprojets );
-		$cat_ids = array_map( 'intval', $cat_ids );
-		if ( !empty( $cat_ids ) ) {
-			wp_set_object_terms( $this->ID, $cat_ids, 'download_category' );
-		}
-		 */
 	}
 
 	/**
