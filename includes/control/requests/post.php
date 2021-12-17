@@ -905,8 +905,10 @@ class WDGPostActions {
 		$input_send_option = filter_input( INPUT_POST, 'send_option' );
 
 		$result = false;
-		if ( !empty( $campaign_id ) && !empty( $input_testimony ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
-			$result = WDGEmails::auto_notifications($campaign_id, $mail_type, $input_testimony, $input_image_url, $input_image_description, $input_send_option);
+		if ( !empty( $campaign_id ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
+			if ( $mail_type == "investment-3days-post-cloture" || ( !empty( $input_testimony ) ) ){
+				$result = WDGEmails::auto_notifications($campaign_id, $mail_type, $input_testimony, $input_image_url, $input_image_description, $input_send_option);
+			}
 		}
 
 		if ( !$skip_redirect ) {

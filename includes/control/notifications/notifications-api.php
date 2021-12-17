@@ -1691,14 +1691,13 @@ class NotificationsAPI {
 	//*******************************************************
 	// RELANCE - INVESTISSEMENT - J-3 post-cloture
 	//*******************************************************
-	public static function confirm_investment_3days_post_cloture($WDGUserInterface, $campaign, $testimony, $image_url, $image_description) {
+	public static function confirm_investment_3days_post_cloture($WDGUserInterface, $campaign, $image_url, $image_description) {
 		$id_template = self::get_id_fr_by_slug( 'project-investment-3days-post-cloture' );
 
 		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		$reminder_data = array();
 		$reminder_data[ 'amount' ] = 0;
-		$reminder_data[ 'testimony' ] = $testimony;
 		$image_element = '<img src="' . $image_url . '" width="590">';
 		$reminder_data[ 'image' ] = $image_element;
 		$reminder_data[ 'description' ] = $image_description;
