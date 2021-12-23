@@ -235,14 +235,19 @@ class WDGAjaxActionsAccountSignin {
 			// Normalement, on ne passe pas ici
 			$result[ 'status' ] = 'not-existing-account';
 		} else {
+			$WDGUser = new WDGUser( $user->ID, FALSE );
 			if ( !is_email( $input_new_email ) || !WDGRESTAPI_Lib_Validator::is_email( $input_new_email )  ) {
 				// Normalement, on ne passe pas ici
 				$result[ 'status' ] = 'email-adress-not-ok';
+				
+			// Si l'utilisateur change d'e-mail et que celui-ci est déjà utilisé, on bloque
+			} else if ( $WDGUser->get_email() != $input_new_email && email_exists( $input_new_email ) ) {
+				$result[ 'status' ] = 'email-adress-not-ok';
+				
 			} else {
-				$WDGUser = new WDGUser( $user->ID, FALSE );
 				global $force_language_to_translate_to;
 				$force_language_to_translate_to = $WDGUser->get_language();
-				$WDGUser->save_data( $input_new_email, $WDGUser->get_gender(), $WDGUser->get_firstname(), $WDGUser->get_lastname(), $WDGUser->get_use_lastname(), $WDGUser->get_birthday_day(), $WDGUser->get_birthday_month(), $WDGUser->get_birthday_year(), $WDGUser->get_birthplace(), $WDGUser->get_birthplace_district(), $WDGUser->get_birthplace_department(), $WDGUser->get_birthplace_country(), $WDGUser->get_nationality(), $WDGUser->get_address_number(), $WDGUser->get_address_number_complement(), $WDGUser->get_address(), $WDGUser->get_postal_code(), $WDGUser->get_city(), $WDGUser->get_country(), $WDGUser->get_tax_country(), $WDGUser->get_phone_number(), $WDGUser->get_contact_if_deceased(), $WDGUser->get_language() );
+				$WDGUser->save_basics( $input_new_email, $WDGUser->get_firstname(), $WDGUser->get_lastname() );
 
 				// on envoie alors un mail de validation à cette nouvelle adresse mail
 				$page_validation_email = WDG_Redirect_Engine::override_get_page_url( 'activer-compte' );

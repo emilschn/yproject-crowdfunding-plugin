@@ -41,6 +41,7 @@ class WDGPostActions {
 		self::add_action( 'add_adjustment' );
 		self::add_action( 'edit_adjustment' );
 		self::add_action("roi_mark_transfer_received");
+		self::add_action("roi_cancel_transfer");
 		self::add_action( 'generate_royalties_bill' );
 		self::add_action( 'save_declaration_bill' );
 		self::add_action( 'refund_investors' );
@@ -639,9 +640,13 @@ class WDGPostActions {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$date_end = filter_input( INPUT_POST, 'date_end' );
 		$free_field = filter_input( INPUT_POST, 'free_field' );
+		$additionnal_fees = filter_input( INPUT_POST, 'additionnal_fees' );
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$campaign->make_funded_certificate( TRUE, $date_end, $free_field );
+			if ( empty( $additionnal_fees ) ) {
+				$additionnal_fees = 0;
+			}
+			$campaign->make_funded_certificate( TRUE, $date_end, $free_field, $additionnal_fees );
 		}
 
 		$url_return = wp_get_referer() . "#documents";
@@ -1179,6 +1184,23 @@ class WDGPostActions {
 			exit();
 		}
 	}
+
+	public static function roi_cancel_transfer() {
+		$WDGUser_current = WDGUser::current();
+		$roi_declaration_id = filter_input( INPUT_POST, 'roi_declaration_id' );
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $roi_declaration_id ) && !empty( $campaign_id ) ) {
+			$roi_declaration = new WDGROIDeclaration( $roi_declaration_id );
+			$roi_declaration->roi_cancel_transfer();
+
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
+			exit();
+		} else {
+			wp_redirect( home_url() );
+			exit();
+		}
+	}	
 
 	public static function generate_royalties_bill() {
 		$WDGUser_current = WDGUser::current();

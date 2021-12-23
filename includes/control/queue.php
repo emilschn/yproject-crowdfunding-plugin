@@ -138,18 +138,16 @@ class WDGQueue {
 		// on récupère la langue du destinataire 
 		WDG_Languages_Helpers::set_current_locale_id( $WDGUserOrOrganization->get_language() );
 		$recipient_email = '';
+		$recipient_email = $WDGUserOrOrganization->get_email();
 		if ( !empty( $WDGOrganization ) ) {
-			$recipient_email = $WDGOrganization->get_email();
 			$linked_users_creator = $WDGOrganization->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
 			if ( !empty( $linked_users_creator ) ) {
 				$WDGUser_creator = $linked_users_creator[ 0 ];
 				$recipient_email .= ',' . $WDGUser_creator->get_email();
 			}
-		} else {
-			$recipient_email = $WDGUser->get_email();
-		}
-		$validated_investments = empty( $WDGOrganization ) ? $WDGUser->get_validated_investments() : $WDGOrganization->get_validated_investments();
-		$id_api_entity = empty( $WDGOrganization ) ? $WDGUser->get_api_id() : $WDGOrganization->get_api_id();
+		} 
+		$validated_investments = $WDGUserOrOrganization->get_validated_investments();
+		$id_api_entity = $WDGUserOrOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 
 		// Parcours de la liste des investissements validés sur le site
@@ -270,6 +268,17 @@ class WDGQueue {
 			}
 			$message .= "<br>";
 		}
+
+
+		/**
+		 * "Vous avez actuellement xx € dans votre monnaie électronique. "(si supérieur à 0€ uniquement)
+		 */
+
+        if ($WDGUserOrOrganization->get_lemonway_wallet_amount() >= 0) {
+			$message .= "<br>";
+			$message .= "<b>" . __( 'email.royalties.WALLET_AMOUNT_1', 'yproject' ) . $WDGUserOrOrganization->get_lemonway_wallet_amount() . __( 'email.royalties.WALLET_AMOUNT_2', 'yproject' ) . "</b><br>";
+			$message .= "<br>";
+        }
 
 		if ( !empty( $message ) ) {
 			$cancel_notification = FALSE;

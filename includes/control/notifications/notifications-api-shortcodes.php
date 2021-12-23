@@ -49,6 +49,7 @@ class NotificationsAPIShortcodes {
 		'investment_pending_viban_iban',
 		'investment_pending_viban_bic',
 		'investment_pending_viban_holder',
+		'investment_pending_viban_code',
 
 		'investment_amount',
 		'investment_date',
@@ -828,6 +829,22 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function investment_pending_viban_holder() {
 		return self::$investment_pending_data[ 'viban_holder' ];
+	}
+
+	/**
+	 * Investissement en attente
+	 * Compte bancaire de destination - Code libellé à préciser si pas de viban
+	 */
+	public static function investment_pending_viban_code() {		
+		global $force_language_to_translate_to;
+		if ( !empty( $force_language_to_translate_to ) ) {
+			WDG_Languages_Helpers::switch_to_temp_language( $force_language_to_translate_to );
+		}
+		if ( self::$investment_pending_data[ 'viban_code' ] == '' || self::$investment_pending_data[ 'viban_code' ] == FALSE ){
+			return '';
+		} else {
+			return __( 'account.bank.CODE', 'yproject' ) . ' : ' . self::$investment_pending_data[ 'viban_code' ];
+		}
 	}
 
 	/**

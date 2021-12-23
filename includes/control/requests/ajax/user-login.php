@@ -80,7 +80,36 @@ class WDGAjaxActionsUserLogin {
 				}
 			}
 
+			// Gestion de la source de l'utilisateur
+			$init_source = $WDGUserCurrent->source;
+			if ( empty( $init_source ) ) {
+				$input_source = $WDGUserCurrent->get_source();
+				if ( empty( $input_source ) ) {
+					$input_source = filter_input( INPUT_POST, 'source' );
+				}
+				if ( empty( $input_source ) ) {
+					ypcf_session_start();
+					$input_source = $_SESSION[ 'user_source' ];
+				}
+				
+				if ( !empty( $input_source ) ) {
+					if ( $input_source == 'sendinblue' ) {
+						$input_source = 'wedogood';
+					}
+					$WDGUserCurrent->source = $input_source;
+					$WDGUserCurrent->update_api();
+				}
+			}
+
 			$buffer = json_encode( $response );
+
+		// Si l'utilisateur n'est pas connecté, mais qu'une source est transmise, on l'enregistre en variable de session
+		} else {
+			$input_source = filter_input( INPUT_POST, 'source' );
+			if ( !empty( $input_source ) ) {
+				ypcf_session_start();
+				$_SESSION[ 'user_source' ] = $input_source;
+			}
 		}
 
 		echo $buffer;
