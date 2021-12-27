@@ -12,7 +12,7 @@ class WDGEmails {
 
 		// Si on teste, on biaise les données et on arrête de suite
 		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
-			$WDGUserOrOrganization = new WDGUser( 68 );
+			$WDGUserOrOrganization = new WDGUser( 60 );
 			$intention_amount = 100;
 			$list_language = array( 'fr', 'en' );
 			foreach ( $list_language as $language ) {
