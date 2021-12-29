@@ -41,6 +41,7 @@ class WDGPostActions {
 		self::add_action( 'add_adjustment' );
 		self::add_action( 'edit_adjustment' );
 		self::add_action("roi_mark_transfer_received");
+		self::add_action("roi_cancel_transfer");
 		self::add_action( 'generate_royalties_bill' );
 		self::add_action( 'save_declaration_bill' );
 		self::add_action( 'refund_investors' );
@@ -100,10 +101,16 @@ class WDGPostActions {
 		$campaign_id = sanitize_text_field( filter_input( INPUT_POST, 'campaign_id' ) );
 		$post_campaign = get_post( $campaign_id );
 		$campaign = new ATCF_Campaign( $campaign_id );
-		$author_user = get_user_by( 'ID', $post_campaign->post_author );
 		$mail_title = sanitize_text_field( filter_input( INPUT_POST, 'mail_title' ) );
 		$mail_content = nl2br( filter_input( INPUT_POST, 'mail_content' ) );
 		$mail_recipients = explode( ',', filter_input( INPUT_POST, 'mail_recipients' ) );
+
+		$author_user = get_user_by( 'ID', $post_campaign->post_author );
+		$reply_to_email = $author_user->user_email;
+		$current_user = WDGUser::current();
+		if ( $current_user->is_admin() ) {
+			$reply_to_email = 'bonjour@wedogood.co';
+		}
 
 		global $wpdb;
 		$table_vote = $wpdb->prefix . "ypcf_project_votes";
@@ -126,7 +133,7 @@ class WDGPostActions {
 
 				$this_mail_content = WDGFormProjects::build_mail_text( $mail_content, $mail_title, $campaign_id, $user_data );
 
-				NotificationsAPI::project_mail( $to, $author_user->user_email, $WDGUser, $user->first_name, $campaign, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
+				NotificationsAPI::project_mail( $to, $reply_to_email, $WDGUser, $user->first_name, $campaign, $post_campaign->post_title, get_permalink( $campaign_id ), $campaign->get_api_id(), $mail_title, $this_mail_content['body'] );
 			}
 		}
 
@@ -633,9 +640,13 @@ class WDGPostActions {
 		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
 		$date_end = filter_input( INPUT_POST, 'date_end' );
 		$free_field = filter_input( INPUT_POST, 'free_field' );
+		$additionnal_fees = filter_input( INPUT_POST, 'additionnal_fees' );
 		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $campaign_id ) ) {
 			$campaign = new ATCF_Campaign( $campaign_id );
-			$campaign->make_funded_certificate( TRUE, $date_end, $free_field );
+			if ( empty( $additionnal_fees ) ) {
+				$additionnal_fees = 0;
+			}
+			$campaign->make_funded_certificate( TRUE, $date_end, $free_field, $additionnal_fees );
 		}
 
 		$url_return = wp_get_referer() . "#documents";
@@ -1174,6 +1185,23 @@ class WDGPostActions {
 		}
 	}
 
+	public static function roi_cancel_transfer() {
+		$WDGUser_current = WDGUser::current();
+		$roi_declaration_id = filter_input( INPUT_POST, 'roi_declaration_id' );
+		$campaign_id = filter_input( INPUT_POST, 'campaign_id' );
+
+		if ( $WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty( $roi_declaration_id ) && !empty( $campaign_id ) ) {
+			$roi_declaration = new WDGROIDeclaration( $roi_declaration_id );
+			$roi_declaration->roi_cancel_transfer();
+
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' .$campaign_id. '#royalties' );
+			exit();
+		} else {
+			wp_redirect( home_url() );
+			exit();
+		}
+	}	
+
 	public static function generate_royalties_bill() {
 		$WDGUser_current = WDGUser::current();
 		$roi_declaration_id = filter_input( INPUT_POST, 'roi_declaration_id' );
@@ -1273,6 +1301,7 @@ class WDGPostActions {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_form( 'organization-details' );
 			$WDGOrganizationDetailsForm = new WDG_Form_Organization_Details( $organization_id );
+			
 			ypcf_session_start();
 			$_SESSION[ 'account_organization_form_feedback_' . $organization_id ] = $WDGOrganizationDetailsForm->postForm();
 
@@ -1291,8 +1320,12 @@ class WDGPostActions {
 		if ( !empty( $organization_id ) ) {
 			$core = ATCF_CrowdFunding::instance();
 			$core->include_form( 'user-identitydocs' );
+			WDG_Languages_Helpers::load_languages();
 			$WDGFormIdentityDocs = new WDG_Form_User_Identity_Docs( $organization_id, TRUE );
-			$WDGFormIdentityDocs->postForm();
+
+			ypcf_session_start();
+			$_SESSION[ 'account_organization_identitydocs_form_feedback_' . $organization_id ] = $WDGFormIdentityDocs->postForm();
+
 			// on ne redirige pas vers Mon Compte quand on est dans le Tableau De Bord
 			if ( stristr(wp_get_referer(), 'tableau-de-bord')  === FALSE && stristr(wp_get_referer(), 'dashboard')  === FALSE ) {
 				wp_redirect( wp_get_referer() . '#orga-identitydocs-' . $organization_id );

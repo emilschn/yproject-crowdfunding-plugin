@@ -154,7 +154,7 @@ class WDGInvestment {
 			if ( !empty( $payment ) ) {
 				$user_info = edd_get_payment_meta_user_info( $payment->ID );
 				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment, $user_id );
+				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment, $user_id, edd_get_payment_status( $payment, true ) );
 			}
 
 			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
@@ -964,12 +964,17 @@ class WDGInvestment {
 			$viban_iban = '';
 			$viban_bic = '';
 			$viban_holder = '';
+			$viban_code = '';
 			if ( !empty( $viban_item ) ) {
-				$viban_iban = $viban_item->DATA;
-				$viban_bic = $viban_item->SWIFT;
-				$viban_holder = $viban_item->HOLDER;
+				$viban_iban = $viban_item[ 'iban' ];
+				$viban_bic = $viban_item[ 'bic' ];
+				$viban_holder = $viban_item[ 'holder' ];
+				//  si c'est l'iban LX par défaut, on envoie le code backup
+				if ( !empty( $viban_item[ 'backup' ] ) && !empty( $viban_item[ 'backup' ][ 'lemonway_id' ] ) ){
+					$viban_code = $viban_item[ 'backup' ][ 'lemonway_id' ]; 
+				}
 			}
-			NotificationsAPI::investment_pending_wire( $WDGUser_current, $this, $this->campaign, $viban_iban, $viban_bic, $viban_holder );
+			NotificationsAPI::investment_pending_wire( $WDGUser_current, $this, $this->campaign, $viban_iban, $viban_bic, $viban_holder, $viban_code );
 		}
 
 		//Si un utilisateur investit, il croit au projet
@@ -1373,7 +1378,7 @@ class WDGInvestment {
 				foreach ( $payments as $payment ) {					
 					$user_info = edd_get_payment_meta_user_info( $payment->ID );
 					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment, $user_id );
+					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment, $user_id,  edd_get_payment_status( $payment, true ));
 				}
 			}
 		}

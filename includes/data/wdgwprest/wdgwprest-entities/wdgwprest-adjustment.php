@@ -27,6 +27,7 @@ class WDGWPREST_Entity_Adjustment {
 			'id_declaration'		=> $adjustment->id_declaration,
 			'date_created'			=> $adjustment->date_created,
 			'type'					=> $adjustment->type,
+			'turnover_checked'		=> $adjustment->turnover_checked,
 			'turnover_difference'	=> $adjustment->turnover_difference,
 			'amount'				=> $adjustment->amount,
 			'message_organization'	=> $adjustment->message_organization,

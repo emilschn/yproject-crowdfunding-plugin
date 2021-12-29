@@ -1281,7 +1281,7 @@ class ATCF_Campaign {
 
 		return $buffer;
 	}
-	public function make_funded_certificate($force = FALSE, $str_date_end = FALSE, $free_field = '') {
+	public function make_funded_certificate($force = FALSE, $str_date_end = FALSE, $free_field = '', $additionnal_fees = 0) {
 		$filename = $this->get_funded_certificate_filename();
 		$filepath = __DIR__ . '/../../files/campaign-funded/' . $filename;
 		if ( !$force && file_exists( $filepath ) ) {
@@ -1357,8 +1357,13 @@ class ATCF_Campaign {
 		$platform_commission_above_100000 = $this->platform_commission_above_100000();
 		$platform_commission_above_100000_amount = $this->platform_commission_above_100000_amount( TRUE, $amount );
 
+		$amount_transferred = $amount - $platform_commission_amount;
+		if ( $additionnal_fees > 0 ) {
+			$amount_transferred -= $additionnal_fees;
+		}
+
 		require __DIR__. '/../control/templates/pdf/certificate-campaign-funded.php';
-		$html_content = WDG_Template_PDF_Campaign_Funded::get($WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(), $WDGUser->get_email(), $WDGOrganization->get_name(), $WDGOrganization->get_full_address_str(), $WDGOrganization->get_postal_code(), $WDGOrganization->get_city(), $free_field, $today_date->format( 'd/m/Y' ), $this->backers_count(), UIHelpers::format_number( $amount ), UIHelpers::format_number( $platform_commission ), UIHelpers::format_number( $platform_commission_amount ), UIHelpers::format_number( $platform_commission_below_100000 ), UIHelpers::format_number( $platform_commission_below_100000_amount ), UIHelpers::format_number( $platform_commission_above_100000 ), UIHelpers::format_number( $platform_commission_above_100000_amount ), UIHelpers::format_number( $amount - $platform_commission_amount ), $start_datetime->format( 'd/m/Y' ), $this->funding_duration(), UIHelpers::format_number( $this->roi_percent(), 10 ), $fiscal_info, $project_investors_list);
+		$html_content = WDG_Template_PDF_Campaign_Funded::get($WDGUser->get_firstname() . ' ' . $WDGUser->get_lastname(), $WDGUser->get_email(), $WDGOrganization->get_name(), $WDGOrganization->get_full_address_str(), $WDGOrganization->get_postal_code(), $WDGOrganization->get_city(), $free_field, $today_date->format( 'd/m/Y' ), $this->backers_count(), UIHelpers::format_number( $amount ), UIHelpers::format_number( $platform_commission ), UIHelpers::format_number( $platform_commission_amount ), UIHelpers::format_number( $platform_commission_below_100000 ), UIHelpers::format_number( $platform_commission_below_100000_amount ), UIHelpers::format_number( $platform_commission_above_100000 ), UIHelpers::format_number( $platform_commission_above_100000_amount ), UIHelpers::format_number( $amount_transferred ), UIHelpers::format_number( $additionnal_fees ), $start_datetime->format( 'd/m/Y' ), $this->funding_duration(), UIHelpers::format_number( $this->roi_percent(), 10 ), $fiscal_info, $project_investors_list);
 
 		$crowdfunding = ATCF_CrowdFunding::instance();
 		$crowdfunding->include_html2pdf();
@@ -1467,8 +1472,9 @@ class ATCF_Campaign {
 	private $roi_percent = 0;
 	public function roi_percent() {
 		if ( $this->roi_percent == 0 ) {
-			if ( $this->goal( FALSE ) >= 0 ) {
-				$this->roi_percent = round($this->roi_percent_estimated() * $this->current_amount( FALSE ) / $this->goal( FALSE ), 10);
+			$max_goal = $this->goal( FALSE );
+			if ( $max_goal > 0 ) {
+				$this->roi_percent = round($this->roi_percent_estimated() * $this->current_amount( FALSE ) / $max_goal, 10);
 				update_post_meta( $this->ID, ATCF_Campaign::$key_roi_percent, $this->roi_percent );
 				$this->set_api_data( 'roi_percent', $this->roi_percent );
 			}
@@ -4021,6 +4027,12 @@ class ATCF_Campaign {
 	}
 
 	public static function get_list_current($nb, $type, $order, $client, $is_time_remaining = true) {
+		
+		WDG_Languages_Helpers::switch_to_french_temp();
+		$term_positive_savings_by_slug = get_term_by( 'slug', 'epargne-positive', 'download_category' );
+		$id_cat_positive_savings = $term_positive_savings_by_slug->term_id;
+		WDG_Languages_Helpers::switch_back_to_display_language();
+
 		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
 			'numberposts' => $nb,
@@ -4040,12 +4052,20 @@ class ATCF_Campaign {
 			$query_options[ 'order' ] = $order;
 		}
 
+		// on exclut les projets d'EP qui seraient publics
+		$query_options['tax_query'] = array( 
+			array(
+				'taxonomy'	=> 'download_category',
+				'operator' 	=> 'NOT IN',
+				'terms'		=> array($id_cat_positive_savings)
+			)
+		);
 		if (!empty($client)) {
-			$query_options['tax_query'] = array( array(
+			$query_options['tax_query'][] = array(
 				'taxonomy' => 'download_tag',
 				'field' => 'slug',
 				'terms' => array($client)
-			) );
+			);
 		}
 
 		return get_posts( $query_options );

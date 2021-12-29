@@ -23,6 +23,7 @@ class WDGConfigTexts {
 	public static $type_investment_generalities_preinvestment = 'avertissements-sur-le-preinvestissement';
 	public static $type_investment_terms = 'modalites-dinvestissement';
 	public static $type_subscription_terms = 'modalites-dabonnement';
+	public static $type_subscription_description = 'description-dabonnement';
 
 	public static $type_contract_frame = 'accord-cadre';
 	public static $type_contract_full = 'contrat-dinvestissement';
