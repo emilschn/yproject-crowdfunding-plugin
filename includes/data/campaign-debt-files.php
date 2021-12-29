@@ -62,7 +62,7 @@ class WDGCampaignDebtFiles {
 			$WDGOrganization_creator->get_firstname(),
 			$WDGOrganization_creator->get_lastname(),
 			$this->campaign->end_date('d/m/Y'), 
-			$this->campaign->backers_count(), 
+			count(array_unique($this->campaign->backers_id_list())), // nombre d'investisseurs uniques, pas d'investissement
 			$this->campaign->current_amount( ), 
 			$this->campaign->get_roi_declarations_total_roi_amount(), // amount paid
 			$this->campaign->current_amount( FALSE ) - $this->campaign->get_roi_declarations_total_roi_amount(), // amount_left
