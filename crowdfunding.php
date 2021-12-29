@@ -137,7 +137,6 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract-model.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-contract.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-file.php';
-		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-file-kyc.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-queued-action.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-sendinblue-template.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-subscription.php';
@@ -219,6 +218,7 @@ final class ATCF_CrowdFunding {
 		WDGPostActions::init_actions();
 
 		if (get_option('wdg_version') != $this->version) {
+			WDGKYCFile::upgrade_db();
 			WDG_Cache_Plugin::upgrade_db();
 			WDGCampaignVotes::upgrade_db();
 			update_option('wdg_version', $this->version);

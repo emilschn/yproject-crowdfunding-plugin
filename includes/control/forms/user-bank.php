@@ -112,7 +112,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 		}
 		$current_file_bank = ( empty( $current_filelist_bank ) ) ? FALSE : $current_filelist_bank[0];
 		$bank_file_path = ( empty( $current_file_bank ) ) ? '' : $current_file_bank->get_public_filepath();
-		$field_bank_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_bank, ( empty( $current_file_bank ) ) ? '' : $current_file_bank->date_uploaded, WDGKYCFile::$type_bank, $this->is_orga );
+		$field_bank_params = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_bank, ( empty( $current_file_bank ) ) ? '' : $current_file_bank->date_uploaded );
 		unset( $field_bank_params[ 'message_instead_of_field' ] );
 		$suffix = ( $this->is_orga ) ? '-orga-' . $WDGOrganization->get_wpref() : '';
 		$this->addField(
@@ -174,8 +174,13 @@ class WDG_Form_User_Bank extends WDG_Form {
 				if ( isset( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' .$bank_file_suffix ] );
 					if ( is_int( $file_id ) ) {
+						$WDGFile = new WDGKYCFile( $file_id );
 						if ( $WDGOrganization->can_register_lemonway() ) {
 							$WDGOrganization->register_lemonway();
+							$lw_id = LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+							if ( !empty( $lw_id ) ) {
+								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
+							}
 							
 							// Si c'est une organisation qui gère des projets, on envoie une alerte admin
 							$list_campaign_orga = $WDGOrganization->get_campaigns();
@@ -198,9 +203,11 @@ class WDG_Form_User_Bank extends WDG_Form {
 				} elseif ( $test_kyc ) {
 					$existing_bank_kyc_list = WDGKYCFile::get_list_by_owner_id( $user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_bank );
 					$WDGFile = $existing_bank_kyc_list[0];
-					// si le fichier existe et n'est pas sur l'API
-					if ( !empty( $WDGFile ) && !$WDGFile->is_api_file ) {
-						WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_organization, LemonwayDocument::$document_type_bank);
+					if ( !empty( $WDGFile ) ) {
+						$lw_id = LemonwayLib::wallet_upload_file( $WDGOrganization->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						if ( !empty( $lw_id ) ) {
+							$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
+						}
 					}
 				}
 				if ( !$was_registered && $WDGOrganization->has_lemonway_wallet() ) {
@@ -226,9 +233,13 @@ class WDG_Form_User_Bank extends WDG_Form {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'bank-file' ] );
 					
 					if ( is_int( $file_id ) ) {
+						$WDGFile = new WDGKYCFile( $file_id );
 						if ( $WDGUser->can_register_lemonway() ) {
 							$WDGUser->register_lemonway();
-
+							$lw_id = LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+							if ( !empty( $lw_id ) ) {
+								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
+							}
 						}
 					} else {
 						// il y a eu un pb à l'upload
@@ -244,8 +255,9 @@ class WDG_Form_User_Bank extends WDG_Form {
 					$existing_bank_kyc_list = WDGKYCFile::get_list_by_owner_id( $user_id, WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
 					$WDGFile = $existing_bank_kyc_list[0];
 					if ( !empty( $WDGFile ) ) {
-						if ( !$WDGFile->is_api_file ){
-							WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_user, LemonwayDocument::$document_type_bank);
+						$lw_id = LemonwayLib::wallet_upload_file( $WDGUser->get_lemonway_id(), $WDGFile->file_name, LemonwayDocument::$document_type_bank, $WDGFile->get_byte_array() );
+						if ( !empty( $lw_id ) ) {
+							$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
 						}
 					}
 				}

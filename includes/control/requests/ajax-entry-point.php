@@ -1,13 +1,6 @@
 <?php
 $list_optimized_actions = array(
-	'account_signin_get_email_info',
-	'account_authentication_get_current_user_info',
-	'account_authentication_remove_file',
-	'account_authentication_replace_file',
-	'account_authentication_save_current_user_info',
-	'account_authentication_save_organization_info',
-	'account_authentication_search_address',
-	'account_authentication_upload_file'
+	'account_signin_get_email_info'
 );
 $action_posted = filter_input( INPUT_POST, 'action' );
 
@@ -42,17 +35,10 @@ foreach ( $headers as $name => $field_value ) {
 	header( "{$name}: {$field_value}" );
 }
 
-// Chargement des helpers communs
-require_once dirname(__FILE__) . '/ajax/common/ajax-common-helper.php';
-
 // Chargement du fichier correspondant à l'action
-$domains_accepted = array( 'account_signin', 'account_authentication' );
 $domain_folder = '';
-foreach ( $domains_accepted as $domain_str ) {
-	if ( strpos( $action_posted, $domain_str ) === 0 ) {
-		$domain_folder = str_replace( '_', '-', $domain_str );
-		break;
-	}
+if ( strpos( $action_posted, 'account_signin' ) === 0 ) {
+	$domain_folder = 'account-signin';
 }
 $action_posted = str_replace( '_', '-', $action_posted );
 require_once dirname(__FILE__) . '/ajax/' .$domain_folder. '/' .$domain_folder. '-autoload.php';

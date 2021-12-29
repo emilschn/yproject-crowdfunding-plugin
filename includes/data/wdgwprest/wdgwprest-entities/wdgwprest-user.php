@@ -93,6 +93,20 @@ class WDGWPREST_Entity_User {
 			'email_is_validated'		=> $user->get_email_is_validated()
 		);
 
+		// Ajout facultatif des documents
+		$file_list_id = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_id );
+		$file_list_idbis = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_idbis );
+		$file_list_rib = WDGKYCFile::get_list_by_owner_id( $user->get_wpref(), WDGKYCFile::$owner_user, WDGKYCFile::$type_bank );
+		if ( !empty( $file_list_id[ 0 ]->file_name ) ) {
+			$parameters[ 'document_id' ] = $file_list_id[ 0 ]->file_name;
+		}
+		if ( !empty( $file_list_idbis[ 0 ]->file_name ) ) {
+			$parameters[ 'document_home' ] = $file_list_idbis[ 0 ]->file_name;
+		}
+		if ( !empty( $file_list_rib[ 0 ]->file_name ) ) {
+			$parameters[ 'document_rib' ] = $file_list_rib[ 0 ]->file_name;
+		}
+
 		return $parameters;
 	}
 	
@@ -126,13 +140,6 @@ class WDGWPREST_Entity_User {
 		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user->get_api_id(). '?with_links=1' );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
-	}
-
-	/**
-	 * Mise à jour de l'utilisateur sur l'API à partir de données transmises dans un tableau
-	 */
-	public static function update_from_array( $user_api_id, $user_data ) {
-		return WDGWPRESTLib::call_post_wdg( 'user/' . $user_api_id, $user_data, TRUE );
 	}
 	
 	/**
