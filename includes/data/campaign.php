@@ -1660,6 +1660,23 @@ class ATCF_Campaign {
 
 		return $buffer;
 	}
+	public function get_months_between_declarations() {
+		$buffer = 3;
+		$declaration_periodicity = $this->get_declaration_periodicity();
+		switch ( $declaration_periodicity ) {
+			case 'month':
+				$buffer = 1;
+				break;
+			case 'semester':
+				$buffer = 6;
+				break;
+			case 'year':
+				$buffer = 12;
+				break;
+		}
+
+		return $buffer;
+	}
 
 	public function payment_list() {
 		$buffer = $this->__get('campaign_payment_list');

@@ -1418,8 +1418,24 @@ class WDGQueue {
 					// on envoie un 2è mail auto 
 					NotificationsAPI::adjustment_needed_30_days( $recipients, $wdguser_author, $campaign );
 					// et créé une tâche Asana avec les infos
-					//Je veux avoir toutes les infos dont j'ai besoin dans une tâche Asana (date de clôture des comptes,  date prévisionnelle du 1er ajustement, info sur dernier ajustement si c’est le cas)
-					NotificationsAsana::adjustment_needed_30_days( $campaign->get_name(), $campaign->contract_start_date() );
+					//La date prévisionnelle du 1er ajustement = 1 an + 1 déclaration après la date de démarrage du contrat
+					$nb_months = ($campaign->get_declarations_count_per_year() + 1) * $campaign->get_months_between_declarations();					
+					$first_adjustment_date_estimated = new DateTime( $campaign->contract_start_date() );
+					$first_adjustment_date_estimated->add(new DateInterval('P'.$nb_months.'M'));
+					// on récupère les ajustements
+					$adjustment_list = $campaign->get_adjustments();
+					$last_adjustment_infos = '';
+                    if (!empty($adjustment_list)) {
+						// sil y en a, on envoie les infos du dernier ajustement en date
+                        $nb_adjustment = count($adjustment_list);
+                        $last_adjustment = $adjustment_list[ $nb_adjustment - 1];
+                        $last_adjustment_infos = "Versement au moment duquel l'ajustement s'applique : " .$last_adjustment->id_declaration. "<br>";
+                        $last_adjustment_infos .= "Type d'ajustement : " .$last_adjustment->type. "<br>";
+                        $last_adjustment_infos .= "Montant du CA vérifié : " .$last_adjustment->turnover_checked. "<br>";
+                        $last_adjustment_infos .= "Diff&eacute;rentiel de CA : " .$last_adjustment->turnover_difference. "<br>";
+                        $last_adjustment_infos .= "Montant de l'ajustement : " .$last_adjustment->amount. "<br>";
+                    }
+					NotificationsAsana::adjustment_needed_30_days( $campaign->get_name(), $campaign->contract_start_date(), $first_adjustment_date_estimated, $last_adjustment_infos );
 				}
 			}
 		}
