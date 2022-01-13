@@ -527,11 +527,15 @@ $country_list_iso2_to_iso3 = array(
 /* insee */
 global $country_list_insee;
 $country_list_insee = array(
+	"CH" => "99140",
 	"DE" => "99109",
+	"ES" => "99134",
 	"FR" => "00000",
 	"GB" => "99132",
+	"IL" => "99207",
+	"IT" => "99127",
+	"PE" => "99422",
 	"PT" => "99139",
-	"CH" => "99140",
 	"TN" => "99351"
 );
 
