@@ -499,6 +499,8 @@ class WDG_FiscalDocuments {
 					global $country_list_insee;
 					$investment_entity_address_town_code = $country_list_insee[ $WDGUser->get_country() ];
 					$investment_entity_address_town_office = $country_list_insee[ $WDGUser->get_country() ];
+					// Et on précoupe le code postal, au cas où ça dépasse
+					$investment_entity_address_post_code = substr( $investment_entity_address_post_code, 0, 5 );
 				}
 				if ( empty( $investment_entity_address_town_code ) || empty( $investment_entity_address_town_office ) ) {
 					self::add_error( 'Problème récupération de données pour localisation adresse - ID USER ' . $investment_entity_id . ' - ' . $user_firstname . ' ' . $user_lastname . ' --- infos recherchees : ' . $investment_entity_address_post_code . ' ' . $investment_entity_address_town );
@@ -568,7 +570,7 @@ class WDG_FiscalDocuments {
 		// R134 - 26 caractères : libellé commune
 		$buffer .= self::clean_size( $investment_entity_address_town, 26, $investment_entity_id, 'libellé commune' );
 		// R135 - 5 caractères : code postal
-		$buffer .= $investment_entity_address_post_code;
+		$buffer .= self::clean_size( $investment_entity_address_post_code, 5, $investment_entity_id, 'code postal' );
 		// R136 - 1 caractère : espace
 		$buffer .= ' ';
 		// R137 - 26 caractères : bureau distributeur
