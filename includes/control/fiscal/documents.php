@@ -457,6 +457,7 @@ class WDG_FiscalDocuments {
 			$user_birthday_town_label = self::clean_town_name( strtoupper( $WDGUser->get_birthplace() ) );
 			if ( $user_birthday_country == 'FR' ) {
 				$user_birthday_department_code = $WDGUser->get_birthplace_department();
+				$user_birthday_department_code = substr( $user_birthday_department_code, 0, 2 );
 				// Pour Paris, Marseille et Lyon, récupérer l'arrondissement de naissance
 				if ( $user_birthday_town_label == 'PARIS' || $user_birthday_town_label == 'MARSEILLE' || $user_birthday_town_label == 'LYON' ) {
 					$user_birthday_town_label .= ' ' . $WDGUser->get_birthplace_district( TRUE );
