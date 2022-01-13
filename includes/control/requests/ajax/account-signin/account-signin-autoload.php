@@ -27,7 +27,6 @@ class AccountSigninHelper {
 		$result = array(
 			'status'			=> '',
 			'firstname'			=> '',
-			'lastname'			=> '',
 			'language'			=> '',
 			'url_redirect'		=> '',
 			'organizationname'	=> ''
@@ -124,7 +123,6 @@ class AccountSigninHelper {
 			$api_data = WDGWPREST_Entity_User::get( $user_api_id, TRUE );
 			if ( !empty( $api_data ) ) {
 				$result[ 'firstname' ] = $api_data->name;
-				$result[ 'lastname' ] = $api_data->surname;
 				$result[ 'language' ] = $api_data->language;
 				$is_email_validated = ( !empty( $api_data->email_is_validated ) && $api_data->email_is_validated === '1' );
 				$result[ 'url_redirect' ] = $is_email_validated ? 'redirect' : 'email-validation';
