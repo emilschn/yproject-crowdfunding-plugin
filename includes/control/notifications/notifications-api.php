@@ -513,6 +513,18 @@ class NotificationsAPI {
 			'description'	=> "Abonnement - Confirmation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
+		),
+		'adjustment-needed-7-days' => array(
+			'fr-sib-id'		=> 'adjustment-needed-7-days',
+			'description'	=> "Ajustement nécessaire - relance 7 jours",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'adjustment-needed-30-days' => array(
+			'fr-sib-id'		=> 'adjustment-needed-30-days',
+			'description'	=> "Ajustement nécessaire - relance 30 jours",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
 		)
 	);
 
@@ -2214,6 +2226,44 @@ class NotificationsAPI {
 	}
 	//*******************************************************
 	// FIN - NOTIFICATIONS DECLARATIONS APROUVEES
+	//*******************************************************
+
+	//*******************************************************
+	// NOTIFICATIONS AJUSTEMENT NECESSAIRE
+	//*******************************************************
+	public static function adjustment_needed_7_days($recipients, $WDGUser, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'adjustment-needed-7-days' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);		
+		NotificationsAPIShortcodes::set_campaign( $campaign );
+		
+		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $param_recipients
+		);
+		return self::send( $parameters, $WDGUser->get_language() );
+
+
+	}
+
+	public static function adjustment_needed_30_days($recipients, $WDGUser, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'adjustment-needed-30-days' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);		
+		NotificationsAPIShortcodes::set_campaign( $campaign );
+		
+		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $param_recipients
+		);
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+	//*******************************************************
+	// FIN - NOTIFICATIONS AJUSTEMENT NECESSAIRE
 	//*******************************************************
 
 	//*******************************************************
