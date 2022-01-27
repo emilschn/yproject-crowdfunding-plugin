@@ -905,8 +905,10 @@ class WDGPostActions {
 		$input_send_option = filter_input( INPUT_POST, 'send_option' );
 
 		$result = false;
-		if ( !empty( $campaign_id ) && !empty( $input_testimony ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
-			$result = WDGEmails::auto_notifications($campaign_id, $mail_type, $input_testimony, $input_image_url, $input_image_description, $input_send_option);
+		if ( !empty( $campaign_id ) && !empty( $input_image_url ) && !empty( $input_image_description ) ) {
+			if ( $mail_type == "investment-3days-post-cloture" || ( !empty( $input_testimony ) ) ){
+				$result = WDGEmails::auto_notifications($campaign_id, $mail_type, $input_testimony, $input_image_url, $input_image_description, $input_send_option);
+			}
 		}
 
 		if ( !$skip_redirect ) {
@@ -1102,7 +1104,7 @@ class WDGPostActions {
 			$campaign = new ATCF_Campaign($campaign_id);
 			$month_count = filter_input( INPUT_POST, 'month_count' );
 			if ( empty( $month_count ) ) {
-				$month_count = 12 / $campaign->get_declararations_count_per_year();
+				$month_count = 12 / $campaign->get_declarations_count_per_year();
 			}
 			$declarations_count = filter_input( INPUT_POST, 'declarations_count' );
 			if ( empty( $declarations_count ) || !is_numeric( $declarations_count ) ) {

@@ -1372,7 +1372,9 @@ class WDGAjaxActionsProjectDashboard {
 			if (WDGOrganization::is_user_organization($user_id)) {
 				$orga = new WDGOrganization($user_id);
 				$linked_users = $orga->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
-				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+				if ( !empty( $linked_users ) ) {
+					$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+				}
 
 				// Etat de l'authentification
 				if ( $orga->get_lemonway_status() == LemonwayLib::$status_registered ) {
