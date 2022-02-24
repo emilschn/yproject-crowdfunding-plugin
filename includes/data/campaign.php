@@ -2351,6 +2351,10 @@ class ATCF_Campaign {
 			$buffer = $commission_with_tax;
 		}
 
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
+		}
+
 		return $buffer;
 	}
 	public function platform_commission_below_100000_amount($with_tax = TRUE, $current_amount = FALSE) {
