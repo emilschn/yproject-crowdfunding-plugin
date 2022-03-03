@@ -226,7 +226,7 @@ class NotificationsAsana {
 		$object = $campaign_name . ' /// Ajustement nécessaire';
 		$content = "Le projet " .$campaign_name. " n'a pas fait d'ajustement depuis plus d'un an. Un mail de rappel a été envoyé il y a 23 jours, et un autre vient d'être envoyé à l'instant.";
 		$content .= "Date de début de contrat : " .$campaign_contract_start_date. "<br>";
-		$content .= "Date prévisionnelle de premier ajustement : " .$first_adjustment_date_estimated. "<br>";
+		$content .= "Date prévisionnelle de premier ajustement : " .$first_adjustment_date_estimated->format('Y-m-d'). "<br>";
 		$content .= $last_adjustment_infos;
 
 		return self::send( self::$notif_type_support, $object, $content );
