@@ -513,6 +513,24 @@ class NotificationsAPI {
 			'description'	=> "Abonnement - Confirmation",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
+		),
+		'adjustment-needed-7-days' => array(
+			'fr-sib-id'		=> 'adjustment-needed-7-days',
+			'description'	=> "Ajustement nécessaire - relance 7 jours",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'adjustment-needed-30-days' => array(
+			'fr-sib-id'		=> 'adjustment-needed-30-days',
+			'description'	=> "Ajustement nécessaire - relance 30 jours",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'project-investment-3days-post-cloture' => array(
+			'fr-sib-id'		=> 'project-investment-3days-post-cloture',
+			'description'	=> "Relance - Investissement J-3 - Post Cloture",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
 		)
 	);
 
@@ -1681,6 +1699,35 @@ class NotificationsAPI {
 
 		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
+		
+	//*******************************************************
+	// RELANCE - INVESTISSEMENT - J-3 post-cloture
+	//*******************************************************
+	public static function confirm_investment_3days_post_cloture($WDGUserInterface, $campaign, $image_url, $image_description) {
+		$id_template = self::get_id_fr_by_slug( 'project-investment-3days-post-cloture' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+		$reminder_data = array();
+		$reminder_data[ 'amount' ] = 0;
+		$image_element = '<img src="' . $image_url . '" width="590">';
+		$reminder_data[ 'image' ] = $image_element;
+		$reminder_data[ 'description' ] = $image_description;
+		NotificationsAPIShortcodes::set_reminder_data($reminder_data);
+
+		$options = array(
+			'personal'					=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
 
 	//**************************************************************************
 	// Evaluation
@@ -2217,6 +2264,44 @@ class NotificationsAPI {
 	//*******************************************************
 
 	//*******************************************************
+	// NOTIFICATIONS AJUSTEMENT NECESSAIRE
+	//*******************************************************
+	public static function adjustment_needed_7_days($recipients, $WDGUser, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'adjustment-needed-7-days' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);		
+		NotificationsAPIShortcodes::set_campaign( $campaign );
+		
+		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $param_recipients
+		);
+		return self::send( $parameters, $WDGUser->get_language() );
+
+
+	}
+
+	public static function adjustment_needed_30_days($recipients, $WDGUser, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'adjustment-needed-30-days' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);		
+		NotificationsAPIShortcodes::set_campaign( $campaign );
+		
+		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $param_recipients
+		);
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+	//*******************************************************
+	// FIN - NOTIFICATIONS AJUSTEMENT NECESSAIRE
+	//*******************************************************
+
+	//*******************************************************
 	// NOTIFICATIONS PROLONGATION DECLARATIONS
 	//*******************************************************
 	public static function declaration_to_be_extended($WDGOrganization, $WDGUser, $campaign, $amount_transferred, $amount_minimum_royalties, $amount_remaining) {
@@ -2588,10 +2673,11 @@ class NotificationsAPI {
 	//*******************************************************
 	// SELECTION DE VIREMENT
 	//*******************************************************
-	public static function prospect_setup_payment_method_select_wire($prospect_setup_draft) {
+	public static function prospect_setup_payment_method_select_wire($prospect_setup_draft, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-select-wire' );
 
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
+		NotificationsAPIShortcodes::set_prospect_setup_draft_payment_amount( $amount );
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
 		

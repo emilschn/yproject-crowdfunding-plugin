@@ -90,7 +90,7 @@ class WDGCronActions {
 									break;
 								} else {
 									$nb_quarter++;
-									if ( $nb_quarter >= $campaign->get_declararations_count_per_year() ) {
+									if ( $nb_quarter >= $campaign->get_declarations_count_per_year() ) {
 										$nb_quarter = 0;
 										$nb_year++;
 									}

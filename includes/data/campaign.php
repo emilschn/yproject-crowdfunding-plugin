@@ -1255,11 +1255,6 @@ class ATCF_Campaign {
 			return;
 		}
 
-		if ( $this->platform_commission() == '' ) {
-			ypcf_debug_log( 'ATCF_Campaign :: make_funded_certificate échec $this->platform_commission() empty ');
-
-			return;
-		}
 		$data_contract_start_date = $this->contract_start_date();
 		if ( !empty( $data_contract_start_date ) ) {
 			$start_datetime = new DateTime( $data_contract_start_date );
@@ -1664,7 +1659,7 @@ class ATCF_Campaign {
 
 		return $buffer;
 	}
-	public function get_declararations_count_per_year() {
+	public function get_declarations_count_per_year() {
 		$buffer = 4;
 		$declaration_periodicity = $this->get_declaration_periodicity();
 		switch ( $declaration_periodicity ) {
@@ -1676,6 +1671,23 @@ class ATCF_Campaign {
 				break;
 			case 'year':
 				$buffer = 1;
+				break;
+		}
+
+		return $buffer;
+	}
+	public function get_months_between_declarations() {
+		$buffer = 3;
+		$declaration_periodicity = $this->get_declaration_periodicity();
+		switch ( $declaration_periodicity ) {
+			case 'month':
+				$buffer = 1;
+				break;
+			case 'semester':
+				$buffer = 6;
+				break;
+			case 'year':
+				$buffer = 12;
 				break;
 		}
 
@@ -1934,6 +1946,58 @@ class ATCF_Campaign {
 		}
 
 		return $this->next_roi_declaration;
+	}
+
+	/**
+	 * Retourne la liste des déclarations qui sont passées
+	 * Ce sont les déclarations dont
+	 * - le statut n'est pas "declaration"
+	 * - le statut n'est pas "failed"
+	 * @return array
+	 */
+	private $past_roi_declarations;
+	public function get_past_roi_declarations() {
+		if ( !isset( $this->past_roi_declarations ) ) {
+			$declaration_list = $this->get_roi_declarations();
+			$this->past_roi_declarations = array();
+			// $date_now = new DateTime();
+			foreach ( $declaration_list as $declaration_item ) {
+				// $date_due = new DateTime( $declaration_item[ 'date_due' ] );
+				// $date_interval = $date_now->diff( $date_due );
+				if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_declaration && $declaration_item[ 'status' ] != WDGROIDeclaration::$status_failed ) {
+					array_push( $this->past_roi_declarations, $declaration_item[ 'item' ] );
+				}
+			}
+		}
+
+		return $this->past_roi_declarations;
+	}
+
+
+	/**
+	 * On a besoin d'un ajustement par an
+	 * donc on regarde les x dernières déclarations, et on vérifie si l'une d'elles a fait l'objet d'un ajustement
+	 * @param int $nb_declaration 
+	 * @return boolean
+	 */
+	public function is_adjustment_needed() {
+		// récupérer toutes les déclarations passées / au statut différent de "declaration"
+		$existing_roi_declarations = $this->get_past_roi_declarations();
+		// on les compte
+		$nb_declarations = count( $existing_roi_declarations );
+		// s'il y en a moins que le nb de déclaration par an, on renvoie false
+		if( $nb_declarations < $this->get_declarations_count_per_year() ) {
+			return FALSE;
+		} else {	
+			// sinon, on parcourt les x dernières pour voir si l'une d'elles a fait l'objet d'un ajustement
+			for ($i = 1; $i <= $this->get_declarations_count_per_year() ; $i++){
+				$roi_declaration = $existing_roi_declarations[$nb_declarations - $i];
+				if( $roi_declaration->is_checked_by_adjustments() ) {
+					return FALSE;
+				}
+			}
+			return TRUE;			
+		}
 	}
 
 	/*******************************************************************************
@@ -2306,6 +2370,10 @@ class ATCF_Campaign {
 			$buffer = $commission_with_tax / 1.2;
 		} else {
 			$buffer = $commission_with_tax;
+		}
+
+		if ( empty( $buffer ) ) {
+			$buffer = 0;
 		}
 
 		return $buffer;

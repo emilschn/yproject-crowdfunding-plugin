@@ -2,11 +2,13 @@
 class WDGEmails {
 	private static $batch_of_notifications = 20; // Nombre arbitraire de notifications envoyées d'un coup
 
-	public static function auto_notifications($campaign_id, $mail_type, $input_testimony_in, $input_image_url, $input_image_description, $input_send_option, $user_already_sent_to = array()) {
+	public static function auto_notifications($campaign_id, $mail_type, $input_testimony_in = '', $input_image_url, $input_image_description, $input_send_option, $user_already_sent_to = array()) {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		$project_api_id = $campaign->get_api_id();
 		// Gestion des sauts de ligne
-		$input_testimony = nl2br( $input_testimony_in );
+		if ( $input_testimony_in != '' ){			
+			$input_testimony = nl2br( $input_testimony_in );
+		}
 
 		// Si on teste, on biaise les données et on arrête de suite
 		if ( strpos( strtolower( $input_send_option ), 'test' ) !== FALSE ) {
@@ -40,6 +42,9 @@ class WDGEmails {
 					case 'investment-2days':
 						NotificationsAPI::confirm_investment_invest2days_intention( $WDGUserOrOrganization, $intention_amount, $campaign, $input_testimony, $input_image_url, $input_image_description );
 						NotificationsAPI::confirm_investment_invest2days_no_intention( $WDGUserOrOrganization, $campaign, $input_testimony, $input_image_url, $input_image_description );
+						break;
+					case 'investment-3days-post-cloture':
+						NotificationsAPI::confirm_investment_3days_post_cloture( $WDGUserOrOrganization, $campaign, $input_image_url, $input_image_description );
 						break;
 				}
 			}

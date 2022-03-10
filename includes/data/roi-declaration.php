@@ -440,7 +440,7 @@ class WDGROIDeclaration {
 					break;
 				} else {
 					$nb_quarter++;
-					if ( $nb_quarter >= $campaign->get_declararations_count_per_year() ) {
+					if ( $nb_quarter >= $campaign->get_declarations_count_per_year() ) {
 						$nb_quarter = 0;
 						$nb_year++;
 					}
@@ -872,7 +872,7 @@ class WDGROIDeclaration {
 		// Si la durée du financement n'est pas indéterminée
 		if ( $campaign->funding_duration() > 0
 			// Si le nombre actuel de déclaration est au moins égal au nombre de déclarations par année * le nombre d'années
-			&& count( $existing_roi_declarations ) >= $campaign->funding_duration() * $campaign->get_declararations_count_per_year()
+			&& count( $existing_roi_declarations ) >= $campaign->funding_duration() * $campaign->get_declarations_count_per_year()
 			// Si le minimum à reverser a été atteint
 			&& $amount_transferred >= $amount_minimum_royalties ) {
 			// Alors c'est la première fois qu'on va ajouter une déclaration, donc on notifie tout le monde
@@ -1102,6 +1102,12 @@ class WDGROIDeclaration {
 		}
 		$WDGOrganization_campaign = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
 		$investment_contracts = WDGInvestmentContract::get_list_sorted_by_subscription_id( $campaign->ID );
+
+		// si un ajustement est nécessaire 
+		if ($campaign->is_adjustment_needed()){
+			// Ajout test dans 7 jours pour vérifier si un ajustement est nécessaire
+			WDGQueue::add_adjustment_needed( $campaign->ID, 'P7D', 1 );
+		}
 
 		$investments_list = $campaign->roi_payments_data( $this );
 		$count_done = 0;

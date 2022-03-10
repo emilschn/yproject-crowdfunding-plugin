@@ -321,15 +321,13 @@ class WDGOrganization implements WDGUserInterface {
 	 * Enregistre les modifications sur l'api bopp
 	 */
 	public function save() {
-		WDGWPREST_Entity_Organization::update( $this );
+		$this->update_api();
 
 		$new_mail = $this->get_email();
-		$meta_email = get_user_meta( $this->wpref, 'orga_contact_email', TRUE );
-		if (empty($meta_email) && !email_exists($new_mail)) {
+		if ( !email_exists($new_mail) ) {
 			wp_update_user( array( 'ID' => $this->wpref, 'user_email' => $new_mail ) );
-		} else {
-			update_user_meta( $this->wpref, 'orga_contact_email', $new_mail );
 		}
+		update_user_meta( $this->wpref, 'orga_contact_email', $new_mail );
 	}
 
 	private function update_api() {
@@ -1953,9 +1951,18 @@ class WDGOrganization implements WDGUserInterface {
 			$invest_item = array();
 
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			if ( !is_array( $downloads[0] ) ) {
+			$download_id = '';
+			if ( isset( $downloads[0] ) ) {
+				if (is_array($downloads[0])) {
+					$download_id = $downloads[0]["id"];
+				} else {
+					$download_id = $downloads[0];
+				}
+			}
+
+			if ( !empty( $download_id ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $downloads[0] );
+				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
