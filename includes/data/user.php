@@ -1576,9 +1576,18 @@ class WDGUser implements WDGUserInterface {
 			$invest_item = array();
 
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			if ( !is_array( $downloads[0] ) ) {
+			$download_id = '';
+			if ( isset( $downloads[0] ) ) {
+				if (is_array($downloads[0])) {
+					$download_id = $downloads[0]["id"];
+				} else {
+					$download_id = $downloads[0];
+				}
+			}
+
+			if ( !empty( $download_id ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $downloads[0] );
+				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );

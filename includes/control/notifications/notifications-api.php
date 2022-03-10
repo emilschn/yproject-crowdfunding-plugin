@@ -2673,10 +2673,11 @@ class NotificationsAPI {
 	//*******************************************************
 	// SELECTION DE VIREMENT
 	//*******************************************************
-	public static function prospect_setup_payment_method_select_wire($prospect_setup_draft) {
+	public static function prospect_setup_payment_method_select_wire($prospect_setup_draft, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-select-wire' );
 
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
+		NotificationsAPIShortcodes::set_prospect_setup_draft_payment_amount( $amount );
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
 		
