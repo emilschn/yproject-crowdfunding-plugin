@@ -15,6 +15,7 @@ class WDGAjaxActionsUserLogin {
 			$response[ 'userinfos' ][ 'userid' ] = $WDGUserCurrent->get_wpref();
 			$response[ 'userinfos' ][ 'username' ] = ( !empty( $firstname_WDGUserCurrent ) ) ? $firstname_WDGUserCurrent : $WDGUserCurrent->get_login();
 			$response[ 'userinfos' ][ 'my_account_txt' ] = __( 'common.MY_ACCOUNT', 'yproject' );
+			$response[ 'userinfos' ][ 'wallet_amount' ] = $WDGUserCurrent->get_lemonway_wallet_amount();
 			// $response[ 'userinfos' ][ 'image_dom_element' ] = UIHelpers::get_user_avatar( $WDGUserCurrent->get_wpref(), 'icon' );
 			$response[ 'userinfos' ][ 'logout_url' ] = wp_logout_url(). '&page_id=' .get_the_ID();
 
@@ -55,6 +56,18 @@ class WDGAjaxActionsUserLogin {
 				}
 			}
 
+			$response[ 'organizationlist' ] = array();
+			$organizations_list = $WDGUserCurrent->get_organizations_list();
+			if ($organizations_list) {
+				foreach ($organizations_list as $organization_query_item) {
+					$organization_item = array();
+					$organization_item[ 'wpref' ] = $organization_query_item->wpref;
+					$organization_item[ 'url' ] = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' ) . '#orga-wallet-' . $organization_query_item->wpref;
+					$organization_item[ 'name' ] = $organization_query_item->name;
+					array_push( $response[ 'organizationlist' ], $organization_item );
+				}
+			}
+
 			$response[ 'userinfos' ][ 'display_need_authentication' ] = ( !$is_project_needing_authentication && !$WDGUserCurrent->is_lemonway_registered() ) ? '1' : '0';
 
 			$response[ 'scripts' ] = array();
@@ -69,7 +82,36 @@ class WDGAjaxActionsUserLogin {
 				}
 			}
 
+			// Gestion de la source de l'utilisateur
+			$init_source = $WDGUserCurrent->source;
+			if ( empty( $init_source ) ) {
+				$input_source = $WDGUserCurrent->get_source();
+				if ( empty( $input_source ) ) {
+					$input_source = filter_input( INPUT_POST, 'source' );
+				}
+				if ( empty( $input_source ) ) {
+					ypcf_session_start();
+					$input_source = $_SESSION[ 'user_source' ];
+				}
+				
+				if ( !empty( $input_source ) ) {
+					if ( $input_source == 'sendinblue' ) {
+						$input_source = 'wedogood';
+					}
+					$WDGUserCurrent->source = $input_source;
+					$WDGUserCurrent->update_api();
+				}
+			}
+
 			$buffer = json_encode( $response );
+
+		// Si l'utilisateur n'est pas connecté, mais qu'une source est transmise, on l'enregistre en variable de session
+		} else {
+			$input_source = filter_input( INPUT_POST, 'source' );
+			if ( !empty( $input_source ) ) {
+				ypcf_session_start();
+				$_SESSION[ 'user_source' ] = $input_source;
+			}
 		}
 
 		echo $buffer;

@@ -49,6 +49,7 @@ class WDGUser implements WDGUserInterface {
 	private $bank_address2;
 	private $authentification_mode;
 	private $signup_date;
+	public $source;
 	private $subscriptions;
 
 	/**
@@ -125,6 +126,7 @@ class WDGUser implements WDGUserInterface {
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
 					$this->email_is_validated = $this->api_data->email_is_validated;
+					$this->source = $this->api_data->source;
 					$this->subscriptions = $this->api_data->subscriptions;
 				}
 			}
@@ -754,6 +756,18 @@ class WDGUser implements WDGUserInterface {
 		}
 	}
 
+	public function get_source() {
+		// Si pas de source définie, on vérifie si il y a des investissements déjà faits
+		// Si c'est le cas, on met "wedogood"
+		if ( empty( $this->source ) ) {
+			$list_investments = $this->get_investments( 'publish' );
+			if ( !empty( $list_investments ) ) {
+				$this->source = 'wedogood';
+			}
+		}
+		return $this->source;
+	}
+
 	/*******************************************************************************
 	 * Préférences d'affichage de l'aide contextuelle
 	*******************************************************************************/
@@ -1044,7 +1058,7 @@ class WDGUser implements WDGUserInterface {
 		if ( !empty( $address_number  ) ) {
 			$this->address_number = $address_number;
 		}
-		if ( !empty( $address_number_complement ) ) {
+		if ( isset( $address_number_complement ) ) {
 			$this->address_number_complement = $address_number_complement;
 		}
 		if ( !empty( $address ) ) {
@@ -1562,9 +1576,18 @@ class WDGUser implements WDGUserInterface {
 			$invest_item = array();
 
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			if ( !is_array( $downloads[0] ) ) {
+			$download_id = '';
+			if ( isset( $downloads[0] ) ) {
+				if (is_array($downloads[0])) {
+					$download_id = $downloads[0]["id"];
+				} else {
+					$download_id = $downloads[0];
+				}
+			}
+
+			if ( !empty( $download_id ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $downloads[0] );
+				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );

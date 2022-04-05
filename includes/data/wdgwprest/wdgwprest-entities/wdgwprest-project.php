@@ -45,6 +45,8 @@ class WDGWPREST_Entity_Project {
 		}
 		$estimated_turnover = $campaign->estimated_turnover();
 		$estimated_turnover_param = json_encode( $estimated_turnover );
+		$estimated_sales = $campaign->estimated_sales();
+		$estimated_sales_param = json_encode( $estimated_sales );
 		$can_go_next_str = $campaign->can_go_next_status() ? 1 : 0;
 		$dt_first_payment_date = new DateTime( $campaign->first_payment_date() );
 		$first_payment_date = $dt_first_payment_date->format( 'Y-m-d' );
@@ -81,7 +83,14 @@ class WDGWPREST_Entity_Project {
 			'earnings_description'	=> $campaign->contract_earnings_description(),
 			'simple_info'			=> $campaign->contract_simple_info(),
 			'detailed_info'			=> $campaign->contract_detailed_info(),
+			'total_previous_funding_description'	=> $campaign->total_previous_funding_description(),
+			'total_previous_funding'		=> $campaign->total_previous_funding(),
+			'turnover_previous_year'		=> $campaign->turnover_previous_year(),
+			'working_capital_sufficient'	=> $campaign->has_sufficient_working_capital() ? '1' : '0',
+			'working_capital_subsequent'	=> $campaign->working_capital_subsequent(),
+			'financial_risks_others'		=> $campaign->financial_risks_others(),
 			'estimated_turnover'	=> $estimated_turnover_param,
+			'estimated_sales'		=> $estimated_sales_param,
 			'blank_contract_file'	=> $file_name_contract_orga,
 			'vote_start_datetime'	=> date_format( $beginvotedate, 'Y-m-d H:i:s'),
 			'vote_end_datetime'		=> $campaign->end_vote(),

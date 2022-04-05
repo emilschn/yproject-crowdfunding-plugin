@@ -21,7 +21,7 @@ class LemonwayNotification {
 	private static $category_document_new_status = 9;
 	private static $category_moneyin_wire = 10;
 	private static $category_moneyin_mandate = 11;
-	private static $category_moneyin_mandate_canceled = 17;
+	private static $category_chargeback = 14;
 
 	private $notification_category;
 
@@ -49,8 +49,8 @@ class LemonwayNotification {
 				$this->process_moneyin_mandate();
 				break;
 
-			case LemonwayNotification::$category_moneyin_mandate_canceled:
-				$this->process_moneyin_mandate_canceled();
+			case LemonwayNotification::$category_chargeback:
+				$this->process_chargeback();
 				break;
 		}
 	}
@@ -529,7 +529,7 @@ class LemonwayNotification {
 		}
 	}
 
-	private function process_moneyin_mandate_canceled() {
+	private function process_chargeback() {
 		/**
 		 * NotifDate : Date et heure de la creation de la notification. Heure de Paris. Format ISO8601
 		 * Ex : 2015-11-01T16:44:55.883

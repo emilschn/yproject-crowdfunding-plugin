@@ -226,23 +226,26 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				if ( $WDGUserOrOrganization->can_register_lemonway() ) {
 					$this->send_notification_validation = TRUE;
 				}
+			} else {
+				$this->addError( $file_id, $type );
 			}
-		} else if( $select_value !== null && $select_value != '' && $select_value != 'undefined' && $select_value != $type 
-				&&  $preview_value !== null && $preview_value != ''){
-			// s'il n'y a pas un nouveau fichier à envoyer, mais que le type du select n'est pas "l'ancien type de base"" ni indéfini, ni vide éivdemment
-			// et qu'il existe un fichier (c'est à dire une preview) (forcément non-authentifié puisqu'on a une valeur de select)
-			// on considère qu'on a changé le type du fichier pour le définir
+		
+		// s'il n'y a pas un nouveau fichier à envoyer, mais que le type du select n'est pas "l'ancien type de base"" ni indéfini, ni vide éivdemment
+		// et qu'il existe un fichier (c'est à dire une preview) (forcément non-authentifié puisqu'on a une valeur de select)
+		// on considère qu'on a changé le type du fichier pour le définir
+		} else if ( $select_value !== null && $select_value != '' && $select_value != 'undefined' && $select_value != $type 
+				&&  $preview_value !== null && $preview_value != '') {
 			
 			// on récupère le fichier concerné grâce  son id
-			$KYCfile = new WDGKYCFile( $kycfile_id, $api_file);
+			$KYCfile = new WDGKYCFile( $kycfile_id, $api_file );
 			// on vérifie si c'est un fichier déjà sur l'API ou pas
-			if( $KYCfile->is_api_file == TRUE || $KYCfile->is_api_file == '1' ){
+			if ( $KYCfile->is_api_file == TRUE || $KYCfile->is_api_file == '1' ) {
 				// si c'est un fichier déjà sur l'API, alors on change juste son type (devrait rarement arriver)
 				$KYCfile->type = $select_value;
 				$KYCfile->save();
-			}else{
+			} else {
 				// si c'est un fichier sur site, on le transfère sur l'API, en enregistrant son type
-				WDGKYCFile::transfer_file_to_api($KYCfile, $owner_type, $select_value);
+				WDGKYCFile::transfer_file_to_api( $KYCfile, $owner_type, $select_value );
 			}
 		}
 	}
@@ -350,7 +353,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 		$buffer = array(
 			'success'	=> $feedback_success,
-			'errors'	=> $feedback_errors
+			'errors'	=> $this->getPostErrors()
 		);
 
 		$this->initFields(); // Reinit pour avoir les bonnes valeurs
@@ -395,5 +398,22 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 	public function getDuplicates() {
 		return $this->duplicates;
+	}
+
+	private function addError( $result, $element ) {
+		switch ( $result ) {
+			case 'EXT':
+				$this->addPostError( 'forms.file.ERROR_EXT', __( 'forms.file.ERROR_EXT', 'yproject' ), $element );
+				break;
+			case 'SERVER':
+				$this->addPostError( 'forms.file.ERROR_SERVER', __( 'forms.file.ERROR_SERVER', 'yproject' ), $element );
+				break;
+			case 'UPLOAD':
+				$this->addPostError( 'forms.file.ERROR_UPLOAD', __( 'forms.file.ERROR_UPLOAD', 'yproject' ), $element );
+				break;
+			case 'SIZE':
+				$this->addPostError( 'forms.file.ERROR_SIZE', __( 'forms.file.ERROR_SIZE', 'yproject' ), $element );
+				break;
+		}
 	}
 }

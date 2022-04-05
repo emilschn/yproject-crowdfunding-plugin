@@ -358,6 +358,13 @@ class WDGAjaxActionsProjectDashboard {
 			$new_advice_notifications_frequency = sanitize_text_field( filter_input( INPUT_POST, 'new_advice_notifications_frequency' ) );
 			update_post_meta( $campaign_id, ATCF_Campaign::$key_advice_notifications_frequency, $new_advice_notifications_frequency );
 
+			$new_display_automatic_economic_model = sanitize_text_field( filter_input( INPUT_POST, 'new_display_automatic_economic_model' ) );
+			if ( $new_display_automatic_economic_model === true || $new_display_automatic_economic_model === "true" || $new_display_automatic_economic_model === 1 ) {
+				update_post_meta( $campaign_id, ATCF_Campaign::$key_display_automatic_economic_model, '1' );
+			} else {
+				delete_post_meta( $campaign_id, ATCF_Campaign::$key_display_automatic_economic_model );
+			}
+
 			$new_show_comments_for_everyone = sanitize_text_field( filter_input( INPUT_POST, 'new_show_comments_for_everyone' ) );
 			if ( $new_show_comments_for_everyone === true || $new_show_comments_for_everyone === "true" || $new_show_comments_for_everyone === 1 ) {
 				update_post_meta( $campaign_id, ATCF_Campaign::$key_show_comments_for_everyone, '1' );
@@ -891,9 +898,46 @@ class WDGAjaxActionsProjectDashboard {
 			}
 		}
 
+		$new_total_previous_funding = sanitize_text_field( filter_input( INPUT_POST, 'new_total_previous_funding') );
+		if ( $new_total_previous_funding >= 0 ) {
+			$campaign->set_api_data( 'total_previous_funding', $new_total_previous_funding );
+			$success['new_total_previous_funding'] = 1;
+		} else {
+			$errors['new_total_previous_funding'] = "Nombre non valide";
+		}
+
+		$new_total_previous_funding_description = htmlentities( filter_input( INPUT_POST, 'new_total_previous_funding_description') );
+		$campaign->set_api_data( 'total_previous_funding_description', $new_total_previous_funding_description );
+		$success['new_total_previous_funding_description'] = 1;
+
+		$new_turnover_previous_year = sanitize_text_field( filter_input( INPUT_POST, 'new_turnover_previous_year') );
+		if ( $new_turnover_previous_year >= 0 ) {
+			$campaign->set_api_data( 'turnover_previous_year', $new_turnover_previous_year );
+			$success['new_turnover_previous_year'] = 1;
+		} else {
+			$errors['new_turnover_previous_year'] = "Nombre non valide";
+		}
+
+		$new_working_capital_sufficient = sanitize_text_field( filter_input( INPUT_POST, 'new_working_capital_sufficient' ) );
+		if ( $new_working_capital_sufficient === true || $new_working_capital_sufficient === "true" || $new_working_capital_sufficient === 1 ) {
+			$campaign->set_api_data( 'working_capital_sufficient', '1' );
+		} else {
+			$campaign->set_api_data( 'working_capital_sufficient', '0' );
+		}
+		$success['new_working_capital_sufficient'] = 1;
+
+		$new_working_capital_subsequent = htmlentities( filter_input( INPUT_POST, 'new_working_capital_subsequent') );
+		$campaign->set_api_data( 'working_capital_subsequent', $new_working_capital_subsequent );
+		$success['new_working_capital_subsequent'] = 1;
+
+		$new_financial_risks_others = htmlentities( filter_input( INPUT_POST, 'new_financial_risks_others') );
+		$campaign->set_api_data( 'financial_risks_others', $new_financial_risks_others );
+		$success['new_financial_risks_others'] = 1;
+
 		//Update list of estimated turnover
 		$i = 0;
 		$sanitized_list = array();
+		$sanitized_list_sales = array();
 		$funding_duration = $campaign->funding_duration();
 		if ( $funding_duration == 0 ) {
 			$funding_duration = 5;
@@ -904,24 +948,29 @@ class WDGAjaxActionsProjectDashboard {
 		}
 		while ( filter_input( INPUT_POST, 'new_estimated_turnover_' . $i ) != '' && ( $i + 1 <= $funding_duration ) ) {
 			$current_val = WDG_Form::formatInputTextNumber( 'new_estimated_turnover_' .$i );
+			$current_val_sales = WDG_Form::formatInputTextNumber( 'new_estimated_sales_' .$i );
 
 			if ( is_numeric( $current_val ) ) {
 				if ( $current_val >= 0 ) {
 					$sanitized_list[ $i + 1 ] = $current_val;
+					$sanitized_list_sales[ $i + 1 ] = $current_val_sales;
 					$success[ 'new_estimated_turnover_' . $i ] = 1;
 				} else {
 					$errors[ 'new_estimated_turnover_' . $i ] = "La valeur doit &ecirc;tre positive";
 					$sanitized_list[ $i + 1 ] = 0;
+					$sanitized_list_sales[ $i + 1 ] = 0;
 				}
 			} else {
 				$errors[ 'new_estimated_turnover_' . $i ] = "Valeur invalide";
 				$sanitized_list[ $i + 1 ] = 0;
+				$sanitized_list_sales[ $i + 1 ] = 0;
 			}
 
 			$i++;
 		}
 		$campaign->__set( ATCF_Campaign::$key_estimated_turnover, json_encode( $sanitized_list ) );
 		$campaign->set_api_data( 'estimated_turnover', json_encode( $sanitized_list ) );
+		$campaign->set_api_data( 'estimated_sales', json_encode( $sanitized_list_sales ) );
 		$campaign->update_api();
 
 		$return_values = array(
@@ -1372,7 +1421,9 @@ class WDGAjaxActionsProjectDashboard {
 			if (WDGOrganization::is_user_organization($user_id)) {
 				$orga = new WDGOrganization($user_id);
 				$linked_users = $orga->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
-				$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+				if ( !empty( $linked_users ) ) {
+					$array_contacts[$user_id]["user_id"] .= ' - contrat : ' . $linked_users[ 0 ]->get_wpref();
+				}
 
 				// Etat de l'authentification
 				if ( $orga->get_lemonway_status() == LemonwayLib::$status_registered ) {

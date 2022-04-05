@@ -20,7 +20,8 @@ class WDG_Template_PDF_Campaign_Funded {
 		$platform_commission_below_100000_amount,
 		$platform_commission_above_100000,
 		$platform_commission_above_100000_amount,
-		$amount_project,
+		$amount_transferred,
+		$additionnal_fees,
 		$date_contract_start,
 		$contract_duration,
 		$percent_turnover,
@@ -90,20 +91,27 @@ class WDG_Template_PDF_Campaign_Funded {
 						COMMISSION WE DO GOOD<br>
 						
 						<?php if ( $platform_commission_above_100000_amount > 0 && $platform_commission_below_100000 != $platform_commission_above_100000 ): ?>
-							- <?php echo $platform_commission_below_100000; ?> % de 100 000 &euro; : <?php echo $platform_commission_below_100000_amount; ?> &euro;<br>
-							- <?php echo $platform_commission_above_100000; ?> % au-delà de 100 000 &euro; : <?php echo $platform_commission_above_100000_amount; ?> &euro;
+							- <?php echo $platform_commission_below_100000; ?> % de 100 000 &euro; : <?php echo $platform_commission_below_100000_amount; ?> &euro; TTC<br>
+							- <?php echo $platform_commission_above_100000; ?> % au-delà de 100 000 &euro; : <?php echo $platform_commission_above_100000_amount; ?> &euro; TTC
 							
 						<?php else: ?>
 							* <?php echo $percent_commission; ?> % de la lev&eacute;e de fonds TTC
 							
 						<?php endif; ?>
 					</td>
-					<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $amount_commission; ?> &euro;</td>
+					<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $amount_commission; ?> &euro; TTC</td>
 				</tr>
+
+				<?php if ( $additionnal_fees > 0 ): ?>
+				<tr>
+					<td style="border-bottom: 1px solid gray; padding: 10px;" width="500">FRAIS SUPPLEMENTAIRES</td>
+					<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $additionnal_fees; ?> &euro; TTC</td>
+				</tr>
+				<?php endif; ?>
 
 				<tr>
 					<td style="border-bottom: 1px solid gray; padding: 10px; text-align: right;" width="400">TOTAL VERS&Eacute;</td>
-					<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $amount_project; ?> &euro;</td>
+					<td style="border-bottom: 1px solid gray; padding: 10px;"><?php echo $amount_transferred; ?> &euro;</td>
 				</tr>
 			</table>
 

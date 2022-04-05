@@ -21,6 +21,8 @@ class NotificationsAPIShortcodes {
 		'project_funding_duration',
 		'project_amount_minimum_goal',
 		'project_percent_reached',
+		'project_amount_reached',
+		'project_nb_investors',
 		'project_max_profit_string',
 		'project_date_first_payment',
 		'project_royalties_percent',
@@ -31,6 +33,7 @@ class NotificationsAPIShortcodes {
 		'project_days_remaining_count',
 		'project_days_string',
 		'project_end_date_hour',
+		'project_end_date_post_cloture',
 
 		'project_news_title',
 		'project_news_content',
@@ -49,6 +52,7 @@ class NotificationsAPIShortcodes {
 		'investment_pending_viban_iban',
 		'investment_pending_viban_bic',
 		'investment_pending_viban_holder',
+		'investment_pending_viban_code',
 
 		'investment_amount',
 		'investment_date',
@@ -588,6 +592,22 @@ class NotificationsAPIShortcodes {
 
 	/**
 	 * Levée de fonds
+	 * Montant atteint
+	 */
+	public static function project_amount_reached() {
+		return self::$campaign->current_amount( FALSE );
+	}
+
+	/**
+	 * Levée de fonds
+	 * Nombre d'investisseurs
+	 */
+	public static function project_nb_investors() {
+		return self::$campaign->backers_count();
+	}
+
+	/**
+	 * Levée de fonds
 	 * Rendement maximum (chaine complète)
 	 */
 	public static function project_max_profit_string() {
@@ -711,6 +731,14 @@ class NotificationsAPIShortcodes {
 	}
 
 	/**
+	 * Levée de fonds
+	 * Date et heure de la date limite d'investissement en post-cloture
+	 */
+	public static function project_end_date_post_cloture() {
+		return self::$campaign->get_end_date_when_can_invest_until_contract_start_date_as_string();
+	}
+
+	/**
 	 * Levée de fonds - Actualité
 	 * Titre
 	 */
@@ -828,6 +856,22 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function investment_pending_viban_holder() {
 		return self::$investment_pending_data[ 'viban_holder' ];
+	}
+
+	/**
+	 * Investissement en attente
+	 * Compte bancaire de destination - Code libellé à préciser si pas de viban
+	 */
+	public static function investment_pending_viban_code() {		
+		global $force_language_to_translate_to;
+		if ( !empty( $force_language_to_translate_to ) ) {
+			WDG_Languages_Helpers::switch_to_temp_language( $force_language_to_translate_to );
+		}
+		if ( self::$investment_pending_data[ 'viban_code' ] == '' || self::$investment_pending_data[ 'viban_code' ] == FALSE ){
+			return '';
+		} else {
+			return __( 'account.bank.CODE', 'yproject' ) . ' : ' . self::$investment_pending_data[ 'viban_code' ];
+		}
 	}
 
 	/**
