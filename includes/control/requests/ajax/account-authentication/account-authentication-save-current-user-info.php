@@ -53,5 +53,7 @@ if ( !empty( $user_api_id ) ) {
 		$result[ 'status' ] = 'error';
 	}
 	$result[ 'result_obj' ] = $result_obj;// àODO : à supprimer
+}else{
+	$result[ 'status' ] = 'user-not-in-api';
 }
 exit( json_encode( $result ) );
