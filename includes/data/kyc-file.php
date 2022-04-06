@@ -510,7 +510,7 @@ class WDGKYCFile {
 	 */
 	public static function add_file($doc_type, $id_owner, $type_owner, $file_uploaded_data, $doc_index = '', $new_type = FALSE) {
 		// Mapping : https://docs.google.com/spreadsheets/d/19i6O3s7f2-MHHXiFuhtG6v0UrBn6KdmzReD0URe_QAI/edit?usp=sharing
-
+		print_r( $doc_type ); echo '<br><br>';
 		if (!empty($id_owner)) {
 			// on défini le doc_index à 1 par défaut s'il n'est pas défini
 			if( $doc_index == '' ){
@@ -552,20 +552,23 @@ class WDGKYCFile {
 					$doc_index = 2;
 				}
 			}
+			print_r( $doc_index ); echo '<br><br>';
 			if ($new_type != FALSE){
 				// Si cette variable est passée en paramètre,  c'est qu'elle a été définie via le select, c'est donc un "nouveau type"
-				// mais on fait d'abord l'algorythme précédent pour définir le doc_index
+				// mais on fait d'abord l'algorithme précédent pour définir le doc_index
 				$doc_type = $new_type;
 			}
-			// on commence par récupérer les éventuels kyc présents dans l'API
+
 			//*******************
-			// On commence par changer le statut de l'existant en "supprimé"
+			// on commence par récupérer les éventuels kyc présents dans l'API
+			// et changer le statut de l'existant en "supprimé"
 
 			// Récupération de l'identifiant API du fichier existant
 			$file_list = self::get_list_by_owner_id($id_owner, $type_owner, $doc_type);
+			print_r($file_list); echo '<br><br>';
 			// Parcourir la liste, vérifier le type et l'index de documents, et si le statut n'est pas déjà "removed"
 			foreach ($file_list as $file_item) {
-				if ($file_item->doc_type == $doc_type && $file_item->doc_index == $doc_index && $file_item->status != 'removed') {
+				if ($file_item->type == $doc_type && $file_item->doc_index == $doc_index && $file_item->status != 'removed') {
 					// Envoi de la demande de suppression à l'API
 					WDGWPREST_Entity_FileKYC::update_status($file_item->id, 'removed');
 				}
@@ -584,11 +587,15 @@ class WDGKYCFile {
 			// Envoi du fichier à l'API
 			// TODO : gérer les retours d'erreur
 			$create_feedback = WDGWPREST_Entity_FileKYC::create($user_id, $organization_id, $doc_type, $doc_index, $ext, base64_encode($byte_array));
-			return $create_feedback;
-		
-		}
-		return 'EMPTY';
 
+			print_r($file_uploaded_data); echo '<br><br>';
+			print_r($create_feedback);
+			exit();
+
+			return $create_feedback;
+		}
+
+		return 'EMPTY';
 	}
 
 	/**

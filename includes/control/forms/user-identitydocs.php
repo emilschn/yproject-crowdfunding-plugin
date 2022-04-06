@@ -202,8 +202,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		$this->initDuplicates();
 	}
 
-	protected function addOneField($WDGUserOrOrganization, $type, $owner_type ) {
-		
+	protected function addOneField( $WDGUserOrOrganization, $type, $owner_type ) {
 		$file_suffix = ( $this->is_orga ) ? '-orga-' . $WDGUserOrOrganization->get_wpref() : '';
 		$select_value = $this->getInputText( 'select-' . $type . $file_suffix );
 		$preview_value = $this->getInputText( 'hidden-preview-' . $type . $file_suffix );
@@ -220,7 +219,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$select_value = FALSE;
 			}
 
-			$file_id = WDGKYCFile::add_file( $api_type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $api_type .$file_suffix ] , '', $select_value);
+			$file_id = WDGKYCFile::add_file( $type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $type .$file_suffix ] , '', $select_value );
 
 			if ( is_int( $file_id ) ) {
 				if ( $WDGUserOrOrganization->can_register_lemonway() ) {
