@@ -28,7 +28,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 	protected function initOneField($wallet_id, $WDGUserOrOrganization, $owner_type, $field_group, $type, $lw_type, $label, $description) {
 		$suffix = ( $this->is_orga ) ? '-orga-' . $WDGUserOrOrganization->get_wpref() : '';
-		// 	
+		
 		$file_path = FALSE;
 		$file_date_uploaded = FALSE;
 		if ( $this->is_orga ){
@@ -39,30 +39,31 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		if ( !empty( $this->current_filelist ) ) {
 			// on cherche dans la liste de tous les fichiers de l'utilisateur un fichier correspondant
 			$index_api = 1;
-			$types_api = array( $type);
-			if ($owner_type === 'organization') {
-				if ( $type == WDGKYCFile::$type_idbis){
+			$types_api = array( $type );
+			if ( $owner_type === 'organization' ) {
+				if ( $type == WDGKYCFile::$type_idbis ){
 					$types_api[] = WDGKYCFile::$type_person2_doc1;
 				}
-				if ( $type == WDGKYCFile::$type_idbis_2){
+				if ( $type == WDGKYCFile::$type_idbis_2 ){
 					$types_api[] = WDGKYCFile::$type_person2_doc2;
 				}
-				if ( $type == WDGKYCFile::$type_id_3){
+				if ( $type == WDGKYCFile::$type_id_3 ){
 					$types_api[] = WDGKYCFile::$type_person3_doc1;
 				}
-				if ( $type == WDGKYCFile::$type_idbis_3){
+				if ( $type == WDGKYCFile::$type_idbis_3 ){
 					$types_api[] = WDGKYCFile::$type_person3_doc2;
 				}
-				if ( $type == WDGKYCFile::$type_id_2){
+				if ( $type == WDGKYCFile::$type_id_2 ){
 					$types_api[] = WDGKYCFile::$type_person2_doc1;
 				}
+
 			} else {
 				$types_api[] = WDGKYCFile::$type_id;
 				$types_api[] = WDGKYCFile::$type_passport;
-				if ( $type == WDGKYCFile::$type_id_back){
+				if ( $type == WDGKYCFile::$type_id_back ){
 					$index_api = 2;
 				}
-				if ( $type == WDGKYCFile::$type_id_2){
+				if ( $type == WDGKYCFile::$type_id_2 ){
 					$types_api[] = WDGKYCFile::$type_tax;
 					$types_api[] = WDGKYCFile::$type_welfare;
 					$types_api[] = WDGKYCFile::$type_family;
@@ -70,7 +71,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$types_api[] = WDGKYCFile::$type_driving;
 
 				}
-				if ( $type == WDGKYCFile::$type_id_2_back){
+				if ( $type == WDGKYCFile::$type_id_2_back ){
 					$types_api[] = WDGKYCFile::$type_tax;
 					$types_api[] = WDGKYCFile::$type_welfare;
 					$types_api[] = WDGKYCFile::$type_family;
@@ -80,40 +81,39 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				}
 			}
 
+			// Parcourir la liste, vérifier le type s'il est précisé
 			foreach ( $this->current_filelist as $key => $kycfile_item ) {
-				// Parcourir la liste, vérifier le type s'il est précisé
-		
-				if ( $kycfile_item->is_api_file == FALSE && $kycfile_item->doctype_type == $type){
-					// un fichier sur le site a exactement le même type
+				// un fichier sur le site a exactement le même type
+				if ( $kycfile_item->is_api_file == FALSE && $kycfile_item->type == $type ) {
 					$current_file = $kycfile_item;
-				// supprimer $current_file de la liste pour ne pas afficher 2 fois le même KYC
-					unset($this->current_filelist[$key]);
+					// supprimer $current_file de la liste pour ne pas afficher 2 fois le même KYC
+					unset( $this->current_filelist[ $key ] );
 					break;
-				} else if ( $kycfile_item->is_api_file && (in_array($kycfile_item->type, $types_api)  && $kycfile_item->doc_index == $index_api) ) {
-					// pour un fichier sur l'API, on doit regarder parmi une liste de type et également le doc_index
+
+				// pour un fichier sur l'API, on doit regarder parmi une liste de type et également le doc_index
+				} else if ( $kycfile_item->is_api_file && ( in_array( $kycfile_item->type, $types_api )  && $kycfile_item->doc_index == $index_api ) ) {
 					$current_file = $kycfile_item;
-					unset($this->current_filelist[$key]);
+					unset( $this->current_filelist[ $key ] );
 					break;
 				}
-
 			}
-			if( isset ($current_file)){
+
+			if ( isset( $current_file ) ) {
 				$file_path = $current_file->get_public_filepath();
 				$file_date_uploaded = $current_file->date_uploaded;
 				$this->addToMD5Array( $type, $current_file->get_byte_array_md5() );
 				// si c'est un fichier sur l'API, le "vrai type" est enregistré, et on veut le montrer
-				if( $current_file->is_api_file == TRUE ){
+				if ( $current_file->is_api_file == TRUE ) {
 					$api_type = $current_file->type;
 				}
 				// enregistrer l'id du fichier en hidden dans le field pour le récupérer facilement en postForm
 				$kycfile_id = $current_file->id;
 				$is_api_file = $current_file->is_api_file;
 			}
-
 		}
-		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified );
-		$this->addField('file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params);
 
+		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified );
+		$this->addField( 'file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params );
 	}
 
 	protected function initFields() {
@@ -168,7 +168,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->initOneField($wallet_id, $WDGOrganization, WDGKYCFile::$owner_organization, WDG_Form_User_Identity_Docs::$field_group_files_orga, WDGKYCFile::$type_person4_doc2, LemonwayDocument::$document_type_person4_doc2, __( 'form.user-identitydocs.SECOND_ID_FOURTH_PERSON', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), __( 'form.user-identitydocs.SECOND_ID_THIRD_PERSON_DESCRIPTION', 'yproject' ));
 
 		} else {
-			$this->current_filelist = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_user );	
+			$this->current_filelist = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_user );
 
 			$WDGUser = new WDGUser( $this->user_id );
 			$wallet_id = $WDGUser->get_lemonway_id();
@@ -220,14 +220,14 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$select_value = FALSE;
 			}
 
-			$file_id = WDGKYCFile::add_file( $type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $type .$file_suffix ] , '', $select_value);
+			$file_id = WDGKYCFile::add_file( $api_type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $api_type .$file_suffix ] , '', $select_value);
 
 			if ( is_int( $file_id ) ) {
 				if ( $WDGUserOrOrganization->can_register_lemonway() ) {
 					$this->send_notification_validation = TRUE;
 				}
 			} else {
-				$this->addError( $file_id, $type );
+				$this->addError( $file_id, $api_type );
 			}
 		
 		// s'il n'y a pas un nouveau fichier à envoyer, mais que le type du select n'est pas "l'ancien type de base"" ni indéfini, ni vide éivdemment

@@ -599,18 +599,18 @@ class WDGKYCFile {
 	 * @param string $type
 	 * @return array of WDGKYCFile
 	 */
-	public static function get_list_by_owner_id($id_owner, $type_owner = 'organization', $type = '') {
+	public static function get_list_by_owner_id($idwp_owner, $type_owner = 'organization', $type = '') {
 		$buffer = array();
 
-		if ( !empty( $id_owner ) ) {
+		if ( !empty( $idwp_owner ) ) {
 			// on commence par récupérer les éventuels kyc présents dans l'API
 			// on met à jour les types si on a d'anciens types
 			$index_api = 1;
 			$type_api = $type;
 			if ($type_owner === 'organization') {
-				$user_id = 0;
-				$WDGOrganization = new WDGOrganization( $id_owner );
-				$organization_id = $WDGOrganization->get_api_id();
+				$user_api_id = 0;
+				$WDGOrganization = new WDGOrganization( $idwp_owner );
+				$organization_api_id = $WDGOrganization->get_api_id();
 				if ( $type == self::$type_idbis){
 					$type_api = self::$type_person2_doc1;
 				}
@@ -627,9 +627,9 @@ class WDGKYCFile {
 					$type_api = self::$type_person2_doc1;
 				}
 			} else {
-				$organization_id = 0;
-				$WDGUser = new WDGUser( $id_owner );
-				$user_id = $WDGUser->get_api_id() ;
+				$organization_api_id = 0;
+				$WDGUser = new WDGUser( $idwp_owner );
+				$user_api_id = $WDGUser->get_api_id() ;
 				if ( $type == self::$type_id_back){
 					$type_api = self::$type_id;
 					$index_api = 2;
@@ -642,12 +642,14 @@ class WDGKYCFile {
 					$index_api = 2;
 				}
 			}
-			$file_api_list = WDGWPREST_Entity_FileKYC::get_list_by_entity_id( $type_owner, $user_id, $organization_id );
-			foreach ( $file_api_list as $kycfile_item ) {
-				// Parcourir la liste, vérifier le type s'il est précisé
-				if ( $type == '' || ($kycfile_item->doc_type == $type_api  && $kycfile_item->doc_index == $index_api )) {
-					$KYCfile = new WDGKYCFile( $kycfile_item->id, TRUE );
-					array_push($buffer, $KYCfile);
+			$file_api_list = WDGWPREST_Entity_FileKYC::get_list_by_entity_id( $type_owner, $user_api_id, $organization_api_id );
+			if ( !empty( $file_api_list ) ) {
+				foreach ( $file_api_list as $kycfile_item ) {
+					// Parcourir la liste, vérifier le type s'il est précisé
+					if ( $type == '' || ($kycfile_item->doc_type == $type_api  && $kycfile_item->doc_index == $index_api )) {
+						$KYCfile = new WDGKYCFile( $kycfile_item->id, TRUE );
+						array_push($buffer, $KYCfile);
+					}
 				}
 			}
 
@@ -656,9 +658,9 @@ class WDGKYCFile {
 			global $wpdb;
 			$query = "SELECT id FROM " .$wpdb->prefix . WDGKYCFile::$table_name;
 			if ($type_owner == WDGKYCFile::$owner_organization) {
-				$query .= " WHERE orga_id=".$id_owner;
+				$query .= " WHERE orga_id=".$idwp_owner;
 			} else {
-				$query .= " WHERE user_id=".$id_owner;
+				$query .= " WHERE user_id=".$idwp_owner;
 			}
 			if ( !empty( $type ) ) {
 				$query .= " AND type='" . $type . "'";

@@ -1334,10 +1334,12 @@ class WDGUser implements WDGUserInterface {
 	*******************************************************************************/
 	public function get_subscriptions( $status = '' ) {
 		$buffer = array();
-		foreach ( $this->subscriptions as $subscription_api_item ) {
-			$WDGSubscription = new WDGSUBSCRIPTION( $subscription_api_item->id, $subscription_api_item );
-			if ( !empty( $status ) && $WDGSubscription->status == $status ) {
-				array_push( $buffer, $WDGSubscription );
+		if ( !empty( $this->subscriptions ) ) {
+			foreach ( $this->subscriptions as $subscription_api_item ) {
+				$WDGSubscription = new WDGSUBSCRIPTION( $subscription_api_item->id, $subscription_api_item );
+				if ( !empty( $status ) && $WDGSubscription->status == $status ) {
+					array_push( $buffer, $WDGSubscription );
+				}
 			}
 		}
 		return $buffer;
@@ -1452,10 +1454,12 @@ class WDGUser implements WDGUserInterface {
 		if ( !isset( $this->royalties_per_year[ $year ] ) ) {
 			$this->royalties_per_year[ $year ] = array();
 			$rois = $this->get_rois();
-			foreach ( $rois as $roi_item ) {
-				$roi_date_transfer = new DateTime( $roi_item->date_transfer );
-				if ( $roi_date_transfer->format('Y') == $year && $roi_item->status == WDGROI::$status_transferred ) {
-					array_push( $this->royalties_per_year[ $year ], $roi_item );
+			if ( !empty( $rois ) ) {
+				foreach ( $rois as $roi_item ) {
+					$roi_date_transfer = new DateTime( $roi_item->date_transfer );
+					if ( $roi_date_transfer->format('Y') == $year && $roi_item->status == WDGROI::$status_transferred ) {
+						array_push( $this->royalties_per_year[ $year ], $roi_item );
+					}
 				}
 			}
 		}
