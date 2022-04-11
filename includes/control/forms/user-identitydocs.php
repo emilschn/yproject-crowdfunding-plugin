@@ -109,7 +109,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$this->addToMD5Array( 'capital_allocation', $current_file_capital_allocation->get_byte_array_md5() );
 			}
 			$field_status_capital_allocation = $this->getParamByFileField( $wallet_id, LemonwayDocument::$document_type_capital_allocation, $capital_allocation_file_date_uploaded );
-			$this->addField('file', 'capital_allocation' .$suffix, __( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $capital_allocation_file_path, __( 'form.user-identitydocs.CAPITAL_ALLOCATION_DESCRIPTION', 'yproject' ), $field_status_capital_allocation);
+			$this->addField('file', 'capital_allocation' .$suffix, __( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ), WDG_Form_User_Identity_Docs::$field_group_files_orga, $capital_allocation_file_path, __( 'form.user-identitydocs.CAPITAL_ALLOCATION_DESCRIPTION', 'yproject' ), $field_status_capital_allocation);
 
 			$current_filelist_id_2 = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_organization, WDGKYCFile::$type_id_2 );
 			$id2_file_path = '';
