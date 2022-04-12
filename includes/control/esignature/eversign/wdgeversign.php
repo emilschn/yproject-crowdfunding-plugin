@@ -38,7 +38,7 @@ class WDGEversign {
 					'timeout' => self::$http_request_timeout
 				));
 		}
-		ypcf_debug_log( 'WDGEversign > call_get [' .$route_to_get. '] > ' .print_r( $result, TRUE ), FALSE );
+		ypcf_debug_log( 'WDGEversign > call_get [' .$route_to_get. '] > ' .print_r( $result["response"], TRUE ), FALSE );
 
 		$buffer = FALSE;
 		if ( !is_wp_error($result) && isset( $result["response"] ) && isset( $result["response"]["code"] ) && $result["response"]["code"] == "200" ) {
