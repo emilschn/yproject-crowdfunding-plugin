@@ -1509,7 +1509,7 @@ class WDGAjaxActionsProjectDashboard {
 			} else {
 				$WDGUser = new WDGUser( $user_id );
 				//Infos supplémentaires pour les investisseurs
-				if ($array_contacts[$user_id]["invest"] == 1) {
+				if ($array_contacts[$user_id]["invest"] == 1 || $array_contacts[$user_id]["vote_invest_sum"] > 0) {
 					// Etat de l'authentification
 					if ( $WDGUser->get_lemonway_status() == LemonwayLib::$status_registered ) {
 						$user_authentication = __( "Valid&eacute;e", 'yproject' );
