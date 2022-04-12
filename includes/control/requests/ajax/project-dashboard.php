@@ -1622,7 +1622,7 @@ class WDGAjaxActionsProjectDashboard {
 					$array_contacts[$user_id]["user_nationality"] = ucfirst( strtolower( $country_list[ $WDGUser->get_nationality() ] ) );
 				}
 
-				if ( !empty( $campaign_poll_answers ) ) {
+				if ( $array_contacts[$user_id]["invest"] == 1 && !empty( $campaign_poll_answers ) ) {
 					foreach ( $campaign_poll_answers as $answer ) {
 						if ( $answer->poll_slug == 'source' && $answer->user_email == $array_contacts[ $user_id ][ 'user_email' ] ) {
 							$answers_decoded = json_decode( $answer->answers );
