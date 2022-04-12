@@ -31,6 +31,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		
 		$file_path = FALSE;
 		$file_date_uploaded = FALSE;
+		$is_api_file = FALSE;
 		if ( $this->is_orga ){
 			$is_authentified = $WDGUserOrOrganization->is_registered_lemonway_wallet();
 		}else{
@@ -91,7 +92,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					break;
 
 				// pour un fichier sur l'API, on doit regarder parmi une liste de type et également le doc_index
-				} else if ( $kycfile_item->is_api_file && ( in_array( $kycfile_item->type, $types_api )  && $kycfile_item->doc_index == $index_api ) ) {
+				} else if ( $kycfile_item->is_api_file && ( in_array( $kycfile_item->type, $types_api ) && $kycfile_item->doc_index == $index_api ) ) {
 					$current_file = $kycfile_item;
 					unset( $this->current_filelist[ $key ] );
 					break;
@@ -110,6 +111,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$kycfile_id = $current_file->id;
 				$is_api_file = $current_file->is_api_file;
 			}
+		}
+
+		if ($is_api_file) {
+			$lw_type = LemonwayDocument::get_lw_document_id_from_document_type($api_type, $index_api);
 		}
 
 		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified );

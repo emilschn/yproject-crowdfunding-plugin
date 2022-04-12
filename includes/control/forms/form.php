@@ -72,6 +72,13 @@ class WDG_Form {
 		if ( $type == WDGKYCFile::$type_id_back || $type == WDGKYCFile::$type_id_2_back){
 			$secondary = TRUE;
 		}
+		/*
+		print_r( $document_type );
+		echo '<br>';
+		print_r( $api_type );
+		echo '<br>';
+		print_r( $type );
+		echo '<br>';*/
 
 		$buffer = array(
 			'date_upload'					=> $date_upload,
@@ -139,6 +146,8 @@ class WDG_Form {
 			$buffer[ 'is_api_file' ] = $is_api_file;
 		}
 		
+		/*print_r( $buffer );
+		echo '<br><br>';*/
 		return $buffer;
 	}
 	
