@@ -40,6 +40,10 @@ class WDGWPREST_Entity_FileKYC {
 			'metadata'			=> $metadata
 		);
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'file-kyc', $parameters, TRUE );
+
+		WDGWPRESTLib::unset_cache( 'wdg/v1/files-kyc/?entity_type=user&user_id=' . $user_id . '&organization_id=' . $organization_id );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/files-kyc/?entity_type=organization&user_id=' . $user_id . '&organization_id=' . $organization_id );
+
 		if (isset($result_obj->code) && $result_obj->code == 400) { 
 			ypcf_debug_log( 'wdgwprest-file-kyc.php :: create PB de création de file-kyc $result_obj = '.var_export($result_obj, TRUE ));
 			$result_obj = ''; 
