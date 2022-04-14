@@ -173,7 +173,7 @@ class WDG_Form_User_Bank extends WDG_Form {
 
 				if ( isset( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' .$bank_file_suffix ][ 'tmp_name' ] ) ) {
 					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_organization, $_FILES[ 'bank-file' .$bank_file_suffix ] );
-					if ( is_int( $file_id ) ) {
+					if ( is_object( $file_id ) ) {
 						if ( $WDGOrganization->can_register_lemonway() ) {
 							$WDGOrganization->register_lemonway();
 							
