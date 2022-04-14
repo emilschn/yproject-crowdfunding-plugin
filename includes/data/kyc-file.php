@@ -406,6 +406,10 @@ class WDGKYCFile {
 	 * @return WDGKYCFile
 	 */
 	public static function get_by_gateway_id( $gateway_id ) {
+		if ( empty( $gateway_id ) ) {
+			return FALSE;
+		}
+
 		$buffer = FALSE;
 		// TODO : à supprimer après transfert de tous les kyc sur l'API
 		// On cherche d'abord sur le site
