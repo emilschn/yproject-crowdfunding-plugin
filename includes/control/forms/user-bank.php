@@ -223,9 +223,9 @@ class WDG_Form_User_Bank extends WDG_Form {
 				}
 
 				if ( isset( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) && !empty( $_FILES[ 'bank-file' ][ 'tmp_name' ] ) ) {
-					$file_id = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'bank-file' ] );
+					$file_result = WDGKYCFile::add_file( WDGKYCFile::$type_bank, $user_id, WDGKYCFile::$owner_user, $_FILES[ 'bank-file' ] );
 					
-					if ( is_int( $file_id ) ) {
+					if ( is_object( $file_result ) ) {
 						if ( $WDGUser->can_register_lemonway() ) {
 							$WDGUser->register_lemonway();
 
@@ -233,8 +233,8 @@ class WDG_Form_User_Bank extends WDG_Form {
 					} else {
 						// il y a eu un pb à l'upload
 						$error = array(
-							'code'		=> $file_id,
-							'text'		=> __( 'forms.file.ERROR_'.$file_id, 'yproject' ),
+							'code'		=> $file_result,
+							'text'		=> __( 'forms.file.ERROR_'.$file_result, 'yproject' ),
 							'element'	=> 'bank-file'
 						);
 						array_push( $feedback_errors, $error );
