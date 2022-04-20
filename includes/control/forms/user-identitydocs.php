@@ -42,7 +42,20 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$index_api = 1;
 			$types_api = array( $type );
 			if ( $owner_type === 'organization' ) {
+				if ( $type == WDGKYCFile::$type_id ){
+					$types_api[] = WDGKYCFile::$type_id;
+					$types_api[] = WDGKYCFile::$type_passport;
+				}
 				if ( $type == WDGKYCFile::$type_idbis ){
+					$types_api[] = WDGKYCFile::$type_id;
+					$types_api[] = WDGKYCFile::$type_passport;
+					$types_api[] = WDGKYCFile::$type_tax;
+					$types_api[] = WDGKYCFile::$type_welfare;
+					$types_api[] = WDGKYCFile::$type_family;
+					$types_api[] = WDGKYCFile::$type_birth;
+					$types_api[] = WDGKYCFile::$type_driving;
+				}
+				if ( $type == WDGKYCFile::$type_id_2 ){
 					$types_api[] = WDGKYCFile::$type_person2_doc1;
 				}
 				if ( $type == WDGKYCFile::$type_idbis_2 ){
@@ -53,9 +66,6 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				}
 				if ( $type == WDGKYCFile::$type_idbis_3 ){
 					$types_api[] = WDGKYCFile::$type_person3_doc2;
-				}
-				if ( $type == WDGKYCFile::$type_id_2 ){
-					$types_api[] = WDGKYCFile::$type_person2_doc1;
 				}
 
 			} else {
@@ -234,7 +244,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$this->addError( $file_id, $api_type );
 			}
 		
-		// s'il n'y a pas un nouveau fichier à envoyer, mais que le type du select n'est pas "l'ancien type de base"" ni indéfini, ni vide éivdemment
+		// s'il n'y a pas un nouveau fichier à envoyer, mais que le type du select n'est pas "l'ancien type de base" ni indéfini, ni vide évidemment
 		// et qu'il existe un fichier (c'est à dire une preview) (forcément non-authentifié puisqu'on a une valeur de select)
 		// on considère qu'on a changé le type du fichier pour le définir
 		} else if ( $select_value !== null && $select_value != '' && $select_value != 'undefined' && $select_value != $type 
