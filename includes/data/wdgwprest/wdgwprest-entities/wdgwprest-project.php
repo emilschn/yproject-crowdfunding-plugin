@@ -73,9 +73,9 @@ class WDGWPREST_Entity_Project {
 			'goal_minimum'			=> $campaign->minimum_goal(),
 			'goal_maximum'			=> $campaign->goal( FALSE ),
 			'yield_for_investors'	=> '1', //TODO
+			'minimum_profit'		=> $campaign->minimum_profit(),
 			'maximum_profit'		=> $campaign->maximum_profit(),
 			'maximum_profit_precision'	=> $campaign->maximum_profit_precision(),
-			'minimum_profit'		=> $campaign->minimum_profit(),
 			'contract_start_date'	=> $campaign->contract_start_date(),
 			'contract_start_date_is_undefined'	=> $campaign->contract_start_date_is_undefined(),
 			'declarations_start_date'	=> $first_payment_date,

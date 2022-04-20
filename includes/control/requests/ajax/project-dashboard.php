@@ -756,6 +756,15 @@ class WDGAjaxActionsProjectDashboard {
 				$errors['new_common_goods_turnover_percent'] = "Le pourcentage doit &ecirc;tre positif";
 			}
 
+			$new_minimum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_profit' ) );
+			$new_minimum_profit = str_replace(',', '.', $new_minimum_profit);
+			if ( is_numeric( $new_minimum_profit ) ) {
+				$campaign->set_api_data( 'minimum_profit', $new_minimum_profit );
+				$success[ 'new_minimum_profit' ] = 1;
+			} else {
+				$errors[ 'new_minimum_profit' ] = "Le gain minimum n'est pas correct (".$new_minimum_profit.")";
+			}
+
 			$new_maximum_profit = sanitize_text_field( filter_input( INPUT_POST, 'new_maximum_profit' ) );
 			$possible_maximum_profit = array_keys( ATCF_Campaign::$maximum_profit_list );
 			if ( in_array( $new_maximum_profit, $possible_maximum_profit ) ) {
@@ -2536,8 +2545,7 @@ class WDGAjaxActionsProjectDashboard {
 
 		$return_values = array(
 			"response" => "done",
-			"values" => $property,
-			"user" => $name
+			"values" => $property
 		);
 
 		if ( empty( $meta_old_value[ 'user' ] ) ) {
@@ -2548,6 +2556,7 @@ class WDGAjaxActionsProjectDashboard {
 
 		$WDGUser = new WDGUser( $meta_old_value[ 'user' ] );
 		$name = $WDGUser->get_firstname()." ".$WDGUser->get_lastname();
+		$return_values[ 'user' ] = $name;
 
 		if ( !empty($meta_old_value) ) {
 			if ( $meta_old_value[ 'user' ] != $user_id ) {
