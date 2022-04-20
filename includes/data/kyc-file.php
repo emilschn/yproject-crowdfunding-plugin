@@ -16,7 +16,7 @@ class WDGKYCFile {
 
 	public static $type_kbis = 'kbis';
 	public static $type_status = 'status';
-	public static $type_capital_allocation = 'capital_allocation';// TODO : normalement c'est capital-allocation ?
+	public static $type_capital_allocation = 'capital-allocation';
 	public static $type_idbis = 'idbis';
 	public static $type_idbis_2 = 'idbis_2';
 	public static $type_id_3 = 'id_3';
