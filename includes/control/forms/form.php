@@ -87,7 +87,7 @@ class WDG_Form {
 		$lw_document = new LemonwayDocument( $wallet_id, $document_type );
 		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
-		} else if ( $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
+		} else if ( $lw_document->get_status() == LemonwayDocument::$document_status_waiting_verification || $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
 		} else if ( $lw_document->get_status() > 2 ) {
 			$buffer[ 'display_refused_alert' ] = TRUE;
