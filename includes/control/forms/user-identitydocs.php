@@ -162,7 +162,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$this->initOneField($wallet_id, $WDGOrganization, WDGKYCFile::$owner_organization, WDG_Form_User_Identity_Docs::$field_group_files_orga, WDGKYCFile::$type_status, LemonwayDocument::$document_type_status, __( 'form.user-identitydocs.STATUS', 'yproject' ) . ' *', '');
 
 			// initialisation du champ "capital allocation"
-			$this->initOneField($wallet_id, $WDGOrganization, WDGKYCFile::$owner_organization, WDG_Form_User_Identity_Docs::$field_group_files_orga, WDGKYCFile::$type_capital_allocation, LemonwayDocument::$document_type_capital_allocation, __( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), __( 'form.user-identitydocs.CAPITAL_ALLOCATION_DESCRIPTION', 'yproject' ));
+			$this->initOneField($wallet_id, $WDGOrganization, WDGKYCFile::$owner_organization, WDG_Form_User_Identity_Docs::$field_group_files_orga, WDGKYCFile::$type_capital_allocation, LemonwayDocument::$document_type_capital_allocation, __( 'form.user-identitydocs.CAPITAL_ALLOCATION', 'yproject' ), __( 'form.user-identitydocs.CAPITAL_ALLOCATION_DESCRIPTION', 'yproject' ));
 
 			// initialisation du champ "première pièce d'identité de la deuxième personne"
 			$this->initOneField($wallet_id, $WDGOrganization, WDGKYCFile::$owner_organization, WDG_Form_User_Identity_Docs::$field_group_files_orga, WDGKYCFile::$type_id_2, LemonwayDocument::$document_type_id2, __( 'form.user-identitydocs.ID_SECOND_PERSON', 'yproject' ).' '.__( 'form.user-identitydocs.OPTIONAL', 'yproject' ), __( 'form.user-identitydocs.ID_SECOND_PERSON_DESCRIPTION', 'yproject' ));
