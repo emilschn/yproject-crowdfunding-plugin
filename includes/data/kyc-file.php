@@ -418,13 +418,13 @@ class WDGKYCFile {
 		$query = 'SELECT * FROM ' .$table_name. ' WHERE gateway_id=' .$gateway_id;
 		$kycfile_item = $wpdb->get_row( $query );
 
-        if (!isset($kycfile_item)) {
+        if (isset($kycfile_item)) {
 			$buffer = new WDGKYCFile( $kycfile_item->id, FALSE );
         }else{	
 			// si on ne trouve pas on cherche sur l'API
 			$kycfile_item = WDGWPREST_Entity_FileKYC::get_by_gateway_id( $gateway_id );	
 			if( isset($kycfile_item)) {
-				// TODO : cette façon de faire (identique à WDGROIDeclaration::get_by_payment_token provque un appel inutile à l'API, à améliorer)
+				// TODO : cette façon de faire (identique à WDGROIDeclaration::get_by_payment_token provque un appel inutile à l'API - même si mis en cache, à améliorer)
 				$buffer = new WDGKYCFile( $kycfile_item->id, TRUE );
 			} 
 		}
