@@ -100,15 +100,14 @@ class WDG_Form {
 
 		// on modifie la liste des nouveaux types possibles en fonction du type du document
 		// attention WDGKYCFile::$type_id_2 correspond à l'ancien type de 2è pièce d'identité pour un utilisateur, mais possiblement aussi à l'ancien type de première pièce d'identité de la deuxième personne pour une orga
-		if ( $type == WDGKYCFile::$type_id || $type == WDGKYCFile::$type_id_back || ($isOrga && $type == WDGKYCFile::$type_id_2 ) || $type == WDGKYCFile::$type_id_3
-		|| $type == WDGKYCFile::$type_person2_doc1 || $type == WDGKYCFile::$type_person3_doc1 || $type == WDGKYCFile::$type_person4_doc1 || $type == WDGKYCFile::$type_passport ){
+		if ( $type == WDGKYCFile::$type_id || $type == WDGKYCFile::$type_id_back || $type == WDGKYCFile::$type_passport
+			|| ($isOrga && $type == WDGKYCFile::$type_idbis) ){
 			$type_list = array( 
 				WDGKYCFile::$type_id => __( "lemonway.document.type.CARD_ID", 'yproject' ), 
 				WDGKYCFile::$type_passport => __( "lemonway.document.type.PASSPORT", 'yproject' ), 
 			);
-		} elseif ( (!$isOrga && $type == WDGKYCFile::$type_id_2) || $type == WDGKYCFile::$type_id_2_back || $type == WDGKYCFile::$type_idbis || $type == WDGKYCFile::$type_idbis_2 || $type == WDGKYCFile::$type_idbis_3 
-		|| $type == WDGKYCFile::$type_person2_doc2 || $type == WDGKYCFile::$type_person3_doc2 || $type == WDGKYCFile::$type_person4_doc2 
-		|| $type == WDGKYCFile::$type_tax || $type == WDGKYCFile::$type_welfare || $type == WDGKYCFile::$type_family || $type == WDGKYCFile::$type_birth || $type == WDGKYCFile::$type_driving){
+		} elseif ( (!$isOrga && $type == WDGKYCFile::$type_id_2) || (!$isOrga && $type == WDGKYCFile::$type_id_2_back)
+			|| $type == WDGKYCFile::$type_tax || $type == WDGKYCFile::$type_welfare || $type == WDGKYCFile::$type_family || $type == WDGKYCFile::$type_birth || $type == WDGKYCFile::$type_driving){
 			$type_list = array( 
 				WDGKYCFile::$type_id => __( "lemonway.document.type.CARD_ID", 'yproject' ), 
 				WDGKYCFile::$type_passport => __( "lemonway.document.type.PASSPORT", 'yproject' ), 
