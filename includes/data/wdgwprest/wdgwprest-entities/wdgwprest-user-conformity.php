@@ -24,13 +24,15 @@ class WDGWPREST_Entity_UserConformity {
 
 		$buffer = array();
 		$buffer[ 'user_id' ] = $user_id;
-		$buffer[ 'financial_details' ] = array();
-		$buffer[ 'financial_details' ][ 'monthlyRevenue' ] = $ajax_data_decoded->monthlyRevenue;
-		$buffer[ 'financial_details' ][ 'complementaryRevenue' ] = $ajax_data_decoded->complementaryRevenue;
-		$buffer[ 'financial_details' ][ 'investmentsValue' ] = $ajax_data_decoded->investmentsValue;
-		$buffer[ 'financial_details' ][ 'commitmentValue' ] = $ajax_data_decoded->commitmentValue;
+		$financial_details = array();
+		$financial_details[ 'monthlyRevenue' ] = $ajax_data_decoded->monthlyRevenue;
+		$financial_details[ 'complementaryRevenue' ] = $ajax_data_decoded->complementaryRevenue;
+		$financial_details[ 'investmentsValue' ] = $ajax_data_decoded->investmentsValue;
+		$financial_details[ 'commitmentValue' ] = $ajax_data_decoded->commitmentValue;
+		$buffer[ 'financial_details' ] = json_encode( $financial_details );
 		$buffer[ 'financial_result_in_cents' ] = $ajax_data_decoded->yearlyCapacityAmount * 100;
-		$buffer[ 'knowledge_details' ] = $ajax_data_decoded->knowledge;
+
+		$buffer[ 'knowledge_details' ] = json_encode( $ajax_data_decoded->knowledge );
 		$buffer[ 'knowledge_result' ] = true ? 'unsophisticated' : 'sophisticated';
 
 		return $buffer;
@@ -47,25 +49,23 @@ class WDGWPREST_Entity_UserConformity {
 		// Build conformity data
 		$conformity_data = self::transform_ajax_to_metadata( $user_id, $ajax_data );
 		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity', $conformity_data );
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity', $conformity_data, TRUE );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
 	
 	/**
 	 * Mise à jour de la donnée de conformité de l'utilisateur à partir d'un id
-	 * @param WDGUser $user
-	 * @return object
 	 */
-	public static function update( $user_id, $ajax_data ) {
-		if ( empty( $user_id ) ) {
+	public static function update( $conformity_id, $user_id, $ajax_data ) {
+		if ( empty( $conformity_id ) ) {
 			return FALSE;
 		}
 
 		// Build conformity data
 		$conformity_data = self::transform_ajax_to_metadata( $user_id, $ajax_data );
 		
-		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity/' . $user_id, $conformity_data );
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity/' . $conformity_id, $conformity_data, TRUE );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}

@@ -24,7 +24,7 @@ $metadata = filter_input( INPUT_POST, 'metadata' );
 
 if ( !empty( $existing_data ) && !empty( $existing_data->id ) ) {
 	$result[ 'status' ] = 'updated';
-	WDGWPREST_Entity_UserConformity::update( $user_api_id, $metadata );
+	WDGWPREST_Entity_UserConformity::update( $existing_data->id, $user_api_id, $metadata );
 
 } else {
 	$result[ 'status' ] = 'created';
