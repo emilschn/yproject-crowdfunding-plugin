@@ -112,7 +112,7 @@ class WDGCampaignDebtFiles {
 		$total_amount = 0;
 		$total_amount_received = 0;
 		$total_amount_left = 0;
-			foreach ( $investment_contracts as $investment_contract ){
+		foreach ( $investment_contracts as $investment_contract ){
 			$line = array();
 			$name = '';
 			$status = ( $investment_contract->status == 'active' ) ? 'Actif' : 'Arrêté';
