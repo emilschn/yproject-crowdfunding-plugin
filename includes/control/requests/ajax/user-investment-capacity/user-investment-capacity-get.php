@@ -3,7 +3,8 @@
  * Enregistre les infos de conformité de l'utilisateur en cours
  */
 $result = array(
-	'status' => ''
+	'status'	=> '',
+	'data'		=> []
 );
 
 // L'utilisateur n'est pas connecté
@@ -20,15 +21,11 @@ $user_api_id = AjaxCommonHelper::get_user_api_id_by_wpref( $current_user_id );
 
 // Récupération d'une éventuelle ligne existante
 $existing_data = WDGWPREST_Entity_UserConformity::get_by_user_id( $user_api_id, TRUE );
-$metadata = filter_input( INPUT_POST, 'metadata' );
 
 if ( !empty( $existing_data ) && !empty( $existing_data->id ) ) {
-	$result[ 'status' ] = 'updated';
-	WDGWPREST_Entity_UserConformity::update( $existing_data->id, $user_api_id, $metadata );
+	$result[ 'status' ] = 'exists';
+	$result[ 'data' ] = $existing_data;
 
-} else {
-	$result[ 'status' ] = 'created';
-	WDGWPREST_Entity_UserConformity::create( $user_api_id, $metadata );
 }
 
 exit( json_encode( $result ) );

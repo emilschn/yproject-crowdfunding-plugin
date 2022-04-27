@@ -8,6 +8,7 @@ $list_optimized_actions = array(
 	'account_authentication_save_organization_info',
 	'account_authentication_search_address',
 	'account_authentication_upload_file',
+	'user_investment_capacity_get',
 	'user_investment_capacity_save'
 );
 $action_posted = filter_input( INPUT_POST, 'action' );
