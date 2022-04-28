@@ -7,10 +7,10 @@ $result = array(
 );
 
 // L'utilisateur n'est pas connecté
-// AjaxCommonHelper::exit_if_not_logged_in();
+AjaxCommonHelper::exit_if_not_logged_in();
 
 // Récupération de l'ID de l'utilisateur en cours
-$current_user_id = 1; // get_current_user_id();
+$current_user_id = get_current_user_id();
 
 // Normalement ça ne devrait pas arriver, mais controle de sécurité si l'utilisateur correspond à une organisation
 AjaxCommonHelper::exit_if_current_user_is_organization( $current_user_id );
