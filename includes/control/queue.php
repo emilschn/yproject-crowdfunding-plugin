@@ -1300,7 +1300,7 @@ class WDGQueue {
 				}
 			}
 
-			if ( $mandate_is_success && $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
+			if ( $mandate_is_success && $amount_wallet >= $roi_declaration->get_amount_with_adjustment() && $roi_declaration->status == WDGROIDeclaration::$status_transfer ) {
 				self::add_royalties_auto_transfer_next( $declaration_id );
 			} else {
 				// Sinon on prévient qu'il n'y a plus assez
