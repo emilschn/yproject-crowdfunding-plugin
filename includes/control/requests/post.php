@@ -227,6 +227,7 @@ class WDGPostActions {
 				$newcampaign = atcf_get_campaign($newcampaign_id);
 
 				$newcampaign->__set( 'campaign_contact_phone', $new_phone );
+				$newcampaign->set_api_data( 'minimum_profit', 1.15 );
 				$newcampaign->set_forced_mandate( 1 );
 				$contract_mandate = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_term_mandate, 'contract_mandate' );
 				$newcampaign->__set( ATCF_Campaign::$key_mandate_conditions, $contract_mandate );
