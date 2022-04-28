@@ -105,15 +105,16 @@ class WDGInvestmentContract {
 		
 		$investment_contracts = self::get_list( $campaign_id );
 		
-		
 		// Parcours de tous les investissements
 		foreach ( $investments as $investment ) {
 			// Si on est déjà passé dans la procédure, on ne le refait pas
-			$create_this_item = true;
-			if ( !empty( $investment_contracts ) ) {
+			$create_this_item = ( $investment[ 'status' ] == 'publish' );
+
+			if ( $create_this_item && !empty( $investment_contracts ) ) {
 				foreach ( $investment_contracts as $investment_contract ) {
 					if ( $investment_contract->subscription_id == $investment[ 'ID' ] ) {
 						$create_this_item = false;
+						break;
 					}
 				}
 			}
