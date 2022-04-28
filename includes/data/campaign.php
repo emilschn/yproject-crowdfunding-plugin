@@ -132,7 +132,7 @@ function atcf_create_campaign($author_ID, $title) {
 	add_post_meta( $newcampaign_id, 'campaign_added_value', $default_strategy );
 	$default_finance = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_finance, 'default_finance' );
 	add_post_meta( $newcampaign_id, 'campaign_economic_model', $default_finance );
-	// TODO : activate when tested : add_post_meta( $newcampaign_id, ATCF_Campaign::$key_display_automatic_economic_model, '1' );
+	add_post_meta( $newcampaign_id, ATCF_Campaign::$key_display_automatic_economic_model, '1' );
 	$default_team = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_team, 'default_team' );
 	add_post_meta( $newcampaign_id, 'campaign_implementation', $default_team );
 
@@ -4194,7 +4194,6 @@ class ATCF_Campaign {
 	public static function get_list_current_hidden($type, $is_time_remaining = true) {
 		$compare_end_date = ( $is_time_remaining ) ? '>' : '<=';
 		$query_options = array(
-			'numberposts' => $nb,
 			'post_type' => 'download',
 			'post_status' => 'publish',
 			'meta_query' => array(
