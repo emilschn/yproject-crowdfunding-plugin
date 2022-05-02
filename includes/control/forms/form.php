@@ -75,6 +75,7 @@ class WDG_Form {
 
 		$buffer = array(
 			'date_upload'					=> $date_upload,
+			'display_upload'				=> !$is_authentified,
 			'message_instead_of_field'		=> FALSE,
 			'display_refused_alert'			=> FALSE,
 			'secondary'						=> $secondary
@@ -85,7 +86,7 @@ class WDG_Form {
 		
 		// TODO : vérifier s'il faut faire correspondre les anciens et nouveaux documents types
 		$lw_document = new LemonwayDocument( $wallet_id, $document_type );
-		if ( $is_authentified || $lw_document->get_status() == LemonwayDocument::$document_status_accepted ) {
+		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
 		} else if ( $lw_document->get_status() === LemonwayDocument::$document_status_waiting_verification || $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
