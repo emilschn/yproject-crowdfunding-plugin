@@ -108,15 +108,18 @@ class WDG_Form {
 			);
 		} elseif ( (!$isOrga && $type == WDGKYCFile::$type_id_2) || (!$isOrga && $type == WDGKYCFile::$type_id_2_back)
 			|| $type == WDGKYCFile::$type_tax || $type == WDGKYCFile::$type_welfare || $type == WDGKYCFile::$type_family || $type == WDGKYCFile::$type_birth || $type == WDGKYCFile::$type_driving){
-			$type_list = array( 
-				WDGKYCFile::$type_id => __( "lemonway.document.type.CARD_ID", 'yproject' ), 
-				WDGKYCFile::$type_passport => __( "lemonway.document.type.PASSPORT", 'yproject' ), 
-				WDGKYCFile::$type_tax => __( "lemonway.document.type.TAX", 'yproject' ) , 
-				WDGKYCFile::$type_welfare => __( "lemonway.document.type.WELFARE", 'yproject' ) , 
-				WDGKYCFile::$type_family => __( "lemonway.document.type.FAMILY", 'yproject' ) , 
-				WDGKYCFile::$type_birth => __( "lemonway.document.type.BIRTH", 'yproject' ) , 
-				WDGKYCFile::$type_driving  => __( "lemonway.document.type.DRIVING_LICENSE", 'yproject' ) 
+			$type_list = array(
+				WDGKYCFile::$type_id => __( "lemonway.document.type.CARD_ID", 'yproject' ),
+				WDGKYCFile::$type_passport => __( "lemonway.document.type.PASSPORT", 'yproject' ),
+				WDGKYCFile::$type_tax => __( "lemonway.document.type.TAX", 'yproject' ),
+				WDGKYCFile::$type_family => __( "lemonway.document.type.FAMILY", 'yproject' ),
+				WDGKYCFile::$type_birth => __( "lemonway.document.type.BIRTH", 'yproject' ),
+				WDGKYCFile::$type_driving  => __( "lemonway.document.type.DRIVING_LICENSE", 'yproject' )
 			);
+			// Si c'est un type du passé et que c'était une carte vitale, on la rajoute à la liste (sinon, on ne propose plus)
+			if ( $type == WDGKYCFile::$type_welfare ) {
+				$type_list[ WDGKYCFile::$type_welfare ] = __( "lemonway.document.type.WELFARE", 'yproject' );
+			}
 		} 
 		// ne mettre un select que si le document n'est pas validé,  et le compte non-authentifié
 		// sinon, on affichera juste l'api_type en texte (si on l'a)
