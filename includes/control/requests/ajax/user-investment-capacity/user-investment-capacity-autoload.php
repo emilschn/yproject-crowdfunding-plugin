@@ -32,6 +32,9 @@ require_once ABSPATH . WPINC . '/blocks.php';
 require_once ABSPATH . WPINC . '/formatting.php';
 require_once ABSPATH . WPINC . '/l10n.php';
 require_once ABSPATH . WPINC . '/user.php';
+// Classes liées à SendInBlue
+require_once dirname(__FILE__) . '/../../../sendinblue/v3/vendor/autoload.php';
+require_once dirname(__FILE__) . '/../../../sendinblue/sendinblue-v3-helper.php';
 // Classes WDG nécessaires (divers)
 require_once dirname(__FILE__) . '/../../../lib/validator.php';
 require_once dirname(__FILE__) . '/../../../cache/db-cacher.php';
