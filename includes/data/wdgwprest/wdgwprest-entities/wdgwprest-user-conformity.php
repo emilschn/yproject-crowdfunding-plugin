@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Gestion des utilisateurs côté WDGWPREST
  */
 class WDGWPREST_Entity_UserConformity {
+	public static $current_version = 1;
 	
 	/**
 	 * Retourne les données de conformité d'un utilisateur à partir d'un id
@@ -24,6 +25,8 @@ class WDGWPREST_Entity_UserConformity {
 
 		$buffer = array();
 		$buffer[ 'user_id' ] = $user_id;
+		$buffer[ 'version' ] = self::$current_version;
+
 		$financial_details = array();
 		$financial_details[ 'monthlyRevenue' ] = $ajax_data_decoded->monthlyRevenue;
 		$financial_details[ 'complementaryRevenue' ] = $ajax_data_decoded->complementaryRevenue;
