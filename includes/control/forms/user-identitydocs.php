@@ -16,6 +16,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 	private $files_by_md5;
 	private $duplicates;
 	private $current_filelist;
+	// Sauvegarde du type de la première pièce d'identité pour se prémunir de problèmes d'affichage
+	private $user_first_slot_type;
 
 	public function __construct($user_id = FALSE, $is_orga = FALSE, $invest_campaign_id = FALSE) {
 		parent::__construct( self::$name );
@@ -74,14 +76,15 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				if ( $type == WDGKYCFile::$type_id_back ){
 					$index_api = 2;
 				}
+
 				if ( $type == WDGKYCFile::$type_id_2 ){
 					$types_api[] = WDGKYCFile::$type_tax;
 					$types_api[] = WDGKYCFile::$type_welfare;
 					$types_api[] = WDGKYCFile::$type_family;
 					$types_api[] = WDGKYCFile::$type_birth;
 					$types_api[] = WDGKYCFile::$type_driving;
-
 				}
+
 				if ( $type == WDGKYCFile::$type_id_2_back ){
 					$types_api[] = WDGKYCFile::$type_tax;
 					$types_api[] = WDGKYCFile::$type_welfare;
@@ -103,9 +106,23 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 				// pour un fichier sur l'API, on doit regarder parmi une liste de type et également le doc_index
 				} else if ( $kycfile_item->is_api_file && ( in_array( $kycfile_item->type, $types_api ) && $kycfile_item->doc_index == $index_api ) ) {
-					$current_file = $kycfile_item;
-					unset( $this->current_filelist[ $key ] );
-					break;
+					// Si il y a un ordre de placement à respecter (personne physique)
+					$confirm_add_field = true;
+					if ( !$this->is_orga ) {
+						if ( empty( $this->user_first_slot_type ) ) {
+							$this->user_first_slot_type = $kycfile_item->type;
+						} else {
+							if ( $index_api == 2 && $this->user_first_slot_type != $kycfile_item->type && $type == WDGKYCFile::$type_id_back ) {
+								$confirm_add_field = false;
+							}
+						}
+					}
+
+					if ( $confirm_add_field ) {
+						$current_file = $kycfile_item;
+						unset( $this->current_filelist[ $key ] );
+						break;
+					}
 				}
 			}
 
@@ -184,9 +201,14 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 		} else {
 			$this->current_filelist = WDGKYCFile::get_list_by_owner_id( $this->user_id, WDGKYCFile::$owner_user );
+			$this->current_slots = array(
+				array( 1 => FALSE, 2 => FALSE ),
+				array( 1 => FALSE, 2 => FALSE )
+			);
 
 			$WDGUser = new WDGUser( $this->user_id );
 			$wallet_id = $WDGUser->get_lemonway_id();
+
 			// initialisation du champ "première pièce d'identité"
 			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id, LemonwayDocument::$document_type_id, __( 'form.user-identitydocs.ID', 'yproject' ) . ' *', __( 'form.user-identitydocs.ID_DESCRIPTION', 'yproject' ) );
 
@@ -250,7 +272,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		} else if ( $select_value !== null && $select_value != '' && $select_value != 'undefined' && $select_value != $type 
 				&&  $preview_value !== null && $preview_value != '') {
 			
-			// on récupère le fichier concerné grâce  son id
+			// on récupère le fichier concerné grâce à son id
 			$KYCfile = new WDGKYCFile( $kycfile_id, $api_file );
 			// on vérifie si c'est un fichier déjà sur l'API ou pas
 			if ( $KYCfile->is_api_file == TRUE || $KYCfile->is_api_file == '1' ) {
@@ -295,7 +317,6 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 						}
 					}
 
-					// TODO : faut-il mettre les types de l'api ? comment faire le mapping ici ?
 					$this->addOneField($WDGOrganization, WDGKYCFile::$type_id, WDGKYCFile::$owner_organization);
 					$this->addOneField($WDGOrganization, WDGKYCFile::$type_idbis, WDGKYCFile::$owner_organization);
 					$this->addOneField($WDGOrganization, WDGKYCFile::$type_status, WDGKYCFile::$owner_organization);
@@ -329,7 +350,6 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 						}
 					}
 
-					// TODO : faut-il mettre les types de l'api ? comment faire le mapping ici ?
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id, WDGKYCFile::$owner_user);
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_back, WDGKYCFile::$owner_user);
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_2, WDGKYCFile::$owner_user);

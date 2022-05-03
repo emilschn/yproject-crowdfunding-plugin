@@ -515,7 +515,7 @@ class WDGKYCFile {
 	public static function add_file($doc_type, $id_owner, $type_owner, $file_uploaded_data, $doc_index = '', $new_type = FALSE) {
 		// Mapping : https://docs.google.com/spreadsheets/d/19i6O3s7f2-MHHXiFuhtG6v0UrBn6KdmzReD0URe_QAI/edit?usp=sharing
 		if (!empty($id_owner)) {
-			// on défini le doc_index à 1 par défaut s'il n'est pas défini
+			// on définit le doc_index à 1 par défaut s'il n'est pas défini
 			if( $doc_index == '' ){
 				$doc_index = 1;
 			}
