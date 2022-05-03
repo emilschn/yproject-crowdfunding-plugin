@@ -2986,17 +2986,17 @@ class ATCF_Campaign {
 			    	$buffer = __('&Eacute;valuation termin&eacute;e', 'yproject');
 			    } else {
 			    	$diff = $expires - $now;
-			    	$nb_days = floor($diff / (60 * 60 * 24));
+			    	$nb_days = floor($diff / (60 * 60 * 24)) + 1;
 			    	$plural = ($nb_days > 1) ? 's' : '';
-			    	$buffer = __('Plus que', 'yproject').' <b>' . ($nb_days+1) . '</b> '. __('jour', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
-			    	if ($nb_days <= 0) {
-			    		$nb_hours = floor($diff / (60 * 60));
+			    	$buffer = __('Plus que', 'yproject').' <b>' . ($nb_days) . '</b> '. __('jour', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
+			    	if ($nb_days <= 1) {
+			    		$nb_hours = floor($diff / (60 * 60)) + 1;
 			    		$plural = ($nb_hours > 1) ? 's' : '';
-			    		$buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours+1) . '</b> '. __('heure', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
-			    		if ($nb_hours <= 0) {
-			    			$nb_minutes = floor($diff / 60);
+			    		$buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours) . '</b> '. __('heure', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
+			    		if ($nb_hours <= 1) {
+			    			$nb_minutes = floor($diff / 60) + 1;
 			    			$plural = ($nb_minutes > 1) ? 's' : '';
-			    			$buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes+1) . '</b> '. __('minute', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
+			    			$buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes) . '</b> '. __('minute', 'yproject').$plural.__(' pour &eacute;valuer !', 'yproject');
 			    		}
 			    	}
 			    }
@@ -3008,17 +3008,17 @@ class ATCF_Campaign {
 			    	$buffer = __("Investissement termin&eacute;", 'yproject');
 			    } else {
 			    	$diff = $expires - $now;
-			    	$nb_days = floor($diff / (60 * 60 * 24));
+			    	$nb_days = floor($diff / (60 * 60 * 24)) + 1;
 			    	$plural = ($nb_days > 1) ? 's' : '';
-			    	$buffer = __('Plus que', 'yproject').' <b>' . ($nb_days+1) . '</b> '. __('jour', 'yproject').$plural.__(' !', 'yproject');
-			    	if ($nb_days <= 0) {
-			    		$nb_hours = floor($diff / (60 * 60));
+			    	$buffer = __('Plus que', 'yproject').' <b>' . ($nb_days) . '</b> '. __('jour', 'yproject').$plural.__(' !', 'yproject');
+			    	if ($nb_days <= 1) {
+			    		$nb_hours = floor($diff / (60 * 60)) + 1;
 			    		$plural = ($nb_hours > 1) ? 's' : '';
-			    		$buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours+1) . '</b> '. __('heure', 'yproject').$plural.__(' !', 'yproject');
-			    		if ($nb_hours <= 0) {
-			    			$nb_minutes = floor($diff / 60);
+			    		$buffer = __('Plus que', 'yproject').' <b>' . ($nb_hours) . '</b> '. __('heure', 'yproject').$plural.__(' !', 'yproject');
+			    		if ($nb_hours <= 1) {
+			    			$nb_minutes = floor($diff / 60) + 1;
 			    			$plural = ($nb_minutes > 1) ? 's' : '';
-			    			$buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes+1) . '</b> '. __('minute', 'yproject').$plural.__(' !', 'yproject');
+			    			$buffer = __('Plus que', 'yproject').' <b>' . ($nb_minutes) . '</b> '. __('minute', 'yproject').$plural.__(' !', 'yproject');
 			    		}
 			    	}
 			    }

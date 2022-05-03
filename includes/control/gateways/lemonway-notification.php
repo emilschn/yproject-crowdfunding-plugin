@@ -214,12 +214,10 @@ class LemonwayNotification {
 						// Et le renvoyer
 						$WDGFile = WDGKYCFile::get_by_gateway_id( $lemonway_posted_document_id );
 
-						if ( !empty( $WDGFile ) ) {
-							if ( !$WDGFile->is_api_file ){
-								WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_user);
-							}
+						if ( !empty( $WDGFile ) && !$WDGFile->is_api_file ){
+							WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_user);
 
-							// Si aucun fichier correspondant était en attente, on peut envoyer la notif
+						// Si aucun fichier correspondant était en attente, on peut envoyer la notif
 						} else {
 							// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
 							if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {

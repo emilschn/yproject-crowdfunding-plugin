@@ -590,7 +590,9 @@ class WDGOrganization implements WDGUserInterface {
 		return $this->type;
 	}
 	public function set_type($value) {
-		$this->type = $value;
+		if ($value == 'society') {
+			$this->type = $value;
+		}
 	}
 
 	public function get_legalform() {
@@ -745,9 +747,6 @@ class WDGOrganization implements WDGUserInterface {
 		$organization_can_invest_errors = array();
 
 		//Infos nécessaires pour tout type de financement
-		if ($this->get_type() != 'society') {
-			array_push($organization_can_invest_errors, __("Ce type d'organisation ne peut pas investir.", 'yproject'));
-		}
 		if ($this->get_legalform() == '' || $this->get_legalform() == '---') {
 			array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la forme juridique de l'organisation", 'yproject'));
 		}
