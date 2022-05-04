@@ -2349,7 +2349,7 @@ class WDGUser implements WDGUserInterface {
 						$lemonway_type = LemonwayDocument::get_lw_document_id_from_document_type($current_document->type, $current_document->doc_index);
 						$document_status = $this->get_document_lemonway_status($lemonway_type);
 						//on vérifie le status du fichier, et on renvoie vers LW, si ce n'est pas un statut d'attente ou de validation
-						if ($document_status == LemonwayDocument::$document_status_waiting_verification ||  $document_status == LemonwayDocument::$document_status_waiting ||  $document_status == LemonwayDocument::$document_status_accepted) {
+						if ($document_status === LemonwayDocument::$document_status_waiting_verification ||  $document_status === LemonwayDocument::$document_status_waiting ||  $document_status === LemonwayDocument::$document_status_accepted) {
 							$do_upload = false;
 						}
 					}
@@ -2358,7 +2358,7 @@ class WDGUser implements WDGUserInterface {
 						if (!$current_document->is_api_file) {
 							// on le transfère sur l'API ce qui forcera son upload vers LW
 							WDGKYCFile::transfer_file_to_api($current_document, WDGKYCFile::$owner_user);
-					} else if ( !isset($current_document->gateway_user_id) && !isset($current_document->gateway_organization_id) ) {
+						} else if ( !isset($current_document->gateway_user_id) && !isset($current_document->gateway_organization_id) ) {
 							WDGWPREST_Entity_FileKYC::send_to_lemonway($current_document->id);
 						}
 					}

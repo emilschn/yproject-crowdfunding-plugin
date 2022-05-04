@@ -895,7 +895,7 @@ class WDGOrganization implements WDGUserInterface {
 				$lemonway_type = LemonwayDocument::get_lw_document_id_from_document_type($kyc_document->type, $kyc_document->doc_index);
 				$document_status = $this->get_document_lemonway_status($lemonway_type);
 				//on vérifie le status du fichier, et on renvoie vers LW, si ce n'est pas un statut d'attente ou de validation
-				if ($document_status != LemonwayDocument::$document_status_waiting_verification &&  $document_status != LemonwayDocument::$document_status_waiting &&  $document_status != LemonwayDocument::$document_status_accepted) {
+				if ($document_status !== LemonwayDocument::$document_status_waiting_verification &&  $document_status !== LemonwayDocument::$document_status_waiting &&  $document_status !== LemonwayDocument::$document_status_accepted) {
 					// si ce fichier a besoin d'être uploadé vers LW et qu'il n'était pas sur l'API
 					if (!$kyc_document->is_api_file) {
 						// on le transfère sur l'API ce qui forcera son upload vers LW
