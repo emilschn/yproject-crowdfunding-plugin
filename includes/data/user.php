@@ -48,6 +48,7 @@ class WDGUser implements WDGUserInterface {
 	private $bank_address;
 	private $bank_address2;
 	private $authentification_mode;
+	private $risk_validation_time;
 	private $signup_date;
 	public $source;
 	private $subscriptions;
@@ -126,6 +127,7 @@ class WDGUser implements WDGUserInterface {
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
 					$this->email_is_validated = $this->api_data->email_is_validated;
+					$this->risk_validation_time = $this->api_data->risk_validation_time;
 					$this->source = $this->api_data->source;
 					$this->subscriptions = $this->api_data->subscriptions;
 				}
@@ -349,6 +351,15 @@ class WDGUser implements WDGUserInterface {
 	}
 	public function set_authentification_mode($value) {
 		$this->authentification_mode = $value;
+	}
+
+	public function init_risk_validation_time() {
+		$current_datetime = new DateTime();
+		$this->risk_validation_time = $current_datetime->format( 'Y-m-d H:i:s' );
+	}
+
+	public function get_risk_validation_time() {
+		return $this->risk_validation_time;
 	}
 
 	/*******************************************************************************

@@ -91,6 +91,7 @@ class WDGWPREST_Entity_User {
 			'royalties_notifications'		=> $user->get_royalties_notifications(),
 			'gateway_list'		=> $user->get_encoded_gateway_list(),
 			'email_is_validated'		=> $user->get_email_is_validated(),
+			'risk_validation_time'		=> $user->get_risk_validation_time(),
 			'source'					=> $user->get_source()
 		);
 
