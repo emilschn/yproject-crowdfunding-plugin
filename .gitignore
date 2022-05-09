@@ -6,6 +6,8 @@ files/certificate-roi-payment/*
 !files/certificate-roi-payment/index.php
 files/certificate-roi-yearly-user/*
 !files/certificate-roi-yearly-user/index.php
+files/debt-certificate/*
+!files/debt-certificate/index.php
 files/fiscal-documents/*
 files/investment-check/*
 !files/investment-check/index.php
