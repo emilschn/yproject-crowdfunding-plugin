@@ -255,7 +255,7 @@ class WDGKYCFile {
 		$result = FALSE;
 		// on supprime le fichier dans le système de fichier
 		$file_path = $this->get_filepath();
-		if ( file_exists( $file_path)) {
+		if ( !empty( $this->file_name ) && file_exists( $file_path) ) {
 			$is_deleted = unlink( $file_path );
 		};
 		if ( $is_deleted ) {
