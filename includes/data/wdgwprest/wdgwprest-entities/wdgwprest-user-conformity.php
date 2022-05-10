@@ -13,18 +13,18 @@ class WDGWPREST_Entity_UserConformity {
 	 * @param string $id
 	 * @return object
 	 */
-	public static function get_by_user_id( $user_id, $shortcut_call = FALSE ) {
-		if ( empty( $user_id ) ) {
+	public static function get_by_user_api_id( $user_api_id, $shortcut_call = FALSE ) {
+		if ( empty( $user_api_id ) ) {
 			return FALSE;
 		}
-		return WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/conformity', $shortcut_call );
+		return WDGWPRESTLib::call_get_wdg( 'user/' .$user_api_id. '/conformity', $shortcut_call );
 	}
 
-	private static function transform_ajax_to_metadata( $user_id, $ajax_data ) {
+	private static function transform_ajax_to_metadata( $user_api_id, $ajax_data ) {
 		$ajax_data_decoded = json_decode( $ajax_data );
 
 		$buffer = array();
-		$buffer[ 'user_id' ] = $user_id;
+		$buffer[ 'user_id' ] = $user_api_id;
 		$buffer[ 'version' ] = self::$current_version;
 
 		$financial_details = array();

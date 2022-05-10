@@ -20,7 +20,7 @@ AjaxCommonHelper::exit_if_current_user_is_organization( $current_user_id );
 $user_api_id = AjaxCommonHelper::get_user_api_id_by_wpref( $current_user_id );
 
 // Récupération d'une éventuelle ligne existante
-$existing_data = WDGWPREST_Entity_UserConformity::get_by_user_id( $user_api_id, TRUE );
+$existing_data = WDGWPREST_Entity_UserConformity::get_by_user_api_id( $user_api_id, TRUE );
 
 if ( !empty( $existing_data ) && !empty( $existing_data->id ) ) {
 	$result[ 'status' ] = 'exists';
