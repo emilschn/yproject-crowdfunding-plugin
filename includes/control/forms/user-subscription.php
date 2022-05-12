@@ -84,8 +84,8 @@ class WDG_Form_Subscription extends WDG_Form {
 		} else {
 
 			$amount_type = $this->getInputText( 'amount_type' );
-			// Si le montant ne rentré ne dépasse pas 10€ 
-			$amount = $this->getInputTextMoney( 'amount' );				
+			// Si le montant saisi ne dépasse pas 10€
+			$amount = $this->getInputTextMoney( 'amount' );
 			if ( $amount_type == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_minimum_amount( $amount ) ) ) {
 				$error = array(
 					'code'		=> 'amount',
@@ -95,7 +95,7 @@ class WDG_Form_Subscription extends WDG_Form {
 				array_push( $feedback_errors, $error );
 			}
 
-			// Si le montant ne rentré n'est pas un entier
+			// Si le montant saisi n'est pas un entier
 			if ( $amount_type == "part_royalties" && ( !is_numeric( $amount ) || !WDGRESTAPI_Lib_Validator::is_number_positive_integer( $amount ) ) ) {
 				$error = array(
 					'code'		=> 'amount',
