@@ -48,7 +48,7 @@ class WDG_Template_PDF_Certificate_ROI_Payment {
 						www.wedogood.co<br />
 						bonjour@wedogood.co
 					</td>
-					<td>
+					<td width="200">
 						<?php echo $organization_name; ?><br />
 						<?php echo $organization_address; ?><br />
 						<?php echo $organization_postalcode; ?> <?php echo $organization_city; ?>
