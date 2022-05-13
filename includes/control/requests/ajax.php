@@ -12,6 +12,8 @@ class WDGAjaxActions {
 	private static $class_name_vuejs = 'WDGAjaxActionsVue';
 	private static $class_name_prospect_setup = 'WDGAjaxActionsProspectSetup';
 	private static $class_name_account_signin = 'WDGAjaxActionsAccountSignin';
+	private static $class_name_account_authentication = 'WDGAjaxActionsAccountAuthentication';
+	private static $class_name_user_investment_capacity = 'WDGAjaxActionsUserInvestmentCapacity';
 
 	private static $class_to_filename = array(
 		'WDG_Form_Vote'			=> 'vote',
@@ -94,9 +96,12 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_received_wire' );
 
 		self::init_actions_account_signin();
+		self::init_actions_account_authentication();
+		self::init_actions_user_investment_capacity();
 	}
 
 	public static $account_signin_actions = array(
+		'account_signin_get_email_info',
 		'account_signin_check_password',
 		'account_signin_create_account',
 		'account_signin_send_reinit_pass',
@@ -107,6 +112,26 @@ class WDGAjaxActions {
 		// Account signin - Interface de connexion / inscription
 		foreach ( self::$account_signin_actions as $single_action ) {
 			WDGAjaxActions::add_action_account_signin( $single_action );
+		}
+	}
+
+	public static $account_authentication_actions = array(
+		'account_authentication_save_current_user_phone'
+	);
+	public static function init_actions_account_authentication() {
+		// Account signin - Interface de connexion / inscription
+		foreach ( self::$account_authentication_actions as $single_action ) {
+			WDGAjaxActions::add_action_account_authentication( $single_action );
+		}
+	}
+
+	public static $user_investment_capacity_actions = array(
+		'user_investment_capacity_save'
+	);
+	public static function init_actions_user_investment_capacity() {
+		// Account signin - Interface de connexion / inscription
+		foreach ( self::$user_investment_capacity_actions as $single_action ) {
+			WDGAjaxActions::add_action_user_investment_capacity( $single_action );
 		}
 	}
 
@@ -123,7 +148,7 @@ class WDGAjaxActions {
 	}
 
 	/**
-	 * Ajoute une action WordPress Ã  exécuter en Ajax
+	 * Ajoute une action WordPress Ã  exécuter en Ajax
 	 * @param string $action_name
 	 */
 	public static function add_action($action_name) {
@@ -324,5 +349,43 @@ class WDGAjaxActions {
 		$sessionUID = filter_input( INPUT_POST, 'sessionUID' );
 		WDGAmplitude::logEvent( $action, $sessionUID );
 		call_user_func( self::$class_name_account_signin . '::' . $action );
+	}
+	
+	/**********************************************/
+	/**
+	 * Référence les actions liées à l'interface d'authentification
+	 */
+	private static function add_action_account_authentication($action_name) {
+		add_action( 'wp_ajax_' . $action_name, self::$class_name . '::account_authentication_actions' );
+		add_action( 'wp_ajax_nopriv_' . $action_name, self::$class_name . '::account_authentication_actions' );
+	}
+
+	/**
+	 * Exécute les actions liées à l'interface d'authentification
+	 */
+	public static function account_authentication_actions() {
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_control( 'requests/ajax/account-authentication' );
+		$action = filter_input( INPUT_POST, 'action' );
+		call_user_func( self::$class_name_account_authentication . '::' . $action );
+	}
+	
+	/**********************************************/
+	/**
+	 * Référence les actions liées à l'interface de profil investisseur
+	 */
+	private static function add_action_user_investment_capacity($action_name) {
+		add_action( 'wp_ajax_' . $action_name, self::$class_name . '::user_investment_capacity_actions' );
+		add_action( 'wp_ajax_nopriv_' . $action_name, self::$class_name . '::user_investment_capacity_actions' );
+	}
+
+	/**
+	 * Exécute les actions liées à l'interface de profil investisseur
+	 */
+	public static function user_investment_capacity_actions() {
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_control( 'requests/ajax/user-investment-capacity' );
+		$action = filter_input( INPUT_POST, 'action' );
+		call_user_func( self::$class_name_user_investment_capacity . '::' . $action );
 	}
 }

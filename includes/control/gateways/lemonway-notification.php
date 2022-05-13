@@ -21,7 +21,7 @@ class LemonwayNotification {
 	private static $category_document_new_status = 9;
 	private static $category_moneyin_wire = 10;
 	private static $category_moneyin_mandate = 11;
-	private static $category_moneyin_mandate_canceled = 17;
+	private static $category_chargeback = 14;
 
 	private $notification_category;
 
@@ -49,8 +49,8 @@ class LemonwayNotification {
 				$this->process_moneyin_mandate();
 				break;
 
-			case LemonwayNotification::$category_moneyin_mandate_canceled:
-				$this->process_moneyin_mandate_canceled();
+			case LemonwayNotification::$category_chargeback:
+				$this->process_chargeback();
 				break;
 		}
 	}
@@ -212,22 +212,12 @@ class LemonwayNotification {
 						// Lemon Way a refusé de l'uploader
 						// On peut donc vérifier si un autre fichier a été envoyé par l'utilisateur mais pas envoyé sur Lemon Way
 						// Et le renvoyer
-						$WDGFile = FALSE;
-						$kyc_type = LemonwayDocument::get_kyc_type_by_lw_type( $lemonway_posted_document_type );
-						$kyc_list = WDGKYCFile::get_list_by_owner_id( $WDGUser_wallet->get_wpref(), 'user', $kyc_type );
-						foreach ( $kyc_list as $kyc_item ) {
-							if ( empty( $kyc_item->gateway_id ) ) {
-								$WDGFile = $kyc_item;
-								break;
-							}
-						}
-						if ( !empty( $WDGFile ) ) {
-							$lw_id = LemonwayLib::wallet_upload_file( $WDGUser_wallet->get_lemonway_id(), $WDGFile->file_name, $lemonway_posted_document_type, $WDGFile->get_byte_array() );
-							if ( !empty( $lw_id ) ) {
-								$WDGFile->set_gateway_id( WDGKYCFile::$gateway_lemonway, $lw_id );
-							}
+						$WDGFile = WDGKYCFile::get_by_gateway_id( $lemonway_posted_document_id );
 
-							// Si aucun fichier correspondant était en attente, on peut envoyer la notif
+						if ( !empty( $WDGFile ) && !$WDGFile->is_api_file ){
+							WDGKYCFile::transfer_file_to_api($WDGFile, WDGKYCFile::$owner_user);
+
+						// Si aucun fichier correspondant était en attente, on peut envoyer la notif
 						} else {
 							// On n'envoie des notifications admin que pour les documents qui sont utiles pour l'authentification (pas le RIB)
 							if ( $lemonway_posted_document_type != LemonwayDocument::$document_type_bank ) {
@@ -257,30 +247,9 @@ class LemonwayNotification {
 						}
 					}
 
-					$has_all_documents_validated = TRUE;
-					// Flag permettant de savoir si les documents validés ne concernent que la première pièce d'identité ou le RIB
-					// On ne fait cette vérification que si il s'agit de la validation du recto ou verso de la première pièce
-					$only_first_document = ( $lemonway_posted_document_type == LemonwayDocument::$document_type_id || $lemonway_posted_document_type == LemonwayDocument::$document_type_id_back );
-
-					// On vérifie si tous les documents sont validés
-					if ( !empty( $wallet_details ) && !empty( $wallet_details->DOCS ) && !empty( $wallet_details->DOCS->DOC ) ) {
-						foreach ( $wallet_details->DOCS->DOC as $document_object ) {
-							if ( !empty( $document_object->S ) && $document_object->S != 2 ) {
-								$has_all_documents_validated = FALSE;
-							}
-							// Si le document est validé et que ce n'est pas la première pièce ou le RIB, on n'envoie pas de notif à ce sujet
-							if ( $document_object->S == 2
-									&& $document_object->TYPE != LemonwayDocument::$document_type_id
-									&& $document_object->TYPE != LemonwayDocument::$document_type_id_back
-									&& $document_object->TYPE != LemonwayDocument::$document_type_bank ) {
-								$only_first_document = FALSE;
-							}
-						}
-					}
-
+					if ( LemonwayDocument::all_doc_validated_but_wallet_not_authentified( $wallet_details ) && !empty( $user_wpref ) ){
 					// Si ils sont tous validés, on enverra une notification plus tard
-					if ( $has_all_documents_validated && !empty( $user_wpref ) ) {
-						if ( $only_first_document && empty( $WDGOrga_wallet ) ) {
+						if ( empty( $WDGOrga_wallet ) ) {
 							NotificationsAPI::kyc_single_validated( $WDGUser_wallet );
 							if ( $WDGUser_wallet->has_subscribed_authentication_notification() ) {
 								WDGQueue::add_document_user_phone_notification( $user_wpref, 'one_doc' );
@@ -294,7 +263,7 @@ class LemonwayNotification {
 
 			// On prévient l'équipe par Slack
 			if ( $orga_has_campaigns && !empty( $asana_content ) && $lemonway_posted_document_status != 2 ) {
-				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type );
+				$document_type = LemonwayDocument::get_document_type_str_by_type_id( $lemonway_posted_document_type, $lemonway_posted_document_id );
 				$document_status = LemonwayDocument::get_document_status_str_by_status_id( $lemonway_posted_document_status );
 				NotificationsAsana::send_new_project_document_status( $asana_content, $document_type, $document_status );
 			}
@@ -545,7 +514,7 @@ class LemonwayNotification {
 
 							$declaration->status = WDGROIDeclaration::$status_initializing;
 							$declaration->update();
-							$declaration->init_rois_and_tax();
+							WDGQueue::add_init_declaration_rois( $declaration->id );
 							break;
 						}
 					}
@@ -558,7 +527,7 @@ class LemonwayNotification {
 		}
 	}
 
-	private function process_moneyin_mandate_canceled() {
+	private function process_chargeback() {
 		/**
 		 * NotifDate : Date et heure de la creation de la notification. Heure de Paris. Format ISO8601
 		 * Ex : 2015-11-01T16:44:55.883

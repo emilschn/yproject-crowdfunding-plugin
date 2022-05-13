@@ -1291,7 +1291,7 @@ class WDGQueue {
 				}
 			}
 
-			if ( $mandate_is_success && $amount_wallet >= $roi_declaration->get_amount_with_adjustment() ) {
+			if ( $mandate_is_success && $amount_wallet >= $roi_declaration->get_amount_with_adjustment() && $roi_declaration->status == WDGROIDeclaration::$status_transfer ) {
 				self::add_royalties_auto_transfer_next( $declaration_id );
 			} else {
 				// Sinon on prévient qu'il n'y a plus assez
@@ -1315,6 +1315,7 @@ class WDGQueue {
 			$result = 100;
 			// Contrôle au cas où il y ait eu un plantage précédent
 			if ( $roi_declaration->status != WDGROIDeclaration::$status_finished ) {
+				WDGWPRESTLib::unset_cache( 'wdg/v1/declaration/' .$declaration_id. '/rois' );
 				$result = $roi_declaration->transfer_pending_rois();
 			}
 			if ( $result == 100 ) {

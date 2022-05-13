@@ -101,7 +101,7 @@ class WDGAjaxActionsUserAccount {
 					$buffer[ $campaign_id ][ 'start_date' ] = '';
 					if ( $campaign->contract_start_date_is_undefined() != '1' ) {
 						$contract_start_date = new DateTime( $campaign->contract_start_date() );
-						$buffer[ $campaign_id ][ 'start_date' ] = date_i18n( 'F Y', strtotime( $campaign->contract_start_date() ) );
+						$buffer[ $campaign_id ][ 'start_date' ] = __( $contract_start_date->format( 'F' ) ) . ' ' . $contract_start_date->format( 'Y' );
 					}
 					$buffer[ $campaign_id ][ 'funding_duration' ] = utf8_encode( $campaign->funding_duration() );
 					$buffer[ $campaign_id ][ 'roi_percent' ] = utf8_encode( $campaign->roi_percent() );
@@ -453,7 +453,7 @@ class WDGAjaxActionsUserAccount {
 			$buffer_item[ 'status' ] = utf8_encode( $result_campaign_item->project_status );
 			$buffer_item[ 'funding_duration' ] = utf8_encode( $result_campaign_item->project_funding_duration );
 			$contract_start_date = new DateTime( $result_campaign_item->project_contract_start_date );
-			$buffer_item[ 'start_date' ] = date_i18n( 'F Y', strtotime( $result_campaign_item->project_contract_start_date ) );
+			$buffer_item[ 'start_date' ] = __( $contract_start_date->format( 'F' ) ) . ' ' . $contract_start_date->format( 'Y' );
 
 			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
 			$exp = dirname( __FILE__ ). '/../../../pdf_files/' .$result_campaign_item->project_wpref. '_' .$user_id. '_*.pdf';

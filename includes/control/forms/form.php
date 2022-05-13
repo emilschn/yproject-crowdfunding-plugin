@@ -67,9 +67,15 @@ class WDG_Form {
 		
 	}
 	
-	protected function getParamByFileField( $wallet_id, $document_type, $date_upload, $secondary = FALSE ) {
+	protected function getParamByFileField( $wallet_id, $document_type, $date_upload, $type, $isOrga = FALSE, $api_type = FALSE, $kycfile_id = FALSE, $is_api_file = FALSE, $is_authentified = FALSE ) {
+		$secondary = FALSE;
+		if ( $type == WDGKYCFile::$type_id_back || $type == WDGKYCFile::$type_id_2_back){
+			$secondary = TRUE;
+		}
+
 		$buffer = array(
 			'date_upload'					=> $date_upload,
+			'display_upload'				=> !$is_authentified,
 			'message_instead_of_field'		=> FALSE,
 			'display_refused_alert'			=> FALSE,
 			'secondary'						=> $secondary
@@ -78,10 +84,11 @@ class WDG_Form {
 		$message_document_validated = __( 'forms.file.DOCUMENT_ACCEPTED_BY_PROVIDER', 'yproject' );
 		$message_document_waiting = __( 'forms.file.DOCUMENT_UNDER_VALIDATION', 'yproject' );
 		
+		// TODO : vérifier s'il faut faire correspondre les anciens et nouveaux documents types
 		$lw_document = new LemonwayDocument( $wallet_id, $document_type );
 		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
-		} else if ( $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
+		} else if ( $lw_document->get_status() === LemonwayDocument::$document_status_waiting_verification || $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
 		} else if ( $lw_document->get_status() > 2 ) {
 			$buffer[ 'display_refused_alert' ] = TRUE;
@@ -89,6 +96,50 @@ class WDG_Form {
 			if ( !empty( $lw_error_str ) ) {
 				$buffer[ 'display_refused_alert' ] = $lw_error_str;
 			}
+		}
+		
+
+		// on modifie la liste des nouveaux types possibles en fonction du type du document
+		// attention WDGKYCFile::$type_id_2 correspond à l'ancien type de 2è pièce d'identité pour un utilisateur, mais possiblement aussi à l'ancien type de première pièce d'identité de la deuxième personne pour une orga
+		if ( $type == WDGKYCFile::$type_id || $type == WDGKYCFile::$type_id_back || $type == WDGKYCFile::$type_passport
+			|| ($isOrga && $type == WDGKYCFile::$type_idbis) ){
+			$type_list = array( 
+				WDGKYCFile::$type_id => __( "lemonway.document.type.CARD_ID", 'yproject' ), 
+				WDGKYCFile::$type_passport => __( "lemonway.document.type.PASSPORT", 'yproject' ), 
+			);
+		} elseif ( (!$isOrga && $type == WDGKYCFile::$type_id_2) || (!$isOrga && $type == WDGKYCFile::$type_id_2_back)
+			|| $type == WDGKYCFile::$type_tax || $type == WDGKYCFile::$type_welfare || $type == WDGKYCFile::$type_family || $type == WDGKYCFile::$type_birth || $type == WDGKYCFile::$type_driving){
+			$type_list = array(
+				WDGKYCFile::$type_id => __( "lemonway.document.type.CARD_ID", 'yproject' ),
+				WDGKYCFile::$type_passport => __( "lemonway.document.type.PASSPORT", 'yproject' ),
+				WDGKYCFile::$type_tax => __( "lemonway.document.type.TAX", 'yproject' ),
+				WDGKYCFile::$type_family => __( "lemonway.document.type.FAMILY", 'yproject' ),
+				WDGKYCFile::$type_birth => __( "lemonway.document.type.BIRTH", 'yproject' ),
+				WDGKYCFile::$type_driving  => __( "lemonway.document.type.DRIVING_LICENSE", 'yproject' )
+			);
+			// Si c'est un type du passé et que c'était une carte vitale, on la rajoute à la liste (sinon, on ne propose plus)
+			if ( $type == WDGKYCFile::$type_welfare ) {
+				$type_list[ WDGKYCFile::$type_welfare ] = __( "lemonway.document.type.WELFARE", 'yproject' );
+			}
+		} 
+		// ne mettre un select que si le document n'est pas validé,  et le compte non-authentifié
+		// sinon, on affichera juste l'api_type en texte (si on l'a)
+		if ( $lw_document->get_status() != LemonwayDocument::$document_status_accepted && $is_authentified == FALSE ){
+			if( $type_list && count( $type_list ) > 1 ){
+				$buffer[ 'list_select' ] = $type_list;
+			}
+		}
+		if( $api_type != FALSE ){
+			$buffer[ 'api_type' ] = $api_type;
+            if ($lw_document->get_status() != LemonwayDocument::$document_status_accepted) {
+                $buffer[ 'string_type' ] = WDGKYCFile::convert_type_id_to_str($api_type, $isOrga);
+            }
+		}
+		if( $kycfile_id != FALSE ){
+			$buffer[ 'kycfile_id' ] = $kycfile_id;
+		}
+		if( $is_api_file != FALSE ){
+			$buffer[ 'is_api_file' ] = $is_api_file;
 		}
 		
 		return $buffer;
@@ -208,7 +259,7 @@ class WDG_Form {
 		$input_result = filter_input( INPUT_POST, $name );
 
 		if ( !empty( $input_result ) ) {
-			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );		
+			$buffer = stripslashes( htmlentities( $input_result, ENT_QUOTES | ENT_HTML401 ) );
 		}
 		return $buffer;
 	}

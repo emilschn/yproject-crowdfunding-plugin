@@ -102,7 +102,10 @@ class NotificationsAPIShortcodes {
 
 		'subscription_amount',
 		'subscription_project',
-		'subscription_start_date'
+		'subscription_start_date',
+
+		'user_conformity_type',
+		'user_conformity_amount'
 	);
 
 	private static $instance;
@@ -133,6 +136,11 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function set_recipient($obj_user) {
 		self::$recipient = $obj_user;
+	}
+
+	private static $recipient_first_name;
+	public static function set_recipient_first_name($first_name) {
+		self::$recipient_first_name = $first_name;
 	}
 
 	/**
@@ -465,6 +473,16 @@ class NotificationsAPIShortcodes {
 	public static function set_subscription( $subscription ) {
 		self::$subscription = $subscription;
 	}
+
+	private static $user_conformity_type;
+	public static function set_user_conformity_type( $type ) {
+		self::$user_conformity_type = $type;
+	}
+
+	private static $user_conformity_amount;
+	public static function set_user_conformity_amount( $amount ) {
+		self::$user_conformity_amount = $amount;
+	}
 	//*************************************
 
 	//*************************************
@@ -493,6 +511,9 @@ class NotificationsAPIShortcodes {
 	 * Prénom
 	 */
 	public static function recipient_first_name() {
+		if ( !empty( self::$recipient_first_name ) ) {
+			return self::$recipient_first_name;
+		}
 		return self::$recipient->get_firstname();
 	}
 
@@ -1342,6 +1363,20 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function subscription_start_date() {
 		return self::$subscription->get_next_payment_date_str();
+	}
+
+	/**
+	 * Test de profil utilisateur - type averti / non-averti
+	 */
+	public static function user_conformity_type() {
+		return self::$user_conformity_type;
+	}
+
+	/**
+	 * Test de profil utilisateur - montant
+	 */
+	public static function user_conformity_amount() {
+		return self::$user_conformity_amount;
 	}
 	//*************************************
 }

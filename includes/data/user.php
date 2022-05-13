@@ -48,6 +48,7 @@ class WDGUser implements WDGUserInterface {
 	private $bank_address;
 	private $bank_address2;
 	private $authentification_mode;
+	private $risk_validation_time;
 	private $signup_date;
 	public $source;
 	private $subscriptions;
@@ -126,6 +127,7 @@ class WDGUser implements WDGUserInterface {
 					$this->signup_date = $this->api_data->signup_date;
 					$this->royalties_notifications = $this->api_data->royalties_notifications;
 					$this->email_is_validated = $this->api_data->email_is_validated;
+					$this->risk_validation_time = $this->api_data->risk_validation_time;
 					$this->source = $this->api_data->source;
 					$this->subscriptions = $this->api_data->subscriptions;
 				}
@@ -349,6 +351,48 @@ class WDGUser implements WDGUserInterface {
 	}
 	public function set_authentification_mode($value) {
 		$this->authentification_mode = $value;
+	}
+
+	public function init_risk_validation_time() {
+		$current_datetime = new DateTime();
+		$this->risk_validation_time = $current_datetime->format( 'Y-m-d H:i:s' );
+	}
+
+	public function get_risk_validation_time() {
+		return $this->risk_validation_time;
+	}
+
+	/**
+	 * Récupération des données de profil investisseur
+	 */
+	private $conformity_data;
+	public function get_conformity_data() {
+		if ( !isset( $this->conformity_data ) ) {
+			$this->conformity_data = WDGWPREST_Entity_UserConformity::get_by_user_api_id( $this->get_api_id(), TRUE );
+		}
+		return $this->conformity_data;
+	}
+
+	/**
+	 * Est-ce qu'il y a des données de profil investisseur ?
+	 */
+	public function has_conformity_data() {
+		$existing_data = $this->get_conformity_data();
+		return ( !empty( $existing_data ) && !empty( $existing_data->id ) );
+	}
+
+	/**
+	 * Est-ce qu'il y a des données de profil investisseur valides (notamment en terme de date) ?
+	 */
+	public function has_valid_conformity_data() {
+		if ( $this->has_conformity_data() ) {
+			$existing_data = $this->get_conformity_data();
+			$date_update = new DateTime( $existing_data->last_update );
+			$date_update->add( new DateInterval( 'P1Y' ) );
+			$date_now = new DateTime();
+			return ( $date_update > $date_now );
+		}
+		return FALSE;
 	}
 
 	/*******************************************************************************
@@ -1334,10 +1378,12 @@ class WDGUser implements WDGUserInterface {
 	*******************************************************************************/
 	public function get_subscriptions( $status = '' ) {
 		$buffer = array();
-		foreach ( $this->subscriptions as $subscription_api_item ) {
-			$WDGSubscription = new WDGSUBSCRIPTION( $subscription_api_item->id, $subscription_api_item );
-			if ( !empty( $status ) && $WDGSubscription->status == $status ) {
-				array_push( $buffer, $WDGSubscription );
+		if ( !empty( $this->subscriptions ) ) {
+			foreach ( $this->subscriptions as $subscription_api_item ) {
+				$WDGSubscription = new WDGSUBSCRIPTION( $subscription_api_item->id, $subscription_api_item );
+				if ( !empty( $status ) && $WDGSubscription->status == $status ) {
+					array_push( $buffer, $WDGSubscription );
+				}
 			}
 		}
 		return $buffer;
@@ -1452,10 +1498,12 @@ class WDGUser implements WDGUserInterface {
 		if ( !isset( $this->royalties_per_year[ $year ] ) ) {
 			$this->royalties_per_year[ $year ] = array();
 			$rois = $this->get_rois();
-			foreach ( $rois as $roi_item ) {
-				$roi_date_transfer = new DateTime( $roi_item->date_transfer );
-				if ( $roi_date_transfer->format('Y') == $year && $roi_item->status == WDGROI::$status_transferred ) {
-					array_push( $this->royalties_per_year[ $year ], $roi_item );
+			if ( !empty( $rois ) ) {
+				foreach ( $rois as $roi_item ) {
+					$roi_date_transfer = new DateTime( $roi_item->date_transfer );
+					if ( $roi_date_transfer->format('Y') == $year && $roi_item->status == WDGROI::$status_transferred ) {
+						array_push( $this->royalties_per_year[ $year ], $roi_item );
+					}
 				}
 			}
 		}
@@ -1576,9 +1624,18 @@ class WDGUser implements WDGUserInterface {
 			$invest_item = array();
 
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			if ( !is_array( $downloads[0] ) ) {
+			$download_id = '';
+			if ( isset( $downloads[0] ) ) {
+				if (is_array($downloads[0])) {
+					$download_id = $downloads[0]["id"];
+				} else {
+					$download_id = $downloads[0];
+				}
+			}
+
+			if ( !empty( $download_id ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $downloads[0] );
+				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
@@ -2327,28 +2384,26 @@ class WDGUser implements WDGUserInterface {
 	 */
 	public function send_kyc($force_upload = TRUE) {
 		if ($this->can_register_lemonway()) {
-			if ( $this->register_lemonway() ) {
-				$documents_type_list = array(
-					WDGKYCFile::$type_id		=> LemonwayDocument::$document_type_id,
-					WDGKYCFile::$type_id_back	=> LemonwayDocument::$document_type_id_back,
-					WDGKYCFile::$type_id_2		=> LemonwayDocument::$document_type_idbis,
-					WDGKYCFile::$type_id_2_back	=> LemonwayDocument::$document_type_idbis_back
-				);
-				foreach ( $documents_type_list as $document_type => $lemonway_type ) {
-					$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wp_user->ID, WDGKYCFile::$owner_user, $document_type );
-					if ( !empty( $document_filelist ) ) {
-						$current_document = $document_filelist[0];
-						if ( !empty( $current_document ) ) {
-							$do_upload = TRUE;
-							if ( !$force_upload ) {
-								$document_status = $this->get_document_lemonway_status( $lemonway_type );
-								if ( $document_status !== FALSE ) {
-									$do_upload = FALSE;
-								}
-							}
-							if ( $do_upload ) {
-								LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
-							}
+			if ($this->register_lemonway()) {
+				// on récupère tous les kyc de cet utilisateur
+				$document_filelist = WDGKYCFile::get_list_by_owner_id($this->wp_user->ID, WDGKYCFile::$owner_user);
+				foreach ($document_filelist as $current_document) {
+					$do_upload = true;
+					if (!$force_upload) {
+						$lemonway_type = LemonwayDocument::get_lw_document_id_from_document_type($current_document->type, $current_document->doc_index);
+						$document_status = $this->get_document_lemonway_status($lemonway_type);
+						//on vérifie le status du fichier, et on renvoie vers LW, si ce n'est pas un statut d'attente ou de validation
+						if ($document_status === LemonwayDocument::$document_status_waiting_verification ||  $document_status === LemonwayDocument::$document_status_waiting ||  $document_status === LemonwayDocument::$document_status_accepted) {
+							$do_upload = false;
+						}
+					}
+					if ($do_upload) {
+						// si ce fichier a besoin d'être uploadé vers LW et qu'il n'était pas sur l'API
+						if (!$current_document->is_api_file) {
+							// on le transfère sur l'API ce qui forcera son upload vers LW
+							WDGKYCFile::transfer_file_to_api($current_document, WDGKYCFile::$owner_user);
+						} else if ( !isset($current_document->gateway_user_id) && !isset($current_document->gateway_organization_id) ) {
+							WDGWPREST_Entity_FileKYC::send_to_lemonway($current_document->id);
 						}
 					}
 				}
@@ -2507,6 +2562,29 @@ class WDGUser implements WDGUserInterface {
 		return $buffer;
 	}
 
+	private static $page_name_where_redirect_is_needed_list = array(
+		'connexion',
+		'inscription',
+		'activer-compte',
+		'capacite'
+	);
+	private static function is_redirect_post_name( $post_name ) {
+		foreach ( self::$page_name_where_redirect_is_needed_list as $redirect_page_name ) {
+			if ( $post_name == WDG_Redirect_Engine::override_get_page_name( $redirect_page_name ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+	private static function contains_redirect_post_name( $url ) {
+		foreach ( self::$page_name_where_redirect_is_needed_list as $redirect_page_name ) {
+			if ( strpos( $url, WDG_Redirect_Engine::override_get_page_name( $redirect_page_name ) ) !== FALSE ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * DÃ©finit la page vers laquelle il faudrait rediriger l'utilisateur lors de sa connexion
 	 * @global type $post
@@ -2519,7 +2597,7 @@ class WDGUser implements WDGUserInterface {
 
 		// Si on est sur la page de connexion ou d'inscription,
 		// il faut retrouver la page précédente et vérifier qu'elle est de WDG
-		if ( $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'connexion' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'inscription' ) || $post->post_name == WDG_Redirect_Engine::override_get_page_name( 'activer-compte' ) ) {
+		if ( self::is_redirect_post_name( $post->post_name ) ) {
 			// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A1', FALSE );
 			//On vérifie d'abord si cela a été passé en paramètre d'URL
 			$get_redirect_page = filter_input( INPUT_GET, 'redirect-page' );
@@ -2544,7 +2622,7 @@ class WDGUser implements WDGUserInterface {
 					// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A2b', FALSE );
 					$buffer = $_SESSION[ 'login-fb-referer' ];
 					$_SESSION[ 'login-fb-referer' ] = '';
-					if ( strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'connexion' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'inscription' ) ) !== FALSE || strpos( $buffer, WDG_Redirect_Engine::override_get_page_name( 'activer-compte' ) ) !== FALSE ) {
+					if ( self::contains_redirect_post_name( $buffer ) ) {
 						$buffer = WDG_Redirect_Engine::override_get_page_url( 'mon-compte' );
 					}
 				} else {
@@ -2554,7 +2632,7 @@ class WDGUser implements WDGUserInterface {
 					if (strpos($referer_url, $buffer) !== FALSE) {
 						//Si la page précédente était déjà la page connexion ou inscription,
 						// on tente de voir si la redirection était passée en paramètre
-						if ( strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'connexion' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'inscription' )) !== FALSE || strpos($referer_url, WDG_Redirect_Engine::override_get_page_name( 'activer-compte' )) !== FALSE ) {
+						if ( self::contains_redirect_post_name( $referer_url ) ) {
 							$posted_redirect_page = filter_input(INPUT_POST, 'redirect-page');
 							if (!empty($posted_redirect_page)) {
 								// ypcf_debug_log( 'WDGUser::get_login_redirect_page > A3a', FALSE );

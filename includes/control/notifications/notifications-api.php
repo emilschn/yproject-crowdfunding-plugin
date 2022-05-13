@@ -502,6 +502,12 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
+		'user-conformity-validation' => array(
+			'fr-sib-id'		=> 'user-conformity-validation',
+			'description'	=> "Validation du parcours de profil investisseur",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
 		'declaration-done-not-paid' => array(
 			'fr-sib-id'		=> 'declaration-done-not-paid',
 			'description'	=> "Déclaration est en attente de paiement",
@@ -946,6 +952,25 @@ class NotificationsAPI {
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	//*******************************************************
+	// Validation du parcours de profil investisseur
+	//*******************************************************
+	public static function user_conformity_validation( $user_email, $user_language, $user_first_name, $user_conformity_type, $user_conformity_amount ) {
+		$id_template = self::get_id_fr_by_slug( 'user-conformity-validation' );
+
+		NotificationsAPIShortcodes::set_recipient_first_name($user_first_name);
+		NotificationsAPIShortcodes::set_user_conformity_type($user_conformity_type);
+		NotificationsAPIShortcodes::set_user_conformity_amount($user_conformity_amount);
+
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $user_email
+		);
+
+		return self::send( $parameters, $user_language );
 	}
 
 	//*******************************************************
@@ -2673,10 +2698,11 @@ class NotificationsAPI {
 	//*******************************************************
 	// SELECTION DE VIREMENT
 	//*******************************************************
-	public static function prospect_setup_payment_method_select_wire($prospect_setup_draft) {
+	public static function prospect_setup_payment_method_select_wire($prospect_setup_draft, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'prospect-setup-payment-method-select-wire' );
 
 		NotificationsAPIShortcodes::set_prospect_setup_draft($prospect_setup_draft);
+		NotificationsAPIShortcodes::set_prospect_setup_draft_payment_amount( $amount );
 
 		$recipient = NotificationsAPIShortcodes::prospect_setup_recipient_email(FALSE, FALSE);
 		

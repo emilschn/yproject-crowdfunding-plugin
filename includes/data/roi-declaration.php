@@ -956,6 +956,7 @@ class WDGROIDeclaration {
 					if ( $transfer != FALSE ) {
 						$ROI->status = $status;
 						$ROI->id_transfer = $transfer->ID;
+						$ROI->date_transfer = $date_now->format( 'Y-m-d' );
 						$ROI->update();
 					}
 				}

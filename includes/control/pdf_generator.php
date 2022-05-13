@@ -26,6 +26,7 @@ class WDG_PDF_Generator {
 		add_shortcode( 'wdg_campaign_contract_maximum_goal', 'WDG_PDF_Generator::shortcode_contract_maximum_goal' );
 		add_shortcode( 'wdg_campaign_contract_roi_percent_max', 'WDG_PDF_Generator::shortcode_contract_roi_percent_max' );
 		add_shortcode( 'wdg_campaign_contract_duration', 'WDG_PDF_Generator::shortcode_contract_duration' );
+		add_shortcode( 'wdg_campaign_contract_minimum_profit', 'WDG_PDF_Generator::shortcode_contract_minimum_profit' );
 		add_shortcode( 'wdg_campaign_contract_maximum_profit', 'WDG_PDF_Generator::shortcode_contract_maximum_profit' );
 		add_shortcode( 'wdg_campaign_contract_premium', 'WDG_PDF_Generator::shortcode_contract_premium' );
 		add_shortcode( 'wdg_campaign_contract_warranty', 'WDG_PDF_Generator::shortcode_contract_warranty' );
@@ -349,6 +350,17 @@ class WDG_PDF_Generator {
 		} else {
 			$buffer = __( 'invest.input.UNDEFINED_DURATION', 'yproject' );
 		}
+
+		return $buffer;
+	}
+
+	/**
+	 * Shortcode affichant le gain minimal
+	 */
+	public static function shortcode_contract_minimum_profit($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = $shortcode_campaign_obj->minimum_profit();
 
 		return $buffer;
 	}

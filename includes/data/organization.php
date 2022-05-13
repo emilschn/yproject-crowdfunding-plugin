@@ -590,7 +590,9 @@ class WDGOrganization implements WDGUserInterface {
 		return $this->type;
 	}
 	public function set_type($value) {
-		$this->type = $value;
+		if ($value == 'society') {
+			$this->type = $value;
+		}
 	}
 
 	public function get_legalform() {
@@ -745,9 +747,6 @@ class WDGOrganization implements WDGUserInterface {
 		$organization_can_invest_errors = array();
 
 		//Infos nécessaires pour tout type de financement
-		if ($this->get_type() != 'society') {
-			array_push($organization_can_invest_errors, __("Ce type d'organisation ne peut pas investir.", 'yproject'));
-		}
 		if ($this->get_legalform() == '' || $this->get_legalform() == '---') {
 			array_push($organization_can_invest_errors, __("Merci de pr&eacute;ciser la forme juridique de l'organisation", 'yproject'));
 		}
@@ -888,12 +887,22 @@ class WDGOrganization implements WDGUserInterface {
 	public function send_kyc() {
 		if ( $this->has_lemonway_wallet() ) {
 			$this->sync_creator_kyc();
-			$documents_type_list = LemonwayDocument::get_list_sorted_by_kyc_type();
-			foreach ( $documents_type_list as $document_type => $lemonway_type ) {
-				$document_filelist = WDGKYCFile::get_list_by_owner_id( $this->wpref, WDGKYCFile::$owner_organization, $document_type );
-				if ( count( $document_filelist ) > 0 ) {
-					$current_document = $document_filelist[0];
-					LemonwayLib::wallet_upload_file( $this->get_lemonway_id(), $current_document->file_name, $lemonway_type, $current_document->get_byte_array() );
+			// on récupère tous les kyc de l'organisation
+			$document_filelist = WDGKYCFile::get_list_by_owner_id($this->wpref, WDGKYCFile::$owner_organization);
+			// on les parcourt
+			foreach ($document_filelist as $kyc_document) {
+				// on récupère le type LW selon le type "maison" et l'index
+				$lemonway_type = LemonwayDocument::get_lw_document_id_from_document_type($kyc_document->type, $kyc_document->doc_index);
+				$document_status = $this->get_document_lemonway_status($lemonway_type);
+				//on vérifie le status du fichier, et on renvoie vers LW, si ce n'est pas un statut d'attente ou de validation
+				if ($document_status !== LemonwayDocument::$document_status_waiting_verification &&  $document_status !== LemonwayDocument::$document_status_waiting &&  $document_status !== LemonwayDocument::$document_status_accepted) {
+					// si ce fichier a besoin d'être uploadé vers LW et qu'il n'était pas sur l'API
+					if (!$kyc_document->is_api_file) {
+						// on le transfère sur l'API ce qui forcera son upload vers LW
+						WDGKYCFile::transfer_file_to_api($kyc_document, WDGKYCFile::$owner_organization);
+					} else if ( !isset($kyc_document->gateway_organization_id) && !isset($kyc_document->gateway_user_id) ) {
+						WDGWPREST_Entity_FileKYC::send_to_lemonway($kyc_document->id);
+					}
 				}
 			}
 		}
@@ -1951,9 +1960,18 @@ class WDGOrganization implements WDGUserInterface {
 			$invest_item = array();
 
 			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			if ( !is_array( $downloads[0] ) ) {
+			$download_id = '';
+			if ( isset( $downloads[0] ) ) {
+				if (is_array($downloads[0])) {
+					$download_id = $downloads[0]["id"];
+				} else {
+					$download_id = $downloads[0];
+				}
+			}
+
+			if ( !empty( $download_id ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $downloads[0] );
+				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );

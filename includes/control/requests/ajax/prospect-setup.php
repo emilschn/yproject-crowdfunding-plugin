@@ -320,7 +320,7 @@ class WDGAjaxActionsProspectSetup {
 			}
 
 			if ( empty( $return[ 'error_str' ] ) ) {
-				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $api_result ) ) {
+				if ( NotificationsAPI::prospect_setup_payment_method_select_wire( $api_result, $amount ) ) {
 					$return[ 'email_sent' ] = '1';
 				}
 			}

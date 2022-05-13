@@ -170,7 +170,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 						}
 					}
 
-					$WDGAdjustment->amount = $roideclaration->get_amount_with_adjustment();
+					$WDGAdjustment->amount = $roideclaration->get_amount_royalties() + $roideclaration->get_adjustment_value();
 					$WDGAdjustment->type = WDGAdjustment::$type_turnover_difference_remainders;
 					$WDGAdjustment->create();
 				}
