@@ -41,7 +41,7 @@ class WDG_Form_Subscribe_Positive_Savings extends WDG_Form {
 			FALSE,
 			FALSE,
 			[
-				'confirm-subscription'	=> "Je souhaite blablabla"
+				'confirm-subscription'	=> __( 'form.positive-savings-subscription.I_WISH_TO_SUBSCRIBE', 'yproject' )
 			]
 		);
 	}
