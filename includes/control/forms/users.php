@@ -102,7 +102,7 @@ class WDGFormUsers {
 							$WDGUser->set_language( WDG_Languages_Helpers::get_current_locale_id() );
 							$WDGUser->update_api();
 							$page_validation_email = WDG_Redirect_Engine::override_get_page_url( 'activer-compte' );
-							$link = $page_validation_email . "?action=validate&is-new-account=1&validation-code=" . $WDGUser->get_email_validation_code();				
+							$link = $page_validation_email . "?action=validate&is-new-account=1&validation-code=" . $WDGUser->get_email_validation_code();
 							NotificationsAPI::user_account_email_validation($WDGUser, $link, TRUE );
 							WDGQueue::add_notification_registered_without_investment( $user_id );
 							update_user_meta( $user_id, $sc_provider_identity_key, $fbUserId );
