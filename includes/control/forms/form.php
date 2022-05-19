@@ -86,11 +86,11 @@ class WDG_Form {
 		
 		// TODO : vérifier s'il faut faire correspondre les anciens et nouveaux documents types
 		$lw_document = new LemonwayDocument( $wallet_id, $document_type );
-		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted ) {
+		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted && !empty( $date_upload ) ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
 		} else if ( $lw_document->get_status() === LemonwayDocument::$document_status_waiting_verification || $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
-		} else if ( $lw_document->get_status() > 2 ) {
+		} else if ( $lw_document->get_status() > 2 && !empty( $date_upload ) ) {
 			$buffer[ 'display_refused_alert' ] = TRUE;
 			$lw_error_str = $lw_document->get_error_str();
 			if ( !empty( $lw_error_str ) ) {

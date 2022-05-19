@@ -147,7 +147,8 @@ class WDGAjaxActionsUserAccount {
 						}
 					} else {
 						$payment_key = $WDGInvestment->get_payment_key();
-						if ( strpos( $payment_key, 'wire_' ) !== FALSE || $payment_key == 'check' ) {
+						$meta_has_received_wire = get_post_meta( $purchase_post->ID, 'has_received_wire', TRUE );
+						if ( (strpos( $payment_key, 'wire_' ) !== FALSE && $meta_has_received_wire !== '1') || $payment_key == 'check' ) {
 							$investment_item[ 'status_str' ] = __( "En attente de paiement", 'yproject' );
 						} elseif ( $WDGInvestment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
 							$investment_item[ 'status_str' ] = __( "A valider", 'yproject' );
@@ -559,7 +560,8 @@ class WDGAjaxActionsUserAccount {
 							$buffer_investment_item[ 'status_str' ] = __( 'account.investments.status.SUSPENDED', 'yproject' );
 						}
 					} else {
-						if ($result_investment_item->mean_payment == 'wire' || $result_investment_item->mean_payment == 'check') {
+						$meta_has_received_wire = get_post_meta( $result_investment_item->wpref, 'has_received_wire', TRUE );
+						if ( ( $result_investment_item->mean_payment == 'wire' && $meta_has_received_wire !== '1' ) || $result_investment_item->mean_payment == 'check') {
 							$buffer_investment_item[ 'status_str' ] = __('account.investments.status.PENDING_PAYMENT', 'yproject');
 						} else {
 							$WDGInvestment = new WDGInvestment($result_investment_item->wpref);

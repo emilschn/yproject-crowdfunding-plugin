@@ -1420,7 +1420,7 @@ class WDGQueue {
 				$queued_action_param = json_decode( $queued_action_params[ 0 ] );
 
 				if ( $queued_action_param->nb_relance == 1 ){
-					//on envoie un mail automatique 
+					//on envoie un mail automatique
 					NotificationsAPI::adjustment_needed_7_days( $recipients, $wdguser_author, $campaign );
 					// création d'un autre rappel à J+30
 					self::add_adjustment_needed($campaign_id, 'P30D', 2);

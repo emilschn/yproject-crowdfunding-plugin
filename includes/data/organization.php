@@ -1223,7 +1223,11 @@ class WDGOrganization implements WDGUserInterface {
 			}
 			$wallet_type = ( $is_managing_project ) ? LemonwayLib::$wallet_type_beneficiary : LemonwayLib::$wallet_type_payer;
 
-			return LemonwayLib::wallet_company_register($this->get_lemonway_id(), $this->get_email(), html_entity_decode( $WDGUser_creator->wp_user->user_firstname ), html_entity_decode( $WDGUser_creator->wp_user->user_lastname ), html_entity_decode( $this->get_name() ), html_entity_decode( $this->get_description() ), $this->get_website(), $WDGUser_creator->get_country( 'iso3' ), $WDGUser_creator->get_lemonway_birthdate(), $WDGUser_creator->get_lemonway_phone_number(), $this->get_idnumber(), $wallet_type);
+			$result = LemonwayLib::wallet_company_register($this->get_lemonway_id(), $this->get_email(), html_entity_decode( $WDGUser_creator->wp_user->user_firstname ), html_entity_decode( $WDGUser_creator->wp_user->user_lastname ), html_entity_decode( $this->get_name() ), html_entity_decode( $this->get_description() ), $this->get_website(), $WDGUser_creator->get_country( 'iso3' ), $WDGUser_creator->get_lemonway_birthdate(), $WDGUser_creator->get_lemonway_phone_number(), $this->get_idnumber(), $wallet_type);
+
+			$this->send_kyc();
+
+			return $result;
 		}
 
 		return TRUE;

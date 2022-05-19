@@ -306,7 +306,7 @@ class WDG_Form_User_Details extends WDG_Form {
 			$this->addField(
 				'textarea',
 				'contact_if_deceased',
-				__( 'form.user-details.CONTACT_IF_DECEASED', 'yproject' ),
+				__( 'form.user-details.CONTACT_IF_DECEASED', 'yproject' ) . ' *',
 				WDG_Form_User_Details::$field_group_extended,
 				$WDGUser->get_contact_if_deceased(),
 				__( 'form.user-details.CONTACT_IF_DECEASED_DESCRIPTION', 'yproject' )

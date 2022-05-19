@@ -44,15 +44,16 @@ class WDGWPREST_Entity_UserConformity {
 	/**
 	 * Crée une donnée de conformité sur l'API
 	 */
-	public static function create( $user_id, $ajax_data ) {
-		if ( empty( $user_id ) ) {
+	public static function create( $user_api_id, $ajax_data ) {
+		if ( empty( $user_api_id ) ) {
 			return FALSE;
 		}
 
 		// Build conformity data
-		$conformity_data = self::transform_ajax_to_metadata( $user_id, $ajax_data );
+		$conformity_data = self::transform_ajax_to_metadata( $user_api_id, $ajax_data );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity', $conformity_data, TRUE );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user_api_id. '/conformity' );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
@@ -60,15 +61,16 @@ class WDGWPREST_Entity_UserConformity {
 	/**
 	 * Mise à jour de la donnée de conformité de l'utilisateur à partir d'un id
 	 */
-	public static function update( $conformity_id, $user_id, $ajax_data ) {
+	public static function update( $conformity_id, $user_api_id, $ajax_data ) {
 		if ( empty( $conformity_id ) ) {
 			return FALSE;
 		}
 
 		// Build conformity data
-		$conformity_data = self::transform_ajax_to_metadata( $user_id, $ajax_data );
+		$conformity_data = self::transform_ajax_to_metadata( $user_api_id, $ajax_data );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity/' . $conformity_id, $conformity_data, TRUE );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user_api_id. '/conformity' );
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
