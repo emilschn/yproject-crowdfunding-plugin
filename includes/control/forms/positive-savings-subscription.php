@@ -4,7 +4,6 @@ class WDG_Form_Subscribe_Positive_Savings extends WDG_Form {
 	public static $name = 'positive-savings-subscription';
 	
 	public static $field_group_hidden = 'invest-hidden';
-	public static $field_group_subscribe = 'invest-subscribe';
 	
 	private $campaign_id;
 	private $user_id;
@@ -32,18 +31,6 @@ class WDG_Form_Subscribe_Positive_Savings extends WDG_Form {
 		$campaign = new ATCF_Campaign( $this->campaign_id );
 		
 		//**********************************************************************
-		// Champs garantie : $field_group_poll_continuous
-		$this->addField(
-			'checkboxes',
-			'',
-			'',
-			self::$field_group_subscribe,
-			FALSE,
-			FALSE,
-			[
-				'confirm-subscription'	=> __( 'form.positive-savings-subscription.I_WISH_TO_SUBSCRIBE', 'yproject' )
-			]
-		);
 	}
 	
 	public function postForm() {
@@ -71,7 +58,7 @@ class WDG_Form_Subscribe_Positive_Savings extends WDG_Form {
 		}
 		
 		if ( !$this->hasErrors() ) {
-			if ( $this->getInputChecked( 'confirm-subscription' ) ) {
+			if ( $this->getInputText( 'subscribe' ) == 'yes' ) {
 				$project_id = $campaign->get_api_id();
 				$user_id = $WDGUser->get_api_id();
 				$id_activator = $user_id;
