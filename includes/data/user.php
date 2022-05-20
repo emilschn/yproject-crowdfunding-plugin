@@ -412,12 +412,7 @@ class WDGUser implements WDGUserInterface {
 	}
 
 	public function get_email_validation_code() {
-		ypcf_debug_log('WDGUser::get_email_validation_code > email_is_validated : ' . print_r($this->email_is_validated, true), false);
-		//if ( wp_is_uuid( $this->email_is_validated, 4 ) ) {
 		return $this->email_is_validated;
-		//}
-
-		return FALSE;
 	}
 
 	public function set_email_is_validated($value = '1') {
@@ -425,10 +420,6 @@ class WDGUser implements WDGUserInterface {
 			$this->email_is_validated = $value;
 			$this->update_api();
 		}
-	}
-
-	public function get_email_is_validated() {
-		return $this->email_is_validated;
 	}
 
 	public function get_gender() {

@@ -2269,8 +2269,10 @@ class NotificationsAPI {
 	public static function adjustment_needed_7_days($recipients, $WDGUser, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'adjustment-needed-7-days' );
 
-		NotificationsAPIShortcodes::set_recipient($WDGUser);		
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		NotificationsAPIShortcodes::set_campaign( $campaign );
+		$declaration = $campaign->get_next_roi_declaration();
+		NotificationsAPIShortcodes::set_declaration($declaration);
 		
 		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
 		$parameters = array(
@@ -2288,6 +2290,8 @@ class NotificationsAPI {
 
 		NotificationsAPIShortcodes::set_recipient($WDGUser);		
 		NotificationsAPIShortcodes::set_campaign( $campaign );
+		$declaration = $campaign->get_next_roi_declaration();
+		NotificationsAPIShortcodes::set_declaration($declaration);
 		
 		$param_recipients = is_array( $recipients ) ? implode( ',', $recipients ) : $recipients;
 		$parameters = array(
