@@ -561,6 +561,7 @@ class LemonwayNotification {
 
 		$name = '';
 
+		$WDGOrganization = FALSE;
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrganization = new WDGOrganization( $WDGUser_wallet->get_wpref() );
@@ -572,6 +573,35 @@ class LemonwayNotification {
 		if ( !empty( $name ) ) {
 			NotificationsSlack::send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount );
 			NotificationsAsana::send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount );
+
+			// On tente d'annuler l'action en attente en cours
+			if ( empty( $WDGOrganization ) ) {
+				return;
+			}
+			$list_campaign_orga = $WDGOrganization->get_campaigns();
+			if ( empty( $list_campaign_orga ) ) {
+				return;
+			}
+			foreach ( $list_campaign_orga as $project ) {
+				if ( empty( $project->wpref ) ) {
+					continue;
+				}
+
+				$campaign = new ATCF_Campaign( $project->wpref );
+				$declarations_list = $campaign->get_roi_declarations();
+				if ( empty( $declarations_list ) ) {
+					continue;
+				}
+				foreach ( $declarations_list as $declaration_item ) {
+					if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_waiting_transfer && $declaration_item[ 'status' ] != WDGROIDeclaration::$status_transfer ) {
+						continue;
+					}
+
+					$id_declaration = $declaration_item[ 'id' ];
+					WDGQueue::set_list_status( $id_declaration, 'init_declaration_rois', WDGQueue::$status_complete );
+					WDGQueue::set_list_status( $id_declaration, 'royalties_auto_transfer_start', WDGQueue::$status_complete );
+				}
+			}
 		}
 	}
 }

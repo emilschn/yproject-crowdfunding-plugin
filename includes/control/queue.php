@@ -43,7 +43,7 @@ class WDGQueue {
 	}
 
 	/**
-	 * Fonction qui récupère les prochaines actions à exécuter et les lancent
+	 * Récupère les prochaines actions à exécuter et les lance
 	 * @param int $number
 	 */
 	public static function execute_next($number = 5) {
@@ -59,6 +59,22 @@ class WDGQueue {
 		}
 
 		return $buffer;
+	}
+
+	/**
+	 * Définit un statut spécifique pour une liste d'actions récupérées
+	 */
+	public static function set_list_status( $entity_id, $action, $status ) {
+		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( FALSE, FALSE, $entity_id, $action );
+		if ( empty( $queued_action_list ) ) {
+			return;
+		}
+		foreach ( $queued_action_list as $queued_action ) {
+			if ( $queued_action->status == $status || empty( $queued_action->id ) ) {
+				continue;
+			}
+			WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, $status );
+		}
 	}
 
 	/******************************************************************************/
