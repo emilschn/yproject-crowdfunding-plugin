@@ -704,15 +704,18 @@ class WDGAjaxActionsUserAccount {
 						$buffer_roi_item[ 'amount' ] = '0 &euro;';
 						switch ( $roi_declaration->status ) {
 							case WDGROIDeclaration::$status_declaration:
-								if ( $decla_datetime < $today_datetime ) {
-									$buffer_roi_item[ 'status' ] = 'late';
-									$buffer_roi_item[ 'status_str' ] = __( 'En retard', 'yproject' );
-								} else {
+								if ( 
+									( $decla_datetime->format('Y') == $today_datetime->format('Y') && $decla_datetime->format('m') >= $today_datetime->format('m') )
+									|| ( $decla_datetime->format('Y') > $today_datetime->format('Y') )
+									) {
 									$buffer_roi_item[ 'status' ] = 'upcoming';
 									$buffer_roi_item[ 'status_str' ] = __( 'A venir', 'yproject' );
 									if ( $buffer_investment_item[ 'payment_date' ]  == '' && $buffer_investment_item[ 'status' ] != 'canceled') {
 										$buffer_investment_item[ 'payment_date' ] = $buffer_roi_item[ 'date' ];
 									}
+								} else {
+									$buffer_roi_item[ 'status' ] = 'late';
+									$buffer_roi_item[ 'status_str' ] = __( 'En retard', 'yproject' );
 								}
 								break;
 							case WDGROIDeclaration::$status_finished:
