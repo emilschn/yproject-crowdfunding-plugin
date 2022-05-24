@@ -8,7 +8,8 @@ class WDGCronActions {
 		$current_date->setTime( 0, 0, 1 );
 
 		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 19 jours (pour ceux dont la déclaration est au 20)
-		if ( $current_date->format( 'd' ) == 1 || $current_date->format( 'd' ) == 8 || $current_date->format( 'd' ) == 10 ) {
+		$current_date_day = $current_date->format( 'd' );
+		if ( $current_date_day == 1 || $current_date_day == 4 || $current_date_day == 8 || $current_date_day == 10 ) {
 			$date_in_10_days = new DateTime();
 			$date_in_10_days->add( new DateInterval('P19D') );
 			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
@@ -20,9 +21,9 @@ class WDGCronActions {
 						$date_due = new DateTime( $declaration_data->date_due );
 						$date_due->setTime( 10, 30, 0 );
 						if ( $date_due > $current_date ) {
-							$current_date_day = $current_date->format( 'd' );
 							switch ( $current_date_day ) {
 								case 1:
+								case 4:
 									$nb_days_diff = 9;
 									break;
 								case 8:
