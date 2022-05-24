@@ -67,7 +67,7 @@ class WDG_Form {
 		
 	}
 	
-	protected function getParamByFileField( $wallet_id, $document_type, $date_upload, $type, $isOrga = FALSE, $api_type = FALSE, $kycfile_id = FALSE, $is_api_file = FALSE, $is_authentified = FALSE ) {
+	protected function getParamByFileField( $wallet_id, $document_type, $date_upload, $type, $isOrga = FALSE, $api_type = FALSE, $kycfile_id = FALSE, $is_api_file = FALSE, $is_authentified = FALSE, $is_file_sent = TRUE ) {
 		$secondary = FALSE;
 		if ( $type == WDGKYCFile::$type_id_back || $type == WDGKYCFile::$type_id_2_back){
 			$secondary = TRUE;
@@ -88,8 +88,11 @@ class WDG_Form {
 		$lw_document = new LemonwayDocument( $wallet_id, $document_type );
 		if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted && !empty( $date_upload ) ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_validated;
-		} else if ( $lw_document->get_status() === LemonwayDocument::$document_status_waiting_verification || $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
+		} else if ( !$is_file_sent || $lw_document->get_status() === LemonwayDocument::$document_status_waiting_verification || $lw_document->get_status() == LemonwayDocument::$document_status_waiting ) {
 			$buffer[ 'message_instead_of_field' ] = $message_document_waiting;
+			if ( !$is_file_sent ) {
+				$buffer[ 'message_instead_of_field' ] .= '.';
+			}
 		} else if ( $lw_document->get_status() > 2 && !empty( $date_upload ) ) {
 			$buffer[ 'display_refused_alert' ] = TRUE;
 			$lw_error_str = $lw_document->get_error_str();

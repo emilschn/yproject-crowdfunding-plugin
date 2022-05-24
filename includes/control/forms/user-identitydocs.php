@@ -34,6 +34,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		$file_path = FALSE;
 		$file_date_uploaded = FALSE;
 		$is_api_file = FALSE;
+		$is_file_sent = TRUE;
+		
 		if ( $this->is_orga ){
 			$is_authentified = $WDGUserOrOrganization->is_registered_lemonway_wallet();
 		}else{
@@ -137,6 +139,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				// enregistrer l'id du fichier en hidden dans le field pour le récupérer facilement en postForm
 				$kycfile_id = $current_file->id;
 				$is_api_file = $current_file->is_api_file;
+				$is_file_sent = !empty( $current_file->gateway_user_id ) || !empty( $current_file->gateway_organization_id );
 			}
 		}
 
@@ -144,7 +147,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$lw_type = LemonwayDocument::get_lw_document_id_from_document_type($api_type, $index_api);
 		}
 
-		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified );
+		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified, $is_file_sent );
 		$this->addField( 'file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params );
 	}
 
