@@ -352,6 +352,12 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
+		'declaration-done-pending-wire' => array(
+			'fr-sib-id'		=> 'declaration-done-pending-wire',
+			'description'	=> "Déclaration faite en attente de paiement par virement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
 		'declaration-done-with-turnover' => array(
 			'fr-sib-id'		=> '127',
 			'description'	=> "Déclaration faite avec CA",
@@ -2217,6 +2223,32 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS DECLARATIONS APROUVEES
 	//*******************************************************
+	public static function declaration_done_pending_wire($WDGOrganization, $WDGUser, $campaign, $viban_iban, $viban_bic, $viban_holder, $viban_code) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-wire' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+		$investment_pending_data = array(
+			'viban_iban'	=> $viban_iban,
+			'viban_bic'		=> $viban_bic,
+			'viban_holder'	=> $viban_holder,
+			'viban_code'	=> $viban_code
+		);
+		NotificationsAPIShortcodes::set_investment_pending_data($investment_pending_data);
+
+		$options = array(
+			'personal' => 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGOrganization->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
 	public static function declaration_done_with_turnover($WDGOrganization, $WDGUser, $campaign, $declaration, $tax_infos, $payment_certificate_url) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-with-turnover' );
 
