@@ -35,6 +35,8 @@ class NotificationsAPIShortcodes {
 		'project_end_date_hour',
 		'project_end_date_post_cloture',
 
+		'organization_iban',
+
 		'project_news_title',
 		'project_news_content',
 
@@ -201,6 +203,18 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function set_campaign($campaign) {
 		self::$campaign = $campaign;
+	}
+
+	/**
+	 * @var WDGOrganization
+	 */
+	private static $organization;
+	/**
+	 * Définit l'organisation dont on veut les données
+	 * @param WDGOrganization
+	 */
+	public static function set_organization($organization) {
+		self::$organization = $organization;
 	}
 
 	/**
@@ -1079,6 +1093,14 @@ class NotificationsAPIShortcodes {
 
 	/**
 	 * Déclaration de CA
+	 * Montant à payer
+	 */
+	public static function declaration_amount_to_pay() {
+		return self::$declaration->get_amount_with_commission();
+	}
+
+	/**
+	 * Déclaration de CA
 	 * Informations fiscales
 	 */
 	public static function declaration_tax_info() {
@@ -1159,6 +1181,13 @@ class NotificationsAPIShortcodes {
 		$mandate_wire_date = $date_in_5_days->format( 'd/m/Y' );
 
 		return $mandate_wire_date;
+	}
+
+	/**
+	 * IBAN d'une organisation
+	 */
+	public static function organization_iban() {
+		return self::$organization->get_mandate_infos_str();
 	}
 
 	/**
