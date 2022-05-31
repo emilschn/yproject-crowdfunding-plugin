@@ -74,6 +74,7 @@ class NotificationsAPIShortcodes {
 		'declaration_due_date',
 		'declaration_due_date_previous_day',
 		'declaration_revenues_amount',
+		'declaration_amount_to_pay',
 		'declaration_tax_info',
 		'declaration_quarter_count',
 		'declaration_estimation_percent',
