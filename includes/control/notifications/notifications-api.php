@@ -256,6 +256,24 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
+		'preinvestment-auto-validated' => array(
+			'fr-sib-id'		=> 'preinvestment-auto-validated',
+			'description'	=> "Pré-investissement validé automatiquement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'preinvestment-to-validate' => array(
+			'fr-sib-id'		=> 'preinvestment-to-validate',
+			'description'	=> "Pré-investissement à valider",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'preinvestment-canceled' => array(
+			'fr-sib-id'		=> 'preinvestment-canceled',
+			'description'	=> "Pré-investissement annulé",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
 		'investment-check-pending' => array(
 			'fr-sib-id'		=> '172',
 			'description'	=> "Investissement par chèque en attente",
@@ -1792,6 +1810,79 @@ class NotificationsAPI {
 
 		$options = array(
 			'personal'					=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
+	//**************************************************************************
+	// Pré-investissement
+	//**************************************************************************
+
+	//*******************************************************
+	// NOTIFICATIONS PRE-INVESTISSEMENT VALIDE AUTOMATIQUEMENT
+	//*******************************************************
+	public static function preinvestment_auto_validated($WDGUserInterface, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'preinvestment-auto-validated' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
+	//*******************************************************
+	// NOTIFICATIONS PRE-INVESTISSEMENT A VALIDER
+	//*******************************************************
+	public static function preinvestment_to_validate($WDGUserInterface, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'preinvestment-to-validate' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
+	//*******************************************************
+	// NOTIFICATIONS PRE-INVESTISSEMENT ANNULé
+	//*******************************************************
+	public static function preinvestment_canceled($WDGUserInterface, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'preinvestment-canceled' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+
+		$options = array(
+			'personal'				=> 1
 		);
 		$parameters = array(
 			'tool'			=> 'sendinblue',
