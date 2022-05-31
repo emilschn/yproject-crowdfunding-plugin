@@ -561,7 +561,7 @@ class WDGAjaxActionsUserAccount {
 						}
 					} else {
 						$meta_has_received_wire = get_post_meta( $result_investment_item->wpref, 'has_received_wire', TRUE );
-						if ( ( $result_investment_item->mean_payment == 'wire' && $meta_has_received_wire !== '1' ) || $result_investment_item->mean_payment == 'check') {
+						if ( ( $result_investment_item->mean_payment == 'wire' && $meta_has_received_wire !== '1' ) || ( $result_investment_item->mean_payment == 'check' && $result_campaign_item->project_status != ATCF_Campaign::$campaign_status_vote ) ) {
 							$buffer_investment_item[ 'status_str' ] = __('account.investments.status.PENDING_PAYMENT', 'yproject');
 						} else {
 							$WDGInvestment = new WDGInvestment($result_investment_item->wpref);
