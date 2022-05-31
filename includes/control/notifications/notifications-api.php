@@ -2257,6 +2257,7 @@ class NotificationsAPI {
 	public static function declaration_done_pending_wire($WDGOrganization, $WDGUser, $campaign, $declaration, $viban_iban, $viban_bic, $viban_holder, $viban_code) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-wire' );
 
+		NotificationsAPIShortcodes::set_organization($WDGOrganization);
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		NotificationsAPIShortcodes::set_campaign($campaign);
 		NotificationsAPIShortcodes::set_declaration($declaration);
@@ -2284,9 +2285,9 @@ class NotificationsAPI {
 	public static function declaration_done_pending_mandate($WDGOrganization, $WDGUser, $campaign) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-mandate' );
 
+		NotificationsAPIShortcodes::set_organization($WDGOrganization);
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		NotificationsAPIShortcodes::set_campaign($campaign);
-		NotificationsAPIShortcodes::set_organization($WDGOrganization);
 
 		$options = array(
 			'personal' => 1

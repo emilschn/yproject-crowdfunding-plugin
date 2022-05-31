@@ -36,6 +36,7 @@ class NotificationsAPIShortcodes {
 		'project_end_date_post_cloture',
 
 		'organization_iban',
+		'organization_lemonway_id',
 
 		'project_news_title',
 		'project_news_content',
@@ -1189,6 +1190,13 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function organization_iban() {
 		return self::$organization->get_mandate_infos_str();
+	}
+
+	/**
+	 * ID Lemon Way d'une organisation
+	 */
+	public static function organization_lemonway_id() {
+		return self::$organization->get_lemonway_id();
 	}
 
 	/**
