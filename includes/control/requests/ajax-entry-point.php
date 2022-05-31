@@ -7,7 +7,9 @@ $list_optimized_actions = array(
 	'account_authentication_save_current_user_info',
 	'account_authentication_save_organization_info',
 	'account_authentication_search_address',
-	'account_authentication_upload_file'
+	'account_authentication_upload_file',
+	'user_investment_capacity_get',
+	'user_investment_capacity_save'
 );
 $action_posted = filter_input( INPUT_POST, 'action' );
 
@@ -46,7 +48,7 @@ foreach ( $headers as $name => $field_value ) {
 require_once dirname(__FILE__) . '/ajax/common/ajax-common-helper.php';
 
 // Chargement du fichier correspondant à l'action
-$domains_accepted = array( 'account_signin', 'account_authentication' );
+$domains_accepted = array( 'account_signin', 'account_authentication', 'user_investment_capacity' );
 $domain_folder = '';
 foreach ( $domains_accepted as $domain_str ) {
 	if ( strpos( $action_posted, $domain_str ) === 0 ) {
