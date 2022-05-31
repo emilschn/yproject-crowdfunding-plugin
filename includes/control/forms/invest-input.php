@@ -182,6 +182,9 @@ class WDG_Form_Invest_Input extends WDG_Form {
 			$amount = $invest_amount * $part_value;
 			$current_investment = WDGInvestment::current();
 			$current_investment->update_session( $amount );
+			$WDGCurrent_User = WDGUser::current();
+			$WDGCurrent_User->init_risk_validation_time();
+			$WDGCurrent_User->update_api();
 		}
 		
 		return !$this->hasErrors();

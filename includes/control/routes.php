@@ -112,4 +112,15 @@ class WDGRoutes {
 			exit();
 		}
 	}
+
+	/**
+	 * Si l'investisseur n'a pas rempli son profil investisseur
+	 */
+	public static function redirect_invest_if_user_capacity_not_valid() {
+		$WDGUser = WDGUser::current();
+		if ( !$WDGUser->has_valid_conformity_data() ) {
+			wp_redirect( WDG_Redirect_Engine::override_get_page_url( 'mon-compte/capacite' ) );
+			exit();
+		}
+	}
 }

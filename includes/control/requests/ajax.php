@@ -13,6 +13,7 @@ class WDGAjaxActions {
 	private static $class_name_prospect_setup = 'WDGAjaxActionsProspectSetup';
 	private static $class_name_account_signin = 'WDGAjaxActionsAccountSignin';
 	private static $class_name_account_authentication = 'WDGAjaxActionsAccountAuthentication';
+	private static $class_name_user_investment_capacity = 'WDGAjaxActionsUserInvestmentCapacity';
 
 	private static $class_to_filename = array(
 		'WDG_Form_Vote'			=> 'vote',
@@ -95,8 +96,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_prospect_setup( 'prospect_setup_send_mail_payment_method_received_wire' );
 
 		self::init_actions_account_signin();
-
 		self::init_actions_account_authentication();
+		self::init_actions_user_investment_capacity();
 	}
 
 	public static $account_signin_actions = array(
@@ -121,6 +122,16 @@ class WDGAjaxActions {
 		// Account signin - Interface de connexion / inscription
 		foreach ( self::$account_authentication_actions as $single_action ) {
 			WDGAjaxActions::add_action_account_authentication( $single_action );
+		}
+	}
+
+	public static $user_investment_capacity_actions = array(
+		'user_investment_capacity_save'
+	);
+	public static function init_actions_user_investment_capacity() {
+		// Account signin - Interface de connexion / inscription
+		foreach ( self::$user_investment_capacity_actions as $single_action ) {
+			WDGAjaxActions::add_action_user_investment_capacity( $single_action );
 		}
 	}
 
@@ -342,7 +353,7 @@ class WDGAjaxActions {
 	
 	/**********************************************/
 	/**
-	 * Référence les actions liées à l'interface d'authentification'
+	 * Référence les actions liées à l'interface d'authentification
 	 */
 	private static function add_action_account_authentication($action_name) {
 		add_action( 'wp_ajax_' . $action_name, self::$class_name . '::account_authentication_actions' );
@@ -357,5 +368,24 @@ class WDGAjaxActions {
 		$crowdfunding->include_control( 'requests/ajax/account-authentication' );
 		$action = filter_input( INPUT_POST, 'action' );
 		call_user_func( self::$class_name_account_authentication . '::' . $action );
+	}
+	
+	/**********************************************/
+	/**
+	 * Référence les actions liées à l'interface de profil investisseur
+	 */
+	private static function add_action_user_investment_capacity($action_name) {
+		add_action( 'wp_ajax_' . $action_name, self::$class_name . '::user_investment_capacity_actions' );
+		add_action( 'wp_ajax_nopriv_' . $action_name, self::$class_name . '::user_investment_capacity_actions' );
+	}
+
+	/**
+	 * Exécute les actions liées à l'interface de profil investisseur
+	 */
+	public static function user_investment_capacity_actions() {
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_control( 'requests/ajax/user-investment-capacity' );
+		$action = filter_input( INPUT_POST, 'action' );
+		call_user_func( self::$class_name_user_investment_capacity . '::' . $action );
 	}
 }

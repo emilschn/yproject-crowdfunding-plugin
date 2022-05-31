@@ -268,7 +268,7 @@ function ypcf_get_updated_transfer_status($transfer_post) {
 
 /**
  * retourne la valeur d'une part
- * @return type
+ * @return int
  */
 function ypcf_get_part_value() {
 	$buffer = 0;
