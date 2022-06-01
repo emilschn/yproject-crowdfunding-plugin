@@ -382,6 +382,12 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
+		'declaration-mandate-received' => array(
+			'fr-sib-id'		=> 'declaration-mandate-received',
+			'description'	=> "Prélèvement bancaire reçu",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
 		'declaration-done-with-turnover' => array(
 			'fr-sib-id'		=> '127',
 			'description'	=> "Déclaration faite avec CA",
@@ -2057,7 +2063,7 @@ class NotificationsAPI {
 	}
 
 	//*******************************************************
-	// NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+	// NOTIFICATION PAIEMENT PAR VIREMENT RECU
 	//*******************************************************
 	public static function wire_transfer_received($WDGUserInterface, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'received-wire-without-pending-investment' );
@@ -2391,6 +2397,29 @@ class NotificationsAPI {
 		);
 
 		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	//*******************************************************
+	// NOTIFICATION PRELEVEMENT BANCAIRE RECU
+	//*******************************************************
+	public static function declaration_mandate_received($WDGUserInterface, $declaration, $date_str) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-mandate-received' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_declaration($declaration);
+		NotificationsAPIShortcodes::set_declaration_transfer_date_string($date_str);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
 	}
 
 	public static function declaration_done_with_turnover($WDGOrganization, $WDGUser, $campaign, $declaration, $tax_infos, $payment_certificate_url) {

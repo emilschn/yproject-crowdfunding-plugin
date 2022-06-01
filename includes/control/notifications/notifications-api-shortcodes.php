@@ -84,6 +84,7 @@ class NotificationsAPIShortcodes {
 		'declaration_estimation_amount_royalties',
 		'declaration_estimation_amount_fees',
 		'declaration_estimation_amount_total',
+		'declaration_transfer_date_string',
 		'declaration_mandate_date',
 
 		'royalties_description',
@@ -416,6 +417,18 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function set_declaration_estimation_data($declaration_estimation_data) {
 		self::$declaration_estimation_data = $declaration_estimation_data;
+	}
+
+	/**
+	 * @var String
+	 */
+	private static $declaration_transfer_date_string;
+	/**
+	 * Définit la date de versement prévue après réception d'un prélèvement
+	 * @param Array
+	 */
+	public static function set_declaration_transfer_date_string($transfer_date_str) {
+		self::$declaration_transfer_date_string = $transfer_date_str;
 	}
 
 	/**
@@ -1171,6 +1184,14 @@ class NotificationsAPIShortcodes {
 	 */
 	public static function declaration_estimation_amount_total() {
 		return self::$declaration_estimation_data[ 'amount_total' ];
+	}
+
+	/**
+	 * Déclaration de CA
+	 * Date de versement prévue
+	 */
+	public static function declaration_transfer_date_string() {
+		return self::$declaration_transfer_date_string;
 	}
 
 	/**
