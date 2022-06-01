@@ -680,10 +680,15 @@ class WDGQueue {
 						&& ( strpos( $payment_key, 'wire_' ) === FALSE || $wire_with_received_payments == '1' )
 						) {
 					$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
+					$user_id = $user_info['id'];
+					$WDGUserOrOrganization = new WDGUser( $user_id );
+					if ( WDGOrganization::is_user_organization( $user_id ) ) {
+						$WDGUserOrOrganization = new WDGOrganization( $user_id );
+					}
 					if ( $contract_has_been_modified ) {
-						NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
+						NotificationsAPI::preinvestment_to_validate( $WDGUserOrOrganization, $campaign );
 					} else {
-						NotificationsEmails::preinvestment_auto_validated( $user_info['email'], $campaign );
+						NotificationsAPI::preinvestment_auto_validated( $WDGUserOrOrganization, $campaign );
 						$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
 					}
 				}
