@@ -358,16 +358,6 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_2, WDGKYCFile::$owner_user);
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_2_back, WDGKYCFile::$owner_user);
 
-					// Si l'utilisateur a des organisations,
-					// on envoie les kycs qui viennent peut-être d'être mis à jour avec les pièces d'identité
-					$orga_list = $WDGUser->get_organizations_list();
-					if ( count( $orga_list ) > 0 ) {
-						foreach ( $orga_list as $orga_item ) {
-							$wdg_orga_item = new WDGOrganization( $orga_item->wpref );
-							$wdg_orga_item->send_kyc();
-						}
-					}
-
 					if ( $this->send_notification_validation && $WDGUser->is_lemonway_registered() ) {
 						NotificationsAPI::kyc_waiting( $WDGUser );
 					}

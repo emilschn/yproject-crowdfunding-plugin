@@ -540,7 +540,6 @@ class WDGKYCFile {
 					$doc_type = self::$type_person2_doc1;
 				}
 			} else {
-				$organization_id = 0;
 				$WDGUser = new WDGUser( $id_owner );
 				$user_id = $WDGUser->get_api_id() ;
 				if ( $doc_type == self::$type_id_back){
@@ -553,6 +552,16 @@ class WDGKYCFile {
 				if ( $doc_type == self::$type_id_2_back){
 					$doc_type = self::$type_passport;
 					$doc_index = 2;
+				}
+
+				// Si l'utilisateur a une organisation, on lie le KYC à l'organisation
+				$organization_id = 0;
+				$orga_list = $WDGUser->get_organizations_list();
+				if ( count( $orga_list ) > 0 ) {
+					foreach ( $orga_list as $orga_item ) {
+						$WDGOrganization = new WDGOrganization( $orga_item->wpref );
+						$organization_id = $WDGOrganization->get_api_id();
+					}
 				}
 			}
 			
@@ -589,6 +598,7 @@ class WDGKYCFile {
 			// Envoi du fichier à l'API
 			// TODO : gérer les retours d'erreur
 			$create_feedback = WDGWPREST_Entity_FileKYC::create($user_id, $organization_id, $doc_type, $doc_index, $ext, base64_encode($byte_array));
+			// TODO : gérer si il y a plusieurs organisations liées à une personne physique dont on modifie les documents
 
 			return $create_feedback;
 		}
