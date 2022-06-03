@@ -905,7 +905,7 @@ class WDGQueue {
 				case 'refused':
 					// On refait la vérification que le statut du wallet n'a pas changé (avec un éventuel décalage temporel)
 					$buffer_returns = LemonwayDocument::build_error_str_from_wallet_details( $wallet_details );
-					if ( !empty( $buffer_returns) ) {
+					if ( !empty( $buffer_returns) && !$WDGUser_wallet->is_lemonway_registered() ) {
 						NotificationsAPI::phone_kyc_refused( $WDGUser_wallet );
 					}
 					break;
