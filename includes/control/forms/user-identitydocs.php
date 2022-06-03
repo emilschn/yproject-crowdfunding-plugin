@@ -251,22 +251,28 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		
 		// s'il y a un nouveau fichier à envoyer, on l'envoie
 		if ( isset( $_FILES[ $type .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ $type .$file_suffix ][ 'tmp_name' ] ) ) {
-			$this->nb_file_sent++;
-			$api_type = $type;
-			if ( $select_value !== null && $select_value != '' ) {
-				$api_type = $select_value;
-			} else {
-				$select_value = FALSE;
-			}
-
-			$file_id = WDGKYCFile::add_file( $type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $type .$file_suffix ] , '', $select_value );
-
-			if ( is_int( $file_id ) ) {
-				if ( $WDGUserOrOrganization->can_register_lemonway() ) {
-					$this->send_notification_validation = TRUE;
+			$list_accepted_types = array( 'image/jpeg', 'image/gif', 'image/png', 'application/pdf' );
+			if ( in_array( $_FILES[ $type .$file_suffix ][ 'type' ], $list_accepted_types ) && ( $_FILES[ $type .$file_suffix ][ 'size' ] / 1024) / 1024 > 8 ) {
+				$this->nb_file_sent++;
+				$api_type = $type;
+				if ( $select_value !== null && $select_value != '' ) {
+					$api_type = $select_value;
+				} else {
+					$select_value = FALSE;
 				}
+	
+				$file_id = WDGKYCFile::add_file( $type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $type .$file_suffix ] , '', $select_value );
+	
+				if ( is_int( $file_id ) ) {
+					if ( $WDGUserOrOrganization->can_register_lemonway() ) {
+						$this->send_notification_validation = TRUE;
+					}
+				} else {
+					$this->addError( $file_id, $api_type );
+				}
+
 			} else {
-				$this->addError( $file_id, $api_type );
+				$this->addError( 'EXT', $type );
 			}
 		
 		// s'il n'y a pas un nouveau fichier à envoyer, mais que le type du select n'est pas "l'ancien type de base" ni indéfini, ni vide évidemment
