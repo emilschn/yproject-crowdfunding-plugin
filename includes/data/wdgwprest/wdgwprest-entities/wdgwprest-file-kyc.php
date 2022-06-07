@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  * Gestion des fichiers KYC côté WDGWPREST
  */
 class WDGWPREST_Entity_FileKYC {
+	public static $error_type = '';
 	
 	/**
 	 * Crée un fichier KYC sur l'API
@@ -20,14 +21,17 @@ class WDGWPREST_Entity_FileKYC {
 	 */
 	public static function create( $user_id, $organization_id, $doc_type, $doc_index, $file_extension, $file_base64_content, $metadata= '' ) {
 		if ( !in_array( strtolower( $file_extension ), WDGKYCFile::$authorized_format_list ) ) {
-			return 'EXT';
+			self::$error_type = 'EXT';
+			return FALSE;
 		}
 		$file_size = strlen( base64_decode( $file_base64_content ) );
 		if ( $file_size < 10 ) {
-			return 'UPLOAD';
+			self::$error_type = 'UPLOAD';
+			return FALSE;
 		}
-		if ( ( $file_size / 1024) / 1024 > 6 ) {
-			return 'SIZE';
+		if ( ( $file_size / 1024) / 1024 > 8 ) {
+			self::$error_type = 'SIZE';
+			return FALSE;
 		}
 
 		$parameters = array(

@@ -5,7 +5,7 @@
 $result = array(
 	'status' => ''
 );
-/*
+
 // L'utilisateur n'est pas connecté
 AjaxCommonHelper::exit_if_not_logged_in();
 
@@ -13,9 +13,7 @@ AjaxCommonHelper::exit_if_not_logged_in();
 $current_user_id = get_current_user_id();
 
 // Normalement ça ne devrait pas arriver, mais controle de sécurité si l'utilisateur correspond à une organisation
-AjaxCommonHelper::exit_if_current_user_is_organization( $current_user_id );*/
-// TODO : à remettre
-$current_user_id = 1;
+AjaxCommonHelper::exit_if_current_user_is_organization( $current_user_id );
 
 // Si on arrive ici, c'est un compte de personne physique dont on récupère l'ID API
 $id_api_user = AjaxCommonHelper::get_user_api_id_by_wpref( $current_user_id );
