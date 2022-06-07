@@ -252,7 +252,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		// s'il y a un nouveau fichier à envoyer, on l'envoie
 		if ( isset( $_FILES[ $type .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ $type .$file_suffix ][ 'tmp_name' ] ) ) {
 			$list_accepted_types = array( 'image/jpeg', 'image/gif', 'image/png', 'application/pdf' );
-			if ( in_array( $_FILES[ $type .$file_suffix ][ 'type' ], $list_accepted_types ) && ( $_FILES[ $type .$file_suffix ][ 'size' ] / 1024) / 1024 > 8 ) {
+			if ( in_array( $_FILES[ $type .$file_suffix ][ 'type' ], $list_accepted_types ) && ( $_FILES[ $type .$file_suffix ][ 'size' ] / 1024) / 1024 < 8 ) {
 				$this->nb_file_sent++;
 				$api_type = $type;
 				if ( $select_value !== null && $select_value != '' ) {
