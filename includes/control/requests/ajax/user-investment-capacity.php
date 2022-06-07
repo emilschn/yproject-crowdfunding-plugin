@@ -32,18 +32,21 @@ class WDGAjaxActionsUserInvestmentCapacity {
 		// Récupération d'une éventuelle ligne existante
 		$existing_data = WDGWPREST_Entity_UserConformity::get_by_user_api_id( $user_api_id, TRUE );
 		$metadata = filter_input( INPUT_POST, 'metadata' );
+
+		$metadata_decoded = json_decode( $metadata );
+		$total_yearly_revenues = $metadata_decoded->monthlyRevenue * 12 + $metadata_decoded->complementaryRevenue + $metadata_decoded->investmentsValue;
+		$is_sophisticated = ($metadata_decoded->profession->hasFinanceJob || $metadata_decoded->knowledge->transactions || $total_yearly_revenues > 60000);
 		
 		if ( !empty( $existing_data ) && !empty( $existing_data->id ) ) {
 			$result[ 'status' ] = 'updated';
-			WDGWPREST_Entity_UserConformity::update( $existing_data->id, $user_api_id, $metadata );
+			WDGWPREST_Entity_UserConformity::update( $existing_data->id, $user_api_id, $metadata, $is_sophisticated );
 		
 		} else {
 			$result[ 'status' ] = 'created';
-			WDGWPREST_Entity_UserConformity::create( $user_api_id, $metadata );
+			WDGWPREST_Entity_UserConformity::create( $user_api_id, $metadata, $is_sophisticated );
 		}
 		
 		// Mise à jour des inscriptions aux newsletter en fonction des choix
-		$metadata_decoded = json_decode( $metadata );
 		$api_data = WDGWPREST_Entity_User::get( $user_api_id, TRUE );
 		if ($metadata_decoded->objectives->purposeTypes->newsletter) {
 			if ( !empty( $api_data ) ) {
@@ -64,8 +67,6 @@ class WDGAjaxActionsUserInvestmentCapacity {
 		
 		// Envoi de notification de confirmation
 		if ( !empty( $api_data ) ) {
-			$total_yearly_revenues = $metadata_decoded->monthlyRevenue * 12 + $metadata_decoded->complementaryRevenue + $metadata_decoded->investmentsValue;
-			$is_sophisticated = ($metadata_decoded->profession->hasFinanceJob || $metadata_decoded->knowledge->transactions || $total_yearly_revenues > 60000);
 			$user_conformity_type = $is_sophisticated ? __( 'account.SOPHISTICATED_INVESTOR', 'yproject' ) : __( 'account.NONSOPHISTICATED_INVESTOR', 'yproject' );
 			NotificationsAPI::user_conformity_validation( $api_data->email, $api_data->language, $api_data->name, $user_conformity_type, $metadata_decoded->yearlyCapacityAmount );
 		}
