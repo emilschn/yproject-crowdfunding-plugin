@@ -2735,122 +2735,29 @@ class ATCF_Campaign {
 	}
 
 	/**
-	 * Campaign Backers
-	 *
-	 * Use EDD logs to get all sales. This includes both preapproved
-	 * payments (if they have Plugin installed) or standard payments.
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign Backers
+	 * Returns number of investments
 	 */
-	private $backers;
-	public function backers() {
-		if ( empty( $this->backers ) ) {
-			global $edd_logs;
-
-			$this->backers = $edd_logs->get_connected_logs( array(
-				'post_parent'    => $this->ID,
-				'log_type'       => /*atcf_has_preapproval_gateway()*/ FALSE ? 'preapproval' : 'sale',
-				'post_status'    => array( 'publish' ),
-				'posts_per_page' => -1
-			) );
-		}
-
-		return $this->backers;
+	public function backers_count() {
+		$backers_id_list = $this->backers_id_list();
+		return count( $backers_id_list );
 	}
 
 	/**
-	 * Campaign Backers Count
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return int Campaign Backers Count
+	 * Returns list of ids of the backers
 	 */
-	public function backers_count() {
-		$backers = $this->backers();
-		$total = 0;
-
-		if ($backers > 0) {
-			foreach ( $backers as $backer ) {
-				$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-				$payment    = get_post( $payment_id );
-
-				if ( empty( $payment ) || $payment->post_status == 'pending' ) {
-					continue;
-				}
-				$total++;
-			}
-		}
-
-		return $total;
-	}
-
 	public function backers_id_list() {
-		$backers = $this->backers();
+		$payments_data = $this->payments_data();
 		$buffer = array();
 
-		if ($backers > 0) {
-			foreach ( $backers as $backer ) {
-				$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-				$payment    = get_post( $payment_id );
-
-				if ( empty( $payment ) || $payment->post_status == 'pending' ) {
-					continue;
+		if (!empty( $payments_data )) {
+			foreach ( $payments_data as $item_investment ) {
+				if ( !empty( $item_investment ) && $item_investment[ 'status' ] == 'publish' ) {
+					array_push( $buffer, $item_investment[ 'user' ] );
 				}
-				array_push( $buffer, $payment->post_author );
 			}
 		}
 
 		return $buffer;
-	}
-
-	/**
-	 * Campaign Backers Per Price
-	 *
-	 * Get all of the backers, then figure out what they purchased. Increment
-	 * a counter for each price point, so they can be displayed elsewhere.
-	 * Not 100% because keys can change in EDD, but it's the best way I think.
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return array $totals The number of backers for each price point
-	 */
-	public function backers_per_price() {
-		$backers = $this->backers();
-		$prices  = edd_get_variable_prices( $this->ID );
-		$totals  = array();
-
-		if ( !is_array( $backers ) ) {
-			$backers = array();
-		}
-
-		foreach ( $prices as $price ) {
-			$totals[$price[ 'amount' ]] = 0;
-		}
-
-		foreach ( $backers as $log ) {
-			$payment_id = get_post_meta( $log->ID, '_edd_log_payment_id', true );
-
-			$payment    = get_post( $payment_id );
-
-			if ( empty( $payment ) ) {
-				continue;
-			}
-			$cart_items = edd_get_payment_meta_cart_details( $payment_id );
-
-			foreach ( $cart_items as $item ) {
-				if ( isset( $item[ 'item_number' ][ 'options' ][ 'atcf_extra_price' ] ) ) {
-					$price_id = $item[ 'price' ] - $item[ 'item_number' ][ 'options' ][ 'atcf_extra_price' ];
-				} else {
-					$price_id = $item[ 'price' ];
-				}
-
-				$totals[$price_id] = isset( $totals[$price_id] ) ? $totals[$price_id] + 1 : 1;
-			}
-		}
-
-		return $totals;
 	}
 
 	/**
@@ -3174,17 +3081,13 @@ class ATCF_Campaign {
 	public function current_amount($formatted = true) {
 		if ( !isset( $this->current_amount ) ) {
 			$total   = 0;
-			$backers = $this->backers();
+			$payments_data = $this->payments_data();
 
-			if ($backers > 0) {
-				foreach ( $backers as $backer ) {
-					$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-					$payment = get_post( $payment_id );
-
-					if ( empty( $payment ) || $payment->post_status == 'pending' ) {
-						continue;
+			if (!empty( $payments_data )) {
+				foreach ( $payments_data as $item_investment ) {
+					if ( !empty( $item_investment ) && $item_investment[ 'status' ] == 'publish' ) {
+						$total += $item_investment[ 'amount' ];
 					}
-					$total = $total + edd_get_payment_amount( $payment_id );
 				}
 			}
 
@@ -3213,16 +3116,12 @@ class ATCF_Campaign {
 
 	public function current_amount_with_check() {
 		$total   = 0;
-		$backers = $this->backers();
+		$payments_data = $this->payments_data();
 
-		if ($backers > 0) {
-			foreach ( $backers as $backer ) {
-				$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-				$payment    = get_post( $payment_id );
-				$payment_key = edd_get_payment_key( $payment_id );
-
-				if ( !empty( $payment ) && $payment_key == 'check' && $payment->post_status != 'pending' ) {
-					$total += edd_get_payment_amount( $payment_id );
+		if (!empty( $payments_data )) {
+			foreach ( $payments_data as $item_investment ) {
+				if ( !empty( $item_investment ) && $item_investment[ 'mean_payment' ] == 'check' && $item_investment[ 'status' ] == 'publish' ) {
+					$total += $item_investment[ 'amount' ];
 				}
 			}
 		}
@@ -3396,67 +3295,12 @@ class ATCF_Campaign {
 							'date'			=> $investment_item->invest_datetime,
 							'user_api_id'	=> $investment_item->user_id,
 							'status'		=> $investment_item->status,
+							'mean_payment'	=> $investment_item->mean_payment,
 							'payment_status'		=> $investment_item->payment_status,
 							'mangopay_contribution'	=> ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_mangopay ) ? $investment_item->payment_key : FALSE,
 							'lemonway_contribution' => ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_lemonway ) ? $investment_item->payment_key : FALSE,
 							'signsquid_status'		=> $investment_item->signature_status
 						);
-					}
-				}
-			} else {
-				$payments = edd_get_payments( array(
-					'number'	 => -1,
-					'download'   => $this->ID
-				) );
-
-				if ( $payments ) {
-					foreach ( $payments as $payment ) {
-						$user_info = edd_get_payment_meta_user_info( $payment->ID );
-						$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
-
-						$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-
-						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
-						$signature_status = $WDGInvestmentSignature->get_status();
-
-						$lemonway_contribution = FALSE;
-						if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-							$lemonway_id = edd_get_payment_key($payment->ID);
-
-							if ( $lemonway_id == 'check' ) {
-							} else {
-								if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
-								} else {
-									if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
-										$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
-										$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
-									} else {
-										if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
-										} else {
-											$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
-										}
-									}
-								}
-							}
-						}
-
-						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
-
-						if ($payment_status != 'failed' || $show_failed) {
-							$this->payments_data[] = array(
-								'ID'			=> $payment->ID,
-								'email'			=> edd_get_payment_user_email( $payment->ID ),
-								'products'		=> $cart_details,
-								'amount'		=> edd_get_payment_amount( $payment->ID ),
-								'date'			=> $payment->post_date,
-								'user'			=> $user_id,
-								'status'		=> $payment_status,
-								'mangopay_contribution' => FALSE,
-								'lemonway_contribution' => $lemonway_contribution,
-								'payment_key' => $lemonway_id,
-								'signsquid_status'	=> $signature_status
-							);
-						}
 					}
 				}
 			}
