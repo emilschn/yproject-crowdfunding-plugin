@@ -106,8 +106,8 @@ class NotificationsAsana {
 	}
 
 	public static function investment_pending_wire($payment_id) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
 
 		$payment_data = edd_get_payment_meta( $payment_id );
 		$payment_amount = edd_get_payment_amount( $payment_id );
@@ -129,8 +129,8 @@ class NotificationsAsana {
 	}
 
 	public static function new_purchase_pending_check_admin($payment_id, $picture_url) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
 
 		$payment_data = edd_get_payment_meta( $payment_id );
 		$payment_amount = edd_get_payment_amount( $payment_id );

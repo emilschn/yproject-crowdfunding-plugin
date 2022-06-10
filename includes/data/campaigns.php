@@ -958,42 +958,6 @@ function _atcf_metabox_campaign_constitution_terms( $editing, $campaign ) {
 }
 
 
-/**
- * Campaign Updates Box
- *
- * @since Appthemer CrowdFunding 0.9
- *
- * @return void
- */
-function _atcf_metabox_campaign_updates() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_updates_before', $campaign );
-?>
-	<textarea name="campaign_updates" rows="4" class="widefat"><?php echo esc_textarea( $campaign->updates() ); ?></textarea>
-	<p class="description"><?php _e( 'Notes and updates about the campaign.', 'atcf' ); ?></p>
-<?php
-	do_action( 'atcf_metabox_campaign_updates_after', $campaign );
-}
-
-/**
- * Updates Save
- *
- * EDD trys to escape this data, and we don't want that.
- *
- * @since Appthemer CrowdFunding 0.9
- */
-function atcf_sanitize_campaign_updates( $updates ) {
-	$updates = $_POST[ 'campaign_updates' ];
-	$updates = wp_kses_post( $updates );
-
-	return $updates;
-}
-add_filter( 'edd_metabox_save_campaign_updates', 'atcf_sanitize_campaign_updates' );
-
-
 
 
 /**

@@ -74,13 +74,6 @@ function atcf_get_campaign_id_from_category($category) {
 	return $campaign_id;
 }
 
-function atcf_get_campaign_post_by_payment_id($payment_id) {
-	$downloads = edd_get_payment_meta_downloads($payment_id);
-	$download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
-
-	return get_post($download_id);
-}
-
 function atcf_create_campaign($author_ID, $title) {
 	global $edd_options;
 
@@ -2724,17 +2717,6 @@ class ATCF_Campaign {
 	}
 
 	/**
-	 * Campaign Updates
-	 *
-	 * @since Appthemer CrowdFunding 0.9
-	 *
-	 * @return sting Campaign Updates
-	 */
-	public function updates() {
-		return $this->__get( 'campaign_updates' );
-	}
-
-	/**
 	 * Returns number of investments
 	 */
 	public function backers_count() {
@@ -3098,17 +3080,12 @@ class ATCF_Campaign {
 
 		if ( $formatted ) {
 			$current_amount = $this->current_amount;
-			$currency = edd_get_currency();
-			if ($currency == "EUR") {
-				if ( strpos( $current_amount, '.00' ) !== false ) {
-					$current_amount = substr( $current_amount, 0, -3 );
-				}
-				$current_amount = number_format( $current_amount, 0, ".", " " );
-
-				return $current_amount . ' &euro;';
-			} else {
-				return edd_currency_filter( edd_format_amount( $current_amount ) );
+			if ( strpos( $current_amount, '.00' ) !== false ) {
+				$current_amount = substr( $current_amount, 0, -3 );
 			}
+			$current_amount = number_format( $current_amount, 0, ".", " " );
+
+			return $current_amount . ' &euro;';
 		}
 
 		return $this->current_amount;
@@ -3137,16 +3114,11 @@ class ATCF_Campaign {
 		}
 
 		if ( $formatted ) {
-			$currency = edd_get_currency();
-			if ($currency == "EUR") {
-				if (strpos($amount_check, '.00') !== false) {
-					$amount_check = substr($amount_check, 0, -3);
-				}
-
-				return $amount_check . ' &euro;';
-			} else {
-				return edd_currency_filter( edd_format_amount( $amount_check ) );
+			if (strpos($amount_check, '.00') !== false) {
+				$amount_check = substr($amount_check, 0, -3);
 			}
+
+			return $amount_check . ' &euro;';
 		}
 
 		return $amount_check;
@@ -3316,17 +3288,15 @@ class ATCF_Campaign {
 
 	public function pending_preinvestments() {
 		$buffer = array();
-
-		$payments = edd_get_payments( array(
-		    'number'	=> -1,
-		    'download'	=> $this->ID,
-			'status'	=> 'pending'
-		) );
-
-		foreach ( $payments as $payment ) {
-			$payment_investment = new WDGInvestment( $payment->ID );
-			if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
-				array_push( $buffer, $payment_investment );
+		$payments_data = $this->payments_data();
+		if (!empty( $payments_data )) {
+			foreach ( $payments_data as $item_investment ) {
+				if ( !empty( $item_investment ) && $item_investment[ 'status' ] == 'pending' ) {
+					$payment_investment = new WDGInvestment( $item_investment[ 'ID' ] );
+					if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+						array_push( $buffer, $payment_investment );
+					}
+				}
 			}
 		}
 
@@ -3438,7 +3408,7 @@ class ATCF_Campaign {
 				'date'			=> date('Y-m-d H:i:s'),
 				'user_email'	=> $email,
 				'purchase_key'	=> $type,
-				'currency'		=> edd_get_currency(),
+				'currency'		=> 'EUR',
 				'downloads'		=> array($this->ID),
 				'user_info'		=> $user_info,
 				'cart_details'	=> $cart_details,

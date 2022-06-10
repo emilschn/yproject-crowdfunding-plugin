@@ -171,8 +171,8 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_user($payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
 
 		$payment_data = edd_get_payment_meta( $payment_id );
 		$WDGInvestment = new WDGInvestment($payment_id);
@@ -228,10 +228,10 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_team_members($payment_id) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_members > ' . $payment_id);
-		$post_campaign = atcf_get_campaign_post_by_payment_id( $payment_id );
-		$campaign = atcf_get_campaign( $post_campaign );
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
 
-		$author_data = get_userdata( $post_campaign->post_author );
+		$author_data = get_userdata( $campaign->post_author() );
 		$emails = $author_data->user_email;
 		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
@@ -243,9 +243,9 @@ class NotificationsEmails {
 		$user_data = get_user_by( 'email', $email );
 
 		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
-			$body_content = "Une nouvelle personne a pré-investi sur votre projet ".$post_campaign->post_title.":<br />";
+			$body_content = "Une nouvelle personne a pré-investi sur votre projet ".$campaign->get_name().":<br />";
 		} else {
-			$body_content = "Une nouvelle personne a investi sur votre projet ".$post_campaign->post_title.":<br />";
+			$body_content = "Une nouvelle personne a investi sur votre projet ".$campaign->get_name().":<br />";
 		}
 
 		$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." &euro;";
