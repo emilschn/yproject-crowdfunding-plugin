@@ -320,57 +320,6 @@ function atcf_shortcode_profile_request_payout() {
 add_action( 'template_redirect', 'atcf_shortcode_profile_request_payout' );
 
 /**
- * Request Data
- *
- * @since Appthemer CrowdFunding 0.8
- *
- * @return void
- */
-function atcf_shortcode_profile_request_data() {
-	global $edd_options, $post;
-
-	if ( 'GET' !== strtoupper( $_SERVER[ 'REQUEST_METHOD' ] ) )
-		return;
-	
-	if ( empty( $_GET[ 'action' ] ) || ( 'atcf-request-data' !== $_GET[ 'action' ] ) )
-		return;
-
-	if ( ! wp_verify_nonce( $_GET[ '_wpnonce' ], 'atcf-request-data' ) )
-		return;
-
-	$user         = wp_get_current_user();
-	$errors       = new WP_Error();
-
-	$crowdfunding = crowdfunding();
-	$campaign     = absint( $_GET[ 'campaign' ] );
-	$campaign     = atcf_get_campaign( $campaign );
-
-	if ( $user->ID != $campaign->data->post_author )
-		$errors->add( 'non-owner', __( 'You are not the author of this campaign, and cannot request the data.', 'atcf' ) );
-
-	if ( ! empty ( $errors->errors ) )
-		wp_die( $errors );
-
-	if ( 0 != $campaign->ID ) {
-		require_once EDD_PLUGIN_DIR . 'includes/admin/reporting/class-export.php';
-		require( $crowdfunding->includes_dir . 'export-campaigns.php' );
-
-		$campaign_export = new ATCF_Campaign_Export( $campaign->ID );
-
-		$campaign_export->export();
-	}
-
-	$url = isset ( $edd_options[ 'profile_page' ] ) ? get_permalink( $edd_options[ 'profile_page' ] ) : get_permalink();
-
-	$redirect = apply_filters( 'atcf_shortcode_profile_info_success_redirect', add_query_arg( array( 'exported' => $campaign->ID, 'success' => 'true' ), $url ) 
-	);
-
-	wp_safe_redirect( $redirect );
-	exit();
-}
-add_action( 'template_redirect', 'atcf_shortcode_profile_request_data' );
-
-/**
  * Success Message
  *
  * @since CrowdFunding 0.1-alpha
