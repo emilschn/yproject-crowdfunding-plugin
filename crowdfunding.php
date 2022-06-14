@@ -344,7 +344,6 @@ final class ATCF_CrowdFunding {
 
 		return $buffer;
 	}
-	}
 
 	/**
 	 * Load a template.
