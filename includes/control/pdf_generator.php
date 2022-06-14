@@ -630,7 +630,6 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
 	add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
 	add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
-	$edd_settings = get_option( 'edd_settings' );
 
 	$blank_space_small = '________________';
 	$blank_space = '________________________________________________';
