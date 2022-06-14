@@ -144,17 +144,17 @@ final class ATCF_CrowdFunding {
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-sendinblue-template.php';
 		require $this->includes_dir . 'data/wdgwprest/wdgwprest-entities/wdgwprest-subscription.php';
 
+		require $this->includes_dir . 'control/api-calls.php';
 		require $this->includes_dir . 'control/cron.php';
-		require $this->includes_dir . 'control/settings.php';
 		require $this->includes_dir . 'control/emails.php';
+		require $this->includes_dir . 'control/invest-lib.php';
+		require $this->includes_dir . 'control/investment.php';
 		require $this->includes_dir . 'control/logs.php';
+		require $this->includes_dir . 'control/pdf_generator.php';
 		require $this->includes_dir . 'control/permalinks.php';
 		require $this->includes_dir . 'control/queue.php';
 		require $this->includes_dir . 'control/routes.php';
-		require $this->includes_dir . 'control/api-calls.php';
-		require $this->includes_dir . 'control/invest-lib.php';
-		require $this->includes_dir . 'control/investment.php';
-		require $this->includes_dir . 'control/pdf_generator.php';
+		require $this->includes_dir . 'control/settings.php';
 		require $this->includes_dir . 'control/forms/form.php';
 		require $this->includes_dir . 'control/forms/projects.php';
 		require $this->includes_dir . 'control/forms/users.php';
@@ -226,7 +226,6 @@ final class ATCF_CrowdFunding {
 			update_option('wdg_version', $this->version);
 		}
 
-		add_action( 'init', array( $this, 'is_edd_activated' ), 1 );
 		add_filter( 'template_include', array( $this, 'template_loader' ) );
 
 		add_filter( 'locale', array( $this, 'set_locale' ) );
@@ -245,24 +244,6 @@ final class ATCF_CrowdFunding {
 		}
 
 		return $override;
-	}
-
-	/**
-	 * Easy Digital Downloads
-	 *
-	 * @since Appthemer CrowdFunding 0.2-alpha
-	 *
-	 * @return void
-	 */
-	function is_edd_activated() {
-		if ( !class_exists( 'Easy_Digital_Downloads' ) ) {
-			if ( is_plugin_active( $this->basename ) ) {
-				deactivate_plugins( $this->basename );
-				unset($_GET[ 'activate' ] ); // Ghetto
-
-				add_action( 'admin_notices', array( $this, 'edd_notice' ) );
-			}
-		}
 	}
 
 	/**
@@ -363,20 +344,6 @@ final class ATCF_CrowdFunding {
 
 		return $buffer;
 	}
-
-	/**
-	 * Admin notice.
-	 *
-	 * @since Appthemer CrowdFunding 0.2-alpha
-	 *
-	 * @return void
-	 */
-	function edd_notice() {
-		?>
-		<div class="updated">
-			<p><?php printf(__( '<strong>Notice:</strong> Crowdfunding by Astoundify requires <a href="%s">Easy Digital Downloads</a> in order to function properly.', 'atcf' ), wp_nonce_url( network_admin_url( 'update.php?action=install-plugin&plugin=easy-digital-downloads' ), 'install-plugin_easy-digital-downloads' )); ?></p>
-		</div>
-<?php
 	}
 
 	/**
