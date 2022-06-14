@@ -75,8 +75,6 @@ function atcf_get_campaign_id_from_category($category) {
 }
 
 function atcf_create_campaign($author_ID, $title) {
-	global $edd_options;
-
 	WDG_Languages_Helpers::switch_to_french_temp();
 
 	$default_pitch = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_pitch, 'default_pitch' );
@@ -198,7 +196,6 @@ class ATCF_Campaign {
 	}
 
 	public function duplicate() {
-		global $edd_options;
 		// on sauvegarde dans la campagne parente l'id de toutes les campagnes dupliquées
 		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns'));
 
@@ -2302,16 +2299,11 @@ class ATCF_Campaign {
 			return 0;
 		}
 		if ( $formatted ) {
-			$currency = edd_get_currency();
-			if ($currency == "EUR") {
-				if (strpos($goal, '.00') !== false) {
-					$goal = substr($goal, 0, -3);
-				}
-
-				return $goal . '&nbsp;&euro;';
-			} else {
-				return edd_currency_filter( edd_format_amount( $goal ) );
+			if (strpos($goal, '.00') !== false) {
+				$goal = substr($goal, 0, -3);
 			}
+
+			return $goal . '&nbsp;&euro;';
 		}
 
 		return $goal;
