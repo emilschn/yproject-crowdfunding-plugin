@@ -22,6 +22,9 @@ class WDGInvestment {
 	 */
 	public $error_item;
 
+	public static $log_post_type = 'edd_log';
+	public static $log_meta_key_payment_id = '_edd_log_payment_id';
+
 	public static $status_init = 'init';
 	public static $status_expired = 'expired';
 	public static $status_started = 'started';
