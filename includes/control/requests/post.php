@@ -587,44 +587,6 @@ class WDGPostActions {
 						$file_create_item = WDGWPREST_Entity_File::create( $payment_id, 'investment', 'amendment', 'pdf', base64_encode( $byte_array ) );
 						update_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, $file_create_item->id );
 					}
-
-					// TODO : remplacer par Eversign ?
-					// Si le contrat n'existe pas sur Signsquid, créer un contrat electronique sur Signsquid dans meta amendment_signsquid_ID
-					/*$meta_payment_amendment_signsquid = get_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, TRUE );
-					if ( empty( $meta_payment_amendment_signsquid ) ) {
-						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_signsquid : ' . $meta_payment_amendment_signsquid );
-						ypcf_debug_log( 'send_contract_model > $payment_item[user] : ' . $payment_item['user'] );
-						$WDGUser = new WDGUser( $payment_item['user'] );
-						$user_name = $WDGUser->get_firstname(). ' ' .$WDGUser->get_lastname();
-						$user_email = $WDGUser->get_email();
-						if ( WDGOrganization::is_user_organization( $WDGUser->get_wpref() ) ) {
-							$WDGOrganization = new WDGOrganization( $WDGUser->get_wpref() );
-							$user_name = $WDGOrganization->get_name();
-						}
-						$contract_name = $contract_model->model_name;
-						$mobile_phone = null;
-						if ( ypcf_check_user_phone_format( $WDGUser->get_phone_number() ) ) {
-							$mobile_phone = ypcf_format_french_phonenumber( $WDGUser->get_phone_number() );
-						}
-						$meta_payment_amendment_signsquid = signsquid_create_contract( $contract_name );
-						signsquid_add_signatory( $meta_payment_amendment_signsquid, $user_name, $user_email, $mobile_phone );
-						signsquid_add_file( $meta_payment_amendment_signsquid, $filepath );
-						signsquid_send_invite( $meta_payment_amendment_signsquid );
-						update_post_meta( $payment_id, 'amendment_signsquid_' . $contract_model_id, $meta_payment_amendment_signsquid );
-
-						$new_contract_infos = signsquid_get_contract_infos( $meta_payment_amendment_signsquid );
-						if ( isset( $new_contract_infos ) && isset( $new_contract_infos->{'signatories'}[0]->{'code'} ) ) {
-							NotificationsEmails::send_new_contract_code_user( $user_name, $user_email, $contract_name, $new_contract_infos->{'signatories'}[0]->{'code'} );
-						}
-					}
-
-					// Si le contrat n'existe pas sur l'API, créer le contrat correspondant sur l'API et sauvegarder dans meta amendment_contract_ID
-					$meta_payment_amendment_contract = get_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, TRUE );
-					if ( empty( $meta_payment_amendment_contract ) && !empty( $meta_payment_amendment_signsquid ) ) {
-						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_contract : ' . $meta_payment_amendment_contract );
-						$api_contract_item = WDGWPREST_Entity_Contract::create( $contract_model_id, 'investment', $payment_id, 'Signsquid', $meta_payment_amendment_signsquid );
-						update_post_meta( $payment_id, 'amendment_contract_' . $contract_model_id, $api_contract_item->id );
-					}*/
 				}
 			}
 
