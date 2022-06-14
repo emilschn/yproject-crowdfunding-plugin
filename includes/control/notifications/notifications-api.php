@@ -370,6 +370,24 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
+		'declaration-done-pending-wire' => array(
+			'fr-sib-id'		=> 'declaration-done-pending-wire',
+			'description'	=> "Déclaration faite en attente de paiement par virement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'declaration-done-pending-mandate' => array(
+			'fr-sib-id'		=> 'declaration-done-pending-mandate',
+			'description'	=> "Déclaration faite en attente de paiement par prélèvement bancaire",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'declaration-mandate-received' => array(
+			'fr-sib-id'		=> 'declaration-mandate-received',
+			'description'	=> "Prélèvement bancaire reçu",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
 		'declaration-done-with-turnover' => array(
 			'fr-sib-id'		=> '127',
 			'description'	=> "Déclaration faite avec CA",
@@ -2045,7 +2063,7 @@ class NotificationsAPI {
 	}
 
 	//*******************************************************
-	// NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+	// NOTIFICATION PAIEMENT PAR VIREMENT RECU
 	//*******************************************************
 	public static function wire_transfer_received($WDGUserInterface, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'received-wire-without-pending-investment' );
@@ -2333,6 +2351,77 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS DECLARATIONS APROUVEES
 	//*******************************************************
+	public static function declaration_done_pending_wire($WDGOrganization, $WDGUser, $campaign, $declaration, $viban_iban, $viban_bic, $viban_holder, $viban_code) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-wire' );
+
+		NotificationsAPIShortcodes::set_organization($WDGOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+		NotificationsAPIShortcodes::set_declaration($declaration);
+		$investment_pending_data = array(
+			'viban_iban'	=> $viban_iban,
+			'viban_bic'		=> $viban_bic,
+			'viban_holder'	=> $viban_holder,
+			'viban_code'	=> $viban_code
+		);
+		NotificationsAPIShortcodes::set_investment_pending_data($investment_pending_data);
+
+		$options = array(
+			'personal' => 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGOrganization->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	public static function declaration_done_pending_mandate($WDGOrganization, $WDGUser, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-mandate' );
+
+		NotificationsAPIShortcodes::set_organization($WDGOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+
+		$options = array(
+			'personal' => 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGOrganization->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	//*******************************************************
+	// NOTIFICATION PRELEVEMENT BANCAIRE RECU
+	//*******************************************************
+	public static function declaration_mandate_received($WDGUserInterface, $declaration, $date_str) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-mandate-received' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_declaration($declaration);
+		NotificationsAPIShortcodes::set_declaration_transfer_date_string($date_str);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
 	public static function declaration_done_with_turnover($WDGOrganization, $WDGUser, $campaign, $declaration, $tax_infos, $payment_certificate_url) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-with-turnover' );
 

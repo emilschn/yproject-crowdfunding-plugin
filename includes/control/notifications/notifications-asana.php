@@ -222,6 +222,17 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_support, $object, $content );
 	}
 
+	public static function declaration_pending_wire($declaration_id) {
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+		$campaign_name = $campaign->data->post_title;
+
+		$object = $campaign_name . ' /// Déclaration avec virement en attente';
+		$content = "Le projet " . $campaign_name . " a prévu de payer par virement bancaire.";
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
 	public static function adjustment_needed_30_days($campaign_name, $campaign_contract_start_date, $first_adjustment_date_estimated, $last_adjustment_infos = '') {
 		$object = $campaign_name . ' /// Ajustement nécessaire';
 		$content = "Le projet " .$campaign_name. " n'a pas fait d'ajustement depuis plus d'un an. Un mail de rappel a été envoyé il y a 23 jours, et un autre vient d'être envoyé à l'instant.";
