@@ -88,7 +88,8 @@ class WDG_Form_User_Delete extends WDG_Form {
 					if( $campaign->data->post_title != '') {
 						$amount = 0;
 						foreach ($campaign_investments as $investment_id) {
-							$payment_amount = edd_get_payment_amount( $investment_id );
+							$WDGInvestment = new WDGInvestment( $investment_id );
+							$payment_amount = $WDGInvestment->get_saved_amount();
 							ypcf_debug_log( 'user-delete.php :: $payment_amount = '.$payment_amount);
 							if( $payment_amount > 0) {
 								$amount += $payment_amount;

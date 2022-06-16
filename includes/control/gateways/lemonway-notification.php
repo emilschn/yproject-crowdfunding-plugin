@@ -344,11 +344,12 @@ class LemonwayNotification {
 			foreach ( $investments_by_campaign as $campaign_id => $campaign_investments ) {
 				$trace .= 'A';
 				foreach ($campaign_investments as $campaign_investment_id) {
+					$WDGInvestment = new WDGInvestment( $campaign_investment_id );
 					$trace .= 'B';
-					$payment_key = edd_get_payment_key( $campaign_investment_id );
+					$payment_key = $WDGInvestment->get_saved_payment_key();
 					if ( strpos( $payment_key, 'wire_' ) !== FALSE ) {
 						$trace .= 'C';
-						$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+						$payment_amount = $WDGInvestment->get_saved_amount();
 						if ( $payment_amount == $lemonway_posted_amount ) {
 							$trace .= 'D';
 							$investment_campaign_id = $campaign_id;

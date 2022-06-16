@@ -679,8 +679,7 @@ class WDGQueue {
 						$preinvestment->get_contract_status() != WDGInvestment::$contract_status_not_validated
 						&& ( strpos( $payment_key, 'wire_' ) === FALSE || $wire_with_received_payments == '1' )
 						) {
-					$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
-					$user_id = $user_info['id'];
+					$user_id = $preinvestment->get_saved_user_id();
 					$WDGUserOrOrganization = new WDGUser( $user_id );
 					if ( WDGOrganization::is_user_organization( $user_id ) ) {
 						$WDGUserOrOrganization = new WDGOrganization( $user_id );
@@ -798,7 +797,8 @@ class WDGQueue {
 					$campaign = new ATCF_Campaign( $campaign_id );
 					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 						foreach ( $campaign_investments as $campaign_investment_id ) {
-							$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+							$WDGInvestment = new WDGInvestment( $campaign_investment_id );
+							$payment_amount = $WDGInvestment->get_saved_amount();
 							array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
 						}
 					}
@@ -993,7 +993,8 @@ class WDGQueue {
 						$campaign = new ATCF_Campaign( $campaign_id );
 						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 							foreach ( $campaign_investments as $campaign_investment_id ) {
-								$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+								$WDGInvestment = new WDGInvestment( $campaign_investment_id );
+								$payment_amount = $WDGInvestment->get_saved_amount();
 								array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
 							}
 						}

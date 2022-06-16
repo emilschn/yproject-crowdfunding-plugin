@@ -22,6 +22,10 @@ class WDGInvestment {
 	 */
 	public $error_item;
 
+	public static $payment_post_type = '';
+	public static $payment_meta_key_user_id = '_edd_payment_user_id';
+	public static $payment_meta_key_ip = '_edd_payment_ip';
+
 	public static $log_post_type = 'edd_log';
 	public static $log_meta_key_payment_id = '_edd_log_payment_id';
 
@@ -450,10 +454,25 @@ class WDGInvestment {
 	 * Retourne l'id de l'investisseur lié à l'investissement
 	 */
 	public function get_saved_user_id() {
-		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
-		$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+		$user_id = get_post_meta( $this->get_id(), self::$payment_meta_key_user_id, TRUE );
+
+		if ( empty( $user_id ) ) {
+			$user_info = edd_get_payment_meta_user_info( $this->get_id() );
+			$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+		}
 
 		return $user_id;
+	}
+
+	/**
+	 * Retourne l'adresse mail d'investisseur liée à un investissement
+	 */
+	public function get_saved_user_email() {
+		$user_info = edd_get_payment_meta_user_info( $this->get_id() );
+		if ( !empty( $user_info ) && !empty( $user_info['email'] ) ) {
+			return $user_info['email'];
+		}
+		return false;
 	}
 
 	/**

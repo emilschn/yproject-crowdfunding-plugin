@@ -1003,7 +1003,8 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE, 
 	$organization = FALSE;
 	if ( !empty( $payment_id ) ) {
 		$current_user = get_userdata($user_id);
-		$saved_user_id = get_post_meta($payment_id, '_edd_payment_user_id', TRUE);
+		$WDGInvestment = new WDGInvestment( $payment_id );
+		$saved_user_id = $WDGInvestment->get_saved_user_id();
 		if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 			$group_id = $_SESSION['redirect_current_invest_type'];
 			$organization = new WDGOrganization($group_id);
@@ -1012,10 +1013,10 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE, 
 				$organization = new WDGOrganization($saved_user_id);
 			}
 		}
-		$amount = edd_get_payment_amount($payment_id);
+		$amount = $WDGInvestment->get_saved_amount();
 		$amount_part = $amount / $campaign->part_value();
 
-		$ip_address = get_post_meta($payment_id, '_edd_payment_ip', TRUE);
+		$ip_address = get_post_meta($payment_id, WDGInvestment::$payment_meta_key_ip, TRUE);
 		$payment_date = get_the_date( 'Y-m-d H:i:s', $payment_id );
 
 		$invest_data = array(
