@@ -641,13 +641,13 @@ class WDGPostActions {
 		}
 
 		$zip = new ZipArchive;
-		$zip_path = dirname( __FILE__ ). '/../../../files/contracts/' .$campaign_id. '-' .$campaign->data->post_name. '.zip';
+		$zip_path = WDGInvestmentContract::get_contracts_zip_path_for_campaign( $campaign );
 		if ( file_exists( $zip_path ) ) {
 			unlink( $zip_path );
 		}
 		$res = $zip->open( $zip_path, ZipArchive::CREATE );
 		if ( $res === TRUE ) {
-			$exp = dirname( __FILE__ ). '/../../pdf_files/' .$campaign_id. '_*.pdf';
+			$exp = WDGInvestmentContract::get_and_create_path_for_campaign( $campaign ) . '*.pdf';
 			$files = glob( $exp );
 			foreach ( $files as $file ) {
 				$file_path_exploded = explode( '/', $file );

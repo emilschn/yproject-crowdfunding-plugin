@@ -121,12 +121,12 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_exclamation_red, self::$notif_type_investors );
 	}
 
-	public static function send_new_investment($project_name, $amount, $investor_email) {
-		global $new_pdf_file_name;
-		$message = 'Nouvel investissement sur le projet ' . $project_name . ' : '.$amount.' € par ' .$investor_email;
+	public static function send_new_investment( $campaign, $amount, $investor_email, $investment_id ) {
+		$message = 'Nouvel investissement sur le projet ' . $campaign->get_name() . ' : '.$amount.' € par ' .$investor_email;
 		if ( !empty( $new_pdf_file_name ) ) {
 			$message .= "\n";
-			$message .= "Lien vers le contrat : " .site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' .$new_pdf_file_name );
+			$investment_url = WDGInvestmentContract::get_investment_file_url( $campaign, $investment_id );
+			$message .= "Lien vers le contrat : " .$investment_url;
 		}
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
 	}

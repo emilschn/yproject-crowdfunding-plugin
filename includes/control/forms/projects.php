@@ -131,7 +131,7 @@ class WDGFormProjects {
 					$create_pdf_file = true;
 
 					$amount = $WDGInvestment->get_saved_amount();
-					NotificationsSlack::send_new_investment( $campaign->get_name(), $amount, $WDGInvestment->get_saved_user_email() );
+					NotificationsSlack::send_new_investment( $campaign, $amount, $WDGInvestment->get_saved_user_email(), $approve_payment_id );
 					$WDGInvestment = new WDGInvestment( $approve_payment_id );
 					$WDGInvestment->save_to_api();
 				}
