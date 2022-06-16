@@ -105,7 +105,7 @@ class NotificationsEmails {
 	}
 
 	/**
-	 * Mail pour l'investisseur lors d'un achat avec erreur de création de contrat
+	 * Mail pour l'investisseur lors d'un investissement réussi avec problème de création de signature électronique
 	 * @param int $payment_id
 	 * @return bool
 	 */
@@ -118,7 +118,7 @@ class NotificationsEmails {
 	}
 
 	/**
-	 * Mail pour l'investisseur lors d'un achat avec création de contrat réussie
+	 * Mail pour l'investisseur lors d'un investissement réussi avec signature électronique (pas de pièce jointe)
 	 * @param int $payment_id
 	 * @return bool
 	 */
@@ -141,7 +141,7 @@ class NotificationsEmails {
 	}
 
 	/**
-	 * Mail pour l'investisseur lors d'un achat sans nécessité de signer le contrat
+	 * Mail pour l'investisseur lors d'un investissement réussi sans signature électronique nécessaire
 	 * @param type $payment_id
 	 * @return type
 	 */
@@ -209,8 +209,7 @@ class NotificationsEmails {
 		}
 
 		if ( !empty( $attachments ) ) {
-			$attachment_url_filename = basename( $attachments[ 0 ] );
-			$attachment_url = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $attachment_url_filename );
+			$attachment_url = WDGInvestmentContract::get_investment_file_url( $campaign, $payment_id );
 			$text_after = __( 'invest.email.WHERE_TO_FIND_CONTRACT', 'yproject' ) . " <a href=\"". home_url( '/mon-compte/' ) ."\">" . __( 'invest.email.PERSONAL_ACCOUNT', 'yproject' ) . "</a>.<br><br>";
 		}
 
