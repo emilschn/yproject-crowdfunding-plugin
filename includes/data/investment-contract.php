@@ -104,8 +104,32 @@ class WDGInvestmentContract {
 	 * @param ATCF_Campaign $campaign
 	 * @param int $investment_id
 	 */
+	public static function get_investment_file_path( $campaign, $investment_id ) {
+		$path = self::get_and_create_path_for_campaign( $campaign );
+		return $path .  $investment_id . '.pdf';
+	}
+
+	/**
+	 * Retourne l'URL publique d'un fichier d'investissement
+	 * @param ATCF_Campaign $campaign
+	 * @param int $investment_id
+	 */
 	public static function get_investment_file_url( $campaign, $investment_id ) {
 		return site_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign->ID. '-' .$campaign->get_url(). '/' .  $investment_id . '.pdf' );
+	}
+
+	/**
+	 * Retourne l'ancienne URL des fichiers
+	 */
+	public static function get_deprecated_file_url( $filename ) {
+		return site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $filename );
+	}
+
+	/**
+	 * Retourne une expression régulière pour récupérer la vieille liste de fichiers
+	 */
+	public static function get_deprecated_file_list_expression( $campaign, $user_id ) {
+		return dirname( __FILE__ ). '/../pdf_files/' .$campaign->ID. '_' .$user_id. '_*.pdf';
 	}
 	
 	/**

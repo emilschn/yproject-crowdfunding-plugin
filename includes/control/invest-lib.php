@@ -171,7 +171,7 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 							if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 								global $contract_filename;
 								$new_contract_pdf_filename = basename( $contract_filename );
-								$new_contract_pdf_url = site_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
+								$new_contract_pdf_url = WDGInvestmentContract::get_deprecated_file_url( $new_contract_pdf_filename );
 								$wdginvestment->update_contract_url( $new_contract_pdf_url );
 							}
 						} else {
@@ -185,7 +185,7 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 						if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
 							$new_contract_pdf_filename = basename( $new_contract_pdf_file );
-							$new_contract_pdf_url = site_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_contract_pdf_filename;
+							$new_contract_pdf_url = WDGInvestmentContract::get_deprecated_file_url( $new_contract_pdf_filename );
 							$wdginvestment->update_contract_url( $new_contract_pdf_url );
 						}
 					}
