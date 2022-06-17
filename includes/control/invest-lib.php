@@ -169,9 +169,7 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 						if ( !empty( $contract_id ) ) {
 							NotificationsEmails::new_purchase_user_success( $payment_id, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 							if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
-								global $contract_filename;
-								$new_contract_pdf_filename = basename( $contract_filename );
-								$new_contract_pdf_url = WDGInvestmentContract::get_deprecated_file_url( $new_contract_pdf_filename );
+								$new_contract_pdf_url = WDGInvestmentContract::get_investment_file_url( $campaign, $payment_id );
 								$wdginvestment->update_contract_url( $new_contract_pdf_url );
 							}
 						} else {
@@ -184,8 +182,7 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 						$new_contract_pdf_file = getNewPdfToSign($download_id, $payment_id, $current_user->ID);
 						NotificationsEmails::new_purchase_user_success_nocontract( $payment_id, $new_contract_pdf_file, $is_card_contribution, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ), $is_only_wallet );
 						if ( !empty( $wdginvestment ) && $wdginvestment->has_token() ) {
-							$new_contract_pdf_filename = basename( $new_contract_pdf_file );
-							$new_contract_pdf_url = WDGInvestmentContract::get_deprecated_file_url( $new_contract_pdf_filename );
+							$new_contract_pdf_url = WDGInvestmentContract::get_investment_file_url( $campaign, $payment_id );
 							$wdginvestment->update_contract_url( $new_contract_pdf_url );
 						}
 					}

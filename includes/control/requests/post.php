@@ -559,10 +559,7 @@ class WDGPostActions {
 					$meta_payment_amendment_file = get_post_meta( $payment_id, 'amendment_file_' . $contract_model_id, TRUE );
 					if ( empty( $meta_payment_amendment_file ) ) {
 						ypcf_debug_log( 'send_contract_model > $meta_payment_amendment_file : ' . $meta_payment_amendment_file );
-						$buffer = __DIR__. '/../../pdf_files/tmp';
-						if ( !is_dir( $buffer ) ) {
-							mkdir( $buffer, 0777, true );
-						}
+						$buffer = WDGInvestmentContract::get_and_create_deprecated_tmp_path();
 						$filepath = $buffer. '/' .$contract_model_id. '-' .$payment_id. '.pdf';
 						ypcf_debug_log( 'send_contract_model > $filepath : ' . $filepath );
 

@@ -131,6 +131,17 @@ class WDGInvestmentContract {
 	public static function get_deprecated_file_list_expression( $campaign, $user_id ) {
 		return dirname( __FILE__ ). '/../pdf_files/' .$campaign->ID. '_' .$user_id. '_*.pdf';
 	}
+
+	/**
+	 * Retourne le dossier temporaire utile pour les amandements
+	 */
+	public static function get_and_create_deprecated_tmp_path() {
+		$buffer = dirname( __FILE__ ). '/../pdf_files/tmp';
+		if ( !is_dir( $buffer ) ) {
+			mkdir( $buffer, 0777, true );
+		}
+		return $buffer;
+	}
 	
 	/**
 	 * Vérifie les montants reçus par l'investisseur

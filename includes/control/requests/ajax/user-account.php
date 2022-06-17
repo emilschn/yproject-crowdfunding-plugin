@@ -90,8 +90,8 @@ class WDGAjaxActionsUserAccount {
 
 			if ( !empty( $campaign ) ) {
 				// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
-				$exp = dirname( __FILE__ ). '/../../../pdf_files/' .$campaign_id. '_' .$user_id. '_*.pdf';
-				$files = glob( $exp );
+				$file_list_expression = WDGInvestmentContract::get_deprecated_file_list_expression( $campaign, $user_id );
+				$files = glob( $file_list_expression );
 
 				if ( !isset( $buffer[ $campaign_id ] ) ) {
 					$buffer[ $campaign_id ] = array();
@@ -457,8 +457,9 @@ class WDGAjaxActionsUserAccount {
 			$buffer_item[ 'start_date' ] = __( $contract_start_date->format( 'F' ) ) . ' ' . $contract_start_date->format( 'Y' );
 
 			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
-			$exp = dirname( __FILE__ ). '/../../../pdf_files/' .$result_campaign_item->project_wpref. '_' .$user_id. '_*.pdf';
-			$files = glob( $exp );
+			$campaign = atcf_get_campaign( $result_campaign_item->project_wpref );
+			$file_list_expression = WDGInvestmentContract::get_deprecated_file_list_expression( $campaign, $user_id );
+			$files = glob( $file_list_expression );
 
 			$buffer_item[ 'items' ] = array();
 			foreach ( $result_campaign_item->investments as $result_investment_item ) {
@@ -636,14 +637,15 @@ class WDGAjaxActionsUserAccount {
 						$contract_index = count( $buffer_item[ 'items' ] );
 					}
 					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .($contract_index + 1). '.pdf';
-					$test_file_name = dirname( __FILE__ ). '/../../../../files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_investment_item->wpref. '.pdf';
+					$campaign = new ATCF_Campaign( $result_campaign_item->project_wpref );
+					$test_file_name = WDGInvestmentContract::get_investment_file_url( $campaign, $result_investment_item->wpref );
 					if ( file_exists( $test_file_name ) ) {
-						$buffer_investment_item[ 'contract_file_path' ] = site_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$result_campaign_item->project_wpref. '-' .$result_campaign_item->project_url. '/' .$result_investment_item->wpref. '.pdf' );
+						$buffer_investment_item[ 'contract_file_path' ] = WDGInvestmentContract::get_investment_file_url( $campaign, $result_investment_item->wpref );
 						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;
 					} elseif ( count( $files ) ) {
 						$filelist_extract = explode( '/', $files[ $contract_index ] );
 						$contract_filename = $filelist_extract[ count( $filelist_extract ) - 1 ];
-						$buffer_investment_item[ 'contract_file_path' ] = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $contract_filename );
+						$buffer_investment_item[ 'contract_file_path' ] = WDGInvestmentContract::get_deprecated_file_url( $contract_filename );
 						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;
 					}
 				}

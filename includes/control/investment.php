@@ -162,20 +162,10 @@ class WDGInvestment {
 				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment, $user_id, edd_get_payment_status( $payment, true ) );
 			}
 
-			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
-			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
-			// le contrat est nommé de cette façon : dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf'
-
-			$exp = dirname( __FILE__ ). '/../pdf_files/' .$campaign_id. '_' .$this->get_saved_user_id(). '_*.pdf';
-			// $exp = dirname( __FILE__ ). '/../../../../plugins/appthemer-crowdfunding/includes/pdf_files/' .$campaign_id. '_' .$WDGUser_current->wp_user->ID. '_*.pdf';
-			$files = glob( $exp );
-			foreach ($files as $filename) {
-				// sachant que l'on transfère les investissements du plus vieux au plus récent, s'il y a plusieurs contrats de cet investisseur sur cette campagne
-				// c'est le plus vieux contrat qu'il faut renommer, donc le premier de la liste
-				break;
-			}
-			$new_filename = str_replace('pdf_files/' .$campaign_id. '_', 'pdf_files/' .$to_campaign_id. '_', $filename);
-			rename($filename, $new_filename);
+			// déplacement du fichier de contrat d'un dossier de projet à l'autre
+			$filename = WDGInvestmentContract::get_and_create_path_for_campaign( $this->get_saved_campaign() ) . $payment_id . '.pdf';
+			$new_filename = WDGInvestmentContract::get_and_create_path_for_campaign( $to_campaign ) . $payment_id . '.pdf';
+			rename( $filename, $new_filename );
 		}
 	}
 	/**
@@ -233,21 +223,11 @@ class WDGInvestment {
 			// on modifie le montant de l'investissement en cours (on soustrait $amount)
 			$this->set_amount($this->get_saved_amount() - $amount);
 
-			// il faut maintenant renommer le contrat qui est préfixé avec l'id du projet
-			// Récupération de la liste des contrats passés entre la levée de fonds et l'investisseur
-			// le contrat est nommé de cette façon : dirname ( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $current_user->ID . '_' . time() . '.pdf'
-			$exp = dirname( __FILE__ ). '/../pdf_files/' .$from_campaign_id. '_' .$user_id. '_*.pdf';
-			$files = glob( $exp );
-			$old_filename = '';
-			foreach ($files as $filename) {
-				// sachant que l'on transfère les investissements du plus vieux au plus récent, s'il y a plusieurs contrats de cet investisseur sur cette campagne
-				// c'est le plus vieux contrat qu'il faut renommer, donc le premier de la liste
-				$old_filename = $filename;
-				break;
-			}
-			$new_filename = str_replace('pdf_files/' .$from_campaign_id. '_', 'pdf_files/_old_' .$from_campaign_id. '_', $old_filename);
+			// on renomme l'ancien fichier de contrat pour le garder de côté
+			$filename = WDGInvestmentContract::get_and_create_path_for_campaign( $this->get_saved_campaign() ) . $this->get_id() . '.pdf';
+			$new_filename = WDGInvestmentContract::get_and_create_path_for_campaign( $this->get_saved_campaign() ) . '_old_' . $this->get_id() . '.pdf';
+			rename( $filename, $new_filename );
 
-			rename($old_filename, $new_filename);
 
 			// on génère 1 contrat pour le nouvel investissement
 			$new_investment_downloads = edd_get_payment_meta_downloads($new_investment_id);
@@ -257,10 +237,9 @@ class WDGInvestment {
 			} else {
 				$new_investment_download_id = $new_investment_downloads[0];
 			}
-			$new_investment_contract_pdf_file = getNewPdfToSign($new_investment_download_id, $new_investment_id, $user_id);
+			getNewPdfToSign($new_investment_download_id, $new_investment_id, $user_id);
 			if ( !empty( $WDGNewInvestment ) && $WDGNewInvestment->has_token() ) {
-				$new_investment_contract_pdf_filename = basename( $new_investment_contract_pdf_file );
-				$new_investment_contract_pdf_url = site_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $new_investment_contract_pdf_filename;
+				$new_investment_contract_pdf_url = WDGInvestmentContract::get_investment_file_url( $to_campaign, $new_investment_id );
 				$WDGNewInvestment->update_contract_url( $new_investment_contract_pdf_url );
 			}
 
@@ -272,10 +251,9 @@ class WDGInvestment {
 			} else {
 				$current_investment_download_id = $current_investment_downloads[0];
 			}
-			$current_investment_contract_pdf_file = getNewPdfToSign($current_investment_download_id, $this->id, $user_id);
+			getNewPdfToSign($current_investment_download_id, $this->id, $user_id);
 			if ( !empty( $this ) && $this->has_token() ) {
-				$current_investment_contract_pdf_filename = basename( $current_investment_contract_pdf_file );
-				$current_investment_contract_pdf_url = site_url('/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/') . $current_investment_contract_pdf_filename;
+				$current_investment_contract_pdf_url = WDGInvestmentContract::get_investment_file_url( $this->get_saved_campaign(), $this->id );
 				$this->update_contract_url( $current_investment_contract_pdf_url );
 			}
 		} else {
