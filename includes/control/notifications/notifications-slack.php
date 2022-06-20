@@ -123,9 +123,9 @@ class NotificationsSlack {
 
 	public static function send_new_investment( $campaign, $amount, $investor_email, $investment_id ) {
 		$message = 'Nouvel investissement sur le projet ' . $campaign->get_name() . ' : '.$amount.' € par ' .$investor_email;
-		if ( !empty( $new_pdf_file_name ) ) {
+		$investment_url = WDGInvestmentContract::get_investment_file_url( $campaign, $investment_id );
+		if ( !empty( $investment_url ) ) {
 			$message .= "\n";
-			$investment_url = WDGInvestmentContract::get_investment_file_url( $campaign, $investment_id );
 			$message .= "Lien vers le contrat : " .$investment_url;
 		}
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
