@@ -3407,7 +3407,7 @@ class ATCF_Campaign {
 				'status'		=> 'pending' // On initialise à pending, sinon la sauvegarde se fait 2 fois dans les logs (edd_record_sale_in_log)
 			);
 			$payment_id = edd_insert_payment( $payment_data );
-			update_post_meta( $payment_id, '_edd_payment_total', $value );
+			update_post_meta( $payment_id, WDGInvestment::$payment_meta_key_payment_total, $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
 			delete_post_meta( $payment_id, '_edd_payment_customer_id' );
 			update_post_meta( $payment_id, '_edd_payment_user_id', $saved_user_id );

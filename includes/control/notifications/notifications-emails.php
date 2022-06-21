@@ -171,15 +171,13 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_user($payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
-		$inv = new WDGInvestment( $payment_id );
-		$campaign = $inv->get_saved_campaign();
-
-		$payment_data = edd_get_payment_meta( $payment_id );
 		$WDGInvestment = new WDGInvestment($payment_id);
-		$email = $payment_data['email'];
+		$campaign = $WDGInvestment->get_saved_campaign();
+
+		$email = $WDGInvestment->get_saved_user_email();
 		$user_data = get_user_by('email', $email);
 		$WDGUser = new WDGUser($user_data->ID);
-		$payment_key = edd_get_payment_key( $payment_id );
+		$payment_key = $WDGInvestment->get_payment_key();
 
 		$attachment_url = '';
 		$text_before = '';
@@ -236,9 +234,8 @@ class NotificationsEmails {
 
 		$object = "Nouvel investissement";
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data[ 'email' ];
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 		$user_data = get_user_by( 'email', $email );
 
 		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {

@@ -109,9 +109,8 @@ class NotificationsAsana {
 		$inv = new WDGInvestment( $payment_id );
 		$campaign = $inv->get_saved_campaign();
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 		$user_data = get_user_by('email', $email);
 
 		$object = $campaign->get_name() . ' /// Nouveau virement : ' . $email;
@@ -132,9 +131,8 @@ class NotificationsAsana {
 		$inv = new WDGInvestment( $payment_id );
 		$campaign = $inv->get_saved_campaign();
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 		$user_data = get_user_by('email', $email);
 
 		$object = $campaign->get_name() . ' /// Nouveau chèque !';

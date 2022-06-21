@@ -62,21 +62,15 @@ class WDGAjaxActionsUserAccount {
 				$purchase_id = $first_investment_contract->subscription_id;
 			} else {
 				$purchase_id = $purchase_post->ID;
-				$purchase_status = get_post_status( $purchase_id );
-				$downloads = edd_get_payment_meta_downloads( $purchase_id );
-				if ( !is_array( $downloads[ 0 ] ) ) {
-					$campaign_id = $downloads[ 0 ];
-				} else {
-					if ( isset( $downloads[ 0 ][ 'id' ] ) ) {
-						$campaign_id = $downloads[ 0 ][ 'id' ];
-					}
-				}
-				$campaign = atcf_get_campaign( $campaign_id );
+				$WDGInvestment = new WDGInvestment( $purchase_id );
+				$purchase_status = $WDGInvestment->get_saved_status();
+				$campaign = $WDGInvestment->get_saved_campaign();
+				$campaign_id = $campaign->ID;
 				if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote && $campaign->campaign_status() != ATCF_Campaign::$campaign_status_collecte && $purchase_status == 'pending' ) {
 					continue;
 				}
-				$payment_amount = edd_get_payment_amount( $purchase_id );
-				$purchase_date = get_post_field( 'post_date', $purchase_id );
+				$payment_amount = $WDGInvestment->get_saved_amount();
+				$purchase_date = $WDGInvestment->get_saved_date();
 
 				if ( !empty( $investment_contracts ) ) {
 					foreach ( $investment_contracts as $investment_contract ) {

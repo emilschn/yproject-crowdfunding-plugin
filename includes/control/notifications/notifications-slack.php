@@ -232,10 +232,8 @@ class NotificationsSlack {
 	public static function investment_pending_wire($payment_id) {
 		$inv = new WDGInvestment( $payment_id );
 		$campaign = $inv->get_saved_campaign();
-
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 
 		$message = "Nouveau virement pour ".$campaign->get_name() ." : ".$payment_amount. "euros (".$email.")";
 
@@ -245,10 +243,8 @@ class NotificationsSlack {
 	public static function new_purchase_pending_check_admin($payment_id, $picture_url) {
 		$inv = new WDGInvestment( $payment_id );
 		$campaign = $inv->get_saved_campaign();
-
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
+		$payment_amount = $inv->get_saved_amount();
+		$email =  $inv->get_saved_user_email();
 
 		$message = "Nouveau chèque pour ".$campaign->get_name() ." : ".$payment_amount. "euros (".$email."). ";
 		if ( $picture_url ) {
