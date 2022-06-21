@@ -314,9 +314,13 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_admin, $object, $content );
 	}
 
-	public static function investment_to_api_error_admin($edd_payment_item) {
+	/**
+	 * 
+	 * @param WDGInvestment $investment
+	 */
+	public static function investment_to_api_error_admin($investment) {
 		$object = "Erreur d'ajout d'investissement sur l'API ";
-		$content = "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $edd_payment_item->ID;
+		$content = "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $investment->get_id();
 
 		return self::send( self::$notif_type_admin, $object, $content );
 	}

@@ -19,11 +19,11 @@ class WDGWPREST_Entity_Investment {
 
 	/**
 	 * Crée une ligne de donnée sur l'API
-	 * @param ATCF_Campaign $campaign
-	 * @param object $edd_payment_item
+	 * @param WDGInvestment $investment
 	 */
-	public static function set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status, $id_subscription = FALSE ) {
-		$payment_date = $edd_payment_item->post_date;
+	private static function set_post_parameters( $investment, $user_wpref, $payment_status, $id_subscription = FALSE ) {
+		$campaign = $investment->get_saved_campaign();
+		$payment_date = $investment->get_saved_date();
 		if ( empty( $payment_date ) ) {
 			$date_now = new DateTime();
 			$payment_date = $date_now->format( 'Y-m-d H:i:s' );
@@ -83,16 +83,15 @@ class WDGWPREST_Entity_Investment {
 			return FALSE;
 		}
 
-		$amount = edd_get_payment_amount( $edd_payment_item->ID );
+		$amount = $investment->get_saved_amount();
 		$amount_with_royalties_in_cents = 0;
-		$WDGInvestment = new WDGInvestment( $edd_payment_item->ID );
-		$status = $WDGInvestment->get_saved_status();
+		$status = $investment->get_saved_status();
 		if ( empty( $payment_status ) ) {
-			$payment_status = $WDGInvestment->get_payment_status();
+			$payment_status = $investment->get_payment_status();
 		}
-		$contract_status = get_post_meta( $edd_payment_item->ID, WDGInvestment::$contract_status_meta, TRUE );
+		$contract_status = $investment->get_contract_status();
 
-		$payment_key = edd_get_payment_key( $edd_payment_item->ID );
+		$payment_key = $investment->get_saved_payment_key();
 		$mean_of_payment = 'card';
 		if ( strpos( $payment_key, 'wire_' ) !== FALSE) {
 			$mean_of_payment = 'wire';
@@ -115,12 +114,12 @@ class WDGWPREST_Entity_Investment {
 		}
 		$payment_provider = $campaign->get_payment_provider();
 
-		$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
+		$WDGInvestmentSignature = new WDGInvestmentSignature( $investment->get_id() );
 		$signature_status = $WDGInvestmentSignature->get_status();
 		$signature_id = $WDGInvestmentSignature->get_external_id();
 
 		$parameters = array(
-			'wpref'				=> $edd_payment_item->ID,
+			'wpref'				=> $investment->get_id(),
 			'redirect_url_ok'	=> 'https://www.wedogood.co',
 			'redirect_url_nok'	=> 'https://www.wedogood.co',
 			'notification_url'	=> 'https://www.wedogood.co',
@@ -180,17 +179,16 @@ class WDGWPREST_Entity_Investment {
 
 	/**
 	 * Crée une ligne de donnée sur l'API
-	 * @param ATCF_Campaign $campaign
-	 * @param object $edd_payment_item
+	 * @param WDGInvestment $investment
 	 */
-	public static function create_or_update( $campaign, $edd_payment_item, $user_wpref, $payment_status, $id_subscription = FALSE ) {
+	public static function create_or_update( $investment, $user_wpref, $payment_status, $id_subscription = FALSE ) {
 		$buffer = FALSE;
 
-		$parameters = WDGWPREST_Entity_Investment::set_post_parameters( $campaign, $edd_payment_item, $user_wpref, $payment_status, $id_subscription );
+		$parameters = self::set_post_parameters( $investment, $user_wpref, $payment_status, $id_subscription );
 		if ( !empty( $parameters ) ) {
 			$buffer = WDGWPRESTLib::call_post_wdg( 'investment', $parameters );
 			if ( $buffer === FALSE ) {
-				NotificationsAsana::investment_to_api_error_admin( $edd_payment_item );
+				NotificationsAsana::investment_to_api_error_admin( $investment );
 			}
 		}
 

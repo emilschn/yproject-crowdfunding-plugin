@@ -159,7 +159,7 @@ class WDGInvestment {
 			if ( !empty( $payment ) ) {
 				$user_info = edd_get_payment_meta_user_info( $payment->ID );
 				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-				WDGWPREST_Entity_Investment::create_or_update( $to_campaign, $payment, $user_id, edd_get_payment_status( $payment, true ) );
+				WDGWPREST_Entity_Investment::create_or_update( $this, $user_id, edd_get_payment_status( $payment, true ) );
 			}
 
 			// déplacement du fichier de contrat d'un dossier de projet à l'autre
@@ -558,7 +558,7 @@ class WDGInvestment {
 
 	public function set_contract_status($status) {
 		if ( !empty( $this->id ) ) {
-			update_post_meta( $this->id, WDGInvestment::$contract_status_meta, $status );
+			update_post_meta( $this->id, self::$contract_status_meta, $status );
 			if ( $status == WDGInvestment::$contract_status_investment_validated && $this->get_saved_status() != 'publish' ) {
 				$postdata = array(
 					'ID'			=> $this->id,
@@ -573,7 +573,7 @@ class WDGInvestment {
 	}
 
 	public function get_contract_status() {
-		return get_post_meta( $this->id, WDGInvestment::$contract_status_meta, TRUE );
+		return get_post_meta( $this->id, self::$contract_status_meta, TRUE );
 	}
 
 	/**
@@ -1374,7 +1374,8 @@ class WDGInvestment {
 				foreach ( $payments as $payment ) {					
 					$user_info = edd_get_payment_meta_user_info( $payment->ID );
 					$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-					WDGWPREST_Entity_Investment::create_or_update( $campaign, $payment, $user_id,  edd_get_payment_status( $payment, true ));
+					$investment = new WDGInvestment( $payment->ID );
+					WDGWPREST_Entity_Investment::create_or_update( $investment, $user_id, edd_get_payment_status( $payment, true ));
 				}
 			}
 		}
@@ -1396,7 +1397,7 @@ class WDGInvestment {
 		}
 
 		if ( !empty( $payment ) ) {
-			WDGWPREST_Entity_Investment::create_or_update( $this->get_saved_campaign(), $payment, $this->get_saved_user_id(), $this->payment_status, $this->id_subscription );
+			WDGWPREST_Entity_Investment::create_or_update( $this, $this->get_saved_user_id(), $this->payment_status, $this->id_subscription );
 		}
 	}
 }
