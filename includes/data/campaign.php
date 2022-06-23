@@ -359,13 +359,22 @@ class ATCF_Campaign {
 	/*******************************************************************************
 	 * GESTION DES CAMPAGNES DUPLIQUEES
 	 ******************************************************************************/
-	public function get_duplicate_campaigns_id() {
-		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
+	private $duplicate_campaigns_decoded;
 
-		return $duplicated_campaigns;
+	public function get_duplicate_campaigns_id() {
+		if ( !isset( $this->duplicate_campaigns_decoded ) ) {
+			$this->duplicate_campaigns_decoded = json_decode($this->__get('duplicated_campaigns') );
+		}
+		return $this->duplicate_campaigns_decoded;
 	}
+
+	public function has_duplicate_campaigns() {
+		$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+		return count( $duplicated_campaigns ) > 0;
+	}
+
 	public function get_duplicate_campaigns_titles() {
-		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
+		$duplicated_campaigns = $this->get_duplicate_campaigns_id();
 		$duplicated_campaigns_title = array();
 		foreach ( $duplicated_campaigns as $wpcampaign ) {
 			$WDGCampaign = new ATCF_Campaign( $wpcampaign );
@@ -374,6 +383,22 @@ class ATCF_Campaign {
 
 		return $duplicated_campaigns_title;
 	}
+
+	public function get_duplicate_campaigns_total_amount( $formatted = TRUE ) {
+		$amount = $this->current_amount( false );
+		$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+		foreach ( $duplicated_campaigns as $wpcampaign ) {
+			$WDGCampaign = new ATCF_Campaign( $wpcampaign );
+			$amount += $WDGCampaign->current_amount( false );
+		}
+
+		if ( $formatted ) {
+			return UIHelpers::format_number( $amount, 0 ) . ' &euro;';
+		}
+
+		return $amount;
+	}
+
 	/*******************************************************************************
 	 * METAS
 	 ******************************************************************************/
