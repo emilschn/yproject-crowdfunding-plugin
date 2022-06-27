@@ -23,7 +23,14 @@ class WDGInvestment {
 	public $error_item;
 
 	public static $payment_post_type = 'edd_payment';
+	public static $payment_meta_key_meta = '_edd_payment_meta';
 	public static $payment_meta_key_user_id = '_edd_payment_user_id';
+	public static $payment_meta_key_customer_id = '_edd_payment_customer_id';
+	public static $payment_meta_key_simple_user_id = 'user_id';
+	public static $payment_meta_key_simple_customer_id = 'customer_id';
+	public static $payment_meta_key_user_email = '_edd_payment_user_email';
+	public static $payment_meta_key_simple_user_email = 'user_email';
+	public static $payment_meta_key_simple_email = 'email';
 	public static $payment_meta_key_ip = '_edd_payment_ip';
 	public static $payment_meta_key_purchase_key = '_edd_payment_purchase_key';
 	public static $payment_meta_key_payment_total = '_edd_payment_total';
@@ -319,6 +326,10 @@ class WDGInvestment {
 			$_SESSION[ 'invest_user_type' ] = $user_type;
 			$_SESSION[ 'redirect_current_user_type' ] = $user_type;
 		}
+	}
+
+	public function update_deprecated_meta( $meta_name, $meta_value ) {
+		edd_update_payment_meta( $this->get_id(), $meta_name, $meta_value );
 	}
 
 	/**

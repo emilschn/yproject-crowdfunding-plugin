@@ -112,8 +112,8 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			wp_update_post( $postdata );
 			// post_author du post de log
 			$log_post_items = get_posts(array(
-				'post_type'		=> 'edd_log',
-				'meta_key'		=> '_edd_log_payment_id',
+				'post_type'		=> WDGInvestment::$log_post_type,
+				'meta_key'		=> WDGInvestment::$log_meta_key_payment_id,
 				'meta_value'	=> $investid
 			));
 			foreach ( $log_post_items as $log_post_item ) {
@@ -124,19 +124,20 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 				wp_update_post($postdata);
 			}
 
-			// Metas edd_payment id et email
-			edd_update_payment_meta( $investid, '_edd_payment_customer_id', $wpuser_recipient_by_email->ID );
-			edd_update_payment_meta( $investid, '_edd_payment_user_id', $wpuser_recipient_by_email->ID );
-			edd_update_payment_meta( $investid, 'customer_id', $wpuser_recipient_by_email->ID );
-			edd_update_payment_meta( $investid, 'user_id', $wpuser_recipient_by_email->ID );
-			$current_meta = get_post_meta( $investid, '_edd_payment_meta', TRUE );
+			// Deprecated metas edd_payment id and email
+			$WDGInvestment->update_deprecated_meta( WDGInvestment::$payment_meta_key_customer_id, $wpuser_recipient_by_email->ID );
+			$WDGInvestment->update_deprecated_meta( WDGInvestment::$payment_meta_key_user_id, $wpuser_recipient_by_email->ID );
+			$WDGInvestment->update_deprecated_meta( WDGInvestment::$payment_meta_key_simple_customer_id, $wpuser_recipient_by_email->ID );
+			$WDGInvestment->update_deprecated_meta( WDGInvestment::$payment_meta_key_simple_user_id, $wpuser_recipient_by_email->ID );
+			
+			$current_meta = get_post_meta( $investid, WDGInvestment::$payment_meta_key_meta, TRUE );
 			if ( is_array( $current_meta ) ) {
 				$current_meta['user_info']['id']  = $wpuser_recipient_by_email->ID;
-				update_post_meta( $investid, '_edd_payment_meta', $current_meta );
+				update_post_meta( $investid, WDGInvestment::$payment_meta_key_meta, $current_meta );
 			}
-			edd_update_payment_meta( $investid, '_edd_payment_user_email', $email );
-			edd_update_payment_meta( $investid, 'user_email', $email );
-			edd_update_payment_meta( $investid, 'email', $email );
+			$WDGInvestment->update_deprecated_meta( WDGInvestment::$payment_meta_key_user_email, $email );
+			$WDGInvestment->update_deprecated_meta( WDGInvestment::$payment_meta_key_simple_user_email, $email );
+			$WDGInvestment->update_deprecated_meta( WDGInvestment::$payment_meta_key_simple_email, $email );
 
 			// Changement d'id investisseur sur la donnée d'investissement sur l'API
 			$WDGInvestment->save_to_api();
