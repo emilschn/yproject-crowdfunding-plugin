@@ -1613,20 +1613,11 @@ class WDGUser implements WDGUserInterface {
 		$investment_list = array();
 		foreach ( $invest_list_unique as $invest_id ) {
 			$invest_item = array();
+			$WDGInvestment = new WDGInvestment( $invest_id );
+			$campaign = $WDGInvestment->get_saved_campaign();
 
-			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			$download_id = '';
-			if ( isset( $downloads[0] ) ) {
-				if (is_array($downloads[0])) {
-					$download_id = $downloads[0]["id"];
-				} else {
-					$download_id = $downloads[0];
-				}
-			}
-
-			if ( !empty( $download_id ) ) {
+			if ( !empty( $campaign ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
@@ -1639,7 +1630,7 @@ class WDGUser implements WDGUserInterface {
 				// Infos date et montant
 				$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
 				$invest_item['date'] = $date_invest->format('d/m/Y');
-				$invest_item_amount = edd_get_payment_amount( $invest_id );
+				$invest_item_amount = $WDGInvestment->get_saved_amount();
 
 				// Infos royalties liés
 				$invest_item['roi_list'] = array();

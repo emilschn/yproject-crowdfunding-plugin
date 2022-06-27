@@ -22,9 +22,12 @@ class WDGInvestment {
 	 */
 	public $error_item;
 
-	public static $payment_post_type = '';
+	public static $payment_post_type = 'edd_payment';
 	public static $payment_meta_key_user_id = '_edd_payment_user_id';
 	public static $payment_meta_key_ip = '_edd_payment_ip';
+	public static $payment_meta_key_purchase_key = '_edd_payment_purchase_key';
+	public static $payment_meta_key_payment_total = '_edd_payment_total';
+	public static $payment_meta_key_payment_mode = '_edd_payment_mode';
 
 	public static $log_post_type = 'edd_log';
 	public static $log_meta_key_payment_id = '_edd_log_payment_id';
@@ -536,7 +539,7 @@ class WDGInvestment {
 		// on sauvegarde le nouveau montant sur le site
 		if ( !empty( $this->id ) ) {
 			$meta = edd_get_payment_meta($this->get_id());
-			edd_update_payment_meta($this->get_id(), '_edd_payment_total', $new_amount);
+			edd_update_payment_meta($this->get_id(), self::$payment_meta_key_payment_total, $new_amount);
 		}
 		// on sauvegarde le nouveau montant sur l'API
 		$this->save_to_api();
@@ -887,7 +890,7 @@ class WDGInvestment {
 		) );
 
 		// Ajustements des meta gérées automatiquement
-		update_post_meta( $payment_id, '_edd_payment_total', $amount );
+		update_post_meta( $payment_id, self::$payment_meta_key_payment_total, $amount );
 		$this->id = $payment_id;
 		update_post_meta( $payment_id, '_edd_payment_ip', $_SERVER[ 'REMOTE_ADDR' ] );
 		if ( strpos( $mean_of_payment, 'wallet' ) !== FALSE ) {
