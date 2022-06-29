@@ -84,7 +84,7 @@ class WDGUserInvestments {
 		if ( !empty($purchases) ) {
 			foreach ( $purchases as $purchase_post ) {
 				$WDGInvestment = new WDGInvestment( $purchase_post->ID );
-				$campaign = $WDGInvestment->get_campaign();
+				$campaign = $WDGInvestment->get_saved_campaign();
 				$download_id = $campaign->ID;
 				if ( !isset( $buffer[ $download_id ] ) ) {
 					$buffer[ $download_id ] = array();
