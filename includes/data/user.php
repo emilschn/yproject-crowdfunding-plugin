@@ -1405,6 +1405,10 @@ class WDGUser implements WDGUserInterface {
 	public function get_validated_investments() {
 		return $this->get_user_investments_object()->get_validated_investments();
 	}
+	public function get_count_validated_investments() {
+		$list = $this->get_user_investments_object()->get_posts_investments( 'publish' );
+		return count( $list );
+	}
 
 	public function get_pending_investments() {
 		return $this->get_user_investments_object()->get_pending_investments();
