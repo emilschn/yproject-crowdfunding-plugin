@@ -364,13 +364,16 @@ class ATCF_Campaign {
 	public function get_duplicate_campaigns_id() {
 		if ( !isset( $this->duplicate_campaigns_decoded ) ) {
 			$this->duplicate_campaigns_decoded = json_decode($this->__get('duplicated_campaigns') );
+			if ( empty( $this->duplicate_campaigns_decoded ) ) {
+				$this->duplicate_campaigns_decoded = array();
+			}
 		}
 		return $this->duplicate_campaigns_decoded;
 	}
 
 	public function has_duplicate_campaigns() {
 		$duplicated_campaigns = $this->get_duplicate_campaigns_id();
-		return count( $duplicated_campaigns ) > 0;
+		return !empty( $duplicated_campaigns ) && count( $duplicated_campaigns ) > 0;
 	}
 
 	public function get_duplicate_campaigns_titles() {
