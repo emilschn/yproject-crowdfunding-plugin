@@ -2379,12 +2379,13 @@ class NotificationsAPI {
 		return self::send( $parameters, $WDGUser->get_language() );
 	}
 
-	public static function declaration_done_pending_mandate($WDGOrganization, $WDGUser, $campaign) {
+	public static function declaration_done_pending_mandate($WDGOrganization, $WDGUser, $campaign, $declaration) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-mandate' );
 
 		NotificationsAPIShortcodes::set_organization($WDGOrganization);
 		NotificationsAPIShortcodes::set_recipient($WDGUser);
 		NotificationsAPIShortcodes::set_campaign($campaign);
+		NotificationsAPIShortcodes::set_declaration($declaration);
 
 		$options = array(
 			'personal' => 1
