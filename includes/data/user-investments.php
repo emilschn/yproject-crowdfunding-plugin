@@ -84,7 +84,7 @@ class WDGUserInvestments {
 		if ( !empty($purchases) ) {
 			foreach ( $purchases as $purchase_post ) {
 				$WDGInvestment = new WDGInvestment( $purchase_post->ID );
-				$campaign = $WDGInvestment->get_campaign();
+				$campaign = $WDGInvestment->get_saved_campaign();
 				$download_id = $campaign->ID;
 				if ( !isset( $buffer[ $download_id ] ) ) {
 					$buffer[ $download_id ] = array();
@@ -211,8 +211,11 @@ class WDGUserInvestments {
 			$this->pending_preinvestments = array();
 			if ( !$preinv_cache ) {
 				$pending_investments = $this->get_pending_investments();
-				foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
-					$investment_campaign = new ATCF_Campaign( $campaign_id );
+				foreach ( $pending_investments as $pending_investments_campaign_id => $campaign_investments ) {
+					if ( empty( $pending_investments_campaign_id ) || empty( $campaign_investments ) ) {
+						continue;
+					}
+					$investment_campaign = new ATCF_Campaign( $pending_investments_campaign_id );
 					$contract_has_been_modified = ( $investment_campaign->contract_modifications() != '' );
 					if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte && $contract_has_been_modified ) {
 						foreach ( $campaign_investments as $investment_id ) {

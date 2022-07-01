@@ -632,7 +632,7 @@ class WDGAjaxActionsUserAccount {
 					}
 					$download_filename = __( 'contrat-investissement-', 'yproject' ) .$result_campaign_item->project_url. '-'  .($contract_index + 1). '.pdf';
 					$campaign = new ATCF_Campaign( $result_campaign_item->project_wpref );
-					$test_file_name = WDGInvestmentContract::get_investment_file_url( $campaign, $result_investment_item->wpref );
+					$test_file_name = WDGInvestmentContract::get_investment_file_path( $campaign, $result_investment_item->wpref );
 					if ( file_exists( $test_file_name ) ) {
 						$buffer_investment_item[ 'contract_file_path' ] = WDGInvestmentContract::get_investment_file_url( $campaign, $result_investment_item->wpref );
 						$buffer_investment_item[ 'contract_file_name' ] = $download_filename;
