@@ -166,7 +166,8 @@ class WDGInvestment {
 			}
 
 			// déplacement du fichier de contrat d'un dossier de projet à l'autre
-			$filename = WDGInvestmentContract::get_and_create_path_for_campaign( $this->get_saved_campaign() ) . $payment_id . '.pdf';
+			$fromcampaign = new ATCF_Campaign( $from_campaign_id );
+			$filename = WDGInvestmentContract::get_and_create_path_for_campaign( $fromcampaign ) . $payment_id . '.pdf';
 			$new_filename = WDGInvestmentContract::get_and_create_path_for_campaign( $to_campaign ) . $payment_id . '.pdf';
 			rename( $filename, $new_filename );
 		}
