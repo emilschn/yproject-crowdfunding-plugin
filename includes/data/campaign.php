@@ -2739,9 +2739,17 @@ class ATCF_Campaign {
 	/**
 	 * Returns number of investments
 	 */
-	public function backers_count() {
+	public function backers_count( $include_duplicates = FALSE ) {
 		$backers_id_list = $this->backers_id_list();
-		return count( $backers_id_list );
+		$buffer = count( $backers_id_list );
+		if ( $include_duplicates ) {
+			$list_duplicates = $this->get_duplicate_campaigns_id();
+			foreach ( $list_duplicates as $duplicate_campaign_id ) {
+				$duplicate_campaign = new ATCF_Campaign( $duplicate_campaign_id );
+				$buffer += $duplicate_campaign->backers_count();
+			}
+		}
+		return $buffer;
 	}
 
 	/**
