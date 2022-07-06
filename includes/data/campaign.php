@@ -251,6 +251,7 @@ class ATCF_Campaign {
 			update_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal') );
 		}
 		update_post_meta( $newcampaign_id, ATCF_Campaign::$key_display_automatic_economic_model, $this->__get( ATCF_Campaign::$key_display_automatic_economic_model ) );
+		update_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_is_hidden, '1' );
 		// on vide la liste des campagnes dupliquées
 		delete_post_meta($newcampaign_id, 'duplicated_campaigns');
 		delete_post_meta($newcampaign_id, 'campaign_duplicata');
