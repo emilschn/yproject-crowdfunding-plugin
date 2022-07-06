@@ -837,6 +837,30 @@ class WDGUser implements WDGUserInterface {
 	/*******************************************************************************
 	 * Fonctions nécessitant des requetes
 	*******************************************************************************/
+	public function is_project_owner() {
+		$list_projects = array();
+		$campaign_status = array('publish');
+		$args = array(
+			'post_type' => 'download',
+			'author' => $this->get_wpref(),
+			'post_status' => $campaign_status
+		);
+		$args['meta_key'] = 'campaign_vote';
+		$args['meta_compare'] = '!=';
+		$args['meta_value'] = 'preparing';
+
+		query_posts($args);
+		if (have_posts()) {
+			while (have_posts()) {
+				the_post();
+				array_push($list_projects, get_the_ID());
+			}
+		}
+		wp_reset_query();
+
+		return !empty( $list_projects );
+	}
+
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
 		if ( $WDG_cache_plugin == null ) {

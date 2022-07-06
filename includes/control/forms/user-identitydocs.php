@@ -95,6 +95,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$types_api[] = WDGKYCFile::$type_driving;
 					$index_api = 2;
 				}
+
+				if ( $type == WDGKYCFile::$type_criminal_record ) {
+					$types_api[] = WDGKYCFile::$type_criminal_record;
+				}
 			}
 
 			// Parcourir la liste, vérifier le type s'il est précisé
@@ -225,6 +229,11 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 			// initialisation du champ "verso de la deuxième pièce d'identité"
 			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id_2_back, LemonwayDocument::$document_type_idbis_back, __( 'form.user-identitydocs.SECOND_ID_BACK', 'yproject' ), __( 'form.user-identitydocs.SECOND_ID_BACK_DESCRIPTION', 'yproject' ) );
+
+			// casier judiciaire si porteur de projet
+			if ( $WDGUser->is_project_owner() ) {
+				$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_criminal_record, FALSE, __( 'form.user-identitydocs.CRIMINAL_RECORD', 'yproject' ), __( 'form.user-identitydocs.CRIMINAL_RECORD_DESCRIPTION', 'yproject' ) );
+			}
 
 			// Activation des notifications par téléphone
 			$values_has_checked_notification = $WDGUser->has_subscribed_authentication_notification();
@@ -363,6 +372,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_back, WDGKYCFile::$owner_user);
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_2, WDGKYCFile::$owner_user);
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_2_back, WDGKYCFile::$owner_user);
+					$this->addOneField($WDGUser, WDGKYCFile::$type_criminal_record, WDGKYCFile::$owner_user);
 
 					if ( $this->send_notification_validation && $WDGUser->is_lemonway_registered() ) {
 						NotificationsAPI::kyc_waiting( $WDGUser );

@@ -13,6 +13,7 @@ class WDGKYCFile {
 	public static $type_id_back = 'id_back';
 	public static $type_id_2 = 'id_2';
 	public static $type_id_2_back = 'id_2_back';
+	public static $type_criminal_record = 'criminal_record';
 
 	public static $type_kbis = 'kbis';
 	public static $type_status = 'status';
