@@ -183,8 +183,6 @@ class WDGAjaxActionsProjectDashboard {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_summary, $backoffice_summary );
 			$campaign->set_api_data( 'description', $backoffice_summary );
 			$success["new_backoffice_summary"]=1;
-		} else {
-			$errors['new_backoffice_summary'].="Décrivez votre projet";
 		}
 
 		// URL du projet
