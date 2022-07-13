@@ -628,18 +628,17 @@ class WDGROIDeclaration {
 
 				$transfer = FALSE;
 				$WDGUserOrOrganization = FALSE;
-				$recipient_name = '';
-				$recipient_email = '';
 				$wdguser_wpref = 0;
 
 				//Gestion versement vers organisation
 				if ( $ROI->recipient_type == 'orga' ) {
 					$WDGOrga = WDGOrganization::get_by_api_id( $ROI->id_user );
+					if ( empty( $WDGOrga ) ) {
+						continue;
+					}
 					$WDGUserOrOrganization = $WDGOrga;
 					$wdguser_wpref = $WDGOrga->get_wpref();
 					$WDGOrga->register_lemonway();
-					$recipient_name = $WDGOrga->get_name();
-					$recipient_email = $WDGOrga->get_email();
 					if ( $ROI->amount > 0 ) {
 						if ( $WDGOrga->is_registered_lemonway_wallet() ) {
 							$transfer = LemonwayLib::ask_transfer_funds( $WDGOrganization_campaign->get_royalties_lemonway_id(), $WDGOrga->get_lemonway_id(), $ROI->amount );
@@ -661,11 +660,12 @@ class WDGROIDeclaration {
 					//Versement vers utilisateur personne physique
 				} else {
 					$WDGUser = WDGUser::get_by_api_id( $ROI->id_user );
+					if ( empty( $WDGUser ) ) {
+						continue;
+					}
 					$WDGUserOrOrganization = $WDGUser;
 					$wdguser_wpref = $WDGUser->get_wpref();
 					$WDGUser->register_lemonway();
-					$recipient_name = $WDGUser->get_firstname();
-					$recipient_email = $WDGUser->get_email();
 					if ( $ROI->amount > 0 ) {
 						if ( $WDGUser->is_lemonway_registered() ) {
 							// Transfert sur le wallet de séquestre d'impots de l'organisation
