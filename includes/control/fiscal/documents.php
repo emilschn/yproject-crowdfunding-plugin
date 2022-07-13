@@ -2,11 +2,11 @@
 class WDG_FiscalDocuments {
 	
 	private static $wedogood_name = 'WE DO GOOD';
-	private static $wedogood_street_number = '38';
-	private static $wedogood_street = 'rue des Olivettes';
+	private static $wedogood_street_number = '40';
+	private static $wedogood_street = 'rue de la tour d’Auvergne';
 	private static $wedogood_town_insee_number = '44109';
 	private static $wedogood_town_label = 'Nantes';
-	private static $wedogood_post_code = '44000';
+	private static $wedogood_post_code = '44200';
 	private static $wedogood_town_office = 'Nantes';
 	private static $wedogood_siret = '79751910500051';
 	private static $wedogood_previous_siret = '79751910500051';
