@@ -188,6 +188,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 					$WDGAdjustment->type = WDGAdjustment::$type_fixed_amount;
 					$WDGAdjustment->create();
 				}
+				/*
 				// Si la campagne est dans sa prolongation et que la déclaration dépasse le rendement minimal, on ajoute un ajustement qui fait baisser le montant
 				if ( $campaign->is_beyond_funding_duration() ) {
 					if ( $roideclaration->get_amount_with_adjustment() > $campaign->minimum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() ) {
@@ -200,6 +201,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 						$WDGAdjustment->create();
 					}
 				}
+				*/
 			}
 			// on met à jour date de déclaration
 			$date_now = new DateTime();
