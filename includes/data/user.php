@@ -1844,15 +1844,17 @@ class WDGUser implements WDGUserInterface {
 	/**
 	 * Enregistre le RIB
 	 */
-	public function save_iban($holder_name, $iban, $bic, $address1, $address2 = '') {
+	public function save_iban($holder_name, $iban, $bic, $address1 = '', $address2 = '') {
 		$this->bank_holdername = $holder_name;
 		$this->save_meta( WDGUser::$key_bank_holdername, $holder_name );
 		$this->bank_iban = $iban;
 		$this->save_meta( WDGUser::$key_bank_iban, $iban );
 		$this->bank_bic = $bic;
 		$this->save_meta( WDGUser::$key_bank_bic, $bic );
-		$this->bank_address = $address1;
-		$this->save_meta( WDGUser::$key_bank_address1, $address1 );
+		if ( !empty( $address1 ) ) {
+			$this->bank_address = $address1;
+			$this->save_meta( WDGUser::$key_bank_address1, $address1 );
+		}
 		if ( !empty( $address2 ) ) {
 			$this->bank_address2 = $address2;
 			$this->save_meta( WDGUser::$key_bank_address2, $address2 );

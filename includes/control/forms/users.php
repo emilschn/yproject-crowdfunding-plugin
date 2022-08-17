@@ -514,9 +514,7 @@ class WDGFormUsers {
 			if ( isset( $save_iban ) && !empty( $save_iban ) ) {
 				$save_holdername = filter_input( INPUT_POST, 'holdername' );
 				$save_bic = filter_input( INPUT_POST, 'bic' );
-				$save_address = filter_input( INPUT_POST, 'address' );
 				$WDGOrganization->set_bank_owner( $save_holdername );
-				$WDGOrganization->set_bank_address( $save_address );
 				$WDGOrganization->set_bank_iban( $save_iban );
 				$WDGOrganization->set_bank_bic( $save_bic );
 				$WDGOrganization->save();
@@ -535,9 +533,7 @@ class WDGFormUsers {
 			if ( isset( $save_iban ) && !empty( $save_iban ) ) {
 				$save_holdername = filter_input( INPUT_POST, 'holdername' );
 				$save_bic = filter_input( INPUT_POST, 'bic' );
-				$save_address = filter_input( INPUT_POST, 'address' );
-				$save_address2 = filter_input( INPUT_POST, 'address2' );
-				$WDGUser->save_iban( $save_holdername, $save_iban, $save_bic, $save_address, $save_address2 );
+				$WDGUser->save_iban( $save_holdername, $save_iban, $save_bic );
 				$WDGUser->update_api();
 			}
 
