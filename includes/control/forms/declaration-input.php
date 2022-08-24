@@ -60,6 +60,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		}
 		$description = __( "Informez vos investisseurs de l'&eacute;tat d'avancement de votre projet et incitez-les &agrave; &ecirc;tre vos ambassadeurs.", 'yproject' );
 		$description .= ' ' . __( "Nous leur transmettrons le message en m&ecirc;me temps que le versement de leurs royalties.", 'yproject' );
+		$description .= ' ' . __( "Merci de saisir au moins 140 caractères.", 'yproject' );
 		$description .= '<br>';
 		$description .= ' ' . __( "<strong>Attention :</strong> ce champ de texte enrichi vous permet de mettre en forme le texte et d'ajouter quelques images d'illustrations. Veillez &agrave; limiter la taille de ces images (500px de largeur maximum) et &agrave; &eacute;viter les autres types de media (vid&eacute;o notamment).", 'yproject' );
 		$this->addField('wpeditor', 'message', __( "Informations aux investisseurs", 'yproject' ) . ' *', self::$field_group_declaration, $input_declaration_message, $description);
@@ -129,6 +130,9 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		$declaration_message = $this->getInputText( 'message' );
 		if ( empty( $declaration_message ) ) {
 			$this->addPostError('empty-message', __( "Merci de saisir un petit message pour vos investisseurs.", 'yproject' ), 'general');
+		}
+		if ( strlen( $declaration_message ) < 140 ) {
+			$this->addPostError('empty-message', __( "Le message pour vos investisseurs devrait être un peu plus long.", 'yproject' ), 'general');
 		}
 
 		$employees_number = $this->getInputText( 'nb_employees' );
