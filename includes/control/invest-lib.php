@@ -187,10 +187,10 @@ function ypcf_get_updated_payment_status($payment_id, $mangopay_contribution = F
 						}
 					}
 
-					NotificationsSlack::send_new_investment( $campaign, $amount, $current_user->user_email, $payment_id );
-					NotificationsEmails::new_purchase_team_members( $payment_id );
 					$WDGInvestment = new WDGInvestment( $payment_id );
 					$WDGInvestment->save_to_api();
+					NotificationsSlack::send_new_investment( $campaign, $amount, $current_user->user_email, $payment_id );
+					NotificationsEmails::new_purchase_team_members( $payment_id );
 
 				//Le paiement vient d'échouer
 				} else {

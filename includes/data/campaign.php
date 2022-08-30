@@ -3018,6 +3018,12 @@ class ATCF_Campaign {
 		return ( $this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_check );
 	}
 
+	public function unset_cache() {
+		unset( $this->percent_minimum_completed );
+		unset( $this->current_amount );
+		unset( $this->payments_data );
+	}
+
 	/**
 	 * Campaign Percent Completed
 	 *

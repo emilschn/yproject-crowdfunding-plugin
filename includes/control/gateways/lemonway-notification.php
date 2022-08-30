@@ -411,12 +411,12 @@ class LemonwayNotification {
 						NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 					}
 
-					NotificationsSlack::send_new_investment( $campaign, $lemonway_posted_amount, $invest_author->get_email(), $investment_id );
-					NotificationsEmails::new_purchase_team_members( $investment_id );
 					if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
 						$WDGInvestment = new WDGInvestment( $investment_id );
 						$WDGInvestment->save_to_api();
 					}
+					NotificationsSlack::send_new_investment( $campaign, $lemonway_posted_amount, $invest_author->get_email(), $investment_id );
+					NotificationsEmails::new_purchase_team_members( $investment_id );
 				} else {
 					// sinon, il faut investiguer
 					$content .= "\n Problème de transfert de fond vers le wallet d'orga";
