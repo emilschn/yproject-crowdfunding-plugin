@@ -472,8 +472,10 @@ class WDGCampaignInvestments {
 			$team_member_list = WDGWPREST_Entity_Project::get_users_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 			if ( count( $team_member_list ) > 0 ) {
 				foreach ( $team_member_list as $team_member ) {
-					$WDGUserTeam = new WDGUser( $team_member->wpref );
-					NotificationsAPI::campaign_advice( $replyto_mail, $campaign, $WDGUserTeam, $greetings, $last_24h, $top_actions );
+					if ($team_member->notifications == '1') {
+						$WDGUserTeam = new WDGUser( $team_member->wpref );
+						NotificationsAPI::campaign_advice( $replyto_mail, $campaign, $WDGUserTeam, $greetings, $last_24h, $top_actions );
+					}
 				}
 			}
 		}
