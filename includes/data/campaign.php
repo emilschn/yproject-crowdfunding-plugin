@@ -3019,9 +3019,9 @@ class ATCF_Campaign {
 	}
 
 	public function reload_cache() {
-		unset( $this->percent_minimum_completed );
-		unset( $this->current_amount );
-		unset( $this->payments_data );
+		unset( $this->percent_minimum_completed_cache );
+		unset( $this->current_amount_cache );
+		$this->payments_data_cache = array();
 		unset( $this->api_data );
 		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$this->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
 		$this->load_api_data();
@@ -3058,27 +3058,27 @@ class ATCF_Campaign {
 		return $percent;
 	}
 
-	private $percent_minimum_completed;
+	private $percent_minimum_completed_cache;
 	public function percent_minimum_completed($formatted = true) {
-		if ( !isset( $this->percent_minimum_completed ) || empty( $this->percent_minimum_completed ) ) {
+		if ( !isset( $this->percent_minimum_completed_cache ) || empty( $this->percent_minimum_completed_cache ) ) {
 			$goal    = $this->minimum_goal(false);
 			$current = $this->current_amount(false);
 
 			if ( 0 == $goal ) {
 				return $formatted ? 0 . '%' : 0;
 			}
-			$this->percent_minimum_completed = ( $current / $goal ) * 100;
-			if ( $this->percent_minimum_completed < 90 ) {
-				$this->percent_minimum_completed = round( $this->percent_minimum_completed );
+			$this->percent_minimum_completed_cache = ( $current / $goal ) * 100;
+			if ( $this->percent_minimum_completed_cache < 90 ) {
+				$this->percent_minimum_completed_cache = round( $this->percent_minimum_completed_cache );
 			} else {
-				$this->percent_minimum_completed = floor( $this->percent_minimum_completed );
+				$this->percent_minimum_completed_cache = floor( $this->percent_minimum_completed_cache );
 			}
 		}
 
 		if ( $formatted ) {
-			return $this->percent_minimum_completed . '%';
+			return $this->percent_minimum_completed_cache . '%';
 		} else {
-			return $this->percent_minimum_completed;
+			return $this->percent_minimum_completed_cache;
 		}
 	}
 
@@ -3097,9 +3097,9 @@ class ATCF_Campaign {
 	 * @param boolean $formatted Return formatted currency or not
 	 * @return sting $total The amount funded (currency formatted or not)
 	 */
-	private $current_amount;
+	private $current_amount_cache;
 	public function current_amount($formatted = true) {
-		if ( !isset( $this->current_amount ) ) {
+		if ( !isset( $this->current_amount_cache ) ) {
 			$total   = 0;
 			$payments_data = $this->payments_data();
 
@@ -3113,11 +3113,11 @@ class ATCF_Campaign {
 
 			$amount_check = $this->current_amount_check_meta(FALSE);
 			$total += $amount_check;
-			$this->current_amount = $total;
+			$this->current_amount_cache = $total;
 		}
 
 		if ( $formatted ) {
-			$current_amount = $this->current_amount;
+			$current_amount = $this->current_amount_cache;
 			if ( strpos( $current_amount, '.00' ) !== false ) {
 				$current_amount = substr( $current_amount, 0, -3 );
 			}
@@ -3126,7 +3126,7 @@ class ATCF_Campaign {
 			return $current_amount . ' &euro;';
 		}
 
-		return $this->current_amount;
+		return $this->current_amount_cache;
 	}
 
 	public function current_amount_with_check() {
@@ -3285,10 +3285,10 @@ class ATCF_Campaign {
 	 * This function is very slow, it is advisable to use it as few as possible
 	 * @return array
 	 */
-	private $payments_data;
+	private $payments_data_cache;
 	public function payments_data($skip_apis = FALSE, $order_by_older = FALSE, $show_failed = FALSE) {
-		if ( !isset( $this->payments_data ) ) {
-			$this->payments_data = array();
+		if ( !isset( $this->payments_data_cache ) || empty( $this->payments_data_cache ) ) {
+			$this->payments_data_cache = array();
 
 			if ( $this->has_investments_in_api() ) {
 				foreach ( $this->api_data->investments as $investment_item ) {
@@ -3296,7 +3296,7 @@ class ATCF_Campaign {
 						// Récupération simple des paiements dans l'API
 						// On dégage 'products' et 'signsquid_status_text' pas très utile
 						// On simplifie 'mangopay_contribution' et 'lemonway_contribution' pour avoir les infos au cas où, mais pas les chercher de suite, car normalement pas besoin
-						$this->payments_data[] = array(
+						$this->payments_data_cache[] = array(
 							'item'			=> $investment_item,
 							'ID'			=> $investment_item->wpref,
 							'user'			=> $investment_item->user_wpref,
@@ -3317,11 +3317,11 @@ class ATCF_Campaign {
 
 			if ( $order_by_older ) {
 				// on trie les investissements par date, le plus vieux en premier
-				array_multisort(array_column($this->payments_data, 'date'), SORT_ASC, $this->payments_data);
+				array_multisort(array_column($this->payments_data_cache, 'date'), SORT_ASC, $this->payments_data_cache);
 			}
 		}
 
-		return $this->payments_data;
+		return $this->payments_data_cache;
 	}
 
 	public function pending_preinvestments() {
