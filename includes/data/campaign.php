@@ -3018,10 +3018,13 @@ class ATCF_Campaign {
 		return ( $this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_check );
 	}
 
-	public function unset_cache() {
+	public function reload_cache() {
 		unset( $this->percent_minimum_completed );
 		unset( $this->current_amount );
 		unset( $this->payments_data );
+		unset( $this->api_data );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$this->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
+		$this->load_api_data();
 	}
 
 	/**

@@ -250,7 +250,7 @@ class NotificationsEmails {
 		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
 			$body_content .= "Bravo, continuez à inciter au pré-investissement (notamment auprès de ceux qui ont déjà voté), afin que votre levée de fonds démarre avec une belle dynamique déjà en place !";
 		} else {
-			$campaign->unset_cache();
+			$campaign->reload_cache();
 			$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
 		}
 
