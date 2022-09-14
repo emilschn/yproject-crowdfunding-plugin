@@ -130,6 +130,7 @@ class NotificationsAsana {
 	public static function new_purchase_pending_check_admin($payment_id, $picture_url) {
 		$inv = new WDGInvestment( $payment_id );
 		$campaign = $inv->get_saved_campaign();
+		$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' . $campaign->ID;
 
 		$payment_amount = $inv->get_saved_amount();
 		$email = $inv->get_saved_user_email();
@@ -138,11 +139,12 @@ class NotificationsAsana {
 		$object = $campaign->get_name() . ' /// Nouveau chèque !';
 
 		$content = "Un nouveau chèque de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		$content .= "-> TBPP : " .$dashboard_url. "<br /><br />";
 		$content .= "Utilisateur :<br />";
 		$content .= "- login : " .$user_data->user_login. "<br />";
 		$content .= "- e-mail : " .$email. "<br />";
 		$content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
-		$content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		$content .= "- téléphone : " .get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
 		if ( $picture_url ) {
 			$content .= "Une photo a été envoyée :<br />";
 			$content .= "<img src='".$picture_url."' /><br />";
