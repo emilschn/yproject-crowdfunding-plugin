@@ -279,6 +279,16 @@ class WDGKYCFile {
 		return $result;
 	}
 
+	public function send_and_reload() {
+		WDGWPREST_Entity_FileKYC::send_to_lemonway( $this->id );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/file-kyc/' . $this->id );
+		$kycfile_item = WDGWPREST_Entity_FileKYC::get( $this->id );
+		if( isset($kycfile_item) && $kycfile_item !== FALSE ) {
+			$this->gateway_user_id = $kycfile_item->gateway_user_id;
+			$this->gateway_organization_id = $kycfile_item->gateway_organization_id;
+		}
+	}
+
 	/*******************************************************************************
 	 * REQUETES STATIQUES
 	 ******************************************************************************/

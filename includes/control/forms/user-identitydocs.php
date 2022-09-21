@@ -144,6 +144,11 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				$kycfile_id = $current_file->id;
 				$is_api_file = $current_file->is_api_file;
 				$is_file_sent = !empty( $current_file->gateway_user_id ) || !empty( $current_file->gateway_organization_id );
+				// Reessaie d'envoyer le fichier
+				if ($is_api_file && !$is_file_sent) {
+					$current_file->send_and_reload();
+					$is_file_sent = !empty( $current_file->gateway_user_id ) || !empty( $current_file->gateway_organization_id );
+				}
 			}
 		}
 
