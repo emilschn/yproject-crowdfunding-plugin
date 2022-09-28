@@ -2000,6 +2000,10 @@ class ATCF_Campaign {
 	 * @return boolean
 	 */
 	public function is_adjustment_needed() {
+		if ($this->campaign_status() != self::$campaign_status_funded) {
+			return false;
+		}
+
 		// récupérer toutes les déclarations passées / au statut différent de "declaration"
 		$existing_roi_declarations = $this->get_past_roi_declarations();
 		// on les compte
