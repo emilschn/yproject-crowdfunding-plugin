@@ -390,10 +390,12 @@ class ATCF_Campaign {
 
 	public function get_duplicate_campaigns_total_amount( $formatted = TRUE ) {
 		$amount = $this->current_amount( false );
-		$duplicated_campaigns = $this->get_duplicate_campaigns_id();
-		foreach ( $duplicated_campaigns as $wpcampaign ) {
-			$WDGCampaign = new ATCF_Campaign( $wpcampaign );
-			$amount += $WDGCampaign->current_amount( false );
+		if ($this->has_duplicate_campaigns()) {
+			$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+			foreach ( $duplicated_campaigns as $wpcampaign ) {
+				$WDGCampaign = new ATCF_Campaign( $wpcampaign );
+				$amount += $WDGCampaign->current_amount( false );
+			}
 		}
 
 		if ( $formatted ) {
