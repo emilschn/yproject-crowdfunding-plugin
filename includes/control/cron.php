@@ -37,7 +37,7 @@ class WDGCronActions {
 							$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
 							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 								$organization = $campaign->get_organization();
-								$wdgorganization = new WDGOrganization( $organization->id, $organization );
+								$wdgorganization = new WDGOrganization( $organization->wpref, $organization );
 								$wdguser_author = new WDGUser( $campaign->data->post_author );
 
 								// Données qui seront transmises à SiB
