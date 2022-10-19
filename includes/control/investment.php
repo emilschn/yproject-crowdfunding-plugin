@@ -133,6 +133,7 @@ class WDGInvestment {
 		$payment_data['cart_details'][ 0 ][ 'item_number' ][ 'id' ] = $to_campaign_id;
 		// sécurité
 		if ($campaign_id == $from_campaign_id) {
+			$fromcampaign = new ATCF_Campaign( $from_campaign_id );
 			// Donnée investissement sur site : table postmeta : modifier l'identifiant du projet WP dans les meta (_edd_payment_meta).
 			update_post_meta($payment_id, '_edd_payment_meta', $payment_data);
 			// on met à jour le post d'investissement
@@ -165,8 +166,16 @@ class WDGInvestment {
 				WDGWPREST_Entity_Investment::create_or_update( $this, $user_id, edd_get_payment_status( $payment, true ) );
 			}
 
+			// Donnée sondage sur API : table wdgrestapi1524_entity_poll_answer : dupliquer la ligne et modifier la donnée "project" avec l'ID API du nouveau projet
+			$wdgUser = new WDGUser($user_id); 
+			$pollAnswers = WDGWPREST_Entity_PollAnswer::get_list( $wdgUser->get_api_id(), $fromcampaign->get_api_id());
+
+			if ( !empty( $pollAnswers ) ) {
+				foreach ( $pollAnswers as $pollAnswer ) {
+					WDGWPREST_Entity_PollAnswer::create( $pollAnswer->poll_slug, $pollAnswer->poll_version, $pollAnswer->answers, $pollAnswer->context, $pollAnswer->context_amount, $to_campaign->get_api_id(), $pollAnswer->user_id, $pollAnswer->user_age, $pollAnswer->user_postal_code, $pollAnswer->user_gender, $pollAnswer->user_email );
+				}
+			}
 			// déplacement du fichier de contrat d'un dossier de projet à l'autre
-			$fromcampaign = new ATCF_Campaign( $from_campaign_id );
 			$filename = WDGInvestmentContract::get_and_create_path_for_campaign( $fromcampaign ) . $payment_id . '.pdf';
 			$new_filename = WDGInvestmentContract::get_and_create_path_for_campaign( $to_campaign ) . $payment_id . '.pdf';
 			rename( $filename, $new_filename );
@@ -204,6 +213,16 @@ class WDGInvestment {
 
 		// la fonction add_investment créé l'investissement dans le site, dans l'API, génère le contrat et envoie un mail de notification
 		$new_investment_id = $to_campaign->add_investment($payment_key, $user_email, $amount, 'publish', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', $orga_email);
+		// Donnée sondage sur API : table wdgrestapi1524_entity_poll_answer : dupliquer la ligne et modifier la donnée "project" avec l'ID API du nouveau projet
+	
+		$fromcampaign = new ATCF_Campaign( $from_campaign_id );
+		$pollAnswers = WDGWPREST_Entity_PollAnswer::get_list( $user->get_api_id(), $fromcampaign->get_api_id());
+
+		if ( !empty( $pollAnswers ) ) {
+			foreach ( $pollAnswers as $pollAnswer ) {
+				WDGWPREST_Entity_PollAnswer::create( $pollAnswer->poll_slug, $pollAnswer->poll_version, $pollAnswer->answers, $pollAnswer->context, $pollAnswer->context_amount, $to_campaign->get_api_id(), $pollAnswer->user_id, $pollAnswer->user_age, $pollAnswer->user_postal_code, $pollAnswer->user_gender, $pollAnswer->user_email );
+			}
+		}
 
 		if ( $new_investment_id ) {
 			// on change le statut et la date du nouvel investissement
