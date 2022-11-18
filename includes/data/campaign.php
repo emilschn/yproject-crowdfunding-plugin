@@ -3877,8 +3877,8 @@ class ATCF_Campaign {
 
 	public static function get_list_most_recent($nb = 1, $client = '') {
 		$buffer = array();
-
-		$projectlist_funding = ATCF_Campaign::get_list_funding( $nb, $client );
+		// Malgré le nom de la fonction, on ne prend pas les projets en collecte les plus récents, mais x projets aléatoirement parmis ceux en collecte
+		$projectlist_funding = ATCF_Campaign::get_list_funding( $nb, $client, TRUE );
 		$count_projectlist = count( $projectlist_funding );
 		foreach ( $projectlist_funding as $project ) {
 			array_push( $buffer, $project->ID );
