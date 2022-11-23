@@ -455,8 +455,8 @@ class WDGFormUsers {
 		$buffer = __( "Votre compte bancaire n'est pas encore valid&eacute;.", 'yproject' );
 		if ( !empty( $orga_id ) ) {
 			$WDGOrganization = new WDGOrganization( $orga_id );
-			if ( $WDGOrganization->has_saved_iban() && $WDGOrganization->get_rois_amount() > 0 ) {
-				$buffer = $WDGOrganization->transfer_wallet_to_bankaccount( $WDGOrganization->get_available_rois_amount() );
+			if ( $WDGOrganization->has_saved_iban()) {
+				$buffer = $WDGOrganization->transfer_wallet_to_bankaccount( $amount );
 			}
 		} else {
 			$WDGUser = new WDGUser( $user_id );
