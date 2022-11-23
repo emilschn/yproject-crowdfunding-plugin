@@ -782,7 +782,11 @@ class NotificationsAPI {
 			$recipients = '';
 			$index = 0;
 			for ( $i = 0; $i < $recipients_array_count; $i++ ) {
-				$recipients .= $recipients_array[ $i ];
+				$is_valid_recipient = false;
+				if (filter_var($recipients_array[ $i ], FILTER_VALIDATE_EMAIL)) {
+					$is_valid_recipient = true;
+					$recipients .= $recipients_array[ $i ];
+				}
 				$index++;
 				if ( $index == $max_recipients ) {
 					$parameters = array(
@@ -795,7 +799,7 @@ class NotificationsAPI {
 					self::send( $parameters );
 					$recipients = '';
 					$index = 0;
-				} elseif ( $i < $recipients_array_count - 1 ) {
+				} elseif ( $i < $recipients_array_count - 1 && $is_valid_recipient ) {
 					$recipients .= ',';
 				}
 			}
