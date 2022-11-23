@@ -360,8 +360,7 @@ class WDGCronActions {
 
 		$buffer_partners .= '<titre><![CDATA['.$campaign->data->post_title.']]></titre>' . "\n"; //TNP
 		$buffer_partners .= '<description><![CDATA['.html_entity_decode($campaign->summary()).']]></description>' . "\n"; //TNP
-		$description_complete = html_entity_decode( $campaign->description() );
-		$buffer_partners .= '<description_complete><![CDATA['.apply_filters( 'the_content', $description_complete ).']]></description_complete>' . "\n"; //Info durable
+		$buffer_partners .= '<description_complete><![CDATA['.$campaign->data->post_content.']]></description_complete>' . "\n"; //Info durable
 		$buffer_partners .= '<url><![CDATA['.$campaign->get_public_url().']]></url>' . "\n"; //TNP
 		$buffer_partners .= '<url_photo><![CDATA['.$campaign->get_home_picture_src().']]></url_photo>' . "\n"; //TNP
 		$buffer_partners .= '<date_debut_collecte>'.$campaign->begin_collecte_date('Y-m-d').'</date_debut_collecte>' . "\n"; //TNP :: YYYY-MM-DD
