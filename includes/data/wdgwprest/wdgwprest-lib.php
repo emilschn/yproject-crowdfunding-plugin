@@ -57,8 +57,8 @@ class WDGWPRESTLib {
 				);
 
 				if ( !$shortcut_call ) {
-					if (!isset( $result['response']) || ($result['response']['code'] != '200')) {
-						ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $route : ' . $route.' --> $result[response] : ' . print_r( $result['response'], TRUE ) );
+					if (is_wp_error($result) || !isset( $result['response']) || ($result['response']['code'] != '200')) {
+						ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $route : ' . $route.' --> $result : ' . print_r( $result, TRUE ) );
 					}
 				}
 				if ( !$shortcut_call && !is_wp_error($result) && isset( $result['body'] ) ) {
