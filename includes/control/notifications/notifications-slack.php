@@ -121,12 +121,12 @@ class NotificationsSlack {
 		self::send_to_notifications( $message, NotificationsSlack::$icon_exclamation_red, self::$notif_type_investors );
 	}
 
-	public static function send_new_investment($project_name, $amount, $investor_email) {
-		global $new_pdf_file_name;
-		$message = 'Nouvel investissement sur le projet ' . $project_name . ' : '.$amount.' € par ' .$investor_email;
-		if ( !empty( $new_pdf_file_name ) ) {
+	public static function send_new_investment( $campaign, $amount, $investor_email, $investment_id ) {
+		$message = 'Nouvel investissement sur le projet ' . $campaign->get_name() . ' : '.$amount.' € par ' .$investor_email;
+		$investment_url = WDGInvestmentContract::get_investment_file_url( $campaign, $investment_id );
+		if ( !empty( $investment_url ) ) {
 			$message .= "\n";
-			$message .= "Lien vers le contrat : " .site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' .$new_pdf_file_name );
+			$message .= "Lien vers le contrat : " .$investment_url;
 		}
 		NotificationsSlack::send_to_notifications( $message, NotificationsSlack::$icon_money, self::$notif_type_investors );
 	}
@@ -230,27 +230,23 @@ class NotificationsSlack {
 	}
 
 	public static function investment_pending_wire($payment_id) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
-
-		$message = "Nouveau virement pour ".$campaign->data->post_title ." : ".$payment_amount. "euros (".$email.")";
+		$message = "Nouveau virement pour ".$campaign->get_name() ." : ".$payment_amount. "euros (".$email.")";
 
 		self::send_to_notifications( $message, NotificationsSlack::$icon_scroll, self::$notif_type_clients );
 	}
 
 	public static function new_purchase_pending_check_admin($payment_id, $picture_url) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
+		$payment_amount = $inv->get_saved_amount();
+		$email =  $inv->get_saved_user_email();
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
-
-		$message = "Nouveau chèque pour ".$campaign->data->post_title ." : ".$payment_amount. "euros (".$email."). ";
+		$message = "Nouveau chèque pour ".$campaign->get_name() ." : ".$payment_amount. "euros (".$email."). ";
 		if ( $picture_url ) {
 			$message .= "Une photo a été envoyée.";
 		} else {

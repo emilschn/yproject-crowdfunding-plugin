@@ -20,7 +20,7 @@ class WDGWPREST_Entity_UserConformity {
 		return WDGWPRESTLib::call_get_wdg( 'user/' .$user_api_id. '/conformity', $shortcut_call );
 	}
 
-	private static function transform_ajax_to_metadata( $user_api_id, $ajax_data ) {
+	private static function transform_ajax_to_metadata( $user_api_id, $ajax_data, $is_sophisticated ) {
 		$ajax_data_decoded = json_decode( $ajax_data );
 
 		$buffer = array();
@@ -36,7 +36,10 @@ class WDGWPREST_Entity_UserConformity {
 		$buffer[ 'financial_result_in_cents' ] = $ajax_data_decoded->yearlyCapacityAmount * 100;
 
 		$buffer[ 'knowledge_details' ] = json_encode( $ajax_data_decoded->knowledge );
-		$buffer[ 'knowledge_result' ] = true ? 'unsophisticated' : 'sophisticated';
+		$buffer[ 'knowledge_result' ] = $is_sophisticated ? 'sophisticated' : 'unsophisticated';
+
+		$buffer[ 'profession_details' ] = json_encode( $ajax_data_decoded->profession );
+		$buffer[ 'objectives_details' ] = json_encode( $ajax_data_decoded->objectives );
 
 		return $buffer;
 	}
@@ -44,13 +47,13 @@ class WDGWPREST_Entity_UserConformity {
 	/**
 	 * Crée une donnée de conformité sur l'API
 	 */
-	public static function create( $user_api_id, $ajax_data ) {
+	public static function create( $user_api_id, $ajax_data, $is_sophisticated ) {
 		if ( empty( $user_api_id ) ) {
 			return FALSE;
 		}
 
 		// Build conformity data
-		$conformity_data = self::transform_ajax_to_metadata( $user_api_id, $ajax_data );
+		$conformity_data = self::transform_ajax_to_metadata( $user_api_id, $ajax_data, $is_sophisticated );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity', $conformity_data, TRUE );
 		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user_api_id. '/conformity' );
@@ -61,13 +64,13 @@ class WDGWPREST_Entity_UserConformity {
 	/**
 	 * Mise à jour de la donnée de conformité de l'utilisateur à partir d'un id
 	 */
-	public static function update( $conformity_id, $user_api_id, $ajax_data ) {
+	public static function update( $conformity_id, $user_api_id, $ajax_data, $is_sophisticated ) {
 		if ( empty( $conformity_id ) ) {
 			return FALSE;
 		}
 
 		// Build conformity data
-		$conformity_data = self::transform_ajax_to_metadata( $user_api_id, $ajax_data );
+		$conformity_data = self::transform_ajax_to_metadata( $user_api_id, $ajax_data, $is_sophisticated );
 		
 		$result_obj = WDGWPRESTLib::call_post_wdg( 'user-conformity/' . $conformity_id, $conformity_data, TRUE );
 		WDGWPRESTLib::unset_cache( 'wdg/v1/user/' .$user_api_id. '/conformity' );

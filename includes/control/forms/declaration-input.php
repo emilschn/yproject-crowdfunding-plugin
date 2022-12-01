@@ -60,6 +60,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		}
 		$description = __( "Informez vos investisseurs de l'&eacute;tat d'avancement de votre projet et incitez-les &agrave; &ecirc;tre vos ambassadeurs.", 'yproject' );
 		$description .= ' ' . __( "Nous leur transmettrons le message en m&ecirc;me temps que le versement de leurs royalties.", 'yproject' );
+		$description .= ' ' . __( "Merci de saisir au moins 140 caractères.", 'yproject' );
 		$description .= '<br>';
 		$description .= ' ' . __( "<strong>Attention :</strong> ce champ de texte enrichi vous permet de mettre en forme le texte et d'ajouter quelques images d'illustrations. Veillez &agrave; limiter la taille de ces images (500px de largeur maximum) et &agrave; &eacute;viter les autres types de media (vid&eacute;o notamment).", 'yproject' );
 		$this->addField('wpeditor', 'message', __( "Informations aux investisseurs", 'yproject' ) . ' *', self::$field_group_declaration, $input_declaration_message, $description);
@@ -130,6 +131,9 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 		if ( empty( $declaration_message ) ) {
 			$this->addPostError('empty-message', __( "Merci de saisir un petit message pour vos investisseurs.", 'yproject' ), 'general');
 		}
+		if ( strlen( $declaration_message ) < 140 ) {
+			$this->addPostError('empty-message', __( "Le message pour vos investisseurs devrait être un peu plus long.", 'yproject' ), 'general');
+		}
 
 		$employees_number = $this->getInputText( 'nb_employees' );
 		$employees_number = intval( $employees_number );
@@ -188,6 +192,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 					$WDGAdjustment->type = WDGAdjustment::$type_fixed_amount;
 					$WDGAdjustment->create();
 				}
+				/*
 				// Si la campagne est dans sa prolongation et que la déclaration dépasse le rendement minimal, on ajoute un ajustement qui fait baisser le montant
 				if ( $campaign->is_beyond_funding_duration() ) {
 					if ( $roideclaration->get_amount_with_adjustment() > $campaign->minimum_profit_amount() - $campaign->get_roi_declarations_total_roi_amount() ) {
@@ -200,6 +205,7 @@ class WDG_Form_Declaration_Input extends WDG_Form {
 						$WDGAdjustment->create();
 					}
 				}
+				*/
 			}
 			// on met à jour date de déclaration
 			$date_now = new DateTime();

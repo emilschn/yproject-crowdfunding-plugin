@@ -34,6 +34,8 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		$file_path = FALSE;
 		$file_date_uploaded = FALSE;
 		$is_api_file = FALSE;
+		$is_file_sent = TRUE;
+		
 		if ( $this->is_orga ){
 			$is_authentified = $WDGUserOrOrganization->is_registered_lemonway_wallet();
 		}else{
@@ -93,6 +95,10 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$types_api[] = WDGKYCFile::$type_driving;
 					$index_api = 2;
 				}
+
+				if ( $type == WDGKYCFile::$type_criminal_record ) {
+					$types_api[] = WDGKYCFile::$type_criminal_record;
+				}
 			}
 
 			// Parcourir la liste, vérifier le type s'il est précisé
@@ -137,6 +143,12 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 				// enregistrer l'id du fichier en hidden dans le field pour le récupérer facilement en postForm
 				$kycfile_id = $current_file->id;
 				$is_api_file = $current_file->is_api_file;
+				$is_file_sent = !empty( $current_file->gateway_user_id ) || !empty( $current_file->gateway_organization_id );
+				// Reessaie d'envoyer le fichier
+				if ($is_api_file && !$is_file_sent) {
+					$current_file->send_and_reload();
+					$is_file_sent = !empty( $current_file->gateway_user_id ) || !empty( $current_file->gateway_organization_id );
+				}
 			}
 		}
 
@@ -144,7 +156,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$lw_type = LemonwayDocument::get_lw_document_id_from_document_type($api_type, $index_api);
 		}
 
-		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified );
+		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified, $is_file_sent );
 		$this->addField( 'file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params );
 	}
 
@@ -223,6 +235,11 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			// initialisation du champ "verso de la deuxième pièce d'identité"
 			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id_2_back, LemonwayDocument::$document_type_idbis_back, __( 'form.user-identitydocs.SECOND_ID_BACK', 'yproject' ), __( 'form.user-identitydocs.SECOND_ID_BACK_DESCRIPTION', 'yproject' ) );
 
+			// casier judiciaire si porteur de projet
+			if ( $WDGUser->is_project_owner() ) {
+				$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_criminal_record, FALSE, __( 'form.user-identitydocs.CRIMINAL_RECORD', 'yproject' ), __( 'form.user-identitydocs.CRIMINAL_RECORD_DESCRIPTION', 'yproject' ) );
+			}
+
 			// Activation des notifications par téléphone
 			$values_has_checked_notification = $WDGUser->has_subscribed_authentication_notification();
 			if ( $values_has_checked_notification ) {
@@ -248,22 +265,28 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		
 		// s'il y a un nouveau fichier à envoyer, on l'envoie
 		if ( isset( $_FILES[ $type .$file_suffix ][ 'tmp_name' ] ) && !empty( $_FILES[ $type .$file_suffix ][ 'tmp_name' ] ) ) {
-			$this->nb_file_sent++;
-			$api_type = $type;
-			if ( $select_value !== null && $select_value != '' ) {
-				$api_type = $select_value;
-			} else {
-				$select_value = FALSE;
-			}
-
-			$file_id = WDGKYCFile::add_file( $type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $type .$file_suffix ] , '', $select_value );
-
-			if ( is_int( $file_id ) ) {
-				if ( $WDGUserOrOrganization->can_register_lemonway() ) {
-					$this->send_notification_validation = TRUE;
+			$list_accepted_types = array( 'image/jpeg', 'image/gif', 'image/png', 'application/pdf' );
+			if ( in_array( $_FILES[ $type .$file_suffix ][ 'type' ], $list_accepted_types ) && ( $_FILES[ $type .$file_suffix ][ 'size' ] / 1024) / 1024 < 8 ) {
+				$this->nb_file_sent++;
+				$api_type = $type;
+				if ( $select_value !== null && $select_value != '' ) {
+					$api_type = $select_value;
+				} else {
+					$select_value = FALSE;
 				}
+	
+				$file_id = WDGKYCFile::add_file( $type, $WDGUserOrOrganization->get_wpref(), $owner_type, $_FILES[ $type .$file_suffix ] , '', $select_value );
+	
+				if ( is_int( $file_id ) ) {
+					if ( $WDGUserOrOrganization->can_register_lemonway() ) {
+						$this->send_notification_validation = TRUE;
+					}
+				} else {
+					$this->addError( $file_id, $api_type );
+				}
+
 			} else {
-				$this->addError( $file_id, $api_type );
+				$this->addError( 'EXT', $type );
 			}
 		
 		// s'il n'y a pas un nouveau fichier à envoyer, mais que le type du select n'est pas "l'ancien type de base" ni indéfini, ni vide évidemment
@@ -354,16 +377,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_back, WDGKYCFile::$owner_user);
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_2, WDGKYCFile::$owner_user);
 					$this->addOneField($WDGUser, WDGKYCFile::$type_id_2_back, WDGKYCFile::$owner_user);
-
-					// Si l'utilisateur a des organisations,
-					// on envoie les kycs qui viennent peut-être d'être mis à jour avec les pièces d'identité
-					$orga_list = $WDGUser->get_organizations_list();
-					if ( count( $orga_list ) > 0 ) {
-						foreach ( $orga_list as $orga_item ) {
-							$wdg_orga_item = new WDGOrganization( $orga_item->wpref );
-							$wdg_orga_item->send_kyc();
-						}
-					}
+					$this->addOneField($WDGUser, WDGKYCFile::$type_criminal_record, WDGKYCFile::$owner_user);
 
 					if ( $this->send_notification_validation && $WDGUser->is_lemonway_registered() ) {
 						NotificationsAPI::kyc_waiting( $WDGUser );

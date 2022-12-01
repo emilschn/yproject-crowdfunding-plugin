@@ -1,7 +1,7 @@
 <?php
 class WDG_Cache_Plugin {
 	// TODO : Déplacer dans une classe spécifique de gestion de configuration de cache
-	public static $nb_query_campaign_funded = 130;
+	public static $nb_query_campaign_funded = 150;
 	public static $stats_key = 'home-stats';
 	public static $stats_duration = 864000; // 10 jours de cache (10*24*60*60)
 	public static $stats_version = 1;

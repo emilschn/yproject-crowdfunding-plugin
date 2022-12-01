@@ -256,6 +256,24 @@ class NotificationsAPI {
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
+		'preinvestment-auto-validated' => array(
+			'fr-sib-id'		=> 'preinvestment-auto-validated',
+			'description'	=> "Pré-investissement validé automatiquement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'preinvestment-to-validate' => array(
+			'fr-sib-id'		=> 'preinvestment-to-validate',
+			'description'	=> "Pré-investissement à valider",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'preinvestment-canceled' => array(
+			'fr-sib-id'		=> 'preinvestment-canceled',
+			'description'	=> "Pré-investissement annulé",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
 		'investment-check-pending' => array(
 			'fr-sib-id'		=> '172',
 			'description'	=> "Investissement par chèque en attente",
@@ -349,6 +367,24 @@ class NotificationsAPI {
 		'declaration-mandate-payment-warning' => array(
 			'fr-sib-id'		=> '595',
 			'description'	=> "Déclarations - Avertissement prélèvement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'declaration-done-pending-wire' => array(
+			'fr-sib-id'		=> 'declaration-done-pending-wire',
+			'description'	=> "Déclaration faite en attente de paiement par virement",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'declaration-done-pending-mandate' => array(
+			'fr-sib-id'		=> 'declaration-done-pending-mandate',
+			'description'	=> "Déclaration faite en attente de paiement par prélèvement bancaire",
+			'variables'		=> "",
+			'wdg-mail'		=> ""
+		),
+		'declaration-mandate-received' => array(
+			'fr-sib-id'		=> 'declaration-mandate-received',
+			'description'	=> "Prélèvement bancaire reçu",
 			'variables'		=> "",
 			'wdg-mail'		=> ""
 		),
@@ -746,7 +782,11 @@ class NotificationsAPI {
 			$recipients = '';
 			$index = 0;
 			for ( $i = 0; $i < $recipients_array_count; $i++ ) {
-				$recipients .= $recipients_array[ $i ];
+				$is_valid_recipient = false;
+				if (filter_var($recipients_array[ $i ], FILTER_VALIDATE_EMAIL)) {
+					$is_valid_recipient = true;
+					$recipients .= $recipients_array[ $i ];
+				}
 				$index++;
 				if ( $index == $max_recipients ) {
 					$parameters = array(
@@ -759,7 +799,7 @@ class NotificationsAPI {
 					self::send( $parameters );
 					$recipients = '';
 					$index = 0;
-				} elseif ( $i < $recipients_array_count - 1 ) {
+				} elseif ( $i < $recipients_array_count - 1 && $is_valid_recipient ) {
 					$recipients .= ',';
 				}
 			}
@@ -1805,6 +1845,79 @@ class NotificationsAPI {
 	}
 
 	//**************************************************************************
+	// Pré-investissement
+	//**************************************************************************
+
+	//*******************************************************
+	// NOTIFICATIONS PRE-INVESTISSEMENT VALIDE AUTOMATIQUEMENT
+	//*******************************************************
+	public static function preinvestment_auto_validated($WDGUserInterface, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'preinvestment-auto-validated' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
+	//*******************************************************
+	// NOTIFICATIONS PRE-INVESTISSEMENT A VALIDER
+	//*******************************************************
+	public static function preinvestment_to_validate($WDGUserInterface, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'preinvestment-to-validate' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
+	//*******************************************************
+	// NOTIFICATIONS PRE-INVESTISSEMENT ANNULé
+	//*******************************************************
+	public static function preinvestment_canceled($WDGUserInterface, $campaign) {
+		$id_template = self::get_id_fr_by_slug( 'preinvestment-canceled' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'id_project'	=> $campaign->get_api_id(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
+	//**************************************************************************
 	// Investissement
 	//**************************************************************************
 
@@ -1954,7 +2067,7 @@ class NotificationsAPI {
 	}
 
 	//*******************************************************
-	// NOTIFICATIONS INVESTISSEMENT - ERREUR - POUR UTILISATEUR
+	// NOTIFICATION PAIEMENT PAR VIREMENT RECU
 	//*******************************************************
 	public static function wire_transfer_received($WDGUserInterface, $amount) {
 		$id_template = self::get_id_fr_by_slug( 'received-wire-without-pending-investment' );
@@ -2242,6 +2355,78 @@ class NotificationsAPI {
 	//*******************************************************
 	// NOTIFICATIONS DECLARATIONS APROUVEES
 	//*******************************************************
+	public static function declaration_done_pending_wire($WDGOrganization, $WDGUser, $campaign, $declaration, $viban_iban, $viban_bic, $viban_holder, $viban_code) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-wire' );
+
+		NotificationsAPIShortcodes::set_organization($WDGOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+		NotificationsAPIShortcodes::set_declaration($declaration);
+		$investment_pending_data = array(
+			'viban_iban'	=> $viban_iban,
+			'viban_bic'		=> $viban_bic,
+			'viban_holder'	=> $viban_holder,
+			'viban_code'	=> $viban_code
+		);
+		NotificationsAPIShortcodes::set_investment_pending_data($investment_pending_data);
+
+		$options = array(
+			'personal' => 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGOrganization->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	public static function declaration_done_pending_mandate($WDGOrganization, $WDGUser, $campaign, $declaration) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-done-pending-mandate' );
+
+		NotificationsAPIShortcodes::set_organization($WDGOrganization);
+		NotificationsAPIShortcodes::set_recipient($WDGUser);
+		NotificationsAPIShortcodes::set_campaign($campaign);
+		NotificationsAPIShortcodes::set_declaration($declaration);
+
+		$options = array(
+			'personal' => 1
+		);
+		$parameters = array(
+			'tool'		=> 'sendinblue',
+			'template'	=> $id_template,
+			'recipient'	=> $WDGOrganization->get_email(),
+			'options'	=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUser->get_language() );
+	}
+
+	//*******************************************************
+	// NOTIFICATION PRELEVEMENT BANCAIRE RECU
+	//*******************************************************
+	public static function declaration_mandate_received($WDGUserInterface, $declaration, $date_str) {
+		$id_template = self::get_id_fr_by_slug( 'declaration-mandate-received' );
+
+		NotificationsAPIShortcodes::set_recipient($WDGUserInterface);
+		NotificationsAPIShortcodes::set_declaration($declaration);
+		NotificationsAPIShortcodes::set_declaration_transfer_date_string($date_str);
+
+		$options = array(
+			'personal'				=> 1
+		);
+		$parameters = array(
+			'tool'			=> 'sendinblue',
+			'template'		=> $id_template,
+			'recipient'		=> $WDGUserInterface->get_email(),
+			'options'		=> json_encode( $options )
+		);
+
+		return self::send( $parameters, $WDGUserInterface->get_language() );
+	}
+
 	public static function declaration_done_with_turnover($WDGOrganization, $WDGUser, $campaign, $declaration, $tax_infos, $payment_certificate_url) {
 		$id_template = self::get_id_fr_by_slug( 'declaration-done-with-turnover' );
 

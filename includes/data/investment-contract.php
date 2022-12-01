@@ -81,7 +81,73 @@ class WDGInvestmentContract {
 	public function create() {
 		WDGWPREST_Entity_InvestmentContract::create( $this );
 	}
+
+	/**
+	 * Retourne le chemin de dossier où sont créés les contrat d'un projet (et le crée si nécessaire)
+	 * @param ATCF_Campaign $campaign
+	 */
+	public static function get_and_create_path_for_campaign( $campaign ) {
+		$final_path = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign->ID. '-' .$campaign->get_url(). '/';
+		if ( !is_dir( $final_path ) ) {
+			mkdir( $final_path, 0755, TRUE );
+		}
+		return $final_path;
+	}
+
+	/**
+	 * Retourne le chemin de fichier du zip des contrats d'une campagne
+	 */
+	public static function get_contracts_zip_path_for_campaign( $campaign ) {
+		return dirname( __FILE__ ). '/../../files/contracts/' .$campaign->ID. '-' .$campaign->data->post_name. '.zip';
+	}
+
+	/**
+	 * Retourne l'URL publique d'un fichier d'investissement
+	 * @param ATCF_Campaign $campaign
+	 * @param int $investment_id
+	 */
+	public static function get_investment_file_path( $campaign, $investment_id ) {
+		$path = self::get_and_create_path_for_campaign( $campaign );
+		return $path .  $investment_id . '.pdf';
+	}
+
+	/**
+	 * Retourne l'URL publique d'un fichier d'investissement
+	 * @param ATCF_Campaign $campaign
+	 * @param int $investment_id
+	 */
+	public static function get_investment_file_url( $campaign, $investment_id ) {
+		return site_url( '/wp-content/plugins/appthemer-crowdfunding/files/contracts/campaigns/' .$campaign->ID. '-' .$campaign->get_url(). '/' .  $investment_id . '.pdf' );
+	}
+
+	/**
+	 * Retourne l'ancienne URL des fichiers
+	 */
+	public static function get_deprecated_file_url( $filename ) {
+		return site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $filename );
+	}
+
+	/**
+	 * Retourne une expression régulière pour récupérer la vieille liste de fichiers
+	 */
+	public static function get_deprecated_file_list_expression( $campaign, $user_id ) {
+		return dirname( __FILE__ ). '/../pdf_files/' .$campaign->ID. '_' .$user_id. '_*.pdf';
+	}
+
+	/**
+	 * Retourne le dossier temporaire utile pour les amandements
+	 */
+	public static function get_and_create_deprecated_tmp_path() {
+		$buffer = dirname( __FILE__ ). '/../pdf_files/tmp';
+		if ( !is_dir( $buffer ) ) {
+			mkdir( $buffer, 0777, true );
+		}
+		return $buffer;
+	}
 	
+	/**
+	 * Vérifie les montants reçus par l'investisseur
+	 */
 	public function check_amount_received( $amount_received, $amount_current_declaration ) {
 		// Est-ce que l'investisseur a reçu une plus-value
 		if ( $amount_received > $this->subscription_amount ) {
@@ -247,10 +313,7 @@ class WDGInvestmentContract {
 		$campaign = new ATCF_Campaign( $campaign_id );
 		
 		// On commence par créer le dossier final
-		$final_path = dirname( __FILE__ ). '/../../files/contracts/campaigns/' .$campaign->ID. '-' .$campaign->get_url(). '/';
-		if ( !is_dir( $final_path ) ) {
-			mkdir( $final_path, 0755, TRUE );
-		}
+		$final_path = self::get_and_create_path_for_campaign( $campaign );
 		
 		// Ensuite on parcourt les investissements
 		$list_investments = $campaign->payments_data( TRUE );

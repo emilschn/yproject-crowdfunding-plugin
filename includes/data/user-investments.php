@@ -64,9 +64,9 @@ class WDGUserInvestments {
 		if ( !isset( self::$posts_investments[ $this->wp_ref ][ $payment_status_key ] ) ) {
 			self::$posts_investments[ $this->wp_ref ][ $payment_status_key ] = get_posts( array(
 				'numberposts'	=> -1,
-				'post_type'		=> 'edd_payment',
+				'post_type'		=> WDGInvestment::$payment_post_type,
 				'post_status'	=> $payment_status,
-				'meta_key'		=> '_edd_payment_user_id',
+				'meta_key'		=> WDGInvestment::$payment_meta_key_user_id,
 				'meta_value'	=> $this->wp_ref
 			) );
 		}
@@ -83,22 +83,13 @@ class WDGUserInvestments {
 		
 		if ( !empty($purchases) ) {
 			foreach ( $purchases as $purchase_post ) {
-				$downloads = edd_get_payment_meta_downloads( $purchase_post->ID );
-				$download_id = '';
-				if ( !is_array( $downloads[0] ) ){
-					$download_id = $downloads[0];
-					if ( !isset($buffer[$download_id]) ) {
-						$buffer[$download_id] = array();
-					}
-					array_push( $buffer[$download_id], $purchase_post->ID );
-					
-				} else {
-					$download_id = $downloads[0][ 'id' ];
-					if ( !isset( $buffer[ $download_id ] ) ) {
-						$buffer[ $download_id ] = array();
-					}
-					array_push( $buffer[ $download_id ], $purchase_post->ID );
+				$WDGInvestment = new WDGInvestment( $purchase_post->ID );
+				$campaign = $WDGInvestment->get_saved_campaign();
+				$download_id = $campaign->ID;
+				if ( !isset( $buffer[ $download_id ] ) ) {
+					$buffer[ $download_id ] = array();
 				}
+				array_push( $buffer[ $download_id ], $purchase_post->ID );
 			}
 		}
 			
@@ -179,20 +170,20 @@ class WDGUserInvestments {
 			return array();
 		}
 
-        if (!isset($this->pending_wire_investments)) {
-            $this->pending_wire_investments = array();
-            $query_options = array(
-                'numberposts' => -1,
-                'post_type' => 'edd_payment',
-                'post_status' => 'pending',
-                'meta_query' => array(
-                    'relation' => 'AND',
-                    array( 'key' => '_edd_payment_user_id', 'value' => $this->wp_ref ),
-                    array( 'key' => '_edd_payment_purchase_key', 'value' => 'wire_', 'compare' => 'LIKE' )
-                )
-            );
-            $this->pending_wire_investments = get_posts($query_options);
-        }
+		if (!isset($this->pending_wire_investments)) {
+			$this->pending_wire_investments = array();
+			$query_options = array(
+				'numberposts'	=> -1,
+				'post_type'		=> WDGInvestment::$payment_post_type,
+				'post_status'	=> 'pending',
+				'meta_query'	=> array(
+					'relation' => 'AND',
+					array( 'key' => WDGInvestment::$payment_meta_key_user_id, 'value' => $this->wp_ref ),
+					array( 'key' => WDGInvestment::$payment_meta_key_purchase_key, 'value' => 'wire_', 'compare' => 'LIKE' )
+				)
+			);
+			$this->pending_wire_investments = get_posts($query_options);
+		}
 		return $this->pending_wire_investments;
 
 	}
@@ -220,8 +211,11 @@ class WDGUserInvestments {
 			$this->pending_preinvestments = array();
 			if ( !$preinv_cache ) {
 				$pending_investments = $this->get_pending_investments();
-				foreach ( $pending_investments as $campaign_id => $campaign_investments ) {
-					$investment_campaign = new ATCF_Campaign( $campaign_id );
+				foreach ( $pending_investments as $pending_investments_campaign_id => $campaign_investments ) {
+					if ( empty( $pending_investments_campaign_id ) || empty( $campaign_investments ) ) {
+						continue;
+					}
+					$investment_campaign = new ATCF_Campaign( $pending_investments_campaign_id );
 					$contract_has_been_modified = ( $investment_campaign->contract_modifications() != '' );
 					if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte && $contract_has_been_modified ) {
 						foreach ( $campaign_investments as $investment_id ) {
@@ -239,7 +233,13 @@ class WDGUserInvestments {
 				$preinvestment_array = json_decode( $preinv_cache, true );
 				foreach ( $preinvestment_array as $investment_id ) {
 					$wdg_investment = new WDGInvestment( $investment_id );
-					array_push( $this->pending_preinvestments, $wdg_investment );
+					$investment_campaign = $wdg_investment->get_saved_campaign();
+					$contract_has_been_modified = ( $investment_campaign->contract_modifications() != '' );
+					if ( $investment_campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte
+							&& $contract_has_been_modified
+							&& $wdg_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+						array_push( $this->pending_preinvestments, $wdg_investment );
+					}
 				}
 			}
 		}
@@ -380,16 +380,16 @@ class WDGUserInvestments {
 			FROM {$wpdb->prefix}postmeta {$wpdb->prefix}m
 			LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}ma
 				ON {$wpdb->prefix}ma.post_id = {$wpdb->prefix}m.post_id
-				AND {$wpdb->prefix}ma.meta_key = '_edd_payment_user_id'
+				AND {$wpdb->prefix}ma.meta_key = '" .WDGInvestment::$payment_meta_key_user_id. "'
 				AND {$wpdb->prefix}ma.meta_value = '%s'
 			LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}mb
 				ON {$wpdb->prefix}mb.post_id = {$wpdb->prefix}ma.post_id
-				AND {$wpdb->prefix}mb.meta_key = '_edd_payment_total'
+				AND {$wpdb->prefix}mb.meta_key = '" .WDGInvestment::$payment_meta_key_payment_total. "'
 			INNER JOIN {$wpdb->prefix}posts {$wpdb->prefix}
 				ON {$wpdb->prefix}.id = {$wpdb->prefix}m.post_id
 				AND {$wpdb->prefix}.post_status = 'publish'
 				AND {$wpdb->prefix}.post_date > '" .date( 'Y-m-d', strtotime( '-' .$interval ) ). "'
-			WHERE {$wpdb->prefix}m.meta_key = '_edd_payment_mode'
+			WHERE {$wpdb->prefix}m.meta_key = '" .WDGInvestment::$payment_meta_key_payment_mode. "'
 			AND {$wpdb->prefix}m.meta_value = '%s'";
 
 		$purchases = $wpdb->get_col( $wpdb->prepare( $query, $this->wp_ref, 'live' ) );
@@ -413,16 +413,16 @@ class WDGUserInvestments {
 			FROM {$wpdb->prefix}postmeta {$wpdb->prefix}m
 			LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}ma
 				ON {$wpdb->prefix}ma.post_id = {$wpdb->prefix}m.post_id
-				AND {$wpdb->prefix}ma.meta_key = '_edd_payment_user_id'
+				AND {$wpdb->prefix}ma.meta_key = '" .WDGInvestment::$payment_meta_key_user_id. "'
 				AND {$wpdb->prefix}ma.meta_value = '%s'
 			LEFT JOIN {$wpdb->prefix}postmeta {$wpdb->prefix}mb
 				ON {$wpdb->prefix}mb.post_id = {$wpdb->prefix}ma.post_id
-				AND {$wpdb->prefix}mb.meta_key = '_edd_payment_total'
+				AND {$wpdb->prefix}mb.meta_key = '" .WDGInvestment::$payment_meta_key_payment_total. "'
 			INNER JOIN {$wpdb->prefix}posts {$wpdb->prefix}
 				ON {$wpdb->prefix}.id = {$wpdb->prefix}m.post_id
 				AND {$wpdb->prefix}.post_status = 'publish'
 				AND {$wpdb->prefix}.post_date > '" .date( 'Y-m-d', strtotime( '-' .$interval ) ). "'
-			WHERE {$wpdb->prefix}m.meta_key = '_edd_payment_mode'
+			WHERE {$wpdb->prefix}m.meta_key = '" .WDGInvestment::$payment_meta_key_payment_mode. "'
 			AND {$wpdb->prefix}m.meta_value = '%s'";
 
 		$purchases = $wpdb->get_col( $wpdb->prepare( $query, $this->wp_ref, 'live' ) );

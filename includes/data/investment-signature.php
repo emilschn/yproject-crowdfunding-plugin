@@ -155,7 +155,7 @@ class WDGInvestmentSignature {
 		getNewPdfToSign( $campaign->ID, $this->subscription_id, $investor_id );
 		global $new_pdf_file_name;
 		$file_name = $new_pdf_file_name;
-		$file_url = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' .$new_pdf_file_name );
+		$file_url = WDGInvestmentContract::get_investment_file_url( $campaign, $this->subscription_id );
 
 		$signer_id = '1';
 		$signer_name = $user_name;

@@ -612,7 +612,7 @@ class LemonwayLib {
 	 * @param string $dom2
 	 * @return boolean or string
 	 */
-	public static function wallet_register_iban($wallet_id, $holder_name, $iban, $bic, $dom1, $dom2 = '') {
+	public static function wallet_register_iban($wallet_id, $holder_name, $iban, $bic, $dom1 = '', $dom2 = '') {
 		if (!isset($wallet_id)) {
 			return FALSE;
 		}

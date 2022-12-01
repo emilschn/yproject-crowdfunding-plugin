@@ -169,19 +169,13 @@ class WDG_Form_User_Change_Investment_Owner extends WDG_Form {
 			if ( empty( $created_from_draft ) ) {
 				// On teste la structure de fichiers idéale
 				// On ne fait rien si ils sont dans cette structure
-				$id_campaign = $campaign->ID;
-				$url_campaign = $campaign->get_url();
-				$great_file_path = dirname( __FILE__ ). '/../../../files/contracts/campaigns/' .$id_campaign. '-' .$url_campaign. '/';
-				$great_file_name = $great_file_path . $investid. '.pdf';
+				$great_file_name = WDGInvestmentContract::get_investment_file_path( $campaign, $investid );
 
 				if ( !file_exists( $great_file_name ) ) {
-					$exp = dirname( __FILE__ ). '/../../pdf_files/' .$id_campaign. '_' .$id_user_sender. '_*.pdf';
-					$files = glob( $exp );
+					$file_list_expression = WDGInvestmentContract::get_deprecated_file_list_expression( $campaign, $id_user_sender );
+					$files = glob( $file_list_expression );
 					if ( count( $files ) ) {
 						foreach ( $files as $single_file ) {
-							if ( !is_dir( $great_file_path ) ) {
-								mkdir( $great_file_path, 0755, TRUE );
-							}
 							// Renommage dans la structure de fichiers idéale
 							$log_report .= '$single_file : ' . $single_file . ' --- ';
 							$log_report .= '$great_file_name : ' . $great_file_name . ' --- ';

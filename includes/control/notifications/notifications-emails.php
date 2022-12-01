@@ -105,7 +105,7 @@ class NotificationsEmails {
 	}
 
 	/**
-	 * Mail pour l'investisseur lors d'un achat avec erreur de création de contrat
+	 * Mail pour l'investisseur lors d'un investissement réussi avec problème de création de signature électronique
 	 * @param int $payment_id
 	 * @return bool
 	 */
@@ -118,7 +118,7 @@ class NotificationsEmails {
 	}
 
 	/**
-	 * Mail pour l'investisseur lors d'un achat avec création de contrat réussie
+	 * Mail pour l'investisseur lors d'un investissement réussi avec signature électronique (pas de pièce jointe)
 	 * @param int $payment_id
 	 * @return bool
 	 */
@@ -141,7 +141,7 @@ class NotificationsEmails {
 	}
 
 	/**
-	 * Mail pour l'investisseur lors d'un achat sans nécessité de signer le contrat
+	 * Mail pour l'investisseur lors d'un investissement réussi sans signature électronique nécessaire
 	 * @param type $payment_id
 	 * @return type
 	 */
@@ -171,15 +171,13 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_user($payment_id, $particular_content, $attachments = array(), $preinvestment = FALSE, $is_only_wallet_contribution = FALSE) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_user > ' . $payment_id);
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
-
-		$payment_data = edd_get_payment_meta( $payment_id );
 		$WDGInvestment = new WDGInvestment($payment_id);
-		$email = $payment_data['email'];
+		$campaign = $WDGInvestment->get_saved_campaign();
+
+		$email = $WDGInvestment->get_saved_user_email();
 		$user_data = get_user_by('email', $email);
 		$WDGUser = new WDGUser($user_data->ID);
-		$payment_key = edd_get_payment_key( $payment_id );
+		$payment_key = $WDGInvestment->get_payment_key();
 
 		$attachment_url = '';
 		$text_before = '';
@@ -209,8 +207,7 @@ class NotificationsEmails {
 		}
 
 		if ( !empty( $attachments ) ) {
-			$attachment_url_filename = basename( $attachments[ 0 ] );
-			$attachment_url = site_url( '/wp-content/plugins/appthemer-crowdfunding/includes/pdf_files/' . $attachment_url_filename );
+			$attachment_url = WDGInvestmentContract::get_investment_file_url( $campaign, $payment_id );
 			$text_after = __( 'invest.email.WHERE_TO_FIND_CONTRACT', 'yproject' ) . " <a href=\"". home_url( '/mon-compte/' ) ."\">" . __( 'invest.email.PERSONAL_ACCOUNT', 'yproject' ) . "</a>.<br><br>";
 		}
 
@@ -228,24 +225,23 @@ class NotificationsEmails {
 	 */
 	public static function new_purchase_team_members($payment_id) {
 		ypcf_debug_log('NotificationsEmails::new_purchase_members > ' . $payment_id);
-		$post_campaign = atcf_get_campaign_post_by_payment_id( $payment_id );
-		$campaign = atcf_get_campaign( $post_campaign );
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
 
-		$author_data = get_userdata( $post_campaign->post_author );
+		$author_data = get_userdata( $campaign->post_author() );
 		$emails = $author_data->user_email;
 		$emails .= WDGWPREST_Entity_Project::get_users_mail_list_by_role( $campaign->get_api_id(), WDGWPREST_Entity_Project::$link_user_type_team );
 
 		$object = "Nouvel investissement";
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data[ 'email' ];
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 		$user_data = get_user_by( 'email', $email );
 
 		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
-			$body_content = "Une nouvelle personne a pré-investi sur votre projet ".$post_campaign->post_title.":<br />";
+			$body_content = "Une nouvelle personne a pré-investi sur votre projet ".$campaign->get_name().":<br />";
 		} else {
-			$body_content = "Une nouvelle personne a investi sur votre projet ".$post_campaign->post_title.":<br />";
+			$body_content = "Une nouvelle personne a investi sur votre projet ".$campaign->get_name().":<br />";
 		}
 
 		$body_content .= $user_data->user_firstname . " " . $user_data->user_lastname . " a investi ".$payment_amount." &euro;";
@@ -254,52 +250,11 @@ class NotificationsEmails {
 		if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) {
 			$body_content .= "Bravo, continuez à inciter au pré-investissement (notamment auprès de ceux qui ont déjà voté), afin que votre levée de fonds démarre avec une belle dynamique déjà en place !";
 		} else {
+			$campaign->reload_cache();
 			$body_content .= "Votre projet a atteint ".$campaign->percent_minimum_completed()." de son objectif, soit ".$campaign->current_amount()." sur ".$campaign->minimum_goal(true).".";
 		}
 
 		return NotificationsEmails::send_mail($emails, $object, $body_content, true);
-	}
-
-	public static function preinvestment_auto_validated($user_email, $campaign) {
-		$object = "Votre pré-investissement est validé";
-
-		$body_content = "Bonjour,<br><br>";
-		$body_content .= "Le pré-investissement que vous avez effectué pour le projet ".$campaign->data->post_title." a été validé automatiquement.<br>";
-		$body_content .= "Aucune modification n'ayant été apportée au contrat, les conditions auxquelles vous avez souscrit restent les mêmes.<br><br>";
-
-		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
-
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
-	}
-
-	public static function preinvestment_to_validate($user_email, $campaign) {
-		$object = "Votre pré-investissement doit être validé";
-
-		$body_content = "Bonjour,<br><br>";
-		$body_content .= "Suite à la phase d'&eacute;valuation, des modifications ont été apportées sur les conditions d'investissement pour le projet ".$campaign->data->post_title.".";
-		$body_content .= "Le pré-investissement que vous avez effectué doit donc être à nouveau validé.<br>";
-		$body_content .= "Merci de vous rendre sur la plateforme pour vous identifier et suivre le processus de validation qui sera affiché.<br><br>";
-
-		$body_content .= "Cliquez sur <a href=\"" .home_url( '/mon-compte/' ). "\">Mon compte</a> pour vous identifier.<br><br>";
-
-		$body_content .= "Merci encore pour votre investissement et à bientôt sur WE DO GOOD !<br>";
-
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
-	}
-
-	public static function preinvestment_canceled($user_email, $campaign) {
-		$object = "Votre pré-investissement est annulé";
-
-		$body_content = "Bonjour,<br><br>";
-		$body_content .= "Suite à votre demande, le pré-investissement que vous aviez effectué sur le projet ".$campaign->data->post_title." a été annulé.<br>";
-		$body_content .= "Si vous aviez payé par carte, la somme vous est directement remboursée sur votre compte bancaire.<br>";
-		$body_content .= "Si vous aviez payé par porte-monnaie WE DO GOOD, la somme est versée sur votre porte-monnaie.<br>";
-		$body_content .= "Si vous aviez payé par virement, la somme est versée sur votre porte-monnaie WE DO GOOD (rendez-vous sur votre compte).<br>";
-		$body_content .= "Si vous aviez payé par chèque, celui-ci ne sera pas encaissé.<br><br>";
-
-		$body_content .= "A bientôt sur WE DO GOOD !<br>";
-
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
 	}
 
 	public static function investment_draft_validated_new_user($user_email, $user_firstname, $user_password, $campaign_name) {
@@ -333,54 +288,8 @@ class NotificationsEmails {
 
 		return NotificationsEmails::send_mail( $to, $object, $body_content );
 	}
-
-	public static function new_project_posted_owner($campaign_id) {
-		$post_campaign = get_post($campaign_id);
-		$user_author = get_user_by('id', $post_campaign->post_author);
-
-		$to = $user_author->user_email;
-		$object = 'Votre dossier a bien été enregistré sur '.ATCF_CrowdFunding::get_platform_name();
-
-		$body_content = 'Bonjour '.$user_author->first_name.',<br />';
-		$body_content .= 'Les informations de votre levée de fonds ont bien été enregistrées sur '.ATCF_CrowdFunding::get_platform_name().'. ';
-		$body_content .= 'Vous pouvez dès à présent les compléter en accédant à votre <a href="'. home_url('/tableau-de-bord/').'?campaign_id='.$campaign_id.'">tableau de bord</a>.<br />';
-		$body_content .= 'Toutes les informations communiquées à '.ATCF_CrowdFunding::get_platform_name().' sont gardées confidentielles.<br /><br />';
-		$body_content .= 'Notre équipe vous contactera très prochainement pour vous conseiller sur la préparation de votre levée de fonds.<br /><br />';
-		$body_content .= 'Bien à vous,<br />';
-		$body_content .= "L'équipe de ".ATCF_CrowdFunding::get_platform_name();
-
-		return NotificationsEmails::send_mail($to, $object, $body_content);
-	}
 	//*******************************************************
 	// FIN NOUVEAU PROJET
-	//*******************************************************
-
-	//*******************************************************
-	// CODE SIGNATURE
-	//*******************************************************
-	/**
-	 * Mail à investisseur pour envoyer code nouvelle signature
-	 * @param string $user_name
-	 * @param string $user_email
-	 * @param string $code
-	 * @return bool
-	public static function send_new_contract_code_user( $user_name, $user_email, $contract_title, $code ) {
-		ypcf_debug_log('NotificationsEmails::send_new_contract_code_user > ' . $user_name . ' | ' . $user_email . ' | ' . $contract_title . ' | ' . $code);
-
-		$object = "Votre code de signature";
-		$body_content = "Bonjour ".$user_name.",<br><br>";
-		$body_content .= "Afin de signer le contrat " .$contract_title. " chez notre partenaire Eversign, ";
-		$body_content .= "voici le code qu'il vous faudra entrer pour le valider :<br>";
-		$body_content .= $code . "<br><br>";
-		$body_content .= "Nous vous remercions par avance,<br>";
-		$body_content .= "Bien cordialement,<br>";
-		$body_content .= "L'équipe WE DO GOOD<br>";
-
-		return NotificationsEmails::send_mail( $user_email, $object, $body_content, true );
-	}
-	 */
-	//*******************************************************
-	// FIN CODE SIGNATURE
 	//*******************************************************
 
 	//*******************************************************

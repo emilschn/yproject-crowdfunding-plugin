@@ -54,22 +54,6 @@ class WDG_Form_User_Bank extends WDG_Form {
 			( $this->is_orga ) ? $WDGOrganization->get_bank_owner() : $WDGUser->get_bank_holdername()
 		);
 		
-		$this->addField(
-			'text',
-			'bank-address',
-			__( 'form.user-bank.ADDRESS_ACCOUNT', 'yproject' ) . ' *',
-			WDG_Form_User_Bank::$field_group_iban,
-			( $this->is_orga ) ? $WDGOrganization->get_bank_address() : $WDGUser->get_bank_address()
-		);
-		
-		$this->addField(
-			'text',
-			'bank-address2',
-			__( 'form.user-bank.ADDRESS_ACCOUNT_2', 'yproject' ) . ' *',
-			WDG_Form_User_Bank::$field_group_iban,
-			( $this->is_orga ) ? $WDGOrganization->get_bank_address2() : $WDGUser->get_bank_address2()
-		);
-		
 		$iban_value = ( $this->is_orga ) ? $WDGOrganization->get_bank_iban() : $WDGUser->get_bank_iban();
 		$iban_options = array();
 		if ( !empty( $iban_value ) && !WDGRESTAPI_Lib_Validator::is_iban( $iban_value ) ) {
@@ -146,8 +130,6 @@ class WDG_Form_User_Bank extends WDG_Form {
 		// Analyse du formulaire
 		} else {
 			$bank_holdername = $this->getInputText( 'bank-holdername' );
-			$bank_address = $this->getInputText( 'bank-address' );
-			$bank_address2 = $this->getInputText( 'bank-address2' );
 			$bank_iban = $this->getInputText( 'bank-iban' );
 			$bank_bic = $this->getInputText( 'bank-bic' );
 			
@@ -158,15 +140,13 @@ class WDG_Form_User_Bank extends WDG_Form {
 				$was_registered = $WDGOrganization->has_lemonway_wallet();
 				if ( !empty( $bank_holdername ) ) {
 					$WDGOrganization->set_bank_owner( $bank_holdername );
-					$WDGOrganization->set_bank_address( $bank_address );
-					$WDGOrganization->set_bank_address2( $bank_address2 );
 					$WDGOrganization->set_bank_iban( $bank_iban );
 					$WDGOrganization->set_bank_bic( $bank_bic );
 					$WDGOrganization->save();
 					if ( $WDGOrganization->can_register_lemonway() ) {
 						$WDGOrganization->register_lemonway();
 						// TODO : faire un unregister
-						LemonwayLib::wallet_register_iban( $WDGOrganization->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+						LemonwayLib::wallet_register_iban( $WDGOrganization->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic );
 						$test_kyc = TRUE;
 					}
 				}
@@ -212,12 +192,12 @@ class WDG_Form_User_Bank extends WDG_Form {
 				$test_kyc = FALSE;
 				$was_registered = $WDGUser->has_lemonway_wallet();
 				if ( !empty( $bank_holdername ) ) {
-					$WDGUser->save_iban( $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+					$WDGUser->save_iban( $bank_holdername, $bank_iban, $bank_bic );
 					$WDGUser->update_api();
 					if ( $WDGUser->can_register_lemonway() ) {
 						$WDGUser->register_lemonway();
 						LemonwayLib::wallet_unregister_iban( $WDGUser->get_lemonway_id(), $WDGUser->get_lemonway_iban()->ID );
-						LemonwayLib::wallet_register_iban( $WDGUser->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic, $bank_address, $bank_address2 );
+						LemonwayLib::wallet_register_iban( $WDGUser->get_lemonway_id(), $bank_holdername, $bank_iban, $bank_bic );
 						$test_kyc = TRUE;
 					}
 				}

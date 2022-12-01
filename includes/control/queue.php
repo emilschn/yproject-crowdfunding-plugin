@@ -43,7 +43,7 @@ class WDGQueue {
 	}
 
 	/**
-	 * Fonction qui récupère les prochaines actions à exécuter et les lancent
+	 * Récupère les prochaines actions à exécuter et les lance
 	 * @param int $number
 	 */
 	public static function execute_next($number = 5) {
@@ -59,6 +59,22 @@ class WDGQueue {
 		}
 
 		return $buffer;
+	}
+
+	/**
+	 * Définit un statut spécifique pour une liste d'actions récupérées
+	 */
+	public static function set_list_status( $entity_id, $action, $status ) {
+		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( FALSE, FALSE, $entity_id, $action );
+		if ( empty( $queued_action_list ) ) {
+			return;
+		}
+		foreach ( $queued_action_list as $queued_action ) {
+			if ( $queued_action->status == $status || empty( $queued_action->id ) ) {
+				continue;
+			}
+			WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, $status );
+		}
 	}
 
 	/******************************************************************************/
@@ -663,11 +679,15 @@ class WDGQueue {
 						$preinvestment->get_contract_status() != WDGInvestment::$contract_status_not_validated
 						&& ( strpos( $payment_key, 'wire_' ) === FALSE || $wire_with_received_payments == '1' )
 						) {
-					$user_info = edd_get_payment_meta_user_info( $preinvestment->get_id() );
+					$user_id = $preinvestment->get_saved_user_id();
+					$WDGUserOrOrganization = new WDGUser( $user_id );
+					if ( WDGOrganization::is_user_organization( $user_id ) ) {
+						$WDGUserOrOrganization = new WDGOrganization( $user_id );
+					}
 					if ( $contract_has_been_modified ) {
-						NotificationsEmails::preinvestment_to_validate( $user_info['email'], $campaign );
+						NotificationsAPI::preinvestment_to_validate( $WDGUserOrOrganization, $campaign );
 					} else {
-						NotificationsEmails::preinvestment_auto_validated( $user_info['email'], $campaign );
+						NotificationsAPI::preinvestment_auto_validated( $WDGUserOrOrganization, $campaign );
 						$preinvestment->set_contract_status( WDGInvestment::$contract_status_investment_validated );
 					}
 				}
@@ -777,7 +797,8 @@ class WDGQueue {
 					$campaign = new ATCF_Campaign( $campaign_id );
 					if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 						foreach ( $campaign_investments as $campaign_investment_id ) {
-							$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+							$WDGInvestment = new WDGInvestment( $campaign_investment_id );
+							$payment_amount = $WDGInvestment->get_saved_amount();
 							array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
 						}
 					}
@@ -884,7 +905,7 @@ class WDGQueue {
 				case 'refused':
 					// On refait la vérification que le statut du wallet n'a pas changé (avec un éventuel décalage temporel)
 					$buffer_returns = LemonwayDocument::build_error_str_from_wallet_details( $wallet_details );
-					if ( !empty( $buffer_returns) ) {
+					if ( !empty( $buffer_returns) && !$WDGUser_wallet->is_lemonway_registered() ) {
 						NotificationsAPI::phone_kyc_refused( $WDGUser_wallet );
 					}
 					break;
@@ -971,7 +992,8 @@ class WDGQueue {
 						$campaign = new ATCF_Campaign( $campaign_id );
 						if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_collecte ) {
 							foreach ( $campaign_investments as $campaign_investment_id ) {
-								$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+								$WDGInvestment = new WDGInvestment( $campaign_investment_id );
+								$payment_amount = $WDGInvestment->get_saved_amount();
 								array_push( $pending_actions, 'Investissement en attente pour ' .$campaign->get_name(). ' (' .$payment_amount. ' €)' );
 							}
 						}

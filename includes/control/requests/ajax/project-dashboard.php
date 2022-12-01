@@ -183,8 +183,6 @@ class WDGAjaxActionsProjectDashboard {
 			$campaign->__set( ATCF_Campaign::$key_backoffice_summary, $backoffice_summary );
 			$campaign->set_api_data( 'description', $backoffice_summary );
 			$success["new_backoffice_summary"]=1;
-		} else {
-			$errors['new_backoffice_summary'].="Décrivez votre projet";
 		}
 
 		// URL du projet
@@ -2350,7 +2348,7 @@ class WDGAjaxActionsProjectDashboard {
 			// Notifications de validation d'investissement
 			NotificationsEmails::new_purchase_user_success_check( $investment_id );
 			NotificationsEmails::new_purchase_team_members( $investment_id );
-			NotificationsSlack::send_new_investment( $campaign->get_name(), $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email );
+			NotificationsSlack::send_new_investment( $campaign, $investments_drafts_item_data->invest_amount, $investments_drafts_item_data->email, $investment_id );
 
 			exit( '1' );
 		} else {

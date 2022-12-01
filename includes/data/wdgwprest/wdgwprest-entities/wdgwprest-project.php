@@ -222,8 +222,10 @@ class WDGWPREST_Entity_Project {
 		$emails = '';
 		$user_list = WDGWPREST_Entity_Project::get_users_by_role( $project_id, $role_slug );
 		foreach ( $user_list as $user ) {
-			$user_data = get_userdata( $user->wpref );
-			$emails .= ',' . $user_data->user_email;
+			if ($user->notifications == '1') {
+				$user_data = get_userdata( $user->wpref );
+				$emails .= ',' . $user_data->user_email;
+			}
 		}
 
 		return $emails;
@@ -255,6 +257,20 @@ class WDGWPREST_Entity_Project {
 	 */
 	public static function unlink_user($project_id, $user_id, $role_slug) {
 		$result_obj = WDGWPRESTLib::call_delete_wdg( 'project/' .$project_id. '/user/' .$user_id. '/type/' .$role_slug );
+
+		return $result_obj;
+	}
+
+	/**
+	 * Met à jour la liaison entre un utilisateur et un projet
+	 */
+	public static function update_link_user($project_id, $user_id, $notifications) {
+		$request_params = array(
+			'id_user'		=> $user_id,
+			'notifications'	=> $notifications,
+			'update'		=> '1'
+		);
+		$result_obj = WDGWPRESTLib::call_post_wdg( 'project/' .$project_id. '/users', $request_params );
 
 		return $result_obj;
 	}

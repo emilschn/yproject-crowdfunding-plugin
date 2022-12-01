@@ -74,16 +74,7 @@ function atcf_get_campaign_id_from_category($category) {
 	return $campaign_id;
 }
 
-function atcf_get_campaign_post_by_payment_id($payment_id) {
-	$downloads = edd_get_payment_meta_downloads($payment_id);
-	$download_id = (is_array($downloads[0])) ? $downloads[0]["id"] : $downloads[0];
-
-	return get_post($download_id);
-}
-
 function atcf_create_campaign($author_ID, $title) {
-	global $edd_options;
-
 	WDG_Languages_Helpers::switch_to_french_temp();
 
 	$default_pitch = WDGConfigTexts::get_config_text_by_name( WDGConfigTexts::$type_project_default_pitch, 'default_pitch' );
@@ -205,7 +196,6 @@ class ATCF_Campaign {
 	}
 
 	public function duplicate() {
-		global $edd_options;
 		// on sauvegarde dans la campagne parente l'id de toutes les campagnes dupliquées
 		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns'));
 
@@ -261,6 +251,7 @@ class ATCF_Campaign {
 			update_post_meta( $newcampaign_id, 'campaign_goal', $this->__get('campaign_minimum_goal') );
 		}
 		update_post_meta( $newcampaign_id, ATCF_Campaign::$key_display_automatic_economic_model, $this->__get( ATCF_Campaign::$key_display_automatic_economic_model ) );
+		update_post_meta( $newcampaign_id, ATCF_Campaign::$key_campaign_is_hidden, '1' );
 		// on vide la liste des campagnes dupliquées
 		delete_post_meta($newcampaign_id, 'duplicated_campaigns');
 		delete_post_meta($newcampaign_id, 'campaign_duplicata');
@@ -369,13 +360,25 @@ class ATCF_Campaign {
 	/*******************************************************************************
 	 * GESTION DES CAMPAGNES DUPLIQUEES
 	 ******************************************************************************/
-	public function get_duplicate_campaigns_id() {
-		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
+	private $duplicate_campaigns_decoded;
 
-		return $duplicated_campaigns;
+	public function get_duplicate_campaigns_id() {
+		if ( !isset( $this->duplicate_campaigns_decoded ) ) {
+			$this->duplicate_campaigns_decoded = json_decode($this->__get('duplicated_campaigns') );
+			if ( empty( $this->duplicate_campaigns_decoded ) ) {
+				$this->duplicate_campaigns_decoded = array();
+			}
+		}
+		return $this->duplicate_campaigns_decoded;
 	}
+
+	public function has_duplicate_campaigns() {
+		$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+		return !empty( $duplicated_campaigns ) && count( $duplicated_campaigns ) > 0;
+	}
+
 	public function get_duplicate_campaigns_titles() {
-		$duplicated_campaigns = json_decode($this->__get('duplicated_campaigns') );
+		$duplicated_campaigns = $this->get_duplicate_campaigns_id();
 		$duplicated_campaigns_title = array();
 		foreach ( $duplicated_campaigns as $wpcampaign ) {
 			$WDGCampaign = new ATCF_Campaign( $wpcampaign );
@@ -384,6 +387,24 @@ class ATCF_Campaign {
 
 		return $duplicated_campaigns_title;
 	}
+
+	public function get_duplicate_campaigns_total_amount( $formatted = TRUE ) {
+		$amount = $this->current_amount( false );
+		if ($this->has_duplicate_campaigns()) {
+			$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+			foreach ( $duplicated_campaigns as $wpcampaign ) {
+				$WDGCampaign = new ATCF_Campaign( $wpcampaign );
+				$amount += $WDGCampaign->current_amount( false );
+			}
+		}
+
+		if ( $formatted ) {
+			return UIHelpers::format_number( $amount, 0 ) . ' &euro;';
+		}
+
+		return $amount;
+	}
+
 	/*******************************************************************************
 	 * METAS
 	 ******************************************************************************/
@@ -1981,6 +2002,10 @@ class ATCF_Campaign {
 	 * @return boolean
 	 */
 	public function is_adjustment_needed() {
+		if ($this->campaign_status() != self::$campaign_status_funded) {
+			return false;
+		}
+
 		// récupérer toutes les déclarations passées / au statut différent de "declaration"
 		$existing_roi_declarations = $this->get_past_roi_declarations();
 		// on les compte
@@ -2309,16 +2334,11 @@ class ATCF_Campaign {
 			return 0;
 		}
 		if ( $formatted ) {
-			$currency = edd_get_currency();
-			if ($currency == "EUR") {
-				if (strpos($goal, '.00') !== false) {
-					$goal = substr($goal, 0, -3);
-				}
-
-				return $goal . '&nbsp;&euro;';
-			} else {
-				return edd_currency_filter( edd_format_amount( $goal ) );
+			if (strpos($goal, '.00') !== false) {
+				$goal = substr($goal, 0, -3);
 			}
+
+			return $goal . '&nbsp;&euro;';
 		}
 
 		return $goal;
@@ -2724,133 +2744,37 @@ class ATCF_Campaign {
 	}
 
 	/**
-	 * Campaign Updates
-	 *
-	 * @since Appthemer CrowdFunding 0.9
-	 *
-	 * @return sting Campaign Updates
+	 * Returns number of investments
 	 */
-	public function updates() {
-		return $this->__get( 'campaign_updates' );
-	}
-
-	/**
-	 * Campaign Backers
-	 *
-	 * Use EDD logs to get all sales. This includes both preapproved
-	 * payments (if they have Plugin installed) or standard payments.
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return sting Campaign Backers
-	 */
-	private $backers;
-	public function backers() {
-		if ( empty( $this->backers ) ) {
-			global $edd_logs;
-
-			$this->backers = $edd_logs->get_connected_logs( array(
-				'post_parent'    => $this->ID,
-				'log_type'       => /*atcf_has_preapproval_gateway()*/ FALSE ? 'preapproval' : 'sale',
-				'post_status'    => array( 'publish' ),
-				'posts_per_page' => -1
-			) );
-		}
-
-		return $this->backers;
-	}
-
-	/**
-	 * Campaign Backers Count
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return int Campaign Backers Count
-	 */
-	public function backers_count() {
-		$backers = $this->backers();
-		$total = 0;
-
-		if ($backers > 0) {
-			foreach ( $backers as $backer ) {
-				$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-				$payment    = get_post( $payment_id );
-
-				if ( empty( $payment ) || $payment->post_status == 'pending' ) {
-					continue;
-				}
-				$total++;
+	public function backers_count( $include_duplicates = FALSE ) {
+		$backers_id_list = $this->backers_id_list();
+		$buffer = count( $backers_id_list );
+		if ( $include_duplicates ) {
+			$list_duplicates = $this->get_duplicate_campaigns_id();
+			foreach ( $list_duplicates as $duplicate_campaign_id ) {
+				$duplicate_campaign = new ATCF_Campaign( $duplicate_campaign_id );
+				$buffer += $duplicate_campaign->backers_count();
 			}
 		}
-
-		return $total;
-	}
-
-	public function backers_id_list() {
-		$backers = $this->backers();
-		$buffer = array();
-
-		if ($backers > 0) {
-			foreach ( $backers as $backer ) {
-				$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-				$payment    = get_post( $payment_id );
-
-				if ( empty( $payment ) || $payment->post_status == 'pending' ) {
-					continue;
-				}
-				array_push( $buffer, $payment->post_author );
-			}
-		}
-
 		return $buffer;
 	}
 
 	/**
-	 * Campaign Backers Per Price
-	 *
-	 * Get all of the backers, then figure out what they purchased. Increment
-	 * a counter for each price point, so they can be displayed elsewhere.
-	 * Not 100% because keys can change in EDD, but it's the best way I think.
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return array $totals The number of backers for each price point
+	 * Returns list of ids of the backers
 	 */
-	public function backers_per_price() {
-		$backers = $this->backers();
-		$prices  = edd_get_variable_prices( $this->ID );
-		$totals  = array();
+	public function backers_id_list() {
+		$payments_data = $this->payments_data();
+		$buffer = array();
 
-		if ( !is_array( $backers ) ) {
-			$backers = array();
-		}
-
-		foreach ( $prices as $price ) {
-			$totals[$price[ 'amount' ]] = 0;
-		}
-
-		foreach ( $backers as $log ) {
-			$payment_id = get_post_meta( $log->ID, '_edd_log_payment_id', true );
-
-			$payment    = get_post( $payment_id );
-
-			if ( empty( $payment ) ) {
-				continue;
-			}
-			$cart_items = edd_get_payment_meta_cart_details( $payment_id );
-
-			foreach ( $cart_items as $item ) {
-				if ( isset( $item[ 'item_number' ][ 'options' ][ 'atcf_extra_price' ] ) ) {
-					$price_id = $item[ 'price' ] - $item[ 'item_number' ][ 'options' ][ 'atcf_extra_price' ];
-				} else {
-					$price_id = $item[ 'price' ];
+		if (!empty( $payments_data )) {
+			foreach ( $payments_data as $item_investment ) {
+				if ( !empty( $item_investment ) && $item_investment[ 'status' ] == 'publish' ) {
+					array_push( $buffer, $item_investment[ 'user' ] );
 				}
-
-				$totals[$price_id] = isset( $totals[$price_id] ) ? $totals[$price_id] + 1 : 1;
 			}
 		}
 
-		return $totals;
+		return $buffer;
 	}
 
 	/**
@@ -3100,6 +3024,15 @@ class ATCF_Campaign {
 		return ( $this->part_value() * $amount_part >= ATCF_Campaign::$invest_amount_min_check );
 	}
 
+	public function reload_cache() {
+		unset( $this->percent_minimum_completed_cache );
+		unset( $this->current_amount_cache );
+		$this->payments_data_cache = array();
+		unset( $this->api_data );
+		WDGWPRESTLib::unset_cache( 'wdg/v1/project/' .$this->get_api_id(). '?with_investments=1&with_organization=1&with_poll_answers=1' );
+		$this->load_api_data();
+	}
+
 	/**
 	 * Campaign Percent Completed
 	 *
@@ -3131,27 +3064,27 @@ class ATCF_Campaign {
 		return $percent;
 	}
 
-	private $percent_minimum_completed;
+	private $percent_minimum_completed_cache;
 	public function percent_minimum_completed($formatted = true) {
-		if ( !isset( $this->percent_minimum_completed ) || empty( $this->percent_minimum_completed ) ) {
+		if ( !isset( $this->percent_minimum_completed_cache ) || empty( $this->percent_minimum_completed_cache ) ) {
 			$goal    = $this->minimum_goal(false);
 			$current = $this->current_amount(false);
 
 			if ( 0 == $goal ) {
 				return $formatted ? 0 . '%' : 0;
 			}
-			$this->percent_minimum_completed = ( $current / $goal ) * 100;
-			if ( $this->percent_minimum_completed < 90 ) {
-				$this->percent_minimum_completed = round( $this->percent_minimum_completed );
+			$this->percent_minimum_completed_cache = ( $current / $goal ) * 100;
+			if ( $this->percent_minimum_completed_cache < 90 ) {
+				$this->percent_minimum_completed_cache = round( $this->percent_minimum_completed_cache );
 			} else {
-				$this->percent_minimum_completed = floor( $this->percent_minimum_completed );
+				$this->percent_minimum_completed_cache = floor( $this->percent_minimum_completed_cache );
 			}
 		}
 
 		if ( $formatted ) {
-			return $this->percent_minimum_completed . '%';
+			return $this->percent_minimum_completed_cache . '%';
 		} else {
-			return $this->percent_minimum_completed;
+			return $this->percent_minimum_completed_cache;
 		}
 	}
 
@@ -3170,59 +3103,46 @@ class ATCF_Campaign {
 	 * @param boolean $formatted Return formatted currency or not
 	 * @return sting $total The amount funded (currency formatted or not)
 	 */
-	private $current_amount;
+	private $current_amount_cache;
 	public function current_amount($formatted = true) {
-		if ( !isset( $this->current_amount ) ) {
+		if ( !isset( $this->current_amount_cache ) ) {
 			$total   = 0;
-			$backers = $this->backers();
+			$payments_data = $this->payments_data();
 
-			if ($backers > 0) {
-				foreach ( $backers as $backer ) {
-					$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-					$payment = get_post( $payment_id );
-
-					if ( empty( $payment ) || $payment->post_status == 'pending' ) {
-						continue;
+			if (!empty( $payments_data )) {
+				foreach ( $payments_data as $item_investment ) {
+					if ( !empty( $item_investment ) && $item_investment[ 'status' ] == 'publish' ) {
+						$total += $item_investment[ 'amount' ];
 					}
-					$total = $total + edd_get_payment_amount( $payment_id );
 				}
 			}
 
 			$amount_check = $this->current_amount_check_meta(FALSE);
 			$total += $amount_check;
-			$this->current_amount = $total;
+			$this->current_amount_cache = $total;
 		}
 
 		if ( $formatted ) {
-			$current_amount = $this->current_amount;
-			$currency = edd_get_currency();
-			if ($currency == "EUR") {
-				if ( strpos( $current_amount, '.00' ) !== false ) {
-					$current_amount = substr( $current_amount, 0, -3 );
-				}
-				$current_amount = number_format( $current_amount, 0, ".", " " );
-
-				return $current_amount . ' &euro;';
-			} else {
-				return edd_currency_filter( edd_format_amount( $current_amount ) );
+			$current_amount = $this->current_amount_cache;
+			if ( strpos( $current_amount, '.00' ) !== false ) {
+				$current_amount = substr( $current_amount, 0, -3 );
 			}
+			$current_amount = number_format( $current_amount, 0, ".", " " );
+
+			return $current_amount . ' &euro;';
 		}
 
-		return $this->current_amount;
+		return $this->current_amount_cache;
 	}
 
 	public function current_amount_with_check() {
 		$total   = 0;
-		$backers = $this->backers();
+		$payments_data = $this->payments_data();
 
-		if ($backers > 0) {
-			foreach ( $backers as $backer ) {
-				$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-				$payment    = get_post( $payment_id );
-				$payment_key = edd_get_payment_key( $payment_id );
-
-				if ( !empty( $payment ) && $payment_key == 'check' && $payment->post_status != 'pending' ) {
-					$total += edd_get_payment_amount( $payment_id );
+		if (!empty( $payments_data )) {
+			foreach ( $payments_data as $item_investment ) {
+				if ( !empty( $item_investment ) && $item_investment[ 'mean_payment' ] == 'check' && $item_investment[ 'status' ] == 'publish' ) {
+					$total += $item_investment[ 'amount' ];
 				}
 			}
 		}
@@ -3238,16 +3158,11 @@ class ATCF_Campaign {
 		}
 
 		if ( $formatted ) {
-			$currency = edd_get_currency();
-			if ($currency == "EUR") {
-				if (strpos($amount_check, '.00') !== false) {
-					$amount_check = substr($amount_check, 0, -3);
-				}
-
-				return $amount_check . ' &euro;';
-			} else {
-				return edd_currency_filter( edd_format_amount( $amount_check ) );
+			if (strpos($amount_check, '.00') !== false) {
+				$amount_check = substr($amount_check, 0, -3);
 			}
+
+			return $amount_check . ' &euro;';
 		}
 
 		return $amount_check;
@@ -3376,10 +3291,10 @@ class ATCF_Campaign {
 	 * This function is very slow, it is advisable to use it as few as possible
 	 * @return array
 	 */
-	private $payments_data;
+	private $payments_data_cache;
 	public function payments_data($skip_apis = FALSE, $order_by_older = FALSE, $show_failed = FALSE) {
-		if ( !isset( $this->payments_data ) ) {
-			$this->payments_data = array();
+		if ( !isset( $this->payments_data_cache ) || empty( $this->payments_data_cache ) ) {
+			$this->payments_data_cache = array();
 
 			if ( $this->has_investments_in_api() ) {
 				foreach ( $this->api_data->investments as $investment_item ) {
@@ -3387,7 +3302,7 @@ class ATCF_Campaign {
 						// Récupération simple des paiements dans l'API
 						// On dégage 'products' et 'signsquid_status_text' pas très utile
 						// On simplifie 'mangopay_contribution' et 'lemonway_contribution' pour avoir les infos au cas où, mais pas les chercher de suite, car normalement pas besoin
-						$this->payments_data[] = array(
+						$this->payments_data_cache[] = array(
 							'item'			=> $investment_item,
 							'ID'			=> $investment_item->wpref,
 							'user'			=> $investment_item->user_wpref,
@@ -3396,6 +3311,7 @@ class ATCF_Campaign {
 							'date'			=> $investment_item->invest_datetime,
 							'user_api_id'	=> $investment_item->user_id,
 							'status'		=> $investment_item->status,
+							'mean_payment'	=> $investment_item->mean_payment,
 							'payment_status'		=> $investment_item->payment_status,
 							'mangopay_contribution'	=> ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_mangopay ) ? $investment_item->payment_key : FALSE,
 							'lemonway_contribution' => ( $investment_item->payment_provider == ATCF_Campaign::$payment_provider_lemonway ) ? $investment_item->payment_key : FALSE,
@@ -3403,86 +3319,28 @@ class ATCF_Campaign {
 						);
 					}
 				}
-			} else {
-				$payments = edd_get_payments( array(
-					'number'	 => -1,
-					'download'   => $this->ID
-				) );
-
-				if ( $payments ) {
-					foreach ( $payments as $payment ) {
-						$user_info = edd_get_payment_meta_user_info( $payment->ID );
-						$cart_details = edd_get_payment_meta_cart_details( $payment->ID );
-
-						$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-
-						$WDGInvestmentSignature = new WDGInvestmentSignature( $payment->ID );
-						$signature_status = $WDGInvestmentSignature->get_status();
-
-						$lemonway_contribution = FALSE;
-						if ($this->get_payment_provider() == ATCF_Campaign::$payment_provider_lemonway) {
-							$lemonway_id = edd_get_payment_key($payment->ID);
-
-							if ( $lemonway_id == 'check' ) {
-							} else {
-								if ( strpos( $lemonway_id, 'wire_' ) !== FALSE ) {
-								} else {
-									if ( strpos( $lemonway_id, '_wallet_' ) !== FALSE ) {
-										$lemonway_id_exploded = explode( '_wallet_', $lemonway_id );
-										$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id( $lemonway_id_exploded[ 0 ] ) : '';
-									} else {
-										if ( strpos( $lemonway_id, 'wallet_' ) !== FALSE ) {
-										} else {
-											$lemonway_contribution = ($skip_apis == FALSE) ? LemonwayLib::get_transaction_by_id($lemonway_id) : '';
-										}
-									}
-								}
-							}
-						}
-
-						$payment_status = ypcf_get_updated_payment_status( $payment->ID, FALSE, $lemonway_contribution );
-
-						if ($payment_status != 'failed' || $show_failed) {
-							$this->payments_data[] = array(
-								'ID'			=> $payment->ID,
-								'email'			=> edd_get_payment_user_email( $payment->ID ),
-								'products'		=> $cart_details,
-								'amount'		=> edd_get_payment_amount( $payment->ID ),
-								'date'			=> $payment->post_date,
-								'user'			=> $user_id,
-								'status'		=> $payment_status,
-								'mangopay_contribution' => FALSE,
-								'lemonway_contribution' => $lemonway_contribution,
-								'payment_key' => $lemonway_id,
-								'signsquid_status'	=> $signature_status
-							);
-						}
-					}
-				}
 			}
 
 			if ( $order_by_older ) {
 				// on trie les investissements par date, le plus vieux en premier
-				array_multisort(array_column($this->payments_data, 'date'), SORT_ASC, $this->payments_data);
+				array_multisort(array_column($this->payments_data_cache, 'date'), SORT_ASC, $this->payments_data_cache);
 			}
 		}
 
-		return $this->payments_data;
+		return $this->payments_data_cache;
 	}
 
 	public function pending_preinvestments() {
 		$buffer = array();
-
-		$payments = edd_get_payments( array(
-		    'number'	=> -1,
-		    'download'	=> $this->ID,
-			'status'	=> 'pending'
-		) );
-
-		foreach ( $payments as $payment ) {
-			$payment_investment = new WDGInvestment( $payment->ID );
-			if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
-				array_push( $buffer, $payment_investment );
+		$payments_data = $this->payments_data();
+		if (!empty( $payments_data )) {
+			foreach ( $payments_data as $item_investment ) {
+				if ( !empty( $item_investment ) && $item_investment[ 'status' ] == 'pending' ) {
+					$payment_investment = new WDGInvestment( $item_investment[ 'ID' ] );
+					if ( $payment_investment->get_contract_status() == WDGInvestment::$contract_status_preinvestment_validated ) {
+						array_push( $buffer, $payment_investment );
+					}
+				}
 			}
 		}
 
@@ -3594,15 +3452,14 @@ class ATCF_Campaign {
 				'date'			=> date('Y-m-d H:i:s'),
 				'user_email'	=> $email,
 				'purchase_key'	=> $type,
-				'currency'		=> edd_get_currency(),
+				'currency'		=> 'EUR',
 				'downloads'		=> array($this->ID),
 				'user_info'		=> $user_info,
 				'cart_details'	=> $cart_details,
 				'status'		=> 'pending' // On initialise à pending, sinon la sauvegarde se fait 2 fois dans les logs (edd_record_sale_in_log)
 			);
 			$payment_id = edd_insert_payment( $payment_data );
-			$_SESSION[ 'investment_id' ] = $payment_id;
-			update_post_meta( $payment_id, '_edd_payment_total', $value );
+			update_post_meta( $payment_id, WDGInvestment::$payment_meta_key_payment_total, $value );
 			edd_record_sale_in_log($this->ID, $payment_id);
 			delete_post_meta( $payment_id, '_edd_payment_customer_id' );
 			update_post_meta( $payment_id, '_edd_payment_user_id', $saved_user_id );
@@ -4020,8 +3877,8 @@ class ATCF_Campaign {
 
 	public static function get_list_most_recent($nb = 1, $client = '') {
 		$buffer = array();
-
-		$projectlist_funding = ATCF_Campaign::get_list_funding( $nb, $client );
+		// Malgré le nom de la fonction, on ne prend pas les projets en collecte les plus récents, mais x projets aléatoirement parmis ceux en collecte
+		$projectlist_funding = ATCF_Campaign::get_list_funding( $nb, $client, TRUE );
 		$count_projectlist = count( $projectlist_funding );
 		foreach ( $projectlist_funding as $project ) {
 			array_push( $buffer, $project->ID );

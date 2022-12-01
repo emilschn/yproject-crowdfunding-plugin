@@ -348,62 +348,6 @@ class ATCF_Campaigns {
 	}
 
 	/**
-	 * Collect Funds
-	 *
-	 * @since Appthemer CrowdFunding 0.1-alpha
-	 *
-	 * @return void
-	 */
-	function collect_funds() {
-		global $edd_options, $errors;
-
-		$campaign = absint( $_GET[ 'campaign' ] );
-		$campaign = atcf_get_campaign( $campaign );
-
-		/** check nonce */
-		if ( ! check_admin_referer( 'atcf-collect-funds' ) ) {
-			return wp_safe_redirect( add_query_arg( array( 'post' => $campaign->ID, 'action' => 'edit' ), admin_url( 'post.php' ) ) );
-			exit();
-		}
-
-		/** check roles */
-		if ( ! current_user_can( 'update_core' ) ) {
-			return wp_safe_redirect( add_query_arg( array( 'post' => $campaign->ID, 'action' => 'edit', 'message' => 12 ), admin_url( 'post.php' ) ) );
-			exit();
-		}
-
-		$backers  = $campaign->backers();
-		$gateways = edd_get_enabled_payment_gateways(); 
-		$errors   = new WP_Error();
-
-		if ( empty( $backers ) ) {
-			return wp_safe_redirect( add_query_arg( array( 'post' => $campaign->ID, 'action' => 'edit', 'message' => 14 ), admin_url( 'post.php' ) ) );
-			exit();
-		}
-
-		foreach ( $backers as $backer ) {
-			$payment_id = get_post_meta( $backer->ID, '_edd_log_payment_id', true );
-			$gateway    = get_post_meta( $payment_id, '_edd_payment_gateway', true );
-
-			$gateways[ $gateway ][ 'payments' ][] = $payment_id;
-		}
-
-		foreach ( $gateways as $gateway => $gateway_args ) {
-			do_action( 'atcf_collect_funds_' . $gateway, $gateway, $gateway_args, $campaign, $errors );
-		}
-
-		if ( ! empty ( $errors->errors ) )
-			wp_die( $errors );
-		else {
-			update_post_meta( $campaign->ID, '_campaign_expired', current_time( 'mysql' ) );
-			update_post_meta( $campaign->ID, '_campaign_bulk_collected', 1 );
-
-			return wp_safe_redirect( add_query_arg( array( 'post' => $campaign->ID, 'action' => 'edit', 'message' => 13, 'collected' => $campaign->backers_count() ), admin_url( 'post.php' ) ) );
-			exit();
-		}
-	}
-
-	/**
 	 * Custom messages for various actions when managing campaigns.
 	 *
 	 * @since Appthemer CrowdFunding 0.1-alpha
@@ -1012,42 +956,6 @@ function _atcf_metabox_campaign_constitution_terms( $editing, $campaign ) {
 	</div>
 <?php
 }
-
-
-/**
- * Campaign Updates Box
- *
- * @since Appthemer CrowdFunding 0.9
- *
- * @return void
- */
-function _atcf_metabox_campaign_updates() {
-	global $post;
-
-	$campaign = atcf_get_campaign( $post );
-
-	do_action( 'atcf_metabox_campaign_updates_before', $campaign );
-?>
-	<textarea name="campaign_updates" rows="4" class="widefat"><?php echo esc_textarea( $campaign->updates() ); ?></textarea>
-	<p class="description"><?php _e( 'Notes and updates about the campaign.', 'atcf' ); ?></p>
-<?php
-	do_action( 'atcf_metabox_campaign_updates_after', $campaign );
-}
-
-/**
- * Updates Save
- *
- * EDD trys to escape this data, and we don't want that.
- *
- * @since Appthemer CrowdFunding 0.9
- */
-function atcf_sanitize_campaign_updates( $updates ) {
-	$updates = $_POST[ 'campaign_updates' ];
-	$updates = wp_kses_post( $updates );
-
-	return $updates;
-}
-add_filter( 'edd_metabox_save_campaign_updates', 'atcf_sanitize_campaign_updates' );
 
 
 

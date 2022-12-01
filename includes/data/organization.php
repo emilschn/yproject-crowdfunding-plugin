@@ -1728,6 +1728,10 @@ class WDGOrganization implements WDGUserInterface {
 	public function get_validated_investments() {
 		return $this->get_user_investments_object()->get_validated_investments();
 	}
+	public function get_count_validated_investments() {
+		$list = $this->get_user_investments_object()->get_posts_investments( 'publish' );
+		return count( $list );
+	}
 	public function get_pending_investments() {
 		return $this->get_user_investments_object()->get_pending_investments();
 	}
@@ -1963,19 +1967,11 @@ class WDGOrganization implements WDGUserInterface {
 		foreach ( $invest_list_unique as $invest_id ) {
 			$invest_item = array();
 
-			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			$download_id = '';
-			if ( isset( $downloads[0] ) ) {
-				if (is_array($downloads[0])) {
-					$download_id = $downloads[0]["id"];
-				} else {
-					$download_id = $downloads[0];
-				}
-			}
+			$WDGInvestment = new WDGInvestment( $invest_id );
+			$campaign = $WDGInvestment->get_saved_campaign();
 
-			if ( !empty( $download_id ) ) {
+			if ( !empty( $campaign ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
@@ -1988,7 +1984,7 @@ class WDGOrganization implements WDGUserInterface {
 				// Infos date et montant
 				$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
 				$invest_item['date'] = $date_invest->format('d/m/Y');
-				$invest_item_amount = edd_get_payment_amount( $invest_id );
+				$invest_item_amount = $WDGInvestment->get_saved_amount();
 
 				// Infos royalties liés
 				$invest_item['roi_list'] = array();

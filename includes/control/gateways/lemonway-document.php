@@ -186,6 +186,9 @@ class LemonwayDocument {
 			case 'person4-doc2':
 				return self::$document_type_person4_doc2;
 				break;
+			case WDGKYCFile::$type_criminal_record:
+				return FALSE;
+				break;
 		}
 		return 20;
 	}

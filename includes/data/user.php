@@ -837,6 +837,30 @@ class WDGUser implements WDGUserInterface {
 	/*******************************************************************************
 	 * Fonctions nécessitant des requetes
 	*******************************************************************************/
+	public function is_project_owner() {
+		$list_projects = array();
+		$campaign_status = array('publish');
+		$args = array(
+			'post_type' => 'download',
+			'author' => $this->get_wpref(),
+			'post_status' => $campaign_status
+		);
+		$args['meta_key'] = 'campaign_vote';
+		$args['meta_compare'] = '!=';
+		$args['meta_value'] = 'preparing';
+
+		query_posts($args);
+		if (have_posts()) {
+			while (have_posts()) {
+				the_post();
+				array_push($list_projects, get_the_ID());
+			}
+		}
+		wp_reset_query();
+
+		return !empty( $list_projects );
+	}
+
 	public function get_projects_list() {
 		global $WDG_cache_plugin;
 		if ( $WDG_cache_plugin == null ) {
@@ -1405,6 +1429,10 @@ class WDGUser implements WDGUserInterface {
 	public function get_validated_investments() {
 		return $this->get_user_investments_object()->get_validated_investments();
 	}
+	public function get_count_validated_investments() {
+		$list = $this->get_user_investments_object()->get_posts_investments( 'publish' );
+		return count( $list );
+	}
 
 	public function get_pending_investments() {
 		return $this->get_user_investments_object()->get_pending_investments();
@@ -1613,20 +1641,11 @@ class WDGUser implements WDGUserInterface {
 		$investment_list = array();
 		foreach ( $invest_list_unique as $invest_id ) {
 			$invest_item = array();
+			$WDGInvestment = new WDGInvestment( $invest_id );
+			$campaign = $WDGInvestment->get_saved_campaign();
 
-			$downloads = edd_get_payment_meta_downloads( $invest_id );
-			$download_id = '';
-			if ( isset( $downloads[0] ) ) {
-				if (is_array($downloads[0])) {
-					$download_id = $downloads[0]["id"];
-				} else {
-					$download_id = $downloads[0];
-				}
-			}
-
-			if ( !empty( $download_id ) ) {
+			if ( !empty( $campaign ) ) {
 				// Infos campagne et organisations
-				$campaign = atcf_get_campaign( $download_id );
 				$invest_item['project_name'] = $campaign->get_name();
 				$campaign_organization = $campaign->get_organization();
 				$wdg_organization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
@@ -1639,7 +1658,7 @@ class WDGUser implements WDGUserInterface {
 				// Infos date et montant
 				$date_invest = new DateTime( get_post_field( 'post_date', $invest_id ) );
 				$invest_item['date'] = $date_invest->format('d/m/Y');
-				$invest_item_amount = edd_get_payment_amount( $invest_id );
+				$invest_item_amount = $WDGInvestment->get_saved_amount();
 
 				// Infos royalties liés
 				$invest_item['roi_list'] = array();
@@ -1825,15 +1844,17 @@ class WDGUser implements WDGUserInterface {
 	/**
 	 * Enregistre le RIB
 	 */
-	public function save_iban($holder_name, $iban, $bic, $address1, $address2 = '') {
+	public function save_iban($holder_name, $iban, $bic, $address1 = '', $address2 = '') {
 		$this->bank_holdername = $holder_name;
 		$this->save_meta( WDGUser::$key_bank_holdername, $holder_name );
 		$this->bank_iban = $iban;
 		$this->save_meta( WDGUser::$key_bank_iban, $iban );
 		$this->bank_bic = $bic;
 		$this->save_meta( WDGUser::$key_bank_bic, $bic );
-		$this->bank_address = $address1;
-		$this->save_meta( WDGUser::$key_bank_address1, $address1 );
+		if ( !empty( $address1 ) ) {
+			$this->bank_address = $address1;
+			$this->save_meta( WDGUser::$key_bank_address1, $address1 );
+		}
 		if ( !empty( $address2 ) ) {
 			$this->bank_address2 = $address2;
 			$this->save_meta( WDGUser::$key_bank_address2, $address2 );

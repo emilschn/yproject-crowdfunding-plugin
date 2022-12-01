@@ -54,8 +54,10 @@ class WDGWPRESTLib {
 					)
 				);
 
-				if ( !$shortcut_call && !is_wp_error($result) && isset( $result['response'] ) ) {
-					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $route : ' . $route.' --> $result[response] : ' . print_r( $result['response'], TRUE ) );
+				if ( !$shortcut_call ) {
+					if (is_wp_error($result) || !isset( $result['response']) || ($result['response']['code'] != '200')) {
+						ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $route : ' . $route.' --> $result : ' . print_r( $result, TRUE ) );
+					}
 				}
 				if ( !$shortcut_call && !is_wp_error($result) && isset( $result['body'] ) ) {
 					$traced_body = json_decode( $result["body"] );
@@ -65,12 +67,18 @@ class WDGWPRESTLib {
 					if ( isset( $traced_body->bank_bic ) ) {
 						$traced_body->bank_bic = 'UNTRACKED';
 					}
+					if ( isset( $traced_body->investments ) ) {
+						$traced_body->investments = 'UNTRACKED';
+					}
+					if ( isset( $traced_body->poll_answers ) ) {
+						$traced_body->poll_answers = 'UNTRACKED';
+					}
 					ypcf_debug_log( 'WDGWPRESTLib::call_get ----> $route : ' . $route.' --> $body result : ' . json_encode( $traced_body ) );
 				}
 				
 				$result_save = serialize( $result );
 				if ( !empty( $result_save ) ) {
-					$db_cacher->set_cache( $cache_id, $result_save, 60*4, $cache_version );
+					$db_cacher->set_cache( $cache_id, $result_save, 60*5, $cache_version );
 				}
 			}
 			

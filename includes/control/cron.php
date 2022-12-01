@@ -8,7 +8,8 @@ class WDGCronActions {
 		$current_date->setTime( 0, 0, 1 );
 
 		// Récupération de toutes les déclarations qui sont dues entre maintenant et dans 19 jours (pour ceux dont la déclaration est au 20)
-		if ( $current_date->format( 'd' ) == 1 || $current_date->format( 'd' ) == 8 || $current_date->format( 'd' ) == 10 ) {
+		$current_date_day = $current_date->format( 'd' );
+		if ( $current_date_day == 1 || $current_date_day == 4 || $current_date_day == 8 || $current_date_day == 10 ) {
 			$date_in_10_days = new DateTime();
 			$date_in_10_days->add( new DateInterval('P19D') );
 			$declaration_list = WDGWPREST_Entity_Declaration::get_list_by_date( $current_date->format( 'Y-m-d' ), $date_in_10_days->format( 'Y-m-d' ) );
@@ -20,9 +21,9 @@ class WDGCronActions {
 						$date_due = new DateTime( $declaration_data->date_due );
 						$date_due->setTime( 10, 30, 0 );
 						if ( $date_due > $current_date ) {
-							$current_date_day = $current_date->format( 'd' );
 							switch ( $current_date_day ) {
 								case 1:
+								case 4:
 									$nb_days_diff = 9;
 									break;
 								case 8:
@@ -36,7 +37,7 @@ class WDGCronActions {
 							$campaign = new ATCF_Campaign( FALSE, $declaration_data->id_project );
 							if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
 								$organization = $campaign->get_organization();
-								$wdgorganization = new WDGOrganization( $organization->id, $organization );
+								$wdgorganization = new WDGOrganization( $organization->wpref, $organization );
 								$wdguser_author = new WDGUser( $campaign->data->post_author );
 
 								// Données qui seront transmises à SiB
@@ -359,8 +360,7 @@ class WDGCronActions {
 
 		$buffer_partners .= '<titre><![CDATA['.$campaign->data->post_title.']]></titre>' . "\n"; //TNP
 		$buffer_partners .= '<description><![CDATA['.html_entity_decode($campaign->summary()).']]></description>' . "\n"; //TNP
-		$description_complete = html_entity_decode( $campaign->description() );
-		$buffer_partners .= '<description_complete><![CDATA['.apply_filters( 'the_content', $description_complete ).']]></description_complete>' . "\n"; //Info durable
+		$buffer_partners .= '<description_complete><![CDATA['.$campaign->data->post_content.']]></description_complete>' . "\n"; //Info durable
 		$buffer_partners .= '<url><![CDATA['.$campaign->get_public_url().']]></url>' . "\n"; //TNP
 		$buffer_partners .= '<url_photo><![CDATA['.$campaign->get_home_picture_src().']]></url_photo>' . "\n"; //TNP
 		$buffer_partners .= '<date_debut_collecte>'.$campaign->begin_collecte_date('Y-m-d').'</date_debut_collecte>' . "\n"; //TNP :: YYYY-MM-DD

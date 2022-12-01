@@ -630,7 +630,6 @@ function doFillPDFHTMLDefaultContentByLang($user_obj, $campaign_obj, $payment_da
 	add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
 	add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
 	add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
-	$edd_settings = get_option( 'edd_settings' );
 
 	$blank_space_small = '________________';
 	$blank_space = '________________________________________________';
@@ -1004,7 +1003,8 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE, 
 	$organization = FALSE;
 	if ( !empty( $payment_id ) ) {
 		$current_user = get_userdata($user_id);
-		$saved_user_id = get_post_meta($payment_id, '_edd_payment_user_id', TRUE);
+		$WDGInvestment = new WDGInvestment( $payment_id );
+		$saved_user_id = $WDGInvestment->get_saved_user_id();
 		if (isset($_SESSION['redirect_current_invest_type']) && $_SESSION['redirect_current_invest_type'] != "user") {
 			$group_id = $_SESSION['redirect_current_invest_type'];
 			$organization = new WDGOrganization($group_id);
@@ -1013,10 +1013,10 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE, 
 				$organization = new WDGOrganization($saved_user_id);
 			}
 		}
-		$amount = edd_get_payment_amount($payment_id);
+		$amount = $WDGInvestment->get_saved_amount();
 		$amount_part = $amount / $campaign->part_value();
 
-		$ip_address = get_post_meta($payment_id, '_edd_payment_ip', TRUE);
+		$ip_address = get_post_meta($payment_id, WDGInvestment::$payment_meta_key_ip, TRUE);
 		$payment_date = get_the_date( 'Y-m-d H:i:s', $payment_id );
 
 		$invest_data = array(
@@ -1037,13 +1037,15 @@ function getNewPdfToSign($project_id, $payment_id, $user_id, $filepath = FALSE, 
 	}
 
 	$html_content = fillPDFHTMLDefaultContent( $current_user, $campaign, $invest_data, $organization, FALSE, $with_agreement );
-	$filename = ( empty( $filepath ) ) ? dirname( __FILE__ ) . '/../pdf_files/' . $campaign->ID . '_' . $saved_user_id . '_' . time() . '.pdf' : $filepath;
+	if ( empty( $filepath ) ) {
+		$filepath = WDGInvestmentContract::get_investment_file_path( $campaign, $payment_id );
+	}
 	global $new_pdf_file_name;
-	$new_pdf_file_name = basename( $filename );
+	$new_pdf_file_name = basename( $filepath );
 
-	ypcf_debug_log('getNewPdfToSign > write in ' . $filename);
-	if (generatePDF($html_content, $filename)) {
-		return $filename;
+	ypcf_debug_log('getNewPdfToSign > write in ' . $filepath);
+	if (generatePDF($html_content, $filepath)) {
+		return $filepath;
 	} else {
 		return false;
 	}

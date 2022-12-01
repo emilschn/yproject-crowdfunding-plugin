@@ -106,12 +106,11 @@ class NotificationsAsana {
 	}
 
 	public static function investment_pending_wire($payment_id) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 		$user_data = get_user_by('email', $email);
 
 		$object = $campaign->get_name() . ' /// Nouveau virement : ' . $email;
@@ -129,22 +128,23 @@ class NotificationsAsana {
 	}
 
 	public static function new_purchase_pending_check_admin($payment_id, $picture_url) {
-		$post_campaign = atcf_get_campaign_post_by_payment_id($payment_id);
-		$campaign = atcf_get_campaign($post_campaign);
+		$inv = new WDGInvestment( $payment_id );
+		$campaign = $inv->get_saved_campaign();
+		$dashboard_url = WDG_Redirect_Engine::override_get_page_url( 'tableau-de-bord' ) . '?campaign_id=' . $campaign->ID;
 
-		$payment_data = edd_get_payment_meta( $payment_id );
-		$payment_amount = edd_get_payment_amount( $payment_id );
-		$email = $payment_data['email'];
+		$payment_amount = $inv->get_saved_amount();
+		$email = $inv->get_saved_user_email();
 		$user_data = get_user_by('email', $email);
 
 		$object = $campaign->get_name() . ' /// Nouveau chèque !';
 
 		$content = "Un nouveau chèque de ".$payment_amount." &euro; a été enregistré pour le projet " .$campaign->data->post_title. ".<br /><br />";
+		$content .= "-> TBPP : " .$dashboard_url. "<br /><br />";
 		$content .= "Utilisateur :<br />";
 		$content .= "- login : " .$user_data->user_login. "<br />";
 		$content .= "- e-mail : " .$email. "<br />";
 		$content .= "- prénom et nom : " .$user_data->first_name . " " . $user_data->last_name. "<br />";
-		$content .= "- téléphone : " . get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
+		$content .= "- téléphone : " .get_user_meta($user_data->ID, 'user_mobile_phone', true). "<br />";
 		if ( $picture_url ) {
 			$content .= "Une photo a été envoyée :<br />";
 			$content .= "<img src='".$picture_url."' /><br />";
@@ -218,6 +218,17 @@ class NotificationsAsana {
 	public static function send_declaration_filled($campaign_name, $turnover_amount, $royalties_amount, $commission_amount) {
 		$object = $campaign_name . ' /// Déclaration de royalties effectuée';
 		$content = "Le projet " .$campaign_name. " a fait sa déclaration de royalties. Montant total du CA : ".$turnover_amount." €. Montant des royalties (ajustement compris) : " .$royalties_amount. " €. Montant de la commission : " .$commission_amount. " €.";
+
+		return self::send( self::$notif_type_support, $object, $content );
+	}
+
+	public static function declaration_pending_wire($declaration_id) {
+		$roi_declaration = new WDGROIDeclaration( $declaration_id );
+		$campaign = new ATCF_Campaign( FALSE, $roi_declaration->id_campaign );
+		$campaign_name = $campaign->data->post_title;
+
+		$object = $campaign_name . ' /// Déclaration avec virement en attente';
+		$content = "Le projet " . $campaign_name . " a prévu de payer par virement bancaire.";
 
 		return self::send( self::$notif_type_support, $object, $content );
 	}
@@ -303,9 +314,13 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_admin, $object, $content );
 	}
 
-	public static function investment_to_api_error_admin($edd_payment_item) {
+	/**
+	 * 
+	 * @param WDGInvestment $investment
+	 */
+	public static function investment_to_api_error_admin($investment) {
 		$object = "Erreur d'ajout d'investissement sur l'API ";
-		$content = "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $edd_payment_item->ID;
+		$content = "Problème d'ajout d'un investissement sur l'API, avec l'identifiant suivant : " . $investment->get_id();
 
 		return self::send( self::$notif_type_admin, $object, $content );
 	}

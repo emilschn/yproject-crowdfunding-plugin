@@ -344,11 +344,12 @@ class LemonwayNotification {
 			foreach ( $investments_by_campaign as $campaign_id => $campaign_investments ) {
 				$trace .= 'A';
 				foreach ($campaign_investments as $campaign_investment_id) {
+					$WDGInvestment = new WDGInvestment( $campaign_investment_id );
 					$trace .= 'B';
-					$payment_key = edd_get_payment_key( $campaign_investment_id );
+					$payment_key = $WDGInvestment->get_saved_payment_key();
 					if ( strpos( $payment_key, 'wire_' ) !== FALSE ) {
 						$trace .= 'C';
-						$payment_amount = edd_get_payment_amount( $campaign_investment_id );
+						$payment_amount = $WDGInvestment->get_saved_amount();
 						if ( $payment_amount == $lemonway_posted_amount ) {
 							$trace .= 'D';
 							$investment_campaign_id = $campaign_id;
@@ -410,12 +411,12 @@ class LemonwayNotification {
 						NotificationsEmails::new_purchase_user_success_nocontract( $investment_id, $new_contract_pdf_file, FALSE, ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_vote ) );
 					}
 
-					NotificationsSlack::send_new_investment( $campaign->get_name(), $lemonway_posted_amount, $invest_author->get_email() );
-					NotificationsEmails::new_purchase_team_members( $investment_id );
 					if ( $campaign->campaign_status() != ATCF_Campaign::$campaign_status_vote ) {
 						$WDGInvestment = new WDGInvestment( $investment_id );
 						$WDGInvestment->save_to_api();
 					}
+					NotificationsSlack::send_new_investment( $campaign, $lemonway_posted_amount, $invest_author->get_email(), $investment_id );
+					NotificationsEmails::new_purchase_team_members( $investment_id );
 				} else {
 					// sinon, il faut investiguer
 					$content .= "\n Problème de transfert de fond vers le wallet d'orga";
@@ -429,9 +430,12 @@ class LemonwayNotification {
 					$amount = $wallet_details->BAL;
 					NotificationsAPI::wire_transfer_received( $WDGUser_invest_author, $amount );
 				} else {
-					$content .= "\n Investissement non identifié";
-					NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
-					NotificationsAsana::wire_payment_received_not_attributed( $content );
+					$result = $this->search_organization_declarations( $WDGUser_invest_author, $WDGOrga_invest_author, $lemonway_posted_amount, 'wire', $lemonway_posted_id_transaction );
+					if (!$result) {
+						$content .= "\n Investissement non identifié";
+						NotificationsSlack::wire_payment_received_not_attributed( 'Virement non automatisé' );
+						NotificationsAsana::wire_payment_received_not_attributed( $content );
+					}
 				}
 			}
 		} else {
@@ -480,50 +484,19 @@ class LemonwayNotification {
 		$content .= 'Montant : ' .$lemonway_posted_amount;
 		NotificationsSlack::mandate_payment_received( $content );
 
-		$content_mail_auto_royalties = '';
 
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			// Transfert vers le wallet de séquestre de royalties
 			$WDGOrga_wallet = new WDGOrganization( $WDGUser_wallet->get_wpref() );
-			$WDGOrga_wallet->check_register_royalties_lemonway_wallet();
 			$transaction_details = LemonwayLib::get_transaction_by_id( $lemonway_posted_id_transaction, 'transactionId' );
 			$transfer_amount = $transaction_details->CRED;
-			LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $transfer_amount );
-
-			// Récupération des projets pour voir les versements de royalties en attente
-			$list_campaign_orga = $WDGOrga_wallet->get_campaigns();
-			if ( !empty( $list_campaign_orga ) ) {
-				foreach ( $list_campaign_orga as $project ) {
-					$campaign = new ATCF_Campaign( $project->wpref );
-					$list_declarations_campaign = WDGROIDeclaration::get_list_by_campaign_id( $project->wpref, WDGROIDeclaration::$status_waiting_transfer );
-					if ( !empty( $list_declarations_campaign ) ) {
-						foreach ( $list_declarations_campaign as $declaration ) {
-							$list_investments = $campaign->roi_payments_data( $declaration );
-							$total_roi = 0;
-							foreach ($list_investments as $investment_item) {
-								$total_roi += $investment_item[ 'roi_amount' ];
-							}
-
-							$date_of_royalties_transfer = $declaration->get_transfer_date();
-							$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . "\n";
-							$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . "\n";
-							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . "\n";
-							$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . " €\n";
-							$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €';
-
-							$declaration->status = WDGROIDeclaration::$status_initializing;
-							$declaration->update();
-							WDGQueue::add_init_declaration_rois( $declaration->id );
-							break;
-						}
-					}
-				}
+			$linked_users_creator = $WDGOrga_wallet->get_linked_users( WDGWPREST_Entity_Organization::$link_user_type_creator );
+			$WDGUser_invest_author = FALSE;
+			if ( !empty( $linked_users_creator ) ) {
+				$WDGUser_invest_author = $linked_users_creator[ 0 ];
 			}
-		}
-
-		if ( !empty( $content_mail_auto_royalties ) ) {
-			NotificationsSlack::send_notification_roi_transfer_to_come( $content_mail_auto_royalties );
+			$this->search_organization_declarations( $WDGUser_invest_author, $WDGOrga_wallet, $transfer_amount, 'mandate' );
 		}
 	}
 
@@ -561,6 +534,7 @@ class LemonwayNotification {
 
 		$name = '';
 
+		$WDGOrganization = FALSE;
 		$WDGUser_wallet = WDGUser::get_by_lemonway_id( $lemonway_posted_id_external );
 		if ( WDGOrganization::is_user_organization( $WDGUser_wallet->get_wpref() ) ) {
 			$WDGOrganization = new WDGOrganization( $WDGUser_wallet->get_wpref() );
@@ -572,6 +546,93 @@ class LemonwayNotification {
 		if ( !empty( $name ) ) {
 			NotificationsSlack::send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount );
 			NotificationsAsana::send_notification_mandate_canceled( $name, $lemonway_posted_id_external, $lemonway_posted_amount );
+
+			// On tente d'annuler l'action en attente en cours
+			if ( empty( $WDGOrganization ) ) {
+				return;
+			}
+			$list_campaign_orga = $WDGOrganization->get_campaigns();
+			if ( empty( $list_campaign_orga ) ) {
+				return;
+			}
+			foreach ( $list_campaign_orga as $project ) {
+				if ( empty( $project->wpref ) ) {
+					continue;
+				}
+
+				$campaign = new ATCF_Campaign( $project->wpref );
+				$declarations_list = $campaign->get_roi_declarations();
+				if ( empty( $declarations_list ) ) {
+					continue;
+				}
+				foreach ( $declarations_list as $declaration_item ) {
+					if ( $declaration_item[ 'status' ] != WDGROIDeclaration::$status_waiting_transfer && $declaration_item[ 'status' ] != WDGROIDeclaration::$status_transfer ) {
+						continue;
+					}
+
+					$id_declaration = $declaration_item[ 'id' ];
+					WDGQueue::set_list_status( $id_declaration, 'init_declaration_rois', WDGQueue::$status_complete );
+					WDGQueue::set_list_status( $id_declaration, 'royalties_auto_transfer_start', WDGQueue::$status_complete );
+				}
+			}
 		}
+	}
+
+	private function search_organization_declarations($WDGUser, $WDGOrga_wallet, $transfer_amount, $mean_of_payment, $id_transaction = FALSE) {
+		if ( empty( $WDGUser ) ) {
+			return;
+		}
+		$content_mail_auto_royalties = '';
+		$WDGOrga_wallet->check_register_royalties_lemonway_wallet();
+		LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_lemonway_id(), $WDGOrga_wallet->get_royalties_lemonway_id(), $transfer_amount );
+
+		// Récupération des projets pour voir les versements de royalties en attente
+		$date_of_royalties_transfer = FALSE;
+		$last_declaration = FALSE;
+		$list_campaign_orga = $WDGOrga_wallet->get_campaigns();
+		if ( !empty( $list_campaign_orga ) ) {
+			foreach ( $list_campaign_orga as $project ) {
+				$campaign = new ATCF_Campaign( $project->wpref );
+				$list_declarations_campaign = WDGROIDeclaration::get_list_by_campaign_id( $project->wpref, WDGROIDeclaration::$status_waiting_transfer );
+				if ( !empty( $list_declarations_campaign ) ) {
+					foreach ( $list_declarations_campaign as $declaration ) {
+						$last_declaration = $declaration;
+						$list_investments = $campaign->roi_payments_data( $declaration );
+						$total_roi = 0;
+						foreach ($list_investments as $investment_item) {
+							$total_roi += $investment_item[ 'roi_amount' ];
+						}
+
+						$content_mail_auto_royalties .= 'Versement pour ' . $campaign->get_name() . "\n";
+						$content_mail_auto_royalties .= 'Declaration du ' . $declaration->get_formatted_date() . "\n";
+						if ( $mean_of_payment == 'mandate' ) {
+							$date_of_royalties_transfer = $declaration->get_transfer_date();
+							$content_mail_auto_royalties .= 'Programmé pour ' . $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) . "\n";
+						} else {
+							$content_mail_auto_royalties .= "Programmé pour maintenant\n";
+						}
+						$content_mail_auto_royalties .= 'Montant avec ajustement : ' . $declaration->get_amount_with_adjustment() . " €\n";
+						$content_mail_auto_royalties .= 'Montant versé aux investisseurs : ' . $total_roi . ' €';
+
+						if ( !empty( $id_transaction ) ) {
+							$declaration->payment_token = $id_transaction;
+						}
+						$declaration->status = WDGROIDeclaration::$status_initializing;
+						$declaration->update();
+						WDGQueue::add_init_declaration_rois( $declaration->id );
+						break;
+					}
+				}
+			}
+		}
+
+		if ( !empty( $content_mail_auto_royalties ) ) {
+			NotificationsSlack::send_notification_roi_transfer_to_come( $content_mail_auto_royalties );
+			if ( !empty( $last_declaration ) && $mean_of_payment == 'mandate' ) {
+				NotificationsAPI::declaration_mandate_received( $WDGUser, $last_declaration, $date_of_royalties_transfer->format( 'd/m/Y H:i:s' ) );
+			}
+		}
+
+		return !empty( $content_mail_auto_royalties );
 	}
 }
