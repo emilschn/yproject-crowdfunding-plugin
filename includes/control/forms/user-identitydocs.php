@@ -28,7 +28,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		$this->initFields();
 	}
 
-	protected function initOneField($wallet_id, $WDGUserOrOrganization, $owner_type, $field_group, $type, $lw_type, $label, $description) {
+	protected function initOneField($wallet_id, $WDGUserOrOrganization, $owner_type, $field_group, $type, $lw_type, $label, $description, $index_api = 1, $for_admin = FALSE) {
 		$suffix = ( $this->is_orga ) ? '-orga-' . $WDGUserOrOrganization->get_wpref() : '';
 		
 		$file_path = FALSE;
@@ -43,7 +43,6 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		}
 		if ( !empty( $this->current_filelist ) ) {
 			// on cherche dans la liste de tous les fichiers de l'utilisateur un fichier correspondant
-			$index_api = 1;
 			$types_api = array( $type );
 			if ( $owner_type === 'organization' ) {
 				if ( $type == WDGKYCFile::$type_id ){
@@ -157,7 +156,21 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		}
 
 		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified, $is_file_sent );
-		$this->addField( 'file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params );
+		if ( $for_admin == FALSE ){
+			$this->addField( 'file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params );
+		} else {
+			// si l'utilisateur courant est un admin, et qu'il y a un fichier fusionné, on le montre
+			$WDGUser_current = WDGUser::current();
+			if ( $WDGUser_current->is_admin() ) {
+				// on rajoute le thème admin
+				$field_id_params[ 'admin_theme' ] = 1;
+				// si c'est un fichier fusionné, on ne le fait apparaitre que si le fichier existe
+				if ( $index_api != 0 || ($index_api == 0 && isset( $current_file ) && $is_api_file)){
+					$field_id_params[ 'display_upload' ] = FALSE;
+					$this->addField('file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params);
+				}				
+			}
+		}	
 	}
 
 	protected function initFields() {
@@ -227,6 +240,9 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			// initialisation du champ "verso de la première pièce d'identité"
 			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id_back, LemonwayDocument::$document_type_id_back, __( 'form.user-identitydocs.ID_BACK', 'yproject' ), __( 'form.user-identitydocs.ID_BACK_DESCRIPTION', 'yproject' ) );
 
+			// initialisation du champ administrateur "première pièce d'identité, version fusionnée"
+			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id, LemonwayDocument::$document_type_id, 'Première pièce d\'identité fusionnée', 'Les recto et verso fusionnés de la première pièce d\'identité', 0, TRUE );
+
 			// initialisation du champ "deuxième pièce d'identité"
 			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id_2, LemonwayDocument::$document_type_idbis, __( 'form.user-identitydocs.SECOND_ID', 'yproject' ) . ' *', __( 'form.user-identitydocs.SECOND_ID_DESCRIPTION_1', 'yproject' ). '<br>'
 			. __( 'form.user-identitydocs.SECOND_ID_DESCRIPTION_2', 'yproject' ). '<br>'
@@ -234,6 +250,9 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 
 			// initialisation du champ "verso de la deuxième pièce d'identité"
 			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id_2_back, LemonwayDocument::$document_type_idbis_back, __( 'form.user-identitydocs.SECOND_ID_BACK', 'yproject' ), __( 'form.user-identitydocs.SECOND_ID_BACK_DESCRIPTION', 'yproject' ) );
+			
+			// initialisation du champ administrateur "deuxième pièce d'identité, version fusionnée"
+			$this->initOneField($wallet_id, $WDGUser, WDGKYCFile::$owner_user, WDG_Form_User_Identity_Docs::$field_group_files, WDGKYCFile::$type_id_2, LemonwayDocument::$document_type_idbis, 'Deuxième pièce d\'identité fusionnée', 'Les recto et verso fusionnés de la deuxième pièce d\'identité', 0, TRUE );
 
 			// casier judiciaire si porteur de projet
 			if ( $WDGUser->is_project_owner() ) {
