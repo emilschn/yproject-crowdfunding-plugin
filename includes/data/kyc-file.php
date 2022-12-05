@@ -672,7 +672,7 @@ class WDGKYCFile {
 			if ( !empty( $file_api_list ) ) {
 				foreach ( $file_api_list as $kycfile_item ) {
 					// Parcourir la liste, vérifier le type s'il est précisé
-					if ( $type == '' || ($kycfile_item->doc_type == $type_api  && $kycfile_item->doc_index == $index_api )) {
+					if ( $type == '' || ($kycfile_item->doc_type == $type_api  && $kycfile_item->doc_index == $index_api) || $kycfile_item->doc_index == 0 ) {
 						$KYCfile = new WDGKYCFile( $kycfile_item->id, TRUE );
 						array_push($buffer, $KYCfile);
 					}
