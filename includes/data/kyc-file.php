@@ -489,7 +489,7 @@ class WDGKYCFile {
 
 		if ($new_type != FALSE){
 			// Si cette variable est passée en paramètre,  c'est qu'elle a été définie via le select, c'est donc un "nouveau type"
-			// mais on fait d'abord l'algorythme précédent pour définir le doc_index
+			// mais on fait d'abord l'algorithme précédent pour définir le doc_index
 			$doc_type = $new_type;
 		}
 		
@@ -585,14 +585,17 @@ class WDGKYCFile {
 			//*******************
 			// on commence par récupérer les éventuels kyc présents dans l'API
 			// et changer le statut de l'existant en "supprimé"
-
+			ypcf_debug_log( 'WDGKYCFile::add_file $doc_type = ' . $doc_type . ' $doc_index = ' . $doc_index);
+			
 			// Récupération de l'identifiant API du fichier existant
 			$file_list = self::get_list_by_owner_id($id_owner, $type_owner, $doc_type);
 			// Parcourir la liste, vérifier le type et l'index de documents, et si le statut n'est pas déjà "removed"
 			foreach ($file_list as $file_item) {
+				ypcf_debug_log( 'WDGKYCFile::add_file fichier déjà existant ? $file_item->type = ' . $file_item->type . ' $file_item->doc_index = ' . $file_item->doc_index . ' $file_item->status = ' . $file_item->status);
 				if ($file_item->type == $doc_type && $file_item->doc_index == $doc_index && $file_item->status != 'removed') {
 					// Envoi de la demande de suppression à l'API
 					WDGWPREST_Entity_FileKYC::update_status($file_item->id, 'removed');
+
 				}
 			}
 			//*******************

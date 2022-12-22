@@ -85,7 +85,7 @@ class WDG_Form {
 		$message_document_waiting = __( 'forms.file.DOCUMENT_UNDER_VALIDATION', 'yproject' );
 		
 		// Récupération du statut en provenance de LW si nécessaire
-		if ( !empty( $document_type ) ) {
+		if ( isset( $document_type ) ) {
 			// TODO : vérifier s'il faut faire correspondre les anciens et nouveaux documents types
 			$lw_document = new LemonwayDocument( $wallet_id, $document_type );
 			if ( $lw_document->get_status() == LemonwayDocument::$document_status_accepted && !empty( $date_upload ) ) {
@@ -130,14 +130,14 @@ class WDG_Form {
 		} 
 		// ne mettre un select que si le document n'est pas validé,  et le compte non-authentifié
 		// sinon, on affichera juste l'api_type en texte (si on l'a)
-		if ( !empty( $document_type ) && $lw_document->get_status() != LemonwayDocument::$document_status_accepted && $is_authentified == FALSE ){
+		if ( isset( $document_type ) && $lw_document->get_status() != LemonwayDocument::$document_status_accepted && $is_authentified == FALSE ){
 			if( $type_list && count( $type_list ) > 1 ){
 				$buffer[ 'list_select' ] = $type_list;
 			}
 		}
 		if( $api_type != FALSE ){
 			$buffer[ 'api_type' ] = $api_type;
-            if ( !empty( $document_type ) && $lw_document->get_status() != LemonwayDocument::$document_status_accepted ) {
+            if ( isset( $document_type ) && $lw_document->get_status() != LemonwayDocument::$document_status_accepted ) {
                 $buffer[ 'string_type' ] = WDGKYCFile::convert_type_id_to_str($api_type, $isOrga);
             }
 		}
