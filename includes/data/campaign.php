@@ -405,6 +405,63 @@ class ATCF_Campaign {
 		return $amount;
 	}
 
+	public function get_maximum_goal_left( $formatted = TRUE ) {
+		$amount = $this->goal( false );
+
+		if ($this->has_duplicate_campaigns()) {
+			$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+			foreach ( $duplicated_campaigns as $wpcampaign ) {
+				$WDGCampaign = new ATCF_Campaign( $wpcampaign );
+				$amount -= $WDGCampaign->current_amount( false );
+			}
+		}
+
+
+		if ( $formatted ) {
+			return UIHelpers::format_number( $amount, 0 ) . ' &euro;';
+		}
+
+		return $amount;
+	}
+
+	public function get_next_goal( $formatted = TRUE ) {
+		$amount = 0;
+
+		if ($this->has_duplicate_campaigns()) {
+			$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+			foreach ( $duplicated_campaigns as $wpcampaign ) {
+				$WDGCampaign = new ATCF_Campaign( $wpcampaign );
+				$amount += $WDGCampaign->current_amount( false );
+			}
+		}
+		$amount += $this->minimum_goal( false );
+
+		if ( $formatted ) {
+			return UIHelpers::format_number( $amount, 0 ) . ' &euro;';
+		}
+
+		return $amount;
+	}
+
+	public function get_original_minimum_goal( $formatted = TRUE ) {
+		$amount = $this->minimum_goal( false );
+
+		if ($this->has_duplicate_campaigns()) {
+			$duplicated_campaigns = $this->get_duplicate_campaigns_id();
+			// foreach ( $duplicated_campaigns as $wpcampaign ) {
+				$WDGCampaign = new ATCF_Campaign( $duplicated_campaigns[0] );
+				$amount = $WDGCampaign->minimum_goal( false );
+			// }
+		}
+		// $amount += $this->minimum_goal( false );
+
+		if ( $formatted ) {
+			return UIHelpers::format_number( $amount, 0 ) . ' &euro;';
+		}
+
+		return $amount;
+	}
+
 	/*******************************************************************************
 	 * METAS
 	 ******************************************************************************/
