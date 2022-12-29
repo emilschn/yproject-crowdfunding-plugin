@@ -137,7 +137,7 @@ class WDG_Form {
 		}
 		if( $api_type != FALSE ){
 			$buffer[ 'api_type' ] = $api_type;
-            if ( isset( $document_type ) && $lw_document->get_status() != LemonwayDocument::$document_status_accepted ) {
+            if ( isset( $document_type ) ) {
                 $buffer[ 'string_type' ] = WDGKYCFile::convert_type_id_to_str($api_type, $isOrga);
             }
 		}
