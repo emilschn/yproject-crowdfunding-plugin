@@ -405,14 +405,14 @@ class ATCF_Campaign {
 		return $amount;
 	}
 
-	public function get_maximum_goal_left( $formatted = TRUE ) {
+	public function get_maximum_goal_total( $formatted = TRUE ) {
 		$amount = $this->goal( false );
 
 		if ($this->has_duplicate_campaigns()) {
 			$duplicated_campaigns = $this->get_duplicate_campaigns_id();
 			foreach ( $duplicated_campaigns as $wpcampaign ) {
 				$WDGCampaign = new ATCF_Campaign( $wpcampaign );
-				$amount -= $WDGCampaign->current_amount( false );
+				$amount += $WDGCampaign->current_amount( false );
 			}
 		}
 
@@ -447,13 +447,11 @@ class ATCF_Campaign {
 		$amount = $this->minimum_goal( false );
 
 		if ($this->has_duplicate_campaigns()) {
+			// c'est le minimum_goal de la première campagne dupliquée
 			$duplicated_campaigns = $this->get_duplicate_campaigns_id();
-			// foreach ( $duplicated_campaigns as $wpcampaign ) {
-				$WDGCampaign = new ATCF_Campaign( $duplicated_campaigns[0] );
-				$amount = $WDGCampaign->minimum_goal( false );
-			// }
+			$WDGCampaign = new ATCF_Campaign( $duplicated_campaigns[0] );
+			$amount = $WDGCampaign->minimum_goal( false );
 		}
-		// $amount += $this->minimum_goal( false );
 
 		if ( $formatted ) {
 			return UIHelpers::format_number( $amount, 0 ) . ' &euro;';
@@ -2880,7 +2878,7 @@ class ATCF_Campaign {
 					$this->set_status( ATCF_Campaign::$campaign_status_funded );
 					$update = true;
 				} else {
-					$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." );
+					$this->__set( ATCF_Campaign::$key_archive_message, "Ce projet est en cours de cl&ocirc;ture." ); // TODO : pas traduits ?
 					$this->set_status( ATCF_Campaign::$campaign_status_archive );
 					$update = true;
 				}
@@ -3143,6 +3141,30 @@ class ATCF_Campaign {
 		} else {
 			return $this->percent_minimum_completed_cache;
 		}
+	}
+
+	private $percent_on_first_minimum_goal_cache;
+	public function percent_on_first_minimum_goal( $formatted = true ) {
+		if ( !isset( $this->percent_on_first_minimum_goal_cache ) || empty( $this->percent_on_first_minimum_goal_cache ) ) {
+			$goal    = $this->get_original_minimum_goal(false);
+			$current = $this->get_duplicate_campaigns_total_amount(false);
+
+			if ( 0 == $goal ) {
+				return $formatted ? 100 . '%' : 100;
+			}
+			$this->percent_on_first_minimum_goal_cache = ( $current / $goal ) * 100;
+			if ( $this->percent_on_first_minimum_goal_cache < 90 ) {
+				$this->percent_on_first_minimum_goal_cache = round( $this->percent_on_first_minimum_goal_cache );
+			} else {
+				$this->percent_on_first_minimum_goal_cache = floor( $this->percent_on_first_minimum_goal_cache );
+			}
+		}
+		if ( $formatted ) {
+			return $this->percent_on_first_minimum_goal_cache . '%';
+		} else {
+			return $this->percent_on_first_minimum_goal_cache;
+		}
+
 	}
 
 	public function percent_minimum_to_total() {
