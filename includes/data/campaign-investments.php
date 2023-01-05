@@ -118,19 +118,23 @@ class WDGCampaignInvestments {
 				if ( $amount_transfered + $payment_data[ 'amount' ] <= $amount_to_reach ) {
 					// on n'a pas atteint la somme, on continue de transférer les investissements
 					$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
-					$WDGInvestment->transfer($to_campaign);
-					$amount_transfered = $amount_transfered + $payment_data[ 'amount' ];
-					if ( $amount_transfered == $amount_to_reach ) {
-						// on a transféré la totalité de la somme du nouveau projet
-						break;
+					$transfert_success = $WDGInvestment->transfer($to_campaign);
+					if ( $transfert_success ) {
+						$amount_transfered = $amount_transfered + $payment_data[ 'amount' ];
+						if ( $amount_transfered == $amount_to_reach ) {
+							// on a transféré la totalité de la somme du nouveau projet
+							break;
+						}
 					}
 				} else {
 					// on a besoin de découper un investissement pour atteindre pile la somme
 					$amount_to_cut = $amount_to_reach - $amount_transfered;
 					$WDGInvestment = new WDGInvestment( $payment_data['ID'] );
-					$WDGInvestment->cut_and_transfer($to_campaign, $amount_to_cut);
-					$amount_transfered = $amount_transfered + $amount_to_cut;
-					break;
+					$transfert_success = $WDGInvestment->cut_and_transfer($to_campaign, $amount_to_cut);
+					if ( $transfert_success ) {
+						$amount_transfered = $amount_transfered + $amount_to_cut;
+						break;
+					}
 				}
 			}
 		}
