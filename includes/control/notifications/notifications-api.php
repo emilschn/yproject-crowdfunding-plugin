@@ -596,7 +596,25 @@ class NotificationsAPI {
 				$force_language_to_translate_to = $language_to_translate_to;
 				$template_post = WDGConfigTextsEmails::get_config_text_email_by_name($template_slug, $language_to_translate_to);
 				if ( !empty( $template_post ) ) {
-					$recipient = $parameters[ 'recipient' ];
+					$recipients_array = explode( ',', $parameters[ 'recipient' ] );
+					$recipients_array_count = count( $recipients_array );
+					$recipient = '';
+					for ( $i = 0; $i < $recipients_array_count; $i++ ) {
+						if (filter_var($recipients_array[ $i ], FILTER_VALIDATE_EMAIL)) {
+							$recipient .= $recipients_array[ $i ];
+							if ( $i < $recipients_array_count - 1  ) {
+								$recipient .= ',';
+							}
+						}else {
+							ypcf_debug_log( 'NotificationsAPI::send > Mail non conforme ' . $recipients_array[ $i ] );
+						}
+					}
+					if ($recipient == ''){
+						ypcf_debug_log( 'NotificationsAPI::send > Aucun destinataire valide ' . $parameters[ 'recipient' ] );
+						// Sinon, on envoie une alerte Asana
+						NotificationsAsana::notification_api_no_valid_recipient( $parameters );
+						return FALSE;
+					}
 					$template_post_name = $template_slug;
 					$parameters = $parameters;
 					if (!isset($parameters[ 'options' ])){
