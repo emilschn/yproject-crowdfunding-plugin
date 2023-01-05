@@ -363,6 +363,15 @@ class NotificationsAsana {
 		return self::send( self::$notif_type_admin, $object, $message );
 	}
 
+	public static function notification_api_no_valid_recipient($parameters) {
+		$object = "Erreur mail : Aucun destinataire valide ";
+		$content = "Pas de mail envoyé car par de destinataire valide :<br>";
+		$content .= "Paramètres :<br>";
+		$content .= print_r( $parameters, true );
+
+		return self::send( self::$notif_type_admin, $object, $content );
+	}
+
 	public static function notification_api_failed($parameters, $result) {
 		$object = "Erreur mail sendinblue";
 		$content = "Erreur de mail envoyé par SendInBlue :<br>";
