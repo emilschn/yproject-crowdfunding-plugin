@@ -102,6 +102,7 @@ class WDGInvestment {
 	 * @param ATCF_Campaign $to_campaign
 	 */
 	public function transfer($to_campaign) {
+		$buffer = FALSE ;
 		// on mémorise l'id de la campagne de départ et d'arrivée
 		$from_campaign_id = $this->get_saved_campaign()->ID;
 		$to_campaign_id = $to_campaign->ID;
@@ -133,6 +134,27 @@ class WDGInvestment {
 		$payment_data['cart_details'][ 0 ][ 'item_number' ][ 'id' ] = $to_campaign_id;
 		// sécurité
 		if ($campaign_id == $from_campaign_id) {
+			// Donnée investissement sur API : table entity_investment : modifier la donnée "project" avec l'ID API du nouveau projet
+			$payment = FALSE;
+			if ( $payments ) {
+				foreach ( $payments as $payment_item ) {
+					if ( $payment_item->ID == $this->id ) {
+						$payment = $payment_item;
+					}
+				}
+			}
+
+			if ( !empty( $payment ) ) {
+				$user_info = edd_get_payment_meta_user_info( $payment->ID );
+				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
+				$buffer = WDGWPREST_Entity_Investment::create_or_update( $this, $user_id, edd_get_payment_status( $payment, true ) );
+			}
+			
+			if ( !$buffer ){
+				// si le changement sur l'API est en échec, on ne fait pas le reste
+				return $buffer;
+			}
+
 			// Donnée investissement sur site : table postmeta : modifier l'identifiant du projet WP dans les meta (_edd_payment_meta).
 			update_post_meta($payment_id, '_edd_payment_meta', $payment_data);
 			// on met à jour le post d'investissement
@@ -149,28 +171,13 @@ class WDGInvestment {
 				wp_update_post($postdata);
 			}
 
-			// Donnée investissement sur API : table entity_investment : modifier la donnée "project" avec l'ID API du nouveau projet
-			$payment = FALSE;
-			if ( $payments ) {
-				foreach ( $payments as $payment_item ) {
-					if ( $payment_item->ID == $this->id ) {
-						$payment = $payment_item;
-					}
-				}
-			}
-
-			if ( !empty( $payment ) ) {
-				$user_info = edd_get_payment_meta_user_info( $payment->ID );
-				$user_id = (isset( $user_info['id'] ) && $user_info['id'] != -1) ? $user_info['id'] : $user_info['email'];
-				WDGWPREST_Entity_Investment::create_or_update( $this, $user_id, edd_get_payment_status( $payment, true ) );
-			}
-
 			// déplacement du fichier de contrat d'un dossier de projet à l'autre
 			$fromcampaign = new ATCF_Campaign( $from_campaign_id );
 			$filename = WDGInvestmentContract::get_and_create_path_for_campaign( $fromcampaign ) . $payment_id . '.pdf';
 			$new_filename = WDGInvestmentContract::get_and_create_path_for_campaign( $to_campaign ) . $payment_id . '.pdf';
 			rename( $filename, $new_filename );
 		}
+		return $buffer;
 	}
 	/**
 	 * coupe un investissement en 2 et transfère la valeur de amount vers une campagne
@@ -178,6 +185,7 @@ class WDGInvestment {
 	 * @param int $amount
 	 */
 	public function cut_and_transfer($to_campaign, $amount) {
+		$buffer = FALSE ;
 		// on mémorise l'id de la campagne de départ et d'arrivée
 		$from_campaign_id = $this->get_saved_campaign()->ID;
 		$to_campaign_id = $to_campaign->ID;
@@ -206,6 +214,7 @@ class WDGInvestment {
 		$new_investment_id = $to_campaign->add_investment($payment_key, $user_email, $amount, 'publish', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', $orga_email);
 
 		if ( $new_investment_id ) {
+			$buffer = TRUE ;
 			// on change le statut et la date du nouvel investissement
 			$WDGInvestment = new WDGInvestment( $new_investment_id );
 			$postdata = array(
@@ -261,8 +270,10 @@ class WDGInvestment {
 				$this->update_contract_url( $current_investment_contract_pdf_url );
 			}
 		} else {
+			$buffer = FALSE ;
 			ypcf_debug_log( 'WDGInvestment::cut_and_transfer erreur d\'ajout du nouvel investissement ');
 		}
+		return $buffer;
 	}
 	/**
 	 * Détermine si les valeurs de sessions sont correctes pour l'investissement
