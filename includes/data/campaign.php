@@ -786,19 +786,23 @@ class ATCF_Campaign {
 	public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
 	public static $key_backoffice_contract_agreement = 'campaign_backoffice_contract_agreement';
 	public function backoffice_contract_orga() {
+		if ( !WDG_Languages_Helpers::is_french_displayed() ) {
+			return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga . '_en');
+		}
 		return $this->__get(ATCF_Campaign::$key_backoffice_contract_orga);
 	}
 	public function backoffice_contract_agreement() {
 		return $this->__get( ATCF_Campaign::$key_backoffice_contract_agreement );
 	}
 	public function generate_contract_pdf_blank_organization() {
-		$filename = 'blank-contract-organization-'.$this->ID.'.pdf';
+		$suffix = ( WDG_Languages_Helpers::is_french_displayed() ) ? '' : '_en';
+		$filename = 'blank-contract-organization-'.$this->ID.$suffix.'.pdf';
 		$filepath = __DIR__ . '/../contracts/' . $filename;
 		if ( file_exists( $filepath ) ) {
 			unlink( $filepath );
 		}
 		if ( getNewPdfToSign( $this->ID, FALSE, 'orga', $filepath ) != FALSE ) {
-			$this->__set( ATCF_Campaign::$key_backoffice_contract_orga, $filename );
+			$this->__set( ATCF_Campaign::$key_backoffice_contract_orga.$suffix, $filename );
 		}
 
 		$filename_agreement = 'blank-contract-agreement-'.$this->ID.'.pdf';
