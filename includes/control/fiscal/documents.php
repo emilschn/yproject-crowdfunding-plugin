@@ -8,6 +8,8 @@ class WDG_FiscalDocuments {
 	private static $wedogood_town_label = 'Nantes';
 	private static $wedogood_post_code = '44200';
 	private static $wedogood_town_office = 'Nantes';
+	
+	private static $wedogood_siren = '797519105';
 	private static $wedogood_siret = '79751910500051';
 	private static $wedogood_previous_siret = '79751910500051';
 	private static $wedogood_legal_category = '5710';
@@ -861,8 +863,10 @@ class WDG_FiscalDocuments {
 		$buffer .= self::$wedogood_person_incharge_phone;
 		// T012 - 60 caractères : Adresse courriel
 		$buffer .= self::clean_size( self::$wedogood_person_incharge_email, 60, 0, 'courriel personne en charge' );
-		// T013 - 227 caractères : espaces (zone réservée)
-		for ( $i = 0; $i < 227; $i++ ) {
+		// T013 - 9 caractères : SIREN du remettant
+		$buffer .= self::$wedogood_siren;
+		// T014 - 218 caractères : espaces (zone réservée)
+		for ( $i = 0; $i < 218; $i++ ) {
 			$buffer .= ' ';
 		}
 		//**********************************************************************
