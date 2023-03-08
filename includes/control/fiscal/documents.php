@@ -18,8 +18,6 @@ class WDG_FiscalDocuments {
 	private static $wedogood_person_incharge_phone = '0972651589';
 	private static $wedogood_person_incharge_email = 'admin@wedogood.co';
 	
-	private static $tax_coef = 0.3;
-	private static $declaration_type_init = 1;
 	private static $declaration_type_rectif = 2;
 
 	private static $geolocation_data_by_town;
@@ -206,13 +204,13 @@ class WDG_FiscalDocuments {
 		foreach ( $amount_by_user as $investment_entity_id => $declaration_item ) {
 			$investment_amount = $declaration_item[ 'investment_amount' ];
 			$amount_to_declare = $declaration_item[ 'amount_to_declare' ];
+			$amount_to_declare_round = round( $amount_to_declare );
 			$amount_tax_sampled_year = $declaration_item[ 'amount_tax_sampled_year' ];
 			$project_year_str = $declaration_item[ 'project_year_str' ];
 
 			// Si la somme des royalties a dépassé l'investissement initial
-			if ( $amount_to_declare > 0 ) {
+			if ( $amount_to_declare_round > 0 ) {
 				$ifu_entity_txt = self::add_ifu_entity( $investment_entity_id, $fiscal_year );
-				$amount_to_declare_round = round( $amount_to_declare );
 				$resume_txt .= $project_year_str . "\n";
 				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_sampled_year );
 				if ( !empty( $ifu_entity_txt ) ) {
