@@ -151,6 +151,7 @@ class WDGQueue {
 		$WDGOrganization = WDGOrganization::is_user_organization( $user_id ) ? new WDGOrganization( $user_id ) : FALSE;
 		$WDGUser = empty( $WDGOrganization ) ? new WDGUser( $user_id ) : FALSE;
 		$WDGUserOrOrganization = empty( $WDGOrganization ) ? $WDGUser : $WDGOrganization;
+		$is_registered = empty( $WDGOrganization ) ? $WDGUser->is_lemonway_registered() : $WDGOrganization->is_registered_lemonway_wallet();
 		// on récupère la langue du destinataire 
 		WDG_Languages_Helpers::set_current_locale_id( $WDGUserOrOrganization->get_language() );
 		$recipient_email = '';
@@ -289,12 +290,15 @@ class WDGQueue {
 		/**
 		 * "Vous avez actuellement xx € dans votre monnaie électronique. "(si supérieur à 0€ uniquement)
 		 */
-
-        if ($WDGUserOrOrganization->get_lemonway_wallet_amount() >= 0) {
+        if ($is_registered && $WDGUserOrOrganization->get_lemonway_wallet_amount() >= 0) {
 			$message .= "<br>";
 			$message .= "<b>" . __( 'email.royalties.WALLET_AMOUNT_1', 'yproject' ) . $WDGUserOrOrganization->get_lemonway_wallet_amount() . __( 'email.royalties.WALLET_AMOUNT_2', 'yproject' ) . "</b><br>";
 			$message .= "<br>";
-        }
+        } else if (!$is_registered && $WDGUserOrOrganization->get_pending_rois_amount() >= 0) {
+			$message .= "<br>";
+			$message .= "<b>" . __( 'email.royalties.WALLET_PENDING_AMOUNT_1', 'yproject' ) . $WDGUserOrOrganization->get_pending_rois_amount() . __( 'email.royalties.WALLET_PENDING_AMOUNT_2', 'yproject' ) . "</b><br>";
+			$message .= "<br>";
+		}
 
 		if ( !empty( $message ) ) {
 			$cancel_notification = FALSE;
