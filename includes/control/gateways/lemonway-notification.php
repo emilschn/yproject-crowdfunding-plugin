@@ -620,6 +620,11 @@ class LemonwayNotification {
 						$declaration->status = WDGROIDeclaration::$status_initializing;
 						$declaration->update();
 						WDGQueue::add_init_declaration_rois( $declaration->id );
+						
+						if ($mean_of_payment == 'wire') {
+							// Si virement bancaire, on transfère la commission vers SC (fait automatiquement pour prélèvement et carte)
+							LemonwayLib::ask_transfer_funds( $WDGOrga_wallet->get_royalties_lemonway_id(), 'SC', $declaration->get_commission_to_pay() );
+						}
 						break;
 					}
 				}
