@@ -1434,7 +1434,7 @@ class WDGROIDeclaration {
 
 		$roi_list = $this->get_rois();
 		foreach ( $roi_list as $roi_item ) {
-			if ( $roi_item->id_investment == $investment_id ) {
+			if ( $roi_item->id_investment == $investment_id && $roi_item->status != WDGROI::$status_canceled ) {
 				$ROI = new WDGROI( $roi_item->id, FALSE, $roi_item );
 				array_push($buffer, $ROI);
 			}
