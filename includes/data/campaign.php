@@ -782,6 +782,35 @@ class ATCF_Campaign {
 		}
 	}
 
+	public function get_key_info_form_version() {
+		$buffer = $this->get_api_data( 'key_info_form_version' );
+		if ( empty( $buffer ) ) {
+			$buffer = 1;
+		}
+		return $buffer;
+	}
+
+	public function generate_key_info_form() {
+		WDG_PDF_Generator::add_shortcodes();
+		add_filter( 'WDG_PDF_Generator_filter', 'wptexturize' );
+		add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
+		add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
+		add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
+		global $shortcode_campaign_obj;
+		$shortcode_campaign_obj = $this;
+		$html_content = apply_filters( 'WDG_PDF_Generator_filter', WDGConfigTexts::get_config_text_by_name( 'fiche-information' ));
+
+		$final_path = dirname( __FILE__ ). '/../../files/info-form/';
+		if ( !is_dir( $final_path ) ) {
+			mkdir( $final_path, 0755, TRUE );
+		}
+		$final_path .= $this->ID. '-' .$this->get_url(). '.pdf';
+		$crowdfunding = ATCF_CrowdFunding::instance();
+		$crowdfunding->include_html2pdf();
+		$h2p_instance = HTML2PDFv5Helper::instance();
+		$h2p_instance->writePDF( $html_content, $final_path );
+	}
+
 	// Contrat vierge pour les personnes morales
 	public static $key_backoffice_contract_orga = 'campaign_backoffice_contract_orga';
 	public static $key_backoffice_contract_agreement = 'campaign_backoffice_contract_agreement';

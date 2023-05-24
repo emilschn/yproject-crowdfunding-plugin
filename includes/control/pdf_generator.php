@@ -4,6 +4,7 @@ class WDG_PDF_Generator {
 	/* Shortcodes spécifiques aux contrats */
 	/******************************************************************************/
 	public static function add_shortcodes() {
+		add_shortcode( 'wdg_campaign_key_info_form_version', 'WDG_PDF_Generator::shortcode_key_info_form_version' );
 		add_shortcode( 'wdg_campaign_agreement_bundle', 'WDG_PDF_Generator::shortcode_agreement_bundle' );
 		add_shortcode( 'wdg_campaign_contract_investor_info', 'WDG_PDF_Generator::shortcode_contract_investor_info' );
 		add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
@@ -83,6 +84,18 @@ class WDG_PDF_Generator {
 
 		return $buffer;
 	}
+
+	/**
+	 * Shortcode affichant le numéro de version de la fiche d'information
+	 */
+	public static function shortcode_key_info_form_version($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		$buffer = nl2br( $shortcode_campaign_obj->get_key_info_form_version() );
+
+		return $buffer;
+	}
+
 	/**
 	 * Shortcode affichant le nom de l'organisation qui porte le projet
 	 */

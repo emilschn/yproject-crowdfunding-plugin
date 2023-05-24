@@ -92,6 +92,7 @@ class WDGWPREST_Entity_Project {
 			'estimated_turnover'	=> $estimated_turnover_param,
 			'estimated_sales'		=> $estimated_sales_param,
 			'blank_contract_file'	=> $file_name_contract_orga,
+			'key_info_form_version'	=> $campaign->get_api_data( 'key_info_form_version' ),
 			'vote_start_datetime'	=> date_format( $beginvotedate, 'Y-m-d H:i:s'),
 			'vote_end_datetime'		=> $campaign->end_vote(),
 			'vote_count'			=> $campaign->nb_voters(),

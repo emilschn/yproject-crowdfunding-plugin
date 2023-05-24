@@ -671,7 +671,13 @@ class WDGPostActions {
 			WDG_Languages_Helpers::switch_to_temp_language( $campaign_locale );
 		}
 		$campaign = new ATCF_Campaign($campaign_id);
+		$key_info_form_version = filter_input(INPUT_POST, 'key_info_form_version');
+		if (!empty($key_info_form_version)) {
+			$campaign->set_api_data( 'key_info_form_version', $key_info_form_version );
+			$campaign->update_api();
+		}
 		$campaign->generate_contract_pdf_blank_organization();
+		$campaign->generate_key_info_form();
 		$url_return = wp_get_referer() . "#contracts";
 		wp_redirect( $url_return );
 		die();
