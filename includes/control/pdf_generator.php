@@ -7,14 +7,19 @@ class WDG_PDF_Generator {
 		add_shortcode( 'wdg_campaign_key_info_form_version', 'WDG_PDF_Generator::shortcode_key_info_form_version' );
 		add_shortcode( 'wdg_campaign_agreement_bundle', 'WDG_PDF_Generator::shortcode_agreement_bundle' );
 		add_shortcode( 'wdg_campaign_contract_investor_info', 'WDG_PDF_Generator::shortcode_contract_investor_info' );
+		add_shortcode( 'wdg_campaign_name', 'WDG_PDF_Generator::shortcode_campaign_name' );
+		add_shortcode( 'wdg_campaign_url', 'WDG_PDF_Generator::shortcode_campaign_url' );
+		add_shortcode( 'wdg_campaign_contract_organization_email', 'WDG_PDF_Generator::shortcode_contract_organization_email' );
 		add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
 		add_shortcode( 'wdg_campaign_contract_organization_legalform', 'WDG_PDF_Generator::shortcode_contract_organization_legalform' );
 		add_shortcode( 'wdg_campaign_contract_organization_capital', 'WDG_PDF_Generator::shortcode_contract_organization_capital' );
 		add_shortcode( 'wdg_campaign_contract_organization_address', 'WDG_PDF_Generator::shortcode_contract_organization_address' );
 		add_shortcode( 'wdg_campaign_contract_organization_postalcode', 'WDG_PDF_Generator::shortcode_contract_organization_postalcode' );
 		add_shortcode( 'wdg_campaign_contract_organization_city', 'WDG_PDF_Generator::shortcode_contract_organization_city' );
+		add_shortcode( 'wdg_campaign_contract_organization_country', 'WDG_PDF_Generator::shortcode_contract_organization_country' );
 		add_shortcode( 'wdg_campaign_contract_organization_rcs', 'WDG_PDF_Generator::shortcode_contract_organization_rcs' );
 		add_shortcode( 'wdg_campaign_contract_organization_idnumber', 'WDG_PDF_Generator::shortcode_contract_organization_idnumber' );
+		add_shortcode( 'wdg_campaign_contract_organization_website', 'WDG_PDF_Generator::shortcode_contract_organization_website' );
 		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_civility', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_civility' );
 		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_firstname', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_firstname' );
 		add_shortcode( 'wdg_campaign_contract_organization_reprensentative_lastname', 'WDG_PDF_Generator::shortcode_contract_organization_reprensentative_lastname' );
@@ -74,6 +79,7 @@ class WDG_PDF_Generator {
 
 		return $buffer;
 	}
+
 	/**
 	 * Shortcode affichant la formule commerciale dans l'accord cadre
 	 */
@@ -94,6 +100,44 @@ class WDG_PDF_Generator {
 		$buffer = nl2br( $shortcode_campaign_obj->get_key_info_form_version() );
 
 		return $buffer;
+	}
+
+	/**
+	 * Nom de la campagne
+	 */
+	public static function shortcode_campaign_name($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		return $shortcode_campaign_obj->get_name();
+	}
+
+	/**
+	 * URL de la campagne
+	 */
+	public static function shortcode_campaign_url($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		return $shortcode_campaign_obj->get_public_url();
+	}
+
+	/**
+	 * Shortcode affichant l'adresse e-mail de l'organisation qui porte le projet
+	 */
+	public static function shortcode_contract_organization_email($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_organization_obj;
+
+		return $shortcode_organization_obj->get_email();
+	}
+
+	/**
+	 * Shortcode affichant le numéro de téléphone de l'organisation qui porte le projet
+	 */
+	public static function shortcode_contract_organization_phone($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_organization_obj;
+
+		return $shortcode_organization_obj->get_email();
 	}
 
 	/**
@@ -150,6 +194,17 @@ class WDG_PDF_Generator {
 
 		return $shortcode_organization_obj->get_city();
 	}
+
+	/**
+	 * Shortcode affichant le pays de l'organisation qui porte le projet
+	 */
+	public static function shortcode_contract_organization_country($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_organization_obj;
+
+		return $shortcode_organization_obj->get_country();
+	}
+
 	/**
 	 * Shortcode affichant le RCS de l'organisation qui porte le projet
 	 */
@@ -168,6 +223,16 @@ class WDG_PDF_Generator {
 
 		return $shortcode_organization_obj->get_idnumber();
 	}
+	/**
+	 * Shortcode affichant le site Internet de l'organisation qui porte le projet
+	 */
+	public static function shortcode_contract_organization_website($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_organization_obj;
+
+		return $shortcode_organization_obj->get_website();
+	}
+
 	/**
 	 * Shortcode affichant la civilité de la personne représentant l'organisation qui porte le projet
 	 */

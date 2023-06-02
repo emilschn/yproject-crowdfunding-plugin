@@ -796,8 +796,10 @@ class ATCF_Campaign {
 		add_filter( 'WDG_PDF_Generator_filter', 'wpautop' );
 		add_filter( 'WDG_PDF_Generator_filter', 'shortcode_unautop' );
 		add_filter( 'WDG_PDF_Generator_filter', 'do_shortcode' );
-		global $shortcode_campaign_obj;
+		global $shortcode_campaign_obj, $shortcode_organization_obj;
 		$shortcode_campaign_obj = $this;
+		$organization = $this->get_organization();
+		$shortcode_organization_obj = new WDGOrganization( $organization->wpref, $organization );
 		$html_content = apply_filters( 'WDG_PDF_Generator_filter', WDGConfigTexts::get_config_text_by_name( 'fiche-information' ));
 
 		$final_path = dirname( __FILE__ ). '/../../files/info-form/';
