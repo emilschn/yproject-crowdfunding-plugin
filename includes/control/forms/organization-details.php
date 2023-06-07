@@ -66,6 +66,8 @@ class WDG_Form_Organization_Details extends WDG_Form {
 
 		$this->addField('number', 'employees_count', __( 'form.organization-details.EMPLOYEES_COUNT', 'yproject' ), self::$field_group_dashboard, $WDGOrganization->get_employees_count());
 
+		$this->addField('text', 'phone_number', __( 'form.user-details.PHONE', 'yproject' ) . ' *', self::$field_group_dashboard, $WDGOrganization->get_phone_number());
+
 		//$field_group_address
 		$this->addField('text', 'address_number', __( 'form.user-details.ADDRESS_NUMBER', 'yproject' ), self::$field_group_address, $WDGOrganization->get_address_number());
 
@@ -216,6 +218,11 @@ class WDG_Form_Organization_Details extends WDG_Form {
 				$employees_count = $this->getInputText( 'employees_count' );
 				if ( !empty( $employees_count ) ) {
 					$WDGOrganization->set_employees_count( $employees_count );
+				}
+
+				$phone_number = $this->getInputText( 'phone_number' );
+				if ( !empty( $phone_number ) ) {
+					$WDGOrganization->set_phone_number( $phone_number );
 				}
 
 				$address_number = $this->getInputText( 'address_number' );

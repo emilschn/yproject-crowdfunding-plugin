@@ -29,6 +29,7 @@ class WDGOrganization implements WDGUserInterface {
 	private $postal_code;
 	private $city;
 	private $nationality;
+	private $phone_number;
 	private $latitude;
 	private $longitude;
 	private $type;
@@ -136,6 +137,7 @@ class WDGOrganization implements WDGUserInterface {
 				$this->postal_code = $this->bopp_object->postalcode;
 				$this->city = $this->bopp_object->city;
 				$this->nationality = $this->bopp_object->country;
+				$this->phone_number = $this->bopp_object->phone_number;
 				$this->type = $this->bopp_object->type;
 				$this->legalform = $this->bopp_object->legalform;
 				$this->capital = $this->bopp_object->capital;
@@ -577,6 +579,13 @@ class WDGOrganization implements WDGUserInterface {
 		global $country_list;
 
 		return $country_list[ $nationality_code ];
+	}
+
+	public function get_phone_number() {
+		return $this->phone_number;
+	}
+	public function set_phone_number($value) {
+		$this->phone_number = $value;
 	}
 
 	public function get_latitude() {

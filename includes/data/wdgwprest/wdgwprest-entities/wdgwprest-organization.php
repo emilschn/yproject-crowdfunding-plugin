@@ -53,6 +53,7 @@ class WDGWPREST_Entity_Organization {
 			'postalcode'				=> $organization->get_postal_code(),
 			'city'						=> $organization->get_city(),
 			'country'					=> $organization->get_nationality(),
+			'phone_number'				=> $organization->get_phone_number(),
 			'accountant'				=> json_encode( $accountant_info ),
 			'bank_owner'				=> $organization->get_bank_owner(),
 			'bank_address'				=> $organization->get_bank_address(),
