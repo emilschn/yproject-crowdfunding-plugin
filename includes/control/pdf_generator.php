@@ -9,7 +9,10 @@ class WDG_PDF_Generator {
 		add_shortcode( 'wdg_campaign_contract_investor_info', 'WDG_PDF_Generator::shortcode_contract_investor_info' );
 		add_shortcode( 'wdg_campaign_name', 'WDG_PDF_Generator::shortcode_campaign_name' );
 		add_shortcode( 'wdg_campaign_url', 'WDG_PDF_Generator::shortcode_campaign_url' );
+		add_shortcode( 'wdg_campaign_end_date', 'WDG_PDF_Generator::shortcode_campaign_end_date' );
+		add_shortcode( 'wdg_campaign_limit_date', 'WDG_PDF_Generator::shortcode_campaign_limit_date' );
 		add_shortcode( 'wdg_campaign_contract_organization_email', 'WDG_PDF_Generator::shortcode_contract_organization_email' );
+		add_shortcode( 'wdg_campaign_contract_organization_phone_number', 'WDG_PDF_Generator::shortcode_contract_organization_phone_number' );
 		add_shortcode( 'wdg_campaign_contract_organization_name', 'WDG_PDF_Generator::shortcode_contract_organization_name' );
 		add_shortcode( 'wdg_campaign_contract_organization_legalform', 'WDG_PDF_Generator::shortcode_contract_organization_legalform' );
 		add_shortcode( 'wdg_campaign_contract_organization_capital', 'WDG_PDF_Generator::shortcode_contract_organization_capital' );
@@ -121,6 +124,35 @@ class WDG_PDF_Generator {
 	}
 
 	/**
+	 * Date et heure de fin de la campagne
+	 */
+	public static function shortcode_campaign_end_date($atts, $content = '') {
+		$atts = shortcode_atts( array( ), $atts );
+		global $shortcode_campaign_obj;
+		return $shortcode_campaign_obj->end_date();
+	}
+
+	/**
+	 * si le projet est en évaluation : un texte de configuration à créer
+	 * si le projet est en souscription : DATE_15_JOURS_AVANT_CONTRAT, sous réserve que le montant visé soit atteint à DATE_FIN_CAMPAGNE
+	 */
+	public static function shortcode_campaign_limit_date($atts, $content = '') {
+		$atts = shortcode_atts( array(
+			'configtext_vote' => ''
+		), $atts );
+
+		global $shortcode_campaign_obj;
+		if ($shortcode_campaign_obj->campaign_status() === ATCF_Campaign::$campaign_status_vote) {
+			return WDGConfigTexts::get_config_text_by_name( $atts[ 'configtext_vote' ] );
+		} else {
+			$buffer = $shortcode_campaign_obj->get_end_date_when_can_invest_until_contract_start_date_as_string();
+			$buffer .= ', sous réserve que le montant visé soit atteint à ';
+			$buffer .= $shortcode_campaign_obj->end_date();
+			return $buffer;
+		}
+	}
+
+	/**
 	 * Shortcode affichant l'adresse e-mail de l'organisation qui porte le projet
 	 */
 	public static function shortcode_contract_organization_email($atts, $content = '') {
@@ -133,11 +165,11 @@ class WDG_PDF_Generator {
 	/**
 	 * Shortcode affichant le numéro de téléphone de l'organisation qui porte le projet
 	 */
-	public static function shortcode_contract_organization_phone($atts, $content = '') {
+	public static function shortcode_contract_organization_phone_number($atts, $content = '') {
 		$atts = shortcode_atts( array( ), $atts );
 		global $shortcode_organization_obj;
 
-		return $shortcode_organization_obj->get_email();
+		return $shortcode_organization_obj->get_phone_number();
 	}
 
 	/**
