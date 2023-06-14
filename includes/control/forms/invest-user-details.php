@@ -338,7 +338,9 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'text',
 			'org_rcs',
 			__( 'form.organization-details.CITY', 'yproject' ) . ' *',
-			WDG_Form_Invest_User_Details::$field_group_orga_info
+			WDG_Form_Invest_User_Details::$field_group_orga_info,
+			FALSE,
+			__( 'form.organization-details.CITY_DESCRIPTION', 'yproject' )
 		);
 		
 		$this->addField(

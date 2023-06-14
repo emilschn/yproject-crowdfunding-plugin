@@ -48,7 +48,7 @@ class WDG_Form_Organization_Details extends WDG_Form {
 
 		$this->addField('text', 'legalform', __( 'form.organization-details.LEGAL_FORM', 'yproject' ) . ' *', self::$field_group_complete, $WDGOrganization->get_legalform());
 
-		$this->addField('text', 'rcs', __( 'form.organization-details.CITY', 'yproject' ) . ' *', self::$field_group_complete, $WDGOrganization->get_rcs());
+		$this->addField('text', 'rcs', __( 'form.organization-details.CITY', 'yproject' ) . ' *', self::$field_group_complete, $WDGOrganization->get_rcs(), __( 'form.organization-details.CITY_DESCRIPTION', 'yproject' ));
 
 		$this->addField('text-money', 'capital', __( 'form.organization-details.SHARE_CAPITAL', 'yproject' ) . ' *', self::$field_group_complete, $WDGOrganization->get_capital());
 
