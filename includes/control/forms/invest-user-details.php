@@ -317,7 +317,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'org_website',
 			__( 'form.organization-details.WEBSITE', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info,
-			FALSE
+			FALSE,
+			__( 'form.organization-details.WEBSITE_DESCRIPTION', 'yproject' )
 		);
 		
 		$this->addField(
