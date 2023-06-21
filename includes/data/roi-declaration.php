@@ -767,6 +767,11 @@ class WDGROIDeclaration {
 				$declaration_message_decoded .= '<br><br>';
 				$declaration_message_decoded .= $declaration_message;
 				NotificationsAPI::roi_transfer_message( $WDGUser_author, $campaign, $declaration_message_decoded, $replyto_mail );
+
+				$support_mail = 'support@wedogood.co';
+				$wpuser_by_email = get_user_by( 'email', $support_mail );
+				$WDGUserSupport = new WDGUser($wpuser_by_email->ID);
+				NotificationsAPI::roi_transfer_message( $WDGUserSupport, $campaign, $declaration_message_decoded, $replyto_mail );
 			}
 
 			$wdguser_author = new WDGUser( $campaign->data->post_author );
