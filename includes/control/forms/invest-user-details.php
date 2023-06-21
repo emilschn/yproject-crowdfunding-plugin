@@ -326,6 +326,13 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			__( 'form.organization-details.LEGAL_FORM', 'yproject' ) . ' *',
 			WDG_Form_Invest_User_Details::$field_group_orga_info
 		);
+
+		$this->addField(
+			'text',
+			'org_description',
+			__( 'form.organization-details.ACTIVITY', 'yproject' ) . ' *',
+			WDG_Form_Invest_User_Details::$field_group_orga_info
+		);
 		
 		$this->addField(
 			'text',
@@ -468,6 +475,19 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 			'',
 			WDG_Form_Invest_User_Details::$field_group_orga_select,
 			$org_legalform
+		);
+		
+		if ( $id_orga == 'new-orga' ) {
+			$org_description = ( $_SESSION[ 'org_description' ] == '' ) ? FALSE : $_SESSION[ 'org_description' ];
+		} else {
+			$org_description = $WDGOrganization->get_description();
+		}
+		$this->addField(
+			'hidden',
+			'org_init_description_' .$id_orga,
+			'',
+			WDG_Form_Invest_User_Details::$field_group_orga_select,
+			$org_description
 		);
 		
 		if ( $id_orga == 'new-orga' ) {
@@ -942,6 +962,8 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$WDGOrganization->set_website( $org_website );
 		$org_legalform = $this->getInputText( 'org_legalform' );
 		$WDGOrganization->set_legalform( $org_legalform );
+		$org_description = $this->getInputText( 'org_description' );
+		$WDGOrganization->set_description( $org_description );
 		$org_idnumber = $this->getInputText( 'org_idnumber' );
 		$WDGOrganization->set_idnumber( $org_idnumber );
 		$org_rcs = $this->getInputText( 'org_rcs' );
@@ -980,6 +1002,7 @@ class WDG_Form_Invest_User_Details extends WDG_Form {
 		$_SESSION[ 'org_email' ] = $this->getInputText( 'org_email' );
 		$_SESSION[ 'org_website' ] = $this->getInputText( 'org_website' );
 		$_SESSION[ 'org_legalform' ] = $this->getInputText( 'org_legalform' );
+		$_SESSION[ 'org_description' ] = $this->getInputText( 'org_description' );
 		$_SESSION[ 'org_idnumber' ] = $this->getInputText( 'org_idnumber' );
 		$_SESSION[ 'org_rcs' ] = $this->getInputText( 'org_rcs' );
 		$_SESSION[ 'org_capital' ] = $this->getInputTextMoney( 'org_capital' );
