@@ -67,7 +67,7 @@ class WDG_Form {
 		
 	}
 	
-	protected function getParamByFileField( $wallet_id, $document_type, $date_upload, $type, $isOrga = FALSE, $api_type = FALSE, $kycfile_id = FALSE, $is_api_file = FALSE, $is_authentified = FALSE, $is_file_sent = TRUE ) {
+	protected function getParamByFileField( $wallet_id, $document_type, $date_upload, $type, $isOrga = FALSE, $api_type = FALSE, $kycfile_id = FALSE, $is_api_file = FALSE, $is_authentified = FALSE, $is_file_sent = TRUE, $is_orga_with_full_info = TRUE ) {
 		$secondary = FALSE;
 		if ( $type == WDGKYCFile::$type_id_back || $type == WDGKYCFile::$type_id_2_back){
 			$secondary = TRUE;
@@ -102,6 +102,10 @@ class WDG_Form {
 					$buffer[ 'display_refused_alert' ] = $lw_error_str;
 				}
 			}
+		}
+
+		if ($isOrga && !$is_orga_with_full_info) {
+			$buffer[ 'message_instead_of_field' ] = __( 'lemonway.document.MISSING_INFO', 'yproject' );
 		}
 		
 

@@ -35,9 +35,11 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 		$file_date_uploaded = FALSE;
 		$is_api_file = FALSE;
 		$is_file_sent = TRUE;
+		$is_orga_with_full_info = TRUE;
 		
 		if ( $this->is_orga ){
 			$is_authentified = $WDGUserOrOrganization->is_registered_lemonway_wallet();
+			$is_orga_with_full_info = $WDGUserOrOrganization->can_register_lemonway();
 		}else{
 			$is_authentified = $WDGUserOrOrganization->is_lemonway_registered();
 		}
@@ -155,7 +157,7 @@ class WDG_Form_User_Identity_Docs extends WDG_Form {
 			$lw_type = LemonwayDocument::get_lw_document_id_from_document_type($api_type, $index_api);
 		}
 
-		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified, $is_file_sent );
+		$field_id_params = $this->getParamByFileField( $wallet_id, $lw_type, $file_date_uploaded, $type, $this->is_orga, $api_type, $kycfile_id, $is_api_file, $is_authentified, $is_file_sent, $is_orga_with_full_info );
 		if ( $for_admin == FALSE ){
 			$this->addField( 'file', $type . $suffix, $label, $field_group, $file_path, $description, $field_id_params );
 		} else {
