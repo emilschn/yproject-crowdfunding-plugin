@@ -2,8 +2,9 @@
 /**
  * Classe de factures de campagnes
  */
-class WDGCampaignBill {
-	
+class WDGCampaignBill
+{
+
 	/**
 	 * @var ATCF_Campaign
 	 */
@@ -14,12 +15,13 @@ class WDGCampaignBill {
 	 * @var WDGROIDeclaration
 	 */
 	private $roideclaration;
-	
+
 	public static $tool_name_quickbooks = 'quickbooks';
-	
+	public static $tool_name_pennylane = 'pennylane';
+
 	public static $bill_type_crowdfunding_commission = 'crowdfunding-commission';
 	public static $bill_type_royalties_commission = 'royalties-commission';
-	
+
 	public static $item_types = array(
 		'crowdfunding' => array(
 			'label' => 'CROWDFUNDING',
@@ -73,49 +75,57 @@ class WDGCampaignBill {
 			'quickbooks_id' => '1400000000001624225'
 		),
 	);
-	
-	public static $item_tax_20 = 31;// identifiant du type de TVA à 20% dans quickbooks
-	public static $location_company_id = 6;// identifiant du site "Entrepreneurs" dans quickbooks
-	
 
-	public function __construct( $campaign, $tool_name, $bill_type ) {
+	public static $item_tax_20 = 31; // identifiant du type de TVA à 20% dans quickbooks
+	public static $location_company_id = 6; // identifiant du site "Entrepreneurs" dans quickbooks
+
+
+	public function __construct($campaign, $tool_name, $bill_type)
+	{
 		$this->campaign = $campaign;
 		$this->tool_name = $tool_name;
 		$this->bill_type = $bill_type;
 	}
-	
-	public function set_declaration( $roi_declaration ) {
+
+	public function set_declaration($roi_declaration)
+	{
 		$this->roideclaration = $roi_declaration;
 	}
-	
-	public function can_generate() {
+
+	public function can_generate()
+	{
 		$platform_commission = $this->campaign->platform_commission();
 		$campaign_organization = $this->campaign->get_organization();
-		$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+		$WDGOrganization = new WDGOrganization($campaign_organization->wpref, $campaign_organization);
 		$id_quickbooks = $WDGOrganization->get_id_quickbooks();
-		$product_type = $this->campaign->get_api_data( 'product_type' );
-		$acquisition = $this->campaign->get_api_data( 'acquisition' );
-		$can_generate = ( !empty( $platform_commission ) && !empty( $id_quickbooks ) && !empty( $product_type ) && !empty( $acquisition ) );
-		if( !$can_generate ){
-			ypcf_debug_log( 'WDGCampaignBill :: can_generate $platform_commission = '.$platform_commission, false);
-			ypcf_debug_log( 'WDGCampaignBill :: can_generate $id_quickbooks = '.$id_quickbooks, false);
-			ypcf_debug_log( 'WDGCampaignBill :: can_generate $product_type = '.$product_type, false);
-			ypcf_debug_log( 'WDGCampaignBill :: can_generate $acquisition = '.$acquisition, false);
+		$product_type = $this->campaign->get_api_data('product_type');
+		$acquisition = $this->campaign->get_api_data('acquisition');
+		$can_generate = (!empty($platform_commission) && !empty($id_quickbooks) && !empty($product_type) && !empty($acquisition));
+		if (!$can_generate) {
+			ypcf_debug_log('WDGCampaignBill :: can_generate $platform_commission = ' . $platform_commission, false);
+			ypcf_debug_log('WDGCampaignBill :: can_generate $id_quickbooks = ' . $id_quickbooks, false);
+			ypcf_debug_log('WDGCampaignBill :: can_generate $product_type = ' . $product_type, false);
+			ypcf_debug_log('WDGCampaignBill :: can_generate $acquisition = ' . $acquisition, false);
 		}
 		return $can_generate;
 	}
-	
-	public function generate() {
-		switch ( $this->tool_name ) {
+
+	public function generate()
+	{
+		switch ($this->tool_name) {
 			case WDGCampaignBill::$tool_name_quickbooks:
 				return $this->generate_quickbooks();
 				break;
+			case WDGCampaignBill::$tool_name_pennylane:
+				return $this->generate_pennylane();
+				break;
 		}
 	}
-	
-	private function generate_quickbooks() {
+
+	private function generate_quickbooks()
+	{
 		$options = FALSE;
-		switch ( $this->bill_type ) {
+		switch ($this->bill_type) {
 			case WDGCampaignBill::$bill_type_crowdfunding_commission:
 				$options = $this->get_quickbooks_crowdfunding_commission_options();
 				break;
@@ -123,155 +133,202 @@ class WDGCampaignBill {
 				$options = $this->get_quickbooks_royalties_commission_options();
 				break;
 		}
-		
 		$params = array(
-			'tool'		=> WDGCampaignBill::$tool_name_quickbooks,
-			'object'	=> $this->bill_type,
-			'options'	=> json_encode( $options )
+			'tool' => WDGCampaignBill::$tool_name_quickbooks,
+			'object' => $this->bill_type,
+			'options' => json_encode($options)
 		);
-		
-		switch ( $this->bill_type ) {
+
+		switch ($this->bill_type) {
 			case WDGCampaignBill::$bill_type_crowdfunding_commission:
-				$params[ 'object_id' ] = $this->campaign->ID;
+				$params['object_id'] = $this->campaign->ID;
 				break;
 			case WDGCampaignBill::$bill_type_royalties_commission:
-				$params[ 'object_id' ] = $this->roideclaration->id;
+				$params['object_id'] = $this->roideclaration->id;
 				break;
 		}
-		
-		$result = WDGWPRESTLib::call_post_wdg( 'bill', $params );
-		ypcf_debug_log( 'WDGCampaignBill :: generate_quickbooks $result = '.print_r($result, true), false);
+		$result = WDGWPRESTLib::call_post_wdg('bill', $params);
+		ypcf_debug_log('WDGCampaignBill :: generate_quickbooks $result = ' . print_r($result, true), false);
 		return $result;
 	}
-	
-/*******************************************************************************
- * FONCTIONS LIEES A LA COMMISSION SUR LA CAMPAGNE
-*******************************************************************************/
-	private function get_quickbooks_crowdfunding_commission_options() {
-		$product_type = $this->campaign->get_api_data( 'product_type' );
-		$acquisition = $this->campaign->get_api_data( 'acquisition' );
-		if ( !empty( $product_type ) && !empty( self::$item_types[ $product_type ] ) 
-				&& !empty( $acquisition ) && !empty( self::$classes[ $acquisition ] ) 
-					) {
+	private function generate_pennylane()
+	{
+		$options = FALSE;
+		switch ($this->bill_type) {
+			case WDGCampaignBill::$bill_type_crowdfunding_commission:
+				$options = $this->get_quickbooks_crowdfunding_commission_options();
+				break;
+			case WDGCampaignBill::$bill_type_royalties_commission:
+				$options = $this->get_quickbooks_royalties_commission_options();
+				break;
+		}
+
+		$params = array(
+			'tool' => WDGCampaignBill::$tool_name_pennylane,
+			'object' => $this->bill_type,
+			'options' => json_encode($options)
+		);
+
+		switch ($this->bill_type) {
+			case WDGCampaignBill::$bill_type_crowdfunding_commission:
+				$params['object_id'] = $this->campaign->ID;
+				break;
+			case WDGCampaignBill::$bill_type_royalties_commission:
+				$params['object_id'] = $this->roideclaration->id;
+				break;
+		}
+		$result = WDGWPRESTLib::call_post_wdg('bill', $params);
+		ypcf_debug_log('WDGCampaignBill :: generate_pennylane $result = ' . print_r($result, true), false);
+		return $result;
+	}
+
+	/*******************************************************************************
+	 * FONCTIONS LIEES A LA COMMISSION SUR LA CAMPAGNE
+	 *******************************************************************************/
+	private function get_quickbooks_crowdfunding_commission_options()
+	{
+		$product_type = $this->campaign->get_api_data('product_type');
+		$acquisition = $this->campaign->get_api_data('acquisition');
+		if (
+			!empty($product_type) && !empty(self::$item_types[$product_type])
+			&& !empty($acquisition) && !empty(self::$classes[$acquisition])
+		) {
 			$line_description = $this->get_line_description();
 			$bill_description = $this->get_bill_description();
-			$platform_commission_amount = $this->campaign->platform_commission_amount( FALSE );
+			$platform_commission_amount = $this->campaign->platform_commission_amount(FALSE);
 			$campaign_organization = $this->campaign->get_organization();
-			$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
+			$WDGOrganization = new WDGOrganization($campaign_organization->wpref, $campaign_organization);
 			$options = array(
-				'customerid'		=> $WDGOrganization->get_id_quickbooks(),
-				'customeremail'		=> $WDGOrganization->get_email(),
-				'itemtitle'			=> self::$item_types[ $product_type ][ 'quickbooks_campaign' ],
-				'itemdescription'	=> $line_description,
-				'itemvalue'			=> $platform_commission_amount,
-				'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
-				'locationid'		=> WDGCampaignBill::$location_company_id,
-				'classid'			=> self::$classes[ $acquisition ][ 'quickbooks_id' ],
-				'billdescription'	=> $bill_description
+				'customerid' => $WDGOrganization->get_id_quickbooks(),
+				'customeremail' => $WDGOrganization->get_email(),
+				'customerName' => $WDGOrganization->get_name(),
+				'customerAddress' => $WDGOrganization->get_address(),
+				'customerCity' => $WDGOrganization->get_city(),
+				'customerZIP' => $WDGOrganization->get_postal_code(),
+				'customerCountry' => $WDGOrganization->get_country(),
+				'itemtitle' => self::$item_types[$product_type]['quickbooks_campaign'],
+				'itemdescription' => $line_description,
+				'itemvalue' => $platform_commission_amount,
+				'itemtaxid' => WDGCampaignBill::$item_tax_20,
+				'locationid' => WDGCampaignBill::$location_company_id,
+				'classid' => self::$classes[$acquisition]['quickbooks_id'],
+				'billdescription' => $bill_description
 			);
+			
 			return $options;
 		}
 		return FALSE;
 	}
-	
-	public function get_line_title() {
-		$product_type = $this->campaign->get_api_data( 'product_type' );
-		if ( !empty( $product_type ) && !empty( self::$item_types[ $product_type ] ) ) {
-			return self::$item_types[ $product_type ][ 'label' ];
+
+	public function get_line_title()
+	{
+		$product_type = $this->campaign->get_api_data('product_type');
+		if (!empty($product_type) && !empty(self::$item_types[$product_type])) {
+			return self::$item_types[$product_type]['label'];
 		}
 		return '';
 	}
-	
-	public function get_line_description() {
-		$amount_collected = UIHelpers::format_number( $this->campaign->current_amount( FALSE ) );
-		$amount_collected_check = UIHelpers::format_number( $this->campaign->current_amount_with_check() );
-		$platform_commission = UIHelpers::format_number( $this->campaign->platform_commission( FALSE ) );
-		$platform_commission_amount = UIHelpers::format_number( $this->campaign->platform_commission_amount( FALSE ) );
-		$platform_commission_below_100000 = UIHelpers::format_number( $this->campaign->platform_commission( FALSE ) );
-		$platform_commission_below_100000_amount = UIHelpers::format_number( $this->campaign->platform_commission_below_100000_amount( FALSE ) );
-		$platform_commission_above_100000 = UIHelpers::format_number( $this->campaign->platform_commission_above_100000( FALSE ) );
-		$platform_commission_above_100000_amount = UIHelpers::format_number( $this->campaign->platform_commission_above_100000_amount( FALSE ) );
-		
-		$product_type = $this->campaign->get_api_data( 'product_type' );
-		if ( $product_type == 'private' || $product_type == 'lovemoney' ) {
+
+	public function get_line_description()
+	{
+		$amount_collected = UIHelpers::format_number($this->campaign->current_amount(FALSE));
+		$amount_collected_check = UIHelpers::format_number($this->campaign->current_amount_with_check());
+		$platform_commission = UIHelpers::format_number($this->campaign->platform_commission(FALSE));
+		$platform_commission_amount = UIHelpers::format_number($this->campaign->platform_commission_amount(FALSE));
+		$platform_commission_below_100000 = UIHelpers::format_number($this->campaign->platform_commission(FALSE));
+		$platform_commission_below_100000_amount = UIHelpers::format_number($this->campaign->platform_commission_below_100000_amount(FALSE));
+		$platform_commission_above_100000 = UIHelpers::format_number($this->campaign->platform_commission_above_100000(FALSE));
+		$platform_commission_above_100000_amount = UIHelpers::format_number($this->campaign->platform_commission_above_100000_amount(FALSE));
+
+		$product_type = $this->campaign->get_api_data('product_type');
+		if ($product_type == 'private' || $product_type == 'lovemoney') {
 			$buffer = "Levée de fonds privée.
 ";
 		} else {
 			$buffer = "Levée de fonds de crowdfunding.
 ";
 		}
-		
-		if ( $platform_commission_above_100000_amount > 0 && $platform_commission_below_100000 != $platform_commission_above_100000 ) {
-			$buffer .= "Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission_below_100000." % HT de 100 000 € : ".$platform_commission_below_100000_amount." € et commission de ".$platform_commission_above_100000." % HT au-delà de 100 000 € : ".$platform_commission_above_100000_amount." €.";
-			
+
+		if ($platform_commission_above_100000_amount > 0 && $platform_commission_below_100000 != $platform_commission_above_100000) {
+			$buffer .= "Montant collecté : " . $amount_collected . " € (dont " . $amount_collected_check . " € par chèque), commission de " . $platform_commission_below_100000 . " % HT de 100 000 € : " . $platform_commission_below_100000_amount . " € et commission de " . $platform_commission_above_100000 . " % HT au-delà de 100 000 € : " . $platform_commission_above_100000_amount . " €.";
+
 		} else {
-			$buffer .= "Montant collecté : ".$amount_collected." € (dont ".$amount_collected_check." € par chèque), commission de ".$platform_commission." % HT : ".$platform_commission_amount." €.";
+			$buffer .= "Montant collecté : " . $amount_collected . " € (dont " . $amount_collected_check . " € par chèque), commission de " . $platform_commission . " % HT : " . $platform_commission_amount . " €.";
 		}
-		
+
 		return $buffer;
 	}
-	
-	public function get_bill_description() {
+
+	public function get_bill_description()
+	{
 		$amount_collected_check = $this->campaign->current_amount_with_check();
-		$amount_collected = $this->campaign->current_amount( FALSE ) - $amount_collected_check;
-		$amount_collected_formatted = UIHelpers::format_number( $amount_collected );
-		$platform_commission_amount = $this->campaign->platform_commission_amount( FALSE );
-		$platform_commission_amount_with_tax_formatted = UIHelpers::format_number( $platform_commission_amount * 1.2 );
-		$transfered_amount_formatted = UIHelpers::format_number( max( 0, $amount_collected - ( $platform_commission_amount * 1.2 ) ) );
+		$amount_collected = $this->campaign->current_amount(FALSE) - $amount_collected_check;
+		$amount_collected_formatted = UIHelpers::format_number($amount_collected);
+		$platform_commission_amount = $this->campaign->platform_commission_amount(FALSE);
+		$platform_commission_amount_with_tax_formatted = UIHelpers::format_number($platform_commission_amount * 1.2);
+		$transfered_amount_formatted = UIHelpers::format_number(max(0, $amount_collected - ($platform_commission_amount * 1.2)));
 		$buffer = "Le règlement est effectué par prélèvement sur les fonds collectés par carte bleue et virement sur internet lors du versement sur votre compte :
-Montant collecté sur la plateforme : ".$amount_collected_formatted." €
-Montant de la commission TTC : ".$platform_commission_amount_with_tax_formatted." €
-Montant reversé : ".$transfered_amount_formatted." €";
-		
-		if ( $amount_collected_check > 0 ) {
+Montant collecté sur la plateforme : " . $amount_collected_formatted . " €
+Montant de la commission TTC : " . $platform_commission_amount_with_tax_formatted . " €
+Montant reversé : " . $transfered_amount_formatted . " €";
+
+		if ($amount_collected_check > 0) {
 			$buffer .= "
 Les chèques vous seront directement adressés.";
 		}
-		return $buffer; 
+		return $buffer;
 	}
-	
-/*******************************************************************************
- * FONCTIONS LIEES A LA COMMISSION SUR LES ROYALTIES
-*******************************************************************************/
-	private function get_quickbooks_royalties_commission_options() {
-		$product_type = $this->campaign->get_api_data( 'product_type' );
-		$acquisition = $this->campaign->get_api_data( 'acquisition' );
-		if ( !empty( $product_type ) && !empty( self::$item_types[ $product_type ] ) 
-				&& !empty( $acquisition ) && !empty( self::$classes[ $acquisition ] ) 
-					) {
+
+	/*******************************************************************************
+	 * FONCTIONS LIEES A LA COMMISSION SUR LES ROYALTIES
+	 *******************************************************************************/
+	private function get_quickbooks_royalties_commission_options()
+	{
+		$product_type = $this->campaign->get_api_data('product_type');
+		$acquisition = $this->campaign->get_api_data('acquisition');
+		if (
+			!empty($product_type) && !empty(self::$item_types[$product_type])
+			&& !empty($acquisition) && !empty(self::$classes[$acquisition])
+		) {
 			$line_description = $this->get_royalties_line_description();
 			$campaign_organization = $this->campaign->get_organization();
-			$WDGOrganization = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-			$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay_without_tax( TRUE );
+			$WDGOrganization = new WDGOrganization($campaign_organization->wpref, $campaign_organization);
+			$commission_to_pay_without_tax = $this->roideclaration->get_commission_to_pay_without_tax(TRUE);
 			$options = array(
-				'customerid'		=> $WDGOrganization->get_id_quickbooks(),
-				'customeremail'		=> $WDGOrganization->get_email(),
-				'itemtitle'			=> self::$item_types[ $product_type ][ 'quickbooks_royalties' ],
-				'itemdescription'	=> $line_description,
-				'itemvalue'			=> $commission_to_pay_without_tax,
-				'itemtaxid'			=> WDGCampaignBill::$item_tax_20,
-				'locationid'		=> WDGCampaignBill::$location_company_id,
-				'classid'			=> self::$classes[ $acquisition ][ 'quickbooks_id' ],
-				'billdescription'	=> '',
-				'sendemail'			=> '1'
+				'customerid' => $WDGOrganization->get_id_quickbooks(),
+				'customeremail' => $WDGOrganization->get_email(),
+				'customerName' => $WDGOrganization->get_name(),
+				'customerAddress' => $WDGOrganization->get_address(),
+				'customerCity' => $WDGOrganization->get_city(),
+				'customerZIP' => $WDGOrganization->get_postal_code(),
+				'customerCountry' => $WDGOrganization->get_country(),
+				'itemtitle' => self::$item_types[$product_type]['quickbooks_royalties'],
+				'itemdescription' => $line_description,
+				'itemvalue' => $commission_to_pay_without_tax,
+				'itemtaxid' => WDGCampaignBill::$item_tax_20,
+				'locationid' => WDGCampaignBill::$location_company_id,
+				'classid' => self::$classes[$acquisition]['quickbooks_id'],
+				'billdescription' => '',
+				'sendemail' => '1'
 			);
 			return $options;
 		} else {
-			ypcf_debug_log( 'WDGCampaignBill :: get_quickbooks_royalties_commission_options $product_type = '.$product_type, false);
-			ypcf_debug_log( 'WDGCampaignBill :: get_quickbooks_royalties_commission_options $acquisition = '.$acquisition, false);
+			ypcf_debug_log('WDGCampaignBill :: get_quickbooks_royalties_commission_options $product_type = ' . $product_type, false);
+			ypcf_debug_log('WDGCampaignBill :: get_quickbooks_royalties_commission_options $acquisition = ' . $acquisition, false);
 		}
 		return FALSE;
 	}
-	
-	public function get_royalties_line_description() {
+
+	public function get_royalties_line_description()
+	{
 		$declaration_cost_to_organization = $this->campaign->get_costs_to_organization();
 		$this->roideclaration->get_month_list_str();
-		$declaration_amount = UIHelpers::format_number( $this->roideclaration->get_amount_with_adjustment() );
-		$declaration_date_object = new DateTime( $this->roideclaration->date_due );
-		$declaration_month_num = $declaration_date_object->format( 'n' );
-		$declaration_year = $declaration_date_object->format( 'Y' );
+		$declaration_amount = UIHelpers::format_number($this->roideclaration->get_amount_with_adjustment());
+		$declaration_date_object = new DateTime($this->roideclaration->date_due);
+		$declaration_month_num = $declaration_date_object->format('n');
+		$declaration_year = $declaration_date_object->format('Y');
 		$declaration_trimester = 4;
-		switch ( $declaration_month_num ) {
+		switch ($declaration_month_num) {
 			case 1:
 				$declaration_year--;
 				break;
@@ -291,11 +348,11 @@ Les chèques vous seront directement adressés.";
 				$declaration_trimester = 3;
 				break;
 		}
-		
-		$buffer = "Frais de gestion royalties T".$declaration_trimester." ".$declaration_year."
-".$declaration_cost_to_organization." % TTC de la Redevance
-La Redevance de ce trimestre étant de ".$declaration_amount." euros";
+
+		$buffer = "Frais de gestion royalties T" . $declaration_trimester . " " . $declaration_year . "
+" . $declaration_cost_to_organization . " % TTC de la Redevance
+La Redevance de ce trimestre étant de " . $declaration_amount . " euros";
 		return $buffer;
 	}
-	
+
 }
