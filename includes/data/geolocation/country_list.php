@@ -529,7 +529,9 @@ global $country_list_insee;
 $country_list_insee = array(
 	"CA" => "99401",
 	"CH" => "99140",
+	"CM" => "99322",
 	"DE" => "99109",
+	"DZ" => "99352",
 	"ES" => "99134",
 	"FR" => "00000",
 	"GA" => "99328",
