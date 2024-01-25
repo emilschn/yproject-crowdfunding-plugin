@@ -794,7 +794,7 @@ class WDGROIDeclaration {
 
 			if ( $this->get_commission_to_pay() > 0 ) {
 				// Envoi de la facture
-				$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission );
+				$campaign_bill = new WDGCampaignBill( $campaign, WDGCampaignBill::$tool_name_pennylane, WDGCampaignBill::$bill_type_royalties_commission );
 				$campaign_bill->set_declaration( $this );
 				if ( $campaign_bill->generate() ) {
 					// Transfert vers le compte bancaire de WDG
