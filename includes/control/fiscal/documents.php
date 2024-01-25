@@ -105,6 +105,7 @@ class WDG_FiscalDocuments {
 		// On stocke d'un autre côté le fichier txt de déclaration des IFUs
 		// Documentation de référence (2020) : https://www.impots.gouv.fr/portail/files/media/1_metier/3_partenaire/tiers_declarants/cdc_td_bilateral/td_rcm_r20_v1.0.pdf
 		$ifu_txt = self::add_ifu_declaring_info( $current_date->format( 'Y' ) - 1 );
+		$ifu_txt .= '\n';
 
 		// Année en cours (telle que sortie dans les noms de fichiers)
 		$file_year = $current_date->format( 'Y' );
@@ -216,6 +217,7 @@ class WDG_FiscalDocuments {
 				if ( !empty( $ifu_entity_txt ) ) {
 					$ifu_txt .= $ifu_entity_txt;
 					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_sampled_year );
+					$ifu_txt .= '\n';
 					$entity_index++;
 				}
 			}
