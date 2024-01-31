@@ -216,6 +216,7 @@ class WDG_FiscalDocuments {
 				$resume_txt .= self::add_resume_entity( $investment_entity_id, $investment_amount, $amount_to_declare_round, $amount_tax_sampled_year );
 				if ( !empty( $ifu_entity_txt ) ) {
 					$ifu_txt .= $ifu_entity_txt;
+					$ifu_txt .= "\n";
 					$ifu_txt .= self::add_ifu_amount_1( $investment_entity_id, $fiscal_year, $amount_to_declare_round, $amount_tax_sampled_year );
 					$ifu_txt .= "\n";
 					$entity_index++;
