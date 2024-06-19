@@ -119,7 +119,6 @@ class WDGWPRESTLib {
 		if ( !$shortcut_call ) {
 			ypcf_debug_log( 'WDGWPRESTLib::call_post -- $route : ' . $route . ' --- ' . print_r( $traced_parameters, TRUE ) );
 		}
-		
 		$headers = array( "Authorization" => "Basic " . base64_encode( YP_WDGWPREST_ID . ':' . YP_WDGWPREST_PWD ) );
 		$result = wp_remote_post( 
 			YP_WDGWPREST_URL . $route, 
