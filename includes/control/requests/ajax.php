@@ -41,6 +41,8 @@ class WDGAjaxActions {
 		WDGAjaxActions::add_action_user_account( 'display_user_investments' ); // deprecated
 		WDGAjaxActions::add_action_user_account( 'display_user_investments_optimized' );
 		WDGAjaxActions::add_action_user_account( 'get_transactions_table' );
+		WDGAjaxActions::add_action_user_account( 'get_transactions_history' );
+		WDGAjaxActions::add_action_user_account( 'get_transactions_history_download' );
 		WDGAjaxActions::add_action_user_account( 'get_viban_info' );
 
 		// Page projet
