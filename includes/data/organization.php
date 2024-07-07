@@ -1731,8 +1731,8 @@ class WDGOrganization implements WDGUserInterface {
 	public function get_investments($payment_status) {
 		return $this->get_user_investments_object()->get_investments( $payment_status );
 	}
-	public function get_validated_investments() {
-		return $this->get_user_investments_object()->get_validated_investments();
+	public function get_validated_investments($trimestre = false) {
+		return $this->get_user_investments_object()->get_validated_investments($trimestre);
 	}
 	public function get_count_validated_investments() {
 		$list = $this->get_user_investments_object()->get_posts_investments( 'publish' );

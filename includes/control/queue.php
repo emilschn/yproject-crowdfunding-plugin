@@ -51,6 +51,9 @@ class WDGQueue {
 		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( $number, TRUE );
 		if ( !empty( $queued_action_list ) ) {
 			foreach ( $queued_action_list as $queued_action ) {
+				if($queued_action->action == 'roi_transfer_message'){
+					WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
+				}
 				$action_name = 'execute_' . $queued_action->action;
 				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params ), $queued_action->id );
 				WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
@@ -147,12 +150,12 @@ class WDGQueue {
 			'not_transfered'	=> array(),
 			'not_started'		=> array()
 		);
-
 		$WDGOrganization = WDGOrganization::is_user_organization( $user_id ) ? new WDGOrganization( $user_id ) : FALSE;
 		$WDGUser = empty( $WDGOrganization ) ? new WDGUser( $user_id ) : FALSE;
 		$WDGUserOrOrganization = empty( $WDGOrganization ) ? $WDGUser : $WDGOrganization;
 		$is_registered = empty( $WDGOrganization ) ? $WDGUser->is_lemonway_registered() : $WDGOrganization->is_registered_lemonway_wallet();
 		// on récupère la langue du destinataire 
+
 		WDG_Languages_Helpers::set_current_locale_id( $WDGUserOrOrganization->get_language() );
 		$recipient_email = '';
 		$recipient_email = $WDGUserOrOrganization->get_email();
@@ -163,7 +166,8 @@ class WDGQueue {
 				$recipient_email .= ',' . $WDGUser_creator->get_email();
 			}
 		} 
-		$validated_investments = $WDGUserOrOrganization->get_validated_investments();
+		$validated_investments = $WDGUserOrOrganization->get_validated_investments(true);
+
 		$id_api_entity = $WDGUserOrOrganization->get_api_id();
 		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 
@@ -299,7 +303,6 @@ class WDGQueue {
 			$message .= "<b>" . __( 'email.royalties.WALLET_PENDING_AMOUNT_1', 'yproject' ) . $WDGUserOrOrganization->get_pending_rois_amount() . __( 'email.royalties.WALLET_PENDING_AMOUNT_2', 'yproject' ) . "</b><br>";
 			$message .= "<br>";
 		}
-
 		if ( !empty( $message ) ) {
 			$cancel_notification = FALSE;
 
