@@ -631,8 +631,6 @@ class NotificationsAPI {
 					$object = str_replace('MM', $lastMonth->format('m'), $object);
 					$object = str_replace('YY', $lastMonth->format('Y'), $object);
 					
-					var_dump($object);die;
-					
 					$content = $template_post->post_content;
 
 					// Vérification si un reply_to a été défini en back-office

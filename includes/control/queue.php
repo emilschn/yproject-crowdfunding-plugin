@@ -234,8 +234,6 @@ class WDGQueue {
 		}
 
 
-		var_dump($message);
-		die;
 		if ( !empty( $message ) ) {
 			$cancel_notification = FALSE;
 
