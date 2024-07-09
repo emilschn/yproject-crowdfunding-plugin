@@ -51,6 +51,9 @@ class WDGQueue {
 		$queued_action_list = WDGWPREST_Entity_QueuedAction::get_list( $number, TRUE );
 		if ( !empty( $queued_action_list ) ) {
 			foreach ( $queued_action_list as $queued_action ) {
+				if($queued_action->action == 'roi_transfer_message'){
+					WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
+				}
 				$action_name = 'execute_' . $queued_action->action;
 				self::{ $action_name }( $queued_action->entity_id, json_decode( $queued_action->params ), $queued_action->id );
 				WDGWPREST_Entity_QueuedAction::edit( $queued_action->id, self::$status_complete );
@@ -116,17 +119,17 @@ class WDGQueue {
 		$priority = self::$priority_date;
 		$date_next_dispatch = new DateTime();
 		// Les envois se font à 21h
+		$date_next_dispatch->modify('first day of next month');
 		$date_next_dispatch->setTime( 21, 0 );
-		// Si la date est avant le 10 (ou le 10), on envoie le 10
-		if ( $date_next_dispatch->format( 'd' ) <= 10 ) {
-			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 10 );
-		}
-		// Si la date est entre le 10 et le 15 (compris), on envoie le 15
-		if ( $date_next_dispatch->format( 'd' ) > 10 && $date_next_dispatch->format( 'd' ) <= 15 ) {
-			$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 15 );
-		}
+		// // Si la date est avant le 10 (ou le 10), on envoie le 10
+		// if ( $date_next_dispatch->format( 'd' ) <= 10 ) {
+		// 	$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 10 );
+		// }
+		// // Si la date est entre le 10 et le 15 (compris), on envoie le 15
+		// if ( $date_next_dispatch->format( 'd' ) > 10 && $date_next_dispatch->format( 'd' ) <= 15 ) {
+		// 	$date_next_dispatch->setDate( $date_next_dispatch->format( 'Y' ), $date_next_dispatch->format( 'm' ), 15 );
+		// }
 		// Faut-il décaler sur un jour ouvré si ça tombe le samedi / dimanche ?
-
 		$date_priority = $date_next_dispatch->format( 'Y-m-d H:i:s' );
 		$params = array();
 
@@ -147,12 +150,12 @@ class WDGQueue {
 			'not_transfered'	=> array(),
 			'not_started'		=> array()
 		);
-
 		$WDGOrganization = WDGOrganization::is_user_organization( $user_id ) ? new WDGOrganization( $user_id ) : FALSE;
 		$WDGUser = empty( $WDGOrganization ) ? new WDGUser( $user_id ) : FALSE;
 		$WDGUserOrOrganization = empty( $WDGOrganization ) ? $WDGUser : $WDGOrganization;
 		$is_registered = empty( $WDGOrganization ) ? $WDGUser->is_lemonway_registered() : $WDGOrganization->is_registered_lemonway_wallet();
 		// on récupère la langue du destinataire 
+
 		WDG_Languages_Helpers::set_current_locale_id( $WDGUserOrOrganization->get_language() );
 		$recipient_email = '';
 		$recipient_email = $WDGUserOrOrganization->get_email();
@@ -163,82 +166,35 @@ class WDGQueue {
 				$recipient_email .= ',' . $WDGUser_creator->get_email();
 			}
 		} 
-		$validated_investments = $WDGUserOrOrganization->get_validated_investments();
-		$id_api_entity = $WDGUserOrOrganization->get_api_id();
-		$investment_contracts = WDGWPREST_Entity_User::get_investment_contracts( $id_api_entity );
 
-		// Parcours de la liste des investissements validés sur le site
-		foreach ( $validated_investments as $campaign_id => $campaign_investments ) {
-			// On vérifie que cet investissement n'a pas été annulé via les enregistrements dans l'API
-			$first_investment_contract = FALSE;
-			foreach ( $campaign_investments as $investment_id ) {
-				if ( !empty( $investment_contracts ) ) {
-					foreach ( $investment_contracts as $investment_contract ) {
-						if ( $investment_contract->subscription_id == $investment_id ) {
-							$first_investment_contract = $investment_contract;
-						}
-					}
-				}
-			}
-			if ( !empty( $first_investment_contract ) && $first_investment_contract->status == 'canceled' ) {
-				continue;
-			}
+		$rois = WDGWPREST_Entity_ROI::getLastest($WDGUserOrOrganization->get_api_id());
 
-			$campaign = new ATCF_Campaign( $campaign_id );
-			$campaign_organization = $campaign->get_organization();
-			if ( !empty( $campaign_organization ) ) {
-				$campaign_organization_obj = new WDGOrganization( $campaign_organization->wpref, $campaign_organization );
-				$campaign_name = $campaign_organization_obj->get_name() . ' ( ' . __( 'email.royalties.FUNDRAISING', 'yproject' ) . ' ' . $campaign->get_name() . '")';
-			} else {
-				$campaign_name = $campaign->get_name();
-			}
-
-			if ( $campaign->campaign_status() == ATCF_Campaign::$campaign_status_funded ) {
-				$amount_royalties = 0;
-				$amount_tax_in_cents = 0;
-				$has_declared = FALSE;
-
-				$campaign_roi_list = ( empty( $WDGOrganization ) ) ? $WDGUser->get_royalties_by_campaign_id( $campaign_id ) : $WDGOrganization->get_royalties_by_campaign_id( $campaign_id );
-				foreach ( $campaign_roi_list as $campaign_roi ) {
-					$date_transfer = new DateTime( $campaign_roi->date_transfer );
-					if ( $date_transfer->format( 'm' ) == $date_now->format( 'm' ) && $date_transfer->format( 'Y' ) == $date_now->format( 'Y' ) ) {
-						$amount_royalties += $campaign_roi->amount;
-						// si il y a un montant taxé, on va prendre le montant du prélèvement social
-						if ( $campaign_roi->amount_taxed_in_cents > 0 && !empty( $WDGUser ) ) {
-							$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $campaign_roi->amount_taxed_in_cents );
-						}
-						$has_declared = TRUE;
-					}
-				}
-
-				if ( $has_declared ) {
-					array_push( $message_categories[ 'with_royalties' ], array(
-						'campaign_name'			=> $campaign_name,
-						'amount_royalties'		=> $amount_royalties,
-						'amount_tax_in_cents'	=> $amount_tax_in_cents,
-					) );
-				} else {
-					$campaign_first_declaration = new DateTime( $campaign->first_payment_date() );
-					if ( $date_now < $campaign_first_declaration && ( $date_now->format( 'Y' ) != $campaign_first_declaration->format( 'Y' ) || $date_now->format( 'm' ) != $campaign_first_declaration->format( 'm' ) ) ) {
-						array_push( $message_categories[ 'not_started' ], array(
-							'campaign_name'	=> $campaign_name,
-							'date_start'	=> $campaign_first_declaration->format( 'd/m/Y' )
-						) );
-					} else {
-						$campaign_declarations = WDGROIDeclaration::get_list_by_campaign_id( $campaign_id );
-						foreach ( $campaign_declarations as $campaign_declaration ) {
-							if ( $campaign_declaration->status != WDGROIDeclaration::$status_finished ) {
-								$date_due = new DateTime( $campaign_declaration->date_due );
-								if ( $date_now->format( 'Y' ) == $date_due->format( 'Y' ) && $date_now->format( 'm' ) == $date_due->format( 'm' ) ) {
-									array_push( $message_categories[ 'not_transfered' ], $campaign_name );
-								}
-							}
-						}
-					}
-				}
-			}
+		//SI pas de royalties dans le dernier mois → pas de mail
+		if(empty($rois)){
+			return;
 		}
 
+		foreach ($rois as $roi)
+		{
+			$orgaApiID = $roi->id_orga;
+			$projectApiID = $roi->id_project;
+			$amount_royalties = $roi->amount;
+			$amount_tax_in_cents = 0;
+			$project = WDGWPREST_Entity_Project::get($projectApiID);
+			$org = WDGWPREST_Entity_Organization::get($orgaApiID);
+			$campaign_name = $org->name . ' ( ' . __( 'email.royalties.FUNDRAISING', 'yproject' ) . ' ' . $project->name . ')';
+			if ( $roi->amount_taxed_in_cents > 0 && $WDGUser != FALSE ) {
+				$amount_tax_in_cents = $WDGUser->get_tax_amount_in_cents_round( $roi->amount_taxed_in_cents );
+			}
+
+			array_push( $message_categories[ 'with_royalties' ], array(
+				'campaign_name'			=> $campaign_name,
+				'amount_royalties'		=> $amount_royalties,
+				'amount_tax_in_cents'	=> $amount_tax_in_cents,
+			) );
+
+		}
+		
 		$message = "";
 
 		/**
@@ -248,7 +204,12 @@ class WDGQueue {
 		- Twiza (3,50 €)
 		 */
 		if ( !empty( $message_categories[ 'with_royalties' ] ) ) {
-			$message .= "<b>" . __( 'email.royalties.COMPANIES_TRANSFERED_ROYALTIES', 'yproject' ) . "</b><br>";
+			if($WDGUserOrOrganization->get_language() == 'en'){
+				$message .= "<b>Here is what you received last month:</b><br>";
+			} else {
+				$message .= "<b>Voici ce que vous avez reçu le mois dernier :</b><br>";
+			}
+
 			foreach ( $message_categories[ 'with_royalties' ] as $campaign_params ) {
 				$message .= "- " .$campaign_params[ 'campaign_name' ]. " : " .YPUIHelpers::display_number( $campaign_params[ 'amount_royalties' ] ). " €";
 				if ( $campaign_params[ 'amount_tax_in_cents' ] > 0 ) {
@@ -258,34 +219,6 @@ class WDGQueue {
 			}
 			$message .= "<br>";
 		}
-
-		/**
-		 *
-		Les versements de ces entreprises sont en attente :
-		- Nkita
-		- Listo
-		 */
-		if ( !empty( $message_categories[ 'not_transfered' ] ) ) {
-			$message .= "<b>" . __( 'email.royalties.COMPANIES_PENDING_TRANSFER', 'yproject' ) . "</b><br>";
-			foreach ( $message_categories[ 'not_transfered' ] as $campaign_name ) {
-				$message .= "- " .$campaign_name. "<br>";
-			}
-			$message .= "<br>";
-		}
-
-		/**
-		 *
-		Ces entreprises ne sont pas encore entrées dans la phase de déclaration :
-		- La charette (démarre le 10/04/2019)
-		 */
-		if ( !empty( $message_categories[ 'not_started' ] ) ) {
-			$message .= "<b>" . __( 'email.royalties.COMPANIES_NOT_YET_TRANSFERING', 'yproject' ) . "</b><br>";
-			foreach ( $message_categories[ 'not_started' ] as $campaign_params ) {
-				$message .= "- " .$campaign_params['campaign_name']. " (démarre le " .$campaign_params['date_start']. ")<br>";
-			}
-			$message .= "<br>";
-		}
-
 
 		/**
 		 * "Vous avez actuellement xx € dans votre monnaie électronique. "(si supérieur à 0€ uniquement)
@@ -299,6 +232,7 @@ class WDGQueue {
 			$message .= "<b>" . __( 'email.royalties.WALLET_PENDING_AMOUNT_1', 'yproject' ) . $WDGUserOrOrganization->get_pending_rois_amount() . __( 'email.royalties.WALLET_PENDING_AMOUNT_2', 'yproject' ) . "</b><br>";
 			$message .= "<br>";
 		}
+
 
 		if ( !empty( $message ) ) {
 			$cancel_notification = FALSE;

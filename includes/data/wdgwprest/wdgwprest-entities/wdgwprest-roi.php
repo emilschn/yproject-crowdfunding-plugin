@@ -70,4 +70,11 @@ class WDGWPREST_Entity_ROI {
 		if (isset($result_obj->code) && $result_obj->code == 400) { $result_obj = ''; }
 		return $result_obj;
 	}
+
+	public static function getLastest($entity_id)
+	{
+		// var_dump('roi/latest/'.$entity_id);die;
+		return WDGWPRESTLib::call_get_wdg('roi/latest/'.$entity_id);
+	}
+
 }
