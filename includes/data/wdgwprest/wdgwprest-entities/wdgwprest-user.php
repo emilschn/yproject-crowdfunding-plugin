@@ -254,7 +254,7 @@ class WDGWPREST_Entity_User {
 	public static function get_transactions_history_download( $user_id ) {
 		$buffer = array();
 		if ( !empty( $user_id ) ) {
-			$buffer = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/transactions/export' );
+			$buffer = WDGWPRESTLib::call_get_wdg( 'user/' .$user_id. '/transactions/export?uniqid='.uniqid() );
 		}
 		return $buffer;
 	}
