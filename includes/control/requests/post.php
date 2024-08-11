@@ -1215,7 +1215,7 @@ class WDGPostActions
 		if ($WDGUser_current != FALSE && $WDGUser_current->is_admin() && !empty($roi_declaration_id) && !empty($campaign_id)) {
 			$campaign = new ATCF_Campaign($campaign_id);
 			$roi_declaration = new WDGROIDeclaration($roi_declaration_id);
-			$campaign_bill = new WDGCampaignBill($campaign, WDGCampaignBill::$tool_name_quickbooks, WDGCampaignBill::$bill_type_royalties_commission);
+			$campaign_bill = new WDGCampaignBill($campaign, WDGCampaignBill::$tool_name_pennylane, WDGCampaignBill::$bill_type_royalties_commission);
 			$campaign_bill->set_declaration($roi_declaration);
 			$campaign_bill->generate();
 
