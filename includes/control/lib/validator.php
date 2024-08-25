@@ -260,7 +260,7 @@ class WDGRESTAPI_Lib_Validator {
 		"ZW" => "ZIMBABWE"
 	);
 	
-	public static $minimum_amount = 10;
+	public static $minimum_amount = 100;
 	
 	/**
 	 * Vérifie si le champ est bien 1 ou 0
