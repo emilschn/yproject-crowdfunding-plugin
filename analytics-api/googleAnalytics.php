@@ -83,7 +83,7 @@ class googleAnalytics
                     'field_name' => 'pagePath',
                     'string_filter' => new Filter\StringFilter([
                         'match_type' => Filter\StringFilter\MatchType::BEGINS_WITH,
-                        'value' => '/neoney',
+                        'value' => $this->path,
                     ])
                 ])
             ])
@@ -147,7 +147,7 @@ class googleAnalytics
                     'field_name' => 'pagePath',
                     'string_filter' => new Filter\StringFilter([
                         'match_type' => Filter\StringFilter\MatchType::BEGINS_WITH,
-                        'value' => '/neoney',
+                        'value' => $this->path,
                     ])
                 ])
             ])
@@ -215,7 +215,7 @@ class googleAnalytics
                     'field_name' => 'pagePath',
                     'string_filter' => new Filter\StringFilter([
                         'match_type' => Filter\StringFilter\MatchType::BEGINS_WITH,
-                        'value' => '/neoney',
+                        'value' => $this->path,
                     ])
                 ])
             ])
