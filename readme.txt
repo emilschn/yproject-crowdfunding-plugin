@@ -1,6 +1,6 @@
 === Crowdfunding by Astoundify ===
 
-Contributors: Boubacar, Emilien, Loeiza
+Contributors: Boubacar, Emilien, Loeiza, Anaïs
 Requires at least: 3.5
 Tested up to: 3.5
 Stable Tag: 1.3.1
