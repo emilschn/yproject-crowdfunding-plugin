@@ -1221,6 +1221,7 @@ class ATCF_Campaign {
 	}
 
 	public static $key_minimum_goal_display = 'minimum_goal_display';
+	public static $key_maximum_goal_display = 'maximum_goal_display';
 	public static $key_minimum_goal_display_option_minimum_as_max = 'minimum_as_max';
 	public static $key_minimum_goal_display_option_minimum_as_step = 'minimum_as_step';
 	public function get_minimum_goal_display() {
