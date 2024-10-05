@@ -326,7 +326,7 @@ class WDGAjaxActionsProjectDashboard {
 			$success[ "new_employees_number" ] = 1;
 		}
 		$new_minimum_goal_display = sanitize_text_field( filter_input( INPUT_POST, 'new_minimum_goal_display' ) );
-		if ( $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max || $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_step ) {
+		if ( $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_max || $new_minimum_goal_display == ATCF_Campaign::$key_minimum_goal_display_option_minimum_as_step || $new_minimum_goal_display == ATCF_Campaign::$key_maximum_goal_display ) {
 			$campaign->set_api_data( 'minimum_goal_display', $new_minimum_goal_display );
 			$success[ "new_minimum_goal_display" ] = 1;
 		}
