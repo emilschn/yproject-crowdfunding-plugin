@@ -1153,6 +1153,7 @@ class WDGAjaxActionsProjectDashboard {
 	 * Crée la table des contacts
 	 */
 	public static function create_contacts_table() {
+		ini_set('max_execution_time', 0); 
 		$campaign_id = filter_input(INPUT_POST, 'id_campaign');
 		if ( !is_numeric( $campaign_id ) ) {
 			return '<div class="wdg-datatable">Erreur de paramètre</div>';

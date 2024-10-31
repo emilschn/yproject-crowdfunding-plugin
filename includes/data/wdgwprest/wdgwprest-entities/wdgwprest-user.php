@@ -212,6 +212,13 @@ class WDGWPREST_Entity_User {
 		return $result_obj;
 	}
 	
+	public static function get_investment_royalties($user_api_id, $investment_id)
+	{
+		$result_obj = WDGWPRESTLib::call_get_wdg( 'user/' .$user_api_id. '/investment-royalties'.'/'.$investment_id);
+		return $result_obj;
+	}
+
+
 	/**
 	 * Retourne les contrats d'investissements liés à un utilisateur
 	 * @return array
